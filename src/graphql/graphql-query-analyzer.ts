@@ -1,7 +1,7 @@
 import {
     FieldNode, GraphQLOutputType, GraphQLCompositeType, ResponsePath, GraphQLSchema,
     FragmentDefinitionNode, OperationDefinitionNode, GraphQLObjectType, isCompositeType, GraphQLNonNull, GraphQLList,
-    getNamedType
+    getNamedType, GraphQLField
 } from 'graphql';
 
 import {resolveSelections, getArgumentValues} from "./field-collection";
@@ -10,9 +10,14 @@ import {groupArray, indent, INDENTATION} from "../utils/utils";
  * A request for the value of one field with a specific argument set and selection set
  */
 export class FieldRequest {
-    constructor(public readonly fieldName: string,
+    constructor(public readonly field: GraphQLField<any, any>,
                 public readonly selectionSet: FieldSelection[] = [],
-                public readonly args: {[argumentName: string ]: any} = {}) {
+                public readonly args: {[argumentName: string ]: any} = {},
+                ) {
+    }
+
+    public get fieldName() {
+        return this.field.name;
     }
 
     /**
@@ -56,13 +61,12 @@ export class FieldSelection {
 }
 
 
-interface FieldRequestConfigExt {
-    fieldName: string;
+interface FieldRequestConfig {
+    field: GraphQLField<any, any>;
     selectionSet?: SelectionSetConfig
     args?: {[argumentName: string ]: any};
 }
-export type FieldRequestConfig = FieldRequestConfigExt|string;
-export type SelectionSetConfig = { [ propertyName: string]: FieldRequestConfig|string };
+export type SelectionSetConfig = { [ propertyName: string]: FieldRequestConfig};
 
 /**
  * Creates a {@link FieldRequest} from a simple JSON-like object
@@ -70,10 +74,7 @@ export type SelectionSetConfig = { [ propertyName: string]: FieldRequestConfig|s
  * @returns {FieldRequest} the created field request
  */
 export function createFieldRequest(config: FieldRequestConfig) {
-    if (typeof config == 'string') {
-        return new FieldRequest(config);
-    }
-    return new FieldRequest(config.fieldName, createSelectionSet(config.selectionSet || {}), config.args || {});
+    return new FieldRequest(config.field, createSelectionSet(config.selectionSet || {}), config.args || {});
 }
 
 function createSelectionSet(config: SelectionSetConfig): FieldSelection[] {
@@ -142,7 +143,7 @@ export function buildFieldRequest(input: FieldRequestInput): FieldRequest {
     }
     const args = getArgumentValues(fieldDef, anyField, input.variableValues);
 
-    return new FieldRequest(input.fieldName, selections, args);
+    return new FieldRequest(fieldDef, selections, args);
 }
 
 export function unwrapToCompositeType(type: GraphQLOutputType): GraphQLCompositeType|null {
