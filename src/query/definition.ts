@@ -32,11 +32,11 @@ export interface QueryNode {
 }
 
 export class LiteralQueryNode {
-    constructor(public readonly literal: any) {
+    constructor(public readonly value: any) {
     }
 
     public describe() {
-        return `literal ${JSON.stringify(this.literal)}`;
+        return `literal ${JSON.stringify(this.value)}`;
     }
 }
 
