@@ -5,14 +5,22 @@ import {
     GraphQLSkipDirective,
     GraphQLIncludeDirective,
     GraphQLDirective,
-    GraphQLField, FragmentDefinitionNode
-} from "graphql";
+    GraphQLField, FragmentDefinitionNode, SelectionNode, GraphQLSchema, VariableDefinitionNode
+} from 'graphql';
 
 // This function is not exported, but we really need this to not duplicate a large chunk of graphql-js
 export const getArgumentValues: (def: GraphQLField<any, any> | GraphQLDirective,
                           node: FieldNode | DirectiveNode,
                           variableValues: {[key: string]: any}) => {[key: string]: any|undefined}
     = require('graphql/execution/values').getArgumentValues;
+
+
+// same for this
+export const getVariableValues: (
+    schema: GraphQLSchema,
+    varDefNodes: Array<VariableDefinitionNode>,
+    inputs: { [key: string]: any }) => { [key: string]: any}
+    = require('graphql/execution/values').getVariableValues;
 
 /**
  * Collects all fields selected by the given selection node
@@ -25,16 +33,18 @@ export const getArgumentValues: (def: GraphQLField<any, any> | GraphQLDirective,
  *
  * We need to duplicate the logic here because graphql-js only supports pulling fields one after the other via the
  * resolve callbacks, but we need to build the whole query structure before any data has been resolved
+ *
+ * This is similar to expandSelections from language-utils but does a shouldIncludeNode filter at each level
  */
-export function resolveSelections(selectionSetNode: SelectionSetNode, context: {
+export function resolveSelections(selections: SelectionNode[], context: {
     variableValues: {[key: string]: any},
     fragments: {[key: string]: FragmentDefinitionNode|undefined}
 }): FieldNode[] {
     const visitedFragmentNames = new Set<string>();
     const nodes: FieldNode[] = [];
 
-    function walk(selectionSetNode: SelectionSetNode) {
-        for (const selection of selectionSetNode.selections) {
+    function walk(selections: SelectionNode[]) {
+        for (const selection of selections) {
             // Here,
             if (!shouldIncludeNode(selection.directives || [], context.variableValues)) {
                 continue;
@@ -45,7 +55,7 @@ export function resolveSelections(selectionSetNode: SelectionSetNode, context: {
                     nodes.push(selection);
                     break;
                 case 'InlineFragment':
-                    walk(selection.selectionSet);
+                    walk(selection.selectionSet.selections);
                     break;
                 case 'FragmentSpread':
                     const fragmentName = selection.name.value;
@@ -57,14 +67,14 @@ export function resolveSelections(selectionSetNode: SelectionSetNode, context: {
                     if (!fragment) {
                         throw new Error(`Fragment ${fragmentName} was queried but not defined`);
                     }
-                    walk(fragment.selectionSet);
+                    walk(fragment.selectionSet.selections);
                     break;
             }
         }
         return nodes;
     }
 
-    return walk(selectionSetNode);
+    return walk(selections);
 }
 
 /**
@@ -78,7 +88,7 @@ export function resolveSelections(selectionSetNode: SelectionSetNode, context: {
  * @param variableValues variables supplied to the query
  * @returns true if the node should be included, false if it should be skipped
  */
-function shouldIncludeNode(directives: DirectiveNode[], variableValues: {[key: string]: any}) {
+export function shouldIncludeNode(directives: DirectiveNode[], variableValues: {[key: string]: any}) {
     const skipNode = directives.find(d => d.name.value == GraphQLSkipDirective.name);
     if (skipNode) {
         const {if: skipIf} = getArgumentValues(

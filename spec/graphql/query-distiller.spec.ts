@@ -1,18 +1,9 @@
 import {
-    parse,
-    GraphQLSchema,
-    GraphQLObjectType,
-    GraphQLList,
-    GraphQLInputObjectType,
-    GraphQLID,
-    GraphQLString,
-    GraphQLResolveInfo,
-    execute,
-    GraphQLInt
-} from "graphql";
-import {FieldRequest, buildFieldRequest} from "../../src/graphql/graphql-query-analyzer";
+    GraphQLID, GraphQLInputObjectType, GraphQLInt, GraphQLList, GraphQLObjectType, GraphQLSchema, GraphQLString, parse
+} from 'graphql';
+import { distillQuery, FieldRequest } from '../../src/graphql/query-distiller';
 
-describe("graphql-query-analyzer", () => {
+describe("query-distiller", () => {
     const userType = new GraphQLObjectType({
         name: 'User',
         fields: {
@@ -25,7 +16,6 @@ describe("graphql-query-analyzer", () => {
         }
     });
 
-    let rootInfo: GraphQLResolveInfo|null = null;
     const schema = new GraphQLSchema({
         // Note: not using createCollectiveRootType() here because this test should only test buildFieldRequest.
         query: new GraphQLObjectType({
@@ -65,21 +55,15 @@ describe("graphql-query-analyzer", () => {
                                 }
                             }
                         }
-                    }),
-                    resolve: (_a, _b, _c, info) => rootInfo = info
+                    })
                 }
             }
         })
     });
 
+    // this is a bit ugly to maintain compatibility to the old unit tests
     async function executeQuery(query: string, variableValues?: {[name: string]: any}): Promise<FieldRequest> {
-        const doc = parse(query);
-        rootInfo = null;
-        await execute(schema, doc, {}, null, variableValues);
-        if (!rootInfo) {
-            throw new Error('GraphQL execute() did not call the resolve() callback');
-        }
-        return buildFieldRequest(rootInfo);
+        return distillQuery(parse(query), schema, variableValues).selectionSet[0].fieldRequest;
     }
 
     it("builds tree for simple query", async() => {
