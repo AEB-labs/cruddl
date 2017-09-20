@@ -1,16 +1,17 @@
 import {
-    FieldNode, GraphQLOutputType, GraphQLCompositeType, ResponsePath, GraphQLSchema,
-    FragmentDefinitionNode, OperationDefinitionNode, GraphQLObjectType, isCompositeType, GraphQLNonNull, GraphQLList,
-    getNamedType, GraphQLField
+    FieldNode, FragmentDefinitionNode, getNamedType, GraphQLCompositeType, GraphQLField, GraphQLObjectType,
+    GraphQLOutputType, isCompositeType
 } from 'graphql';
 
-import {resolveSelections, getArgumentValues} from "./field-collection";
-import {groupArray, indent, INDENTATION} from "../utils/utils";
+import { getArgumentValues, resolveSelections } from './field-collection';
+import { groupArray, indent, INDENTATION } from '../utils/utils';
+
 /**
  * A request for the value of one field with a specific argument set and selection set
  */
 export class FieldRequest {
     constructor(public readonly field: GraphQLField<any, any>,
+                public readonly parentType: GraphQLCompositeType,
                 public readonly selectionSet: FieldSelection[] = [],
                 public readonly args: {[argumentName: string ]: any} = {},
                 ) {
@@ -63,6 +64,7 @@ export class FieldSelection {
 
 interface FieldRequestConfig {
     field: GraphQLField<any, any>;
+    parentType: GraphQLCompositeType;
     selectionSet?: SelectionSetConfig
     args?: {[argumentName: string ]: any};
 }
@@ -74,7 +76,7 @@ export type SelectionSetConfig = { [ propertyName: string]: FieldRequestConfig};
  * @returns {FieldRequest} the created field request
  */
 export function createFieldRequest(config: FieldRequestConfig) {
-    return new FieldRequest(config.field, createSelectionSet(config.selectionSet || {}), config.args || {});
+    return new FieldRequest(config.field, config.parentType, createSelectionSet(config.selectionSet || {}), config.args || {});
 }
 
 function createSelectionSet(config: SelectionSetConfig): FieldSelection[] {
@@ -143,7 +145,7 @@ export function buildFieldRequest(input: FieldRequestInput): FieldRequest {
     }
     const args = getArgumentValues(fieldDef, anyField, input.variableValues);
 
-    return new FieldRequest(fieldDef, selections, args);
+    return new FieldRequest(fieldDef, input.parentType, selections, args);
 }
 
 export function unwrapToCompositeType(type: GraphQLOutputType): GraphQLCompositeType|null {

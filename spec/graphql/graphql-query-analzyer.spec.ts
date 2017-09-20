@@ -209,4 +209,10 @@ describe("graphql-query-analyzer", () => {
         const userNode2 = rootNode2.selectionSet[0].fieldRequest;
         expect(userNode2.selectionSet.length).toBe(0);
     });
+
+    it("fills out parentType", async() => {
+        const rootNode = await executeQuery(`query($var: Boolean) { root { users { id } } }`, {var: true});
+        expect(rootNode.parentType.name).toBe('Query');
+        expect(rootNode.selectionSet[0].fieldRequest.parentType.name).toBe('Root');
+    });
 });
