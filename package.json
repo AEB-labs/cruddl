@@ -13,15 +13,18 @@
     "@types/node": "^8.0.28",
     "@types/cors": "^2.8.1",
     "@types/body-parser": "^1.16.3",
+    "@types/jasmine": "^2.5.41",
     "body-parser": "^1.17.2",
     "cors": "^2.8.3",
     "graphql": "~0.10.0",
     "graphql-server-express": "^1.1.2",
+    "jasmine": "^2.5.3",
+    "jasmine-promises": "^0.4.1",
+    "jasmine-spec-reporter": "^3.2.0",
     "ts-node": "^3.1.0",
     "typescript": "^2.5.2",
     "express": "~4.15.4",
     "graphql-server-core": "~1.1.0"
   },
-  "dependencies": {
-  }
+  "dependencies": {}
 }
