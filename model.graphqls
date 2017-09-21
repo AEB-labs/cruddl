@@ -35,7 +35,7 @@ type GeoPosition {
 type User {
     id: ID
     name: String
-    pets(filter: PetsFilter, orderBy: [PetsOrderBy]): [Pet]
+    pets(filter: PetsFilter, orderBy: [PetsOrderBy], first: Int): [Pet]
     address: Address
 }
 
@@ -52,7 +52,7 @@ enum UsersOrderBy {
 }
 
 type Query {
-    allUsers(filter: UsersFilter, orderBy: [UsersOrderBy]): [User]
+    allUsers(filter: UsersFilter, orderBy: [UsersOrderBy], first: Int): [User]
 }
 
 schema {

@@ -55,7 +55,8 @@ function createListQueryNode(fieldRequest: FieldRequest, listNode: QueryNode): Q
     const filterNode = getFilterNode(fieldRequest.args.filter, objectType);
     const innerNode = createObjectNode(fieldRequest.selectionSet);
     const orderBy = createOrderSpecification(fieldRequest.args.orderBy, objectType);
-    return new ListQueryNode({listNode, innerNode, filterNode, orderBy});
+    const maxCount = fieldRequest.args.first;
+    return new ListQueryNode({listNode, innerNode, filterNode, orderBy, maxCount});
 }
 
 function createEntitiesQueryNode(fieldRequest: FieldRequest): QueryNode {

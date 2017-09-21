@@ -202,20 +202,22 @@ export class EntitiesQueryNode implements QueryNode {
  * A node to to control how to retrieve an embedded list
  */
 export class ListQueryNode implements QueryNode {
-    constructor(params: { listNode: QueryNode, innerNode?: QueryNode, filterNode?: QueryNode, orderBy?: OrderSpecification }) {
+    constructor(params: { listNode: QueryNode, innerNode?: QueryNode, filterNode?: QueryNode, orderBy?: OrderSpecification, maxCount?: number }) {
         this.listNode = params.listNode;
         this.innerNode = params.innerNode || new ContextQueryNode();
         this.filterNode = params.filterNode || new LiteralQueryNode(true);
         this.orderBy = params.orderBy || new OrderSpecification([]);
+        this.maxCount = params.maxCount;
     }
 
     public readonly listNode: QueryNode;
     public readonly innerNode: QueryNode;
     public readonly filterNode: QueryNode;
     public readonly orderBy: OrderSpecification;
+    public readonly maxCount: number|undefined;
 
     describe() {
-        return `${this.listNode.describe()} as list where ${this.filterNode.describe()} order by ${this.orderBy.describe()} as ${this.innerNode.describe()}`;
+        return `${this.listNode.describe()} as list where ${this.filterNode.describe()} order by${this.orderBy.describe()} ${this.maxCount != undefined ? ` (max ${this.maxCount}` : ''} as ${this.innerNode.describe()}`;
     }
 }
 

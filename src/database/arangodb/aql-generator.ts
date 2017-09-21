@@ -72,8 +72,9 @@ const processors: { [name: string]: NodeProcessor<any> } = {
             aql.indent(aql.lines(
                 aql`FOR ${itemVar}`,
                 aql`IN ${list}`,
-                generateSortAQL(node.orderBy, context),
                 aql`FILTER ${processNode(node.filterNode, itemVar)}`,
+                generateSortAQL(node.orderBy, context),
+                node.maxCount != undefined ? aql`LIMIT ${node.maxCount}` : aql``,
                 aql`RETURN ${processNode(node.innerNode, itemVar)}`)
             ),
             aql`)`);
