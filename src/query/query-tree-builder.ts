@@ -1,8 +1,9 @@
 import { DistilledOperation, FieldRequest, FieldSelection } from '../graphql/query-distiller';
-import { getNamedType, GraphQLCompositeType, GraphQLField, GraphQLObjectType } from 'graphql';
+import { getNamedType, GraphQLCompositeType, GraphQLField, GraphQLList, GraphQLObjectType } from 'graphql';
 import {
     BinaryOperationQueryNode, BinaryOperator,
-    EntitiesQueryNode, FieldQueryNode, LiteralQueryNode, ObjectQueryNode, PropertySpecification, QueryNode
+    EntitiesQueryNode, FieldQueryNode, ListQueryNode, LiteralQueryNode, ObjectQueryNode, PropertySpecification,
+    QueryNode
 } from './definition';
 
 /**
@@ -24,30 +25,46 @@ function createQueryNodeForField(fieldRequest: FieldRequest): QueryNode {
         return createEntitiesQueryNode(fieldRequest);
     }
     if (isEntityType(fieldRequest.parentType)) {
+        if (fieldRequest.field.type instanceof GraphQLList && getNamedType(fieldRequest.field.type) instanceof GraphQLObjectType) {
+            return createListQueryNode(fieldRequest);
+        }
         return new FieldQueryNode(fieldRequest.field);
     }
     console.log(`unknown field: ${fieldRequest.fieldName}`);
     return new LiteralQueryNode(null);
 }
 
+function createListQueryNode(fieldRequest: FieldRequest): QueryNode {
+    const objectType = getNamedType(fieldRequest.field.type) as GraphQLObjectType;
+    const listNode = new FieldQueryNode(fieldRequest.field);
+    const filterNode = getFilterNode(fieldRequest.args.filter, objectType);
+    const innerNode = createObjectNode(fieldRequest.selectionSet);
+    return new ListQueryNode({listNode, innerNode, filterNode});
+}
+
 function createEntitiesQueryNode(fieldRequest: FieldRequest): QueryNode {
     const objectType = getNamedType(fieldRequest.field.type) as GraphQLObjectType;
-    const filter = fieldRequest.args.filter;
-    let filterNode: QueryNode|undefined = undefined;
-    if (filter) {
-        for (const key of Object.getOwnPropertyNames(filter)) {
-            const fieldQuery = new FieldQueryNode(objectType.getFields()[key]);
-            const valueQuery = new LiteralQueryNode(filter[key]);
-            const newClause = new BinaryOperationQueryNode(fieldQuery, BinaryOperator.EQUALS, valueQuery);
-            if (filterNode) {
-                filterNode = new BinaryOperationQueryNode(filterNode, BinaryOperator.AND, newClause);
-            } else {
-                filterNode = newClause;
-            }
-        }
-    }
+    const filterNode = getFilterNode(fieldRequest.args.filter, objectType);
     const innerNode = createObjectNode(fieldRequest.selectionSet);
     return new EntitiesQueryNode({objectType, innerNode, filterNode});
+}
+
+function getFilterNode(filterArg: any, objectType: GraphQLObjectType) {
+    if (!filterArg) {
+        return undefined;
+    }
+    let filterNode: QueryNode|undefined = undefined;
+    for (const key of Object.getOwnPropertyNames(filterArg)) {
+        const fieldQuery = new FieldQueryNode(objectType.getFields()[key]);
+        const valueQuery = new LiteralQueryNode(filterArg[key]);
+        const newClause = new BinaryOperationQueryNode(fieldQuery, BinaryOperator.EQUALS, valueQuery);
+        if (filterNode) {
+            filterNode = new BinaryOperationQueryNode(filterNode, BinaryOperator.AND, newClause);
+        } else {
+            filterNode = newClause;
+        }
+    }
+    return filterNode;
 }
 
 function isQueryType(type: GraphQLCompositeType) {

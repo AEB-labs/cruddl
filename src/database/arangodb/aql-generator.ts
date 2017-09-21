@@ -1,6 +1,6 @@
 import {
     BinaryOperationQueryNode, BinaryOperator, ContextQueryNode,
-    EntitiesQueryNode, FieldQueryNode, LiteralQueryNode, ObjectQueryNode, QueryNode
+    EntitiesQueryNode, FieldQueryNode, ListQueryNode, LiteralQueryNode, ObjectQueryNode, QueryNode
 } from '../../query/definition';
 import { aql, AQLFragment } from './aql';
 import { GraphQLNamedType } from 'graphql';
@@ -34,7 +34,7 @@ const processors: { [name: string]: NodeProcessor<any> } = {
         return context || aql`null`;
     },
 
-    Literal(node: LiteralQueryNode, context): AQLFragment {
+    Literal(node: LiteralQueryNode): AQLFragment {
         return aql`${node.value}`;
     },
 
@@ -47,7 +47,7 @@ const processors: { [name: string]: NodeProcessor<any> } = {
         return aql`${context}[${id}]`;
     },
 
-    Entities(node: EntitiesQueryNode, context): AQLFragment {
+    Entities(node: EntitiesQueryNode): AQLFragment {
         const entityVar = aql.variable();
         const coll = getCollectionForType(node.objectType);
         return aql.lines(
@@ -57,6 +57,20 @@ const processors: { [name: string]: NodeProcessor<any> } = {
                 aql`IN ${coll}`,
                 aql`FILTER ${processNode(node.filterNode, entityVar)}`,
                 aql`RETURN ${processNode(node.innerNode, entityVar)}`)
+            ),
+            aql`)`);
+    },
+
+    List(node: ListQueryNode, context): AQLFragment {
+        const list = processNode(node.listNode, context);
+        const itemVar = aql.variable();
+        return aql.lines(
+            aql`(`,
+            aql.indent(aql.lines(
+                aql`FOR ${itemVar}`,
+                aql`IN ${list}`,
+                aql`FILTER ${processNode(node.filterNode, itemVar)}`,
+                aql`RETURN ${processNode(node.innerNode, itemVar)}`)
             ),
             aql`)`);
     },

@@ -1,10 +1,29 @@
 
 import {
-    GraphQLID, GraphQLInputObjectType, GraphQLList, GraphQLObjectType, GraphQLSchema, GraphQLString, parse, print
+    GraphQLEnumType,
+    GraphQLID, GraphQLInputObjectType, GraphQLInt, GraphQLList, GraphQLObjectType, GraphQLSchema, GraphQLString, parse,
+    print
 } from 'graphql';
 import { createQueryTree } from './src/query/query-tree-builder';
 import { distillQuery } from './src/graphql/query-distiller';
 import { getAQLForQuery } from './src/database/arangodb/aql-generator';
+
+const speciesType = new GraphQLEnumType({name: 'PetSpecies', values:{Dog:{}, Cat:{}, Parrot: {}}});
+
+const petType = new GraphQLObjectType({
+    name: 'Pet',
+    fields: {
+        species: {
+            type: speciesType
+        },
+        name: {
+            type: GraphQLString
+        },
+        birthYear: {
+            type: GraphQLInt
+        },
+    }
+});
 
 const userType = new GraphQLObjectType({
     name: 'User',
@@ -14,6 +33,21 @@ const userType = new GraphQLObjectType({
         },
         name: {
             type: GraphQLString
+        },
+        pets: {
+            type: new GraphQLList(petType),
+            args: {
+                filter: {
+                    type: new GraphQLInputObjectType({
+                        name: 'PetsFilter',
+                        fields: {
+                            species: {
+                                type: speciesType
+                            }
+                        }
+                    })
+                }
+            }
         }
     }
 });
@@ -45,7 +79,7 @@ const schema = new GraphQLSchema({
     })
 });
 
-const query = parse(`query($name: String) { allUsers(filter:{name: $name, id: "123"}) { code: id, name } }`);
+const query = parse(`query($name: String) { allUsers(filter:{name: $name, id: "123"}) { code: id, name, pets(filter:{species: Cat}) { species name birthYear } } }`);
 console.log(print(query));
 const op = distillQuery(query, schema, { name: 'Hans "Wurscht"'});
 console.log(op.describe());

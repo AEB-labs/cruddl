@@ -11,6 +11,13 @@ export class AQLVariable {
     }
 }
 
+function stringify(val: any) {
+    if (val === undefined) {
+        return "undefined";
+    }
+    return JSON.stringify(val);
+}
+
 export class AQLFragment {
     constructor(public readonly code: string, public readonly bindValues: { [name: string]: any} = {}, public readonly variableNames: {[name: string]: boolean}) {
 
@@ -42,7 +49,7 @@ export class AQLFragment {
             if (!(name in this.bindValues)) {
                 return '@name[MISSING]';
             }
-            return JSON.stringify(this.bindValues[name])
+            return stringify(this.bindValues[name])
         });
     }
 
@@ -51,7 +58,7 @@ export class AQLFragment {
             if (!(name in this.bindValues)) {
                 return '@name[MISSING]'.bgRed.white.bold;
             }
-            return JSON.stringify(this.bindValues[name]).magenta;
+            return stringify(this.bindValues[name]).magenta;
         });
     }
 

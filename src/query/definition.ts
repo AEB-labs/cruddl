@@ -150,3 +150,22 @@ export class EntitiesQueryNode implements QueryNode {
         return `entities of type ${this.objectType.name.blue} where ${this.filterNode.describe()} as ${this.innerNode.describe()}`;
     }
 }
+
+/**
+ * A node to to control how to retrieve an embedded list
+ */
+export class ListQueryNode implements QueryNode {
+    constructor(params: { listNode: QueryNode, innerNode?: QueryNode, filterNode?: QueryNode }) {
+        this.listNode = params.listNode;
+        this.innerNode = params.innerNode || new ContextQueryNode();
+        this.filterNode = params.filterNode || new LiteralQueryNode(true);
+    }
+
+    public readonly listNode: QueryNode;
+    public readonly innerNode: QueryNode;
+    public readonly filterNode: QueryNode;
+
+    describe() {
+        return `${this.listNode.describe()} as list where ${this.filterNode.describe()} as ${this.innerNode.describe()}`;
+    }
+}
