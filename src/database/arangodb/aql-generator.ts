@@ -1,10 +1,10 @@
 import {
-    BinaryOperationQueryNode, BinaryOperator, ContextQueryNode,
-    EntitiesQueryNode, FieldQueryNode, ListQueryNode, LiteralQueryNode, ObjectQueryNode, QueryNode
+    BasicType, BinaryOperationQueryNode, BinaryOperator, ConditionalQueryNode, ContextQueryNode, EntitiesQueryNode,
+    FieldQueryNode, ListQueryNode, LiteralQueryNode, ObjectQueryNode, QueryNode, TypeCheckQueryNode
 } from '../../query/definition';
 import { aql, AQLFragment } from './aql';
 import { GraphQLNamedType } from 'graphql';
-import * as pluralize from "pluralize";
+import * as pluralize from 'pluralize';
 import { decapitalize } from '../../utils/utils';
 
 type NodeProcessor<T extends QueryNode> = (node: T, context?: AQLFragment) => AQLFragment;
@@ -39,12 +39,13 @@ const processors: { [name: string]: NodeProcessor<any> } = {
     },
 
     Field(node: FieldQueryNode, context): AQLFragment {
+        const object = processNode(node.objectNode, context);
         const id = node.field.name;
         if (aql.isSafeIdentifier(id)) {
-            return aql`${context}.${aql.identifier(id)}`;
+            return aql`${object}.${aql.identifier(id)}`;
         }
         // fall back to bound values. do not attempt aql.string for security reasons - should not be the case normally, anyway.
-        return aql`${context}[${id}]`;
+        return aql`${object}[${id}]`;
     },
 
     Entities(node: EntitiesQueryNode): AQLFragment {
@@ -80,6 +81,28 @@ const processors: { [name: string]: NodeProcessor<any> } = {
         const lhs = processNode(node.lhs, context);
         const rhs = processNode(node.rhs, context);
         return aql`${lhs} ${op} ${rhs}`;
+    },
+
+    Conditional(node: ConditionalQueryNode, context) {
+        const cond = processNode(node.condition, context);
+        const expr1 = processNode(node.expr1, context);
+        const expr2 = processNode(node.expr2, context);
+        return aql`(${cond} ? ${expr1} : ${expr2})`;
+    },
+
+    TypeCheck(node: TypeCheckQueryNode, context) {
+        const value = processNode(node.valueNode, context);
+
+        switch (node.type) {
+            case BasicType.SCALAR:
+                return aql`(IS_BOOL(${value}) || IS_NUMBER(${value}) || IS_STRING(${value}))`;
+            case BasicType.LIST:
+                return aql`IS_LIST(${value})`;
+            case BasicType.OBJECT:
+                return aql`IS_OBJECT(${value})`;
+            case BasicType.NULL:
+                return aql`IS_NULL(${value})`;
+        }
     }
 };
 

@@ -10,10 +10,24 @@ input PetsFilter {
     species: PetSpecies
 }
 
+type Address {
+    street: String
+    city: String
+    zipCode: String
+    country: String
+    coordinates: GeoPosition
+}
+
+type GeoPosition {
+    latitude: Float
+    longitude: Float
+}
+
 type User {
     id: ID
     name: String
     pets(filter: PetsFilter): [Pet]
+    address: Address
 }
 
 input UsersFilter {

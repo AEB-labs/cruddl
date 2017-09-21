@@ -4,9 +4,10 @@
  * the objects can "describe" themselves for a human-readable representation.
  *
  * A query tree specifies *what* is to be fetched and *how* the result should look like. Each query node results in
- * some kind of runtime value. For simplification, there are no arguments or variables. Instead, some nodes like
- * "access field" use the context object implicitly. This is in line with GraphQL and simplifies both query generation
- * and query consumption.
+ * some kind of runtime value. Some nodes are evaluated with a *context value* which is then transitively passed through
+ * the tree until a different context value is present. The context value can then be retrieved via ContextNode. This is
+ * used for loop variables. It could also be used for any object (e.g. a ContextEstablishingQueryNode), but here, we
+ * currently just repeat the node that evaluates to this object on every use.
  *
  * To specify an expression like this:
  *     users.filter(u => u.role == "admin").map(u => { name: u.fullName, age: u.age })
@@ -27,6 +28,7 @@
  */
 import { GraphQLField, GraphQLObjectType } from 'graphql';
 import { indent } from '../utils/utils';
+import { TypeSpecification } from '../../../model-manager-node/src/definition/types';
 
 export interface QueryNode {
     describe(): string;
@@ -57,16 +59,16 @@ export class LiteralQueryNode {
 }
 
 /**
- * A node that evaluates to the value of a regular field of the context object
+ * A node that evaluates to the value of a field of an object
  *
  * Note: this is unrelated to storing the value in a property of a result object, see ObjectQueryNode
  */
 export class FieldQueryNode implements QueryNode {
-    constructor(public readonly field: GraphQLField<any, any>) {
+    constructor(public readonly objectNode: QueryNode, public readonly field: GraphQLField<any, any>) {
     }
 
     public describe() {
-        return `field ${this.field.name.blue}`;
+        return `field ${this.field.name.blue} of ${this.objectNode.describe()}`;
     }
 }
 
@@ -94,6 +96,49 @@ export class PropertySpecification implements QueryNode {
 
     describe(): string {
         return `${JSON.stringify(this.propertyName).green}: ${this.valueNode.describe()}`;
+    }
+}
+
+/**
+ * A query that evaluates to true if a value is of a certain type, or false otherwise
+ */
+export class TypeCheckQueryNode implements QueryNode {
+    constructor(public readonly valueNode: QueryNode, public type: BasicType) {
+
+    }
+
+    private describeType(type: BasicType) {
+        switch (type) {
+            case BasicType.OBJECT:
+                return 'object';
+            case BasicType.LIST:
+                return 'list';
+            case BasicType.SCALAR:
+                return 'scalar';
+            case BasicType.NULL:
+                return 'null';
+        }
+    }
+
+    describe(): string {
+        return `${this.valueNode.describe()} is of type ${this.describeType(this.type)}`;
+    }
+}
+
+export enum BasicType {
+    OBJECT,
+    LIST,
+    SCALAR,
+    NULL
+}
+
+export class ConditionalQueryNode implements QueryNode{
+    constructor(public readonly condition: QueryNode, public readonly expr1: QueryNode, public readonly expr2: QueryNode) {
+
+    }
+
+    describe() {
+        return `${this.condition.describe()} ? ${this.expr1.describe()} : ${this.expr2.describe()}`;
     }
 }
 
