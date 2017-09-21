@@ -1,4 +1,5 @@
 import { indent as indentStr } from '../../utils/utils';
+require('colors');
 
 export class AQLVariable {
     public readonly name: string;
@@ -51,7 +52,15 @@ export class AQLFragment {
                 return '@name[MISSING]'.bgRed.white.bold;
             }
             return JSON.stringify(this.bindValues[name]).magenta;
-        }).replace(/tmp[0-9]+/g, (name: string) => name.blue);
+        });
+    }
+
+    toPrettyString() {
+        return this.normalize().toColoredString();
+    }
+
+    get prettyCode() {
+        return this.normalize().code;
     }
 }
 
@@ -60,8 +69,8 @@ interface NormalizationData<T> {
     code: string
 }
 function normalizeNumbers<T>(data: NormalizationData<T>, prefix: string, regex: RegExp): NormalizationData<T> {
-    const oldNumbers = Object.keys(data.map).map(name => parseInt(name.substr(bindValueNames.prefix.length)));
-    const sortedOldNumbers = oldNumbers.sort();
+    const oldNumbers = Object.keys(data.map).map(name => parseInt(name.substr(bindValueNames.prefix.length), 0));
+    const sortedOldNumbers = oldNumbers.sort((a, b) => a - b);
     const newNameByOldName: {[name: string]: string} = {};
     let newMap: {[name: string]: any} = {};
     let newNumber = 1;
@@ -146,7 +155,7 @@ export namespace aql {
     }
 
     export function variable() {
-        return new AQLVariable();
+        return aql`${new AQLVariable()}`;
     }
 
     export function collection(name: string) {
@@ -155,6 +164,15 @@ export namespace aql {
             throw new Error(`Possibly invalid collection name: ${name}`);
         }
         return code(name);
+    }
+
+    /**
+     * Should be used when fairly certain that string can't be malicious
+     *
+     * As the string is json-encoded, it *should* be fine in any case, but still, user-supplied strings in queries is scary
+     */
+    export function string(str: string) {
+        return code(JSON.stringify(str));
     }
 }
 

@@ -69,6 +69,13 @@ export class FieldSelection {
  */
 export class DistilledOperation {
     constructor(public readonly operation: OperationTypeNode, public readonly selectionSet: FieldSelection[]) {}
+
+    public describe(): string {
+        const selectionItemsDesc = this.selectionSet
+            .map(selection => `${JSON.stringify(selection.propertyName)}: ${selection.fieldRequest.describe()}`)
+            .join(',\n');
+        return `${this.operation} with selections {\n${indent(selectionItemsDesc)}\n}`;
+    }
 }
 
 interface FieldRequestConfig {
