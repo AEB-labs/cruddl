@@ -106,7 +106,7 @@ function processNode(node: QueryNode, context?: AQLFragment) {
 }
 
 export function getAQLForQuery(node: QueryNode) {
-    return processNode(node);
+    return aql`RETURN ${processNode(node)}`;
 }
 
 function getCollectionForType(type: GraphQLNamedType) {

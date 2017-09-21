@@ -122,3 +122,11 @@ export function arrayToObject<TValue>(array: TValue[], keyFn: (obj: TValue) => s
 export function compact<T>(arr: (T | undefined | null)[]): T[] {
     return arr.filter(a => a != undefined) as T[];
 }
+
+export function objectValues<T>(obj: { [name: string]: T }): T[] {
+    return Object.keys(obj).map(i => obj[i]);
+}
+
+export function objectEntries<T>(obj: { [name: string]: T }): [string, T][] {
+    return Object.keys(obj).map((k): [string,T] => [k, obj[k]]);
+}

@@ -1,0 +1,1 @@
+export { ArangoDBAdapter, ArangoDBConfig } from './arangodb-adapter';

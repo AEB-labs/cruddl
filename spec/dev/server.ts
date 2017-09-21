@@ -1,18 +1,22 @@
+import { buildASTSchema, parse } from 'graphql';
+import * as fs from 'fs';
+import { addQueryResolvers, ArangoDBAdapter } from '../..';
+import { GraphQLServer } from './graphql-server';
 
-
-const defaultPort = 3200;
+const port = 3000;
+const databaseName = 'momo';
+const databaseURL = 'http://root:@localhost:8529';
 
 export async function start() {
 
-    console.log('Creating schema...');
-    const schema = await createSchema(config);
-
-    const port = config.port || defaultPort;
-    const schemaManager = {
-        getSchema: () => schema
-    };
-    const graphqlServer = new GraphQLServer({
-        schemaProvider: schemaManager,
-        port
+    const db = new ArangoDBAdapter({
+        databaseName,
+        url: databaseURL
+    });
+    const model = parse(fs.readFileSync('./model.graphqls', 'utf-8'));
+    const schema = buildASTSchema(model);
+    const executableSchema = addQueryResolvers(schema, db);
+    const server = new GraphQLServer({
+        port, schema: executableSchema
     });
 }

@@ -29,6 +29,7 @@
     "typescript": "^2.5.2"
   },
   "dependencies": {
+    "arangojs": "^5.7.0",
     "colors": "^1.1.2",
     "pluralize": "^7.0.0"
   }
