@@ -61,10 +61,8 @@ function createListQueryNode(fieldRequest: FieldRequest, listNode: QueryNode): Q
 
 function createEntitiesQueryNode(fieldRequest: FieldRequest): QueryNode {
     const objectType = getNamedType(fieldRequest.field.type) as GraphQLObjectType;
-    const filterNode = getFilterNode(fieldRequest.args.filter, objectType);
-    const innerNode = createObjectNode(fieldRequest.selectionSet);
-    const orderBy = createOrderSpecification(fieldRequest.args.orderBy, objectType);
-    return new EntitiesQueryNode({objectType, innerNode, filterNode, orderBy});
+    const listNode = new EntitiesQueryNode(objectType);
+    return createListQueryNode(fieldRequest, listNode);
 }
 
 function getFilterNode(filterArg: any, objectType: GraphQLObjectType) {

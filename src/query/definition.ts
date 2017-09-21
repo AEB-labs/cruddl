@@ -178,23 +178,13 @@ export enum BinaryOperator {
 }
 
 /**
- * A node to fetch entities of a certain kind. Supports a wide range of options like filtering, sorting, pagination etc.
+ * A node that evaluates in the list of entities of a given type. use ListQueryNode to further process them
  */
 export class EntitiesQueryNode implements QueryNode {
-    constructor(params: { objectType: GraphQLObjectType, innerNode?: QueryNode, filterNode?: QueryNode, orderBy?: OrderSpecification }) {
-        this.objectType = params.objectType;
-        this.innerNode = params.innerNode || new ContextQueryNode();
-        this.filterNode = params.filterNode || new LiteralQueryNode(true);
-        this.orderBy = params.orderBy || new OrderSpecification([]);
-    }
-
-    public readonly objectType: GraphQLObjectType;
-    public readonly innerNode: QueryNode;
-    public readonly filterNode: QueryNode;
-    public readonly orderBy: OrderSpecification;
+    constructor(public readonly objectType: GraphQLObjectType) { }
 
     describe() {
-        return `entities of type ${this.objectType.name.blue} where ${this.filterNode.describe()} order by ${this.orderBy.describe()} as ${this.innerNode.describe()}`;
+        return `entities of type ${this.objectType.name.blue}`;
     }
 }
 

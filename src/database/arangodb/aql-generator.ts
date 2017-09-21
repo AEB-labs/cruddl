@@ -51,17 +51,7 @@ const processors: { [name: string]: NodeProcessor<any> } = {
 
     Entities(node: EntitiesQueryNode): AQLFragment {
         const entityVar = aql.variable();
-        const coll = getCollectionForType(node.objectType);
-        return aql.lines(
-            aql`(`,
-            aql.indent(aql.lines(
-                aql`FOR ${entityVar}`,
-                aql`IN ${coll}`,
-                aql`FILTER ${processNode(node.filterNode, entityVar)}`,
-                generateSortAQL(node.orderBy, entityVar),
-                aql`RETURN ${processNode(node.innerNode, entityVar)}`)
-            ),
-            aql`)`);
+        return getCollectionForType(node.objectType);
     },
 
     List(node: ListQueryNode, context): AQLFragment {
