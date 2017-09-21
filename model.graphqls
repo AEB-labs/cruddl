@@ -1,0 +1,30 @@
+enum PetSpecies { Dog, Cat, Parrot }
+
+type Pet {
+    species: PetSpecies
+    name: String
+    birthYear: Int
+}
+
+input PetsFilter {
+    species: PetSpecies
+}
+
+type User {
+    id: ID
+    name: String
+    pets(filter: PetsFilter): [Pet]
+}
+
+input UsersFilter {
+    id: ID
+    name: String
+}
+
+type Query {
+    allUsers(filter: UsersFilter): [User]
+}
+
+schema {
+    query: Query
+}
