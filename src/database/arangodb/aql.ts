@@ -133,6 +133,10 @@ export namespace aql {
         return new AQLFragment(code, bindValues, variableNames);
     }
 
+    export function code(code: string): AQLFragment {
+        return new AQLFragment(code, {}, {});
+    }
+
     export function lines(...fragments: AQLFragment[]) {
         return join(fragments, aql`\n`);
     }
@@ -143,6 +147,14 @@ export namespace aql {
 
     export function variable() {
         return new AQLVariable();
+    }
+
+    export function collection(name: string) {
+        // being pessimistic for security reasons
+        if (!name.match(/^[a-zA-Z0-9-_]+$/)) {
+            throw new Error(`Possibly invalid collection name: ${name}`);
+        }
+        return code(name);
     }
 }
 

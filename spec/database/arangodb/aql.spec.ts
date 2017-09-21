@@ -77,4 +77,14 @@ describe('aql', () => {
         expect(Object.keys(fragment.normalize().variableNames)).toEqual(['tmp1', 'tmp2']);
         console.log(fragment.normalize().toColoredString());
     });
+
+    describe('collection', () => {
+        it('accepts normal names', () => {
+            expect(aql.collection('deliveries').code).toEqual('deliveries');
+        });
+
+        it('rejects strange collection names', () => {
+            expect(() =>aql.collection('deliveries + / BAD')).toThrow();
+        })
+    })
 });
