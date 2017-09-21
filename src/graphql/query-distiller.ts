@@ -40,13 +40,13 @@ export class FieldRequest {
 
     public describe(): string {
         const selectionItemsDesc = this.selectionSet
-            .map(selection => `${JSON.stringify(selection.propertyName)}: ${selection.fieldRequest.describe()}`)
+            .map(selection => `${JSON.stringify(selection.propertyName).green}: ${selection.fieldRequest.describe()}`)
             .join(',\n');
         const selectionDesc = selectionItemsDesc ? ` with selections {\n${indent(selectionItemsDesc)}\n}` : '';
         const argsDesc = (this.args && Object.getOwnPropertyNames(this.args).length) ?
-            ` with args ${JSON.stringify(this.args, null, INDENTATION)}` : '';
+            ` with args ${JSON.stringify(this.args, null, INDENTATION).magenta}` : '';
 
-        return `field ${this.fieldName}${argsDesc}${selectionDesc}`;
+        return `field ${this.fieldName.blue}${argsDesc}${selectionDesc}`;
     }
 }
 
@@ -72,7 +72,7 @@ export class DistilledOperation {
 
     public describe(): string {
         const selectionItemsDesc = this.selectionSet
-            .map(selection => `${JSON.stringify(selection.propertyName)}: ${selection.fieldRequest.describe()}`)
+            .map(selection => `${JSON.stringify(selection.propertyName).green}: ${selection.fieldRequest.describe()}`)
             .join(',\n');
         return `${this.operation} with selections {\n${indent(selectionItemsDesc)}\n}`;
     }

@@ -159,9 +159,15 @@ export namespace aql {
     }
 
     export function collection(name: string) {
-        // being pessimistic for security reasons
-        if (!name.match(/^[a-zA-Z0-9-_]+$/)) {
-            throw new Error(`Possibly invalid collection name: ${name}`);
+        if (!isSafeIdentifier(name)) {
+            throw new Error(`Possibly invalid/unsafe collection name: ${name}`);
+        }
+        return code(name);
+    }
+
+    export function identifier(name: string) {
+        if (!isSafeIdentifier(name)) {
+            throw new Error(`Possibly invalid/unsafe identifier in AQL: ${name}`);
         }
         return code(name);
     }
@@ -173,6 +179,11 @@ export namespace aql {
      */
     export function string(str: string) {
         return code(JSON.stringify(str));
+    }
+
+    export function isSafeIdentifier(str: string) {
+        // being pessimistic for security reasons
+        return str.match(/^[a-zA-Z0-9-_]+$/);
     }
 }
 

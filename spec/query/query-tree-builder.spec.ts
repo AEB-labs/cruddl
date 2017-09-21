@@ -38,7 +38,7 @@ describe('query-tree-builder', () => {
         expect(queryTree.properties[0].propertyName).toBe('allUsers');
         expect(queryTree.properties[0].valueNode).toEqual(any(EntitiesQueryNode));
         const entitiesNode = queryTree.properties[0].valueNode as EntitiesQueryNode;
-        expect(entitiesNode.type).toBe(userType);
+        expect(entitiesNode.objectType).toBe(userType);
         expect(entitiesNode.innerNode).toEqual(any(ObjectQueryNode));
         const objectNode = entitiesNode.innerNode as ObjectQueryNode;
         expect(objectNode.properties.length).toBe(2);

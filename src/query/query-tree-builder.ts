@@ -1,6 +1,7 @@
 import { DistilledOperation, FieldRequest, FieldSelection } from '../graphql/query-distiller';
 import { getNamedType, GraphQLCompositeType, GraphQLField, GraphQLObjectType } from 'graphql';
 import {
+    BinaryOperationQueryNode, BinaryOperator,
     EntitiesQueryNode, FieldQueryNode, LiteralQueryNode, ObjectQueryNode, PropertySpecification, QueryNode
 } from './definition';
 
@@ -31,7 +32,22 @@ function createQueryNodeForField(fieldRequest: FieldRequest): QueryNode {
 
 function createEntitiesQueryNode(fieldRequest: FieldRequest): QueryNode {
     const objectType = getNamedType(fieldRequest.field.type) as GraphQLObjectType;
-    return new EntitiesQueryNode(objectType, createObjectNode(fieldRequest.selectionSet));
+    const filter = fieldRequest.args.filter;
+    let filterNode: QueryNode|undefined = undefined;
+    if (filter) {
+        for (const key of Object.getOwnPropertyNames(filter)) {
+            const fieldQuery = new FieldQueryNode(objectType.getFields()[key]);
+            const valueQuery = new LiteralQueryNode(filter[key]);
+            const newClause = new BinaryOperationQueryNode(fieldQuery, BinaryOperator.EQUALS, valueQuery);
+            if (filterNode) {
+                filterNode = new BinaryOperationQueryNode(filterNode, BinaryOperator.AND, newClause);
+            } else {
+                filterNode = newClause;
+            }
+        }
+    }
+    const innerNode = createObjectNode(fieldRequest.selectionSet);
+    return new EntitiesQueryNode({objectType, innerNode, filterNode});
 }
 
 function isQueryType(type: GraphQLCompositeType) {
