@@ -181,18 +181,20 @@ export enum BinaryOperator {
  * A node to fetch entities of a certain kind. Supports a wide range of options like filtering, sorting, pagination etc.
  */
 export class EntitiesQueryNode implements QueryNode {
-    constructor(params: { objectType: GraphQLObjectType, innerNode?: QueryNode, filterNode?: QueryNode }) {
+    constructor(params: { objectType: GraphQLObjectType, innerNode?: QueryNode, filterNode?: QueryNode, orderBy?: OrderSpecification }) {
         this.objectType = params.objectType;
         this.innerNode = params.innerNode || new ContextQueryNode();
         this.filterNode = params.filterNode || new LiteralQueryNode(true);
+        this.orderBy = params.orderBy || new OrderSpecification([]);
     }
 
     public readonly objectType: GraphQLObjectType;
     public readonly innerNode: QueryNode;
     public readonly filterNode: QueryNode;
+    public readonly orderBy: OrderSpecification;
 
     describe() {
-        return `entities of type ${this.objectType.name.blue} where ${this.filterNode.describe()} as ${this.innerNode.describe()}`;
+        return `entities of type ${this.objectType.name.blue} where ${this.filterNode.describe()} order by ${this.orderBy.describe()} as ${this.innerNode.describe()}`;
     }
 }
 
@@ -200,17 +202,58 @@ export class EntitiesQueryNode implements QueryNode {
  * A node to to control how to retrieve an embedded list
  */
 export class ListQueryNode implements QueryNode {
-    constructor(params: { listNode: QueryNode, innerNode?: QueryNode, filterNode?: QueryNode }) {
+    constructor(params: { listNode: QueryNode, innerNode?: QueryNode, filterNode?: QueryNode, orderBy?: OrderSpecification }) {
         this.listNode = params.listNode;
         this.innerNode = params.innerNode || new ContextQueryNode();
         this.filterNode = params.filterNode || new LiteralQueryNode(true);
+        this.orderBy = params.orderBy || new OrderSpecification([]);
     }
 
     public readonly listNode: QueryNode;
     public readonly innerNode: QueryNode;
     public readonly filterNode: QueryNode;
+    public readonly orderBy: OrderSpecification;
 
     describe() {
-        return `${this.listNode.describe()} as list where ${this.filterNode.describe()} as ${this.innerNode.describe()}`;
+        return `${this.listNode.describe()} as list where ${this.filterNode.describe()} order by ${this.orderBy.describe()} as ${this.innerNode.describe()}`;
     }
+}
+
+export class OrderClause {
+    constructor(public readonly valueNode: QueryNode, public readonly direction: OrderDirection) {
+
+    }
+
+    private describeDirection(direction: OrderDirection) {
+        if (direction == OrderDirection.DESCENDING) {
+            return ` desc`;
+        }
+        return ``;
+    }
+
+    describe() {
+        return `${this.valueNode.describe()}${this.describeDirection(this.direction)}`;
+    }
+}
+
+export class OrderSpecification {
+    constructor(public readonly clauses: OrderClause[]) {
+
+    }
+
+    isUnordered() {
+        return this.clauses.length == 0;
+    }
+
+    describe() {
+        if (!this.clauses.length) {
+            return '(unordered)';
+        }
+        return this.clauses.map(c => c.describe()).join(', ');
+    }
+}
+
+export enum OrderDirection {
+    ASCENDING,
+    DESCENDING
 }

@@ -138,6 +138,9 @@ export namespace aql {
             Object.assign(variableNames, separator.variableNames);
         }
         for (const fragment of fragments) {
+            if (!fragment.code.length) {
+                continue;
+            }
             if (!isFirst) {
                 code += separator.code;
             }

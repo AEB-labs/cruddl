@@ -1,6 +1,7 @@
 import {
     BasicType, BinaryOperationQueryNode, BinaryOperator, ConditionalQueryNode, ContextQueryNode, EntitiesQueryNode,
-    FieldQueryNode, ListQueryNode, LiteralQueryNode, ObjectQueryNode, QueryNode, TypeCheckQueryNode
+    FieldQueryNode, ListQueryNode, LiteralQueryNode, ObjectQueryNode, OrderDirection, OrderSpecification, QueryNode,
+    TypeCheckQueryNode
 } from '../../query/definition';
 import { aql, AQLFragment } from './aql';
 import { GraphQLNamedType } from 'graphql';
@@ -57,6 +58,7 @@ const processors: { [name: string]: NodeProcessor<any> } = {
                 aql`FOR ${entityVar}`,
                 aql`IN ${coll}`,
                 aql`FILTER ${processNode(node.filterNode, entityVar)}`,
+                generateSortAQL(node.orderBy, entityVar),
                 aql`RETURN ${processNode(node.innerNode, entityVar)}`)
             ),
             aql`)`);
@@ -70,6 +72,7 @@ const processors: { [name: string]: NodeProcessor<any> } = {
             aql.indent(aql.lines(
                 aql`FOR ${itemVar}`,
                 aql`IN ${list}`,
+                generateSortAQL(node.orderBy, context),
                 aql`FILTER ${processNode(node.filterNode, itemVar)}`,
                 aql`RETURN ${processNode(node.innerNode, itemVar)}`)
             ),
@@ -117,6 +120,23 @@ function getAQLOperator(op: BinaryOperator): AQLFragment {
         default:
             throw new Error(`Unsupported binary operator: ${op}`);
     }
+}
+
+function generateSortAQL(orderBy: OrderSpecification, context?: AQLFragment): AQLFragment {
+    if (orderBy.isUnordered()) {
+        return aql``;
+    }
+
+    function dirAQL(dir: OrderDirection) {
+        if (dir == OrderDirection.DESCENDING) {
+            return aql` DESC`;
+        }
+        return aql``;
+    }
+
+    const clauses = orderBy.clauses.map(cl => aql`(${processNode(cl.valueNode, context)}) ${dirAQL(cl.direction)}`);
+
+    return aql`SORT ${aql.join(clauses, aql`, `)}`;
 }
 
 function processNode(node: QueryNode, context?: AQLFragment) {

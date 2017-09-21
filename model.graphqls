@@ -10,6 +10,15 @@ input PetsFilter {
     species: PetSpecies
 }
 
+enum PetsOrderBy {
+    species_ASC,
+    species_DESC,
+    name_ASC,
+    name_DESC,
+    birthYear_ASC,
+    birthYear_DESC
+}
+
 type Address {
     street: String
     city: String
@@ -26,7 +35,7 @@ type GeoPosition {
 type User {
     id: ID
     name: String
-    pets(filter: PetsFilter): [Pet]
+    pets(filter: PetsFilter, orderBy: [PetsOrderBy]): [Pet]
     address: Address
 }
 
@@ -35,8 +44,15 @@ input UsersFilter {
     name: String
 }
 
+enum UsersOrderBy {
+    id_ASC,
+    id_DESC,
+    name_ASC,
+    name_DESC
+}
+
 type Query {
-    allUsers(filter: UsersFilter): [User]
+    allUsers(filter: UsersFilter, orderBy: [UsersOrderBy]): [User]
 }
 
 schema {
