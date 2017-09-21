@@ -1,4 +1,4 @@
-import { aql, aqlIndent, aqlJoin, aqlLines, aqlVar, AQLVariable } from '../../../src/database/arangodb/aql';
+import { aql, AQLVariable } from '../../../src/database/arangodb/aql';
 
 describe('aql', () => {
     it('works with plain code', () => {
@@ -37,7 +37,7 @@ describe('aql', () => {
     });
 
     it('can join lines', () => {
-        const fragment = aqlLines(
+        const fragment = aql.lines(
             aql`{`,
             aql`  flag: ${true}`,
             aql`}`
@@ -49,30 +49,30 @@ describe('aql', () => {
 
     it('can indent lines', () => {
         const items = [123, 456, 42].map(number => aql`2 * ${number}`);
-        const fragment = aqlLines(
+        const fragment = aql.lines(
             aql`[`,
-            aqlIndent(aqlJoin(items, aql`,\n`)),
+            aql.indent(aql.join(items, aql`,\n`)),
             aql`]`);
         expect(fragment.normalize().code).toEqual('[\n  2 * @var1,\n  2 * @var2,\n  2 * @var3\n]');
         console.log(fragment.toColoredString());
     });
 
     it('supports tmp vars', () => {
-        const tmp1 = aqlVar();
+        const tmp1 = aql.variable();
         const fragment = aql`FOR ${tmp1} IN [ 1, 2, 3 ] RETURN ${tmp1} * 2`;
         expect(Object.keys(fragment.variableNames).length).toBe(1);
     });
 
     it('supports multiple tmp vars', () => {
-        const tmp1 = aqlVar();
-        const tmp2 = aqlVar();
+        const tmp1 = aql.variable();
+        const tmp2 = aql.variable();
         const fragment = aql`LET ${tmp1} = [ 1, 2, 3] FOR ${tmp2} IN ${tmp1} RETURN ${tmp2} * 2`;
         expect(Object.keys(fragment.variableNames).length).toBe(2);
     });
 
     it('normalizes tmp vars', () => {
-        const tmp1 = aqlVar();
-        const tmp2 = aqlVar();
+        const tmp1 = aql.variable();
+        const tmp2 = aql.variable();
         const fragment = aql`LET ${tmp1} = [ 1, 2, 3] FOR ${tmp2} IN ${tmp1} RETURN ${tmp2} * 2`;
         expect(Object.keys(fragment.normalize().variableNames)).toEqual(['tmp1', 'tmp2']);
         console.log(fragment.normalize().toColoredString());

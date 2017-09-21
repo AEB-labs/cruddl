@@ -1,4 +1,4 @@
-import { indent } from '../../utils/utils';
+import { indent as indentStr } from '../../utils/utils';
 
 export class AQLVariable {
     public readonly name: string;
@@ -8,10 +8,6 @@ export class AQLVariable {
             this.name = tmpVarNames.nextName();
         }
     }
-}
-
-export function aqlVar() {
-    return new AQLVariable();
 }
 
 export class AQLFragment {
@@ -85,35 +81,6 @@ function normalizeNumbers<T>(data: NormalizationData<T>, prefix: string, regex: 
     return { map: newMap, code: newCode };
 }
 
-export function aqlLines(...fragments: AQLFragment[]) {
-    return aqlJoin(fragments, aql`\n`);
-}
-
-export function aqlJoin(fragments: AQLFragment[], separator: AQLFragment) {
-    let code = '';
-    let bindValues: { [name: string]: any } = {};
-    let variableNames: { [name: string]: boolean } = {};
-    let isFirst = true;
-    if (fragments.length) {
-        Object.assign(bindValues, separator.bindValues);
-        Object.assign(variableNames, separator.variableNames);
-    }
-    for (const fragment of fragments) {
-        if (!isFirst) {
-            code += separator.code;
-        }
-        isFirst = false;
-        code += fragment.code;
-        Object.assign(bindValues, fragment.bindValues);
-        Object.assign(variableNames, fragment.variableNames);
-    }
-    return new AQLFragment(code, bindValues, variableNames);
-}
-
-export function aqlIndent(fragment: AQLFragment) {
-    return new AQLFragment(indent(fragment.code), fragment.bindValues, fragment.variableNames);
-}
-
 export function aql(strings: ReadonlyArray<string>, ...values: any[]) {
     let code = '';
     let bindValues: { [name: string]: any } = {};
@@ -142,6 +109,41 @@ export function aql(strings: ReadonlyArray<string>, ...values: any[]) {
     }
 
     return new AQLFragment(code, bindValues, variableNames);
+}
+
+export namespace aql {
+    export function join(fragments: AQLFragment[], separator: AQLFragment) {
+        let code = '';
+        let bindValues: { [name: string]: any } = {};
+        let variableNames: { [name: string]: boolean } = {};
+        let isFirst = true;
+        if (fragments.length) {
+            Object.assign(bindValues, separator.bindValues);
+            Object.assign(variableNames, separator.variableNames);
+        }
+        for (const fragment of fragments) {
+            if (!isFirst) {
+                code += separator.code;
+            }
+            isFirst = false;
+            code += fragment.code;
+            Object.assign(bindValues, fragment.bindValues);
+            Object.assign(variableNames, fragment.variableNames);
+        }
+        return new AQLFragment(code, bindValues, variableNames);
+    }
+
+    export function lines(...fragments: AQLFragment[]) {
+        return join(fragments, aql`\n`);
+    }
+
+    export function indent(fragment: AQLFragment) {
+        return new AQLFragment(indentStr(fragment.code), fragment.bindValues, fragment.variableNames);
+    }
+
+    export function variable() {
+        return new AQLVariable();
+    }
 }
 
 namespace bindValueNames {
