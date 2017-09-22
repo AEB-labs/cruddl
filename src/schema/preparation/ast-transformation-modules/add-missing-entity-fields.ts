@@ -15,6 +15,7 @@ export class AddMissingEntityFieldsTransformer implements ASTTransformer {
     protected extendRootEntityTypes(ast: DocumentNode) {
         getEntityTypes(ast).forEach(moType => {
             // assert existence of ID field
+            // TODO better remove existing fields with the following names because they could contain bullshit (wrong type, args...).
             if (!fieldDefinitionNodeByNameExists(moType, ENTITY_ID)) {
                 moType.fields.push(createFieldDefinitionNode(ENTITY_ID, 'ID', moType.loc));
             }
