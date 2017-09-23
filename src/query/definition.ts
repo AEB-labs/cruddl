@@ -47,6 +47,18 @@ export class ContextQueryNode implements QueryNode {
 }
 
 /**
+ * A node that sets the context to the result of a node and evaluates to a second node
+ */
+export class ContextAssignmentQueryNode implements QueryNode {
+    constructor(public readonly contextValueNode: QueryNode, public readonly resultNode: QueryNode) {
+    }
+
+    public describe() {
+        return `let context = ${this.contextValueNode.describe()} in ${this.resultNode.describe()}`;
+    }
+}
+
+/**
  * A node that evaluates to a predefined literal value
  */
 export class LiteralQueryNode {
@@ -248,4 +260,17 @@ export class OrderSpecification {
 export enum OrderDirection {
     ASCENDING,
     DESCENDING
+}
+
+/**
+ * A node that creates a new entity and evaluates to that new entity object
+ */
+export class CreateEntityQueryNode {
+    constructor(public readonly objectType: GraphQLObjectType, public readonly objectNode: QueryNode) {
+
+    }
+
+    describe() {
+        return `create ${this.objectType.name} entity with values ${this.objectNode.describe()}`;
+    }
 }

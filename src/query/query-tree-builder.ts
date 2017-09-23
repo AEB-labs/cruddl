@@ -2,13 +2,17 @@ import { DistilledOperation, FieldRequest, FieldSelection } from '../graphql/que
 import { getNamedType, GraphQLCompositeType, GraphQLField, GraphQLList, GraphQLObjectType } from 'graphql';
 import {
     BasicType,
-    BinaryOperationQueryNode, BinaryOperator, ConditionalQueryNode, ContextQueryNode, EntitiesQueryNode, FieldQueryNode,
+    BinaryOperationQueryNode, BinaryOperator, ConditionalQueryNode, ContextAssignmentQueryNode, ContextQueryNode,
+    CreateEntityQueryNode,
+    EntitiesQueryNode, FieldQueryNode,
     ListQueryNode,
     LiteralQueryNode, ObjectQueryNode, OrderClause, OrderDirection, OrderSpecification, PropertySpecification,
     QueryNode,
     TypeCheckQueryNode
 } from './definition';
 import { isArray } from 'util';
+import { Query } from '../../../model-manager-node/src/database/query';
+import { objectEntries } from '../utils/utils';
 
 /**
  * Creates a QueryTree that is used to instruct the DataBase how to perform a GraphQL query
@@ -34,12 +38,17 @@ function createQueryNodeForField(fieldRequest: FieldRequest, contextNode: QueryN
     if (isQueryType(fieldRequest.parentType) && isEntitiesQueryField(fieldRequest.field)) {
         return createEntitiesQueryNode(fieldRequest);
     }
+    if (isMutationType(fieldRequest.parentType)) {
+        if (fieldRequest.fieldName.startsWith('create')) {
+            return createCreateEntityQueryNode(fieldRequest);
+        }
+    }
     if (isEntityType(fieldRequest.parentType)) {
         const type = fieldRequest.field.type;
         const rawType = getNamedType(type);
         const fieldNode = new FieldQueryNode(contextNode, fieldRequest.field);
         if (type instanceof GraphQLList && rawType instanceof GraphQLObjectType) {
-            return createListQueryNode(fieldRequest, fieldNode);
+            return createConditionalListQueryNode(fieldRequest, fieldNode);
         }
         if (rawType instanceof GraphQLObjectType) {
             return createConditionalObjectNode(fieldRequest.selectionSet, fieldNode);
@@ -57,6 +66,17 @@ function createListQueryNode(fieldRequest: FieldRequest, listNode: QueryNode): Q
     const orderBy = createOrderSpecification(fieldRequest.args.orderBy, objectType);
     const maxCount = fieldRequest.args.first;
     return new ListQueryNode({listNode, innerNode, filterNode, orderBy, maxCount});
+}
+
+function createConditionalListQueryNode(fieldRequest: FieldRequest, listNode: QueryNode): QueryNode {
+    // to avoid errors because of eagerly evaluated list expression, we just convert non-lists to an empty list
+    const safeList = new ConditionalQueryNode(
+        new TypeCheckQueryNode(listNode, BasicType.LIST),
+        listNode,
+        new LiteralQueryNode([])
+    );
+
+    return createListQueryNode(fieldRequest, safeList);
 }
 
 function createEntitiesQueryNode(fieldRequest: FieldRequest): QueryNode {
@@ -103,12 +123,29 @@ function createOrderSpecification(orderByArg: any, objectType: GraphQLObjectType
     return new OrderSpecification(clauses);
 }
 
+function createCreateEntityQueryNode(fieldRequest: FieldRequest): QueryNode {
+    const entityName = fieldRequest.fieldName.substr('create'.length);
+    const entityType = fieldRequest.schema.getTypeMap()[entityName];
+    if (!entityType || !(entityType instanceof GraphQLObjectType)) {
+        throw new Error(`Object type ${entityName} not found but needed for field ${fieldRequest.fieldName}`);
+    }
+    const input = fieldRequest.args['input'];
+    const objectNode = new LiteralQueryNode(input);
+    const createEntityNode = new CreateEntityQueryNode(entityType, objectNode);
+    const resultNode = createObjectNode(fieldRequest.selectionSet);
+    return new ContextAssignmentQueryNode(createEntityNode, resultNode);
+}
+
 function isQueryType(type: GraphQLCompositeType) {
     return type.name == 'Query';
 }
 
+function isMutationType(type: GraphQLCompositeType) {
+    return type.name == 'Mutation';
+}
+
 function isEntityType(type: GraphQLCompositeType) {
-    return type.name != 'Query';
+    return type.name != 'Query' && type.name != 'Mutation';
 }
 
 function isEntitiesQueryField(field: GraphQLField<any, any>) {

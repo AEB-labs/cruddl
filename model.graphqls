@@ -55,6 +55,48 @@ type Query {
     allUsers(filter: UsersFilter, orderBy: [UsersOrderBy], first: Int): [User]
 }
 
+type Mutation {
+    createUser(input: CreateUserInput): User
+    updateUser(input: UpdateUserInput): User
+    deleteUser(input: DeleteUserInput): User
+}
+
+input CreateUserInput {
+    name: String
+    address: AddressInput
+    pets: [PetInput]
+}
+
+input UpdateUserInput {
+    id: ID
+    name: String
+    address: AddressInput
+}
+
+input AddressInput {
+    street: String
+    city: String
+    zipCode: String
+    country: String
+    coordinates: GeoPositionInput
+}
+
+input GeoPositionInput {
+    latitude: Float
+    longitude: Float
+}
+
+input DeleteUserInput {
+    id: ID
+}
+
+input PetInput {
+    name: String
+    species: PetSpecies
+    birthYear: Int
+}
+
 schema {
     query: Query
+    mutation: Mutation
 }

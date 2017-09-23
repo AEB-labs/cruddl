@@ -1,5 +1,7 @@
 import {
-    BasicType, BinaryOperationQueryNode, BinaryOperator, ConditionalQueryNode, ContextQueryNode, EntitiesQueryNode,
+    BasicType, BinaryOperationQueryNode, BinaryOperator, ConditionalQueryNode, ContextAssignmentQueryNode,
+    ContextQueryNode, CreateEntityQueryNode,
+    EntitiesQueryNode,
     FieldQueryNode, ListQueryNode, LiteralQueryNode, ObjectQueryNode, OrderDirection, OrderSpecification, QueryNode,
     TypeCheckQueryNode
 } from '../../query/definition';
@@ -18,6 +20,18 @@ namespace aqlExt {
             return aql`${key}`; // fall back to bound values
         }
     }
+
+    export function parenthesizeList(...content: AQLFragment[]): AQLFragment {
+        return aql.lines(
+            aql`(`,
+            aql.indent(aql.lines(...content)),
+            aql`)`
+        );
+    }
+
+    export function parenthesizeObject(...content: AQLFragment[]): AQLFragment {
+        return aql`FIRST${parenthesizeList(...content)}`;
+    }
 }
 
 const processors: { [name: string]: NodeProcessor<any> } = {
@@ -35,39 +49,56 @@ const processors: { [name: string]: NodeProcessor<any> } = {
         return context || aql`null`;
     },
 
+    ContextAssignment(node: ContextAssignmentQueryNode, context): AQLFragment {
+        const tmpVar = aql.variable();
+        // note that we have to know statically if the context var is a list or an object
+        // assuming object here because lists are not needed currently
+        return aqlExt.parenthesizeObject(
+            aql`LET ${tmpVar} = ${processNode(node.contextValueNode, context)}`,
+            aql`RETURN ${processNode(node.resultNode, tmpVar)}`
+        );
+    },
+
     Literal(node: LiteralQueryNode): AQLFragment {
         return aql`${node.value}`;
     },
 
     Field(node: FieldQueryNode, context): AQLFragment {
         const object = processNode(node.objectNode, context);
-        const id = node.field.name;
-        if (aql.isSafeIdentifier(id)) {
-            return aql`${object}.${aql.identifier(id)}`;
+        let identifier = node.field.name;
+        if (identifier == 'id') {
+            identifier = '_key'; // ids are stored in _key field
+        }
+
+        if (aql.isSafeIdentifier(identifier)) {
+            return aql`${object}.${aql.identifier(identifier)}`;
         }
         // fall back to bound values. do not attempt aql.string for security reasons - should not be the case normally, anyway.
-        return aql`${object}[${id}]`;
+        return aql`${object}[${identifier}]`;
     },
 
     Entities(node: EntitiesQueryNode): AQLFragment {
-        const entityVar = aql.variable();
         return getCollectionForType(node.objectType);
+    },
+
+    CreateEntity(node: CreateEntityQueryNode, context): AQLFragment {
+        return aqlExt.parenthesizeObject(
+            aql`INSERT ${processNode(node.objectNode, context)} IN ${getCollectionForType(node.objectType)}`,
+            aql`RETURN NEW`
+        );
     },
 
     List(node: ListQueryNode, context): AQLFragment {
         const list = processNode(node.listNode, context);
         const itemVar = aql.variable();
-        return aql.lines(
-            aql`(`,
-            aql.indent(aql.lines(
-                aql`FOR ${itemVar}`,
-                aql`IN ${list}`,
-                aql`FILTER ${processNode(node.filterNode, itemVar)}`,
-                generateSortAQL(node.orderBy, context),
-                node.maxCount != undefined ? aql`LIMIT ${node.maxCount}` : aql``,
-                aql`RETURN ${processNode(node.innerNode, itemVar)}`)
-            ),
-            aql`)`);
+        return aqlExt.parenthesizeList(
+            aql`FOR ${itemVar}`,
+            aql`IN ${list}`,
+            aql`FILTER ${processNode(node.filterNode, itemVar)}`,
+            generateSortAQL(node.orderBy, context),
+            node.maxCount != undefined ? aql`LIMIT ${node.maxCount}` : aql``,
+            aql`RETURN ${processNode(node.innerNode, itemVar)}`
+        );
     },
 
     BinaryOperation(node: BinaryOperationQueryNode, context): AQLFragment {
