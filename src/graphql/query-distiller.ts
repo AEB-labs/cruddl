@@ -16,6 +16,7 @@ import { getAliasOrName } from './language-utils';
 export class FieldRequest {
     constructor(public readonly field: GraphQLField<any, any>,
                 public readonly parentType: GraphQLCompositeType,
+                public readonly schema: GraphQLSchema,
                 public readonly selectionSet: FieldSelection[] = [],
                 public readonly args: { [argumentName: string ]: any } = {}) {
     }
@@ -81,6 +82,7 @@ export class DistilledOperation {
 interface FieldRequestConfig {
     field: GraphQLField<any, any>;
     parentType: GraphQLCompositeType;
+    schema: GraphQLSchema,
     selectionSet?: SelectionSetConfig
     args?: { [argumentName: string ]: any };
 }
@@ -93,7 +95,7 @@ export type SelectionSetConfig = { [ propertyName: string]: FieldRequestConfig }
  * @returns {FieldRequest} the created field request
  */
 export function createFieldRequest(config: FieldRequestConfig) {
-    return new FieldRequest(config.field, config.parentType, createSelectionSet(config.selectionSet || {}), config.args || {});
+    return new FieldRequest(config.field, config.parentType, config.schema, createSelectionSet(config.selectionSet || {}), config.args || {});
 }
 
 function createSelectionSet(config: SelectionSetConfig): FieldSelection[] {
@@ -121,7 +123,8 @@ export function distillOperation(params: OperationDistillationParams): Distilled
     const variableValues = getVariableValues(params.schema, params.operation.variableDefinitions || [], params.variableValues);
     const context = {
         variableValues,
-        fragments: params.fragments
+        fragments: params.fragments,
+        schema: params.schema
     };
 
     const parentType = getOperationRootType(params.schema, params.operation.operation);
@@ -154,6 +157,7 @@ export function distillQuery(document: DocumentNode, schema: GraphQLSchema, vari
 interface Context {
     fragments: { [fragmentName: string]: FragmentDefinitionNode };
     variableValues: { [variableName: string]: any };
+    schema: GraphQLSchema;
 }
 
 /**
@@ -197,7 +201,7 @@ function buildFieldRequest(fieldNodes: Array<FieldNode>, parentType: GraphQLComp
 
     // GraphQL disallows multiple requests of the same field with different arguments and same alias, so we can just pick one
     const args = getArgumentValues(fieldDef, fieldNodes[0], context.variableValues);
-    return new FieldRequest(fieldDef, parentType, selections, args);
+    return new FieldRequest(fieldDef, parentType, context.schema, selections, args);
 }
 
 export function unwrapToCompositeType(type: GraphQLOutputType): GraphQLCompositeType | undefined {
