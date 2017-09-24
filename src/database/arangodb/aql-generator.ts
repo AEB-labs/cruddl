@@ -4,7 +4,7 @@ import {
     ContextQueryNode, CreateEntityQueryNode,
     EntitiesQueryNode,
     FieldQueryNode, ListQueryNode, LiteralQueryNode, ObjectQueryNode, OrderDirection, OrderSpecification, QueryNode,
-    TypeCheckQueryNode
+    TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator
 } from '../../query/definition';
 import { aql, AQLFragment } from './aql';
 import { GraphQLNamedType } from 'graphql';
@@ -107,10 +107,32 @@ const processors: { [name: string]: NodeProcessor<any> } = {
     },
 
     BinaryOperation(node: BinaryOperationQueryNode, context): AQLFragment {
-        const op = getAQLOperator(node.operator);
         const lhs = processNode(node.lhs, context);
         const rhs = processNode(node.rhs, context);
-        return aql`(${lhs} ${op} ${rhs})`;
+        const op = getAQLOperator(node.operator);
+        if (op) {
+            return aql`(${lhs} ${op} ${rhs})`;
+        }
+
+        switch (node.operator) {
+            case BinaryOperator.CONTAINS:
+                return aql`CONTAINS(${lhs}, ${rhs})`;
+            case BinaryOperator.STARTS_WITH:
+                return aql`(LEFT(${lhs}, LENGTH(${rhs})) == ${rhs})`;
+            case BinaryOperator.ENDS_WITH:
+                return aql`(RIGHT(${lhs}, LENGTH(${rhs})) == ${rhs})`;
+            default:
+                throw new Error(`Unsupported binary operator: ${op}`);
+        }
+    },
+
+    UnaryOperation(node: UnaryOperationQueryNode, context) {
+        switch (node.operator) {
+            case UnaryOperator.NOT:
+                return aql`!(${processNode(node.valueNode, context)})`;
+            default:
+                throw new Error(`Unsupported unary operator: ${node.operator}`);
+        }
     },
 
     Conditional(node: ConditionalQueryNode, context) {
@@ -136,7 +158,7 @@ const processors: { [name: string]: NodeProcessor<any> } = {
     }
 };
 
-function getAQLOperator(op: BinaryOperator): AQLFragment {
+function getAQLOperator(op: BinaryOperator): AQLFragment|undefined {
     switch (op) {
         case BinaryOperator.AND:
             return aql`&&`;
@@ -154,8 +176,10 @@ function getAQLOperator(op: BinaryOperator): AQLFragment {
             return aql`>`;
         case BinaryOperator.GREATER_THAN_OR_EQUAL:
             return aql`>=`;
+        case BinaryOperator.IN:
+            return aql`IN`;
         default:
-            throw new Error(`Unsupported binary operator: ${op}`);
+            return undefined;
     }
 }
 

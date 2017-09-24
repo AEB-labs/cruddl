@@ -63,7 +63,7 @@ export function endsWithField(name: string) {
 }
 
 export function notEndsWithField(name: string) {
-    return name + '_not_ends';
+    return name + '_not_ends_with';
 }
 
 export function allEntitiesQueryBy(entityName: string) {

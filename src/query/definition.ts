@@ -166,6 +166,31 @@ export class ConditionalQueryNode implements QueryNode{
 }
 
 /**
+ * A node that performs an operation with one operand
+ */
+export class UnaryOperationQueryNode implements QueryNode {
+    constructor(public readonly valueNode: QueryNode, public readonly operator: UnaryOperator) {
+
+    }
+
+    describe() {
+        switch (this.operator) {
+            case UnaryOperator.NOT:
+                return `!(${this.valueNode.describe()})`;
+            default:
+                return '(unknown operator)';
+        }
+    }
+}
+
+/**
+ * The operator of a UnaryOperationQueryNode
+ */
+export enum UnaryOperator {
+    NOT
+}
+
+/**
  * A node that performs an operation with two operands
  */
 export class BinaryOperationQueryNode implements QueryNode {
@@ -195,6 +220,14 @@ export class BinaryOperationQueryNode implements QueryNode {
                 return '<';
             case BinaryOperator.LESS_THAN_OR_EQUAL:
                 return '<=';
+            case BinaryOperator.IN:
+                return 'IN';
+            case BinaryOperator.CONTAINS:
+                return 'CONTAINS';
+            case BinaryOperator.STARTS_WITH:
+                return 'STARTS WITH';
+            case BinaryOperator.ENDS_WITH:
+                return 'ENDS WITH';
             default:
                 return '(unknown operator)';
         }
@@ -212,7 +245,11 @@ export enum BinaryOperator {
     LESS_THAN,
     LESS_THAN_OR_EQUAL,
     GREATER_THAN,
-    GREATER_THAN_OR_EQUAL
+    GREATER_THAN_OR_EQUAL,
+    IN,
+    CONTAINS,
+    STARTS_WITH,
+    ENDS_WITH,
 }
 
 /**
