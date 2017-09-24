@@ -1,11 +1,11 @@
 import {
     DocumentNode, FieldDefinitionNode, InputValueDefinitionNode, ObjectTypeDefinitionNode, TypeNode, Location,
-    ScalarTypeDefinitionNode, NameNode, InputObjectTypeDefinitionNode, EnumTypeDefinitionNode,
+    ScalarTypeDefinitionNode, NameNode, InputObjectTypeDefinitionNode, EnumTypeDefinitionNode, TypeDefinitionNode,
 
 } from "graphql";
 import {
     ENUM_TYPE_DEFINITION,
-    FIELD_DEFINITION, INPUT_OBJECT_TYPE_DEFINITION, NAME, NAMED_TYPE, NON_NULL_TYPE, OBJECT_TYPE_DEFINITION,
+    FIELD_DEFINITION, INPUT_OBJECT_TYPE_DEFINITION, LIST_TYPE, NAME, NAMED_TYPE, NON_NULL_TYPE, OBJECT_TYPE_DEFINITION,
     SCALAR_TYPE_DEFINITION
 } from "graphql/language/kinds";
 import {EMBEDDABLE_DIRECTIVE, ENTITY_DIRECTIVE} from "./schema-defaults";
@@ -135,7 +135,17 @@ export function getNamedTypeDefinitionAST(ast: DocumentNode, name: string): Obje
     if (!type) {
         throw new Error(`Undefined type ${name}`);
     }
-    return type as ObjectTypeDefinitionNode|ScalarTypeDefinitionNode;
+    return type as ObjectTypeDefinitionNode|ScalarTypeDefinitionNode|EnumTypeDefinitionNode;
+}
+
+export function getTypeNameIgnoringNonNullAndList(ast: DocumentNode, typeNode: TypeNode): string {
+    switch (typeNode.kind) {
+        case NON_NULL_TYPE:
+        case LIST_TYPE:
+            return getTypeNameIgnoringNonNullAndList(ast, typeNode.type);
+        case NAMED_TYPE:
+            return typeNode.name.value;
+    }
 }
 
 export function getNamedInputTypeDefinitionAST(ast: DocumentNode, name: string): InputObjectTypeDefinitionNode|ScalarTypeDefinitionNode {

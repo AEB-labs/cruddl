@@ -5,6 +5,7 @@ import {AddFilterInputTypesTransformer} from "./ast-transformation-modules/add-f
 import {AddScalarTypesTransformer} from "./ast-transformation-modules/add-scalar-types";
 import {AddRootQueryTypeTransformer} from "./ast-transformation-modules/add-root-query-type";
 import {AddRootSchemaTransformer} from "./ast-transformation-modules/add-root-schema";
+import {AddFilterArgumentsToFieldsTransformer} from "./ast-transformation-modules/add-filter-arguments-to-fields";
 
 const transformers = [
     AddScalarTypesTransformer,
@@ -12,7 +13,8 @@ const transformers = [
     NonNullableListsTransformer,
     AddFilterInputTypesTransformer,
     AddRootSchemaTransformer,
-    AddRootQueryTypeTransformer
+    AddRootQueryTypeTransformer,
+    AddFilterArgumentsToFieldsTransformer
 ];
 
 export function prepareModelAST(ast: DocumentNode) {

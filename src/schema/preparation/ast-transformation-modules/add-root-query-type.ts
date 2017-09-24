@@ -50,13 +50,7 @@ export class AddRootQueryTypeTransformer implements ASTTransformer {
             kind: FIELD_DEFINITION,
             name: buildNameNode(allEntitiesQueryBy(entityDef.name.value)),
             type: { kind: LIST_TYPE, type: { kind: NON_NULL_TYPE, type: { kind: NAMED_TYPE, name: buildNameNode(entityDef.name.value) }} },
-            arguments: [
-                {
-                    kind: INPUT_VALUE_DEFINITION,
-                    name: buildNameNode(FILTER_ARG),
-                    type: { kind: NAMED_TYPE,  name: buildNameNode(getFilterTypeName(entityDef))}
-                }
-            ],
+            arguments: [], // arguments will be added later
             loc: entityDef.loc
         }
     }
