@@ -12,9 +12,10 @@ export const defaultModelDefTypes = `
         }
     `;
 
-export const ENTITY_DIRECTIVE = 'Entity';
-export const RELATION_DIRECTIVE = 'Relation';
-export const REFERENCE_DIRECTIVE = 'Reference';
+export const ENTITY_DIRECTIVE = 'entity';
+export const EMBEDDABLE_DIRECTIVE = 'embeddable';
+export const RELATION_DIRECTIVE = 'relation';
+export const REFERENCE_DIRECTIVE = 'reference';
 
 export const ID_FIELD = 'id';
 export const ID_TYPE = 'ID';
