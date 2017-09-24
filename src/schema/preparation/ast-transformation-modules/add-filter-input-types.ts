@@ -6,7 +6,9 @@ import {
 } from "graphql";
 import {getEntityTypes, getNamedTypeDefinitionAST, getObjectTypes} from "../../schema-utils";
 import {
-    INPUT_OBJECT_TYPE_DEFINITION, LIST_TYPE, NAME, NAMED_TYPE, NON_NULL_TYPE, SCALAR_TYPE_DEFINITION,
+    ENUM_TYPE_DEFINITION,
+    INPUT_OBJECT_TYPE_DEFINITION, LIST_TYPE, NAME, NAMED_TYPE, NON_NULL_TYPE, OBJECT_TYPE_DEFINITION,
+    SCALAR_TYPE_DEFINITION,
     STRING
 } from "graphql/language/kinds";
 import {
@@ -63,51 +65,61 @@ export class AddFilterInputTypesTransformer implements ASTTransformer {
             case NAMED_TYPE:
                 // get definition for named type
                 const namedTypeDefinition = getNamedTypeDefinitionAST(ast, type.name.value);
-                if (namedTypeDefinition.kind == SCALAR_TYPE_DEFINITION) {
-                    switch(namedTypeDefinition.name.value) {
-                        case 'String':
-                            return [
-                                this.buildInputValueNamedType(name, 'String'),
-                                this.buildInputValueNamedType(notField(name), 'String'),
-                                this.buildInputValueListType(inField(name), 'String'),
-                                this.buildInputValueListType(notInField(name), 'String'),
-                                this.buildInputValueNamedType(ltField(name), 'String'),
-                                this.buildInputValueNamedType(lteField(name), 'String'),
-                                this.buildInputValueNamedType(gtField(name), 'String'),
-                                this.buildInputValueNamedType(gteField(name), 'String'),
-                                this.buildInputValueNamedType(containsField(name), 'String'),
-                                this.buildInputValueNamedType(notContainsField(name), 'String'),
-                                this.buildInputValueNamedType(starts_with_field(name), 'String'),
-                                this.buildInputValueNamedType(not_starts_with_field(name), 'String'),
-                                this.buildInputValueNamedType(endsWithField(name), 'String'),
-                                this.buildInputValueNamedType(notEndsWithField(name), 'String'),
-                            ]
-                        case SCALAR_TIME:
-                        case SCALAR_DATE:
-                        case SCALAR_DATETIME:
-                        case 'Int': // TODO: should't id have a reduced set? gt, lt, do they really make sense on ids?
-                        case 'Float':
-                        case 'Id':
-                            return [
-                                this.buildInputValueNamedType(name, namedTypeDefinition.name.value),
-                                this.buildInputValueNamedType(notField(name), namedTypeDefinition.name.value),
-                                this.buildInputValueListType(inField(name), namedTypeDefinition.name.value),
-                                this.buildInputValueListType(notInField(name), namedTypeDefinition.name.value),
-                                this.buildInputValueNamedType(ltField(name), namedTypeDefinition.name.value),
-                                this.buildInputValueNamedType(lteField(name), namedTypeDefinition.name.value),
-                                this.buildInputValueNamedType(gtField(name), namedTypeDefinition.name.value),
-                                this.buildInputValueNamedType(gteField(name), namedTypeDefinition.name.value),
-                            ];
-                        case 'Boolean':
-                            return [
-                                this.buildInputValueNamedType(name, namedTypeDefinition.name.value),
-                            ];
-                        default:
-                            return [];
-                    }
-                } else {
-                    // it's an embedded object, use the embedded object filter
-                    return [this.buildInputValueNamedType(name, getFilterTypeName(namedTypeDefinition))];
+                switch (namedTypeDefinition.kind) {
+                    case SCALAR_TYPE_DEFINITION:
+                        switch(namedTypeDefinition.name.value) {
+                            case 'String':
+                                return [
+                                    this.buildInputValueNamedType(name, 'String'),
+                                    this.buildInputValueNamedType(notField(name), 'String'),
+                                    this.buildInputValueListType(inField(name), 'String'),
+                                    this.buildInputValueListType(notInField(name), 'String'),
+                                    this.buildInputValueNamedType(ltField(name), 'String'),
+                                    this.buildInputValueNamedType(lteField(name), 'String'),
+                                    this.buildInputValueNamedType(gtField(name), 'String'),
+                                    this.buildInputValueNamedType(gteField(name), 'String'),
+                                    this.buildInputValueNamedType(containsField(name), 'String'),
+                                    this.buildInputValueNamedType(notContainsField(name), 'String'),
+                                    this.buildInputValueNamedType(starts_with_field(name), 'String'),
+                                    this.buildInputValueNamedType(not_starts_with_field(name), 'String'),
+                                    this.buildInputValueNamedType(endsWithField(name), 'String'),
+                                    this.buildInputValueNamedType(notEndsWithField(name), 'String'),
+                                ]
+                            case SCALAR_TIME:
+                            case SCALAR_DATE:
+                            case SCALAR_DATETIME:
+                            case 'Int': // TODO: should't id have a reduced set? gt, lt, do they really make sense on ids?
+                            case 'Float':
+                            case 'Id':
+                                return [
+                                    this.buildInputValueNamedType(name, namedTypeDefinition.name.value),
+                                    this.buildInputValueNamedType(notField(name), namedTypeDefinition.name.value),
+                                    this.buildInputValueListType(inField(name), namedTypeDefinition.name.value),
+                                    this.buildInputValueListType(notInField(name), namedTypeDefinition.name.value),
+                                    this.buildInputValueNamedType(ltField(name), namedTypeDefinition.name.value),
+                                    this.buildInputValueNamedType(lteField(name), namedTypeDefinition.name.value),
+                                    this.buildInputValueNamedType(gtField(name), namedTypeDefinition.name.value),
+                                    this.buildInputValueNamedType(gteField(name), namedTypeDefinition.name.value),
+                                ];
+                            case 'Boolean':
+                                return [
+                                    this.buildInputValueNamedType(name, namedTypeDefinition.name.value),
+                                ];
+                            default:
+                                return [];
+                        }
+                    case ENUM_TYPE_DEFINITION:
+                        return [
+                            this.buildInputValueNamedType(name, namedTypeDefinition.name.value),
+                            this.buildInputValueNamedType(notField(name), namedTypeDefinition.name.value),
+                            this.buildInputValueNamedType(inField(name), namedTypeDefinition.name.value),
+                            this.buildInputValueNamedType(notInField(name), namedTypeDefinition.name.value),
+                        ];
+                    case OBJECT_TYPE_DEFINITION:
+                        // use the embedded object filter
+                        return [this.buildInputValueNamedType(name, getFilterTypeName(namedTypeDefinition))];
+                    default:
+                        return []
                 }
         }
     }
