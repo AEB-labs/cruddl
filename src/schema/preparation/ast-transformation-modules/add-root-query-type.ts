@@ -8,7 +8,7 @@ import {
 import {QueryNode} from "../../../query/definition";
 import {flatMap} from "../../../utils/utils";
 import {ENTITY_ID, FILTER_ARG} from "../../schema-defaults";
-import {allEntitiesQueryBy} from "../../../graphql/names";
+import {allEntitiesQueryBy, getFilterTypeName} from "../../../graphql/names";
 
 export class AddRootQueryTypeTransformer implements ASTTransformer {
 
@@ -54,7 +54,7 @@ export class AddRootQueryTypeTransformer implements ASTTransformer {
                 {
                     kind: INPUT_VALUE_DEFINITION,
                     name: buildNameNode(FILTER_ARG),
-                    type: { kind: NAMED_TYPE,  name: buildNameNode('ID')}
+                    type: { kind: NAMED_TYPE,  name: buildNameNode(getFilterTypeName(entityDef))}
                 }
             ],
             loc: entityDef.loc
