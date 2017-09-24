@@ -1,10 +1,18 @@
 import {DocumentNode} from "graphql";
 import {AddMissingEntityFieldsTransformer} from "./ast-transformation-modules/add-missing-entity-fields";
 import {NonNullableListsTransformer} from "./ast-transformation-modules/non-nullable-lists";
+import {AddFilterInputTypesTransformer} from "./ast-transformation-modules/add-filter-input-types";
+import {AddScalarTypesTransformer} from "./ast-transformation-modules/add-scalar-types";
+import {AddRootQueryTypeTransformer} from "./ast-transformation-modules/add-root-query-type";
+import {AddRootSchemaTransformer} from "./ast-transformation-modules/add-root-schema";
 
 const transformers = [
+    AddScalarTypesTransformer,
     AddMissingEntityFieldsTransformer,
-    NonNullableListsTransformer
+    NonNullableListsTransformer,
+    AddFilterInputTypesTransformer,
+    AddRootSchemaTransformer,
+    AddRootQueryTypeTransformer
 ];
 
 export function prepareModelAST(ast: DocumentNode) {
