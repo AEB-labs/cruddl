@@ -28,7 +28,6 @@
  */
 import { GraphQLField, GraphQLObjectType } from 'graphql';
 import { indent } from '../utils/utils';
-import { TypeSpecification } from '../../../model-manager-node/src/definition/types';
 
 export interface QueryNode {
     describe(): string;
@@ -172,8 +171,18 @@ export class BinaryOperationQueryNode implements QueryNode {
                 return '&&';
             case BinaryOperator.OR:
                 return '&&';
-            case BinaryOperator.EQUALS:
+            case BinaryOperator.EQUAL:
                 return '==';
+            case BinaryOperator.UNEQUAL:
+                return '!=';
+            case BinaryOperator.GREATER_THAN:
+                return '>';
+            case BinaryOperator.GREATER_THAN_OR_EQUAL:
+                return '>=';
+            case BinaryOperator.LESS_THAN:
+                return '<';
+            case BinaryOperator.LESS_THAN_OR_EQUAL:
+                return '<=';
             default:
                 return '(unknown operator)';
         }
@@ -186,7 +195,12 @@ export class BinaryOperationQueryNode implements QueryNode {
 export enum BinaryOperator {
     AND,
     OR,
-    EQUALS
+    EQUAL,
+    UNEQUAL,
+    LESS_THAN,
+    LESS_THAN_OR_EQUAL,
+    GREATER_THAN,
+    GREATER_THAN_OR_EQUAL
 }
 
 /**

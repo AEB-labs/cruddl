@@ -85,15 +85,13 @@ function createEntitiesQueryNode(fieldRequest: FieldRequest): QueryNode {
     return createListQueryNode(fieldRequest, listNode);
 }
 
-function getFilterNode(filterArg: any, objectType: GraphQLObjectType) {
-    if (!filterArg) {
+function getFilterNode(filterArg: any, objectType: GraphQLObjectType, contextNode: QueryNode = new ContextQueryNode()) {
+    if (!filterArg || !Object.keys(filterArg).length) {
         return undefined;
     }
     let filterNode: QueryNode|undefined = undefined;
     for (const key of Object.getOwnPropertyNames(filterArg)) {
-        const fieldQuery = new FieldQueryNode(new ContextQueryNode(), objectType.getFields()[key]);
-        const valueQuery = new LiteralQueryNode(filterArg[key]);
-        const newClause = new BinaryOperationQueryNode(fieldQuery, BinaryOperator.EQUALS, valueQuery);
+        const newClause = getFilterClauseNode(key, filterArg[key], contextNode, objectType);
         if (filterNode) {
             filterNode = new BinaryOperationQueryNode(filterNode, BinaryOperator.AND, newClause);
         } else {
@@ -101,6 +99,45 @@ function getFilterNode(filterArg: any, objectType: GraphQLObjectType) {
         }
     }
     return filterNode;
+}
+
+function getFilterClauseNode(key: string, value: any, contextNode: QueryNode, objectType: GraphQLObjectType): QueryNode {
+    // check for filters in embedded objects
+    const field = objectType.getFields()[key];
+    const rawFieldType = field ? getNamedType(field.type) : undefined;
+    if (field && rawFieldType instanceof GraphQLObjectType) {
+        const fieldNode = new FieldQueryNode(contextNode, field);
+        const isObjectNode = new TypeCheckQueryNode(fieldNode, BasicType.OBJECT);
+        const rawFilterNode = getFilterNode(value, rawFieldType, fieldNode);
+        if (!rawFilterNode) {
+            return isObjectNode; // an empty filter only checks if the object is present and a real object
+        }
+        // make sure to check for object type before doing the filter
+        return new BinaryOperationQueryNode(isObjectNode, BinaryOperator.AND, rawFilterNode);
+    }
+
+    const variations: {[suffix: string]: (fieldNode: QueryNode, valueNode: QueryNode) => QueryNode} = {
+        '_not': (fieldNode, valueNode) => new BinaryOperationQueryNode(fieldNode, BinaryOperator.UNEQUAL, valueNode),
+        '_lt': (fieldNode, valueNode) => new BinaryOperationQueryNode(fieldNode, BinaryOperator.LESS_THAN, valueNode),
+        '_lte': (fieldNode, valueNode) => new BinaryOperationQueryNode(fieldNode, BinaryOperator.LESS_THAN_OR_EQUAL, valueNode),
+        '_gt': (fieldNode, valueNode) => new BinaryOperationQueryNode(fieldNode, BinaryOperator.GREATER_THAN, valueNode),
+        '_gte': (fieldNode, valueNode) => new BinaryOperationQueryNode(fieldNode, BinaryOperator.GREATER_THAN_OR_EQUAL, valueNode),
+        '': (fieldNode, valueNode) => new BinaryOperationQueryNode(fieldNode, BinaryOperator.EQUAL, valueNode),
+    };
+
+    for (const suffix in variations) {
+        if (key.endsWith(suffix)) {
+            const fieldName = key.substr(0, key.length - suffix.length);
+            const field = objectType.getFields()[fieldName];
+            if (!field) {
+                throw new Error(`Field ${fieldName} does not exist in type ${objectType.name} but is used as a filter`);
+            }
+            const fieldNode = new FieldQueryNode(contextNode, field);
+            const valueNode = new LiteralQueryNode(value);
+            return variations[suffix](fieldNode, valueNode);
+        }
+    }
+    throw new Error(`Invalid filter field: ${key}`);
 }
 
 function createOrderSpecification(orderByArg: any, objectType: GraphQLObjectType) {

@@ -134,11 +134,21 @@ const processors: { [name: string]: NodeProcessor<any> } = {
 function getAQLOperator(op: BinaryOperator): AQLFragment {
     switch (op) {
         case BinaryOperator.AND:
-            return aql`'&&`;
+            return aql`&&`;
         case BinaryOperator.OR:
-            return aql`'||`;
-        case BinaryOperator.EQUALS:
+            return aql`||`;
+        case BinaryOperator.EQUAL:
             return aql`==`;
+        case BinaryOperator.UNEQUAL:
+            return aql`!=`;
+        case BinaryOperator.LESS_THAN:
+            return aql`<`;
+        case BinaryOperator.LESS_THAN_OR_EQUAL:
+            return aql`<=`;
+        case BinaryOperator.GREATER_THAN:
+            return aql`>`;
+        case BinaryOperator.GREATER_THAN_OR_EQUAL:
+            return aql`>=`;
         default:
             throw new Error(`Unsupported binary operator: ${op}`);
     }
