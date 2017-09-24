@@ -70,6 +70,18 @@ export class LiteralQueryNode {
 }
 
 /**
+ * A node that evaluates either to true or to false
+ */
+export class ConstBoolQueryNode {
+    constructor(public readonly value: boolean) {
+    }
+
+    public describe() {
+        return `${!!this.value}`;
+    }
+}
+
+/**
  * A node that evaluates to the value of a field of an object
  *
  * Note: this is unrelated to storing the value in a property of a result object, see ObjectQueryNode

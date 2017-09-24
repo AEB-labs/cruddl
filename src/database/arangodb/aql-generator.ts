@@ -1,5 +1,6 @@
 import {
-    BasicType, BinaryOperationQueryNode, BinaryOperator, ConditionalQueryNode, ContextAssignmentQueryNode,
+    BasicType, BinaryOperationQueryNode, BinaryOperator, ConditionalQueryNode, ConstBoolQueryNode,
+    ContextAssignmentQueryNode,
     ContextQueryNode, CreateEntityQueryNode,
     EntitiesQueryNode,
     FieldQueryNode, ListQueryNode, LiteralQueryNode, ObjectQueryNode, OrderDirection, OrderSpecification, QueryNode,
@@ -63,6 +64,10 @@ const processors: { [name: string]: NodeProcessor<any> } = {
         return aql`${node.value}`;
     },
 
+    ConstBool(node: ConstBoolQueryNode): AQLFragment {
+        return node.value ? aql`true` : aql`false`;
+    },
+
     Field(node: FieldQueryNode, context): AQLFragment {
         const object = processNode(node.objectNode, context);
         let identifier = node.field.name;
@@ -105,7 +110,7 @@ const processors: { [name: string]: NodeProcessor<any> } = {
         const op = getAQLOperator(node.operator);
         const lhs = processNode(node.lhs, context);
         const rhs = processNode(node.rhs, context);
-        return aql`${lhs} ${op} ${rhs}`;
+        return aql`(${lhs} ${op} ${rhs})`;
     },
 
     Conditional(node: ConditionalQueryNode, context) {

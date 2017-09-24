@@ -1,7 +1,8 @@
 import { DistilledOperation, FieldRequest, FieldSelection } from '../graphql/query-distiller';
 import { getNamedType, GraphQLCompositeType, GraphQLField, GraphQLList, GraphQLObjectType } from 'graphql';
 import {
-    BasicType, BinaryOperationQueryNode, BinaryOperator, ConditionalQueryNode, ContextAssignmentQueryNode,
+    BasicType, BinaryOperationQueryNode, BinaryOperator, ConditionalQueryNode, ConstBoolQueryNode,
+    ContextAssignmentQueryNode,
     ContextQueryNode, CreateEntityQueryNode, EntitiesQueryNode, FieldQueryNode, ListQueryNode, LiteralQueryNode,
     ObjectQueryNode, OrderClause, OrderDirection, OrderSpecification, PropertySpecification, QueryNode,
     TypeCheckQueryNode
@@ -79,23 +80,44 @@ function createEntitiesQueryNode(fieldRequest: FieldRequest): QueryNode {
     return createListQueryNode(fieldRequest, listNode);
 }
 
-function getFilterNode(filterArg: any, objectType: GraphQLObjectType, contextNode: QueryNode = new ContextQueryNode()) {
+function getFilterNode(filterArg: any, objectType: GraphQLObjectType, contextNode: QueryNode = new ContextQueryNode()): QueryNode {
     if (!filterArg || !Object.keys(filterArg).length) {
-        return undefined;
+        return new ConstBoolQueryNode(true);
     }
     let filterNode: QueryNode|undefined = undefined;
     for (const key of Object.getOwnPropertyNames(filterArg)) {
         const newClause = getFilterClauseNode(key, filterArg[key], contextNode, objectType);
-        if (filterNode) {
+        if (filterNode && newClause) {
             filterNode = new BinaryOperationQueryNode(filterNode, BinaryOperator.AND, newClause);
         } else {
             filterNode = newClause;
         }
     }
-    return filterNode;
+    return filterNode || new ConstBoolQueryNode(true);
 }
 
 function getFilterClauseNode(key: string, value: any, contextNode: QueryNode, objectType: GraphQLObjectType): QueryNode {
+    // special nodes
+    switch (key) {
+        case 'AND':
+            if (!isArray(value) || !value.length) {
+                return new ConstBoolQueryNode(true);
+            }
+            return value
+                .map(itemValue => getFilterNode(itemValue, objectType, contextNode))
+                .reduce((prev, current) => new BinaryOperationQueryNode(prev, BinaryOperator.AND, current));
+        case 'OR':
+            if (!isArray(value)) {
+                return new ConstBoolQueryNode(true); // regard as omitted
+            }
+            if (!value.length) {
+                return new ConstBoolQueryNode(false); // proper boolean logic (neutral element of OR is FALSE)
+            }
+            return value
+                .map(itemValue => getFilterNode(itemValue, objectType, contextNode))
+                .reduce((prev, current) => new BinaryOperationQueryNode(prev, BinaryOperator.OR, current));
+    }
+
     // check for filters in embedded objects
     const field = objectType.getFields()[key];
     const rawFieldType = field ? getNamedType(field.type) : undefined;

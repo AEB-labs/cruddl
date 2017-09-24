@@ -42,8 +42,8 @@ export class AddFilterInputTypesTransformer implements ASTTransformer {
     protected createInputFilterTypeForEntity(ast: DocumentNode, entityType: ObjectTypeDefinitionNode): InputObjectTypeDefinitionNode {
         const args = [
             ...flatMap(entityType.fields, field => this.createInputFilterTypeFields(ast, field.name.value, field.type)),
-            this.buildInputValueNamedType(ARGUMENT_AND, getFilterTypeName(entityType)),
-            this.buildInputValueNamedType(ARGUMENT_OR, getFilterTypeName(entityType)),
+            this.buildInputValueListOfNamedType(ARGUMENT_AND,  getFilterTypeName(entityType)),
+            this.buildInputValueListOfNamedType(ARGUMENT_OR, getFilterTypeName(entityType)),
             // TODO add if supported: this.buildInputValueNamedType(ARGUMENT_NOT, getFilterTypeName(entityType))
         ]
         return {
@@ -121,6 +121,14 @@ export class AddFilterInputTypesTransformer implements ASTTransformer {
                     default:
                         return []
                 }
+        }
+    }
+
+    protected buildInputValueListOfNamedType(name: string, typeName: string): InputValueDefinitionNode {
+        return {
+            kind: "InputValueDefinition",
+            type: { kind: LIST_TYPE, type: { kind: NAMED_TYPE, name: { kind: NAME, value: typeName } } },
+            name: { kind: NAME, value: name }
         }
     }
 
