@@ -1,18 +1,12 @@
 import { DistilledOperation, FieldRequest, FieldSelection } from '../graphql/query-distiller';
 import { getNamedType, GraphQLCompositeType, GraphQLField, GraphQLList, GraphQLObjectType } from 'graphql';
 import {
-    BasicType,
-    BinaryOperationQueryNode, BinaryOperator, ConditionalQueryNode, ContextAssignmentQueryNode, ContextQueryNode,
-    CreateEntityQueryNode,
-    EntitiesQueryNode, FieldQueryNode,
-    ListQueryNode,
-    LiteralQueryNode, ObjectQueryNode, OrderClause, OrderDirection, OrderSpecification, PropertySpecification,
-    QueryNode,
+    BasicType, BinaryOperationQueryNode, BinaryOperator, ConditionalQueryNode, ContextAssignmentQueryNode,
+    ContextQueryNode, CreateEntityQueryNode, EntitiesQueryNode, FieldQueryNode, ListQueryNode, LiteralQueryNode,
+    ObjectQueryNode, OrderClause, OrderDirection, OrderSpecification, PropertySpecification, QueryNode,
     TypeCheckQueryNode
 } from './definition';
 import { isArray } from 'util';
-import { Query } from '../../../model-manager-node/src/database/query';
-import { objectEntries } from '../utils/utils';
 
 /**
  * Creates a QueryTree that is used to instruct the DataBase how to perform a GraphQL query
