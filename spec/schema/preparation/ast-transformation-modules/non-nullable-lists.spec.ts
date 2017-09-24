@@ -1,4 +1,4 @@
-import {FieldDefinitionNode, ListTypeNode, NonNullTypeNode, ObjectTypeDefinitionNode, parse} from "graphql";
+import {ListTypeNode, NonNullTypeNode, ObjectTypeDefinitionNode, parse} from "graphql";
 import {NonNullableListsTransformer} from "../../../../src/schema/preparation/ast-transformation-modules/non-nullable-lists";
 import {LIST_TYPE, NAMED_TYPE, NON_NULL_TYPE} from "graphql/language/kinds";
 
