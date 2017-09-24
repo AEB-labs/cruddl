@@ -51,19 +51,19 @@ export function notContainsField(name: string) {
 }
 
 export function starts_with_field(name: string) {
-    return name + '_starts_with_contains';
+    return name + '_starts_with';
 }
 
 export function not_starts_with_field(name: string) {
-    return name + '_not_starts_with_contains';
+    return name + '_not_starts_with';
 }
 
 export function endsWithField(name: string) {
-    return name + '_ends_with_contains';
+    return name + '_ends_with';
 }
 
 export function notEndsWithField(name: string) {
-    return name + '_not_ends_with_contains';
+    return name + '_not_ends';
 }
 
 export function allEntitiesQueryBy(entityName: string) {
