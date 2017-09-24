@@ -26,12 +26,12 @@ export class AddRootQueryTypeTransformer implements ASTTransformer {
 
     protected buildQueryTypeEntityFields(entityDefinitionNodes: ObjectTypeDefinitionNode[]): FieldDefinitionNode[] {
         return flatMap(entityDefinitionNodes, entityDef => [
-            this.buildFindOneEntityField(entityDef),
-            this.buildFindAllEntityField(entityDef),
+            this.buildQueryOneEntityField(entityDef),
+            this.buildQueryAllEntityField(entityDef),
         ])
     }
 
-    protected buildFindOneEntityField(entityDef: ObjectTypeDefinitionNode): FieldDefinitionNode {
+    protected buildQueryOneEntityField(entityDef: ObjectTypeDefinitionNode): FieldDefinitionNode {
         return {
             kind: FIELD_DEFINITION,
             name: buildNameNode(entityDef.name.value),
@@ -45,7 +45,7 @@ export class AddRootQueryTypeTransformer implements ASTTransformer {
         }
     }
 
-    protected buildFindAllEntityField(entityDef: ObjectTypeDefinitionNode): FieldDefinitionNode {
+    protected buildQueryAllEntityField(entityDef: ObjectTypeDefinitionNode): FieldDefinitionNode {
         return {
             kind: FIELD_DEFINITION,
             name: buildNameNode(allEntitiesQueryBy(entityDef.name.value)),
