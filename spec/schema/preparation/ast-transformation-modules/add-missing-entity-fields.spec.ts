@@ -1,10 +1,5 @@
-import {
-    FieldDefinitionNode, ListTypeNode, NamedTypeNode, NonNullTypeNode, ObjectTypeDefinitionNode,
-    parse
-} from "graphql";
-import {NonNullableListsTransformer} from "../../../../src/schema/preparation/ast-transformation-modules/non-nullable-lists";
-import {LIST_TYPE, NAMED_TYPE, NON_NULL_TYPE} from "graphql/language/kinds";
-import {SCALAR_DATETIME, ENTITY_CREATED_AT, ENTITY_ID, ENTITY_UPDATED_AT} from "../../../../src/schema/schema-defaults";
+import {ObjectTypeDefinitionNode, parse} from "graphql";
+import {ENTITY_CREATED_AT, ENTITY_ID, ENTITY_UPDATED_AT, SCALAR_DATETIME} from "../../../../src/schema/schema-defaults";
 import {objectTypeFieldsWithNameOfNamedType} from "../../schema-test-utils";
 import {AddMissingEntityFieldsTransformer} from "../../../../src/schema/preparation/ast-transformation-modules/add-missing-entity-fields";
 
