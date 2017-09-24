@@ -28,3 +28,9 @@ export const SCALAR_DATE = 'Date';
 export const SCALAR_TIME = 'Time';
 
 export const ENTITY_ID = 'id';
+
+export const ARGUMENT_AND = 'AND';
+export const ARGUMENT_OR = 'OR';
+export const ARGUMENT_NOT = 'NOT';
+
+export const FILTER_ARG = 'filter';
