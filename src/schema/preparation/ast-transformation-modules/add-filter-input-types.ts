@@ -90,7 +90,7 @@ export class AddFilterInputTypesTransformer implements ASTTransformer {
                             case SCALAR_DATETIME:
                             case 'Int': // TODO: should't id have a reduced set? gt, lt, do they really make sense on ids?
                             case 'Float':
-                            case 'Id':
+                            case 'ID':
                                 return [
                                     this.buildInputValueNamedType(name, namedTypeDefinition.name.value),
                                     this.buildInputValueNamedType(notField(name), namedTypeDefinition.name.value),
