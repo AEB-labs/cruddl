@@ -1,6 +1,4 @@
-import {buildASTSchema, DocumentNode, GraphQLSchema, parse, Source, visit} from "graphql";
-import {isNullOrUndefined} from "util";
-import {OBJECT_TYPE_DEFINITION} from "graphql/language/kinds";
+import {buildASTSchema, DocumentNode, GraphQLSchema, parse, print, Source} from "graphql";
 import {prepareModelAST} from "./preparation/ast-transformer";
 
 /*
@@ -9,11 +7,12 @@ import {prepareModelAST} from "./preparation/ast-transformer";
 export function createSchema(modelDefinition: Array<Source | DocumentNode>): GraphQLSchema {
     const ast = mergeModelDefinition(modelDefinition);
     prepareModelAST(ast);
+    console.log(print(ast));
     return buildASTSchema(ast);
 }
 
-function mergeModelDefinition(definitions: Array<Source | DocumentNode>): DocumentNode {
-    return definitions.map(definition => (definition instanceof Source) ? parse(definition) : definition).reduce(mergeAST);
+function mergeModelDefinition(modelDefinitions: Array<Source | DocumentNode>): DocumentNode {
+    return modelDefinitions.map(modelDef => (modelDef instanceof Source) ? parse(modelDef) : modelDef).reduce(mergeAST);
 }
 
 function mergeAST(doc1: DocumentNode, doc2: DocumentNode): DocumentNode {
