@@ -1,0 +1,6 @@
+type User @entity {
+    id: ID
+    name: String
+    pets: [Pet]
+    address: Address
+}

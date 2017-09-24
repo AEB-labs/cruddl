@@ -1,0 +1,13 @@
+type Address {
+    street: String
+    city: String
+    zipCode: String
+    country: String
+    coordinates: GeoPosition
+}
+
+type GeoPosition {
+    latitude: Float
+    longitude: Float
+}
+

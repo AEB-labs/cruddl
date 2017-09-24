@@ -1,0 +1,7 @@
+enum PetSpecies { Dog, Cat, Parrot }
+
+type Pet @entity {
+    species: PetSpecies
+    name: String
+    birthYear: Int
+}
