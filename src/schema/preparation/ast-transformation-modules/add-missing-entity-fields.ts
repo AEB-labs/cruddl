@@ -1,7 +1,7 @@
 import {ASTTransformer} from "../ast-transformer";
 import {DocumentNode} from "graphql";
 import {createFieldDefinitionNode, fieldDefinitionNodeByNameExists, getEntityTypes} from "../../schema-utils";
-import {DATETIME, ENTITY_CREATED_AT, ENTITY_ID, ENTITY_UPDATED_AT} from "../../schema-defaults";
+import {SCALAR_DATETIME, ENTITY_CREATED_AT, ENTITY_ID, ENTITY_UPDATED_AT} from "../../schema-defaults";
 
 /**
  * Assert that all @Entity have the fields id, updatedAt, createdAt.
@@ -21,11 +21,11 @@ export class AddMissingEntityFieldsTransformer implements ASTTransformer {
             }
             // assert existence of createdAt field
             if (!fieldDefinitionNodeByNameExists(moType, ENTITY_CREATED_AT)) {
-                moType.fields.push(createFieldDefinitionNode(ENTITY_CREATED_AT, DATETIME, moType.loc));
+                moType.fields.push(createFieldDefinitionNode(ENTITY_CREATED_AT, SCALAR_DATETIME, moType.loc));
             }
             // assert existence of updatedAt field
             if (!fieldDefinitionNodeByNameExists(moType, ENTITY_UPDATED_AT)) {
-                moType.fields.push(createFieldDefinitionNode(ENTITY_UPDATED_AT, DATETIME, moType.loc));
+                moType.fields.push(createFieldDefinitionNode(ENTITY_UPDATED_AT, SCALAR_DATETIME, moType.loc));
             }
         });
     }
