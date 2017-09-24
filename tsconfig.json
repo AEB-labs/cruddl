@@ -14,7 +14,10 @@
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
-    "lib": ["es2015"],
+    "lib": [
+      "es2016",
+      "esnext.asynciterable"
+    ],
     "typeRoots": [
       "node_modules/@types"
     ],
