@@ -10,7 +10,7 @@ export function getValueObjectInputTypeName(embeddableDefinition: ObjectTypeDefi
     return embeddableDefinition.name.value + 'Input';
 }
 
-export function getRootEntityOrderByTypeName(entityDefinition: ObjectTypeDefinitionNode) {
+export function getOrderByEnumTypeName(entityDefinition: ObjectTypeDefinitionNode) {
     return entityDefinition.name.value + 'OrderBy';
 }
 
@@ -68,4 +68,12 @@ export function notEndsWithField(name: string) {
 
 export function allEntitiesQueryBy(entityName: string) {
     return 'all' + pluralize(entityName);
+}
+
+export function sortedByAsc(name: string) {
+    return name + '_ASC';
+}
+
+export function sortedByDesc(name: string) {
+    return name + '_DESC';
 }
