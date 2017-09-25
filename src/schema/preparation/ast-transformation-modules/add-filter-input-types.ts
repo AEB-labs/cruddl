@@ -22,8 +22,8 @@ import {flatMap} from "../../../utils/utils";
 export class AddFilterInputTypesTransformer implements ASTTransformer {
 
     transform(ast: DocumentNode): void {
-        getObjectTypes(ast).forEach(entityType => {
-            ast.definitions.push(this.createInputFilterTypeForEntity(ast, entityType))
+        getObjectTypes(ast).forEach(objectType => {
+            ast.definitions.push(this.createInputFilterTypeForObjectType(ast, objectType))
         })
     }
 
@@ -39,18 +39,18 @@ export class AddFilterInputTypesTransformer implements ASTTransformer {
      *
      */
 
-    protected createInputFilterTypeForEntity(ast: DocumentNode, entityType: ObjectTypeDefinitionNode): InputObjectTypeDefinitionNode {
+    protected createInputFilterTypeForObjectType(ast: DocumentNode, objectType: ObjectTypeDefinitionNode): InputObjectTypeDefinitionNode {
         const args = [
-            ...flatMap(entityType.fields, field => this.createInputFilterTypeFields(ast, field.name.value, field.type)),
-            this.buildInputValueListOfNamedType(ARGUMENT_AND,  getFilterTypeName(entityType)),
-            this.buildInputValueListOfNamedType(ARGUMENT_OR, getFilterTypeName(entityType)),
-            // TODO add if supported: this.buildInputValueNamedType(ARGUMENT_NOT, getFilterTypeName(entityType))
+            ...flatMap(objectType.fields, field => this.createInputFilterTypeFields(ast, field.name.value, field.type)),
+            this.buildInputValueListOfNamedType(ARGUMENT_AND,  getFilterTypeName(objectType)),
+            this.buildInputValueListOfNamedType(ARGUMENT_OR, getFilterTypeName(objectType)),
+            // TODO add if supported: this.buildInputValueNamedType(ARGUMENT_NOT, getFilterTypeName(objectType))
         ]
         return {
             kind: INPUT_OBJECT_TYPE_DEFINITION,
-            name: { kind: "Name", value: getFilterTypeName(entityType) },
+            name: { kind: "Name", value: getFilterTypeName(objectType) },
             fields: args,
-            loc: entityType.loc
+            loc: objectType.loc
         }
     }
 
