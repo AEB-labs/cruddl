@@ -34,3 +34,4 @@ export const ARGUMENT_OR = 'OR';
 export const ARGUMENT_NOT = 'NOT';
 
 export const FILTER_ARG = 'filter';
+export const ORDER_BY_ARG = 'orderBy'
