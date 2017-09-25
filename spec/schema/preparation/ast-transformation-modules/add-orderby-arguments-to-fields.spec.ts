@@ -1,13 +1,7 @@
 import {ListTypeNode, NamedTypeNode, NonNullTypeNode, ObjectTypeDefinitionNode, parse} from "graphql";
-import {
-    INPUT_OBJECT_TYPE_DEFINITION, LIST_TYPE, NAMED_TYPE, NON_NULL_TYPE,
-    OBJECT_TYPE_DEFINITION
-} from "graphql/language/kinds";
-import {AddFilterInputTypesTransformer} from "../../../../src/schema/preparation/ast-transformation-modules/add-filter-input-types";
-import {getNamedInputTypeDefinitionAST} from "../../../../src/schema/schema-utils";
-import {FILTER_ARG, ORDER_BY_ARG} from "../../../../src/schema/schema-defaults";
+import {LIST_TYPE, NAMED_TYPE, NON_NULL_TYPE, OBJECT_TYPE_DEFINITION} from "graphql/language/kinds";
+import {ORDER_BY_ARG} from "../../../../src/schema/schema-defaults";
 import {AddOrderbyArgumentsToFieldsTransformer} from "../../../../src/schema/preparation/ast-transformation-modules/add-orderby-arguments-to-fields";
-import {getFilterTypeName} from "../../../../src/graphql/names";
 
 const sdl = `
             type Foo @entity {
@@ -46,7 +40,7 @@ const sdl = `
 describe('add-orderby-arguments-to-fields', () => {
     it('meets preconditions', () => {
         const ast = parse(sdl);
-        // there are no filter/input types before running the transformer.
+        // there are no orderBy arguments before running the transformer.
         const queryType: ObjectTypeDefinitionNode = ast.definitions.find(def => def.kind === OBJECT_TYPE_DEFINITION && def.name.value === 'Query') as ObjectTypeDefinitionNode;
         const allFoosField = queryType.fields.find(field => field.name.value === 'allFoos');
         const orderByArg = allFoosField!.arguments.find(arg => arg.name.value === ORDER_BY_ARG);
