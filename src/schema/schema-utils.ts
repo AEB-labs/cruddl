@@ -138,11 +138,11 @@ export function getNamedTypeDefinitionAST(ast: DocumentNode, name: string): Obje
     return type as ObjectTypeDefinitionNode|ScalarTypeDefinitionNode|EnumTypeDefinitionNode;
 }
 
-export function getTypeNameIgnoringNonNullAndList(ast: DocumentNode, typeNode: TypeNode): string {
+export function getTypeNameIgnoringNonNullAndList(typeNode: TypeNode): string {
     switch (typeNode.kind) {
         case NON_NULL_TYPE:
         case LIST_TYPE:
-            return getTypeNameIgnoringNonNullAndList(ast, typeNode.type);
+            return getTypeNameIgnoringNonNullAndList(typeNode.type);
         case NAMED_TYPE:
             return typeNode.name.value;
     }

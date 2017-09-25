@@ -26,7 +26,7 @@ export class AddFilterArgumentsToFieldsTransformer implements ASTTransformer {
                 if (field.type.kind !== LIST_TYPE && !(field.type.kind === NON_NULL_TYPE && field.type.type.kind === LIST_TYPE)) {
                     return;
                 }
-                const resolvedType = getNamedTypeDefinitionAST(ast, getTypeNameIgnoringNonNullAndList(ast, field.type));
+                const resolvedType = getNamedTypeDefinitionAST(ast, getTypeNameIgnoringNonNullAndList(field.type));
                 // if this field is of an object type and this object type has a *Filter type
                 if (resolvedType.kind === OBJECT_TYPE_DEFINITION && getNamedInputTypeDefinitionAST(ast, getFilterTypeName(resolvedType))) {
                     field.arguments.push({
