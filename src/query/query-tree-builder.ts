@@ -65,7 +65,7 @@ function createListQueryNode(fieldRequest: FieldRequest, listNode: QueryNode, fi
     const objectType = getNamedType(fieldRequest.field.type) as GraphQLObjectType;
     const filterNode = getFilterNode(fieldRequest.args.filter, objectType);
     const innerNode = createObjectNode(fieldRequest.selectionSet, new ContextQueryNode(), fieldRequestStack);
-    const orderBy = createOrderSpecification(fieldRequest.args.orderBy, objectType);
+    const orderBy = createOrderSpecification(fieldRequest.args.orderBy, objectType, fieldRequest);
     const maxCount = fieldRequest.args.first;
     return new ListQueryNode({listNode, innerNode, filterNode, orderBy, maxCount});
 }
@@ -176,11 +176,23 @@ function getFilterClauseNode(key: string, value: any, contextNode: QueryNode, ob
     throw new Error(`Invalid filter field: ${key}`);
 }
 
-function createOrderSpecification(orderByArg: any, objectType: GraphQLObjectType) {
-    if (!orderByArg || isArray(orderByArg) && !orderByArg.length) {
-        return new OrderSpecification([]);
+function getOrderByClauseNames(orderBy: any, objectType: GraphQLObjectType, listFieldRequest: FieldRequest): string[] {
+    const clauseNames = !orderBy ? [] : isArray(orderBy) ? orderBy : [orderBy];
+
+    // if pagination is enabled on a list of entities, make sure we filter after a unique key
+    // TODO figure a way to do proper pagination on a simple list of embedded objects
+    if ('first' in listFieldRequest.args && 'id' in objectType.getFields()) {
+        const includesID = clauseNames.some(name => name == 'id_ASC' || name == 'id_DESC');
+        if (!includesID) {
+            return [...orderBy, 'id_ASC'];
+        }
+        return clauseNames;
     }
-    const clauseNames = isArray(orderByArg) ? orderByArg : [orderByArg];
+    return clauseNames;
+}
+
+function createOrderSpecification(orderByArg: any, objectType: GraphQLObjectType, listFieldRequest: FieldRequest) {
+    const clauseNames = getOrderByClauseNames(orderByArg, objectType, listFieldRequest);
     const clauses = clauseNames.map(name => {
         let dir = name.endsWith('_DESC') ? OrderDirection.DESCENDING : OrderDirection.ASCENDING;
         const fieldName = getFieldFromOrderByClause(name);
@@ -209,8 +221,7 @@ function createCursorQueryNode(listFieldRequest: FieldRequest, itemNode: QueryNo
     }
 
     const objectType = getNamedType(listFieldRequest.field.type) as GraphQLObjectType;
-    const orderBy = listFieldRequest.args['orderBy'] || [];
-    const clauses = isArray(orderBy) ? orderBy : [orderBy];
+    const clauses = getOrderByClauseNames(listFieldRequest.args['orderBy'], objectType, listFieldRequest);
     const fieldNamess = clauses.map(clause => getFieldFromOrderByClause(clause)).sort();
     const objectNode = new ObjectQueryNode(fieldNamess.map( fieldName =>
         new PropertySpecification(fieldName, createScalarFieldValueNode(objectType, fieldName))));
