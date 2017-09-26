@@ -9,6 +9,7 @@ import {AddFilterArgumentsToFieldsTransformer} from "./ast-transformation-module
 import {AddOrderbyInputEnumsTransformer} from "./ast-transformation-modules/add-orderby-enums";
 import {AddOrderbyArgumentsToFieldsTransformer} from "./ast-transformation-modules/add-orderby-arguments-to-fields";
 import {AddCursorFieldToEntitiesTransformer} from "../../../spec/schema/preparation/ast-transformation-modules/add-cursor-field-to-entities";
+import { AddPaginationArgumentsToFieldsTransformer } from './ast-transformation-modules/add-pagination-arguments-to-fields';
 
 const transformers = [
     AddScalarTypesTransformer,
@@ -20,6 +21,7 @@ const transformers = [
     AddRootQueryTypeTransformer,
     AddFilterArgumentsToFieldsTransformer,
     AddOrderbyArgumentsToFieldsTransformer,
+    AddPaginationArgumentsToFieldsTransformer,
     AddCursorFieldToEntitiesTransformer
 ];
 

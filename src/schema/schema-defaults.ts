@@ -35,5 +35,7 @@ export const ARGUMENT_NOT = 'NOT';
 
 export const FILTER_ARG = 'filter';
 export const ORDER_BY_ARG = 'orderBy';
+export const FIRST_ARG = 'first';
+export const AFTER_ARG = 'after';
 
 export const CURSOR_FIELD = '_cursor';
