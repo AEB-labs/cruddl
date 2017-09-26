@@ -4,6 +4,7 @@ import {
     LiteralQueryNode, QueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator
 } from './definition';
 import { isArray } from 'util';
+import { ARGUMENT_AND, ARGUMENT_OR } from '../schema/schema-defaults';
 
 export function createFilterNode(filterArg: any, objectType: GraphQLObjectType, contextNode: QueryNode = new ContextQueryNode()): QueryNode {
     if (!filterArg || !Object.keys(filterArg).length) {
@@ -24,14 +25,14 @@ export function createFilterNode(filterArg: any, objectType: GraphQLObjectType, 
 function getFilterClauseNode(key: string, value: any, contextNode: QueryNode, objectType: GraphQLObjectType): QueryNode {
     // special nodes
     switch (key) {
-        case 'AND':
+        case ARGUMENT_AND:
             if (!isArray(value) || !value.length) {
                 return new ConstBoolQueryNode(true);
             }
             return value
                 .map(itemValue => createFilterNode(itemValue, objectType, contextNode))
                 .reduce((prev, current) => new BinaryOperationQueryNode(prev, BinaryOperator.AND, current));
-        case 'OR':
+        case ARGUMENT_OR:
             if (!isArray(value)) {
                 return new ConstBoolQueryNode(true); // regard as omitted
             }
@@ -62,6 +63,7 @@ function getFilterClauseNode(key: string, value: any, contextNode: QueryNode, ob
     }
 
     const variations: { [suffix: string]: (fieldNode: QueryNode, valueNode: QueryNode) => QueryNode } = {
+        // identifier cross reference: graphql/names.ts
         // not's before the normal fields because they need to be matched first
         '_not': (fieldNode, valueNode) => new BinaryOperationQueryNode(fieldNode, BinaryOperator.UNEQUAL, valueNode),
         '_lt': (fieldNode, valueNode) => new BinaryOperationQueryNode(fieldNode, BinaryOperator.LESS_THAN, valueNode),

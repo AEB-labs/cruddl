@@ -7,6 +7,12 @@ import {
 } from './definition';
 import { createCursorQueryNode, createOrderSpecification, createPaginationFilterNode } from './pagination-and-sorting';
 import { createFilterNode } from './filtering';
+import {
+    AFTER_ARG,
+    ALL_ENTITIES_FIELD_PREFIX, CREATE_ENTITY_FIELD_PREFIX, CREATE_INPUT_ARG, CURSOR_FIELD, FILTER_ARG, FIRST_ARG,
+    MUTATION_TYPE, ORDER_BY_ARG,
+    QUERY_TYPE
+} from '../schema/schema-defaults';
 
 /**
  * Creates a QueryTree that is used to instruct the DataBase how to perform a GraphQL query
@@ -34,12 +40,12 @@ function createQueryNodeForField(fieldRequest: FieldRequest, contextNode: QueryN
         return createEntitiesQueryNode(fieldRequest, fieldRequestStack);
     }
     if (isMutationType(fieldRequest.parentType)) {
-        if (fieldRequest.fieldName.startsWith('create')) {
+        if (fieldRequest.fieldName.startsWith(CREATE_ENTITY_FIELD_PREFIX)) {
             return createCreateEntityQueryNode(fieldRequest, fieldRequestStack);
         }
     }
     if (isEntityType(fieldRequest.parentType)) {
-        if (fieldRequest.fieldName == '_cursor') {
+        if (fieldRequest.fieldName == CURSOR_FIELD) {
             return createCursorQueryNode(fieldRequestStack[fieldRequestStack.length - 2], new ContextQueryNode());
         }
 
@@ -60,12 +66,12 @@ function createQueryNodeForField(fieldRequest: FieldRequest, contextNode: QueryN
 
 function createListQueryNode(fieldRequest: FieldRequest, listNode: QueryNode, fieldRequestStack: FieldRequest[]): QueryNode {
     const objectType = getNamedType(fieldRequest.field.type) as GraphQLObjectType;
-    const orderBy = createOrderSpecification(fieldRequest.args.orderBy, objectType, fieldRequest);
-    const basicFilterNode = createFilterNode(fieldRequest.args.filter, objectType);
-    const paginationFilterNode = createPaginationFilterNode(fieldRequest.args.after, orderBy);
+    const orderBy = createOrderSpecification(fieldRequest.args[ORDER_BY_ARG], objectType, fieldRequest);
+    const basicFilterNode = createFilterNode(fieldRequest.args[FILTER_ARG], objectType);
+    const paginationFilterNode = createPaginationFilterNode(fieldRequest.args[AFTER_ARG], orderBy);
     const filterNode = new BinaryOperationQueryNode(basicFilterNode, BinaryOperator.AND, paginationFilterNode);
     const innerNode = createObjectNode(fieldRequest.selectionSet, new ContextQueryNode(), fieldRequestStack);
-    const maxCount = fieldRequest.args.first;
+    const maxCount = fieldRequest.args[FIRST_ARG];
     return new ListQueryNode({listNode, innerNode, filterNode, orderBy, maxCount});
 }
 
@@ -92,7 +98,7 @@ function createCreateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestSta
     if (!entityType || !(entityType instanceof GraphQLObjectType)) {
         throw new Error(`Object type ${entityName} not found but needed for field ${fieldRequest.fieldName}`);
     }
-    const input = fieldRequest.args['input'];
+    const input = fieldRequest.args[CREATE_INPUT_ARG];
     const objectNode = new LiteralQueryNode(input);
     const createEntityNode = new CreateEntityQueryNode(entityType, objectNode);
     const resultNode = createObjectNode(fieldRequest.selectionSet, new ContextQueryNode(), fieldRequestStack);
@@ -100,17 +106,17 @@ function createCreateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestSta
 }
 
 function isQueryType(type: GraphQLCompositeType) {
-    return type.name == 'Query';
+    return type.name == QUERY_TYPE;
 }
 
 function isMutationType(type: GraphQLCompositeType) {
-    return type.name == 'Mutation';
+    return type.name == MUTATION_TYPE;
 }
 
 function isEntityType(type: GraphQLCompositeType) {
-    return type.name != 'Query' && type.name != 'Mutation';
+    return !isQueryType(type) && !isMutationType(type);
 }
 
 function isEntitiesQueryField(field: GraphQLField<any, any>) {
-    return field.name.startsWith('all');
+    return field.name.startsWith(ALL_ENTITIES_FIELD_PREFIX);
 }

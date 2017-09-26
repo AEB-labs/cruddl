@@ -8,6 +8,10 @@ import {
 } from './definition';
 import { isArray } from 'util';
 import { isListType } from '../graphql/schema-utils';
+import {
+    FIRST_ARG, ID_FIELD, ORDER_BY_ARG, ORDER_BY_ASC_SUFFIX, ORDER_BY_DESC_SUFFIX
+} from '../schema/schema-defaults';
+import { sortedByAsc, sortedByDesc } from '../graphql/names';
 
 export function createPaginationFilterNode(afterArg: any, orderSpecification: OrderSpecification) {
     if (!afterArg) {
@@ -66,7 +70,7 @@ export function createPaginationFilterNode(afterArg: any, orderSpecification: Or
 export function createOrderSpecification(orderByArg: any, objectType: GraphQLObjectType, listFieldRequest: FieldRequest) {
     const clauseNames = getOrderByClauseNames(orderByArg, objectType, listFieldRequest);
     const clauses = clauseNames.map(name => {
-        let dir = name.endsWith('_DESC') ? OrderDirection.DESCENDING : OrderDirection.ASCENDING;
+        let dir = name.endsWith(ORDER_BY_DESC_SUFFIX) ? OrderDirection.DESCENDING : OrderDirection.ASCENDING;
         const fieldName = getFieldFromOrderByClause(name);
         const fieldQuery = createScalarFieldValueNode(objectType, fieldName);
         return new OrderClause(fieldQuery, dir);
@@ -86,7 +90,7 @@ export function createCursorQueryNode(listFieldRequest: FieldRequest, itemNode: 
     }
 
     const objectType = getNamedType(listFieldRequest.field.type) as GraphQLObjectType;
-    const clauses = getOrderByClauseNames(listFieldRequest.args['orderBy'], objectType, listFieldRequest);
+    const clauses = getOrderByClauseNames(listFieldRequest.args[ORDER_BY_ARG], objectType, listFieldRequest);
     const fieldNamess = clauses.map(clause => getFieldFromOrderByClause(clause)).sort();
     const objectNode = new ObjectQueryNode(fieldNamess.map( fieldName =>
         new PropertySpecification(fieldName, createScalarFieldValueNode(objectType, fieldName))));
@@ -95,11 +99,11 @@ export function createCursorQueryNode(listFieldRequest: FieldRequest, itemNode: 
 
 
 function getFieldFromOrderByClause(clause: string): string {
-    if (clause.endsWith('_ASC')) {
-        return clause.substr(0, clause.length - '_ASC'.length);
+    if (clause.endsWith(ORDER_BY_ASC_SUFFIX)) {
+        return clause.substr(0, clause.length - ORDER_BY_ASC_SUFFIX.length);
     }
-    if (clause.endsWith('_DESC')) {
-        return clause.substr(0, clause.length - '_DESC'.length);
+    if (clause.endsWith(ORDER_BY_DESC_SUFFIX)) {
+        return clause.substr(0, clause.length - ORDER_BY_DESC_SUFFIX.length);
     }
     return clause;
 }
@@ -109,10 +113,10 @@ function getOrderByClauseNames(orderBy: any, objectType: GraphQLObjectType, list
 
     // if pagination is enabled on a list of entities, make sure we filter after a unique key
     // TODO figure a way to do proper pagination on a simple list of embedded objects
-    if ('first' in listFieldRequest.args && 'id' in objectType.getFields()) {
-        const includesID = clauseNames.some(name => name == 'id_ASC' || name == 'id_DESC');
+    if (FIRST_ARG in listFieldRequest.args && ID_FIELD in objectType.getFields()) {
+        const includesID = clauseNames.some(name => name == sortedByAsc(ID_FIELD) || name == sortedByDesc(ID_FIELD));
         if (!includesID) {
-            return [...orderBy, 'id_ASC'];
+            return [...orderBy, sortedByAsc(ID_FIELD)];
         }
         return clauseNames;
     }

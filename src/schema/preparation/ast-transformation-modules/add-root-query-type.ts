@@ -7,7 +7,7 @@ import {
 } from "graphql/language/kinds";
 import {QueryNode} from "../../../query/definition";
 import {flatMap} from "../../../utils/utils";
-import {ENTITY_ID, FILTER_ARG} from "../../schema-defaults";
+import { ENTITY_ID, FILTER_ARG, QUERY_TYPE } from '../../schema-defaults';
 import {allEntitiesQueryBy, getFilterTypeName} from "../../../graphql/names";
 
 export class AddRootQueryTypeTransformer implements ASTTransformer {
@@ -19,7 +19,7 @@ export class AddRootQueryTypeTransformer implements ASTTransformer {
     protected buildQueryFieldDefinition(ast: DocumentNode): ObjectTypeDefinitionNode {
         return {
             kind: OBJECT_TYPE_DEFINITION,
-            name: buildNameNode('Query'),
+            name: buildNameNode(QUERY_TYPE),
             fields: this.buildQueryTypeEntityFields(getEntityTypes(ast)),
         }
     }

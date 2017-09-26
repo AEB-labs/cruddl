@@ -1,5 +1,6 @@
 import {ObjectTypeDefinitionNode} from "graphql";
 import * as pluralize from "pluralize";
+import { ALL_ENTITIES_FIELD_PREFIX, ORDER_BY_ASC_SUFFIX, ORDER_BY_DESC_SUFFIX } from '../schema/schema-defaults';
 
 
 export function getFilterTypeName(entityDefinition: ObjectTypeDefinitionNode) {
@@ -13,6 +14,9 @@ export function getValueObjectInputTypeName(embeddableDefinition: ObjectTypeDefi
 export function getOrderByEnumTypeName(entityDefinition: ObjectTypeDefinitionNode) {
     return entityDefinition.name.value + 'OrderBy';
 }
+
+
+// identifier cross reference: query/filtering.ts
 
 export function notField(name: string) {
     return name + '_not';
@@ -67,13 +71,13 @@ export function notEndsWithField(name: string) {
 }
 
 export function allEntitiesQueryBy(entityName: string) {
-    return 'all' + pluralize(entityName);
+    return ALL_ENTITIES_FIELD_PREFIX + pluralize(entityName);
 }
 
 export function sortedByAsc(name: string) {
-    return name + '_ASC';
+    return name + ORDER_BY_ASC_SUFFIX;
 }
 
 export function sortedByDesc(name: string) {
-    return name + '_DESC';
+    return name + ORDER_BY_DESC_SUFFIX;
 }
