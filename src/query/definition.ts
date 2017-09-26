@@ -294,7 +294,8 @@ export class ListQueryNode implements QueryNode {
     public readonly maxCount: number|undefined;
 
     describe() {
-        return `${this.listNode.describe()} as list where ${this.filterNode.describe()} order by${this.orderBy.describe()} ${this.maxCount != undefined ? ` (max ${this.maxCount}` : ''} as ${this.innerNode.describe()}`;
+        return `${this.listNode.describe()} as list\n` +
+            indent(`where ${this.filterNode.describe()}\norder by ${this.orderBy.describe()}${this.maxCount != undefined ? `\nlimit by max. ${this.maxCount}` : ''}\nas ${this.innerNode.describe()}`);
     }
 }
 

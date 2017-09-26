@@ -63,9 +63,11 @@ function createQueryNodeForField(fieldRequest: FieldRequest, contextNode: QueryN
 
 function createListQueryNode(fieldRequest: FieldRequest, listNode: QueryNode, fieldRequestStack: FieldRequest[]): QueryNode {
     const objectType = getNamedType(fieldRequest.field.type) as GraphQLObjectType;
-    const filterNode = getFilterNode(fieldRequest.args.filter, objectType);
-    const innerNode = createObjectNode(fieldRequest.selectionSet, new ContextQueryNode(), fieldRequestStack);
     const orderBy = createOrderSpecification(fieldRequest.args.orderBy, objectType, fieldRequest);
+    const basicFilterNode = getFilterNode(fieldRequest.args.filter, objectType);
+    const paginationFilterNode = createPaginationFilterNode(fieldRequest.args.after, orderBy);
+    const filterNode = new BinaryOperationQueryNode(basicFilterNode, BinaryOperator.AND, paginationFilterNode);
+    const innerNode = createObjectNode(fieldRequest.selectionSet, new ContextQueryNode(), fieldRequestStack);
     const maxCount = fieldRequest.args.first;
     return new ListQueryNode({listNode, innerNode, filterNode, orderBy, maxCount});
 }
@@ -236,6 +238,60 @@ function getFieldFromOrderByClause(clause: string): string {
         return clause.substr(0, clause.length - '_DESC'.length);
     }
     return clause;
+}
+
+function createPaginationFilterNode(afterArg: any, orderSpecification: OrderSpecification) {
+    if (!afterArg) {
+        return new ConstBoolQueryNode(true);
+    }
+
+    let cursorObj: any;
+    try {
+        cursorObj = JSON.parse(afterArg);
+        if (typeof cursorObj != 'object') {
+            throw new Error('The JSON value provided as "after" argument is not an object');
+        }
+    } catch (e) {
+        throw new Error(`Invalid cursor ${JSON.stringify(afterArg)} supplied to "after": ${e.message}`);
+    }
+
+    // Make sure we only select items after the cursor
+    // Thus, we need to implement the 'comparator' based on the order-by-specification
+    // Haskell-like pseudo-code because it's easier ;-)
+    // orderByToFilter :: Clause[] -> FilterNode:
+    // orderByToFilter([{field, ASC}, ...tail]) =
+    //   (context[clause.field] > cursor[clause.field] || (context[clause.field] == cursor[clause.field] && orderByToFilter(tail))
+    // orderByToFilter([{field, DESC}, ...tail]) =
+    //   (context[clause.field] < cursor[clause.field] || (context[clause.field] == cursor[clause.field] && orderByToFilter(tail))
+    // orderByToFilter([]) = FALSE # arbitrary; if order is absolute, this case should never occur
+    function orderByToFilter(clauses: OrderClause[]): QueryNode {
+        if (clauses.length == 0) {
+            return new ConstBoolQueryNode(false);
+        }
+
+        const clause = clauses[0];
+        let cursorValue;
+        if (clause.valueNode instanceof FieldQueryNode) {
+            cursorValue = cursorObj[clause.valueNode.field.name];
+        } else if (clause.valueNode instanceof LiteralQueryNode) {
+            cursorValue = clause.valueNode.value;
+        } else {
+            throw new Error('Pagination is not supported in combination with order-by clauses of type ' + (<any>clause.valueNode).constructor.name);
+        }
+
+        const operator = clause.direction == OrderDirection.ASCENDING ? BinaryOperator.GREATER_THAN : BinaryOperator.LESS_THAN;
+        return new BinaryOperationQueryNode(
+            new BinaryOperationQueryNode(clause.valueNode, operator, new LiteralQueryNode(cursorValue)),
+            BinaryOperator.OR,
+            new BinaryOperationQueryNode(
+                new BinaryOperationQueryNode(clause.valueNode, BinaryOperator.EQUAL, new LiteralQueryNode(cursorValue)),
+                BinaryOperator.AND,
+                orderByToFilter(clauses.slice(1))
+            )
+        );
+    }
+
+    return orderByToFilter(orderSpecification.clauses);
 }
 
 function createCreateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[]): QueryNode {
