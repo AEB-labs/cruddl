@@ -70,6 +70,15 @@ export class LiteralQueryNode {
 }
 
 /**
+ * A node that evaluates either to null
+ */
+export class NullQueryNode {
+    public describe() {
+        return `null`;
+    }
+}
+
+/**
  * A node that evaluates either to true or to false
  */
 export class ConstBoolQueryNode {
@@ -177,6 +186,8 @@ export class UnaryOperationQueryNode implements QueryNode {
         switch (this.operator) {
             case UnaryOperator.NOT:
                 return `!(${this.valueNode.describe()})`;
+            case UnaryOperator.JSON_STRINGIFY:
+                return `JSON_STRINGIFY(${this.valueNode.describe()})`;
             default:
                 return '(unknown operator)';
         }
@@ -187,7 +198,8 @@ export class UnaryOperationQueryNode implements QueryNode {
  * The operator of a UnaryOperationQueryNode
  */
 export enum UnaryOperator {
-    NOT
+    NOT,
+    JSON_STRINGIFY
 }
 
 /**

@@ -68,6 +68,10 @@ const processors: { [name: string]: NodeProcessor<any> } = {
         return node.value ? aql`true` : aql`false`;
     },
 
+    NullQueryNode(): AQLFragment {
+        return aql`null`;
+    },
+
     Field(node: FieldQueryNode, context): AQLFragment {
         const object = processNode(node.objectNode, context);
         let identifier = node.field.name;
@@ -100,7 +104,7 @@ const processors: { [name: string]: NodeProcessor<any> } = {
             aql`FOR ${itemVar}`,
             aql`IN ${list}`,
             aql`FILTER ${processNode(node.filterNode, itemVar)}`,
-            generateSortAQL(node.orderBy, context),
+            generateSortAQL(node.orderBy, itemVar),
             node.maxCount != undefined ? aql`LIMIT ${node.maxCount}` : aql``,
             aql`RETURN ${processNode(node.innerNode, itemVar)}`
         );
@@ -130,6 +134,8 @@ const processors: { [name: string]: NodeProcessor<any> } = {
         switch (node.operator) {
             case UnaryOperator.NOT:
                 return aql`!(${processNode(node.valueNode, context)})`;
+            case UnaryOperator.JSON_STRINGIFY:
+                return aql`JSON_STRINGIFY(${processNode(node.valueNode, context)})`
             default:
                 throw new Error(`Unsupported unary operator: ${node.operator}`);
         }

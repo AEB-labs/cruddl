@@ -1,4 +1,4 @@
-import { GraphQLObjectType, GraphQLSchema, OperationTypeNode } from 'graphql';
+import { GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLSchema, GraphQLType, OperationTypeNode } from 'graphql';
 
 export function getOperationRootType(schema: GraphQLSchema, operation: OperationTypeNode): GraphQLObjectType|undefined {
     switch (operation) {
@@ -11,4 +11,11 @@ export function getOperationRootType(schema: GraphQLSchema, operation: Operation
         default:
             return undefined;
     }
+}
+
+export function isListType(type: GraphQLType): boolean {
+    if (type instanceof GraphQLNonNull) {
+        return isListType(type.ofType);
+    }
+    return type instanceof GraphQLList;
 }
