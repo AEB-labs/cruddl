@@ -8,6 +8,7 @@ import {AddRootSchemaTransformer} from "./ast-transformation-modules/add-root-sc
 import {AddFilterArgumentsToFieldsTransformer} from "./ast-transformation-modules/add-filter-arguments-to-fields";
 import {AddOrderbyInputEnumsTransformer} from "./ast-transformation-modules/add-orderby-enums";
 import {AddOrderbyArgumentsToFieldsTransformer} from "./ast-transformation-modules/add-orderby-arguments-to-fields";
+import {AddCursorFieldToEntitiesTransformer} from "../../../spec/schema/preparation/ast-transformation-modules/add-cursor-field-to-entities";
 
 const transformers = [
     AddScalarTypesTransformer,
@@ -18,7 +19,8 @@ const transformers = [
     AddOrderbyInputEnumsTransformer,
     AddRootQueryTypeTransformer,
     AddFilterArgumentsToFieldsTransformer,
-    AddOrderbyArgumentsToFieldsTransformer
+    AddOrderbyArgumentsToFieldsTransformer,
+    AddCursorFieldToEntitiesTransformer
 ];
 
 export function prepareModelAST(ast: DocumentNode) {
