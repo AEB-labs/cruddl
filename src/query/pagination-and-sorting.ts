@@ -12,6 +12,7 @@ import {
     FIRST_ARG, ID_FIELD, ORDER_BY_ARG, ORDER_BY_ASC_SUFFIX, ORDER_BY_DESC_SUFFIX
 } from '../schema/schema-defaults';
 import { sortedByAsc, sortedByDesc } from '../graphql/names';
+import { createScalarFieldValueNode } from './common';
 
 export function createPaginationFilterNode(afterArg: any, orderSpecification: OrderSpecification) {
     if (!afterArg) {
@@ -116,17 +117,10 @@ function getOrderByClauseNames(orderBy: any, objectType: GraphQLObjectType, list
     if (FIRST_ARG in listFieldRequest.args && ID_FIELD in objectType.getFields()) {
         const includesID = clauseNames.some(name => name == sortedByAsc(ID_FIELD) || name == sortedByDesc(ID_FIELD));
         if (!includesID) {
-            return [...orderBy, sortedByAsc(ID_FIELD)];
+            return [...clauseNames, sortedByAsc(ID_FIELD)];
         }
         return clauseNames;
     }
     return clauseNames;
 }
 
-function createScalarFieldValueNode(objectType: GraphQLObjectType, fieldName: string, contextNode: QueryNode = new ContextQueryNode()): QueryNode {
-    const field = objectType.getFields()[fieldName];
-    if (!field || !(field.type instanceof GraphQLScalarType)) {
-        throw new Error(`Field ${fieldName} is not a field of ${objectType.name} with scalar type`);
-    }
-    return new FieldQueryNode(contextNode, field);
-}

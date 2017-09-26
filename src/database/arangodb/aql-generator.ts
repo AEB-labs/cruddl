@@ -3,7 +3,8 @@ import {
     ContextAssignmentQueryNode,
     ContextQueryNode, CreateEntityQueryNode,
     EntitiesQueryNode,
-    FieldQueryNode, ListQueryNode, LiteralQueryNode, ObjectQueryNode, OrderDirection, OrderSpecification, QueryNode,
+    FieldQueryNode, FirstOfListQueryNode, ListQueryNode, LiteralQueryNode, ObjectQueryNode, OrderDirection,
+    OrderSpecification, QueryNode,
     TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator
 } from '../../query/definition';
 import { aql, AQLFragment } from './aql';
@@ -108,6 +109,10 @@ const processors: { [name: string]: NodeProcessor<any> } = {
             node.maxCount != undefined ? aql`LIMIT ${node.maxCount}` : aql``,
             aql`RETURN ${processNode(node.innerNode, itemVar)}`
         );
+    },
+
+    FirstOfList(node: FirstOfListQueryNode, context): AQLFragment {
+        return aql`FIRST(${processNode(node.listNode, context)})`;
     },
 
     BinaryOperation(node: BinaryOperationQueryNode, context): AQLFragment {

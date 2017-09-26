@@ -153,7 +153,7 @@ export class TypeCheckQueryNode implements QueryNode {
     }
 
     describe(): string {
-        return `${this.valueNode.describe()} is of type ${this.describeType(this.type)}`;
+        return `(${this.valueNode.describe()} is of type ${this.describeType(this.type)})`;
     }
 }
 
@@ -211,7 +211,7 @@ export class BinaryOperationQueryNode implements QueryNode {
     }
 
     describe() {
-        return `${this.lhs.describe()} ${this.describeOperator(this.operator)} ${this.rhs.describe()}`;
+        return `(${this.lhs.describe()} ${this.describeOperator(this.operator)} ${this.rhs.describe()})`;
     }
 
     private describeOperator(op: BinaryOperator) {
@@ -296,6 +296,16 @@ export class ListQueryNode implements QueryNode {
     describe() {
         return `${this.listNode.describe()} as list\n` +
             indent(`where ${this.filterNode.describe()}\norder by ${this.orderBy.describe()}${this.maxCount != undefined ? `\nlimit by max. ${this.maxCount}` : ''}\nas ${this.innerNode.describe()}`);
+    }
+}
+/**
+ * A node that evaluates to the first item of a list
+ */
+export class FirstOfListQueryNode implements QueryNode {
+    constructor(public readonly listNode: QueryNode) { }
+
+    describe() {
+        return `first of ${this.listNode.describe()}`;
     }
 }
 

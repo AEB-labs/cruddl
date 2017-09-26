@@ -1,8 +1,11 @@
 import { FieldRequest, FieldSelection } from '../graphql/query-distiller';
 import { getNamedType, GraphQLField, GraphQLList, GraphQLObjectType } from 'graphql';
 import {
-    BasicType, BinaryOperationQueryNode, BinaryOperator, ConditionalQueryNode, ContextQueryNode, EntitiesQueryNode,
-    FieldQueryNode, ListQueryNode, LiteralQueryNode, ObjectQueryNode, PropertySpecification, QueryNode,
+    BasicType, BinaryOperationQueryNode, BinaryOperator, ConditionalQueryNode, ContextAssignmentQueryNode,
+    ContextQueryNode, EntitiesQueryNode,
+    FieldQueryNode, FirstOfListQueryNode, ListQueryNode, LiteralQueryNode, NullQueryNode, ObjectQueryNode,
+    PropertySpecification,
+    QueryNode,
     TypeCheckQueryNode
 } from './definition';
 import { createCursorQueryNode, createOrderSpecification, createPaginationFilterNode } from './pagination-and-sorting';
@@ -10,6 +13,9 @@ import { createFilterNode } from './filtering';
 import {
     AFTER_ARG, ALL_ENTITIES_FIELD_PREFIX, CURSOR_FIELD, FILTER_ARG, FIRST_ARG, ORDER_BY_ARG
 } from '../schema/schema-defaults';
+import { objectEntries } from '../utils/utils';
+import { createScalarFieldValueNode } from './common';
+import { isListType } from '../graphql/schema-utils';
 
 /**
  * Creates a QueryNode for a field of the root query type
@@ -17,17 +23,34 @@ import {
  */
 export function createQueryRootNode(fieldRequest: FieldRequest): QueryNode {
     if (isEntitiesQueryField(fieldRequest.field)) {
-        return createEntitiesQueryNode(fieldRequest, [ fieldRequest ]);
+        return createAllEntitiesFieldNode(fieldRequest, [ fieldRequest ]);
+    }
+    if (fieldRequest.field.type instanceof GraphQLObjectType) {
+        return createSingleEntityFieldNode(fieldRequest, [ fieldRequest ]);
     }
 
     console.log(`unknown field: ${fieldRequest.fieldName}`);
     return new LiteralQueryNode(null);
 }
 
-function createEntitiesQueryNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[]): QueryNode {
+function createAllEntitiesFieldNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[]): QueryNode {
     const objectType = getNamedType(fieldRequest.field.type) as GraphQLObjectType;
     const listNode = new EntitiesQueryNode(objectType);
     return createListQueryNode(fieldRequest, listNode, fieldRequestStack);
+}
+
+function createSingleEntityFieldNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[]): QueryNode {
+    const objectType = getNamedType(fieldRequest.field.type) as GraphQLObjectType;
+    const filterClauses = objectEntries(fieldRequest.args).map(([fieldName, value]) =>
+        new BinaryOperationQueryNode(createScalarFieldValueNode(objectType, fieldName), BinaryOperator.EQUAL, new LiteralQueryNode(value)));
+    if (filterClauses.length != 1) {
+        throw new Error(`Must specify exactly one argument to ${fieldRequest.field.type.toString()}.${fieldRequest.field.name}`);
+    }
+    const filterNode = filterClauses[0];
+    const innerNode = createConditionalObjectNode(fieldRequest.selectionSet, new ContextQueryNode(), fieldRequestStack);
+    const listNode = new EntitiesQueryNode(objectType);
+    const filteredListNode = new ListQueryNode({listNode, filterNode, innerNode});
+    return new FirstOfListQueryNode(filteredListNode);
 }
 
 /**
@@ -58,7 +81,7 @@ function createEntityFieldQueryNode(fieldRequest: FieldRequest, contextNode: Que
     const type = fieldRequest.field.type;
     const rawType = getNamedType(type);
     const fieldNode = new FieldQueryNode(contextNode, fieldRequest.field);
-    if (type instanceof GraphQLList && rawType instanceof GraphQLObjectType) {
+    if (isListType(type) && rawType instanceof GraphQLObjectType) {
         return createConditionalListQueryNode(fieldRequest, fieldNode, fieldRequestStack);
     }
     if (rawType instanceof GraphQLObjectType) {
