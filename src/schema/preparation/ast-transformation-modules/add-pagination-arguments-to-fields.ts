@@ -29,7 +29,6 @@ export class AddPaginationArgumentsToFieldsTransformer implements ASTTransformer
                 const resolvedType = getNamedTypeDefinitionAST(ast, getTypeNameIgnoringNonNullAndList(field.type));
                 // if this field is of an object type (only object types can have a _cursor field, so pagination only makes sense for them)
                 if (resolvedType.kind === OBJECT_TYPE_DEFINITION) {
-                    console.log(`adding first and after to ${objectType.name.value}.${field.name.value} of type ${GraphQLInt.name}`);
                     field.arguments.push({
                         kind: INPUT_VALUE_DEFINITION,
                         name: buildNameNode(FIRST_ARG),

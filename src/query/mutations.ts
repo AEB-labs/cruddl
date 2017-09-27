@@ -1,7 +1,7 @@
 import { FieldRequest } from '../graphql/query-distiller';
 import { GraphQLObjectType } from 'graphql';
 import {
-    ContextAssignmentQueryNode, ContextQueryNode, CreateEntityQueryNode, LiteralQueryNode, QueryNode
+    ContextAssignmentQueryNode, ContextQueryNode, CreateEntityQueryNode, LiteralQueryNode, NullQueryNode, QueryNode
 } from './definition';
 import { CREATE_ENTITY_FIELD_PREFIX, CREATE_INPUT_ARG } from '../schema/schema-defaults';
 import { createEntityObjectNode } from './queries';
@@ -16,7 +16,7 @@ export function createMutationRootNode(fieldRequest: FieldRequest): QueryNode {
     }
 
     console.log(`unknown field: ${fieldRequest.fieldName}`);
-    return new LiteralQueryNode(null);
+    return new NullQueryNode();
 }
 
 function createCreateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[]): QueryNode {

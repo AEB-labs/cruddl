@@ -3,9 +3,9 @@ import {
     ContextAssignmentQueryNode,
     ContextQueryNode, CreateEntityQueryNode,
     EntitiesQueryNode,
-    FieldQueryNode, FirstOfListQueryNode, ListQueryNode, LiteralQueryNode, ObjectQueryNode, OrderDirection,
+    FieldQueryNode, FirstOfListQueryNode, TransformListQueryNode, LiteralQueryNode, ObjectQueryNode, OrderDirection,
     OrderSpecification, QueryNode,
-    TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator
+    TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, ListQueryNode
 } from '../../query/definition';
 import { aql, AQLFragment } from './aql';
 import { GraphQLNamedType } from 'graphql';
@@ -36,14 +36,43 @@ namespace aqlExt {
     }
 }
 
-const processors: { [name: string]: NodeProcessor<any> } = {
+const processors : { [name: string]: NodeProcessor<any> } = {
+    Literal(node: LiteralQueryNode): AQLFragment {
+        return aql`${node.value}`;
+    },
+
+    Null(): AQLFragment {
+        return aql`null`;
+    },
+
+    ConstBool(node: ConstBoolQueryNode): AQLFragment {
+        return node.value ? aql`true` : aql`false`;
+    },
+
     Object(node: ObjectQueryNode, context): AQLFragment {
+        if (!node.properties.length) {
+            return aql`{}`;
+        }
+
         const properties = node.properties.map(p =>
             aql`${aqlExt.safeJSONKey(p.propertyName)}: ${processNode(p.valueNode, context)}`);
         return aql.lines(
             aql`{`,
             aql.indent(aql.join(properties, aql`,\n`)),
             aql`}`
+        );
+    },
+
+    List(node: ListQueryNode, context): AQLFragment {
+        const test = aql`"${aql.string('"test')}`
+        if (!node.itemNodes.length) {
+            return aql`[]`;
+        }
+
+        return aql.lines(
+            aql`[`,
+            aql.indent(aql.join(node.itemNodes.map(itemNode => processNode(itemNode, context)), aql`,\n`)),
+            aql`]`
         );
     },
 
@@ -61,18 +90,6 @@ const processors: { [name: string]: NodeProcessor<any> } = {
         );
     },
 
-    Literal(node: LiteralQueryNode): AQLFragment {
-        return aql`${node.value}`;
-    },
-
-    ConstBool(node: ConstBoolQueryNode): AQLFragment {
-        return node.value ? aql`true` : aql`false`;
-    },
-
-    NullQueryNode(): AQLFragment {
-        return aql`null`;
-    },
-
     Field(node: FieldQueryNode, context): AQLFragment {
         const object = processNode(node.objectNode, context);
         let identifier = node.field.name;
@@ -87,18 +104,7 @@ const processors: { [name: string]: NodeProcessor<any> } = {
         return aql`${object}[${identifier}]`;
     },
 
-    Entities(node: EntitiesQueryNode): AQLFragment {
-        return getCollectionForType(node.objectType);
-    },
-
-    CreateEntity(node: CreateEntityQueryNode, context): AQLFragment {
-        return aqlExt.parenthesizeObject(
-            aql`INSERT ${processNode(node.objectNode, context)} IN ${getCollectionForType(node.objectType)}`,
-            aql`RETURN NEW`
-        );
-    },
-
-    List(node: ListQueryNode, context): AQLFragment {
+    TransformList(node: TransformListQueryNode, context): AQLFragment {
         const list = processNode(node.listNode, context);
         const itemVar = aql.variable();
         return aqlExt.parenthesizeList(
@@ -123,6 +129,7 @@ const processors: { [name: string]: NodeProcessor<any> } = {
             return aql`(${lhs} ${op} ${rhs})`;
         }
 
+        // TODO maybe use LIKE for fulltext indices
         switch (node.operator) {
             case BinaryOperator.CONTAINS:
                 return aql`CONTAINS(${lhs}, ${rhs})`;
@@ -166,7 +173,18 @@ const processors: { [name: string]: NodeProcessor<any> } = {
             case BasicType.NULL:
                 return aql`IS_NULL(${value})`;
         }
-    }
+    },
+
+    Entities(node: EntitiesQueryNode): AQLFragment {
+        return getCollectionForType(node.objectType);
+    },
+
+    CreateEntity(node: CreateEntityQueryNode, context): AQLFragment {
+        return aqlExt.parenthesizeObject(
+            aql`INSERT ${processNode(node.objectNode, context)} IN ${getCollectionForType(node.objectType)}`,
+            aql`RETURN NEW`
+        );
+    },
 };
 
 function getAQLOperator(op: BinaryOperator): AQLFragment|undefined {

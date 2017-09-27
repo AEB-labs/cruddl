@@ -100,7 +100,7 @@ export class FieldQueryNode implements QueryNode {
     }
 
     public describe() {
-        return `field ${this.field.name.blue} of ${this.objectNode.describe()}`;
+        return `${this.objectNode.describe()}.${this.field.name.blue}`;
     }
 }
 
@@ -113,6 +113,9 @@ export class ObjectQueryNode implements QueryNode {
     }
 
     describe() {
+        if (!this.properties.length) {
+            return `{}`;
+        }
         return `{\n` + indent(this.properties.map(p => p.describe()).join('\n')) + `\n}`;
     }
 }
@@ -128,6 +131,22 @@ export class PropertySpecification implements QueryNode {
 
     describe(): string {
         return `${JSON.stringify(this.propertyName).green}: ${this.valueNode.describe()}`;
+    }
+}
+
+/**
+ * A node that evaluates to a list with query nodes as list entries
+ */
+export class ListQueryNode implements QueryNode {
+    constructor(public readonly itemNodes: QueryNode[]) {
+
+    }
+
+    describe(): string {
+        if (!this.itemNodes.length) {
+            return `[]`;
+        }
+        return `[\n` + indent(this.itemNodes.map(item => item.describe()).join(',\n')) + `\n]`;
     }
 }
 
@@ -170,7 +189,7 @@ export class ConditionalQueryNode implements QueryNode{
     }
 
     describe() {
-        return `${this.condition.describe()} ? ${this.expr1.describe()} : ${this.expr2.describe()}`;
+        return `(if ${this.condition.describe()} then ${this.expr1.describe()} else ${this.expr2.describe()} endif)`;
     }
 }
 
@@ -276,13 +295,13 @@ export class EntitiesQueryNode implements QueryNode {
 }
 
 /**
- * A node to to control how to retrieve an embedded list
+ * A node to filter, order, limit and map a list
  */
-export class ListQueryNode implements QueryNode {
+export class TransformListQueryNode implements QueryNode {
     constructor(params: { listNode: QueryNode, innerNode?: QueryNode, filterNode?: QueryNode, orderBy?: OrderSpecification, maxCount?: number }) {
         this.listNode = params.listNode;
         this.innerNode = params.innerNode || new ContextQueryNode();
-        this.filterNode = params.filterNode || new LiteralQueryNode(true);
+        this.filterNode = params.filterNode || new ConstBoolQueryNode(true);
         this.orderBy = params.orderBy || new OrderSpecification([]);
         this.maxCount = params.maxCount;
     }
@@ -295,7 +314,7 @@ export class ListQueryNode implements QueryNode {
 
     describe() {
         return `${this.listNode.describe()} as list\n` +
-            indent(`where ${this.filterNode.describe()}\norder by ${this.orderBy.describe()}${this.maxCount != undefined ? `\nlimit by max. ${this.maxCount}` : ''}\nas ${this.innerNode.describe()}`);
+            indent(`where ${this.filterNode.describe()}\norder by ${this.orderBy.describe()}${this.maxCount != undefined ? `\nlimit ${this.maxCount}` : ''}\nas ${this.innerNode.describe()}`);
     }
 }
 /**

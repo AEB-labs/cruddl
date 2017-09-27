@@ -1,5 +1,5 @@
 import { DistilledOperation, FieldRequest } from '../graphql/query-distiller';
-import { LiteralQueryNode, ObjectQueryNode, PropertySpecification, QueryNode } from './definition';
+import { LiteralQueryNode, NullQueryNode, ObjectQueryNode, PropertySpecification, QueryNode } from './definition';
 import { MUTATION_TYPE, QUERY_TYPE } from '../schema/schema-defaults';
 import { createQueryRootNode } from './queries';
 import { createMutationRootNode } from './mutations';
@@ -22,6 +22,6 @@ function createQueryNodeForField(fieldRequest: FieldRequest): QueryNode {
             return createMutationRootNode(fieldRequest);
         default:
             console.log(`unknown root field: ${fieldRequest.fieldName}`);
-            return new LiteralQueryNode(null);
+            return new NullQueryNode();
     }
 }

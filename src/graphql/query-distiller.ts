@@ -25,20 +25,6 @@ export class FieldRequest {
         return this.field.name;
     }
 
-    /**
-     * Finds a fieldRequest in the selection set that matches the given name
-     *
-     * This is here to ease transition. Finally, it should no longer be used because it disregards aliases.
-     * @param fieldName
-     * @returns the FieldRequest for the given field, or null if it was not requested
-     */
-    public getChildField(fieldName: string) {
-        return this.selectionSet
-            .filter(selection => selection.fieldRequest.fieldName == fieldName)
-            .map(selection => selection.fieldRequest)
-            [0] || null;
-    }
-
     public describe(): string {
         const selectionItemsDesc = this.selectionSet
             .map(selection => `${JSON.stringify(selection.propertyName).green}: ${selection.fieldRequest.describe()}`)

@@ -3,10 +3,10 @@ import { getNamedType, GraphQLField, GraphQLList, GraphQLObjectType } from 'grap
 import {
     BasicType, BinaryOperationQueryNode, BinaryOperator, ConditionalQueryNode, ContextAssignmentQueryNode,
     ContextQueryNode, EntitiesQueryNode,
-    FieldQueryNode, FirstOfListQueryNode, ListQueryNode, LiteralQueryNode, NullQueryNode, ObjectQueryNode,
+    FieldQueryNode, FirstOfListQueryNode, TransformListQueryNode, LiteralQueryNode, NullQueryNode, ObjectQueryNode,
     PropertySpecification,
     QueryNode,
-    TypeCheckQueryNode
+    TypeCheckQueryNode, ListQueryNode
 } from './definition';
 import { createCursorQueryNode, createOrderSpecification, createPaginationFilterNode } from './pagination-and-sorting';
 import { createFilterNode } from './filtering';
@@ -30,13 +30,13 @@ export function createQueryRootNode(fieldRequest: FieldRequest): QueryNode {
     }
 
     console.log(`unknown field: ${fieldRequest.fieldName}`);
-    return new LiteralQueryNode(null);
+    return new NullQueryNode();
 }
 
 function createAllEntitiesFieldNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[]): QueryNode {
     const objectType = getNamedType(fieldRequest.field.type) as GraphQLObjectType;
     const listNode = new EntitiesQueryNode(objectType);
-    return createListQueryNode(fieldRequest, listNode, fieldRequestStack);
+    return createTransformListQueryNode(fieldRequest, listNode, fieldRequestStack);
 }
 
 function createSingleEntityFieldNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[]): QueryNode {
@@ -49,7 +49,7 @@ function createSingleEntityFieldNode(fieldRequest: FieldRequest, fieldRequestSta
     const filterNode = filterClauses[0];
     const innerNode = createConditionalObjectNode(fieldRequest.selectionSet, new ContextQueryNode(), fieldRequestStack);
     const listNode = new EntitiesQueryNode(objectType);
-    const filteredListNode = new ListQueryNode({listNode, filterNode, innerNode});
+    const filteredListNode = new TransformListQueryNode({listNode, filterNode, innerNode});
     return new FirstOfListQueryNode(filteredListNode);
 }
 
@@ -94,10 +94,10 @@ function createConditionalObjectNode(fieldSelections: FieldSelection[], contextN
     return new ConditionalQueryNode(
         new TypeCheckQueryNode(contextNode, BasicType.OBJECT),
         createEntityObjectNode(fieldSelections, contextNode, fieldRequestStack),
-        new LiteralQueryNode(null));
+        new NullQueryNode());
 }
 
-function createListQueryNode(fieldRequest: FieldRequest, listNode: QueryNode, fieldRequestStack: FieldRequest[]): QueryNode {
+function createTransformListQueryNode(fieldRequest: FieldRequest, listNode: QueryNode, fieldRequestStack: FieldRequest[]): QueryNode {
     const objectType = getNamedType(fieldRequest.field.type) as GraphQLObjectType;
     const orderBy = createOrderSpecification(fieldRequest.args[ORDER_BY_ARG], objectType, fieldRequest);
     const basicFilterNode = createFilterNode(fieldRequest.args[FILTER_ARG], objectType);
@@ -105,7 +105,7 @@ function createListQueryNode(fieldRequest: FieldRequest, listNode: QueryNode, fi
     const filterNode = new BinaryOperationQueryNode(basicFilterNode, BinaryOperator.AND, paginationFilterNode);
     const innerNode = createEntityObjectNode(fieldRequest.selectionSet, new ContextQueryNode(), fieldRequestStack);
     const maxCount = fieldRequest.args[FIRST_ARG];
-    return new ListQueryNode({listNode, innerNode, filterNode, orderBy, maxCount});
+    return new TransformListQueryNode({listNode, innerNode, filterNode, orderBy, maxCount});
 }
 
 function createConditionalListQueryNode(fieldRequest: FieldRequest, listNode: QueryNode, fieldRequestStack: FieldRequest[]): QueryNode {
@@ -113,10 +113,10 @@ function createConditionalListQueryNode(fieldRequest: FieldRequest, listNode: Qu
     const safeList = new ConditionalQueryNode(
         new TypeCheckQueryNode(listNode, BasicType.LIST),
         listNode,
-        new LiteralQueryNode([])
+        new ListQueryNode([])
     );
 
-    return createListQueryNode(fieldRequest, safeList, fieldRequestStack);
+    return createTransformListQueryNode(fieldRequest, safeList, fieldRequestStack);
 }
 
 function isEntitiesQueryField(field: GraphQLField<any, any>) {
