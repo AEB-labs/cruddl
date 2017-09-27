@@ -1,0 +1,72 @@
+schema {
+    mutation: Mutation
+}
+
+type Mutation {
+    createDelivery(input: CreateDeliveryInput!): Delivery
+    updateDelivery(input: UpdateDeliveryInput!): Delivery
+}
+
+input CreateDeliveryInput {
+    deliveryNumber: String
+    items: [CreateItemInput!]
+    consignee: CreateAddressInput
+    handlingUnits: [ID!]
+    # future: createHandlingUnits: [CreateHandlingUnitInput!]
+}
+
+input CreateItemInput {
+    itemNumber: String
+}
+
+input CreateAddressInput {
+    street: String
+}
+
+input Translation {
+    languageIsoCode: String @key
+    translation: String
+}
+
+input UpdateDeliveryInput {
+    id: ID!
+    deliveryNumber: String
+    replaceAllItems: [CreateItemInput!]
+    updateItems: [UpdateItemsInput!]
+
+
+    addItems: [CreateItemInput!]
+    deleteItems: TranslationFilter!
+    replaceSomeItems: [UpdateItemInput!]
+    updateSomeItems: [UpdateItemInput!]
+    updateItems: UpdateItemsInput
+    #updateTranslations
+    replaceAllTranslations: [CreateTranslationInput!]
+}
+
+input UpdateTranslationsInput {
+    filter: TranslationFilter!
+    values: UpdateTranslationInput!
+}
+
+enum UpdateMode {
+    DELETE_MATCHED, DELETE_ONE, UPDATE_ONE, UPDATE_MATCHED, REPLACE_ONE
+}
+
+input UpdateItemsInput {
+    add: [CreateItemInput!]
+    delete: ItemFilter
+    replaceAll: [CreateItemInput!]
+    updateOne:
+    updateMany:
+    replaceOne:
+
+    filter: ItemFilter
+    updateMode: UpdateMode
+    newValues: [CreateItemInput!]
+    values: UpdateItemInput!
+}
+
+input UpdateItemInput {
+    itemNumber: String
+}
