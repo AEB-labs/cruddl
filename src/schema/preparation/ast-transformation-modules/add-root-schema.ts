@@ -22,14 +22,14 @@ export class AddRootSchemaTransformer implements ASTTransformer {
                     },
                     operation: "query"
                 },
-                // {
-                //     kind: OPERATION_TYPE_DEFINITION,
-                //     type: {
-                //         kind: NAMED_TYPE,
-                //         name: buildNameNode('Mutation'),
-                //     },
-                //     operation: "mutation"
-                // }
+                {
+                    kind: OPERATION_TYPE_DEFINITION,
+                    type: {
+                        kind: NAMED_TYPE,
+                        name: buildNameNode('Mutation'),
+                    },
+                    operation: "mutation"
+                }
             ],
             directives: []
         }

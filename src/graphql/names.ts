@@ -3,9 +3,12 @@ import * as pluralize from "pluralize";
 import {
     ALL_ENTITIES_FIELD_PREFIX,
     CHILD_ENTITY_DIRECTIVE,
+    CREATE_ENTITY_FIELD_PREFIX,
+    DELETE_ENTITY_FIELD_PREFIX,
     ORDER_BY_ASC_SUFFIX,
     ORDER_BY_DESC_SUFFIX,
-    ROOT_ENTITY_DIRECTIVE
+    ROOT_ENTITY_DIRECTIVE,
+    UPDATE_ENTITY_FIELD_PREFIX,
 } from '../schema/schema-defaults';
 import {capitalize} from "../utils/utils";
 import {hasObjectTypeDirectiveWithName} from "../schema/schema-utils";
@@ -110,6 +113,18 @@ export function notEndsWithField(name: string) {
 
 export function allEntitiesQueryBy(entityName: string) {
     return ALL_ENTITIES_FIELD_PREFIX + pluralize(entityName);
+}
+
+export function createEntityQuery(entityName: string) {
+    return CREATE_ENTITY_FIELD_PREFIX + entityName;
+}
+
+export function updateEntityQuery(entityName: string) {
+    return UPDATE_ENTITY_FIELD_PREFIX + entityName;
+}
+
+export function deleteEntityQuery(entityName: string) {
+    return DELETE_ENTITY_FIELD_PREFIX + entityName;
 }
 
 export function sortedByAsc(name: string) {

@@ -28,6 +28,8 @@ export const MUTATION_TYPE = 'Mutation';
 
 export const ALL_ENTITIES_FIELD_PREFIX = 'all';
 export const CREATE_ENTITY_FIELD_PREFIX = 'create';
+export const UPDATE_ENTITY_FIELD_PREFIX = 'update';
+export const DELETE_ENTITY_FIELD_PREFIX = 'delete';
 
 export const ID_FIELD = 'id';
 export const ID_TYPE = 'ID';
@@ -56,3 +58,5 @@ export const CREATE_INPUT_ARG = 'input';
 export const CURSOR_FIELD = '_cursor';
 export const AFTER_ARG = 'after';
 export const FIRST_ARG = 'first';
+
+export const MUTATION_INPUT_ARG = 'input';

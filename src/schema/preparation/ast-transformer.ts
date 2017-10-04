@@ -13,15 +13,19 @@ import {AddCreateEntityInputTypesTransformer} from "./ast-transformation-modules
 import {AddUpdateEntityInputTypesTransformer} from "./ast-transformation-modules/add-update-entity-input-types";
 import {AddExtensionInputTypesTransformer} from "./ast-transformation-modules/add-extension-input-types";
 import {AddValueObjectInputTypesTransformer} from "./ast-transformation-modules/add-value-object-input-types";
+import {AddRootMutationTypeTransformer} from "./ast-transformation-modules/add-root-mutation-type";
 
 const transformers = [
+    // Add basic stuff to object types
     AddScalarTypesTransformer,
     AddMissingEntityFieldsTransformer,
     // TODO: check if some input stuff should be nullable in schema.
     // NonNullableListsTransformer,
+
+    // add query parameters
     AddFilterInputTypesTransformer,
-    AddRootSchemaTransformer,
     AddOrderbyInputEnumsTransformer,
+    AddPaginationArgumentsToFieldsTransformer,
 
     // Input types for creation and manipulation of object types.
     AddCreateEntityInputTypesTransformer,
@@ -29,11 +33,18 @@ const transformers = [
     AddExtensionInputTypesTransformer,
     AddValueObjectInputTypesTransformer,
 
+    // build query stuff
     AddRootQueryTypeTransformer,
     AddFilterArgumentsToFieldsTransformer,
     AddOrderbyArgumentsToFieldsTransformer,
-    AddPaginationArgumentsToFieldsTransformer,
-    AddCursorFieldToEntitiesTransformer
+    AddCursorFieldToEntitiesTransformer,
+
+    // build mutation stuff
+    AddRootMutationTypeTransformer,
+
+    // compose schema
+    AddRootSchemaTransformer
+
 ];
 
 export function prepareModelAST(ast: DocumentNode) {
