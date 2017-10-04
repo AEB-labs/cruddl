@@ -1,0 +1,13 @@
+type Delivery @rootEntity {
+    deliveryNumber: String
+    serialNumbers: [String]
+    consignee: Address
+    contentInfo: [Translation]
+    dgInfo: DangerousGoodsInfo
+    items: [DeliveryItem]
+    handlingUnits: [HandlingUnit] @relation
+}
+
+type DeliveryItem @childEntity {
+    itemNumber: String
+}

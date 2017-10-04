@@ -1,6 +1,0 @@
-type User @rootEntity {
-    id: ID
-    name: String
-    pets: [Pet]
-    address: Address
-}

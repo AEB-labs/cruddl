@@ -1,7 +1,0 @@
-enum PetSpecies { Dog, Cat, Parrot }
-
-type Pet @rootEntity {
-    species: PetSpecies
-    name: String
-    birthYear: Int
-}
