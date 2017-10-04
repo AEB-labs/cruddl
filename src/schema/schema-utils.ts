@@ -1,15 +1,32 @@
 import {
-    DocumentNode, FieldDefinitionNode, InputValueDefinitionNode, ObjectTypeDefinitionNode, TypeNode, Location,
-    ScalarTypeDefinitionNode, NameNode, InputObjectTypeDefinitionNode, EnumTypeDefinitionNode, TypeDefinitionNode,
-
+    DocumentNode,
+    EnumTypeDefinitionNode,
+    FieldDefinitionNode,
+    InputObjectTypeDefinitionNode,
+    InputValueDefinitionNode,
+    Location,
+    NameNode,
+    ObjectTypeDefinitionNode,
+    ScalarTypeDefinitionNode,
+    TypeNode,
 } from "graphql";
 import {
     ENUM_TYPE_DEFINITION,
-    FIELD_DEFINITION, INPUT_OBJECT_TYPE_DEFINITION, LIST_TYPE, NAME, NAMED_TYPE, NON_NULL_TYPE, OBJECT_TYPE_DEFINITION,
+    FIELD_DEFINITION,
+    INPUT_OBJECT_TYPE_DEFINITION,
+    LIST_TYPE,
+    NAME,
+    NAMED_TYPE,
+    NON_NULL_TYPE,
+    OBJECT_TYPE_DEFINITION,
     SCALAR_TYPE_DEFINITION
 } from "graphql/language/kinds";
-import {EMBEDDABLE_DIRECTIVE, ENTITY_DIRECTIVE} from "./schema-defaults";
-import {NamedTypeNode} from "graphql";
+import {
+    CHILD_ENTITY_DIRECTIVE,
+    ENTITY_DIRECTIVE,
+    ENTITY_EXTENSION_DIRECTIVE,
+    VALUE_OBJECT_DIRECTIVE
+} from "./schema-defaults";
 import {flatMap} from "../utils/utils";
 
 
@@ -25,7 +42,7 @@ export function getObjectTypes(model: DocumentNode): ObjectTypeDefinitionNode[] 
 }
 
 /**
- * Get all @link ObjectTypeDefinitionNode annotated with @Entity directive of a model.
+ * Get all @link ObjectTypeDefinitionNode annotated with @entity directive of a model.
  * @param {DocumentNode} model (ast)
  * @returns {ObjectTypeDefinitionNode[]}
  */
@@ -38,18 +55,43 @@ export function getEntityTypes(model: DocumentNode): ObjectTypeDefinitionNode[] 
 }
 
 /**
- * Get all @link ObjectTypeDefinitionNode annotated with @Embeddable directive of a model.
+ * Get all @link ObjectTypeDefinitionNode annotated with @childEntity directive of a model.
  * @param {DocumentNode} model (ast)
  * @returns {ObjectTypeDefinitionNode[]}
  */
-export function getEmbeddableTypes(model: DocumentNode): ObjectTypeDefinitionNode[] {
+export function getChildEntityTypes(model: DocumentNode): ObjectTypeDefinitionNode[] {
     return <ObjectTypeDefinitionNode[]> model.definitions.filter(
         def => def.kind === OBJECT_TYPE_DEFINITION && def.directives && def.directives.some(
-            directive => directive.name.value === EMBEDDABLE_DIRECTIVE
+            directive => directive.name.value === CHILD_ENTITY_DIRECTIVE
         )
     )
 }
 
+/**
+ * Get all @link ObjectTypeDefinitionNode annotated with @entityExtension directive of a model.
+ * @param {DocumentNode} model (ast)
+ * @returns {ObjectTypeDefinitionNode[]}
+ */
+export function getEntityExtensionTypes(model: DocumentNode): ObjectTypeDefinitionNode[] {
+    return <ObjectTypeDefinitionNode[]> model.definitions.filter(
+        def => def.kind === OBJECT_TYPE_DEFINITION && def.directives && def.directives.some(
+            directive => directive.name.value === ENTITY_EXTENSION_DIRECTIVE
+        )
+    )
+}
+
+/**
+ * Get all @link ObjectTypeDefinitionNode annotated with @valueObject directive of a model.
+ * @param {DocumentNode} model (ast)
+ * @returns {ObjectTypeDefinitionNode[]}
+ */
+export function getValueObjectTypes(model: DocumentNode): ObjectTypeDefinitionNode[] {
+    return <ObjectTypeDefinitionNode[]> model.definitions.filter(
+        def => def.kind === OBJECT_TYPE_DEFINITION && def.directives && def.directives.some(
+            directive => directive.name.value === VALUE_OBJECT_DIRECTIVE
+        )
+    )
+}
 
 /**
  * Get all @link FieldDefinitionNode in all @link ObjectTypeDefinition of a model (ast).

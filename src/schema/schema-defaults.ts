@@ -13,7 +13,13 @@ export const defaultModelDefTypes = `
     `;
 
 export const ENTITY_DIRECTIVE = 'entity';
-export const EMBEDDABLE_DIRECTIVE = 'embeddable';
+export const CHILD_ENTITY_DIRECTIVE = 'childEntity';
+export const ENTITY_EXTENSION_DIRECTIVE = 'entityExtension';
+/**
+ * Value object according to DDD. Some people know this kind of type as Composite.
+ */
+export const VALUE_OBJECT_DIRECTIVE = 'valueObject';
+
 export const RELATION_DIRECTIVE = 'relation';
 export const REFERENCE_DIRECTIVE = 'reference';
 
@@ -44,8 +50,8 @@ export const ORDER_BY_DESC_SUFFIX = '_DESC';
 
 export const FILTER_ARG = 'filter';
 export const ORDER_BY_ARG = 'orderBy';
-export const FIRST_ARG = 'first';
-export const AFTER_ARG = 'after';
 export const CREATE_INPUT_ARG = 'input';
 
 export const CURSOR_FIELD = '_cursor';
+export const AFTER_ARG = 'after';
+export const FIRST_ARG = 'first';
