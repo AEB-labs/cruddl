@@ -44,7 +44,7 @@ export class AddRootMutationTypeTransformer implements ASTTransformer {
             name: buildNameNode(createEntityQuery(rootEntityDef.name.value)),
             type: { kind: NON_NULL_TYPE, type: { kind: NAMED_TYPE, name: buildNameNode(rootEntityDef.name.value) } },
             arguments: [
-                this.buildNonNullTypeInputArg('input', getUpdateInputTypeName(rootEntityDef)),
+                this.buildNonNullTypeInputArg('input', getCreateInputTypeName(rootEntityDef)),
             ],
             loc: rootEntityDef.loc
         }
@@ -77,12 +77,12 @@ export class AddRootMutationTypeTransformer implements ASTTransformer {
     protected buildNonNullTypeInputArg(name: string, namedTypeName: string) {
         return {
             kind: INPUT_VALUE_DEFINITION,
-            name: buildNameNode(ID_FIELD),
+            name: buildNameNode(name),
             type: {
                 kind: NON_NULL_TYPE,
                 type: {
                     kind: NAMED_TYPE,
-                    name: buildNameNode(GraphQLID.name)
+                    name: buildNameNode(namedTypeName)
                 }
             }
         };
