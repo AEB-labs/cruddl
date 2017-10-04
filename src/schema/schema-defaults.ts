@@ -38,6 +38,7 @@ export const ENTITY_UPDATED_AT = 'updatedAt';
 export const SCALAR_DATETIME = 'DateTime';
 export const SCALAR_DATE = 'Date';
 export const SCALAR_TIME = 'Time';
+export const SCALAR_JSON = 'JSON';
 
 export const ENTITY_ID = 'id';
 
