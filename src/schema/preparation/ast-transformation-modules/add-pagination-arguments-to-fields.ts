@@ -38,7 +38,6 @@ export class AddPaginationArgumentsToFieldsTransformer implements ASTTransformer
                         name: buildNameNode(AFTER_ARG),
                         type: { kind: NAMED_TYPE,  name: buildNameNode(GraphQLString.name)}
                     });
-                    console.log('ok');
                 }
             })
         })
