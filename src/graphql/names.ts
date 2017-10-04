@@ -1,14 +1,52 @@
 import {ObjectTypeDefinitionNode} from "graphql";
 import * as pluralize from "pluralize";
-import { ALL_ENTITIES_FIELD_PREFIX, ORDER_BY_ASC_SUFFIX, ORDER_BY_DESC_SUFFIX } from '../schema/schema-defaults';
+import {
+    ALL_ENTITIES_FIELD_PREFIX,
+    CHILD_ENTITY_DIRECTIVE,
+    ORDER_BY_ASC_SUFFIX,
+    ORDER_BY_DESC_SUFFIX,
+    ROOT_ENTITY_DIRECTIVE
+} from '../schema/schema-defaults';
+import {capitalize} from "../utils/utils";
+import {hasObjectTypeDirectiveWithName} from "../schema/schema-utils";
 
 
 export function getFilterTypeName(entityDefinition: ObjectTypeDefinitionNode) {
     return entityDefinition.name.value + 'Filter';
 }
 
-export function getValueObjectInputTypeName(embeddableDefinition: ObjectTypeDefinitionNode) {
-    return embeddableDefinition.name.value + 'Input';
+export function getCreateInputTypeName(objectType: ObjectTypeDefinitionNode) {
+    if (hasObjectTypeDirectiveWithName(objectType, ROOT_ENTITY_DIRECTIVE) || hasObjectTypeDirectiveWithName(objectType, CHILD_ENTITY_DIRECTIVE)) {
+        return 'Create' + objectType.name.value + 'Input';
+    }
+    return objectType.name.value + 'Input';
+}
+
+export function getUpdateInputTypeName(objectType: ObjectTypeDefinitionNode) {
+    if (hasObjectTypeDirectiveWithName(objectType, ROOT_ENTITY_DIRECTIVE) || hasObjectTypeDirectiveWithName(objectType, CHILD_ENTITY_DIRECTIVE)) {
+        return 'Update' + objectType.name.value + 'Input';
+    }
+    return objectType.name.value + 'Input';
+}
+
+export function getAddRelationFieldName(fieldName: string) {
+    return 'add' + capitalize(fieldName);
+}
+
+export function getRemoveRelationFieldName(fieldName: string) {
+    return 'remove' + capitalize(fieldName);
+}
+
+export function getAddChildEntityFieldName(fieldName: string) {
+    return 'add' + capitalize(fieldName);
+}
+
+export function getUpdateChildEntityFieldName(fieldName: string) {
+    return 'update' + capitalize(fieldName);
+}
+
+export function getRemoveChildEntityFieldName(fieldName: string) {
+    return 'remove' + capitalize(fieldName);
 }
 
 export function getOrderByEnumTypeName(entityDefinition: ObjectTypeDefinitionNode) {

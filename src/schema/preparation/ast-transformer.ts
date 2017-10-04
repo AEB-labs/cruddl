@@ -1,6 +1,5 @@
 import {DocumentNode} from "graphql";
 import {AddMissingEntityFieldsTransformer} from "./ast-transformation-modules/add-missing-entity-fields";
-import {NonNullableListsTransformer} from "./ast-transformation-modules/non-nullable-lists";
 import {AddFilterInputTypesTransformer} from "./ast-transformation-modules/add-filter-input-types";
 import {AddScalarTypesTransformer} from "./ast-transformation-modules/add-scalar-types";
 import {AddRootQueryTypeTransformer} from "./ast-transformation-modules/add-root-query-type";
@@ -9,7 +8,11 @@ import {AddFilterArgumentsToFieldsTransformer} from "./ast-transformation-module
 import {AddOrderbyInputEnumsTransformer} from "./ast-transformation-modules/add-orderby-enums";
 import {AddOrderbyArgumentsToFieldsTransformer} from "./ast-transformation-modules/add-orderby-arguments-to-fields";
 import {AddCursorFieldToEntitiesTransformer} from "./ast-transformation-modules/add-cursor-field-to-entities";
-import { AddPaginationArgumentsToFieldsTransformer } from './ast-transformation-modules/add-pagination-arguments-to-fields';
+import {AddPaginationArgumentsToFieldsTransformer} from './ast-transformation-modules/add-pagination-arguments-to-fields';
+import {AddCreateEntityInputTypesTransformer} from "./ast-transformation-modules/add-create-entity-input-types";
+import {AddUpdateEntityInputTypesTransformer} from "./ast-transformation-modules/add-update-entity-input-types";
+import {AddExtensionInputTypesTransformer} from "./ast-transformation-modules/add-extension-input-types";
+import {AddValueObjectInputTypesTransformer} from "./ast-transformation-modules/add-value-object-input-types";
 
 const transformers = [
     AddScalarTypesTransformer,
@@ -19,6 +22,13 @@ const transformers = [
     AddFilterInputTypesTransformer,
     AddRootSchemaTransformer,
     AddOrderbyInputEnumsTransformer,
+
+    // Input types for creation and manipulation of object types.
+    AddCreateEntityInputTypesTransformer,
+    AddUpdateEntityInputTypesTransformer,
+    AddExtensionInputTypesTransformer,
+    AddValueObjectInputTypesTransformer,
+
     AddRootQueryTypeTransformer,
     AddFilterArgumentsToFieldsTransformer,
     AddOrderbyArgumentsToFieldsTransformer,
