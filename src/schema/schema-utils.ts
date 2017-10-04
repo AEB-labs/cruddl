@@ -23,8 +23,8 @@ import {
 } from "graphql/language/kinds";
 import {
     CHILD_ENTITY_DIRECTIVE,
-    ROOT_ENTITY_DIRECTIVE,
     ENTITY_EXTENSION_DIRECTIVE,
+    ROOT_ENTITY_DIRECTIVE,
     VALUE_OBJECT_DIRECTIVE
 } from "./schema-defaults";
 import {flatMap} from "../utils/utils";
@@ -205,3 +205,13 @@ export function buildNameNode(name: string): NameNode {
     return { kind: NAME, value: name };
 }
 
+export function hasObjectTypeDirectiveWithName(objectType: ObjectTypeDefinitionNode, directiveName: string): boolean {
+    // remove leading @
+    if (directiveName[0] === '@') {
+        directiveName = directiveName.substr(1, directiveName.length - 1);
+    }
+    if (!objectType.directives) {
+        return false;
+    }
+    return objectType.directives.some(directive => directive.name.value === directiveName);
+}
