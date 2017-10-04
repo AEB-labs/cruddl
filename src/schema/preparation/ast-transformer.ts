@@ -8,13 +8,14 @@ import {AddRootSchemaTransformer} from "./ast-transformation-modules/add-root-sc
 import {AddFilterArgumentsToFieldsTransformer} from "./ast-transformation-modules/add-filter-arguments-to-fields";
 import {AddOrderbyInputEnumsTransformer} from "./ast-transformation-modules/add-orderby-enums";
 import {AddOrderbyArgumentsToFieldsTransformer} from "./ast-transformation-modules/add-orderby-arguments-to-fields";
-import {AddCursorFieldToEntitiesTransformer} from "../../../spec/schema/preparation/ast-transformation-modules/add-cursor-field-to-entities";
+import {AddCursorFieldToEntitiesTransformer} from "./ast-transformation-modules/add-cursor-field-to-entities";
 import { AddPaginationArgumentsToFieldsTransformer } from './ast-transformation-modules/add-pagination-arguments-to-fields';
 
 const transformers = [
     AddScalarTypesTransformer,
     AddMissingEntityFieldsTransformer,
-    NonNullableListsTransformer,
+    // TODO: check if some input stuff should be nullable in schema.
+    // NonNullableListsTransformer,
     AddFilterInputTypesTransformer,
     AddRootSchemaTransformer,
     AddOrderbyInputEnumsTransformer,
