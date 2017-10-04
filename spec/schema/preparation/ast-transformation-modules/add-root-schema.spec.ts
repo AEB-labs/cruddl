@@ -3,7 +3,7 @@ import {SCHEMA_DEFINITION} from "graphql/language/kinds";
 import {AddRootSchemaTransformer} from "../../../../src/schema/preparation/ast-transformation-modules/add-root-schema";
 
 const sdl = `
-            type Foo @entity {
+            type Foo @rootEntity {
                 id: ID
                 createdAt: DateTime
                 updatedAt: DateTime

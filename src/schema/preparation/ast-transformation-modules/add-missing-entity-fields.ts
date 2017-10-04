@@ -1,10 +1,10 @@
 import {ASTTransformer} from "../ast-transformer";
 import {DocumentNode} from "graphql";
-import {createFieldDefinitionNode, fieldDefinitionNodeByNameExists, getEntityTypes} from "../../schema-utils";
-import {SCALAR_DATETIME, ENTITY_CREATED_AT, ENTITY_ID, ENTITY_UPDATED_AT} from "../../schema-defaults";
+import {createFieldDefinitionNode, fieldDefinitionNodeByNameExists, getRootEntityTypes} from "../../schema-utils";
+import {ENTITY_CREATED_AT, ENTITY_ID, ENTITY_UPDATED_AT, SCALAR_DATETIME} from "../../schema-defaults";
 
 /**
- * Assert that all @Entity have the fields id, updatedAt, createdAt.
+ * Assert that all @rootEntity have the fields id, updatedAt, createdAt.
  */
 export class AddMissingEntityFieldsTransformer implements ASTTransformer {
 
@@ -13,7 +13,7 @@ export class AddMissingEntityFieldsTransformer implements ASTTransformer {
     }
 
     protected extendRootEntityTypes(ast: DocumentNode) {
-        getEntityTypes(ast).forEach(moType => {
+        getRootEntityTypes(ast).forEach(moType => {
             // assert existence of ID field
             // TODO better remove existing fields with the following names because they could contain bullshit (wrong type, args...).
             if (!fieldDefinitionNodeByNameExists(moType, ENTITY_ID)) {

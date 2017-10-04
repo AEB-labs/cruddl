@@ -4,7 +4,7 @@ import {FILTER_ARG} from "../../../../src/schema/schema-defaults";
 import {AddFilterArgumentsToFieldsTransformer} from "../../../../src/schema/preparation/ast-transformation-modules/add-filter-arguments-to-fields";
 
 const sdl = `
-            type Foo @entity {
+            type Foo @rootEntity {
                 id: ID
                 createdAt: DateTime
                 updatedAt: DateTime

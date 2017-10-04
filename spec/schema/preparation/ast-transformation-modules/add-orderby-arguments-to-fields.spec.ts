@@ -4,7 +4,7 @@ import {ORDER_BY_ARG} from "../../../../src/schema/schema-defaults";
 import {AddOrderbyArgumentsToFieldsTransformer} from "../../../../src/schema/preparation/ast-transformation-modules/add-orderby-arguments-to-fields";
 
 const sdl = `
-            type Foo @entity {
+            type Foo @rootEntity {
                 id: ID
                 createdAt: DateTime
                 updatedAt: DateTime

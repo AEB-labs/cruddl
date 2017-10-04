@@ -1,14 +1,17 @@
 import {ASTTransformer} from "../ast-transformer";
-import {DocumentNode, FieldDefinitionNode, ObjectTypeDefinitionNode, SchemaDefinitionNode} from "graphql";
-import {buildNameNode, getEntityTypes} from "../../schema-utils";
+import {DocumentNode, FieldDefinitionNode, ObjectTypeDefinitionNode} from "graphql";
+import {buildNameNode, getRootEntityTypes} from "../../schema-utils";
 import {
-    FIELD_DEFINITION, INPUT_VALUE_DEFINITION, LIST, LIST_TYPE, NAME, NAMED_TYPE, NON_NULL_TYPE,
-    OBJECT_TYPE_DEFINITION, OPERATION_TYPE_DEFINITION, SCHEMA_DEFINITION
+    FIELD_DEFINITION,
+    INPUT_VALUE_DEFINITION,
+    LIST_TYPE,
+    NAMED_TYPE,
+    NON_NULL_TYPE,
+    OBJECT_TYPE_DEFINITION
 } from "graphql/language/kinds";
-import {QueryNode} from "../../../query/definition";
 import {flatMap} from "../../../utils/utils";
-import { ENTITY_ID, FILTER_ARG, QUERY_TYPE } from '../../schema-defaults';
-import {allEntitiesQueryBy, getFilterTypeName} from "../../../graphql/names";
+import {ENTITY_ID, QUERY_TYPE} from '../../schema-defaults';
+import {allEntitiesQueryBy} from "../../../graphql/names";
 
 export class AddRootQueryTypeTransformer implements ASTTransformer {
 
@@ -20,7 +23,7 @@ export class AddRootQueryTypeTransformer implements ASTTransformer {
         return {
             kind: OBJECT_TYPE_DEFINITION,
             name: buildNameNode(QUERY_TYPE),
-            fields: this.buildQueryTypeEntityFields(getEntityTypes(ast)),
+            fields: this.buildQueryTypeEntityFields(getRootEntityTypes(ast)),
         }
     }
 

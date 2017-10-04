@@ -11,7 +11,7 @@ export class AddRootSchemaTransformer implements ASTTransformer {
 
     protected buildRootSchema(ast: DocumentNode): SchemaDefinitionNode {
         return {
-            // fields: this.buildQueryTypeEntityFields(getEntityTypes(ast)),
+            // fields: this.buildQueryTypeEntityFields(getRootEntityTypes(ast)),
             kind: SCHEMA_DEFINITION,
             operationTypes: [
                 {
@@ -22,7 +22,6 @@ export class AddRootSchemaTransformer implements ASTTransformer {
                     },
                     operation: "query"
                 },
-                // TODO add when needed
                 // {
                 //     kind: OPERATION_TYPE_DEFINITION,
                 //     type: {

@@ -5,7 +5,7 @@ import {getNamedInputTypeDefinitionAST, getNamedTypeDefinitionAST} from "../../.
 import {AddOrderbyInputEnumsTransformer} from "../../../../src/schema/preparation/ast-transformation-modules/add-orderby-enums";
 
 const sdl = `
-            type Foo @entity {
+            type Foo @rootEntity {
                 id: ID
                 createdAt: DateTime
                 updatedAt: DateTime

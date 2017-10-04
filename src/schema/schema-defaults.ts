@@ -7,12 +7,12 @@ export const defaultModelDefTypes = `
             createdBy: User
         }
         
-        type User @Entity {
+        type User @rootEntity {
             name: String!
         }
     `;
 
-export const ENTITY_DIRECTIVE = 'entity';
+export const ROOT_ENTITY_DIRECTIVE = 'rootEntity';
 export const CHILD_ENTITY_DIRECTIVE = 'childEntity';
 export const ENTITY_EXTENSION_DIRECTIVE = 'entityExtension';
 /**

@@ -4,11 +4,11 @@ import {objectTypeFieldsWithNameOfNamedType} from "../../schema-test-utils";
 import {AddMissingEntityFieldsTransformer} from "../../../../src/schema/preparation/ast-transformation-modules/add-missing-entity-fields";
 
 const sdl = `
-            type Foo @entity {
+            type Foo @rootEntity {
                 foo: String
             }
             
-            type Bar @entity {
+            type Bar @rootEntity {
                 id: ID
                 createdAt: DateTime
                 updatedAt: DateTime

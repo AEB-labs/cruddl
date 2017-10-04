@@ -4,7 +4,7 @@ import {getNamedTypeDefinitionAST} from "../../../../src/schema/schema-utils";
 import {AddRootQueryTypeTransformer} from "../../../../src/schema/preparation/ast-transformation-modules/add-root-query-type";
 
 const sdl = `
-            type Foo @entity {
+            type Foo @rootEntity {
                 id: ID
                 createdAt: DateTime
                 updatedAt: DateTime

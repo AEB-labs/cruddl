@@ -4,7 +4,7 @@ import {AddFilterInputTypesTransformer} from "../../../../src/schema/preparation
 import {getNamedInputTypeDefinitionAST} from "../../../../src/schema/schema-utils";
 
 const sdl = `
-            type Foo @entity {
+            type Foo @rootEntity {
                 id: ID
                 createdAt: DateTime
                 updatedAt: DateTime

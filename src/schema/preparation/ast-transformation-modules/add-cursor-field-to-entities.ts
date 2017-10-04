@@ -1,6 +1,6 @@
 import {ASTTransformer} from "../ast-transformer";
 import {DocumentNode, FieldDefinitionNode} from "graphql";
-import {buildNameNode, getChildEntityTypes, getEntityTypes, getValueObjectTypes} from "../../schema-utils";
+import {buildNameNode, getChildEntityTypes, getRootEntityTypes, getValueObjectTypes} from "../../schema-utils";
 import {FIELD_DEFINITION, NAMED_TYPE} from "graphql/language/kinds";
 import {CURSOR_FIELD} from "../../schema-defaults";
 
@@ -18,14 +18,14 @@ export class AddCursorFieldToEntitiesTransformer implements ASTTransformer {
             arguments: []
         };
 
-        getEntityTypes(ast).forEach(entityType => {
-            entityType.fields.push(cursorFieldDefinition)
+        getRootEntityTypes(ast).forEach(rootEntityType => {
+            rootEntityType.fields.push(cursorFieldDefinition)
         });
-        getChildEntityTypes(ast).forEach(entityType => {
-            entityType.fields.push(cursorFieldDefinition)
+        getChildEntityTypes(ast).forEach(rootEntityType => {
+            rootEntityType.fields.push(cursorFieldDefinition)
         });
-        getValueObjectTypes(ast).forEach(entityType => {
-            entityType.fields.push(cursorFieldDefinition)
+        getValueObjectTypes(ast).forEach(rootEntityType => {
+            rootEntityType.fields.push(cursorFieldDefinition)
         });
 
     }

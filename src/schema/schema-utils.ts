@@ -23,7 +23,7 @@ import {
 } from "graphql/language/kinds";
 import {
     CHILD_ENTITY_DIRECTIVE,
-    ENTITY_DIRECTIVE,
+    ROOT_ENTITY_DIRECTIVE,
     ENTITY_EXTENSION_DIRECTIVE,
     VALUE_OBJECT_DIRECTIVE
 } from "./schema-defaults";
@@ -42,14 +42,14 @@ export function getObjectTypes(model: DocumentNode): ObjectTypeDefinitionNode[] 
 }
 
 /**
- * Get all @link ObjectTypeDefinitionNode annotated with @entity directive of a model.
+ * Get all @link ObjectTypeDefinitionNode annotated with @rootEntity directive of a model.
  * @param {DocumentNode} model (ast)
  * @returns {ObjectTypeDefinitionNode[]}
  */
-export function getEntityTypes(model: DocumentNode): ObjectTypeDefinitionNode[] {
+export function getRootEntityTypes(model: DocumentNode): ObjectTypeDefinitionNode[] {
     return <ObjectTypeDefinitionNode[]> model.definitions.filter(
         def => def.kind === OBJECT_TYPE_DEFINITION && def.directives && def.directives.some(
-            directive => directive.name.value === ENTITY_DIRECTIVE
+            directive => directive.name.value === ROOT_ENTITY_DIRECTIVE
         )
     )
 }

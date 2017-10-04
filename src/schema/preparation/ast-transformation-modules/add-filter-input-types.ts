@@ -1,22 +1,39 @@
 import {ASTTransformer} from "../ast-transformer";
 import {
-    DocumentNode, FieldDefinitionNode, InputObjectTypeDefinitionNode, InputValueDefinitionNode,
+    DocumentNode,
+    InputObjectTypeDefinitionNode,
+    InputValueDefinitionNode,
     ObjectTypeDefinitionNode,
     TypeNode
 } from "graphql";
-import {getEntityTypes, getNamedTypeDefinitionAST, getObjectTypes} from "../../schema-utils";
+import {getNamedTypeDefinitionAST, getObjectTypes} from "../../schema-utils";
 import {
     ENUM_TYPE_DEFINITION,
-    INPUT_OBJECT_TYPE_DEFINITION, LIST_TYPE, NAME, NAMED_TYPE, NON_NULL_TYPE, OBJECT_TYPE_DEFINITION,
-    SCALAR_TYPE_DEFINITION,
-    STRING
+    INPUT_OBJECT_TYPE_DEFINITION,
+    LIST_TYPE,
+    NAME,
+    NAMED_TYPE,
+    NON_NULL_TYPE,
+    OBJECT_TYPE_DEFINITION,
+    SCALAR_TYPE_DEFINITION
 } from "graphql/language/kinds";
 import {
-    getFilterTypeName, gtField, inField, lteField, notField, notInField, ltField,
-    gteField, containsField, notContainsField, starts_with_field, not_starts_with_field, endsWithField,
-    notEndsWithField
+    containsField,
+    endsWithField,
+    getFilterTypeName,
+    gteField,
+    gtField,
+    inField,
+    lteField,
+    ltField,
+    not_starts_with_field,
+    notContainsField,
+    notEndsWithField,
+    notField,
+    notInField,
+    starts_with_field
 } from "../../../graphql/names";
-import {ARGUMENT_AND, ARGUMENT_OR, SCALAR_DATE, SCALAR_DATETIME, SCALAR_TIME, ARGUMENT_NOT} from "../../schema-defaults";
+import {ARGUMENT_AND, ARGUMENT_OR, SCALAR_DATE, SCALAR_DATETIME, SCALAR_TIME} from "../../schema-defaults";
 import {flatMap} from "../../../utils/utils";
 
 export class AddFilterInputTypesTransformer implements ASTTransformer {
@@ -45,7 +62,7 @@ export class AddFilterInputTypesTransformer implements ASTTransformer {
             this.buildInputValueListOfNamedType(ARGUMENT_AND,  getFilterTypeName(objectType)),
             this.buildInputValueListOfNamedType(ARGUMENT_OR, getFilterTypeName(objectType)),
             // TODO add if supported: this.buildInputValueNamedType(ARGUMENT_NOT, getFilterTypeName(objectType))
-        ]
+        ];
         return {
             kind: INPUT_OBJECT_TYPE_DEFINITION,
             name: { kind: "Name", value: getFilterTypeName(objectType) },
@@ -84,7 +101,7 @@ export class AddFilterInputTypesTransformer implements ASTTransformer {
                                     this.buildInputValueNamedType(not_starts_with_field(name), 'String'),
                                     this.buildInputValueNamedType(endsWithField(name), 'String'),
                                     this.buildInputValueNamedType(notEndsWithField(name), 'String'),
-                                ]
+                                ];
                             case SCALAR_TIME:
                             case SCALAR_DATE:
                             case SCALAR_DATETIME:
