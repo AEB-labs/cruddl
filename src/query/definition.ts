@@ -183,7 +183,7 @@ export enum BasicType {
     NULL
 }
 
-export class ConditionalQueryNode implements QueryNode{
+export class ConditionalQueryNode implements QueryNode {
     constructor(public readonly condition: QueryNode, public readonly expr1: QueryNode, public readonly expr2: QueryNode) {
 
     }
@@ -287,7 +287,8 @@ export enum BinaryOperator {
  * A node that evaluates in the list of entities of a given type. use ListQueryNode to further process them
  */
 export class EntitiesQueryNode implements QueryNode {
-    constructor(public readonly objectType: GraphQLObjectType) { }
+    constructor(public readonly objectType: GraphQLObjectType) {
+    }
 
     describe() {
         return `entities of type ${this.objectType.name.blue}`;
@@ -310,18 +311,20 @@ export class TransformListQueryNode implements QueryNode {
     public readonly innerNode: QueryNode;
     public readonly filterNode: QueryNode;
     public readonly orderBy: OrderSpecification;
-    public readonly maxCount: number|undefined;
+    public readonly maxCount: number | undefined;
 
     describe() {
         return `${this.listNode.describe()} as list\n` +
             indent(`where ${this.filterNode.describe()}\norder by ${this.orderBy.describe()}${this.maxCount != undefined ? `\nlimit ${this.maxCount}` : ''}\nas ${this.innerNode.describe()}`);
     }
 }
+
 /**
  * A node that evaluates to the first item of a list
  */
 export class FirstOfListQueryNode implements QueryNode {
-    constructor(public readonly listNode: QueryNode) { }
+    constructor(public readonly listNode: QueryNode) {
+    }
 
     describe() {
         return `first of ${this.listNode.describe()}`;
@@ -377,5 +380,89 @@ export class CreateEntityQueryNode {
 
     describe() {
         return `create ${this.objectType.name} entity with values ${this.objectNode.describe()}`;
+    }
+}
+
+/**
+ * A node that updates existing entities
+ *
+ * Existing properties of the entities will be kept when not specified in the updateNode. If a property is specified
+ * in updates and in the existing entity, it will be replaced with the PropertySpecification's value. The entity
+ * to-be-updated will however be available as *context* so you can still access the old value via a FieldQueryNode
+ * and use e.g. an UpdateObjectQueryNode to only modify some properties.
+ *
+ * FOR doc
+ * IN $collection(objectType)
+ * FILTER $filterNode
+ * UPDATE doc
+ * WITH $updateNode [doc as context]
+ * IN $collection(objectType)
+ * OPTIONS { mergeObjects: false }
+ *
+ * The objectNode is evaluated in the context of the to-be-updated entity.
+ */
+export class UpdateEntitiesQueryNode {
+    constructor(params: { objectType: GraphQLObjectType, filterNode: QueryNode, updates: PropertySpecification[], maxCount?: number }) {
+        this.objectType = params.objectType;
+        this.filterNode = params.filterNode;
+        this.updates = params.updates;
+        this.maxCount = params.maxCount;
+    }
+
+    public readonly objectType: GraphQLObjectType;
+    public readonly filterNode: QueryNode;
+    public readonly updates: PropertySpecification[];
+    public readonly maxCount: number|undefined;
+
+    describe() {
+        return `update ${this.objectType.name} entities where ${this.filterNode.describe()} with values {\n` +
+            indent(this.updates.map(p => p.describe()).join(',\n')) + `\n}`;
+    }
+}
+
+/**
+ * A node that is executed in the context of an existing object, can add or reassign properties, and then evaluates to
+ * the object with new properties. Untouched properties are kept as-is. Properties can be "removed" by setting them
+ * to null.
+ *
+ * This operation behaves like the {...objectSpread} operator in JavaScript, or the MERGE function in AQL.
+ *
+ * The *context* is set to *sourceNode* in the update nodes.
+ *
+ * The merge is NOT recursive. To update objects recursively, use an ObjectObjectQueryNode again as the value of a
+ * PropertySpecification.
+ */
+export class UpdateObjectQueryNode implements QueryNode {
+    constructor(public readonly sourceNode: QueryNode, public readonly updates: PropertySpecification[]) {
+
+    }
+
+    describe() {
+        if (!this.updates.length) {
+            return this.sourceNode.describe();
+        }
+        return `{\n` +
+            indent('...' + this.sourceNode.describe()) + ', [using this as context in:]\n' +
+            indent(this.updates.map(p => p.describe()).join(',\n')) + `\n}`;
+    }
+}
+
+/**
+ * A node that concatenates multiple lists and evaluates to the new list
+ *
+ * This can be used to append items to an array by using a ListQueryNode as second item
+ */
+export class ConcatListsQueryNode implements QueryNode {
+    constructor(public readonly listNodes: QueryNode[]) {
+
+    }
+
+    describe() {
+        if (!this.listNodes.length) {
+            return `[]`;
+        }
+        return `[\n` +
+            this.listNodes.map(node => indent('...' + node.describe())).join(',\n') +
+            `]`;
     }
 }

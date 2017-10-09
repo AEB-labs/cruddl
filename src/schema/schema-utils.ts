@@ -1,15 +1,15 @@
 import {
     DocumentNode,
     EnumTypeDefinitionNode,
-    FieldDefinitionNode,
+    FieldDefinitionNode, GraphQLObjectType, GraphQLType,
     InputObjectTypeDefinitionNode,
     InputValueDefinitionNode,
     Location,
     NameNode,
     ObjectTypeDefinitionNode,
     ScalarTypeDefinitionNode,
-    TypeNode,
-} from "graphql";
+    TypeNode
+} from 'graphql';
 import {
     ENUM_TYPE_DEFINITION,
     FIELD_DEFINITION,
@@ -214,4 +214,40 @@ export function hasObjectTypeDirectiveWithName(objectType: ObjectTypeDefinitionN
         return false;
     }
     return objectType.directives.some(directive => directive.name.value === directiveName);
+}
+
+function getTypeDefinitionNode(type: GraphQLType): ObjectTypeDefinitionNode|undefined {
+    if (!(type instanceof GraphQLObjectType)) {
+        return undefined;
+    }
+    const astNode: ObjectTypeDefinitionNode = (type as any).astNode;
+    if (!astNode) {
+        throw new Error(`astNode on type ${type} expected but missing`);
+    }
+    return astNode;
+}
+
+export function isTypeWithIdentity(type: GraphQLType) {
+    const astNode = getTypeDefinitionNode(type);
+    if (!astNode) {
+        return false;
+    }
+    return hasObjectTypeDirectiveWithName(astNode, ROOT_ENTITY_DIRECTIVE) ||
+        hasObjectTypeDirectiveWithName(astNode, CHILD_ENTITY_DIRECTIVE);
+}
+
+export function isEntityExtensionType(type: GraphQLType) {
+    const astNode = getTypeDefinitionNode(type);
+    if (!astNode) {
+        return false;
+    }
+    return hasObjectTypeDirectiveWithName(astNode, ENTITY_EXTENSION_DIRECTIVE);
+}
+
+export function isChildEntityType(type: GraphQLType) {
+    const astNode = getTypeDefinitionNode(type);
+    if (!astNode) {
+        return false;
+    }
+    return hasObjectTypeDirectiveWithName(astNode, CHILD_ENTITY_DIRECTIVE);
 }

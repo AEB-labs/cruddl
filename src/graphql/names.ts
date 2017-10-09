@@ -1,14 +1,15 @@
 import {ObjectTypeDefinitionNode} from "graphql";
 import * as pluralize from "pluralize";
 import {
+    ADD_CHILD_ENTITIES_FIELD_PREFIX,
     ALL_ENTITIES_FIELD_PREFIX,
     CHILD_ENTITY_DIRECTIVE,
     CREATE_ENTITY_FIELD_PREFIX,
     DELETE_ENTITY_FIELD_PREFIX,
     ORDER_BY_ASC_SUFFIX,
-    ORDER_BY_DESC_SUFFIX,
-    ROOT_ENTITY_DIRECTIVE,
-    UPDATE_ENTITY_FIELD_PREFIX,
+    ORDER_BY_DESC_SUFFIX, REMOVE_CHILD_ENTITIES_FIELD_PREFIX,
+    ROOT_ENTITY_DIRECTIVE, UPDATE_CHILD_ENTITIES_FIELD_PREFIX,
+    UPDATE_ENTITY_FIELD_PREFIX
 } from '../schema/schema-defaults';
 import {capitalize} from "../utils/utils";
 import {hasObjectTypeDirectiveWithName} from "../schema/schema-utils";
@@ -41,15 +42,15 @@ export function getRemoveRelationFieldName(fieldName: string) {
 }
 
 export function getAddChildEntityFieldName(fieldName: string) {
-    return 'add' + capitalize(fieldName);
+    return ADD_CHILD_ENTITIES_FIELD_PREFIX + capitalize(fieldName);
 }
 
 export function getUpdateChildEntityFieldName(fieldName: string) {
-    return 'update' + capitalize(fieldName);
+    return UPDATE_CHILD_ENTITIES_FIELD_PREFIX + capitalize(fieldName);
 }
 
 export function getRemoveChildEntityFieldName(fieldName: string) {
-    return 'remove' + capitalize(fieldName);
+    return REMOVE_CHILD_ENTITIES_FIELD_PREFIX + capitalize(fieldName);
 }
 
 export function getOrderByEnumTypeName(entityDefinition: ObjectTypeDefinitionNode) {

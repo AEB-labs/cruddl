@@ -54,7 +54,7 @@ export class AddRootMutationTypeTransformer implements ASTTransformer {
         return {
             kind: FIELD_DEFINITION,
             name: buildNameNode(updateEntityQuery(rootEntityDef.name.value)),
-            type: { kind: NON_NULL_TYPE, type: { kind: NAMED_TYPE, name: buildNameNode(rootEntityDef.name.value) } },
+            type: { kind: NAMED_TYPE, name: buildNameNode(rootEntityDef.name.value) },
             arguments: [
                 this.buildNonNullTypeInputArg('input', getUpdateInputTypeName(rootEntityDef)),
             ],

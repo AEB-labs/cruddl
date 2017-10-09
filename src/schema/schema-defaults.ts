@@ -30,6 +30,9 @@ export const ALL_ENTITIES_FIELD_PREFIX = 'all';
 export const CREATE_ENTITY_FIELD_PREFIX = 'create';
 export const UPDATE_ENTITY_FIELD_PREFIX = 'update';
 export const DELETE_ENTITY_FIELD_PREFIX = 'delete';
+export const ADD_CHILD_ENTITIES_FIELD_PREFIX = 'add';
+export const UPDATE_CHILD_ENTITIES_FIELD_PREFIX = 'update';
+export const REMOVE_CHILD_ENTITIES_FIELD_PREFIX = 'remove';
 
 export const ID_FIELD = 'id';
 export const ID_TYPE = 'ID';
@@ -53,7 +56,6 @@ export const ORDER_BY_DESC_SUFFIX = '_DESC';
 
 export const FILTER_ARG = 'filter';
 export const ORDER_BY_ARG = 'orderBy';
-export const CREATE_INPUT_ARG = 'input';
 
 export const CURSOR_FIELD = '_cursor';
 export const AFTER_ARG = 'after';

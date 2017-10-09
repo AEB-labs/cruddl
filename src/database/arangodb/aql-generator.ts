@@ -1,11 +1,10 @@
 import {
-    BasicType, BinaryOperationQueryNode, BinaryOperator, ConditionalQueryNode, ConstBoolQueryNode,
-    ContextAssignmentQueryNode,
-    ContextQueryNode, CreateEntityQueryNode,
-    EntitiesQueryNode,
-    FieldQueryNode, FirstOfListQueryNode, TransformListQueryNode, LiteralQueryNode, ObjectQueryNode, OrderDirection,
-    OrderSpecification, QueryNode,
-    TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, ListQueryNode
+    BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode,
+    ConstBoolQueryNode,
+    ContextAssignmentQueryNode, ContextQueryNode, CreateEntityQueryNode, EntitiesQueryNode, FieldQueryNode,
+    FirstOfListQueryNode, ListQueryNode, LiteralQueryNode, ObjectQueryNode, OrderDirection, OrderSpecification,
+    QueryNode, TransformListQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator,
+    UpdateEntitiesQueryNode, UpdateObjectQueryNode
 } from '../../query/definition';
 import { aql, AQLFragment } from './aql';
 import { GraphQLNamedType } from 'graphql';
@@ -64,7 +63,7 @@ const processors : { [name: string]: NodeProcessor<any> } = {
     },
 
     List(node: ListQueryNode, context): AQLFragment {
-        const test = aql`"${aql.string('"test')}`
+        const test = aql`"${aql.string('"test')}`;
         if (!node.itemNodes.length) {
             return aql`[]`;
         }
@@ -74,6 +73,13 @@ const processors : { [name: string]: NodeProcessor<any> } = {
             aql.indent(aql.join(node.itemNodes.map(itemNode => processNode(itemNode, context)), aql`,\n`)),
             aql`]`
         );
+    },
+
+    ConcatLists(node: ConcatListsQueryNode, context): AQLFragment {
+        const listNodes = node.listNodes.map(node => processNode(node, context));
+        const listNodeStr = aql.join(listNodes, aql`, `);
+        // note: UNION just appends, there is a special UNION_DISTINCT to filter out duplicates
+        return aql`UNION(${listNodeStr})`;
     },
 
     Context(node: ContextQueryNode, context): AQLFragment {
@@ -115,6 +121,10 @@ const processors : { [name: string]: NodeProcessor<any> } = {
             node.maxCount != undefined ? aql`LIMIT ${node.maxCount}` : aql``,
             aql`RETURN ${processNode(node.innerNode, itemVar)}`
         );
+    },
+
+    UpdateObject(node: UpdateObjectQueryNode, context): AQLFragment {
+        return aql`MERGE(${processNode(node.sourceNode, context)}, ${processNode(new ObjectQueryNode(node.updates), context)})`;
     },
 
     FirstOfList(node: FirstOfListQueryNode, context): AQLFragment {
@@ -185,6 +195,21 @@ const processors : { [name: string]: NodeProcessor<any> } = {
             aql`RETURN NEW`
         );
     },
+
+    UpdateEntities(node: UpdateEntitiesQueryNode) {
+        const entityVar = aql.variable();
+        return aqlExt.parenthesizeList(
+            aql`FOR ${entityVar}`,
+            aql`IN ${getCollectionForType(node.objectType)}`,
+            aql`FILTER ${processNode(node.filterNode, entityVar)}`,
+            node.maxCount !== undefined ? aql`LIMIT ${node.maxCount}` : aql``,
+            aql`UPDATE ${entityVar}`,
+            aql`WITH ${processNode(new ObjectQueryNode(node.updates), entityVar)}`,
+            aql`IN ${getCollectionForType(node.objectType)}`,
+            aql`OPTIONS { mergeObjects: false }`,
+            aql`RETURN NEW`
+        );
+    }
 };
 
 function getAQLOperator(op: BinaryOperator): AQLFragment|undefined {
