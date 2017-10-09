@@ -10,7 +10,7 @@ import {
     OBJECT_TYPE_DEFINITION
 } from "graphql/language/kinds";
 import {flatMap} from "../../../utils/utils";
-import {ENTITY_ID, ID_FIELD, MUTATION_INPUT_ARG, MUTATION_TYPE} from '../../schema-defaults';
+import { ENTITY_ID, ID_FIELD, MUTATION_ID_ARG, MUTATION_INPUT_ARG, MUTATION_TYPE } from '../../schema-defaults';
 import {
     allEntitiesQueryBy, createEntityQuery, deleteEntityQuery, getCreateInputTypeName, getUpdateInputTypeName,
     updateEntityQuery
@@ -44,7 +44,7 @@ export class AddRootMutationTypeTransformer implements ASTTransformer {
             name: buildNameNode(createEntityQuery(rootEntityDef.name.value)),
             type: { kind: NON_NULL_TYPE, type: { kind: NAMED_TYPE, name: buildNameNode(rootEntityDef.name.value) } },
             arguments: [
-                this.buildNonNullTypeInputArg('input', getCreateInputTypeName(rootEntityDef)),
+                this.buildNonNullTypeInputArg(MUTATION_INPUT_ARG, getCreateInputTypeName(rootEntityDef)),
             ],
             loc: rootEntityDef.loc
         }
@@ -56,7 +56,7 @@ export class AddRootMutationTypeTransformer implements ASTTransformer {
             name: buildNameNode(updateEntityQuery(rootEntityDef.name.value)),
             type: { kind: NAMED_TYPE, name: buildNameNode(rootEntityDef.name.value) },
             arguments: [
-                this.buildNonNullTypeInputArg('input', getUpdateInputTypeName(rootEntityDef)),
+                this.buildNonNullTypeInputArg(MUTATION_INPUT_ARG, getUpdateInputTypeName(rootEntityDef)),
             ],
             loc: rootEntityDef.loc
         }
@@ -66,9 +66,9 @@ export class AddRootMutationTypeTransformer implements ASTTransformer {
         return {
             kind: FIELD_DEFINITION,
             name: buildNameNode(deleteEntityQuery(rootEntityDef.name.value)),
-            type: { kind: NON_NULL_TYPE, type: { kind: NAMED_TYPE, name: buildNameNode(rootEntityDef.name.value) } },
+            type: { kind: NAMED_TYPE, name: buildNameNode(rootEntityDef.name.value) },
             arguments: [
-                this.buildNonNullTypeInputArg('id', GraphQLID.name),
+                this.buildNonNullTypeInputArg(MUTATION_ID_ARG, GraphQLID.name),
             ],
             loc: rootEntityDef.loc
         }

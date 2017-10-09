@@ -62,3 +62,4 @@ export const AFTER_ARG = 'after';
 export const FIRST_ARG = 'first';
 
 export const MUTATION_INPUT_ARG = 'input';
+export const MUTATION_ID_ARG = 'id';

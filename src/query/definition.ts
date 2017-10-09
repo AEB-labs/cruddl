@@ -65,7 +65,8 @@ export class LiteralQueryNode {
     }
 
     public describe() {
-        return `literal ${JSON.stringify(this.value).magenta}`;
+        const json = this.value === undefined ? "undefined" : JSON.stringify(this.value);
+        return `literal ${json.magenta}`;
     }
 }
 
@@ -417,6 +418,25 @@ export class UpdateEntitiesQueryNode {
     describe() {
         return `update ${this.objectType.name} entities where ${this.filterNode.describe()} with values {\n` +
             indent(this.updates.map(p => p.describe()).join(',\n')) + `\n}`;
+    }
+}
+
+/**
+ * A node that deletes existing entities and evaluates to the entities before deletion
+ */
+export class DeleteEntitiesQueryNode {
+    constructor(params: { objectType: GraphQLObjectType, filterNode: QueryNode, maxCount?: number }) {
+        this.objectType = params.objectType;
+        this.filterNode = params.filterNode;
+        this.maxCount = params.maxCount;
+    }
+
+    public readonly objectType: GraphQLObjectType;
+    public readonly filterNode: QueryNode;
+    public readonly maxCount: number|undefined;
+
+    describe() {
+        return `delete ${this.objectType.name} entities where ${this.filterNode.describe()}`;
     }
 }
 

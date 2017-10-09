@@ -2,13 +2,15 @@ import { FieldRequest } from '../graphql/query-distiller';
 import { getNamedType, GraphQLObjectType } from 'graphql';
 import {
     BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode,
-    ContextAssignmentQueryNode, ContextQueryNode, CreateEntityQueryNode, FieldQueryNode, FirstOfListQueryNode,
+    ContextAssignmentQueryNode, ContextQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, FieldQueryNode,
+    FirstOfListQueryNode,
     ListQueryNode,
     LiteralQueryNode, NullQueryNode, PropertySpecification, QueryNode, TransformListQueryNode, TypeCheckQueryNode,
     UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, UpdateObjectQueryNode
 } from './definition';
 import {
-    CREATE_ENTITY_FIELD_PREFIX, ID_FIELD, MUTATION_INPUT_ARG, UPDATE_ENTITY_FIELD_PREFIX
+    CREATE_ENTITY_FIELD_PREFIX, DELETE_ENTITY_FIELD_PREFIX, ID_FIELD, MUTATION_ID_ARG, MUTATION_INPUT_ARG,
+    UPDATE_ENTITY_FIELD_PREFIX
 } from '../schema/schema-defaults';
 import { createEntityObjectNode } from './queries';
 import { isChildEntityType, isEntityExtensionType } from '../schema/schema-utils';
@@ -28,6 +30,10 @@ export function createMutationRootNode(fieldRequest: FieldRequest): QueryNode {
 
     if (fieldRequest.fieldName.startsWith(UPDATE_ENTITY_FIELD_PREFIX)) {
         return createUpdateEntityQueryNode(fieldRequest, [fieldRequest]);
+    }
+
+    if (fieldRequest.fieldName.startsWith(DELETE_ENTITY_FIELD_PREFIX)) {
+        return createDeleteEntityQueryNode(fieldRequest, [fieldRequest]);
     }
 
     console.log(`unknown field: ${fieldRequest.fieldName}`);
@@ -159,4 +165,26 @@ function createUpdatePropertiesSpecification(obj: any, parentType: GraphQLObject
     }
 
     return properties;
+}
+
+function createDeleteEntityQueryNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[]): QueryNode {
+    const entityName = fieldRequest.fieldName.substr('create'.length);
+    const entityType = fieldRequest.schema.getTypeMap()[entityName];
+    if (!entityType || !(entityType instanceof GraphQLObjectType)) {
+        throw new Error(`Object type ${entityName} not found but needed for field ${fieldRequest.fieldName}`);
+    }
+    const input = fieldRequest.args[MUTATION_ID_ARG];
+    // TODO special handling for generated ids of child entities
+
+    const idField = entityType.getFields()[ID_FIELD];
+    const filterNode = new BinaryOperationQueryNode(new FieldQueryNode(new ContextQueryNode(), idField),
+        BinaryOperator.EQUAL,
+        new LiteralQueryNode(input));
+    const deleteEntityNode = new FirstOfListQueryNode(new DeleteEntitiesQueryNode({objectType: entityType, maxCount: 1, filterNode}));
+    const resultNode = createEntityObjectNode(fieldRequest.selectionSet, new ContextQueryNode(), fieldRequestStack);
+    const conditionalResultNode = new ConditionalQueryNode( // updated entity may not exist
+        new TypeCheckQueryNode(new ContextQueryNode(), BasicType.OBJECT),
+        resultNode,
+        new NullQueryNode());
+    return new ContextAssignmentQueryNode(deleteEntityNode, conditionalResultNode);
 }

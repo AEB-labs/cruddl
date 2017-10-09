@@ -1,7 +1,8 @@
 import {
     BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode,
     ConstBoolQueryNode,
-    ContextAssignmentQueryNode, ContextQueryNode, CreateEntityQueryNode, EntitiesQueryNode, FieldQueryNode,
+    ContextAssignmentQueryNode, ContextQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EntitiesQueryNode,
+    FieldQueryNode,
     FirstOfListQueryNode, ListQueryNode, LiteralQueryNode, ObjectQueryNode, OrderDirection, OrderSpecification,
     QueryNode, TransformListQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator,
     UpdateEntitiesQueryNode, UpdateObjectQueryNode
@@ -208,6 +209,19 @@ const processors : { [name: string]: NodeProcessor<any> } = {
             aql`IN ${getCollectionForType(node.objectType)}`,
             aql`OPTIONS { mergeObjects: false }`,
             aql`RETURN NEW`
+        );
+    },
+
+    DeleteEntities(node: DeleteEntitiesQueryNode) {
+        const entityVar = aql.variable();
+        return aqlExt.parenthesizeList(
+            aql`FOR ${entityVar}`,
+            aql`IN ${getCollectionForType(node.objectType)}`,
+            aql`FILTER ${processNode(node.filterNode, entityVar)}`,
+            node.maxCount !== undefined ? aql`LIMIT ${node.maxCount}` : aql``,
+            aql`REMOVE ${entityVar}`,
+            aql`IN ${getCollectionForType(node.objectType)}`,
+            aql`RETURN OLD`
         );
     }
 };
