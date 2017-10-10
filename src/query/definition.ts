@@ -298,6 +298,8 @@ export class EntitiesQueryNode implements QueryNode {
 
 /**
  * A node to filter, order, limit and map a list
+ *
+ * If you use a ContextQueryNode in filterNode or in innerNode, they will evaluate to the corresponding list item value
  */
 export class TransformListQueryNode implements QueryNode {
     constructor(params: { listNode: QueryNode, innerNode?: QueryNode, filterNode?: QueryNode, orderBy?: OrderSpecification, maxCount?: number }) {

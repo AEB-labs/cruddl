@@ -56,14 +56,14 @@ function createSingleEntityFieldNode(fieldRequest: FieldRequest, fieldRequestSta
 /**
  * Creates a QueryNode for the value of querying a specific entity
  * @param {FieldSelection[]} fieldSelections specifies what to select in the entity (e.g. the fieldSelections of an allEntities query)
- * @param {QueryNode} contextNode a node that evaluates to the entity
+ * @param {QueryNode} sourceObjectNode a node that evaluates to the entity
  * @param {FieldRequest[]} fieldRequestStack parent field requests, up to (including) the enclosing fieldRequest of fieldSeletions
  * @returns {ObjectQueryNode}
  */
-export function createEntityObjectNode(fieldSelections: FieldSelection[], contextNode: QueryNode, fieldRequestStack: FieldRequest[]) {
+export function createEntityObjectNode(fieldSelections: FieldSelection[], sourceObjectNode: QueryNode, fieldRequestStack: FieldRequest[]) {
     return new ObjectQueryNode(fieldSelections.map(
         sel => new PropertySpecification(sel.propertyName,
-            createEntityFieldQueryNode(sel.fieldRequest, contextNode, [...fieldRequestStack, sel.fieldRequest]))));
+            createEntityFieldQueryNode(sel.fieldRequest, sourceObjectNode, [...fieldRequestStack, sel.fieldRequest]))));
 }
 
 /**
@@ -81,8 +81,9 @@ function createEntityFieldQueryNode(fieldRequest: FieldRequest, contextNode: Que
     const type = fieldRequest.field.type;
     const rawType = getNamedType(type);
     const fieldNode = new FieldQueryNode(contextNode, fieldRequest.field);
+    // TODO fall back to empty list if not IS_LIST even in the case of scalar lists
     if (isListType(type) && rawType instanceof GraphQLObjectType) {
-        return createConditionalListQueryNode(fieldRequest, fieldNode, fieldRequestStack);
+        return createSafeTransformListQueryNode(fieldRequest, fieldNode, fieldRequestStack);
     }
     if (rawType instanceof GraphQLObjectType) {
         return createConditionalObjectNode(fieldRequest.selectionSet, fieldNode, fieldRequestStack);
@@ -108,7 +109,7 @@ function createTransformListQueryNode(fieldRequest: FieldRequest, listNode: Quer
     return new TransformListQueryNode({listNode, innerNode, filterNode, orderBy, maxCount});
 }
 
-function createConditionalListQueryNode(fieldRequest: FieldRequest, listNode: QueryNode, fieldRequestStack: FieldRequest[]): QueryNode {
+function createSafeTransformListQueryNode(fieldRequest: FieldRequest, listNode: QueryNode, fieldRequestStack: FieldRequest[]): QueryNode {
     // to avoid errors because of eagerly evaluated list expression, we just convert non-lists to an empty list
     const safeList = new ConditionalQueryNode(
         new TypeCheckQueryNode(listNode, BasicType.LIST),

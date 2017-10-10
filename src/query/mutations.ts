@@ -155,6 +155,7 @@ function createUpdatePropertiesSpecification(obj: any, parentType: GraphQLObject
 
             properties.push(new PropertySpecification(field.name, currentNode));
         } else if (field.name in obj) {
+            // TODO do not include id in entities
             // scalars and value objects
             properties.push(new PropertySpecification(field.name, new LiteralQueryNode(obj[field.name])));
         }
