@@ -74,14 +74,8 @@ export class AddRootQueryTypeTransformer implements ASTTransformer {
             loc: field.loc,
             name: field.name,
             type: {
-                kind: LIST_TYPE,
-                type: {
-                    kind: NON_NULL_TYPE,
-                    type: {
-                        kind: NAMED_TYPE,
-                        name: buildNameNode(getTypeNameIgnoringNonNullAndList(field.type))
-                    }
-                }
+                kind: NAMED_TYPE,
+                name: buildNameNode(getTypeNameIgnoringNonNullAndList(field.type))
             }
         }));
     }
