@@ -1,6 +1,12 @@
 import {ASTTransformer} from "../ast-transformer";
-import {DocumentNode, FieldDefinitionNode, ObjectTypeDefinitionNode} from "graphql";
-import {buildNameNode, getRootEntityTypes} from "../../schema-utils";
+import {
+    ArgumentNode, DocumentNode, FieldDefinitionNode, InputValueDefinitionNode,
+    ObjectTypeDefinitionNode
+} from "graphql";
+import {
+    buildNameNode, getNamedTypeDefinitionAST, getRootEntityTypes,
+    getTypeNameIgnoringNonNullAndList
+} from "../../schema-utils";
 import {
     FIELD_DEFINITION,
     INPUT_VALUE_DEFINITION,
@@ -10,7 +16,7 @@ import {
     OBJECT_TYPE_DEFINITION
 } from "graphql/language/kinds";
 import {flatMap} from "../../../utils/utils";
-import {ENTITY_ID, QUERY_TYPE} from '../../schema-defaults';
+import {ENTITY_ID, KEY_FIELD_DIRECTIVE, QUERY_TYPE} from '../../schema-defaults';
 import {allEntitiesQueryBy} from "../../../graphql/names";
 
 export class AddRootQueryTypeTransformer implements ASTTransformer {
@@ -39,11 +45,14 @@ export class AddRootQueryTypeTransformer implements ASTTransformer {
             kind: FIELD_DEFINITION,
             name: buildNameNode(entityDef.name.value),
             type: { kind: NAMED_TYPE, name: buildNameNode(entityDef.name.value) },
-            arguments: [{
-                kind: INPUT_VALUE_DEFINITION,
-                name: buildNameNode(ENTITY_ID),
-                type: { kind: NAMED_TYPE,  name: buildNameNode('ID')}
-            }],
+            arguments: [
+                {
+                    kind: INPUT_VALUE_DEFINITION,
+                    name: buildNameNode(ENTITY_ID),
+                    type: { kind: NAMED_TYPE,  name: buildNameNode('ID')}
+                },
+                ...this.buildQueryOneInputFiltersForKeyFields(entityDef)
+            ],
             loc: entityDef.loc
         }
     }
@@ -57,4 +66,24 @@ export class AddRootQueryTypeTransformer implements ASTTransformer {
             loc: entityDef.loc
         }
     }
+
+    private buildQueryOneInputFiltersForKeyFields(entityDef: ObjectTypeDefinitionNode): InputValueDefinitionNode[] {
+        const keyFields = entityDef.fields.filter(field => field.directives && field.directives.some(directive => directive.name.value === KEY_FIELD_DIRECTIVE))
+        return keyFields.map(field => ({
+            kind: INPUT_VALUE_DEFINITION,
+            loc: field.loc,
+            name: field.name,
+            type: {
+                kind: LIST_TYPE,
+                type: {
+                    kind: NON_NULL_TYPE,
+                    type: {
+                        kind: NAMED_TYPE,
+                        name: buildNameNode(getTypeNameIgnoringNonNullAndList(field.type))
+                    }
+                }
+            }
+        }));
+    }
+
 }

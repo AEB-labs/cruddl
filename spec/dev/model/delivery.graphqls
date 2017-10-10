@@ -1,5 +1,5 @@
 type Delivery @rootEntity {
-    deliveryNumber: String
+    deliveryNumber: String @key
     serialNumbers: [String]
     consignee: Address
     contentInfo: [Translation]

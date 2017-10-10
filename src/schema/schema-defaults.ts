@@ -61,6 +61,7 @@ export const ORDER_BY_ARG = 'orderBy';
 export const CURSOR_FIELD = '_cursor';
 export const AFTER_ARG = 'after';
 export const FIRST_ARG = 'first';
+export const KEY_FIELD_DIRECTIVE = 'key'
 
 export const COUNT_META_FIELDS = 'count';
 
