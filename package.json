@@ -5,6 +5,7 @@
   "main": "index.ts",
   "scripts": {
     "test": "tsc --noEmit --skipLibCheck && node momo-test",
+    "test:dropdb": "ts-node ./spec/regression/drop-test-db.ts",
     "start": "node momo"
   },
   "repository": {

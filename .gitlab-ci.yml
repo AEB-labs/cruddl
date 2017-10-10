@@ -1,10 +1,18 @@
 image: node:latest
 
+cache:
+  paths:
+    - node_modules/
+    - arangodb
+
 stages:
   - test
 
 test:
   stage: test
   script:
+    - mkdir -p arangodb && cd arangodb && curl https://www.arangodb.com/repositories/travisCI/setup_arangodb_3.1.12.sh | bash
     - npm install
+    - npm test
+    - npm run test:dropdb
     - npm test
