@@ -37,6 +37,7 @@
  */
 import { GraphQLField, GraphQLObjectType } from 'graphql';
 import { indent } from '../utils/utils';
+import { ObjectType } from '../../../model-manager-node/src/scripting/typescript-declarations';
 
 export interface QueryNode {
     describe(): string;
@@ -424,6 +425,35 @@ export class OrderSpecification {
 export enum OrderDirection {
     ASCENDING,
     DESCENDING
+}
+
+/**
+ * Evaluates to all root entitites that are connected to a specific root entitity through a specific edge
+ */
+export class FollowEdgeQueryNode implements QueryNode {
+    constructor(readonly edgeType: EdgeType, readonly sourceEntityNode: QueryNode) {
+
+    }
+
+    describe() {
+        return `follow ${this.edgeType.describe()} of ${this.sourceEntityNode.describe()}`
+    }
+}
+
+export class EdgeType {
+    constructor(params: { fromType: GraphQLObjectType, toType: GraphQLObjectType, discriminator?: string }) {
+        this.fromType = params.fromType;
+        this.toType = params.toType;
+        this.discriminator = params.discriminator;
+    }
+
+    public fromType: GraphQLObjectType;
+    public toType: GraphQLObjectType;
+    public discriminator: string|undefined;
+
+    describe() {
+        return `edge ${this.fromType.name}/${this.toType.name}` + (this.discriminator ? '/' + this.discriminator : '');
+    }
 }
 
 /**

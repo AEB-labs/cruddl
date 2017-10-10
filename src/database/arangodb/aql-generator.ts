@@ -1,6 +1,7 @@
 import {
     BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode, ConstBoolQueryNode,
-    CreateEntityQueryNode, DeleteEntitiesQueryNode, EntitiesQueryNode, FieldQueryNode, FirstOfListQueryNode,
+    CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeType, EntitiesQueryNode, FieldQueryNode, FirstOfListQueryNode,
+    FollowEdgeQueryNode,
     ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, ObjectQueryNode, OrderDirection, OrderSpecification,
     QueryNode, TransformListQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator,
     UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode
@@ -218,6 +219,17 @@ const processors : { [name: string]: NodeProcessor<any> } = {
         return getCollectionForType(node.objectType);
     },
 
+    FollowEdge(node: FollowEdgeQueryNode, context): AQLFragment {
+        const tmpVar = aql.variable();
+        // need to wrap this in a subquery because ANY is not possible as first token of an expression node in AQL
+        // sadly means that with a TransformList, there are two nested FORs (but should be optimized away by arangodb)
+        return aqlExt.parenthesizeList(
+            aql`FOR ${tmpVar}`,
+            aql`IN ANY ${processNode(node.sourceEntityNode, context)} ${getCollectionForEdge(node.edgeType)}`,
+            aql`RETURN ${tmpVar}`
+        );
+    },
+
     CreateEntity(node: CreateEntityQueryNode, context): AQLFragment {
         return aqlExt.parenthesizeObject(
             aql`INSERT ${processNode(node.objectNode, context)} IN ${getCollectionForType(node.objectType)}`,
@@ -313,4 +325,8 @@ export function getAQLForQuery(node: QueryNode) {
 
 function getCollectionForType(type: GraphQLNamedType) {
     return aql.collection(decapitalize(pluralize(type.name)));
+}
+
+function getCollectionForEdge(edgeType: EdgeType) {
+    return aql.collection(decapitalize(pluralize(edgeType.fromType.name)) + '_' + decapitalize(pluralize(edgeType.toType.name)));
 }
