@@ -240,6 +240,14 @@ export function isTypeWithIdentity(type: GraphQLType) {
         hasDirectiveWithName(astNode, CHILD_ENTITY_DIRECTIVE);
 }
 
+export function isRootEntityType(type: GraphQLType) {
+    const astNode = getTypeDefinitionNode(type);
+    if (!astNode) {
+        return false;
+    }
+    return hasDirectiveWithName(astNode, ROOT_ENTITY_DIRECTIVE);
+}
+
 export function isEntityExtensionType(type: GraphQLType) {
     const astNode = getTypeDefinitionNode(type);
     if (!astNode) {

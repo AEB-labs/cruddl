@@ -21,6 +21,7 @@
     "@types/jasmine": "^2.5.41",
     "@types/node": "^8.0.28",
     "@types/pluralize": "0.0.27",
+    "@types/strip-json-comments": "0.0.30",
     "body-parser": "^1.17.2",
     "cors": "^2.8.3",
     "express": "~4.15.4",
@@ -36,6 +37,8 @@
   "dependencies": {
     "arangojs": "^5.7.0",
     "colors": "^1.1.2",
-    "pluralize": "^7.0.0"
+    "jsondiffpatch": "^0.2.4",
+    "pluralize": "^7.0.0",
+    "strip-json-comments": "^2.0.1"
   }
 }
