@@ -27,7 +27,6 @@ const transformers = [
     // add query parameters
     AddFilterInputTypesTransformer,
     AddOrderbyInputEnumsTransformer,
-    AddPaginationArgumentsToFieldsTransformer,
 
     // Input types for creation and manipulation of object types.
     AddCreateEntityInputTypesTransformer,
@@ -40,6 +39,7 @@ const transformers = [
     AddFilterArgumentsToFieldsTransformer,
     AddOrderbyArgumentsToFieldsTransformer,
     AddCursorFieldToEntitiesTransformer,
+    AddPaginationArgumentsToFieldsTransformer,
 
     AddQueryMetaTypeTransformer,
     AddMetaFieldsAlongWithFilterableFieldsTransformer,
