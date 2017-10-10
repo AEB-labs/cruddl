@@ -220,11 +220,7 @@ function getTypeDefinitionNode(type: GraphQLType): ObjectTypeDefinitionNode|unde
     if (!(type instanceof GraphQLObjectType)) {
         return undefined;
     }
-    const astNode: ObjectTypeDefinitionNode = (type as any).astNode;
-    if (!astNode) {
-        throw new Error(`astNode on type ${type} expected but missing`);
-    }
-    return astNode;
+    return (type as any).astNode;
 }
 
 function getFieldDefinitionNode(field: GraphQLField<any, any>): FieldDefinitionNode {
