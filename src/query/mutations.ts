@@ -91,9 +91,7 @@ function createUpdatePropertiesSpecification(obj: any, parentType: GraphQLObject
             const sourceNode = new FieldQueryNode(new ContextQueryNode(), field);
             const valueNode = new UpdateObjectQueryNode(sourceNode, createUpdatePropertiesSpecification(obj[field.name], getNamedType(field.type) as GraphQLObjectType));
             properties.push(new PropertySpecification(field.name, valueNode));
-        }
-
-        if (isChildEntityType(getNamedType(field.type))) {
+        } else if (isChildEntityType(getNamedType(field.type))) {
             const childEntityType = getNamedType(field.type) as GraphQLObjectType;
             const idField = childEntityType.getFields()[ID_FIELD];
             const idQueryNode = new FieldQueryNode(new ContextQueryNode(), idField);
@@ -156,10 +154,8 @@ function createUpdatePropertiesSpecification(obj: any, parentType: GraphQLObject
             }
 
             properties.push(new PropertySpecification(field.name, currentNode));
-        }
-
-        // scalars and value objects
-        if (field.name in obj) {
+        } else if (field.name in obj) {
+            // scalars and value objects
             properties.push(new PropertySpecification(field.name, new LiteralQueryNode(obj[field.name])));
         }
     }
