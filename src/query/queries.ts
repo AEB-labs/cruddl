@@ -1,11 +1,9 @@
 import { FieldRequest, FieldSelection } from '../graphql/query-distiller';
-import { getNamedType, GraphQLField, GraphQLNamedType, GraphQLObjectType } from 'graphql';
+import { getNamedType, GraphQLField, GraphQLObjectType } from 'graphql';
 import {
-    BasicType, BinaryOperationQueryNode, BinaryOperator, ConditionalQueryNode, EdgeType, EntitiesQueryNode,
-    FieldQueryNode,
+    BasicType, BinaryOperationQueryNode, BinaryOperator, ConditionalQueryNode, EntitiesQueryNode, FieldQueryNode,
     FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode, NullQueryNode, ObjectQueryNode,
-    PropertySpecification,
-    QueryNode, TransformListQueryNode, TypeCheckQueryNode, VariableQueryNode
+    PropertySpecification, QueryNode, TransformListQueryNode, TypeCheckQueryNode, VariableQueryNode
 } from './definition';
 import { createCursorQueryNode, createOrderSpecification, createPaginationFilterNode } from './pagination-and-sorting';
 import { createFilterNode } from './filtering';
@@ -16,6 +14,7 @@ import { decapitalize, objectEntries } from '../utils/utils';
 import { createScalarFieldValueNode } from './common';
 import { isListType } from '../graphql/schema-utils';
 import { getSingleKeyField, isReferenceField, isRelationField } from '../schema/schema-utils';
+import { getEdgeType } from '../schema/edges';
 
 /**
  * Creates a QueryNode for a field of the root query type
@@ -72,38 +71,15 @@ export function createEntityObjectNode(fieldSelections: FieldSelection[], source
             createEntityFieldQueryNode(sel.fieldRequest, sourceObjectNode, [...fieldRequestStack, sel.fieldRequest]))));
 }
 
-function getEdgeType(typeA: GraphQLObjectType, typeB: GraphQLObjectType, typeAField: GraphQLField<any, any>) {
-    // TODO add discriminator
-    if (typeA.name < typeB.name) {
-        return new EdgeType({
-            fromType: typeA,
-            toType: typeB
-        });
-    } else {
-        return new EdgeType({
-            fromType: typeB,
-            toType: typeA
-        });
-    }
-}
-
 function createTo1RelationQueryNode(fieldRequest: FieldRequest, sourceEntityNode: QueryNode, fieldRequestStack: FieldRequest[]): QueryNode {
-    const edgeType = getEdgeType(
-        getNamedType(fieldRequest.parentType) as GraphQLObjectType,
-        getNamedType(fieldRequest.field.type) as GraphQLObjectType,
-        fieldRequest.field);
-
+    const edgeType = getEdgeType(getNamedType(fieldRequest.parentType) as GraphQLObjectType, fieldRequest.field);
     const followNode = new FollowEdgeQueryNode(edgeType, sourceEntityNode);
     const relatedNode = new FirstOfListQueryNode(followNode);
     return createEntityObjectNode(fieldRequest.selectionSet, relatedNode, fieldRequestStack);
 }
 
 function createToNRelationQueryNode(fieldRequest: FieldRequest, sourceEntityNode: QueryNode, fieldRequestStack: FieldRequest[]): QueryNode {
-    const edgeType = getEdgeType(
-        getNamedType(fieldRequest.parentType) as GraphQLObjectType,
-        getNamedType(fieldRequest.field.type) as GraphQLObjectType,
-        fieldRequest.field);
-
+    const edgeType = getEdgeType(getNamedType(fieldRequest.parentType) as GraphQLObjectType, fieldRequest.field);
     const followNode = new FollowEdgeQueryNode(edgeType, sourceEntityNode);
     return createTransformListQueryNode(fieldRequest, followNode, fieldRequestStack);
 }

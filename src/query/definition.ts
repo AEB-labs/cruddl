@@ -37,6 +37,7 @@
  */
 import { GraphQLField, GraphQLObjectType } from 'graphql';
 import { indent } from '../utils/utils';
+import { EdgeType } from '../schema/edges';
 
 export interface QueryNode {
     describe(): string;
@@ -435,23 +436,11 @@ export class FollowEdgeQueryNode implements QueryNode {
     }
 
     describe() {
-        return `follow ${this.edgeType.describe()} of ${this.sourceEntityNode.describe()}`
-    }
-}
-
-export class EdgeType {
-    constructor(params: { fromType: GraphQLObjectType, toType: GraphQLObjectType, discriminator?: string }) {
-        this.fromType = params.fromType;
-        this.toType = params.toType;
-        this.discriminator = params.discriminator;
+        return `follow ${this.describeEdge(this.edgeType)} of ${this.sourceEntityNode.describe()}`
     }
 
-    public fromType: GraphQLObjectType;
-    public toType: GraphQLObjectType;
-    public discriminator: string|undefined;
-
-    describe() {
-        return `edge ${this.fromType.name}/${this.toType.name}` + (this.discriminator ? '/' + this.discriminator : '');
+    private describeEdge(edge: EdgeType) {
+        return `edge ${edge.fromType.name}/${edge.toType.name}` + (edge.discriminator ? '/' + edge.discriminator : '');
     }
 }
 
