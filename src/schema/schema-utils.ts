@@ -169,7 +169,7 @@ export function getScalarFieldsOfObjectDefinition(ast: DocumentNode, objectDefin
 }
 
 export function getNamedTypeDefinitionAST(ast: DocumentNode, name: string): ObjectTypeDefinitionNode|ScalarTypeDefinitionNode|EnumTypeDefinitionNode {
-    if (['String', 'ID', 'Int', 'Float'].includes(name)) {
+    if (['String', 'ID', 'Int', 'Float', 'Boolean'].includes(name)) {
         // Fake default scalar types, because they are not present in AST but will be generated later during schema creation.
         return buildScalarDefinitionNode(name)
     }
