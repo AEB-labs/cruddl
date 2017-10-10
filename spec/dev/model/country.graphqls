@@ -1,0 +1,4 @@
+type Country @rootEntity {
+    isoCode: String @key
+    description: [Translation]
+}

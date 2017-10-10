@@ -1,7 +1,7 @@
 import {
     DocumentNode,
     EnumTypeDefinitionNode,
-    FieldDefinitionNode, GraphQLObjectType, GraphQLType,
+    FieldDefinitionNode, GraphQLField, GraphQLObjectType, GraphQLType,
     InputObjectTypeDefinitionNode,
     InputValueDefinitionNode,
     Location,
@@ -23,11 +23,11 @@ import {
 } from "graphql/language/kinds";
 import {
     CHILD_ENTITY_DIRECTIVE,
-    ENTITY_EXTENSION_DIRECTIVE,
+    ENTITY_EXTENSION_DIRECTIVE, KEY_FIELD_DIRECTIVE, REFERENCE_DIRECTIVE, RELATION_DIRECTIVE,
     ROOT_ENTITY_DIRECTIVE,
     VALUE_OBJECT_DIRECTIVE
-} from "./schema-defaults";
-import {flatMap} from "../utils/utils";
+} from './schema-defaults';
+import { flatMap, objectValues } from '../utils/utils';
 
 
 /**
@@ -205,15 +205,15 @@ export function buildNameNode(name: string): NameNode {
     return { kind: NAME, value: name };
 }
 
-export function hasObjectTypeDirectiveWithName(objectType: ObjectTypeDefinitionNode, directiveName: string): boolean {
+export function hasDirectiveWithName(typeOrField: ObjectTypeDefinitionNode|FieldDefinitionNode, directiveName: string): boolean {
     // remove leading @
     if (directiveName[0] === '@') {
         directiveName = directiveName.substr(1, directiveName.length - 1);
     }
-    if (!objectType.directives) {
+    if (!typeOrField.directives) {
         return false;
     }
-    return objectType.directives.some(directive => directive.name.value === directiveName);
+    return typeOrField.directives.some(directive => directive.name.value === directiveName);
 }
 
 function getTypeDefinitionNode(type: GraphQLType): ObjectTypeDefinitionNode|undefined {
@@ -227,13 +227,21 @@ function getTypeDefinitionNode(type: GraphQLType): ObjectTypeDefinitionNode|unde
     return astNode;
 }
 
+function getFieldDefinitionNode(field: GraphQLField<any, any>): FieldDefinitionNode {
+    const astNode: FieldDefinitionNode = (field as any).astNode;
+    if (!astNode) {
+        throw new Error(`astNode on field ${field.name} expected but missing`);
+    }
+    return astNode;
+}
+
 export function isTypeWithIdentity(type: GraphQLType) {
     const astNode = getTypeDefinitionNode(type);
     if (!astNode) {
         return false;
     }
-    return hasObjectTypeDirectiveWithName(astNode, ROOT_ENTITY_DIRECTIVE) ||
-        hasObjectTypeDirectiveWithName(astNode, CHILD_ENTITY_DIRECTIVE);
+    return hasDirectiveWithName(astNode, ROOT_ENTITY_DIRECTIVE) ||
+        hasDirectiveWithName(astNode, CHILD_ENTITY_DIRECTIVE);
 }
 
 export function isEntityExtensionType(type: GraphQLType) {
@@ -241,7 +249,7 @@ export function isEntityExtensionType(type: GraphQLType) {
     if (!astNode) {
         return false;
     }
-    return hasObjectTypeDirectiveWithName(astNode, ENTITY_EXTENSION_DIRECTIVE);
+    return hasDirectiveWithName(astNode, ENTITY_EXTENSION_DIRECTIVE);
 }
 
 export function isChildEntityType(type: GraphQLType) {
@@ -249,5 +257,28 @@ export function isChildEntityType(type: GraphQLType) {
     if (!astNode) {
         return false;
     }
-    return hasObjectTypeDirectiveWithName(astNode, CHILD_ENTITY_DIRECTIVE);
+    return hasDirectiveWithName(astNode, CHILD_ENTITY_DIRECTIVE);
+}
+
+export function isRelationField(field: GraphQLField<any, any>) {
+    const astNode = getFieldDefinitionNode(field);
+    return hasDirectiveWithName(astNode, RELATION_DIRECTIVE);
+}
+
+export function isReferenceField(field: GraphQLField<any, any>) {
+    const astNode = getFieldDefinitionNode(field);
+    return hasDirectiveWithName(astNode, REFERENCE_DIRECTIVE);
+}
+
+export function isKeyField(field: GraphQLField<any, any>) {
+    const astNode = getFieldDefinitionNode(field);
+    return hasDirectiveWithName(astNode, KEY_FIELD_DIRECTIVE);
+}
+
+export function getSingleKeyField(type: GraphQLObjectType): GraphQLField<any, any>|undefined {
+    const keyFields = objectValues(type.getFields()).filter(field => isKeyField(field));
+    if (keyFields.length != 1) {
+        return undefined;
+    }
+    return keyFields[0];
 }

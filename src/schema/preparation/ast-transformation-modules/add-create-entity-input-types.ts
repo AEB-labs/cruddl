@@ -12,7 +12,7 @@ import {
     getChildEntityTypes,
     getNamedTypeDefinitionAST,
     getRootEntityTypes,
-    hasObjectTypeDirectiveWithName
+    hasDirectiveWithName
 } from "../../schema-utils";
 import {
     INPUT_OBJECT_TYPE_DEFINITION,
@@ -68,7 +68,7 @@ export class AddCreateEntityInputTypesTransformer implements ASTTransformer {
                 }
                 const namedTypeOfList = getNamedTypeDefinitionAST(ast, effectiveType.name.value);
                 if (namedTypeOfList.kind === OBJECT_TYPE_DEFINITION) {
-                    if (hasObjectTypeDirectiveWithName(namedTypeOfList, ROOT_ENTITY_DIRECTIVE)) {
+                    if (hasDirectiveWithName(namedTypeOfList, ROOT_ENTITY_DIRECTIVE)) {
                         return buildInputValueListNode(field.name.value, GraphQLID.name, field.loc)
                     }
                     return buildInputValueListNode(field.name.value, getCreateInputTypeName(namedTypeOfList), field.loc)

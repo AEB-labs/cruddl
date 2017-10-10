@@ -8,7 +8,7 @@ import {
     ObjectTypeDefinitionNode,
     TypeNode
 } from "graphql";
-import {getEntityExtensionTypes, getNamedTypeDefinitionAST, hasObjectTypeDirectiveWithName} from "../../schema-utils";
+import {getEntityExtensionTypes, getNamedTypeDefinitionAST, hasDirectiveWithName} from "../../schema-utils";
 import {
     INPUT_OBJECT_TYPE_DEFINITION,
     LIST_TYPE,
@@ -50,7 +50,7 @@ export class AddExtensionInputTypesTransformer implements ASTTransformer {
                 const namedType = getNamedTypeDefinitionAST(ast, type.name.value);
                 switch (namedType.kind) {
                     case OBJECT_TYPE_DEFINITION:
-                        if (hasObjectTypeDirectiveWithName(namedType, ROOT_ENTITY_DIRECTIVE)) {
+                        if (hasDirectiveWithName(namedType, ROOT_ENTITY_DIRECTIVE)) {
                             // referenced by foreign key
                             return buildInputValueNode(field.name.value, GraphQLID.name)
                         } else {
@@ -67,7 +67,7 @@ export class AddExtensionInputTypesTransformer implements ASTTransformer {
                 const namedTypeOfList = getNamedTypeDefinitionAST(ast, effectiveType.name.value);
                 switch (namedTypeOfList.kind) {
                     case OBJECT_TYPE_DEFINITION:
-                        if (hasObjectTypeDirectiveWithName(namedTypeOfList, ROOT_ENTITY_DIRECTIVE)) {
+                        if (hasDirectiveWithName(namedTypeOfList, ROOT_ENTITY_DIRECTIVE)) {
                             // foreign key
                             return buildInputValueListNode(field.name.value, GraphQLID.name);
                         } else {

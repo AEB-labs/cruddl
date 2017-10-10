@@ -172,6 +172,7 @@ export namespace aql {
         if (!isSafeIdentifier(name)) {
             throw new Error(`Possibly invalid/unsafe collection name: ${name}`);
         }
+        // TODO make sure this does not collide with a variable, maybe use bound vars?
         return code(name);
     }
 

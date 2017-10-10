@@ -1,18 +1,41 @@
 import {
-    BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode,
-    ConstBoolQueryNode,
-    ContextAssignmentQueryNode, ContextQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EntitiesQueryNode,
-    FieldQueryNode,
-    FirstOfListQueryNode, ListQueryNode, LiteralQueryNode, ObjectQueryNode, OrderDirection, OrderSpecification,
+    BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode, ConstBoolQueryNode,
+    CreateEntityQueryNode, DeleteEntitiesQueryNode, EntitiesQueryNode, FieldQueryNode, FirstOfListQueryNode,
+    ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, ObjectQueryNode, OrderDirection, OrderSpecification,
     QueryNode, TransformListQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator,
-    UpdateEntitiesQueryNode, UpdateObjectQueryNode
+    UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode
 } from '../../query/definition';
-import { aql, AQLFragment } from './aql';
+import { aql, AQLFragment, AQLVariable } from './aql';
 import { GraphQLNamedType } from 'graphql';
 import * as pluralize from 'pluralize';
 import { decapitalize } from '../../utils/utils';
+import variable = aql.variable;
 
-type NodeProcessor<T extends QueryNode> = (node: T, context?: AQLFragment) => AQLFragment;
+class QueryContext {
+    private variableMap = new Map<VariableQueryNode, AQLVariable>();
+
+    introduceVariable(variableNode: VariableQueryNode): QueryContext {
+        if (this.variableMap.has(variableNode)) {
+            throw new Error(`Variable ${variableNode.describe()} is introduced twice`);
+        }
+        const variable = new AQLVariable();
+        const newMap = new Map(this.variableMap);
+        newMap.set(variableNode, variable);
+        const newContext = new QueryContext();
+        newContext.variableMap = newMap;
+        return newContext;
+    }
+
+    getVariable(variableNode: VariableQueryNode): AQLFragment {
+        const variable = this.variableMap.get(variableNode);
+        if (!variable) {
+            throw new Error(`Variable ${variableNode.toString()} is used but not introduced`);
+        }
+        return aql`${variable}`;
+    }
+}
+
+type NodeProcessor<T extends QueryNode> = (node: T, context: QueryContext) => AQLFragment;
 
 namespace aqlExt {
     export function safeJSONKey(key: string): AQLFragment {
@@ -83,17 +106,19 @@ const processors : { [name: string]: NodeProcessor<any> } = {
         return aql`UNION(${listNodeStr})`;
     },
 
-    Context(node: ContextQueryNode, context): AQLFragment {
-        return context || aql`null`;
+    Variable(node: VariableQueryNode, context): AQLFragment {
+        return context.getVariable(node);
     },
 
-    ContextAssignment(node: ContextAssignmentQueryNode, context): AQLFragment {
-        const tmpVar = aql.variable();
+    VariableAssignment(node: VariableAssignmentQueryNode, context): AQLFragment {
+        const newContext = context.introduceVariable(node.variableNode);
+        const tmpVar = newContext.getVariable(node.variableNode);
+
         // note that we have to know statically if the context var is a list or an object
         // assuming object here because lists are not needed currently
         return aqlExt.parenthesizeObject(
-            aql`LET ${tmpVar} = ${processNode(node.contextValueNode, context)}`,
-            aql`RETURN ${processNode(node.resultNode, tmpVar)}`
+            aql`LET ${tmpVar} = ${processNode(node.variableValueNode, newContext)}`,
+            aql`RETURN ${processNode(node.resultNode, newContext)}`
         );
     },
 
@@ -112,20 +137,23 @@ const processors : { [name: string]: NodeProcessor<any> } = {
     },
 
     TransformList(node: TransformListQueryNode, context): AQLFragment {
+        const newContext = context.introduceVariable(node.itemVariable);
+        const itemVar = newContext.getVariable(node.itemVariable);
         const list = processNode(node.listNode, context);
-        const itemVar = aql.variable();
         return aqlExt.parenthesizeList(
             aql`FOR ${itemVar}`,
             aql`IN ${list}`,
-            aql`FILTER ${processNode(node.filterNode, itemVar)}`,
-            generateSortAQL(node.orderBy, itemVar),
+            aql`FILTER ${processNode(node.filterNode, newContext)}`,
+            generateSortAQL(node.orderBy, newContext),
             node.maxCount != undefined ? aql`LIMIT ${node.maxCount}` : aql``,
-            aql`RETURN ${processNode(node.innerNode, itemVar)}`
+            aql`RETURN ${processNode(node.innerNode, newContext)}`
         );
     },
 
-    UpdateObject(node: UpdateObjectQueryNode, context): AQLFragment {
-        return aql`MERGE(${processNode(node.sourceNode, context)}, ${processNode(new ObjectQueryNode(node.updates), context)})`;
+    UpdateObject(node: MergeObjectsQueryNode, context): AQLFragment {
+        const objectList = node.objectNodes.map(node => aql`...${processNode(node, context)}`);
+        const objectsFragment = aql.join(objectList, aql`, `);
+        return aql`MERGE(${objectsFragment})`;
     },
 
     FirstOfList(node: FirstOfListQueryNode, context): AQLFragment {
@@ -158,7 +186,7 @@ const processors : { [name: string]: NodeProcessor<any> } = {
             case UnaryOperator.NOT:
                 return aql`!(${processNode(node.valueNode, context)})`;
             case UnaryOperator.JSON_STRINGIFY:
-                return aql`JSON_STRINGIFY(${processNode(node.valueNode, context)})`
+                return aql`JSON_STRINGIFY(${processNode(node.valueNode, context)})`;
             default:
                 throw new Error(`Unsupported unary operator: ${node.operator}`);
         }
@@ -197,27 +225,29 @@ const processors : { [name: string]: NodeProcessor<any> } = {
         );
     },
 
-    UpdateEntities(node: UpdateEntitiesQueryNode) {
-        const entityVar = aql.variable();
+    UpdateEntities(node: UpdateEntitiesQueryNode, context) {
+        const newContext = context.introduceVariable(node.currentEntityVariable);
+        const entityVar = newContext.getVariable(node.currentEntityVariable);
         return aqlExt.parenthesizeList(
             aql`FOR ${entityVar}`,
             aql`IN ${getCollectionForType(node.objectType)}`,
-            aql`FILTER ${processNode(node.filterNode, entityVar)}`,
+            aql`FILTER ${processNode(node.filterNode, newContext)}`,
             node.maxCount !== undefined ? aql`LIMIT ${node.maxCount}` : aql``,
             aql`UPDATE ${entityVar}`,
-            aql`WITH ${processNode(new ObjectQueryNode(node.updates), entityVar)}`,
+            aql`WITH ${processNode(new ObjectQueryNode(node.updates), newContext)}`,
             aql`IN ${getCollectionForType(node.objectType)}`,
             aql`OPTIONS { mergeObjects: false }`,
             aql`RETURN NEW`
         );
     },
 
-    DeleteEntities(node: DeleteEntitiesQueryNode) {
-        const entityVar = aql.variable();
+    DeleteEntities(node: DeleteEntitiesQueryNode, context) {
+        const newContext = context.introduceVariable(node.currentEntityVariable);
+        const entityVar = newContext.getVariable(node.currentEntityVariable);
         return aqlExt.parenthesizeList(
             aql`FOR ${entityVar}`,
             aql`IN ${getCollectionForType(node.objectType)}`,
-            aql`FILTER ${processNode(node.filterNode, entityVar)}`,
+            aql`FILTER ${processNode(node.filterNode, newContext)}`,
             node.maxCount !== undefined ? aql`LIMIT ${node.maxCount}` : aql``,
             aql`REMOVE ${entityVar}`,
             aql`IN ${getCollectionForType(node.objectType)}`,
@@ -251,7 +281,7 @@ function getAQLOperator(op: BinaryOperator): AQLFragment|undefined {
     }
 }
 
-function generateSortAQL(orderBy: OrderSpecification, context?: AQLFragment): AQLFragment {
+function generateSortAQL(orderBy: OrderSpecification, context: QueryContext): AQLFragment {
     if (orderBy.isUnordered()) {
         return aql``;
     }
@@ -268,7 +298,7 @@ function generateSortAQL(orderBy: OrderSpecification, context?: AQLFragment): AQ
     return aql`SORT ${aql.join(clauses, aql`, `)}`;
 }
 
-function processNode(node: QueryNode, context?: AQLFragment) {
+function processNode(node: QueryNode, context: QueryContext) {
     const type = node.constructor.name;
     const rawType = type.replace(/QueryNode$/, '');
     if (!(rawType in processors)) {
@@ -278,7 +308,7 @@ function processNode(node: QueryNode, context?: AQLFragment) {
 }
 
 export function getAQLForQuery(node: QueryNode) {
-    return aql`RETURN ${processNode(node)}`;
+    return aql`RETURN ${processNode(node, new QueryContext())}`;
 }
 
 function getCollectionForType(type: GraphQLNamedType) {

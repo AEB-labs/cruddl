@@ -1,12 +1,12 @@
 import { getNamedType, GraphQLObjectType } from 'graphql';
 import {
-    BasicType, BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, ContextQueryNode, FieldQueryNode,
-    LiteralQueryNode, QueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator
+    BasicType, BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, FieldQueryNode, LiteralQueryNode,
+    QueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator
 } from './definition';
 import { isArray } from 'util';
 import { ARGUMENT_AND, ARGUMENT_OR } from '../schema/schema-defaults';
 
-export function createFilterNode(filterArg: any, objectType: GraphQLObjectType, contextNode: QueryNode = new ContextQueryNode()): QueryNode {
+export function createFilterNode(filterArg: any, objectType: GraphQLObjectType, contextNode: QueryNode): QueryNode {
     if (!filterArg || !Object.keys(filterArg).length) {
         return new ConstBoolQueryNode(true);
     }

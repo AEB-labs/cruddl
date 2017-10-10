@@ -12,7 +12,7 @@ import {
     getChildEntityTypes,
     getNamedTypeDefinitionAST,
     getRootEntityTypes,
-    hasObjectTypeDirectiveWithName
+    hasDirectiveWithName
 } from "../../schema-utils";
 import {
     INPUT_OBJECT_TYPE_DEFINITION,
@@ -89,14 +89,14 @@ export class AddUpdateEntityInputTypesTransformer implements ASTTransformer {
                 }
                 const namedTypeOfList = getNamedTypeDefinitionAST(ast, effectiveType.name.value);
                 if (namedTypeOfList.kind === OBJECT_TYPE_DEFINITION) {
-                    if (hasObjectTypeDirectiveWithName(namedTypeOfList, ROOT_ENTITY_DIRECTIVE)) {
+                    if (hasDirectiveWithName(namedTypeOfList, ROOT_ENTITY_DIRECTIVE)) {
                         // add/remove by foreign key
                         return [
                             buildInputValueListNode(getAddRelationFieldName(field.name.value), GraphQLID.name),
                             buildInputValueListNode(getRemoveRelationFieldName(field.name.value), GraphQLID.name),
                         ];
                     }
-                    if (hasObjectTypeDirectiveWithName(namedTypeOfList, CHILD_ENTITY_DIRECTIVE)) {
+                    if (hasDirectiveWithName(namedTypeOfList, CHILD_ENTITY_DIRECTIVE)) {
                         // add / update /remove with data
                         return [
                             buildInputValueListNode(getAddChildEntityFieldName(field.name.value), getCreateInputTypeName(namedTypeOfList)),

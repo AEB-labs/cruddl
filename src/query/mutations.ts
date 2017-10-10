@@ -2,11 +2,11 @@ import { FieldRequest } from '../graphql/query-distiller';
 import { getNamedType, GraphQLObjectType } from 'graphql';
 import {
     BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode,
-    ContextAssignmentQueryNode, ContextQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, FieldQueryNode,
-    FirstOfListQueryNode,
-    ListQueryNode,
-    LiteralQueryNode, NullQueryNode, PropertySpecification, QueryNode, TransformListQueryNode, TypeCheckQueryNode,
-    UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, UpdateObjectQueryNode
+    CreateEntityQueryNode, DeleteEntitiesQueryNode, FieldQueryNode, FirstOfListQueryNode, ListQueryNode,
+    LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, PropertySpecification, QueryNode,
+    TransformListQueryNode,
+    TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode,
+    VariableQueryNode
 } from './definition';
 import {
     CREATE_ENTITY_FIELD_PREFIX, DELETE_ENTITY_FIELD_PREFIX, ID_FIELD, MUTATION_ID_ARG, MUTATION_INPUT_ARG,
@@ -14,7 +14,7 @@ import {
 } from '../schema/schema-defaults';
 import { createEntityObjectNode } from './queries';
 import { isChildEntityType, isEntityExtensionType } from '../schema/schema-utils';
-import { objectValues } from '../utils/utils';
+import { decapitalize, objectValues } from '../utils/utils';
 import {
     getAddChildEntityFieldName, getRemoveChildEntityFieldName, getUpdateChildEntityFieldName
 } from '../graphql/names';
@@ -50,8 +50,13 @@ function createCreateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestSta
     // TODO special handling for generated ids of child entities
     const objectNode = new LiteralQueryNode(input);
     const createEntityNode = new CreateEntityQueryNode(entityType, objectNode);
-    const resultNode = createEntityObjectNode(fieldRequest.selectionSet, new ContextQueryNode(), fieldRequestStack);
-    return new ContextAssignmentQueryNode(createEntityNode, resultNode);
+    const newEntityVarNode = new VariableQueryNode('newEntity');
+    const resultNode = createEntityObjectNode(fieldRequest.selectionSet, newEntityVarNode, fieldRequestStack);
+    return new VariableAssignmentQueryNode({
+        variableValueNode: createEntityNode,
+        resultNode,
+        variableNode: newEntityVarNode
+    });
 }
 
 function createUpdateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[]): QueryNode {
@@ -62,24 +67,31 @@ function createUpdateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestSta
     }
     const input = fieldRequest.args[MUTATION_INPUT_ARG];
     const idField = entityType.getFields()[ID_FIELD];
-    const filterNode = new BinaryOperationQueryNode(new FieldQueryNode(new ContextQueryNode(), idField),
+    const currentEntityVarNode = new VariableQueryNode('currentEntity');
+    const filterNode = new BinaryOperationQueryNode(new FieldQueryNode(currentEntityVarNode, idField),
         BinaryOperator.EQUAL,
         new LiteralQueryNode(input[ID_FIELD]));
     const updateEntityNode = new FirstOfListQueryNode(new UpdateEntitiesQueryNode({
         objectType: entityType,
         filterNode,
-        updates: createUpdatePropertiesSpecification(input, entityType),
-        maxCount: 1
+        updates: createUpdatePropertiesSpecification(input, entityType, currentEntityVarNode),
+        maxCount: 1,
+        currentEntityVariable: currentEntityVarNode
     }));
-    const resultNode = createEntityObjectNode(fieldRequest.selectionSet, new ContextQueryNode(), fieldRequestStack);
+    const updatedEntityVarNode = new VariableQueryNode('updatedEntity');
+    const resultNode = createEntityObjectNode(fieldRequest.selectionSet, updatedEntityVarNode, fieldRequestStack);
     const conditionalResultNode = new ConditionalQueryNode( // updated entity may not exist
-        new TypeCheckQueryNode(new ContextQueryNode(), BasicType.OBJECT),
+        new TypeCheckQueryNode(updatedEntityVarNode, BasicType.OBJECT),
         resultNode,
         new NullQueryNode());
-    return new ContextAssignmentQueryNode(updateEntityNode, conditionalResultNode);
+    return new VariableAssignmentQueryNode({
+        variableNode: updatedEntityVarNode,
+        variableValueNode: updateEntityNode,
+        resultNode: conditionalResultNode
+    });
 }
 
-function createUpdatePropertiesSpecification(obj: any, parentType: GraphQLObjectType): PropertySpecification[] {
+function createUpdatePropertiesSpecification(obj: any, parentType: GraphQLObjectType, oldEntityNode: QueryNode): PropertySpecification[] {
     if (typeof obj != 'object') {
         return [];
     }
@@ -88,13 +100,15 @@ function createUpdatePropertiesSpecification(obj: any, parentType: GraphQLObject
     for (const field of objectValues(parentType.getFields())) {
         if (isEntityExtensionType(getNamedType(field.type)) && field.name in obj) {
             // call recursively and use update semantic (leave fields that are not specified as-is
-            const sourceNode = new FieldQueryNode(new ContextQueryNode(), field);
-            const valueNode = new UpdateObjectQueryNode(sourceNode, createUpdatePropertiesSpecification(obj[field.name], getNamedType(field.type) as GraphQLObjectType));
+            const sourceNode = new FieldQueryNode(oldEntityNode, field);
+            const valueNode = new MergeObjectsQueryNode([
+                sourceNode,
+                new ObjectQueryNode(createUpdatePropertiesSpecification(obj[field.name], getNamedType(field.type) as GraphQLObjectType, sourceNode))
+            ]);
             properties.push(new PropertySpecification(field.name, valueNode));
         } else if (isChildEntityType(getNamedType(field.type))) {
             const childEntityType = getNamedType(field.type) as GraphQLObjectType;
             const idField = childEntityType.getFields()[ID_FIELD];
-            const idQueryNode = new FieldQueryNode(new ContextQueryNode(), idField);
 
             // first add, then delete, then update
             // -> delete trumps add
@@ -102,7 +116,7 @@ function createUpdatePropertiesSpecification(obj: any, parentType: GraphQLObject
             // -> update operates on reduced list (delete ones do not generate overhead)
             // generates a query like this:
             // FOR obj IN [...existing, ...newValues] FILTER !(obj.id IN removedIDs) RETURN obj.id == updateID ? update(obj) : obj
-            const rawExistingNode = new FieldQueryNode(new ContextQueryNode(), field);
+            const rawExistingNode = new FieldQueryNode(oldEntityNode, field);
             let currentNode: QueryNode = new ConditionalQueryNode( // fall back to empty list if property is not a list
                 new TypeCheckQueryNode(rawExistingNode, BasicType.LIST), rawExistingNode, new ListQueryNode([]));
 
@@ -113,13 +127,16 @@ function createUpdatePropertiesSpecification(obj: any, parentType: GraphQLObject
                 currentNode = new ConcatListsQueryNode([currentNode, newNode]);
             }
 
+            const childEntityVarNode = new VariableQueryNode(decapitalize(childEntityType.name));
+            const childIDQueryNode = new FieldQueryNode(childEntityVarNode, idField);
+
             const removedIDs: number[] | undefined = obj[getRemoveChildEntityFieldName(field.name)];
             let removalFilterNode: QueryNode | undefined = undefined;
             if (removedIDs && removedIDs.length) {
                 // FILTER !(obj.id IN [...removedIDs])
                 removalFilterNode = new UnaryOperationQueryNode(
                     new BinaryOperationQueryNode(
-                        idQueryNode,
+                        childIDQueryNode,
                         BinaryOperator.IN,
                         new LiteralQueryNode(removedIDs)
                     ),
@@ -136,11 +153,14 @@ function createUpdatePropertiesSpecification(obj: any, parentType: GraphQLObject
                 // - item.id == 1 ? update1(item) : item
                 // - item.id == 2 ? update2(item) : (item.id == 1 ? update1(item) : item)
                 // ...
-                updateMapNode = new ContextQueryNode();
+                updateMapNode = childEntityVarNode;
 
                 for (const value of updatedValues) {
-                    const filterNode = new BinaryOperationQueryNode(idQueryNode, BinaryOperator.EQUAL, new LiteralQueryNode(value[ID_FIELD]));
-                    const updateNode = new UpdateObjectQueryNode(new ContextQueryNode(), createUpdatePropertiesSpecification(value, childEntityType));
+                    const filterNode = new BinaryOperationQueryNode(childIDQueryNode, BinaryOperator.EQUAL, new LiteralQueryNode(value[ID_FIELD]));
+                    const updateNode = new MergeObjectsQueryNode([
+                        childEntityVarNode,
+                        new ObjectQueryNode(createUpdatePropertiesSpecification(value, childEntityType, childEntityVarNode))
+                    ]);
                     updateMapNode = new ConditionalQueryNode(filterNode, updateNode, updateMapNode);
                 }
             }
@@ -149,7 +169,8 @@ function createUpdatePropertiesSpecification(obj: any, parentType: GraphQLObject
                 currentNode = new TransformListQueryNode({
                     listNode: currentNode,
                     filterNode: removalFilterNode,
-                    innerNode: updateMapNode
+                    innerNode: updateMapNode,
+                    itemVariable: childEntityVarNode
                 });
             }
 
@@ -174,14 +195,25 @@ function createDeleteEntityQueryNode(fieldRequest: FieldRequest, fieldRequestSta
     // TODO special handling for generated ids of child entities
 
     const idField = entityType.getFields()[ID_FIELD];
-    const filterNode = new BinaryOperationQueryNode(new FieldQueryNode(new ContextQueryNode(), idField),
+    const currentEntityVarNode = new VariableQueryNode('currentEntity');
+    const filterNode = new BinaryOperationQueryNode(new FieldQueryNode(currentEntityVarNode, idField),
         BinaryOperator.EQUAL,
         new LiteralQueryNode(input));
-    const deleteEntityNode = new FirstOfListQueryNode(new DeleteEntitiesQueryNode({objectType: entityType, maxCount: 1, filterNode}));
-    const resultNode = createEntityObjectNode(fieldRequest.selectionSet, new ContextQueryNode(), fieldRequestStack);
+    const deleteEntityNode = new FirstOfListQueryNode(new DeleteEntitiesQueryNode({
+        objectType: entityType,
+        maxCount: 1,
+        filterNode,
+        currentEntityVariable: currentEntityVarNode
+    }));
+    const deletedEntityVarNode = new VariableQueryNode('deletedEntity');
+    const resultNode = createEntityObjectNode(fieldRequest.selectionSet, deletedEntityVarNode, fieldRequestStack);
     const conditionalResultNode = new ConditionalQueryNode( // updated entity may not exist
-        new TypeCheckQueryNode(new ContextQueryNode(), BasicType.OBJECT),
+        new TypeCheckQueryNode(deletedEntityVarNode, BasicType.OBJECT),
         resultNode,
         new NullQueryNode());
-    return new ContextAssignmentQueryNode(deleteEntityNode, conditionalResultNode);
+    return new VariableAssignmentQueryNode({
+        resultNode: conditionalResultNode,
+        variableValueNode: deleteEntityNode,
+        variableNode: deletedEntityVarNode,
+    });
 }

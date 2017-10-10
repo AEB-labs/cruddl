@@ -1,8 +1,7 @@
 import { FieldRequest } from '../graphql/query-distiller';
-import { getNamedType, GraphQLObjectType, GraphQLScalarType } from 'graphql';
+import { getNamedType, GraphQLObjectType } from 'graphql';
 import {
-    BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, ContextQueryNode, FieldQueryNode, LiteralQueryNode,
-    NullQueryNode,
+    BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, FieldQueryNode, LiteralQueryNode, NullQueryNode,
     ObjectQueryNode, OrderClause, OrderDirection, OrderSpecification, PropertySpecification, QueryNode,
     UnaryOperationQueryNode, UnaryOperator
 } from './definition';
@@ -68,12 +67,12 @@ export function createPaginationFilterNode(afterArg: any, orderSpecification: Or
     return orderByToFilter(orderSpecification.clauses);
 }
 
-export function createOrderSpecification(orderByArg: any, objectType: GraphQLObjectType, listFieldRequest: FieldRequest) {
+export function createOrderSpecification(orderByArg: any, objectType: GraphQLObjectType, listFieldRequest: FieldRequest, itemNode: QueryNode) {
     const clauseNames = getOrderByClauseNames(orderByArg, objectType, listFieldRequest);
     const clauses = clauseNames.map(name => {
         let dir = name.endsWith(ORDER_BY_DESC_SUFFIX) ? OrderDirection.DESCENDING : OrderDirection.ASCENDING;
         const fieldName = getFieldFromOrderByClause(name);
-        const fieldQuery = createScalarFieldValueNode(objectType, fieldName);
+        const fieldQuery = createScalarFieldValueNode(objectType, fieldName, itemNode);
         return new OrderClause(fieldQuery, dir);
     });
     return new OrderSpecification(clauses);
@@ -94,7 +93,7 @@ export function createCursorQueryNode(listFieldRequest: FieldRequest, itemNode: 
     const clauses = getOrderByClauseNames(listFieldRequest.args[ORDER_BY_ARG], objectType, listFieldRequest);
     const fieldNamess = clauses.map(clause => getFieldFromOrderByClause(clause)).sort();
     const objectNode = new ObjectQueryNode(fieldNamess.map( fieldName =>
-        new PropertySpecification(fieldName, createScalarFieldValueNode(objectType, fieldName))));
+        new PropertySpecification(fieldName, createScalarFieldValueNode(objectType, fieldName, itemNode))));
     return new UnaryOperationQueryNode(objectNode, UnaryOperator.JSON_STRINGIFY);
 }
 

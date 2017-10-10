@@ -12,7 +12,7 @@ import {
     UPDATE_ENTITY_FIELD_PREFIX
 } from '../schema/schema-defaults';
 import {capitalize} from "../utils/utils";
-import {hasObjectTypeDirectiveWithName} from "../schema/schema-utils";
+import {hasDirectiveWithName} from "../schema/schema-utils";
 
 
 export function getFilterTypeName(entityDefinition: ObjectTypeDefinitionNode) {
@@ -20,14 +20,14 @@ export function getFilterTypeName(entityDefinition: ObjectTypeDefinitionNode) {
 }
 
 export function getCreateInputTypeName(objectType: ObjectTypeDefinitionNode) {
-    if (hasObjectTypeDirectiveWithName(objectType, ROOT_ENTITY_DIRECTIVE) || hasObjectTypeDirectiveWithName(objectType, CHILD_ENTITY_DIRECTIVE)) {
+    if (hasDirectiveWithName(objectType, ROOT_ENTITY_DIRECTIVE) || hasDirectiveWithName(objectType, CHILD_ENTITY_DIRECTIVE)) {
         return 'Create' + objectType.name.value + 'Input';
     }
     return objectType.name.value + 'Input';
 }
 
 export function getUpdateInputTypeName(objectType: ObjectTypeDefinitionNode) {
-    if (hasObjectTypeDirectiveWithName(objectType, ROOT_ENTITY_DIRECTIVE) || hasObjectTypeDirectiveWithName(objectType, CHILD_ENTITY_DIRECTIVE)) {
+    if (hasDirectiveWithName(objectType, ROOT_ENTITY_DIRECTIVE) || hasDirectiveWithName(objectType, CHILD_ENTITY_DIRECTIVE)) {
         return 'Update' + objectType.name.value + 'Input';
     }
     return objectType.name.value + 'Input';

@@ -2,5 +2,5 @@ type Address @valueObject {
     street: String
     city: String
     zipCode: String
-    country: String
+    country: Country @reference
 }

@@ -4,24 +4,33 @@
  * the objects can "describe" themselves for a human-readable representation.
  *
  * A query tree specifies *what* is to be fetched and *how* the result should look like. Each query node results in
- * some kind of runtime value. Some nodes are evaluated with a *context value* which is then transitively passed through
- * the tree until a different context value is present. The context value can then be retrieved via ContextNode. This is
- * used for loop variables. It could also be used for any object (e.g. a ContextEstablishingQueryNode), but here, we
- * currently just repeat the node that evaluates to this object on every use.
+ * some kind of runtime value. A *variable node* is a special node that can be passed to some other nodes which then
+ * *assign* this variable. Wherever it is used as a normal node, it evaluates to the current value of the variable. This
+ * is mostly used for loop variables.
  *
  * To specify an expression like this:
  *     users.filter(u => u.role == "admin").map(u => { name: u.fullName, age: u.age })
  * create the following query:
  *  EntitiesQueryNode {
  *    type: 'User'
- *    filterNode: BinaryOperationQueryNode { # gets each user as context
- *      lhs: FieldNode "role" # takes the context for field access
+ *    itemVar: $itemVar
+ *    filterNode: BinaryOperationQueryNode {
+ *      lhs: FieldNode {
+ *        field "role"
+ *        object $itemVar
+ *      }
  *      operator: EQUALS
  *      rhs: LiteralNode "admin"
  *    }
- *    innerNode: ObjectQueryNode { # gets each user as context
- *      property "name": FieldNode "fullName"
- *      property "age": FieldNode "age"
+ *    innerNode: ObjectQueryNode {
+ *      property "name": FieldNode {
+ *        field "fullName"
+ *        object $itemVar
+ *      }
+ *      property "age": FieldNode {
+ *        field "age"
+ *        object $itemVar
+ *      }
  *    }
  *
  *
@@ -33,27 +42,62 @@ export interface QueryNode {
     describe(): string;
 }
 
-/**
- * A node that evaluates to the current context value
- */
-export class ContextQueryNode implements QueryNode {
-    constructor() {
-    }
+namespace varIndices {
+    let nextIndex = 1;
 
-    public describe() {
-        return `context`;
+    export function next() {
+        const thisIndex = nextIndex;
+        nextIndex++;
+        return thisIndex;
     }
 }
 
 /**
- * A node that sets the context to the result of a node and evaluates to a second node
+ * A node that evaluates to the value of a variable.
+ *
+ * Use in a VariableAssignmentQueryNode or in a TransformListQueryNode to assign a value
  */
-export class ContextAssignmentQueryNode implements QueryNode {
-    constructor(public readonly contextValueNode: QueryNode, public readonly resultNode: QueryNode) {
+export class VariableQueryNode implements QueryNode {
+    constructor(label: string = 'var') {
+        this.label = label;
+        this.index = varIndices.next();
     }
 
+    public readonly label: string;
+    public readonly index: number;
+
+    toString() {
+        return `$${this.label}_${this.index}`;
+    }
+
+    describe() {
+        return (this.toString()).magenta;
+    }
+}
+
+/**
+ * A node that sets the value of a variable to the result of a node and evaluates to a second node
+ *
+ * LET $variableNode = $variableValueNode RETURN $resultNode
+ *
+ * (function() {
+ *   let $variableNode = $variableValueNode
+ *   return $resultNode
+ * })()
+ */
+export class VariableAssignmentQueryNode implements QueryNode {
+    constructor(params: { variableValueNode: QueryNode, resultNode: QueryNode, variableNode: VariableQueryNode }) {
+        this.variableNode = params.variableNode;
+        this.variableValueNode = params.variableValueNode;
+        this.resultNode = params.resultNode;
+    }
+
+    public readonly variableValueNode: QueryNode;
+    public readonly resultNode: QueryNode;
+    public readonly variableNode: VariableQueryNode;
+
     public describe() {
-        return `let context = ${this.contextValueNode.describe()} in ${this.resultNode.describe()}`;
+        return `let ${this.variableNode} = ${this.variableValueNode.describe()} in ${this.resultNode.describe()}`;
     }
 }
 
@@ -65,7 +109,7 @@ export class LiteralQueryNode {
     }
 
     public describe() {
-        const json = this.value === undefined ? "undefined" : JSON.stringify(this.value);
+        const json = this.value === undefined ? 'undefined' : JSON.stringify(this.value);
         return `literal ${json.magenta}`;
     }
 }
@@ -299,12 +343,20 @@ export class EntitiesQueryNode implements QueryNode {
 /**
  * A node to filter, order, limit and map a list
  *
- * If you use a ContextQueryNode in filterNode or in innerNode, they will evaluate to the corresponding list item value
+ * itemVariable can be used inside filterNode and innerNode to access the current item
  */
 export class TransformListQueryNode implements QueryNode {
-    constructor(params: { listNode: QueryNode, innerNode?: QueryNode, filterNode?: QueryNode, orderBy?: OrderSpecification, maxCount?: number }) {
+    constructor(params: {
+        listNode: QueryNode,
+        innerNode?: QueryNode,
+        filterNode?: QueryNode,
+        orderBy?: OrderSpecification,
+        maxCount?: number
+        itemVariable?: VariableQueryNode
+    }) {
+        this.itemVariable = params.itemVariable || new VariableQueryNode();
         this.listNode = params.listNode;
-        this.innerNode = params.innerNode || new ContextQueryNode();
+        this.innerNode = params.innerNode || this.itemVariable;
         this.filterNode = params.filterNode || new ConstBoolQueryNode(true);
         this.orderBy = params.orderBy || new OrderSpecification([]);
         this.maxCount = params.maxCount;
@@ -315,6 +367,7 @@ export class TransformListQueryNode implements QueryNode {
     public readonly filterNode: QueryNode;
     public readonly orderBy: OrderSpecification;
     public readonly maxCount: number | undefined;
+    public readonly itemVariable: VariableQueryNode;
 
     describe() {
         return `${this.listNode.describe()} as list\n` +
@@ -390,36 +443,45 @@ export class CreateEntityQueryNode {
  * A node that updates existing entities
  *
  * Existing properties of the entities will be kept when not specified in the updateNode. If a property is specified
- * in updates and in the existing entity, it will be replaced with the PropertySpecification's value. The entity
- * to-be-updated will however be available as *context* so you can still access the old value via a FieldQueryNode
- * and use e.g. an UpdateObjectQueryNode to only modify some properties.
+ * in updates and in the existing entity, it will be replaced with the PropertySpecification's value. To access the old
+ * value of the entity within the updates, specify an oldValueVariable and use that inside the updates. Then, you can
+ * access the old value of a field via a FieldQueryNode and use e.g. an UpdateObjectQueryNode to only modify some properties.
  *
  * FOR doc
  * IN $collection(objectType)
  * FILTER $filterNode
  * UPDATE doc
- * WITH $updateNode [doc as context]
+ * WITH $updateNode
  * IN $collection(objectType)
  * OPTIONS { mergeObjects: false }
- *
- * The objectNode is evaluated in the context of the to-be-updated entity.
  */
 export class UpdateEntitiesQueryNode {
-    constructor(params: { objectType: GraphQLObjectType, filterNode: QueryNode, updates: PropertySpecification[], maxCount?: number }) {
+    constructor(params: {
+        objectType: GraphQLObjectType,
+        filterNode: QueryNode,
+        updates: PropertySpecification[],
+        maxCount?: number,
+        currentEntityVariable?: VariableQueryNode
+    }) {
         this.objectType = params.objectType;
         this.filterNode = params.filterNode;
         this.updates = params.updates;
         this.maxCount = params.maxCount;
+        this.currentEntityVariable = params.currentEntityVariable || new VariableQueryNode();
     }
 
     public readonly objectType: GraphQLObjectType;
     public readonly filterNode: QueryNode;
     public readonly updates: PropertySpecification[];
-    public readonly maxCount: number|undefined;
+    public readonly maxCount: number | undefined;
+    public readonly currentEntityVariable: VariableQueryNode;
 
     describe() {
-        return `update ${this.objectType.name} entities where ${this.filterNode.describe()} with values {\n` +
-            indent(this.updates.map(p => p.describe()).join(',\n')) + `\n}`;
+        return `update ${this.objectType.name} entities ` +
+            `where (${this.currentEntityVariable.describe()} => ${this.filterNode.describe()}) ` +
+            `with values (${this.currentEntityVariable.describe()} => {\n` +
+            indent(this.updates.map(p => p.describe()).join(',\n')) +
+            `\n})`;
     }
 }
 
@@ -427,45 +489,45 @@ export class UpdateEntitiesQueryNode {
  * A node that deletes existing entities and evaluates to the entities before deletion
  */
 export class DeleteEntitiesQueryNode {
-    constructor(params: { objectType: GraphQLObjectType, filterNode: QueryNode, maxCount?: number }) {
+    constructor(params: {
+        objectType: GraphQLObjectType,
+        filterNode: QueryNode,
+        maxCount?: number,
+        currentEntityVariable?: VariableQueryNode
+    }) {
         this.objectType = params.objectType;
         this.filterNode = params.filterNode;
         this.maxCount = params.maxCount;
+        this.currentEntityVariable = params.currentEntityVariable || new VariableQueryNode();
     }
 
     public readonly objectType: GraphQLObjectType;
     public readonly filterNode: QueryNode;
-    public readonly maxCount: number|undefined;
+    public readonly maxCount: number | undefined;
+    public readonly currentEntityVariable: VariableQueryNode;
 
     describe() {
-        return `delete ${this.objectType.name} entities where ${this.filterNode.describe()}`;
+        return `delete ${this.objectType.name} entities where (${this.currentEntityVariable.describe()} => ${this.filterNode.describe()})`;
     }
 }
 
 /**
- * A node that is executed in the context of an existing object, can add or reassign properties, and then evaluates to
- * the object with new properties. Untouched properties are kept as-is. Properties can be "removed" by setting them
- * to null.
+ * A node that that merges the properties of multiple nodes. If multiple objects define the same property, the last one
+ * will win. Set properties to null to remove them.
  *
  * This operation behaves like the {...objectSpread} operator in JavaScript, or the MERGE function in AQL.
  *
- * The *context* is set to *sourceNode* in the update nodes.
- *
- * The merge is NOT recursive. To update objects recursively, use an ObjectObjectQueryNode again as the value of a
- * PropertySpecification.
+ * The merge is NOT recursive.
  */
-export class UpdateObjectQueryNode implements QueryNode {
-    constructor(public readonly sourceNode: QueryNode, public readonly updates: PropertySpecification[]) {
+export class MergeObjectsQueryNode implements QueryNode {
+    constructor(public readonly objectNodes: QueryNode[]) {
 
     }
 
     describe() {
-        if (!this.updates.length) {
-            return this.sourceNode.describe();
-        }
         return `{\n` +
-            indent('...' + this.sourceNode.describe()) + ', [using this as context in:]\n' +
-            indent(this.updates.map(p => p.describe()).join(',\n')) + `\n}`;
+            indent(this.objectNodes.map(node => '...' + node.describe()).join(',\n')) +
+            '\n}';
     }
 }
 
