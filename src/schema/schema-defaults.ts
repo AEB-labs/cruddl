@@ -25,6 +25,7 @@ export const REFERENCE_DIRECTIVE = 'reference';
 
 export const QUERY_TYPE = 'Query';
 export const MUTATION_TYPE = 'Mutation';
+export const QUERY_META_TYPE = '_QueryMeta';
 
 export const ALL_ENTITIES_FIELD_PREFIX = 'all';
 export const CREATE_ENTITY_FIELD_PREFIX = 'create';
@@ -61,5 +62,6 @@ export const CURSOR_FIELD = '_cursor';
 export const AFTER_ARG = 'after';
 export const FIRST_ARG = 'first';
 
-export const MUTATION_INPUT_ARG = 'input';
-export const MUTATION_ID_ARG = 'id';
+export const COUNT_META_FIELDS = 'count';
+
+export const MUTATION_INPUT_ARG = 'input';export const MUTATION_ID_ARG = 'id';

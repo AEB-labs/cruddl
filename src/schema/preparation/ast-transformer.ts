@@ -14,6 +14,8 @@ import {AddUpdateEntityInputTypesTransformer} from "./ast-transformation-modules
 import {AddExtensionInputTypesTransformer} from "./ast-transformation-modules/add-extension-input-types";
 import {AddValueObjectInputTypesTransformer} from "./ast-transformation-modules/add-value-object-input-types";
 import {AddRootMutationTypeTransformer} from "./ast-transformation-modules/add-root-mutation-type";
+import {AddMetaFieldsAlongWithFilterableFieldsTransformer} from "./ast-transformation-modules/add-meta-fields-along-with-filterable-fields";
+import {AddQueryMetaTypeTransformer} from "./ast-transformation-modules/add-query-meta-type";
 
 const transformers = [
     // Add basic stuff to object types
@@ -38,6 +40,9 @@ const transformers = [
     AddFilterArgumentsToFieldsTransformer,
     AddOrderbyArgumentsToFieldsTransformer,
     AddCursorFieldToEntitiesTransformer,
+
+    AddQueryMetaTypeTransformer,
+    AddMetaFieldsAlongWithFilterableFieldsTransformer,
 
     // build mutation stuff
     AddRootMutationTypeTransformer,

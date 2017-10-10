@@ -116,6 +116,10 @@ export function allEntitiesQueryBy(entityName: string) {
     return ALL_ENTITIES_FIELD_PREFIX + pluralize(entityName);
 }
 
+export function getMetaNameFieldFor(field: string) {
+    return '_' + field + 'Meta';
+}
+
 export function createEntityQuery(entityName: string) {
     return CREATE_ENTITY_FIELD_PREFIX + entityName;
 }
