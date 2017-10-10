@@ -1,0 +1,5 @@
+{
+    allPapers(orderBy: title_ASC) {
+            title
+    }
+}

@@ -1,0 +1,6 @@
+query {
+    allPapers(filter: {OR: [{title: "Unified modeling language reference manual, the"}, {title: "Scalable SQL and NoSQL data stores"}]},
+        orderBy: title_ASC) {
+        title
+    }
+}

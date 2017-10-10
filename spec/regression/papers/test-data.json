@@ -1,0 +1,145 @@
+{
+  "rootEntities": {
+    "Paper": [
+      {
+        "@id": "1",
+        "title": "Object-oriented modeling and design",
+        "publishDate": "2017-04-05",
+        "isPublished": true,
+        "literatureReferences": [],
+        "tags": [
+          "object-oriented",
+          "modeling",
+          "design"
+        ]
+      },
+      {
+        "@id": "2",
+        "literatureReferences": [],
+        "tags": [
+          "uml",
+          "specification"
+        ],
+        "title": "Unified modeling language reference manual, the"
+      },
+      {
+        "@id": "3",
+        "title": "Will NoSQL databases live up to their promise?",
+        "publishDate": "2017-04-05",
+        "isPublished": true,
+        "literatureReferences": [],
+        "tags": [
+          "nosql"
+        ]
+      },
+      {
+        "@id": "4",
+        "title": "Brewer's conjecture and the feasibility of consistent, available, partition-tolerant web services",
+        "publishDate": "2017-04-05",
+        "isPublished": true,
+        "literatureReferences": [
+          {
+            "title": "Achievable cases in an asynchronous environment",
+            "authors": [
+              "Hagit Attiya",
+              "Amotz Bar-Noy",
+              "Danny Dolev",
+              "Daphne Koller",
+              "David Peleg",
+              "and Rüdiger Reischuk"
+            ],
+            "pages": {
+              "startPage": "337",
+              "endPage": 346
+            }
+          }
+        ],
+        "tags": [
+          "cap-theorem",
+          "databases"
+        ]
+      },
+      {
+        "@id": "5",
+        "isPublished": true,
+        "publishDate": "2017-04-05",
+        "tags": [
+          "nosql"
+        ],
+        "title": "Scalable SQL and NoSQL data stores",
+        "literatureReferences": [
+          {
+            //"paper": "@ids/Paper/4",
+            "title": "Brewer’s conjecture and the feasibility of consistent, available, and partition-tolerant web services",
+            "authors": [
+              "Seth Gilbert",
+              "Nancy Lynch"
+            ],
+            "pages": {
+              "startPage": 51,
+              "endPage": 59
+            }
+          }
+        ]
+      }
+    ],
+    "User": [
+      {
+        "@id": "1",
+        "firstName": "Seth",
+        "lastName": "Gilbert"
+      },
+      {
+        "@id": "2",
+        "firstName": "Nancy",
+        "lastName": "Lynch"
+      },
+      {
+        "@id": "3",
+        "firstName": "Jon",
+        "lastName": "Doe",
+        "email": "jon.doe@example.com"
+      },
+      {
+        "@id": "4",
+        "firstName": "Erika",
+        "lastName": "Mustermann",
+        "email": "erika.mustermann@example.com"
+      }
+    ]
+  },
+  "associations": {
+    "PaperAuthor": [
+      {
+        "user": "@ids/User/1",
+        "paper": "@ids/Paper/5"
+      }
+    ],
+    "PaperReader": [
+      {
+        "user": "@ids/User/3",
+        "paper": "@ids/Paper/1"
+      },
+      {
+        "user": "@ids/User/3",
+        "paper": "@ids/Paper/2"
+      },
+      {
+        "user": "@ids/User/3",
+        "paper": "@ids/Paper/3"
+      },
+      {
+        "user": "@ids/User/3",
+        "paper": "@ids/Paper/5"
+      },
+      {
+        "user": "@ids/User/4",
+        "paper": "@ids/Paper/2"
+      },
+      {
+        "user": "@ids/User/3",
+        "paper": "@ids/Paper/4"
+      }
+    ]
+  }
+}

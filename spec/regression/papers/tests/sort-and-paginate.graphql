@@ -1,0 +1,22 @@
+fragment PapersPage on Paper {
+    #count
+            title
+}
+
+query {
+    page1: allPapers(orderBy: title_ASC, first: 2) {
+        ...PapersPage
+    }
+    page2: allPapers(orderBy: title_ASC, first: 2, after: "{\"id\":\"xxx\",\"title\":\"Object-oriented modeling and design\"}") {
+        ...PapersPage
+    }
+    page1Desc: allPapers(orderBy: title_DESC, first: 2) {
+        ...PapersPage
+    }
+    page2Desc: allPapers(orderBy: title_DESC, first: 2, after: "{\"id\":\"xxx\",\"title\":\"Unified modeling language reference manual, the\"}") {
+        ...PapersPage
+    }
+    emptyPage: allPapers(orderBy: title_ASC, first: 0) {
+        ...PapersPage
+    }
+}

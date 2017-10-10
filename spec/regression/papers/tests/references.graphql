@@ -1,0 +1,19 @@
+query {
+    allPapers(orderBy: title_ASC) {
+            title
+            literatureReferences {
+                paper {
+                    title
+                    publishDate
+                    isPublished
+                    tags
+                }
+                # authors # TODO: fall back to empty list if null
+                pages {
+                    startPage
+                    endPage
+                }
+            }
+            tags
+    }
+}

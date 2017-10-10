@@ -1,0 +1,48 @@
+{
+  "data": {
+    "onlyCursor": [
+        {
+          "_cursor": "{\"id\":\"@{ids/Paper/1}\"}"
+        },
+        {
+          "_cursor": "{\"id\":\"@{ids/Paper/2}\"}"
+        },
+        {
+          "_cursor": "{\"id\":\"@{ids/Paper/3}\"}"
+        }
+      ],
+    "onlyCursorNoLimit": [
+        {
+          "_cursor": "{}"
+        },
+        {
+          "_cursor": "{}"
+        },
+        {
+          "_cursor": "{}"
+        },
+        {
+          "_cursor": "{}"
+        },
+        {
+          "_cursor": "{}"
+        }
+      ]
+    }
+    /*"onlyCount": {
+      "count": 5
+    },
+    "onlyPageInfo": {
+      "pageInfo": {
+        "hasNextPage": true,
+        "endCursor": "{\"id\":\"@{ids/Paper/3}\"}"
+      }
+    },
+    "onlyPageInfoNoLimit": {
+      "pageInfo": {
+        "hasNextPage": false,
+        "endCursor": null
+      }
+    }
+  }*/
+}

@@ -1,0 +1,32 @@
+query {
+    allPapers(first: 3, filter: {isPublished: true}) {
+        #pageInfo {
+        #    hasNextPage
+        #    hasPreviousPage
+        #    endCursor
+        #}
+        #count
+            _cursor
+                title2: title
+                title
+                readers(first: 3) {
+                    lastName
+                    #count
+                    #pageInfo {
+                    #    hasPreviousPage
+                    #    hasNextPage
+                    #    endCursor
+                    #}
+                }
+                b: readers(first: 1) {
+                    lastName
+                    _cursor
+                }
+                empty: readers(filter: {id: "nonexistant"}) {
+                    id
+                }
+            }
+    noPagesLeft: allPapers(first: 2, after: "{\"id\":\"@{ids/Paper/5}\"}", filter: {isPublished: true}) {
+        id
+    }
+}

@@ -1,0 +1,7 @@
+query {
+    onlyCursor: allPapers(first: 3) { _cursor }
+    onlyCursorNoLimit: allPapers { _cursor}
+    # TODO onlyCount: allPapers { count }
+    # onlyPageInfo: allPapers(first: 3) { pageInfo { hasNextPage endCursor} }
+    # onlyPageInfoNoLimit: allPapers { pageInfo { hasNextPage endCursor} }
+}

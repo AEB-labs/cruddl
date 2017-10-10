@@ -1,0 +1,6 @@
+type User @rootEntity {
+    email: String
+    firstName: String
+    lastName: String
+    papers: [Paper] @relation
+}

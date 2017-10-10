@@ -1,0 +1,21 @@
+type Paper @rootEntity {
+    title: String @key # need a key field for the reference
+    publishDate: String #datetime
+    isPublished: Boolean
+    literatureReferences: [LiteratureReference]
+    tags: [String]
+    #author: User @relation
+    readers: [User] @relation
+}
+
+type LiteratureReference @valueObject {
+    paper: Paper @reference
+    title: String
+    authors: [String]
+    pages: PageRange
+}
+
+type PageRange @valueObject {
+    startPage: Int
+    endPage: Int
+}
