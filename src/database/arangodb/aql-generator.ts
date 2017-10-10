@@ -1,16 +1,15 @@
 import {
     BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode, ConstBoolQueryNode,
-    CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeType, EntitiesQueryNode, FieldQueryNode, FirstOfListQueryNode,
-    FollowEdgeQueryNode,
-    ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, ObjectQueryNode, OrderDirection, OrderSpecification,
-    QueryNode, TransformListQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator,
+    CreateEntityQueryNode, DeleteEntitiesQueryNode, EntitiesQueryNode, FieldQueryNode, FirstOfListQueryNode,
+    FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, ObjectQueryNode, OrderDirection,
+    OrderSpecification, QueryNode, TransformListQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator,
     UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode
 } from '../../query/definition';
 import { aql, AQLFragment, AQLVariable } from './aql';
+import { getCollectionNameForEdge, getCollectionNameForRootEntity } from './arango-basics';
 import { GraphQLNamedType } from 'graphql';
-import * as pluralize from 'pluralize';
-import { decapitalize } from '../../utils/utils';
-import variable = aql.variable;
+import { EdgeType } from '../../schema/edges';
+import { type } from 'os';
 
 class QueryContext {
     private variableMap = new Map<VariableQueryNode, AQLVariable>();
@@ -323,10 +322,10 @@ export function getAQLForQuery(node: QueryNode) {
     return aql`RETURN ${processNode(node, new QueryContext())}`;
 }
 
-function getCollectionForType(type: GraphQLNamedType) {
-    return aql.collection(decapitalize(pluralize(type.name)));
+export function getCollectionForType(type: GraphQLNamedType) {
+    return aql.collection(getCollectionNameForRootEntity(type));
 }
 
-function getCollectionForEdge(edgeType: EdgeType) {
-    return aql.collection(decapitalize(pluralize(edgeType.fromType.name)) + '_' + decapitalize(pluralize(edgeType.toType.name)));
+export function getCollectionForEdge(edgeType: EdgeType) {
+    return aql.collection(getCollectionNameForEdge(edgeType));
 }
