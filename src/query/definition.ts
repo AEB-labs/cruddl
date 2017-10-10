@@ -37,7 +37,6 @@
  */
 import { GraphQLField, GraphQLObjectType } from 'graphql';
 import { indent } from '../utils/utils';
-import { ObjectType } from '../../../model-manager-node/src/scripting/typescript-declarations';
 
 export interface QueryNode {
     describe(): string;
