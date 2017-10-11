@@ -23,6 +23,11 @@ export async function start() {
     const schema = createSchema(model);
 
     const executableSchema = addQueryResolvers(schema, db);
+
+    console.log('Making sure schema is up to date...');
+    await db.updateSchema(executableSchema);
+    console.log('Schema is up to date');
+
     const server = new GraphQLServer({
         port, schema: executableSchema
     });
