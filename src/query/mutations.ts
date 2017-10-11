@@ -1,5 +1,5 @@
 import { FieldRequest } from '../graphql/query-distiller';
-import { getNamedType, GraphQLObjectType } from 'graphql';
+import { getNamedType, getNullableType, GraphQLObjectType, GraphQLOutputType, GraphQLType } from 'graphql';
 import {
     AddEdgesQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode,
     CreateEntityQueryNode, DeleteEntitiesQueryNode, PartialEdgeIdentifier, EdgeIdentifier, FieldQueryNode,
@@ -14,14 +14,15 @@ import {
     UPDATE_ENTITY_FIELD_PREFIX
 } from '../schema/schema-defaults';
 import { createEntityObjectNode } from './queries';
-import { isChildEntityType, isEntityExtensionType, isRelationField } from '../schema/schema-utils';
-import { decapitalize, objectValues, PlainObject } from '../utils/utils';
+import { isChildEntityType, isEntityExtensionType, isRelationField, isRootEntityType } from '../schema/schema-utils';
+import { AnyValue, decapitalize, filterProperties, mapValues, objectValues, PlainObject } from '../utils/utils';
 import {
     getAddChildEntityFieldName, getAddRelationFieldName, getRemoveChildEntityFieldName, getRemoveRelationFieldName,
     getUpdateChildEntityFieldName
 } from '../graphql/names';
 import { isListType } from '../graphql/schema-utils';
 import { EdgeType, getEdgeType } from '../schema/edges';
+import uuid = require('uuid');
 
 /**
  * Creates a QueryNode for a field of the root mutation type
@@ -50,9 +51,10 @@ function createCreateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestSta
     if (!entityType || !(entityType instanceof GraphQLObjectType)) {
         throw new Error(`Object type ${entityName} not found but needed for field ${fieldRequest.fieldName}`);
     }
+    // { handlingUnits: [1,2,3], dnNumber: "as" }
     const input = fieldRequest.args[MUTATION_INPUT_ARG];
-    // TODO special handling for generated ids of child entities
-    const objectNode = new LiteralQueryNode(input);
+    // TODO create relations
+    const objectNode = new LiteralQueryNode(prepareCreateInput(input, entityType));
     const createEntityNode = new CreateEntityQueryNode(entityType, objectNode);
     const newEntityVarNode = new VariableQueryNode('newEntity');
     const resultNode = createEntityObjectNode(fieldRequest.selectionSet, newEntityVarNode, fieldRequestStack);
@@ -61,6 +63,36 @@ function createCreateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestSta
         resultNode,
         variableNode: newEntityVarNode
     });
+}
+
+function prepareCreateInput(input: PlainObject, objectType: GraphQLObjectType): PlainObject {
+    if (isChildEntityType(objectType)) {
+        input = {
+            ...input,
+            [ID_FIELD]: uuid()
+        };
+    }
+
+    if (isRootEntityType(objectType)) {
+        // remove relation fields as they are treated by createCreateEntityQueryNode directly and should not be part
+        // of the created object
+        input = filterProperties(input, (value, key) => !isRelationField(objectType.getFields()[key]));
+    }
+
+    function prepareFieldValue(value: AnyValue, fieldType: GraphQLType): AnyValue {
+        const rawType = getNamedType(fieldType);
+        if (isListType(fieldType)) {
+            return (value as AnyValue[]).map(itemValue => prepareFieldValue(itemValue, rawType));
+        }
+        if (rawType instanceof GraphQLObjectType && (isEntityExtensionType(rawType) || isChildEntityType(rawType))) {
+            return prepareCreateInput(value as PlainObject, rawType);
+        }
+        // scalars and value objects can be used as-is
+        return value;
+    }
+
+    // recursive calls
+    return mapValues(input, (fieldValue, key) => prepareFieldValue(fieldValue, objectType.getFields()[key].type));
 }
 
 function createUpdateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[]): QueryNode {
@@ -209,13 +241,13 @@ function getEdgeFilter(param: { edgeType: EdgeType; sourceIDNodes?: QueryNode[];
     }
 }
 
-function createUpdatePropertiesSpecification(obj: any, parentType: GraphQLObjectType, oldEntityNode: QueryNode): PropertySpecification[] {
+function createUpdatePropertiesSpecification(obj: any, objectType: GraphQLObjectType, oldEntityNode: QueryNode): PropertySpecification[] {
     if (typeof obj != 'object') {
         return [];
     }
 
     const properties: PropertySpecification[] = [];
-    for (const field of objectValues(parentType.getFields())) {
+    for (const field of objectValues(objectType.getFields())) {
         if (isEntityExtensionType(getNamedType(field.type)) && field.name in obj) {
             // call recursively and use update semantic (leave fields that are not specified as-is
             const sourceNode = new FieldQueryNode(oldEntityNode, field);

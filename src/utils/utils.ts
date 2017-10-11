@@ -1,4 +1,5 @@
-export type PlainObject = {[key: string]: {}|undefined|null};
+export type PlainObject = {[key: string]: AnyValue};
+export type AnyValue = {}|undefined|null;
 
 export function flatMap<TOut, TIn>(arr: TIn[], f: (t: TIn) => TOut[]): TOut[] {
     return arr.reduce((ys: any, x: any) => {
@@ -131,4 +132,23 @@ export function objectValues<T>(obj: { [name: string]: T }): T[] {
 
 export function objectEntries<T>(obj: { [name: string]: T }): [string, T][] {
     return Object.keys(obj).map((k): [string,T] => [k, obj[k]]);
+}
+
+export function mapValues<TIn, TOut>(obj: { [key: string]: TIn }, fn: (value: TIn, key: string) => TOut): { [key: string]: TOut } {
+    const result: { [key: string]: TOut } = {};
+    for (const key in obj) {
+        result[key] = fn(obj[key], key);
+    }
+    return result;
+}
+
+export function filterProperties<TValue>(obj: { [key: string]: TValue }, predicate: (value: TValue, key: string) => boolean): { [key: string]: TValue } {
+    const result: { [key: string]: TValue } = {};
+    for (const key in obj) {
+        const value = obj[key];
+        if (predicate(value, key)) {
+            result[key] = value;
+        }
+    }
+    return result;
 }

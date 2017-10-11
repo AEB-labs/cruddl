@@ -23,6 +23,7 @@
     "@types/node": "^8.0.28",
     "@types/pluralize": "0.0.27",
     "@types/strip-json-comments": "0.0.30",
+    "@types/uuid": "^3.4.2",
     "body-parser": "^1.17.2",
     "cors": "^2.8.3",
     "express": "~4.15.4",
@@ -40,6 +41,7 @@
     "colors": "^1.1.2",
     "jsondiffpatch": "^0.2.4",
     "pluralize": "^7.0.0",
-    "strip-json-comments": "^2.0.1"
+    "strip-json-comments": "^2.0.1",
+    "uuid": "^3.1.0"
   }
 }
