@@ -1,3 +1,5 @@
+export type PlainObject = {[key: string]: {}|undefined|null};
+
 export function flatMap<TOut, TIn>(arr: TIn[], f: (t: TIn) => TOut[]): TOut[] {
     return arr.reduce((ys: any, x: any) => {
         return ys.concat(f.call(null, x))

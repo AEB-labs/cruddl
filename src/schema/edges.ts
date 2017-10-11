@@ -10,6 +10,10 @@ export class EdgeType {
     public fromType: GraphQLObjectType;
     public toType: GraphQLObjectType;
     public discriminator: string|undefined;
+
+    private toString() {
+        return `edge ${this.fromType.name}->${this.toType.name}` + (this.discriminator ? '/ ' + this.discriminator : '');
+    }
 }
 
 export function getEdgeType(parentType: GraphQLObjectType, field: GraphQLField<any, any>) {

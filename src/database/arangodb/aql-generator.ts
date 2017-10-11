@@ -1,15 +1,16 @@
 import {
-    BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode, ConstBoolQueryNode,
-    CreateEntityQueryNode, DeleteEntitiesQueryNode, EntitiesQueryNode, FieldQueryNode, FirstOfListQueryNode,
-    FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, ObjectQueryNode, OrderDirection,
-    OrderSpecification, QueryNode, TransformListQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator,
+    AddEdgesQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode,
+    ConstBoolQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeFilter, EdgeIdentifier, EntitiesQueryNode,
+    FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode,
+    ObjectQueryNode, OrderDirection, OrderSpecification, PartialEdgeIdentifier, QueryNode, RemoveEdgesQueryNode,
+    SetEdgeQueryNode, TransformListQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator,
     UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode
 } from '../../query/definition';
 import { aql, AQLFragment, AQLVariable } from './aql';
 import { getCollectionNameForEdge, getCollectionNameForRootEntity } from './arango-basics';
-import { GraphQLNamedType } from 'graphql';
+import { GraphQLNamedType, GraphQLObjectType } from 'graphql';
 import { EdgeType } from '../../schema/edges';
-import { type } from 'os';
+import { ID_FIELD } from '../../schema/schema-defaults';
 
 class QueryContext {
     private variableMap = new Map<VariableQueryNode, AQLVariable>();
@@ -150,8 +151,8 @@ const processors : { [name: string]: NodeProcessor<any> } = {
         );
     },
 
-    UpdateObject(node: MergeObjectsQueryNode, context): AQLFragment {
-        const objectList = node.objectNodes.map(node => aql`...${processNode(node, context)}`);
+    MergeObjects(node: MergeObjectsQueryNode, context): AQLFragment {
+        const objectList = node.objectNodes.map(node => processNode(node, context));
         const objectsFragment = aql.join(objectList, aql`, `);
         return aql`MERGE(${objectsFragment})`;
     },
@@ -264,8 +265,88 @@ const processors : { [name: string]: NodeProcessor<any> } = {
             aql`IN ${getCollectionForType(node.objectType)}`,
             aql`RETURN OLD`
         );
+    },
+
+    AddEdges(node: AddEdgesQueryNode, context) {
+        const edgeVar = aql.variable();
+        return aqlExt.parenthesizeList(
+            aql`FOR ${edgeVar}`,
+            aql`IN [ ${aql.join(node.edges.map(edge => formatEdge(node.edgeType, edge, context)), aql`, `)} ]`,
+            aql`UPSERT { _from: ${edgeVar}._from, _to: ${edgeVar}._to }`, // need to unpack avoid dynamic property names in UPSERT example filter
+            aql`INSERT ${edgeVar}`,
+            aql`UPDATE {}`,
+            aql`IN ${getCollectionForEdge(node.edgeType)}`
+        );
+    },
+
+    RemoveEdges(node: RemoveEdgesQueryNode, context) {
+        const edgeVar = aql.variable();
+        return aqlExt.parenthesizeList(
+            aql`FOR ${edgeVar}`,
+            aql`IN ${getCollectionForEdge(node.edgeType)}`,
+            aql`FILTER ${formatEdgeFilter(node.edgeType, node.edgeFilter, edgeVar, context)}`,
+            aql`REMOVE ${edgeVar}`,
+            aql`IN ${getCollectionForEdge(node.edgeType)}`,
+        );
+    },
+
+    SetEdge(node: SetEdgeQueryNode, context) {
+        const edgeVar = aql.variable();
+        return aqlExt.parenthesizeList(
+            aql`UPSERT ${formatEdge(node.edgeType, node.existingEdge, context)}`,
+            aql`IN ${getCollectionForEdge(node.edgeType)}`,
+            aql`INSERT ${formatEdge(node.edgeType, node.newEdge, context)}`,
+            aql`UPDATE {}`,
+        );
     }
 };
+
+/**
+ * Gets an aql fragment that evaluates to a string of the format "collectionName/objectKey", given a query node that
+ * evaluates to the "object id", which is, in arango terms, the _key.
+ */
+function getFullIDFromKeyNode(node: QueryNode, type: GraphQLObjectType, context: QueryContext): AQLFragment {
+    // special handling to avoid concat if possible - do not alter the behavior
+    if (node instanceof LiteralQueryNode && typeof node.value == 'string') {
+        // just append the node to the literal key in JavaScript and bind it as a string
+        return aql`${getCollectionNameForRootEntity(type) + '/' + node.value}`;
+    }
+    if (node instanceof FieldQueryNode && node.field.name == ID_FIELD) {
+        // access the _id field. processNode(node) would access the _key field instead.
+        return aql`${processNode(node.objectNode, context)}._id`;
+    }
+
+    // fall back to general case
+    return aql`CONCAT(${getCollectionForType(type)}, "/", ${processNode(node, context)})`;
+}
+
+function formatEdge(edgeType: EdgeType, edge: PartialEdgeIdentifier|EdgeIdentifier, context: QueryContext): AQLFragment {
+    const conditions = [];
+    if (edge.fromIDNode) {
+        conditions.push(aql`_from: ${getFullIDFromKeyNode(edge.fromIDNode, edgeType.fromType, context)}`);
+    }
+    if (edge.toIDNode) {
+        conditions.push(aql`_to: ${getFullIDFromKeyNode(edge.toIDNode, edgeType.toType, context)}`);
+    }
+
+    return aql`{${aql.join(conditions, aql`, `)}}`;
+}
+
+function formatEdgeFilter(edgeType: EdgeType, edge: EdgeFilter, edgeFragment: AQLFragment, context: QueryContext) {
+    function makeList(ids: QueryNode[], type: GraphQLObjectType) {
+        return aql`[${aql.join(ids.map(node => getFullIDFromKeyNode(node, type, context)), aql`, `)}]`;
+    }
+
+    const conditions = [];
+    if (edge.fromIDNodes) {
+        conditions.push(aql`${edgeFragment}._from IN ${makeList(edge.fromIDNodes, edgeType.fromType)}`);
+    }
+    if (edge.toIDNodes) {
+        conditions.push(aql`${edgeFragment}._to IN ${makeList(edge.toIDNodes, edgeType.toType)}`);
+    }
+
+    return aql.join(conditions, aql` && `);
+}
 
 function getAQLOperator(op: BinaryOperator): AQLFragment|undefined {
     switch (op) {
@@ -309,7 +390,7 @@ function generateSortAQL(orderBy: OrderSpecification, context: QueryContext): AQ
     return aql`SORT ${aql.join(clauses, aql`, `)}`;
 }
 
-function processNode(node: QueryNode, context: QueryContext) {
+function processNode(node: QueryNode, context: QueryContext): AQLFragment {
     const type = node.constructor.name;
     const rawType = type.replace(/QueryNode$/, '');
     if (!(rawType in processors)) {

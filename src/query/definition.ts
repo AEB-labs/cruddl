@@ -388,6 +388,46 @@ export class FirstOfListQueryNode implements QueryNode {
     }
 }
 
+/**
+ * A node that that merges the properties of multiple nodes. If multiple objects define the same property, the last one
+ * will win. Set properties to null to remove them.
+ *
+ * This operation behaves like the {...objectSpread} operator in JavaScript, or the MERGE function in AQL.
+ *
+ * The merge is NOT recursive.
+ */
+export class MergeObjectsQueryNode implements QueryNode {
+    constructor(public readonly objectNodes: QueryNode[]) {
+
+    }
+
+    describe() {
+        return `{\n` +
+            indent(this.objectNodes.map(node => '...' + node.describe()).join(',\n')) +
+            '\n}';
+    }
+}
+
+/**
+ * A node that concatenates multiple lists and evaluates to the new list
+ *
+ * This can be used to append items to an array by using a ListQueryNode as second item
+ */
+export class ConcatListsQueryNode implements QueryNode {
+    constructor(public readonly listNodes: QueryNode[]) {
+
+    }
+
+    describe() {
+        if (!this.listNodes.length) {
+            return `[]`;
+        }
+        return `[\n` +
+            this.listNodes.map(node => indent('...' + node.describe())).join(',\n') +
+            `]`;
+    }
+}
+
 export class OrderClause {
     constructor(public readonly valueNode: QueryNode, public readonly direction: OrderDirection) {
 
@@ -436,11 +476,7 @@ export class FollowEdgeQueryNode implements QueryNode {
     }
 
     describe() {
-        return `follow ${this.describeEdge(this.edgeType)} of ${this.sourceEntityNode.describe()}`
-    }
-
-    private describeEdge(edge: EdgeType) {
-        return `edge ${edge.fromType.name}/${edge.toType.name}` + (edge.discriminator ? '/' + edge.discriminator : '');
+        return `follow ${this.edgeType} of ${this.sourceEntityNode.describe()}`
     }
 }
 
@@ -506,7 +542,7 @@ export class UpdateEntitiesQueryNode {
 /**
  * A node that deletes existing entities and evaluates to the entities before deletion
  */
-export class DeleteEntitiesQueryNode {
+export class DeleteEntitiesQueryNode implements QueryNode {
     constructor(params: {
         objectType: GraphQLObjectType,
         filterNode: QueryNode,
@@ -529,42 +565,97 @@ export class DeleteEntitiesQueryNode {
     }
 }
 
-/**
- * A node that that merges the properties of multiple nodes. If multiple objects define the same property, the last one
- * will win. Set properties to null to remove them.
- *
- * This operation behaves like the {...objectSpread} operator in JavaScript, or the MERGE function in AQL.
- *
- * The merge is NOT recursive.
- */
-export class MergeObjectsQueryNode implements QueryNode {
-    constructor(public readonly objectNodes: QueryNode[]) {
+export class AddEdgesQueryNode implements QueryNode {
 
+    // TODO: accept one QueryNode which evaluates to the lits of edge ids somehow?
+    // (currently, adding 50 edges generates 50 bound variables with the literal values)
+
+    constructor(readonly edgeType: EdgeType, readonly edges: EdgeIdentifier[]) {
     }
 
     describe() {
-        return `{\n` +
-            indent(this.objectNodes.map(node => '...' + node.describe()).join(',\n')) +
-            '\n}';
+        return `add edges to ${this.edgeType}: [\n` +
+            indent(this.edges.map(edge => edge.describe()).join(',\n')) +
+            `\n]`;
+    }
+}
+
+export class RemoveEdgesQueryNode implements QueryNode {
+    constructor(readonly edgeType: EdgeType, readonly edgeFilter: EdgeFilter) {
+    }
+
+    describe() {
+        return `remove edges from ${this.edgeType} matching ${this.edgeFilter.describe()}`;
     }
 }
 
 /**
- * A node that concatenates multiple lists and evaluates to the new list
- *
- * This can be used to append items to an array by using a ListQueryNode as second item
+ * Checks if an edge specified by existingEdgeFilter exists. If it does, replaces it by the newEdge. If it does not,
+ * creates newEge.
  */
-export class ConcatListsQueryNode implements QueryNode {
-    constructor(public readonly listNodes: QueryNode[]) {
+export class SetEdgeQueryNode implements QueryNode {
+    constructor(params: { edgeType: EdgeType, existingEdgeFilter: PartialEdgeIdentifier, newEdge: EdgeIdentifier }) {
+        this.edgeType = params.edgeType;
+        this.existingEdge = params.existingEdgeFilter;
+        this.newEdge = params.newEdge;
+    }
+
+    readonly edgeType: EdgeType;
+    readonly existingEdge: PartialEdgeIdentifier;
+    readonly newEdge: EdgeIdentifier;
+
+    describe() {
+        return `replace edge ${this.existingEdge.describe()} by ${this.newEdge.describe()} in ${this.edgeType}`;
+    }
+}
+
+/**
+ * Filters edges by from and to id (from and to are and-combined, but the individual ids are or-combined)
+ *
+ * pseudo code: from IN [...fromIDNodes] && to IN [...toIDNodes]
+ */
+export class EdgeFilter {
+    constructor(readonly fromIDNodes?: QueryNode[], readonly toIDNodes?: QueryNode[]) {
 
     }
 
     describe() {
-        if (!this.listNodes.length) {
-            return `[]`;
+        return `(${this.describeIDs(this.fromIDNodes)} -> ${this.describeIDs(this.toIDNodes)})`;
+    }
+
+    private describeIDs(ids: QueryNode[]|undefined) {
+        if (!ids) {
+            return '?';
         }
-        return `[\n` +
-            this.listNodes.map(node => indent('...' + node.describe())).join(',\n') +
-            `]`;
+        if (ids.length == 1) {
+            return ids[0].describe();
+        }
+        return `[ ` + ids.map(id => id.describe()).join(' | ') + ` ]`;
+    }
+}
+
+export class PartialEdgeIdentifier {
+    constructor(public readonly fromIDNode?: QueryNode, public readonly toIDNode?: QueryNode) {
+
+    }
+
+    describe() {
+        return `(${this.describeNode(this.fromIDNode)} -> ${this.describeNode(this.toIDNode)})`;
+    }
+
+    private describeNode(node: QueryNode|undefined) {
+        if (!node) {
+            return '?';
+        }
+        return node.describe();
+    }
+}
+
+export class EdgeIdentifier {
+    constructor(public readonly fromIDNode: QueryNode, public readonly toIDNode: QueryNode) {
+    }
+
+    describe() {
+        return `(${this.fromIDNode.describe()} -> ${this.toIDNode.describe()})`;
     }
 }

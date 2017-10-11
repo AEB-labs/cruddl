@@ -1,23 +1,27 @@
 import { FieldRequest } from '../graphql/query-distiller';
 import { getNamedType, GraphQLObjectType } from 'graphql';
 import {
-    BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode,
-    CreateEntityQueryNode, DeleteEntitiesQueryNode, FieldQueryNode, FirstOfListQueryNode, ListQueryNode,
-    LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, PropertySpecification, QueryNode,
-    TransformListQueryNode,
-    TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode,
-    VariableQueryNode
+    AddEdgesQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode,
+    CreateEntityQueryNode, DeleteEntitiesQueryNode, PartialEdgeIdentifier, EdgeIdentifier, FieldQueryNode,
+    FirstOfListQueryNode,
+    ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, PropertySpecification,
+    QueryNode, RemoveEdgesQueryNode, SetEdgeQueryNode, TransformListQueryNode, TypeCheckQueryNode,
+    UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode,
+    EdgeFilter
 } from './definition';
 import {
     CREATE_ENTITY_FIELD_PREFIX, DELETE_ENTITY_FIELD_PREFIX, ID_FIELD, MUTATION_ID_ARG, MUTATION_INPUT_ARG,
     UPDATE_ENTITY_FIELD_PREFIX
 } from '../schema/schema-defaults';
 import { createEntityObjectNode } from './queries';
-import { isChildEntityType, isEntityExtensionType } from '../schema/schema-utils';
-import { decapitalize, objectValues } from '../utils/utils';
+import { isChildEntityType, isEntityExtensionType, isRelationField } from '../schema/schema-utils';
+import { decapitalize, objectValues, PlainObject } from '../utils/utils';
 import {
-    getAddChildEntityFieldName, getRemoveChildEntityFieldName, getUpdateChildEntityFieldName
+    getAddChildEntityFieldName, getAddRelationFieldName, getRemoveChildEntityFieldName, getRemoveRelationFieldName,
+    getUpdateChildEntityFieldName
 } from '../graphql/names';
+import { isListType } from '../graphql/schema-utils';
+import { EdgeType, getEdgeType } from '../schema/edges';
 
 /**
  * Creates a QueryNode for a field of the root mutation type
@@ -78,8 +82,19 @@ function createUpdateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestSta
         maxCount: 1,
         currentEntityVariable: currentEntityVarNode
     }));
+
     const updatedEntityVarNode = new VariableQueryNode('updatedEntity');
-    const resultNode = createEntityObjectNode(fieldRequest.selectionSet, updatedEntityVarNode, fieldRequestStack);
+    let resultNode: QueryNode = createEntityObjectNode(fieldRequest.selectionSet, updatedEntityVarNode, fieldRequestStack);
+
+    // put these statements here because they need to be executed in the context of the updated variable
+    const relationStatements = getRelationAddRemoveStatements(input, entityType, updatedEntityVarNode);
+    if (relationStatements.length) {
+        resultNode = new FirstOfListQueryNode(new ListQueryNode([
+            resultNode,
+            ...relationStatements
+        ]));
+    }
+
     const conditionalResultNode = new ConditionalQueryNode( // updated entity may not exist
         new TypeCheckQueryNode(updatedEntityVarNode, BasicType.OBJECT),
         resultNode,
@@ -89,6 +104,109 @@ function createUpdateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestSta
         variableValueNode: updateEntityNode,
         resultNode: conditionalResultNode
     });
+}
+
+function getRelationAddRemoveStatements(obj: PlainObject, parentType: GraphQLObjectType, sourceEntityNode: QueryNode): QueryNode[] {
+    // note: we don't check if the target ids exists. This would be a constraint that will be checked in Foxx once we
+    // implement Foxx. It's not easy to do this in AQL because we can't throw errors in AQL.
+
+    const relationFields = objectValues(parentType.getFields()).filter(field => isRelationField(field));
+    const statements: QueryNode[] = [];
+    for (const field of relationFields) {
+        const edgeType = getEdgeType(parentType, field);
+        const sourceIDNode = new FieldQueryNode(sourceEntityNode, parentType.getFields()[ID_FIELD]);
+        if (isListType(field.type)) {
+            // to-n relation
+            const idsToBeAdded = (obj[getAddRelationFieldName(field.name)] || []) as {}[];
+            const idsToBeRemoved = (obj[getRemoveRelationFieldName(field.name)] || []) as {}[];
+            if (idsToBeAdded.length && idsToBeRemoved.length) {
+                throw new Error(`Currently, it is not possible to use add and remove on the same relation in one mutation`);
+            }
+
+            if (idsToBeAdded.length) {
+                const edgeNodes = idsToBeAdded.map(id => getEdgeIdentifier({
+                    edgeType,
+                    sourceIDNode,
+                    targetIDNode: new LiteralQueryNode(id),
+                    sourceType: parentType
+                }));
+                statements.push(new AddEdgesQueryNode(edgeType, edgeNodes));
+            }
+
+            if (idsToBeRemoved.length) {
+                statements.push(new RemoveEdgesQueryNode(edgeType, getEdgeFilter({
+                    edgeType,
+                    sourceType: parentType,
+                    sourceIDNodes: [ sourceIDNode ],
+                    targetIDNodes: idsToBeRemoved.map(id => new LiteralQueryNode(id))
+                })));
+            }
+        } else if (field.name in obj) {
+            // to-1 relation
+            const newID = obj[field.name];
+            if (newID) {
+                // set related entity
+                statements.push(new SetEdgeQueryNode({
+                    edgeType,
+                    existingEdgeFilter: getPartialEdgeIdentifier({
+                        edgeType,
+                        sourceType: parentType,
+                        sourceIDNode
+                    }),
+                    newEdge: getEdgeIdentifier({
+                        edgeType,
+                        sourceType: parentType,
+                        sourceIDNode,
+                        targetIDNode: new LiteralQueryNode(newID)
+                    })
+                }));
+            } else {
+                // remove relation
+                statements.push(new RemoveEdgesQueryNode(
+                    edgeType,
+                    getEdgeFilter({
+                        edgeType,
+                        sourceType: parentType,
+                        sourceIDNodes: [ sourceIDNode ]
+                    })
+                ));
+            }
+        }
+    }
+    return statements;
+}
+
+/**
+ * Creates an Edge identifier. Reorders source/target so that they match from/to in the edgeType
+ */
+function getEdgeIdentifier(param: { edgeType: EdgeType; sourceIDNode: QueryNode; targetIDNode: QueryNode; sourceType: GraphQLObjectType }): EdgeIdentifier {
+    if (param.sourceType == param.edgeType.fromType) {
+        return new EdgeIdentifier(param.sourceIDNode, param.targetIDNode);
+    } else {
+        return new EdgeIdentifier(param.targetIDNode, param.sourceIDNode);
+    }
+}
+
+/**
+ * Creates a partial edge identifier of the format ?->id or id->?
+ */
+function getPartialEdgeIdentifier(param: { edgeType: EdgeType; sourceIDNode: QueryNode; sourceType: GraphQLObjectType }): PartialEdgeIdentifier {
+    if (param.sourceType == param.edgeType.fromType) {
+        return new PartialEdgeIdentifier(param.sourceIDNode, undefined);
+    } else {
+        return new PartialEdgeIdentifier(undefined, param.sourceIDNode);
+    }
+}
+
+/**
+ * Creates an Edge filter. Reorders source/target so that they match from/to in the edgeType
+ */
+function getEdgeFilter(param: { edgeType: EdgeType; sourceIDNodes?: QueryNode[]; targetIDNodes?: QueryNode[]; sourceType: GraphQLObjectType }): EdgeFilter {
+    if (param.sourceType == param.edgeType.fromType) {
+        return new EdgeFilter(param.sourceIDNodes, param.targetIDNodes);
+    } else {
+        return new EdgeFilter(param.targetIDNodes, param.sourceIDNodes);
+    }
 }
 
 function createUpdatePropertiesSpecification(obj: any, parentType: GraphQLObjectType, oldEntityNode: QueryNode): PropertySpecification[] {
@@ -175,6 +293,9 @@ function createUpdatePropertiesSpecification(obj: any, parentType: GraphQLObject
             }
 
             properties.push(new PropertySpecification(field.name, currentNode));
+        } else if (isRelationField(field)) {
+            // do nothing because relations are not represented in the update property specification, they are
+            // considered by createUpdateEntityQueryNode directly
         } else if (field.name in obj) {
             // TODO do not include id in entities
             // scalars and value objects
@@ -214,6 +335,6 @@ function createDeleteEntityQueryNode(fieldRequest: FieldRequest, fieldRequestSta
     return new VariableAssignmentQueryNode({
         resultNode: conditionalResultNode,
         variableValueNode: deleteEntityNode,
-        variableNode: deletedEntityVarNode,
+        variableNode: deletedEntityVarNode
     });
 }
