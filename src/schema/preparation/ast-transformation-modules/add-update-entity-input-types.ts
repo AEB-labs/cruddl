@@ -78,6 +78,9 @@ export class AddUpdateEntityInputTypesTransformer implements ASTTransformer {
             case NAMED_TYPE:
                 const namedType = getNamedTypeDefinitionAST(ast, type.name.value);
                 if (namedType.kind === OBJECT_TYPE_DEFINITION) {
+                    if (hasDirectiveWithName(namedType, ROOT_ENTITY_DIRECTIVE)) {
+                        return [buildInputValueNode(field.name.value, GraphQLID.name)];
+                    }
                     return [buildInputValueNode(field.name.value, getUpdateInputTypeName(namedType))];
                 } else {
                     return [buildInputValueNode(field.name.value, type.name.value, field.loc)];
