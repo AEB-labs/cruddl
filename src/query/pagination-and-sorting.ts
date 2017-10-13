@@ -1,7 +1,8 @@
 import { FieldRequest } from '../graphql/query-distiller';
 import { getNamedType, GraphQLObjectType } from 'graphql';
 import {
-    BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, FieldQueryNode, LiteralQueryNode, NullQueryNode,
+    BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, FieldQueryNode, RootEntityIDQueryNode, LiteralQueryNode,
+    NullQueryNode,
     ObjectQueryNode, OrderClause, OrderDirection, OrderSpecification, PropertySpecification, QueryNode,
     UnaryOperationQueryNode, UnaryOperator
 } from './definition';
@@ -46,6 +47,8 @@ export function createPaginationFilterNode(afterArg: any, orderSpecification: Or
         let cursorValue;
         if (clause.valueNode instanceof FieldQueryNode) {
             cursorValue = cursorObj[clause.valueNode.field.name];
+        } else if (clause.valueNode instanceof RootEntityIDQueryNode) {
+            cursorValue = cursorObj[ID_FIELD];
         } else if (clause.valueNode instanceof LiteralQueryNode) {
             cursorValue = clause.valueNode.value;
         } else {
@@ -91,12 +94,11 @@ export function createCursorQueryNode(listFieldRequest: FieldRequest, itemNode: 
 
     const objectType = getNamedType(listFieldRequest.field.type) as GraphQLObjectType;
     const clauses = getOrderByClauseNames(listFieldRequest.args[ORDER_BY_ARG], objectType, listFieldRequest);
-    const fieldNamess = clauses.map(clause => getFieldFromOrderByClause(clause)).sort();
-    const objectNode = new ObjectQueryNode(fieldNamess.map( fieldName =>
+    const fieldNames = clauses.map(clause => getFieldFromOrderByClause(clause)).sort();
+    const objectNode = new ObjectQueryNode(fieldNames.map( fieldName =>
         new PropertySpecification(fieldName, createScalarFieldValueNode(objectType, fieldName, itemNode))));
     return new UnaryOperationQueryNode(objectNode, UnaryOperator.JSON_STRINGIFY);
 }
-
 
 function getFieldFromOrderByClause(clause: string): string {
     if (clause.endsWith(ORDER_BY_ASC_SUFFIX)) {
@@ -122,4 +124,3 @@ function getOrderByClauseNames(orderBy: any, objectType: GraphQLObjectType, list
     }
     return clauseNames;
 }
-

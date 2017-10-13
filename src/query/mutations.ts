@@ -1,13 +1,12 @@
 import { FieldRequest } from '../graphql/query-distiller';
-import { getNamedType, getNullableType, GraphQLObjectType, GraphQLOutputType, GraphQLType } from 'graphql';
+import { getNamedType, GraphQLObjectType, GraphQLType } from 'graphql';
 import {
     AddEdgesQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode,
-    CreateEntityQueryNode, DeleteEntitiesQueryNode, PartialEdgeIdentifier, EdgeIdentifier, FieldQueryNode,
-    FirstOfListQueryNode,
-    ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, PropertySpecification,
-    QueryNode, RemoveEdgesQueryNode, SetEdgeQueryNode, TransformListQueryNode, TypeCheckQueryNode,
-    UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode,
-    EdgeFilter
+    CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeFilter, EdgeIdentifier, FieldQueryNode, FirstOfListQueryNode,
+    RootEntityIDQueryNode, ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode,
+    PartialEdgeIdentifier, PropertySpecification, QueryNode, RemoveEdgesQueryNode, SetEdgeQueryNode,
+    TransformListQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode,
+    VariableAssignmentQueryNode, VariableQueryNode
 } from './definition';
 import {
     CREATE_ENTITY_FIELD_PREFIX, DELETE_ENTITY_FIELD_PREFIX, ID_FIELD, MUTATION_ID_ARG, MUTATION_INPUT_ARG,
@@ -102,9 +101,8 @@ function createUpdateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestSta
         throw new Error(`Object type ${entityName} not found but needed for field ${fieldRequest.fieldName}`);
     }
     const input = fieldRequest.args[MUTATION_INPUT_ARG];
-    const idField = entityType.getFields()[ID_FIELD];
     const currentEntityVarNode = new VariableQueryNode('currentEntity');
-    const filterNode = new BinaryOperationQueryNode(new FieldQueryNode(currentEntityVarNode, idField),
+    const filterNode = new BinaryOperationQueryNode(new RootEntityIDQueryNode(currentEntityVarNode),
         BinaryOperator.EQUAL,
         new LiteralQueryNode(input[ID_FIELD]));
     const updateEntityNode = new FirstOfListQueryNode(new UpdateEntitiesQueryNode({
@@ -146,7 +144,7 @@ function getRelationAddRemoveStatements(obj: PlainObject, parentType: GraphQLObj
     const statements: QueryNode[] = [];
     for (const field of relationFields) {
         const edgeType = getEdgeType(parentType, field);
-        const sourceIDNode = new FieldQueryNode(sourceEntityNode, parentType.getFields()[ID_FIELD]);
+        const sourceIDNode = new RootEntityIDQueryNode(sourceEntityNode);
         if (isListType(field.type)) {
             // to-n relation
             const idsToBeAdded = (obj[getAddRelationFieldName(field.name)] || []) as {}[];
@@ -347,9 +345,8 @@ function createDeleteEntityQueryNode(fieldRequest: FieldRequest, fieldRequestSta
     const input = fieldRequest.args[MUTATION_ID_ARG];
     // TODO special handling for generated ids of child entities
 
-    const idField = entityType.getFields()[ID_FIELD];
     const currentEntityVarNode = new VariableQueryNode('currentEntity');
-    const filterNode = new BinaryOperationQueryNode(new FieldQueryNode(currentEntityVarNode, idField),
+    const filterNode = new BinaryOperationQueryNode(new RootEntityIDQueryNode(currentEntityVarNode),
         BinaryOperator.EQUAL,
         new LiteralQueryNode(input));
     const deleteEntityNode = new FirstOfListQueryNode(new DeleteEntitiesQueryNode({

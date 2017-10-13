@@ -1,7 +1,8 @@
 import {
     AddEdgesQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode,
     ConstBoolQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeFilter, EdgeIdentifier, EntitiesQueryNode,
-    FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode,
+    FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, RootEntityIDQueryNode, ListQueryNode, LiteralQueryNode,
+    MergeObjectsQueryNode,
     ObjectQueryNode, OrderDirection, OrderSpecification, PartialEdgeIdentifier, QueryNode, RemoveEdgesQueryNode,
     SetEdgeQueryNode, TransformListQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator,
     UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode
@@ -10,7 +11,6 @@ import { aql, AQLFragment, AQLVariable } from './aql';
 import { getCollectionNameForEdge, getCollectionNameForRootEntity } from './arango-basics';
 import { GraphQLNamedType, GraphQLObjectType } from 'graphql';
 import { EdgeType } from '../../schema/edges';
-import { ID_FIELD } from '../../schema/schema-defaults';
 
 class QueryContext {
     private variableMap = new Map<VariableQueryNode, AQLVariable>();
@@ -126,15 +126,15 @@ const processors : { [name: string]: NodeProcessor<any> } = {
     Field(node: FieldQueryNode, context): AQLFragment {
         const object = processNode(node.objectNode, context);
         let identifier = node.field.name;
-        if (identifier == 'id') {
-            identifier = '_key'; // ids are stored in _key field
-        }
-
         if (aql.isSafeIdentifier(identifier)) {
             return aql`${object}.${aql.identifier(identifier)}`;
         }
         // fall back to bound values. do not attempt aql.string for security reasons - should not be the case normally, anyway.
         return aql`${object}[${identifier}]`;
+    },
+
+    RootEntityID(node: RootEntityIDQueryNode, context): AQLFragment {
+        return aql`${processNode(node.objectNode, context)}._key`; // ids are stored in _key field
     },
 
     TransformList(node: TransformListQueryNode, context): AQLFragment {
@@ -311,13 +311,13 @@ function getFullIDFromKeyNode(node: QueryNode, type: GraphQLObjectType, context:
         // just append the node to the literal key in JavaScript and bind it as a string
         return aql`${getCollectionNameForRootEntity(type) + '/' + node.value}`;
     }
-    if (node instanceof FieldQueryNode && node.field.name == ID_FIELD) {
+    if (node instanceof RootEntityIDQueryNode) {
         // access the _id field. processNode(node) would access the _key field instead.
         return aql`${processNode(node.objectNode, context)}._id`;
     }
 
     // fall back to general case
-    return aql`CONCAT(${getCollectionForType(type)}, "/", ${processNode(node, context)})`;
+    return aql`CONCAT(${getCollectionNameForRootEntity(type) + '/'}, ${processNode(node, context)})`;
 }
 
 function formatEdge(edgeType: EdgeType, edge: PartialEdgeIdentifier|EdgeIdentifier, context: QueryContext): AQLFragment {

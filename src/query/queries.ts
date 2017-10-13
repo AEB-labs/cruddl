@@ -2,18 +2,19 @@ import { FieldRequest, FieldSelection } from '../graphql/query-distiller';
 import { getNamedType, GraphQLField, GraphQLObjectType } from 'graphql';
 import {
     BasicType, BinaryOperationQueryNode, BinaryOperator, ConditionalQueryNode, EntitiesQueryNode, FieldQueryNode,
-    FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode, NullQueryNode, ObjectQueryNode,
+    FirstOfListQueryNode, FollowEdgeQueryNode, RootEntityIDQueryNode, ListQueryNode, LiteralQueryNode, NullQueryNode,
+    ObjectQueryNode,
     PropertySpecification, QueryNode, TransformListQueryNode, TypeCheckQueryNode, VariableQueryNode
 } from './definition';
 import { createCursorQueryNode, createOrderSpecification, createPaginationFilterNode } from './pagination-and-sorting';
 import { createFilterNode } from './filtering';
 import {
-    AFTER_ARG, ALL_ENTITIES_FIELD_PREFIX, CURSOR_FIELD, FILTER_ARG, FIRST_ARG, ORDER_BY_ARG
+    AFTER_ARG, ALL_ENTITIES_FIELD_PREFIX, CURSOR_FIELD, FILTER_ARG, FIRST_ARG, ID_FIELD, ORDER_BY_ARG
 } from '../schema/schema-defaults';
 import { decapitalize, objectEntries } from '../utils/utils';
 import { createScalarFieldValueNode } from './common';
 import { isListType } from '../graphql/schema-utils';
-import { getSingleKeyField, isReferenceField, isRelationField } from '../schema/schema-utils';
+import { getSingleKeyField, isReferenceField, isRelationField, isRootEntityType } from '../schema/schema-utils';
 import { getEdgeType } from '../schema/edges';
 
 /**
@@ -140,6 +141,10 @@ function createEntityFieldQueryNode(fieldRequest: FieldRequest, entityNode: Quer
             const keyNode = new FieldQueryNode(entityNode, fieldRequest.field);
             return createTo1ReferenceQueryNode(fieldRequest, keyNode, fieldRequestStack);
         }
+    }
+
+    if (isRootEntityType(fieldRequest.parentType) && fieldRequest.field.name == ID_FIELD) {
+        return new RootEntityIDQueryNode(entityNode);
     }
 
     const fieldNode = new FieldQueryNode(entityNode, fieldRequest.field);

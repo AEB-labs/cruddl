@@ -151,6 +151,18 @@ export class FieldQueryNode implements QueryNode {
 }
 
 /**
+ * A node that evaluates to the id of a root entity
+ */
+export class RootEntityIDQueryNode implements QueryNode {
+    constructor(public readonly objectNode: QueryNode) {
+    }
+
+    public describe() {
+        return `id(${this.objectNode.describe()})`;
+    }
+}
+
+/**
  * A node that evaluates in a JSON-like object structure with properties and values
  */
 export class ObjectQueryNode implements QueryNode {

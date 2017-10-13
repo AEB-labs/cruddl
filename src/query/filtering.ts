@@ -1,10 +1,13 @@
 import { getNamedType, GraphQLObjectType } from 'graphql';
 import {
-    BasicType, BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, FieldQueryNode, LiteralQueryNode,
+    BasicType, BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, FieldQueryNode, RootEntityIDQueryNode,
+    LiteralQueryNode,
     QueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator
 } from './definition';
 import { isArray } from 'util';
-import { ARGUMENT_AND, ARGUMENT_OR } from '../schema/schema-defaults';
+import { ARGUMENT_AND, ARGUMENT_OR, ID_FIELD } from '../schema/schema-defaults';
+import { isRootEntityType } from '../schema/schema-utils';
+import { createScalarFieldValueNode } from './common';
 
 export function createFilterNode(filterArg: any, objectType: GraphQLObjectType, contextNode: QueryNode): QueryNode {
     if (!filterArg || !Object.keys(filterArg).length) {
@@ -84,12 +87,8 @@ function getFilterClauseNode(key: string, value: any, contextNode: QueryNode, ob
     for (const suffix in variations) {
         if (key.endsWith(suffix)) {
             const fieldName = key.substr(0, key.length - suffix.length);
-            const field = objectType.getFields()[fieldName];
-            if (!field) {
-                throw new Error(`Field ${fieldName} does not exist in type ${objectType.name} but is used as a filter`);
-            }
-            const fieldNode = new FieldQueryNode(contextNode, field);
-            const valueNode = new LiteralQueryNode(value);
+            const fieldNode = createScalarFieldValueNode(objectType, fieldName, contextNode);
+            const valueNode =  new LiteralQueryNode(value);
             return variations[suffix](fieldNode, valueNode);
         }
     }
