@@ -54,7 +54,7 @@ export const INDENTATION = '  ';
  * @returns the indented string
  */
 export function indent(input: string, indentation: string|number = INDENTATION) {
-    if (indentation == 0 || indentation == '') {
+    if (indentation === 0 || indentation === '') {
         return input;
     }
     if (typeof indentation == 'number') {
