@@ -143,7 +143,7 @@ export interface BenchmarkExecutionCallbacks {
 const stats = require("stats-lite");
 
 export async function benchmark(config: BenchmarkConfig, callbacks?: BenchmarkExecutionCallbacks): Promise<BenchmarkResult> {
-    async function cycle(count: number): Promise<number[]> {
+    async function cycle(count: number): Promise<{times: number[], netTime: number}> {
         if (config.before) {
             await config.before({count});
         }
@@ -154,10 +154,13 @@ export async function benchmark(config: BenchmarkConfig, callbacks?: BenchmarkEx
         }
         const timeAfter = time();
 
-        return [ (timeAfter - timeBefore) / count ];
+        return {
+            times: [ (timeAfter - timeBefore) / count ],
+            netTime: timeAfter - timeBefore
+        };
     }
 
-    async function cycleSync(count: number): Promise<number[]> {
+    async function cycleSync(count: number): Promise<{times: number[], netTime: number}> {
         if (config.before) {
             await config.before({count});
         }
@@ -168,10 +171,13 @@ export async function benchmark(config: BenchmarkConfig, callbacks?: BenchmarkEx
         }
         const timeAfter = time();
 
-        return [ (timeAfter - timeBefore) / count ];
+        return {
+            times: [ (timeAfter - timeBefore) / count ],
+            netTime: timeAfter - timeBefore
+        };
     }
 
-    async function cycleDetailed(count: number): Promise<number[]> {
+    async function cycleDetailed(count: number): Promise<{times: number[], netTime: number}> {
         if (config.before) {
             await config.before({count});
         }
@@ -183,7 +189,10 @@ export async function benchmark(config: BenchmarkConfig, callbacks?: BenchmarkEx
             times[i] = timeAfter - timeBefore;
         }
 
-        return times;
+        return {
+            times,
+            netTime: stats.sum(times)
+        };
     }
 
     const startTime = time();
@@ -213,11 +222,10 @@ export async function benchmark(config: BenchmarkConfig, callbacks?: BenchmarkEx
         }
 
         // Run cycle
-        const netTimes = await cycleFn(iterationCount);
+        const {netTime, times: cycleTimes} = await cycleFn(iterationCount);
 
         // Calculate next state
-        const netTime = stats.sum(netTimes);
-        times.push(...netTimes);
+        times.push(...cycleTimes);
         state = {
             timings: getTimings(times),
             config: state.config,
