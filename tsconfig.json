@@ -21,15 +21,16 @@
     "typeRoots": [
       "node_modules/@types"
     ],
-    "noEmit": true
+    "outDir": "dist"
   },
   "exclude": [
     "node_modules",
-    "dist"
+    "dist",
+    "spec"
   ],
   "include": [
-    "src/**/*",
-    "spec/**/*"
+    "index.ts",
+    "src/**/*"
   ],
   "compileOnSave": false,
   "buildOnSave": false,
