@@ -1,0 +1,21 @@
+mutation add {
+    updateDelivery(input: {
+        id: "@{ids/Delivery/1}",
+        addItems: [{
+            itemNumber: "1234"
+        }]
+    }) {
+        items {
+            itemNumber
+        }
+    }
+}
+
+# to verify it is updated in the db
+query query {
+    Delivery(id: "@{ids/Delivery/1}") {
+        items {
+            itemNumber
+        }
+    }
+}

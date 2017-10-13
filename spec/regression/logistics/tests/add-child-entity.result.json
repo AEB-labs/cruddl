@@ -1,0 +1,36 @@
+{
+  "add": {
+    "data": {
+      "updateDelivery": {
+        "items": [
+          {
+            "itemNumber": "1001"
+          },
+          {
+            "itemNumber": "1002"
+          },
+          {
+            "itemNumber": "1234"
+          }
+        ]
+      }
+    }
+  },
+  "query": {
+    "data": {
+      "Delivery": {
+        "items": [
+          {
+            "itemNumber": "1001"
+          },
+          {
+            "itemNumber": "1002"
+          },
+          {
+            "itemNumber": "1234"
+          }
+        ]
+      }
+    }
+  }
+}
