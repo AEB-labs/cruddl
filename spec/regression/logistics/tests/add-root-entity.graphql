@@ -1,0 +1,23 @@
+mutation add {
+    createCountry(input: {
+        description: [
+            {
+                languageIsoCode: "en",
+                translation: "Norway"
+            }
+        ]
+        isoCode: "NO"
+    }) {
+        isoCode
+    }
+}
+
+query query {
+    allCountries(orderBy: isoCode_ASC) {
+        isoCode
+        description {
+            languageIsoCode
+            translation
+        }
+    }
+}

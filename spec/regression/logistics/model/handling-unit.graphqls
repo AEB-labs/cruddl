@@ -1,0 +1,4 @@
+type HandlingUnit @rootEntity {
+    huNumber: String
+    delivery: Delivery @relation
+}
