@@ -16,8 +16,8 @@ function testCountWithoutFilter(config: {rootEntitiesInDB: number}): BenchmarkCo
         },
 
         async fn() {
-            const result: any = await env.exec(`query { allPapersMeta { count } }`);
-            const count = result.allPapersMeta.count;
+            const result: any = await env.exec(`query { _allPapersMeta { count } }`);
+            const count = result._allPapersMeta.count;
             if (!count) {
                 throw new Error('Count is missing');
             }
@@ -35,8 +35,8 @@ function testCountWithFilter(config: {rootEntitiesInDB: number}): BenchmarkConfi
         },
 
         async fn() {
-            const result: any = await env.exec(`query { allPapersMeta(filter:{isPublished:true}) { count } }`);
-            const count = result.allPapersMeta.count;
+            const result: any = await env.exec(`query { _allPapersMeta(filter:{isPublished:true}) { count } }`);
+            const count = result._allPapersMeta.count;
             if (!count) {
                 throw new Error('Count is missing');
             }

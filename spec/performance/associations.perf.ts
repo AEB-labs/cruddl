@@ -36,7 +36,7 @@ async function setUpPapersAndReaders(environment: TestEnvironment, config: { pap
           RETURN paper
         ) 
         INSERT { _from: user._id, _to: paper._id }
-        INTO paperReadersAssociations        
+        INTO papers_users        
     `);
 }
 

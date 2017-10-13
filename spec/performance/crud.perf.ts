@@ -68,7 +68,7 @@ function getAllOfXRootEntities(config: { rootEntities: number, documentLength: n
     let env: TestEnvironment;
     const sizeFactor = getSizeFactorForJSONLength(config.documentLength);
     return {
-        name: `Fetch ${config.onlyFewFields ? 'two fields of ' : ''} all ${config.rootEntities} root entities of size ${formatBytes(config.documentLength)} in a collection})`,
+        name: `Fetch ${config.onlyFewFields ? 'two fields of ' : ''} all ${config.rootEntities} root entities of size ${formatBytes(config.documentLength)} in a collection`,
         async beforeAll() {
             env = await initEnvironment();
             await addManyPapersWithAQL(env, config.rootEntities, createLargePaper(sizeFactor));

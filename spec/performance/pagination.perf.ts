@@ -19,7 +19,7 @@ function testPagination(config: { pageSize: number, pages: number, rootEntitiesI
         async fn() {
             let cursor = null;
             for (let i = 0; i < config.pages ; i++) {
-                const result: any = await env.exec(`query($count: Int!, $cursor: String, $orderBy: PaperOrderBy) { allPapers(first: $count, after: $cursor, orderBy: $orderBy) { title, id, _cursor } }`, {
+                const result: any = await env.exec(`query($count: Int!, $cursor: String, $orderBy: [PaperOrderBy!]) { allPapers(first: $count, after: $cursor, orderBy: $orderBy) { title, id, _cursor } }`, {
                     count: config.pageSize,
                     cursor,
                     orderBy: config.orderBy
