@@ -15,13 +15,9 @@ describe('regression tests', async () => {
         describe(suiteName, () => {
             beforeAll(async () => {
                 jasmine.addMatchers(TO_EQUAL_JSON_MATCHERS);
-                await suite.setUp();
             });
             for (const testName of suite.getTestNames()) {
                 it(testName, async () => {
-                    if (!suite.isSetUp) {
-                        return;
-                    }
                     const { expectedResult, actualResult } = await suite.runTest(testName);
                     (<any>expect(actualResult)).toEqualJSON(expectedResult);
                 });
