@@ -11,7 +11,7 @@ stages:
 test:
   stage: test
   script:
-    - mkdir -p arangodb && cd arangodb && curl https://www.arangodb.com/repositories/travisCI/setup_arangodb_3.1.12.sh | bash
+    - mkdir -p arangodb && cd arangodb && curl -L https://download.arangodb.com/travisCI/setup_arangodb_3.2.4.sh | bash
     - npm install
     - npm test
     - npm run test:dropdb
