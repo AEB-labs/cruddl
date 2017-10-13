@@ -25,12 +25,12 @@
   },
   "exclude": [
     "node_modules",
-    "dist",
-    "spec"
+    "dist"
   ],
   "include": [
     "index.ts",
-    "src/**/*"
+    "src/**/*",
+    "spec/**/*"
   ],
   "compileOnSave": false,
   "buildOnSave": false,
