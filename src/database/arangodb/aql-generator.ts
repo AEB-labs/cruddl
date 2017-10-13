@@ -390,13 +390,17 @@ function generateSortAQL(orderBy: OrderSpecification, context: QueryContext): AQ
     return aql`SORT ${aql.join(clauses, aql`, `)}`;
 }
 
+const processorMap: {[name: string]: NodeProcessor<any>} = {};
+for (const processorName in processors) {
+    processorMap[processorName + 'QueryNode'] = processors[processorName];
+}
+
 function processNode(node: QueryNode, context: QueryContext): AQLFragment {
     const type = node.constructor.name;
-    const rawType = type.replace(/QueryNode$/, '');
-    if (!(rawType in processors)) {
+    if (!(type in processorMap)) {
         throw new Error(`Unsupported query type: ${type}`);
     }
-    return processors[rawType](node, context);
+    return processorMap[type](node, context);
 }
 
 export function getAQLForQuery(node: QueryNode): AQLFragment {
