@@ -399,7 +399,7 @@ function processNode(node: QueryNode, context: QueryContext): AQLFragment {
     return processors[rawType](node, context);
 }
 
-export function getAQLForQuery(node: QueryNode) {
+export function getAQLForQuery(node: QueryNode): AQLFragment {
     return aql`RETURN ${processNode(node, new QueryContext())}`;
 }
 

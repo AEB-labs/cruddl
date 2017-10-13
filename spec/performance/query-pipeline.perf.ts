@@ -116,7 +116,7 @@ function testQueryPipeline(params: { parser: boolean, queryDistiller: boolean, q
     return {
         name: `Run query pipeline with ${optionsStr}`,
         isSync: true,
-        initialCount: 100000,
+        initialCount: params.aql ? 10000 : 100000,
         fn() {
             const preparedQuery = PREPARED_QUERIES[Math.floor(Math.random() * PREPARED_QUERIES.length)];
             if (params.parser) {
@@ -129,7 +129,8 @@ function testQueryPipeline(params: { parser: boolean, queryDistiller: boolean, q
                 createQueryTree(preparedQuery.distilledOperation);
             }
             if (params.aql) {
-                getAQLForQuery(preparedQuery.queryTree);
+                const fragment = getAQLForQuery(preparedQuery.queryTree);
+                fragment.getCode();
             }
         }
     };

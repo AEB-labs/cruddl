@@ -5,8 +5,8 @@ describe('getAQLForQuery', () => {
     it('supports LiteralQuery', () => {
         const query = new LiteralQueryNode({some: 'object'});
         const aql = getAQLForQuery(query);
-        console.log(aql.toPrettyString());
-        expect(aql.prettyCode).toEqual(`RETURN @var1`);
+        console.log(aql.toColoredString());
+        expect(aql.getCode().code).toEqual(`RETURN @var1`);
     });
 
     it('supports ObjectQuery', () => {
@@ -15,7 +15,7 @@ describe('getAQLForQuery', () => {
             new PropertySpecification('propB', new LiteralQueryNode('b')),
         ]);
         const aql = getAQLForQuery(query);
-        console.log(aql.toPrettyString());
-        expect(aql.prettyCode).toEqual(`RETURN {\n  "propA": @var1,\n  "propB": @var2\n}`);
+        console.log(aql.toColoredString());
+        expect(aql.getCode().code).toEqual(`RETURN {\n  "propA": @var1,\n  "propB": @var2\n}`);
     });
 });

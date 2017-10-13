@@ -54,6 +54,9 @@ export const INDENTATION = '  ';
  * @returns the indented string
  */
 export function indent(input: string, indentation: string|number = INDENTATION) {
+    if (indentation == 0 || indentation == '') {
+        return input;
+    }
     if (typeof indentation == 'number') {
         indentation = INDENTATION.repeat(indentation);
     }
@@ -114,10 +117,18 @@ export function removeDuplicates<T, U>(list: T[], keyFn: (item: T) => U): T[] {
     });
 }
 
-export function arrayToObject<TValue>(array: TValue[], keyFn: (obj: TValue) => string): { [name: string]: TValue } {
+export function arrayToObject<TValue>(array: TValue[], keyFn: (item: TValue, index: number) => string): { [name: string]: TValue } {
     const result: { [name: string]: TValue } = {};
-    for (const item of array) {
-        result[keyFn(item)] = item;
+    for (let i = 0; i < array.length; i++) {
+        result[keyFn(array[i], i)] = array[i];
+    }
+    return result;
+}
+
+export function arrayToObjectExt<TItem, TValue>(array: TItem[], keyFn: (obj: TItem, index: number) => string, valueFn: (obj: TItem, index: number) => TValue): { [name: string]: TValue } {
+    const result: { [name: string]: TValue } = {};
+    for (let i = 0; i < array.length; i++) {
+        result[keyFn(array[i], i)] = valueFn(array[i], i);
     }
     return result;
 }

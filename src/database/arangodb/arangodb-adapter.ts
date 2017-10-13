@@ -32,8 +32,9 @@ export class ArangoDBAdapter implements DatabaseAdapter {
 
     async execute(queryTree: QueryNode) {
         const aql = getAQLForQuery(queryTree);
-        console.log(aql.toPrettyString());
-        const cursor = await this.db.query(aql.code, aql.bindValues);
+        console.log(aql.toColoredString());
+        const { code, boundValues } = aql.getCode();
+        const cursor = await this.db.query(code, boundValues);
         return await cursor.next();
     }
 
