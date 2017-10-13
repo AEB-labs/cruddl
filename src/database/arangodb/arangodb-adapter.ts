@@ -10,6 +10,8 @@ import { getCollectionNameForEdge, getCollectionNameForRootEntity } from './aran
 
 export interface ArangoDBConfig {
     readonly url: string;
+    readonly user?: string;
+    readonly password?: string;
     readonly databaseName: string;
 }
 
@@ -21,6 +23,11 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             url: config.url,
             databaseName: config.databaseName
         });
+        if(config.user) {
+            // Unfortunately the typings of arangojs do not include the method "useBasicAuth" although it is present in the implementation of arangojs.
+            // Therefore we cast to any
+            (this.db as any).useBasicAuth(config.user, config.password);
+        }
     }
 
     async execute(queryTree: QueryNode) {
