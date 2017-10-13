@@ -8,10 +8,12 @@ const INCLUDE_INITIAL_SETUP_IN_MAX_TIME = false; // makes million-docs-tests fea
 
 export interface BenchmarkConfig {
     readonly name: string;
-    readonly fn: () => Promise<any>;
+    readonly isSync?: boolean;
+    readonly fn: () => Promise<any>|any;
     readonly before?: (info: {count: number}) => Promise<any>;
     readonly beforeAll?: () => Promise<any>;
     readonly maxTime?: number;
+    readonly initialCount?: number;
 }
 
 export type BenchmarkFactories = Array<() => BenchmarkConfig>;
@@ -152,7 +154,21 @@ export async function benchmark(config: BenchmarkConfig, callbacks?: BenchmarkEx
         }
         const timeAfter = time();
 
-        return [ timeAfter - timeBefore ];
+        return [ (timeAfter - timeBefore) / count ];
+    }
+
+    async function cycleSync(count: number): Promise<number[]> {
+        if (config.before) {
+            await config.before({count});
+        }
+
+        const timeBefore = time();
+        for (let i = 0; i < count; i++) {
+            config.fn();
+        }
+        const timeAfter = time();
+
+        return [ (timeAfter - timeBefore) / count ];
     }
 
     async function cycleDetailed(count: number): Promise<number[]> {
@@ -191,7 +207,7 @@ export async function benchmark(config: BenchmarkConfig, callbacks?: BenchmarkEx
     while (true) {
         // Preparation
         const iterationCount = nextIterationCount(state);
-        const cycleFn = iterationCount > 10000 ? cycle : cycleDetailed;
+        const cycleFn = config.isSync ? cycleSync : iterationCount > 10000 ? cycle : cycleDetailed;
         if (!iterationCount) {
             break;
         }
@@ -246,7 +262,7 @@ function nextIterationCount(state: BenchmarkState): number {
 
     // Always do at least one cycle
     if (state.cycles == 0) {
-        return INITIAL_ITERATION_COUNT;
+        return state.config.initialCount || INITIAL_ITERATION_COUNT;
     }
 
     // Already out of time?
