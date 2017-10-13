@@ -2,7 +2,7 @@ import { createTempDatabase, initTestData } from '../../regression/initializatio
 import {Database} from "arangojs";
 import {range} from "../../../src/utils/utils";
 import { ArangoDBAdapter } from '../../../src/database/arangodb/arangodb-adapter';
-import { graphql, Source } from 'graphql';
+import { graphql, GraphQLSchema, Source } from 'graphql';
 import * as fs from 'fs';
 import * as path from 'path';
 import { createSchema } from '../../../src/schema/schema-builder';
@@ -18,13 +18,16 @@ export interface TestEnvironment {
     exec(graphql: string, variables?: {[name: string]: any}): any
 }
 
+export function createDumbSchema(modelPath: string): GraphQLSchema {
+    const model: Array<Source> = fs.readdirSync(modelPath)
+        .map(file => fileToSource(path.resolve(modelPath, file)));
+    return createSchema(model);
+}
+
 export async function initEnvironment(): Promise<TestEnvironment> {
     const dbConfig = await createTempDatabase();
     const dbAdapter = new ArangoDBAdapter(dbConfig);
-    const model: Array<Source> = fs.readdirSync(MODEL_PATH)
-        .map(file => fileToSource(path.resolve(MODEL_PATH, file)));
-    const dumbSchema = createSchema(model);
-    const schema = addQueryResolvers(dumbSchema, dbAdapter);
+    const schema = addQueryResolvers(createDumbSchema(MODEL_PATH), dbAdapter);
     await dbAdapter.updateSchema(schema);
 
     return {
