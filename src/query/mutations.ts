@@ -152,7 +152,7 @@ function getRelationAddRemoveStatements(obj: PlainObject, parentType: GraphQLObj
         const sourceIDNode = new RootEntityIDQueryNode(sourceEntityNode);
         if (isListType(field.type)) {
             // to-n relation
-            const idsToBeAdded = (isAddRemove ? obj[getAddRelationFieldName(field.name)] : obj[field.name] || []) as {}[];
+            const idsToBeAdded = (isAddRemove ? obj[getAddRelationFieldName(field.name)] : obj[field.name]) as {}[]|undefined || [];
             const idsToBeRemoved = isAddRemove ? (obj[getRemoveRelationFieldName(field.name)] || []) as {}[] : [];
             if (idsToBeAdded.length && idsToBeRemoved.length) {
                 throw new Error(`Currently, it is not possible to use add and remove on the same relation in one mutation`);
