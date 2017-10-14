@@ -328,8 +328,9 @@ function createUpdatePropertiesSpecification(obj: any, objectType: GraphQLObject
         } else if (isRelationField(field)) {
             // do nothing because relations are not represented in the update property specification, they are
             // considered by createUpdateEntityQueryNode directly
+        } else if (isRootEntityType(objectType) && field.name == ID_FIELD) {
+            // do not update id - the id is only used to find the root entity
         } else if (field.name in obj) {
-            // TODO do not include id in entities
             // scalars and value objects
             properties.push(new PropertySpecification(field.name, new LiteralQueryNode(obj[field.name])));
         }
@@ -345,7 +346,6 @@ function createDeleteEntityQueryNode(fieldRequest: FieldRequest, fieldRequestSta
         throw new Error(`Object type ${entityName} not found but needed for field ${fieldRequest.fieldName}`);
     }
     const input = fieldRequest.args[MUTATION_ID_ARG];
-    // TODO special handling for generated ids of child entities
 
     const currentEntityVarNode = new VariableQueryNode('currentEntity');
     const filterNode = new BinaryOperationQueryNode(new RootEntityIDQueryNode(currentEntityVarNode),
