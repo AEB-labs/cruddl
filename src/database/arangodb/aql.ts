@@ -210,7 +210,9 @@ export function aql(strings: ReadonlyArray<string>, ...values: any[]): AQLFragme
         }
         if (values.length) {
             const value = values.shift();
-            if (value instanceof AQLFragment) {
+            if (value instanceof AQLCompoundFragment) {
+                fragments.push(...value.fragments);
+            } else if (value instanceof AQLFragment) {
                 fragments.push(value);
             } else {
                 fragments.push(new AQLBoundValue(value));
