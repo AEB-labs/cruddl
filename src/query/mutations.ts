@@ -50,13 +50,18 @@ function createCreateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestSta
     if (!entityType || !(entityType instanceof GraphQLObjectType)) {
         throw new Error(`Object type ${entityName} not found but needed for field ${fieldRequest.fieldName}`);
     }
-    // { handlingUnits: [1,2,3], dnNumber: "as" }
     const input = fieldRequest.args[MUTATION_INPUT_ARG];
-    // TODO create relations
     const objectNode = new LiteralQueryNode(prepareCreateInput(input, entityType));
     const createEntityNode = new CreateEntityQueryNode(entityType, objectNode);
     const newEntityVarNode = new VariableQueryNode('newEntity');
-    const resultNode = createEntityObjectNode(fieldRequest.selectionSet, newEntityVarNode, fieldRequestStack);
+    let resultNode: QueryNode= createEntityObjectNode(fieldRequest.selectionSet, newEntityVarNode, fieldRequestStack);
+    const relationStatements = getRelationAddRemoveStatements(input, entityType, newEntityVarNode, false);
+    if (relationStatements.length) {
+        resultNode = new FirstOfListQueryNode(new ListQueryNode([
+            resultNode,
+            ...relationStatements
+        ]));
+    }
     return new VariableAssignmentQueryNode({
         variableValueNode: createEntityNode,
         resultNode,
@@ -117,7 +122,7 @@ function createUpdateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestSta
     let resultNode: QueryNode = createEntityObjectNode(fieldRequest.selectionSet, updatedEntityVarNode, fieldRequestStack);
 
     // put these statements here because they need to be executed in the context of the updated variable
-    const relationStatements = getRelationAddRemoveStatements(input, entityType, updatedEntityVarNode);
+    const relationStatements = getRelationAddRemoveStatements(input, entityType, updatedEntityVarNode, true);
     if (relationStatements.length) {
         resultNode = new FirstOfListQueryNode(new ListQueryNode([
             resultNode,
@@ -136,7 +141,7 @@ function createUpdateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestSta
     });
 }
 
-function getRelationAddRemoveStatements(obj: PlainObject, parentType: GraphQLObjectType, sourceEntityNode: QueryNode): QueryNode[] {
+function getRelationAddRemoveStatements(obj: PlainObject, parentType: GraphQLObjectType, sourceEntityNode: QueryNode, isAddRemove: boolean): QueryNode[] {
     // note: we don't check if the target ids exists. This would be a constraint that will be checked in Foxx once we
     // implement Foxx. It's not easy to do this in AQL because we can't throw errors in AQL.
 
@@ -147,8 +152,8 @@ function getRelationAddRemoveStatements(obj: PlainObject, parentType: GraphQLObj
         const sourceIDNode = new RootEntityIDQueryNode(sourceEntityNode);
         if (isListType(field.type)) {
             // to-n relation
-            const idsToBeAdded = (obj[getAddRelationFieldName(field.name)] || []) as {}[];
-            const idsToBeRemoved = (obj[getRemoveRelationFieldName(field.name)] || []) as {}[];
+            const idsToBeAdded = (isAddRemove ? obj[getAddRelationFieldName(field.name)] : obj[field.name] || []) as {}[];
+            const idsToBeRemoved = isAddRemove ? (obj[getRemoveRelationFieldName(field.name)] || []) as {}[] : [];
             if (idsToBeAdded.length && idsToBeRemoved.length) {
                 throw new Error(`Currently, it is not possible to use add and remove on the same relation in one mutation`);
             }
