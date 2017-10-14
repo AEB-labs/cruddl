@@ -150,7 +150,7 @@ function createEntityFieldQueryNode(fieldRequest: FieldRequest, entityNode: Quer
 
     if (isReferenceField(fieldRequest.field)) {
         if (isListType(type)) {
-            throw new Error(`References in lists are not supported yet`);
+            throw new Error(`${fieldRequest.fieldName}: references in lists are not supported yet`);
         } else {
             const keyNode = new FieldQueryNode(entityNode, fieldRequest.field);
             return createTo1ReferenceQueryNode(fieldRequest, keyNode, fieldRequestStack);
@@ -168,9 +168,16 @@ function createEntityFieldQueryNode(fieldRequest: FieldRequest, entityNode: Quer
         if (!listField) {
             throw new Error(`Requested meta field ${fieldRequest.field.name} but associated list field ${listFieldName} does not exist in object type ${objectType.name}`);
         }
-        const listNode = new FieldQueryNode(entityNode, listField);
-        // TODO support references and relations
-        return createListMetaNode(fieldRequest, createSafeListQueryNode(listNode), getNamedType(listField.type) as GraphQLObjectType);
+        let listNode: QueryNode;
+        if (isRelationField(listField)) {
+            const edgeType = getEdgeType(getNamedType(fieldRequest.parentType) as GraphQLObjectType, listField);
+            listNode = new FollowEdgeQueryNode(edgeType, entityNode);
+        } else if (isReferenceField(listField)) {
+            throw new Error(`${fieldRequest.fieldName}: references in lists are not supported yet`);
+        } else {
+            listNode = createSafeListQueryNode(new FieldQueryNode(entityNode, listField));
+        }
+        return createListMetaNode(fieldRequest, listNode, getNamedType(listField.type) as GraphQLObjectType);
     }
 
     const fieldNode = new FieldQueryNode(entityNode, fieldRequest.field);
