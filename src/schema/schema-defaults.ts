@@ -63,6 +63,6 @@ export const AFTER_ARG = 'after';
 export const FIRST_ARG = 'first';
 export const KEY_FIELD_DIRECTIVE = 'key'
 
-export const COUNT_META_FIELDS = 'count';
+export const COUNT_META_FIELD = 'count';
 
 export const MUTATION_INPUT_ARG = 'input';export const MUTATION_ID_ARG = 'id';

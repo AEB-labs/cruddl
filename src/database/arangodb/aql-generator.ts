@@ -5,7 +5,7 @@ import {
     MergeObjectsQueryNode,
     ObjectQueryNode, OrderDirection, OrderSpecification, PartialEdgeIdentifier, QueryNode, RemoveEdgesQueryNode,
     SetEdgeQueryNode, TransformListQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator,
-    UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode
+    UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode, CountQueryNode
 } from '../../query/definition';
 import { aql, AQLFragment, AQLVariable } from './aql';
 import { getCollectionNameForEdge, getCollectionNameForRootEntity } from './arango-basics';
@@ -148,6 +148,28 @@ const processors : { [name: string]: NodeProcessor<any> } = {
             generateSortAQL(node.orderBy, newContext),
             node.maxCount != undefined ? aql`LIMIT ${node.maxCount}` : aql``,
             aql`RETURN ${processNode(node.innerNode, newContext)}`
+        );
+    },
+
+    Count(node: CountQueryNode, context): AQLFragment {
+        if (node.listNode instanceof FieldQueryNode || node.listNode instanceof EntitiesQueryNode) {
+            // These cases are known to be optimized
+            // TODO this does not catch the safe-list case (list ? list : []), where we could optimize to (list ? LENGTH(list) : 0)
+            // so we probably need to add an optimization to the query tree builder
+            return aql`LENGTH(${processNode(node.listNode, context)})`;
+        }
+
+        // in the general case (mostly a TransformListQueryNode), it is better to use the COLLeCT WITH COUNT syntax
+        // because it avoids building the whole collection temporarily in memory
+        // however, https://docs.arangodb.com/3.2/AQL/Examples/Counting.html does not really mention this case, so we
+        // should evaluate it again
+        const nodeVar = aql.variable();
+        const countVar = aql.variable();
+        return aqlExt.parenthesizeObject(
+            aql`FOR ${nodeVar}`,
+            aql`IN ${processNode(node.listNode, context)}`,
+            aql`COLLECT WITH COUNT INTO ${countVar}`,
+            aql`return ${countVar}`
         );
     },
 

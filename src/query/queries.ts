@@ -2,20 +2,21 @@ import { FieldRequest, FieldSelection } from '../graphql/query-distiller';
 import { getNamedType, GraphQLField, GraphQLObjectType } from 'graphql';
 import {
     BasicType, BinaryOperationQueryNode, BinaryOperator, ConditionalQueryNode, EntitiesQueryNode, FieldQueryNode,
-    FirstOfListQueryNode, FollowEdgeQueryNode, RootEntityIDQueryNode, ListQueryNode, LiteralQueryNode, NullQueryNode,
-    ObjectQueryNode,
-    PropertySpecification, QueryNode, TransformListQueryNode, TypeCheckQueryNode, VariableQueryNode
+    FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode, NullQueryNode, ObjectQueryNode,
+    PropertySpecification, QueryNode, RootEntityIDQueryNode, TransformListQueryNode, TypeCheckQueryNode,
+    VariableQueryNode
 } from './definition';
 import { createCursorQueryNode, createOrderSpecification, createPaginationFilterNode } from './pagination-and-sorting';
 import { createFilterNode } from './filtering';
 import {
     AFTER_ARG, ALL_ENTITIES_FIELD_PREFIX, CURSOR_FIELD, FILTER_ARG, FIRST_ARG, ID_FIELD, ORDER_BY_ARG
 } from '../schema/schema-defaults';
-import { decapitalize, objectEntries } from '../utils/utils';
+import { capitalize, decapitalize, objectEntries } from '../utils/utils';
 import { createScalarFieldValueNode } from './common';
 import { isListType } from '../graphql/schema-utils';
 import { getSingleKeyField, isReferenceField, isRelationField, isRootEntityType } from '../schema/schema-utils';
 import { getEdgeType } from '../schema/edges';
+import { createListMetaNode } from './list-meta';
 
 /**
  * Creates a QueryNode for a field of the root query type
@@ -24,6 +25,9 @@ import { getEdgeType } from '../schema/edges';
 export function createQueryRootNode(fieldRequest: FieldRequest): QueryNode {
     if (isEntitiesQueryField(fieldRequest.field)) {
         return createAllEntitiesFieldNode(fieldRequest, [fieldRequest]);
+    }
+    if (isMetaField(fieldRequest.field)) {
+        return createEntitiesMetaFieldNode(fieldRequest);
     }
     if (fieldRequest.field.type instanceof GraphQLObjectType) {
         return createSingleEntityFieldNode(fieldRequest, [fieldRequest]);
@@ -39,6 +43,16 @@ function createAllEntitiesFieldNode(fieldRequest: FieldRequest, fieldRequestStac
     return createTransformListQueryNode(fieldRequest, listNode, fieldRequestStack);
 }
 
+function createEntitiesMetaFieldNode(fieldRequest: FieldRequest): QueryNode {
+    const listFieldName = unwrapMetaFieldName(fieldRequest.field);
+    const listField = fieldRequest.schema.getQueryType().getFields()[listFieldName];
+    if (!listField) {
+        throw new Error(`Requesting meta field ${fieldRequest.fieldName}, but list field ${listFieldName} does not exist on Query`);
+    }
+    const objectType = getNamedType(listField.type) as GraphQLObjectType;
+    const listNode = new EntitiesQueryNode(objectType);
+    return createListMetaNode(fieldRequest, listNode, objectType);
+}
 function createSingleEntityFieldNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[]): QueryNode {
     const objectType = getNamedType(fieldRequest.field.type) as GraphQLObjectType;
     const entityVarNode = new VariableQueryNode(decapitalize(objectType.name));
@@ -147,6 +161,18 @@ function createEntityFieldQueryNode(fieldRequest: FieldRequest, entityNode: Quer
         return new RootEntityIDQueryNode(entityNode);
     }
 
+    if (isMetaField(fieldRequest.field)) {
+        const objectType = fieldRequest.parentType as GraphQLObjectType;
+        const listFieldName = unwrapMetaFieldName(fieldRequest.field);
+        const listField = objectType.getFields()[listFieldName];
+        if (!listField) {
+            throw new Error(`Requested meta field ${fieldRequest.field.name} but associated list field ${listFieldName} does not exist in object type ${objectType.name}`);
+        }
+        const listNode = new FieldQueryNode(entityNode, listField);
+        // TODO support references and relations
+        return createListMetaNode(fieldRequest, createSafeListQueryNode(listNode), getNamedType(listField.type) as GraphQLObjectType);
+    }
+
     const fieldNode = new FieldQueryNode(entityNode, fieldRequest.field);
     if (isListType(type)) {
         if (rawType instanceof GraphQLObjectType) {
@@ -203,4 +229,12 @@ function createSafeTransformListQueryNode(fieldRequest: FieldRequest, listNode: 
 
 function isEntitiesQueryField(field: GraphQLField<any, any>) {
     return field.name.startsWith(ALL_ENTITIES_FIELD_PREFIX);
+}
+
+function isMetaField(field: GraphQLField<any, any>) {
+    return field.name.startsWith('_') && field.name.endsWith('Meta');
+}
+
+function unwrapMetaFieldName(field: GraphQLField<any, any>): string {
+    return field.name.substr(1, field.name.length - '_Meta'.length);
 }

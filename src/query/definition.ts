@@ -388,6 +388,16 @@ export class TransformListQueryNode implements QueryNode {
     }
 }
 
+export class CountQueryNode implements QueryNode {
+    constructor(public readonly listNode: QueryNode) {
+
+    }
+
+    describe() {
+        return `count(${this.listNode.describe()})`;
+    }
+}
+
 /**
  * A node that evaluates to the first item of a list
  */
