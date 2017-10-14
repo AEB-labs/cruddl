@@ -270,8 +270,10 @@ function createUpdatePropertiesSpecification(obj: any, objectType: GraphQLObject
 
             const newValues: any[] | undefined = obj[getAddChildEntityFieldName(field.name)];
             if (newValues) {
-                // TODO special handling for generated ids
-                const newNode = new ListQueryNode(newValues.map((value: any) => new LiteralQueryNode(value)));
+                // call prepareCreateInput() to assign uuids to new child entities (possibly recursively)
+                // wrap the whole thing into a LiteralQueryNode instead of them individually so that only one bound variable is used
+                const preparedNewValues = newValues.map(value => prepareCreateInput(value, childEntityType));
+                const newNode = new LiteralQueryNode(preparedNewValues);
                 currentNode = new ConcatListsQueryNode([currentNode, newNode]);
             }
 
