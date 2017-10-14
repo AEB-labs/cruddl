@@ -1,22 +1,14 @@
-import {ASTTransformer} from "../ast-transformer";
+import { ASTTransformer } from '../ast-transformer';
 import {
-    DocumentNode,
-    FieldDefinitionNode,
-    InputObjectTypeDefinitionNode,
-    InputValueDefinitionNode,
-    ObjectTypeDefinitionNode,
-    TypeNode
-} from "graphql";
-import {getNamedTypeDefinitionAST, getValueObjectTypes} from "../../schema-utils";
+    DocumentNode, FieldDefinitionNode, InputObjectTypeDefinitionNode, InputValueDefinitionNode,
+    ObjectTypeDefinitionNode, TypeNode
+} from 'graphql';
+import { getNamedTypeDefinitionAST, getValueObjectTypes } from '../../schema-utils';
 import {
-    INPUT_OBJECT_TYPE_DEFINITION,
-    LIST_TYPE,
-    NAMED_TYPE,
-    NON_NULL_TYPE,
-    OBJECT_TYPE_DEFINITION
-} from "graphql/language/kinds";
-import {getCreateInputTypeName} from "../../../graphql/names";
-import {buildInputValueNode} from "./add-input-type-transformation-helper";
+    INPUT_OBJECT_TYPE_DEFINITION, LIST_TYPE, NAMED_TYPE, NON_NULL_TYPE, OBJECT_TYPE_DEFINITION
+} from 'graphql/language/kinds';
+import { getCreateInputTypeName } from '../../../graphql/names';
+import { buildInputValueListNode, buildInputValueNode } from './add-input-type-transformation-helper';
 
 export class AddValueObjectInputTypesTransformer implements ASTTransformer {
 
@@ -57,7 +49,7 @@ export class AddValueObjectInputTypesTransformer implements ASTTransformer {
                 if (effectiveType.kind === LIST_TYPE) {
                     throw new Error('Lists of lists are not allowed.');
                 }
-                return buildInputValueNode(field.name.value, effectiveType.name.value, field.loc);
+                return buildInputValueListNode(field.name.value, effectiveType.name.value, field.loc);
         }
     }
 
