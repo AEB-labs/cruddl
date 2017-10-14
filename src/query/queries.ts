@@ -148,9 +148,13 @@ function createEntityFieldQueryNode(fieldRequest: FieldRequest, entityNode: Quer
     }
 
     const fieldNode = new FieldQueryNode(entityNode, fieldRequest.field);
-    // TODO fall back to empty list if not IS_LIST even in the case of scalar lists
-    if (isListType(type) && rawType instanceof GraphQLObjectType) {
-        return createSafeTransformListQueryNode(fieldRequest, fieldNode, fieldRequestStack);
+    if (isListType(type)) {
+        if (rawType instanceof GraphQLObjectType) {
+            // support filters, order by and pagination
+            return createSafeTransformListQueryNode(fieldRequest, fieldNode, fieldRequestStack);
+        } else {
+            return createSafeListQueryNode(fieldNode);
+        }
     }
     if (rawType instanceof GraphQLObjectType) {
         return createConditionalObjectNode(fieldRequest.selectionSet, fieldNode, fieldRequestStack);
@@ -184,15 +188,17 @@ function createTransformListQueryNode(fieldRequest: FieldRequest, listNode: Quer
     });
 }
 
-function createSafeTransformListQueryNode(fieldRequest: FieldRequest, listNode: QueryNode, fieldRequestStack: FieldRequest[]): QueryNode {
+function createSafeListQueryNode(listNode: QueryNode) {
     // to avoid errors because of eagerly evaluated list expression, we just convert non-lists to an empty list
-    const safeList = new ConditionalQueryNode(
+    return new ConditionalQueryNode(
         new TypeCheckQueryNode(listNode, BasicType.LIST),
         listNode,
         new ListQueryNode([])
     );
+}
 
-    return createTransformListQueryNode(fieldRequest, safeList, fieldRequestStack);
+function createSafeTransformListQueryNode(fieldRequest: FieldRequest, listNode: QueryNode, fieldRequestStack: FieldRequest[]): QueryNode {
+    return createTransformListQueryNode(fieldRequest, createSafeListQueryNode(listNode), fieldRequestStack);
 }
 
 function isEntitiesQueryField(field: GraphQLField<any, any>) {

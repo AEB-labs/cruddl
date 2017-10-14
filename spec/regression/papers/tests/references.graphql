@@ -8,7 +8,7 @@ query {
                     isPublished
                     tags
                 }
-                # authors # TODO: fall back to empty list if null
+                authors
                 pages {
                     startPage
                     endPage

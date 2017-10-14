@@ -6,6 +6,14 @@
         "literatureReferences": [
           {
             "paper": null,
+            "authors": [
+              "Hagit Attiya",
+              "Amotz Bar-Noy",
+              "Danny Dolev",
+              "Daphne Koller",
+              "David Peleg",
+              "and Rüdiger Reischuk"
+            ],
             "pages": {
               "startPage": 337,
               "endPage": 346
@@ -31,6 +39,10 @@
         "literatureReferences": [
           {
             "paper": null,
+            "authors": [
+              "Seth Gilbert",
+              "Nancy Lynch"
+            ],
             "pages": {
               "startPage": 51,
               "endPage": 59
