@@ -57,9 +57,7 @@
   "check4": {
     "data": {
       "HandlingUnit": {
-        "delivery": {
-          "deliveryNumber": null
-        }
+        "delivery": null
       }
     }
   }

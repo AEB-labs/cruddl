@@ -4,6 +4,7 @@ import {
     BasicType, BinaryOperationQueryNode, BinaryOperator, ConditionalQueryNode, EntitiesQueryNode, FieldQueryNode,
     FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode, NullQueryNode, ObjectQueryNode,
     PropertySpecification, QueryNode, RootEntityIDQueryNode, TransformListQueryNode, TypeCheckQueryNode,
+    VariableAssignmentQueryNode,
     VariableQueryNode
 } from './definition';
 import { createCursorQueryNode, createOrderSpecification, createPaginationFilterNode } from './pagination-and-sorting';
@@ -87,10 +88,15 @@ export function createEntityObjectNode(fieldSelections: FieldSelection[], source
 }
 
 function createTo1RelationQueryNode(fieldRequest: FieldRequest, sourceEntityNode: QueryNode, fieldRequestStack: FieldRequest[]): QueryNode {
+    const relatedVarNode = new VariableQueryNode(fieldRequest.fieldName);
     const edgeType = getEdgeType(getNamedType(fieldRequest.parentType) as GraphQLObjectType, fieldRequest.field);
     const followNode = new FollowEdgeQueryNode(edgeType, sourceEntityNode);
     const relatedNode = new FirstOfListQueryNode(followNode);
-    return createEntityObjectNode(fieldRequest.selectionSet, relatedNode, fieldRequestStack);
+    return new VariableAssignmentQueryNode({
+        variableNode: relatedVarNode,
+        variableValueNode: relatedNode,
+        resultNode: createConditionalObjectNode(fieldRequest.selectionSet, relatedVarNode, fieldRequestStack)
+    });
 }
 
 function createToNRelationQueryNode(fieldRequest: FieldRequest, sourceEntityNode: QueryNode, fieldRequestStack: FieldRequest[]): QueryNode {
