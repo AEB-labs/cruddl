@@ -29,20 +29,4 @@
         }
       ]
     }
-    /*"onlyCount": {
-      "count": 5
-    },
-    "onlyPageInfo": {
-      "pageInfo": {
-        "hasNextPage": true,
-        "endCursor": "{\"id\":\"@{ids/Paper/3}\"}"
-      }
-    },
-    "onlyPageInfoNoLimit": {
-      "pageInfo": {
-        "hasNextPage": false,
-        "endCursor": null
-      }
-    }
-  }*/
 }
