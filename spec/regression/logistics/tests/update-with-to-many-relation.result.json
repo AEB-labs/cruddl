@@ -1,0 +1,90 @@
+{
+  "add": {
+    "data": {
+      "updateDelivery": {
+        "deliveryNumber": "1000173"
+      }
+    }
+  },
+  "check1": {
+    "data": {
+      "Delivery": {
+        "deliveryNumber": "1000173",
+        "handlingUnits": [
+          {
+            "huNumber": "1000007",
+            "delivery": {
+              "deliveryNumber": "1000173"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "add2": {
+    "data": {
+      "updateDelivery": {
+        "deliveryNumber": "1000173"
+      }
+    }
+  },
+  "check2": {
+    "data": {
+      "Delivery": {
+        "deliveryNumber": "1000173",
+        "handlingUnits": [
+          {
+            "huNumber": "1000007",
+            "delivery": {
+              "deliveryNumber": "1000173"
+            }
+          },
+          {
+            "huNumber": "1000014",
+            "delivery": {
+              "deliveryNumber": "1000173"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "remove": {
+    "data": {
+      "updateDelivery": {
+        "deliveryNumber": "1000173"
+      }
+    }
+  },
+  "check3": {
+    "data": {
+      "Delivery": {
+        "deliveryNumber": "1000173",
+        "handlingUnits": [
+          {
+            "huNumber": "1000014",
+            "delivery": {
+              "deliveryNumber": "1000173"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "remove2": {
+    "data": {
+      "updateDelivery": {
+        "deliveryNumber": "1000173"
+      }
+    }
+  },
+  "check4": {
+    "data": {
+      "Delivery": {
+        "deliveryNumber": "1000173",
+        "handlingUnits": [
+        ]
+      }
+    }
+  }
+}

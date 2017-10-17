@@ -1,0 +1,21 @@
+{
+  "create": {
+    "data": {
+      "createHandlingUnit": {
+        "huNumber": "1234-test-create-with-relations"
+      }
+    }
+  },
+  "check": {
+    "data": {
+      "allHandlingUnits": [
+        {
+          "huNumber": "1234-test-create-with-relations",
+          "delivery": {
+            "deliveryNumber": "1000173"
+          }
+        }
+      ]
+    }
+  }
+}

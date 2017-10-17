@@ -73,6 +73,28 @@
             "itemNumber": "1002"
           }
         ]
+      },
+      {
+        "@id": "2",
+        "deliveryNumber": "1000521",
+        "consignee": {
+          "street": "675 Kurtis Route",
+          "city": "Port Neldahaven",
+          "zipCode": "17624"
+          //"country": "US" // schema is currently wrong (accepts CreateCountry instead of String)
+        },
+        "contentInfo": [{
+          "languageIsoCode": "DE",
+          "translation": "Hartplastik-Bausteine"
+        }],
+        "items": [
+          {
+            "itemNumber": "2001"
+          },
+          {
+            "itemNumber": "2002"
+          }
+        ]
       }
     ],
 

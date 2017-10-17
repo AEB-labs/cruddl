@@ -1,0 +1,66 @@
+{
+  "set": {
+    "data": {
+      "updateHandlingUnit": {
+        "huNumber": "1000007"
+      }
+    }
+  },
+  "check1": {
+    "data": {
+      "HandlingUnit": {
+        "delivery": {
+          "deliveryNumber": "1000173"
+        }
+      }
+    }
+  },
+  "replace": {
+    "data": {
+      "updateHandlingUnit": {
+        "huNumber": "1000007"
+      }
+    }
+  },
+  "check2": {
+    "data": {
+      "HandlingUnit": {
+        "delivery": {
+          "deliveryNumber": "1000521"
+        }
+      }
+    }
+  },
+  "leave": {
+    "data": {
+      "updateHandlingUnit": {
+        "huNumber": "1000007"
+      }
+    }
+  },
+  "check3": {
+    "data": {
+      "HandlingUnit": {
+        "delivery": {
+          "deliveryNumber": "1000521"
+        }
+      }
+    }
+  },
+  "unset": {
+    "data": {
+      "updateHandlingUnit": {
+        "huNumber": "1000007"
+      }
+    }
+  },
+  "check4": {
+    "data": {
+      "HandlingUnit": {
+        "delivery": {
+          "deliveryNumber": null
+        }
+      }
+    }
+  }
+}
