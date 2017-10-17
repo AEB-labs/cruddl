@@ -11,19 +11,21 @@ export class AddMetaFieldsAlongWithFilterableFieldsTransformer implements ASTTra
         getObjectTypes(ast).forEach(objectType => {
             objectType.fields.forEach(field => {
                 if (field.arguments.some(arg => arg.name.value === FILTER_ARG)) {
-                    objectType.fields.push(this.buildMetaField(field))
+                    objectType.fields.push(buildMetaField(field))
                 }
             })
         })
     }
 
-    protected buildMetaField(field: FieldDefinitionNode): FieldDefinitionNode {
-        return {
-            name: buildNameNode(getMetaNameFieldFor(field.name.value)),
-            arguments: [...field.arguments],
-            type: { kind: NON_NULL_TYPE, type: { kind: NAMED_TYPE, name: buildNameNode(QUERY_META_TYPE)}},
-            kind: FIELD_DEFINITION,
-            loc: field.loc
-        }
+}
+
+function buildMetaField(field: FieldDefinitionNode): FieldDefinitionNode {
+    return {
+        name: buildNameNode(getMetaNameFieldFor(field.name.value)),
+        // meta fields have only the filter arg of the original field.
+        arguments: field.arguments.filter(arg => arg.name.value === FILTER_ARG),
+        type: { kind: NON_NULL_TYPE, type: { kind: NAMED_TYPE, name: buildNameNode(QUERY_META_TYPE)}},
+        kind: FIELD_DEFINITION,
+        loc: field.loc
     }
 }
