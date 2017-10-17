@@ -5,7 +5,7 @@ import {
     getNamedInputTypeDefinitionAST,
     getNamedTypeDefinitionAST,
     getObjectTypes,
-    getTypeNameIgnoringNonNullAndList
+    getTypeNameIgnoringNonNullAndList, hasDirectiveWithName
 } from "../../schema-utils";
 import {
     INPUT_VALUE_DEFINITION,
@@ -15,7 +15,7 @@ import {
     OBJECT_TYPE_DEFINITION
 } from "graphql/language/kinds";
 import {getFilterTypeName} from "../../../graphql/names";
-import { AFTER_ARG, FILTER_ARG, FIRST_ARG } from '../../schema-defaults';
+import {AFTER_ARG, FILTER_ARG, FIRST_ARG, VALUE_OBJECT_DIRECTIVE} from '../../schema-defaults';
 
 export class AddPaginationArgumentsToFieldsTransformer implements ASTTransformer {
 
@@ -28,7 +28,7 @@ export class AddPaginationArgumentsToFieldsTransformer implements ASTTransformer
                 }
                 const resolvedType = getNamedTypeDefinitionAST(ast, getTypeNameIgnoringNonNullAndList(field.type));
                 // if this field is of an object type (only object types can have a _cursor field, so pagination only makes sense for them)
-                if (resolvedType.kind === OBJECT_TYPE_DEFINITION) {
+                if (resolvedType.kind === OBJECT_TYPE_DEFINITION && !hasDirectiveWithName(resolvedType, VALUE_OBJECT_DIRECTIVE)) {
                     field.arguments.push({
                         kind: INPUT_VALUE_DEFINITION,
                         name: buildNameNode(FIRST_ARG),
