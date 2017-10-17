@@ -316,9 +316,9 @@ const processors : { [name: string]: NodeProcessor<any> } = {
         const edgeVar = aql.variable();
         return aqlExt.parenthesizeList(
             aql`UPSERT ${formatEdge(node.edgeType, node.existingEdge, context)}`,
-            aql`IN ${getCollectionForEdge(node.edgeType)}`,
             aql`INSERT ${formatEdge(node.edgeType, node.newEdge, context)}`,
-            aql`UPDATE {}`,
+            aql`UPDATE ${formatEdge(node.edgeType, node.newEdge, context)}`,
+            aql`IN ${getCollectionForEdge(node.edgeType)}`,
         );
     }
 };
