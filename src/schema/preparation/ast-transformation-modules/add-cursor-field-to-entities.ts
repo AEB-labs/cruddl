@@ -21,11 +21,8 @@ export class AddCursorFieldToEntitiesTransformer implements ASTTransformer {
         getRootEntityTypes(ast).forEach(rootEntityType => {
             rootEntityType.fields.push(cursorFieldDefinition)
         });
-        getChildEntityTypes(ast).forEach(rootEntityType => {
-            rootEntityType.fields.push(cursorFieldDefinition)
-        });
-        getValueObjectTypes(ast).forEach(rootEntityType => {
-            rootEntityType.fields.push(cursorFieldDefinition)
+        getChildEntityTypes(ast).forEach(childEntityType => {
+            childEntityType.fields.push(cursorFieldDefinition)
         });
 
     }
