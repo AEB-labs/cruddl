@@ -286,3 +286,11 @@ export function getSingleKeyField(type: GraphQLObjectType): GraphQLField<any, an
     }
     return keyFields[0];
 }
+
+export function getReferenceKeyField(objectTypeWithKeyField: ObjectTypeDefinitionNode): string {
+    const field = objectTypeWithKeyField.fields.find(field => field.directives != undefined && field.directives.some(directive => directive.name.value === KEY_FIELD_DIRECTIVE));
+    if (!field) {
+        throw new Error(`Missing @key directive on ${objectTypeWithKeyField.name.value}`);
+    }
+    return getTypeNameIgnoringNonNullAndList(field.type);
+}

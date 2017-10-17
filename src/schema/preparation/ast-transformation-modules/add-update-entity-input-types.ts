@@ -10,7 +10,7 @@ import {
 } from "graphql";
 import {
     getChildEntityTypes,
-    getNamedTypeDefinitionAST,
+    getNamedTypeDefinitionAST, getReferenceKeyField,
     getRootEntityTypes,
     hasDirectiveWithName
 } from "../../schema-utils";
@@ -34,7 +34,7 @@ import {
     CHILD_ENTITY_DIRECTIVE,
     ENTITY_CREATED_AT,
     ENTITY_UPDATED_AT,
-    ID_FIELD,
+    ID_FIELD, REFERENCE_DIRECTIVE, RELATION_DIRECTIVE,
     ROOT_ENTITY_DIRECTIVE
 } from "../../schema-defaults";
 import {flatMap} from "../../../utils/utils";
@@ -78,7 +78,10 @@ export class AddUpdateEntityInputTypesTransformer implements ASTTransformer {
             case NAMED_TYPE:
                 const namedType = getNamedTypeDefinitionAST(ast, type.name.value);
                 if (namedType.kind === OBJECT_TYPE_DEFINITION) {
-                    if (hasDirectiveWithName(namedType, ROOT_ENTITY_DIRECTIVE)) {
+                    if (hasDirectiveWithName(field, REFERENCE_DIRECTIVE)) {
+                        return [buildInputValueNode(field.name.value, getReferenceKeyField(namedType))];
+                    }
+                    if (hasDirectiveWithName(field, RELATION_DIRECTIVE)) {
                         return [buildInputValueNode(field.name.value, GraphQLID.name)];
                     }
                     return [buildInputValueNode(field.name.value, getUpdateInputTypeName(namedType))];
@@ -92,7 +95,7 @@ export class AddUpdateEntityInputTypesTransformer implements ASTTransformer {
                 }
                 const namedTypeOfList = getNamedTypeDefinitionAST(ast, effectiveType.name.value);
                 if (namedTypeOfList.kind === OBJECT_TYPE_DEFINITION) {
-                    if (hasDirectiveWithName(namedTypeOfList, ROOT_ENTITY_DIRECTIVE)) {
+                    if (hasDirectiveWithName(field, RELATION_DIRECTIVE)) {
                         // add/remove by foreign key
                         return [
                             buildInputValueListNode(getAddRelationFieldName(field.name.value), GraphQLID.name),

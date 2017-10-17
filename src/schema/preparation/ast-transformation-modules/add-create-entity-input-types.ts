@@ -5,13 +5,13 @@ import {
     GraphQLID,
     InputObjectTypeDefinitionNode,
     InputValueDefinitionNode,
-    ObjectTypeDefinitionNode,
+    ObjectTypeDefinitionNode, ScalarTypeDefinitionNode,
     TypeNode
 } from "graphql";
 import {
     getChildEntityTypes,
-    getNamedTypeDefinitionAST,
-    getRootEntityTypes,
+    getNamedTypeDefinitionAST, getReferenceKeyField,
+    getRootEntityTypes, getTypeNameIgnoringNonNullAndList,
     hasDirectiveWithName
 } from "../../schema-utils";
 import {
@@ -22,7 +22,10 @@ import {
     OBJECT_TYPE_DEFINITION
 } from "graphql/language/kinds";
 import {getCreateInputTypeName} from "../../../graphql/names";
-import {ENTITY_CREATED_AT, ENTITY_UPDATED_AT, ID_FIELD, ROOT_ENTITY_DIRECTIVE} from "../../schema-defaults";
+import {
+    ENTITY_CREATED_AT, ENTITY_UPDATED_AT, ID_FIELD, KEY_FIELD_DIRECTIVE, REFERENCE_DIRECTIVE, RELATION_DIRECTIVE,
+    ROOT_ENTITY_DIRECTIVE
+} from "../../schema-defaults";
 import {buildInputValueListNode, buildInputValueNode} from "./add-input-type-transformation-helper";
 
 export class AddCreateEntityInputTypesTransformer implements ASTTransformer {
@@ -57,7 +60,12 @@ export class AddCreateEntityInputTypesTransformer implements ASTTransformer {
             case NAMED_TYPE:
                 const namedType = getNamedTypeDefinitionAST(ast, type.name.value);
                 if (namedType.kind === OBJECT_TYPE_DEFINITION) {
-                    if (hasDirectiveWithName(namedType, ROOT_ENTITY_DIRECTIVE)) {
+                    // references are referred via @key type
+                    if (hasDirectiveWithName(field, REFERENCE_DIRECTIVE)) {
+                        return buildInputValueNode(field.name.value, getReferenceKeyField(namedType));
+                    }
+                    // relations are referenced via IDs
+                    if (hasDirectiveWithName(field, RELATION_DIRECTIVE)) {
                         return buildInputValueNode(field.name.value, GraphQLID.name);
                     }
                     return buildInputValueNode(field.name.value, getCreateInputTypeName(namedType));
@@ -71,7 +79,8 @@ export class AddCreateEntityInputTypesTransformer implements ASTTransformer {
                 }
                 const namedTypeOfList = getNamedTypeDefinitionAST(ast, effectiveType.name.value);
                 if (namedTypeOfList.kind === OBJECT_TYPE_DEFINITION) {
-                    if (hasDirectiveWithName(namedTypeOfList, ROOT_ENTITY_DIRECTIVE)) {
+                    // references are referred via @key type
+                    if (hasDirectiveWithName(field, RELATION_DIRECTIVE)) {
                         return buildInputValueListNode(field.name.value, GraphQLID.name, field.loc)
                     }
                     return buildInputValueListNode(field.name.value, getCreateInputTypeName(namedTypeOfList), field.loc)
@@ -82,3 +91,5 @@ export class AddCreateEntityInputTypesTransformer implements ASTTransformer {
     }
 
 }
+
+

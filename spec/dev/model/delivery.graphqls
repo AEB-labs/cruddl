@@ -6,6 +6,7 @@ type Delivery @rootEntity {
     dgInfo: DangerousGoodsInfo
     items: [DeliveryItem]
     handlingUnits: [HandlingUnit] @relation
+    destinationCountry: Country @reference
 }
 
 type DeliveryItem @childEntity {
