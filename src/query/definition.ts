@@ -138,6 +138,13 @@ export class ConstBoolQueryNode {
     constructor(public readonly value: boolean) {
     }
 
+    static readonly TRUE = new ConstBoolQueryNode(true);
+    static readonly FALSE = new ConstBoolQueryNode(false);
+
+    static for(value: boolean) {
+        return value ? this.TRUE : this.FALSE;
+    }
+
     public describe() {
         return `${!!this.value}`;
     }

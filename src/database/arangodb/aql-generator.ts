@@ -11,6 +11,7 @@ import { aql, AQLFragment, AQLVariable } from './aql';
 import { getCollectionNameForEdge, getCollectionNameForRootEntity } from './arango-basics';
 import { GraphQLNamedType, GraphQLObjectType } from 'graphql';
 import { EdgeType } from '../../schema/edges';
+import { isNullOrUndefined } from 'util';
 
 class QueryContext {
     private variableMap = new Map<VariableQueryNode, AQLVariable>();
@@ -138,15 +139,23 @@ const processors : { [name: string]: NodeProcessor<any> } = {
     },
 
     TransformList(node: TransformListQueryNode, context): AQLFragment {
-        const newContext = context.introduceVariable(node.itemVariable);
-        const itemVar = newContext.getVariable(node.itemVariable);
-        const list = processNode(node.listNode, context);
+        const itemContext = context.introduceVariable(node.itemVariable);
+        const itemVar = itemContext.getVariable(node.itemVariable);
+
+        let list: AQLFragment;
+        if (node.listNode instanceof FollowEdgeQueryNode) {
+            list = getSimpleFollowEdgeFragment(node.listNode, context);
+        } else {
+            list = processNode(node.listNode, context);
+        }
+
+        let filter = simplifyBooleans(node.filterNode);
 
         // optimization: declare filter variables in FOR loop to avoid subqueries in filter
         // (note: we still have subqueries for FIRST Statements, so maybe this does not do much)
         const variableAssignments: VariableAssignmentQueryNode[] = [];
-        const filter = extractVariableAssignments(node.filterNode, variableAssignments);
-        let filterContext = newContext;
+        filter = extractVariableAssignments(filter, variableAssignments);
+        let filterContext = itemContext;
         const variableAssignmentAQL = variableAssignments.map(assignmentNode => {
             // modify context variable in place so that later variable assignment nodes can access earlier variables
             filterContext = filterContext.introduceVariable(assignmentNode.variableNode);
@@ -158,10 +167,10 @@ const processors : { [name: string]: NodeProcessor<any> } = {
             aql`FOR ${itemVar}`,
             aql`IN ${list}`,
             aql.lines(...variableAssignmentAQL),
-            aql`FILTER ${processNode(filter, filterContext)}`,
-            generateSortAQL(node.orderBy, newContext),
+            (filter instanceof ConstBoolQueryNode && filter.value) ? aql`` : aql`FILTER ${processNode(filter, filterContext)}`,
+            generateSortAQL(node.orderBy, itemContext),
             node.maxCount != undefined ? aql`LIMIT ${node.maxCount}` : aql``,
-            aql`RETURN ${processNode(node.innerNode, newContext)}`
+            aql`RETURN ${processNode(node.innerNode, itemContext)}`
         );
     },
 
@@ -258,10 +267,9 @@ const processors : { [name: string]: NodeProcessor<any> } = {
     FollowEdge(node: FollowEdgeQueryNode, context): AQLFragment {
         const tmpVar = aql.variable('node');
         // need to wrap this in a subquery because ANY is not possible as first token of an expression node in AQL
-        // sadly means that with a TransformList, there are two nested FORs (but should be optimized away by arangodb)
         return aqlExt.parenthesizeList(
             aql`FOR ${tmpVar}`,
-            aql`IN ANY ${processNode(node.sourceEntityNode, context)} ${getCollectionForEdge(node.edgeType)}`,
+            aql`IN ${getSimpleFollowEdgeFragment(node, context)}`,
             aql`RETURN ${tmpVar}`
         );
     },
@@ -469,7 +477,87 @@ function extractVariableAssignments(node: QueryNode, variableAssignmentsList: Va
     }
     if (node instanceof VariableAssignmentQueryNode) {
         variableAssignmentsList.push(node);
-        return node.variableNode;
+        return node.resultNode;
+    }
+    return node;
+}
+
+/**
+ * Processes a FollowEdgeQueryNode into a fragment to be used within `IN ...` (as opposed to be used in a general
+ * expression context)
+ */
+function getSimpleFollowEdgeFragment(node: FollowEdgeQueryNode, context: QueryContext): AQLFragment {
+    return aql`ANY ${processNode(node.sourceEntityNode, context)} ${getCollectionForEdge(node.edgeType)}`;
+}
+
+/**
+ * Simplifies a boolean expression (does not recurse into non-boolean-related nodes)
+ */
+function simplifyBooleans(node: QueryNode): QueryNode {
+    if (node instanceof UnaryOperationQueryNode && node.operator == UnaryOperator.NOT) {
+        const inner = simplifyBooleans(node.valueNode);
+        if (inner instanceof ConstBoolQueryNode) {
+            return new ConstBoolQueryNode(!inner.value);
+        }
+        return inner;
+    }
+    if (node instanceof BinaryOperationQueryNode) {
+        const lhs = simplifyBooleans(node.lhs);
+        const rhs = simplifyBooleans(node.rhs);
+        if (node.operator == BinaryOperator.AND) {
+            if (lhs instanceof ConstBoolQueryNode) {
+                if (rhs instanceof ConstBoolQueryNode) {
+                    // constant evaluation
+                    return ConstBoolQueryNode.for(lhs.value && rhs.value);
+                }
+                if (lhs.value == false) {
+                    // FALSE && anything == FALSE
+                    return ConstBoolQueryNode.FALSE;
+                }
+                if (lhs.value == true) {
+                    // TRUE && other == other
+                    return rhs;
+                }
+            }
+            if (rhs instanceof ConstBoolQueryNode) {
+                if (rhs.value == false) {
+                    // anything && FALSE == FALSE
+                    return ConstBoolQueryNode.FALSE;
+                }
+                // const case is handled above
+                if (rhs.value == true) {
+                    // other && TRUE == other
+                    return lhs;
+                }
+            }
+        }
+
+        if (node.operator == BinaryOperator.OR) {
+            if (lhs instanceof ConstBoolQueryNode) {
+                if (rhs instanceof ConstBoolQueryNode) {
+                    // constant evaluation
+                    return ConstBoolQueryNode.for(lhs.value || rhs.value);
+                }
+                if (lhs.value == true) {
+                    // TRUE || anything == TRUE
+                    return ConstBoolQueryNode.TRUE;
+                }
+                if (lhs.value == false) {
+                    // FALSE || other == other
+                    return rhs;
+                }
+            }
+            if (rhs instanceof ConstBoolQueryNode) {
+                if (rhs.value == true) {
+                    // anything || TRUE == TRUE
+                    return ConstBoolQueryNode.TRUE;
+                }
+                if (rhs.value == false) {
+                    // other || FALSE == other
+                    return lhs;
+                }
+            }
+        }
     }
     return node;
 }
