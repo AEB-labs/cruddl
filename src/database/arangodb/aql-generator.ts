@@ -141,10 +141,24 @@ const processors : { [name: string]: NodeProcessor<any> } = {
         const newContext = context.introduceVariable(node.itemVariable);
         const itemVar = newContext.getVariable(node.itemVariable);
         const list = processNode(node.listNode, context);
+
+        // optimization: declare filter variables in FOR loop to avoid subqueries in filter
+        // (note: we still have subqueries for FIRST Statements, so maybe this does not do much)
+        const variableAssignments: VariableAssignmentQueryNode[] = [];
+        const filter = extractVariableAssignments(node.filterNode, variableAssignments);
+        let filterContext = newContext;
+        const variableAssignmentAQL = variableAssignments.map(assignmentNode => {
+            // modify context variable in place so that later variable assignment nodes can access earlier variables
+            filterContext = filterContext.introduceVariable(assignmentNode.variableNode);
+            const variable = filterContext.getVariable(assignmentNode.variableNode);
+            return aql`LET ${variable} = ${processNode(assignmentNode.variableValueNode, filterContext)}`;
+        });
+
         return aqlExt.parenthesizeList(
             aql`FOR ${itemVar}`,
             aql`IN ${list}`,
-            aql`FILTER ${processNode(node.filterNode, newContext)}`,
+            aql.lines(...variableAssignmentAQL),
+            aql`FILTER ${processNode(filter, filterContext)}`,
             generateSortAQL(node.orderBy, newContext),
             node.maxCount != undefined ? aql`LIMIT ${node.maxCount}` : aql``,
             aql`RETURN ${processNode(node.innerNode, newContext)}`
@@ -435,4 +449,27 @@ export function getCollectionForType(type: GraphQLNamedType) {
 
 export function getCollectionForEdge(edgeType: EdgeType) {
     return aql.collection(getCollectionNameForEdge(edgeType));
+}
+
+/**
+ * Traverses recursively through Unary/Binary operations, extracts all variable definitions and replaces them by their
+ * variable nodes
+ * @param {QueryNode} node
+ * @param variableAssignmentsList: (will be modified) list to which to add the variable assignment nodes
+ */
+function extractVariableAssignments(node: QueryNode, variableAssignmentsList: VariableAssignmentQueryNode[]): QueryNode {
+    if (node instanceof UnaryOperationQueryNode) {
+        return new UnaryOperationQueryNode(extractVariableAssignments(node.valueNode, variableAssignmentsList), node.operator);
+    }
+    if (node instanceof BinaryOperationQueryNode) {
+        return new BinaryOperationQueryNode(
+            extractVariableAssignments(node.lhs, variableAssignmentsList),
+            node.operator,
+            extractVariableAssignments(node.rhs, variableAssignmentsList));
+    }
+    if (node instanceof VariableAssignmentQueryNode) {
+        variableAssignmentsList.push(node);
+        return node.variableNode;
+    }
+    return node;
 }
