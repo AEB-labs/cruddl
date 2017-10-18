@@ -22,8 +22,9 @@ import {
     SCALAR_TYPE_DEFINITION
 } from "graphql/language/kinds";
 import {
-    CHILD_ENTITY_DIRECTIVE,
-    ENTITY_EXTENSION_DIRECTIVE, KEY_FIELD_DIRECTIVE, REFERENCE_DIRECTIVE, RELATION_DIRECTIVE,
+    CHILD_ENTITY_DIRECTIVE, ENTITY_CREATED_AT,
+    ENTITY_EXTENSION_DIRECTIVE, ENTITY_UPDATED_AT, ID_FIELD, KEY_FIELD_DIRECTIVE, REFERENCE_DIRECTIVE,
+    RELATION_DIRECTIVE,
     ROOT_ENTITY_DIRECTIVE,
     VALUE_OBJECT_DIRECTIVE
 } from './schema-defaults';
@@ -277,6 +278,19 @@ export function isReferenceField(field: GraphQLField<any, any>) {
 export function isKeyField(field: GraphQLField<any, any>) {
     const astNode = getFieldDefinitionNode(field);
     return hasDirectiveWithName(astNode, KEY_FIELD_DIRECTIVE);
+}
+
+/**
+ * Determines whether a field is controlled by the system and can not be written directly by the user
+ * @param {GraphQLField<any, any>} field
+ * @returns {boolean}
+ */
+export function isWriteProtectedSystemField(field: GraphQLField<any, any>, parentType: GraphQLObjectType) {
+    if (!isTypeWithIdentity(parentType)) {
+        // value objects and extensions do not have system fields
+        return false;
+    }
+    return field.name == ID_FIELD || field.name == ENTITY_CREATED_AT || field.name == ENTITY_UPDATED_AT;
 }
 
 export function getSingleKeyField(type: GraphQLObjectType): GraphQLField<any, any>|undefined {
