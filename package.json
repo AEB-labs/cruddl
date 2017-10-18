@@ -26,6 +26,7 @@
     "@types/cors": "^2.8.1",
     "@types/graphql": "~0.10.0",
     "@types/jasmine": "^2.5.41",
+    "@types/lodash": "^4.14.77",
     "@types/node": "^8.0.28",
     "@types/pluralize": "0.0.27",
     "@types/strip-json-comments": "0.0.30",
@@ -51,6 +52,7 @@
     "jsondiffpatch": "^0.2.4",
     "pluralize": "^7.0.0",
     "strip-json-comments": "^2.0.1",
-    "uuid": "^3.1.0"
+    "uuid": "^3.1.0",
+    "lodash": "^4.17.4"
   }
 }

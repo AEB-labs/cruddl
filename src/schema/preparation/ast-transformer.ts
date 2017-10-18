@@ -16,6 +16,7 @@ import {AddValueObjectInputTypesTransformer} from "./ast-transformation-modules/
 import {AddRootMutationTypeTransformer} from "./ast-transformation-modules/add-root-mutation-type";
 import {AddMetaFieldsAlongWithFilterableFieldsTransformer} from "./ast-transformation-modules/add-meta-fields-along-with-filterable-fields";
 import {AddQueryMetaTypeTransformer} from "./ast-transformation-modules/add-query-meta-type";
+import {cloneDeep} from "lodash";
 
 const transformers = [
     // Add basic stuff to object types
@@ -52,17 +53,20 @@ const transformers = [
 
 ];
 
-export function prepareModelAST(ast: DocumentNode) {
+export function prepareModelAST(ast: DocumentNode): DocumentNode {
     validateModel(ast);
-    transformModel(ast);
+    return transformModel(ast);
 }
 
 function validateModel(ast: DocumentNode): void {
     // TODO
 }
 
-function transformModel(ast: DocumentNode): void {
-    transformers.forEach(Transformer => new Transformer().transform(ast))
+function transformModel(ast: DocumentNode): DocumentNode {
+    // Don't modify original AST definitions because they could be already of DocumentType wrapped into a Source
+    const astClone = cloneDeep(ast);
+    transformers.forEach(Transformer => new Transformer().transform(astClone));
+    return astClone;
 }
 
 function validateSchema(ast: DocumentNode): void {

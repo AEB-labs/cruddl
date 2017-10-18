@@ -5,8 +5,8 @@ import {prepareModelAST} from "./preparation/ast-transformer";
  Create a schema for a given model definition. A model definition is an array of definition parts, represented as a (sourced) SDL string or AST document.
   */
 export function createSchema(modelDefinition: Array<Source | DocumentNode>): GraphQLSchema {
-    const ast = mergeModelDefinition(modelDefinition);
-    prepareModelAST(ast);
+    let ast = mergeModelDefinition(modelDefinition);
+    ast = prepareModelAST(ast);
     console.log(print(ast));
     return buildASTSchema(ast);
 }
