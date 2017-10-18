@@ -5,7 +5,8 @@ import {
     MergeObjectsQueryNode,
     ObjectQueryNode, OrderDirection, OrderSpecification, PartialEdgeIdentifier, QueryNode, RemoveEdgesQueryNode,
     SetEdgeQueryNode, TransformListQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator,
-    UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode, CountQueryNode
+    UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode, CountQueryNode, OrderClause,
+    PropertySpecification
 } from '../../query/definition';
 import { aql, AQLFragment, AQLVariable } from './aql';
 import { getCollectionNameForEdge, getCollectionNameForRootEntity } from './arango-basics';
@@ -139,7 +140,7 @@ const processors : { [name: string]: NodeProcessor<any> } = {
     },
 
     TransformList(node: TransformListQueryNode, context): AQLFragment {
-        const itemContext = context.introduceVariable(node.itemVariable);
+        let itemContext = context.introduceVariable(node.itemVariable);
         const itemVar = itemContext.getVariable(node.itemVariable);
 
         let list: AQLFragment;
@@ -151,26 +152,27 @@ const processors : { [name: string]: NodeProcessor<any> } = {
 
         let filter = simplifyBooleans(node.filterNode);
 
-        // optimization: declare filter variables in FOR loop to avoid subqueries in filter
-        // (note: we still have subqueries for FIRST Statements, so maybe this does not do much)
+        // optimization: declare variables in FOR loop to avoid subqueries of pattern FIRST(LET ... RETURN ...)
+        // (note: we still have subqueries for FIRST Statements, so maybe this does not do much performance wise, but it looks cleaner)
         const variableAssignments: VariableAssignmentQueryNode[] = [];
         filter = extractVariableAssignments(filter, variableAssignments);
-        let filterContext = itemContext;
+        const orderBy = extractVariableAssignmentsInOrderSpecification(node.orderBy, variableAssignments);
+        const inner = extractVariableAssignments(node.innerNode, variableAssignments);
         const variableAssignmentAQL = variableAssignments.map(assignmentNode => {
             // modify context variable in place so that later variable assignment nodes can access earlier variables
-            filterContext = filterContext.introduceVariable(assignmentNode.variableNode);
-            const variable = filterContext.getVariable(assignmentNode.variableNode);
-            return aql`LET ${variable} = ${processNode(assignmentNode.variableValueNode, filterContext)}`;
+            itemContext = itemContext.introduceVariable(assignmentNode.variableNode);
+            const variable = itemContext.getVariable(assignmentNode.variableNode);
+            return aql`LET ${variable} = ${processNode(assignmentNode.variableValueNode, itemContext)}`;
         });
 
         return aqlExt.parenthesizeList(
             aql`FOR ${itemVar}`,
             aql`IN ${list}`,
             aql.lines(...variableAssignmentAQL),
-            (filter instanceof ConstBoolQueryNode && filter.value) ? aql`` : aql`FILTER ${processNode(filter, filterContext)}`,
-            generateSortAQL(node.orderBy, itemContext),
+            (filter instanceof ConstBoolQueryNode && filter.value) ? aql`` : aql`FILTER ${processNode(filter, itemContext)}`,
+            generateSortAQL(orderBy, itemContext),
             node.maxCount != undefined ? aql`LIMIT ${node.maxCount}` : aql``,
-            aql`RETURN ${processNode(node.innerNode, itemContext)}`
+            aql`RETURN ${processNode(inner, itemContext)}`
         );
     },
 
@@ -479,7 +481,24 @@ function extractVariableAssignments(node: QueryNode, variableAssignmentsList: Va
         variableAssignmentsList.push(node);
         return node.resultNode;
     }
+    if (node instanceof FirstOfListQueryNode) {
+        return new FirstOfListQueryNode(extractVariableAssignments(node.listNode, variableAssignmentsList));
+    }
+    if (node instanceof FieldQueryNode) {
+        return new FieldQueryNode(extractVariableAssignments(node.objectNode, variableAssignmentsList), node.field);
+    }
+    if (node instanceof RootEntityIDQueryNode) {
+        return new RootEntityIDQueryNode(extractVariableAssignments(node.objectNode, variableAssignmentsList));
+    }
+    if (node instanceof ObjectQueryNode) {
+        return new ObjectQueryNode(node.properties.map(p => new PropertySpecification(p.propertyName, extractVariableAssignments(p.valueNode, variableAssignmentsList))));
+    }
     return node;
+}
+
+function extractVariableAssignmentsInOrderSpecification(orderSpecification: OrderSpecification, variableAssignmentsList: VariableAssignmentQueryNode[]): OrderSpecification {
+    return new OrderSpecification(orderSpecification.clauses
+        .map(clause => new OrderClause(extractVariableAssignments(clause.valueNode, variableAssignmentsList), clause.direction)));
 }
 
 /**
