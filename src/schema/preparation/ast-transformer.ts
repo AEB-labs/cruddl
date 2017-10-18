@@ -53,24 +53,11 @@ const transformers = [
 
 ];
 
-export function prepareModelAST(ast: DocumentNode): DocumentNode {
-    validateModel(ast);
-    return transformModel(ast);
-}
-
-function validateModel(ast: DocumentNode): void {
-    // TODO
-}
-
-function transformModel(ast: DocumentNode): DocumentNode {
+export function transformModel(ast: DocumentNode): DocumentNode {
     // Don't modify original AST definitions because they could be already of DocumentType wrapped into a Source
     const astClone = cloneDeep(ast);
     transformers.forEach(Transformer => new Transformer().transform(astClone));
     return astClone;
-}
-
-function validateSchema(ast: DocumentNode): void {
-    // TODO
 }
 
 export interface ASTTransformer {
