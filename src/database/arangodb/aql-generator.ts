@@ -177,10 +177,10 @@ const processors : { [name: string]: NodeProcessor<any> } = {
         // because it avoids building the whole collection temporarily in memory
         // however, https://docs.arangodb.com/3.2/AQL/Examples/Counting.html does not really mention this case, so we
         // should evaluate it again
-        const nodeVar = aql.variable();
-        const countVar = aql.variable();
+        const itemVar = aql.variable('item');
+        const countVar = aql.variable('count');
         return aqlExt.parenthesizeObject(
-            aql`FOR ${nodeVar}`,
+            aql`FOR ${itemVar}`,
             aql`IN ${processNode(node.listNode, context)}`,
             aql`COLLECT WITH COUNT INTO ${countVar}`,
             aql`return ${countVar}`
@@ -256,7 +256,7 @@ const processors : { [name: string]: NodeProcessor<any> } = {
     },
 
     FollowEdge(node: FollowEdgeQueryNode, context): AQLFragment {
-        const tmpVar = aql.variable();
+        const tmpVar = aql.variable('node');
         // need to wrap this in a subquery because ANY is not possible as first token of an expression node in AQL
         // sadly means that with a TransformList, there are two nested FORs (but should be optimized away by arangodb)
         return aqlExt.parenthesizeList(
@@ -304,7 +304,7 @@ const processors : { [name: string]: NodeProcessor<any> } = {
     },
 
     AddEdges(node: AddEdgesQueryNode, context) {
-        const edgeVar = aql.variable();
+        const edgeVar = aql.variable('edge');
         return aqlExt.parenthesizeList(
             aql`FOR ${edgeVar}`,
             aql`IN [ ${aql.join(node.edges.map(edge => formatEdge(node.edgeType, edge, context)), aql`, `)} ]`,
@@ -316,7 +316,7 @@ const processors : { [name: string]: NodeProcessor<any> } = {
     },
 
     RemoveEdges(node: RemoveEdgesQueryNode, context) {
-        const edgeVar = aql.variable();
+        const edgeVar = aql.variable('edge');
         return aqlExt.parenthesizeList(
             aql`FOR ${edgeVar}`,
             aql`IN ${getCollectionForEdge(node.edgeType)}`,
@@ -327,7 +327,7 @@ const processors : { [name: string]: NodeProcessor<any> } = {
     },
 
     SetEdge(node: SetEdgeQueryNode, context) {
-        const edgeVar = aql.variable();
+        const edgeVar = aql.variable('edge');
         return aqlExt.parenthesizeList(
             aql`UPSERT ${formatEdge(node.edgeType, node.existingEdge, context)}`,
             aql`INSERT ${formatEdge(node.edgeType, node.newEdge, context)}`,

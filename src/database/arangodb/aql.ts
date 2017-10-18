@@ -267,8 +267,8 @@ export namespace aql {
         return new AQLIndentationFragment(fragment);
     }
 
-    export function variable(): AQLFragment {
-        return new AQLVariable();
+    export function variable(label?: string): AQLFragment {
+        return new AQLVariable(label);
     }
 
     export function collection(name: string): AQLFragment {
