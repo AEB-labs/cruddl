@@ -33,10 +33,10 @@ export function createNonListFieldValueNode(params: {field: GraphQLField<any, an
         throw new Error(`Type of ${params.field} is unexpectedly a list type`);
     }
     if (isRelationField(params.field)) {
-        return VariableAssignmentQueryNode.create(createTo1RelationNode(params.field, params.parentType, params.objectNode), params.innerNodeFn);
+        return VariableAssignmentQueryNode.create(createTo1RelationNode(params.field, params.parentType, params.objectNode), params.innerNodeFn, params.field.name);
     }
     if (isReferenceField(params.field)) {
-        return VariableAssignmentQueryNode.create(createTo1ReferenceNode(params.field, params.objectNode), params.innerNodeFn);
+        return VariableAssignmentQueryNode.create(createTo1ReferenceNode(params.field, params.objectNode), params.innerNodeFn, params.field.name);
     }
     if (isRootEntityType(params.parentType) && params.field.name == ID_FIELD) {
         return params.innerNodeFn(new RootEntityIDQueryNode(params.objectNode));

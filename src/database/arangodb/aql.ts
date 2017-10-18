@@ -23,35 +23,53 @@ function indentLineBreaks(val: string, level: number) {
 
 class AQLCodeBuildingContext {
     private boundValues: any[] = [];
-    private variableBindings = new Map<AQLVariable, number>();
+    private variableBindings = new Map<AQLVariable, string>();
+    private nextIndexPerLabel = new Map<string, number>();
     public indentationLevel = 0;
 
-    getBoundValueName(index: number) {
+    private static getBoundValueName(index: number) {
         return 'var' + (index + 1);
     }
 
-    getVarName(index: number) {
-        return 'tmp' + (index + 1);
+    private static DEFAULT_LABEL = 'tmp';
+
+    private static getSafeLabel(label: string|undefined): string {
+        if (label) {
+            // avoid collisions with collection names, functions and keywords
+            label = 'v_' + label;
+        }
+        if (!label || !aql.isSafeIdentifier(label)) {
+            // bail out
+            label = AQLCodeBuildingContext.DEFAULT_LABEL;
+        }
+        return label;
+    }
+
+    private static getVarName(label: string, index: number) {
+        return label + (index + 1);
     }
 
     bindValue(value: any): string {
         const index = this.boundValues.length;
         this.boundValues.push(value);
-        return this.getBoundValueName(index);
+        return AQLCodeBuildingContext.getBoundValueName(index);
     }
 
     getOrAddVariable(token: AQLVariable): string {
         const existingBinding = this.variableBindings.get(token);
         if (existingBinding != undefined) {
-            return this.getVarName(existingBinding);
+            return existingBinding;
         }
-        const newBinding = this.variableBindings.size;
+        const safeLabel = AQLCodeBuildingContext.getSafeLabel(token.label);
+        const newIndex = this.nextIndexPerLabel.get(safeLabel) || 0;
+        this.nextIndexPerLabel.set(safeLabel, newIndex + 1);
+        const newBinding = AQLCodeBuildingContext.getVarName(safeLabel, newIndex);
         this.variableBindings.set(token, newBinding);
-        return this.getVarName(newBinding);
+        return newBinding;
     }
 
     getBoundValueMap() {
-        return arrayToObject(this.boundValues, (_, index) => this.getBoundValueName(index));
+        return arrayToObject(this.boundValues, (_, index) => AQLCodeBuildingContext.getBoundValueName(index));
     }
 }
 
@@ -105,11 +123,8 @@ class AQLCodeFragment extends AQLFragment {
 }
 
 export class AQLVariable extends AQLFragment {
-    public readonly name: string|undefined;
-
-    constructor(name?: string) {
+    constructor(public readonly label?: string) {
         super();
-        this.name = name;
     }
 
     getCodeWithContext(context: AQLCodeBuildingContext): string {
@@ -282,6 +297,7 @@ export namespace aql {
 
     export function isSafeIdentifier(str: string) {
         // being pessimistic for security reasons
-        return str.match(/^[a-zA-Z0-9-_]+$/);
+        // TODO collisions with collection names / keywords?
+        return str.match(/^[a-zA-Z0-9_]+$/);
     }
 }

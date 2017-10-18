@@ -59,16 +59,14 @@ namespace varIndices {
  * Use in a VariableAssignmentQueryNode or in a TransformListQueryNode to assign a value
  */
 export class VariableQueryNode implements QueryNode {
-    constructor(label: string = 'var') {
-        this.label = label;
+    constructor(public readonly label?: string) {
         this.index = varIndices.next();
     }
 
-    public readonly label: string;
     public readonly index: number;
 
     toString() {
-        return `$${this.label}_${this.index}`;
+        return `$${this.label || 'var'}_${this.index}`;
     }
 
     describe() {
@@ -93,8 +91,8 @@ export class VariableAssignmentQueryNode implements QueryNode {
         this.resultNode = params.resultNode;
     }
 
-    static create(valueNode: QueryNode, resultNodeFn: (variableNode: QueryNode) => QueryNode) {
-        const variableNode = new VariableQueryNode();
+    static create(valueNode: QueryNode, resultNodeFn: (variableNode: QueryNode) => QueryNode, varLabel?: string) {
+        const variableNode = new VariableQueryNode(varLabel);
         return new VariableAssignmentQueryNode({
             variableNode,
             variableValueNode: valueNode,

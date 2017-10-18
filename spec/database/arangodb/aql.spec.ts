@@ -64,6 +64,19 @@ describe('aql', () => {
         expect(fragment.getCode().code).toEqual(`LET tmp1 = [ 1, 2, 3] FOR tmp2 IN tmp1 RETURN tmp2 * 2`);
     });
 
+    it('discards unsafe variable labels', () => {
+        const tmp1 = new AQLVariable('unsafe label');
+        const fragment = aql`LET ${tmp1} = true RETURN ${tmp1}`;
+        expect(fragment.getCode().code).toEqual(`LET tmp1 = true RETURN tmp1`);
+    });
+
+    it('supports multiple labeled tmp vars', () => {
+        const tmp1 = new AQLVariable('label');
+        const tmp2 = new AQLVariable('label');
+        const fragment = aql`LET ${tmp1} = [ 1, 2, 3] FOR ${tmp2} IN ${tmp1} RETURN ${tmp2} * 2`;
+        expect(fragment.getCode().code).toEqual(`LET v_label1 = [ 1, 2, 3] FOR v_label2 IN v_label1 RETURN v_label2 * 2`);
+    });
+
     describe('collection', () => {
         it('accepts normal names', () => {
             expect(aql.collection('deliveries').getCode().code).toEqual('deliveries');

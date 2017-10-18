@@ -19,7 +19,7 @@ class QueryContext {
         if (this.variableMap.has(variableNode)) {
             throw new Error(`Variable ${variableNode.describe()} is introduced twice`);
         }
-        const variable = new AQLVariable();
+        const variable = new AQLVariable(variableNode.label);
         const newMap = new Map(this.variableMap);
         newMap.set(variableNode, variable);
         const newContext = new QueryContext();
