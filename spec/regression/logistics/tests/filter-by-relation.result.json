@@ -1,8 +1,15 @@
 {
-  "addRelation": {
+  "addRelation1": {
     "data": {
       "updateHandlingUnit": {
         "huNumber": "1000007"
+      }
+    }
+  },
+  "addRelation2": {
+    "data": {
+      "updateHandlingUnit": {
+        "huNumber": "1000014"
       }
     }
   },
