@@ -1,0 +1,57 @@
+mutation addRelation1 {
+    updateHandlingUnit(input: {
+        id: "@{ids/HandlingUnit/1}",
+        delivery: "@{ids/Delivery/1}"
+    }) {
+        huNumber
+    }
+}
+
+mutation addRelation2 {
+    updateHandlingUnit(input: {
+        id: "@{ids/HandlingUnit/2}",
+        delivery: "@{ids/Delivery/2}"
+    }) {
+        huNumber
+    }
+}
+
+query asc {
+    allHandlingUnits(orderBy: delivery_deliveryNumber_ASC) {
+        huNumber
+        delivery {
+            deliveryNumber
+        }
+    }
+}
+
+query desc {
+    allHandlingUnits(orderBy: delivery_deliveryNumber_DESC) {
+        huNumber
+        delivery {
+            deliveryNumber
+        }
+    }
+}
+
+query relationAndExtensionAsc {
+    allHandlingUnits(orderBy: delivery_consignee_street_ASC) {
+        huNumber
+        delivery {
+            consignee {
+                street
+            }
+        }
+    }
+}
+
+query relationAndExtensionDesc {
+    allHandlingUnits(orderBy: delivery_consignee_street_DESC) {
+        huNumber
+        delivery {
+            consignee {
+                street
+            }
+        }
+    }
+}

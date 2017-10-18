@@ -25,23 +25,38 @@ export function createScalarFieldValueNode(objectType: GraphQLObjectType, fieldN
 /**
  * Creates a query node that evaluates to the value of a field, and optionally maps that value using a mapping function
  * Complex field lookups are cached for the mapping function.
+ * If a mapping function is specified and the field lookup is complex, wraps the value in a variable.
  */
 export function createNonListFieldValueNode(params: {field: GraphQLField<any, any>, parentType: GraphQLObjectType, objectNode: QueryNode, innerNodeFn?: (valueNode: QueryNode) => QueryNode }) {
     params.innerNodeFn = params.innerNodeFn || (a => a);
+
+    function mapInnerFn(node: QueryNode) {
+        if (params.innerNodeFn) {
+            return params.innerNodeFn(node);
+        }
+        return node;
+    }
+
+    function mapInnerFnWithVariable(node: QueryNode) {
+        if (params.innerNodeFn) {
+            return VariableAssignmentQueryNode.create(node, params.innerNodeFn, params.field.name);
+        }
+        return node;
+    }
 
     if (isListType(params.field.type)) {
         throw new Error(`Type of ${params.field} is unexpectedly a list type`);
     }
     if (isRelationField(params.field)) {
-        return VariableAssignmentQueryNode.create(createTo1RelationNode(params.field, params.parentType, params.objectNode), params.innerNodeFn, params.field.name);
+        return mapInnerFnWithVariable(createTo1RelationNode(params.field, params.parentType, params.objectNode));
     }
     if (isReferenceField(params.field)) {
-        return VariableAssignmentQueryNode.create(createTo1ReferenceNode(params.field, params.objectNode), params.innerNodeFn, params.field.name);
+        return mapInnerFnWithVariable(createTo1ReferenceNode(params.field, params.objectNode));
     }
     if (isRootEntityType(params.parentType) && params.field.name == ID_FIELD) {
-        return params.innerNodeFn(new RootEntityIDQueryNode(params.objectNode));
+        return mapInnerFn(new RootEntityIDQueryNode(params.objectNode));
     }
-    return params.innerNodeFn(new FieldQueryNode(params.objectNode, params.field));
+    return mapInnerFn(new FieldQueryNode(params.objectNode, params.field));
 }
 
 export function createTo1RelationNode(field: GraphQLField<any, any>, parentType: GraphQLObjectType, objectNode: QueryNode): QueryNode {

@@ -78,9 +78,9 @@
         "@id": "2",
         "deliveryNumber": "1000521",
         "consignee": {
-          "street": "675 Kurtis Route",
-          "city": "Port Neldahaven",
-          "zipCode": "17624"
+          "street": "1 North Bridge Road",
+          "city": "Singapore",
+          "zipCode": "179094"
           //"country": "US" // schema is currently wrong (accepts CreateCountry instead of String)
         },
         "contentInfo": [{

@@ -1,10 +1,9 @@
 import { FieldRequest } from '../graphql/query-distiller';
-import { getNamedType, GraphQLObjectType } from 'graphql';
+import { getNamedType, GraphQLField, GraphQLObjectType, GraphQLType } from 'graphql';
 import {
-    BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, FieldQueryNode, RootEntityIDQueryNode, LiteralQueryNode,
-    NullQueryNode,
-    ObjectQueryNode, OrderClause, OrderDirection, OrderSpecification, PropertySpecification, QueryNode,
-    UnaryOperationQueryNode, UnaryOperator
+    BasicType, BinaryOperationQueryNode, BinaryOperator, ConditionalQueryNode, ConstBoolQueryNode, FieldQueryNode,
+    LiteralQueryNode, NullQueryNode, ObjectQueryNode, OrderClause, OrderDirection, OrderSpecification,
+    PropertySpecification, QueryNode, RootEntityIDQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator
 } from './definition';
 import { isArray } from 'util';
 import { isListType } from '../graphql/schema-utils';
@@ -12,7 +11,8 @@ import {
     FIRST_ARG, ID_FIELD, ORDER_BY_ARG, ORDER_BY_ASC_SUFFIX, ORDER_BY_DESC_SUFFIX
 } from '../schema/schema-defaults';
 import { sortedByAsc, sortedByDesc } from '../graphql/names';
-import { createScalarFieldValueNode } from './fields';
+import { createNonListFieldValueNode, createScalarFieldValueNode } from './fields';
+import { type } from 'os';
 
 export function createPaginationFilterNode(afterArg: any, orderSpecification: OrderSpecification) {
     if (!afterArg) {
@@ -74,8 +74,8 @@ export function createOrderSpecification(orderByArg: any, objectType: GraphQLObj
     const clauseNames = getOrderByClauseNames(orderByArg, objectType, listFieldRequest);
     const clauses = clauseNames.map(name => {
         let dir = name.endsWith(ORDER_BY_DESC_SUFFIX) ? OrderDirection.DESCENDING : OrderDirection.ASCENDING;
-        const fieldName = getFieldFromOrderByClause(name);
-        const fieldQuery = createScalarFieldValueNode(objectType, fieldName, itemNode);
+        const fieldPath = getFieldPathFromOrderByClause(name);
+        const fieldQuery = createScalarFieldPathValueNode(objectType, fieldPath, itemNode);
         return new OrderClause(fieldQuery, dir);
     });
     return new OrderSpecification(clauses);
@@ -94,13 +94,13 @@ export function createCursorQueryNode(listFieldRequest: FieldRequest, itemNode: 
 
     const objectType = getNamedType(listFieldRequest.field.type) as GraphQLObjectType;
     const clauses = getOrderByClauseNames(listFieldRequest.args[ORDER_BY_ARG], objectType, listFieldRequest);
-    const fieldNames = clauses.map(clause => getFieldFromOrderByClause(clause)).sort();
-    const objectNode = new ObjectQueryNode(fieldNames.map( fieldName =>
-        new PropertySpecification(fieldName, createScalarFieldValueNode(objectType, fieldName, itemNode))));
+    const fieldPaths = clauses.map(clause => getFieldPathFromOrderByClause(clause)).sort();
+    const objectNode = new ObjectQueryNode(fieldPaths.map( fieldPath =>
+        new PropertySpecification(fieldPath, createScalarFieldPathValueNode(objectType, fieldPath, itemNode))));
     return new UnaryOperationQueryNode(objectNode, UnaryOperator.JSON_STRINGIFY);
 }
 
-function getFieldFromOrderByClause(clause: string): string {
+function getFieldPathFromOrderByClause(clause: string): string {
     if (clause.endsWith(ORDER_BY_ASC_SUFFIX)) {
         return clause.substr(0, clause.length - ORDER_BY_ASC_SUFFIX.length);
     }
@@ -108,6 +108,37 @@ function getFieldFromOrderByClause(clause: string): string {
         return clause.substr(0, clause.length - ORDER_BY_DESC_SUFFIX.length);
     }
     return clause;
+}
+
+function createScalarFieldPathValueNode(baseType: GraphQLObjectType, fieldPath: string, baseNode: QueryNode): QueryNode {
+    const segments = fieldPath.split('_');
+    if (!segments.length) {
+        throw new Error(`Invalid field path: ${fieldPath}`);
+    }
+    let currentType: GraphQLType = baseType;
+    let currentNode = baseNode;
+    for (const fieldName of segments) {
+        if (!(currentType instanceof GraphQLObjectType)) {
+            throw new Error(`Invalid field path on ${baseType.name}: ${fieldPath} (type ${currentType} does not have subfields`);
+        }
+        const field: GraphQLField<any, any> = currentType.getFields()[fieldName];
+        if (!field) {
+            throw new Error(`Invalid field path on ${baseType.name}: ${fieldPath} (field ${fieldName} not found)`)
+        }
+
+        // we don't do type checks for object because in AQL, property loookups on non-objects yield NULL anyway
+        // we might need to change this when targeting different data bases
+
+        currentNode = createNonListFieldValueNode({
+            field,
+            parentType: currentType,
+            objectNode: currentNode
+        });
+
+        currentType = field.type;
+    }
+
+    return currentNode;
 }
 
 function getOrderByClauseNames(orderBy: any, objectType: GraphQLObjectType, listFieldRequest: FieldRequest): string[] {

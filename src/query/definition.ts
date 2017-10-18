@@ -154,6 +154,9 @@ export class ConstBoolQueryNode {
  * A node that evaluates to the value of a field of an object
  *
  * Note: this is unrelated to storing the value in a property of a result object, see ObjectQueryNode
+ *
+ * Runtime implementation note: if objectNode yields a non-object value (e.g. NULL), the result should be NULL.
+ * (this is Arango logic and we currently rely on it in createScalarFieldPathValueNode()
  */
 export class FieldQueryNode implements QueryNode {
     constructor(public readonly objectNode: QueryNode, public readonly field: GraphQLField<any, any>) {
