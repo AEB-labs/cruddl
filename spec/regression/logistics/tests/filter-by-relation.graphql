@@ -1,0 +1,17 @@
+mutation addRelation {
+    updateHandlingUnit(input: {
+        id: "@{ids/HandlingUnit/1}",
+        delivery: "@{ids/Delivery/1}"
+    }) {
+        huNumber
+    }
+}
+
+query q {
+    allHandlingUnits(filter: { delivery: { deliveryNumber: "1000173"}}) {
+        huNumber
+        delivery {
+            deliveryNumber
+        }
+    }
+}

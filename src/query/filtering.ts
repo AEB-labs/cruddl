@@ -6,8 +6,8 @@ import {
 } from './definition';
 import { isArray } from 'util';
 import { ARGUMENT_AND, ARGUMENT_OR, ID_FIELD } from '../schema/schema-defaults';
-import { isRootEntityType } from '../schema/schema-utils';
-import { createScalarFieldValueNode } from './common';
+import { isRelationField, isRootEntityType } from '../schema/schema-utils';
+import { createNonListFieldValueNode, createScalarFieldValueNode } from './fields';
 
 export function createFilterNode(filterArg: any, objectType: GraphQLObjectType, contextNode: QueryNode): QueryNode {
     if (!filterArg || !Object.keys(filterArg).length) {
@@ -51,14 +51,22 @@ function getFilterClauseNode(key: string, value: any, contextNode: QueryNode, ob
     const field = objectType.getFields()[key];
     const rawFieldType = field ? getNamedType(field.type) : undefined;
     if (field && rawFieldType instanceof GraphQLObjectType) {
-        const fieldNode = new FieldQueryNode(contextNode, field);
-        const isObjectNode = new TypeCheckQueryNode(fieldNode, BasicType.OBJECT);
-        const rawFilterNode = createFilterNode(value, rawFieldType, fieldNode);
-        if (!rawFilterNode) {
-            return isObjectNode; // an empty filter only checks if the object is present and a real object
-        }
-        // make sure to check for object type before doing the filter
-        return new BinaryOperationQueryNode(isObjectNode, BinaryOperator.AND, rawFilterNode);
+        // possibly complex field lookup (references, relations)
+        return createNonListFieldValueNode({
+            field,
+            parentType: objectType,
+            objectNode: contextNode,
+            innerNodeFn: (valueNode: QueryNode) => {
+                // this function maps the object (field value, referenced object, related object) to the filter condition
+                const isObjectNode = new TypeCheckQueryNode(valueNode, BasicType.OBJECT);
+                const rawFilterNode = createFilterNode(value, rawFieldType, valueNode);
+                if (!rawFilterNode) {
+                    return isObjectNode; // an empty filter only checks if the object is present and a real object
+                }
+                // make sure to check for object type before doing the filter
+                return new BinaryOperationQueryNode(isObjectNode, BinaryOperator.AND, rawFilterNode);
+            }
+        });
     }
 
     function not(value: QueryNode) {

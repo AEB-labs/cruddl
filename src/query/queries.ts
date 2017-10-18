@@ -3,19 +3,17 @@ import { getNamedType, GraphQLField, GraphQLObjectType } from 'graphql';
 import {
     BasicType, BinaryOperationQueryNode, BinaryOperator, ConditionalQueryNode, EntitiesQueryNode, FieldQueryNode,
     FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode, NullQueryNode, ObjectQueryNode,
-    PropertySpecification, QueryNode, RootEntityIDQueryNode, TransformListQueryNode, TypeCheckQueryNode,
-    VariableAssignmentQueryNode,
-    VariableQueryNode
+    PropertySpecification, QueryNode, TransformListQueryNode, TypeCheckQueryNode, VariableQueryNode
 } from './definition';
 import { createCursorQueryNode, createOrderSpecification, createPaginationFilterNode } from './pagination-and-sorting';
 import { createFilterNode } from './filtering';
 import {
-    AFTER_ARG, ALL_ENTITIES_FIELD_PREFIX, CURSOR_FIELD, FILTER_ARG, FIRST_ARG, ID_FIELD, ORDER_BY_ARG
+    AFTER_ARG, ALL_ENTITIES_FIELD_PREFIX, CURSOR_FIELD, FILTER_ARG, FIRST_ARG, ORDER_BY_ARG
 } from '../schema/schema-defaults';
-import { capitalize, decapitalize, objectEntries } from '../utils/utils';
-import { createScalarFieldValueNode } from './common';
+import { decapitalize, objectEntries } from '../utils/utils';
+import { createNonListFieldValueNode, createScalarFieldValueNode } from './fields';
 import { isListType } from '../graphql/schema-utils';
-import { getSingleKeyField, isReferenceField, isRelationField, isRootEntityType } from '../schema/schema-utils';
+import { isReferenceField, isRelationField } from '../schema/schema-utils';
 import { getEdgeType } from '../schema/edges';
 import { createListMetaNode } from './list-meta';
 
@@ -41,6 +39,7 @@ export function createQueryRootNode(fieldRequest: FieldRequest): QueryNode {
 function createAllEntitiesFieldNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[]): QueryNode {
     const objectType = getNamedType(fieldRequest.field.type) as GraphQLObjectType;
     const listNode = new EntitiesQueryNode(objectType);
+    // (node.roles INTERSECT requestRoles) > 0
     return createTransformListQueryNode(fieldRequest, listNode, fieldRequestStack);
 }
 
@@ -54,6 +53,7 @@ function createEntitiesMetaFieldNode(fieldRequest: FieldRequest): QueryNode {
     const listNode = new EntitiesQueryNode(objectType);
     return createListMetaNode(fieldRequest, listNode, objectType);
 }
+
 function createSingleEntityFieldNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[]): QueryNode {
     const objectType = getNamedType(fieldRequest.field.type) as GraphQLObjectType;
     const entityVarNode = new VariableQueryNode(decapitalize(objectType.name));
@@ -87,85 +87,26 @@ export function createEntityObjectNode(fieldSelections: FieldSelection[], source
             createEntityFieldQueryNode(sel.fieldRequest, sourceObjectNode, [...fieldRequestStack, sel.fieldRequest]))));
 }
 
-function createTo1RelationQueryNode(fieldRequest: FieldRequest, sourceEntityNode: QueryNode, fieldRequestStack: FieldRequest[]): QueryNode {
-    const relatedVarNode = new VariableQueryNode(fieldRequest.fieldName);
-    const edgeType = getEdgeType(getNamedType(fieldRequest.parentType) as GraphQLObjectType, fieldRequest.field);
-    const followNode = new FollowEdgeQueryNode(edgeType, sourceEntityNode);
-    const relatedNode = new FirstOfListQueryNode(followNode);
-    return new VariableAssignmentQueryNode({
-        variableNode: relatedVarNode,
-        variableValueNode: relatedNode,
-        resultNode: createConditionalObjectNode(fieldRequest.selectionSet, relatedVarNode, fieldRequestStack)
-    });
-}
-
 function createToNRelationQueryNode(fieldRequest: FieldRequest, sourceEntityNode: QueryNode, fieldRequestStack: FieldRequest[]): QueryNode {
     const edgeType = getEdgeType(getNamedType(fieldRequest.parentType) as GraphQLObjectType, fieldRequest.field);
     const followNode = new FollowEdgeQueryNode(edgeType, sourceEntityNode);
     return createTransformListQueryNode(fieldRequest, followNode, fieldRequestStack);
 }
 
-function createTo1ReferenceQueryNode(fieldRequest: FieldRequest, keyNode: FieldQueryNode, fieldRequestStack: FieldRequest[]): QueryNode {
-    const referencedEntityType = getNamedType(fieldRequest.field.type) as GraphQLObjectType;
-    const keyField = getSingleKeyField(referencedEntityType);
-    if (!keyField) {
-        throw new Error(`Type ${referencedEntityType} referenced in field ${fieldRequest.field.name} does not declare a single key field`);
-    }
-
-    const listItemVar = new VariableQueryNode(fieldRequest.fieldName);
-    const filterNode = new BinaryOperationQueryNode(
-        new FieldQueryNode(listItemVar, keyField),
-        BinaryOperator.EQUAL,
-        keyNode
-    );
-
-    const innerNode = createConditionalObjectNode(fieldRequest.selectionSet, listItemVar, fieldRequestStack);
-    const listNode = new EntitiesQueryNode(referencedEntityType);
-    const filteredListNode = new TransformListQueryNode({
-        listNode,
-        filterNode,
-        innerNode,
-        maxCount: 1,
-        itemVariable: listItemVar
-    });
-    return new FirstOfListQueryNode(filteredListNode);
-}
-
 /**
  * Creates a QueryNode for a specific field to query from an entity
  * @param {FieldRequest} fieldRequest the field, e.g. "id"
- * @param {QueryNode} entityNode the QueryNode that evaluates to the entity
+ * @param {QueryNode} objectNode the QueryNode that evaluates to the entity
  * @param {FieldRequest[]} fieldRequestStack parent field requests, up to (including) the fieldRequest arg
  * @returns {QueryNode}
  */
-function createEntityFieldQueryNode(fieldRequest: FieldRequest, entityNode: QueryNode, fieldRequestStack: FieldRequest[]): QueryNode {
+function createEntityFieldQueryNode(fieldRequest: FieldRequest, objectNode: QueryNode, fieldRequestStack: FieldRequest[]): QueryNode {
     if (fieldRequest.fieldName == CURSOR_FIELD) {
-        return createCursorQueryNode(fieldRequestStack[fieldRequestStack.length - 2], entityNode);
+        return createCursorQueryNode(fieldRequestStack[fieldRequestStack.length - 2], objectNode);
     }
 
     const type = fieldRequest.field.type;
     const rawType = getNamedType(type);
-
-    if (isRelationField(fieldRequest.field)) {
-        if (isListType(type)) {
-            return createToNRelationQueryNode(fieldRequest, entityNode, fieldRequestStack);
-        } else {
-            return createTo1RelationQueryNode(fieldRequest, entityNode, fieldRequestStack);
-        }
-    }
-
-    if (isReferenceField(fieldRequest.field)) {
-        if (isListType(type)) {
-            throw new Error(`${fieldRequest.fieldName}: references in lists are not supported yet`);
-        } else {
-            const keyNode = new FieldQueryNode(entityNode, fieldRequest.field);
-            return createTo1ReferenceQueryNode(fieldRequest, keyNode, fieldRequestStack);
-        }
-    }
-
-    if (isRootEntityType(fieldRequest.parentType) && fieldRequest.field.name == ID_FIELD) {
-        return new RootEntityIDQueryNode(entityNode);
-    }
 
     if (isMetaField(fieldRequest.field)) {
         const objectType = fieldRequest.parentType as GraphQLObjectType;
@@ -177,28 +118,36 @@ function createEntityFieldQueryNode(fieldRequest: FieldRequest, entityNode: Quer
         let listNode: QueryNode;
         if (isRelationField(listField)) {
             const edgeType = getEdgeType(getNamedType(fieldRequest.parentType) as GraphQLObjectType, listField);
-            listNode = new FollowEdgeQueryNode(edgeType, entityNode);
+            listNode = new FollowEdgeQueryNode(edgeType, objectNode);
         } else if (isReferenceField(listField)) {
             throw new Error(`${fieldRequest.fieldName}: references in lists are not supported yet`);
         } else {
-            listNode = createSafeListQueryNode(new FieldQueryNode(entityNode, listField));
+            listNode = createSafeListQueryNode(new FieldQueryNode(objectNode, listField));
         }
         return createListMetaNode(fieldRequest, listNode, getNamedType(listField.type) as GraphQLObjectType);
     }
 
-    const fieldNode = new FieldQueryNode(entityNode, fieldRequest.field);
     if (isListType(type)) {
+        if (isRelationField(fieldRequest.field)) {
+            return createToNRelationQueryNode(fieldRequest, objectNode, fieldRequestStack);
+        }
+        if (isReferenceField(fieldRequest.field)) {
+            throw new Error(`${fieldRequest.fieldName}: references in lists are not supported yet`);
+        }
         if (rawType instanceof GraphQLObjectType) {
             // support filters, order by and pagination
-            return createSafeTransformListQueryNode(fieldRequest, fieldNode, fieldRequestStack);
+            return createSafeTransformListQueryNode(fieldRequest, new FieldQueryNode(objectNode, fieldRequest.field), fieldRequestStack);
         } else {
-            return createSafeListQueryNode(fieldNode);
+            return createSafeListQueryNode(new FieldQueryNode(objectNode, fieldRequest.field));
         }
     }
-    if (rawType instanceof GraphQLObjectType) {
-        return createConditionalObjectNode(fieldRequest.selectionSet, fieldNode, fieldRequestStack);
-    }
-    return fieldNode;
+
+    return createNonListFieldValueNode({
+        objectNode,
+        parentType: fieldRequest.parentType as GraphQLObjectType,
+        field: fieldRequest.field,
+        innerNodeFn: valueNode => rawType instanceof GraphQLObjectType ? createConditionalObjectNode(fieldRequest.selectionSet, valueNode, fieldRequestStack) : valueNode
+    });
 }
 
 function createConditionalObjectNode(fieldSelections: FieldSelection[], contextNode: QueryNode, fieldRequestStack: FieldRequest[]) {

@@ -93,6 +93,15 @@ export class VariableAssignmentQueryNode implements QueryNode {
         this.resultNode = params.resultNode;
     }
 
+    static create(valueNode: QueryNode, resultNodeFn: (variableNode: QueryNode) => QueryNode) {
+        const variableNode = new VariableQueryNode();
+        return new VariableAssignmentQueryNode({
+            variableNode,
+            variableValueNode: valueNode,
+            resultNode: resultNodeFn(variableNode)
+        })
+    }
+
     public readonly variableValueNode: QueryNode;
     public readonly resultNode: QueryNode;
     public readonly variableNode: VariableQueryNode;

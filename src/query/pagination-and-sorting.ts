@@ -12,7 +12,7 @@ import {
     FIRST_ARG, ID_FIELD, ORDER_BY_ARG, ORDER_BY_ASC_SUFFIX, ORDER_BY_DESC_SUFFIX
 } from '../schema/schema-defaults';
 import { sortedByAsc, sortedByDesc } from '../graphql/names';
-import { createScalarFieldValueNode } from './common';
+import { createScalarFieldValueNode } from './fields';
 
 export function createPaginationFilterNode(afterArg: any, orderSpecification: OrderSpecification) {
     if (!afterArg) {

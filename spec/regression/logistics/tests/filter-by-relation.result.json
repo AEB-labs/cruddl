@@ -1,0 +1,21 @@
+{
+  "addRelation": {
+    "data": {
+      "updateHandlingUnit": {
+        "huNumber": "1000007"
+      }
+    }
+  },
+  "q": {
+    "data": {
+      "allHandlingUnits": [
+        {
+          "huNumber": "1000007",
+          "delivery": {
+            "deliveryNumber": "1000173"
+          }
+        }
+      ]
+    }
+  }
+}
