@@ -1,20 +1,21 @@
 import { FieldRequest } from '../graphql/query-distiller';
 import { getNamedType, GraphQLField, GraphQLObjectType, GraphQLType } from 'graphql';
 import {
-    BasicType, BinaryOperationQueryNode, BinaryOperator, ConditionalQueryNode, ConstBoolQueryNode, FieldQueryNode,
-    LiteralQueryNode, NullQueryNode, ObjectQueryNode, OrderClause, OrderDirection, OrderSpecification,
-    PropertySpecification, QueryNode, RootEntityIDQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator
+    BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, FieldQueryNode, LiteralQueryNode, NullQueryNode,
+    ObjectQueryNode, OrderClause, OrderDirection, OrderSpecification, PropertySpecification, QueryNode,
+    RootEntityIDQueryNode, UnaryOperationQueryNode, UnaryOperator
 } from './definition';
 import { isArray } from 'util';
 import { isListType } from '../graphql/schema-utils';
 import {
+    AFTER_ARG,
     FIRST_ARG, ID_FIELD, ORDER_BY_ARG, ORDER_BY_ASC_SUFFIX, ORDER_BY_DESC_SUFFIX
 } from '../schema/schema-defaults';
 import { sortedByAsc, sortedByDesc } from '../graphql/names';
-import { createNonListFieldValueNode, createScalarFieldValueNode } from './fields';
-import { type } from 'os';
+import { createNonListFieldValueNode } from './fields';
 
-export function createPaginationFilterNode(afterArg: any, orderSpecification: OrderSpecification) {
+export function createPaginationFilterNode(objectType: GraphQLObjectType, listFieldRequest: FieldRequest, itemNode: QueryNode) {
+    const afterArg = listFieldRequest.args[AFTER_ARG];
     if (!afterArg) {
         return new ConstBoolQueryNode(true);
     }
@@ -32,28 +33,19 @@ export function createPaginationFilterNode(afterArg: any, orderSpecification: Or
     // Make sure we only select items after the cursor
     // Thus, we need to implement the 'comparator' based on the order-by-specification
     // Haskell-like pseudo-code because it's easier ;-)
-    // orderByToFilter :: Clause[] -> FilterNode:
-    // orderByToFilter([{field, ASC}, ...tail]) =
-    //   (context[clause.field] > cursor[clause.field] || (context[clause.field] == cursor[clause.field] && orderByToFilter(tail))
-    // orderByToFilter([{field, DESC}, ...tail]) =
-    //   (context[clause.field] < cursor[clause.field] || (context[clause.field] == cursor[clause.field] && orderByToFilter(tail))
-    // orderByToFilter([]) = FALSE # arbitrary; if order is absolute, this case should never occur
-    function orderByToFilter(clauses: OrderClause[]): QueryNode {
+    // filterForClause :: Clause[] -> FilterNode:
+    // filterForClause([{field, ASC}, ...tail]) =
+    //   (context[clause.field] > cursor[clause.field] || (context[clause.field] == cursor[clause.field] && filterForClause(tail))
+    // filterForClause([{field, DESC}, ...tail]) =
+    //   (context[clause.field] < cursor[clause.field] || (context[clause.field] == cursor[clause.field] && filterForClause(tail))
+    // filterForClause([]) = FALSE # arbitrary; if order is absolute, this case should never occur
+    function filterForClause(clauses: {fieldPath: string, valueNode: QueryNode, direction: OrderDirection}[]): QueryNode {
         if (clauses.length == 0) {
             return new ConstBoolQueryNode(false);
         }
 
         const clause = clauses[0];
-        let cursorValue;
-        if (clause.valueNode instanceof FieldQueryNode) {
-            cursorValue = cursorObj[clause.valueNode.field.name];
-        } else if (clause.valueNode instanceof RootEntityIDQueryNode) {
-            cursorValue = cursorObj[ID_FIELD];
-        } else if (clause.valueNode instanceof LiteralQueryNode) {
-            cursorValue = clause.valueNode.value;
-        } else {
-            throw new Error('Pagination is not supported in combination with order-by clauses of type ' + (<any>clause.valueNode).constructor.name);
-        }
+        const cursorValue = cursorObj[clause.fieldPath];
 
         const operator = clause.direction == OrderDirection.ASCENDING ? BinaryOperator.GREATER_THAN : BinaryOperator.LESS_THAN;
         return new BinaryOperationQueryNode(
@@ -62,16 +54,27 @@ export function createPaginationFilterNode(afterArg: any, orderSpecification: Or
             new BinaryOperationQueryNode(
                 new BinaryOperationQueryNode(clause.valueNode, BinaryOperator.EQUAL, new LiteralQueryNode(cursorValue)),
                 BinaryOperator.AND,
-                orderByToFilter(clauses.slice(1))
+                filterForClause(clauses.slice(1))
             )
         );
     }
 
-    return orderByToFilter(orderSpecification.clauses);
+    const clauseNames = getOrderByClauseNames(objectType, listFieldRequest);
+    const clauses = clauseNames.map(name => {
+        let direction = name.endsWith(ORDER_BY_DESC_SUFFIX) ? OrderDirection.DESCENDING : OrderDirection.ASCENDING;
+        const fieldPath = getFieldPathFromOrderByClause(name);
+        const valueNode = createScalarFieldPathValueNode(objectType, fieldPath, itemNode);
+        return {
+            fieldPath,
+            direction,
+            valueNode
+        };
+    });
+    return filterForClause(clauses);
 }
 
-export function createOrderSpecification(orderByArg: any, objectType: GraphQLObjectType, listFieldRequest: FieldRequest, itemNode: QueryNode) {
-    const clauseNames = getOrderByClauseNames(orderByArg, objectType, listFieldRequest);
+export function createOrderSpecification(objectType: GraphQLObjectType, listFieldRequest: FieldRequest, itemNode: QueryNode) {
+    const clauseNames = getOrderByClauseNames(objectType, listFieldRequest);
     const clauses = clauseNames.map(name => {
         let dir = name.endsWith(ORDER_BY_DESC_SUFFIX) ? OrderDirection.DESCENDING : OrderDirection.ASCENDING;
         const fieldPath = getFieldPathFromOrderByClause(name);
@@ -93,7 +96,7 @@ export function createCursorQueryNode(listFieldRequest: FieldRequest, itemNode: 
     }
 
     const objectType = getNamedType(listFieldRequest.field.type) as GraphQLObjectType;
-    const clauses = getOrderByClauseNames(listFieldRequest.args[ORDER_BY_ARG], objectType, listFieldRequest);
+    const clauses = getOrderByClauseNames(objectType, listFieldRequest);
     const fieldPaths = clauses.map(clause => getFieldPathFromOrderByClause(clause)).sort();
     const objectNode = new ObjectQueryNode(fieldPaths.map( fieldPath =>
         new PropertySpecification(fieldPath, createScalarFieldPathValueNode(objectType, fieldPath, itemNode))));
@@ -141,7 +144,8 @@ function createScalarFieldPathValueNode(baseType: GraphQLObjectType, fieldPath: 
     return currentNode;
 }
 
-function getOrderByClauseNames(orderBy: any, objectType: GraphQLObjectType, listFieldRequest: FieldRequest): string[] {
+function getOrderByClauseNames(objectType: GraphQLObjectType, listFieldRequest: FieldRequest): string[] {
+    const orderBy = listFieldRequest.args[ORDER_BY_ARG];
     const clauseNames = !orderBy ? [] : isArray(orderBy) ? orderBy : [orderBy];
 
     // if pagination is enabled on a list of entities, make sure we filter after a unique key

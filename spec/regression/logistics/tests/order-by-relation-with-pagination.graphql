@@ -1,0 +1,37 @@
+mutation addRelation1 {
+    updateHandlingUnit(input: {
+        id: "@{ids/HandlingUnit/1}",
+        delivery: "@{ids/Delivery/1}"
+    }) {
+        huNumber
+    }
+}
+
+mutation addRelation2 {
+    updateHandlingUnit(input: {
+        id: "@{ids/HandlingUnit/2}",
+        delivery: "@{ids/Delivery/2}"
+    }) {
+        huNumber
+    }
+}
+
+query ascPage1 {
+    allHandlingUnits(orderBy: delivery_deliveryNumber_ASC, first: 2) {
+        huNumber
+        delivery {
+            deliveryNumber
+        }
+        _cursor
+    }
+}
+
+query ascPage2 {
+    allHandlingUnits(orderBy: delivery_deliveryNumber_ASC, first: 2, after: "{\"delivery_deliveryNumber\":\"1000173\",\"id\":\"@{ids/HandlingUnit/2}\"}") {
+        huNumber
+        delivery {
+            deliveryNumber
+        }
+        _cursor
+    }
+}

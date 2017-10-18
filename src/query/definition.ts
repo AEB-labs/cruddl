@@ -97,7 +97,7 @@ export class VariableAssignmentQueryNode implements QueryNode {
             variableNode,
             variableValueNode: valueNode,
             resultNode: resultNodeFn(variableNode)
-        })
+        });
     }
 
     public readonly variableValueNode: QueryNode;
@@ -105,7 +105,7 @@ export class VariableAssignmentQueryNode implements QueryNode {
     public readonly variableNode: VariableQueryNode;
 
     public describe() {
-        return `let ${this.variableNode} = ${this.variableValueNode.describe()} in ${this.resultNode.describe()}`;
+        return `let ${this.variableNode.describe()} = ${this.variableValueNode.describe()} in ${this.resultNode.describe()}`;
     }
 }
 
@@ -383,6 +383,7 @@ export class TransformListQueryNode implements QueryNode {
         orderBy?: OrderSpecification,
         maxCount?: number
         itemVariable?: VariableQueryNode
+        variableAssignmentNodes?: VariableAssignmentQueryNode[]
     }) {
         this.itemVariable = params.itemVariable || new VariableQueryNode();
         this.listNode = params.listNode;
@@ -390,6 +391,7 @@ export class TransformListQueryNode implements QueryNode {
         this.filterNode = params.filterNode || new ConstBoolQueryNode(true);
         this.orderBy = params.orderBy || new OrderSpecification([]);
         this.maxCount = params.maxCount;
+        this.variableAssignmentNodes = params.variableAssignmentNodes || [];
     }
 
     public readonly listNode: QueryNode;
@@ -399,9 +401,20 @@ export class TransformListQueryNode implements QueryNode {
     public readonly maxCount: number | undefined;
     public readonly itemVariable: VariableQueryNode;
 
+    /**
+     * A list of variables that will be available in filter, order and innerNode
+     * resultNode of these is IGNORED.
+     */
+    public readonly variableAssignmentNodes: VariableAssignmentQueryNode[];
+
     describe() {
-        return `${this.listNode.describe()} as list\n` +
-            indent(`where ${this.filterNode.describe()}\norder by ${this.orderBy.describe()}${this.maxCount != undefined ? `\nlimit ${this.maxCount}` : ''}\nas ${this.innerNode.describe()}`);
+        return `${this.listNode.describe()} as list\n` + indent('' + // '' to move the arg label here in WebStorm
+            `where ${this.filterNode.describe()}\n` +
+            `order by ${this.orderBy.describe()}` +
+            this.variableAssignmentNodes.map(node => `let ${node.variableNode.describe()} = ${node.variableValueNode}`).join('\n') +
+            `${this.maxCount != undefined ? `\nlimit ${this.maxCount}` : ''}\n` +
+            `as ${this.innerNode.describe()}`
+        );
     }
 }
 
@@ -515,7 +528,7 @@ export class FollowEdgeQueryNode implements QueryNode {
     }
 
     describe() {
-        return `follow ${this.edgeType} of ${this.sourceEntityNode.describe()}`
+        return `follow ${this.edgeType} of ${this.sourceEntityNode.describe()}`;
     }
 }
 
@@ -662,7 +675,7 @@ export class EdgeFilter {
         return `(${this.describeIDs(this.fromIDNodes)} -> ${this.describeIDs(this.toIDNodes)})`;
     }
 
-    private describeIDs(ids: QueryNode[]|undefined) {
+    private describeIDs(ids: QueryNode[] | undefined) {
         if (!ids) {
             return '?';
         }
@@ -682,7 +695,7 @@ export class PartialEdgeIdentifier {
         return `(${this.describeNode(this.fromIDNode)} -> ${this.describeNode(this.toIDNode)})`;
     }
 
-    private describeNode(node: QueryNode|undefined) {
+    private describeNode(node: QueryNode | undefined) {
         if (!node) {
             return '?';
         }

@@ -3,19 +3,19 @@ import { getNamedType, GraphQLField, GraphQLObjectType } from 'graphql';
 import {
     BasicType, BinaryOperationQueryNode, BinaryOperator, ConditionalQueryNode, EntitiesQueryNode, FieldQueryNode,
     FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode, NullQueryNode, ObjectQueryNode,
-    PropertySpecification, QueryNode, TransformListQueryNode, TypeCheckQueryNode, VariableQueryNode
+    PropertySpecification, QueryNode, TransformListQueryNode, TypeCheckQueryNode, VariableAssignmentQueryNode,
+    VariableQueryNode
 } from './definition';
 import { createCursorQueryNode, createOrderSpecification, createPaginationFilterNode } from './pagination-and-sorting';
 import { createFilterNode } from './filtering';
-import {
-    AFTER_ARG, ALL_ENTITIES_FIELD_PREFIX, CURSOR_FIELD, FILTER_ARG, FIRST_ARG, ORDER_BY_ARG
-} from '../schema/schema-defaults';
+import { ALL_ENTITIES_FIELD_PREFIX, CURSOR_FIELD, FILTER_ARG, FIRST_ARG } from '../schema/schema-defaults';
 import { decapitalize, objectEntries } from '../utils/utils';
 import { createNonListFieldValueNode, createScalarFieldValueNode } from './fields';
 import { isListType } from '../graphql/schema-utils';
 import { isReferenceField, isRelationField } from '../schema/schema-utils';
 import { getEdgeType } from '../schema/edges';
 import { createListMetaNode } from './list-meta';
+import { extractVariableAssignments, extractVariableAssignmentsInOrderSpecification } from './query-tree-utils';
 
 /**
  * Creates a QueryNode for a field of the root query type
@@ -158,13 +158,21 @@ function createConditionalObjectNode(fieldSelections: FieldSelection[], contextN
 }
 
 function createTransformListQueryNode(fieldRequest: FieldRequest, listNode: QueryNode, fieldRequestStack: FieldRequest[]): QueryNode {
+    let variableAssignmentNodes: VariableAssignmentQueryNode[] = [];
     const objectType = getNamedType(fieldRequest.field.type) as GraphQLObjectType;
-    const itemVarNode = new VariableQueryNode(decapitalize(objectType.name));
-    const orderBy = createOrderSpecification(fieldRequest.args[ORDER_BY_ARG], objectType, fieldRequest, itemVarNode);
-    const basicFilterNode = createFilterNode(fieldRequest.args[FILTER_ARG], objectType, itemVarNode);
-    const paginationFilterNode = createPaginationFilterNode(fieldRequest.args[AFTER_ARG], orderBy);
-    const filterNode = new BinaryOperationQueryNode(basicFilterNode, BinaryOperator.AND, paginationFilterNode);
-    const innerNode = createEntityObjectNode(fieldRequest.selectionSet, itemVarNode, fieldRequestStack);
+    const itemVariable = new VariableQueryNode(decapitalize(objectType.name));
+    let orderBy = createOrderSpecification(objectType, fieldRequest, itemVariable);
+    const basicFilterNode = createFilterNode(fieldRequest.args[FILTER_ARG], objectType, itemVariable);
+    const paginationFilterNode = createPaginationFilterNode(objectType, fieldRequest, itemVariable);
+    let filterNode: QueryNode = new BinaryOperationQueryNode(basicFilterNode, BinaryOperator.AND, paginationFilterNode);
+    let innerNode: QueryNode = createEntityObjectNode(fieldRequest.selectionSet, itemVariable, fieldRequestStack);
+
+    // pull the variables assignments up as they might have been duplicated
+    orderBy = extractVariableAssignmentsInOrderSpecification(orderBy, variableAssignmentNodes);
+    filterNode = extractVariableAssignments(filterNode, variableAssignmentNodes);
+    innerNode = extractVariableAssignments(innerNode, variableAssignmentNodes);
+    variableAssignmentNodes = Array.from(new Set(variableAssignmentNodes)); // deduplicate
+
     const maxCount = fieldRequest.args[FIRST_ARG];
     return new TransformListQueryNode({
         listNode,
@@ -172,7 +180,8 @@ function createTransformListQueryNode(fieldRequest: FieldRequest, listNode: Quer
         filterNode,
         orderBy,
         maxCount,
-        itemVariable: itemVarNode
+        itemVariable,
+        variableAssignmentNodes
     });
 }
 

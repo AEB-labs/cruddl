@@ -1,25 +1,23 @@
 import {
     AddEdgesQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode,
-    ConstBoolQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeFilter, EdgeIdentifier, EntitiesQueryNode,
-    FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, RootEntityIDQueryNode, ListQueryNode, LiteralQueryNode,
-    MergeObjectsQueryNode,
-    ObjectQueryNode, OrderDirection, OrderSpecification, PartialEdgeIdentifier, QueryNode, RemoveEdgesQueryNode,
-    SetEdgeQueryNode, TransformListQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator,
-    UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode, CountQueryNode, OrderClause,
-    PropertySpecification
+    ConstBoolQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeFilter, EdgeIdentifier,
+    EntitiesQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode,
+    MergeObjectsQueryNode, ObjectQueryNode, OrderDirection, OrderSpecification, PartialEdgeIdentifier, QueryNode,
+    RemoveEdgesQueryNode, RootEntityIDQueryNode, SetEdgeQueryNode, TransformListQueryNode, TypeCheckQueryNode,
+    UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode
 } from '../../query/definition';
 import { aql, AQLFragment, AQLVariable } from './aql';
 import { getCollectionNameForEdge, getCollectionNameForRootEntity } from './arango-basics';
 import { GraphQLNamedType, GraphQLObjectType } from 'graphql';
 import { EdgeType } from '../../schema/edges';
-import { isNullOrUndefined } from 'util';
+import { simplifyBooleans } from '../../query/query-tree-utils';
 
 class QueryContext {
     private variableMap = new Map<VariableQueryNode, AQLVariable>();
 
     introduceVariable(variableNode: VariableQueryNode): QueryContext {
         if (this.variableMap.has(variableNode)) {
-            throw new Error(`Variable ${variableNode.describe()} is introduced twice`);
+            throw new Error(`Variable ${variableNode} is introduced twice`);
         }
         const variable = new AQLVariable(variableNode.label);
         const newMap = new Map(this.variableMap);
@@ -152,14 +150,7 @@ const processors : { [name: string]: NodeProcessor<any> } = {
 
         let filter = simplifyBooleans(node.filterNode);
 
-        // optimization: declare variables in FOR loop to avoid subqueries of pattern FIRST(LET ... RETURN ...)
-        // (note: we still have subqueries for FIRST Statements, so maybe this does not do much performance wise, but it looks cleaner)
-        const variableAssignments: VariableAssignmentQueryNode[] = [];
-        filter = extractVariableAssignments(filter, variableAssignments);
-        const orderBy = extractVariableAssignmentsInOrderSpecification(node.orderBy, variableAssignments);
-        const inner = extractVariableAssignments(node.innerNode, variableAssignments);
-        const variableAssignmentAQL = variableAssignments.map(assignmentNode => {
-            // modify context variable in place so that later variable assignment nodes can access earlier variables
+        const variableAssignmentAQL = node.variableAssignmentNodes.map(assignmentNode => {
             itemContext = itemContext.introduceVariable(assignmentNode.variableNode);
             const variable = itemContext.getVariable(assignmentNode.variableNode);
             return aql`LET ${variable} = ${processNode(assignmentNode.variableValueNode, itemContext)}`;
@@ -170,9 +161,9 @@ const processors : { [name: string]: NodeProcessor<any> } = {
             aql`IN ${list}`,
             aql.lines(...variableAssignmentAQL),
             (filter instanceof ConstBoolQueryNode && filter.value) ? aql`` : aql`FILTER ${processNode(filter, itemContext)}`,
-            generateSortAQL(orderBy, itemContext),
+            generateSortAQL(node.orderBy, itemContext),
             node.maxCount != undefined ? aql`LIMIT ${node.maxCount}` : aql``,
-            aql`RETURN ${processNode(inner, itemContext)}`
+            aql`RETURN ${processNode(node.innerNode, itemContext)}`
         );
     },
 
@@ -332,7 +323,7 @@ const processors : { [name: string]: NodeProcessor<any> } = {
             aql`IN ${getCollectionForEdge(node.edgeType)}`,
             aql`FILTER ${formatEdgeFilter(node.edgeType, node.edgeFilter, edgeVar, context)}`,
             aql`REMOVE ${edgeVar}`,
-            aql`IN ${getCollectionForEdge(node.edgeType)}`,
+            aql`IN ${getCollectionForEdge(node.edgeType)}`
         );
     },
 
@@ -342,7 +333,7 @@ const processors : { [name: string]: NodeProcessor<any> } = {
             aql`UPSERT ${formatEdge(node.edgeType, node.existingEdge, context)}`,
             aql`INSERT ${formatEdge(node.edgeType, node.newEdge, context)}`,
             aql`UPDATE ${formatEdge(node.edgeType, node.newEdge, context)}`,
-            aql`IN ${getCollectionForEdge(node.edgeType)}`,
+            aql`IN ${getCollectionForEdge(node.edgeType)}`
         );
     }
 };
@@ -462,121 +453,9 @@ export function getCollectionForEdge(edgeType: EdgeType) {
 }
 
 /**
- * Traverses recursively through Unary/Binary operations, extracts all variable definitions and replaces them by their
- * variable nodes
- * @param {QueryNode} node
- * @param variableAssignmentsList: (will be modified) list to which to add the variable assignment nodes
- */
-function extractVariableAssignments(node: QueryNode, variableAssignmentsList: VariableAssignmentQueryNode[]): QueryNode {
-    if (node instanceof UnaryOperationQueryNode) {
-        return new UnaryOperationQueryNode(extractVariableAssignments(node.valueNode, variableAssignmentsList), node.operator);
-    }
-    if (node instanceof BinaryOperationQueryNode) {
-        return new BinaryOperationQueryNode(
-            extractVariableAssignments(node.lhs, variableAssignmentsList),
-            node.operator,
-            extractVariableAssignments(node.rhs, variableAssignmentsList));
-    }
-    if (node instanceof VariableAssignmentQueryNode) {
-        variableAssignmentsList.push(node);
-        return node.resultNode;
-    }
-    if (node instanceof FirstOfListQueryNode) {
-        return new FirstOfListQueryNode(extractVariableAssignments(node.listNode, variableAssignmentsList));
-    }
-    if (node instanceof FieldQueryNode) {
-        return new FieldQueryNode(extractVariableAssignments(node.objectNode, variableAssignmentsList), node.field);
-    }
-    if (node instanceof RootEntityIDQueryNode) {
-        return new RootEntityIDQueryNode(extractVariableAssignments(node.objectNode, variableAssignmentsList));
-    }
-    if (node instanceof ObjectQueryNode) {
-        return new ObjectQueryNode(node.properties.map(p => new PropertySpecification(p.propertyName, extractVariableAssignments(p.valueNode, variableAssignmentsList))));
-    }
-    return node;
-}
-
-function extractVariableAssignmentsInOrderSpecification(orderSpecification: OrderSpecification, variableAssignmentsList: VariableAssignmentQueryNode[]): OrderSpecification {
-    return new OrderSpecification(orderSpecification.clauses
-        .map(clause => new OrderClause(extractVariableAssignments(clause.valueNode, variableAssignmentsList), clause.direction)));
-}
-
-/**
  * Processes a FollowEdgeQueryNode into a fragment to be used within `IN ...` (as opposed to be used in a general
  * expression context)
  */
 function getSimpleFollowEdgeFragment(node: FollowEdgeQueryNode, context: QueryContext): AQLFragment {
     return aql`ANY ${processNode(node.sourceEntityNode, context)} ${getCollectionForEdge(node.edgeType)}`;
-}
-
-/**
- * Simplifies a boolean expression (does not recurse into non-boolean-related nodes)
- */
-function simplifyBooleans(node: QueryNode): QueryNode {
-    if (node instanceof UnaryOperationQueryNode && node.operator == UnaryOperator.NOT) {
-        const inner = simplifyBooleans(node.valueNode);
-        if (inner instanceof ConstBoolQueryNode) {
-            return new ConstBoolQueryNode(!inner.value);
-        }
-        return inner;
-    }
-    if (node instanceof BinaryOperationQueryNode) {
-        const lhs = simplifyBooleans(node.lhs);
-        const rhs = simplifyBooleans(node.rhs);
-        if (node.operator == BinaryOperator.AND) {
-            if (lhs instanceof ConstBoolQueryNode) {
-                if (rhs instanceof ConstBoolQueryNode) {
-                    // constant evaluation
-                    return ConstBoolQueryNode.for(lhs.value && rhs.value);
-                }
-                if (lhs.value == false) {
-                    // FALSE && anything == FALSE
-                    return ConstBoolQueryNode.FALSE;
-                }
-                if (lhs.value == true) {
-                    // TRUE && other == other
-                    return rhs;
-                }
-            }
-            if (rhs instanceof ConstBoolQueryNode) {
-                if (rhs.value == false) {
-                    // anything && FALSE == FALSE
-                    return ConstBoolQueryNode.FALSE;
-                }
-                // const case is handled above
-                if (rhs.value == true) {
-                    // other && TRUE == other
-                    return lhs;
-                }
-            }
-        }
-
-        if (node.operator == BinaryOperator.OR) {
-            if (lhs instanceof ConstBoolQueryNode) {
-                if (rhs instanceof ConstBoolQueryNode) {
-                    // constant evaluation
-                    return ConstBoolQueryNode.for(lhs.value || rhs.value);
-                }
-                if (lhs.value == true) {
-                    // TRUE || anything == TRUE
-                    return ConstBoolQueryNode.TRUE;
-                }
-                if (lhs.value == false) {
-                    // FALSE || other == other
-                    return rhs;
-                }
-            }
-            if (rhs instanceof ConstBoolQueryNode) {
-                if (rhs.value == true) {
-                    // anything || TRUE == TRUE
-                    return ConstBoolQueryNode.TRUE;
-                }
-                if (rhs.value == false) {
-                    // other || FALSE == other
-                    return lhs;
-                }
-            }
-        }
-    }
-    return node;
 }
