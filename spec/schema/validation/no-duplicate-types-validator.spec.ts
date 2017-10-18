@@ -1,6 +1,9 @@
 import {validateModel, ValidationResult} from "../../../src/schema/preparation/ast-validator";
 import {parse} from "graphql";
-import {NoDuplicateTypesValidator} from "../../../src/schema/preparation/ast-validation-modules/no-duplicate-types-validator";
+import {
+    NoDuplicateTypesValidator,
+    VALIDATION_ERROR_DUPLICATE_TYPE_NAMES
+} from "../../../src/schema/preparation/ast-validation-modules/no-duplicate-types-validator";
 
 const modelWithoutDuplicates = `
             type Stuff {
@@ -22,9 +25,11 @@ describe('no duplicate type definition validator', () => {
         const ast = parse(modelWithDuplicate);
         const validationResult = new ValidationResult(new NoDuplicateTypesValidator().validate(ast));
         expect(validationResult.hasErrors()).toBeTruthy();
+        expect(validationResult.messages.length).toBe(1);
+        expect(validationResult.messages[0].msgKey).toBe(VALIDATION_ERROR_DUPLICATE_TYPE_NAMES);
     });
 
-    it('ignores unique types', () => {
+    it('accepts unique types', () => {
         const ast = parse(modelWithoutDuplicates);
         const validationResult = new ValidationResult(new NoDuplicateTypesValidator().validate(ast));
         expect(validationResult.hasErrors()).toBeFalsy();

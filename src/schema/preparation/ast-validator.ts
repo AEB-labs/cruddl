@@ -3,10 +3,12 @@ import {Severity, ValidationMessage} from "./validation-message";
 import {flatMap} from "../../utils/utils";
 import {NoDuplicateTypesValidator} from "./ast-validation-modules/no-duplicate-types-validator";
 import {OnlyAllowedTypesValidator} from "./ast-validation-modules/only-allowed-types-validator";
+import {KeyFieldValidator} from "./ast-validation-modules/key-field-validator";
 
 const validators = [
     NoDuplicateTypesValidator,
-    OnlyAllowedTypesValidator
+    OnlyAllowedTypesValidator,
+    KeyFieldValidator
 ];
 
 export interface ASTValidator {
