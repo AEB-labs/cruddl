@@ -38,7 +38,15 @@
         "title": "Scalable SQL and NoSQL data stores",
         "literatureReferences": [
           {
-            "paper": null,
+            "paper": {
+              "title": "Brewer's conjecture and the feasibility of consistent, available, partition-tolerant web services",
+              "publishDate": "2017-04-05",
+              "isPublished": true,
+              "tags": [
+                "cap-theorem",
+                "databases"
+              ]
+            },
             "authors": [
               "Seth Gilbert",
               "Nancy Lynch"

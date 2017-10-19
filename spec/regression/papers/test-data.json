@@ -3,6 +3,7 @@
     "Paper": [
       {
         "@id": "1",
+        "key": "OOM",
         "title": "Object-oriented modeling and design",
         "publishDate": "2017-04-05",
         "isPublished": true,
@@ -15,6 +16,7 @@
       },
       {
         "@id": "2",
+        "key": "UML",
         "literatureReferences": [],
         "tags": [
           "uml",
@@ -24,6 +26,7 @@
       },
       {
         "@id": "3",
+        "key": "NoSQL",
         "title": "Will NoSQL databases live up to their promise?",
         "publishDate": "2017-04-05",
         "isPublished": true,
@@ -34,6 +37,7 @@
       },
       {
         "@id": "4",
+        "key": "Part",
         "title": "Brewer's conjecture and the feasibility of consistent, available, partition-tolerant web services",
         "publishDate": "2017-04-05",
         "isPublished": true,
@@ -61,6 +65,7 @@
       },
       {
         "@id": "5",
+        "key": "Scal",
         "isPublished": true,
         "publishDate": "2017-04-05",
         "tags": [
@@ -69,8 +74,7 @@
         "title": "Scalable SQL and NoSQL data stores",
         "literatureReferences": [
           {
-            //"paper": "@ids/Paper/4",
-            "title": "Brewer’s conjecture and the feasibility of consistent, available, and partition-tolerant web services",
+            "paper": "Part",
             "authors": [
               "Seth Gilbert",
               "Nancy Lynch"

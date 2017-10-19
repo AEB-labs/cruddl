@@ -1,5 +1,6 @@
 type Paper @rootEntity {
-    title: String @key # need a key field for the reference
+    key: String @key # need a key field for the reference
+    title: String
     publishDate: String #datetime
     isPublished: Boolean
     literatureReferences: [LiteratureReference]
