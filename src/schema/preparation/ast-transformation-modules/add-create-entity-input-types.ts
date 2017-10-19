@@ -79,7 +79,7 @@ export class AddCreateEntityInputTypesTransformer implements ASTTransformer {
                 }
                 const namedTypeOfList = getNamedTypeDefinitionAST(ast, effectiveType.name.value);
                 if (namedTypeOfList.kind === OBJECT_TYPE_DEFINITION) {
-                    // references are referred via @key type
+                    // relations are referenced via IDs
                     if (hasDirectiveWithName(field, RELATION_DIRECTIVE)) {
                         return buildInputValueListNode(field.name.value, GraphQLID.name, field.loc)
                     }

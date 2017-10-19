@@ -8,7 +8,9 @@ import {
     ObjectTypeDefinitionNode,
     TypeNode
 } from "graphql";
-import {getEntityExtensionTypes, getNamedTypeDefinitionAST, hasDirectiveWithName} from "../../schema-utils";
+import {
+    getEntityExtensionTypes, getNamedTypeDefinitionAST, getReferenceKeyField, hasDirectiveWithName
+} from '../../schema-utils';
 import {
     INPUT_OBJECT_TYPE_DEFINITION,
     LIST_TYPE,
@@ -17,7 +19,7 @@ import {
     OBJECT_TYPE_DEFINITION
 } from "graphql/language/kinds";
 import {getCreateInputTypeName} from "../../../graphql/names";
-import {ROOT_ENTITY_DIRECTIVE} from "../../schema-defaults";
+import { REFERENCE_DIRECTIVE, ROOT_ENTITY_DIRECTIVE } from '../../schema-defaults';
 import {buildInputValueListNode, buildInputValueNode} from "./add-input-type-transformation-helper";
 
 export class AddExtensionInputTypesTransformer implements ASTTransformer {
@@ -53,6 +55,8 @@ export class AddExtensionInputTypesTransformer implements ASTTransformer {
                         if (hasDirectiveWithName(namedType, ROOT_ENTITY_DIRECTIVE)) {
                             // referenced by foreign key
                             return buildInputValueNode(field.name.value, GraphQLID.name)
+                        } else if (hasDirectiveWithName(field, REFERENCE_DIRECTIVE)) {
+                            return buildInputValueNode(field.name.value, getReferenceKeyField(namedType));
                         } else {
                             return buildInputValueNode(field.name.value, getCreateInputTypeName(namedType))
                         }

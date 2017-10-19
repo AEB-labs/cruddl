@@ -3,12 +3,15 @@ import {
     DocumentNode, FieldDefinitionNode, InputObjectTypeDefinitionNode, InputValueDefinitionNode,
     ObjectTypeDefinitionNode, TypeNode
 } from 'graphql';
-import { getNamedTypeDefinitionAST, getValueObjectTypes } from '../../schema-utils';
+import {
+    getNamedTypeDefinitionAST, getReferenceKeyField, getValueObjectTypes, hasDirectiveWithName
+} from '../../schema-utils';
 import {
     INPUT_OBJECT_TYPE_DEFINITION, LIST_TYPE, NAMED_TYPE, NON_NULL_TYPE, OBJECT_TYPE_DEFINITION
 } from 'graphql/language/kinds';
 import { getCreateInputTypeName } from '../../../graphql/names';
 import { buildInputValueListNode, buildInputValueNode } from './add-input-type-transformation-helper';
+import { REFERENCE_DIRECTIVE } from '../../schema-defaults';
 
 export class AddValueObjectInputTypesTransformer implements ASTTransformer {
 
@@ -40,6 +43,9 @@ export class AddValueObjectInputTypesTransformer implements ASTTransformer {
                 const namedType = getNamedTypeDefinitionAST(ast, type.name.value);
                 switch (namedType.kind) {
                     case OBJECT_TYPE_DEFINITION:
+                        if (hasDirectiveWithName(field, REFERENCE_DIRECTIVE)) {
+                            return buildInputValueNode(field.name.value, getReferenceKeyField(namedType));
+                        }
                         return buildInputValueNode(field.name.value, getCreateInputTypeName(namedType));
                     default:
                         return buildInputValueNode(field.name.value, type.name.value, field.loc);
