@@ -6,11 +6,25 @@ import { AnyValue, compact, PlainObject } from '../utils/utils';
 
 export function checkAuthorization(operation: DistilledOperation, requestRoles: string[]): AuthorizationCheckResult {
     const errorList: AuthorizationError[] = [];
-    const newSelectionSet = checkAuthorizationForSelectionSet(operation.selectionSet, errorList, {
-        accessKind: operation.operation == 'mutation' ? AccessKind.WRITE : AccessKind.READ,
+    const accessKind = operation.operation == 'mutation' ? AccessKind.WRITE : AccessKind.READ;
+    let newSelectionSet = checkAuthorizationForSelectionSet(operation.selectionSet, errorList, {
+        accessKind,
         requestRoles,
         path: []
     });
+    if (errorList.length && operation.operation == 'mutation' && newSelectionSet.length != operation.selectionSet.length) {
+        // don't do partial mutations - add errors for the other fields
+        // but it's ok if only some of its queries failed
+        errorList.push(...newSelectionSet.map(sel => new AuthorizationError({
+            isErrorBecauseOtherMutationFieldHasErrors: true,
+            allowedRoles: [],
+            accessKind,
+            field: sel.fieldRequest.field,
+            requestRoles,
+            path: [ sel.propertyName ]
+        })));
+        newSelectionSet = [];
+    }
     const sanitizedOperation = errorList.length ? new DistilledOperation(operation.operation, newSelectionSet) : operation;
     return new AuthorizationCheckResult(sanitizedOperation, errorList);
 }
@@ -85,7 +99,8 @@ export class AuthorizationError {
         field: GraphQLField<any, any>,
         accessKind: AccessKind,
         allowedRoles: string[],
-        requestRoles: string[]
+        requestRoles: string[],
+        isErrorBecauseOtherMutationFieldHasErrors?: boolean
     }) {
         this.path = params.path;
         this.argumentErrors = params.argumentErrors || [];
@@ -93,6 +108,7 @@ export class AuthorizationError {
         this.accessKind = params.accessKind;
         this.allowedRoles = params.allowedRoles;
         this.requestRoles = params.requestRoles;
+        this.isSkippedBecauseOtherMutationFieldHasErrors = params.isErrorBecauseOtherMutationFieldHasErrors || false;
     }
 
     public readonly path: string[];
@@ -101,8 +117,12 @@ export class AuthorizationError {
     public readonly accessKind: AccessKind;
     public readonly allowedRoles: string[];
     public readonly requestRoles: string[];
+    public readonly isSkippedBecauseOtherMutationFieldHasErrors: boolean;
 
     toString() {
+        if (this.isSkippedBecauseOtherMutationFieldHasErrors) {
+            return `${this.path.join('.')} skipped because other mutation fields have authorization errors`;
+        }
         let argPart = '';
         if (this.argumentErrors.length) {
             argPart += ' with argument' + (this.argumentErrors.length > 1 ? 's' : '') + ' ' +
