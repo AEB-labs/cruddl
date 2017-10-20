@@ -1,0 +1,15 @@
+{
+    aDelivery: Delivery(id: "@{ids/Delivery/1}") {
+        nr: deliveryNumber
+        oneItem: items(first: 1) {
+            itemNumber
+        }
+        items {
+            itemNumber
+        }
+    }
+
+    anotherDelivery: Delivery(id: "@{ids/Delivery/2}") {
+        nr: deliveryNumber
+    }
+}

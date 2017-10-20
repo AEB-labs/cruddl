@@ -6,7 +6,7 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "rimraf dist && tsc && dependency-check ./package.json",
-    "prepublish": "npm run build",
+    "prepublishOnly": "npm run build",
     "test": "tsc --noEmit --skipLibCheck && node momo-test",
     "test:dropdb": "ts-node ./spec/regression/drop-test-db.ts",
     "test:perf": "node momo-bench",
@@ -24,7 +24,7 @@
     "@types/body-parser": "^1.16.3",
     "@types/colors": "^1.1.3",
     "@types/cors": "^2.8.1",
-    "@types/graphql": "~0.10.0",
+    "@types/graphql": "~0.11.5",
     "@types/jasmine": "^2.5.41",
     "@types/lodash": "^4.14.77",
     "@types/node": "^8.0.28",
@@ -35,7 +35,7 @@
     "cors": "^2.8.3",
     "dependency-check": "^2.9.1",
     "express": "~4.15.4",
-    "graphql": "~0.10.0",
+    "graphql": "~0.11.7",
     "graphql-server-core": "~1.1.0",
     "graphql-server-express": "^1.1.2",
     "jasmine": "^2.5.3",
@@ -49,10 +49,11 @@
   "dependencies": {
     "arangojs": "^5.7.0",
     "colors": "^1.1.2",
+    "graphql-transformer": "^0.1.2",
     "jsondiffpatch": "^0.2.4",
+    "lodash": "^4.17.4",
     "pluralize": "^7.0.0",
     "strip-json-comments": "^2.0.1",
-    "uuid": "^3.1.0",
-    "lodash": "^4.17.4"
+    "uuid": "^3.1.0"
   }
 }

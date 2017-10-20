@@ -1,4 +1,5 @@
 import {
+    defaultFieldResolver,
     FragmentDefinitionNode, GraphQLFieldConfigMap, GraphQLFieldResolver, GraphQLObjectType, GraphQLSchema,
     OperationDefinitionNode
 } from 'graphql';
@@ -33,13 +34,17 @@ export function addOperationBasedResolvers(schema: GraphQLSchema, operationResol
         const newFields: GraphQLFieldConfigMap<any, any> = {};
         for (const fieldName in type.getFields()) {
             const field = type.getFields()[fieldName];
+            const oldResolver = field.resolve || defaultFieldResolver;
             newFields[fieldName] = {
                 type: field.type,
                 description: field.description,
                 deprecationReason: field.deprecationReason,
                 args: arrayToObject(field.args, arg => arg.name),
-                resolve: (a,b,c,info) => resolveOp(a,b,c,info).then((res: any) => res[getAliasOrName(info.fieldNodes[0])])
-                // TODO add astNode once in typings
+                resolve: async (oldSource, args, context, info) => {
+                    const newSource = await resolveOp(oldSource,args,context,info);
+                    return oldResolver(newSource, args, context, info);
+                },
+                astNode: field.astNode
             };
         }
 

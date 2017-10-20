@@ -225,7 +225,7 @@ function getTypeDefinitionNode(type: GraphQLType): ObjectTypeDefinitionNode|unde
 }
 
 function getFieldDefinitionNode(field: GraphQLField<any, any>): FieldDefinitionNode {
-    const astNode: FieldDefinitionNode = (field as any).astNode;
+    const astNode = field.astNode;
     if (!astNode) {
         throw new Error(`astNode on field ${field.name} expected but missing`);
     }
