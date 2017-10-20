@@ -15,6 +15,25 @@ export function addQueryResolvers(schema: GraphQLSchema, databaseAdapter: Databa
 
     const authorizationCheckResultsByContext = new WeakMap<any, AuthorizationCheckResult>();
 
+    // this needs to be first (deeper/later in the chain) because it authorizationCheckResultsByContext needs to be filled already
+    schema = transformSchema(schema, {
+        transformField(config) {
+            return {
+                ...config,
+                resolve(source, args, context, info) {
+                    const result = authorizationCheckResultsByContext.get(context);
+                    if (result) {
+                        const errors = result.errors.filter(error => comparePath(info.path, error.path));
+                        if (errors.length) {
+                            throw new GraphQLError(errors.join(', '));
+                        }
+                    }
+                    return (config.resolve || defaultFieldResolver)(source, args, context, info);
+                }
+            }
+        }
+    });
+
     schema = addOperationBasedResolvers(schema, async operationInfo => {
         try {
             console.log(print(operationInfo.operation));
@@ -36,24 +55,6 @@ export function addQueryResolvers(schema: GraphQLSchema, databaseAdapter: Databa
         } catch (e) {
             console.error(e.stack);
             throw e;
-        }
-    });
-
-    schema = transformSchema(schema, {
-        transformField(config) {
-            return {
-                ...config,
-                resolve(source, args, context, info) {
-                    const result = authorizationCheckResultsByContext.get(context);
-                    if (result) {
-                        const errors = result.errors.filter(error => comparePath(info.path, error.path));
-                        if (errors.length) {
-                            throw new GraphQLError(errors.join(', '));
-                        }
-                    }
-                    return (config.resolve || defaultFieldResolver)(source, args, context, info);
-                }
-            }
         }
     });
 
