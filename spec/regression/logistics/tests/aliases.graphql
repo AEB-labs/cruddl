@@ -1,7 +1,7 @@
 {
     aDelivery: Delivery(id: "@{ids/Delivery/1}") {
         nr: deliveryNumber
-        oneItem: items(first: 1) {
+        oneItem: items(filter: { itemNumber: "1001" }) {
             itemNumber
         }
         items {
