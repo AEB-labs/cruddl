@@ -66,3 +66,7 @@ export const KEY_FIELD_DIRECTIVE = 'key'
 export const COUNT_META_FIELD = 'count';
 
 export const MUTATION_INPUT_ARG = 'input';export const MUTATION_ID_ARG = 'id';
+
+export const ROLES_DIRECTIVE = 'roles';
+export const ROLES_READ_ARG = 'read';
+export const ROLes_READ_WRITE_ARG = 'readWrite';

@@ -7,6 +7,8 @@ type Delivery @rootEntity {
     items: [DeliveryItem]
     handlingUnits: [HandlingUnit] @relation
     destinationCountry: Country @reference
+
+    totalValue: String @roles(readWrite: ["accounting"])
 }
 
 type DeliveryItem @childEntity {

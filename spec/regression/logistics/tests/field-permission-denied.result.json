@@ -1,0 +1,23 @@
+{
+  "errors": [
+    {
+      "message": "Not authorized to read Delivery.totalValue",
+      "locations": [
+        {
+          "line": 4,
+          "column": 9
+        }
+      ],
+      "path": [
+        "Delivery",
+        "totalValue"
+      ]
+    }
+  ],
+  "data": {
+    "Delivery": {
+      "deliveryNumber": "1000173",
+      "totalValue": null
+    }
+  }
+}

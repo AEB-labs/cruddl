@@ -1,14 +1,15 @@
 import {
+    DirectiveNode,
     DocumentNode,
     EnumTypeDefinitionNode,
-    FieldDefinitionNode, GraphQLField, GraphQLObjectType, GraphQLType,
+    FieldDefinitionNode, GraphQLField, GraphQLInputField, GraphQLObjectType, GraphQLType,
     InputObjectTypeDefinitionNode,
     InputValueDefinitionNode,
     Location,
     NameNode,
     ObjectTypeDefinitionNode,
     ScalarTypeDefinitionNode,
-    TypeNode
+    TypeNode, ValueNode
 } from 'graphql';
 import {
     ENUM_TYPE_DEFINITION,
@@ -24,7 +25,7 @@ import {
 import {
     CHILD_ENTITY_DIRECTIVE, ENTITY_CREATED_AT,
     ENTITY_EXTENSION_DIRECTIVE, ENTITY_UPDATED_AT, ID_FIELD, KEY_FIELD_DIRECTIVE, REFERENCE_DIRECTIVE,
-    RELATION_DIRECTIVE,
+    RELATION_DIRECTIVE, ROLES_DIRECTIVE, ROLES_READ_ARG, ROLes_READ_WRITE_ARG,
     ROOT_ENTITY_DIRECTIVE,
     VALUE_OBJECT_DIRECTIVE
 } from './schema-defaults';
@@ -206,15 +207,19 @@ export function buildNameNode(name: string): NameNode {
     return { kind: NAME, value: name };
 }
 
-export function hasDirectiveWithName(typeOrField: ObjectTypeDefinitionNode|FieldDefinitionNode, directiveName: string): boolean {
+export function findDirectiveWithName(typeOrField: ObjectTypeDefinitionNode|FieldDefinitionNode|InputValueDefinitionNode, directiveName: string): DirectiveNode|undefined {
     // remove leading @
     if (directiveName[0] === '@') {
         directiveName = directiveName.substr(1, directiveName.length - 1);
     }
     if (!typeOrField.directives) {
-        return false;
+        return undefined;
     }
-    return typeOrField.directives.some(directive => directive.name.value === directiveName);
+    return typeOrField.directives.find(directive => directive.name.value === directiveName);
+}
+
+export function hasDirectiveWithName(typeOrField: ObjectTypeDefinitionNode|FieldDefinitionNode|InputValueDefinitionNode, directiveName: string): boolean {
+    return !!findDirectiveWithName(typeOrField, directiveName);
 }
 
 function getTypeDefinitionNode(type: GraphQLType): ObjectTypeDefinitionNode|undefined {
@@ -225,6 +230,22 @@ function getTypeDefinitionNode(type: GraphQLType): ObjectTypeDefinitionNode|unde
 }
 
 function getFieldDefinitionNode(field: GraphQLField<any, any>): FieldDefinitionNode {
+    const astNode = field.astNode;
+    if (!astNode) {
+        throw new Error(`astNode on field ${field.name} expected but missing`);
+    }
+    return astNode;
+}
+
+function getInputFieldDefinitionNode(field: GraphQLInputField): InputValueDefinitionNode {
+    const astNode = field.astNode;
+    if (!astNode) {
+        throw new Error(`astNode on input field ${field.name} expected but missing`);
+    }
+    return astNode;
+}
+
+function getInputOutputFieldDefinitionNode(field: GraphQLInputField|GraphQLField<any, any>): InputValueDefinitionNode|FieldDefinitionNode {
     const astNode = field.astNode;
     if (!astNode) {
         throw new Error(`astNode on field ${field.name} expected but missing`);
@@ -278,6 +299,50 @@ export function isReferenceField(field: GraphQLField<any, any>) {
 export function isKeyField(field: GraphQLField<any, any>) {
     const astNode = getFieldDefinitionNode(field);
     return hasDirectiveWithName(astNode, KEY_FIELD_DIRECTIVE);
+}
+
+function getStringListValues(value: ValueNode): string[] {
+    if (value.kind == 'ListValue') {
+        return value.values.map(value => {
+            if (value.kind == 'StringValue') {
+                return value.value;
+            }
+            throw new Error(`Expected string, got ${value.kind}`)
+        });
+    }
+    if (value.kind == 'StringValue') {
+        return [ value.value ];
+    }
+    throw new Error(`Expected string or list of string, got ${value.kind}`);
+}
+
+export function getAllowedReadRoles(field: GraphQLField<any, any>|GraphQLInputField): string[]|undefined {
+    const readRoles = getAllowedRoles(field, ROLES_READ_ARG);
+    const readWriteRoles = getAllowedRoles(field, ROLes_READ_WRITE_ARG);
+    if (readRoles && readWriteRoles) {
+        return Array.from(new Set([...readRoles, ...readWriteRoles]));
+    }
+    return readRoles || readWriteRoles;
+}
+
+export function getAllowedWriteRoles(field: GraphQLField<any, any>|GraphQLInputField): string[]|undefined {
+    return getAllowedRoles(field, ROLes_READ_WRITE_ARG);
+}
+
+function getAllowedRoles(field: GraphQLField<any, any>|GraphQLInputField, argName: string): string[]|undefined {
+    const astNode = getInputOutputFieldDefinitionNode(field);
+    const directive = findDirectiveWithName(astNode, ROLES_DIRECTIVE);
+    if (directive && directive.arguments) {
+        const arg = directive.arguments.find(arg => arg.name.value == argName);
+        if (arg) {
+            return getStringListValues(arg.value);
+        }
+
+        // if the directive is specified but an arg is missing, this default to [] (default to secure option)
+        return [];
+    }
+    // directive missing, so no restriction
+    return undefined;
 }
 
 /**

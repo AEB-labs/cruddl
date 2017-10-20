@@ -7,6 +7,8 @@ type Delivery @rootEntity @indices(indices: [{ fields: ["items", "items[*]."]}],
     items: [DeliveryItem]
     handlingUnits: [HandlingUnit] @relation
     roles: [String] @validate(every: "item.startsWith('forwarder-')")
+
+    totalValue: String @roles(readWrite: ["accounting"])
 }
 
 type DeliveryItem @childEntity {

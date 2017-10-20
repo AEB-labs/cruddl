@@ -1,0 +1,6 @@
+query {
+    Delivery(id: "@{ids/Delivery/1}") {
+        deliveryNumber
+        totalValue
+    }
+}

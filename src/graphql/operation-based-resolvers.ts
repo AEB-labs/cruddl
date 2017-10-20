@@ -11,6 +11,7 @@ export interface OperationParams {
     operation: OperationDefinitionNode
     variableValues: { [name: string]: any }
     fragments: { [fragmentName: string]: FragmentDefinitionNode }
+    context: any
 }
 
 /**
@@ -21,12 +22,13 @@ export interface OperationParams {
 export function addOperationBasedResolvers(schema: GraphQLSchema, operationResolver: (params: OperationParams) => Promise<any>): GraphQLSchema {
     function convertType(type: GraphQLObjectType): GraphQLObjectType {
         const promises = new WeakMap<OperationDefinitionNode, Promise<any>>();
-        const resolveOp: GraphQLFieldResolver<any, any> = (a, b, c, info) => {
+        const resolveOp: GraphQLFieldResolver<any, any> = (a, b, context, info) => {
             const cached = promises.get(info.operation);
             if (cached) {
                 return cached;
             }
-            const promise = operationResolver(info);
+            const opInfo = { ...info, context };
+            const promise = operationResolver(opInfo);
             promises.set(info.operation, promise);
             return promise;
         };

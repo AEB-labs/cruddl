@@ -57,6 +57,7 @@ export class RegressionSuite {
         const gqlPath = path.resolve(this.testsPath, name + '.graphql');
         const resultPath = path.resolve(this.testsPath, name + '.result.json');
         const variablesPath = path.resolve(this.testsPath, name + '.vars.json');
+        const contextPath = path.resolve(this.testsPath, name + '.context.json');
 
         const gqlTemplate = fs.readFileSync(gqlPath, 'utf-8');
         const gqlSource = this.testDataEnvironment.fillTemplateStrings(gqlTemplate);
@@ -69,16 +70,17 @@ export class RegressionSuite {
         const expectedResultTemplate = JSON.parse(stripJsonComments(fs.readFileSync(resultPath, 'utf-8')));
         const expectedResult = this.testDataEnvironment.fillTemplateStrings(expectedResultTemplate);
         const variableValues = fs.existsSync(variablesPath) ? JSON.parse(stripJsonComments(fs.readFileSync(variablesPath, 'utf-8'))) : {};
+        const context = fs.existsSync(contextPath) ? JSON.parse(stripJsonComments(fs.readFileSync(contextPath, 'utf-8'))) : {};
 
         let actualResult: any;
         if (hasNamedOperations) {
             const operationNames = operations.map(def => def.name!.value);
             actualResult = {};
             for (const operationName of operationNames) {
-                actualResult[operationName] = await graphql(this.schema, gqlSource, {} /* root */, {}, variableValues, operationName);
+                actualResult[operationName] = await graphql(this.schema, gqlSource, {} /* root */, context, variableValues, operationName);
             }
         } else {
-            actualResult = await graphql(this.schema, gqlSource, {} /* root */, {}, variableValues);
+            actualResult = await graphql(this.schema, gqlSource, {} /* root */, context, variableValues);
         }
 
         return {
