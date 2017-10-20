@@ -48,13 +48,13 @@ const sdl4 = `
         `;
 
 describe('non-nullable-lists transformer', () => {
-    it ('keep non list types'), () => {
+    it ('keep non list types', () => {
         const ast = parse(sdl1);
         const stuffDefinition = ast.definitions[0] as ObjectTypeDefinitionNode;
         const listElementStuffDefinition = ast.definitions[1] as ObjectTypeDefinitionNode;
         // check old ast
         expect(listElementStuffDefinition.fields[0].type.kind).toBe(NAMED_TYPE);
-    }
+    });
 
     it('transforms [ListElem]', () => {
         const ast = parse(sdl1);
