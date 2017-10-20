@@ -55,5 +55,9 @@
     "pluralize": "^7.0.0",
     "strip-json-comments": "^2.0.1",
     "uuid": "^3.1.0"
+  },
+  "peerDependencies": {
+    "@types/graphql": "~0.10.4 || ~0.11.0",
+    "graphql": "~0.10.4 || ~0.11.0"
   }
 }
