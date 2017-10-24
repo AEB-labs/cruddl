@@ -40,6 +40,9 @@
   "filter": {
     "data": {
       "direct": [],
+      "simple": {
+        "value": "everything"
+      },
       "startsWith": [
         {
           "deliveryNumber": "1000173"

@@ -121,6 +121,14 @@
         "name": "DHL",
         "deliveries": [ "@{ids/Delivery/1}" ]
       }
+    ],
+
+    "SecretKey": [
+      {
+        "@id": "1",
+        "key": "42",
+        "value": "everything"
+      }
     ]
   }
 }

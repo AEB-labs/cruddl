@@ -1,5 +1,6 @@
 import { DistilledOperation, FieldRequest, FieldSelection } from '../graphql/query-distiller';
 import {
+    GraphQLArgument,
     GraphQLEnumType, GraphQLEnumValue, GraphQLField, GraphQLInputField, GraphQLInputObjectType, GraphQLInputType,
     GraphQLList, GraphQLNonNull
 } from 'graphql';
@@ -90,19 +91,28 @@ export class InputFieldAuthorizationError {
 export class ArgumentAuthorizationError {
     constructor(params: {
         argumentName: string,
-        inputFieldErrors: InputFieldAuthorizationError[],
-        accessKind: AccessKind
+        inputFieldErrors?: InputFieldAuthorizationError[],
+        accessKind: AccessKind,
+        allowedRoles?: string[],
+        requestRoles: string[]
     }) {
         this.argumentName = params.argumentName;
         this.inputFieldErrors = params.inputFieldErrors;
         this.accessKind = params.accessKind;
+        this.allowedRoles = params.allowedRoles;
+        this.requestRoles = params.requestRoles;
     }
 
     public readonly argumentName: string;
-    public readonly inputFieldErrors: InputFieldAuthorizationError[];
+    public readonly inputFieldErrors: InputFieldAuthorizationError[]|undefined;
     public readonly accessKind: AccessKind;
+    public readonly allowedRoles: string[]|undefined;
+    public readonly requestRoles: string[];
 
     toString() {
+        if (!this.inputFieldErrors) {
+            return this.argumentName;
+        }
         let fieldPart = '';
         if (this.inputFieldErrors.length) {
             fieldPart = ' (';
@@ -121,7 +131,7 @@ export class AuthorizationError {
         argumentErrors?: ArgumentAuthorizationError[],
         field: GraphQLField<any, any>,
         accessKind: AccessKind,
-        allowedRoles: string[],
+        allowedRoles?: string[],
         requestRoles: string[],
         isErrorBecauseOtherMutationFieldHasErrors?: boolean
     }) {
@@ -138,7 +148,7 @@ export class AuthorizationError {
     public readonly argumentErrors: ArgumentAuthorizationError[];
     public readonly field: GraphQLField<any, any>;
     public readonly accessKind: AccessKind;
-    public readonly allowedRoles: string[];
+    public readonly allowedRoles: string[]|undefined;
     public readonly requestRoles: string[];
     public readonly isSkippedBecauseOtherMutationFieldHasErrors: boolean;
 
@@ -204,19 +214,13 @@ function checkAuthorizationForFieldRecursively(fieldRequest: FieldRequest, error
 
     const argumentErrors: ArgumentAuthorizationError[] = [];
     for (const argumentName in fieldRequest.args) {
-        const argValue = fieldRequest.args[argumentName];
         const argDef = fieldRequest.field.args.find(arg => arg.name == argumentName);
-        if (!argDef) {
-            continue;
-        }
-        const inputFieldErrors: InputFieldAuthorizationError[] = [];
-        checkAuthorizationForInputValue(argDef.type, context, argValue, [], inputFieldErrors);
-        if (inputFieldErrors.length) {
-            argumentErrors.push(new ArgumentAuthorizationError({
-                argumentName,
-                accessKind: context.accessKind,
-                inputFieldErrors
-            }));
+        const argValue = fieldRequest.args[argumentName];
+        if (argDef) {
+            const error = checkAuthorizationForArgument(argDef, argValue, context);
+            if (error) {
+                argumentErrors.push(error);
+            }
         }
     }
     if (argumentErrors.length) {
@@ -239,6 +243,33 @@ function checkAuthorizationForFieldRecursively(fieldRequest: FieldRequest, error
         return fieldRequest;
     }
     return new FieldRequest(fieldRequest.field, fieldRequest.parentType, fieldRequest.schema, newSelectionSet, fieldRequest.args);
+}
+
+function checkAuthorizationForArgument(argument: GraphQLArgument, argValue: AnyValue, context: AuthorizationCheckContext): ArgumentAuthorizationError|undefined {
+    const allowedRoles = getAllowedRoles(argument, context.accessKind);
+    if (allowedRoles && !intersection(allowedRoles, context.requestRoles).length) {
+        return new ArgumentAuthorizationError({
+            argumentName: argument.name,
+            accessKind: context.accessKind,
+            allowedRoles,
+            requestRoles: context.requestRoles
+        });
+    }
+
+    // check value
+    const inputFieldErrors: InputFieldAuthorizationError[] = [];
+    checkAuthorizationForInputValue(argument.type, context, argValue, [], inputFieldErrors);
+    if (inputFieldErrors.length) {
+        return new ArgumentAuthorizationError({
+            argumentName: argument.name,
+            accessKind: context.accessKind,
+            inputFieldErrors,
+            requestRoles: context.requestRoles
+        });
+    }
+
+    // ok
+    return undefined;
 }
 
 function checkAuthorizationForInputField(inputField: GraphQLInputField, context: AuthorizationCheckContext, inputValue: AnyValue, inputPath: (string|number)[], errorList: InputFieldAuthorizationError[]): void {

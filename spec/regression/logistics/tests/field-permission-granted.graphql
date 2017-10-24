@@ -40,6 +40,10 @@ query filter {
         deliveryNumber
     }
 
+    simple: SecretKey(key: "42") {
+        value
+    }
+
     startsWith: allDeliveries(filter: { id: "@{ids/Delivery/1}", totalValue_starts_with: "EUR"}) {
         deliveryNumber
     }

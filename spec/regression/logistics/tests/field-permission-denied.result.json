@@ -104,10 +104,22 @@
         ]
       },
       {
-        "message": "Not authorized to select startsWith with argument filter (field totalValue_starts_with)",
+        "message": "Not authorized to select simple with argument key",
         "locations": [
           {
             "line": 43,
+            "column": 5
+          }
+        ],
+        "path": [
+          "simple"
+        ]
+      },
+      {
+        "message": "Not authorized to select startsWith with argument filter (field totalValue_starts_with)",
+        "locations": [
+          {
+            "line": 47,
             "column": 5
           }
         ],
@@ -119,7 +131,7 @@
         "message": "Not authorized to select throughRelation with argument filter (field delivery.totalValue)",
         "locations": [
           {
-            "line": 47,
+            "line": 51,
             "column": 5
           }
         ],
@@ -131,7 +143,7 @@
         "message": "Not authorized to select toUnaccessibleEntity with argument filter (field forwarder)",
         "locations": [
           {
-            "line": 51,
+            "line": 55,
             "column": 5
           }
         ],
@@ -142,6 +154,7 @@
     ],
     "data": {
       "direct": null,
+      "simple": null,
       "startsWith": null,
       "throughRelation": null,
       "toUnaccessibleEntity": null
@@ -153,7 +166,7 @@
         "message": "Not authorized to select direct with argument orderBy ([0] == totalValue_ASC)",
         "locations": [
           {
-            "line": 57,
+            "line": 61,
             "column": 5
           }
         ],
@@ -165,7 +178,7 @@
         "message": "Not authorized to select throughRelation with argument orderBy ([0] == delivery_totalValue_DESC)",
         "locations": [
           {
-            "line": 61,
+            "line": 65,
             "column": 5
           }
         ],
@@ -185,7 +198,7 @@
         "message": "Not authorized to call createDelivery with argument input (field totalValue)",
         "locations": [
           {
-            "line": 67,
+            "line": 71,
             "column": 5
           }
         ],
@@ -202,7 +215,7 @@
         "message": "Not authorized to call updateDelivery with argument input (field totalValue)",
         "locations": [
           {
-            "line": 77,
+            "line": 81,
             "column": 5
           }
         ],
@@ -214,7 +227,7 @@
         "message": "Not authorized to call updateForwarder",
         "locations": [
           {
-            "line": 81,
+            "line": 85,
             "column": 5
           }
         ],
@@ -234,7 +247,7 @@
         "message": "Not authorized to call deleteForwarder",
         "locations": [
           {
-            "line": 87,
+            "line": 91,
             "column": 5
           }
         ],

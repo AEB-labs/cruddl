@@ -70,7 +70,6 @@ export class AddRootQueryTypeTransformer implements ASTTransformer {
     }
 
     private buildQueryOneInputFiltersForKeyFields(entityDef: ObjectTypeDefinitionNode): InputValueDefinitionNode[] {
-        // TODO roles
         const keyFields = entityDef.fields.filter(field => field.directives && field.directives.some(directive => directive.name.value === KEY_FIELD_DIRECTIVE))
         return keyFields.map(field => ({
             kind: INPUT_VALUE_DEFINITION,
@@ -79,7 +78,8 @@ export class AddRootQueryTypeTransformer implements ASTTransformer {
             type: {
                 kind: NAMED_TYPE,
                 name: buildNameNode(getTypeNameIgnoringNonNullAndList(field.type))
-            }
+            },
+            directives: mapNullable(field.directives, directives => directives.filter(dir => dir.name.value == ROLES_DIRECTIVE))
         }));
     }
 
