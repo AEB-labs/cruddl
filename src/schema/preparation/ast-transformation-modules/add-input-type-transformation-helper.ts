@@ -36,7 +36,7 @@ export function buildInputValueNodeFromField(name: string, namedTypeName: string
     return buildInputValueNode(name, namedTypeName, sourceField.loc, directives.length ? directives : undefined);
 }
 
-export function buildInputValueListNode(name: string, namedTypeName: string, loc?: Location): InputValueDefinitionNode {
+export function buildInputValueListNode(name: string, namedTypeName: string, loc?: Location, directives?: DirectiveNode[]): InputValueDefinitionNode {
     return {
         kind: INPUT_VALUE_DEFINITION,
         type: {
@@ -52,6 +52,12 @@ export function buildInputValueListNode(name: string, namedTypeName: string, loc
         name: buildNameNode(name),
         loc: loc
     };
+}
+
+export function buildInputValueListNodeFromField(name: string, namedTypeName: string, sourceField: FieldDefinitionNode): InputValueDefinitionNode {
+    const directiveNames = [ROLES_DIRECTIVE];
+    const directives = compact(directiveNames.map(name => findDirectiveWithName(sourceField, name)));
+    return buildInputValueListNode(name, namedTypeName, sourceField.loc, directives.length ? directives : undefined);
 }
 
 export function buildInputValueNodeID(): InputValueDefinitionNode {

@@ -11,7 +11,7 @@ import {
 } from 'graphql/language/kinds';
 import { getCreateInputTypeName } from '../../../graphql/names';
 import { ENTITY_CREATED_AT, ENTITY_UPDATED_AT, ID_FIELD, RELATION_DIRECTIVE } from '../../schema-defaults';
-import { buildInputFieldFromNonListField, buildInputValueListNode } from './add-input-type-transformation-helper';
+import { buildInputFieldFromNonListField, buildInputValueListNodeFromField } from './add-input-type-transformation-helper';
 
 export class AddCreateEntityInputTypesTransformer implements ASTTransformer {
 
@@ -53,11 +53,11 @@ export class AddCreateEntityInputTypesTransformer implements ASTTransformer {
                 if (namedTypeOfList.kind === OBJECT_TYPE_DEFINITION) {
                     // relations are referenced via IDs
                     if (hasDirectiveWithName(field, RELATION_DIRECTIVE)) {
-                        return buildInputValueListNode(field.name.value, GraphQLID.name, field.loc)
+                        return buildInputValueListNodeFromField(field.name.value, GraphQLID.name, field)
                     }
-                    return buildInputValueListNode(field.name.value, getCreateInputTypeName(namedTypeOfList), field.loc)
+                    return buildInputValueListNodeFromField(field.name.value, getCreateInputTypeName(namedTypeOfList), field)
                 } else {
-                    return buildInputValueListNode(field.name.value, effectiveType.name.value, field.loc);
+                    return buildInputValueListNodeFromField(field.name.value, effectiveType.name.value, field);
                 }
         }
     }

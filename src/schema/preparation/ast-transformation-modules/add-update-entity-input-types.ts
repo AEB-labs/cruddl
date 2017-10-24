@@ -18,7 +18,7 @@ import {
 } from '../../schema-defaults';
 import { flatMap } from '../../../utils/utils';
 import {
-    buildInputFieldFromNonListField, buildInputValueListNode, buildInputValueNodeID
+    buildInputFieldFromNonListField, buildInputValueListNodeFromField, buildInputValueNodeID
 } from './add-input-type-transformation-helper';
 
 export class AddUpdateEntityInputTypesTransformer implements ASTTransformer {
@@ -64,21 +64,21 @@ export class AddUpdateEntityInputTypesTransformer implements ASTTransformer {
                     if (hasDirectiveWithName(field, RELATION_DIRECTIVE)) {
                         // add/remove by foreign key
                         return [
-                            buildInputValueListNode(getAddRelationFieldName(field.name.value), GraphQLID.name),
-                            buildInputValueListNode(getRemoveRelationFieldName(field.name.value), GraphQLID.name),
+                            buildInputValueListNodeFromField(getAddRelationFieldName(field.name.value), GraphQLID.name, field),
+                            buildInputValueListNodeFromField(getRemoveRelationFieldName(field.name.value), GraphQLID.name, field),
                         ];
                     }
                     if (hasDirectiveWithName(namedTypeOfList, CHILD_ENTITY_DIRECTIVE)) {
                         // add / update /remove with data
                         return [
-                            buildInputValueListNode(getAddChildEntityFieldName(field.name.value), getCreateInputTypeName(namedTypeOfList)),
-                            buildInputValueListNode(getUpdateChildEntityFieldName(field.name.value), getUpdateInputTypeName(namedTypeOfList)),
-                            buildInputValueListNode(getRemoveChildEntityFieldName(field.name.value), GraphQLID.name),
+                            buildInputValueListNodeFromField(getAddChildEntityFieldName(field.name.value), getCreateInputTypeName(namedTypeOfList), field),
+                            buildInputValueListNodeFromField(getUpdateChildEntityFieldName(field.name.value), getUpdateInputTypeName(namedTypeOfList), field),
+                            buildInputValueListNodeFromField(getRemoveChildEntityFieldName(field.name.value), GraphQLID.name, field),
                         ]
                     }
-                    return [buildInputValueListNode(field.name.value, getUpdateInputTypeName(namedTypeOfList), field.loc)];
+                    return [buildInputValueListNodeFromField(field.name.value, getUpdateInputTypeName(namedTypeOfList), field)];
                 } else {
-                    return [buildInputValueListNode(field.name.value, effectiveType.name.value, field.loc)];
+                    return [buildInputValueListNodeFromField(field.name.value, effectiveType.name.value, field)];
                 }
         }
     }

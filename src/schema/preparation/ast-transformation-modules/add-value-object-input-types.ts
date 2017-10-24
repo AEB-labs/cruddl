@@ -11,7 +11,7 @@ import {
 } from 'graphql/language/kinds';
 import { getCreateInputTypeName } from '../../../graphql/names';
 import {
-    buildInputFieldFromNonListField, buildInputValueListNode, buildInputValueNodeFromField
+    buildInputFieldFromNonListField, buildInputValueListNodeFromField, buildInputValueNodeFromField
 } from './add-input-type-transformation-helper';
 import { REFERENCE_DIRECTIVE } from '../../schema-defaults';
 
@@ -48,7 +48,7 @@ export class AddValueObjectInputTypesTransformer implements ASTTransformer {
                 if (effectiveType.kind === LIST_TYPE) {
                     throw new Error('Lists of lists are not allowed.');
                 }
-                return buildInputValueListNode(field.name.value, effectiveType.name.value, field.loc);
+                return buildInputValueListNodeFromField(field.name.value, effectiveType.name.value, field);
         }
     }
 
