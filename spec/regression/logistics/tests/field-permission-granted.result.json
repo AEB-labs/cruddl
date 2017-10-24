@@ -26,6 +26,14 @@
           "deliveryNumber": "1000173",
           "totalValue": "EUR 1024.00"
         }
+      },
+      "allForwarders": [
+        {
+          "name": "DHL"
+        }
+      ],
+      "_allForwardersMeta": {
+        "count": 1
       }
     }
   },
@@ -59,6 +67,9 @@
     "data": {
       "createDelivery": {
         "deliveryNumber": null
+      },
+      "createForwarder": {
+        "name": "DPD"
       }
     }
   },
@@ -66,6 +77,16 @@
     "data": {
       "updateDelivery": {
         "deliveryNumber": "1000173"
+      },
+      "updateForwarder": {
+        "name": "DPD"
+      }
+    }
+  },
+  "delete": {
+    "data": {
+      "deleteForwarder": {
+        "name": "DPD"
       }
     }
   }

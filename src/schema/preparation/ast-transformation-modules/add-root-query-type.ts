@@ -15,8 +15,8 @@ import {
     NON_NULL_TYPE,
     OBJECT_TYPE_DEFINITION
 } from "graphql/language/kinds";
-import {flatMap} from "../../../utils/utils";
-import {ENTITY_ID, KEY_FIELD_DIRECTIVE, QUERY_TYPE} from '../../schema-defaults';
+import { flatMap, mapNullable } from '../../../utils/utils';
+import { ENTITY_ID, KEY_FIELD_DIRECTIVE, QUERY_TYPE, ROLES_DIRECTIVE } from '../../schema-defaults';
 import {allEntitiesQueryBy} from "../../../graphql/names";
 
 export class AddRootQueryTypeTransformer implements ASTTransformer {
@@ -53,7 +53,8 @@ export class AddRootQueryTypeTransformer implements ASTTransformer {
                 },
                 ...this.buildQueryOneInputFiltersForKeyFields(entityDef)
             ],
-            loc: entityDef.loc
+            loc: entityDef.loc,
+            directives: mapNullable(entityDef.directives, directives => directives.filter(dir => dir.name.value == ROLES_DIRECTIVE))
         }
     }
 
@@ -63,11 +64,13 @@ export class AddRootQueryTypeTransformer implements ASTTransformer {
             name: buildNameNode(allEntitiesQueryBy(entityDef.name.value)),
             type: { kind: LIST_TYPE, type: { kind: NON_NULL_TYPE, type: { kind: NAMED_TYPE, name: buildNameNode(entityDef.name.value) }} },
             arguments: [], // arguments will be added later
-            loc: entityDef.loc
+            loc: entityDef.loc,
+            directives: mapNullable(entityDef.directives, directives => directives.filter(dir => dir.name.value == ROLES_DIRECTIVE))
         }
     }
 
     private buildQueryOneInputFiltersForKeyFields(entityDef: ObjectTypeDefinitionNode): InputValueDefinitionNode[] {
+        // TODO roles
         const keyFields = entityDef.fields.filter(field => field.directives && field.directives.some(directive => directive.name.value === KEY_FIELD_DIRECTIVE))
         return keyFields.map(field => ({
             kind: INPUT_VALUE_DEFINITION,

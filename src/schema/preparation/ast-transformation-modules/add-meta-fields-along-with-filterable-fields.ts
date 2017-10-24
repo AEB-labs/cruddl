@@ -1,9 +1,10 @@
 import {ASTTransformer} from "../ast-transformer";
 import {DocumentNode, FieldDefinitionNode} from "graphql";
 import {buildNameNode, getObjectTypes} from "../../schema-utils";
-import {FILTER_ARG, QUERY_META_TYPE} from "../../schema-defaults";
+import { FILTER_ARG, QUERY_META_TYPE, ROLES_DIRECTIVE } from '../../schema-defaults';
 import {getMetaNameFieldFor} from "../../../graphql/names";
 import {FIELD_DEFINITION, NAMED_TYPE, NON_NULL_TYPE} from "graphql/language/kinds";
+import { mapNullable } from '../../../utils/utils';
 
 export class AddMetaFieldsAlongWithFilterableFieldsTransformer implements ASTTransformer {
 
@@ -26,6 +27,7 @@ function buildMetaField(field: FieldDefinitionNode): FieldDefinitionNode {
         arguments: field.arguments.filter(arg => arg.name.value === FILTER_ARG),
         type: { kind: NON_NULL_TYPE, type: { kind: NAMED_TYPE, name: buildNameNode(QUERY_META_TYPE)}},
         kind: FIELD_DEFINITION,
-        loc: field.loc
+        loc: field.loc,
+        directives: mapNullable(field.directives, directives => directives.filter(dir => dir.name.value == ROLES_DIRECTIVE))
     }
 }

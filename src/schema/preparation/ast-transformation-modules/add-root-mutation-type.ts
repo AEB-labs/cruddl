@@ -9,8 +9,10 @@ import {
     NON_NULL_TYPE,
     OBJECT_TYPE_DEFINITION
 } from "graphql/language/kinds";
-import {flatMap} from "../../../utils/utils";
-import { ENTITY_ID, ID_FIELD, MUTATION_ID_ARG, MUTATION_INPUT_ARG, MUTATION_TYPE } from '../../schema-defaults';
+import { flatMap, mapNullable } from '../../../utils/utils';
+import {
+    ENTITY_ID, ID_FIELD, MUTATION_ID_ARG, MUTATION_INPUT_ARG, MUTATION_TYPE, ROLES_DIRECTIVE
+} from '../../schema-defaults';
 import {
     allEntitiesQueryBy, createEntityQuery, deleteEntityQuery, getCreateInputTypeName, getUpdateInputTypeName,
     updateEntityQuery
@@ -46,7 +48,8 @@ export class AddRootMutationTypeTransformer implements ASTTransformer {
             arguments: [
                 this.buildNonNullTypeInputArg(MUTATION_INPUT_ARG, getCreateInputTypeName(rootEntityDef)),
             ],
-            loc: rootEntityDef.loc
+            loc: rootEntityDef.loc,
+            directives: mapNullable(rootEntityDef.directives, directives => directives.filter(dir => dir.name.value == ROLES_DIRECTIVE))
         }
     }
 
@@ -58,7 +61,8 @@ export class AddRootMutationTypeTransformer implements ASTTransformer {
             arguments: [
                 this.buildNonNullTypeInputArg(MUTATION_INPUT_ARG, getUpdateInputTypeName(rootEntityDef)),
             ],
-            loc: rootEntityDef.loc
+            loc: rootEntityDef.loc,
+            directives: mapNullable(rootEntityDef.directives, directives => directives.filter(dir => dir.name.value == ROLES_DIRECTIVE))
         }
     }
 
@@ -70,7 +74,8 @@ export class AddRootMutationTypeTransformer implements ASTTransformer {
             arguments: [
                 this.buildNonNullTypeInputArg(MUTATION_ID_ARG, GraphQLID.name),
             ],
-            loc: rootEntityDef.loc
+            loc: rootEntityDef.loc,
+            directives: mapNullable(rootEntityDef.directives, directives => directives.filter(dir => dir.name.value == ROLES_DIRECTIVE))
         }
     }
 

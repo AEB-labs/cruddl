@@ -61,27 +61,33 @@
           "delivery",
           "totalValue"
         ]
+      },
+      {
+        "message": "Not authorized to select allForwarders",
+        "locations": [
+          {
+            "line": 29,
+            "column": 5
+          }
+        ],
+        "path": [
+          "allForwarders"
+        ]
+      },
+      {
+        "message": "Not authorized to select _allForwardersMeta",
+        "locations": [
+          {
+            "line": 33,
+            "column": 5
+          }
+        ],
+        "path": [
+          "_allForwardersMeta"
+        ]
       }
     ],
-    "data": {
-      "Delivery": {
-        "deliveryNumber": "1000173",
-        "totalValue": null,
-        "forwarder": null
-      },
-      "allDeliveries": [
-        {
-          "deliveryNumber": "1000173",
-          "totalValue": null
-        }
-      ],
-      "HandlingUnit": {
-        "delivery": {
-          "deliveryNumber": "1000173",
-          "totalValue": null
-        }
-      }
-    }
+    "data": null
   },
   "filter": {
     "errors": [
@@ -89,7 +95,7 @@
         "message": "Not authorized to select direct with argument filter (field totalValue)",
         "locations": [
           {
-            "line": 30,
+            "line": 39,
             "column": 5
           }
         ],
@@ -101,7 +107,7 @@
         "message": "Not authorized to select startsWith with argument filter (field totalValue_starts_with)",
         "locations": [
           {
-            "line": 34,
+            "line": 43,
             "column": 5
           }
         ],
@@ -113,7 +119,7 @@
         "message": "Not authorized to select throughRelation with argument filter (field delivery.totalValue)",
         "locations": [
           {
-            "line": 38,
+            "line": 47,
             "column": 5
           }
         ],
@@ -125,7 +131,7 @@
         "message": "Not authorized to select toUnaccessibleEntity with argument filter (field forwarder)",
         "locations": [
           {
-            "line": 42,
+            "line": 51,
             "column": 5
           }
         ],
@@ -147,7 +153,7 @@
         "message": "Not authorized to select direct with argument orderBy ([0] == totalValue_ASC)",
         "locations": [
           {
-            "line": 48,
+            "line": 57,
             "column": 5
           }
         ],
@@ -159,7 +165,7 @@
         "message": "Not authorized to select throughRelation with argument orderBy ([0] == delivery_totalValue_DESC)",
         "locations": [
           {
-            "line": 52,
+            "line": 61,
             "column": 5
           }
         ],
@@ -179,7 +185,7 @@
         "message": "Not authorized to call createDelivery with argument input (field totalValue)",
         "locations": [
           {
-            "line": 58,
+            "line": 67,
             "column": 5
           }
         ],
@@ -196,17 +202,49 @@
         "message": "Not authorized to call updateDelivery with argument input (field totalValue)",
         "locations": [
           {
-            "line": 64,
+            "line": 77,
             "column": 5
           }
         ],
         "path": [
           "updateDelivery"
         ]
+      },
+      {
+        "message": "Not authorized to call updateForwarder",
+        "locations": [
+          {
+            "line": 81,
+            "column": 5
+          }
+        ],
+        "path": [
+          "updateForwarder"
+        ]
       }
     ],
     "data": {
-      "updateDelivery": null
+      "updateDelivery": null,
+      "updateForwarder": null
+    }
+  },
+  "delete": {
+    "errors": [
+      {
+        "message": "Not authorized to call deleteForwarder",
+        "locations": [
+          {
+            "line": 87,
+            "column": 5
+          }
+        ],
+        "path": [
+          "deleteForwarder"
+        ]
+      }
+    ],
+    "data": {
+      "deleteForwarder": null
     }
   }
 }

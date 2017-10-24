@@ -163,3 +163,10 @@ export function filterProperties<TValue>(obj: { [key: string]: TValue }, predica
     }
     return result;
 }
+
+export function mapNullable<TIn, TOut>(value: TIn|undefined, fn: (vlaue: TIn) => TOut): TOut|undefined {
+    if (value == undefined) {
+        return value;
+    }
+    return fn(value);
+}

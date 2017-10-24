@@ -24,6 +24,15 @@ query select {
             totalValue
         }
     }
+
+    # these are forbidden on type level
+    allForwarders {
+        name
+    }
+
+    _allForwardersMeta {
+        count
+    }
 }
 
 query filter {
@@ -58,10 +67,24 @@ mutation create {
     createDelivery(input: {totalValue: "EUR 5.50"}) {
         deliveryNumber
     }
+
+    createForwarder(input: { name: "DPD"}) {
+        name
+    }
 }
 
 mutation update {
     updateDelivery(input: { id: "@{ids/Delivery/1}", totalValue: "EUR 5.50"}) {
         deliveryNumber
+    }
+
+    updateForwarder(input: { id: "@{ids/Forwarder/1}", name: "DPD"}) {
+        name
+    }
+}
+
+mutation delete {
+    deleteForwarder(id: "@{ids/Forwarder/1}") {
+        name
     }
 }
