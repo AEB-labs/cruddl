@@ -1,33 +1,17 @@
 import {
-    DirectiveNode,
-    DocumentNode,
-    EnumTypeDefinitionNode,
-    FieldDefinitionNode, GraphQLField, GraphQLInputField, GraphQLObjectType, GraphQLType,
-    InputObjectTypeDefinitionNode,
-    InputValueDefinitionNode,
-    Location,
-    NameNode,
-    ObjectTypeDefinitionNode,
-    ScalarTypeDefinitionNode,
-    TypeNode, ValueNode
+    DirectiveNode, DocumentNode, EnumTypeDefinitionNode, EnumValueDefinitionNode, FieldDefinitionNode, GraphQLEnumValue,
+    GraphQLField, GraphQLInputField, GraphQLObjectType, GraphQLType, InputObjectTypeDefinitionNode,
+    InputValueDefinitionNode, Location, NameNode, ObjectTypeDefinitionNode, ScalarTypeDefinitionNode, TypeNode,
+    ValueNode
 } from 'graphql';
 import {
-    ENUM_TYPE_DEFINITION,
-    FIELD_DEFINITION,
-    INPUT_OBJECT_TYPE_DEFINITION,
-    LIST_TYPE,
-    NAME,
-    NAMED_TYPE,
-    NON_NULL_TYPE,
-    OBJECT_TYPE_DEFINITION,
-    SCALAR_TYPE_DEFINITION
-} from "graphql/language/kinds";
+    ENUM_TYPE_DEFINITION, FIELD_DEFINITION, INPUT_OBJECT_TYPE_DEFINITION, LIST_TYPE, NAME, NAMED_TYPE, NON_NULL_TYPE,
+    OBJECT_TYPE_DEFINITION, SCALAR_TYPE_DEFINITION
+} from 'graphql/language/kinds';
 import {
-    CHILD_ENTITY_DIRECTIVE, ENTITY_CREATED_AT,
-    ENTITY_EXTENSION_DIRECTIVE, ENTITY_UPDATED_AT, ID_FIELD, KEY_FIELD_DIRECTIVE, REFERENCE_DIRECTIVE,
-    RELATION_DIRECTIVE, ROLES_DIRECTIVE, ROLES_READ_ARG, ROLES_READ_WRITE_ARG,
-    ROOT_ENTITY_DIRECTIVE,
-    VALUE_OBJECT_DIRECTIVE
+    CHILD_ENTITY_DIRECTIVE, ENTITY_CREATED_AT, ENTITY_EXTENSION_DIRECTIVE, ENTITY_UPDATED_AT, ID_FIELD,
+    KEY_FIELD_DIRECTIVE, REFERENCE_DIRECTIVE, RELATION_DIRECTIVE, ROLES_DIRECTIVE, ROLES_READ_ARG, ROLES_READ_WRITE_ARG,
+    ROOT_ENTITY_DIRECTIVE, VALUE_OBJECT_DIRECTIVE
 } from './schema-defaults';
 import { flatMap, objectValues } from '../utils/utils';
 
@@ -207,7 +191,7 @@ export function buildNameNode(name: string): NameNode {
     return { kind: NAME, value: name };
 }
 
-export function findDirectiveWithName(typeOrField: ObjectTypeDefinitionNode|FieldDefinitionNode|InputValueDefinitionNode, directiveName: string): DirectiveNode|undefined {
+export function findDirectiveWithName(typeOrField: ObjectTypeDefinitionNode|FieldDefinitionNode|InputValueDefinitionNode|EnumValueDefinitionNode, directiveName: string): DirectiveNode|undefined {
     // remove leading @
     if (directiveName[0] === '@') {
         directiveName = directiveName.substr(1, directiveName.length - 1);
@@ -245,7 +229,7 @@ function getInputFieldDefinitionNode(field: GraphQLInputField): InputValueDefini
     return astNode;
 }
 
-function getInputOutputFieldDefinitionNode(field: GraphQLInputField|GraphQLField<any, any>): InputValueDefinitionNode|FieldDefinitionNode {
+function getASTNodeWithDirectives(field: GraphQLInputField|GraphQLField<any, any>|GraphQLEnumValue): InputValueDefinitionNode|FieldDefinitionNode|EnumValueDefinitionNode {
     const astNode = field.astNode;
     if (!astNode) {
         throw new Error(`astNode on field ${field.name} expected but missing`);
@@ -316,7 +300,7 @@ export function getStringListValues(value: ValueNode): string[] {
     throw new Error(`Expected string or list of string, got ${value.kind}`);
 }
 
-export function getAllowedReadRoles(field: GraphQLField<any, any>|GraphQLInputField): string[]|undefined {
+export function getAllowedReadRoles(field: GraphQLField<any, any>|GraphQLInputField|GraphQLEnumValue): string[]|undefined {
     const readRoles = getAllowedRoles(field, ROLES_READ_ARG);
     const readWriteRoles = getAllowedRoles(field, ROLES_READ_WRITE_ARG);
     if (readRoles && readWriteRoles) {
@@ -325,7 +309,7 @@ export function getAllowedReadRoles(field: GraphQLField<any, any>|GraphQLInputFi
     return readRoles || readWriteRoles;
 }
 
-export function getAllowedWriteRoles(field: GraphQLField<any, any>|GraphQLInputField): string[]|undefined {
+export function getAllowedWriteRoles(field: GraphQLField<any, any>|GraphQLInputField|GraphQLEnumValue): string[]|undefined {
     return getAllowedRoles(field, ROLES_READ_WRITE_ARG);
 }
 
@@ -339,8 +323,8 @@ export function getRoleListFromDirective(directive: DirectiveNode, argName: stri
     return [];
 }
 
-function getAllowedRoles(field: GraphQLField<any, any>|GraphQLInputField, argName: string): string[]|undefined {
-    const astNode = getInputOutputFieldDefinitionNode(field);
+function getAllowedRoles(field: GraphQLField<any, any>|GraphQLInputField|GraphQLEnumValue, argName: string): string[]|undefined {
+    const astNode = getASTNodeWithDirectives(field);
     const directive = findDirectiveWithName(astNode, ROLES_DIRECTIVE);
     if (!directive) {
         // directive missing, so no restriction

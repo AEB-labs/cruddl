@@ -1,13 +1,12 @@
 import { DistilledOperation, FieldRequest, FieldSelection } from '../graphql/query-distiller';
 import {
-    getNamedType, getNullableType, GraphQLField, GraphQLInputField, GraphQLInputObjectType, GraphQLInputType,
+    GraphQLEnumType, GraphQLEnumValue, GraphQLField, GraphQLInputField, GraphQLInputObjectType, GraphQLInputType,
     GraphQLList, GraphQLNonNull
 } from 'graphql';
 import { getAllowedReadRoles, getAllowedWriteRoles } from '../schema/schema-utils';
 import { intersection } from 'lodash';
 import { AnyValue, compact, PlainObject } from '../utils/utils';
-import { isListType } from '../graphql/schema-utils';
-import { error, isArray } from 'util';
+import { isArray } from 'util';
 
 export function checkAuthorization(operation: DistilledOperation, requestRoles: string[]): AuthorizationCheckResult {
     const errorList: AuthorizationError[] = [];
@@ -44,20 +43,23 @@ export class AuthorizationCheckResult {
 export class InputFieldAuthorizationError {
     constructor(params: {
         inputPath: (string|number)[],
-        inputField: GraphQLInputField,
+        inputField?: GraphQLInputField,
+        enumValue?: GraphQLEnumValue,
         accessKind: AccessKind,
         allowedRoles: string[],
         requestRoles: string[]
     }) {
         this.inputPath = params.inputPath;
         this.inputField = params.inputField;
+        this.enumValue = params.enumValue;
         this.accessKind = params.accessKind;
         this.allowedRoles = params.allowedRoles;
         this.requestRoles = params.requestRoles;
     }
 
     public readonly inputPath: (string|number)[];
-    public readonly inputField: GraphQLInputField;
+    public readonly inputField: GraphQLInputField|undefined;
+    public readonly enumValue: GraphQLEnumValue|undefined;
     public readonly accessKind: AccessKind;
     public readonly allowedRoles: string[];
     public readonly requestRoles: string[];
@@ -66,16 +68,18 @@ export class InputFieldAuthorizationError {
         let path = '';
         let first = true;
         for (const segment of this.inputPath) {
-            if (first) {
-                path += segment;
-                first = false;
+            if (typeof segment == 'number') {
+                path += `[${segment}]`;
             } else {
-                if (typeof segment == 'number') {
-                    path += `[${segment}]`;
-                } else {
-                    path += `.${segment}`;
+                if (!first) {
+                    path += '.';
                 }
+                path += segment;
             }
+            first = false;
+        }
+        if (this.enumValue) {
+            return `${path} == ${this.enumValue.name}`;
         }
         return path;
     }
@@ -98,10 +102,8 @@ export class ArgumentAuthorizationError {
 
     toString() {
         let fieldPart = '';
-        if (this.inputFieldErrors.length == 1) {
-            fieldPart += ' (field: ';
-        } else if (this.inputFieldErrors.length > 1) {
-            fieldPart += ' (fields: ';
+        if (this.inputFieldErrors.length) {
+            fieldPart = ' (';
         }
         fieldPart += this.inputFieldErrors.join(', ');
         if (this.inputFieldErrors.length) {
@@ -273,9 +275,26 @@ function checkAuthorizationForInputValue(type: GraphQLInputType, context: Author
             }
         }
     }
+
+    if (type instanceof GraphQLEnumType && inputValue) {
+        const enumValue = type.getValue(inputValue + '');
+        if (enumValue) {
+            const allowedRoles = getAllowedRoles(enumValue, context.accessKind);
+            if (allowedRoles && !intersection(allowedRoles, context.requestRoles).length) {
+                errorList.push(new InputFieldAuthorizationError({
+                    inputPath,
+                    accessKind: context.accessKind,
+                    requestRoles: context.requestRoles,
+                    allowedRoles,
+                    enumValue
+                }));
+                return;
+            }
+        }
+    }
 }
 
-function getAllowedRoles(field: GraphQLField<any, any>|GraphQLInputField, accessKind: AccessKind) {
+function getAllowedRoles(field: GraphQLField<any, any>|GraphQLInputField|GraphQLEnumValue, accessKind: AccessKind) {
     switch (accessKind) {
         case AccessKind.READ:
             return getAllowedReadRoles(field);
