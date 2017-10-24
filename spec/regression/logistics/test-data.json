@@ -1,4 +1,5 @@
 {
+  "roles": [ "accounting" ],
   "rootEntities": {
     "Country": [
       {

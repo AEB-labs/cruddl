@@ -70,6 +70,9 @@ export async function initTestData(path: string, schema: GraphQLSchema): Promise
         return data;
     }
 
+    const context = {
+        authRoles: testData.roles || []
+    };
     for (const rootEntityName in testData.rootEntities) {
         const dataSets = testData.rootEntities[rootEntityName] || [];
         for (let dataSet of dataSets) {
@@ -78,7 +81,7 @@ export async function initTestData(path: string, schema: GraphQLSchema): Promise
             delete dataSet['@id'];
             const query = `mutation($input: Create${rootEntityName}Input!) { res: create${rootEntityName}(input: $input) { id } }`;
             const variables = {input: dataSet};
-            const result = await graphql(schema, query, {}, {}, variables);
+            const result = await graphql(schema, query, {}, context, variables);
             if (result.errors) {
                 throw new Error(`GraphQL error while inserting ${rootEntityName}: ${JSON.stringify(result.errors)}`);
             }
