@@ -1,9 +1,23 @@
-import {INPUT_VALUE_DEFINITION, LIST_TYPE, NAMED_TYPE, NON_NULL_TYPE} from "graphql/language/kinds";
-import {buildNameNode} from "../../schema-utils";
-import {GraphQLID, InputValueDefinitionNode, Location} from "graphql";
-import {ID_FIELD} from "../../schema-defaults";
+import {
+    INPUT_VALUE_DEFINITION, LIST_TYPE, NAMED_TYPE, NON_NULL_TYPE, OBJECT_TYPE_DEFINITION
+} from 'graphql/language/kinds';
+import {
+    buildNameNode, findDirectiveWithName, getNamedTypeDefinitionAST, getReferenceKeyField, getRoleListFromDirective,
+    hasDirectiveWithName
+} from '../../schema-utils';
+import {
+    ArgumentNode,
+    DirectiveNode, DocumentNode, FieldDefinitionNode, GraphQLID, InputValueDefinitionNode, ListValueNode, Location,
+    NamedTypeNode, StringValueNode
+} from 'graphql';
+import {
+    ID_FIELD, REFERENCE_DIRECTIVE, RELATION_DIRECTIVE, ROLES_DIRECTIVE, ROLES_READ_ARG, ROLES_READ_WRITE_ARG
+} from '../../schema-defaults';
+import { compact } from '../../../utils/utils';
+import { getInputTypeName } from '../../../graphql/names';
+import { intersection, List } from 'lodash';
 
-export function buildInputValueNode(name: string, namedTypeName: string, loc?: Location): InputValueDefinitionNode {
+export function buildInputValueNode(name: string, namedTypeName: string, loc?: Location, directives?: DirectiveNode[]): InputValueDefinitionNode {
     return {
         kind: INPUT_VALUE_DEFINITION,
         type: {
@@ -11,8 +25,15 @@ export function buildInputValueNode(name: string, namedTypeName: string, loc?: L
             name: buildNameNode(namedTypeName)
         },
         name: buildNameNode(name),
-        loc: loc
-    }
+        loc: loc,
+        directives
+    };
+}
+
+export function buildInputValueNodeFromField(name: string, namedTypeName: string, sourceField: FieldDefinitionNode): InputValueDefinitionNode {
+    const directiveNames = [ROLES_DIRECTIVE];
+    const directives = compact(directiveNames.map(name => findDirectiveWithName(sourceField, name)));
+    return buildInputValueNode(name, namedTypeName, sourceField.loc, directives.length ? directives : undefined);
 }
 
 export function buildInputValueListNode(name: string, namedTypeName: string, loc?: Location): InputValueDefinitionNode {
@@ -29,8 +50,8 @@ export function buildInputValueListNode(name: string, namedTypeName: string, loc
             }
         },
         name: buildNameNode(name),
-        loc: loc,
-    }
+        loc: loc
+    };
 }
 
 export function buildInputValueNodeID(): InputValueDefinitionNode {
@@ -41,8 +62,75 @@ export function buildInputValueNodeID(): InputValueDefinitionNode {
             type: {
                 kind: NAMED_TYPE,
                 name: buildNameNode(GraphQLID.name)
-            },
+            }
         },
-        name: buildNameNode(ID_FIELD),
+        name: buildNameNode(ID_FIELD)
+    };
+}
+
+/**
+ * Creates a new @roles() directive which is equivalent to a list of directive nodes combined
+ * (getting more and more restrictive)
+ */
+function intersectRolesDirectives(directiveNodes: DirectiveNode[]): DirectiveNode|undefined {
+    if (!directiveNodes.length) {
+        // no restriction
+        return undefined;
+    }
+
+    function getArg(argName: string): ArgumentNode {
+        const roleSets = directiveNodes.map(directive => getRoleListFromDirective(directive, argName));
+        const roles = intersection(...roleSets);
+        const argValue: ListValueNode = {
+            kind: 'ListValue',
+            values: roles.map((roleName: string): StringValueNode => ({
+                kind: 'StringValue',
+                value: roleName
+            }))
+        };
+        return {
+            kind: 'Argument',
+            name: { kind: 'Name', value: argName },
+            value: argValue
+        };
+    }
+
+    return {
+        kind: 'Directive',
+        name: { kind: 'Name', value: ROLES_DIRECTIVE },
+        arguments: [
+            getArg(ROLES_READ_ARG),
+            getArg(ROLES_READ_WRITE_ARG)
+        ]
+    };
+}
+
+export function buildInputFieldFromNonListField(ast: DocumentNode, field: FieldDefinitionNode, namedType: NamedTypeNode ) {
+    const typeDefinition = getNamedTypeDefinitionAST(ast, namedType.name.value);
+    if (typeDefinition.kind === OBJECT_TYPE_DEFINITION) {
+        const isReference = hasDirectiveWithName(field, REFERENCE_DIRECTIVE);
+        const isRelation = hasDirectiveWithName(field, RELATION_DIRECTIVE);
+
+        if (isReference || isRelation) {
+            // intersect our roles with the roles of the given entities
+            const entityRoles = findDirectiveWithName(typeDefinition, ROLES_DIRECTIVE);
+            const fieldRoles = findDirectiveWithName(field, ROLES_DIRECTIVE);
+            // note: if roles directives are missing, we treat this as *no restriction*. On the field this is exactly
+            // how it is defined. On the entity, we have a validator that asserts there is a directive. If we decide
+            // to remove this validator for some reason, this here will be consistent with authorization-inspector.
+            const intersectedRoles = intersectRolesDirectives(compact([entityRoles, fieldRoles]));
+
+            // references are referred via @key type, relations by IDs
+            const type = isReference ? getReferenceKeyField(typeDefinition) : GraphQLID.name;
+
+            return buildInputValueNode(field.name.value, type, field.loc, intersectedRoles ? [ intersectedRoles ] : undefined);
+        }
+
+        // we excluded lists, relations and references -> no child entities, no root entities
+        // -> only extensions and value objects -> we don't need to distinguish between create and update
+        return buildInputValueNodeFromField(field.name.value, getInputTypeName(typeDefinition), field);
+    } else {
+        // scalars
+        return buildInputValueNodeFromField(field.name.value, namedType.name.value, field);
     }
 }

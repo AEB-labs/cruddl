@@ -25,7 +25,7 @@ import {
 import {
     CHILD_ENTITY_DIRECTIVE, ENTITY_CREATED_AT,
     ENTITY_EXTENSION_DIRECTIVE, ENTITY_UPDATED_AT, ID_FIELD, KEY_FIELD_DIRECTIVE, REFERENCE_DIRECTIVE,
-    RELATION_DIRECTIVE, ROLES_DIRECTIVE, ROLES_READ_ARG, ROLes_READ_WRITE_ARG,
+    RELATION_DIRECTIVE, ROLES_DIRECTIVE, ROLES_READ_ARG, ROLES_READ_WRITE_ARG,
     ROOT_ENTITY_DIRECTIVE,
     VALUE_OBJECT_DIRECTIVE
 } from './schema-defaults';
@@ -301,7 +301,7 @@ export function isKeyField(field: GraphQLField<any, any>) {
     return hasDirectiveWithName(astNode, KEY_FIELD_DIRECTIVE);
 }
 
-function getStringListValues(value: ValueNode): string[] {
+export function getStringListValues(value: ValueNode): string[] {
     if (value.kind == 'ListValue') {
         return value.values.map(value => {
             if (value.kind == 'StringValue') {
@@ -318,7 +318,7 @@ function getStringListValues(value: ValueNode): string[] {
 
 export function getAllowedReadRoles(field: GraphQLField<any, any>|GraphQLInputField): string[]|undefined {
     const readRoles = getAllowedRoles(field, ROLES_READ_ARG);
-    const readWriteRoles = getAllowedRoles(field, ROLes_READ_WRITE_ARG);
+    const readWriteRoles = getAllowedRoles(field, ROLES_READ_WRITE_ARG);
     if (readRoles && readWriteRoles) {
         return Array.from(new Set([...readRoles, ...readWriteRoles]));
     }
@@ -326,23 +326,27 @@ export function getAllowedReadRoles(field: GraphQLField<any, any>|GraphQLInputFi
 }
 
 export function getAllowedWriteRoles(field: GraphQLField<any, any>|GraphQLInputField): string[]|undefined {
-    return getAllowedRoles(field, ROLes_READ_WRITE_ARG);
+    return getAllowedRoles(field, ROLES_READ_WRITE_ARG);
+}
+
+export function getRoleListFromDirective(directive: DirectiveNode, argName: string): string[] {
+    const arg = (directive.arguments || []).find(arg => arg.name.value == argName);
+    if (arg) {
+        return getStringListValues(arg.value);
+    }
+
+    // if the directive is specified but an arg is missing, this default to [] (default to secure option)
+    return [];
 }
 
 function getAllowedRoles(field: GraphQLField<any, any>|GraphQLInputField, argName: string): string[]|undefined {
     const astNode = getInputOutputFieldDefinitionNode(field);
     const directive = findDirectiveWithName(astNode, ROLES_DIRECTIVE);
-    if (directive && directive.arguments) {
-        const arg = directive.arguments.find(arg => arg.name.value == argName);
-        if (arg) {
-            return getStringListValues(arg.value);
-        }
-
-        // if the directive is specified but an arg is missing, this default to [] (default to secure option)
-        return [];
+    if (!directive) {
+        // directive missing, so no restriction
+        return undefined;
     }
-    // directive missing, so no restriction
-    return undefined;
+    return getRoleListFromDirective(directive, argName);
 }
 
 /**

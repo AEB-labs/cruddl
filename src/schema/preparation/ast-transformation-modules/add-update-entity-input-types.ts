@@ -1,48 +1,25 @@
-import {ASTTransformer} from "../ast-transformer";
+import { ASTTransformer } from '../ast-transformer';
 import {
-    DocumentNode,
-    FieldDefinitionNode,
-    GraphQLID,
-    InputObjectTypeDefinitionNode,
-    InputValueDefinitionNode,
-    ObjectTypeDefinitionNode,
-    TypeNode
-} from "graphql";
+    DocumentNode, FieldDefinitionNode, GraphQLID, InputObjectTypeDefinitionNode, InputValueDefinitionNode,
+    ObjectTypeDefinitionNode, TypeNode
+} from 'graphql';
 import {
-    getChildEntityTypes,
-    getNamedTypeDefinitionAST, getReferenceKeyField,
-    getRootEntityTypes,
-    hasDirectiveWithName
-} from "../../schema-utils";
+    getChildEntityTypes, getNamedTypeDefinitionAST, getRootEntityTypes, hasDirectiveWithName
+} from '../../schema-utils';
 import {
-    INPUT_OBJECT_TYPE_DEFINITION,
-    LIST_TYPE,
-    NAMED_TYPE,
-    NON_NULL_TYPE,
-    OBJECT_TYPE_DEFINITION
-} from "graphql/language/kinds";
+    INPUT_OBJECT_TYPE_DEFINITION, LIST_TYPE, NAMED_TYPE, NON_NULL_TYPE, OBJECT_TYPE_DEFINITION
+} from 'graphql/language/kinds';
 import {
-    getAddChildEntityFieldName,
-    getAddRelationFieldName,
-    getCreateInputTypeName,
-    getRemoveChildEntityFieldName,
-    getRemoveRelationFieldName,
-    getUpdateChildEntityFieldName,
-    getUpdateInputTypeName,
-} from "../../../graphql/names";
+    getAddChildEntityFieldName, getAddRelationFieldName, getCreateInputTypeName, getRemoveChildEntityFieldName,
+    getRemoveRelationFieldName, getUpdateChildEntityFieldName, getUpdateInputTypeName
+} from '../../../graphql/names';
 import {
-    CHILD_ENTITY_DIRECTIVE,
-    ENTITY_CREATED_AT,
-    ENTITY_UPDATED_AT,
-    ID_FIELD, REFERENCE_DIRECTIVE, RELATION_DIRECTIVE,
-    ROOT_ENTITY_DIRECTIVE
-} from "../../schema-defaults";
-import {flatMap} from "../../../utils/utils";
+    CHILD_ENTITY_DIRECTIVE, ENTITY_CREATED_AT, ENTITY_UPDATED_AT, ID_FIELD, RELATION_DIRECTIVE
+} from '../../schema-defaults';
+import { flatMap } from '../../../utils/utils';
 import {
-    buildInputValueListNode,
-    buildInputValueNode,
-    buildInputValueNodeID
-} from "./add-input-type-transformation-helper";
+    buildInputFieldFromNonListField, buildInputValueListNode, buildInputValueNodeID
+} from './add-input-type-transformation-helper';
 
 export class AddUpdateEntityInputTypesTransformer implements ASTTransformer {
 
@@ -76,18 +53,7 @@ export class AddUpdateEntityInputTypesTransformer implements ASTTransformer {
             case NON_NULL_TYPE:
                 return this.createInputTypeField(ast, field, type.type);
             case NAMED_TYPE:
-                const namedType = getNamedTypeDefinitionAST(ast, type.name.value);
-                if (namedType.kind === OBJECT_TYPE_DEFINITION) {
-                    if (hasDirectiveWithName(field, REFERENCE_DIRECTIVE)) {
-                        return [buildInputValueNode(field.name.value, getReferenceKeyField(namedType))];
-                    }
-                    if (hasDirectiveWithName(field, RELATION_DIRECTIVE)) {
-                        return [buildInputValueNode(field.name.value, GraphQLID.name)];
-                    }
-                    return [buildInputValueNode(field.name.value, getUpdateInputTypeName(namedType))];
-                } else {
-                    return [buildInputValueNode(field.name.value, type.name.value, field.loc)];
-                }
+                return [ buildInputFieldFromNonListField(ast, field, type) ];
             case LIST_TYPE:
                 const effectiveType = type.type.kind === NON_NULL_TYPE ? type.type.type : type.type;
                 if (effectiveType.kind === LIST_TYPE) {

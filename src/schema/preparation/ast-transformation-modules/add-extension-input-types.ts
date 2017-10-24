@@ -20,7 +20,9 @@ import {
 } from "graphql/language/kinds";
 import {getCreateInputTypeName} from "../../../graphql/names";
 import { REFERENCE_DIRECTIVE, ROOT_ENTITY_DIRECTIVE } from '../../schema-defaults';
-import {buildInputValueListNode, buildInputValueNode} from "./add-input-type-transformation-helper";
+import {
+    buildInputFieldFromNonListField, buildInputValueListNode, buildInputValueNodeFromField
+} from './add-input-type-transformation-helper';
 
 export class AddExtensionInputTypesTransformer implements ASTTransformer {
 
@@ -49,20 +51,7 @@ export class AddExtensionInputTypesTransformer implements ASTTransformer {
             case NON_NULL_TYPE:
                 return this.createInputTypeField(ast, field, type.type);
             case NAMED_TYPE:
-                const namedType = getNamedTypeDefinitionAST(ast, type.name.value);
-                switch (namedType.kind) {
-                    case OBJECT_TYPE_DEFINITION:
-                        if (hasDirectiveWithName(namedType, ROOT_ENTITY_DIRECTIVE)) {
-                            // referenced by foreign key
-                            return buildInputValueNode(field.name.value, GraphQLID.name)
-                        } else if (hasDirectiveWithName(field, REFERENCE_DIRECTIVE)) {
-                            return buildInputValueNode(field.name.value, getReferenceKeyField(namedType));
-                        } else {
-                            return buildInputValueNode(field.name.value, getCreateInputTypeName(namedType))
-                        }
-                    default:
-                        return buildInputValueNode(field.name.value, type.name.value, field.loc);
-                }
+                return buildInputFieldFromNonListField(ast, field, type);
             case LIST_TYPE:
                 const effectiveType = type.type.kind === NON_NULL_TYPE ? type.type.type : type.type;
                 if (effectiveType.kind === LIST_TYPE) {
@@ -78,7 +67,7 @@ export class AddExtensionInputTypesTransformer implements ASTTransformer {
                             return buildInputValueListNode(field.name.value, getCreateInputTypeName(namedTypeOfList))
                         }
                     default:
-                        return buildInputValueNode(field.name.value, effectiveType.name.value, field.loc);
+                        return buildInputValueListNode(field.name.value, effectiveType.name.value, field.loc);
                 }
         }
     }

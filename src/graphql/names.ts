@@ -19,18 +19,28 @@ export function getFilterTypeName(entityDefinition: ObjectTypeDefinitionNode) {
     return entityDefinition.name.value + 'Filter';
 }
 
+/**
+ * Don't use for root entities and child entities, use getCreateInputTypeName or getUpdateInputTypeName instead.
+ */
+export function getInputTypeName(objectType: ObjectTypeDefinitionNode) {
+    if (hasDirectiveWithName(objectType, ROOT_ENTITY_DIRECTIVE) || hasDirectiveWithName(objectType, CHILD_ENTITY_DIRECTIVE)) {
+        throw new Error(`Can't call getInputTypeName() on root and child entities`);
+    }
+    return objectType.name.value + 'Input';
+}
+
 export function getCreateInputTypeName(objectType: ObjectTypeDefinitionNode) {
     if (hasDirectiveWithName(objectType, ROOT_ENTITY_DIRECTIVE) || hasDirectiveWithName(objectType, CHILD_ENTITY_DIRECTIVE)) {
         return 'Create' + objectType.name.value + 'Input';
     }
-    return objectType.name.value + 'Input';
+    return getInputTypeName(objectType);
 }
 
 export function getUpdateInputTypeName(objectType: ObjectTypeDefinitionNode) {
     if (hasDirectiveWithName(objectType, ROOT_ENTITY_DIRECTIVE) || hasDirectiveWithName(objectType, CHILD_ENTITY_DIRECTIVE)) {
         return 'Update' + objectType.name.value + 'Input';
     }
-    return objectType.name.value + 'Input';
+    return getInputTypeName(objectType);
 }
 
 export function getAddRelationFieldName(fieldName: string) {
