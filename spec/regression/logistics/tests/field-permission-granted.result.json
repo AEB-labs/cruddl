@@ -1,10 +1,50 @@
 {
+  "prepare": {
+    "data": {
+      "updateHandlingUnit": {
+        "huNumber": "1000007"
+      }
+    }
+  },
   "select": {
     "data": {
       "Delivery": {
         "deliveryNumber": "1000173",
         "totalValue": "EUR 1024.00"
+      },
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173",
+          "totalValue": "EUR 1024.00"
+        }
+      ],
+      "HandlingUnit": {
+        "delivery": {
+          "deliveryNumber": "1000173",
+          "totalValue": "EUR 1024.00"
+        }
       }
+    }
+  },
+  "filter": {
+    "data": {
+      "direct": [],
+      "startsWith": [
+        {
+          "deliveryNumber": "1000173"
+        }
+      ],
+      "throughRelation": []
+    }
+  },
+  "sort": {
+    "data": {
+      "direct": [
+        {
+          "deliveryNumber": "1000173"
+        }
+      ],
+      "throughRelation": []
     }
   },
   "create": {

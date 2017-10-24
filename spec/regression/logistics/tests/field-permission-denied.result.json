@@ -1,16 +1,51 @@
 {
+  "prepare": {
+    "data": {
+      "updateHandlingUnit": {
+        "huNumber": "1000007"
+      }
+    }
+  },
   "select": {
     "errors": [
       {
         "message": "Not authorized to select Delivery.totalValue",
         "locations": [
           {
-            "line": 4,
+            "line": 10,
             "column": 9
           }
         ],
         "path": [
           "Delivery",
+          "totalValue"
+        ]
+      },
+      {
+        "message": "Not authorized to select allDeliveries.totalValue",
+        "locations": [
+          {
+            "line": 15,
+            "column": 9
+          }
+        ],
+        "path": [
+          "allDeliveries",
+          0,
+          "totalValue"
+        ]
+      },
+      {
+        "message": "Not authorized to select HandlingUnit.delivery.totalValue",
+        "locations": [
+          {
+            "line": 21,
+            "column": 13
+          }
+        ],
+        "path": [
+          "HandlingUnit",
+          "delivery",
           "totalValue"
         ]
       }
@@ -19,16 +54,105 @@
       "Delivery": {
         "deliveryNumber": "1000173",
         "totalValue": null
+      },
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173",
+          "totalValue": null
+        }
+      ],
+      "HandlingUnit": {
+        "delivery": {
+          "deliveryNumber": "1000173",
+          "totalValue": null
+        }
       }
+    }
+  },
+  "filter": {
+    "errors": [
+      {
+        "message": "Not authorized to select direct with argument filter (totalValue)",
+        "locations": [
+          {
+            "line": 27,
+            "column": 5
+          }
+        ],
+        "path": [
+          "direct"
+        ]
+      },
+      {
+        "message": "Not authorized to select startsWith with argument filter (totalValue_starts_with)",
+        "locations": [
+          {
+            "line": 31,
+            "column": 5
+          }
+        ],
+        "path": [
+          "startsWith"
+        ]
+      },
+      {
+        "message": "Not authorized to select throughRelation with argument filter (delivery.totalValue)",
+        "locations": [
+          {
+            "line": 35,
+            "column": 5
+          }
+        ],
+        "path": [
+          "throughRelation"
+        ]
+      }
+    ],
+    "data": {
+      "direct": null,
+      "startsWith": null,
+      "throughRelation": null
+    }
+  },
+  "sort": {
+    "errors": [
+      {
+        "message": "Not authorized to select direct with argument orderBy ([0] == totalValue_ASC)",
+        "locations": [
+          {
+            "line": 41,
+            "column": 5
+          }
+        ],
+        "path": [
+          "direct"
+        ]
+      },
+      {
+        "message": "Not authorized to select throughRelation with argument orderBy ([0] == delivery_totalValue_DESC)",
+        "locations": [
+          {
+            "line": 45,
+            "column": 5
+          }
+        ],
+        "path": [
+          "throughRelation"
+        ]
+      }
+    ],
+    "data": {
+      "direct": null,
+      "throughRelation": null
     }
   },
   "create": {
     "errors": [
       {
-        "message": "Not authorized to call createDelivery with argument input (field: totalValue)",
+        "message": "Not authorized to call createDelivery with argument input (totalValue)",
         "locations": [
           {
-            "line": 9,
+            "line": 51,
             "column": 5
           }
         ],
@@ -42,10 +166,10 @@
   "update": {
     "errors": [
       {
-        "message": "Not authorized to call updateDelivery with argument input (field: totalValue)",
+        "message": "Not authorized to call updateDelivery with argument input (totalValue)",
         "locations": [
           {
-            "line": 15,
+            "line": 57,
             "column": 5
           }
         ],

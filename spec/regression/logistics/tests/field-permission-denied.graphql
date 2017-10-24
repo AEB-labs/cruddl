@@ -1,7 +1,49 @@
+mutation prepare {
+    updateHandlingUnit(input: { id: "@{ids/HandlingUnit/1}", delivery:  "@{ids/Delivery/1}" }) {
+        huNumber
+    }
+}
+
 query select {
     Delivery(id: "@{ids/Delivery/1}") {
         deliveryNumber
         totalValue
+    }
+
+    allDeliveries(filter: { id: "@{ids/Delivery/1}" }) {
+        deliveryNumber
+        totalValue
+    }
+
+    HandlingUnit(id: "@{ids/HandlingUnit/1}") {
+        delivery {
+            deliveryNumber
+            totalValue
+        }
+    }
+}
+
+query filter {
+    direct: allDeliveries(filter: { id: "@{ids/Delivery/1}", totalValue: "EUR 5.50"}) {
+        deliveryNumber
+    }
+
+    startsWith: allDeliveries(filter: { id: "@{ids/Delivery/1}", totalValue_starts_with: "EUR"}) {
+        deliveryNumber
+    }
+
+    throughRelation: allHandlingUnits(filter: { id: "@{ids/HandlingUnit/1}", delivery: {totalValue: "EUR 5.50"}}) {
+        huNumber
+    }
+}
+
+query sort {
+    direct: allDeliveries(filter: { id: "@{ids/Delivery/1}" }, orderBy: totalValue_ASC) {
+        deliveryNumber
+    }
+
+    throughRelation: allHandlingUnits(filter: { id: "@{ids/Delivery/1}" }, orderBy: delivery_totalValue_DESC) {
+        huNumber
     }
 }
 

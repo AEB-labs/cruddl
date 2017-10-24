@@ -1,12 +1,13 @@
 import {ASTTransformer} from "../ast-transformer";
 import {
-    DocumentNode,
+    DirectiveNode,
+    DocumentNode, FieldDefinitionNode,
     InputObjectTypeDefinitionNode,
     InputValueDefinitionNode,
     ObjectTypeDefinitionNode,
     TypeNode
-} from "graphql";
-import {getNamedTypeDefinitionAST, getObjectTypes} from "../../schema-utils";
+} from 'graphql';
+import { findDirectiveWithName, getNamedTypeDefinitionAST, getObjectTypes } from '../../schema-utils';
 import {
     ENUM_TYPE_DEFINITION,
     INPUT_OBJECT_TYPE_DEFINITION,
@@ -33,8 +34,10 @@ import {
     notInField,
     starts_with_field
 } from "../../../graphql/names";
-import {ARGUMENT_AND, ARGUMENT_OR, SCALAR_DATE, SCALAR_DATETIME, SCALAR_TIME} from "../../schema-defaults";
-import {flatMap} from "../../../utils/utils";
+import {
+    ARGUMENT_AND, ARGUMENT_OR, ROLES_DIRECTIVE, SCALAR_DATE, SCALAR_DATETIME, SCALAR_TIME
+} from '../../schema-defaults';
+import { compact, flatMap } from '../../../utils/utils';
 
 export class AddFilterInputTypesTransformer implements ASTTransformer {
 
@@ -58,9 +61,9 @@ export class AddFilterInputTypesTransformer implements ASTTransformer {
 
     protected createInputFilterTypeForObjectType(ast: DocumentNode, objectType: ObjectTypeDefinitionNode): InputObjectTypeDefinitionNode {
         const args = [
-            ...flatMap(objectType.fields, field => this.createInputFilterTypeFields(ast, field.name.value, field.type)),
-            this.buildInputValueListOfNamedType(ARGUMENT_AND,  getFilterTypeName(objectType)),
-            this.buildInputValueListOfNamedType(ARGUMENT_OR, getFilterTypeName(objectType)),
+            ...flatMap(objectType.fields, field => this.createInputFilterTypeFields(ast, field, field.type)),
+            this.buildListOfNamedTypeField(ARGUMENT_AND,  getFilterTypeName(objectType)),
+            this.buildListOfNamedTypeField(ARGUMENT_OR, getFilterTypeName(objectType)),
             // TODO add if supported: this.buildInputValueNamedType(ARGUMENT_NOT, getFilterTypeName(objectType))
         ];
         return {
@@ -72,10 +75,11 @@ export class AddFilterInputTypesTransformer implements ASTTransformer {
     }
 
     // undefined currently means not supported.
-    protected createInputFilterTypeFields(ast: DocumentNode, name: string, type: TypeNode): InputValueDefinitionNode[] {
+    protected createInputFilterTypeFields(ast: DocumentNode, field: FieldDefinitionNode, type: TypeNode): InputValueDefinitionNode[] {
+        const name = field.name.value;
         switch (type.kind) {
             case NON_NULL_TYPE:
-                return this.createInputFilterTypeFields(ast, name, type.type);
+                return this.createInputFilterTypeFields(ast, field, type.type);
             case LIST_TYPE:
                 // TODO
                 return [];
@@ -87,20 +91,20 @@ export class AddFilterInputTypesTransformer implements ASTTransformer {
                         switch(namedTypeDefinition.name.value) {
                             case 'String':
                                 return [
-                                    this.buildInputValueNamedType(name, 'String'),
-                                    this.buildInputValueNamedType(notField(name), 'String'),
-                                    this.buildInputValueListType(inField(name), 'String'),
-                                    this.buildInputValueListType(notInField(name), 'String'),
-                                    this.buildInputValueNamedType(ltField(name), 'String'),
-                                    this.buildInputValueNamedType(lteField(name), 'String'),
-                                    this.buildInputValueNamedType(gtField(name), 'String'),
-                                    this.buildInputValueNamedType(gteField(name), 'String'),
-                                    this.buildInputValueNamedType(containsField(name), 'String'),
-                                    this.buildInputValueNamedType(notContainsField(name), 'String'),
-                                    this.buildInputValueNamedType(starts_with_field(name), 'String'),
-                                    this.buildInputValueNamedType(not_starts_with_field(name), 'String'),
-                                    this.buildInputValueNamedType(endsWithField(name), 'String'),
-                                    this.buildInputValueNamedType(notEndsWithField(name), 'String'),
+                                    this.buildNamedTypeFieldForField(name, 'String', field),
+                                    this.buildNamedTypeFieldForField(notField(name), 'String', field),
+                                    this.buildListOfNamedTypeFieldForField(inField(name), 'String', field),
+                                    this.buildListOfNamedTypeFieldForField(notInField(name), 'String', field),
+                                    this.buildNamedTypeFieldForField(ltField(name), 'String', field),
+                                    this.buildNamedTypeFieldForField(lteField(name), 'String', field),
+                                    this.buildNamedTypeFieldForField(gtField(name), 'String', field),
+                                    this.buildNamedTypeFieldForField(gteField(name), 'String', field),
+                                    this.buildNamedTypeFieldForField(containsField(name), 'String', field),
+                                    this.buildNamedTypeFieldForField(notContainsField(name), 'String', field),
+                                    this.buildNamedTypeFieldForField(starts_with_field(name), 'String', field),
+                                    this.buildNamedTypeFieldForField(not_starts_with_field(name), 'String', field),
+                                    this.buildNamedTypeFieldForField(endsWithField(name), 'String', field),
+                                    this.buildNamedTypeFieldForField(notEndsWithField(name), 'String', field),
                                 ];
                             case SCALAR_TIME:
                             case SCALAR_DATE:
@@ -109,60 +113,64 @@ export class AddFilterInputTypesTransformer implements ASTTransformer {
                             case 'Float':
                             case 'ID':
                                 return [
-                                    this.buildInputValueNamedType(name, namedTypeDefinition.name.value),
-                                    this.buildInputValueNamedType(notField(name), namedTypeDefinition.name.value),
-                                    this.buildInputValueListType(inField(name), namedTypeDefinition.name.value),
-                                    this.buildInputValueListType(notInField(name), namedTypeDefinition.name.value),
-                                    this.buildInputValueNamedType(ltField(name), namedTypeDefinition.name.value),
-                                    this.buildInputValueNamedType(lteField(name), namedTypeDefinition.name.value),
-                                    this.buildInputValueNamedType(gtField(name), namedTypeDefinition.name.value),
-                                    this.buildInputValueNamedType(gteField(name), namedTypeDefinition.name.value),
+                                    this.buildNamedTypeFieldForField(name, namedTypeDefinition.name.value, field),
+                                    this.buildNamedTypeFieldForField(notField(name), namedTypeDefinition.name.value, field),
+                                    this.buildListOfNamedTypeFieldForField(inField(name), namedTypeDefinition.name.value, field),
+                                    this.buildListOfNamedTypeFieldForField(notInField(name), namedTypeDefinition.name.value, field),
+                                    this.buildNamedTypeFieldForField(ltField(name), namedTypeDefinition.name.value, field),
+                                    this.buildNamedTypeFieldForField(lteField(name), namedTypeDefinition.name.value, field),
+                                    this.buildNamedTypeFieldForField(gtField(name), namedTypeDefinition.name.value, field),
+                                    this.buildNamedTypeFieldForField(gteField(name), namedTypeDefinition.name.value, field),
                                 ];
                             case 'Boolean':
                                 return [
-                                    this.buildInputValueNamedType(name, namedTypeDefinition.name.value),
+                                    this.buildNamedTypeFieldForField(name, namedTypeDefinition.name.value, field),
                                 ];
                             default:
                                 return [];
                         }
                     case ENUM_TYPE_DEFINITION:
                         return [
-                            this.buildInputValueNamedType(name, namedTypeDefinition.name.value),
-                            this.buildInputValueNamedType(notField(name), namedTypeDefinition.name.value),
-                            this.buildInputValueNamedType(inField(name), namedTypeDefinition.name.value),
-                            this.buildInputValueNamedType(notInField(name), namedTypeDefinition.name.value),
+                            this.buildNamedTypeFieldForField(name, namedTypeDefinition.name.value, field),
+                            this.buildNamedTypeFieldForField(notField(name), namedTypeDefinition.name.value, field),
+                            this.buildNamedTypeFieldForField(inField(name), namedTypeDefinition.name.value, field),
+                            this.buildNamedTypeFieldForField(notInField(name), namedTypeDefinition.name.value, field),
                         ];
                     case OBJECT_TYPE_DEFINITION:
                         // use the embedded object filter
-                        return [this.buildInputValueNamedType(name, getFilterTypeName(namedTypeDefinition))];
+                        // TODO relations and references @roles (but maybe do this in advance in a separate module?)
+                        return [this.buildNamedTypeFieldForField(name, getFilterTypeName(namedTypeDefinition), field)];
                     default:
                         return []
                 }
         }
     }
 
-    protected buildInputValueListOfNamedType(name: string, typeName: string): InputValueDefinitionNode {
-        return {
-            kind: "InputValueDefinition",
-            type: { kind: LIST_TYPE, type: { kind: NAMED_TYPE, name: { kind: NAME, value: typeName } } },
-            name: { kind: NAME, value: name }
-        }
-    }
-
-    protected buildInputValueNamedType(name: string, typeName: string): InputValueDefinitionNode {
+    protected buildNamedTypeFieldForField(name: string, typeName: string, sourceField: FieldDefinitionNode): InputValueDefinitionNode {
         return {
             kind: "InputValueDefinition",
             type: { kind: NAMED_TYPE, name: { kind: NAME, value: typeName } },
-            name: { kind: NAME, value: name }
+            name: { kind: NAME, value: name },
+            directives: this.getDirectivesForField(sourceField)
         }
     }
 
-    protected buildInputValueListType(name: string, innerListTypeName: string): InputValueDefinitionNode {
+    protected buildListOfNamedTypeField(name: string, innerListTypeName: string, directives?: DirectiveNode[]): InputValueDefinitionNode {
         return {
             kind: "InputValueDefinition",
             type: { kind: LIST_TYPE, type: { kind: NON_NULL_TYPE, type: { kind: NAMED_TYPE, name: { kind: NAME, value: innerListTypeName } } } },
-            name: { kind: NAME, value: name }
+            name: { kind: NAME, value: name },
+            directives
         }
+    }
+
+    protected buildListOfNamedTypeFieldForField(name: string, typeName: string, sourceField: FieldDefinitionNode): InputValueDefinitionNode {
+        return this.buildListOfNamedTypeField(name, typeName, this.getDirectivesForField(sourceField));
+    }
+
+    protected getDirectivesForField(field: FieldDefinitionNode) {
+        const directiveNames = [ROLES_DIRECTIVE];
+        return compact(directiveNames.map(name => findDirectiveWithName(field, name)));
     }
 
 

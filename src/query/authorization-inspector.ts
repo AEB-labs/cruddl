@@ -157,6 +157,8 @@ export class AuthorizationError {
         // - Not authorized to call updateDelivery.secretField
         // - Not authorized to select allDeliveries.secretField
         // - Not authorized to select allDeliveries with argument filter (field: secretField)
+        // Maybe it would be better to use field here because we already throw this at the correct path and it might
+        // be confusing to show aliases here
         return `Not authorized to ${this.accessKind == AccessKind.WRITE ? 'call' : 'select'} ${this.path.join('.')}` +
             argPart;
     }
