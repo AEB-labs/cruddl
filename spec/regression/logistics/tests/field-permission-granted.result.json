@@ -1,8 +1,24 @@
 {
-  "data": {
-    "Delivery": {
-      "deliveryNumber": "1000173",
-      "totalValue": "EUR 1024.00"
+  "select": {
+    "data": {
+      "Delivery": {
+        "deliveryNumber": "1000173",
+        "totalValue": "EUR 1024.00"
+      }
+    }
+  },
+  "create": {
+    "data": {
+      "createDelivery": {
+        "deliveryNumber": null
+      }
+    }
+  },
+  "update": {
+    "data": {
+      "updateDelivery": {
+        "deliveryNumber": "1000173"
+      }
     }
   }
 }

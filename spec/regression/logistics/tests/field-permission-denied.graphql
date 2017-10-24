@@ -1,6 +1,18 @@
-query {
+query select {
     Delivery(id: "@{ids/Delivery/1}") {
         deliveryNumber
         totalValue
+    }
+}
+
+mutation create {
+    createDelivery(input: {totalValue: "EUR 5.50"}) {
+        deliveryNumber
+    }
+}
+
+mutation update {
+    updateDelivery(input: { id: "@{ids/Delivery/1}", totalValue: "EUR 5.50"}) {
+        deliveryNumber
     }
 }

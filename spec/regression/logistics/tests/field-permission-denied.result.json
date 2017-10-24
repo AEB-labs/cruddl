@@ -1,23 +1,61 @@
 {
-  "errors": [
-    {
-      "message": "Not authorized to read Delivery.totalValue",
-      "locations": [
-        {
-          "line": 4,
-          "column": 9
-        }
-      ],
-      "path": [
-        "Delivery",
-        "totalValue"
-      ]
+  "select": {
+    "errors": [
+      {
+        "message": "Not authorized to select Delivery.totalValue",
+        "locations": [
+          {
+            "line": 4,
+            "column": 9
+          }
+        ],
+        "path": [
+          "Delivery",
+          "totalValue"
+        ]
+      }
+    ],
+    "data": {
+      "Delivery": {
+        "deliveryNumber": "1000173",
+        "totalValue": null
+      }
     }
-  ],
-  "data": {
-    "Delivery": {
-      "deliveryNumber": "1000173",
-      "totalValue": null
+  },
+  "create": {
+    "errors": [
+      {
+        "message": "Not authorized to call createDelivery with argument input (field: totalValue)",
+        "locations": [
+          {
+            "line": 9,
+            "column": 5
+          }
+        ],
+        "path": [
+          "createDelivery"
+        ]
+      }
+    ],
+    "data": null
+  },
+  "update": {
+    "errors": [
+      {
+        "message": "Not authorized to call updateDelivery with argument input (field: totalValue)",
+        "locations": [
+          {
+            "line": 15,
+            "column": 5
+          }
+        ],
+        "path": [
+          "updateDelivery"
+        ]
+      }
+    ],
+    "data": {
+      "updateDelivery": null
     }
   }
 }
