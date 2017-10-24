@@ -72,7 +72,7 @@ export function buildInputValueNodeID(): InputValueDefinitionNode {
  * Creates a new @roles() directive which is equivalent to a list of directive nodes combined
  * (getting more and more restrictive)
  */
-function intersectRolesDirectives(directiveNodes: DirectiveNode[]): DirectiveNode|undefined {
+export function intersectRolesDirectives(directiveNodes: DirectiveNode[]): DirectiveNode|undefined {
     if (!directiveNodes.length) {
         // no restriction
         return undefined;
