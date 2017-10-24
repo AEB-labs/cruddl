@@ -15,4 +15,3 @@ test:
     - npm install
     - npm test
     - npm run test:dropdb
-    - npm test
