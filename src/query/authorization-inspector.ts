@@ -1,5 +1,5 @@
 import { DistilledOperation, FieldRequest, FieldSelection } from '../graphql/query-distiller';
-import { GraphQLField, GraphQLInputField, GraphQLInputObjectType, GraphQLInputType } from 'graphql';
+import { getNamedType, GraphQLField, GraphQLInputField, GraphQLInputObjectType, GraphQLInputType } from 'graphql';
 import { getAllowedReadRoles, getAllowedWriteRoles } from '../schema/schema-utils';
 import { intersection } from 'lodash';
 import { AnyValue, compact, PlainObject } from '../utils/utils';
@@ -174,11 +174,14 @@ function checkAuthorizationForFieldRecursively(fieldRequest: FieldRequest, error
         const argValue = fieldRequest.args[argumentName];
         const argDef = fieldRequest.field.args.find(arg => arg.name == argumentName);
         const inputFieldErrors: InputFieldAuthorizationError[] = [];
-        if (typeof argValue == 'object' && argDef && argDef.type instanceof GraphQLInputObjectType) {
-            for (const fieldName in argValue) {
-                const field = argDef.type.getFields()[fieldName];
-                if (field) {
-                    inputFieldErrors.push(...checkAuthorizationForInputField(field, context, argValue[fieldName], [fieldName]));
+        if (typeof argValue == 'object' && argDef) {
+            const argType = getNamedType(argDef.type);
+            if (argType instanceof GraphQLInputObjectType) {
+                for (const fieldName in argValue) {
+                    const field = argType.getFields()[fieldName];
+                    if (field) {
+                        inputFieldErrors.push(...checkAuthorizationForInputField(field, context, argValue[fieldName], [fieldName]));
+                    }
                 }
             }
         }
@@ -225,9 +228,10 @@ function checkAuthorizationForInputField(inputField: GraphQLInputField, context:
     }
 
     const errors = [];
-    if (inputValue && typeof inputValue == 'object' && inputField.type instanceof GraphQLInputObjectType) {
+    const fieldType = getNamedType(inputField.type);
+    if (inputValue && typeof inputValue == 'object' && fieldType instanceof GraphQLInputObjectType) {
         for (const fieldName in inputValue) {
-            const field = inputField.type.getFields()[fieldName];
+            const field = fieldType.getFields()[fieldName];
             if (field) {
                 errors.push(...checkAuthorizationForInputField(field, context, (inputValue as PlainObject)[fieldName], [
                     ...inputPath, fieldName
