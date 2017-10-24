@@ -99,9 +99,9 @@ export class ArgumentAuthorizationError {
     toString() {
         let fieldPart = '';
         if (this.inputFieldErrors.length == 1) {
-            fieldPart += ' (input field: ';
+            fieldPart += ' (field: ';
         } else if (this.inputFieldErrors.length > 1) {
-            fieldPart += ' (input fields: ';
+            fieldPart += ' (fields: ';
         }
         fieldPart += this.inputFieldErrors.join(', ');
         if (this.inputFieldErrors.length) {
@@ -147,7 +147,15 @@ export class AuthorizationError {
             argPart += ' with argument' + (this.argumentErrors.length > 1 ? 's' : '') + ' ' +
                 this.argumentErrors.join(', ');
         }
-        return `Not authorized to ${this.accessKind == AccessKind.WRITE ? 'write' : 'read'} ${this.path.join('.')}` +
+        // regarding 'call' and 'select':
+        // Everything is a field selection, so 'select' would be technically. correct However, for mutations, it is
+        // clearer to use the term 'call', as mutations are a kind of function calls.
+        // The READ vs. WRITE aspect should become clear to the user from the error messages - e.g.
+        // - Not authorized to call updateDelivery with argument input (field: secretField)
+        // - Not authorized to call updateDelivery.secretField
+        // - Not authorized to select allDeliveries.secretField
+        // - Not authorized to select allDeliveries with argument filter (field: secretField)
+        return `Not authorized to ${this.accessKind == AccessKind.WRITE ? 'call' : 'select'} ${this.path.join('.')}` +
             argPart;
     }
 }
