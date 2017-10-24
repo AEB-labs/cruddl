@@ -1,0 +1,118 @@
+{
+  "create": {
+    "data": {
+      "createDelivery": {
+        "deliveryNumber": "the-dn",
+        "consignee": {
+          "city": "Saint Nowhere",
+          "country": {
+            "isoCode": "DE",
+            "description": [
+              {
+                "languageIsoCode": "DE",
+                "translation": "Deutschland"
+              },
+              {
+                "languageIsoCode": "EN",
+                "translation": "Germany"
+              }
+            ]
+          },
+          "street": "Sunrise Avenue 1"
+        },
+        "contentInfo": [
+          {
+            "translation": "für dich",
+            "languageIsoCode": "de"
+          },
+          {
+            "translation": "for you",
+            "languageIsoCode": "en"
+          }
+        ],
+        "destinationCountry": {
+          "isoCode": "GB"
+        },
+        "dgInfo": {
+          "flashpoint": "37 °C",
+          "unNumber": "123",
+          "notices": [
+            "handle with care",
+            "do not throw"
+          ]
+        },
+        "serialNumbers": [
+          "456",
+          "424242"
+        ],
+        "items": [
+          {
+            "itemNumber": "44"
+          },
+          {
+            "itemNumber": "45"
+          }
+        ]
+      }
+    }
+  },
+  "query": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "the-dn",
+          "consignee": {
+            "city": "Saint Nowhere",
+            "country": {
+              "isoCode": "DE",
+              "description": [
+                {
+                  "languageIsoCode": "DE",
+                  "translation": "Deutschland"
+                },
+                {
+                  "languageIsoCode": "EN",
+                  "translation": "Germany"
+                }
+              ]
+            },
+            "street": "Sunrise Avenue 1"
+          },
+          "contentInfo": [
+            {
+              "translation": "für dich",
+              "languageIsoCode": "de"
+            },
+            {
+              "translation": "for you",
+              "languageIsoCode": "en"
+            }
+          ],
+          "destinationCountry": {
+            "isoCode": "GB"
+          },
+          "dgInfo": {
+            "flashpoint": "37 °C",
+            "unNumber": "123",
+            "notices": [
+              "handle with care",
+              "do not throw"
+            ]
+          },
+          "serialNumbers": [
+            "456",
+            "424242"
+          ],
+          "items": [
+            {
+              "itemNumber": "44"
+            },
+            {
+              "itemNumber": "45"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

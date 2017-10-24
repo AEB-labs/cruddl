@@ -1,4 +1,4 @@
-type Delivery @rootEntity @indices(indices: [{ fields: ["items", "items[*]."]}], readWrite: "admin") @dataDrivenPermissions(rolePattern: "asdf|asdf|asdf") {
+type Delivery @rootEntity {
     deliveryNumber: String @key
     serialNumbers: [String]
     consignee: Address
@@ -6,7 +6,7 @@ type Delivery @rootEntity @indices(indices: [{ fields: ["items", "items[*]."]}],
     dgInfo: DangerousGoodsInfo
     items: [DeliveryItem]
     handlingUnits: [HandlingUnit] @relation
-    roles: [String] @validate(every: "item.startsWith('forwarder-')")
+    destinationCountry: Country @reference
 
     totalValue: String @roles(readWrite: ["accounting"])
 }

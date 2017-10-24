@@ -1,4 +1,5 @@
 type DangerousGoodsInfo @entityExtension {
     unNumber: String
     flashpoint: String
+    notices: [ String ]
 }
