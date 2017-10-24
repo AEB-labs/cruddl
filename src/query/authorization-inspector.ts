@@ -1,8 +1,13 @@
 import { DistilledOperation, FieldRequest, FieldSelection } from '../graphql/query-distiller';
-import { getNamedType, GraphQLField, GraphQLInputField, GraphQLInputObjectType, GraphQLInputType } from 'graphql';
+import {
+    getNamedType, getNullableType, GraphQLField, GraphQLInputField, GraphQLInputObjectType, GraphQLInputType,
+    GraphQLList, GraphQLNonNull
+} from 'graphql';
 import { getAllowedReadRoles, getAllowedWriteRoles } from '../schema/schema-utils';
 import { intersection } from 'lodash';
 import { AnyValue, compact, PlainObject } from '../utils/utils';
+import { isListType } from '../graphql/schema-utils';
+import { error, isArray } from 'util';
 
 export function checkAuthorization(operation: DistilledOperation, requestRoles: string[]): AuthorizationCheckResult {
     const errorList: AuthorizationError[] = [];
@@ -38,7 +43,7 @@ export class AuthorizationCheckResult {
 }
 export class InputFieldAuthorizationError {
     constructor(params: {
-        inputPath: string[],
+        inputPath: (string|number)[],
         inputField: GraphQLInputField,
         accessKind: AccessKind,
         allowedRoles: string[],
@@ -51,14 +56,28 @@ export class InputFieldAuthorizationError {
         this.requestRoles = params.requestRoles;
     }
 
-    public readonly inputPath: string[];
+    public readonly inputPath: (string|number)[];
     public readonly inputField: GraphQLInputField;
     public readonly accessKind: AccessKind;
     public readonly allowedRoles: string[];
     public readonly requestRoles: string[];
 
     toString() {
-        return `${this.inputPath.join('.')}`;
+        let path = '';
+        let first = true;
+        for (const segment of this.inputPath) {
+            if (first) {
+                path += segment;
+                first = false;
+            } else {
+                if (typeof segment == 'number') {
+                    path += `[${segment}]`;
+                } else {
+                    path += `.${segment}`;
+                }
+            }
+        }
+        return path;
     }
 }
 
@@ -173,18 +192,11 @@ function checkAuthorizationForFieldRecursively(fieldRequest: FieldRequest, error
     for (const argumentName in fieldRequest.args) {
         const argValue = fieldRequest.args[argumentName];
         const argDef = fieldRequest.field.args.find(arg => arg.name == argumentName);
-        const inputFieldErrors: InputFieldAuthorizationError[] = [];
-        if (typeof argValue == 'object' && argDef) {
-            const argType = getNamedType(argDef.type);
-            if (argType instanceof GraphQLInputObjectType) {
-                for (const fieldName in argValue) {
-                    const field = argType.getFields()[fieldName];
-                    if (field) {
-                        inputFieldErrors.push(...checkAuthorizationForInputField(field, context, argValue[fieldName], [fieldName]));
-                    }
-                }
-            }
+        if (!argDef) {
+            continue;
         }
+        const inputFieldErrors: InputFieldAuthorizationError[] = [];
+        checkAuthorizationForInputValue(argDef.type, context, argValue, [], inputFieldErrors);
         if (inputFieldErrors.length) {
             argumentErrors.push(new ArgumentAuthorizationError({
                 argumentName,
@@ -215,31 +227,44 @@ function checkAuthorizationForFieldRecursively(fieldRequest: FieldRequest, error
     return new FieldRequest(fieldRequest.field, fieldRequest.parentType, fieldRequest.schema, newSelectionSet, fieldRequest.args);
 }
 
-function checkAuthorizationForInputField(inputField: GraphQLInputField, context: AuthorizationCheckContext, inputValue: AnyValue, inputPath: string[]): InputFieldAuthorizationError[] {
+function checkAuthorizationForInputField(inputField: GraphQLInputField, context: AuthorizationCheckContext, inputValue: AnyValue, inputPath: (string|number)[], errorList: InputFieldAuthorizationError[]): void {
     const allowedRoles = getAllowedRoles(inputField, context.accessKind);
     if (allowedRoles && !intersection(allowedRoles, context.requestRoles).length) {
-        return [ new InputFieldAuthorizationError({
+        errorList.push(new InputFieldAuthorizationError({
             inputPath,
             accessKind: context.accessKind,
             requestRoles: context.requestRoles,
             allowedRoles,
             inputField
-        }) ];
+        }));
+        return;
+    }
+    checkAuthorizationForInputValue(inputField.type, context, inputValue, inputPath, errorList);
+}
+
+function checkAuthorizationForInputValue(type: GraphQLInputType, context: AuthorizationCheckContext, inputValue: AnyValue, inputPath: (string|number)[], errorList: InputFieldAuthorizationError[]): void {
+    if (type instanceof GraphQLNonNull) {
+        checkAuthorizationForInputValue(type.ofType, context, inputValue, inputPath, errorList);
+        return;
     }
 
-    const errors = [];
-    const fieldType = getNamedType(inputField.type);
-    if (inputValue && typeof inputValue == 'object' && fieldType instanceof GraphQLInputObjectType) {
-        for (const fieldName in inputValue) {
-            const field = fieldType.getFields()[fieldName];
+    if (type instanceof GraphQLList && isArray(inputValue)) {
+        inputValue.forEach((itemValue, index) => {
+            const newInputPath = [ ...inputPath, index ];
+            checkAuthorizationForInputValue(type.ofType, context, itemValue, newInputPath, errorList);
+        });
+        return;
+    }
+
+    if (type instanceof GraphQLInputObjectType && inputValue && typeof inputValue == 'object') {
+        for (const fieldName of Object.keys(inputValue)) {
+            const field = type.getFields()[fieldName];
             if (field) {
-                errors.push(...checkAuthorizationForInputField(field, context, (inputValue as PlainObject)[fieldName], [
-                    ...inputPath, fieldName
-                ]));
+                const newInputPath = [ ...inputPath, fieldName ];
+                checkAuthorizationForInputField(field, context, (inputValue as PlainObject)[fieldName], newInputPath, errorList);
             }
         }
     }
-    return errors;
 }
 
 function getAllowedRoles(field: GraphQLField<any, any>|GraphQLInputField, accessKind: AccessKind) {
