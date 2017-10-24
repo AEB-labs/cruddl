@@ -17,6 +17,7 @@ import {AddRootMutationTypeTransformer} from "./ast-transformation-modules/add-r
 import {AddMetaFieldsAlongWithFilterableFieldsTransformer} from "./ast-transformation-modules/add-meta-fields-along-with-filterable-fields";
 import {AddQueryMetaTypeTransformer} from "./ast-transformation-modules/add-query-meta-type";
 import {cloneDeep} from "lodash";
+import { PropagateEntityRolesToFieldsTransformer } from './ast-transformation-modules/propagate-entity-roles-to-fields';
 
 const transformers = [
     // Add basic stuff to object types
@@ -24,6 +25,9 @@ const transformers = [
     AddMissingEntityFieldsTransformer,
     // TODO: check if some input stuff should be nullable in schema.
     // NonNullableListsTransformer,
+
+    // Complete object fields
+    PropagateEntityRolesToFieldsTransformer,
 
     // add query parameters
     AddFilterInputTypesTransformer,

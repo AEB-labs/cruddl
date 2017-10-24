@@ -10,7 +10,10 @@
     "data": {
       "Delivery": {
         "deliveryNumber": "1000173",
-        "totalValue": "EUR 1024.00"
+        "totalValue": "EUR 1024.00",
+        "forwarder": {
+          "name": "DHL"
+        }
       },
       "allDeliveries": [
         {
@@ -34,7 +37,12 @@
           "deliveryNumber": "1000173"
         }
       ],
-      "throughRelation": []
+      "throughRelation": [],
+      "toUnaccessibleEntity": [
+        {
+          "deliveryNumber": "1000173"
+        }
+      ]
     }
   },
   "sort": {

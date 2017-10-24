@@ -1,5 +1,5 @@
 {
-  "roles": [ "accounting" ],
+  "roles": [ "accounting", "logistics" ],
   "rootEntities": {
     "Country": [
       {
@@ -112,6 +112,14 @@
       {
         "@id": "3",
         "huNumber": "1000021"
+      }
+    ],
+
+    "Forwarder": [
+      {
+        "@id": "1",
+        "name": "DHL",
+        "deliveries": [ "@{ids/Delivery/1}" ]
       }
     ]
   }

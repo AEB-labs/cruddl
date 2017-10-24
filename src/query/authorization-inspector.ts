@@ -71,7 +71,9 @@ export class InputFieldAuthorizationError {
             if (typeof segment == 'number') {
                 path += `[${segment}]`;
             } else {
-                if (!first) {
+                if (first) {
+                    path += 'field ';
+                } else {
                     path += '.';
                 }
                 path += segment;

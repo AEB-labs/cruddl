@@ -9,8 +9,14 @@ type Delivery @rootEntity {
     destinationCountry: Country @reference
 
     totalValue: String @roles(readWrite: ["accounting"])
+    forwarder: Forwarder @relation
 }
 
 type DeliveryItem @childEntity {
     itemNumber: String
+}
+
+type Forwarder @rootEntity @roles(readWrite: ["logistics"]) {
+    name: String @key
+    deliveries: [Delivery] @relation
 }

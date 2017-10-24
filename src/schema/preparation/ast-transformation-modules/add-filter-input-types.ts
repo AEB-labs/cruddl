@@ -138,7 +138,6 @@ export class AddFilterInputTypesTransformer implements ASTTransformer {
                         ];
                     case OBJECT_TYPE_DEFINITION:
                         // use the embedded object filter
-                        // TODO relations and references @roles (but maybe do this in advance in a separate module?)
                         return [this.buildNamedTypeFieldForField(name, getFilterTypeName(namedTypeDefinition), field)];
                     default:
                         return []

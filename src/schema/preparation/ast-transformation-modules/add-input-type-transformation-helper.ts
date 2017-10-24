@@ -108,22 +108,12 @@ export function intersectRolesDirectives(directiveNodes: DirectiveNode[]): Direc
 export function buildInputFieldFromNonListField(ast: DocumentNode, field: FieldDefinitionNode, namedType: NamedTypeNode ) {
     const typeDefinition = getNamedTypeDefinitionAST(ast, namedType.name.value);
     if (typeDefinition.kind === OBJECT_TYPE_DEFINITION) {
-        const isReference = hasDirectiveWithName(field, REFERENCE_DIRECTIVE);
-        const isRelation = hasDirectiveWithName(field, RELATION_DIRECTIVE);
-
-        if (isReference || isRelation) {
-            // intersect our roles with the roles of the given entities
-            const entityRoles = findDirectiveWithName(typeDefinition, ROLES_DIRECTIVE);
-            const fieldRoles = findDirectiveWithName(field, ROLES_DIRECTIVE);
-            // note: if roles directives are missing, we treat this as *no restriction*. On the field this is exactly
-            // how it is defined. On the entity, we have a validator that asserts there is a directive. If we decide
-            // to remove this validator for some reason, this here will be consistent with authorization-inspector.
-            const intersectedRoles = intersectRolesDirectives(compact([entityRoles, fieldRoles]));
-
-            // references are referred via @key type, relations by IDs
-            const type = isReference ? getReferenceKeyField(typeDefinition) : GraphQLID.name;
-
-            return buildInputValueNode(field.name.value, type, field.loc, intersectedRoles ? [ intersectedRoles ] : undefined);
+        if (hasDirectiveWithName(field, REFERENCE_DIRECTIVE)) {
+            const keyType = getReferenceKeyField(typeDefinition);
+            return buildInputValueNodeFromField(field.name.value, keyType, field);
+        }
+        if (hasDirectiveWithName(field, RELATION_DIRECTIVE)) {
+            return buildInputValueNodeFromField(field.name.value, GraphQLID.name, field);
         }
 
         // we excluded lists, relations and references -> no child entities, no root entities
