@@ -6,13 +6,15 @@ import {OnlyAllowedTypesValidator} from "./ast-validation-modules/only-allowed-t
 import {KeyFieldValidator} from "./ast-validation-modules/key-field-validator";
 import {EntityDirectiveNestingValidator} from "./ast-validation-modules/entity-directive-nesting-validator";
 import {NoListOfReferencesValidator} from "./ast-validation-modules/no-list-of-references-validator";
+import {RelationsOnlyOnRootEntitiesValidator} from "./ast-validation-modules/relations-only-on-root-entities-validator";
 
 const validators = [
     NoDuplicateTypesValidator,
     OnlyAllowedTypesValidator,
     KeyFieldValidator,
     EntityDirectiveNestingValidator,
-    NoListOfReferencesValidator
+    NoListOfReferencesValidator,
+    RelationsOnlyOnRootEntitiesValidator
 ];
 
 export interface ASTValidator {
