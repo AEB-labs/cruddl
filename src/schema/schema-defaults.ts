@@ -61,12 +61,15 @@ export const ORDER_BY_ARG = 'orderBy';
 export const CURSOR_FIELD = '_cursor';
 export const AFTER_ARG = 'after';
 export const FIRST_ARG = 'first';
-export const KEY_FIELD_DIRECTIVE = 'key'
+export const KEY_FIELD_DIRECTIVE = 'key';
 
 export const COUNT_META_FIELD = 'count';
 
-export const MUTATION_INPUT_ARG = 'input';export const MUTATION_ID_ARG = 'id';
+export const MUTATION_INPUT_ARG = 'input';
+export const MUTATION_ID_ARG = 'id';
 
 export const ROLES_DIRECTIVE = 'roles';
 export const ROLES_READ_ARG = 'read';
 export const ROLES_READ_WRITE_ARG = 'readWrite';
+
+export const OBJECT_TYPE_ENTITY_DIRECTIVES = [ROOT_ENTITY_DIRECTIVE, CHILD_ENTITY_DIRECTIVE, ENTITY_EXTENSION_DIRECTIVE, VALUE_OBJECT_DIRECTIVE];
