@@ -361,3 +361,10 @@ export function getReferenceKeyField(objectTypeWithKeyField: ObjectTypeDefinitio
     }
     return getTypeNameIgnoringNonNullAndList(field.type);
 }
+
+export function getNodeByName<T extends {name: NameNode}>(listOfNodes: T[]|undefined, name: string): T|undefined {
+    if (!listOfNodes) {
+        return undefined;
+    }
+    return listOfNodes.find(node => node.name.value === name);
+}
