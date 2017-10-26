@@ -6,7 +6,8 @@ cache:
     - arangodb
 
 stages:
-  - test
+ - test
+ - deploy
 
 test:
   stage: test
@@ -15,3 +16,12 @@ test:
     - npm install
     - npm run test:coverage
     - npm run test:dropdb
+
+deploy-npm:
+  stage: deploy
+  script:
+    - npm install
+    - npm publish
+  #only:
+  #  - /^release-.*$/
+  when: manual
