@@ -30,7 +30,17 @@ export interface ASTValidator {
 }
 
 export function validateModel(ast: DocumentNode): ValidationResult {
-    return new ValidationResult(flatMap(validators, Validator => new Validator().validate(ast)));
+    return new ValidationResult(flatMap(validators, Validator => {
+        // All validators rely on a valid model except for the things they test.
+        // That's why they allow them to throw errors due to a bad model.
+        // To keep the validators simple, we just ignore these errors and
+        // trust on the appropriate validator for the modelling mistake.
+        try {
+            return new Validator().validate(ast)
+        } catch(e) {
+            return []
+        }
+    }));
 }
 export class ValidationResult {
 
