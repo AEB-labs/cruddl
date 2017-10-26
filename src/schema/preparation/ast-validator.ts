@@ -8,6 +8,7 @@ import {EntityDirectiveNestingValidator} from "./ast-validation-modules/entity-d
 import {NoListOfReferencesValidator} from "./ast-validation-modules/no-list-of-references-validator";
 import {RelationsOnlyInRootEntitiesValidator} from "./ast-validation-modules/relations-only-in-root-entities-validator";
 import {RelationsOnlyToRootEntitiesValidator} from "./ast-validation-modules/relations-only-to-root-entities-validator";
+import {ReferenceOnlyToRootEntitiesWithKeyFieldValidator} from "./ast-validation-modules/references-only-to-root-entities-with-key-field-validator";
 
 const validators = [
     NoDuplicateTypesValidator,
@@ -16,7 +17,8 @@ const validators = [
     EntityDirectiveNestingValidator,
     NoListOfReferencesValidator,
     RelationsOnlyInRootEntitiesValidator,
-    RelationsOnlyToRootEntitiesValidator
+    RelationsOnlyToRootEntitiesValidator,
+    ReferenceOnlyToRootEntitiesWithKeyFieldValidator
 ];
 
 export interface ASTValidator {
