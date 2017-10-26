@@ -11,6 +11,7 @@ import {RelationsOnlyToRootEntitiesValidator} from "./ast-validation-modules/rel
 import {ReferenceOnlyToRootEntitiesWithKeyFieldValidator} from "./ast-validation-modules/references-only-to-root-entities-with-key-field-validator";
 import {NoUnusedNonRootObjectTypesValidator} from "./ast-validation-modules/no-unused-non-root-object-types-validator";
 import {NoEmptyObjectTypesValidator} from "./ast-validation-modules/no-empty-object-types-validator";
+import {NoListsOfListsValidator} from "./ast-validation-modules/no-lists-of-lists-validator";
 
 const validators = [
     NoDuplicateTypesValidator,
@@ -22,7 +23,8 @@ const validators = [
     RelationsOnlyToRootEntitiesValidator,
     ReferenceOnlyToRootEntitiesWithKeyFieldValidator,
     NoUnusedNonRootObjectTypesValidator,
-    NoEmptyObjectTypesValidator
+    NoEmptyObjectTypesValidator,
+    NoListsOfListsValidator
 ];
 
 export interface ASTValidator {
