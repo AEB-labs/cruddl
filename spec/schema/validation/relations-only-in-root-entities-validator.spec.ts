@@ -13,9 +13,9 @@ import {
     VALIDATION_ERROR_LIST_OF_REFERENCES_NOT_SUPPORTED
 } from "../../../src/schema/preparation/ast-validation-modules/no-list-of-references-validator";
 import {
-    RelationsOnlyOnRootEntitiesValidator,
-    VALIDATION_ERROR_RELATION_ON_NON_ROOT_ENTITY
-} from "../../../src/schema/preparation/ast-validation-modules/relations-only-on-root-entities-validator";
+    RelationsOnlyInRootEntitiesValidator,
+    VALIDATION_ERROR_RELATION_IN_NON_ROOT_ENTITY
+} from "../../../src/schema/preparation/ast-validation-modules/relations-only-in-root-entities-validator";
 
 const modelWithRelationInNonRoot = `
             type Stuff @rootEntity {
@@ -35,18 +35,18 @@ const modelWithoutRelationInNonRoot = `
             }
         `;
 
-describe('relations only on root entities validator', () => {
+describe('relations only in root entities validator', () => {
     it('rejects @relation in non-@rootEntity', () => {
         const ast = parse(modelWithRelationInNonRoot);
-        const validationResult = new ValidationResult(new RelationsOnlyOnRootEntitiesValidator().validate(ast));
+        const validationResult = new ValidationResult(new RelationsOnlyInRootEntitiesValidator().validate(ast));
         expect(validationResult.hasErrors()).toBeTruthy();
         expect(validationResult.messages.length).toBe(1);
-        expect(validationResult.messages[0].msgKey).toBe(VALIDATION_ERROR_RELATION_ON_NON_ROOT_ENTITY);
+        expect(validationResult.messages[0].msgKey).toBe(VALIDATION_ERROR_RELATION_IN_NON_ROOT_ENTITY);
     });
 
     it('accepts @relation in @rootEntity', () => {
         const ast = parse(modelWithoutRelationInNonRoot);
-        const validationResult = new ValidationResult(new RelationsOnlyOnRootEntitiesValidator().validate(ast));
+        const validationResult = new ValidationResult(new RelationsOnlyInRootEntitiesValidator().validate(ast));
         expect(validationResult.hasErrors()).toBeFalsy();
     })
 
