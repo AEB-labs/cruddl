@@ -13,13 +13,13 @@ export class EveryRootEntityMustDeclareOneRoleValidator implements ASTValidator 
             getRootEntityTypes(ast).forEach(rootEntity => {
                 const rolesDirective =  findDirectiveWithName(rootEntity, ROLES_DIRECTIVE);
                 if (!rolesDirective || !rolesDirective.arguments) {
-                    validationMessages.push(ValidationMessage.error(VALIDATION_ERROR_MISSING_ROLE_ON_ROOT_ENTITY))
+                    validationMessages.push(ValidationMessage.error(VALIDATION_ERROR_MISSING_ROLE_ON_ROOT_ENTITY, {}, !!rolesDirective ? rolesDirective.loc : rootEntity.loc))
                 } else {
                     const readArg = getNodeByName(rolesDirective.arguments, ROLES_READ_ARG);
                     const readWriteArg = getNodeByName(rolesDirective.arguments, ROLES_READ_WRITE_ARG);
                     if ((!readArg || !readArg.value || readArg.value.kind !== STRING || !readArg.value.value) &&
                         (!readWriteArg || !readWriteArg.value || readWriteArg.value.kind !== STRING || !readWriteArg.value.value)) {
-                        validationMessages.push(ValidationMessage.error(VALIDATION_ERROR_MISSING_ROLE_ON_ROOT_ENTITY))
+                        validationMessages.push(ValidationMessage.error(VALIDATION_ERROR_MISSING_ROLE_ON_ROOT_ENTITY, {}, rolesDirective.loc))
                     }
                 }
             });
