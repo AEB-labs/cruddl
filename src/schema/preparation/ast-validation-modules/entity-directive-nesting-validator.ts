@@ -2,14 +2,18 @@ import {ASTValidator} from "../ast-validator";
 import {ValidationMessage} from "../validation-message";
 import {DocumentNode, FieldDefinitionNode, Location, ObjectTypeDefinitionNode, TypeNode} from "graphql";
 import {
-    getNamedTypeDefinitionAST, getObjectTypes, getTypeNameIgnoringNonNullAndList,
+    getNamedTypeDefinitionAST,
+    getObjectTypes,
+    getTypeNameIgnoringNonNullAndList,
     hasDirectiveWithName
 } from "../../schema-utils";
 import {flatMap} from "../../../utils/utils";
 import {
     CHILD_ENTITY_DIRECTIVE,
     ENTITY_EXTENSION_DIRECTIVE,
-    OBJECT_TYPE_ENTITY_DIRECTIVES, REFERENCE_DIRECTIVE, RELATION_DIRECTIVE,
+    OBJECT_TYPE_ENTITY_DIRECTIVES,
+    REFERENCE_DIRECTIVE,
+    RELATION_DIRECTIVE,
     ROOT_ENTITY_DIRECTIVE,
     VALUE_OBJECT_DIRECTIVE
 } from "../../schema-defaults";

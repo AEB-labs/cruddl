@@ -4,7 +4,10 @@ import {DocumentNode, ObjectTypeDefinitionNode} from "graphql";
 import {getObjectTypes} from "../../schema-utils";
 import {flatMap} from "../../../utils/utils";
 import {
-    CHILD_ENTITY_DIRECTIVE, ENTITY_EXTENSION_DIRECTIVE, OBJECT_TYPE_ENTITY_DIRECTIVES, ROOT_ENTITY_DIRECTIVE,
+    CHILD_ENTITY_DIRECTIVE,
+    ENTITY_EXTENSION_DIRECTIVE,
+    OBJECT_TYPE_ENTITY_DIRECTIVES,
+    ROOT_ENTITY_DIRECTIVE,
     VALUE_OBJECT_DIRECTIVE
 } from "../../schema-defaults";
 
