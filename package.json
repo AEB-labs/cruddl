@@ -10,6 +10,8 @@
     "test": "tsc --noEmit --skipLibCheck && node momo-test",
     "test:dropdb": "ts-node ./spec/regression/drop-test-db.ts",
     "test:perf": "node momo-bench",
+    "test:coverage": "nyc --reporter=text-summary npm test",
+    "test:coverage:full": "nyc --reporter=html npm test",
     "start": "node momo"
   },
   "repository": {
@@ -39,6 +41,7 @@
     "graphql": "~0.11.7",
     "graphql-server-core": "~1.1.0",
     "graphql-server-express": "^1.1.2",
+    "nyc": "^11.2.1",
     "jasmine": "^2.5.3",
     "jasmine-promises": "^0.4.1",
     "jasmine-spec-reporter": "^3.2.0",
@@ -61,5 +64,18 @@
   "peerDependencies": {
     "@types/graphql": "~0.10.4 || ~0.11.0",
     "graphql": "~0.10.4 || ~0.11.0"
+  },
+  "nyc": {
+    "include": [
+      "src/*.ts",
+      "src/**/*.ts"
+    ],
+    "extension": [
+      ".ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ],
+    "all": true
   }
 }
