@@ -1,4 +1,4 @@
-import {DocumentNode, Location} from "graphql";
+import {DocumentNode} from "graphql";
 import {Severity, ValidationMessage} from "./validation-message";
 import {flatMap} from "../../utils/utils";
 import {NoDuplicateTypesValidator} from "./ast-validation-modules/no-duplicate-types-validator";
@@ -7,6 +7,7 @@ import {KeyFieldValidator} from "./ast-validation-modules/key-field-validator";
 import {EntityDirectiveNestingValidator} from "./ast-validation-modules/entity-directive-nesting-validator";
 import {NoListOfReferencesValidator} from "./ast-validation-modules/no-list-of-references-validator";
 import {RelationsOnlyInRootEntitiesValidator} from "./ast-validation-modules/relations-only-in-root-entities-validator";
+import {RelationsOnlyToRootEntitiesValidator} from "./ast-validation-modules/relations-only-to-root-entities-validator";
 
 const validators = [
     NoDuplicateTypesValidator,
@@ -14,7 +15,8 @@ const validators = [
     KeyFieldValidator,
     EntityDirectiveNestingValidator,
     NoListOfReferencesValidator,
-    RelationsOnlyInRootEntitiesValidator
+    RelationsOnlyInRootEntitiesValidator,
+    RelationsOnlyToRootEntitiesValidator
 ];
 
 export interface ASTValidator {
