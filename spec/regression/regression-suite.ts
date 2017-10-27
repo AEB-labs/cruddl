@@ -57,7 +57,11 @@ export class RegressionSuite {
         const gqlPath = path.resolve(this.testsPath, name + '.graphql');
         const resultPath = path.resolve(this.testsPath, name + '.result.json');
         const variablesPath = path.resolve(this.testsPath, name + '.vars.json');
-        const contextPath = path.resolve(this.testsPath, name + '.context.json');
+        let contextPath = path.resolve(this.testsPath, name + '.context.json');
+        if (!fs.existsSync(contextPath)) {
+            contextPath = path.resolve(this.path, 'default-context.json');
+        }
+
 
         const gqlTemplate = fs.readFileSync(gqlPath, 'utf-8');
         const gqlSource = this.testDataEnvironment.fillTemplateStrings(gqlTemplate);
