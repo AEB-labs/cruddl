@@ -1,4 +1,6 @@
-import { defaultFieldResolver, GraphQLError, GraphQLResolveInfo, GraphQLSchema, print, ResponsePath } from 'graphql';
+import {
+    defaultFieldResolver, GraphQLError, GraphQLResolveInfo, GraphQLSchema, OperationDefinitionNode, print, ResponsePath
+} from 'graphql';
 import { DatabaseAdapter } from '../database/database-adapter';
 import { addOperationBasedResolvers } from '../graphql/operation-based-resolvers';
 import { distillOperation } from '../graphql/query-distiller';
@@ -13,15 +15,15 @@ export function addQueryResolvers(schema: GraphQLSchema, databaseAdapter: Databa
     // do this first because addOperationBasedResolvers supports resolver chaining and this one does not (how would it)
     schema = addAliasBasedResolvers(schema);
 
-    const authorizationCheckResultsByContext = new WeakMap<any, AuthorizationCheckResult>();
+    const authorizationCheckResultsByOperation = new WeakMap<OperationDefinitionNode, AuthorizationCheckResult>();
 
-    // this needs to be first (deeper/later in the chain) because it authorizationCheckResultsByContext needs to be filled already
+    // this needs to be first (deeper/later in the chain) because authorizationCheckResultsByOperation needs to be filled already
     schema = transformSchema(schema, {
         transformField(config) {
             return {
                 ...config,
                 resolve(source, args, context, info) {
-                    const result = authorizationCheckResultsByContext.get(context);
+                    const result = authorizationCheckResultsByOperation.get(info.operation);
                     if (result) {
                         const errors = result.errors.filter(error => comparePath(info.path, error.path));
                         if (errors.length) {
@@ -45,7 +47,7 @@ export function addQueryResolvers(schema: GraphQLSchema, databaseAdapter: Databa
                 console.log(`Authorization errors:\n${authorizationCheckResult.errors.join('\n')}`);
                 console.log(`Sanitized operation:\n${authorizationCheckResult.sanitizedOperation.describe()}`);
             }
-            authorizationCheckResultsByContext.set(operationInfo.context, authorizationCheckResult);
+            authorizationCheckResultsByOperation.set(operationInfo.operation, authorizationCheckResult);
 
             const queryTree = createQueryTree(authorizationCheckResult.sanitizedOperation);
             console.log(queryTree.describe());
