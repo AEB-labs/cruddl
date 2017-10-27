@@ -1,5 +1,5 @@
 {
-  "roles": [ "accounting", "logistics" ],
+  "roles": [ "allusers", "accounting", "logistics" ],
   "rootEntities": {
     "Country": [
       {

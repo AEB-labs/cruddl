@@ -1,4 +1,4 @@
-type Delivery @rootEntity {
+type Delivery @rootEntity @roles(readWrite: ["allusers"]) {
     deliveryNumber: String @key
     serialNumbers: [String]
     consignee: Address

@@ -1,4 +1,4 @@
-type HandlingUnit @rootEntity {
+type HandlingUnit @rootEntity @roles(readWrite: ["allusers"]) {
     huNumber: String
     delivery: Delivery @relation
 }

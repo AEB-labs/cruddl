@@ -1,4 +1,4 @@
-type Delivery @rootEntity {
+type Delivery @rootEntity @roles(readWrite: ["allusers"]) {
     deliveryNumber: String @key
     serialNumbers: [String]
     consignee: Address
@@ -18,4 +18,5 @@ type DeliveryItem @childEntity {
 
 type Forwarder @rootEntity @roles(readWrite: ["logistics"]) {
     name: String @key
+    deliveries: [Delivery] @relation
 }
