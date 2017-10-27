@@ -1,4 +1,4 @@
-type User @rootEntity {
+type User @rootEntity @roles(readWrite: ["admin"]) {
     email: String
     firstName: String
     lastName: String

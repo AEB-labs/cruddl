@@ -1,4 +1,4 @@
-type Paper @rootEntity {
+type Paper @rootEntity @roles(readWrite: ["admin"]) {
     key: String @key # need a key field for the reference
     title: String
     publishDate: String #datetime
