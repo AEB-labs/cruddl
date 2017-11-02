@@ -1,17 +1,5 @@
-import {validateModel, ValidationResult} from "../../../src/schema/preparation/ast-validator";
+import {ValidationResult} from "../../../src/schema/preparation/ast-validator";
 import {parse} from "graphql";
-import {
-    OnlyAllowedTypesValidator,
-    VALIDATION_ERROR_INVALID_TYPE_KIND
-} from "../../../src/schema/preparation/ast-validation-modules/only-allowed-types-validator";
-import {
-    NoListsOfListsValidator,
-    VALIDATION_ERROR_LISTS_OF_LISTS_NOT_ALLOWED
-} from "../../../src/schema/preparation/ast-validation-modules/no-lists-of-lists-validator";
-import {
-    EveryRootEntityMustDeclareOneRoleValidator,
-    VALIDATION_ERROR_MISSING_ROLE_ON_ROOT_ENTITY
-} from "../../../src/schema/preparation/ast-validation-modules/every-root-entity-must-declare-one-role-validator";
 import {
     NoRolesOnValueObjectsValidator,
     VALIDATION_ERROR_ROLES_NOT_ALLOWED_FOR_VALUE_OBJECTS

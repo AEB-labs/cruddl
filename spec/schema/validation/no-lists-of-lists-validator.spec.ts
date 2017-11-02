@@ -1,9 +1,5 @@
-import {validateModel, ValidationResult} from "../../../src/schema/preparation/ast-validator";
+import {ValidationResult} from "../../../src/schema/preparation/ast-validator";
 import {parse} from "graphql";
-import {
-    OnlyAllowedTypesValidator,
-    VALIDATION_ERROR_INVALID_TYPE_KIND
-} from "../../../src/schema/preparation/ast-validation-modules/only-allowed-types-validator";
 import {
     NoListsOfListsValidator,
     VALIDATION_ERROR_LISTS_OF_LISTS_NOT_ALLOWED

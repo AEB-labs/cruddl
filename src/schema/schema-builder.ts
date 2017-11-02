@@ -3,7 +3,7 @@ import {
     executePostMergeTransformationPipeline,
     executePreMergeTransformationPipeline
 } from "./preparation/transformation-pipeline";
-import {validateModel} from "./preparation/ast-validator";
+import {validatePostMerge} from "./preparation/ast-validator";
 import {implementScalarTypes} from './scalars/implement-scalar-types';
 import {SchemaConfig} from "../config/schema-config";
 import {cloneDeep} from "lodash";
@@ -21,7 +21,7 @@ export function createSchema(inputSchemaConfig: SchemaConfig): GraphQLSchema {
     executePreMergeTransformationPipeline(schemaParts, rootContext);
     const mergedSchema: DocumentNode = mergeSchemaDefinition(schemaConfig);
 
-    const validationResult = validateModel(mergedSchema);
+    const validationResult = validatePostMerge(mergedSchema);
     if(validationResult.hasErrors()) {
         throw new Error('Invalid model:\n' + validationResult.messages.map(msg => msg.toString()).join('\n'))
     } else {

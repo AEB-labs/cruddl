@@ -1,4 +1,4 @@
-import {validateModel, ValidationResult} from "../../../src/schema/preparation/ast-validator";
+import {ValidationResult} from "../../../src/schema/preparation/ast-validator";
 import {parse} from "graphql";
 import {
     NoDuplicateTypesValidator,

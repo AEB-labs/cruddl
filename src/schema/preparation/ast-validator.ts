@@ -15,34 +15,34 @@ import {NoListsOfListsValidator} from "./ast-validation-modules/no-lists-of-list
 import {EveryRootEntityMustDeclareOneRoleValidator} from "./ast-validation-modules/every-root-entity-must-declare-one-role-validator";
 import {NoRolesOnValueObjectsValidator} from "./ast-validation-modules/no-roles-on-value-objects-validator";
 
-const validators = [
-    NoDuplicateTypesValidator,
-    OnlyAllowedTypesValidator,
-    KeyFieldValidator,
-    EntityDirectiveNestingValidator,
-    NoListOfReferencesValidator,
-    RelationsOnlyInRootEntitiesValidator,
-    RelationsOnlyToRootEntitiesValidator,
-    ReferenceOnlyToRootEntitiesWithKeyFieldValidator,
-    NoUnusedNonRootObjectTypesValidator,
-    NoEmptyObjectTypesValidator,
-    NoListsOfListsValidator,
-    EveryRootEntityMustDeclareOneRoleValidator,
-    NoRolesOnValueObjectsValidator
+const postMergeValidators: ASTValidator[] = [
+    new NoDuplicateTypesValidator(),
+    new OnlyAllowedTypesValidator(),
+    new KeyFieldValidator(),
+    new EntityDirectiveNestingValidator(),
+    new NoListOfReferencesValidator(),
+    new RelationsOnlyInRootEntitiesValidator(),
+    new RelationsOnlyToRootEntitiesValidator(),
+    new ReferenceOnlyToRootEntitiesWithKeyFieldValidator(),
+    new NoUnusedNonRootObjectTypesValidator(),
+    new NoEmptyObjectTypesValidator(),
+    new NoListsOfListsValidator(),
+    new EveryRootEntityMustDeclareOneRoleValidator(),
+    new NoRolesOnValueObjectsValidator()
 ];
 
 export interface ASTValidator {
     validate(ast: DocumentNode): ValidationMessage[];
 }
 
-export function validateModel(ast: DocumentNode): ValidationResult {
-    return new ValidationResult(flatMap(validators, Validator => {
+export function validatePostMerge(ast: DocumentNode): ValidationResult {
+    return new ValidationResult(flatMap(postMergeValidators, validator => {
         // All validators rely on a valid model except for the things they test.
         // That's why they allow them to throw errors due to a bad model.
         // To keep the validators simple, we just ignore these errors and
         // trust on the appropriate validator for the modelling mistake.
         try {
-            return new Validator().validate(ast)
+            return validator.validate(ast)
         } catch(e) {
             return []
         }

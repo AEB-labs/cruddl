@@ -10,13 +10,12 @@ import {
     UNION_TYPE_DEFINITION
 } from "graphql/language/kinds";
 
-export const VALIDATION_ERROR_DUPLICATE_TYPE_NAMES = "Type name is already in use";
+export const VALIDATION_ERROR_DUPLICATE_TYPE_NAMES = "Duplicate type name";
 
 export class NoDuplicateTypesValidator implements ASTValidator {
 
-    private typeNames = new Set<string>();
-
     validate(ast: DocumentNode): ValidationMessage[] {
+        const typeNames = new Set<string>();
         const validationMessages: ValidationMessage[] = [];
         ast.definitions.forEach(definition => {
             if (definition.kind === SCALAR_TYPE_DEFINITION ||
@@ -25,10 +24,10 @@ export class NoDuplicateTypesValidator implements ASTValidator {
                 definition.kind === UNION_TYPE_DEFINITION ||
                 definition.kind === ENUM_TYPE_DEFINITION ||
                 definition.kind === INPUT_OBJECT_TYPE_DEFINITION) {
-                if (this.typeNames.has(definition.name.value)) {
+                if (typeNames.has(definition.name.value)) {
                     validationMessages.push(ValidationMessage.error(VALIDATION_ERROR_DUPLICATE_TYPE_NAMES, {name: definition.name.value}, definition.loc))
                 } else {
-                    this.typeNames.add(definition.name.value)
+                    typeNames.add(definition.name.value)
                 }
             }
         });

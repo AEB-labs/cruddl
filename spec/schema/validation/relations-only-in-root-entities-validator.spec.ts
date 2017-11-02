@@ -1,17 +1,5 @@
-import {validateModel, ValidationResult} from "../../../src/schema/preparation/ast-validator";
+import {ValidationResult} from "../../../src/schema/preparation/ast-validator";
 import {parse} from "graphql";
-import {
-    OnlyAllowedTypesValidator,
-    VALIDATION_ERROR_INVALID_TYPE_KIND
-} from "../../../src/schema/preparation/ast-validation-modules/only-allowed-types-validator";
-import {
-    ObjectTypeDirectiveCountValidator,
-    VALIDATION_ERROR_INVALID_COUNT_OF_ENTITY_DIRECTIVES
-} from "../../../src/schema/preparation/ast-validation-modules/object-type-directive-count-validator";
-import {
-    NoListOfReferencesValidator,
-    VALIDATION_ERROR_LIST_OF_REFERENCES_NOT_SUPPORTED
-} from "../../../src/schema/preparation/ast-validation-modules/no-list-of-references-validator";
 import {
     RelationsOnlyInRootEntitiesValidator,
     VALIDATION_ERROR_RELATION_IN_NON_ROOT_ENTITY
