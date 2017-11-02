@@ -1,25 +1,48 @@
-import { ASTTransformer } from '../ast-transformer';
+import {ASTTransformer} from '../transformation-pipeline';
 import {
-    DocumentNode, FieldDefinitionNode, GraphQLID, InputObjectTypeDefinitionNode, InputValueDefinitionNode,
-    ObjectTypeDefinitionNode, TypeNode
+    DocumentNode,
+    FieldDefinitionNode,
+    GraphQLID,
+    InputObjectTypeDefinitionNode,
+    InputValueDefinitionNode,
+    ObjectTypeDefinitionNode,
+    TypeNode
 } from 'graphql';
 import {
-    getChildEntityTypes, getNamedTypeDefinitionAST, getRootEntityTypes, hasDirectiveWithName
+    getChildEntityTypes,
+    getNamedTypeDefinitionAST,
+    getRootEntityTypes,
+    hasDirectiveWithName
 } from '../../schema-utils';
 import {
-    INPUT_OBJECT_TYPE_DEFINITION, LIST_TYPE, NAMED_TYPE, NON_NULL_TYPE, OBJECT_TYPE_DEFINITION
+    INPUT_OBJECT_TYPE_DEFINITION,
+    LIST_TYPE,
+    NAMED_TYPE,
+    NON_NULL_TYPE,
+    OBJECT_TYPE_DEFINITION
 } from 'graphql/language/kinds';
 import {
-    getAddChildEntityFieldName, getAddRelationFieldName, getCreateInputTypeName, getRemoveChildEntityFieldName,
-    getRemoveRelationFieldName, getUpdateChildEntityFieldName, getUpdateInputTypeName
+    getAddChildEntityFieldName,
+    getAddRelationFieldName,
+    getCreateInputTypeName,
+    getRemoveChildEntityFieldName,
+    getRemoveRelationFieldName,
+    getUpdateChildEntityFieldName,
+    getUpdateInputTypeName
 } from '../../../graphql/names';
 import {
-    CHILD_ENTITY_DIRECTIVE, ENTITY_CREATED_AT, ENTITY_UPDATED_AT, ID_FIELD, RELATION_DIRECTIVE
+    CHILD_ENTITY_DIRECTIVE,
+    ENTITY_CREATED_AT,
+    ENTITY_UPDATED_AT,
+    ID_FIELD,
+    RELATION_DIRECTIVE
 } from '../../schema-defaults';
-import { flatMap } from '../../../utils/utils';
+import {flatMap} from '../../../utils/utils';
 import {
-    buildInputFieldFromNonListField, buildInputValueListNodeFromField, buildInputValueNodeID
-} from './add-input-type-transformation-helper';
+    buildInputFieldFromNonListField,
+    buildInputValueListNodeFromField,
+    buildInputValueNodeID
+} from './add-input-type-transformation-helper-transformer';
 
 export class AddUpdateEntityInputTypesTransformer implements ASTTransformer {
 

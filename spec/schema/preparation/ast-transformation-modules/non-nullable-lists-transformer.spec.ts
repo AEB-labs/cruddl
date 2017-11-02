@@ -1,5 +1,5 @@
 import {ListTypeNode, NonNullTypeNode, ObjectTypeDefinitionNode, parse} from "graphql";
-import {NonNullableListsTransformer} from "../../../../src/schema/preparation/ast-transformation-modules/non-nullable-lists";
+import {NonNullableListsTransformer} from "../../../../src/schema/preparation/post-merge-ast-transformation-modules/non-nullable-lists-transformer";
 import {LIST_TYPE, NAMED_TYPE, NON_NULL_TYPE} from "graphql/language/kinds";
 
 const sdl1 = `

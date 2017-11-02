@@ -1,21 +1,41 @@
 import {
-    INPUT_VALUE_DEFINITION, LIST_TYPE, NAMED_TYPE, NON_NULL_TYPE, OBJECT_TYPE_DEFINITION
+    INPUT_VALUE_DEFINITION,
+    LIST_TYPE,
+    NAMED_TYPE,
+    NON_NULL_TYPE,
+    OBJECT_TYPE_DEFINITION
 } from 'graphql/language/kinds';
 import {
-    buildNameNode, findDirectiveWithName, getNamedTypeDefinitionAST, getReferenceKeyField, getRoleListFromDirective,
+    buildNameNode,
+    findDirectiveWithName,
+    getNamedTypeDefinitionAST,
+    getReferenceKeyField,
+    getRoleListFromDirective,
     hasDirectiveWithName
 } from '../../schema-utils';
 import {
     ArgumentNode,
-    DirectiveNode, DocumentNode, FieldDefinitionNode, GraphQLID, InputValueDefinitionNode, ListValueNode, Location,
-    NamedTypeNode, StringValueNode
+    DirectiveNode,
+    DocumentNode,
+    FieldDefinitionNode,
+    GraphQLID,
+    InputValueDefinitionNode,
+    ListValueNode,
+    Location,
+    NamedTypeNode,
+    StringValueNode
 } from 'graphql';
 import {
-    ID_FIELD, REFERENCE_DIRECTIVE, RELATION_DIRECTIVE, ROLES_DIRECTIVE, ROLES_READ_ARG, ROLES_READ_WRITE_ARG
+    ID_FIELD,
+    REFERENCE_DIRECTIVE,
+    RELATION_DIRECTIVE,
+    ROLES_DIRECTIVE,
+    ROLES_READ_ARG,
+    ROLES_READ_WRITE_ARG
 } from '../../schema-defaults';
-import { compact } from '../../../utils/utils';
-import { getInputTypeName } from '../../../graphql/names';
-import { intersection, List } from 'lodash';
+import {compact} from '../../../utils/utils';
+import {getInputTypeName} from '../../../graphql/names';
+import {intersection} from 'lodash';
 
 export function buildInputValueNode(name: string, namedTypeName: string, loc?: Location, directives?: DirectiveNode[]): InputValueDefinitionNode {
     return {

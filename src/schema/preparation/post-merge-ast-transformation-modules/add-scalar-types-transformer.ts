@@ -1,6 +1,5 @@
-import {ASTTransformer} from "../ast-transformer";
-import {DocumentNode, ScalarTypeDefinitionNode} from "graphql";
-import {NAME, SCALAR_TYPE_DEFINITION} from "graphql/language/kinds";
+import {ASTTransformer} from "../transformation-pipeline";
+import {DocumentNode} from "graphql";
 import {SCALAR_DATE, SCALAR_DATETIME, SCALAR_JSON, SCALAR_TIME} from "../../schema-defaults";
 import {buildScalarDefinitionNode} from "../../schema-utils";
 

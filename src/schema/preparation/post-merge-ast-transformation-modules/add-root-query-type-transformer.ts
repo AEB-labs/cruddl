@@ -1,12 +1,6 @@
-import {ASTTransformer} from "../ast-transformer";
-import {
-    ArgumentNode, DocumentNode, FieldDefinitionNode, InputValueDefinitionNode,
-    ObjectTypeDefinitionNode
-} from "graphql";
-import {
-    buildNameNode, getNamedTypeDefinitionAST, getRootEntityTypes,
-    getTypeNameIgnoringNonNullAndList
-} from "../../schema-utils";
+import {ASTTransformer} from "../transformation-pipeline";
+import {DocumentNode, FieldDefinitionNode, InputValueDefinitionNode, ObjectTypeDefinitionNode} from "graphql";
+import {buildNameNode, getRootEntityTypes, getTypeNameIgnoringNonNullAndList} from "../../schema-utils";
 import {
     FIELD_DEFINITION,
     INPUT_VALUE_DEFINITION,
@@ -15,8 +9,8 @@ import {
     NON_NULL_TYPE,
     OBJECT_TYPE_DEFINITION
 } from "graphql/language/kinds";
-import { flatMap, mapNullable } from '../../../utils/utils';
-import { ENTITY_ID, KEY_FIELD_DIRECTIVE, QUERY_TYPE, ROLES_DIRECTIVE } from '../../schema-defaults';
+import {flatMap, mapNullable} from '../../../utils/utils';
+import {ENTITY_ID, KEY_FIELD_DIRECTIVE, QUERY_TYPE, ROLES_DIRECTIVE} from '../../schema-defaults';
 import {allEntitiesQueryBy} from "../../../graphql/names";
 
 export class AddRootQueryTypeTransformer implements ASTTransformer {

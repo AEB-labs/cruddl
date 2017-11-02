@@ -1,7 +1,7 @@
 import {ObjectTypeDefinitionNode, parse} from "graphql";
 import {ENTITY_CREATED_AT, ENTITY_ID, ENTITY_UPDATED_AT, SCALAR_DATETIME} from "../../../../src/schema/schema-defaults";
 import {objectTypeFieldsWithNameOfNamedType} from "../../schema-test-utils";
-import {AddMissingEntityFieldsTransformer} from "../../../../src/schema/preparation/ast-transformation-modules/add-missing-entity-fields";
+import {AddMissingEntityFieldsTransformer} from "../../../../src/schema/preparation/post-merge-ast-transformation-modules/add-missing-entity-fields-transformer";
 
 const sdl = `
             type Foo @rootEntity {

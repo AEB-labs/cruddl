@@ -1,11 +1,11 @@
-import {ASTTransformer} from "../ast-transformer";
-import { DocumentNode, GraphQLInt, GraphQLString } from 'graphql';
+import {ASTTransformer} from "../transformation-pipeline";
+import {DocumentNode, GraphQLInt, GraphQLString} from 'graphql';
 import {
     buildNameNode,
-    getNamedInputTypeDefinitionAST,
     getNamedTypeDefinitionAST,
     getObjectTypes,
-    getTypeNameIgnoringNonNullAndList, hasDirectiveWithName
+    getTypeNameIgnoringNonNullAndList,
+    hasDirectiveWithName
 } from "../../schema-utils";
 import {
     INPUT_VALUE_DEFINITION,
@@ -14,8 +14,7 @@ import {
     NON_NULL_TYPE,
     OBJECT_TYPE_DEFINITION
 } from "graphql/language/kinds";
-import {getFilterTypeName} from "../../../graphql/names";
-import {AFTER_ARG, FILTER_ARG, FIRST_ARG, VALUE_OBJECT_DIRECTIVE} from '../../schema-defaults';
+import {AFTER_ARG, FIRST_ARG, VALUE_OBJECT_DIRECTIVE} from '../../schema-defaults';
 
 export class AddPaginationArgumentsToFieldsTransformer implements ASTTransformer {
 

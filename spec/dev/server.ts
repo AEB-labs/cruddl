@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import { addQueryResolvers, ArangoDBAdapter } from '../..';
 import { GraphQLServer } from './graphql-server';
 import {createSchema} from "../../src/schema/schema-builder";
+import {SchemaConfig, SchemaPartConfig} from "../../src/config/schema-config";
 
 const port = 3000;
 const databaseName = 'momo';
@@ -15,12 +16,11 @@ export async function start() {
         url: databaseURL
     });
 
-    const model: Array<Source> = fs.readdirSync('spec/dev/model').map(file => fileToSource('spec/dev/model/' + file));
+    const schemaConfig: SchemaConfig = {
+        schemaParts: fs.readdirSync('spec/dev/model').map(file => fileToSchemaPartConfig('spec/dev/model/' + file))
+    }
 
-    // const model = parse(fs.readFileSync('./model.graphqls', 'utf-8'));
-    // const schema = buildASTSchema(model);
-
-    const schema = createSchema(model);
+    const schema = createSchema(schemaConfig);
 
     const executableSchema = addQueryResolvers(schema, db);
 
@@ -33,6 +33,8 @@ export async function start() {
     });
 }
 
-function fileToSource(path: string): Source {
-    return new Source(fs.readFileSync(path).toString(), path);
+function fileToSchemaPartConfig(path: string): SchemaPartConfig {
+    return {
+        source: new Source(fs.readFileSync(path).toString(), path)
+    };
 }

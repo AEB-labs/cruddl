@@ -9,6 +9,7 @@ import { addQueryResolvers } from '../../src/query/query-resolvers';
 import { createTempDatabase, initTestData, TestDataEnvironment } from './initialization';
 import * as stripJsonComments from 'strip-json-comments';
 import { PlainObject } from '../../src/utils/utils';
+import {SchemaConfig, SchemaPartConfig} from "../../src/config/schema-config";
 
 interface TestResult {
     actualResult: any
@@ -31,9 +32,12 @@ export class RegressionSuite {
     private async setUp() {
         const dbConfig = await createTempDatabase();
         const dbAdapter = new ArangoDBAdapter(dbConfig);
-        const model: Array<Source> = fs.readdirSync(path.resolve(this.path, 'model'))
-            .map(file => fileToSource(path.resolve(this.path, 'model', file)));
-        const dumbSchema = createSchema(model);
+
+        const schemaConfig: SchemaConfig = {
+            schemaParts: fs.readdirSync(path.resolve(this.path, 'model'))
+                .map(file => fileToSchemaPartConfig(path.resolve(this.path, 'model', file)))
+        };
+        const dumbSchema = createSchema(schemaConfig);
         this.schema = addQueryResolvers(dumbSchema, dbAdapter);
         await dbAdapter.updateSchema(this.schema);
         this.testDataEnvironment = await initTestData(path.resolve(this.path, 'test-data.json'), this.schema);
@@ -94,6 +98,6 @@ export class RegressionSuite {
     }
 }
 
-function fileToSource(path: string): Source {
-    return new Source(fs.readFileSync(path).toString(), path);
+function fileToSchemaPartConfig(path: string): SchemaPartConfig {
+    return { source: new Source(fs.readFileSync(path).toString(), path) };
 }

@@ -1,19 +1,19 @@
-import { ASTTransformer } from '../ast-transformer';
+import {ASTTransformer} from '../transformation-pipeline';
 import {
-    DocumentNode, FieldDefinitionNode, InputObjectTypeDefinitionNode, InputValueDefinitionNode,
-    ObjectTypeDefinitionNode, TypeNode
+    DocumentNode,
+    FieldDefinitionNode,
+    InputObjectTypeDefinitionNode,
+    InputValueDefinitionNode,
+    ObjectTypeDefinitionNode,
+    TypeNode
 } from 'graphql';
+import {getValueObjectTypes} from '../../schema-utils';
+import {INPUT_OBJECT_TYPE_DEFINITION, LIST_TYPE, NAMED_TYPE, NON_NULL_TYPE} from 'graphql/language/kinds';
+import {getCreateInputTypeName} from '../../../graphql/names';
 import {
-    getNamedTypeDefinitionAST, getReferenceKeyField, getValueObjectTypes, hasDirectiveWithName
-} from '../../schema-utils';
-import {
-    INPUT_OBJECT_TYPE_DEFINITION, LIST_TYPE, NAMED_TYPE, NON_NULL_TYPE, OBJECT_TYPE_DEFINITION
-} from 'graphql/language/kinds';
-import { getCreateInputTypeName } from '../../../graphql/names';
-import {
-    buildInputFieldFromNonListField, buildInputValueListNodeFromField, buildInputValueNodeFromField
-} from './add-input-type-transformation-helper';
-import { REFERENCE_DIRECTIVE } from '../../schema-defaults';
+    buildInputFieldFromNonListField,
+    buildInputValueListNodeFromField
+} from './add-input-type-transformation-helper-transformer';
 
 export class AddValueObjectInputTypesTransformer implements ASTTransformer {
 

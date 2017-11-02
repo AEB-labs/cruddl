@@ -1,13 +1,14 @@
-import {ASTTransformer} from "../ast-transformer";
+import {ASTTransformer} from "../transformation-pipeline";
 import {
     DirectiveNode,
-    DocumentNode, FieldDefinitionNode,
+    DocumentNode,
+    FieldDefinitionNode,
     InputObjectTypeDefinitionNode,
     InputValueDefinitionNode,
     ObjectTypeDefinitionNode,
     TypeNode
 } from 'graphql';
-import { findDirectiveWithName, getNamedTypeDefinitionAST, getObjectTypes } from '../../schema-utils';
+import {findDirectiveWithName, getNamedTypeDefinitionAST, getObjectTypes} from '../../schema-utils';
 import {
     ENUM_TYPE_DEFINITION,
     INPUT_OBJECT_TYPE_DEFINITION,
@@ -35,9 +36,14 @@ import {
     starts_with_field
 } from "../../../graphql/names";
 import {
-    ARGUMENT_AND, ARGUMENT_OR, ROLES_DIRECTIVE, SCALAR_DATE, SCALAR_DATETIME, SCALAR_TIME
+    ARGUMENT_AND,
+    ARGUMENT_OR,
+    ROLES_DIRECTIVE,
+    SCALAR_DATE,
+    SCALAR_DATETIME,
+    SCALAR_TIME
 } from '../../schema-defaults';
-import { compact, flatMap } from '../../../utils/utils';
+import {compact, flatMap} from '../../../utils/utils';
 
 export class AddFilterInputTypesTransformer implements ASTTransformer {
 

@@ -1,20 +1,20 @@
-import {ASTTransformer} from "../ast-transformer";
+import {ASTTransformer} from "../transformation-pipeline";
 import {DocumentNode, FieldDefinitionNode, GraphQLID, ObjectTypeDefinitionNode} from "graphql";
 import {buildNameNode, getRootEntityTypes} from "../../schema-utils";
 import {
     FIELD_DEFINITION,
     INPUT_VALUE_DEFINITION,
-    LIST_TYPE,
     NAMED_TYPE,
     NON_NULL_TYPE,
     OBJECT_TYPE_DEFINITION
 } from "graphql/language/kinds";
-import { flatMap, mapNullable } from '../../../utils/utils';
+import {flatMap, mapNullable} from '../../../utils/utils';
+import {MUTATION_ID_ARG, MUTATION_INPUT_ARG, MUTATION_TYPE, ROLES_DIRECTIVE} from '../../schema-defaults';
 import {
-    ENTITY_ID, ID_FIELD, MUTATION_ID_ARG, MUTATION_INPUT_ARG, MUTATION_TYPE, ROLES_DIRECTIVE
-} from '../../schema-defaults';
-import {
-    allEntitiesQueryBy, createEntityQuery, deleteEntityQuery, getCreateInputTypeName, getUpdateInputTypeName,
+    createEntityQuery,
+    deleteEntityQuery,
+    getCreateInputTypeName,
+    getUpdateInputTypeName,
     updateEntityQuery
 } from "../../../graphql/names";
 

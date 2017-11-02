@@ -1,7 +1,7 @@
 import {ObjectTypeDefinitionNode, parse} from "graphql";
 import {OBJECT_TYPE_DEFINITION} from "graphql/language/kinds";
 import {getNamedTypeDefinitionAST} from "../../../../src/schema/schema-utils";
-import {AddRootQueryTypeTransformer} from "../../../../src/schema/preparation/ast-transformation-modules/add-root-query-type";
+import {AddRootQueryTypeTransformer} from "../../../../src/schema/preparation/post-merge-ast-transformation-modules/add-root-query-type-transformer";
 
 const sdl = `
             type Foo @rootEntity {

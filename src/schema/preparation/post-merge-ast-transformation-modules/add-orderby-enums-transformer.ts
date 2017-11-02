@@ -1,18 +1,30 @@
-import { ASTTransformer } from '../ast-transformer';
+import {ASTTransformer} from '../transformation-pipeline';
 import {
-    DirectiveNode, DocumentNode, EnumTypeDefinitionNode, EnumValueDefinitionNode, ObjectTypeDefinitionNode
+    DirectiveNode,
+    DocumentNode,
+    EnumTypeDefinitionNode,
+    EnumValueDefinitionNode,
+    ObjectTypeDefinitionNode
 } from 'graphql';
 import {
-    buildNameNode, findDirectiveWithName, getNamedTypeDefinitionAST, getObjectTypes, getTypeNameIgnoringNonNullAndList
+    buildNameNode,
+    findDirectiveWithName,
+    getNamedTypeDefinitionAST,
+    getObjectTypes,
+    getTypeNameIgnoringNonNullAndList
 } from '../../schema-utils';
-import { compact, flatMap } from '../../../utils/utils';
+import {compact, flatMap} from '../../../utils/utils';
 import {
-    ENUM_TYPE_DEFINITION, ENUM_VALUE_DEFINITION, LIST_TYPE, NON_NULL_TYPE, OBJECT_TYPE_DEFINITION,
+    ENUM_TYPE_DEFINITION,
+    ENUM_VALUE_DEFINITION,
+    LIST_TYPE,
+    NON_NULL_TYPE,
+    OBJECT_TYPE_DEFINITION,
     SCALAR_TYPE_DEFINITION
 } from 'graphql/language/kinds';
-import { getOrderByEnumTypeName, sortedByAsc, sortedByDesc } from '../../../graphql/names';
-import { ROLES_DIRECTIVE } from '../../schema-defaults';
-import { intersectRolesDirectives } from './add-input-type-transformation-helper';
+import {getOrderByEnumTypeName, sortedByAsc, sortedByDesc} from '../../../graphql/names';
+import {ROLES_DIRECTIVE} from '../../schema-defaults';
+import {intersectRolesDirectives} from './add-input-type-transformation-helper-transformer';
 
 interface EnumValueWithDirectives {
     name: string;

@@ -1,6 +1,6 @@
-import {ASTTransformer} from "../ast-transformer";
+import {ASTTransformer} from "../transformation-pipeline";
 import {DocumentNode, FieldDefinitionNode} from "graphql";
-import {buildNameNode, getChildEntityTypes, getRootEntityTypes, getValueObjectTypes} from "../../schema-utils";
+import {buildNameNode, getChildEntityTypes, getRootEntityTypes} from "../../schema-utils";
 import {FIELD_DEFINITION, NAMED_TYPE} from "graphql/language/kinds";
 import {CURSOR_FIELD} from "../../schema-defaults";
 

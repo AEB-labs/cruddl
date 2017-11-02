@@ -1,8 +1,8 @@
 import {parse} from "graphql";
 import {ENUM_TYPE_DEFINITION, INPUT_OBJECT_TYPE_DEFINITION} from "graphql/language/kinds";
-import {AddFilterInputTypesTransformer} from "../../../../src/schema/preparation/ast-transformation-modules/add-filter-input-types";
+import {AddFilterInputTypesTransformer} from "../../../../src/schema/preparation/post-merge-ast-transformation-modules/add-filter-input-types-transformer";
 import {getNamedInputTypeDefinitionAST, getNamedTypeDefinitionAST} from "../../../../src/schema/schema-utils";
-import {AddOrderbyInputEnumsTransformer} from "../../../../src/schema/preparation/ast-transformation-modules/add-orderby-enums";
+import {AddOrderbyInputEnumsTransformer} from "../../../../src/schema/preparation/post-merge-ast-transformation-modules/add-orderby-enums-transformer";
 
 const sdl = `
             type Foo @rootEntity {

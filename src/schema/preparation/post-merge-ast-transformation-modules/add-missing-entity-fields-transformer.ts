@@ -1,7 +1,9 @@
-import {ASTTransformer} from "../ast-transformer";
+import {ASTTransformer} from "../transformation-pipeline";
 import {DocumentNode} from "graphql";
 import {
-    createFieldDefinitionNode, fieldDefinitionNodeByNameExists, getChildEntityTypes,
+    createFieldDefinitionNode,
+    fieldDefinitionNodeByNameExists,
+    getChildEntityTypes,
     getRootEntityTypes
 } from "../../schema-utils";
 import {ENTITY_CREATED_AT, ENTITY_ID, ENTITY_UPDATED_AT, SCALAR_DATETIME} from "../../schema-defaults";

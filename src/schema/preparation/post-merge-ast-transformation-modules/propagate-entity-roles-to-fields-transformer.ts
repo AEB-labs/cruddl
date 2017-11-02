@@ -1,10 +1,10 @@
-import { ASTTransformer } from '../ast-transformer';
-import { DocumentNode, FieldDefinitionNode, ObjectTypeDefinitionNode, TypeNode } from 'graphql';
-import { findDirectiveWithName, getNamedTypeDefinitionAST, getObjectTypes } from '../../schema-utils';
-import { LIST_TYPE, NAMED_TYPE, NON_NULL_TYPE, OBJECT_TYPE_DEFINITION } from 'graphql/language/kinds';
-import { intersectRolesDirectives } from './add-input-type-transformation-helper';
-import { ROLES_DIRECTIVE } from '../../schema-defaults';
-import { compact } from '../../../utils/utils';
+import {ASTTransformer} from '../transformation-pipeline';
+import {DocumentNode, FieldDefinitionNode, ObjectTypeDefinitionNode, TypeNode} from 'graphql';
+import {findDirectiveWithName, getNamedTypeDefinitionAST, getObjectTypes} from '../../schema-utils';
+import {LIST_TYPE, NAMED_TYPE, NON_NULL_TYPE, OBJECT_TYPE_DEFINITION} from 'graphql/language/kinds';
+import {intersectRolesDirectives} from './add-input-type-transformation-helper-transformer';
+import {ROLES_DIRECTIVE} from '../../schema-defaults';
+import {compact} from '../../../utils/utils';
 
 export class PropagateEntityRolesToFieldsTransformer implements ASTTransformer {
 

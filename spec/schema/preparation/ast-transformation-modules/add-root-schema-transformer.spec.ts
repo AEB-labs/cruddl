@@ -1,6 +1,6 @@
 import {parse, SchemaDefinitionNode} from "graphql";
 import {SCHEMA_DEFINITION} from "graphql/language/kinds";
-import {AddRootSchemaTransformer} from "../../../../src/schema/preparation/ast-transformation-modules/add-root-schema";
+import {AddRootSchemaTransformer} from "../../../../src/schema/preparation/post-merge-ast-transformation-modules/add-root-schema-transformer";
 
 const sdl = `
             type Foo @rootEntity {

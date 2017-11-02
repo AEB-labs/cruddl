@@ -1,4 +1,4 @@
-import {ASTTransformer} from "../ast-transformer";
+import {ASTTransformer} from "../transformation-pipeline";
 import {DocumentNode, GraphQLInt} from "graphql";
 import {FIELD_DEFINITION, NAMED_TYPE, NON_NULL_TYPE, OBJECT_TYPE_DEFINITION} from "graphql/language/kinds";
 import {buildNameNode} from "../../schema-utils";

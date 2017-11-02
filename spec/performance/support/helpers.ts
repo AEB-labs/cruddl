@@ -7,6 +7,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { createSchema } from '../../../src/schema/schema-builder';
 import { addQueryResolvers } from '../../../src/query/query-resolvers';
+import {SchemaConfig, SchemaPartConfig} from "../../../src/config/schema-config";
 
 // arangojs typings for this are completely broken
 export const aql: (template: TemplateStringsArray, ...args: any[]) => any = require('arangojs').aql;
@@ -19,9 +20,11 @@ export interface TestEnvironment {
 }
 
 export function createDumbSchema(modelPath: string): GraphQLSchema {
-    const model: Array<Source> = fs.readdirSync(modelPath)
-        .map(file => fileToSource(path.resolve(modelPath, file)));
-    return createSchema(model);
+    const schemaConfig: SchemaConfig = {
+        schemaParts: fs.readdirSync(modelPath)
+            .map(file => fileToSchemaPartConfig(path.resolve(modelPath, file)))
+    };
+    return createSchema(schemaConfig);
 }
 
 export async function initEnvironment(): Promise<TestEnvironment> {
@@ -44,8 +47,8 @@ export async function initEnvironment(): Promise<TestEnvironment> {
     };
 }
 
-function fileToSource(path: string): Source {
-    return new Source(fs.readFileSync(path).toString(), path);
+function fileToSchemaPartConfig(path: string): SchemaPartConfig {
+    return { source: new Source(fs.readFileSync(path).toString(), path) };
 }
 
 function createLiteratureReference(sizeFactor: number) {

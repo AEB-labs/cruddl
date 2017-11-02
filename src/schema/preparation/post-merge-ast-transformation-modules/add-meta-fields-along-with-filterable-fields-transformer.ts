@@ -1,10 +1,10 @@
-import {ASTTransformer} from "../ast-transformer";
+import {ASTTransformer} from "../transformation-pipeline";
 import {DocumentNode, FieldDefinitionNode} from "graphql";
 import {buildNameNode, getObjectTypes} from "../../schema-utils";
-import { FILTER_ARG, QUERY_META_TYPE, ROLES_DIRECTIVE } from '../../schema-defaults';
+import {FILTER_ARG, QUERY_META_TYPE, ROLES_DIRECTIVE} from '../../schema-defaults';
 import {getMetaNameFieldFor} from "../../../graphql/names";
 import {FIELD_DEFINITION, NAMED_TYPE, NON_NULL_TYPE} from "graphql/language/kinds";
-import { mapNullable } from '../../../utils/utils';
+import {mapNullable} from '../../../utils/utils';
 
 export class AddMetaFieldsAlongWithFilterableFieldsTransformer implements ASTTransformer {
 

@@ -1,4 +1,4 @@
-import {ASTTransformer} from "../ast-transformer";
+import {ASTTransformer} from "../transformation-pipeline";
 import {
     DocumentNode,
     FieldDefinitionNode,
@@ -8,9 +8,7 @@ import {
     ObjectTypeDefinitionNode,
     TypeNode
 } from "graphql";
-import {
-    getEntityExtensionTypes, getNamedTypeDefinitionAST, getReferenceKeyField, hasDirectiveWithName
-} from '../../schema-utils';
+import {getEntityExtensionTypes, getNamedTypeDefinitionAST, hasDirectiveWithName} from '../../schema-utils';
 import {
     INPUT_OBJECT_TYPE_DEFINITION,
     LIST_TYPE,
@@ -19,10 +17,11 @@ import {
     OBJECT_TYPE_DEFINITION
 } from "graphql/language/kinds";
 import {getCreateInputTypeName} from "../../../graphql/names";
-import { REFERENCE_DIRECTIVE, ROOT_ENTITY_DIRECTIVE } from '../../schema-defaults';
+import {ROOT_ENTITY_DIRECTIVE} from '../../schema-defaults';
 import {
-    buildInputFieldFromNonListField, buildInputValueListNodeFromField, buildInputValueNodeFromField
-} from './add-input-type-transformation-helper';
+    buildInputFieldFromNonListField,
+    buildInputValueListNodeFromField
+} from './add-input-type-transformation-helper-transformer';
 
 export class AddExtensionInputTypesTransformer implements ASTTransformer {
 
