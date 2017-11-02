@@ -59,6 +59,7 @@ const postMergePipeline: ASTTransformer[] = [
 ];
 
 const preMergePipeline: ASTTransformer[] = [
+    new AddNamespacesToTypesTransformer()
 ];
 
 export function executePostMergeTransformationPipeline(ast: DocumentNode, context: {[key: string]: any}) {
