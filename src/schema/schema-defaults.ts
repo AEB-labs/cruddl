@@ -76,3 +76,5 @@ export const OBJECT_TYPE_ENTITY_DIRECTIVES = [ROOT_ENTITY_DIRECTIVE, CHILD_ENTIT
 
 export const NAMESPACE_DIRECTIVE = 'namespace';
 export const NAMESPACE_NAME_ARG = 'name';
+export const NAMESPACE_SEPARATOR = '.';
+export const NAMESPACE_FIELD_PATH_DIRECTIVE = 'namespaceFieldPath';

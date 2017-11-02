@@ -17,8 +17,9 @@ export async function start() {
     });
 
     const schemaConfig: SchemaConfig = {
-        schemaParts: fs.readdirSync('spec/dev/model').map(file => fileToSchemaPartConfig('spec/dev/model/' + file))
-    }
+        schemaParts: fs.readdirSync('spec/dev/model').map(file => fileToSchemaPartConfig('spec/dev/model/' + file)),
+        // defaultNamespace: "model"
+    };
 
     const schema = createSchema(schemaConfig);
 
@@ -28,13 +29,14 @@ export async function start() {
     await db.updateSchema(executableSchema);
     console.log('Schema is up to date');
 
-    const server = new GraphQLServer({
+    new GraphQLServer({
         port, schema: executableSchema
     });
 }
 
 function fileToSchemaPartConfig(path: string): SchemaPartConfig {
     return {
-        source: new Source(fs.readFileSync(path).toString(), path)
+        source: new Source(fs.readFileSync(path).toString(), path),
+        // localNamespace: path.match(/.*\/(.*).graphqls/)![1]
     };
 }

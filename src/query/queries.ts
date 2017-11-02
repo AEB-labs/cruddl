@@ -1,5 +1,5 @@
 import { FieldRequest, FieldSelection } from '../graphql/query-distiller';
-import { getNamedType, GraphQLField, GraphQLObjectType } from 'graphql';
+import {FieldDefinitionNode, getNamedType, GraphQLField, GraphQLObjectType, ObjectTypeDefinitionNode} from 'graphql';
 import {
     BasicType, BinaryOperationQueryNode, BinaryOperator, ConditionalQueryNode, EntitiesQueryNode, FieldQueryNode,
     FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode, NullQueryNode, ObjectQueryNode,
@@ -8,14 +8,18 @@ import {
 } from './definition';
 import { createCursorQueryNode, createOrderSpecification, createPaginationFilterNode } from './pagination-and-sorting';
 import { createFilterNode } from './filtering';
-import { ALL_ENTITIES_FIELD_PREFIX, CURSOR_FIELD, FILTER_ARG, FIRST_ARG } from '../schema/schema-defaults';
+import {
+    ALL_ENTITIES_FIELD_PREFIX, CURSOR_FIELD, FILTER_ARG, FIRST_ARG,
+    NAMESPACE_FIELD_PATH_DIRECTIVE
+} from '../schema/schema-defaults';
 import { decapitalize, objectEntries } from '../utils/utils';
 import { createNonListFieldValueNode, createScalarFieldValueNode } from './fields';
 import { isListType } from '../graphql/schema-utils';
-import { isReferenceField, isRelationField } from '../schema/schema-utils';
+import {hasDirectiveWithName, isReferenceField, isRelationField} from '../schema/schema-utils';
 import { getEdgeType } from '../schema/edges';
 import { createListMetaNode } from './list-meta';
 import { extractVariableAssignments, extractVariableAssignmentsInOrderSpecification } from './query-tree-utils';
+import {createFieldNode, createSelectionChain} from "../graphql/language-utils";
 
 /**
  * Creates a QueryNode for a field of the root query type
@@ -28,12 +32,22 @@ export function createQueryRootNode(fieldRequest: FieldRequest): QueryNode {
     if (isMetaField(fieldRequest.field)) {
         return createEntitiesMetaFieldNode(fieldRequest);
     }
+    if (fieldRequest.field.type instanceof GraphQLObjectType && hasDirectiveWithName(fieldRequest.field.astNode as FieldDefinitionNode, NAMESPACE_FIELD_PATH_DIRECTIVE)) {
+        return createNamespaceFieldNode(fieldRequest, [fieldRequest])
+    }
     if (fieldRequest.field.type instanceof GraphQLObjectType) {
         return createSingleEntityFieldNode(fieldRequest, [fieldRequest]);
     }
 
     console.log(`unknown field: ${fieldRequest.fieldName}`);
     return new NullQueryNode();
+}
+
+function createNamespaceFieldNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[]): QueryNode {
+        return new ObjectQueryNode(fieldRequest.selectionSet.map(
+            sel => new PropertySpecification(sel.propertyName,
+                // a namespace can be interpreted as pushing the root node down.
+                createQueryRootNode(sel.fieldRequest))));
 }
 
 function createAllEntitiesFieldNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[]): QueryNode {

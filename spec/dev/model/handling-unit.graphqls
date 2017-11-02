@@ -1,4 +1,4 @@
-type HandlingUnit @rootEntity @roles(readWrite: ["allusers"]) {
+type HandlingUnit @rootEntity @roles(readWrite: ["allusers"]) @namespace(name: "logistics.delivery") {
     huNumber: String
     delivery: Delivery @relation
 }

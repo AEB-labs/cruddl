@@ -1,13 +1,15 @@
 import { DistilledOperation, FieldRequest, FieldSelection } from '../graphql/query-distiller';
 import {
+    FieldDefinitionNode,
     GraphQLArgument,
     GraphQLEnumType, GraphQLEnumValue, GraphQLField, GraphQLInputField, GraphQLInputObjectType, GraphQLInputType,
     GraphQLList, GraphQLNonNull
 } from 'graphql';
-import { getAllowedReadRoles, getAllowedWriteRoles } from '../schema/schema-utils';
+import {getAllowedReadRoles, getAllowedWriteRoles, hasDirectiveWithName} from '../schema/schema-utils';
 import { intersection } from 'lodash';
 import { AnyValue, compact, PlainObject } from '../utils/utils';
 import { isArray } from 'util';
+import {NAMESPACE_FIELD_PATH_DIRECTIVE} from "../schema/schema-defaults";
 
 export function checkAuthorization(operation: DistilledOperation, requestRoles: string[]): AuthorizationCheckResult {
     const errorList: AuthorizationError[] = [];
@@ -202,6 +204,10 @@ function checkAuthorizationForSelectionSet(selectionSet: FieldSelection[], error
 
 function checkAuthorizationForFieldRecursively(fieldRequest: FieldRequest, errorList: AuthorizationError[], context: AuthorizationCheckContext): FieldRequest|undefined {
     const allowedRoles = getAllowedRoles(fieldRequest.field, context.accessKind);
+    if (hasDirectiveWithName(fieldRequest.field.astNode as FieldDefinitionNode, NAMESPACE_FIELD_PATH_DIRECTIVE)) {
+        // namespaces are always allowed, return original fieldRequest
+        return fieldRequest;
+    }
     if (allowedRoles && !intersection(allowedRoles, context.requestRoles).length) {
         // (if allowedRules is undefined, no restriction is set)
         errorList.push(new AuthorizationError({
