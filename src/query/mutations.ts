@@ -32,21 +32,21 @@ import uuid = require('uuid');
  * Creates a QueryNode for a field of the root mutation type
  * @param {FieldRequest} fieldRequest the mutation field, such as createSomeEntity
  */
-export function createMutationRootNode(fieldRequest: FieldRequest): QueryNode {
+export function createMutationNamespaceNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[]): QueryNode {
     if (fieldRequest.fieldName.startsWith(CREATE_ENTITY_FIELD_PREFIX)) {
-        return createCreateEntityQueryNode(fieldRequest, [fieldRequest]);
+        return createCreateEntityQueryNode(fieldRequest, [...fieldRequestStack, fieldRequest]);
     }
 
     if (fieldRequest.fieldName.startsWith(UPDATE_ENTITY_FIELD_PREFIX)) {
-        return createUpdateEntityQueryNode(fieldRequest, [fieldRequest]);
+        return createUpdateEntityQueryNode(fieldRequest, [...fieldRequestStack, fieldRequest]);
     }
 
     if (fieldRequest.fieldName.startsWith(DELETE_ENTITY_FIELD_PREFIX)) {
-        return createDeleteEntityQueryNode(fieldRequest, [fieldRequest]);
+        return createDeleteEntityQueryNode(fieldRequest, [...fieldRequestStack, fieldRequest]);
     }
 
     if (fieldRequest.field.type instanceof GraphQLObjectType && hasDirectiveWithName(fieldRequest.field.astNode as FieldDefinitionNode, NAMESPACE_FIELD_PATH_DIRECTIVE)) {
-        return createMutationNamespaceFieldNode(fieldRequest, [fieldRequest])
+        return createMutationNamespaceFieldNode(fieldRequest, [...fieldRequestStack, fieldRequest])
     }
 
     console.log(`unknown field: ${fieldRequest.fieldName}`);
@@ -57,7 +57,7 @@ function createMutationNamespaceFieldNode(fieldRequest: FieldRequest, fieldReque
     return new ObjectQueryNode(fieldRequest.selectionSet.map(
         sel => new PropertySpecification(sel.propertyName,
             // a namespace can be interpreted as pushing the root node down.
-            createMutationRootNode(sel.fieldRequest))));
+            createMutationNamespaceNode(sel.fieldRequest, fieldRequestStack))));
 }
 
 function createCreateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[]): QueryNode {

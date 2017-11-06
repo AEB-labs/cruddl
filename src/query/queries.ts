@@ -25,18 +25,18 @@ import {createFieldNode, createSelectionChain} from "../graphql/language-utils";
  * Creates a QueryNode for a field of the root query type
  * @param {FieldRequest} fieldRequest the query field, such as allEntities
  */
-export function createQueryRootNode(fieldRequest: FieldRequest): QueryNode {
+export function createQueryNamespaceNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[]): QueryNode {
     if (isEntitiesQueryField(fieldRequest.field)) {
-        return createAllEntitiesFieldNode(fieldRequest, [fieldRequest]);
+        return createAllEntitiesFieldNode(fieldRequest, [...fieldRequestStack, fieldRequest]);
     }
     if (isMetaField(fieldRequest.field)) {
-        return createEntitiesMetaFieldNode(fieldRequest);
+        return createEntitiesMetaFieldNode(fieldRequest, fieldRequestStack);
     }
     if (fieldRequest.field.type instanceof GraphQLObjectType && hasDirectiveWithName(fieldRequest.field.astNode as FieldDefinitionNode, NAMESPACE_FIELD_PATH_DIRECTIVE)) {
-        return createQueryNamespaceFieldNode(fieldRequest, [fieldRequest])
+        return createQueryNamespaceFieldNode(fieldRequest, [...fieldRequestStack, fieldRequest])
     }
     if (fieldRequest.field.type instanceof GraphQLObjectType) {
-        return createSingleEntityFieldNode(fieldRequest, [fieldRequest]);
+        return createSingleEntityFieldNode(fieldRequest, [...fieldRequestStack, fieldRequest]);
     }
 
     console.log(`unknown field: ${fieldRequest.fieldName}`);
@@ -47,7 +47,7 @@ function createQueryNamespaceFieldNode(fieldRequest: FieldRequest, fieldRequestS
         return new ObjectQueryNode(fieldRequest.selectionSet.map(
             sel => new PropertySpecification(sel.propertyName,
                 // a namespace can be interpreted as pushing the root node down.
-                createQueryRootNode(sel.fieldRequest))));
+                createQueryNamespaceNode(sel.fieldRequest, fieldRequestStack))));
 }
 
 function createAllEntitiesFieldNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[]): QueryNode {
@@ -57,15 +57,31 @@ function createAllEntitiesFieldNode(fieldRequest: FieldRequest, fieldRequestStac
     return createTransformListQueryNode(fieldRequest, listNode, fieldRequestStack);
 }
 
-function createEntitiesMetaFieldNode(fieldRequest: FieldRequest): QueryNode {
-    const listFieldName = unwrapMetaFieldName(fieldRequest.field);
-    const listField = fieldRequest.schema.getQueryType().getFields()[listFieldName];
-    if (!listField) {
-        throw new Error(`Requesting meta field ${fieldRequest.fieldName}, but list field ${listFieldName} does not exist on Query`);
-    }
+function createEntitiesMetaFieldNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[]): QueryNode {
+    const listField = findOriginalFieldForMetaFieldInNamespace(fieldRequest, fieldRequestStack);
     const objectType = getNamedType(listField.type) as GraphQLObjectType;
     const listNode = new EntitiesQueryNode(objectType);
     return createListMetaNode(fieldRequest, listNode, objectType);
+}
+
+function findOriginalFieldForMetaFieldInNamespace(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[]) {
+    const listFieldName = unwrapMetaFieldName(fieldRequest.field);
+    // walk through namespaces, start at root query type.
+    let currentNamespaceNode = fieldRequest.schema.getQueryType();
+    const pathRemaining = [...fieldRequestStack];
+    while(pathRemaining.length) {
+        const nextFieldNode = pathRemaining.shift()!;
+        const nextType = getNamedType(currentNamespaceNode.getFields()[nextFieldNode.field.name].type);
+        if (!(nextType instanceof GraphQLObjectType)) {
+            throw new Error("Expected object type");
+        }
+        currentNamespaceNode = nextType;
+    }
+    const listField = currentNamespaceNode.getFields()[listFieldName];
+    if (!listField) {
+        throw new Error(`Requesting meta field ${fieldRequest.fieldName}, but list field ${listFieldName} does not exist on Query`);
+    }
+    return listField;
 }
 
 function createSingleEntityFieldNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[]): QueryNode {

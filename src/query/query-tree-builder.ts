@@ -1,8 +1,8 @@
 import { DistilledOperation, FieldRequest } from '../graphql/query-distiller';
 import { LiteralQueryNode, NullQueryNode, ObjectQueryNode, PropertySpecification, QueryNode } from './definition';
 import { MUTATION_TYPE, QUERY_TYPE } from '../schema/schema-defaults';
-import { createQueryRootNode } from './queries';
-import { createMutationRootNode } from './mutations';
+import { createQueryNamespaceNode } from './queries';
+import { createMutationNamespaceNode } from './mutations';
 
 /**
  * Creates a QueryTree that is used to instruct the DataBase how to perform a GraphQL query
@@ -17,9 +17,9 @@ export function createQueryTree(operation: DistilledOperation) {
 function createQueryNodeForField(fieldRequest: FieldRequest): QueryNode {
     switch (fieldRequest.parentType.name) {
         case QUERY_TYPE:
-            return createQueryRootNode(fieldRequest);
+            return createQueryNamespaceNode(fieldRequest, []);
         case MUTATION_TYPE:
-            return createMutationRootNode(fieldRequest);
+            return createMutationNamespaceNode(fieldRequest, []);
         default:
             console.log(`unknown root field: ${fieldRequest.fieldName}`);
             return new NullQueryNode();
