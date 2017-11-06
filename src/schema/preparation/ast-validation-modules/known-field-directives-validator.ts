@@ -9,7 +9,7 @@ export const VALIDATION_ERROR_UNKNOWN_FIELD_DIRECTIVE = 'Unknown field directive
 export class KnownFieldDirectivesValidator implements ASTValidator {
 
     validate(ast: DocumentNode): ValidationMessage[] {
-        const validationMessages: ValidationMessage[] = []
+        const validationMessages: ValidationMessage[] = [];
         getObjectTypes(ast).forEach(objectType => {
             objectType.fields.forEach(field => {
                 if (field.directives) {
@@ -20,7 +20,7 @@ export class KnownFieldDirectivesValidator implements ASTValidator {
                     })
                 }
             })
-        })
+        });
         return validationMessages;
     }
 
