@@ -16,6 +16,7 @@ import {
     ROOT_ENTITY_DIRECTIVE, VALUE_OBJECT_DIRECTIVE
 } from './schema-defaults';
 import { flatMap, objectValues } from '../utils/utils';
+import {namespacedType} from "../graphql/names";
 
 
 /**
@@ -399,28 +400,27 @@ export function createFieldWithDirective(name: string, typeName: string, directi
 }
 
 /**
- * walks one hop along the namespace path. Creates missing fields and types and returns the current node.
+ * walks one namespace part along the namespace path. Creates missing fields and types and returns the current node.
  *
  * @param ast
  * @param {ObjectTypeDefinitionNode} currentNode - the starting node
- * @param {string} hop - one step of the namespace to walk
+ * @param {string} namespacePart - one step of the namespace to walk
+ * @param baseOperationType "Query" or "Mutation"
  * @returns {ObjectTypeDefinitionNode}
  */
-export function walkNamespacePathByOneHop(ast: DocumentNode, currentNode: ObjectTypeDefinitionNode, hop: string, baseOperationType: string): ObjectTypeDefinitionNode {
-    let hopField = getNodeByName(currentNode.fields, hop);
-    if (hopField) {
+export function enterOrCreateNextNamespacePart(ast: DocumentNode, currentNode: ObjectTypeDefinitionNode, namespacePart: string, baseOperationType: string): ObjectTypeDefinitionNode {
+    let namespacePartField = getNodeByName(currentNode.fields, namespacePart);
+    if (namespacePartField) {
         // Hey, were done, this one already exists. Just search and return the corresponding type.
-        const arrivingNode = getNodeByName(getObjectTypes(ast), hop + baseOperationType);
+        const arrivingNode = getNodeByName(getObjectTypes(ast), namespacedType(namespacePart, baseOperationType));
         if (!arrivingNode) {
-            throw Error(`Found path field ${hop} but not corresponding type. That seems a bit strange...`);
+            throw Error(`Found path field ${namespacePart} but not corresponding type. That seems a bit strange...`);
         }
         return arrivingNode;
     } else {
-        const arrivingNode = createObjectTypeNode(hop + baseOperationType);
+        const arrivingNode = createObjectTypeNode(namespacedType(namespacePart, baseOperationType));
         ast.definitions.push(arrivingNode);
-        currentNode.fields.push(createFieldWithDirective(hop, hop + baseOperationType, NAMESPACE_FIELD_PATH_DIRECTIVE));
+        currentNode.fields.push(createFieldWithDirective(namespacePart, namespacedType(namespacePart, baseOperationType), NAMESPACE_FIELD_PATH_DIRECTIVE));
         return arrivingNode;
     }
 }
-
-

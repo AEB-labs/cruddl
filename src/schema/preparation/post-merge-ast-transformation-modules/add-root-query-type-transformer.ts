@@ -7,7 +7,7 @@ import {
     getNodeByName,
     getRootEntityTypes,
     getTypeNameIgnoringNonNullAndList,
-    walkNamespacePathByOneHop
+    enterOrCreateNextNamespacePart
 } from "../../schema-utils";
 import {
     FIELD_DEFINITION,
@@ -46,8 +46,8 @@ function buildQueryTypeEntityFieldsIntoNamespace(ast: DocumentNode, rootEntityTy
         if (nameArg && nameArg.value.kind === STRING && nameArg.value.value) {
             const namespace = nameArg.value.value;
             // loop through namespaces and create intermediate fields and types
-            namespace.split(NAMESPACE_SEPARATOR).forEach(hop => {
-                currentNode = walkNamespacePathByOneHop(ast, currentNode, hop, QUERY_TYPE);
+            namespace.split(NAMESPACE_SEPARATOR).forEach(namespacePart => {
+                currentNode = enterOrCreateNextNamespacePart(ast, currentNode, namespacePart, QUERY_TYPE);
             });
         }
     }

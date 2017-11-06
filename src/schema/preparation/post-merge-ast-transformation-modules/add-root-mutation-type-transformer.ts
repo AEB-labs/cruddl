@@ -6,7 +6,7 @@ import {
     findDirectiveWithName,
     getNodeByName,
     getRootEntityTypes,
-    walkNamespacePathByOneHop
+    enterOrCreateNextNamespacePart
 } from "../../schema-utils";
 import {FIELD_DEFINITION, INPUT_VALUE_DEFINITION, NAMED_TYPE, NON_NULL_TYPE, STRING} from "graphql/language/kinds";
 import {mapNullable} from '../../../utils/utils';
@@ -44,8 +44,8 @@ function buildMutationTypeEntityFieldsIntoNamespace(ast: DocumentNode, rootEntit
         if (nameArg && nameArg.value.kind === STRING && nameArg.value.value) {
             const namespace = nameArg.value.value;
             // loop through namespaces and create intermediate fields and types
-            namespace.split(NAMESPACE_SEPARATOR).forEach(hop => {
-                currentNode = walkNamespacePathByOneHop(ast, currentNode, hop, MUTATION_TYPE);
+            namespace.split(NAMESPACE_SEPARATOR).forEach(namespacePart => {
+                currentNode = enterOrCreateNextNamespacePart(ast, currentNode, namespacePart, MUTATION_TYPE);
             });
         }
     }

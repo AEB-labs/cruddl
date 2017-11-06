@@ -149,3 +149,7 @@ export function sortedByAsc(name: string) {
 export function sortedByDesc(name: string) {
     return name + ORDER_BY_DESC_SUFFIX;
 }
+
+export function namespacedType(namespace: string, opType: string) {
+    return capitalize(namespace) + opType;
+}
