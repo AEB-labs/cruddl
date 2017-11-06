@@ -15,6 +15,7 @@ import {NoListsOfListsValidator} from "./ast-validation-modules/no-lists-of-list
 import {EveryRootEntityMustDeclareOneRoleValidator} from "./ast-validation-modules/every-root-entity-must-declare-one-role-validator";
 import {NoRolesOnValueObjectsValidator} from "./ast-validation-modules/no-roles-on-value-objects-validator";
 import {KnownFieldDirectivesValidator} from "./ast-validation-modules/known-field-directives-validator";
+import {KnownObjectTypeDirectivesValidator} from "./ast-validation-modules/known-object-type-directives-validator";
 
 const postMergeValidators: ASTValidator[] = [
     new NoDuplicateTypesValidator(),
@@ -30,7 +31,8 @@ const postMergeValidators: ASTValidator[] = [
     new NoListsOfListsValidator(),
     new EveryRootEntityMustDeclareOneRoleValidator(),
     new NoRolesOnValueObjectsValidator(),
-    new KnownFieldDirectivesValidator()
+    new KnownFieldDirectivesValidator(),
+    new KnownObjectTypeDirectivesValidator()
 ];
 
 export interface ASTValidator {
