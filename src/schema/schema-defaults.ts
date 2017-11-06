@@ -78,3 +78,5 @@ export const NAMESPACE_DIRECTIVE = 'namespace';
 export const NAMESPACE_NAME_ARG = 'name';
 export const NAMESPACE_SEPARATOR = '.';
 export const NAMESPACE_FIELD_PATH_DIRECTIVE = 'namespaceFieldPath';
+
+export const ALL_FIELD_DIRECTIVES = [KEY_FIELD_DIRECTIVE, RELATION_DIRECTIVE, REFERENCE_DIRECTIVE];
