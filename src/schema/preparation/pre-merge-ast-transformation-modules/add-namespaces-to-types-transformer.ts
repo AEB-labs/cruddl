@@ -15,7 +15,7 @@ export class AddNamespacesToTypesTransformer implements ASTTransformer {
             return;
         }
         getRootEntityTypes(ast).forEach(rootEntityType => {
-            if (!hasDirectiveWithName(rootEntityType, 'namespace')) {
+            if (!hasDirectiveWithName(rootEntityType, NAMESPACE_DIRECTIVE)) {
                 rootEntityType.directives = [
                     ...rootEntityType.directives || [],
                     ({
