@@ -1,7 +1,7 @@
 type Paper @rootEntity @roles(readWrite: ["admin"]) {
     key: String @key # need a key field for the reference
     title: String
-    publishDate: String #datetime
+    publishDate: DateTime
     isPublished: Boolean
     literatureReferences: [LiteratureReference]
     tags: [String]
