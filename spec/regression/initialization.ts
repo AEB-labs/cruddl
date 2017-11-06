@@ -1,8 +1,9 @@
 import { ArangoDBConfig } from '../../src/database/arangodb/arangodb-adapter';
 import { Database } from 'arangojs';
-import { graphql, GraphQLSchema } from 'graphql';
+import {ExecutionResult, graphql, GraphQLSchema} from 'graphql';
 import * as fs from 'fs';
 import stripJsonComments = require('strip-json-comments');
+import {NAMESPACE_SEPARATOR} from "../../src/schema/schema-defaults";
 
 const DATABASE_NAME = 'momo-test-temp';
 const DATABASE_URL = 'http://root:@localhost:8529';
@@ -45,7 +46,7 @@ export async function initTestData(path: string, schema: GraphQLSchema): Promise
 
     function fillTemplateStrings(data: any): any {
         if (typeof data == "string") {
-            const exprs = [ /@\{ids\/(\w+)\/(\w*)}/g, /@ids\/(\w+)\/(\w*)/g ];
+            const exprs = [ /@\{ids\/([\w\.]+)\/(\w*)}/g, /@ids\/([\w\.]+)\/(\w*)/g ];
             let result = data;
             for (const expr of exprs) {
                 result = result.replace(expr, (_, collection, localID) => {
@@ -74,18 +75,20 @@ export async function initTestData(path: string, schema: GraphQLSchema): Promise
         authRoles: testData.roles || []
     };
     for (const rootEntityName in testData.rootEntities) {
+        const namespace = rootEntityName.split('.');
+        const rootEntityLocalName = namespace.pop();
         const dataSets = testData.rootEntities[rootEntityName] || [];
         for (let dataSet of dataSets) {
             dataSet = fillTemplateStrings(dataSet);
             const dataID = dataSet['@id'];
             delete dataSet['@id'];
-            const query = `mutation($input: Create${rootEntityName}Input!) { res: create${rootEntityName}(input: $input) { id } }`;
+            const query = `mutation($input: Create${rootEntityLocalName}Input!) { ${ wrapNamespaceForQuery(`res: create${rootEntityLocalName}(input: $input) { id }`, namespace) } }`;
             const variables = {input: dataSet};
             const result = await graphql(schema, query, {}, context, variables);
             if (result.errors) {
                 throw new Error(`GraphQL error while inserting ${rootEntityName}: ${JSON.stringify(result.errors)}`);
             }
-            const id = result.data!.res.id;
+            const id = retrieveIdFromResult(result, namespace);
             if (!id) {
                 throw new Error(`Failed to retrieve ID from query result: ${JSON.stringify(result)}`);
             }
@@ -105,4 +108,22 @@ export async function initTestData(path: string, schema: GraphQLSchema): Promise
      }*/
 
     return { fillTemplateStrings };
+}
+
+function wrapNamespaceForQuery(stuff: string, namespace: string[]) {
+    if (!namespace) { return stuff }
+    let result = stuff;
+    for (const namespacePart of namespace) {
+        result = `${namespacePart} { ${ result } }`;
+    }
+    return result;
+}
+
+function retrieveIdFromResult(result: ExecutionResult, namespace: string[]) {
+    const ns = [...namespace];
+    let node = result.data!;
+    while (ns.length) {
+        node = node[ns.shift()!];
+    }
+    return node.res.id;
 }

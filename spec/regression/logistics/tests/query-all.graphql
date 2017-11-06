@@ -1,10 +1,12 @@
 {
-    allCountries(orderBy: isoCode_ASC) {
-        id
-        isoCode
-        description {
-            languageIsoCode
-            translation
+    foundation {
+        allCountries(orderBy: isoCode_ASC) {
+            id
+            isoCode
+            description {
+                languageIsoCode
+                translation
+            }
         }
     }
 }
