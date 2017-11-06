@@ -1,27 +1,33 @@
 import {ASTTransformer} from "../transformation-pipeline";
 import {DocumentNode, FieldDefinitionNode, InputValueDefinitionNode, ObjectTypeDefinitionNode} from "graphql";
 import {
-    buildNameNode, findDirectiveWithName, getNodeByName, getObjectTypes, getRootEntityTypes,
+    buildNameNode,
+    createObjectTypeNode,
+    findDirectiveWithName,
+    getNodeByName,
+    getRootEntityTypes,
     getTypeNameIgnoringNonNullAndList,
-    hasDirectiveWithName
+    walkNamespacePathByOneHop
 } from "../../schema-utils";
 import {
-    DIRECTIVE_DEFINITION,
     FIELD_DEFINITION,
     INPUT_VALUE_DEFINITION,
     LIST_TYPE,
     NAMED_TYPE,
-    NON_NULL_TYPE, OBJECT,
-    OBJECT_TYPE_DEFINITION, STRING, DIRECTIVE
+    NON_NULL_TYPE,
+    STRING
 } from "graphql/language/kinds";
-import {flatMap, mapNullable} from '../../../utils/utils';
+import {mapNullable} from '../../../utils/utils';
 import {
-    ENTITY_ID, KEY_FIELD_DIRECTIVE, NAMESPACE_DIRECTIVE, NAMESPACE_FIELD_PATH_DIRECTIVE, NAMESPACE_NAME_ARG, NAMESPACE_SEPARATOR,
+    ENTITY_ID,
+    KEY_FIELD_DIRECTIVE,
+    NAMESPACE_DIRECTIVE,
+    NAMESPACE_NAME_ARG,
+    NAMESPACE_SEPARATOR,
     QUERY_TYPE,
     ROLES_DIRECTIVE
 } from '../../schema-defaults';
 import {allEntitiesQueryBy} from "../../../graphql/names";
-import {createEntityObjectNode} from "../../../query/queries";
 
 export class AddRootQueryTypeTransformer implements ASTTransformer {
 
@@ -41,7 +47,7 @@ function buildQueryTypeEntityFieldsIntoNamespace(ast: DocumentNode, rootEntityTy
             const namespace = nameArg.value.value;
             // loop through namespaces and create intermediate fields and types
             namespace.split(NAMESPACE_SEPARATOR).forEach(hop => {
-                currentNode = walkNamespacePathByOneHop(ast, currentNode, hop);
+                currentNode = walkNamespacePathByOneHop(ast, currentNode, hop, QUERY_TYPE);
             });
         }
     }
@@ -49,58 +55,6 @@ function buildQueryTypeEntityFieldsIntoNamespace(ast: DocumentNode, rootEntityTy
         buildQueryOneEntityField(rootEntityType),
         buildQueryAllEntityField(rootEntityType),
     )
-}
-
-/**
- * walks one hop along the namespace path. Creates missing fields and types and returns the current node.
- *
- * @param ast
- * @param {ObjectTypeDefinitionNode} currentNode - the starting node
- * @param {string} hop - one step of the namespace to walk
- * @returns {ObjectTypeDefinitionNode}
- */
-function walkNamespacePathByOneHop(ast: DocumentNode, currentNode: ObjectTypeDefinitionNode, hop: string): ObjectTypeDefinitionNode {
-    let hopField = getNodeByName(currentNode.fields, hop);
-    if (hopField) {
-        // Hey, were done, this one already exists. Just search and return the corresponding type.
-        const arrivingNode = getNodeByName(getObjectTypes(ast), hop);
-        if (!arrivingNode) {
-            throw Error(`Found path field ${hop} but not corresponding type. That seems a bit strange...`);
-        }
-        return arrivingNode;
-    } else {
-        const arrivingNode = createObjectTypeNode(hop);
-        ast.definitions.push(arrivingNode);
-        currentNode.fields.push(createHopField(hop));
-        return arrivingNode;
-    }
-}
-
-function createObjectTypeNode(name: string): ObjectTypeDefinitionNode {
-    return {
-        kind: OBJECT_TYPE_DEFINITION,
-        name: buildNameNode(name),
-        fields: []
-    }
-}
-
-function createHopField(name: string): FieldDefinitionNode {
-    return {
-        kind: FIELD_DEFINITION,
-        name: buildNameNode(name),
-        type: {
-            kind: NAMED_TYPE,
-            name: buildNameNode(name),
-        },
-        arguments: [],
-        directives: [
-            {
-                kind: DIRECTIVE,
-                name: buildNameNode(NAMESPACE_FIELD_PATH_DIRECTIVE),
-                arguments: []
-            }
-        ]
-    }
 }
 
 function buildQueryOneEntityField(entityDef: ObjectTypeDefinitionNode): FieldDefinitionNode {

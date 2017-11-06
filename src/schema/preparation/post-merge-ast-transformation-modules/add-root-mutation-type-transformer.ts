@@ -1,15 +1,24 @@
 import {ASTTransformer} from "../transformation-pipeline";
 import {DocumentNode, FieldDefinitionNode, GraphQLID, ObjectTypeDefinitionNode} from "graphql";
-import {buildNameNode, getRootEntityTypes} from "../../schema-utils";
 import {
-    FIELD_DEFINITION,
-    INPUT_VALUE_DEFINITION,
-    NAMED_TYPE,
-    NON_NULL_TYPE,
-    OBJECT_TYPE_DEFINITION
-} from "graphql/language/kinds";
-import {flatMap, mapNullable} from '../../../utils/utils';
-import {MUTATION_ID_ARG, MUTATION_INPUT_ARG, MUTATION_TYPE, ROLES_DIRECTIVE} from '../../schema-defaults';
+    buildNameNode,
+    createObjectTypeNode,
+    findDirectiveWithName,
+    getNodeByName,
+    getRootEntityTypes,
+    walkNamespacePathByOneHop
+} from "../../schema-utils";
+import {FIELD_DEFINITION, INPUT_VALUE_DEFINITION, NAMED_TYPE, NON_NULL_TYPE, STRING} from "graphql/language/kinds";
+import {mapNullable} from '../../../utils/utils';
+import {
+    MUTATION_ID_ARG,
+    MUTATION_INPUT_ARG,
+    MUTATION_TYPE,
+    NAMESPACE_DIRECTIVE,
+    NAMESPACE_NAME_ARG,
+    NAMESPACE_SEPARATOR,
+    ROLES_DIRECTIVE
+} from '../../schema-defaults';
 import {
     createEntityQuery,
     deleteEntityQuery,
@@ -21,76 +30,81 @@ import {
 export class AddRootMutationTypeTransformer implements ASTTransformer {
 
     transform(ast: DocumentNode): void {
-        ast.definitions.push(this.buildQueryFieldDefinition(ast))
+        const rootMutatuinField = createObjectTypeNode(MUTATION_TYPE);
+        ast.definitions.push(rootMutatuinField);
+        getRootEntityTypes(ast).forEach(rootEntityType => buildMutationTypeEntityFieldsIntoNamespace(ast, rootEntityType, rootMutatuinField))
     }
+}
 
-    protected buildQueryFieldDefinition(ast: DocumentNode): ObjectTypeDefinitionNode {
-        return {
-            kind: OBJECT_TYPE_DEFINITION,
-            name: buildNameNode(MUTATION_TYPE),
-            fields: this.buildMutationTypeRootEntityMutations(getRootEntityTypes(ast)),
+function buildMutationTypeEntityFieldsIntoNamespace(ast: DocumentNode, rootEntityType: ObjectTypeDefinitionNode, rootQueryField: ObjectTypeDefinitionNode) {
+    let currentNode = rootQueryField;
+    const namespaceDirective = findDirectiveWithName(rootEntityType, NAMESPACE_DIRECTIVE);
+    if (namespaceDirective && namespaceDirective.arguments) {
+        const nameArg = getNodeByName(namespaceDirective.arguments, NAMESPACE_NAME_ARG);
+        if (nameArg && nameArg.value.kind === STRING && nameArg.value.value) {
+            const namespace = nameArg.value.value;
+            // loop through namespaces and create intermediate fields and types
+            namespace.split(NAMESPACE_SEPARATOR).forEach(hop => {
+                currentNode = walkNamespacePathByOneHop(ast, currentNode, hop, MUTATION_TYPE);
+            });
         }
     }
+    currentNode.fields.push(
+        buildCreateMutation(rootEntityType),
+        buildUpdateMutation(rootEntityType),
+        buildDeleteMutation(rootEntityType)
+    )
+}
 
-    protected buildMutationTypeRootEntityMutations(rootEntityDefinitionNodes: ObjectTypeDefinitionNode[]): FieldDefinitionNode[] {
-        return flatMap(rootEntityDefinitionNodes, rootEntityDef => [
-            this.buildCreateMutation(rootEntityDef),
-            this.buildUpdateMutation(rootEntityDef),
-            this.buildDeleteMutation(rootEntityDef),
-        ])
+function buildCreateMutation(rootEntityDef: ObjectTypeDefinitionNode): FieldDefinitionNode {
+    return {
+        kind: FIELD_DEFINITION,
+        name: buildNameNode(createEntityQuery(rootEntityDef.name.value)),
+        type: { kind: NON_NULL_TYPE, type: { kind: NAMED_TYPE, name: buildNameNode(rootEntityDef.name.value) } },
+        arguments: [
+            buildNonNullTypeInputArg(MUTATION_INPUT_ARG, getCreateInputTypeName(rootEntityDef)),
+        ],
+        loc: rootEntityDef.loc,
+        directives: mapNullable(rootEntityDef.directives, directives => directives.filter(dir => dir.name.value == ROLES_DIRECTIVE))
     }
+}
 
-    protected buildCreateMutation(rootEntityDef: ObjectTypeDefinitionNode): FieldDefinitionNode {
-        return {
-            kind: FIELD_DEFINITION,
-            name: buildNameNode(createEntityQuery(rootEntityDef.name.value)),
-            type: { kind: NON_NULL_TYPE, type: { kind: NAMED_TYPE, name: buildNameNode(rootEntityDef.name.value) } },
-            arguments: [
-                this.buildNonNullTypeInputArg(MUTATION_INPUT_ARG, getCreateInputTypeName(rootEntityDef)),
-            ],
-            loc: rootEntityDef.loc,
-            directives: mapNullable(rootEntityDef.directives, directives => directives.filter(dir => dir.name.value == ROLES_DIRECTIVE))
-        }
+function buildUpdateMutation(rootEntityDef: ObjectTypeDefinitionNode): FieldDefinitionNode {
+    return {
+        kind: FIELD_DEFINITION,
+        name: buildNameNode(updateEntityQuery(rootEntityDef.name.value)),
+        type: { kind: NAMED_TYPE, name: buildNameNode(rootEntityDef.name.value) },
+        arguments: [
+            buildNonNullTypeInputArg(MUTATION_INPUT_ARG, getUpdateInputTypeName(rootEntityDef)),
+        ],
+        loc: rootEntityDef.loc,
+        directives: mapNullable(rootEntityDef.directives, directives => directives.filter(dir => dir.name.value == ROLES_DIRECTIVE))
     }
+}
 
-    protected buildUpdateMutation(rootEntityDef: ObjectTypeDefinitionNode): FieldDefinitionNode {
-        return {
-            kind: FIELD_DEFINITION,
-            name: buildNameNode(updateEntityQuery(rootEntityDef.name.value)),
-            type: { kind: NAMED_TYPE, name: buildNameNode(rootEntityDef.name.value) },
-            arguments: [
-                this.buildNonNullTypeInputArg(MUTATION_INPUT_ARG, getUpdateInputTypeName(rootEntityDef)),
-            ],
-            loc: rootEntityDef.loc,
-            directives: mapNullable(rootEntityDef.directives, directives => directives.filter(dir => dir.name.value == ROLES_DIRECTIVE))
-        }
+function buildDeleteMutation(rootEntityDef: ObjectTypeDefinitionNode): FieldDefinitionNode {
+    return {
+        kind: FIELD_DEFINITION,
+        name: buildNameNode(deleteEntityQuery(rootEntityDef.name.value)),
+        type: { kind: NAMED_TYPE, name: buildNameNode(rootEntityDef.name.value) },
+        arguments: [
+            buildNonNullTypeInputArg(MUTATION_ID_ARG, GraphQLID.name),
+        ],
+        loc: rootEntityDef.loc,
+        directives: mapNullable(rootEntityDef.directives, directives => directives.filter(dir => dir.name.value == ROLES_DIRECTIVE))
     }
+}
 
-    protected buildDeleteMutation(rootEntityDef: ObjectTypeDefinitionNode): FieldDefinitionNode {
-        return {
-            kind: FIELD_DEFINITION,
-            name: buildNameNode(deleteEntityQuery(rootEntityDef.name.value)),
-            type: { kind: NAMED_TYPE, name: buildNameNode(rootEntityDef.name.value) },
-            arguments: [
-                this.buildNonNullTypeInputArg(MUTATION_ID_ARG, GraphQLID.name),
-            ],
-            loc: rootEntityDef.loc,
-            directives: mapNullable(rootEntityDef.directives, directives => directives.filter(dir => dir.name.value == ROLES_DIRECTIVE))
-        }
-    }
-
-    protected buildNonNullTypeInputArg(name: string, namedTypeName: string) {
-        return {
-            kind: INPUT_VALUE_DEFINITION,
-            name: buildNameNode(name),
+function buildNonNullTypeInputArg(name: string, namedTypeName: string) {
+    return {
+        kind: INPUT_VALUE_DEFINITION,
+        name: buildNameNode(name),
+        type: {
+            kind: NON_NULL_TYPE,
             type: {
-                kind: NON_NULL_TYPE,
-                type: {
-                    kind: NAMED_TYPE,
-                    name: buildNameNode(namedTypeName)
-                }
+                kind: NAMED_TYPE,
+                name: buildNameNode(namedTypeName)
             }
-        };
-    }
-
+        }
+    };
 }

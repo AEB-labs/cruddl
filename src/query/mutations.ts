@@ -1,5 +1,5 @@
 import { FieldRequest } from '../graphql/query-distiller';
-import { getNamedType, GraphQLObjectType, GraphQLType } from 'graphql';
+import {FieldDefinitionNode, getNamedType, GraphQLObjectType, GraphQLType} from 'graphql';
 import {
     AddEdgesQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode,
     CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeFilter, EdgeIdentifier, FieldQueryNode, FirstOfListQueryNode,
@@ -11,10 +11,11 @@ import {
 import {
     CREATE_ENTITY_FIELD_PREFIX, DELETE_ENTITY_FIELD_PREFIX, ENTITY_CREATED_AT, ENTITY_UPDATED_AT, ID_FIELD,
     MUTATION_ID_ARG,
-    MUTATION_INPUT_ARG, UPDATE_ENTITY_FIELD_PREFIX
+    MUTATION_INPUT_ARG, NAMESPACE_FIELD_PATH_DIRECTIVE, UPDATE_ENTITY_FIELD_PREFIX
 } from '../schema/schema-defaults';
 import { createEntityObjectNode } from './queries';
 import {
+    hasDirectiveWithName,
     isChildEntityType, isEntityExtensionType, isRelationField, isRootEntityType, isTypeWithIdentity,
     isWriteProtectedSystemField
 } from '../schema/schema-utils';
@@ -44,8 +45,19 @@ export function createMutationRootNode(fieldRequest: FieldRequest): QueryNode {
         return createDeleteEntityQueryNode(fieldRequest, [fieldRequest]);
     }
 
+    if (fieldRequest.field.type instanceof GraphQLObjectType && hasDirectiveWithName(fieldRequest.field.astNode as FieldDefinitionNode, NAMESPACE_FIELD_PATH_DIRECTIVE)) {
+        return createMutationNamespaceFieldNode(fieldRequest, [fieldRequest])
+    }
+
     console.log(`unknown field: ${fieldRequest.fieldName}`);
     return new NullQueryNode();
+}
+
+function createMutationNamespaceFieldNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[]): QueryNode {
+    return new ObjectQueryNode(fieldRequest.selectionSet.map(
+        sel => new PropertySpecification(sel.propertyName,
+            // a namespace can be interpreted as pushing the root node down.
+            createMutationRootNode(sel.fieldRequest))));
 }
 
 function createCreateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[]): QueryNode {

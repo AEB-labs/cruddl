@@ -33,7 +33,7 @@ export function createQueryRootNode(fieldRequest: FieldRequest): QueryNode {
         return createEntitiesMetaFieldNode(fieldRequest);
     }
     if (fieldRequest.field.type instanceof GraphQLObjectType && hasDirectiveWithName(fieldRequest.field.astNode as FieldDefinitionNode, NAMESPACE_FIELD_PATH_DIRECTIVE)) {
-        return createNamespaceFieldNode(fieldRequest, [fieldRequest])
+        return createQueryNamespaceFieldNode(fieldRequest, [fieldRequest])
     }
     if (fieldRequest.field.type instanceof GraphQLObjectType) {
         return createSingleEntityFieldNode(fieldRequest, [fieldRequest]);
@@ -43,7 +43,7 @@ export function createQueryRootNode(fieldRequest: FieldRequest): QueryNode {
     return new NullQueryNode();
 }
 
-function createNamespaceFieldNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[]): QueryNode {
+function createQueryNamespaceFieldNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[]): QueryNode {
         return new ObjectQueryNode(fieldRequest.selectionSet.map(
             sel => new PropertySpecification(sel.propertyName,
                 // a namespace can be interpreted as pushing the root node down.

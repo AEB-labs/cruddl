@@ -5,12 +5,14 @@ import {
     ValueNode
 } from 'graphql';
 import {
+    DIRECTIVE,
     ENUM_TYPE_DEFINITION, FIELD_DEFINITION, INPUT_OBJECT_TYPE_DEFINITION, LIST_TYPE, NAME, NAMED_TYPE, NON_NULL_TYPE,
     OBJECT_TYPE_DEFINITION, SCALAR_TYPE_DEFINITION
 } from 'graphql/language/kinds';
 import {
     CHILD_ENTITY_DIRECTIVE, ENTITY_CREATED_AT, ENTITY_EXTENSION_DIRECTIVE, ENTITY_UPDATED_AT, ID_FIELD,
-    KEY_FIELD_DIRECTIVE, REFERENCE_DIRECTIVE, RELATION_DIRECTIVE, ROLES_DIRECTIVE, ROLES_READ_ARG, ROLES_READ_WRITE_ARG,
+    KEY_FIELD_DIRECTIVE, NAMESPACE_FIELD_PATH_DIRECTIVE, REFERENCE_DIRECTIVE, RELATION_DIRECTIVE, ROLES_DIRECTIVE,
+    ROLES_READ_ARG, ROLES_READ_WRITE_ARG,
     ROOT_ENTITY_DIRECTIVE, VALUE_OBJECT_DIRECTIVE
 } from './schema-defaults';
 import { flatMap, objectValues } from '../utils/utils';
@@ -368,3 +370,57 @@ export function getNodeByName<T extends {name: NameNode}>(listOfNodes: T[]|undef
     }
     return listOfNodes.find(node => node.name.value === name);
 }
+
+export function createObjectTypeNode(name: string): ObjectTypeDefinitionNode {
+    return {
+        kind: OBJECT_TYPE_DEFINITION,
+        name: buildNameNode(name),
+        fields: []
+    }
+}
+
+export function createFieldWithDirective(name: string, typeName: string, directiveName: string): FieldDefinitionNode {
+    return {
+        kind: FIELD_DEFINITION,
+        name: buildNameNode(name),
+        type: {
+            kind: NAMED_TYPE,
+            name: buildNameNode(typeName),
+        },
+        arguments: [],
+        directives: [
+            {
+                kind: DIRECTIVE,
+                name: buildNameNode(directiveName),
+                arguments: []
+            }
+        ]
+    }
+}
+
+/**
+ * walks one hop along the namespace path. Creates missing fields and types and returns the current node.
+ *
+ * @param ast
+ * @param {ObjectTypeDefinitionNode} currentNode - the starting node
+ * @param {string} hop - one step of the namespace to walk
+ * @returns {ObjectTypeDefinitionNode}
+ */
+export function walkNamespacePathByOneHop(ast: DocumentNode, currentNode: ObjectTypeDefinitionNode, hop: string, baseOperationType: string): ObjectTypeDefinitionNode {
+    let hopField = getNodeByName(currentNode.fields, hop);
+    if (hopField) {
+        // Hey, were done, this one already exists. Just search and return the corresponding type.
+        const arrivingNode = getNodeByName(getObjectTypes(ast), hop + baseOperationType);
+        if (!arrivingNode) {
+            throw Error(`Found path field ${hop} but not corresponding type. That seems a bit strange...`);
+        }
+        return arrivingNode;
+    } else {
+        const arrivingNode = createObjectTypeNode(hop + baseOperationType);
+        ast.definitions.push(arrivingNode);
+        currentNode.fields.push(createFieldWithDirective(hop, hop + baseOperationType, NAMESPACE_FIELD_PATH_DIRECTIVE));
+        return arrivingNode;
+    }
+}
+
+
