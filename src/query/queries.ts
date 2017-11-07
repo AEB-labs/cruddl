@@ -90,7 +90,7 @@ function createSingleEntityFieldNode(fieldRequest: FieldRequest, fieldRequestSta
     const filterClauses = objectEntries(fieldRequest.args).map(([fieldName, value]) =>
         new BinaryOperationQueryNode(createScalarFieldValueNode(objectType, fieldName, entityVarNode), BinaryOperator.EQUAL, new LiteralQueryNode(value)));
     if (filterClauses.length != 1) {
-        throw new Error(`Must specify exactly one argument to ${fieldRequest.field.type.toString()}.${fieldRequest.field.name}`);
+        throw new Error(`Must specify exactly one argument to ${fieldRequest.parentType.toString()}.${fieldRequest.field.name}`);
     }
     const filterNode = filterClauses[0];
     const innerNode = createConditionalObjectNode(fieldRequest.selectionSet, entityVarNode, fieldRequestStack);
