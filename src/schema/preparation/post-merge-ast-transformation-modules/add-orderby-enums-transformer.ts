@@ -7,8 +7,9 @@ import {
     ObjectTypeDefinitionNode
 } from 'graphql';
 import {
+    areRolesDirectivesEqual,
     buildNameNode,
-    findDirectiveWithName,
+    findDirectiveWithName, getAllowedReadRoles,
     getNamedTypeDefinitionAST,
     getObjectTypes,
     getTypeNameIgnoringNonNullAndList
@@ -62,6 +63,13 @@ export class AddOrderbyInputEnumsTransformer implements ASTTransformer {
     }
 
     protected collectOrderByEnumFieldNamesRecurse(ast: DocumentNode, objectType: ObjectTypeDefinitionNode, ignoreTypeNames: string[], prefix: string, outerRoleDirective?: DirectiveNode): EnumValueWithDirectives[] {
+        // see of the outerRoleDirective really restricts something
+        // this is to work around bug https://gitlab.aeb.com/next-playground/momo/issues/26
+        const objectTypeRoles = findDirectiveWithName(objectType, ROLES_DIRECTIVE);
+        if (outerRoleDirective && (!objectTypeRoles || areRolesDirectivesEqual(outerRoleDirective, objectTypeRoles))) {
+            outerRoleDirective = undefined;
+        }
+
         return flatMap(objectType.fields, field => {
             // no sorting on nested lists
             if (field.type.kind === LIST_TYPE || field.type.kind === NON_NULL_TYPE && field.type.type.kind === LIST_TYPE) {

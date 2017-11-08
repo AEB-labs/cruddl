@@ -326,6 +326,19 @@ export function getRoleListFromDirective(directive: DirectiveNode, argName: stri
     return [];
 }
 
+/**
+ * Determines whether two @roles directives are specifying exactly the same roles
+ */
+export function areRolesDirectivesEqual(lhs: DirectiveNode, rhs: DirectiveNode) {
+    function forArg(argName: string) {
+        const lhsRoles = getRoleListFromDirective(lhs, argName);
+        const rhsRoles = getRoleListFromDirective(lhs, argName);
+        return isEqual(lhsRoles.sort(), rhsRoles.sort());
+    }
+
+    return forArg(ROLES_READ_ARG) && forArg(ROLES_READ_WRITE_ARG);
+}
+
 function getAllowedRoles(field: GraphQLField<any, any>|GraphQLInputField|GraphQLEnumValue, argName: string): string[]|undefined {
     const astNode = getASTNodeWithDirectives(field);
     const directive = findDirectiveWithName(astNode, ROLES_DIRECTIVE);
