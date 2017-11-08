@@ -61,3 +61,5 @@ reports/
 spec/
 coverage/
 .nyc_output/
+/src/
+/*.ts
