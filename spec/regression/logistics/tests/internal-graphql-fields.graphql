@@ -1,0 +1,14 @@
+{
+    # momo should just ignore these fields and let the graphql engine handle them
+
+    __type(name: "Delivery") {
+        name
+    }
+
+    __typename
+
+    Delivery(id: "@{ids/Delivery/1}") {
+        deliveryNumber
+        __typename
+    }
+}

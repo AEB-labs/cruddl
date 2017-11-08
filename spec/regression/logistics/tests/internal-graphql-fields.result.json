@@ -1,0 +1,12 @@
+{
+  "data": {
+    "__type": {
+      "name": "Delivery"
+    },
+    "__typename": "Query",
+    "Delivery": {
+      "deliveryNumber": "1000173",
+      "__typename": "Delivery"
+    }
+  }
+}

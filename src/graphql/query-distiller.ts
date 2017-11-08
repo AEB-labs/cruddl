@@ -151,7 +151,8 @@ interface Context {
  */
 function distillSelections(selections: SelectionNode[], parentType: GraphQLCompositeType, context: Context): FieldSelection[] {
     const allFieldNodes: FieldNode[] = resolveSelections(selections, context);
-    const fieldNodesByPropertyName = groupArray(allFieldNodes, selection => getAliasOrName(selection));
+    const allButSystemFieldNodes = allFieldNodes.filter(node => !node.name.value.startsWith('__'));
+    const fieldNodesByPropertyName = groupArray(allButSystemFieldNodes, selection => getAliasOrName(selection));
     return [...fieldNodesByPropertyName].map(([propertyName, fieldNodes]) =>
         new FieldSelection(propertyName, buildFieldRequest(fieldNodes, parentType, context)));
 }
