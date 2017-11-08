@@ -153,7 +153,7 @@ function distillSelections(selections: SelectionNode[], parentType: GraphQLCompo
     const allFieldNodes: FieldNode[] = resolveSelections(selections, context);
     const allButSystemFieldNodes = allFieldNodes.filter(node => !node.name.value.startsWith('__'));
     const fieldNodesByPropertyName = groupArray(allButSystemFieldNodes, selection => getAliasOrName(selection));
-    return [...fieldNodesByPropertyName].map(([propertyName, fieldNodes]) =>
+    return Array.from(fieldNodesByPropertyName).map(([propertyName, fieldNodes]) =>
         new FieldSelection(propertyName, buildFieldRequest(fieldNodes, parentType, context)));
 }
 

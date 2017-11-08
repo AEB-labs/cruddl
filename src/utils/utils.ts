@@ -70,7 +70,7 @@ export function indent(input: string, indentation: string|number = INDENTATION) 
  * @returns the array
  */
 export function range(count: number): number[] {
-    return [...Array(count).keys()];
+    return Array.from(Array(count).keys());
 }
 
 /**
