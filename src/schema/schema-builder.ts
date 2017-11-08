@@ -3,10 +3,24 @@ import {
     executePostMergeTransformationPipeline,
     executePreMergeTransformationPipeline
 } from "./preparation/transformation-pipeline";
-import {validatePostMerge} from "./preparation/ast-validator";
+import { validatePostMerge, ValidationResult } from './preparation/ast-validator';
 import {implementScalarTypes} from './scalars/implement-scalar-types';
 import {SchemaConfig} from "../config/schema-config";
 import {cloneDeep} from "lodash";
+
+/**
+ * Validates a schema config and thus determines whether createSchema() would succeed
+ */
+export function validateSchema(inputSchemaConfig: SchemaConfig): ValidationResult {
+    const schemaConfig = parseSchemaParts(inputSchemaConfig);
+
+    const { schemaParts, ...rootContext } = schemaConfig;
+
+    executePreMergeTransformationPipeline(schemaParts, rootContext);
+    const mergedSchema: DocumentNode = mergeSchemaDefinition(schemaConfig);
+
+    return validatePostMerge(mergedSchema);
+}
 
 /**
  Create an executable schema for a given schema definition.
