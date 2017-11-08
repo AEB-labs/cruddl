@@ -16,7 +16,8 @@ import {
     ROOT_ENTITY_DIRECTIVE, VALUE_OBJECT_DIRECTIVE
 } from './schema-defaults';
 import { flatMap, objectValues } from '../utils/utils';
-import {namespacedType} from "../graphql/names";
+import {namespacedType} from '../graphql/names';
+import { isEqual } from 'lodash';
 
 
 /**
@@ -27,7 +28,7 @@ import {namespacedType} from "../graphql/names";
 export function getObjectTypes(model: DocumentNode): ObjectTypeDefinitionNode[] {
     return <ObjectTypeDefinitionNode[]> model.definitions.filter(
         def => def.kind === OBJECT_TYPE_DEFINITION
-    )
+    );
 }
 
 /**
@@ -40,7 +41,7 @@ export function getRootEntityTypes(model: DocumentNode): ObjectTypeDefinitionNod
         def => def.kind === OBJECT_TYPE_DEFINITION && def.directives && def.directives.some(
             directive => directive.name.value === ROOT_ENTITY_DIRECTIVE
         )
-    )
+    );
 }
 
 /**
@@ -53,7 +54,7 @@ export function getChildEntityTypes(model: DocumentNode): ObjectTypeDefinitionNo
         def => def.kind === OBJECT_TYPE_DEFINITION && def.directives && def.directives.some(
             directive => directive.name.value === CHILD_ENTITY_DIRECTIVE
         )
-    )
+    );
 }
 
 /**
@@ -66,7 +67,7 @@ export function getEntityExtensionTypes(model: DocumentNode): ObjectTypeDefiniti
         def => def.kind === OBJECT_TYPE_DEFINITION && def.directives && def.directives.some(
             directive => directive.name.value === ENTITY_EXTENSION_DIRECTIVE
         )
-    )
+    );
 }
 
 /**
@@ -79,7 +80,7 @@ export function getValueObjectTypes(model: DocumentNode): ObjectTypeDefinitionNo
         def => def.kind === OBJECT_TYPE_DEFINITION && def.directives && def.directives.some(
             directive => directive.name.value === VALUE_OBJECT_DIRECTIVE
         )
-    )
+    );
 }
 
 /**
@@ -88,7 +89,7 @@ export function getValueObjectTypes(model: DocumentNode): ObjectTypeDefinitionNo
  * @returns {FieldDefinitionNode[]}
  */
 export function getFieldDefinitionNodes(model: DocumentNode): FieldDefinitionNode[] {
-    return flatMap(<ObjectTypeDefinitionNode[]> model.definitions.filter(def => def.kind === OBJECT_TYPE_DEFINITION), def => def.fields)
+    return flatMap(<ObjectTypeDefinitionNode[]> model.definitions.filter(def => def.kind === OBJECT_TYPE_DEFINITION), def => def.fields);
 }
 
 /**
@@ -112,7 +113,7 @@ export function createFieldDefinitionNode(name: string, type: string, loc?: Loca
             }
         },
         arguments: args || []
-    }
+    };
 
 }
 
@@ -138,19 +139,19 @@ export function nonNullifyType(type: TypeNode): TypeNode {
     return {
         kind: NON_NULL_TYPE,
         type: type
-    }
+    };
 }
 
 export function getScalarFieldsOfObjectDefinition(ast: DocumentNode, objectDefinition: ObjectTypeDefinitionNode): FieldDefinitionNode[] {
     return objectDefinition.fields.filter(field => {
         switch (field.type.kind) {
             case NAMED_TYPE:
-                return getNamedTypeDefinitionAST(ast, field.type.name.value).kind === SCALAR_TYPE_DEFINITION
+                return getNamedTypeDefinitionAST(ast, field.type.name.value).kind === SCALAR_TYPE_DEFINITION;
             case NON_NULL_TYPE:
                 if (field.type.type.kind !== NAMED_TYPE) {
-                    return false
+                    return false;
                 }
-                return getNamedTypeDefinitionAST(ast, field.type.type.name.value).kind === SCALAR_TYPE_DEFINITION
+                return getNamedTypeDefinitionAST(ast, field.type.type.name.value).kind === SCALAR_TYPE_DEFINITION;
             default:
                 return false;
         }
@@ -160,7 +161,7 @@ export function getScalarFieldsOfObjectDefinition(ast: DocumentNode, objectDefin
 export function getNamedTypeDefinitionAST(ast: DocumentNode, name: string): ObjectTypeDefinitionNode|ScalarTypeDefinitionNode|EnumTypeDefinitionNode {
     if (['String', 'ID', 'Int', 'Float', 'Boolean'].includes(name)) {
         // Fake default scalar types, because they are not present in AST but will be generated later during schema creation.
-        return buildScalarDefinitionNode(name)
+        return buildScalarDefinitionNode(name);
     }
     const type = ast.definitions.find(def => (def.kind === OBJECT_TYPE_DEFINITION || def.kind === SCALAR_TYPE_DEFINITION || def.kind === ENUM_TYPE_DEFINITION) && def.name.value === name);
     if (!type) {
@@ -187,7 +188,7 @@ export function buildScalarDefinitionNode(name: string): ScalarTypeDefinitionNod
     return {
         kind: SCALAR_TYPE_DEFINITION,
         name: { kind: NAME, value: name }
-    }
+    };
 }
 
 export function buildNameNode(name: string): NameNode {
@@ -294,7 +295,7 @@ export function getStringListValues(value: ValueNode): string[] {
             if (value.kind == 'StringValue') {
                 return value.value;
             }
-            throw new Error(`Expected string, got ${value.kind}`)
+            throw new Error(`Expected string, got ${value.kind}`);
         });
     }
     if (value.kind == 'StringValue') {
@@ -390,7 +391,7 @@ export function createObjectTypeNode(name: string): ObjectTypeDefinitionNode {
         kind: OBJECT_TYPE_DEFINITION,
         name: buildNameNode(name),
         fields: []
-    }
+    };
 }
 
 export function createFieldWithDirective(name: string, typeName: string, directiveName: string): FieldDefinitionNode {
@@ -399,7 +400,7 @@ export function createFieldWithDirective(name: string, typeName: string, directi
         name: buildNameNode(name),
         type: {
             kind: NAMED_TYPE,
-            name: buildNameNode(typeName),
+            name: buildNameNode(typeName)
         },
         arguments: [],
         directives: [
@@ -409,7 +410,7 @@ export function createFieldWithDirective(name: string, typeName: string, directi
                 arguments: []
             }
         ]
-    }
+    };
 }
 
 /**

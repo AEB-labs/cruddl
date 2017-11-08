@@ -91,7 +91,6 @@ export class AddOrderbyInputEnumsTransformer implements ASTTransformer {
                     const roleDirective = intersectRolesDirectives(compact(roleDirectives));
                     return [ { name: prefix + field.name.value, directives: roleDirective ? [ roleDirective ] : [] } ];
                 case OBJECT_TYPE_DEFINITION:
-                    roleDirectives.push(findDirectiveWithName(type, ROLES_DIRECTIVE));
                     return this.collectOrderByEnumFieldNamesRecurse(ast, type, [...ignoreTypeNames, typeName], prefix + field.name.value + '_', intersectRolesDirectives(compact(roleDirectives)));
                 default:
                     throw new Error(`Unexpected type of ${typeName} when creating order by enum.`);
