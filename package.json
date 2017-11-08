@@ -53,6 +53,7 @@
   "dependencies": {
     "arangojs": "^5.7.0",
     "colors": "^1.1.2",
+    "graphql-tag": "^2.5.0",
     "graphql-transformer": "^0.1.2",
     "jsondiffpatch": "^0.2.4",
     "lodash": "^4.17.4",
