@@ -47,7 +47,7 @@ export async function initEnvironment(): Promise<TestEnvironment> {
             return new Database(dbConfig)
         },
         async exec(gql, variables) {
-            const res = await graphql(schema, gql, {} /* root */, {}, variables);
+            const res = await graphql(schema, gql, {} /* root */, {authRoles: ['admin']}, variables);
             if (res.errors) {
                 throw new Error(JSON.stringify(res.errors));
             }
