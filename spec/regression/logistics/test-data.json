@@ -11,7 +11,8 @@
         },{
           "languageIsoCode": "EN",
           "translation": "Germany"
-        }]
+        }],
+        "totalInvestment": "EUR 50000000"
       },
       {
         "@id": "2",
@@ -22,7 +23,8 @@
         },{
           "languageIsoCode": "EN",
           "translation": "United Kingdom"
-        }]
+        }],
+        "totalInvestment": "EUR 3000000"
       },
       {
         "@id": "3",

@@ -42,10 +42,14 @@ export function addQueryResolvers(schema: GraphQLSchema, databaseAdapter: Databa
             const operation = distillOperation(operationInfo);
             console.log(operation.describe());
 
-            const authorizationCheckResult = checkAuthorization(operation, getRequestRoles(operationInfo.context));
+            const requestRoles = getRequestRoles(operationInfo.context);
+            console.log(`Request roles: ${requestRoles.join(', ')}`);
+            const authorizationCheckResult = checkAuthorization(operation, requestRoles);
             if (authorizationCheckResult.hasErrors) {
                 console.log(`Authorization errors:\n${authorizationCheckResult.errors.join('\n')}`);
                 console.log(`Sanitized operation:\n${authorizationCheckResult.sanitizedOperation.describe()}`);
+            } else {
+                console.log('Authorization ok.');
             }
             authorizationCheckResultsByOperation.set(operationInfo.operation, authorizationCheckResult);
 
