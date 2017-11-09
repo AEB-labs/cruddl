@@ -24,7 +24,10 @@ query select {
             totalValue
         }
     }
+}
 
+# this is separate because they are non-nullable and tus set the whole data property to null
+query selectMeta {
     # these are forbidden on type level
     allForwarders {
         name

@@ -26,7 +26,11 @@
           "deliveryNumber": "1000173",
           "totalValue": "EUR 1024.00"
         }
-      },
+      }
+    }
+  },
+  "selectMeta": {
+    "data": {
       "allForwarders": [
         {
           "name": "DHL"
