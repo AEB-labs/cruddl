@@ -26,6 +26,12 @@
           "deliveryNumber": "1000173",
           "totalValue": "EUR 1024.00"
         }
+      },
+      "foundation": {
+        "Country": {
+          "isoCode": "DE",
+          "totalInvestment": "EUR 50000000"
+        }
       }
     }
   },

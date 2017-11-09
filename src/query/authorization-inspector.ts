@@ -202,7 +202,7 @@ function checkAuthorizationForSelectionSet(selectionSet: FieldSelection[], error
     }));
 }
 
-function checkAuthorizationForFieldRecursively(fieldRequest: FieldRequest, errorList: AuthorizationError[], context: AuthorizationCheckContext): FieldRequest|undefined {
+function checkAuthorizationForField(fieldRequest: FieldRequest, errorList: AuthorizationError[], context: AuthorizationCheckContext): FieldRequest|undefined {
     const allowedRoles = getAllowedRoles(fieldRequest.field, context.accessKind);
     if (hasDirectiveWithName(fieldRequest.field.astNode as FieldDefinitionNode, NAMESPACE_FIELD_PATH_DIRECTIVE)) {
         // namespaces are always allowed, return original fieldRequest
@@ -237,6 +237,15 @@ function checkAuthorizationForFieldRecursively(fieldRequest: FieldRequest, error
             argumentErrors
         }));
         return undefined;
+    }
+
+    return fieldRequest;
+}
+
+function checkAuthorizationForFieldRecursively(fieldRequest: FieldRequest, errorList: AuthorizationError[], context: AuthorizationCheckContext): FieldRequest|undefined {
+    const result = checkAuthorizationForField(fieldRequest, errorList, context);
+    if (!result) {
+        return result;
     }
 
     // process selections

@@ -24,6 +24,13 @@ query select {
             totalValue
         }
     }
+
+    foundation {
+        Country(isoCode: "DE") {
+            isoCode
+            totalInvestment
+        }
+    }
 }
 
 # this is separate because they are non-nullable and tus set the whole data property to null
