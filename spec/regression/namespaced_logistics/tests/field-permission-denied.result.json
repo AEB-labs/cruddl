@@ -13,7 +13,7 @@
   "select": {
     "errors": [
       {
-        "message": "Not authorized to select logistics.delivery.Delivery.totalValue",
+        "message": "Not authorized to select totalValue",
         "locations": [
           {
             "line": 16,
@@ -28,7 +28,7 @@
         ]
       },
       {
-        "message": "Not authorized to select logistics.delivery.Delivery.forwarder",
+        "message": "Not authorized to select forwarder",
         "locations": [
           {
             "line": 17,
@@ -43,7 +43,7 @@
         ]
       },
       {
-        "message": "Not authorized to select logistics.delivery.allDeliveries.totalValue",
+        "message": "Not authorized to select totalValue",
         "locations": [
           {
             "line": 24,
@@ -59,7 +59,7 @@
         ]
       },
       {
-        "message": "Not authorized to select logistics.delivery.HandlingUnit.delivery.totalValue",
+        "message": "Not authorized to select totalValue",
         "locations": [
           {
             "line": 30,
@@ -75,7 +75,7 @@
         ]
       },
       {
-        "message": "Not authorized to select foundation.Country.totalInvestment",
+        "message": "Not authorized to select totalInvestment",
         "locations": [
           {
             "line": 38,
@@ -122,7 +122,7 @@
   "selectMeta": {
     "errors": [
       {
-        "message": "Not authorized to select logistics.allForwarders",
+        "message": "Not authorized to select allForwarders",
         "locations": [
           {
             "line": 48,
@@ -135,7 +135,7 @@
         ]
       },
       {
-        "message": "Not authorized to select logistics._allForwardersMeta",
+        "message": "Not authorized to select _allForwardersMeta",
         "locations": [
           {
             "line": 52,
@@ -155,7 +155,7 @@
   "filter": {
     "errors": [
       {
-        "message": "Not authorized to select logistics.delivery.direct with argument filter (field totalValue)",
+        "message": "Not authorized to select allDeliveries with argument filter (field totalValue)",
         "locations": [
           {
             "line": 61,
@@ -169,7 +169,7 @@
         ]
       },
       {
-        "message": "Not authorized to select logistics.delivery.startsWith with argument filter (field totalValue_starts_with)",
+        "message": "Not authorized to select allDeliveries with argument filter (field totalValue_starts_with)",
         "locations": [
           {
             "line": 65,
@@ -183,7 +183,7 @@
         ]
       },
       {
-        "message": "Not authorized to select logistics.delivery.throughRelation with argument filter (field delivery.totalValue)",
+        "message": "Not authorized to select allHandlingUnits with argument filter (field delivery.totalValue)",
         "locations": [
           {
             "line": 69,
@@ -197,7 +197,7 @@
         ]
       },
       {
-        "message": "Not authorized to select logistics.delivery.toUnaccessibleEntity with argument filter (field forwarder)",
+        "message": "Not authorized to select allDeliveries with argument filter (field forwarder)",
         "locations": [
           {
             "line": 73,
@@ -211,7 +211,7 @@
         ]
       },
       {
-        "message": "Not authorized to select simple.SecretKey with argument key",
+        "message": "Not authorized to select SecretKey with argument key",
         "locations": [
           {
             "line": 79,
@@ -241,7 +241,7 @@
   "sort": {
     "errors": [
       {
-        "message": "Not authorized to select logistics.delivery.direct with argument orderBy ([0] == totalValue_ASC)",
+        "message": "Not authorized to select allDeliveries with argument orderBy ([0] == totalValue_ASC)",
         "locations": [
           {
             "line": 89,
@@ -255,7 +255,7 @@
         ]
       },
       {
-        "message": "Not authorized to select logistics.delivery.throughRelation with argument orderBy ([0] == delivery_totalValue_DESC)",
+        "message": "Not authorized to select allHandlingUnits with argument orderBy ([0] == delivery_totalValue_DESC)",
         "locations": [
           {
             "line": 93,
@@ -281,7 +281,7 @@
   "create": {
     "errors": [
       {
-        "message": "Not authorized to call logistics.delivery.createDelivery with argument input (field totalValue)",
+        "message": "Not authorized to call createDelivery with argument input (field totalValue)",
         "locations": [
           {
             "line": 103,
@@ -295,7 +295,7 @@
         ]
       },
       {
-        "message": "Not authorized to call logistics.createForwarder",
+        "message": "Not authorized to call createForwarder",
         "locations": [
           {
             "line": 107,
@@ -315,7 +315,7 @@
   "update": {
     "errors": [
       {
-        "message": "Not authorized to call logistics.delivery.updateDelivery with argument input (field totalValue)",
+        "message": "Not authorized to call updateDelivery with argument input (field totalValue)",
         "locations": [
           {
             "line": 116,
@@ -329,7 +329,7 @@
         ]
       },
       {
-        "message": "Not authorized to call logistics.updateForwarder",
+        "message": "Not authorized to call updateForwarder",
         "locations": [
           {
             "line": 120,
@@ -354,7 +354,7 @@
   "delete": {
     "errors": [
       {
-        "message": "Not authorized to call logistics.deleteForwarder",
+        "message": "Not authorized to call deleteForwarder",
         "locations": [
           {
             "line": 128,
