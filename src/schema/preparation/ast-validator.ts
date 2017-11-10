@@ -16,9 +16,11 @@ import {EveryRootEntityMustDeclareOneRoleValidator} from "./ast-validation-modul
 import {NoRolesOnValueObjectsValidator} from "./ast-validation-modules/no-roles-on-value-objects-validator";
 import {KnownFieldDirectivesValidator} from "./ast-validation-modules/known-field-directives-validator";
 import {KnownObjectTypeDirectivesValidator} from "./ast-validation-modules/known-object-type-directives-validator";
+import {ObjectTypeDirectiveCountValidator} from "./ast-validation-modules/object-type-directive-count-validator";
 
 const postMergeValidators: ASTValidator[] = [
     new NoDuplicateTypesValidator(),
+    new ObjectTypeDirectiveCountValidator(),
     new OnlyAllowedTypesValidator(),
     new KeyFieldValidator(),
     new EntityDirectiveNestingValidator(),
