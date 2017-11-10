@@ -16,6 +16,9 @@ const modelWithDuplicate = `
                 foo: String
             }
             type Stuff {
+                bar: String
+            }
+            type Stuff {
                 name: String
             }
         `;
@@ -25,7 +28,8 @@ describe('no duplicate type definition validator', () => {
         const ast = parse(modelWithDuplicate);
         const validationResult = new ValidationResult(new NoDuplicateTypesValidator().validate(ast));
         expect(validationResult.hasErrors()).toBeTruthy();
-        expect(validationResult.messages.length).toBe(1);
+        // we expect two errors because both types have a duplicate type error
+        expect(validationResult.messages.length).toBe(3);
         expect(validationResult.messages[0].msgKey).toBe(VALIDATION_ERROR_DUPLICATE_TYPE_NAMES);
     });
 
