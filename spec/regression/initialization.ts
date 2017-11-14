@@ -113,7 +113,7 @@ export async function initTestData(path: string, schema: GraphQLSchema): Promise
 function wrapNamespaceForQuery(stuff: string, namespace: string[]) {
     if (!namespace) { return stuff }
     let result = stuff;
-    for (const namespacePart of namespace) {
+    for (const namespacePart of [...namespace].reverse()) {
         result = `${namespacePart} { ${ result } }`;
     }
     return result;
@@ -123,7 +123,12 @@ function retrieveIdFromResult(result: ExecutionResult, namespace: string[]) {
     const ns = [...namespace];
     let node = result.data!;
     while (ns.length) {
-        node = node[ns.shift()!];
+        const nextNode = node[ns.shift()!];
+        if (!nextNode) {
+            // Not available in result due to missing namespace, e. g. because of auth errors.
+            return undefined;
+        }
+        node = nextNode;
     }
     return node.res.id;
 }
