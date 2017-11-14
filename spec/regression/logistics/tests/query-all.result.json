@@ -1,64 +1,62 @@
 {
   "data": {
-    "foundation": {
-      "allCountries": [
-        {
-          "id": "@{ids/foundation.Country/4}",
-          "isoCode": "CH",
-          "description": [
-            {
-              "languageIsoCode": "DE",
-              "translation": "Schweiz"
-            },
-            {
-              "languageIsoCode": "EN",
-              "translation": "Switzerland"
-            }
-          ]
-        },
-        {
-          "id": "@{ids/foundation.Country/1}",
-          "isoCode": "DE",
-          "description": [
-            {
-              "languageIsoCode": "DE",
-              "translation": "Deutschland"
-            },
-            {
-              "languageIsoCode": "EN",
-              "translation": "Germany"
-            }
-          ]
-        },
-        {
-          "id": "@{ids/foundation.Country/2}",
-          "isoCode": "GB",
-          "description": [
-            {
-              "languageIsoCode": "DE",
-              "translation": "Vereinigtes Königreich"
-            },
-            {
-              "languageIsoCode": "EN",
-              "translation": "United Kingdom"
-            }
-          ]
-        },
-        {
-          "id": "@{ids/foundation.Country/3}",
-          "isoCode": "US",
-          "description": [
-            {
-              "languageIsoCode": "DE",
-              "translation": "Vereinigte Staaten"
-            },
-            {
-              "languageIsoCode": "EN",
-              "translation": "United States"
-            }
-          ]
-        }
-      ]
-    }
+    "allCountries": [
+      {
+        "id": "@{ids/Country/4}",
+        "isoCode": "CH",
+        "description": [
+          {
+            "languageIsoCode": "DE",
+            "translation": "Schweiz"
+          },
+          {
+            "languageIsoCode": "EN",
+            "translation": "Switzerland"
+          }
+        ]
+      },
+      {
+        "id": "@{ids/Country/1}",
+        "isoCode": "DE",
+        "description": [
+          {
+            "languageIsoCode": "DE",
+            "translation": "Deutschland"
+          },
+          {
+            "languageIsoCode": "EN",
+            "translation": "Germany"
+          }
+        ]
+      },
+      {
+        "id": "@{ids/Country/2}",
+        "isoCode": "GB",
+        "description": [
+          {
+            "languageIsoCode": "DE",
+            "translation": "Vereinigtes Königreich"
+          },
+          {
+            "languageIsoCode": "EN",
+            "translation": "United Kingdom"
+          }
+        ]
+      },
+      {
+        "id": "@{ids/Country/3}",
+        "isoCode": "US",
+        "description": [
+          {
+            "languageIsoCode": "DE",
+            "translation": "Vereinigte Staaten"
+          },
+          {
+            "languageIsoCode": "EN",
+            "translation": "United States"
+          }
+        ]
+      }
+    ]
   }
 }

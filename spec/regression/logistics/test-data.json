@@ -1,7 +1,7 @@
 {
   "roles": [ "allusers", "accounting", "logistics" ],
   "rootEntities": {
-    "foundation.Country": [
+    "Country": [
       {
         "@id": "1",
         "isoCode": "DE",
