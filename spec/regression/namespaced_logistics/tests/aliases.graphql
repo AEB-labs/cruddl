@@ -1,0 +1,19 @@
+{
+    logistics {
+        delivery {
+           aDelivery: Delivery(id: "@{ids/logistics.delivery.Delivery/1}") {
+                nr: deliveryNumber
+                oneItem: items(filter: { itemNumber: "1001" }) {
+                    itemNumber
+                }
+                items {
+                    itemNumber
+                }
+            }
+
+            anotherDelivery: Delivery(id: "@{ids/logistics.delivery.Delivery/2}") {
+                nr: deliveryNumber
+            }
+        }
+    }
+}

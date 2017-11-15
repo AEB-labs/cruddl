@@ -1,0 +1,53 @@
+mutation addRelation1 {
+    logistics {
+        delivery {
+            updateHandlingUnit(input: {
+                id: "@{ids/logistics.delivery.HandlingUnit/1}",
+                delivery: "@{ids/logistics.delivery.Delivery/1}"
+            }) {
+                huNumber
+            }
+        }
+    }
+}
+
+mutation addRelation2 {
+    logistics {
+        delivery {
+            updateHandlingUnit(input: {
+                id: "@{ids/logistics.delivery.HandlingUnit/2}",
+                delivery: "@{ids/logistics.delivery.Delivery/2}"
+            }) {
+                huNumber
+            }
+        }
+    }
+}
+
+query ascPage1 {
+    logistics {
+        delivery {
+            allHandlingUnits(orderBy: delivery_deliveryNumber_ASC, first: 2) {
+                huNumber
+                delivery {
+                    deliveryNumber
+                }
+                _cursor
+            }
+        }
+    }
+}
+
+query ascPage2 {
+    logistics {
+        delivery {
+            allHandlingUnits(orderBy: delivery_deliveryNumber_ASC, first: 2, after: "{\"delivery_deliveryNumber\":\"1000173\",\"id\":\"@{ids/logistics.delivery.HandlingUnit/2}\"}") {
+                huNumber
+                delivery {
+                    deliveryNumber
+                }
+                _cursor
+            }
+        }
+    }
+}

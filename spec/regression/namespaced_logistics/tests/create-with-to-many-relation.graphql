@@ -1,0 +1,28 @@
+mutation create {
+    logistics {
+        delivery {
+            createDelivery(input: {
+                deliveryNumber: "1234-test-create-with-relations",
+                handlingUnits:["@{ids/logistics.delivery.HandlingUnit/1}"]
+            }) {
+                deliveryNumber
+            }
+        }
+    }
+}
+
+query check {
+    logistics {
+        delivery {
+            allDeliveries(filter:{deliveryNumber:"1234-test-create-with-relations"}) {
+                deliveryNumber
+                handlingUnits {
+                    huNumber
+                    delivery {
+                        deliveryNumber
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,22 @@
+type Delivery @rootEntity @roles(readWrite: ["allusers"]) @namespace(name: "logistics.delivery") {
+    deliveryNumber: String @key
+    serialNumbers: [String]
+    consignee: Address
+    contentInfo: [Translation]
+    dgInfo: DangerousGoodsInfo
+    items: [DeliveryItem]
+    handlingUnits: [HandlingUnit] @relation
+    destinationCountry: Country @reference
+
+    totalValue: String @roles(readWrite: ["accounting"])
+    forwarder: Forwarder @relation
+}
+
+type DeliveryItem @childEntity {
+    itemNumber: String
+}
+
+type Forwarder @rootEntity @roles(readWrite: ["logistics"]) @namespace(name: "logistics") {
+    name: String @key
+    deliveries: [Delivery] @relation
+}

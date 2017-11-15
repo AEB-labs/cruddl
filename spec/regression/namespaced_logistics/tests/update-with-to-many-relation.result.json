@@ -1,0 +1,122 @@
+{
+  "add": {
+    "data": {
+      "logistics": {
+        "delivery": {
+          "updateDelivery": {
+            "deliveryNumber": "1000173"
+          }
+        }
+      }
+    }
+  },
+  "check1": {
+    "data": {
+      "logistics": {
+        "delivery": {
+          "Delivery": {
+            "deliveryNumber": "1000173",
+            "handlingUnits": [
+              {
+                "huNumber": "1000007",
+                "delivery": {
+                  "deliveryNumber": "1000173"
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "add2": {
+    "data": {
+      "logistics": {
+        "delivery": {
+          "updateDelivery": {
+            "deliveryNumber": "1000173"
+          }
+        }
+      }
+    }
+  },
+  "check2": {
+    "data": {
+      "logistics": {
+        "delivery": {
+          "Delivery": {
+            "deliveryNumber": "1000173",
+            "handlingUnits": [
+              {
+                "huNumber": "1000007",
+                "delivery": {
+                  "deliveryNumber": "1000173"
+                }
+              },
+              {
+                "huNumber": "1000014",
+                "delivery": {
+                  "deliveryNumber": "1000173"
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "remove": {
+    "data": {
+      "logistics": {
+        "delivery": {
+          "updateDelivery": {
+            "deliveryNumber": "1000173"
+          }
+        }
+      }
+    }
+  },
+  "check3": {
+    "data": {
+      "logistics": {
+        "delivery": {
+          "Delivery": {
+            "deliveryNumber": "1000173",
+            "handlingUnits": [
+              {
+                "huNumber": "1000014",
+                "delivery": {
+                  "deliveryNumber": "1000173"
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "remove2": {
+    "data": {
+      "logistics": {
+        "delivery": {
+          "updateDelivery": {
+            "deliveryNumber": "1000173"
+          }
+        }
+      }
+    }
+  },
+  "check4": {
+    "data": {
+      "logistics": {
+        "delivery": {
+          "Delivery": {
+            "deliveryNumber": "1000173",
+            "handlingUnits": [
+            ]
+          }
+        }
+      }
+    }
+  }
+}

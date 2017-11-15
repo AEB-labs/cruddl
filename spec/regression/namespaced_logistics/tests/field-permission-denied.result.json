@@ -1,0 +1,376 @@
+{
+  "prepare": {
+    "data": {
+      "logistics": {
+        "delivery": {
+          "updateHandlingUnit": {
+            "huNumber": "1000007"
+          }
+        }
+      }
+    }
+  },
+  "select": {
+    "errors": [
+      {
+        "message": "Not authorized to select logistics.delivery.Delivery.totalValue",
+        "locations": [
+          {
+            "line": 16,
+            "column": 17
+          }
+        ],
+        "path": [
+          "logistics",
+          "delivery",
+          "Delivery",
+          "totalValue"
+        ]
+      },
+      {
+        "message": "Not authorized to select logistics.delivery.Delivery.forwarder",
+        "locations": [
+          {
+            "line": 17,
+            "column": 17
+          }
+        ],
+        "path": [
+          "logistics",
+          "delivery",
+          "Delivery",
+          "forwarder"
+        ]
+      },
+      {
+        "message": "Not authorized to select logistics.delivery.allDeliveries.totalValue",
+        "locations": [
+          {
+            "line": 24,
+            "column": 17
+          }
+        ],
+        "path": [
+          "logistics",
+          "delivery",
+          "allDeliveries",
+          0,
+          "totalValue"
+        ]
+      },
+      {
+        "message": "Not authorized to select logistics.delivery.HandlingUnit.delivery.totalValue",
+        "locations": [
+          {
+            "line": 30,
+            "column": 21
+          }
+        ],
+        "path": [
+          "logistics",
+          "delivery",
+          "HandlingUnit",
+          "delivery",
+          "totalValue"
+        ]
+      },
+      {
+        "message": "Not authorized to select foundation.Country.totalInvestment",
+        "locations": [
+          {
+            "line": 38,
+            "column": 13
+          }
+        ],
+        "path": [
+          "foundation",
+          "Country",
+          "totalInvestment"
+        ]
+      }
+    ],
+    "data": {
+      "logistics": {
+        "delivery": {
+          "Delivery": {
+            "deliveryNumber": "1000173",
+            "totalValue": null,
+            "forwarder": null
+          },
+          "allDeliveries": [
+            {
+              "deliveryNumber": "1000173",
+              "totalValue": null
+            }
+          ],
+          "HandlingUnit": {
+            "delivery": {
+              "deliveryNumber": "1000173",
+              "totalValue": null
+            }
+          }
+        }
+      },
+      "foundation": {
+        "Country": {
+          "isoCode": "DE",
+          "totalInvestment": null
+        }
+      }
+    }
+  },
+  "selectMeta": {
+    "errors": [
+      {
+        "message": "Not authorized to select logistics.allForwarders",
+        "locations": [
+          {
+            "line": 48,
+            "column": 9
+          }
+        ],
+        "path": [
+          "logistics",
+          "allForwarders"
+        ]
+      },
+      {
+        "message": "Not authorized to select logistics._allForwardersMeta",
+        "locations": [
+          {
+            "line": 52,
+            "column": 9
+          }
+        ],
+        "path": [
+          "logistics",
+          "_allForwardersMeta"
+        ]
+      }
+    ],
+    "data": {
+      "logistics": null
+    }
+  },
+  "filter": {
+    "errors": [
+      {
+        "message": "Not authorized to select logistics.delivery.direct with argument filter (field totalValue)",
+        "locations": [
+          {
+            "line": 61,
+            "column": 13
+          }
+        ],
+        "path": [
+          "logistics",
+          "delivery",
+          "direct"
+        ]
+      },
+      {
+        "message": "Not authorized to select logistics.delivery.startsWith with argument filter (field totalValue_starts_with)",
+        "locations": [
+          {
+            "line": 65,
+            "column": 13
+          }
+        ],
+        "path": [
+          "logistics",
+          "delivery",
+          "startsWith"
+        ]
+      },
+      {
+        "message": "Not authorized to select logistics.delivery.throughRelation with argument filter (field delivery.totalValue)",
+        "locations": [
+          {
+            "line": 69,
+            "column": 13
+          }
+        ],
+        "path": [
+          "logistics",
+          "delivery",
+          "throughRelation"
+        ]
+      },
+      {
+        "message": "Not authorized to select logistics.delivery.toUnaccessibleEntity with argument filter (field forwarder)",
+        "locations": [
+          {
+            "line": 73,
+            "column": 13
+          }
+        ],
+        "path": [
+          "logistics",
+          "delivery",
+          "toUnaccessibleEntity"
+        ]
+      },
+      {
+        "message": "Not authorized to select simple.SecretKey with argument key",
+        "locations": [
+          {
+            "line": 79,
+            "column": 9
+          }
+        ],
+        "path": [
+          "simple",
+          "SecretKey"
+        ]
+      }
+    ],
+    "data": {
+      "logistics": {
+        "delivery": {
+          "direct": null,
+          "startsWith": null,
+          "throughRelation": null,
+          "toUnaccessibleEntity": null
+        }
+      },
+      "simple": {
+        "SecretKey": null
+      }
+    }
+  },
+  "sort": {
+    "errors": [
+      {
+        "message": "Not authorized to select logistics.delivery.direct with argument orderBy ([0] == totalValue_ASC)",
+        "locations": [
+          {
+            "line": 89,
+            "column": 13
+          }
+        ],
+        "path": [
+          "logistics",
+          "delivery",
+          "direct"
+        ]
+      },
+      {
+        "message": "Not authorized to select logistics.delivery.throughRelation with argument orderBy ([0] == delivery_totalValue_DESC)",
+        "locations": [
+          {
+            "line": 93,
+            "column": 13
+          }
+        ],
+        "path": [
+          "logistics",
+          "delivery",
+          "throughRelation"
+        ]
+      }
+    ],
+    "data": {
+      "logistics": {
+        "delivery": {
+          "direct": null,
+          "throughRelation": null
+        }
+      }
+    }
+  },
+  "create": {
+    "errors": [
+      {
+        "message": "Not authorized to call logistics.delivery.createDelivery with argument input (field totalValue)",
+        "locations": [
+          {
+            "line": 103,
+            "column": 13
+          }
+        ],
+        "path": [
+          "logistics",
+          "delivery",
+          "createDelivery"
+        ]
+      },
+      {
+        "message": "Not authorized to call logistics.createForwarder",
+        "locations": [
+          {
+            "line": 107,
+            "column": 9
+          }
+        ],
+        "path": [
+          "logistics",
+          "createForwarder"
+        ]
+      }
+    ],
+    "data": {
+      "logistics": null
+    }
+  },
+  "update": {
+    "errors": [
+      {
+        "message": "Not authorized to call logistics.delivery.updateDelivery with argument input (field totalValue)",
+        "locations": [
+          {
+            "line": 116,
+            "column": 13
+          }
+        ],
+        "path": [
+          "logistics",
+          "delivery",
+          "updateDelivery"
+        ]
+      },
+      {
+        "message": "Not authorized to call logistics.updateForwarder",
+        "locations": [
+          {
+            "line": 120,
+            "column": 9
+          }
+        ],
+        "path": [
+          "logistics",
+          "updateForwarder"
+        ]
+      }
+    ],
+    "data": {
+      "logistics": {
+        "delivery": {
+          "updateDelivery": null
+        },
+        "updateForwarder": null
+      }
+    }
+  },
+  "delete": {
+    "errors": [
+      {
+        "message": "Not authorized to call logistics.deleteForwarder",
+        "locations": [
+          {
+            "line": 128,
+            "column": 9
+          }
+        ],
+        "path": [
+          "logistics",
+          "deleteForwarder"
+        ]
+      }
+    ],
+    "data": {
+      "logistics": {
+        "deleteForwarder": null
+      }
+    }
+  }
+}

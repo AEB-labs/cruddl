@@ -1,0 +1,34 @@
+{
+  "create": {
+    "data": {
+      "logistics": {
+        "delivery": {
+          "createDelivery": {
+            "deliveryNumber": "1234-test-create-with-relations"
+          }
+        }
+      }
+    }
+  },
+  "check": {
+    "data": {
+      "logistics": {
+        "delivery": {
+          "allDeliveries": [
+            {
+              "deliveryNumber": "1234-test-create-with-relations",
+              "handlingUnits": [
+                {
+                  "huNumber": "1000007",
+                  "delivery": {
+                    "deliveryNumber": "1234-test-create-with-relations"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  }
+}

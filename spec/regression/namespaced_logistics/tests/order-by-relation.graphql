@@ -1,0 +1,81 @@
+mutation addRelation1 {
+    logistics {
+        delivery {
+            updateHandlingUnit(input: {
+                id: "@{ids/logistics.delivery.HandlingUnit/1}",
+                delivery: "@{ids/logistics.delivery.Delivery/1}"
+            }) {
+                huNumber
+            }
+        }
+    }
+}
+
+mutation addRelation2 {
+    logistics {
+        delivery {
+            updateHandlingUnit(input: {
+                id: "@{ids/logistics.delivery.HandlingUnit/2}",
+                delivery: "@{ids/logistics.delivery.Delivery/2}"
+            }) {
+                huNumber
+            }
+        }
+    }
+}
+
+query asc {
+    logistics {
+        delivery {
+            allHandlingUnits(orderBy: delivery_deliveryNumber_ASC) {
+                huNumber
+                delivery {
+                    deliveryNumber
+                }
+            }
+       }
+    }
+}
+
+query desc {
+    logistics {
+        delivery {
+            allHandlingUnits(orderBy: delivery_deliveryNumber_DESC) {
+                huNumber
+                delivery {
+                    deliveryNumber
+                }
+            }
+        }
+    }
+}
+
+query relationAndExtensionAsc {
+    logistics {
+        delivery {
+            allHandlingUnits(orderBy: delivery_consignee_street_ASC) {
+                huNumber
+                delivery {
+                    consignee {
+                        street
+                    }
+                }
+            }
+        }
+    }
+}
+
+query relationAndExtensionDesc {
+    logistics {
+        delivery {
+            allHandlingUnits(orderBy: delivery_consignee_street_DESC) {
+                huNumber
+                delivery {
+                    consignee {
+                        street
+                    }
+                }
+            }
+        }
+    }
+}

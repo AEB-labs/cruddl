@@ -1,0 +1,136 @@
+{
+  "roles": [ "allusers", "accounting", "logistics" ],
+  "rootEntities": {
+    "foundation.Country": [
+      {
+        "@id": "1",
+        "isoCode": "DE",
+        "description": [{
+          "languageIsoCode": "DE",
+          "translation": "Deutschland"
+        },{
+          "languageIsoCode": "EN",
+          "translation": "Germany"
+        }],
+        "totalInvestment": "EUR 50000000"
+      },
+      {
+        "@id": "2",
+        "isoCode": "GB",
+        "description": [{
+          "languageIsoCode": "DE",
+          "translation": "Vereinigtes Königreich"
+        },{
+          "languageIsoCode": "EN",
+          "translation": "United Kingdom"
+        }],
+        "totalInvestment": "EUR 3000000"
+      },
+      {
+        "@id": "3",
+        "isoCode": "US",
+        "description": [{
+          "languageIsoCode": "DE",
+          "translation": "Vereinigte Staaten"
+        },{
+          "languageIsoCode": "EN",
+          "translation": "United States"
+        }]
+      },
+      {
+        "@id": "4",
+        "isoCode": "CH",
+        "description": [{
+          "languageIsoCode": "DE",
+          "translation": "Schweiz"
+        },{
+          "languageIsoCode": "EN",
+          "translation": "Switzerland"
+        }]
+      }
+    ],
+
+    "logistics.delivery.Delivery": [
+      {
+        "@id": "1",
+        "deliveryNumber": "1000173",
+        "consignee": {
+          "street": "675 Kurtis Route",
+          "city": "Port Neldahaven",
+          "zipCode": "17624"
+          //"country": "US" // schema is currently wrong (accepts CreateCountry instead of String)
+        },
+        "contentInfo": [{
+          "languageIsoCode": "DE",
+          "translation": "Kerosin 1000L"
+        }],
+        "dgInfo": {
+          "unNumber": "1863",
+          "flashpoint": "37 °C"
+        },
+        "items": [
+          {
+            "itemNumber": "1001"
+          },
+          {
+            "itemNumber": "1002"
+          }
+        ],
+        "totalValue": "EUR 1024.00"
+      },
+      {
+        "@id": "2",
+        "deliveryNumber": "1000521",
+        "consignee": {
+          "street": "1 North Bridge Road",
+          "city": "Singapore",
+          "zipCode": "179094"
+          //"country": "US" // schema is currently wrong (accepts CreateCountry instead of String)
+        },
+        "contentInfo": [{
+          "languageIsoCode": "DE",
+          "translation": "Hartplastik-Bausteine"
+        }],
+        "items": [
+          {
+            "itemNumber": "2001"
+          },
+          {
+            "itemNumber": "2002"
+          }
+        ]
+      }
+    ],
+
+    "logistics.delivery.HandlingUnit": [
+      {
+        "@id": "1",
+        "huNumber": "1000007"
+      },
+      {
+        "@id": "2",
+        "huNumber": "1000014"
+      },
+      {
+        "@id": "3",
+        "huNumber": "1000021"
+      }
+    ],
+
+    "logistics.Forwarder": [
+      {
+        "@id": "1",
+        "name": "DHL",
+        "deliveries": [ "@{ids/logistics.delivery.Delivery/1}" ]
+      }
+    ],
+
+    "accounting.SecretKey": [
+      {
+        "@id": "1",
+        "key": "42",
+        "value": "everything"
+      }
+    ]
+  }
+}

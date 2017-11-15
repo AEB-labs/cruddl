@@ -1,0 +1,27 @@
+mutation add {
+    foundation {
+        createCountry(input: {
+            description: [
+                {
+                    languageIsoCode: "en",
+                    translation: "Norway"
+                }
+            ]
+            isoCode: "NO"
+        }) {
+            isoCode
+        }
+    }
+}
+
+query query {
+    foundation {
+        allCountries(orderBy: isoCode_ASC) {
+            isoCode
+            description {
+                languageIsoCode
+                translation
+            }
+        }
+    }
+}

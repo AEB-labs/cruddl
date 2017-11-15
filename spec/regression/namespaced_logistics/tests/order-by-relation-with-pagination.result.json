@@ -1,0 +1,63 @@
+{
+  "addRelation1": {
+    "data": {
+      "logistics": {
+        "delivery": {
+          "updateHandlingUnit": {
+            "huNumber": "1000007"
+          }
+        }
+      }
+    }
+  },
+  "addRelation2": {
+    "data": {
+      "logistics": {
+        "delivery": {
+          "updateHandlingUnit": {
+            "huNumber": "1000014"
+          }
+        }
+      }
+    }
+  },
+  "ascPage1": {
+    "data": {
+      "logistics": {
+        "delivery": {
+          "allHandlingUnits": [
+            {
+              "huNumber": "1000021",
+              "delivery": null,
+              "_cursor": "{\"delivery_deliveryNumber\":null,\"id\":\"@{ids/logistics.delivery.HandlingUnit/3}\"}"
+            },
+            {
+              "huNumber": "1000007",
+              "delivery": {
+                "deliveryNumber": "1000173"
+              },
+              "_cursor": "{\"delivery_deliveryNumber\":\"1000173\",\"id\":\"@{ids/logistics.delivery.HandlingUnit/1}\"}"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "ascPage2": {
+    "data": {
+      "logistics": {
+        "delivery": {
+          "allHandlingUnits": [
+            {
+              "huNumber": "1000014",
+              "delivery": {
+                "deliveryNumber": "1000521"
+              },
+              "_cursor": "{\"delivery_deliveryNumber\":\"1000521\",\"id\":\"@{ids/logistics.delivery.HandlingUnit/2}\"}"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

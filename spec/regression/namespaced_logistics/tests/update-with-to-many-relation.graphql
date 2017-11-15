@@ -1,0 +1,116 @@
+mutation add {
+    logistics {
+        delivery {
+            updateDelivery(input: {
+                id: "@{ids/logistics.delivery.Delivery/1}",
+                addHandlingUnits:["@{ids/logistics.delivery.HandlingUnit/1}"]
+            }) {
+                deliveryNumber
+            }
+        }
+    }
+}
+
+query check1 {
+    logistics {
+        delivery {
+            Delivery(id: "@{ids/logistics.delivery.Delivery/1}") {
+                deliveryNumber
+                handlingUnits {
+                    huNumber
+                    delivery {
+                        deliveryNumber
+                    }
+                }
+            }
+        }
+    }
+}
+
+mutation add2 {
+    logistics {
+        delivery {
+            updateDelivery(input: {
+                id: "@{ids/logistics.delivery.Delivery/1}",
+                addHandlingUnits:["@{ids/logistics.delivery.HandlingUnit/2}"]
+            }) {
+                deliveryNumber
+            }
+        }
+    }
+}
+
+
+query check2 {
+    logistics {
+        delivery {
+            Delivery(id: "@{ids/logistics.delivery.Delivery/1}") {
+                deliveryNumber
+                handlingUnits {
+                    huNumber
+                    delivery {
+                        deliveryNumber
+                    }
+                }
+            }
+        }
+    }
+}
+
+mutation remove {
+    logistics {
+        delivery {
+            updateDelivery(input: {
+                id: "@{ids/logistics.delivery.Delivery/1}",
+                removeHandlingUnits:["@{ids/logistics.delivery.HandlingUnit/1}"]
+            }) {
+                deliveryNumber
+            }
+        }
+    }
+}
+
+query check3 {
+    logistics {
+        delivery {
+            Delivery(id: "@{ids/logistics.delivery.Delivery/1}") {
+                deliveryNumber
+                handlingUnits {
+                    huNumber
+                    delivery {
+                        deliveryNumber
+                    }
+                }
+            }
+        }
+    }
+}
+
+mutation remove2 {
+    logistics {
+        delivery {
+            updateDelivery(input: {
+                id: "@{ids/logistics.delivery.Delivery/1}",
+                removeHandlingUnits:["@{ids/logistics.delivery.HandlingUnit/2}"]
+            }) {
+                deliveryNumber
+            }
+        }
+    }
+}
+
+query check4 {
+    logistics {
+        delivery {
+            Delivery(id: "@{ids/logistics.delivery.Delivery/1}") {
+                deliveryNumber
+                handlingUnits {
+                    huNumber
+                    delivery {
+                        deliveryNumber
+                    }
+                }
+            }
+        }
+    }
+}

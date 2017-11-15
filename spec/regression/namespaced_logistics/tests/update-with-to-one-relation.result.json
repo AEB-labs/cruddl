@@ -1,0 +1,96 @@
+{
+  "set": {
+    "data": {
+      "logistics": {
+        "delivery": {
+          "updateHandlingUnit": {
+            "huNumber": "1000007"
+          }
+        }
+      }
+    }
+  },
+  "check1": {
+    "data": {
+      "logistics": {
+        "delivery": {
+          "HandlingUnit": {
+            "delivery": {
+              "deliveryNumber": "1000173"
+            }
+          }
+        }
+      }
+    }
+  },
+  "replace": {
+    "data": {
+      "logistics": {
+        "delivery": {
+          "updateHandlingUnit": {
+            "huNumber": "1000007"
+          }
+        }
+      }
+    }
+  },
+  "check2": {
+    "data": {
+      "logistics": {
+        "delivery": {
+          "HandlingUnit": {
+            "delivery": {
+              "deliveryNumber": "1000521"
+            }
+          }
+        }
+      }
+    }
+  },
+  "leave": {
+    "data": {
+      "logistics": {
+        "delivery": {
+          "updateHandlingUnit": {
+            "huNumber": "1000007"
+          }
+        }
+      }
+    }
+  },
+  "check3": {
+    "data": {
+      "logistics": {
+        "delivery": {
+          "HandlingUnit": {
+            "delivery": {
+              "deliveryNumber": "1000521"
+            }
+          }
+        }
+      }
+    }
+  },
+  "unset": {
+    "data": {
+      "logistics": {
+        "delivery": {
+          "updateHandlingUnit": {
+            "huNumber": "1000007"
+          }
+        }
+      }
+    }
+  },
+  "check4": {
+    "data": {
+      "logistics": {
+        "delivery": {
+          "HandlingUnit": {
+            "delivery": null
+          }
+        }
+      }
+    }
+  }
+}

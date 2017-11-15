@@ -1,0 +1,39 @@
+mutation addRelation1 {
+    logistics {
+        delivery {
+            updateHandlingUnit(input: {
+                id: "@{ids/logistics.delivery.HandlingUnit/1}",
+                delivery: "@{ids/logistics.delivery.Delivery/1}"
+            }) {
+                huNumber
+            }
+        }
+    }
+}
+
+# make sure that it just does not find a deliverey with *any* handling unit
+mutation addRelation2 {
+    logistics {
+        delivery {
+            updateHandlingUnit(input: {
+                id: "@{ids/logistics.delivery.HandlingUnit/2}",
+                delivery: "@{ids/logistics.delivery.Delivery/2}"
+            }) {
+                huNumber
+            }
+        }
+    }
+}
+
+query q {
+    logistics {
+        delivery {
+            allHandlingUnits(filter: { delivery: { deliveryNumber: "1000173"}}) {
+                huNumber
+                delivery {
+                    deliveryNumber
+                }
+            }
+        }
+    }
+}

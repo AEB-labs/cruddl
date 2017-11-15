@@ -1,0 +1,132 @@
+mutation prepare {
+    logistics {
+        delivery {
+            updateHandlingUnit(input: { id: "@{ids/logistics.delivery.HandlingUnit/1}", delivery:  "@{ids/logistics.delivery.Delivery/1}" }) {
+                huNumber
+            }
+        }
+    }
+}
+
+query select {
+    logistics {
+        delivery {
+            Delivery(id: "@{ids/logistics.delivery.Delivery/1}") {
+                deliveryNumber
+                totalValue
+                forwarder {
+                    name
+                }
+            }
+
+            allDeliveries(filter: { id: "@{ids/logistics.delivery.Delivery/1}" }) {
+                deliveryNumber
+                totalValue
+            }
+
+            HandlingUnit(id: "@{ids/logistics.delivery.HandlingUnit/1}") {
+                delivery {
+                    deliveryNumber
+                    totalValue
+                }
+            }
+        }
+    }
+    foundation {
+        Country(isoCode: "DE") {
+            isoCode
+            totalInvestment
+        }
+    }
+}
+
+# this is separate because they are non-nullable and tus set the whole data property to null
+query selectMeta {
+    logistics {
+
+        # these are forbidden on type level
+        allForwarders {
+            name
+        }
+
+        _allForwardersMeta {
+            count
+        }
+    }
+}
+
+query filter {
+    logistics {
+        delivery {
+            direct: allDeliveries(filter: { id: "@{ids/logistics.delivery.Delivery/1}", totalValue: "EUR 5.50"}) {
+                deliveryNumber
+            }
+
+            startsWith: allDeliveries(filter: { id: "@{ids/logistics.delivery.Delivery/1}", totalValue_starts_with: "EUR"}) {
+                deliveryNumber
+            }
+
+            throughRelation: allHandlingUnits(filter: { id: "@{ids/logistics.delivery.HandlingUnit/1}", delivery: {totalValue: "EUR 5.50"}}) {
+                huNumber
+            }
+
+            toUnaccessibleEntity: allDeliveries(filter: { id: "@{ids/logistics.delivery.Delivery/1}", forwarder: {name: "DHL"}}) {
+                deliveryNumber
+            }
+        }
+    }
+    simple: accounting {
+        SecretKey(key: "42") {
+            value
+        }
+    }
+}
+
+query sort {
+    logistics {
+        delivery {
+
+            direct: allDeliveries(filter: { id: "@{ids/logistics.delivery.Delivery/1}" }, orderBy: totalValue_ASC) {
+                deliveryNumber
+            }
+
+            throughRelation: allHandlingUnits(filter: { id: "@{ids/logistics.delivery.Delivery/1}" }, orderBy: delivery_totalValue_DESC) {
+                huNumber
+            }
+        }
+    }
+}
+
+mutation create {
+    logistics {
+        delivery {
+            createDelivery(input: {totalValue: "EUR 5.50"}) {
+                deliveryNumber
+            }
+        }
+        createForwarder(input: { name: "DPD"}) {
+            name
+        }
+    }
+}
+
+mutation update {
+    logistics {
+        delivery {
+            updateDelivery(input: { id: "@{ids/logistics.delivery.Delivery/1}", totalValue: "EUR 5.50"}) {
+                deliveryNumber
+            }
+        }
+        updateForwarder(input: { id: "@{ids/logistics.Forwarder/1}", name: "DPD"}) {
+            name
+        }
+    }
+}
+
+mutation delete {
+    logistics {
+        deleteForwarder(id: "@{ids/logistics.Forwarder/1}") {
+            name
+        }
+    }
+}

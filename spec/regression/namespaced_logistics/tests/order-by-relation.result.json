@@ -1,0 +1,136 @@
+{
+  "addRelation1": {
+    "data": {
+      "logistics": {
+        "delivery": {
+          "updateHandlingUnit": {
+            "huNumber": "1000007"
+          }
+        }
+      }
+    }
+  },
+  "addRelation2": {
+    "data": {
+      "logistics": {
+        "delivery": {
+          "updateHandlingUnit": {
+            "huNumber": "1000014"
+          }
+        }
+      }
+    }
+  },
+  "asc": {
+    "data": {
+      "logistics": {
+        "delivery": {
+          "allHandlingUnits": [
+            {
+              "huNumber": "1000021",
+              "delivery": null
+            },
+            {
+              "huNumber": "1000007",
+              "delivery": {
+                "deliveryNumber": "1000173"
+              }
+            },
+            {
+              "huNumber": "1000014",
+              "delivery": {
+                "deliveryNumber": "1000521"
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "desc": {
+    "data": {
+      "logistics": {
+        "delivery": {
+          "allHandlingUnits": [
+            {
+              "huNumber": "1000014",
+              "delivery": {
+                "deliveryNumber": "1000521"
+              }
+            },
+            {
+              "huNumber": "1000007",
+              "delivery": {
+                "deliveryNumber": "1000173"
+              }
+            },
+            {
+              "huNumber": "1000021",
+              "delivery": null
+            }
+          ]
+        }
+      }
+    }
+  },
+  "relationAndExtensionAsc": {
+    "data": {
+      "logistics": {
+        "delivery": {
+          "allHandlingUnits": [
+            {
+              "huNumber": "1000021",
+              "delivery": null
+            },
+            {
+              "huNumber": "1000014",
+              "delivery": {
+                "consignee": {
+                  "street": "1 North Bridge Road"
+                }
+              }
+            },
+            {
+              "huNumber": "1000007",
+              "delivery": {
+                "consignee": {
+                  "street": "675 Kurtis Route"
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "relationAndExtensionDesc": {
+    "data": {
+      "logistics": {
+        "delivery": {
+          "allHandlingUnits": [
+            {
+              "huNumber": "1000007",
+              "delivery": {
+                "consignee": {
+                  "street": "675 Kurtis Route"
+                }
+              }
+            },
+            {
+              "huNumber": "1000014",
+              "delivery": {
+                "consignee": {
+                  "street": "1 North Bridge Road"
+                }
+              }
+            },
+            {
+              "huNumber": "1000021",
+              "delivery": null
+            }
+          ]
+        }
+      }
+    }
+  }
+}

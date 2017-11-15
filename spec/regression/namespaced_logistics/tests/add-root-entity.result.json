@@ -1,0 +1,80 @@
+{
+  "add": {
+    "data": {
+      "foundation": {
+        "createCountry": {
+          "isoCode": "NO"
+        }
+      }
+    }
+  },
+  "query": {
+    "data": {
+      "foundation": {
+        "allCountries": [
+          {
+            "isoCode": "CH",
+            "description": [
+              {
+                "languageIsoCode": "DE",
+                "translation": "Schweiz"
+              },
+              {
+                "languageIsoCode": "EN",
+                "translation": "Switzerland"
+              }
+            ]
+          },
+          {
+            "isoCode": "DE",
+            "description": [
+              {
+                "languageIsoCode": "DE",
+                "translation": "Deutschland"
+              },
+              {
+                "languageIsoCode": "EN",
+                "translation": "Germany"
+              }
+            ]
+          },
+          {
+            "isoCode": "GB",
+            "description": [
+              {
+                "languageIsoCode": "DE",
+                "translation": "Vereinigtes Königreich"
+              },
+              {
+                "languageIsoCode": "EN",
+                "translation": "United Kingdom"
+              }
+            ]
+          },
+          {
+            "isoCode": "NO",
+            "description": [
+              {
+                "languageIsoCode": "en",
+                "translation": "Norway"
+              }
+            ]
+          },
+          {
+            "isoCode": "US",
+            "description": [
+              {
+                "languageIsoCode": "DE",
+                "translation": "Vereinigte Staaten"
+              },
+              {
+                "languageIsoCode": "EN",
+                "translation": "United States"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

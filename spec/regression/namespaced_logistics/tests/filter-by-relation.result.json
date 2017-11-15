@@ -1,0 +1,40 @@
+{
+  "addRelation1": {
+    "data": {
+      "logistics": {
+        "delivery": {
+          "updateHandlingUnit": {
+            "huNumber": "1000007"
+          }
+        }
+      }
+    }
+  },
+  "addRelation2": {
+    "data": {
+      "logistics": {
+        "delivery": {
+          "updateHandlingUnit": {
+            "huNumber": "1000014"
+          }
+        }
+      }
+    }
+  },
+  "q": {
+    "data": {
+      "logistics": {
+        "delivery": {
+          "allHandlingUnits": [
+            {
+              "huNumber": "1000007",
+              "delivery": {
+                "deliveryNumber": "1000173"
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}

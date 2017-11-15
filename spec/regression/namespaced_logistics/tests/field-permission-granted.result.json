@@ -1,0 +1,136 @@
+{
+  "prepare": {
+    "data": {
+      "logistics": {
+        "delivery": {
+          "updateHandlingUnit": {
+            "huNumber": "1000007"
+          }
+        }
+      }
+    }
+  },
+  "select": {
+    "data": {
+      "logistics": {
+        "delivery": {
+          "Delivery": {
+            "deliveryNumber": "1000173",
+            "totalValue": "EUR 1024.00",
+            "forwarder": {
+              "name": "DHL"
+            }
+          },
+          "allDeliveries": [
+            {
+              "deliveryNumber": "1000173",
+              "totalValue": "EUR 1024.00"
+            }
+          ],
+          "HandlingUnit": {
+            "delivery": {
+              "deliveryNumber": "1000173",
+              "totalValue": "EUR 1024.00"
+            }
+          }
+        }
+      },
+      "foundation": {
+        "Country": {
+          "isoCode": "DE",
+          "totalInvestment": "EUR 50000000"
+        }
+      }
+    }
+  },
+  "selectMeta": {
+    "data": {
+      "logistics": {
+        "allForwarders": [
+          {
+            "name": "DHL"
+          }
+        ],
+        "_allForwardersMeta": {
+          "count": 1
+        }
+      }
+    }
+  },
+  "filter": {
+    "data": {
+      "accounting": {
+        "simple": {
+          "value": "everything"
+        }
+      },
+      "logistics": {
+        "delivery": {
+          "direct": [],
+          "startsWith": [
+            {
+              "deliveryNumber": "1000173"
+            }
+          ],
+          "throughRelation": [],
+          "toUnaccessibleEntity": [
+            {
+              "deliveryNumber": "1000173"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "sort": {
+    "data": {
+      "logistics": {
+        "delivery": {
+          "direct": [
+            {
+              "deliveryNumber": "1000173"
+            }
+          ],
+          "throughRelation": []
+        }
+      }
+    }
+  },
+  "create": {
+    "data": {
+      "logistics": {
+        "delivery": {
+          "createDelivery": {
+            "deliveryNumber": null
+          }
+        },
+        "createForwarder": {
+          "name": "DPD"
+        }
+      }
+    }
+  },
+  "update": {
+    "data": {
+      "logistics": {
+        "delivery": {
+          "updateDelivery": {
+            "deliveryNumber": "1000173"
+          }
+        },
+        "updateForwarder": {
+          "name": "DPD"
+        }
+      }
+    }
+  },
+  "delete": {
+    "data": {
+      "logistics": {
+        "deleteForwarder": {
+          "name": "DPD"
+        }
+      }
+    }
+  }
+}

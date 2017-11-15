@@ -1,0 +1,98 @@
+mutation set {
+    logistics {
+        delivery {
+            updateHandlingUnit(input: {
+                id: "@{ids/logistics.delivery.HandlingUnit/1}",
+                delivery: "@{ids/logistics.delivery.Delivery/1}"
+            }) {
+                huNumber
+            }
+        }
+    }
+}
+
+query check1 {
+    logistics {
+        delivery {
+            HandlingUnit(id: "@{ids/logistics.delivery.HandlingUnit/1}") {
+                delivery {
+                    deliveryNumber
+                }
+            }
+        }
+    }
+}
+
+mutation replace {
+    logistics {
+        delivery {
+            updateHandlingUnit(input: {
+                id: "@{ids/logistics.delivery.HandlingUnit/1}",
+                delivery: "@{ids/logistics.delivery.Delivery/2}"
+            }) {
+                huNumber
+            }
+        }
+    }
+}
+
+query check2 {
+    logistics {
+        delivery {
+            HandlingUnit(id: "@{ids/logistics.delivery.HandlingUnit/1}") {
+                delivery {
+                    deliveryNumber
+                }
+            }
+        }
+    }
+}
+
+mutation leave {
+    logistics {
+        delivery {
+            updateHandlingUnit(input: {
+                id: "@{ids/logistics.delivery.HandlingUnit/1}"
+            }) {
+                huNumber
+            }
+        }
+    }
+}
+
+query check3 {
+    logistics {
+        delivery {
+            HandlingUnit(id: "@{ids/logistics.delivery.HandlingUnit/1}") {
+                delivery {
+                    deliveryNumber
+                }
+            }
+        }
+    }
+}
+
+mutation unset {
+    logistics {
+        delivery {
+            updateHandlingUnit(input: {
+                id: "@{ids/logistics.delivery.HandlingUnit/1}",
+                delivery: null
+            }) {
+                huNumber
+            }
+        }
+    }
+}
+
+query check4 {
+    logistics {
+        delivery {
+            HandlingUnit(id: "@{ids/logistics.delivery.HandlingUnit/1}") {
+                delivery {
+                    deliveryNumber
+                }
+            }
+        }
+    }
+}
