@@ -1,39 +1,40 @@
-import { DistilledOperation, FieldRequest, FieldSelection } from '../graphql/query-distiller';
+import {DistilledOperation, FieldRequest, FieldSelection} from '../graphql/query-distiller';
 import {
     FieldDefinitionNode,
     GraphQLArgument,
-    GraphQLEnumType, GraphQLEnumValue, GraphQLField, GraphQLInputField, GraphQLInputObjectType, GraphQLInputType,
-    GraphQLList, GraphQLNonNull
+    GraphQLEnumType,
+    GraphQLEnumValue,
+    GraphQLField,
+    GraphQLInputField,
+    GraphQLInputObjectType,
+    GraphQLInputType,
+    GraphQLList,
+    GraphQLNonNull
 } from 'graphql';
 import {getAllowedReadRoles, getAllowedWriteRoles, hasDirectiveWithName} from '../schema/schema-utils';
-import { intersection } from 'lodash';
-import { AnyValue, compact, PlainObject } from '../utils/utils';
-import { isArray } from 'util';
-import {NAMESPACE_FIELD_PATH_DIRECTIVE} from "../schema/schema-defaults";
+import {intersection} from 'lodash';
+import {AnyValue, compact, PlainObject} from '../utils/utils';
+import {isArray} from 'util';
+import {MUTATION_FIELD, NAMESPACE_FIELD_PATH_DIRECTIVE} from "../schema/schema-defaults";
+
 
 export function checkAuthorization(operation: DistilledOperation, requestRoles: string[]): AuthorizationCheckResult {
     const errorList: AuthorizationError[] = [];
-    const accessKind = operation.operation == 'mutation' ? AccessKind.WRITE : AccessKind.READ;
     let newSelectionSet = checkAuthorizationForSelectionSet(operation.selectionSet, errorList, {
-        accessKind,
         requestRoles,
         path: []
     });
-    if (errorList.length && operation.operation == 'mutation' && newSelectionSet.length != operation.selectionSet.length) {
-        // don't do partial mutations - add errors for the other fields
-        // but it's ok if only some of its queries failed
-        errorList.push(...newSelectionSet.map(sel => new AuthorizationError({
-            isErrorBecauseOtherMutationFieldHasErrors: true,
-            allowedRoles: [],
-            accessKind,
-            field: sel.fieldRequest.field,
-            requestRoles,
-            path: [ sel.propertyName ]
-        })));
-        newSelectionSet = [];
+    // don't do partial mutations - add errors for the other fields
+    // but it's ok if only some of its queries failed
+    if (errorList.some(error => error.accessKind === AccessKind.WRITE)) {
+        newSelectionSet = removeNonNamespaceNodesRecursively(newSelectionSet, errorList, requestRoles);
     }
     const sanitizedOperation = errorList.length ? new DistilledOperation(operation.operation, newSelectionSet) : operation;
     return new AuthorizationCheckResult(sanitizedOperation, errorList);
+}
+
+function getAccessKindFromGraphQLField(field: GraphQLField<any, any>) {
+    return hasDirectiveWithName(field.astNode as FieldDefinitionNode, MUTATION_FIELD) ? AccessKind.WRITE : AccessKind.READ;
 }
 
 export class AuthorizationCheckResult {
@@ -178,18 +179,23 @@ export class AuthorizationError {
     }
 }
 
-interface AuthorizationCheckContext {
+interface AuthorizationCheckSelectionSetContext {
     path: string[]
-    accessKind: AccessKind
     requestRoles: string[]
 }
 
-enum AccessKind {
+interface AuthorizationCheckFieldContext {
+    path: string[]
+    requestRoles: string[]
+    accessKind: AccessKind
+}
+
+export enum AccessKind {
     READ,
     WRITE
 }
 
-function checkAuthorizationForSelectionSet(selectionSet: FieldSelection[], errorList: AuthorizationError[], context: AuthorizationCheckContext): FieldSelection[] {
+function checkAuthorizationForSelectionSet(selectionSet: FieldSelection[], errorList: AuthorizationError[], context: AuthorizationCheckSelectionSetContext): FieldSelection[] {
     return compact(selectionSet.map(selection => {
         const newFieldRequest = checkAuthorizationForFieldRecursively(selection.fieldRequest, errorList, {
             ...context,
@@ -202,8 +208,9 @@ function checkAuthorizationForSelectionSet(selectionSet: FieldSelection[], error
     }));
 }
 
-function checkAuthorizationForField(fieldRequest: FieldRequest, errorList: AuthorizationError[], context: AuthorizationCheckContext): FieldRequest|undefined {
-    const allowedRoles = getAllowedRoles(fieldRequest.field, context.accessKind);
+function checkAuthorizationForField(fieldRequest: FieldRequest, errorList: AuthorizationError[], context: AuthorizationCheckSelectionSetContext): FieldRequest|undefined {
+    const accessKind = getAccessKindFromGraphQLField(fieldRequest.field);
+    const allowedRoles = getAllowedRoles(fieldRequest.field, accessKind);
     if (hasDirectiveWithName(fieldRequest.field.astNode as FieldDefinitionNode, NAMESPACE_FIELD_PATH_DIRECTIVE)) {
         // namespaces are always allowed, return original fieldRequest
         return fieldRequest;
@@ -212,6 +219,7 @@ function checkAuthorizationForField(fieldRequest: FieldRequest, errorList: Autho
         // (if allowedRules is undefined, no restriction is set)
         errorList.push(new AuthorizationError({
             ...context,
+            accessKind,
             field: fieldRequest.field,
             allowedRoles,
         }));
@@ -223,7 +231,7 @@ function checkAuthorizationForField(fieldRequest: FieldRequest, errorList: Autho
         const argDef = fieldRequest.field.args.find(arg => arg.name == argumentName);
         const argValue = fieldRequest.args[argumentName];
         if (argDef) {
-            const error = checkAuthorizationForArgument(argDef, argValue, context);
+            const error = checkAuthorizationForArgument(argDef, argValue, { ...context, accessKind });
             if (error) {
                 argumentErrors.push(error);
             }
@@ -232,6 +240,7 @@ function checkAuthorizationForField(fieldRequest: FieldRequest, errorList: Autho
     if (argumentErrors.length) {
         errorList.push(new AuthorizationError({
             ...context,
+            accessKind,
             field: fieldRequest.field,
             allowedRoles: [],
             argumentErrors
@@ -242,7 +251,7 @@ function checkAuthorizationForField(fieldRequest: FieldRequest, errorList: Autho
     return fieldRequest;
 }
 
-function checkAuthorizationForFieldRecursively(fieldRequest: FieldRequest, errorList: AuthorizationError[], context: AuthorizationCheckContext): FieldRequest|undefined {
+function checkAuthorizationForFieldRecursively(fieldRequest: FieldRequest, errorList: AuthorizationError[], context: AuthorizationCheckSelectionSetContext): FieldRequest|undefined {
     const result = checkAuthorizationForField(fieldRequest, errorList, context);
     if (!result) {
         return result;
@@ -251,8 +260,7 @@ function checkAuthorizationForFieldRecursively(fieldRequest: FieldRequest, error
     // process selections
     const oldErrorLength = errorList.length;
     const newSelectionSet = checkAuthorizationForSelectionSet(fieldRequest.selectionSet, errorList, {
-        ...context,
-        accessKind: AccessKind.READ // only the first level of mutation fields are write operations
+        ...context
     });
     if (oldErrorLength == errorList.length) {
         return fieldRequest;
@@ -260,7 +268,7 @@ function checkAuthorizationForFieldRecursively(fieldRequest: FieldRequest, error
     return new FieldRequest(fieldRequest.field, fieldRequest.parentType, fieldRequest.schema, newSelectionSet, fieldRequest.args);
 }
 
-function checkAuthorizationForArgument(argument: GraphQLArgument, argValue: AnyValue, context: AuthorizationCheckContext): ArgumentAuthorizationError|undefined {
+function checkAuthorizationForArgument(argument: GraphQLArgument, argValue: AnyValue, context: AuthorizationCheckFieldContext): ArgumentAuthorizationError|undefined {
     const allowedRoles = getAllowedRoles(argument, context.accessKind);
     if (allowedRoles && !intersection(allowedRoles, context.requestRoles).length) {
         return new ArgumentAuthorizationError({
@@ -287,7 +295,7 @@ function checkAuthorizationForArgument(argument: GraphQLArgument, argValue: AnyV
     return undefined;
 }
 
-function checkAuthorizationForInputField(inputField: GraphQLInputField, context: AuthorizationCheckContext, inputValue: AnyValue, inputPath: (string|number)[], errorList: InputValueAuthorizationError[]): void {
+function checkAuthorizationForInputField(inputField: GraphQLInputField, context: AuthorizationCheckFieldContext, inputValue: AnyValue, inputPath: (string|number)[], errorList: InputValueAuthorizationError[]): void {
     const allowedRoles = getAllowedRoles(inputField, context.accessKind);
     if (allowedRoles && !intersection(allowedRoles, context.requestRoles).length) {
         errorList.push(new InputValueAuthorizationError({
@@ -302,7 +310,7 @@ function checkAuthorizationForInputField(inputField: GraphQLInputField, context:
     checkAuthorizationForInputValue(inputField.type, context, inputValue, inputPath, errorList);
 }
 
-function checkAuthorizationForInputValue(type: GraphQLInputType, context: AuthorizationCheckContext, inputValue: AnyValue, inputPath: (string|number)[], errorList: InputValueAuthorizationError[]): void {
+function checkAuthorizationForInputValue(type: GraphQLInputType, context: AuthorizationCheckFieldContext, inputValue: AnyValue, inputPath: (string|number)[], errorList: InputValueAuthorizationError[]): void {
     if (type instanceof GraphQLNonNull) {
         checkAuthorizationForInputValue(type.ofType, context, inputValue, inputPath, errorList);
         return;
@@ -351,4 +359,38 @@ function getAllowedRoles(field: GraphQLField<any, any>|GraphQLInputField|GraphQL
         default:
             return getAllowedWriteRoles(field);
     }
+}
+
+
+function removeNonNamespaceNodesRecursively(selectionSet: FieldSelection[], errorList: AuthorizationError[], requestRoles: string[]): FieldSelection[] {
+    if (!selectionSet || selectionSet.length === 0) {
+        return selectionSet;
+    }
+    return compact(selectionSet.map(selection => {
+        if (hasDirectiveWithName(selection.fieldRequest.field.astNode as FieldDefinitionNode, NAMESPACE_FIELD_PATH_DIRECTIVE)) {
+            // keep namespace node
+            const fieldRequest = selection.fieldRequest;
+            return new FieldSelection(
+                selection.propertyName,
+                new FieldRequest(
+                    fieldRequest.field,
+                    fieldRequest.parentType,
+                    fieldRequest.schema,
+                    removeNonNamespaceNodesRecursively(selection.fieldRequest.selectionSet, errorList, requestRoles),
+                    fieldRequest.args
+                )
+            );
+        } else {
+            errorList.push(...selectionSet.map(sel => new AuthorizationError({
+                isErrorBecauseOtherMutationFieldHasErrors: true,
+                allowedRoles: [],
+                accessKind: getAccessKindFromGraphQLField(sel.fieldRequest.field),
+                field: sel.fieldRequest.field,
+                requestRoles,
+                path: [ sel.propertyName ]
+            })));
+            return undefined;
+        }
+    }));
+
 }
