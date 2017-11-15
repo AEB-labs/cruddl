@@ -55,7 +55,7 @@ export function addQueryResolvers(schema: GraphQLSchema, databaseAdapter: Databa
 
             const queryTree = createQueryTree(authorizationCheckResult.sanitizedOperation);
             console.log(queryTree.describe());
-            const result = await databaseAdapter.execute(queryTree);
+            const result = queryTree.properties.length ? await databaseAdapter.execute(queryTree) : {};
             console.log(JSON.stringify(result, undefined, '  '));
             return result;
         } catch (e) {
