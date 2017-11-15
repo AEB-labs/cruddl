@@ -88,3 +88,5 @@ export const ALL_OBJECT_TYPE_DIRECTIVES = [
     NAMESPACE_DIRECTIVE,
     ROLES_DIRECTIVE,
 ];
+
+export const MUTATION_FIELD = 'mutation';

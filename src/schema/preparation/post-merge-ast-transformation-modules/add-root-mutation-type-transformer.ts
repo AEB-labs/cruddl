@@ -1,16 +1,19 @@
 import {ASTTransformer} from "../transformation-pipeline";
-import {DocumentNode, FieldDefinitionNode, GraphQLID, ObjectTypeDefinitionNode} from "graphql";
+import {DirectiveNode, DocumentNode, FieldDefinitionNode, GraphQLID, ObjectTypeDefinitionNode} from "graphql";
 import {
     buildNameNode,
     createObjectTypeNode,
+    enterOrCreateNextNamespacePart,
     findDirectiveWithName,
     getNodeByName,
-    getRootEntityTypes,
-    enterOrCreateNextNamespacePart
+    getRootEntityTypes
 } from "../../schema-utils";
-import {FIELD_DEFINITION, INPUT_VALUE_DEFINITION, NAMED_TYPE, NON_NULL_TYPE, STRING} from "graphql/language/kinds";
-import {mapNullable} from '../../../utils/utils';
 import {
+    DIRECTIVE, FIELD_DEFINITION, INPUT_VALUE_DEFINITION, NAMED_TYPE, NON_NULL_TYPE,
+    STRING
+} from "graphql/language/kinds";
+import {
+    MUTATION_FIELD,
     MUTATION_ID_ARG,
     MUTATION_INPUT_ARG,
     MUTATION_TYPE,
@@ -26,6 +29,11 @@ import {
     getUpdateInputTypeName,
     updateEntityQuery
 } from "../../../graphql/names";
+import {compact} from "graphql-transformer/dist/src/utils";
+
+const MUTATION_FIELD_DIRECTIVE: DirectiveNode = {
+    name: buildNameNode(MUTATION_FIELD), kind: DIRECTIVE
+};
 
 export class AddRootMutationTypeTransformer implements ASTTransformer {
 
@@ -65,7 +73,7 @@ function buildCreateMutation(rootEntityDef: ObjectTypeDefinitionNode): FieldDefi
             buildNonNullTypeInputArg(MUTATION_INPUT_ARG, getCreateInputTypeName(rootEntityDef)),
         ],
         loc: rootEntityDef.loc,
-        directives: mapNullable(rootEntityDef.directives, directives => directives.filter(dir => dir.name.value == ROLES_DIRECTIVE))
+        directives: compact([findDirectiveWithName(rootEntityDef, ROLES_DIRECTIVE), MUTATION_FIELD_DIRECTIVE])
     }
 }
 
@@ -78,7 +86,7 @@ function buildUpdateMutation(rootEntityDef: ObjectTypeDefinitionNode): FieldDefi
             buildNonNullTypeInputArg(MUTATION_INPUT_ARG, getUpdateInputTypeName(rootEntityDef)),
         ],
         loc: rootEntityDef.loc,
-        directives: mapNullable(rootEntityDef.directives, directives => directives.filter(dir => dir.name.value == ROLES_DIRECTIVE))
+        directives: compact([findDirectiveWithName(rootEntityDef, ROLES_DIRECTIVE), MUTATION_FIELD_DIRECTIVE])
     }
 }
 
@@ -91,7 +99,7 @@ function buildDeleteMutation(rootEntityDef: ObjectTypeDefinitionNode): FieldDefi
             buildNonNullTypeInputArg(MUTATION_ID_ARG, GraphQLID.name),
         ],
         loc: rootEntityDef.loc,
-        directives: mapNullable(rootEntityDef.directives, directives => directives.filter(dir => dir.name.value == ROLES_DIRECTIVE))
+        directives: compact([findDirectiveWithName(rootEntityDef, ROLES_DIRECTIVE), MUTATION_FIELD_DIRECTIVE])
     }
 }
 
