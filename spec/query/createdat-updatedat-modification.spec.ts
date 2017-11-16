@@ -1,15 +1,11 @@
-
 import {createSchema} from "../../src/schema/schema-builder";
-import {execute, Source, parse} from "graphql";
+import {execute, parse, Source} from "graphql";
 import {ArangoDBAdapter} from "../../src/database/arangodb/arangodb-adapter";
 import {addQueryResolvers} from "../../src/query/query-resolvers";
-import {create} from "domain";
 import {createTempDatabase} from "../regression/initialization";
 import {sleep} from "../../src/utils/utils";
 
 describe('mutation', () => {
-    const databaseName = 'momo';
-    const databaseURL = 'http://root:@localhost:8529';
 
     const astSchema = `
     type Delivery @rootEntity @roles(readWrite: "allusers") {
