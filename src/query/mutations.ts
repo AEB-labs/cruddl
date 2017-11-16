@@ -9,9 +9,12 @@ import {
     VariableAssignmentQueryNode, VariableQueryNode
 } from './definition';
 import {
+    ADD_CHILD_ENTITIES_FIELD_PREFIX,
     CREATE_ENTITY_FIELD_PREFIX, DELETE_ENTITY_FIELD_PREFIX, ENTITY_CREATED_AT, ENTITY_UPDATED_AT, ID_FIELD,
     MUTATION_ID_ARG,
-    MUTATION_INPUT_ARG, NAMESPACE_FIELD_PATH_DIRECTIVE, UPDATE_ENTITY_FIELD_PREFIX
+    MUTATION_INPUT_ARG, MutationType, NAMESPACE_FIELD_PATH_DIRECTIVE, REMOVE_CHILD_ENTITIES_FIELD_PREFIX,
+    UPDATE_CHILD_ENTITIES_FIELD_PREFIX,
+    UPDATE_ENTITY_FIELD_PREFIX
 } from '../schema/schema-defaults';
 import { createEntityObjectNode } from './queries';
 import {
@@ -67,7 +70,7 @@ function createCreateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestSta
         throw new Error(`Object type ${entityName} not found but needed for field ${fieldRequest.fieldName}`);
     }
     const input = fieldRequest.args[MUTATION_INPUT_ARG];
-    const objectNode = new LiteralQueryNode(prepareCreateInput(input, entityType));
+    const objectNode = new LiteralQueryNode(prepareMutationInput(input, entityType, MutationType.CREATE));
     const createEntityNode = new CreateEntityQueryNode(entityType, objectNode);
     const newEntityVarNode = new VariableQueryNode('newEntity');
     let resultNode: QueryNode = createEntityObjectNode(fieldRequest.selectionSet, newEntityVarNode, fieldRequestStack);
@@ -85,40 +88,67 @@ function createCreateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestSta
     });
 }
 
-function prepareCreateInput(input: PlainObject, objectType: GraphQLObjectType): PlainObject {
+function prepareMutationInput(input: PlainObject, objectType: GraphQLObjectType, mutationType: MutationType): PlainObject {
     if (isChildEntityType(objectType)) {
         input = {
             ...input,
-            [ID_FIELD]: uuid(),
-            [ENTITY_CREATED_AT]: getCurrentISODate(),
             [ENTITY_UPDATED_AT]: getCurrentISODate()
         };
+        if (mutationType === MutationType.CREATE) {
+            input[ID_FIELD] = uuid();
+            input[ENTITY_CREATED_AT] = getCurrentISODate();
+        }
     }
 
     if (isRootEntityType(objectType)) {
-        // remove relation fields as they are treated by createCreateEntityQueryNode directly and should not be part
-        // of the created object
-        input = {
-            ...filterProperties(input, (value, key) => !isRelationField(objectType.getFields()[key])),
-            [ENTITY_CREATED_AT]: getCurrentISODate(),
-            [ENTITY_UPDATED_AT]: getCurrentISODate()
-        };
+        if (mutationType === MutationType.CREATE) {
+            // remove relation fields as they are treated by createCreateEntityQueryNode directly and should not be part
+            // of the created object
+            input = {
+                ...filterProperties(input, (value, key) => !isRelationField(objectType.getFields()[key])),
+                [ENTITY_CREATED_AT]: getCurrentISODate(),
+                [ENTITY_UPDATED_AT]: getCurrentISODate()
+            };
+        } else {
+            input = {
+                ...input,
+                [ENTITY_UPDATED_AT]: getCurrentISODate()
+            }
+        }
     }
 
-    function prepareFieldValue(value: AnyValue, fieldType: GraphQLType): AnyValue {
+    function prepareFieldValue(value: AnyValue, fieldType: GraphQLType, mutationType: MutationType): AnyValue {
         const rawType = getNamedType(fieldType);
         if (isListType(fieldType)) {
-            return (value as AnyValue[]).map(itemValue => prepareFieldValue(itemValue, rawType));
+            return (value as AnyValue[]).map(itemValue => prepareFieldValue(itemValue, rawType, mutationType));
         }
         if (rawType instanceof GraphQLObjectType && (isEntityExtensionType(rawType) || isChildEntityType(rawType))) {
-            return prepareCreateInput(value as PlainObject, rawType);
+            return prepareMutationInput(value as PlainObject, rawType, mutationType);
         }
         // scalars and value objects can be used as-is
         return value;
     }
 
     // recursive calls
-    return mapValues(input, (fieldValue, key) => prepareFieldValue(fieldValue, objectType.getFields()[key].type));
+    return mapValues(input, (fieldValue, key) => {
+        let descendantKey = key;
+        let descendantMutationType = mutationType;
+        if (!objectType.getFields()[key]) {
+            // must be an input field which needs special treatment
+            if (descendantKey.startsWith(ADD_CHILD_ENTITIES_FIELD_PREFIX)) {
+                // oh, adding child entities is create, not update!
+                // btw, once create => always create!
+                descendantMutationType = MutationType.CREATE;
+                descendantKey = decapitalize(descendantKey.substring(ADD_CHILD_ENTITIES_FIELD_PREFIX.length, descendantKey.length));
+            } else if (descendantKey.startsWith(UPDATE_CHILD_ENTITIES_FIELD_PREFIX)) {
+                descendantKey = decapitalize(descendantKey.substring(UPDATE_CHILD_ENTITIES_FIELD_PREFIX.length, descendantKey.length));
+            } else if (descendantKey.startsWith(REMOVE_CHILD_ENTITIES_FIELD_PREFIX)) {
+                // removal does not need further treatment.
+                return fieldValue;
+            }
+        }
+        return prepareFieldValue(fieldValue, objectType.getFields()[descendantKey].type, descendantMutationType)
+    });
 }
 
 function createUpdateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[]): QueryNode {
@@ -127,7 +157,7 @@ function createUpdateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestSta
     if (!entityType || !(entityType instanceof GraphQLObjectType)) {
         throw new Error(`Object type ${entityName} not found but needed for field ${fieldRequest.fieldName}`);
     }
-    const input = fieldRequest.args[MUTATION_INPUT_ARG];
+    const input = prepareMutationInput(fieldRequest.args[MUTATION_INPUT_ARG], entityType, MutationType.UPDATE);
     const currentEntityVarNode = new VariableQueryNode('currentEntity');
     const filterNode = new BinaryOperationQueryNode(new RootEntityIDQueryNode(currentEntityVarNode),
         BinaryOperator.EQUAL,
@@ -301,9 +331,9 @@ function createUpdatePropertiesSpecification(obj: any, objectType: GraphQLObject
 
             const newValues: any[] | undefined = obj[getAddChildEntityFieldName(field.name)];
             if (newValues) {
-                // call prepareCreateInput() to assign uuids to new child entities (possibly recursively)
+                // call prepareMutationInput() to assign uuids to new child entities (possibly recursively)
                 // wrap the whole thing into a LiteralQueryNode instead of them individually so that only one bound variable is used
-                const preparedNewValues = newValues.map(value => prepareCreateInput(value, childEntityType));
+                const preparedNewValues = newValues.map(value => prepareMutationInput(value, childEntityType, MutationType.CREATE));
                 const newNode = new LiteralQueryNode(preparedNewValues);
                 currentNode = new ConcatListsQueryNode([currentNode, newNode]);
             }

@@ -170,3 +170,7 @@ export function mapNullable<TIn, TOut>(value: TIn|undefined, fn: (vlaue: TIn) =>
     }
     return fn(value);
 }
+
+export function sleep(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}

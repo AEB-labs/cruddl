@@ -90,3 +90,8 @@ export const ALL_OBJECT_TYPE_DIRECTIVES = [
 ];
 
 export const MUTATION_FIELD = 'mutation';
+
+export enum MutationType {
+    CREATE,
+    UPDATE
+}

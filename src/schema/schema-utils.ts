@@ -11,7 +11,8 @@ import {
 } from 'graphql/language/kinds';
 import {
     CHILD_ENTITY_DIRECTIVE, ENTITY_CREATED_AT, ENTITY_EXTENSION_DIRECTIVE, ENTITY_UPDATED_AT, ID_FIELD,
-    KEY_FIELD_DIRECTIVE, NAMESPACE_FIELD_PATH_DIRECTIVE, REFERENCE_DIRECTIVE, RELATION_DIRECTIVE, ROLES_DIRECTIVE,
+    KEY_FIELD_DIRECTIVE, MutationType, NAMESPACE_FIELD_PATH_DIRECTIVE, REFERENCE_DIRECTIVE, RELATION_DIRECTIVE,
+    ROLES_DIRECTIVE,
     ROLES_READ_ARG, ROLES_READ_WRITE_ARG,
     ROOT_ENTITY_DIRECTIVE, VALUE_OBJECT_DIRECTIVE
 } from './schema-defaults';
@@ -360,7 +361,9 @@ export function isWriteProtectedSystemField(field: GraphQLField<any, any>, paren
         // value objects and extensions do not have system fields
         return false;
     }
-    return field.name == ID_FIELD || field.name == ENTITY_CREATED_AT || field.name == ENTITY_UPDATED_AT;
+    // No need to protect ENTITY_UPDATED_AT because because it will be set
+    // to the correct value by the update logic anyway.
+    return field.name == ID_FIELD || field.name == ENTITY_CREATED_AT;
 }
 
 export function getSingleKeyField(type: GraphQLObjectType): GraphQLField<any, any>|undefined {
