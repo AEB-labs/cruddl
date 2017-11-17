@@ -32,6 +32,19 @@ export const DIRECTIVES = gql`
         # A list of roles that are authorized to read, create, update and delete objects of this type
         readWrite: [String!])
     on FIELD_DEFINITION|OBJECT
+
+    enum CalcMutationsOperator {
+        MULTIPLY,
+        DIVIDE,
+        ADD,
+        SUBTRACT,
+        MODULO
+    }    
+    # Specifies which special calculation update mutations should be generated for this field
+    directive @calcMutations(
+        # A list of operators. For each operator a update calculation mutation will be generated
+        operators: [CalcMutationsOperator!])
+    on FIELD_DEFINITION
 `;
 
 export const CORE_SCALARS = gql`

@@ -405,6 +405,16 @@ function getAQLOperator(op: BinaryOperator): AQLFragment|undefined {
             return aql`>=`;
         case BinaryOperator.IN:
             return aql`IN`;
+        case BinaryOperator.ADD:
+            return aql`+`;
+        case BinaryOperator.SUBTRACT:
+            return aql`-`;
+        case BinaryOperator.MULTIPLY:
+            return aql`*`;
+        case BinaryOperator.DIVIDE:
+            return aql`/`;
+        case BinaryOperator.MODULO:
+            return aql`%`;
         default:
             return undefined;
     }

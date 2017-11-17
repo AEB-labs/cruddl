@@ -9,7 +9,7 @@ import {
     VariableAssignmentQueryNode, VariableQueryNode
 } from './definition';
 import {
-    ADD_CHILD_ENTITIES_FIELD_PREFIX,
+    ADD_CHILD_ENTITIES_FIELD_PREFIX, CALC_MUTATIONS_OPERATORS,
     CREATE_ENTITY_FIELD_PREFIX, DELETE_ENTITY_FIELD_PREFIX, ENTITY_CREATED_AT, ENTITY_UPDATED_AT, ID_FIELD,
     MUTATION_ID_ARG,
     MUTATION_INPUT_ARG, MutationType, NAMESPACE_FIELD_PATH_DIRECTIVE, REMOVE_CHILD_ENTITIES_FIELD_PREFIX,
@@ -18,7 +18,7 @@ import {
 } from '../schema/schema-defaults';
 import { createEntityObjectNode } from './queries';
 import {
-    hasDirectiveWithName,
+    hasDirectiveWithName, isCalcMutationField,
     isChildEntityType, isEntityExtensionType, isRelationField, isRootEntityType, isTypeWithIdentity,
     isWriteProtectedSystemField
 } from '../schema/schema-utils';
@@ -391,9 +391,29 @@ function createUpdatePropertiesSpecification(obj: any, objectType: GraphQLObject
             // considered by createUpdateEntityQueryNode directly
         } else if (isWriteProtectedSystemField(field, objectType)) {
             // this field must not be updated (may exist in schema for other purposes like filtering for an entity)
-        } else if (field.name in obj) {
+        } else  {
             // scalars and value objects
-            properties.push(new PropertySpecification(field.name, new LiteralQueryNode(obj[field.name])));
+            let valueNode: QueryNode | undefined = undefined;
+            if (field.name in obj) {
+                valueNode = new LiteralQueryNode(obj[field.name]);
+            }
+
+            if(isCalcMutationField(field)) {
+                for (const operator of CALC_MUTATIONS_OPERATORS) {
+                    const inputCalcFieldName = operator.prefix + field.name;
+                    const binaryOperator: BinaryOperator = BinaryOperator[operator.name];
+                    if((inputCalcFieldName) in obj) {
+                        valueNode = new BinaryOperationQueryNode(
+                            valueNode || new FieldQueryNode(oldEntityNode, field),
+                            binaryOperator,
+                            new LiteralQueryNode(obj[inputCalcFieldName]))
+                    }
+                }
+            }
+
+            if(valueNode) {
+                properties.push(new PropertySpecification(field.name, valueNode));
+            }
         }
     }
 

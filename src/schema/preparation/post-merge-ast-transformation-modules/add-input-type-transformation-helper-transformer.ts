@@ -7,7 +7,7 @@ import {
 } from 'graphql/language/kinds';
 import {
     buildNameNode,
-    findDirectiveWithName,
+    findDirectiveWithName, getCalcMutationOperatorsFromDirective,
     getNamedTypeDefinitionAST,
     getReferenceKeyField,
     getRoleListFromDirective,
@@ -26,6 +26,7 @@ import {
     StringValueNode
 } from 'graphql';
 import {
+    CALC_MUTATIONS_DIRECTIVE,
     ID_FIELD,
     REFERENCE_DIRECTIVE,
     RELATION_DIRECTIVE,
@@ -149,4 +150,15 @@ export function buildInputFieldFromNonListField(ast: DocumentNode, field: FieldD
         // scalars
         return buildInputValueNodeFromField(field.name.value, namedType.name.value, field);
     }
+}
+
+export function buildInputFieldsFromCalcMutationField(ast: DocumentNode, field: FieldDefinitionNode, namedType: NamedTypeNode ): InputValueDefinitionNode[] {
+    const directive = findDirectiveWithName(field, CALC_MUTATIONS_DIRECTIVE);
+    if (!directive) {
+        // directive missing => no calcMutations
+        return [];
+    }
+    const operators = getCalcMutationOperatorsFromDirective(directive);
+
+    return operators.map(operator => buildInputValueNodeFromField(operator.prefix + field.name.value, namedType.name.value, field))
 }

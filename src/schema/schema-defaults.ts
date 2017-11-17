@@ -63,6 +63,17 @@ export const AFTER_ARG = 'after';
 export const FIRST_ARG = 'first';
 export const KEY_FIELD_DIRECTIVE = 'key';
 
+export const CALC_MUTATIONS_DIRECTIVE = 'calcMutations';
+export const CALC_MUTATIONS_OPERATORS_ARG = 'operators';
+export type CalcMutationOperator = {name: 'MULTIPLY' | 'DIVIDE' | 'ADD' | 'SUBTRACT' | 'MODULO', prefix: string, supportedTypes: string[]};
+export const CALC_MUTATIONS_OPERATORS: CalcMutationOperator[] = [
+    {name: 'MULTIPLY', prefix: 'multiplyWith_', supportedTypes: ['Int', 'Float']},
+    {name: 'DIVIDE', prefix: 'divideBy_', supportedTypes: ['Int', 'Float']},
+    {name: 'ADD', prefix: 'addTo_', supportedTypes: ['Int', 'Float']},
+    {name: 'SUBTRACT', prefix: 'subtractFrom_', supportedTypes: ['Int', 'Float']},
+    {name: 'MODULO', prefix: 'moduloOf_', supportedTypes: ['Int', 'Float']},
+];
+
 export const COUNT_META_FIELD = 'count';
 
 export const MUTATION_INPUT_ARG = 'input';
@@ -79,7 +90,7 @@ export const NAMESPACE_NAME_ARG = 'name';
 export const NAMESPACE_SEPARATOR = '.';
 export const NAMESPACE_FIELD_PATH_DIRECTIVE = 'namespaceFieldPath';
 
-export const ALL_FIELD_DIRECTIVES = [KEY_FIELD_DIRECTIVE, RELATION_DIRECTIVE, REFERENCE_DIRECTIVE, ROLES_DIRECTIVE];
+export const ALL_FIELD_DIRECTIVES = [KEY_FIELD_DIRECTIVE, RELATION_DIRECTIVE, REFERENCE_DIRECTIVE, ROLES_DIRECTIVE, CALC_MUTATIONS_DIRECTIVE];
 export const ALL_OBJECT_TYPE_DIRECTIVES = [
     ROOT_ENTITY_DIRECTIVE,
     CHILD_ENTITY_DIRECTIVE,
