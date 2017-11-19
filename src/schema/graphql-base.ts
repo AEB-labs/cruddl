@@ -38,7 +38,9 @@ export const DIRECTIVES = gql`
         DIVIDE,
         ADD,
         SUBTRACT,
-        MODULO
+        MODULO,
+        APPEND,
+        PREPEND
     }    
     # Specifies which special calculation update mutations should be generated for this field
     directive @calcMutations(
