@@ -142,8 +142,9 @@ function prepareMutationInput(input: PlainObject, objectType: GraphQLObjectType,
                 descendantKey = decapitalize(descendantKey.substring(ADD_CHILD_ENTITIES_FIELD_PREFIX.length, descendantKey.length));
             } else if (descendantKey.startsWith(UPDATE_CHILD_ENTITIES_FIELD_PREFIX)) {
                 descendantKey = decapitalize(descendantKey.substring(UPDATE_CHILD_ENTITIES_FIELD_PREFIX.length, descendantKey.length));
-            } else if (descendantKey.startsWith(REMOVE_CHILD_ENTITIES_FIELD_PREFIX)) {
-                // removal does not need further treatment.
+            } else {
+                // the remaining special input fields do not need further treatment.
+                // e.g. REMOVE_CHILD_ENTITIES_FIELD_PREFIX, CALC_MUTATIONS_OPERATORS
                 return fieldValue;
             }
         }
