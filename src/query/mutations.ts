@@ -129,26 +129,50 @@ function prepareMutationInput(input: PlainObject, objectType: GraphQLObjectType,
         return value;
     }
 
+    function keyWithoutPrefix(key: string, prefix: string): string | undefined {
+        if(key.startsWith(prefix)) {
+            return decapitalize(key.substring(prefix.length));
+        } else {
+            return undefined;
+        }
+    }
+
     // recursive calls
     return mapValues(input, (fieldValue, key) => {
-        let descendantKey = key;
-        let descendantMutationType = mutationType;
-        if (!objectType.getFields()[key]) {
-            // must be an input field which needs special treatment
-            if (descendantKey.startsWith(ADD_CHILD_ENTITIES_FIELD_PREFIX)) {
-                // oh, adding child entities is create, not update!
-                // btw, once create => always create!
-                descendantMutationType = MutationType.CREATE;
-                descendantKey = decapitalize(descendantKey.substring(ADD_CHILD_ENTITIES_FIELD_PREFIX.length, descendantKey.length));
-            } else if (descendantKey.startsWith(UPDATE_CHILD_ENTITIES_FIELD_PREFIX)) {
-                descendantKey = decapitalize(descendantKey.substring(UPDATE_CHILD_ENTITIES_FIELD_PREFIX.length, descendantKey.length));
-            } else {
-                // the remaining special input fields do not need further treatment.
-                // e.g. REMOVE_CHILD_ENTITIES_FIELD_PREFIX, CALC_MUTATIONS_OPERATORS
-                return fieldValue;
+        let objFields = objectType.getFields();
+
+        if (objFields[key]) {
+            // input field for plain object fields
+            return prepareFieldValue(fieldValue, objFields[key].type, mutationType)
+        } else {
+            // must be a (gnerated) special input field
+            const possiblePrefixes: string[] = [
+                ADD_CHILD_ENTITIES_FIELD_PREFIX,
+                UPDATE_CHILD_ENTITIES_FIELD_PREFIX,
+                REMOVE_CHILD_ENTITIES_FIELD_PREFIX,
+                ...CALC_MUTATIONS_OPERATORS.map(op => op.prefix)];
+            for (const prefix of possiblePrefixes) {
+                let withoutPrefix = keyWithoutPrefix(key, prefix);
+                if(withoutPrefix && objFields[withoutPrefix]) {
+                    switch(prefix) {
+                        case ADD_CHILD_ENTITIES_FIELD_PREFIX: {
+                            // oh, adding child entities is create, not update!
+                            // btw, once create => always create!
+                            return prepareFieldValue(fieldValue, objFields[withoutPrefix].type, MutationType.CREATE)
+                        }
+                        case UPDATE_CHILD_ENTITIES_FIELD_PREFIX: {
+                            return prepareFieldValue(fieldValue, objFields[withoutPrefix].type, mutationType)
+                        }
+                        default: {
+                            // the remaining special input fields do not need further treatment.
+                            // e.g. REMOVE_CHILD_ENTITIES_FIELD_PREFIX, CALC_MUTATIONS_OPERATORS
+                            return fieldValue;
+                        }
+                    }
+                }
             }
+            throw new Error(`Mutation input field named "${key}" does neither match to a plain object field, nor to a known special input field pattern.`);
         }
-        return prepareFieldValue(fieldValue, objectType.getFields()[descendantKey].type, descendantMutationType)
     });
 }
 
