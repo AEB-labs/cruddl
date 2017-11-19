@@ -428,6 +428,7 @@ function createUpdatePropertiesSpecification(obj: any, objectType: GraphQLObject
                     const inputCalcFieldName = operator.prefix + field.name;
                     const binaryOperator: BinaryOperator = BinaryOperator[operator.name];
                     if((inputCalcFieldName) in obj) {
+                        // TODO ArangoDB implicitly converts null to 0 during arithmetic operations. Is this ok?
                         valueNode = new BinaryOperationQueryNode(
                             valueNode || new FieldQueryNode(oldEntityNode, field),
                             binaryOperator,

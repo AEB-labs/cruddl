@@ -344,6 +344,10 @@ export class BinaryOperationQueryNode implements QueryNode {
                 return '/';
             case BinaryOperator.MODULO:
                 return '%';
+            case BinaryOperator.APPEND:
+                return 'APPEND';
+            case BinaryOperator.PREPEND:
+                return 'PREPEND';
             default:
                 return '(unknown operator)';
         }
@@ -371,6 +375,8 @@ export enum BinaryOperator {
     MULTIPLY,
     DIVIDE,
     MODULO,
+    APPEND,
+    PREPEND,
 }
 
 /**

@@ -65,13 +65,15 @@ export const KEY_FIELD_DIRECTIVE = 'key';
 
 export const CALC_MUTATIONS_DIRECTIVE = 'calcMutations';
 export const CALC_MUTATIONS_OPERATORS_ARG = 'operators';
-export type CalcMutationOperator = {name: 'MULTIPLY' | 'DIVIDE' | 'ADD' | 'SUBTRACT' | 'MODULO', prefix: string, supportedTypes: string[]};
+export type CalcMutationOperator = {name: 'MULTIPLY' | 'DIVIDE' | 'ADD' | 'SUBTRACT' | 'MODULO' | 'APPEND' | 'PREPEND', prefix: string, supportedTypes: string[]};
 export const CALC_MUTATIONS_OPERATORS: CalcMutationOperator[] = [
     {name: 'MULTIPLY', prefix: 'multiplyWith_', supportedTypes: ['Int', 'Float']},
     {name: 'DIVIDE', prefix: 'divideBy_', supportedTypes: ['Int', 'Float']},
     {name: 'ADD', prefix: 'addTo_', supportedTypes: ['Int', 'Float']},
     {name: 'SUBTRACT', prefix: 'subtractFrom_', supportedTypes: ['Int', 'Float']},
     {name: 'MODULO', prefix: 'moduloOf_', supportedTypes: ['Int', 'Float']},
+    {name: 'APPEND', prefix: 'appendTo_', supportedTypes: ['String']},
+    {name: 'PREPEND', prefix: 'prependTo_', supportedTypes: ['String']},
 ];
 
 export const COUNT_META_FIELD = 'count';

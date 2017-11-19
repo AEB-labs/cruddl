@@ -215,6 +215,10 @@ const processors : { [name: string]: NodeProcessor<any> } = {
                 return aql`(LEFT(${lhs}, LENGTH(${rhs})) == ${rhs})`;
             case BinaryOperator.ENDS_WITH:
                 return aql`(RIGHT(${lhs}, LENGTH(${rhs})) == ${rhs})`;
+            case BinaryOperator.APPEND:
+                return aql`CONCAT(${lhs}, ${rhs})`;
+            case BinaryOperator.PREPEND:
+                return aql`CONCAT(${rhs}, ${lhs})`;
             default:
                 throw new Error(`Unsupported binary operator: ${op}`);
         }
