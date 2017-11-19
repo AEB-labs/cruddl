@@ -11,7 +11,7 @@ import {
     VALUE_OBJECT_DIRECTIVE
 } from "../../schema-defaults";
 
-export const VALIDATION_ERROR_INVALID_COUNT_OF_ENTITY_DIRECTIVES = `Every type must have exactly one direction out of @${ROOT_ENTITY_DIRECTIVE}, @${CHILD_ENTITY_DIRECTIVE}, @${ENTITY_EXTENSION_DIRECTIVE} and @${VALUE_OBJECT_DIRECTIVE}.`;
+export const VALIDATION_ERROR_INVALID_COUNT_OF_ENTITY_DIRECTIVES = `Every type must have exactly one directive out of @${ROOT_ENTITY_DIRECTIVE}, @${CHILD_ENTITY_DIRECTIVE}, @${ENTITY_EXTENSION_DIRECTIVE} or @${VALUE_OBJECT_DIRECTIVE}.`;
 
 export class ObjectTypeDirectiveCountValidator implements ASTValidator {
 
