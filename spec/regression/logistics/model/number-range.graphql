@@ -1,0 +1,4 @@
+type NumberRange @rootEntity @roles(readWrite: ["allusers"]) {
+    name: String
+    number: Int @calcMutations(operators: ADD)
+}

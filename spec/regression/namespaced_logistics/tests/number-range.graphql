@@ -1,29 +1,21 @@
-mutation add {
-    logistics {
-        delivery {
-            updateDelivery(input: {
-                id: "@{ids/logistics.delivery.Delivery/1}",
-                addItems: [{
-                    itemNumber: "1234"
-                }]
-            }) {
-                items {
-                    itemNumber
-                }
-            }
+mutation firstIncrement {
+    foundation {
+        updateNumberRange(input: {
+            id: "@{ids/foundation.NumberRange/1}",
+            addTo_number: 1
+        }) {
+            number
         }
     }
 }
 
-# to verify it is updated in the db
-query query {
-    logistics {
-        delivery {
-            Delivery(id: "@{ids/logistics.delivery.Delivery/1}") {
-                items {
-                    itemNumber
-                }
-            }
+mutation secondIncrement {
+    foundation {
+        updateNumberRange(input: {
+            id: "@{ids/foundation.NumberRange/1}",
+            addTo_number: 5
+        }) {
+            number
         }
     }
 }

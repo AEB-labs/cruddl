@@ -1,4 +1,4 @@
-type NumberRange @rootEntity @roles(readWrite: ["allusers"]) {
+type NumberRange @rootEntity @roles(readWrite: ["allusers"]) @namespace(name: "foundation") {
     name: String
     number: Int @calcMutations(operators: ADD)
 }

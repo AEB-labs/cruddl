@@ -1,42 +1,18 @@
 {
-  "add": {
+  "firstIncrement": {
     "data": {
-      "logistics": {
-        "delivery": {
-          "updateDelivery": {
-            "items": [
-              {
-                "itemNumber": "1001"
-              },
-              {
-                "itemNumber": "1002"
-              },
-              {
-                "itemNumber": "1234"
-              }
-            ]
-          }
+      "foundation": {
+        "updateNumberRange": {
+          "number": 1
         }
       }
     }
   },
-  "query": {
+  "secondIncrement": {
     "data": {
-      "logistics": {
-        "delivery": {
-          "Delivery": {
-            "items": [
-              {
-                "itemNumber": "1001"
-              },
-              {
-                "itemNumber": "1002"
-              },
-              {
-                "itemNumber": "1234"
-              }
-            ]
-          }
+      "foundation": {
+        "updateNumberRange": {
+          "number": 6
         }
       }
     }

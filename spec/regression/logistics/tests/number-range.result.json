@@ -1,19 +1,15 @@
 {
   "firstIncrement": {
     "data": {
-      "foundation": {
-        "updateNumberRange": {
-          "number": 1
-        }
+      "updateNumberRange": {
+        "number": 1
       }
     }
   },
   "secondIncrement": {
     "data": {
-      "foundation": {
-        "updateNumberRange": {
-          "number": 6
-        }
+      "updateNumberRange": {
+        "number": 6
       }
     }
   }

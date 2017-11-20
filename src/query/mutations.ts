@@ -34,13 +34,12 @@ import {
 } from './definition';
 import {
     ADD_CHILD_ENTITIES_FIELD_PREFIX,
+    CALC_MUTATIONS_OPERATORS,
     CREATE_ENTITY_FIELD_PREFIX,
     DELETE_ENTITY_FIELD_PREFIX,
     ENTITY_CREATED_AT,
     ENTITY_UPDATED_AT,
     ID_FIELD,
-    ADD_CHILD_ENTITIES_FIELD_PREFIX, CALC_MUTATIONS_OPERATORS,
-    CREATE_ENTITY_FIELD_PREFIX, DELETE_ENTITY_FIELD_PREFIX, ENTITY_CREATED_AT, ENTITY_UPDATED_AT, ID_FIELD,
     MUTATION_ID_ARG,
     MUTATION_INPUT_ARG,
     MutationType,
@@ -52,13 +51,12 @@ import {
 import {createEntityObjectNode} from './queries';
 import {
     hasDirectiveWithName,
+    isCalcMutationField,
     isChildEntityType,
     isEntityExtensionType,
     isRelationField,
     isRootEntityType,
     isTypeWithIdentity,
-    hasDirectiveWithName, isCalcMutationField,
-    isChildEntityType, isEntityExtensionType, isRelationField, isRootEntityType, isTypeWithIdentity,
     isWriteProtectedSystemField
 } from '../schema/schema-utils';
 import {AnyValue, decapitalize, filterProperties, mapValues, objectValues, PlainObject} from '../utils/utils';
@@ -173,12 +171,12 @@ function prepareMutationInput(input: PlainObject, objectType: GraphQLObjectType,
             } else {
                 if (key.startsWith(ADD_CHILD_ENTITIES_FIELD_PREFIX)) {
                     const descendantKey = decapitalize(key.substring(ADD_CHILD_ENTITIES_FIELD_PREFIX.length, key.length));
-                    if (isRelationField(objectType.getFields()[descendantKey])) {
+                    if (objectType.getFields()[descendantKey] && isRelationField(objectType.getFields()[descendantKey])) {
                         continue;
                     }
                 } else if (key.startsWith(REMOVE_CHILD_ENTITIES_FIELD_PREFIX)) {
                     const descendantKey = decapitalize(key.substring(REMOVE_CHILD_ENTITIES_FIELD_PREFIX.length, key.length));
-                    if (isRelationField(objectType.getFields()[descendantKey])) {
+                    if (objectType.getFields()[descendantKey] && isRelationField(objectType.getFields()[descendantKey])) {
                         continue;
                     }
                 }
@@ -209,7 +207,7 @@ function prepareMutationInput(input: PlainObject, objectType: GraphQLObjectType,
     }
 
     // recursive calls
-    return mapValues(input, (fieldValue, key) => {
+    return mapValues(preparedInput, (fieldValue, key) => {
         let objFields = objectType.getFields();
 
         if (objFields[key]) {
