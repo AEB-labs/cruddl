@@ -1,0 +1,20 @@
+{
+  "firstIncrement": {
+    "data": {
+      "foundation": {
+        "updateNumberRange": {
+          "number": 1
+        }
+      }
+    }
+  },
+  "secondIncrement": {
+    "data": {
+      "foundation": {
+        "updateNumberRange": {
+          "number": 6
+        }
+      }
+    }
+  }
+}

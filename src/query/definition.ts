@@ -334,6 +334,20 @@ export class BinaryOperationQueryNode implements QueryNode {
                 return 'STARTS WITH';
             case BinaryOperator.ENDS_WITH:
                 return 'ENDS WITH';
+            case BinaryOperator.ADD:
+                return '+';
+            case BinaryOperator.SUBTRACT:
+                return '-';
+            case BinaryOperator.MULTIPLY:
+                return '*';
+            case BinaryOperator.DIVIDE:
+                return '/';
+            case BinaryOperator.MODULO:
+                return '%';
+            case BinaryOperator.APPEND:
+                return 'APPEND';
+            case BinaryOperator.PREPEND:
+                return 'PREPEND';
             default:
                 return '(unknown operator)';
         }
@@ -356,6 +370,13 @@ export enum BinaryOperator {
     CONTAINS,
     STARTS_WITH,
     ENDS_WITH,
+    ADD,
+    SUBTRACT,
+    MULTIPLY,
+    DIVIDE,
+    MODULO,
+    APPEND,
+    PREPEND,
 }
 
 /**

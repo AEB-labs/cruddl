@@ -39,7 +39,7 @@ import {
 } from '../../schema-defaults';
 import {flatMap} from '../../../utils/utils';
 import {
-    buildInputFieldFromNonListField,
+    buildInputFieldFromNonListField, buildInputFieldsFromCalcMutationField,
     buildInputValueListNodeFromField,
     buildInputValueNodeID
 } from './add-input-type-transformation-helper-transformer';
@@ -76,7 +76,7 @@ export class AddUpdateEntityInputTypesTransformer implements ASTTransformer {
             case NON_NULL_TYPE:
                 return this.createInputTypeField(ast, field, type.type);
             case NAMED_TYPE:
-                return [ buildInputFieldFromNonListField(ast, field, type) ];
+                return [ buildInputFieldFromNonListField(ast, field, type), ...buildInputFieldsFromCalcMutationField(ast, field, type) ];
             case LIST_TYPE:
                 const effectiveType = type.type.kind === NON_NULL_TYPE ? type.type.type : type.type;
                 if (effectiveType.kind === LIST_TYPE) {

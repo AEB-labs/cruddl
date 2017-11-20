@@ -10,13 +10,14 @@ import {
     OBJECT_TYPE_DEFINITION, SCALAR_TYPE_DEFINITION
 } from 'graphql/language/kinds';
 import {
+    CALC_MUTATIONS_DIRECTIVE, CALC_MUTATIONS_OPERATORS, CALC_MUTATIONS_OPERATORS_ARG, CalcMutationOperator,
     CHILD_ENTITY_DIRECTIVE, ENTITY_CREATED_AT, ENTITY_EXTENSION_DIRECTIVE, ENTITY_UPDATED_AT, ID_FIELD,
     KEY_FIELD_DIRECTIVE, MutationType, NAMESPACE_FIELD_PATH_DIRECTIVE, REFERENCE_DIRECTIVE, RELATION_DIRECTIVE,
     ROLES_DIRECTIVE,
     ROLES_READ_ARG, ROLES_READ_WRITE_ARG,
     ROOT_ENTITY_DIRECTIVE, VALUE_OBJECT_DIRECTIVE
 } from './schema-defaults';
-import { flatMap, objectValues } from '../utils/utils';
+import { compact, flatMap, objectValues } from '../utils/utils';
 import {namespacedType} from '../graphql/names';
 import { isEqual } from 'lodash';
 
@@ -290,19 +291,24 @@ export function isKeyField(field: GraphQLField<any, any>) {
     return hasDirectiveWithName(astNode, KEY_FIELD_DIRECTIVE);
 }
 
+export function isCalcMutationField(field: GraphQLField<any, any>) {
+    const astNode = getFieldDefinitionNode(field);
+    return hasDirectiveWithName(astNode, CALC_MUTATIONS_DIRECTIVE);
+}
+
 export function getStringListValues(value: ValueNode): string[] {
     if (value.kind == 'ListValue') {
         return value.values.map(value => {
-            if (value.kind == 'StringValue') {
+            if (value.kind == 'StringValue' || value.kind == 'EnumValue') {
                 return value.value;
             }
-            throw new Error(`Expected string, got ${value.kind}`);
+            throw new Error(`Expected string or enum, got ${value.kind}`);
         });
     }
-    if (value.kind == 'StringValue') {
+    if (value.kind == 'StringValue' || value.kind == 'EnumValue') {
         return [ value.value ];
     }
-    throw new Error(`Expected string or list of string, got ${value.kind}`);
+    throw new Error(`Expected string/enum or list of string/enum, got ${value.kind}`);
 }
 
 export function getAllowedReadRoles(field: GraphQLField<any, any>|GraphQLInputField|GraphQLEnumValue): string[]|undefined {
@@ -349,6 +355,18 @@ function getAllowedRoles(field: GraphQLField<any, any>|GraphQLInputField|GraphQL
         return undefined;
     }
     return getRoleListFromDirective(directive, argName);
+}
+
+
+export function getCalcMutationOperatorsFromDirective(directive: DirectiveNode): CalcMutationOperator[] {
+    const arg = (directive.arguments || []).find(arg => arg.name.value == CALC_MUTATIONS_OPERATORS_ARG);
+    if (arg) {
+        return compact(getStringListValues(arg.value).map(operatorName =>
+            CALC_MUTATIONS_OPERATORS.find(operator => operator.name === operatorName)));
+    }
+
+    // if the directive is specified but an arg is missing, this default to [] (default to secure option)
+    return [];
 }
 
 /**

@@ -215,6 +215,10 @@ const processors : { [name: string]: NodeProcessor<any> } = {
                 return aql`(LEFT(${lhs}, LENGTH(${rhs})) == ${rhs})`;
             case BinaryOperator.ENDS_WITH:
                 return aql`(RIGHT(${lhs}, LENGTH(${rhs})) == ${rhs})`;
+            case BinaryOperator.APPEND:
+                return aql`CONCAT(${lhs}, ${rhs})`;
+            case BinaryOperator.PREPEND:
+                return aql`CONCAT(${rhs}, ${lhs})`;
             default:
                 throw new Error(`Unsupported binary operator: ${op}`);
         }
@@ -405,6 +409,16 @@ function getAQLOperator(op: BinaryOperator): AQLFragment|undefined {
             return aql`>=`;
         case BinaryOperator.IN:
             return aql`IN`;
+        case BinaryOperator.ADD:
+            return aql`+`;
+        case BinaryOperator.SUBTRACT:
+            return aql`-`;
+        case BinaryOperator.MULTIPLY:
+            return aql`*`;
+        case BinaryOperator.DIVIDE:
+            return aql`/`;
+        case BinaryOperator.MODULO:
+            return aql`%`;
         default:
             return undefined;
     }

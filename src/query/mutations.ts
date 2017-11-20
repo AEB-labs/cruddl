@@ -39,6 +39,8 @@ import {
     ENTITY_CREATED_AT,
     ENTITY_UPDATED_AT,
     ID_FIELD,
+    ADD_CHILD_ENTITIES_FIELD_PREFIX, CALC_MUTATIONS_OPERATORS,
+    CREATE_ENTITY_FIELD_PREFIX, DELETE_ENTITY_FIELD_PREFIX, ENTITY_CREATED_AT, ENTITY_UPDATED_AT, ID_FIELD,
     MUTATION_ID_ARG,
     MUTATION_INPUT_ARG,
     MutationType,
@@ -55,6 +57,8 @@ import {
     isRelationField,
     isRootEntityType,
     isTypeWithIdentity,
+    hasDirectiveWithName, isCalcMutationField,
+    isChildEntityType, isEntityExtensionType, isRelationField, isRootEntityType, isTypeWithIdentity,
     isWriteProtectedSystemField
 } from '../schema/schema-utils';
 import {AnyValue, decapitalize, filterProperties, mapValues, objectValues, PlainObject} from '../utils/utils';
@@ -196,25 +200,50 @@ function prepareMutationInput(input: PlainObject, objectType: GraphQLObjectType,
         return value;
     }
 
-    // recursive calls
-    return mapValues(preparedInput, (fieldValue, key) => {
-        let descendantKey = key;
-        let descendantMutationType = mutationType;
-        if (!objectType.getFields()[key]) {
-            // must be an preparedInput field which needs special treatment
-            if (descendantKey.startsWith(ADD_CHILD_ENTITIES_FIELD_PREFIX)) {
-                // oh, adding child entities is create, not update!
-                // btw, once create => always create!
-                descendantMutationType = MutationType.CREATE;
-                descendantKey = decapitalize(descendantKey.substring(ADD_CHILD_ENTITIES_FIELD_PREFIX.length, descendantKey.length));
-            } else if (descendantKey.startsWith(UPDATE_CHILD_ENTITIES_FIELD_PREFIX)) {
-                descendantKey = decapitalize(descendantKey.substring(UPDATE_CHILD_ENTITIES_FIELD_PREFIX.length, descendantKey.length));
-            } else if (descendantKey.startsWith(REMOVE_CHILD_ENTITIES_FIELD_PREFIX)) {
-                // removal does not need further treatment.
-                return fieldValue;
-            }
+    function keyWithoutPrefix(key: string, prefix: string): string | undefined {
+        if(key.startsWith(prefix)) {
+            return decapitalize(key.substring(prefix.length));
+        } else {
+            return undefined;
         }
-        return prepareFieldValue(fieldValue, objectType.getFields()[descendantKey].type, descendantMutationType)
+    }
+
+    // recursive calls
+    return mapValues(input, (fieldValue, key) => {
+        let objFields = objectType.getFields();
+
+        if (objFields[key]) {
+            // input field for plain object fields
+            return prepareFieldValue(fieldValue, objFields[key].type, mutationType)
+        } else {
+            // must be a (gnerated) special input field
+            const possiblePrefixes: string[] = [
+                ADD_CHILD_ENTITIES_FIELD_PREFIX,
+                UPDATE_CHILD_ENTITIES_FIELD_PREFIX,
+                REMOVE_CHILD_ENTITIES_FIELD_PREFIX,
+                ...CALC_MUTATIONS_OPERATORS.map(op => op.prefix)];
+            for (const prefix of possiblePrefixes) {
+                let withoutPrefix = keyWithoutPrefix(key, prefix);
+                if(withoutPrefix && objFields[withoutPrefix]) {
+                    switch(prefix) {
+                        case ADD_CHILD_ENTITIES_FIELD_PREFIX: {
+                            // oh, adding child entities is create, not update!
+                            // btw, once create => always create!
+                            return prepareFieldValue(fieldValue, objFields[withoutPrefix].type, MutationType.CREATE)
+                        }
+                        case UPDATE_CHILD_ENTITIES_FIELD_PREFIX: {
+                            return prepareFieldValue(fieldValue, objFields[withoutPrefix].type, mutationType)
+                        }
+                        default: {
+                            // the remaining special input fields do not need further treatment.
+                            // e.g. REMOVE_CHILD_ENTITIES_FIELD_PREFIX, CALC_MUTATIONS_OPERATORS
+                            return fieldValue;
+                        }
+                    }
+                }
+            }
+            throw new Error(`Mutation input field named "${key}" does neither match to a plain object field, nor to a known special input field pattern.`);
+        }
     });
 }
 
@@ -458,9 +487,30 @@ function createUpdatePropertiesSpecification(obj: any, objectType: GraphQLObject
             // considered by createUpdateEntityQueryNode directly
         } else if (isWriteProtectedSystemField(field, objectType)) {
             // this field must not be updated (may exist in schema for other purposes like filtering for an entity)
-        } else if (field.name in obj) {
+        } else  {
             // scalars and value objects
-            properties.push(new PropertySpecification(field.name, new LiteralQueryNode(obj[field.name])));
+            let valueNode: QueryNode | undefined = undefined;
+            if (field.name in obj) {
+                valueNode = new LiteralQueryNode(obj[field.name]);
+            }
+
+            if(isCalcMutationField(field)) {
+                for (const operator of CALC_MUTATIONS_OPERATORS) {
+                    const inputCalcFieldName = operator.prefix + field.name;
+                    const binaryOperator: BinaryOperator = BinaryOperator[operator.name];
+                    if((inputCalcFieldName) in obj) {
+                        // TODO ArangoDB implicitly converts null to 0 during arithmetic operations. Is this ok?
+                        valueNode = new BinaryOperationQueryNode(
+                            valueNode || new FieldQueryNode(oldEntityNode, field),
+                            binaryOperator,
+                            new LiteralQueryNode(obj[inputCalcFieldName]))
+                    }
+                }
+            }
+
+            if(valueNode) {
+                properties.push(new PropertySpecification(field.name, valueNode));
+            }
         }
     }
 
