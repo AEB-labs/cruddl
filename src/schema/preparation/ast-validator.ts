@@ -18,6 +18,7 @@ import {KnownFieldDirectivesValidator} from "./ast-validation-modules/known-fiel
 import {KnownObjectTypeDirectivesValidator} from "./ast-validation-modules/known-object-type-directives-validator";
 import {ObjectTypeDirectiveCountValidator} from "./ast-validation-modules/object-type-directive-count-validator";
 import { CalcMutationsDirectiveValidator } from './ast-validation-modules/calc-mutations-directive-validator';
+import {DefaultValueValidator} from "./ast-validation-modules/default-value-validator";
 
 const postMergeValidators: ASTValidator[] = [
     new NoDuplicateTypesValidator(),
@@ -36,7 +37,8 @@ const postMergeValidators: ASTValidator[] = [
     new NoRolesOnValueObjectsValidator(),
     new KnownFieldDirectivesValidator(),
     new KnownObjectTypeDirectivesValidator(),
-    new CalcMutationsDirectiveValidator()
+    new CalcMutationsDirectiveValidator(),
+    new DefaultValueValidator()
 ];
 
 export interface ASTValidator {
