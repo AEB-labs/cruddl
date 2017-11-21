@@ -1,13 +1,12 @@
-import {
-    defaultFieldResolver, GraphQLError, GraphQLResolveInfo, GraphQLSchema, OperationDefinitionNode, print, ResponsePath
-} from 'graphql';
-import { DatabaseAdapter } from '../database/database-adapter';
-import { addOperationBasedResolvers } from '../graphql/operation-based-resolvers';
-import { distillOperation } from '../graphql/query-distiller';
-import { createQueryTree } from './query-tree-builder';
-import { addAliasBasedResolvers } from '../graphql/alias-based-resolvers';
-import { AuthorizationCheckResult, checkAuthorization } from './authorization-inspector';
-import { transformSchema } from 'graphql-transformer/dist';
+import {defaultFieldResolver, GraphQLError, GraphQLSchema, OperationDefinitionNode, print, ResponsePath} from 'graphql';
+import {DatabaseAdapter} from '../database/database-adapter';
+import {addOperationBasedResolvers} from '../graphql/operation-based-resolvers';
+import {distillOperation} from '../graphql/query-distiller';
+import {createQueryTree} from './query-tree-builder';
+import {addAliasBasedResolvers} from '../graphql/alias-based-resolvers';
+import {AuthorizationCheckResult, checkAuthorization} from './authorization-inspector';
+import {transformSchema} from 'graphql-transformer/dist';
+import {globalContext} from "../config/global";
 
 export function addQueryResolvers(schema: GraphQLSchema, databaseAdapter: DatabaseAdapter) {
     // this is needed because the query tree already does the alias handling and stores the values in the places where
@@ -38,25 +37,26 @@ export function addQueryResolvers(schema: GraphQLSchema, databaseAdapter: Databa
 
     schema = addOperationBasedResolvers(schema, async operationInfo => {
         try {
-            console.log(print(operationInfo.operation));
+            const logger = globalContext.loggerProvider.getLogger('Momo QueryResolver');
+            logger.debug(`Executing operation ${print(operationInfo.operation)}`);
             const operation = distillOperation(operationInfo);
-            console.log(operation.describe());
+            logger.debug(operation.describe());
 
             const requestRoles = getRequestRoles(operationInfo.context);
-            console.log(`Request roles: ${requestRoles.join(', ')}`);
+            logger.debug(`Request roles: ${requestRoles.join(', ')}`);
             const authorizationCheckResult = checkAuthorization(operation, requestRoles);
             if (authorizationCheckResult.hasErrors) {
-                console.log(`Authorization errors:\n${authorizationCheckResult.errors.join('\n')}`);
-                console.log(`Sanitized operation:\n${authorizationCheckResult.sanitizedOperation.describe()}`);
+                logger.warn(`Authorization errors:\n${authorizationCheckResult.errors.join('\n')}`);
+                logger.info(`Sanitized operation:\n${authorizationCheckResult.sanitizedOperation.describe()}`);
             } else {
-                console.log('Authorization ok.');
+                logger.debug('Authorization ok.');
             }
             authorizationCheckResultsByOperation.set(operationInfo.operation, authorizationCheckResult);
 
             const queryTree = createQueryTree(authorizationCheckResult.sanitizedOperation);
-            console.log(queryTree.describe());
+            logger.debug(queryTree.describe());
             const result = queryTree.properties.length ? await databaseAdapter.execute(queryTree) : {};
-            console.log(JSON.stringify(result, undefined, '  '));
+            logger.debug(JSON.stringify(result, undefined, '  '));
             return result;
         } catch (e) {
             console.error(e.stack);

@@ -7,6 +7,7 @@ import { validatePostMerge, ValidationResult } from './preparation/ast-validator
 import {implementScalarTypes} from './scalars/implement-scalar-types';
 import {SchemaConfig} from "../config/schema-config";
 import {cloneDeep} from "lodash";
+import {GlobalContext, globalContext} from "../config/global";
 
 /**
  * Validates a schema config and thus determines whether createSchema() would succeed
@@ -27,7 +28,12 @@ export function validateSchema(inputSchemaConfig: SchemaConfig): ValidationResul
  A schema definition is an array of definition parts, represented
  as a (sourced) SDL string or AST document.
   */
-export function createSchema(inputSchemaConfig: SchemaConfig): GraphQLSchema {
+export function createSchema(inputSchemaConfig: SchemaConfig, context?: GlobalContext): GraphQLSchema {
+
+    if (context) {
+        globalContext.registerContext(context);
+    }
+
     const schemaConfig = parseSchemaParts(inputSchemaConfig);
 
     const { schemaParts, ...rootContext } = schemaConfig;
@@ -39,7 +45,7 @@ export function createSchema(inputSchemaConfig: SchemaConfig): GraphQLSchema {
     if(validationResult.hasErrors()) {
         throw new Error('Invalid model:\n' + validationResult.messages.map(msg => msg.toString()).join('\n'))
     } else {
-        console.log('Thank you for your valid model. I will now do some magic with it.')
+        globalContext.loggerProvider.getLogger('Momo SchemaBuilder').info('Schema successfully created.')
     }
 
     executePostMergeTransformationPipeline(mergedSchema, {...rootContext});

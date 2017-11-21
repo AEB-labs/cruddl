@@ -72,6 +72,7 @@ import {isListType} from '../graphql/schema-utils';
 import {EdgeType, getEdgeType} from '../schema/edges';
 import uuid = require('uuid');
 import {flattenValueNode} from "../schema/directive-arg-flattener";
+import {globalContext} from "../config/global";
 
 /**
  * Creates a QueryNode for a field of the root mutation type
@@ -95,7 +96,7 @@ export function createMutationNamespaceNode(fieldRequest: FieldRequest, fieldReq
         return createMutationNamespaceFieldNode(fieldRequest, [...fieldRequestStack, fieldRequest])
     }
 
-    console.log(`unknown field: ${fieldRequest.fieldName}`);
+    globalContext.loggerProvider.getLogger('Momo Queries').warn(`unknown field: ${fieldRequest.fieldName}`);
     return new NullQueryNode();
 }
 

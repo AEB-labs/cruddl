@@ -7,6 +7,7 @@ import { flatMap, objectValues } from '../../utils/utils';
 import { isRelationField, isRootEntityType } from '../../schema/schema-utils';
 import { getEdgeType } from '../../schema/edges';
 import { getCollectionNameForEdge, getCollectionNameForRootEntity } from './arango-basics';
+import {globalContext} from "../../config/global";
 
 export interface ArangoDBConfig {
     readonly url: string;
@@ -17,7 +18,7 @@ export interface ArangoDBConfig {
 
 export class ArangoDBAdapter implements DatabaseAdapter {
     private db: Database;
-
+    private logger = globalContext.loggerProvider.getLogger('Momo ArangoDBAdapter');
     constructor(config: ArangoDBConfig) {
         this.db = new Database({
             url: config.url,
@@ -32,7 +33,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
 
     async execute(queryTree: QueryNode) {
         const aql = getAQLForQuery(queryTree);
-        console.log(aql.toColoredString());
+        this.logger.debug(aql.toColoredString());
         const { code, boundValues } = aql.getCode();
         const cursor = await this.db.query(code, boundValues);
         return await cursor.next();
@@ -52,10 +53,10 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         const requiredCollections = rootEntities.map(entity => getCollectionNameForRootEntity(entity));
         const existingCollections = colls.map(coll => (<any>coll).name); // typing for name missing
         const collectionsToCreate = requiredCollections.filter(c => existingCollections.indexOf(c) < 0);
-        console.log(`Creating collections ${collectionsToCreate.join(', ')}...`);
+        this.logger.info(`Creating collections ${collectionsToCreate.join(', ')}...`);
         const createTasks = collectionsToCreate.map(col => this.db.collection(col.toString()).create({waitForSync: false}));
         await Promise.all(createTasks);
-        console.log(`Done`);
+        this.logger.info(`Done`);
 
         // TODO create indices
 
@@ -63,9 +64,9 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         const requiredEdgeCollections = Array.from(new Set(edgeTypes.map(edge => getCollectionNameForEdge(edge))));
         const existingEdgeCollections = colls.map(coll => (<any>coll).name); // typing for name missing
         const edgeCollectionsToCreate = requiredEdgeCollections.filter(c => existingEdgeCollections.indexOf(c) < 0);
-        console.log(`Creating edge collections ${edgeCollectionsToCreate.join(', ')}...`);
+        this.logger.info(`Creating edge collections ${edgeCollectionsToCreate.join(', ')}...`);
         const createEdgeTasks = edgeCollectionsToCreate.map(col => this.db.edgeCollection(col.toString()).create({waitForSync: false}));
         await Promise.all(createEdgeTasks);
-        console.log(`Done`);
+        this.logger.info(`Done`);
     }
 }

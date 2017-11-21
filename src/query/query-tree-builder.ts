@@ -3,6 +3,7 @@ import { LiteralQueryNode, NullQueryNode, ObjectQueryNode, PropertySpecification
 import { MUTATION_TYPE, QUERY_TYPE } from '../schema/schema-defaults';
 import { createQueryNamespaceNode } from './queries';
 import { createMutationNamespaceNode } from './mutations';
+import {globalContext} from '../config/global';
 
 /**
  * Creates a QueryTree that is used to instruct the DataBase how to perform a GraphQL query
@@ -21,7 +22,7 @@ function createQueryNodeForField(fieldRequest: FieldRequest): QueryNode {
         case MUTATION_TYPE:
             return createMutationNamespaceNode(fieldRequest, []);
         default:
-            console.log(`unknown root field: ${fieldRequest.fieldName}`);
+            globalContext.loggerProvider.getLogger('Momo QTBuilder').warn(`unknown root field: ${fieldRequest.fieldName}`);
             return new NullQueryNode();
     }
 }

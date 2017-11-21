@@ -20,6 +20,7 @@ import { getEdgeType } from '../schema/edges';
 import { createListMetaNode } from './list-meta';
 import { extractVariableAssignments, extractVariableAssignmentsInOrderSpecification } from './query-tree-utils';
 import {createFieldNode, createSelectionChain} from "../graphql/language-utils";
+import {globalContext} from "../config/global";
 
 /**
  * Creates a QueryNode for a field of the root query type
@@ -39,7 +40,7 @@ export function createQueryNamespaceNode(fieldRequest: FieldRequest, fieldReques
         return createSingleEntityFieldNode(fieldRequest, [...fieldRequestStack, fieldRequest]);
     }
 
-    console.log(`unknown field: ${fieldRequest.fieldName}`);
+    globalContext.loggerProvider.getLogger('Momo Queries').warn(`unknown field: ${fieldRequest.fieldName}`);
     return new NullQueryNode();
 }
 

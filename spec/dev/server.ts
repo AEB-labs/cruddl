@@ -1,9 +1,10 @@
-import {buildASTSchema, parse, Source} from 'graphql';
+import {__EnumValue, buildASTSchema, parse, Source} from 'graphql';
 import * as fs from 'fs';
 import { addQueryResolvers, ArangoDBAdapter } from '../..';
 import { GraphQLServer } from './graphql-server';
 import {createSchema} from "../../src/schema/schema-builder";
 import {SchemaConfig, SchemaPartConfig} from "../../src/config/schema-config";
+import {globalContext} from "../../src/config/global";
 
 const port = 3000;
 const databaseName = 'momo';
@@ -24,10 +25,10 @@ export async function start() {
     const schema = createSchema(schemaConfig);
 
     const executableSchema = addQueryResolvers(schema, db);
-
-    console.log('Making sure schema is up to date...');
+    const logger = globalContext.loggerProvider.getLogger('Momo Server');
+    logger.info('Making sure schema is up to date...');
     await db.updateSchema(executableSchema);
-    console.log('Schema is up to date');
+    logger.info('Schema is up to date');
 
     new GraphQLServer({
         port, schema: executableSchema
