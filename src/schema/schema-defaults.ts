@@ -22,6 +22,7 @@ export const VALUE_OBJECT_DIRECTIVE = 'valueObject';
 
 export const RELATION_DIRECTIVE = 'relation';
 export const REFERENCE_DIRECTIVE = 'reference';
+export const DEFAULT_VALUE_DIRECTIVE = 'defaultValue';
 
 export const QUERY_TYPE = 'Query';
 export const MUTATION_TYPE = 'Mutation';
@@ -61,6 +62,7 @@ export const ORDER_BY_ARG = 'orderBy';
 export const CURSOR_FIELD = '_cursor';
 export const AFTER_ARG = 'after';
 export const FIRST_ARG = 'first';
+export const VALUE_ARG = 'value';
 export const KEY_FIELD_DIRECTIVE = 'key';
 
 export const CALC_MUTATIONS_DIRECTIVE = 'calcMutations';
@@ -92,7 +94,7 @@ export const NAMESPACE_NAME_ARG = 'name';
 export const NAMESPACE_SEPARATOR = '.';
 export const NAMESPACE_FIELD_PATH_DIRECTIVE = 'namespaceFieldPath';
 
-export const ALL_FIELD_DIRECTIVES = [KEY_FIELD_DIRECTIVE, RELATION_DIRECTIVE, REFERENCE_DIRECTIVE, ROLES_DIRECTIVE, CALC_MUTATIONS_DIRECTIVE];
+export const ALL_FIELD_DIRECTIVES = [KEY_FIELD_DIRECTIVE, RELATION_DIRECTIVE, REFERENCE_DIRECTIVE, ROLES_DIRECTIVE, CALC_MUTATIONS_DIRECTIVE, DEFAULT_VALUE_DIRECTIVE];
 export const ALL_OBJECT_TYPE_DIRECTIVES = [
     ROOT_ENTITY_DIRECTIVE,
     CHILD_ENTITY_DIRECTIVE,

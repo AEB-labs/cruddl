@@ -1,5 +1,5 @@
 import {FieldRequest} from '../graphql/query-distiller';
-import {FieldDefinitionNode, getNamedType, GraphQLObjectType, GraphQLType} from 'graphql';
+import {FieldDefinitionNode, getNamedType, GraphQLField, GraphQLObjectType, GraphQLType} from 'graphql';
 import {
     AddEdgesQueryNode,
     BasicType,
@@ -35,7 +35,7 @@ import {
 import {
     ADD_CHILD_ENTITIES_FIELD_PREFIX,
     CALC_MUTATIONS_OPERATORS,
-    CREATE_ENTITY_FIELD_PREFIX,
+    CREATE_ENTITY_FIELD_PREFIX, DEFAULT_VALUE_DIRECTIVE,
     DELETE_ENTITY_FIELD_PREFIX,
     ENTITY_CREATED_AT,
     ENTITY_UPDATED_AT,
@@ -46,10 +46,11 @@ import {
     NAMESPACE_FIELD_PATH_DIRECTIVE,
     REMOVE_CHILD_ENTITIES_FIELD_PREFIX,
     UPDATE_CHILD_ENTITIES_FIELD_PREFIX,
-    UPDATE_ENTITY_FIELD_PREFIX
+    UPDATE_ENTITY_FIELD_PREFIX, VALUE_ARG
 } from '../schema/schema-defaults';
 import {createEntityObjectNode} from './queries';
 import {
+    findDirectiveWithName, getNodeByName,
     hasDirectiveWithName,
     isCalcMutationField,
     isChildEntityType,
@@ -70,6 +71,7 @@ import {
 import {isListType} from '../graphql/schema-utils';
 import {EdgeType, getEdgeType} from '../schema/edges';
 import uuid = require('uuid');
+import {flattenValueNode} from "../schema/directive-arg-flattener";
 
 /**
  * Creates a QueryNode for a field of the root mutation type
@@ -130,7 +132,32 @@ function createCreateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestSta
 }
 
 function prepareMutationInput(input: PlainObject, objectType: GraphQLObjectType, mutationType: MutationType): PlainObject {
+
     let preparedInput: PlainObject = { ...input };
+
+    // Apply default values from model
+    // This is treated as user input, so the default
+    // values are applied as the very first step.
+    if (mutationType === MutationType.CREATE) {
+        // add default values
+        const defaultValues: any = {};
+        for (const fieldKey in objectType.getFields()) {
+            if (!getObjectTypeFieldOfInputKey(objectType, fieldKey)) {
+                // there is no such field
+                continue;
+            }
+            const defaultValueDirective = findDirectiveWithName(objectType.getFields()[fieldKey].astNode as FieldDefinitionNode, DEFAULT_VALUE_DIRECTIVE);
+            if (defaultValueDirective == undefined || !defaultValueDirective.arguments || !getNodeByName(defaultValueDirective.arguments, VALUE_ARG)) {
+                continue;
+            }
+            defaultValues[fieldKey] = flattenValueNode(getNodeByName(defaultValueDirective.arguments, VALUE_ARG)!.value);
+        }
+        preparedInput = {
+            ...defaultValues,
+            ...input
+        }
+    }
+
     if (isChildEntityType(objectType)) {
         preparedInput[ENTITY_UPDATED_AT] = getCurrentISODate();
         if (mutationType === MutationType.CREATE) {
@@ -164,26 +191,32 @@ function prepareMutationInput(input: PlainObject, objectType: GraphQLObjectType,
                 // don't count id fields, they are always there.
                 continue;
             }
-            if (objectType.getFields()[key]) {
-                if (isRelationField(objectType.getFields()[key])) {
-                    continue;
-                }
-            } else {
-                if (key.startsWith(ADD_CHILD_ENTITIES_FIELD_PREFIX)) {
-                    const descendantKey = decapitalize(key.substring(ADD_CHILD_ENTITIES_FIELD_PREFIX.length, key.length));
-                    if (objectType.getFields()[descendantKey] && isRelationField(objectType.getFields()[descendantKey])) {
-                        continue;
-                    }
-                } else if (key.startsWith(REMOVE_CHILD_ENTITIES_FIELD_PREFIX)) {
-                    const descendantKey = decapitalize(key.substring(REMOVE_CHILD_ENTITIES_FIELD_PREFIX.length, key.length));
-                    if (objectType.getFields()[descendantKey] && isRelationField(objectType.getFields()[descendantKey])) {
-                        continue;
-                    }
-                }
+            const field = getObjectTypeFieldOfInputKey(objectType, key);
+            if (field && isRelationField(field)) {
+                continue;
             }
             keysLeft.add(key);
         }
         return keysLeft.size;
+    }
+
+    function getObjectTypeFieldOfInputKey(objectType: GraphQLObjectType, key: string) {
+        if (objectType.getFields()[key]) {
+            return objectType.getFields()[key]
+        } else {
+            if (key.startsWith(ADD_CHILD_ENTITIES_FIELD_PREFIX)) {
+                const descendantKey = decapitalize(key.substring(ADD_CHILD_ENTITIES_FIELD_PREFIX.length, key.length));
+                if (objectType.getFields()[descendantKey]) {
+                    return objectType.getFields()[descendantKey];
+                }
+            } else if (key.startsWith(REMOVE_CHILD_ENTITIES_FIELD_PREFIX)) {
+                const descendantKey = decapitalize(key.substring(REMOVE_CHILD_ENTITIES_FIELD_PREFIX.length, key.length));
+                if (objectType.getFields()[descendantKey]) {
+                    return objectType.getFields()[descendantKey];
+                }
+            }
+            return undefined;
+        }
     }
 
     function prepareFieldValue(value: AnyValue, fieldType: GraphQLType, mutationType: MutationType): AnyValue {

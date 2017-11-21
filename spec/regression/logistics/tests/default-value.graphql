@@ -1,0 +1,41 @@
+query checkCreatedByInit {
+    allDeliveries(orderBy: deliveryNumber_ASC) {
+        deliveryNumber
+        destination {
+            street
+            city
+            zipCode
+            country {
+                isoCode
+            }
+        }
+        defaultValueString
+        defaultValueString2
+        defaultValueInt
+        defaultValueTrue
+        defaultValueFalse
+        defaultValueFloat
+        defaultValueEnum
+    }
+}
+
+mutation createNewWithSomeOtherValuesOverwritten {
+    createDelivery(input: { deliveryNumber: "42", defaultValueString: "distinct", defaultValueFloat: 1.62 }) {
+        deliveryNumber
+        destination {
+            street
+            city
+            zipCode
+            country {
+                isoCode
+            }
+        }
+        defaultValueString
+        defaultValueString2
+        defaultValueInt
+        defaultValueTrue
+        defaultValueFalse
+        defaultValueFloat
+        defaultValueEnum
+    }
+}

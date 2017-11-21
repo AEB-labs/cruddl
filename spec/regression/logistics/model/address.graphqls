@@ -3,4 +3,5 @@ type Address @valueObject {
     city: String
     zipCode: String
     country: Country @reference
+    bla: String @defaultValue(value: "yehaw")
 }
