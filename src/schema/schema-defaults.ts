@@ -12,6 +12,8 @@ export const defaultModelDefTypes = `
         }
     `;
 
+export const WILDCARD_CHARACTER = '*';
+
 export const ROOT_ENTITY_DIRECTIVE = 'rootEntity';
 export const CHILD_ENTITY_DIRECTIVE = 'childEntity';
 export const ENTITY_EXTENSION_DIRECTIVE = 'entityExtension';

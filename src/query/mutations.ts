@@ -46,7 +46,7 @@ import {
     NAMESPACE_FIELD_PATH_DIRECTIVE,
     REMOVE_CHILD_ENTITIES_FIELD_PREFIX,
     UPDATE_CHILD_ENTITIES_FIELD_PREFIX,
-    UPDATE_ENTITY_FIELD_PREFIX, VALUE_ARG
+    UPDATE_ENTITY_FIELD_PREFIX, VALUE_ARG, WILDCARD_CHARACTER
 } from '../schema/schema-defaults';
 import {createEntityObjectNode} from './queries';
 import {
@@ -331,8 +331,8 @@ function getRelationAddRemoveStatements(obj: PlainObject, parentType: GraphQLObj
         const sourceIDNode = new RootEntityIDQueryNode(sourceEntityNode);
         if (isListType(field.type)) {
             // to-n relation
-            const idsToBeAdded = (isAddRemove ? obj[getAddRelationFieldName(field.name)] : obj[field.name]) as {}[] | undefined || [];
-            const idsToBeRemoved = isAddRemove ? (obj[getRemoveRelationFieldName(field.name)] || []) as {}[] : [];
+            const idsToBeAdded = (isAddRemove ? obj[getAddRelationFieldName(field.name)] : obj[field.name]) as string[] | undefined || [];
+            const idsToBeRemoved = isAddRemove ? (obj[getRemoveRelationFieldName(field.name)] || []) as string[] : [];
             if (idsToBeAdded.length && idsToBeRemoved.length) {
                 throw new Error(`Currently, it is not possible to use add and remove on the same relation in one mutation`);
             }
@@ -345,14 +345,20 @@ function getRelationAddRemoveStatements(obj: PlainObject, parentType: GraphQLObj
                     sourceType: parentType
                 }));
                 statements.push(new AddEdgesQueryNode(edgeType, edgeNodes));
-            }
+            } else if (idsToBeRemoved.length) {
+                let targetIds;
+                if(idsToBeRemoved.includes(WILDCARD_CHARACTER)) {
+                    // target IDs undefined => no target ID filter => remove all edges from source ignoring target
+                    targetIds = undefined;
+                }else {
+                    targetIds = idsToBeRemoved.map(id => new LiteralQueryNode(id));
+                }
 
-            if (idsToBeRemoved.length) {
                 statements.push(new RemoveEdgesQueryNode(edgeType, getEdgeFilter({
                     edgeType,
                     sourceType: parentType,
                     sourceIDNodes: [sourceIDNode],
-                    targetIDNodes: idsToBeRemoved.map(id => new LiteralQueryNode(id))
+                    targetIDNodes: targetIds
                 })));
             }
         } else if (field.name in obj) {
