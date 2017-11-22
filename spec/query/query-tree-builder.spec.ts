@@ -42,6 +42,6 @@ describe('query-tree-builder', () => {
         expect(objectNode.properties[1].propertyName).toBe('name');
         expect(objectNode.properties[1].valueNode).toEqual(any(FieldQueryNode));
         expect((objectNode.properties[1].valueNode as FieldQueryNode).field.name).toBe('name');
-        globalContext.loggerProvider.getLogger('Momo Server').debug(queryTree.describe());
+        console.log(queryTree.describe());
     });
 });
