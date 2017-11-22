@@ -27,6 +27,7 @@ export function validateSchema(inputSchemaConfig: SchemaConfig): ValidationResul
  Create an executable schema for a given schema definition.
  A schema definition is an array of definition parts, represented
  as a (sourced) SDL string or AST document.
+ Use the optional context to inject your logging framework.
   */
 export function createSchema(inputSchemaConfig: SchemaConfig, context?: GlobalContext): GraphQLSchema {
 

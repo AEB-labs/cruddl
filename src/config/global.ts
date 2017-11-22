@@ -4,6 +4,10 @@ export interface GlobalContext {
     readonly loggerProvider?: LoggerProvider;
 }
 
+/**
+ * Implement a class implementing this interface to use your own logger.
+ * As this is also implemented by log4js, you can directly inject your log4js setup.
+ */
 export interface LoggerProvider {
     getLogger(categoryName?: string): Logger;
 }
