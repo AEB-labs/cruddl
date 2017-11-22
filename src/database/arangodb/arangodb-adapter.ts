@@ -18,7 +18,7 @@ export interface ArangoDBConfig {
 
 export class ArangoDBAdapter implements DatabaseAdapter {
     private db: Database;
-    private logger = globalContext.loggerProvider.getLogger('Momo ArangoDBAdapter');
+    private logger = globalContext.loggerProvider.getLogger('ArangoDBAdapter');
     constructor(config: ArangoDBConfig) {
         this.db = new Database({
             url: config.url,

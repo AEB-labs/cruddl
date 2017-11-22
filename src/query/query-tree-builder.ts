@@ -22,7 +22,7 @@ function createQueryNodeForField(fieldRequest: FieldRequest): QueryNode {
         case MUTATION_TYPE:
             return createMutationNamespaceNode(fieldRequest, []);
         default:
-            globalContext.loggerProvider.getLogger('Momo QTBuilder').warn(`unknown root field: ${fieldRequest.fieldName}`);
+            globalContext.loggerProvider.getLogger('query-tree-builder').warn(`unknown root field: ${fieldRequest.fieldName}`);
             return new NullQueryNode();
     }
 }

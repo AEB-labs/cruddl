@@ -25,7 +25,7 @@ export async function start() {
     const schema = createSchema(schemaConfig);
 
     const executableSchema = addQueryResolvers(schema, db);
-    const logger = globalContext.loggerProvider.getLogger('Momo Server');
+    const logger = globalContext.loggerProvider.getLogger('server');
     logger.info('Making sure schema is up to date...');
     await db.updateSchema(executableSchema);
     logger.info('Schema is up to date');

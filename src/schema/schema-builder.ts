@@ -45,7 +45,7 @@ export function createSchema(inputSchemaConfig: SchemaConfig, context?: GlobalCo
     if(validationResult.hasErrors()) {
         throw new Error('Invalid model:\n' + validationResult.messages.map(msg => msg.toString()).join('\n'))
     } else {
-        globalContext.loggerProvider.getLogger('Momo SchemaBuilder').info('Schema successfully created.')
+        globalContext.loggerProvider.getLogger('schema-builder').info('Schema successfully created.')
     }
 
     executePostMergeTransformationPipeline(mergedSchema, {...rootContext});

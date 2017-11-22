@@ -40,7 +40,7 @@ export function createQueryNamespaceNode(fieldRequest: FieldRequest, fieldReques
         return createSingleEntityFieldNode(fieldRequest, [...fieldRequestStack, fieldRequest]);
     }
 
-    globalContext.loggerProvider.getLogger('Momo Queries').warn(`unknown field: ${fieldRequest.fieldName}`);
+    globalContext.loggerProvider.getLogger('queries').warn(`unknown field: ${fieldRequest.fieldName}`);
     return new NullQueryNode();
 }
 

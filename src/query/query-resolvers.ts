@@ -37,7 +37,7 @@ export function addQueryResolvers(schema: GraphQLSchema, databaseAdapter: Databa
 
     schema = addOperationBasedResolvers(schema, async operationInfo => {
         try {
-            const logger = globalContext.loggerProvider.getLogger('Momo QueryResolver');
+            const logger = globalContext.loggerProvider.getLogger('query-resolvers');
             logger.debug(`Executing operation ${print(operationInfo.operation)}`);
             const operation = distillOperation(operationInfo);
             logger.debug(operation.describe());

@@ -7,6 +7,8 @@ import {Server} from "http";
 import {GraphQLSchema} from "graphql";
 import {globalContext} from "../../src/config/global";
 
+const logger = globalContext.loggerProvider.getLogger('GraphQLServer')
+
 export interface GraphQLServerConfig {
     readonly port: number;
     readonly schema: GraphQLSchema;
@@ -24,14 +26,14 @@ export class GraphQLServer {
         app.use('/graphql', bodyParser.json(), graphqlExpress(() => this.getGraphQLOptions()));
         app.use('/graphiql', graphiqlExpress({endpointURL: '/graphql'}));
         this.server = app.listen(config.port, () => {
-            globalContext.loggerProvider.getLogger('Momo Server').info(`GraphQL server started on http://localhost:${config.port}.`);
+            logger.info(`GraphQL server started on http://localhost:${config.port}.`);
         });
     }
 
     public stop() {
         if (this.server) {
             this.server.close();
-            globalContext.loggerProvider.getLogger('Momo Server').info('GraphQL server stopped.');
+            logger.info('GraphQL server stopped.');
         }
     }
 

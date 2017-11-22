@@ -96,7 +96,7 @@ export function createMutationNamespaceNode(fieldRequest: FieldRequest, fieldReq
         return createMutationNamespaceFieldNode(fieldRequest, [...fieldRequestStack, fieldRequest])
     }
 
-    globalContext.loggerProvider.getLogger('Momo Queries').warn(`unknown field: ${fieldRequest.fieldName}`);
+    globalContext.loggerProvider.getLogger('mutations').warn(`unknown field: ${fieldRequest.fieldName}`);
     return new NullQueryNode();
 }
 
