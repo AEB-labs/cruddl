@@ -47,6 +47,9 @@ export const DIRECTIVES = gql`
         # A list of operators. For each operator a update calculation mutation will be generated
         operators: [CalcMutationsOperator!])
     on FIELD_DEFINITION
+
+    # Specifies the defaultValue of a field
+    directive @defaultValue(value: JSON!) on FIELD_DEFINITION
 `;
 
 export const CORE_SCALARS = gql`
