@@ -44,7 +44,7 @@ export class GraphQLServer {
         }
         return {
             schema,
-            context: {} // unique token
+            context: { authRoles: ["allusers" ]} // unique token
         };
     }
 }
