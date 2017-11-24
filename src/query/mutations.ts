@@ -445,7 +445,7 @@ function createUpdatePropertiesSpecification(obj: any, objectType: GraphQLObject
             // call recursively and use update semantic (leave fields that are not specified as-is
             const sourceNode = new FieldQueryNode(oldEntityNode, field);
             const valueNode = new MergeObjectsQueryNode([
-                sourceNode,
+                createSafeObjectQueryNode(sourceNode),
                 new ObjectQueryNode(createUpdatePropertiesSpecification(obj[field.name], getNamedType(field.type) as GraphQLObjectType, sourceNode))
             ]);
             properties.push(new PropertySpecification(field.name, valueNode));
@@ -503,7 +503,7 @@ function createUpdatePropertiesSpecification(obj: any, objectType: GraphQLObject
                 for (const value of updatedValues) {
                     const filterNode = new BinaryOperationQueryNode(childIDQueryNode, BinaryOperator.EQUAL, new LiteralQueryNode(value[ID_FIELD]));
                     const updateNode = new MergeObjectsQueryNode([
-                        childEntityVarNode,
+                        createSafeObjectQueryNode(childEntityVarNode),
                         new ObjectQueryNode(createUpdatePropertiesSpecification(value, childEntityType, childEntityVarNode))
                     ]);
                     updateMapNode = new ConditionalQueryNode(filterNode, updateNode, updateMapNode);
@@ -590,3 +590,12 @@ function createDeleteEntityQueryNode(fieldRequest: FieldRequest, fieldRequestSta
         variableNode: deletedEntityVarNode
     });
 }
+
+export function createSafeObjectQueryNode(objectNode: QueryNode) {
+    return new ConditionalQueryNode(
+        new TypeCheckQueryNode(objectNode, BasicType.OBJECT),
+        objectNode,
+        new ObjectQueryNode([])
+    );
+}
+
