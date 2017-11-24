@@ -1,4 +1,4 @@
-import {ObjectTypeDefinitionNode} from "graphql";
+import {ObjectTypeDefinitionNode, TypeDefinitionNode} from "graphql";
 import * as pluralize from "pluralize";
 import {
     ADD_CHILD_ENTITIES_FIELD_PREFIX,
@@ -6,16 +6,36 @@ import {
     CHILD_ENTITY_DIRECTIVE,
     CREATE_ENTITY_FIELD_PREFIX,
     DELETE_ENTITY_FIELD_PREFIX,
+    INPUT_FIELD_CONTAINS,
+    INPUT_FIELD_ENDS_WITH,
+    INPUT_FIELD_EVERY,
+    INPUT_FIELD_GT,
+    INPUT_FIELD_GTE,
+    INPUT_FIELD_LT,
+    INPUT_FIELD_LTE,
+    INPUT_FIELD_NONE,
+    INPUT_FIELD_NOT,
+    INPUT_FIELD_NOT_CONTAINS,
+    INPUT_FIELD_NOT_ENDS_WITH,
+    INPUT_FIELD_NOT_IN,
+    INPUT_FIELD_NOT_STARTS_WITH,
+    INPUT_FIELD_SEPARATOR,
+    INPUT_FIELD_SOME,
+    INPUT_FIELD_STARTS_WITH,
     ORDER_BY_ASC_SUFFIX,
-    ORDER_BY_DESC_SUFFIX, REMOVE_CHILD_ENTITIES_FIELD_PREFIX,
-    ROOT_ENTITY_DIRECTIVE, UPDATE_CHILD_ENTITIES_FIELD_PREFIX,
+    ORDER_BY_DESC_SUFFIX,
+    REMOVE_CHILD_ENTITIES_FIELD_PREFIX,
+    ROOT_ENTITY_DIRECTIVE,
+    UPDATE_CHILD_ENTITIES_FIELD_PREFIX,
     UPDATE_ENTITY_FIELD_PREFIX
 } from '../schema/schema-defaults';
 import {capitalize} from "../utils/utils";
 import {hasDirectiveWithName} from "../schema/schema-utils";
 
-
-export function getFilterTypeName(entityDefinition: ObjectTypeDefinitionNode) {
+export function getFilterTypeName(entityDefinition: TypeDefinitionNode|string) {
+    if (typeof(entityDefinition) === 'string') {
+        return entityDefinition + 'Filter';
+    }
     return entityDefinition.name.value + 'Filter';
 }
 
@@ -71,55 +91,67 @@ export function getOrderByEnumTypeName(entityDefinition: ObjectTypeDefinitionNod
 // identifier cross reference: query/filtering.ts
 
 export function notField(name: string) {
-    return name + '_not';
+    return name + INPUT_FIELD_SEPARATOR + INPUT_FIELD_NOT;
 }
 
 export function inField(name: string) {
-    return name + '_in';
+    return name + INPUT_FIELD_SEPARATOR + INPUT_FIELD_NOT;
 }
 
 export function notInField(name: string) {
-    return name + '_not_in';
+    return name + INPUT_FIELD_SEPARATOR + INPUT_FIELD_NOT_IN;
 }
 
 export function ltField(name: string) {
-    return name + '_lt';
+    return name + INPUT_FIELD_SEPARATOR + INPUT_FIELD_LT;
 }
 
 export function lteField(name: string) {
-    return name + '_lte';
+    return name + INPUT_FIELD_SEPARATOR + INPUT_FIELD_LTE;
 }
 
 export function gtField(name: string) {
-    return name + '_gt';
+    return name + INPUT_FIELD_SEPARATOR + INPUT_FIELD_GT;
 }
 
 export function gteField(name: string) {
-    return name + '_gte';
+    return name + INPUT_FIELD_SEPARATOR + INPUT_FIELD_GTE;
 }
 
 export function containsField(name: string) {
-    return name + '_contains';
+    return name + INPUT_FIELD_SEPARATOR + INPUT_FIELD_CONTAINS;
 }
 
 export function notContainsField(name: string) {
-    return name + '_not_contains';
+    return name + INPUT_FIELD_SEPARATOR + INPUT_FIELD_NOT_CONTAINS;
 }
 
-export function starts_with_field(name: string) {
-    return name + '_starts_with';
+export function startsWithField(name: string) {
+    return name + INPUT_FIELD_SEPARATOR + INPUT_FIELD_STARTS_WITH;
 }
 
-export function not_starts_with_field(name: string) {
-    return name + '_not_starts_with';
+export function notStartsWithField(name: string) {
+    return name + INPUT_FIELD_SEPARATOR + INPUT_FIELD_NOT_STARTS_WITH;
 }
 
 export function endsWithField(name: string) {
-    return name + '_ends_with';
+    return name + INPUT_FIELD_SEPARATOR + INPUT_FIELD_ENDS_WITH;
 }
 
 export function notEndsWithField(name: string) {
-    return name + '_not_ends_with';
+    return name + INPUT_FIELD_SEPARATOR + INPUT_FIELD_NOT_ENDS_WITH;
+}
+
+export function someField(name: string) {
+    return name + INPUT_FIELD_SEPARATOR + INPUT_FIELD_SOME;
+}
+
+export function everyField(name: string) {
+    return name + INPUT_FIELD_SEPARATOR + INPUT_FIELD_EVERY;
+}
+
+export function noneField(name: string) {
+    return name + INPUT_FIELD_SEPARATOR + INPUT_FIELD_NONE;
 }
 
 export function allEntitiesQueryBy(entityName: string) {

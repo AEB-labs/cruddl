@@ -1,13 +1,22 @@
-import { getNamedType, GraphQLObjectType } from 'graphql';
+import {FieldNode, getNamedType, GraphQLObjectType} from 'graphql';
 import {
-    BasicType, BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, FieldQueryNode, RootEntityIDQueryNode,
+    BasicType,
+    BinaryOperationQueryNode,
+    BinaryOperator,
+    ConstBoolQueryNode, CountQueryNode, FieldQueryNode, FollowEdgeQueryNode, ListQueryNode,
     LiteralQueryNode,
-    QueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator
+    QueryNode, TransformListQueryNode,
+    TypeCheckQueryNode,
+    UnaryOperationQueryNode,
+    UnaryOperator, VariableQueryNode
 } from './definition';
-import { isArray } from 'util';
-import { ARGUMENT_AND, ARGUMENT_OR, ID_FIELD } from '../schema/schema-defaults';
-import { isRelationField, isRootEntityType } from '../schema/schema-utils';
-import { createNonListFieldValueNode, createScalarFieldValueNode } from './fields';
+import {isArray, isUndefined} from 'util';
+import {ARGUMENT_AND, ARGUMENT_OR, FILTER_ARG} from '../schema/schema-defaults';
+import {createNonListFieldValueNode, createScalarFieldValueNode} from './fields';
+import {decapitalize, invariant} from "../utils/utils";
+import {isReferenceField, isRelationField} from "../schema/schema-utils";
+import {getEdgeType} from "../schema/edges";
+import {createSafeListQueryNode} from "./queries";
 
 export function createFilterNode(filterArg: any, objectType: GraphQLObjectType, contextNode: QueryNode): QueryNode {
     if (!filterArg || !Object.keys(filterArg).length) {
@@ -46,6 +55,35 @@ function getFilterClauseNode(key: string, value: any, contextNode: QueryNode, ob
                 .map(itemValue => createFilterNode(itemValue, objectType, contextNode))
                 .reduce((prev, current) => new BinaryOperationQueryNode(prev, BinaryOperator.OR, current));
     }
+
+    // check for _some, _every, _none filters
+    const quantifierData = captureListQuantifiers(key);
+    if (quantifierData) {
+        let { fieldKey, quantifier } = quantifierData;
+        const field = objectType.getFields()[fieldKey];
+        invariant(!field, 'Expected field to be defined');
+        const rawFieldType= getNamedType(field.type);
+        // get source
+        let quantifiedList: QueryNode;
+        if (isRelationField(field)) {
+            const edgeType = getEdgeType(objectType, field);
+            quantifiedList = new FollowEdgeQueryNode(edgeType, contextNode);
+        } else {
+            invariant(isReferenceField(field), 'Lists of references are not supported, yet');
+            quantifiedList = createSafeListQueryNode(new FieldQueryNode(contextNode, field));
+        }
+        if (quantifier === 'every') {
+            // every(P(x)) === none(!P(x))
+            // so just flip it
+            quantifier = 'none';
+            value = { not: value }
+        }
+        const binaryOp = quantifier === 'some' ? BinaryOperator.GREATER_THAN : BinaryOperator.EQUAL;
+        const itemVarNode = new VariableQueryNode(decapitalize(rawFieldType.name));
+        quantifiedList = new TransformListQueryNode({listNode: quantifiedList, filterNode: createFilterNode(value, rawFieldType as GraphQLObjectType, itemVarNode), itemVariable: itemVarNode});
+        return new BinaryOperationQueryNode(new CountQueryNode(quantifiedList), binaryOp, new LiteralQueryNode(0));
+    }
+
 
     // check for filters in embedded objects
     const field = objectType.getFields()[key];
@@ -101,4 +139,16 @@ function getFilterClauseNode(key: string, value: any, contextNode: QueryNode, ob
         }
     }
     throw new Error(`Invalid filter field: ${key}`);
+
+}
+
+function captureListQuantifiers(key: string) {
+    const data = key.match(/^(.+)_(some|every|none)$/);
+    if (data == undefined) {
+        return undefined;
+    }
+    return {
+        fieldKey: data[1],
+        quantifier: data[2]
+    }
 }

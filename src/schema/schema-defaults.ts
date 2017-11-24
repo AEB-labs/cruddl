@@ -39,7 +39,6 @@ export const UPDATE_CHILD_ENTITIES_FIELD_PREFIX = 'update';
 export const REMOVE_CHILD_ENTITIES_FIELD_PREFIX = 'remove';
 
 export const ID_FIELD = 'id';
-export const ID_TYPE = 'ID';
 
 export const ENTITY_CREATED_AT = 'createdAt';
 export const ENTITY_UPDATED_AT = 'updatedAt';
@@ -66,6 +65,25 @@ export const AFTER_ARG = 'after';
 export const FIRST_ARG = 'first';
 export const VALUE_ARG = 'value';
 export const KEY_FIELD_DIRECTIVE = 'key';
+
+export const INPUT_FIELD_SEPARATOR = '_';
+export const INPUT_FIELD_EQUAL = 'equal';
+export const INPUT_FIELD_NOT = 'not';
+export const INPUT_FIELD_IN = 'in';
+export const INPUT_FIELD_NOT_IN = 'not_in';
+export const INPUT_FIELD_LT = 'lt';
+export const INPUT_FIELD_LTE = 'lte';
+export const INPUT_FIELD_GT = 'gt';
+export const INPUT_FIELD_GTE = 'gte';
+export const INPUT_FIELD_CONTAINS = 'contains';
+export const INPUT_FIELD_NOT_CONTAINS = 'not_contains';
+export const INPUT_FIELD_STARTS_WITH = 'starts_with';
+export const INPUT_FIELD_NOT_STARTS_WITH = 'not_starts_with';
+export const INPUT_FIELD_ENDS_WITH = 'ends_with';
+export const INPUT_FIELD_NOT_ENDS_WITH = 'not_ends_with';
+export const INPUT_FIELD_SOME = 'some';
+export const INPUT_FIELD_EVERY = 'every';
+export const INPUT_FIELD_NONE = 'none';
 
 export const CALC_MUTATIONS_DIRECTIVE = 'calcMutations';
 export const CALC_MUTATIONS_OPERATORS_ARG = 'operators';
