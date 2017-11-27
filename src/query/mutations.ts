@@ -69,7 +69,7 @@ import {
     getUpdateChildEntityFieldName
 } from '../graphql/names';
 import {isListType} from '../graphql/schema-utils';
-import {EdgeType, getEdgeType} from '../schema/edges';
+import { RelationFieldEdgeSide, EdgeType, getEdgeType } from '../schema/edges';
 import uuid = require('uuid');
 import {flattenValueNode} from "../schema/directive-arg-flattener";
 import {globalContext} from "../config/global";
@@ -343,7 +343,8 @@ function getRelationAddRemoveStatements(obj: PlainObject, parentType: GraphQLObj
                     edgeType,
                     sourceIDNode,
                     targetIDNode: new LiteralQueryNode(id),
-                    sourceType: parentType
+                    sourceType: parentType,
+                    sourceField: field
                 }));
                 statements.push(new AddEdgesQueryNode(edgeType, edgeNodes));
             } else if (idsToBeRemoved.length) {
@@ -359,7 +360,8 @@ function getRelationAddRemoveStatements(obj: PlainObject, parentType: GraphQLObj
                     edgeType,
                     sourceType: parentType,
                     sourceIDNodes: [sourceIDNode],
-                    targetIDNodes: targetIds
+                    targetIDNodes: targetIds,
+                    sourceField: field
                 })));
             }
         } else if (field.name in obj) {
@@ -372,13 +374,15 @@ function getRelationAddRemoveStatements(obj: PlainObject, parentType: GraphQLObj
                     existingEdgeFilter: getPartialEdgeIdentifier({
                         edgeType,
                         sourceType: parentType,
-                        sourceIDNode
+                        sourceIDNode,
+                        sourceField: field
                     }),
                     newEdge: getEdgeIdentifier({
                         edgeType,
                         sourceType: parentType,
                         sourceIDNode,
-                        targetIDNode: new LiteralQueryNode(newID)
+                        targetIDNode: new LiteralQueryNode(newID),
+                        sourceField: field
                     })
                 }));
             } else {
@@ -388,7 +392,8 @@ function getRelationAddRemoveStatements(obj: PlainObject, parentType: GraphQLObj
                     getEdgeFilter({
                         edgeType,
                         sourceType: parentType,
-                        sourceIDNodes: [sourceIDNode]
+                        sourceIDNodes: [sourceIDNode],
+                        sourceField: field
                     })
                 ));
             }
@@ -400,33 +405,36 @@ function getRelationAddRemoveStatements(obj: PlainObject, parentType: GraphQLObj
 /**
  * Creates an Edge identifier. Reorders source/target so that they match from/to in the edgeType
  */
-function getEdgeIdentifier(param: { edgeType: EdgeType; sourceIDNode: QueryNode; targetIDNode: QueryNode; sourceType: GraphQLObjectType }): EdgeIdentifier {
-    if (param.sourceType == param.edgeType.fromType) {
-        return new EdgeIdentifier(param.sourceIDNode, param.targetIDNode);
-    } else {
-        return new EdgeIdentifier(param.targetIDNode, param.sourceIDNode);
+function getEdgeIdentifier(param: { edgeType: EdgeType; sourceIDNode: QueryNode; targetIDNode: QueryNode; sourceType: GraphQLObjectType, sourceField: GraphQLField<any, any> }): EdgeIdentifier {
+    switch (param.edgeType.getRelationFieldEdgeSide(param.sourceField)) {
+        case RelationFieldEdgeSide.FROM_SIDE:
+            return new EdgeIdentifier(param.sourceIDNode, param.targetIDNode);
+        case RelationFieldEdgeSide.TO_SIDE:
+            return new EdgeIdentifier(param.targetIDNode, param.sourceIDNode);
     }
 }
 
 /**
  * Creates a partial edge identifier of the format ?->id or id->?
  */
-function getPartialEdgeIdentifier(param: { edgeType: EdgeType; sourceIDNode: QueryNode; sourceType: GraphQLObjectType }): PartialEdgeIdentifier {
-    if (param.sourceType == param.edgeType.fromType) {
-        return new PartialEdgeIdentifier(param.sourceIDNode, undefined);
-    } else {
-        return new PartialEdgeIdentifier(undefined, param.sourceIDNode);
+function getPartialEdgeIdentifier(param: { edgeType: EdgeType; sourceIDNode: QueryNode; sourceType: GraphQLObjectType, sourceField: GraphQLField<any, any> }): PartialEdgeIdentifier {
+    switch (param.edgeType.getRelationFieldEdgeSide(param.sourceField)) {
+        case RelationFieldEdgeSide.FROM_SIDE:
+            return new PartialEdgeIdentifier(param.sourceIDNode, undefined);
+        case RelationFieldEdgeSide.TO_SIDE:
+            return new PartialEdgeIdentifier(undefined, param.sourceIDNode);
     }
 }
 
 /**
  * Creates an Edge filter. Reorders source/target so that they match from/to in the edgeType
  */
-function getEdgeFilter(param: { edgeType: EdgeType; sourceIDNodes?: QueryNode[]; targetIDNodes?: QueryNode[]; sourceType: GraphQLObjectType }): EdgeFilter {
-    if (param.sourceType == param.edgeType.fromType) {
-        return new EdgeFilter(param.sourceIDNodes, param.targetIDNodes);
-    } else {
-        return new EdgeFilter(param.targetIDNodes, param.sourceIDNodes);
+function getEdgeFilter(param: { edgeType: EdgeType; sourceIDNodes?: QueryNode[]; targetIDNodes?: QueryNode[]; sourceType: GraphQLObjectType, sourceField: GraphQLField<any, any> }): EdgeFilter {
+    switch (param.edgeType.getRelationFieldEdgeSide(param.sourceField)) {
+        case RelationFieldEdgeSide.FROM_SIDE:
+            return new EdgeFilter(param.sourceIDNodes, param.targetIDNodes);
+        case RelationFieldEdgeSide.TO_SIDE:
+            return new EdgeFilter(param.targetIDNodes, param.sourceIDNodes);
     }
 }
 

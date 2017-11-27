@@ -120,7 +120,7 @@ export function createEntityObjectNode(fieldSelections: FieldSelection[], source
 
 function createToNRelationQueryNode(fieldRequest: FieldRequest, sourceEntityNode: QueryNode, fieldRequestStack: FieldRequest[]): QueryNode {
     const edgeType = getEdgeType(getNamedType(fieldRequest.parentType) as GraphQLObjectType, fieldRequest.field);
-    const followNode = new FollowEdgeQueryNode(edgeType, sourceEntityNode);
+    const followNode = new FollowEdgeQueryNode(edgeType, sourceEntityNode, edgeType.getRelationFieldEdgeSide(fieldRequest.field));
     return createTransformListQueryNode(fieldRequest, followNode, fieldRequestStack);
 }
 
@@ -149,7 +149,7 @@ function createEntityFieldQueryNode(fieldRequest: FieldRequest, objectNode: Quer
         let listNode: QueryNode;
         if (isRelationField(listField)) {
             const edgeType = getEdgeType(getNamedType(fieldRequest.parentType) as GraphQLObjectType, listField);
-            listNode = new FollowEdgeQueryNode(edgeType, objectNode);
+            listNode = new FollowEdgeQueryNode(edgeType, objectNode, edgeType.getRelationFieldEdgeSide(listField));
         } else if (isReferenceField(listField)) {
             throw new Error(`${fieldRequest.fieldName}: references in lists are not supported yet`);
         } else {
