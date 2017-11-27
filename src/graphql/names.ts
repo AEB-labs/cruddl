@@ -10,7 +10,7 @@ import {
     INPUT_FIELD_ENDS_WITH,
     INPUT_FIELD_EVERY,
     INPUT_FIELD_GT,
-    INPUT_FIELD_GTE,
+    INPUT_FIELD_GTE, INPUT_FIELD_IN,
     INPUT_FIELD_LT,
     INPUT_FIELD_LTE,
     INPUT_FIELD_NONE,
@@ -95,7 +95,7 @@ export function notField(name: string) {
 }
 
 export function inField(name: string) {
-    return name + INPUT_FIELD_SEPARATOR + INPUT_FIELD_NOT;
+    return name + INPUT_FIELD_SEPARATOR + INPUT_FIELD_IN;
 }
 
 export function notInField(name: string) {
