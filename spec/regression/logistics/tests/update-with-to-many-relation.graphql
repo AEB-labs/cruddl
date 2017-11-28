@@ -31,7 +31,7 @@ mutation add2 {
 query check2 {
     Delivery(id: "@{ids/Delivery/1}") {
         deliveryNumber
-        handlingUnits {
+        handlingUnits(orderBy: huNumber_ASC) {
             huNumber
             delivery {
                 deliveryNumber

@@ -46,7 +46,7 @@ query check2 {
         delivery {
             Delivery(id: "@{ids/logistics.delivery.Delivery/1}") {
                 deliveryNumber
-                handlingUnits {
+                handlingUnits(orderBy: huNumber_ASC) {
                     huNumber
                     delivery {
                         deliveryNumber
