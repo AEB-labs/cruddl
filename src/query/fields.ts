@@ -1,4 +1,4 @@
-import { getNamedType, GraphQLField, GraphQLObjectType, GraphQLScalarType } from 'graphql';
+import {getNamedType, GraphQLEnumType, GraphQLField, GraphQLObjectType, GraphQLScalarType} from 'graphql';
 import {
     FieldQueryNode, RootEntityIDQueryNode, QueryNode, VariableQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode,
     BinaryOperationQueryNode, BinaryOperator, EntitiesQueryNode, TransformListQueryNode, ConditionalQueryNode,
@@ -12,7 +12,7 @@ import { createEntityObjectNode } from './queries';
 
 export function createScalarFieldValueNode(objectType: GraphQLObjectType, fieldName: string, contextNode: QueryNode): QueryNode {
     const field = objectType.getFields()[fieldName];
-    if (!field || !(field.type instanceof GraphQLScalarType)) {
+    if (!field || !(field.type instanceof GraphQLScalarType || field.type instanceof GraphQLEnumType)) {
         throw new Error(`Field ${fieldName} is not a field of ${objectType.name} with scalar type`);
     }
     return createNonListFieldValueNode({
