@@ -10,7 +10,7 @@ import {
 } from 'graphql';
 import {
     buildNameNode,
-    findDirectiveWithName,
+    findDirectiveWithName, getEnumTypes,
     getNamedTypeDefinitionAST,
     getObjectTypes,
     getTypeNameIgnoringNonNullAndList, hasDirectiveWithName
@@ -79,10 +79,26 @@ export class AddFilterInputTypesTransformer implements ASTTransformer {
             this.createDateFilterType(),
             this.createTimeFilterType(),
             this.createDateTimeFilterType(),
-            this.createJSONFilterType()
+            this.createJSONFilterType(),
+            ...this.createEnumTypeFilters(ast)
         );
         getObjectTypes(ast).forEach(objectType => {
             ast.definitions.push(this.createInputFilterTypeForObjectType(ast, objectType))
+        })
+    }
+
+    protected createEnumTypeFilters(ast: DocumentNode): InputObjectTypeDefinitionNode[] {
+        return getEnumTypes(ast).map(enumType => {
+            return {
+                kind: INPUT_OBJECT_TYPE_DEFINITION,
+                name: buildNameNode(getFilterTypeName(enumType)),
+                fields: [
+                    this.buildNamedTypeFieldForField(INPUT_FIELD_EQUAL, enumType.name.value),
+                    this.buildNamedTypeFieldForField(INPUT_FIELD_NOT, enumType.name.value),
+                    this.buildListOfNamedTypeFieldForField(INPUT_FIELD_IN, enumType.name.value),
+                    this.buildListOfNamedTypeFieldForField(INPUT_FIELD_NOT_IN, enumType.name.value),
+                ]
+            }
         })
     }
 

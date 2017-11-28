@@ -33,6 +33,12 @@ export function getObjectTypes(model: DocumentNode): ObjectTypeDefinitionNode[] 
     );
 }
 
+export function getEnumTypes(model: DocumentNode): ObjectTypeDefinitionNode[] {
+    return <ObjectTypeDefinitionNode[]> model.definitions.filter(
+        def => def.kind === ENUM_TYPE_DEFINITION
+    );
+}
+
 /**
  * Get all @link ObjectTypeDefinitionNode annotated with @rootEntity directive of a model.
  * @param {DocumentNode} model (ast)
