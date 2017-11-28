@@ -13,7 +13,8 @@
           "object-oriented",
           "modeling",
           "design"
-        ]
+        ],
+        "categories": ["ITScience", "Programming"]
       },
       {
         "@id": "2",
@@ -34,7 +35,8 @@
         "literatureReferences": [],
         "tags": [
           "nosql"
-        ]
+        ],
+        "categories": ["ITScience", "Programming", "BusinessInformatics"]
       },
       {
         "@id": "4",
@@ -62,7 +64,8 @@
         "tags": [
           "cap-theorem",
           "databases"
-        ]
+        ],
+        "categories": ["Programming", "Telecommunications"]
       },
       {
         "@id": "5",
@@ -72,6 +75,7 @@
         "tags": [
           "nosql"
         ],
+        "categories": ["Programming"],
         "title": "Scalable SQL and NoSQL data stores",
         "literatureReferences": [
           {

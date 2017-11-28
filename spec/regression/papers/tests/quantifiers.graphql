@@ -1,0 +1,56 @@
+query allPapersHavingLiteraturReferences {
+    allPapers(filter:{literatureReferences_some:{}}, orderBy: id_ASC) {
+        id
+        literatureReferences(orderBy: [title_ASC, pages_startPage_ASC]) {
+            title
+        }
+    }
+}
+
+query allPapersWihoutLiteraturReferences {
+    allPapers(filter:{literatureReferences_none:{}}, orderBy: id_ASC) {
+        id
+        literatureReferences(orderBy: [title_ASC, pages_startPage_ASC]) {
+            title
+        }
+    }
+}
+
+query allPapersHavingACertainLiteraturReferences {
+    allPapers(filter:{literatureReferences_some:{ title: "Achievable cases in an asynchronous environment" }}, orderBy: id_ASC) {
+        id
+        literatureReferences(orderBy: [title_ASC, pages_startPage_ASC]) {
+            title
+        }
+    }
+}
+
+query allPapersHavingLiteraturReferencesLike {
+    allPapers(filter:{literatureReferences_some:{ title_starts_with: "Achievable" }}, orderBy: id_ASC) {
+        id
+        literatureReferences(orderBy: [title_ASC, pages_startPage_ASC]) {
+            title
+        }
+    }
+}
+
+query allPapersOfSomeCategories {
+    allPapers(filter:{categories_some:{in:[ITScience, Telecommunications]}}, orderBy: id_ASC) {
+        id
+        categories
+    }
+}
+
+query allPapersWhichHaveOnlyOneOfTheseCategories {
+    allPapers(filter:{categories_every:{in:[ITScience, Telecommunications]}}, orderBy: id_ASC) {
+        id
+        categories
+    }
+}
+
+query allPapersNotInOneOfTheseCategories {
+    allPapers(filter:{categories_none:{equal:ITScience}}, orderBy: id_ASC) {
+        id
+        categories
+    }
+}

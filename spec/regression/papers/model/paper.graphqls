@@ -1,3 +1,11 @@
+enum Category {
+    ITScience
+    Telecommunications
+    BusinessInformatics
+    InformationSystems
+    Programming
+}
+
 type Paper @rootEntity @roles(readWrite: ["admin"]) {
     key: String @key # need a key field for the reference
     title: String
@@ -7,6 +15,7 @@ type Paper @rootEntity @roles(readWrite: ["admin"]) {
     tags: [String]
     #author: User @relation
     readers: [User] @relation
+    categories: [Category!]
 }
 
 type LiteratureReference @valueObject {

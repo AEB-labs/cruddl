@@ -1,0 +1,131 @@
+{
+  "allPapersHavingLiteraturReferences": {
+    "data": {
+      "allPapers": [
+        {
+          "id": "@{ids/Paper/4}",
+          "literatureReferences": [
+            {
+              "title": "Achievable cases in an asynchronous environment"
+            }
+          ]
+        },
+        {
+          "id": "@{ids/Paper/5}",
+          "literatureReferences": [
+            {
+              "title": null
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "allPapersHavingACertainLiteraturReferences": {
+    "data": {
+      "allPapers": [
+        {
+          "id": "@{ids/Paper/4}",
+          "literatureReferences": [
+            {
+              "title": "Achievable cases in an asynchronous environment"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "allPapersHavingLiteraturReferencesLike": {
+    "data": {
+      "allPapers": [
+        {
+          "id": "@{ids/Paper/4}",
+          "literatureReferences": [
+            {
+              "title": "Achievable cases in an asynchronous environment"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "allPapersNotInOneOfTheseCategories": {
+    "data": {
+      "allPapers": [
+        {
+          "id": "@{ids/Paper/2}",
+          "categories": []
+        },
+        {
+          "id": "@{ids/Paper/4}",
+          "categories": [
+            "Programming",
+            "Telecommunications"
+          ]
+        },
+        {
+          "id": "@{ids/Paper/5}",
+          "categories": [
+            "Programming"
+          ]
+        }
+      ]
+    }
+  },
+  "allPapersOfSomeCategories": {
+    "data": {
+      "allPapers": [
+        {
+          "id": "@{ids/Paper/1}",
+          "categories": [
+            "ITScience",
+            "Programming"
+          ]
+        },
+        {
+          "id": "@{ids/Paper/3}",
+          "categories": [
+            "ITScience",
+            "Programming",
+            "BusinessInformatics"
+          ]
+        },
+        {
+          "id": "@{ids/Paper/4}",
+          "categories": [
+            "Programming",
+            "Telecommunications"
+          ]
+        }
+      ]
+    }
+  },
+  "allPapersWhichHaveOnlyOneOfTheseCategories": {
+    "data": {
+      "allPapers": [
+        {
+          "id": "@{ids/Paper/2}",
+          "categories": []
+        }
+      ]
+    }
+  },
+  "allPapersWihoutLiteraturReferences": {
+    "data": {
+      "allPapers": [
+        {
+          "id": "@{ids/Paper/1}",
+          "literatureReferences": []
+        },
+        {
+          "id": "@{ids/Paper/2}",
+          "literatureReferences": []
+        },
+        {
+          "id": "@{ids/Paper/3}",
+          "literatureReferences": []
+        }
+      ]
+    }
+  }
+}
