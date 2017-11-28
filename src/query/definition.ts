@@ -37,7 +37,7 @@
  */
 import { GraphQLField, GraphQLObjectType } from 'graphql';
 import { indent } from '../utils/utils';
-import { EdgeType } from '../schema/edges';
+import { EdgeType, RelationFieldEdgeSide } from '../schema/edges';
 
 export interface QueryNode {
     describe(): string;
@@ -544,12 +544,17 @@ export enum OrderDirection {
  * Evaluates to all root entitites that are connected to a specific root entitity through a specific edge
  */
 export class FollowEdgeQueryNode implements QueryNode {
-    constructor(readonly edgeType: EdgeType, readonly sourceEntityNode: QueryNode) {
+    constructor(readonly edgeType: EdgeType, readonly sourceEntityNode: QueryNode, readonly sourceFieldSide: RelationFieldEdgeSide) {
 
     }
 
     describe() {
-        return `follow ${this.edgeType} of ${this.sourceEntityNode.describe()}`;
+        switch (this.sourceFieldSide) {
+            case RelationFieldEdgeSide.FROM_SIDE:
+                return `follow forward ${this.edgeType} of ${this.sourceEntityNode.describe()}`;
+            case RelationFieldEdgeSide.TO_SIDE:
+                return `follow backward ${this.edgeType} of ${this.sourceEntityNode.describe()}`;
+        }
     }
 }
 

@@ -61,7 +61,7 @@ export function createNonListFieldValueNode(params: {field: GraphQLField<any, an
 
 export function createTo1RelationNode(field: GraphQLField<any, any>, parentType: GraphQLObjectType, objectNode: QueryNode): QueryNode {
     const edgeType = getEdgeType(parentType, field);
-    const followNode = new FollowEdgeQueryNode(edgeType, objectNode);
+    const followNode = new FollowEdgeQueryNode(edgeType, objectNode, edgeType.getRelationFieldEdgeSide(field));
     return new FirstOfListQueryNode(followNode);
 }
 

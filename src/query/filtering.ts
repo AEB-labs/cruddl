@@ -79,7 +79,7 @@ function getObjectTypeFilterClauseNode(key: string, value: any, contextNode: Que
         let quantifiedList: QueryNode;
         if (isRelationField(field)) {
             const edgeType = getEdgeType(objectType, field);
-            quantifiedList = new FollowEdgeQueryNode(edgeType, contextNode);
+            quantifiedList = new FollowEdgeQueryNode(edgeType, contextNode, edgeType.getRelationFieldEdgeSide(field));
         } else {
             invariant(isReferenceField(field), 'Lists of references are not supported, yet');
             quantifiedList = createSafeListQueryNode(new FieldQueryNode(contextNode, field));

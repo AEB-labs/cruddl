@@ -9,7 +9,7 @@ import {
 import { aql, AQLFragment, AQLVariable } from './aql';
 import { getCollectionNameForEdge, getCollectionNameForRootEntity } from './arango-basics';
 import { GraphQLNamedType, GraphQLObjectType } from 'graphql';
-import { EdgeType } from '../../schema/edges';
+import { EdgeType, RelationFieldEdgeSide } from '../../schema/edges';
 import { simplifyBooleans } from '../../query/query-tree-utils';
 
 class QueryContext {
@@ -471,5 +471,11 @@ export function getCollectionForEdge(edgeType: EdgeType) {
  * expression context)
  */
 function getSimpleFollowEdgeFragment(node: FollowEdgeQueryNode, context: QueryContext): AQLFragment {
-    return aql`ANY ${processNode(node.sourceEntityNode, context)} ${getCollectionForEdge(node.edgeType)}`;
+    switch (node.sourceFieldSide) {
+        case RelationFieldEdgeSide.FROM_SIDE:
+            return aql`OUTBOUND ${processNode(node.sourceEntityNode, context)} ${getCollectionForEdge(node.edgeType)}`;
+        case RelationFieldEdgeSide.TO_SIDE:
+            return aql`INBOUND ${processNode(node.sourceEntityNode, context)} ${getCollectionForEdge(node.edgeType)}`;
+    }
+
 }
