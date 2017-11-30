@@ -142,12 +142,13 @@ const processors : { [name: string]: NodeProcessor<any> } = {
         const itemVar = itemContext.getVariable(node.itemVariable);
 
         let list: AQLFragment;
+        let filterDanglingEdges = aql``;
         if (node.listNode instanceof FollowEdgeQueryNode) {
             list = getSimpleFollowEdgeFragment(node.listNode, context);
+            filterDanglingEdges = aql`FILTER ${itemVar} != null`;
         } else {
             list = processNode(node.listNode, context);
         }
-
         let filter = simplifyBooleans(node.filterNode);
 
         const variableAssignmentAQL = node.variableAssignmentNodes.map(assignmentNode => {
@@ -161,6 +162,7 @@ const processors : { [name: string]: NodeProcessor<any> } = {
             aql`IN ${list}`,
             aql.lines(...variableAssignmentAQL),
             (filter instanceof ConstBoolQueryNode && filter.value) ? aql`` : aql`FILTER ${processNode(filter, itemContext)}`,
+            filterDanglingEdges,
             generateSortAQL(node.orderBy, itemContext),
             node.maxCount != undefined ? aql`LIMIT ${node.maxCount}` : aql``,
             aql`RETURN ${processNode(node.innerNode, itemContext)}`
@@ -267,6 +269,7 @@ const processors : { [name: string]: NodeProcessor<any> } = {
         return aqlExt.parenthesizeList(
             aql`FOR ${tmpVar}`,
             aql`IN ${getSimpleFollowEdgeFragment(node, context)}`,
+            aql`FILTER ${tmpVar} != null`,
             aql`RETURN ${tmpVar}`
         );
     },
