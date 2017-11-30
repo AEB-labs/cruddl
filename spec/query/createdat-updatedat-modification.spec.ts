@@ -15,7 +15,7 @@ describe('mutation', () => {
     
     type DeliveryItem @rootEntity @roles(readWrite: "allusers") {
         itemNumber: Int
-        delivery: Delivery @relation
+        delivery: Delivery @relation(inverseOf:"deliveryItems")
     }
     `;
 
