@@ -1,6 +1,6 @@
 import { DatabaseAdapter } from '../database-adapter';
 import { QueryNode } from '../../query/definition';
-import { getAQLForQuery, createAQLCompoundQuery } from './aql-generator';
+import { getAQLForQuery, getAQLQuery } from './aql-generator';
 import { Database } from 'arangojs';
 import { GraphQLObjectType, GraphQLSchema } from 'graphql';
 import { flatMap, objectValues } from '../../utils/utils';
@@ -36,7 +36,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
 
     async execute(queryTree: QueryNode) {
         //TODO Execute single statement AQL queries directly without "db.transaction"?
-        const aqlQuery = createAQLCompoundQuery(queryTree);
+        const aqlQuery = getAQLQuery(queryTree);
         const executableQueries = aqlQuery.getExecutableQueries();
 
         this.logger.debug(aqlQuery.toColoredString());
@@ -50,9 +50,20 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                 for (const key in query.usedPreExecResultNames) {
                     boundValues[query.usedPreExecResultNames[key]] = resultHolder[key];
                 }
-                resultHolder[query.resultName] = db._query(query.code, boundValues).next();
+                if (query.resultName) {
+                    resultHolder[query.resultName] = db._query(query.code, boundValues).next();
+                } else {
+                    db._query(query.code, boundValues);
+                }
             }
-            return resultHolder[queries[queries.length - 1].resultName];
+
+            const lastQueryResultName = queries[queries.length - 1].resultName;
+            if (lastQueryResultName) {
+                return resultHolder[lastQueryResultName];
+            } else {
+                return undefined;
+            }
+
         }
 
         return await this.db.transaction(

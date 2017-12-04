@@ -328,7 +328,7 @@ export class AQLCompoundQuery extends AQLFragment {
     constructor(
         public readonly preExecQueries: AQLCompoundQuery[],
         public readonly aqlQuery: AQLFragment,
-        public readonly resultVar: AQLQueryResultVariable,
+        public readonly resultVar: AQLQueryResultVariable|undefined,
         public readonly readAccessedCollections: string[],
         public readonly writeAccessedCollections: string[]){
         super();
@@ -354,8 +354,11 @@ export class AQLCompoundQuery extends AQLFragment {
             usedResultNames[usedResultName] = bindParamName;
         });
 
-        const queryResultName = "query_result_" + resultVarToNameMap.size;
-        resultVarToNameMap.set(this.resultVar, queryResultName);
+        let queryResultName = undefined;
+        if (this.resultVar) {
+            queryResultName = "query_result_" + resultVarToNameMap.size;
+            resultVarToNameMap.set(this.resultVar, queryResultName);
+        }
 
         const executableQuery = new AQLExecutableQuery(code, boundValues, usedResultNames, queryResultName);
         executableQueries.push(executableQuery);
@@ -367,18 +370,20 @@ export class AQLCompoundQuery extends AQLFragment {
     //TODO Include read/write accessed collections in output
     toStringWithContext(context: AQLCodeBuildingContext): string {
         let descriptions = this.preExecQueries.map(aqlQuery => aqlQuery.toStringWithContext(context));
-        const description = this.resultVar.toStringWithContext(context) + ' =\n' +
-            aql.indent(this.aqlQuery).toStringWithContext(context);
-        descriptions.push(description);
-        return descriptions.join(';\n\n')
+        const varDescription = this.resultVar ? this.resultVar.toStringWithContext(context) + ' = ' : '';
+        const execDescription = varDescription + 'execute(\n' +
+            aql.indent(this.aqlQuery).toStringWithContext(context) + '\n);';
+        descriptions.push(execDescription);
+        return descriptions.join('\n')
     }
 
     toColoredStringWithContext(context: AQLCodeBuildingContext): string {
         let descriptions = this.preExecQueries.map(aqlQuery => aqlQuery.toColoredStringWithContext(context));
-        const description = this.resultVar.toColoredStringWithContext(context) + ' =\n' +
-            aql.indent(this.aqlQuery).toColoredStringWithContext(context);
-        descriptions.push(description);
-        return descriptions.join(';\n\n')
+        const varDescription = this.resultVar ? this.resultVar.toColoredStringWithContext(context) + ' = ' : '';
+        const execDescription = varDescription + 'execute(\n' +
+            aql.indent(this.aqlQuery).toColoredStringWithContext(context) + '\n);';
+        descriptions.push(execDescription);
+        return descriptions.join('\n')
     }
 
     getCodeWithContext(context: AQLCodeBuildingContext): string {
@@ -391,6 +396,6 @@ export class AQLExecutableQuery{
         public readonly code: string,
         public readonly boundValues: {[p: string]: any},
         public readonly usedPreExecResultNames: {[p: string]: string},
-        public readonly resultName: string ) {
+        public readonly resultName?: string ) {
     }
 }

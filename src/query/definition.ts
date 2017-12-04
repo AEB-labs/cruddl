@@ -36,7 +36,7 @@
  *
  */
 import { GraphQLField, GraphQLObjectType } from 'graphql';
-import { indent } from '../utils/utils';
+import { compact, indent } from '../utils/utils';
 import { EdgeType, RelationFieldEdgeSide } from '../schema/edges';
 
 export interface QueryNode {
@@ -110,13 +110,20 @@ export class VariableAssignmentQueryNode implements QueryNode {
 }
 
 export class WithPreExecutionQueryNode implements QueryNode {
-    constructor(public readonly preExecQuery: QueryNode, public readonly preExecQueryResultVariable: VariableQueryNode, public readonly resultNode: QueryNode) {
+    public readonly morePreExecQueries: QueryNode[]
+    constructor(public readonly resultNode: QueryNode, public readonly preExecQueryResultVariable: VariableQueryNode, public readonly preExecQuery: QueryNode, ...morePreExecQueries: (QueryNode|undefined)[]) {
+        this.morePreExecQueries = compact(morePreExecQueries);
     }
 
     public describe() {
-        return `with pre execute(\n` + indent('' + // '' to move the arg label here in WebStorm
+        const morePreExecDescriptions = this.morePreExecQueries.map(node =>
+            ` and (\n` + indent(node.describe()) + `\n)` ).join('');
+
+        return `with pre execute (\n` + indent('' + // '' to move the arg label here in WebStorm
             `${this.preExecQuery.describe()}`) +
-            `\n)as ${this.preExecQueryResultVariable.describe()} evaluate(\n` + indent('' + // '' to move the arg label here in WebStorm
+            `\n) as ${this.preExecQueryResultVariable.describe()}` +
+            morePreExecDescriptions +
+            ` evaluate (\n` + indent('' + // '' to move the arg label here in WebStorm
             `${this.resultNode.describe()}`) +
             `\n)`;
     }

@@ -55,9 +55,16 @@ class QueryContext {
         return this.newNestedContextWithNewVariable(variableNode, variable);
     }
 
-    addPreExecuteQuery(preExecQuery: QueryNode, variableNode: VariableQueryNode): QueryContext {
-        const resultVar = new AQLQueryResultVariable(variableNode.label)
-        const newContext = this.newNestedContextWithNewVariable(variableNode, resultVar);
+    addPreExecuteQuery(preExecQuery: QueryNode, resultVariable?: VariableQueryNode): QueryContext {
+        let resultVar: AQLQueryResultVariable|undefined;
+        let newContext: QueryContext;
+        if (resultVariable) {
+            resultVar = new AQLQueryResultVariable(resultVariable.label)
+            newContext = this.newNestedContextWithNewVariable(resultVariable, resultVar);
+        } else {
+            resultVar = undefined;
+            newContext = this;
+        }
 
         const aqlQuery = createAQLCompoundQuery(preExecQuery, resultVar, this.newPreExecContext());
 
@@ -95,6 +102,15 @@ class QueryContext {
     getWriteAccessedCollections(): string[]{
         return Array.from(this.writeAccessedCollections);
     }
+}
+
+function createAQLCompoundQuery(node: QueryNode, resultVariable: AQLQueryResultVariable|undefined, context: QueryContext): AQLCompoundQuery {
+    const aqlQuery = aql`RETURN ${processNode(node, context)}`;
+    const preExecQueries = context.getPreExecuteQueries();
+    const readAccessedCollections = context.getReadAccessedCollections();
+    const writeAccessedCollections = context.getWriteAccessedCollections();
+
+    return new AQLCompoundQuery(preExecQueries, aqlQuery, resultVariable, readAccessedCollections, writeAccessedCollections);
 }
 
 type NodeProcessor<T extends QueryNode> = (node: T, context: QueryContext) => AQLFragment;
@@ -185,6 +201,8 @@ const processors : { [name: string]: NodeProcessor<any> } = {
 
     WithPreExecution(node: WithPreExecutionQueryNode, context): AQLFragment {
         const newContext = context.addPreExecuteQuery(node.preExecQuery, node.preExecQueryResultVariable);
+
+        node.morePreExecQueries.forEach(preExecQuery => newContext.addPreExecuteQuery(preExecQuery));
 
         return aql`${processNode(node.resultNode, newContext)}`;
     },
@@ -532,15 +550,8 @@ export function getAQLForQuery(node: QueryNode): AQLFragment {
     return aql`RETURN ${processNode(node, new QueryContext())}`;
 }
 
-export function createAQLCompoundQuery(node: QueryNode, resultVariable?: AQLQueryResultVariable, previousContext?: QueryContext): AQLCompoundQuery {
-    const context = previousContext || new QueryContext();
-    const resultVar = resultVariable || aql.queryResultVariable('result');
-    const aqlQuery = aql`RETURN ${processNode(node, context)}`;
-    const preExecQueries = context.getPreExecuteQueries();
-    const readAccessedCollections = context.getReadAccessedCollections();
-    const writeAccessedCollections = context.getWriteAccessedCollections();
-
-    return new AQLCompoundQuery(preExecQueries, aqlQuery, resultVar, readAccessedCollections, writeAccessedCollections);
+export function getAQLQuery(node: QueryNode): AQLCompoundQuery {
+    return createAQLCompoundQuery(node, aql.queryResultVariable('result'), new QueryContext());
 }
 
 function getCollectionForType(type: GraphQLNamedType, accessType: AccessType, context: QueryContext) {
