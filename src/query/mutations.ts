@@ -8,7 +8,7 @@ import {
     ConcatListsQueryNode,
     ConditionalQueryNode,
     CreateEntityQueryNode,
-    DeleteEntitiesQueryNode,
+    DeleteEntitiesQueryNode, DocumentFromFullIdQueryNode,
     EdgeFilter,
     EdgeIdentifier,
     FieldQueryNode,
@@ -30,7 +30,7 @@ import {
     UnaryOperator,
     UpdateEntitiesQueryNode,
     VariableAssignmentQueryNode,
-    VariableQueryNode
+    VariableQueryNode, WithPreExecutionQueryNode
 } from './definition';
 import {
     ADD_CHILD_ENTITIES_FIELD_PREFIX,
@@ -115,21 +115,33 @@ function createCreateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestSta
     }
     const input = fieldRequest.args[MUTATION_INPUT_ARG];
     const objectNode = new LiteralQueryNode(prepareMutationInput(input, entityType, MutationType.CREATE));
+
+    // Create new entity
     const createEntityNode = new CreateEntityQueryNode(entityType, objectNode);
-    const newEntityVarNode = new VariableQueryNode('newEntity');
-    let resultNode: QueryNode = createEntityObjectNode(fieldRequest.selectionSet, newEntityVarNode, fieldRequestStack);
-    const relationStatements = getRelationAddRemoveStatements(input, entityType, newEntityVarNode, false);
+    const newEntityIdVarNode = new VariableQueryNode('newEntityId');
+    const newEntityDocNode = new DocumentFromFullIdQueryNode(newEntityIdVarNode);
+
+    // Add relations if needed
+    let createRelationsNode = undefined;
+    const relationStatements = getRelationAddRemoveStatements(input, entityType, newEntityDocNode, false); //TODO handover id directly, and not the complete document
     if (relationStatements.length) {
-        resultNode = new FirstOfListQueryNode(new ListQueryNode([
-            resultNode,
+        createRelationsNode = new FirstOfListQueryNode(new ListQueryNode([
+            new NullQueryNode(),
             ...relationStatements
         ]));
     }
-    return new VariableAssignmentQueryNode({
-        variableValueNode: createEntityNode,
-        resultNode,
+
+    // Build up result query node
+    const newEntityVarNode = new VariableQueryNode('newEntity');
+    const objectQueryNode = createEntityObjectNode(fieldRequest.selectionSet, newEntityVarNode, fieldRequestStack);
+    const resultNode = new VariableAssignmentQueryNode({
+        variableValueNode: newEntityDocNode,
+        resultNode: objectQueryNode,
         variableNode: newEntityVarNode
     });
+
+    // PreExecute creation and relation queries and return result
+    return new WithPreExecutionQueryNode(resultNode, newEntityIdVarNode, createEntityNode, createRelationsNode);
 }
 
 function prepareMutationInput(input: PlainObject, objectType: GraphQLObjectType, mutationType: MutationType): PlainObject {
