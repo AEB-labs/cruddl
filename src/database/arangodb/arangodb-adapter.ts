@@ -1,6 +1,6 @@
 import { DatabaseAdapter } from '../database-adapter';
 import { QueryNode } from '../../query/definition';
-import { getAQLForQuery } from './aql-generator';
+import { getAQLForQuery, createAQLCompoundQuery } from './aql-generator';
 import { Database } from 'arangojs';
 import { GraphQLObjectType, GraphQLSchema } from 'graphql';
 import { flatMap, objectValues } from '../../utils/utils';
@@ -8,6 +8,7 @@ import { isRelationField, isRootEntityType } from '../../schema/schema-utils';
 import { getEdgeType } from '../../schema/edges';
 import { getCollectionNameForEdge, getCollectionNameForRootEntity } from './arango-basics';
 import {globalContext} from "../../config/global";
+import { AQLExecutableQuery } from './aql';
 
 export interface ArangoDBConfig {
     readonly url: string;
@@ -31,12 +32,37 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         }
     }
 
+
+
     async execute(queryTree: QueryNode) {
-        const aql = getAQLForQuery(queryTree);
-        this.logger.debug(aql.toColoredString());
-        const { code, boundValues } = aql.getCode();
-        const cursor = await this.db.query(code, boundValues);
-        return await cursor.next();
+        //TODO Execute single statement AQL queries directly without "db.transaction"?
+        const aqlQuery = createAQLCompoundQuery(queryTree);
+        const executableQueries = aqlQuery.getExecutableQueries();
+
+        this.logger.debug(aqlQuery.toColoredString());
+
+        function executeQueriesInArango(queries: AQLExecutableQuery[]) {
+            const db = require("@arangodb").db;
+
+            let resultHolder: {[p: string]: any} = {};
+            for (const query of queries) {
+                const boundValues = query.boundValues;
+                for (const key in query.usedPreExecResultNames) {
+                    boundValues[query.usedPreExecResultNames[key]] = resultHolder[key];
+                }
+                resultHolder[query.resultName] = db._query(query.code, boundValues).next();
+            }
+            return resultHolder[queries[queries.length - 1].resultName];
+        }
+
+        return await this.db.transaction(
+            {
+                read: aqlQuery.readAccessedCollections,
+                write: aqlQuery.writeAccessedCollections
+            },
+            String(executeQueriesInArango),
+            executableQueries
+        );
     }
 
     async updateSchema(schema: GraphQLSchema): Promise<void> {

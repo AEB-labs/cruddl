@@ -109,6 +109,28 @@ export class VariableAssignmentQueryNode implements QueryNode {
     }
 }
 
+export class WithPreExecutionQueryNode implements QueryNode {
+    constructor(public readonly preExecQuery: QueryNode, public readonly preExecQueryResultVariable: VariableQueryNode, public readonly resultNode: QueryNode) {
+    }
+
+    public describe() {
+        return `with pre execute(\n` + indent('' + // '' to move the arg label here in WebStorm
+            `${this.preExecQuery.describe()}`) +
+            `\n)as ${this.preExecQueryResultVariable.describe()} evaluate(\n` + indent('' + // '' to move the arg label here in WebStorm
+            `${this.resultNode.describe()}`) +
+            `\n)`;
+    }
+}
+
+export class DocumentFromFullIdQueryNode implements QueryNode {
+    constructor(public readonly fullIdNode: QueryNode) {
+    }
+
+    public describe() {
+        return `document(${this.fullIdNode.describe()})`;
+    }
+}
+
 /**
  * A node that evaluates to a predefined literal value
  */

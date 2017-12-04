@@ -1,6 +1,7 @@
 import { getNamedType, GraphQLField, GraphQLObjectType } from 'graphql';
 import { objectValues } from '../utils/utils';
 import { isRelationField } from './schema-utils';
+import { isListType } from '../graphql/schema-utils';
 
 export enum RelationFieldEdgeSide {
     FROM_SIDE,
@@ -39,40 +40,35 @@ export class EdgeType {
     }
 }
 
-export function getEdgeType(parentType: GraphQLObjectType, field: GraphQLField<any, any>) {
-    const otherType = getNamedType(field.type);
+export function getEdgeType(parentType: GraphQLObjectType, parentField: GraphQLField<any, any>) {
+    const otherType = getNamedType(parentField.type);
     if (!(otherType instanceof GraphQLObjectType)) {
-        throw new Error(`Relation field ${parentType.name}.${field.name} is of type ${field.type} which is not an object type`);
+        throw new Error(`Relation field ${parentType.name}.${parentField.name} is of type ${parentField.type} which is not an object type`);
     }
-    const opponentRelationFields = objectValues(otherType.getFields()).filter(otherTypeField => {
-        if (!isRelationField(otherTypeField)) {
-            return false;
-        }
-        const otherTypeFieldType = getNamedType(otherTypeField.type);
-        return otherTypeFieldType === parentType && (parentType !== otherType || otherTypeField !== field)
-    });
-    let opponentField = undefined;
-    if(opponentRelationFields.length > 1) {
+    const matchingOtherFields = objectValues(otherType.getFields()).filter(field =>
+        isRelationField(field) && getNamedType(field.type) === parentType && field !== parentField
+    );
+
+    if (matchingOtherFields.length > 1) {
         // TODO allow multiple references between two types. See discriminator
-        throw new Error(`Currently there is only one relation between two types allowed, but found multiple fields to same type in ${otherType.name}: ${opponentRelationFields.map(f => f.name)}`);
-    } else if (opponentRelationFields.length === 1) {
-        opponentField = opponentRelationFields[0];
+        throw new Error(`Currently there is only one relation between two types allowed, but found multiple fields to same type in ${otherType.name}: ${matchingOtherFields.map(f => f.name)}`);
     }
+    const otherField = matchingOtherFields.length ? matchingOtherFields[0] : undefined;
 
     // TODO add discriminator
-    if (parentType.name < otherType.name || (parentType.name === otherType.name && (!opponentField || field.name < opponentField.name))) {
+    if (parentType.name < otherType.name || (parentType.name === otherType.name && (!otherField || parentField.name < otherField.name))) {
         return new EdgeType({
             fromType: parentType,
-            fromField: field,
+            fromField: parentField,
             toType: otherType,
-            toField: opponentField
+            toField: otherField
         });
     } else {
         return new EdgeType({
             fromType: otherType,
-            fromField: opponentField,
+            fromField: otherField,
             toType: parentType,
-            toField: field
+            toField: parentField
         });
     }
 }
