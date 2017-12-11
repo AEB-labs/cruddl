@@ -9,6 +9,7 @@ import { getEdgeType } from '../../schema/edges';
 import { getCollectionNameForEdge, getCollectionNameForRootEntity } from './arango-basics';
 import {globalContext} from "../../config/global";
 import { AQLExecutableQuery } from './aql';
+import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS } from '../../query/query-result-validators';
 
 export interface ArangoDBConfig {
     readonly url: string;
@@ -20,6 +21,8 @@ export interface ArangoDBConfig {
 export class ArangoDBAdapter implements DatabaseAdapter {
     private db: Database;
     private logger = globalContext.loggerProvider.getLogger('ArangoDBAdapter');
+    private allValidatorFunctions: string;
+
     constructor(config: ArangoDBConfig) {
         this.db = new Database({
             url: config.url,
@@ -30,8 +33,16 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             // Therefore we cast to any
             (this.db as any).useBasicAuth(config.user, config.password);
         }
+
+        this.initAllValidatorFunctions();
     }
 
+    private initAllValidatorFunctions() {
+        const providers = ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS.map(provider =>
+            `['${provider.getValidatorName()}']:${String(provider.getValidatorFunction())}`);
+
+        this.allValidatorFunctions = `validators = {${providers.join(',\n')}}`
+    }
 
 
     async execute(queryTree: QueryNode) {
@@ -44,16 +55,28 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         function executeQueriesInArango(queries: AQLExecutableQuery[]) {
             const db = require("@arangodb").db;
 
+            let validators: {[name:string]: (validationData: any, result:any) => void} = {};
+            //inject_validators_here
+
             let resultHolder: {[p: string]: any} = {};
             for (const query of queries) {
                 const boundValues = query.boundValues;
                 for (const key in query.usedPreExecResultNames) {
                     boundValues[query.usedPreExecResultNames[key]] = resultHolder[key];
                 }
+
+                const result = db._query(query.code, boundValues).next();
+
                 if (query.resultName) {
-                    resultHolder[query.resultName] = db._query(query.code, boundValues).next();
-                } else {
-                    db._query(query.code, boundValues);
+                    resultHolder[query.resultName] = result;
+                }
+
+                if (query.resultValidator) {
+                    for (const key in query.resultValidator) {
+                        if (key in validators) {
+                            validators[key](query.resultValidator[key], result);
+                        }
+                    }
                 }
             }
 
@@ -71,7 +94,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                 read: aqlQuery.readAccessedCollections,
                 write: aqlQuery.writeAccessedCollections
             },
-            String(executeQueriesInArango),
+            String(executeQueriesInArango).replace('//inject_validators_here', this.allValidatorFunctions),
             executableQueries
         );
     }

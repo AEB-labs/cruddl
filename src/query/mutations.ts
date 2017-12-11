@@ -18,7 +18,7 @@ import {
     MergeObjectsQueryNode,
     NullQueryNode,
     ObjectQueryNode,
-    PartialEdgeIdentifier,
+    PartialEdgeIdentifier, PreExecQueryParms,
     PropertySpecification,
     QueryNode,
     RemoveEdgesQueryNode,
@@ -73,6 +73,7 @@ import { RelationFieldEdgeSide, EdgeType, getEdgeType } from '../schema/edges';
 import uuid = require('uuid');
 import {flattenValueNode} from "../schema/directive-arg-flattener";
 import {globalContext} from "../config/global";
+import { ErrorIfNotTruthyResultValidator } from './query-result-validators';
 
 /**
  * Creates a QueryNode for a field of the root mutation type
@@ -120,15 +121,14 @@ function createCreateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestSta
     const createEntityNode = new CreateEntityQueryNode(entityType, objectNode);
     const newEntityIdVarNode = new VariableQueryNode('newEntityId');
     const newEntityDocNode = new DocumentFromFullIdQueryNode(newEntityIdVarNode);
+    const newEntityPreExec: PreExecQueryParms = {query: createEntityNode, resultVariable: newEntityIdVarNode};
 
     // Add relations if needed
-    let createRelationsNode = undefined;
+    let createRelationsPreExec: PreExecQueryParms|undefined = undefined;
     const relationStatements = getRelationAddRemoveStatements(input, entityType, newEntityDocNode, false); //TODO handover id directly, and not the complete document
     if (relationStatements.length) {
-        createRelationsNode = new FirstOfListQueryNode(new ListQueryNode([
-            new NullQueryNode(),
-            ...relationStatements
-        ]));
+        createRelationsPreExec = { query:
+            new FirstOfListQueryNode(new ListQueryNode([new NullQueryNode(),...relationStatements]))};
     }
 
     // Build up result query node
@@ -141,7 +141,10 @@ function createCreateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestSta
     });
 
     // PreExecute creation and relation queries and return result
-    return new WithPreExecutionQueryNode(resultNode, newEntityIdVarNode, createEntityNode, createRelationsNode);
+    return new WithPreExecutionQueryNode({
+        resultNode,
+        preExecQueries: [newEntityPreExec, createRelationsPreExec]
+    });
 }
 
 function prepareMutationInput(input: PlainObject, objectType: GraphQLObjectType, mutationType: MutationType): PlainObject {
@@ -298,6 +301,8 @@ function createUpdateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestSta
         throw new Error(`Object type ${entityName} not found but needed for field ${fieldRequest.fieldName}`);
     }
     const input = prepareMutationInput(fieldRequest.args[MUTATION_INPUT_ARG], entityType, MutationType.UPDATE);
+
+    // Update entity query
     const currentEntityVarNode = new VariableQueryNode('currentEntity');
     const filterNode = new BinaryOperationQueryNode(new RootEntityIDQueryNode(currentEntityVarNode),
         BinaryOperator.EQUAL,
@@ -309,27 +314,35 @@ function createUpdateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestSta
         maxCount: 1,
         currentEntityVariable: currentEntityVarNode
     }));
+    const updatedEntityIdVarNode = new VariableQueryNode('updatedEntityId');
+    const updatedEntityDocNode = new DocumentFromFullIdQueryNode(updatedEntityIdVarNode);
+    const updateEntityResultValidator = new ErrorIfNotTruthyResultValidator(`${entityType.name} with id ${input[ID_FIELD]} could not be found.`)
+    const updatedEntityPreExec: PreExecQueryParms = {query: updateEntityNode, resultVariable: updatedEntityIdVarNode, resultValidator: updateEntityResultValidator};
 
-    const updatedEntityVarNode = new VariableQueryNode('updatedEntity');
-    let resultNode: QueryNode = createEntityObjectNode(fieldRequest.selectionSet, updatedEntityVarNode, fieldRequestStack);
-
-    // put these statements here because they need to be executed in the context of the updated variable
-    const relationStatements = getRelationAddRemoveStatements(input, entityType, updatedEntityVarNode, true);
+    // update relations if needed
+    let updateRelationsPreExec: PreExecQueryParms|undefined = undefined;
+    const relationStatements = getRelationAddRemoveStatements(input, entityType, updatedEntityDocNode, true); //TODO handover id directly, and not the complete document
     if (relationStatements.length) {
-        resultNode = new FirstOfListQueryNode(new ListQueryNode([
-            resultNode,
-            ...relationStatements
-        ]));
+        updateRelationsPreExec = { query:
+            new FirstOfListQueryNode(new ListQueryNode([new NullQueryNode(), ...relationStatements]))};
     }
 
-    const conditionalResultNode = new ConditionalQueryNode( // updated entity may not exist
-        new TypeCheckQueryNode(updatedEntityVarNode, BasicType.OBJECT),
+    // Build up result query node
+    const updatedEntityVarNode = new VariableQueryNode('updatedEntity');
+    const objectQueryNode = new ConditionalQueryNode( // updated entity may not exist
+        new TypeCheckQueryNode(updatedEntityVarNode, BasicType.NULL),
+        new NullQueryNode(),
+        createEntityObjectNode(fieldRequest.selectionSet, updatedEntityVarNode, fieldRequestStack));
+    const resultNode = new VariableAssignmentQueryNode({
+        variableValueNode: updatedEntityDocNode,
+        resultNode: objectQueryNode,
+        variableNode: updatedEntityVarNode
+    });
+
+    // PreExecute update and relation queries and return result
+    return new WithPreExecutionQueryNode({
         resultNode,
-        new NullQueryNode());
-    return new VariableAssignmentQueryNode({
-        variableNode: updatedEntityVarNode,
-        variableValueNode: updateEntityNode,
-        resultNode: conditionalResultNode
+        preExecQueries: [updatedEntityPreExec, updateRelationsPreExec]
     });
 }
 

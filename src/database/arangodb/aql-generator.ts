@@ -11,7 +11,7 @@ import { getCollectionNameForEdge, getCollectionNameForRootEntity } from './aran
 import { GraphQLNamedType, GraphQLObjectType } from 'graphql';
 import { EdgeType, RelationFieldEdgeSide } from '../../schema/edges';
 import { simplifyBooleans } from '../../query/query-tree-utils';
-import { flatMap } from '../../utils/utils';
+import { QueryResultValidator } from '../../query/query-result-validators';
 
 enum AccessType {
     READ,
@@ -55,7 +55,7 @@ class QueryContext {
         return this.newNestedContextWithNewVariable(variableNode, variable);
     }
 
-    addPreExecuteQuery(preExecQuery: QueryNode, resultVariable?: VariableQueryNode): QueryContext {
+    addPreExecuteQuery(preExecQuery: QueryNode, resultVariable?: VariableQueryNode, resultValidator?: QueryResultValidator): QueryContext {
         let resultVar: AQLQueryResultVariable|undefined;
         let newContext: QueryContext;
         if (resultVariable) {
@@ -66,7 +66,7 @@ class QueryContext {
             newContext = this;
         }
 
-        const aqlQuery = createAQLCompoundQuery(preExecQuery, resultVar, this.newPreExecContext());
+        const aqlQuery = createAQLCompoundQuery(preExecQuery, resultVar, resultValidator, this.newPreExecContext());
 
         this.preExecQueries.push(aqlQuery);
         return newContext;
@@ -104,13 +104,16 @@ class QueryContext {
     }
 }
 
-function createAQLCompoundQuery(node: QueryNode, resultVariable: AQLQueryResultVariable|undefined, context: QueryContext): AQLCompoundQuery {
+function createAQLCompoundQuery(node: QueryNode,
+                                resultVariable: AQLQueryResultVariable|undefined,
+                                resultValidator: QueryResultValidator|undefined,
+                                context: QueryContext): AQLCompoundQuery {
     const aqlQuery = aql`RETURN ${processNode(node, context)}`;
     const preExecQueries = context.getPreExecuteQueries();
     const readAccessedCollections = context.getReadAccessedCollections();
     const writeAccessedCollections = context.getWriteAccessedCollections();
 
-    return new AQLCompoundQuery(preExecQueries, aqlQuery, resultVariable, readAccessedCollections, writeAccessedCollections);
+    return new AQLCompoundQuery(preExecQueries, aqlQuery, resultVariable, resultValidator, readAccessedCollections, writeAccessedCollections);
 }
 
 type NodeProcessor<T extends QueryNode> = (node: T, context: QueryContext) => AQLFragment;
@@ -200,11 +203,12 @@ const processors : { [name: string]: NodeProcessor<any> } = {
     },
 
     WithPreExecution(node: WithPreExecutionQueryNode, context): AQLFragment {
-        const newContext = context.addPreExecuteQuery(node.preExecQuery, node.preExecQueryResultVariable);
+        let currentContext = context;
+        for (const preExecParm of node.preExecQueries) {
+            currentContext = currentContext.addPreExecuteQuery(preExecParm.query, preExecParm.resultVariable, preExecParm.resultValidator);
+        }
 
-        node.morePreExecQueries.forEach(preExecQuery => newContext.addPreExecuteQuery(preExecQuery));
-
-        return aql`${processNode(node.resultNode, newContext)}`;
+        return aql`${processNode(node.resultNode, currentContext)}`;
     },
 
     DocumentFromFullId(node: DocumentFromFullIdQueryNode, context): AQLFragment {
@@ -381,7 +385,7 @@ const processors : { [name: string]: NodeProcessor<any> } = {
             aql`WITH ${processNode(new ObjectQueryNode(node.updates), newContext)}`,
             aql`IN ${getCollectionForType(node.objectType, AccessType.WRITE, context)}`,
             aql`OPTIONS { mergeObjects: false }`,
-            aql`RETURN NEW`
+            aql`RETURN NEW._id`
         );
     },
 
@@ -551,7 +555,7 @@ export function getAQLForQuery(node: QueryNode): AQLFragment {
 }
 
 export function getAQLQuery(node: QueryNode): AQLCompoundQuery {
-    return createAQLCompoundQuery(node, aql.queryResultVariable('result'), new QueryContext());
+    return createAQLCompoundQuery(node, aql.queryResultVariable('result'), undefined, new QueryContext());
 }
 
 function getCollectionForType(type: GraphQLNamedType, accessType: AccessType, context: QueryContext) {

@@ -38,6 +38,7 @@
 import { GraphQLField, GraphQLObjectType } from 'graphql';
 import { compact, indent } from '../utils/utils';
 import { EdgeType, RelationFieldEdgeSide } from '../schema/edges';
+import { QueryResultValidator } from './query-result-validators';
 
 export interface QueryNode {
     describe(): string;
@@ -109,23 +110,36 @@ export class VariableAssignmentQueryNode implements QueryNode {
     }
 }
 
+export type PreExecQueryParms = { query: QueryNode, resultVariable?: VariableQueryNode, resultValidator?: QueryResultValidator };
+
 export class WithPreExecutionQueryNode implements QueryNode {
-    public readonly morePreExecQueries: QueryNode[]
-    constructor(public readonly resultNode: QueryNode, public readonly preExecQueryResultVariable: VariableQueryNode, public readonly preExecQuery: QueryNode, ...morePreExecQueries: (QueryNode|undefined)[]) {
-        this.morePreExecQueries = compact(morePreExecQueries);
+
+    public readonly resultNode: QueryNode;
+    public readonly preExecQueries: PreExecQueryParms[];
+
+    constructor(params:{
+        resultNode: QueryNode,
+        preExecQueries: (PreExecQueryParms|undefined)[]
+    }) {
+        this.resultNode = params.resultNode;
+        this.preExecQueries = compact(params.preExecQueries);
     }
 
     public describe() {
-        const morePreExecDescriptions = this.morePreExecQueries.map(node =>
-            ` and (\n` + indent(node.describe()) + `\n)` ).join('');
+        if (!this.preExecQueries.length) {
+            return this.resultNode.describe();
+        }
 
-        return `with pre execute (\n` + indent('' + // '' to move the arg label here in WebStorm
-            `${this.preExecQuery.describe()}`) +
-            `\n) as ${this.preExecQueryResultVariable.describe()}` +
-            morePreExecDescriptions +
-            ` evaluate (\n` + indent('' + // '' to move the arg label here in WebStorm
-            `${this.resultNode.describe()}`) +
-            `\n)`;
+        const preExecDescriptions = this.preExecQueries.map(parms => {
+            const resultVarDescr = parms.resultVariable ? `${parms.resultVariable.describe()} = ` : '';
+            const validatorDescr = parms.resultValidator ? ' validate result: ' + parms.resultValidator.describe(): '';
+            return resultVarDescr + '(\n' + indent(parms.query.describe()) + '\n)' + validatorDescr;
+        })
+        const resultDescr = '(\n' + indent(this.resultNode.describe()) + '\n)';
+
+        return 'pre execute\n' + indent('' + // '' to move the arg label here in WebStorm
+            preExecDescriptions.join('\nthen ') + '\n' +
+            `return ${resultDescr}`);
     }
 }
 
