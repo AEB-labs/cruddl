@@ -143,12 +143,12 @@ export class WithPreExecutionQueryNode implements QueryNode {
     }
 }
 
-export class DocumentFromFullIdQueryNode implements QueryNode {
-    constructor(public readonly fullIdNode: QueryNode) {
+export class EntityFromIdQueryNode implements QueryNode {
+    constructor(public readonly objectType: GraphQLObjectType, public readonly idNode: QueryNode) {
     }
 
     public describe() {
-        return `document(${this.fullIdNode.describe()})`;
+        return `${this.objectType.name.blue} with id (${this.idNode.describe()})`;
     }
 }
 

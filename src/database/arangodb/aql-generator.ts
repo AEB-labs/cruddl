@@ -1,7 +1,7 @@
 import {
     AddEdgesQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode,
-    ConstBoolQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, DocumentFromFullIdQueryNode, EdgeFilter, EdgeIdentifier,
-    EntitiesQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode,
+    ConstBoolQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeFilter, EdgeIdentifier,
+    EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode,
     MergeObjectsQueryNode, ObjectQueryNode, OrderDirection, OrderSpecification, PartialEdgeIdentifier, QueryNode,
     RemoveEdgesQueryNode, RootEntityIDQueryNode, SetEdgeQueryNode, TransformListQueryNode, TypeCheckQueryNode,
     UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode
@@ -211,8 +211,9 @@ const processors : { [name: string]: NodeProcessor<any> } = {
         return aql`${processNode(node.resultNode, currentContext)}`;
     },
 
-    DocumentFromFullId(node: DocumentFromFullIdQueryNode, context): AQLFragment {
-        return aql`DOCUMENT(${processNode(node.fullIdNode, context)})`;
+    EntityFromId(node:  EntityFromIdQueryNode, context): AQLFragment {
+        const collection = getCollectionForType(node.objectType, AccessType.READ, context);
+        return aql`DOCUMENT(${collection}, ${processNode(node.idNode, context)})`;
     },
 
     Field(node: FieldQueryNode, context): AQLFragment {
@@ -369,7 +370,7 @@ const processors : { [name: string]: NodeProcessor<any> } = {
     CreateEntity(node: CreateEntityQueryNode, context): AQLFragment {
         return aqlExt.parenthesizeObject(
             aql`INSERT ${processNode(node.objectNode, context)} IN ${getCollectionForType(node.objectType, AccessType.WRITE, context)}`,
-            aql`RETURN NEW._id`
+            aql`RETURN NEW._key`
         );
     },
 
@@ -385,7 +386,7 @@ const processors : { [name: string]: NodeProcessor<any> } = {
             aql`WITH ${processNode(new ObjectQueryNode(node.updates), newContext)}`,
             aql`IN ${getCollectionForType(node.objectType, AccessType.WRITE, context)}`,
             aql`OPTIONS { mergeObjects: false }`,
-            aql`RETURN NEW._id`
+            aql`RETURN NEW._key`
         );
     },
 

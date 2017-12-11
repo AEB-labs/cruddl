@@ -8,9 +8,9 @@ import {
     ConcatListsQueryNode,
     ConditionalQueryNode,
     CreateEntityQueryNode,
-    DeleteEntitiesQueryNode, DocumentFromFullIdQueryNode,
+    DeleteEntitiesQueryNode,
     EdgeFilter,
-    EdgeIdentifier,
+    EdgeIdentifier, EntityFromIdQueryNode,
     FieldQueryNode,
     FirstOfListQueryNode,
     ListQueryNode,
@@ -120,12 +120,11 @@ function createCreateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestSta
     // Create new entity
     const createEntityNode = new CreateEntityQueryNode(entityType, objectNode);
     const newEntityIdVarNode = new VariableQueryNode('newEntityId');
-    const newEntityDocNode = new DocumentFromFullIdQueryNode(newEntityIdVarNode);
     const newEntityPreExec: PreExecQueryParms = {query: createEntityNode, resultVariable: newEntityIdVarNode};
 
     // Add relations if needed
     let createRelationsPreExec: PreExecQueryParms|undefined = undefined;
-    const relationStatements = getRelationAddRemoveStatements(input, entityType, newEntityDocNode, false); //TODO handover id directly, and not the complete document
+    const relationStatements = getRelationAddRemoveStatements(input, entityType, newEntityIdVarNode, false);
     if (relationStatements.length) {
         createRelationsPreExec = { query:
             new FirstOfListQueryNode(new ListQueryNode([new NullQueryNode(),...relationStatements]))};
@@ -135,9 +134,9 @@ function createCreateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestSta
     const newEntityVarNode = new VariableQueryNode('newEntity');
     const objectQueryNode = createEntityObjectNode(fieldRequest.selectionSet, newEntityVarNode, fieldRequestStack);
     const resultNode = new VariableAssignmentQueryNode({
-        variableValueNode: newEntityDocNode,
-        resultNode: objectQueryNode,
-        variableNode: newEntityVarNode
+        variableNode: newEntityVarNode,
+        variableValueNode: new EntityFromIdQueryNode(entityType, newEntityIdVarNode),
+        resultNode: objectQueryNode
     });
 
     // PreExecute creation and relation queries and return result
@@ -315,13 +314,12 @@ function createUpdateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestSta
         currentEntityVariable: currentEntityVarNode
     }));
     const updatedEntityIdVarNode = new VariableQueryNode('updatedEntityId');
-    const updatedEntityDocNode = new DocumentFromFullIdQueryNode(updatedEntityIdVarNode);
     const updateEntityResultValidator = new ErrorIfNotTruthyResultValidator(`${entityType.name} with id ${input[ID_FIELD]} could not be found.`)
     const updatedEntityPreExec: PreExecQueryParms = {query: updateEntityNode, resultVariable: updatedEntityIdVarNode, resultValidator: updateEntityResultValidator};
 
     // update relations if needed
     let updateRelationsPreExec: PreExecQueryParms|undefined = undefined;
-    const relationStatements = getRelationAddRemoveStatements(input, entityType, updatedEntityDocNode, true); //TODO handover id directly, and not the complete document
+    const relationStatements = getRelationAddRemoveStatements(input, entityType, updatedEntityIdVarNode, true);
     if (relationStatements.length) {
         updateRelationsPreExec = { query:
             new FirstOfListQueryNode(new ListQueryNode([new NullQueryNode(), ...relationStatements]))};
@@ -334,9 +332,9 @@ function createUpdateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestSta
         new NullQueryNode(),
         createEntityObjectNode(fieldRequest.selectionSet, updatedEntityVarNode, fieldRequestStack));
     const resultNode = new VariableAssignmentQueryNode({
-        variableValueNode: updatedEntityDocNode,
-        resultNode: objectQueryNode,
-        variableNode: updatedEntityVarNode
+        variableNode: updatedEntityVarNode,
+        variableValueNode: new EntityFromIdQueryNode(entityType, updatedEntityIdVarNode),
+        resultNode: objectQueryNode
     });
 
     // PreExecute update and relation queries and return result
@@ -346,7 +344,7 @@ function createUpdateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestSta
     });
 }
 
-function getRelationAddRemoveStatements(obj: PlainObject, parentType: GraphQLObjectType, sourceEntityNode: QueryNode, isAddRemove: boolean): QueryNode[] {
+function getRelationAddRemoveStatements(obj: PlainObject, parentType: GraphQLObjectType, sourceIDNode: QueryNode, isAddRemove: boolean): QueryNode[] {
     // note: we don't check if the target ids exists. This would be a constraint that will be checked in Foxx once we
     // implement Foxx. It's not easy to do this in AQL because we can't throw errors in AQL.
 
@@ -354,7 +352,6 @@ function getRelationAddRemoveStatements(obj: PlainObject, parentType: GraphQLObj
     const statements: QueryNode[] = [];
     for (const field of relationFields) {
         const edgeType = getEdgeType(parentType, field);
-        const sourceIDNode = new RootEntityIDQueryNode(sourceEntityNode);
         if (isListType(field.type)) {
             // to-n relation
             const idsToBeAdded = (isAddRemove ? obj[getAddRelationFieldName(field.name)] : obj[field.name]) as string[] | undefined || [];
