@@ -52,7 +52,7 @@
     "typescript": "^2.5.2"
   },
   "dependencies": {
-    "arangojs": "^5.7.0",
+    "arangojs": "~5.7.1",
     "colors": "^1.1.2",
     "graphql-tag": "^2.5.0",
     "graphql-transformer": "^0.1.2",
