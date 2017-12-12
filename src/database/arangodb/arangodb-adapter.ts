@@ -21,7 +21,7 @@ export interface ArangoDBConfig {
 export class ArangoDBAdapter implements DatabaseAdapter {
     private db: Database;
     private logger = globalContext.loggerProvider.getLogger('ArangoDBAdapter');
-    private allValidatorFunctions: string;
+    private readonly arangoExecutionFunction: string;
 
     constructor(config: ArangoDBConfig) {
         this.db = new Database({
@@ -34,25 +34,17 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             (this.db as any).useBasicAuth(config.user, config.password);
         }
 
-        this.initAllValidatorFunctions();
+        this.arangoExecutionFunction = this.buildUpArangoExecutionFunction();
     }
 
-    private initAllValidatorFunctions() {
-        const providers = ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS.map(provider =>
-            `['${provider.getValidatorName()}']:${String(provider.getValidatorFunction())}`);
+    private buildUpArangoExecutionFunction(): string {
 
-        this.allValidatorFunctions = `validators = {${providers.join(',\n')}}`
-    }
+        // The following function will be translated to a string and executed (as one transaction) within the
+        // ArangoDB server itself. Therefore the next comment is necessary to instruct our test coverage tool
+        // (https://github.com/istanbuljs/nyc) not to instrument the code with coverage instructions.
 
-
-    async execute(queryTree: QueryNode) {
-        //TODO Execute single statement AQL queries directly without "db.transaction"?
-        const aqlQuery = getAQLQuery(queryTree);
-        const executableQueries = aqlQuery.getExecutableQueries();
-
-        this.logger.debug(aqlQuery.toColoredString());
-
-        function executeQueriesInArango(queries: AQLExecutableQuery[]) {
+        /* istanbul ignore next */
+        const arangoExecutionFunction = function (queries: AQLExecutableQuery[]) {
             const db = require("@arangodb").db;
 
             let validators: {[name:string]: (validationData: any, result:any) => void} = {};
@@ -86,15 +78,32 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             } else {
                 return undefined;
             }
+        };
 
-        }
+
+        const validatorProviders = ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS.map(provider =>
+            `['${provider.getValidatorName()}']:${String(provider.getValidatorFunction())}`);
+
+        const allValidatorFunctionsObjectString = `validators = {${validatorProviders.join(',\n')}}`
+
+        return String(arangoExecutionFunction)
+            .replace('//inject_validators_here', allValidatorFunctionsObjectString);
+    }
+
+
+    async execute(queryTree: QueryNode) {
+        //TODO Execute single statement AQL queries directly without "db.transaction"?
+        const aqlQuery = getAQLQuery(queryTree);
+        const executableQueries = aqlQuery.getExecutableQueries();
+
+        this.logger.debug(aqlQuery.toColoredString());
 
         return await this.db.transaction(
             {
                 read: aqlQuery.readAccessedCollections,
                 write: aqlQuery.writeAccessedCollections
             },
-            String(executeQueriesInArango).replace('//inject_validators_here', this.allValidatorFunctions),
+            this.arangoExecutionFunction,
             executableQueries
         );
     }

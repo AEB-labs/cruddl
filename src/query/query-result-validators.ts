@@ -13,6 +13,11 @@ export class ErrorIfNotTruthyResultValidator implements QueryResultValidator {
     constructor (public readonly errorMessage: string, public readonly errorNumber?: number) {
     }
 
+    // The following function will be translated to a string and executed within the ArangoDB server itself.
+    // Therefore the next comment is necessary to instruct our test coverage tool (https://github.com/istanbuljs/nyc)
+    // not to instrument the code with coverage instructions.
+
+    /* istanbul ignore next */
     static getValidatorFunction(){
         return function(validationData: any, result: any) {
             if(!result) {
