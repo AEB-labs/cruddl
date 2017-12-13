@@ -30,10 +30,10 @@ export function validateSchema(inputSchemaConfig: SchemaConfig): ValidationResul
  Use the optional context to inject your logging framework.
   */
 export function createSchema(inputSchemaConfig: SchemaConfig, context?: GlobalContext): GraphQLSchema {
-
     if (context) {
         globalContext.registerContext(context);
     }
+    const logger = globalContext.loggerProvider.getLogger('schema-builder');
 
     const schemaConfig = parseSchemaParts(inputSchemaConfig);
 
@@ -46,11 +46,11 @@ export function createSchema(inputSchemaConfig: SchemaConfig, context?: GlobalCo
     if(validationResult.hasErrors()) {
         throw new Error('Invalid model:\n' + validationResult.messages.map(msg => msg.toString()).join('\n'))
     } else {
-        globalContext.loggerProvider.getLogger('schema-builder').info('Schema successfully created.')
+        logger.info('Schema successfully created.')
     }
 
     executePostMergeTransformationPipeline(mergedSchema, {...rootContext});
-    console.log(print(mergedSchema));
+    logger.debug(print(mergedSchema));
     const executableGraphQLSchema = buildASTSchema(mergedSchema);
     return implementScalarTypes(executableGraphQLSchema);
 }
