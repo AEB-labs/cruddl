@@ -166,12 +166,12 @@ export function getScalarFieldsOfObjectDefinition(ast: DocumentNode, objectDefin
     });
 }
 
-export function getNamedTypeDefinitionAST(ast: DocumentNode, name: string): ObjectTypeDefinitionNode|ScalarTypeDefinitionNode|EnumTypeDefinitionNode {
+export function getNamedTypeDefinitionAST(ast: DocumentNode, name: string): ObjectTypeDefinitionNode|ScalarTypeDefinitionNode|EnumTypeDefinitionNode|InputObjectTypeDefinitionNode {
     if (['String', 'ID', 'Int', 'Float', 'Boolean'].includes(name)) {
         // Fake default scalar types, because they are not present in AST but will be generated later during schema creation.
         return buildScalarDefinitionNode(name);
     }
-    const type = ast.definitions.find(def => (def.kind === OBJECT_TYPE_DEFINITION || def.kind === SCALAR_TYPE_DEFINITION || def.kind === ENUM_TYPE_DEFINITION) && def.name.value === name);
+    const type = ast.definitions.find(def => (def.kind === OBJECT_TYPE_DEFINITION || def.kind === SCALAR_TYPE_DEFINITION || def.kind === ENUM_TYPE_DEFINITION || def.kind === INPUT_OBJECT_TYPE_DEFINITION) && def.name.value === name);
     if (!type) {
         throw new Error(`Undefined type ${name}`);
     }
@@ -203,7 +203,7 @@ export function buildNameNode(name: string): NameNode {
     return { kind: NAME, value: name };
 }
 
-export function findDirectiveWithName(typeOrField: ObjectTypeDefinitionNode|FieldDefinitionNode|InputValueDefinitionNode|EnumValueDefinitionNode, directiveName: string): DirectiveNode|undefined {
+export function findDirectiveWithName(typeOrField: ObjectTypeDefinitionNode|FieldDefinitionNode|InputValueDefinitionNode|EnumValueDefinitionNode|InputObjectTypeDefinitionNode, directiveName: string): DirectiveNode|undefined {
     // remove leading @
     if (directiveName[0] === '@') {
         directiveName = directiveName.substr(1, directiveName.length - 1);

@@ -113,7 +113,8 @@ export class AddFilterInputTypesTransformer implements ASTTransformer {
             kind: INPUT_OBJECT_TYPE_DEFINITION,
             name: {kind: "Name", value: getFilterTypeName(objectType)},
             fields: args,
-            loc: objectType.loc
+            loc: objectType.loc,
+            directives: compact([ findDirectiveWithName(objectType, ROLES_DIRECTIVE) ])
         }
     }
 
