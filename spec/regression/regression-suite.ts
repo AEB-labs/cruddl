@@ -16,12 +16,16 @@ interface TestResult {
     expectedResult: any
 }
 
+export interface RegressionSuiteOptions {
+    saveActualAsExpected?: boolean
+}
+
 export class RegressionSuite {
     private schema: GraphQLSchema;
     private testDataEnvironment: TestDataEnvironment;
     private _isSetUpClean = false;
 
-    constructor(private readonly path: string) {
+    constructor(private readonly path: string, private options: RegressionSuiteOptions = {}) {
 
     }
 
@@ -89,6 +93,10 @@ export class RegressionSuite {
             }
         } else {
             actualResult = await graphql(this.schema, gqlSource, {} /* root */, context, variableValues);
+        }
+
+        if (this.options.saveActualAsExpected && !(jasmine as any).matchersUtil.equals(actualResult, expectedResult)) {
+            fs.writeFileSync(resultPath, JSON.stringify(actualResult, undefined, '  '), 'utf-8');
         }
 
         return {
