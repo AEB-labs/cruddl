@@ -8,6 +8,7 @@ import * as path from 'path';
 import { createSchema } from '../../../src/schema/schema-builder';
 import { addQueryResolvers } from '../../../src/query/query-resolvers';
 import {SchemaConfig, SchemaPartConfig} from "../../../src/config/schema-config";
+import { getLogger, Logger } from 'log4js';
 
 // arangojs typings for this are completely broken
 export const aql: (template: TemplateStringsArray, ...args: any[]) => any = require('arangojs').aql;
@@ -24,7 +25,15 @@ export function createDumbSchema(modelPath: string): GraphQLSchema {
         schemaParts: fs.readdirSync(modelPath)
             .map(file => fileToSchemaPartConfig(path.resolve(modelPath, file)))
     };
-    return createSchema(schemaConfig);
+    return createSchema(schemaConfig, {
+        loggerProvider: {
+            getLogger: category => {
+                const logger = getLogger(category);
+                logger.level = 'warn';
+                return logger;
+            }
+        }
+    });
 }
 
 export async function initEnvironment(): Promise<TestEnvironment> {
