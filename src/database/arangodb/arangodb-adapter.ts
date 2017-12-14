@@ -88,7 +88,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
 
 
         const validatorProviders = ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS.map(provider =>
-            `['${provider.getValidatorName()}']:${String(provider.getValidatorFunction())}`);
+            `[${JSON.stringify(provider.getValidatorName)}]: ${String(provider.getValidatorFunction())}`);
 
         const allValidatorFunctionsObjectString = `validators = {${validatorProviders.join(',\n')}}`;
 
