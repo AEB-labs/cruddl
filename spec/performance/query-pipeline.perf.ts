@@ -4,7 +4,7 @@ import { createDumbSchema } from './support/helpers';
 import * as path from 'path';
 import { DistilledOperation, distillQuery } from '../../src/graphql/query-distiller';
 import { createQueryTree } from '../../src/query/query-tree-builder';
-import { getAQLForQuery } from '../../src/database/arangodb/aql-generator';
+import { getAQLForQuery, getAQLQuery } from '../../src/database/arangodb/aql-generator';
 import { QueryNode } from '../../src/query/definition';
 import { compact } from '../../src/utils/utils';
 
@@ -129,8 +129,8 @@ function testQueryPipeline(params: { parser: boolean, queryDistiller: boolean, q
                 createQueryTree(preparedQuery.distilledOperation);
             }
             if (params.aql) {
-                const fragment = getAQLForQuery(preparedQuery.queryTree);
-                fragment.getCode();
+                const transaction = getAQLQuery(preparedQuery.queryTree);
+                transaction.getExecutableQueries();
             }
         }
     };
