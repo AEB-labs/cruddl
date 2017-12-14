@@ -1,10 +1,11 @@
 import {
     AddEdgesQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode,
     ConstBoolQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeFilter, EdgeIdentifier,
-    EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode,
-    MergeObjectsQueryNode, ObjectQueryNode, OrderDirection, OrderSpecification, PartialEdgeIdentifier, QueryNode,
-    RemoveEdgesQueryNode, RootEntityIDQueryNode, SetEdgeQueryNode, TransformListQueryNode, TypeCheckQueryNode,
-    UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode
+    EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode,
+    LiteralQueryNode, MergeObjectsQueryNode, ObjectQueryNode, OrderDirection, OrderSpecification, PartialEdgeIdentifier,
+    QueryNode, RemoveEdgesQueryNode, RootEntityIDQueryNode, SetEdgeQueryNode, TransformListQueryNode,
+    TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode,
+    VariableQueryNode, WithPreExecutionQueryNode
 } from '../../query/definition';
 import { aql, AQLCompoundQuery, AQLFragment, AQLQueryResultVariable, AQLVariable } from './aql';
 import { getCollectionNameForEdge, getCollectionNameForRootEntity } from './arango-basics';
@@ -581,11 +582,6 @@ function processNode(node: QueryNode, context: QueryContext): AQLFragment {
         throw new Error(`Unsupported query type: ${type}`);
     }
     return processorMap[type](node, context);
-}
-
-export function getAQLForQuery(node: QueryNode): AQLFragment {
-    //TODO delete this method
-    return aql`RETURN ${processNode(node, new QueryContext())}`;
 }
 
 export function getAQLQuery(node: QueryNode): AQLCompoundQuery {

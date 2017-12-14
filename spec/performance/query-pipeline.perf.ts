@@ -1,10 +1,10 @@
 import { BenchmarkConfig, BenchmarkFactories } from './support/async-bench';
-import { DocumentNode, GraphQLSchema, parse, validate } from 'graphql';
+import { DocumentNode, parse, validate } from 'graphql';
 import { createDumbSchema } from './support/helpers';
 import * as path from 'path';
 import { DistilledOperation, distillQuery } from '../../src/graphql/query-distiller';
 import { createQueryTree } from '../../src/query/query-tree-builder';
-import { getAQLForQuery, getAQLQuery } from '../../src/database/arangodb/aql-generator';
+import { getAQLQuery } from '../../src/database/arangodb/aql-generator';
 import { QueryNode } from '../../src/query/definition';
 import { compact } from '../../src/utils/utils';
 

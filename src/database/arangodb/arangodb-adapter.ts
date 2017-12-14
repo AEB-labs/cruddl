@@ -1,13 +1,13 @@
 import { DatabaseAdapter } from '../database-adapter';
 import { QueryNode } from '../../query/definition';
-import { getAQLForQuery, getAQLQuery } from './aql-generator';
+import { getAQLQuery } from './aql-generator';
 import { Database } from 'arangojs';
 import { GraphQLObjectType, GraphQLSchema } from 'graphql';
 import { flatMap, objectValues } from '../../utils/utils';
 import { isRelationField, isRootEntityType } from '../../schema/schema-utils';
 import { getEdgeType } from '../../schema/edges';
 import { getCollectionNameForEdge, getCollectionNameForRootEntity } from './arango-basics';
-import {globalContext} from "../../config/global";
+import { globalContext } from '../../config/global';
 import { AQLExecutableQuery } from './aql';
 import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS } from '../../query/query-result-validators';
 
