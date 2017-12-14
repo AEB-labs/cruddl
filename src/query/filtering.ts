@@ -17,7 +17,7 @@ import {
 } from './definition';
 import {isArray} from 'util';
 import {ARGUMENT_AND, ARGUMENT_OR} from '../schema/schema-defaults';
-import {createNonListFieldValueNode, createScalarFieldValueNode} from './fields';
+import { createListFieldValueNode, createNonListFieldValueNode, createScalarFieldValueNode } from './fields';
 import {decapitalize, assert} from "../utils/utils";
 import {isReferenceField, isRelationField} from "../schema/schema-utils";
 import {getEdgeType} from "../schema/edges";
@@ -74,16 +74,14 @@ function getObjectTypeFilterClauseNode(key: string, value: any, contextNode: Que
         let { fieldKey, quantifier } = quantifierData;
         const field = objectType.getFields()[fieldKey];
         assert(!!field, 'Expected field to be defined');
-        const rawFieldType= getNamedType(field.type);
-        // get source
-        let quantifiedList: QueryNode;
-        if (isRelationField(field)) {
-            const edgeType = getEdgeType(objectType, field);
-            quantifiedList = new FollowEdgeQueryNode(edgeType, contextNode, edgeType.getRelationFieldEdgeSide(field));
-        } else {
-            assert(!isReferenceField(field), 'Lists of references are not supported, yet');
-            quantifiedList = createSafeListQueryNode(new FieldQueryNode(contextNode, field));
-        }
+        const rawFieldType = getNamedType(field.type);
+
+        const listNode = createListFieldValueNode({
+            objectNode: contextNode,
+            parentType: objectType,
+            field: field
+        });
+
         if (quantifier === 'every') {
             // every(P(x)) === none(!P(x))
             // so just flip it
@@ -92,9 +90,13 @@ function getObjectTypeFilterClauseNode(key: string, value: any, contextNode: Que
         }
         const binaryOp = quantifier === 'some' ? BinaryOperator.GREATER_THAN : BinaryOperator.EQUAL;
         const itemVarNode = new VariableQueryNode(decapitalize(rawFieldType.name));
-        quantifiedList = new TransformListQueryNode({listNode: quantifiedList, filterNode: createFilterNode(value, rawFieldType as GraphQLObjectType, itemVarNode), itemVariable: itemVarNode});
+        const filteredListNode = new TransformListQueryNode({
+            listNode,
+            filterNode: createFilterNode(value, rawFieldType as GraphQLObjectType, itemVarNode),
+            itemVariable: itemVarNode
+        });
 
-        return new BinaryOperationQueryNode(new CountQueryNode(quantifiedList), binaryOp, new LiteralQueryNode(0));
+        return new BinaryOperationQueryNode(new CountQueryNode(filteredListNode), binaryOp, new LiteralQueryNode(0));
     }
 
 

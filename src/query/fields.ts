@@ -1,14 +1,14 @@
-import {getNamedType, GraphQLEnumType, GraphQLField, GraphQLObjectType, GraphQLScalarType} from 'graphql';
+import { getNamedType, GraphQLEnumType, GraphQLField, GraphQLObjectType, GraphQLScalarType } from 'graphql';
 import {
-    FieldQueryNode, RootEntityIDQueryNode, QueryNode, VariableQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode,
-    BinaryOperationQueryNode, BinaryOperator, EntitiesQueryNode, TransformListQueryNode, ConditionalQueryNode,
-    TypeCheckQueryNode, BasicType, NullQueryNode, VariableAssignmentQueryNode
+    BinaryOperationQueryNode, BinaryOperator, EntitiesQueryNode, FieldQueryNode, FirstOfListQueryNode,
+    FollowEdgeQueryNode, QueryNode, RootEntityIDQueryNode, TransformListQueryNode, VariableAssignmentQueryNode,
+    VariableQueryNode
 } from './definition';
 import { getSingleKeyField, isReferenceField, isRelationField, isRootEntityType } from '../schema/schema-utils';
 import { ID_FIELD } from '../schema/schema-defaults';
 import { getEdgeType } from '../schema/edges';
 import { isListType } from '../graphql/schema-utils';
-import { createEntityObjectNode } from './queries';
+import { createSafeListQueryNode } from './queries';
 
 export function createScalarFieldValueNode(objectType: GraphQLObjectType, fieldName: string, contextNode: QueryNode): QueryNode {
     const field = objectType.getFields()[fieldName];
@@ -59,13 +59,13 @@ export function createNonListFieldValueNode(params: {field: GraphQLField<any, an
     return mapInnerFn(new FieldQueryNode(params.objectNode, params.field));
 }
 
-export function createTo1RelationNode(field: GraphQLField<any, any>, parentType: GraphQLObjectType, objectNode: QueryNode): QueryNode {
+function createTo1RelationNode(field: GraphQLField<any, any>, parentType: GraphQLObjectType, objectNode: QueryNode): QueryNode {
     const edgeType = getEdgeType(parentType, field);
     const followNode = new FollowEdgeQueryNode(edgeType, objectNode, edgeType.getRelationFieldEdgeSide(field));
     return new FirstOfListQueryNode(followNode);
 }
 
-export function createTo1ReferenceNode(field: GraphQLField<any, any>, objectNode: QueryNode): QueryNode {
+function createTo1ReferenceNode(field: GraphQLField<any, any>, objectNode: QueryNode): QueryNode {
     const referencedEntityType = getNamedType(field.type) as GraphQLObjectType;
     const keyFieldInReferencedEntity = getSingleKeyField(referencedEntityType);
     if (!keyFieldInReferencedEntity) {
@@ -88,4 +88,19 @@ export function createTo1ReferenceNode(field: GraphQLField<any, any>, objectNode
         itemVariable: listItemVar
     });
     return new FirstOfListQueryNode(filteredListNode);
+}
+
+export function createListFieldValueNode(params: { field: GraphQLField<any, any>, objectNode: QueryNode, parentType: GraphQLObjectType}) {
+    if (isRelationField(params.field)) {
+        return createToNRelationQueryNode(params.field, params.parentType, params.objectNode);
+    }
+    if (isReferenceField(params.field)) {
+        throw new Error(`${params.field.name}: references in lists are not supported yet`);
+    }
+    return createSafeListQueryNode(new FieldQueryNode(params.objectNode, params.field));
+}
+
+function createToNRelationQueryNode(field: GraphQLField<any, any>, parentType: GraphQLObjectType, sourceEntityNode: QueryNode): QueryNode {
+    const edgeType = getEdgeType(getNamedType(parentType) as GraphQLObjectType, field);
+    return new FollowEdgeQueryNode(edgeType, sourceEntityNode, edgeType.getRelationFieldEdgeSide(field));
 }

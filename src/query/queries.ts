@@ -1,26 +1,22 @@
 import { FieldRequest, FieldSelection } from '../graphql/query-distiller';
-import {FieldDefinitionNode, getNamedType, GraphQLField, GraphQLObjectType, ObjectTypeDefinitionNode} from 'graphql';
+import { FieldDefinitionNode, getNamedType, GraphQLField, GraphQLObjectType } from 'graphql';
 import {
-    BasicType, BinaryOperationQueryNode, BinaryOperator, ConditionalQueryNode, EntitiesQueryNode, FieldQueryNode,
-    FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode, NullQueryNode, ObjectQueryNode,
-    PropertySpecification, QueryNode, TransformListQueryNode, TypeCheckQueryNode, VariableAssignmentQueryNode,
-    VariableQueryNode
+    BasicType, BinaryOperationQueryNode, BinaryOperator, ConditionalQueryNode, EntitiesQueryNode, FirstOfListQueryNode,
+    ListQueryNode, LiteralQueryNode, NullQueryNode, ObjectQueryNode, PropertySpecification, QueryNode,
+    TransformListQueryNode, TypeCheckQueryNode, VariableAssignmentQueryNode, VariableQueryNode
 } from './definition';
 import { createCursorQueryNode, createOrderSpecification, createPaginationFilterNode } from './pagination-and-sorting';
 import { createFilterNode } from './filtering';
 import {
-    ALL_ENTITIES_FIELD_PREFIX, CURSOR_FIELD, FILTER_ARG, FIRST_ARG,
-    NAMESPACE_FIELD_PATH_DIRECTIVE
+    ALL_ENTITIES_FIELD_PREFIX, CURSOR_FIELD, FILTER_ARG, FIRST_ARG, NAMESPACE_FIELD_PATH_DIRECTIVE
 } from '../schema/schema-defaults';
 import { decapitalize, objectEntries } from '../utils/utils';
-import { createNonListFieldValueNode, createScalarFieldValueNode } from './fields';
+import { createListFieldValueNode, createNonListFieldValueNode, createScalarFieldValueNode } from './fields';
 import { isListType } from '../graphql/schema-utils';
-import {hasDirectiveWithName, isReferenceField, isRelationField} from '../schema/schema-utils';
-import { getEdgeType } from '../schema/edges';
+import { hasDirectiveWithName } from '../schema/schema-utils';
 import { createListMetaNode } from './list-meta';
 import { extractVariableAssignments, extractVariableAssignmentsInOrderSpecification } from './query-tree-utils';
-import {createFieldNode, createSelectionChain} from "../graphql/language-utils";
-import {globalContext} from "../config/global";
+import { globalContext } from '../config/global';
 
 /**
  * Creates a QueryNode for a field of the root query type
@@ -118,12 +114,6 @@ export function createEntityObjectNode(fieldSelections: FieldSelection[], source
             createEntityFieldQueryNode(sel.fieldRequest, sourceObjectNode, [...fieldRequestStack, sel.fieldRequest]))));
 }
 
-function createToNRelationQueryNode(fieldRequest: FieldRequest, sourceEntityNode: QueryNode, fieldRequestStack: FieldRequest[]): QueryNode {
-    const edgeType = getEdgeType(getNamedType(fieldRequest.parentType) as GraphQLObjectType, fieldRequest.field);
-    const followNode = new FollowEdgeQueryNode(edgeType, sourceEntityNode, edgeType.getRelationFieldEdgeSide(fieldRequest.field));
-    return createTransformListQueryNode(fieldRequest, followNode, fieldRequestStack);
-}
-
 /**
  * Creates a QueryNode for a specific field to query from an entity
  * @param {FieldRequest} fieldRequest the field, e.g. "id"
@@ -146,30 +136,23 @@ function createEntityFieldQueryNode(fieldRequest: FieldRequest, objectNode: Quer
         if (!listField) {
             throw new Error(`Requested meta field ${fieldRequest.field.name} but associated list field ${listFieldName} does not exist in object type ${objectType.name}`);
         }
-        let listNode: QueryNode;
-        if (isRelationField(listField)) {
-            const edgeType = getEdgeType(getNamedType(fieldRequest.parentType) as GraphQLObjectType, listField);
-            listNode = new FollowEdgeQueryNode(edgeType, objectNode, edgeType.getRelationFieldEdgeSide(listField));
-        } else if (isReferenceField(listField)) {
-            throw new Error(`${fieldRequest.fieldName}: references in lists are not supported yet`);
-        } else {
-            listNode = createSafeListQueryNode(new FieldQueryNode(objectNode, listField));
-        }
+        const listNode = createListFieldValueNode({
+            objectNode,
+            parentType: fieldRequest.parentType as GraphQLObjectType,
+            field: fieldRequest.field});
         return createListMetaNode(fieldRequest, listNode, getNamedType(listField.type) as GraphQLObjectType);
     }
 
     if (isListType(type)) {
-        if (isRelationField(fieldRequest.field)) {
-            return createToNRelationQueryNode(fieldRequest, objectNode, fieldRequestStack);
-        }
-        if (isReferenceField(fieldRequest.field)) {
-            throw new Error(`${fieldRequest.fieldName}: references in lists are not supported yet`);
-        }
+        const listNode = createListFieldValueNode({
+            objectNode,
+            parentType: fieldRequest.parentType as GraphQLObjectType,
+            field: fieldRequest.field});
         if (rawType instanceof GraphQLObjectType) {
             // support filters, order by and pagination
-            return createSafeTransformListQueryNode(fieldRequest, new FieldQueryNode(objectNode, fieldRequest.field), fieldRequestStack);
+            return createTransformListQueryNode(fieldRequest, listNode, fieldRequestStack);
         } else {
-            return createSafeListQueryNode(new FieldQueryNode(objectNode, fieldRequest.field));
+            return listNode;
         }
     }
 
@@ -223,10 +206,6 @@ export function createSafeListQueryNode(listNode: QueryNode) {
         listNode,
         new ListQueryNode([])
     );
-}
-
-function createSafeTransformListQueryNode(fieldRequest: FieldRequest, listNode: QueryNode, fieldRequestStack: FieldRequest[]): QueryNode {
-    return createTransformListQueryNode(fieldRequest, createSafeListQueryNode(listNode), fieldRequestStack);
 }
 
 function isEntitiesQueryField(field: GraphQLField<any, any>) {
