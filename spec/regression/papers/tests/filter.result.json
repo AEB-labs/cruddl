@@ -1,12 +1,145 @@
 {
   "data": {
-    "allPapers": [
-        {
-          "title": "Scalable SQL and NoSQL data stores"
-        },
-        {
-          "title": "Unified modeling language reference manual, the"
-        }
-      ]
+    "eq": [
+      {
+        "key": "OOM"
+      }
+    ],
+    "neq": [
+      {
+        "key": "NoSQL"
+      },
+      {
+        "key": "Part"
+      },
+      {
+        "key": "Scal"
+      },
+      {
+        "key": "UML"
+      }
+    ],
+    "gt": [
+      {
+        "key": "Part"
+      },
+      {
+        "key": "Scal"
+      },
+      {
+        "key": "UML"
+      }
+    ],
+    "gte": [
+      {
+        "key": "OOM"
+      },
+      {
+        "key": "Part"
+      },
+      {
+        "key": "Scal"
+      },
+      {
+        "key": "UML"
+      }
+    ],
+    "lt": [
+      {
+        "key": "NoSQL"
+      }
+    ],
+    "lte": [
+      {
+        "key": "NoSQL"
+      },
+      {
+        "key": "OOM"
+      }
+    ],
+    "in": [
+      {
+        "key": "OOM"
+      },
+      {
+        "key": "Part"
+      }
+    ],
+    "not_in": [
+      {
+        "key": "NoSQL"
+      },
+      {
+        "key": "Scal"
+      },
+      {
+        "key": "UML"
+      }
+    ],
+    "contains": [
+      {
+        "key": "Part"
+      },
+      {
+        "key": "Scal"
+      }
+    ],
+    "not_contains": [
+      {
+        "key": "NoSQL"
+      },
+      {
+        "key": "OOM"
+      },
+      {
+        "key": "UML"
+      }
+    ],
+    "starts_with": [
+      {
+        "key": "OOM"
+      }
+    ],
+    "not_starts_with": [
+      {
+        "key": "NoSQL"
+      },
+      {
+        "key": "Part"
+      },
+      {
+        "key": "Scal"
+      },
+      {
+        "key": "UML"
+      }
+    ],
+    "ends_with": [
+      {
+        "key": "OOM"
+      }
+    ],
+    "not_ends_with": [
+      {
+        "key": "NoSQL"
+      },
+      {
+        "key": "Part"
+      },
+      {
+        "key": "Scal"
+      },
+      {
+        "key": "UML"
+      }
+    ],
+    "or": [
+      {
+        "title": "Scalable SQL and NoSQL data stores"
+      },
+      {
+        "title": "Unified modeling language reference manual, the"
+      }
+    ]
   }
 }

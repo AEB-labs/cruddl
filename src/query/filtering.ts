@@ -61,7 +61,7 @@ const filterOperators: { [suffix: string]: (fieldNode: QueryNode, valueNode: Que
     [INPUT_FIELD_LTE]: (fieldNode, valueNode) => new BinaryOperationQueryNode(fieldNode, BinaryOperator.LESS_THAN_OR_EQUAL, valueNode),
     [INPUT_FIELD_GT]: (fieldNode, valueNode) => new BinaryOperationQueryNode(fieldNode, BinaryOperator.GREATER_THAN, valueNode),
     [INPUT_FIELD_GTE]: (fieldNode, valueNode) => new BinaryOperationQueryNode(fieldNode, BinaryOperator.GREATER_THAN_OR_EQUAL, valueNode),
-    [INPUT_FIELD_NOT_IN]: (fieldNode, valueNode) => not(new BinaryOperationQueryNode(fieldNode, BinaryOperator.GREATER_THAN_OR_EQUAL, valueNode)),
+    [INPUT_FIELD_NOT_IN]: (fieldNode, valueNode) => not(new BinaryOperationQueryNode(fieldNode, BinaryOperator.IN, valueNode)),
     [INPUT_FIELD_IN]: (fieldNode, valueNode) => new BinaryOperationQueryNode(fieldNode, BinaryOperator.IN, valueNode),
     [INPUT_FIELD_NOT_CONTAINS]: (fieldNode, valueNode) => not(new BinaryOperationQueryNode(fieldNode, BinaryOperator.CONTAINS, valueNode)),
     [INPUT_FIELD_CONTAINS]: (fieldNode, valueNode) => new BinaryOperationQueryNode(fieldNode, BinaryOperator.CONTAINS, valueNode),

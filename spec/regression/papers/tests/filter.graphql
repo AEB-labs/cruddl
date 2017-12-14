@@ -1,5 +1,47 @@
 query {
-    allPapers(filter: {OR: [{title: "Unified modeling language reference manual, the"}, {title: "Scalable SQL and NoSQL data stores"}]},
+    eq: allPapers(filter: { key: "OOM"}, orderBy: key_ASC) {
+        key
+    }
+    neq: allPapers(filter: { key_not: "OOM"}, orderBy: key_ASC) {
+        key
+    }
+    gt: allPapers(filter: { key_gt: "OOM"}, orderBy: key_ASC) {
+        key
+    }
+    gte: allPapers(filter: { key_gte: "OOM"}, orderBy: key_ASC) {
+        key
+    }
+    lt: allPapers(filter: { key_lt: "OOM"}, orderBy: key_ASC) {
+        key
+    }
+    lte: allPapers(filter: { key_lte: "OOM"}, orderBy: key_ASC) {
+        key
+    }
+    in: allPapers(filter: { key_in: [ "OOM", "Part" ]}, orderBy: key_ASC) {
+        key
+    }
+    not_in: allPapers(filter: { key_not_in: [ "OOM", "Part" ]}, orderBy: key_ASC) {
+        key
+    }
+    contains: allPapers(filter: { key_contains: "a"}, orderBy: key_ASC) {
+        key
+    }
+    not_contains: allPapers(filter: { key_not_contains: "a"}, orderBy: key_ASC) {
+        key
+    }
+    starts_with: allPapers(filter: { key_starts_with: "O"}, orderBy: key_ASC) {
+        key
+    }
+    not_starts_with: allPapers(filter: { key_not_starts_with: "O"}, orderBy: key_ASC) {
+        key
+    }
+    ends_with: allPapers(filter: { key_ends_with: "M"}, orderBy: key_ASC) {
+        key
+    }
+    not_ends_with: allPapers(filter: { key_not_ends_with: "M"}, orderBy: key_ASC) {
+        key
+    }
+    or: allPapers(filter: {OR: [{title: "Unified modeling language reference manual, the"}, {title: "Scalable SQL and NoSQL data stores"}]},
         orderBy: title_ASC) {
         title
     }
