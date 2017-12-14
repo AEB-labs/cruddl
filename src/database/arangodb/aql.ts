@@ -51,6 +51,10 @@ class AQLCodeBuildingContext {
 
     bindValue(value: any): string {
         const index = this.boundValues.length;
+        if (value === undefined) {
+            // AQL does not know about "undefined" and would complain about a missing value for bind parameter.
+            value = null;
+        }
         this.boundValues.push(value);
         return AQLCodeBuildingContext.getBoundValueName(index);
     }
