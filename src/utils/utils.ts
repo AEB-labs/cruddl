@@ -175,8 +175,13 @@ export function sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-export function invariant(condition: boolean, message: string) {
-    if (condition) {
+/**
+ * Checks if a condition is met, and if it is not, throws an error with the specified message
+ * @param {boolean} condition the condition which should be met
+ * @param {string} message the message to throw in case the condition is not met
+ */
+export function assert(condition: boolean, message: string) {
+    if (!condition) {
         throw new Error(message);
     }
 }

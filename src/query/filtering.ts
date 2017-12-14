@@ -18,7 +18,7 @@ import {
 import {isArray} from 'util';
 import {ARGUMENT_AND, ARGUMENT_OR} from '../schema/schema-defaults';
 import {createNonListFieldValueNode, createScalarFieldValueNode} from './fields';
-import {decapitalize, invariant} from "../utils/utils";
+import {decapitalize, assert} from "../utils/utils";
 import {isReferenceField, isRelationField} from "../schema/schema-utils";
 import {getEdgeType} from "../schema/edges";
 import {createSafeListQueryNode} from "./queries";
@@ -73,7 +73,7 @@ function getObjectTypeFilterClauseNode(key: string, value: any, contextNode: Que
     if (quantifierData) {
         let { fieldKey, quantifier } = quantifierData;
         const field = objectType.getFields()[fieldKey];
-        invariant(!field, 'Expected field to be defined');
+        assert(!!field, 'Expected field to be defined');
         const rawFieldType= getNamedType(field.type);
         // get source
         let quantifiedList: QueryNode;
@@ -81,7 +81,7 @@ function getObjectTypeFilterClauseNode(key: string, value: any, contextNode: Que
             const edgeType = getEdgeType(objectType, field);
             quantifiedList = new FollowEdgeQueryNode(edgeType, contextNode, edgeType.getRelationFieldEdgeSide(field));
         } else {
-            invariant(isReferenceField(field), 'Lists of references are not supported, yet');
+            assert(!isReferenceField(field), 'Lists of references are not supported, yet');
             quantifiedList = createSafeListQueryNode(new FieldQueryNode(contextNode, field));
         }
         if (quantifier === 'every') {
