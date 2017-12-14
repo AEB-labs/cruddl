@@ -16,7 +16,14 @@ import {
     VariableQueryNode
 } from './definition';
 import {isArray} from 'util';
-import {ARGUMENT_AND, ARGUMENT_OR} from '../schema/schema-defaults';
+import {
+    ARGUMENT_AND, ARGUMENT_OR, INPUT_FIELD_CONTAINS, INPUT_FIELD_ENDS_WITH, INPUT_FIELD_EQUAL, INPUT_FIELD_GT,
+    INPUT_FIELD_GTE, INPUT_FIELD_IN,
+    INPUT_FIELD_LT,
+    INPUT_FIELD_LTE,
+    INPUT_FIELD_NOT, INPUT_FIELD_NOT_CONTAINS, INPUT_FIELD_NOT_ENDS_WITH, INPUT_FIELD_NOT_IN,
+    INPUT_FIELD_NOT_STARTS_WITH, INPUT_FIELD_SEPARATOR, INPUT_FIELD_STARTS_WITH
+} from '../schema/schema-defaults';
 import { createListFieldValueNode, createNonListFieldValueNode, createScalarFieldValueNode } from './fields';
 import {decapitalize, assert} from "../utils/utils";
 import {isReferenceField, isRelationField} from "../schema/schema-utils";
@@ -45,6 +52,24 @@ export function createFilterNode(filterArg: any, objectType: GraphQLObjectType|G
     }
     return filterNode || new ConstBoolQueryNode(true);
 }
+
+const filterOperators: { [suffix: string]: (fieldNode: QueryNode, valueNode: QueryNode) => QueryNode } = {
+    // not's before the normal fields because they need to be matched first in the suffix-matching algorithm
+    [INPUT_FIELD_EQUAL]: (fieldNode, valueNode) => new BinaryOperationQueryNode(fieldNode, BinaryOperator.EQUAL, valueNode),
+    [INPUT_FIELD_NOT]: (fieldNode, valueNode) => new BinaryOperationQueryNode(fieldNode, BinaryOperator.UNEQUAL, valueNode),
+    [INPUT_FIELD_LT]: (fieldNode, valueNode) => new BinaryOperationQueryNode(fieldNode, BinaryOperator.LESS_THAN, valueNode),
+    [INPUT_FIELD_LTE]: (fieldNode, valueNode) => new BinaryOperationQueryNode(fieldNode, BinaryOperator.LESS_THAN_OR_EQUAL, valueNode),
+    [INPUT_FIELD_GT]: (fieldNode, valueNode) => new BinaryOperationQueryNode(fieldNode, BinaryOperator.GREATER_THAN, valueNode),
+    [INPUT_FIELD_GTE]: (fieldNode, valueNode) => new BinaryOperationQueryNode(fieldNode, BinaryOperator.GREATER_THAN_OR_EQUAL, valueNode),
+    [INPUT_FIELD_NOT_IN]: (fieldNode, valueNode) => not(new BinaryOperationQueryNode(fieldNode, BinaryOperator.GREATER_THAN_OR_EQUAL, valueNode)),
+    [INPUT_FIELD_IN]: (fieldNode, valueNode) => new BinaryOperationQueryNode(fieldNode, BinaryOperator.IN, valueNode),
+    [INPUT_FIELD_NOT_CONTAINS]: (fieldNode, valueNode) => not(new BinaryOperationQueryNode(fieldNode, BinaryOperator.CONTAINS, valueNode)),
+    [INPUT_FIELD_CONTAINS]: (fieldNode, valueNode) => new BinaryOperationQueryNode(fieldNode, BinaryOperator.CONTAINS, valueNode),
+    [INPUT_FIELD_NOT_STARTS_WITH]: (fieldNode, valueNode) => not(new BinaryOperationQueryNode(fieldNode, BinaryOperator.STARTS_WITH, valueNode)),
+    [INPUT_FIELD_STARTS_WITH]: (fieldNode, valueNode) => new BinaryOperationQueryNode(fieldNode, BinaryOperator.STARTS_WITH, valueNode),
+    [INPUT_FIELD_NOT_ENDS_WITH]: (fieldNode, valueNode) => not(new BinaryOperationQueryNode(fieldNode, BinaryOperator.ENDS_WITH, valueNode)),
+    [INPUT_FIELD_ENDS_WITH]: (fieldNode, valueNode) => new BinaryOperationQueryNode(fieldNode, BinaryOperator.ENDS_WITH, valueNode)
+};
 
 function getObjectTypeFilterClauseNode(key: string, value: any, contextNode: QueryNode, objectType: GraphQLObjectType): QueryNode {
     // special nodes
@@ -92,65 +117,54 @@ function getObjectTypeFilterClauseNode(key: string, value: any, contextNode: Que
         const itemVarNode = new VariableQueryNode(decapitalize(rawFieldType.name));
         const filteredListNode = new TransformListQueryNode({
             listNode,
-            filterNode: createFilterNode(value, rawFieldType as GraphQLObjectType, itemVarNode),
+            filterNode: createFilterNode(value, rawFieldType as GraphQLObjectType|GraphQLScalarType|GraphQLEnumType, itemVarNode),
             itemVariable: itemVarNode
         });
 
         return new BinaryOperationQueryNode(new CountQueryNode(filteredListNode), binaryOp, new LiteralQueryNode(0));
     }
 
-
     // check for filters in embedded objects
     const field = objectType.getFields()[key];
     const rawFieldType = field ? getNamedType(field.type) : undefined;
-    if (field && rawFieldType instanceof GraphQLObjectType) {
-        // possibly complex field lookup (references, relations)
-        return createNonListFieldValueNode({
-            field,
-            parentType: objectType,
-            objectNode: contextNode,
-            innerNodeFn: (valueNode: QueryNode) => {
-                // this function maps the object (field value, referenced object, related object) to the filter condition
-                const isObjectNode = new TypeCheckQueryNode(valueNode, BasicType.OBJECT);
-                const rawFilterNode = createFilterNode(value, rawFieldType, valueNode);
-                if (!rawFilterNode) {
-                    return isObjectNode; // an empty filter only checks if the object is present and a real object
+    if (field) {
+        if (rawFieldType instanceof GraphQLObjectType) {
+            // possibly complex field lookup (references, relations)
+            return createNonListFieldValueNode({
+                field,
+                parentType: objectType,
+                objectNode: contextNode,
+                innerNodeFn: (valueNode: QueryNode) => {
+                    // this function maps the object (field value, referenced object, related object) to the filter condition
+                    const isObjectNode = new TypeCheckQueryNode(valueNode, BasicType.OBJECT);
+                    const rawFilterNode = createFilterNode(value, rawFieldType, valueNode);
+                    if (!rawFilterNode) {
+                        return isObjectNode; // an empty filter only checks if the object is present and a real object
+                    }
+                    // make sure to check for object type before doing the filter
+                    return new BinaryOperationQueryNode(isObjectNode, BinaryOperator.AND, rawFilterNode);
                 }
-                // make sure to check for object type before doing the filter
-                return new BinaryOperationQueryNode(isObjectNode, BinaryOperator.AND, rawFilterNode);
-            }
-        });
+            });
+        } else {
+            // simple scalar equality filter
+            const fieldNode = createScalarFieldValueNode(objectType, key, contextNode);
+            const valueNode = new LiteralQueryNode(value);
+            return new BinaryOperationQueryNode(fieldNode, BinaryOperator.EQUAL, valueNode);
+        }
     }
 
-    const variations: { [suffix: string]: (fieldNode: QueryNode, valueNode: QueryNode) => QueryNode } = {
-        // identifier cross reference: graphql/names.ts
-        // not's before the normal fields because they need to be matched first
-        '_not': (fieldNode, valueNode) => new BinaryOperationQueryNode(fieldNode, BinaryOperator.UNEQUAL, valueNode),
-        '_lt': (fieldNode, valueNode) => new BinaryOperationQueryNode(fieldNode, BinaryOperator.LESS_THAN, valueNode),
-        '_lte': (fieldNode, valueNode) => new BinaryOperationQueryNode(fieldNode, BinaryOperator.LESS_THAN_OR_EQUAL, valueNode),
-        '_gt': (fieldNode, valueNode) => new BinaryOperationQueryNode(fieldNode, BinaryOperator.GREATER_THAN, valueNode),
-        '_gte': (fieldNode, valueNode) => new BinaryOperationQueryNode(fieldNode, BinaryOperator.GREATER_THAN_OR_EQUAL, valueNode),
-        '_not_in': (fieldNode, valueNode) => not(new BinaryOperationQueryNode(fieldNode, BinaryOperator.GREATER_THAN_OR_EQUAL, valueNode)),
-        '_in': (fieldNode, valueNode) => new BinaryOperationQueryNode(fieldNode, BinaryOperator.IN, valueNode),
-        '_not_contains': (fieldNode, valueNode) => not(new BinaryOperationQueryNode(fieldNode, BinaryOperator.CONTAINS, valueNode)),
-        '_contains': (fieldNode, valueNode) => new BinaryOperationQueryNode(fieldNode, BinaryOperator.CONTAINS, valueNode),
-        '_not_starts_with': (fieldNode, valueNode) => not(new BinaryOperationQueryNode(fieldNode, BinaryOperator.STARTS_WITH, valueNode)),
-        '_starts_with': (fieldNode, valueNode) => new BinaryOperationQueryNode(fieldNode, BinaryOperator.STARTS_WITH, valueNode),
-        '_not_ends_with': (fieldNode, valueNode) => not(new BinaryOperationQueryNode(fieldNode, BinaryOperator.ENDS_WITH, valueNode)),
-        '_ends_with': (fieldNode, valueNode) => new BinaryOperationQueryNode(fieldNode, BinaryOperator.ENDS_WITH, valueNode),
-        '': (fieldNode, valueNode) => new BinaryOperationQueryNode(fieldNode, BinaryOperator.EQUAL, valueNode)
-    };
-
-    for (const suffix in variations) {
+    // operator on scalar
+    for (const operatorKey in filterOperators) {
+        const suffix = INPUT_FIELD_SEPARATOR + operatorKey;
         if (key.endsWith(suffix)) {
             const fieldName = key.substr(0, key.length - suffix.length);
             const fieldNode = createScalarFieldValueNode(objectType, fieldName, contextNode);
             const valueNode =  new LiteralQueryNode(value);
-            return variations[suffix](fieldNode, valueNode);
+            return filterOperators[operatorKey](fieldNode, valueNode);
         }
     }
-    throw new Error(`Invalid filter field: ${key}`);
 
+    throw new Error(`Invalid filter field: ${key}`);
 }
 
 function captureListQuantifiers(key: string) {
@@ -169,22 +183,6 @@ function not(value: QueryNode) {
 }
 
 function getScalarTypeFilterClauseNode(key: string, value: any, contextNode: QueryNode): QueryNode {
-    const variations: { [suffix: string]: (fieldNode: QueryNode, valueNode: QueryNode) => QueryNode } = {
-        'equal': (fieldNode, valueNode) => new BinaryOperationQueryNode(fieldNode, BinaryOperator.EQUAL, valueNode),
-        'not': (fieldNode, valueNode) => new BinaryOperationQueryNode(fieldNode, BinaryOperator.UNEQUAL, valueNode),
-        'lt': (fieldNode, valueNode) => new BinaryOperationQueryNode(fieldNode, BinaryOperator.LESS_THAN, valueNode),
-        'lte': (fieldNode, valueNode) => new BinaryOperationQueryNode(fieldNode, BinaryOperator.LESS_THAN_OR_EQUAL, valueNode),
-        'gt': (fieldNode, valueNode) => new BinaryOperationQueryNode(fieldNode, BinaryOperator.GREATER_THAN, valueNode),
-        'gte': (fieldNode, valueNode) => new BinaryOperationQueryNode(fieldNode, BinaryOperator.GREATER_THAN_OR_EQUAL, valueNode),
-        'not_in': (fieldNode, valueNode) => not(new BinaryOperationQueryNode(fieldNode, BinaryOperator.GREATER_THAN_OR_EQUAL, valueNode)),
-        'in': (fieldNode, valueNode) => new BinaryOperationQueryNode(fieldNode, BinaryOperator.IN, valueNode),
-        'not_contains': (fieldNode, valueNode) => not(new BinaryOperationQueryNode(fieldNode, BinaryOperator.CONTAINS, valueNode)),
-        'contains': (fieldNode, valueNode) => new BinaryOperationQueryNode(fieldNode, BinaryOperator.CONTAINS, valueNode),
-        'not_starts_with': (fieldNode, valueNode) => not(new BinaryOperationQueryNode(fieldNode, BinaryOperator.STARTS_WITH, valueNode)),
-        'starts_with': (fieldNode, valueNode) => new BinaryOperationQueryNode(fieldNode, BinaryOperator.STARTS_WITH, valueNode),
-        'not_ends_with': (fieldNode, valueNode) => not(new BinaryOperationQueryNode(fieldNode, BinaryOperator.ENDS_WITH, valueNode)),
-        'ends_with': (fieldNode, valueNode) => new BinaryOperationQueryNode(fieldNode, BinaryOperator.ENDS_WITH, valueNode)
-    };
     const valueNode =  new LiteralQueryNode(value);
-    return variations[key](contextNode, valueNode);
+    return filterOperators[key](contextNode, valueNode);
 }
