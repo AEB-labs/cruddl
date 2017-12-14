@@ -37,6 +37,10 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         this.arangoExecutionFunction = this.buildUpArangoExecutionFunction();
     }
 
+    /**
+     * Gets the javascript source code for a function that executes a transaction
+     * @returns {string}
+     */
     private buildUpArangoExecutionFunction(): string {
 
         // The following function will be translated to a string and executed (as one transaction) within the
@@ -57,6 +61,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                     boundValues[query.usedPreExecResultNames[key]] = resultHolder[key];
                 }
 
+                // Execute the AQL query
                 const result = db._query(query.code, boundValues).next();
 
                 if (query.resultName) {
@@ -72,6 +77,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                 }
             }
 
+            // the last query is always the main query, use its result as result of the transaction
             const lastQueryResultName = queries[queries.length - 1].resultName;
             if (lastQueryResultName) {
                 return resultHolder[lastQueryResultName];
@@ -84,7 +90,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         const validatorProviders = ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS.map(provider =>
             `['${provider.getValidatorName()}']:${String(provider.getValidatorFunction())}`);
 
-        const allValidatorFunctionsObjectString = `validators = {${validatorProviders.join(',\n')}}`
+        const allValidatorFunctionsObjectString = `validators = {${validatorProviders.join(',\n')}}`;
 
         return String(arangoExecutionFunction)
             .replace('//inject_validators_here', allValidatorFunctionsObjectString);

@@ -24,7 +24,10 @@ class QueryContext {
     private readAccessedCollections = new Set<string>();
     private writeAccessedCollections = new Set<string>();
 
-
+    /**
+     * Creates a new QueryContext with an independent variable map except that all query result variables of this
+     * context are available.
+     */
     private newPreExecContext(): QueryContext{
         const newContext = new QueryContext();
         this.variableMap.forEach((aqlVar, varNode) => {
@@ -37,6 +40,11 @@ class QueryContext {
         return newContext;
     }
 
+    /**
+     * Creates a new QueryContext that is identical to this one but has one additional variable binding
+     * @param variableNode the variable token as it is referenced in the query tree
+     * @param aqlVariable the variable token as it will be available within the AQL fragment
+     */
     private newNestedContextWithNewVariable(variableNode: VariableQueryNode, aqlVariable: AQLVariable): QueryContext {
         if (this.variableMap.has(variableNode)) {
             throw new Error(`Variable ${variableNode} is introduced twice`);
@@ -50,11 +58,30 @@ class QueryContext {
         return newContext;
     }
 
+    /**
+     * Creates a new QueryContext that is identical to this one but has one additional variable binding
+     *
+     * The AQLFragment for the variable will be available via getVariable().
+     *
+     * @param {VariableQueryNode} variableNode the variable as referenced in the query tree
+     * @returns {QueryContext} the nested context
+     */
     introduceVariable(variableNode: VariableQueryNode): QueryContext {
         const variable = new AQLVariable(variableNode.label);
         return this.newNestedContextWithNewVariable(variableNode, variable);
     }
 
+    /**
+     * Creates a new QueryContext that includes an additional transaction step and adds resultVariable to the scope
+     * which will contain the result of the query
+     *
+     * The preExecQuery is evaluated in an independent context that has access to all previous preExecQuery result
+     * variables.
+     *
+     * @param preExecQuery the query to execute as transaction step
+     * @param resultVariable the variable to store the query result
+     * @param resultValidator an optional validator for the query result
+     */
     addPreExecuteQuery(preExecQuery: QueryNode, resultVariable?: VariableQueryNode, resultValidator?: QueryResultValidator): QueryContext {
         let resultVar: AQLQueryResultVariable|undefined;
         let newContext: QueryContext;
@@ -72,6 +99,9 @@ class QueryContext {
         return newContext;
     }
 
+    /**
+     * Adds the information (in-place) that a collection is accessed
+     */
     addCollectionAccess(collection: string, accessType: AccessType): void {
         switch (accessType) {
             case AccessType.READ:
@@ -83,6 +113,9 @@ class QueryContext {
         }
     }
 
+    /**
+     * Gets an AQLFragment that evaluates to the value of a variable in the current scope
+     */
     getVariable(variableNode: VariableQueryNode): AQLFragment {
         const variable = this.variableMap.get(variableNode);
         if (!variable) {
