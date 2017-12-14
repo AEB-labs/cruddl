@@ -7,13 +7,15 @@ import {
     ObjectTypeDefinitionNode,
     TypeNode
 } from 'graphql';
-import {getValueObjectTypes} from '../../schema-utils';
+import { findDirectiveWithName, getValueObjectTypes } from '../../schema-utils';
 import {INPUT_OBJECT_TYPE_DEFINITION, LIST_TYPE, NAMED_TYPE, NON_NULL_TYPE} from 'graphql/language/kinds';
 import {getCreateInputTypeName} from '../../../graphql/names';
 import {
     buildInputFieldFromNonListField,
     buildInputValueListNodeFromField
 } from './add-input-type-transformation-helper-transformer';
+import { ROLES_DIRECTIVE } from '../../schema-defaults';
+import { compact } from '../../../utils/utils';
 
 export class AddValueObjectInputTypesTransformer implements ASTTransformer {
 
@@ -32,7 +34,8 @@ export class AddValueObjectInputTypesTransformer implements ASTTransformer {
             kind: INPUT_OBJECT_TYPE_DEFINITION,
             name: { kind: "Name", value: getCreateInputTypeName(objectType) },
             fields: args,
-            loc: objectType.loc
+            loc: objectType.loc,
+            directives: compact([ findDirectiveWithName(objectType, ROLES_DIRECTIVE) ])
         }
     }
 

@@ -89,7 +89,6 @@ const benchmarks: BenchmarkFactories = [
     () => testAddRootEntity({documentLength: 10000}),
     () => testAddRootEntity({documentLength: 1000000}),
     () => testAddRootEntity({documentLength: 10000000}),
-    () => testAddRootEntity({documentLength: 100000000}),
 
     // test fetching from large collection
     () => getOneOfXRootEntities({ rootEntitiesInDB: 1000, documentLength: 100}),

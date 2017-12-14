@@ -68,7 +68,7 @@ export function simplifyBooleans(node: QueryNode): QueryNode {
         if (inner instanceof ConstBoolQueryNode) {
             return new ConstBoolQueryNode(!inner.value);
         }
-        return inner;
+        return new UnaryOperationQueryNode(inner, UnaryOperator.NOT);
     }
     if (node instanceof BinaryOperationQueryNode) {
         const lhs = simplifyBooleans(node.lhs);

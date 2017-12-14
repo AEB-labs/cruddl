@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { RegressionSuite } from './regression-suite';
+import { RegressionSuite, RegressionSuiteOptions } from './regression-suite';
 import { TO_EQUAL_JSON_MATCHERS } from '../helpers/equal-json';
 
 const regressionRootDir = __dirname;
@@ -14,7 +14,12 @@ describe('regression tests', async () => {
 
     for (const suiteName of dirs) {
         const suitePath = path.resolve(regressionRootDir, suiteName);
-        const suite = new RegressionSuite(suitePath);
+        // run npm test -- --save-actual-as-expected to replace the .result file with the actual contents
+        // (first npm test run still marked as failure, subsequent runs will pass)
+        const options: RegressionSuiteOptions = {
+            saveActualAsExpected: process.argv.includes('--save-actual-as-expected')
+        };
+        const suite = new RegressionSuite(suitePath, options);
         describe(suiteName, () => {
             beforeAll(async () => {
                 jasmine.addMatchers(TO_EQUAL_JSON_MATCHERS);

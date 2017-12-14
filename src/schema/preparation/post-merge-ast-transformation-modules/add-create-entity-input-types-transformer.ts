@@ -9,6 +9,7 @@ import {
     TypeNode
 } from 'graphql';
 import {
+    findDirectiveWithName,
     getChildEntityTypes,
     getNamedTypeDefinitionAST,
     getRootEntityTypes,
@@ -22,11 +23,14 @@ import {
     OBJECT_TYPE_DEFINITION
 } from 'graphql/language/kinds';
 import {getCreateInputTypeName} from '../../../graphql/names';
-import {ENTITY_CREATED_AT, ENTITY_UPDATED_AT, ID_FIELD, RELATION_DIRECTIVE} from '../../schema-defaults';
+import {
+    ENTITY_CREATED_AT, ENTITY_UPDATED_AT, ID_FIELD, RELATION_DIRECTIVE, ROLES_DIRECTIVE
+} from '../../schema-defaults';
 import {
     buildInputFieldFromNonListField,
     buildInputValueListNodeFromField
 } from './add-input-type-transformation-helper-transformer';
+import { compact } from '../../../utils/utils';
 
 export class AddCreateEntityInputTypesTransformer implements ASTTransformer {
 
@@ -49,7 +53,8 @@ export class AddCreateEntityInputTypesTransformer implements ASTTransformer {
             kind: INPUT_OBJECT_TYPE_DEFINITION,
             name: { kind: "Name", value: getCreateInputTypeName(objectType) },
             fields: args,
-            loc: objectType.loc
+            loc: objectType.loc,
+            directives: compact([ findDirectiveWithName(objectType, ROLES_DIRECTIVE) ])
         }
     }
 
