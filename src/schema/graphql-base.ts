@@ -14,7 +14,7 @@ export const DIRECTIVES = gql`
     directive @entityExtension on OBJECT
     
     # Declares a field as a to-1 or to-n relation to another root entity
-    directive @relation on FIELD_DEFINITION
+    directive @relation(inverseOf: String) on FIELD_DEFINITION
     
     # Declares a field to reference another root entity via its @key
     directive @reference on FIELD_DEFINITION
