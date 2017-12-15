@@ -1,5 +1,3 @@
-import {debug} from "util";
-
 export interface GlobalContext {
     readonly loggerProvider?: LoggerProvider;
 }
@@ -29,9 +27,9 @@ export class ConsoleLogger implements Logger {
     debug(message: string, ...args: any[]): void {
         console.log(message, args)
     }
-    info = debug;
-    warn = debug;
-    error = debug;
+    info = this.debug;
+    warn = this.debug;
+    error = this.debug;
 }
 
 export namespace globalContext {
