@@ -78,7 +78,6 @@ function matchStartingAndEndingEdges(startingEdges: EdgeSide[], endingEdges: Edg
             if (edge1.remoteType === edge2.localType.name.value
                 && edge2.remoteType === edge1.localType.name.value) {
                 validationMessages.push(ValidationMessage.warn(VALIDATION_WARNING_UNASSOCIATED_RELATIONS, { localType: edge1.localType.name.value, localField: edge1.localField.name.value }, edge1.loc));
-                validationMessages.push(ValidationMessage.warn(VALIDATION_WARNING_UNASSOCIATED_RELATIONS, { localType: edge2.localType.name.value, localField: edge2.localField.name.value }, edge2.loc));
             }
         })
     })
