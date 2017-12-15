@@ -26,6 +26,8 @@ export const RELATION_DIRECTIVE = 'relation';
 export const REFERENCE_DIRECTIVE = 'reference';
 export const DEFAULT_VALUE_DIRECTIVE = 'defaultValue';
 
+export const INVERSE_OF_ARG = 'inverseOf';
+
 export const QUERY_TYPE = 'Query';
 export const MUTATION_TYPE = 'Mutation';
 export const QUERY_META_TYPE = '_QueryMeta';

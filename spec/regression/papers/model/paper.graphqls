@@ -14,7 +14,7 @@ type Paper @rootEntity @roles(readWrite: ["admin"]) {
     literatureReferences: [LiteratureReference]
     tags: [String]
     #author: User @relation
-    readers: [User] @relation
+    readers: [User] @relation(inverseOf: "papers")
     categories: [Category!]
 }
 

@@ -8,5 +8,5 @@ export function getCollectionNameForRootEntity(type: GraphQLNamedType) {
 }
 
 export function getCollectionNameForEdge(edgeType: EdgeType) {
-    return getCollectionNameForRootEntity(edgeType.fromType) + '_' + getCollectionNameForRootEntity(edgeType.toType);
+    return getCollectionNameForRootEntity(edgeType.fromType) + '_' + edgeType.fromField.name;
 }
