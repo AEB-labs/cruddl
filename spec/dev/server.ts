@@ -1,17 +1,16 @@
-import {__EnumValue, buildASTSchema, parse, Source} from 'graphql';
+import { Source } from 'graphql';
 import * as fs from 'fs';
 import { addQueryResolvers, ArangoDBAdapter } from '../..';
 import { GraphQLServer } from './graphql-server';
-import {createSchema} from "../../src/schema/schema-builder";
-import {SchemaConfig, SchemaPartConfig} from "../../src/config/schema-config";
-import {globalContext} from "../../src/config/global";
+import { createSchema } from '../../src/schema/schema-builder';
+import { SchemaConfig, SchemaPartConfig } from '../../src/config/schema-config';
+import { globalContext } from '../../src/config/global';
 
 const port = 3000;
 const databaseName = 'momo';
 const databaseURL = 'http://root:@localhost:8529';
 
 export async function start() {
-
     const db = new ArangoDBAdapter({
         databaseName,
         url: databaseURL

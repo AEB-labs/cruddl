@@ -7,7 +7,7 @@ import { flatMap, objectValues } from '../../utils/utils';
 import { isRelationField, isRootEntityType } from '../../schema/schema-utils';
 import { getEdgeType } from '../../schema/edges';
 import { getCollectionNameForEdge, getCollectionNameForRootEntity } from './arango-basics';
-import {globalContext} from "../../config/global";
+import { globalContext, Logger, SchemaContext } from '../../config/global';
 
 export interface ArangoDBConfig {
     readonly url: string;
@@ -18,8 +18,15 @@ export interface ArangoDBConfig {
 
 export class ArangoDBAdapter implements DatabaseAdapter {
     private db: Database;
-    private logger = globalContext.loggerProvider.getLogger('ArangoDBAdapter');
-    constructor(config: ArangoDBConfig) {
+    private logger: Logger;
+
+    constructor(config: ArangoDBConfig, private schemaContext?: SchemaContext) {
+        globalContext.registerContext(schemaContext);
+        try {
+            this.logger = globalContext.loggerProvider.getLogger("ArangoDBAdapter");
+        } finally {
+            globalContext.unregisterContext();
+        }
         this.db = new Database({
             url: config.url,
             databaseName: config.databaseName
@@ -32,10 +39,16 @@ export class ArangoDBAdapter implements DatabaseAdapter {
     }
 
     async execute(queryTree: QueryNode) {
-        const aql = getAQLForQuery(queryTree);
-        this.logger.debug(aql.toColoredString());
-        const { code, boundValues } = aql.getCode();
-        const cursor = await this.db.query(code, boundValues);
+        globalContext.registerContext(this.schemaContext);
+        let cursor;
+        try {
+            const aql = getAQLForQuery(queryTree);
+            this.logger.debug(aql.toColoredString());
+            const {code, boundValues} = aql.getCode();
+            cursor = await this.db.query(code, boundValues);
+        } finally {
+            globalContext.unregisterContext();
+        }
         return await cursor.next();
     }
 

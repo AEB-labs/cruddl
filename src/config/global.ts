@@ -1,4 +1,4 @@
-export interface GlobalContext {
+export interface SchemaContext {
     readonly loggerProvider?: LoggerProvider;
 }
 
@@ -18,14 +18,18 @@ export interface Logger {
 }
 
 export class ConsoleLoggerProvider implements LoggerProvider {
+    constructor(private prefix?: string) { }
+
     getLogger(categoryName?: string | undefined): Logger {
-        return new ConsoleLogger();
+        return new ConsoleLogger((this.prefix ? this.prefix + ': ' : '') + (categoryName ? categoryName + ': ' : ''));
     }
 }
 
 export class ConsoleLogger implements Logger {
+    constructor(private prefix?: string) { }
+
     debug(message: string, ...args: any[]): void {
-        console.log(message, args)
+        console.log((this.prefix || '') + message, args)
     }
     info = this.debug;
     warn = this.debug;
@@ -33,11 +37,25 @@ export class ConsoleLogger implements Logger {
 }
 
 export namespace globalContext {
-    export let loggerProvider: ConsoleLoggerProvider = new ConsoleLoggerProvider();
+    export let loggerProvider: ConsoleLoggerProvider;
 
-    export function registerContext(context: GlobalContext) {
-        if (context.loggerProvider) {
+    /**
+     * Restores default values in the global context
+     */
+    export function unregisterContext() {
+        loggerProvider = new ConsoleLoggerProvider();
+    }
+
+    /**
+     * Resets the global context and applies values of a given schema context
+     */
+    export function registerContext(context: SchemaContext|undefined) {
+        unregisterContext();
+        if (context && context.loggerProvider) {
             loggerProvider = context.loggerProvider;
         }
     }
+
+    // init
+    unregisterContext();
 }
