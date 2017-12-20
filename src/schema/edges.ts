@@ -40,33 +40,38 @@ export class EdgeType {
     }
 }
 
-function findInverseField(field: GraphQLField<any, any>): GraphQLField<any, any>|undefined {
-    const relationDirective = findDirectiveWithName(field.astNode as FieldDefinitionNode, RELATION_DIRECTIVE);
-    if (!relationDirective) { throw new Error(`Missing @relation on ${field.name}.`); }
-    const inverseFieldName = getNodeByName(relationDirective!.arguments, INVERSE_OF_ARG);
-    if (inverseFieldName && inverseFieldName.value.kind === STRING) {
-        // should be an inverse relation
-        const inverseField = (getNamedType(field.type) as GraphQLObjectType).getFields()[inverseFieldName.value.value];
-        if (!inverseField) throw new Error(`Could not find inverse relation field of ${field.name} with name ${inverseFieldName.value.value}.`);
-        return inverseField;
-    } else {
-        // should be a "forward" relation
-        const oppositeTypeFields = (getNamedType(field.type) as GraphQLObjectType).getFields();
-        for (const key in oppositeTypeFields) {
-            const possibleField = oppositeTypeFields[key];
-            const directive = findDirectiveWithName(possibleField.astNode as FieldDefinitionNode, RELATION_DIRECTIVE);
-            if (directive) {
-                const inverseOf = getNodeByName(directive.arguments, INVERSE_OF_ARG);
-                if (inverseOf && inverseOf.value.kind === STRING && inverseOf.value.value === field.name) {
-                    // that's it!
-                    return possibleField;
-                }
-            }
+function findOpponentFieldInfo(myField: GraphQLField<any, any>):
+    { opponentField: GraphQLField<any, any>|undefined, myFieldSide: RelationFieldEdgeSide.FROM_SIDE}|{ opponentField: GraphQLField<any, any>, myFieldSide: RelationFieldEdgeSide.TO_SIDE} {
+    const relationDirective = findDirectiveWithName(myField.astNode as FieldDefinitionNode, RELATION_DIRECTIVE);
+    if (!relationDirective) { throw new Error(`Missing @relation on ${myField.name}.`); }
+    const inverseOfArgument = getNodeByName(relationDirective!.arguments, INVERSE_OF_ARG);
 
-        }
+    if (inverseOfArgument && inverseOfArgument.value.kind === STRING) {
+        // if there is a inverseOf argument, myField is the TO side
+        const opponentField = (getNamedType(myField.type) as GraphQLObjectType).getFields()[inverseOfArgument.value.value];
+        if (!opponentField) throw new Error(`Could not find inverse relation field of ${myField.name} with name ${inverseOfArgument.value.value}.`);
+        return { opponentField, myFieldSide: RelationFieldEdgeSide.TO_SIDE };
     }
-    // No backlink available
-    return undefined;
+
+    // No inverseOf argument, so myField is the FROM side
+
+    // see if we find an inverse field
+    const oppositeTypeFields = (getNamedType(myField.type) as GraphQLObjectType).getFields();
+    for (const key in oppositeTypeFields) {
+        const possibleField = oppositeTypeFields[key];
+        const directive = findDirectiveWithName(possibleField.astNode as FieldDefinitionNode, RELATION_DIRECTIVE);
+        if (directive) {
+            const inverseOf = getNodeByName(directive.arguments, INVERSE_OF_ARG);
+            if (inverseOf && inverseOf.value.kind === STRING && inverseOf.value.value === myField.name) {
+                // that's it!
+                return { opponentField: possibleField, myFieldSide: RelationFieldEdgeSide.FROM_SIDE };
+            }
+        }
+
+    }
+
+    // No inverse field available
+    return { opponentField: undefined, myFieldSide: RelationFieldEdgeSide.FROM_SIDE };
 }
 
 export function getEdgeType(parentType: GraphQLObjectType, field: GraphQLField<any, any>) {
@@ -75,24 +80,22 @@ export function getEdgeType(parentType: GraphQLObjectType, field: GraphQLField<a
         throw new Error(`Relation field ${parentType.name}.${field.name} is of type ${field.type} which is not an object type`);
     }
 
-    const opponentField = findInverseField(field);
+    const opponentFieldInfo = findOpponentFieldInfo(field);
 
-    if (parentType.name < otherType.name || (parentType.name === otherType.name && (!opponentField || field.name < opponentField.name))) {
-        return new EdgeType({
-            fromType: parentType,
-            fromField: field,
-            toType: otherType,
-            toField: opponentField
-        });
-    } else {
-        if (!opponentField) {
-            throw new Error(`Bad @relation configuration for ${parentType.name}.${field.name}.`);
-        }
-        return new EdgeType({
-            fromType: otherType,
-            fromField: opponentField,
-            toType: parentType,
-            toField: field
-        });
+    switch(opponentFieldInfo.myFieldSide) {
+        case RelationFieldEdgeSide.FROM_SIDE:
+            return new EdgeType({
+                fromType: parentType,
+                fromField: field,
+                toType: otherType,
+                toField: opponentFieldInfo.opponentField
+            });
+        case RelationFieldEdgeSide.TO_SIDE:
+            return new EdgeType({
+                fromType: otherType,
+                fromField: opponentFieldInfo.opponentField,
+                toType: parentType,
+                toField: field
+            });
     }
 }
