@@ -1,25 +1,57 @@
 import {
-    DirectiveNode, DocumentNode, EnumTypeDefinitionNode, EnumValueDefinitionNode, FieldDefinitionNode, GraphQLEnumValue,
-    GraphQLField, GraphQLInputField, GraphQLObjectType, GraphQLType, InputObjectTypeDefinitionNode,
-    InputValueDefinitionNode, Location, NameNode, ObjectTypeDefinitionNode, ScalarTypeDefinitionNode, TypeNode,
+    DirectiveNode,
+    DocumentNode,
+    EnumTypeDefinitionNode,
+    EnumValueDefinitionNode,
+    FieldDefinitionNode,
+    GraphQLEnumValue,
+    GraphQLField,
+    GraphQLInputField,
+    GraphQLObjectType,
+    GraphQLType,
+    InputObjectTypeDefinitionNode,
+    InputValueDefinitionNode,
+    Location,
+    NameNode,
+    ObjectTypeDefinitionNode,
+    ScalarTypeDefinitionNode,
+    TypeNode,
     ValueNode
 } from 'graphql';
 import {
     DIRECTIVE,
-    ENUM_TYPE_DEFINITION, FIELD_DEFINITION, INPUT_OBJECT_TYPE_DEFINITION, LIST_TYPE, NAME, NAMED_TYPE, NON_NULL_TYPE,
-    OBJECT_TYPE_DEFINITION, SCALAR_TYPE_DEFINITION
+    ENUM_TYPE_DEFINITION,
+    FIELD_DEFINITION,
+    INPUT_OBJECT_TYPE_DEFINITION,
+    LIST_TYPE,
+    NAME,
+    NAMED_TYPE,
+    NON_NULL_TYPE,
+    OBJECT_TYPE_DEFINITION,
+    SCALAR_TYPE_DEFINITION
 } from 'graphql/language/kinds';
 import {
-    CALC_MUTATIONS_DIRECTIVE, CALC_MUTATIONS_OPERATORS, CALC_MUTATIONS_OPERATORS_ARG, CalcMutationOperator,
-    CHILD_ENTITY_DIRECTIVE, ENTITY_CREATED_AT, ENTITY_EXTENSION_DIRECTIVE, ENTITY_UPDATED_AT, ID_FIELD,
-    KEY_FIELD_DIRECTIVE, MutationType, NAMESPACE_FIELD_PATH_DIRECTIVE, REFERENCE_DIRECTIVE, RELATION_DIRECTIVE,
+    CALC_MUTATIONS_DIRECTIVE,
+    CALC_MUTATIONS_OPERATORS,
+    CALC_MUTATIONS_OPERATORS_ARG,
+    CalcMutationOperator,
+    CHILD_ENTITY_DIRECTIVE,
+    ENTITY_CREATED_AT,
+    ENTITY_EXTENSION_DIRECTIVE,
+    ID_FIELD,
+    KEY_FIELD_DIRECTIVE,
+    NAMESPACE_FIELD_PATH_DIRECTIVE,
+    REFERENCE_DIRECTIVE,
+    RELATION_DIRECTIVE,
     ROLES_DIRECTIVE,
-    ROLES_READ_ARG, ROLES_READ_WRITE_ARG,
-    ROOT_ENTITY_DIRECTIVE, VALUE_OBJECT_DIRECTIVE
+    ROLES_READ_ARG,
+    ROLES_READ_WRITE_ARG,
+    ROOT_ENTITY_DIRECTIVE,
+    VALUE_OBJECT_DIRECTIVE
 } from './schema-defaults';
-import { compact, flatMap, objectValues } from '../utils/utils';
+import {compact, flatMap, objectValues} from '../utils/utils';
 import {namespacedType} from '../graphql/names';
-import { isEqual } from 'lodash';
+import {isEqual} from 'lodash';
 
 
 /**
@@ -465,3 +497,4 @@ export function enterOrCreateNextNamespacePart(ast: DocumentNode, currentNode: O
         return arrivingNode;
     }
 }
+

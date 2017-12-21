@@ -1,4 +1,4 @@
-type Delivery @rootEntity @roles(readWrite: ["allusers"]) @namespace(name: "logistics.delivery") {
+type Delivery @rootEntity @roles(readWrite: ["allusers"]) @namespace(name: "logistics.delivery") @indices(indices: [{ fields: ["deliveryNumber"] }]) {
     deliveryNumber: String @key
     serialNumbers: [String]
     consignee: Address

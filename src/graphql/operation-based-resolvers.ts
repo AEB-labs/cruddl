@@ -5,6 +5,7 @@ import {
 } from 'graphql';
 import { arrayToObject, objectValues } from '../utils/utils';
 import { getAliasOrName } from './language-utils';
+import {INDEX_DEFINITION_INPUT_TYPE} from "../schema/schema-defaults";
 
 export interface OperationParams {
     schema: GraphQLSchema
@@ -58,11 +59,12 @@ export function addOperationBasedResolvers(schema: GraphQLSchema, operationResol
 
     const mut = schema.getMutationType();
     const sub = schema.getSubscriptionType();
+    const indexDefinitionType = schema.getTypeMap()[INDEX_DEFINITION_INPUT_TYPE];
     return new GraphQLSchema({
         query: convertType(schema.getQueryType()),
         mutation: mut ? convertType(mut) : undefined,
         subscription: sub ? convertType(sub) : undefined,
         directives: schema.getDirectives(),
-        types: objectValues(schema.getTypeMap()).filter(t => t != mut && t != sub && t != schema.getQueryType())
+        types: objectValues(schema.getTypeMap()).filter(t => t != mut && t != sub && t != schema.getQueryType() && t != indexDefinitionType)
     });
 }
