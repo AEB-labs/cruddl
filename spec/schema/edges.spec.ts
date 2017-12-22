@@ -3,7 +3,8 @@ import { createSchema } from '../../src/schema/schema-builder';
 import { addQueryResolvers } from '../../src/query/query-resolvers';
 import { DatabaseAdapter } from '../../src/database/database-adapter';
 import { QueryNode } from '../../src/query/definition';
-import { graphql, GraphQLSchema, Source, print } from 'graphql';
+import { graphql, GraphQLSchema, Source, print, GraphQLObjectType } from 'graphql';
+import { EdgeType, getEdgeType } from '../../src/schema/edges';
 
 class FakeDBAdatper implements DatabaseAdapter {
     async execute(queryTree: QueryNode): Promise<any> {
@@ -33,4 +34,31 @@ describe('edges', () => {
         const result = await graphql(schema, new Source(print(source)), {}, {authRoles: [ "admin" ]}, {});
         expect(result.errors).toEqual(undefined);
     });
+
+    it('correctly builds EdgeType from field', () => {
+        const schemaGQL = gql`
+            type Delivery @rootEntity @roles(readWrite: "admin") {
+                handlingUnits: HandlingUnit @relation
+            }
+
+            type HandlingUnit @rootEntity @roles(readWrite: "admin") {
+                delivery: Delivery @relation(inverseOf: "handlingUnits")
+            }
+        `;
+        let schema = createSchema({schemaParts:[{source: schemaGQL}]});
+        const deliveryType = schema.getType('Delivery') as GraphQLObjectType;
+        const handlingUnitType = schema.getType('HandlingUnit') as GraphQLObjectType;
+        const handlingUnitsField = deliveryType.getFields()['handlingUnits'];
+        const deliveryField = handlingUnitType.getFields()['delivery'];
+
+        function checkEdgeType(edgeType: EdgeType) {
+            expect(edgeType.fromType).toBe(deliveryType);
+            expect(edgeType.fromField).toBe(handlingUnitsField);
+            expect(edgeType.toType).toBe(handlingUnitType);
+            expect(edgeType.toField).toBe(deliveryField);
+        }
+
+        checkEdgeType(getEdgeType(deliveryType, handlingUnitsField));
+        checkEdgeType(getEdgeType(handlingUnitType, deliveryField));
+    })
 });
