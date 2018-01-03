@@ -96,7 +96,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         await Promise.all(deleteIndicesPromises);
         const createIndicesPromises = indicesToCreate.map(indexToCreate => {
             const collection = getCollectionNameForRootEntity(indexToCreate.rootEntity);
-            this.logger.info(`Creating ${ indexToCreate.unique ? 'unique' : ''} index on collection ${collection} on field(s) ${indexToCreate.fields.join(',')}`);
+            this.logger.info(`Creating ${ indexToCreate.unique ? 'unique ' : ''}index on collection ${collection} on ${indexToCreate.fields.length > 1 ? 'fields' : 'field'} '${indexToCreate.fields.join(',')}'`);
             return this.db.collection(collection).createIndex({fields: indexToCreate.fields, unique: indexToCreate.unique, type: DEFAULT_INDEX_TYPE})
         });
         await Promise.all(createIndicesPromises);
