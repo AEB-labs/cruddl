@@ -1,5 +1,7 @@
-type Country @rootEntity @roles(readWrite: ["allusers"]) @namespace(name: "foundation") {
-    isoCode: String @key
+type Country @rootEntity
+        @roles(readWrite: ["allusers"])
+        @namespace(name: "foundation") {
+    isoCode: String @key @unique
     description: [Translation]
-    totalInvestment: String @roles(readWrite: "accounting")
+    totalInvestment: String @roles(readWrite: "accounting") @index
 }
