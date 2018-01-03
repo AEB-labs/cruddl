@@ -83,8 +83,8 @@ function checkASTPath(path: string, type: ObjectTypeDefinitionNode, ast: Documen
         validationMessages.push(ValidationMessage.error(VALIDATION_ERROR_INDICES_INVALID_PATH_BAD_SYNTAX, {}, loc));
         return;
     }
-    const requiredFieldName = path.split(/\.([^/s/S]*)/)[0];
-    const remainingPath = path.split(/\.([^/s/S]*)/)[1];
+    const requiredFieldName = path.split(/\.([\w]*)/)[0];
+    const remainingPath = path.split(/\.([\w]*)/)[1];
     const fieldNode = getNodeByName(type.fields, requiredFieldName);
     if (!fieldNode) {
         validationMessages.push(ValidationMessage.error(VALIDATION_ERROR_INDICES_UNKNOWN_FIELD_ON_PATH, { field: requiredFieldName, type: type.name.value }, loc));
