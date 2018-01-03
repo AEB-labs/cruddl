@@ -1,17 +1,14 @@
-import { DatabaseAdapter } from '../database-adapter';
-import { QueryNode } from '../../query/definition';
-import { getAQLForQuery } from './aql-generator';
-import { Database } from 'arangojs';
-import { GraphQLObjectType, GraphQLSchema } from 'graphql';
-import {compact, flatMap, objectValues} from '../../utils/utils';
-import {getNodeByName, isRelationField, isRootEntityType} from '../../schema/schema-utils';
-import { getEdgeType } from '../../schema/edges';
-import { getCollectionNameForEdge, getCollectionNameForRootEntity } from './arango-basics';
-import { globalContext, Logger, SchemaContext } from '../../config/global';
-import {INDICES_DIRECTIVE} from "../../schema/schema-defaults";
+import {DatabaseAdapter} from '../database-adapter';
+import {QueryNode} from '../../query/definition';
+import {getAQLForQuery} from './aql-generator';
+import {Database} from 'arangojs';
+import {getNamedType, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLSchema} from 'graphql';
+import {flatMap, objectValues} from '../../utils/utils';
+import {isRelationField, isRootEntityType} from '../../schema/schema-utils';
+import {getEdgeType} from '../../schema/edges';
+import {getCollectionNameForEdge, getCollectionNameForRootEntity} from './arango-basics';
+import {globalContext, Logger, SchemaContext} from '../../config/global';
 import {calculateRequiredIndexOperations, getRequiredIndicesFromSchema, IndexDefinition} from "../index-definition";
-import {aql} from "./aql";
-import collection = aql.collection;
 
 const DEFAULT_INDEX_TYPE = 'persistent'; // persistent is a skiplist index
 
@@ -85,6 +82,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
 
         // update indices
         const requiredIndices = getRequiredIndicesFromSchema(schema);
+        pimpListsWithAsterisk(requiredIndices);
         const existingIndicesPromises = rootEntities.map(entity => this.getCollectionIndices(entity));
         let existingIndices: IndexDefinition[] = [];
         await Promise.all(existingIndicesPromises).then(promiseResults => promiseResults.forEach(indices => indices.forEach(index => existingIndices.push(index))));
@@ -139,3 +137,21 @@ export class ArangoDBAdapter implements DatabaseAdapter {
     }
 }
 
+function pimpListsWithAsterisk(indexDefinitions: IndexDefinition[]) {
+    indexDefinitions.forEach(indexDefinition => {
+        indexDefinition.fields = indexDefinition.fields.map(field => {
+            const splitField = field.split('.');
+            let currentNodeOnPath = indexDefinition.rootEntity;
+            let currentFieldIndex: number = 0;
+            while (currentFieldIndex < splitField.length) {
+                const field = (currentNodeOnPath as GraphQLObjectType).getFields()[splitField[currentFieldIndex]];
+                if (field.type instanceof GraphQLList || (field.type instanceof GraphQLNonNull && field.type.ofType instanceof GraphQLList)) {
+                    splitField[currentFieldIndex] += "[*]";
+                }
+                currentFieldIndex++;
+                currentNodeOnPath = getNamedType(field.type);
+            }
+            return splitField.join('.');
+        });
+    })
+}
