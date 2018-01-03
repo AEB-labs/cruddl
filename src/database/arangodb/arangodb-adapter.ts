@@ -20,11 +20,15 @@ export interface ArangoDBConfig {
     readonly user?: string;
     readonly password?: string;
     readonly databaseName: string;
+    readonly autocreateIndices?: boolean;
+    readonly autoremoveIndices?: boolean;
 }
 
 export class ArangoDBAdapter implements DatabaseAdapter {
     private db: Database;
     private logger: Logger;
+    readonly autocreateIndices?: boolean;
+    readonly autoremoveIndices?: boolean;
 
     constructor(config: ArangoDBConfig, private schemaContext?: SchemaContext) {
         globalContext.registerContext(schemaContext);
@@ -42,6 +46,8 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             // Therefore we cast to any
             (this.db as any).useBasicAuth(config.user, config.password);
         }
+        this.autocreateIndices = config.autocreateIndices;
+        this.autoremoveIndices = config.autoremoveIndices;
     }
 
     async execute(queryTree: QueryNode) {
@@ -89,17 +95,29 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                 // Don't delete primary indices
                 return;
             }
-            // TODO enable automagic index removal
-            this.logger.info(`Not dropping index ${indexToDelete.id} with fields ${indexToDelete.fields.join(',')}`);
-            return undefined; //this.db.collection(collection).dropIndex(indexToDelete.id);
+            if (this.autoremoveIndices) {
+                this.logger.info(`Dropping index ${indexToDelete.id} on ${indexToDelete.fields.length > 1 ? 'fields' : 'field'} '${indexToDelete.fields.join(',')}'`);
+                return this.db.collection(collection).dropIndex(indexToDelete.id);
+            } else {
+                this.logger.info(`Skipping drop index ${indexToDelete.id} on ${indexToDelete.fields.length > 1 ? 'fields' : 'field'} '${indexToDelete.fields.join(',')}'`);
+                return undefined;
+            }
         });
         await Promise.all(deleteIndicesPromises);
-        const createIndicesPromises = indicesToCreate.map(indexToCreate => {
-            const collection = getCollectionNameForRootEntity(indexToCreate.rootEntity);
-            this.logger.info(`Creating ${ indexToCreate.unique ? 'unique ' : ''}index on collection ${collection} on ${indexToCreate.fields.length > 1 ? 'fields' : 'field'} '${indexToCreate.fields.join(',')}'`);
-            return this.db.collection(collection).createIndex({fields: indexToCreate.fields, unique: indexToCreate.unique, type: DEFAULT_INDEX_TYPE})
-        });
-        await Promise.all(createIndicesPromises);
+        if (this.autocreateIndices !== false) {
+            const createIndicesPromises = indicesToCreate.map(indexToCreate => {
+                const collection = getCollectionNameForRootEntity(indexToCreate.rootEntity);
+                this.logger.info(`Creating ${ indexToCreate.unique ? 'unique ' : ''}index on collection ${collection} on ${indexToCreate.fields.length > 1 ? 'fields' : 'field'} '${indexToCreate.fields.join(',')}'`);
+                return this.db.collection(collection).createIndex({
+                    fields: indexToCreate.fields,
+                    unique: indexToCreate.unique,
+                    type: DEFAULT_INDEX_TYPE
+                })
+            });
+            await Promise.all(createIndicesPromises);
+        } else {
+            this.logger.info('Skipping auto index creation.')
+        }
 
         // Creating missing edge collections in ArangoDB
         const requiredEdgeCollections = Array.from(new Set(edgeTypes.map(edge => getCollectionNameForEdge(edge))));

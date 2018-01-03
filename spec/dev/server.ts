@@ -13,7 +13,9 @@ const databaseURL = 'http://root:@localhost:8529';
 export async function start() {
     const db = new ArangoDBAdapter({
         databaseName,
-        url: databaseURL
+        url: databaseURL,
+        autocreateIndices: true,
+        autoremoveIndices: true
     });
 
     const schemaConfig: SchemaConfig = {
