@@ -99,25 +99,27 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                 this.logger.info(`Dropping index ${indexToDelete.id} on ${indexToDelete.fields.length > 1 ? 'fields' : 'field'} '${indexToDelete.fields.join(',')}'`);
                 return this.db.collection(collection).dropIndex(indexToDelete.id);
             } else {
-                this.logger.info(`Skipping drop index ${indexToDelete.id} on ${indexToDelete.fields.length > 1 ? 'fields' : 'field'} '${indexToDelete.fields.join(',')}'`);
+                this.logger.info(`Skipping removal of index ${indexToDelete.id} on ${indexToDelete.fields.length > 1 ? 'fields' : 'field'} '${indexToDelete.fields.join(',')}'`);
                 return undefined;
             }
         });
         await Promise.all(deleteIndicesPromises);
-        if (this.autocreateIndices !== false) {
-            const createIndicesPromises = indicesToCreate.map(indexToCreate => {
-                const collection = getCollectionNameForRootEntity(indexToCreate.rootEntity);
+
+        const createIndicesPromises = indicesToCreate.map(indexToCreate => {
+            const collection = getCollectionNameForRootEntity(indexToCreate.rootEntity);
+            if (this.autocreateIndices !== false) {
                 this.logger.info(`Creating ${ indexToCreate.unique ? 'unique ' : ''}index on collection ${collection} on ${indexToCreate.fields.length > 1 ? 'fields' : 'field'} '${indexToCreate.fields.join(',')}'`);
                 return this.db.collection(collection).createIndex({
                     fields: indexToCreate.fields,
                     unique: indexToCreate.unique,
                     type: DEFAULT_INDEX_TYPE
                 })
-            });
-            await Promise.all(createIndicesPromises);
-        } else {
-            this.logger.info('Skipping auto index creation.')
-        }
+            } else {
+                this.logger.info(`Skipping creation of ${ indexToCreate.unique ? 'unique ' : ''}index on collection ${collection} on ${indexToCreate.fields.length > 1 ? 'fields' : 'field'} '${indexToCreate.fields.join(',')}'`);
+                return undefined;
+            }
+        });
+        await Promise.all(createIndicesPromises);
 
         // Creating missing edge collections in ArangoDB
         const requiredEdgeCollections = Array.from(new Set(edgeTypes.map(edge => getCollectionNameForEdge(edge))));
