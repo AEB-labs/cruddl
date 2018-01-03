@@ -65,7 +65,7 @@ export function addQueryResolvers(schema: GraphQLSchema, databaseAdapter: Databa
                     globalContext.unregisterContext();
                 }
                 const result = queryTree.properties.length ? await databaseAdapter.execute(queryTree) : {};
-                logger.debug(JSON.stringify(result, undefined, '  '));
+                logger.debug('Evaluated query successfully');
                 return result;
             } catch (e) {
                 logger.error("Error evaluating GraphQL query: " + e.stack);
