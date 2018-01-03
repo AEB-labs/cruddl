@@ -20,6 +20,7 @@ import {ObjectTypeDirectiveCountValidator} from "./ast-validation-modules/object
 import { CalcMutationsDirectiveValidator } from './ast-validation-modules/calc-mutations-directive-validator';
 import {DefaultValueValidator} from "./ast-validation-modules/default-value-validator";
 import {CheckDirectedRelationEdgesValidator} from "./ast-validation-modules/check-directed-relation-edges-validator";
+import {IndicesValidator} from "./ast-validation-modules/indices-validator";
 
 const postMergeValidators: ASTValidator[] = [
     new NoDuplicateTypesValidator(),
@@ -40,7 +41,8 @@ const postMergeValidators: ASTValidator[] = [
     new KnownObjectTypeDirectivesValidator(),
     new CalcMutationsDirectiveValidator(),
     new DefaultValueValidator(),
-    new CheckDirectedRelationEdgesValidator()
+    new CheckDirectedRelationEdgesValidator(),
+    new IndicesValidator()
 ];
 
 export interface ASTValidator {
