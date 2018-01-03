@@ -13,7 +13,7 @@ import {calculateRequiredIndexOperations, getRequiredIndicesFromSchema, IndexDef
 import {aql} from "./aql";
 import collection = aql.collection;
 
-const DEFAULT_INDEX_TYPE = 'skiplist';
+const DEFAULT_INDEX_TYPE = 'persistent'; // persistent is a skiplist index
 
 export interface ArangoDBConfig {
     readonly url: string;
