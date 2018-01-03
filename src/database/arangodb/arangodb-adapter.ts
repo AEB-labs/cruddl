@@ -89,8 +89,9 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                 // Don't delete primary indices
                 return;
             }
-            this.logger.info(`Dropping index ${indexToDelete.id} with fields ${indexToDelete.fields.join(',')}`);
-            return this.db.collection(collection).dropIndex(indexToDelete.id);
+            // TODO enable automagic index removal
+            this.logger.info(`Not dropping index ${indexToDelete.id} with fields ${indexToDelete.fields.join(',')}`);
+            return undefined; //this.db.collection(collection).dropIndex(indexToDelete.id);
         });
         await Promise.all(deleteIndicesPromises);
         const createIndicesPromises = indicesToCreate.map(indexToCreate => {
