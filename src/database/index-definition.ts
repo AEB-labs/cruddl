@@ -6,7 +6,10 @@ import {
     ObjectValueNode,
     valueFromAST
 } from "graphql";
-import {INDEX_DEFINITION_INPUT_TYPE, INDICES_ARG, INDICES_DIRECTIVE} from "../schema/schema-defaults";
+import {
+    INDEX_DEFINITION_INPUT_TYPE, INDICES_ARG, INDICES_DIRECTIVE,
+    ROOT_ENTITY_DIRECTIVE
+} from "../schema/schema-defaults";
 import {getNodeByName, isRootEntityType} from "../schema/schema-utils";
 import {compact, flatMap, objectValues} from "../utils/utils";
 import {DOCUMENT, LIST, OBJECT} from "graphql/language/kinds";
@@ -24,9 +27,8 @@ export function getRequiredIndicesFromSchema(schema: GraphQLSchema) {
 
     const rootEntities = objectValues(schema.getTypeMap()).filter(type => isRootEntityType(type)) as GraphQLObjectType[];
     return flatMap(rootEntities, rootEntity => {
-        const rootEntityIndexDefinition = getNodeByName(rootEntity.astNode!.directives, INDICES_DIRECTIVE);
-        if (rootEntityIndexDefinition == undefined) { return []; }
-        const rootEntityIndexDefinitionArg = getNodeByName(rootEntityIndexDefinition.arguments, INDICES_ARG);
+        const rootEntityDirective = getNodeByName(rootEntity.astNode!.directives, ROOT_ENTITY_DIRECTIVE);
+        const rootEntityIndexDefinitionArg = getNodeByName(rootEntityDirective!.arguments, INDICES_ARG);
         if (rootEntityIndexDefinitionArg == undefined) { return []; }
         const indexDefinitionList = rootEntityIndexDefinitionArg.value;
         if (indexDefinitionList.kind !== LIST) {
