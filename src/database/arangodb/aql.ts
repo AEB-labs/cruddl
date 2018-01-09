@@ -21,7 +21,7 @@ function indentLineBreaks(val: string, level: number) {
     return val.replace(/\n/g, '\n' + indent);
 }
 
-class AQLCodeBuildingContext {
+export class AQLCodeBuildingContext {
     private boundValues: any[] = [];
     private variableBindings = new Map<AQLVariable, string>();
     private nextIndexPerLabel = new Map<string, number>();
@@ -104,7 +104,7 @@ export abstract class AQLFragment {
     abstract getCodeWithContext(context: AQLCodeBuildingContext): string;
 }
 
-class AQLCodeFragment extends AQLFragment {
+export class AQLCodeFragment extends AQLFragment {
     constructor(public readonly aql: string) {
         super();
     }
