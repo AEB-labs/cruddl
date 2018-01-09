@@ -2,7 +2,7 @@ import gql from 'graphql-tag';
 
 export const DIRECTIVES = gql`
     # Declares a type for root-level objects with ids that are stored directly in the data base
-    directive @rootEntity on OBJECT
+    directive @rootEntity(indices: [IndexDefinition!]) on OBJECT
     
     # Declares a type for objects with ids that can be embedded as a list within another entity
     directive @childEntity on OBJECT
@@ -21,7 +21,13 @@ export const DIRECTIVES = gql`
     
     # Declares a field as business key which is used in @reference fields
     directive @key on FIELD_DEFINITION
-    
+
+    # Declares a field to be indexed
+    directive @index on FIELD_DEFINITION
+
+    # Declares a field to be unique-indexed
+    directive @unique on FIELD_DEFINITION
+
     # Specifies the namespace of a type
     directive @namespace(name: String!) on OBJECT
     
@@ -33,6 +39,12 @@ export const DIRECTIVES = gql`
         readWrite: [String!])
     on FIELD_DEFINITION|OBJECT
 
+    # Specifies the indices of a root entity
+    directive @indices(
+            indices: [IndexDefinition!]
+        )
+    on OBJECT
+    
     enum CalcMutationsOperator {
         MULTIPLY,
         DIVIDE,
@@ -50,6 +62,12 @@ export const DIRECTIVES = gql`
 
     # Specifies the defaultValue of a field
     directive @defaultValue(value: JSON!) on FIELD_DEFINITION
+    
+    input IndexDefinition {
+        id: String,
+        fields: [String!]!
+        unique: Boolean
+    }
 `;
 
 export const CORE_SCALARS = gql`
