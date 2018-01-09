@@ -65,7 +65,7 @@ export class DistilledOperation {
     }
 }
 
-interface FieldRequestConfig {
+export interface FieldRequestConfig {
     field: GraphQLField<any, any>;
     parentType: GraphQLCompositeType;
     schema: GraphQLSchema,
