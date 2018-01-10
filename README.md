@@ -29,7 +29,7 @@ momo supports four basic meta types which basically can be annotated as directiv
 
 ### @rootEntity
 A root entity represents a base model. A collection with the types plural name will be created in the database.
-```graphql schema
+```graphql
 type Person @rootEntity {
    name: String
    shoeSize: Int
@@ -38,7 +38,7 @@ type Person @rootEntity {
 ### @childEntity
 A child entity is an entity which belongs list-wise to a root entity but has no own collection. It is stored within the root entity. References to child entities from other root entities are not possible. Root entities can be reused in several root entities.  
 
-```graphql schema
+```graphql
 type Organ @childEntity {
    name: String
    location: String
@@ -48,7 +48,7 @@ type Organ @childEntity {
 
 ```
 Now, we can add organs to the ```Person``` type: 
-```graphql schema
+```graphql
 type Person @rootEntity {
     ...
     organs: [Organ]
@@ -57,7 +57,7 @@ type Person @rootEntity {
 
 ### @entityExtension
 An entity extension also is an entity which does not have an isolated representation in the database. It is used to store a record of self-contained fields which can be used in several root entities.
-```graphql schema
+```graphql
 type Education @entityExtension {
     schoolYearsCount: Int
     degree: Degree
@@ -77,7 +77,7 @@ type Person @rootEntity {
 ```
 ### @valueObject
 Value objects are atomic objects in the sense of domain driven design. They behave like scalars.
-```graphql schema
+```graphql
 type Address @valueObject {
     street: String
     postalCode: String
@@ -92,7 +92,7 @@ type Person @rootEntity {
 ## Relationships
 ### @relation
 A @relation directive on a field from the top level of one root entity to another root entity.
-```graphql schema
+```graphql
 type Person @rootEntity {
     ...
     likes: [Person] @relation
@@ -110,7 +110,7 @@ A @reference field defines a link to a foreign root entity. Lists of references 
 
 A referred root entity can be referred by ID (default) or by setting a @key on a scalar field.
 A reference mostly corresponds to a foreign key in relational databases.
-```graphql schema
+```graphql
 type Person @rootEntity {
     ...
     country: Countr @reference
@@ -127,7 +127,7 @@ type Country @rootEntity {
 momo supports index handling. During start up they are extracted from the schema and created or removed from the database.
 ### Root entity index definition
 Indices can be added to the @rootEntity directive:
-```graphql schema
+```graphql
 type Person @rootEntity(indices: [{ fields: ["lastName", "firstName"], unique: false}, {fields:["education.degree"]}]) {
     lastName: String
     firstName: String
@@ -137,7 +137,7 @@ type Person @rootEntity(indices: [{ fields: ["lastName", "firstName"], unique: f
 
 ### Field index definition
 Indices can also be directly attached to fields. For each field, one index is created. Multi-field indices are not supported via field definition.
-```graphql schema
+```graphql
 type Person @rootEntity {
     lastName: String @index
     passportNumber: String @unique
