@@ -45,12 +45,12 @@ export class IndicesValidator implements ASTValidator {
                     return;
                 }
                 if (fieldsField.value.kind !== LIST || fieldsField.value.values.length === 0) {
-                    validationMessages.push(ValidationMessage.error(VALIDATION_ERROR_INDICES_INVALID_FIELDS_ARGUMENT, {}, fieldsField.loc));
+                    validationMessages.push(ValidationMessage.error(VALIDATION_ERROR_INDICES_INVALID_FIELDS_ARGUMENT, {}, fieldsField.loc ? fieldsField.loc : indexDefinition.loc));
                     return;
                 }
                 const indexFields = fieldsField.value.values.map(field => {
                     if (field.kind !== STRING) {
-                        validationMessages.push(ValidationMessage.error(VALIDATION_ERROR_INDICES_INVALID_FIELDS_ARGUMENT, {}, field.loc));
+                        validationMessages.push(ValidationMessage.error(VALIDATION_ERROR_INDICES_INVALID_FIELDS_ARGUMENT, {}, field.loc ? field.loc : indexDefinition.loc));
                         return undefined;
                     }
                     return field.value;
@@ -66,7 +66,7 @@ export class IndicesValidator implements ASTValidator {
                 } else {
                     indicesMap.set(indexKey, indexDefinition);
                 }
-                fieldsField.value.values.forEach(indexField => checkASTPath((indexField as StringValueNode).value, rootEntity, ast, validationMessages, indexField.loc))
+                fieldsField.value.values.forEach(indexField => checkASTPath((indexField as StringValueNode).value, rootEntity, ast, validationMessages, indexField.loc ? indexField.loc : indexDefinition.loc))
             });
         });
         [...getChildEntityTypes(ast), ...getEntityExtensionTypes(ast), ...getValueObjectTypes(ast)].forEach(nonRootEntityType => {
