@@ -94,7 +94,7 @@ function prepareQuery(gql: string): PreparedQuery {
     const document = parse(gql);
     validate(schema, document);
     const distilledOperation = distillQuery(document, schema, {});
-    const queryTree = createQueryTree(distilledOperation);
+    const queryTree = createQueryTree(distilledOperation, { authContext: { authRoles: []} });
     return {
         gql,
         document,
@@ -126,7 +126,7 @@ function testQueryPipeline(params: { parser: boolean, queryDistiller: boolean, q
                 distillQuery(preparedQuery.document, schema, {});
             }
             if (params.queryTree) {
-                createQueryTree(preparedQuery.distilledOperation);
+                createQueryTree(preparedQuery.distilledOperation, { authContext: { authRoles: []} });
             }
             if (params.aql) {
                 const transaction = getAQLQuery(preparedQuery.queryTree);
