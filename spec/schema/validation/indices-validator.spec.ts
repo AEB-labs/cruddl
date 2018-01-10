@@ -7,7 +7,8 @@ import {
     VALIDATION_ERROR_INDICES_INVALID_PATH_FINAL_NODE_HAS_NO_SUBFIELDS,
     VALIDATION_ERROR_INDICES_INVALID_PATH_INVALID_INTERMEDIATE_NODE,
     VALIDATION_ERROR_INDICES_INVALID_PATH_NON_SCALAR_END,
-    VALIDATION_ERROR_INDICES_MISSING_FIELDS, VALIDATION_ERROR_INDICES_UNKNOWN_FIELD_ON_PATH
+    VALIDATION_ERROR_INDICES_MISSING_FIELDS, VALIDATION_ERROR_INDICES_ONLY_ON_ROOT_ENTITIES,
+    VALIDATION_ERROR_INDICES_UNKNOWN_FIELD_ON_PATH
 } from "../../../src/schema/preparation/ast-validation-modules/indices-validator";
 
 describe('indices validator', () => {
@@ -68,6 +69,14 @@ describe('indices validator', () => {
         type Foo @rootEntity(indices:[{ fields: ["bar.baz"]}]) { bar: Bar @relation }
         type Bar @rootEntity { baz: String }
     `, VALIDATION_ERROR_INDICES_INVALID_PATH_INVALID_INTERMEDIATE_NODE);
+
+    assertValidatorRejects('index on field of non-rootEntity', `
+        type Foo @valueObject { bar: String @unique }
+    `, VALIDATION_ERROR_INDICES_ONLY_ON_ROOT_ENTITIES);
+
+    assertValidatorRejects('index on field of non-rootEntity', `
+        type Foo @childEntity { bar: String @index }
+    `, VALIDATION_ERROR_INDICES_ONLY_ON_ROOT_ENTITIES);
 
 });
 
