@@ -60,7 +60,7 @@ function createEntitiesMetaFieldNode(fieldRequest: FieldRequest, fieldRequestSta
     const listField = findOriginalFieldForMetaFieldInNamespace(fieldRequest, fieldRequestStack, context);
     const objectType = getNamedType(listField.type) as GraphQLObjectType;
     const listNode = createAuthenticatedRootEntitiesQuery(objectType, context.authContext);
-    return createListMetaNode(fieldRequest, listNode, objectType);
+    return createListMetaNode(fieldRequest, listNode, objectType, context);
 }
 
 function findOriginalFieldForMetaFieldInNamespace(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[], context: QueryTreeContext) {
@@ -125,7 +125,7 @@ export function createEntityObjectNode(fieldSelections: FieldSelection[], source
  */
 function createEntityFieldQueryNode(fieldRequest: FieldRequest, objectNode: QueryNode, fieldRequestStack: FieldRequest[], context: QueryTreeContext): QueryNode {
     if (fieldRequest.fieldName == CURSOR_FIELD) {
-        return createCursorQueryNode(fieldRequestStack[fieldRequestStack.length - 2], objectNode);
+        return createCursorQueryNode(fieldRequestStack[fieldRequestStack.length - 2], objectNode, context);
     }
 
     const type = fieldRequest.field.type;
@@ -142,7 +142,7 @@ function createEntityFieldQueryNode(fieldRequest: FieldRequest, objectNode: Quer
             objectNode,
             parentType: fieldRequest.parentType as GraphQLObjectType,
             field: fieldRequest.field});
-        return createListMetaNode(fieldRequest, listNode, getNamedType(listField.type) as GraphQLObjectType);
+        return createListMetaNode(fieldRequest, listNode, getNamedType(listField.type) as GraphQLObjectType, context);
     }
 
     if (isListType(type)) {
@@ -178,9 +178,9 @@ function createTransformListQueryNode(fieldRequest: FieldRequest, listNode: Quer
     let variableAssignmentNodes: VariableAssignmentQueryNode[] = [];
     const objectType = getNamedType(fieldRequest.field.type) as GraphQLObjectType;
     const itemVariable = new VariableQueryNode(decapitalize(objectType.name));
-    let orderBy = createOrderSpecification(objectType, fieldRequest, itemVariable);
-    const basicFilterNode = createFilterNode(fieldRequest.args[FILTER_ARG], objectType, itemVariable);
-    const paginationFilterNode = createPaginationFilterNode(objectType, fieldRequest, itemVariable);
+    let orderBy = createOrderSpecification(objectType, fieldRequest, itemVariable, context);
+    const basicFilterNode = createFilterNode(fieldRequest.args[FILTER_ARG], objectType, itemVariable, context);
+    const paginationFilterNode = createPaginationFilterNode(objectType, fieldRequest, itemVariable, context);
     let filterNode: QueryNode = new BinaryOperationQueryNode(basicFilterNode, BinaryOperator.AND, paginationFilterNode);
     let innerNode: QueryNode = createEntityObjectNode(fieldRequest.selectionSet, itemVariable, fieldRequestStack, context);
 
