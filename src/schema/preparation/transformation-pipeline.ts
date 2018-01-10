@@ -19,6 +19,8 @@ import {AddQueryMetaTypeTransformer} from "./post-merge-ast-transformation-modul
 import {PropagateTypeRolesToFieldsTransformer} from './post-merge-ast-transformation-modules/propagate-type-roles-to-fields-transformer';
 import {SchemaPartConfig} from "../../config/schema-config";
 import {AddNamespacesToTypesTransformer} from "./pre-merge-ast-transformation-modules/add-namespaces-to-types-transformer";
+import {PermissionProfileMap} from '../../authorization/permission-profile';
+import {AddPermissionDescriptorsTransformer} from './post-merge-ast-transformation-modules/add-permission-descriptors';
 import {MoveUpFieldIndicesTransformer} from "./pre-merge-ast-transformation-modules/move-up-field-indices-transformer";
 
 const postMergePipeline: ASTTransformer[] = [
@@ -54,6 +56,8 @@ const postMergePipeline: ASTTransformer[] = [
     // Complete object fields
     new PropagateTypeRolesToFieldsTransformer(),
 
+    new AddPermissionDescriptorsTransformer(),
+
     // compose schema
     new AddRootSchemaTransformer()
 
@@ -64,11 +68,11 @@ const preMergePipeline: ASTTransformer[] = [
     new MoveUpFieldIndicesTransformer()
 ];
 
-export function executePostMergeTransformationPipeline(ast: DocumentNode, context: {[key: string]: any}) {
+export function executePostMergeTransformationPipeline(ast: DocumentNode, context: ASTTransformationContext) {
     postMergePipeline.forEach(transformer => transformer.transform(ast, context));
 }
 
-export function executePreMergeTransformationPipeline(schemaParts: SchemaPartConfig[], rootContext: {[key: string]: any}) {
+export function executePreMergeTransformationPipeline(schemaParts: SchemaPartConfig[], rootContext: ASTTransformationContext) {
     schemaParts.forEach(schemaPart =>
         preMergePipeline.forEach(transformer => {
             if (schemaPart.source instanceof Source) {
@@ -80,8 +84,14 @@ export function executePreMergeTransformationPipeline(schemaParts: SchemaPartCon
     ) ;
 }
 
+export interface ASTTransformationContext {
+    defaultNamespace?: string
+    localNamespace?: string
+    permissionProfiles?: PermissionProfileMap
+}
+
 export interface ASTTransformer {
-    transform(ast: DocumentNode, context?: {[key: string]: any}): void;
+    transform(ast: DocumentNode, context: ASTTransformationContext): void;
 }
 
 

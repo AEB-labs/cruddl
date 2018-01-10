@@ -17,51 +17,53 @@ import { hasDirectiveWithName } from '../schema/schema-utils';
 import { createListMetaNode } from './list-meta';
 import { extractVariableAssignments, extractVariableAssignmentsInOrderSpecification } from './query-tree-utils';
 import { globalContext } from '../config/global';
+import { QueryTreeContext } from './query-tree-base';
+import { createAuthenticatedRootEntitiesQuery } from './root-entities';
 
 /**
  * Creates a QueryNode for a field of the root query type
  * @param {FieldRequest} fieldRequest the query field, such as allEntities
  */
-export function createQueryNamespaceNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[]): QueryNode {
+export function createQueryNamespaceNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[], context: QueryTreeContext): QueryNode {
     if (isEntitiesQueryField(fieldRequest.field)) {
-        return createAllEntitiesFieldNode(fieldRequest, [...fieldRequestStack, fieldRequest]);
+        return createAllEntitiesFieldNode(fieldRequest, [...fieldRequestStack, fieldRequest], context);
     }
     if (isMetaField(fieldRequest.field)) {
-        return createEntitiesMetaFieldNode(fieldRequest, fieldRequestStack);
+        return createEntitiesMetaFieldNode(fieldRequest, fieldRequestStack, context);
     }
     if (fieldRequest.field.type instanceof GraphQLObjectType && hasDirectiveWithName(fieldRequest.field.astNode as FieldDefinitionNode, NAMESPACE_FIELD_PATH_DIRECTIVE)) {
-        return createQueryNamespaceFieldNode(fieldRequest, [...fieldRequestStack, fieldRequest])
+        return createQueryNamespaceFieldNode(fieldRequest, [...fieldRequestStack, fieldRequest], context)
     }
     if (fieldRequest.field.type instanceof GraphQLObjectType) {
-        return createSingleEntityFieldNode(fieldRequest, [...fieldRequestStack, fieldRequest]);
+        return createSingleEntityFieldNode(fieldRequest, [...fieldRequestStack, fieldRequest], context);
     }
 
     globalContext.loggerProvider.getLogger('queries').warn(`unknown field: ${fieldRequest.fieldName}`);
     return new NullQueryNode();
 }
 
-function createQueryNamespaceFieldNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[]): QueryNode {
+function createQueryNamespaceFieldNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[], context: QueryTreeContext): QueryNode {
         return new ObjectQueryNode(fieldRequest.selectionSet.map(
             sel => new PropertySpecification(sel.propertyName,
                 // a namespace can be interpreted as pushing the root node down.
-                createQueryNamespaceNode(sel.fieldRequest, fieldRequestStack))));
+                createQueryNamespaceNode(sel.fieldRequest, fieldRequestStack, context))));
 }
 
-function createAllEntitiesFieldNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[]): QueryNode {
+function createAllEntitiesFieldNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[], context: QueryTreeContext): QueryNode {
     const objectType = getNamedType(fieldRequest.field.type) as GraphQLObjectType;
-    const listNode = new EntitiesQueryNode(objectType);
+    const listNode = createAuthenticatedRootEntitiesQuery(objectType, context.authContext);
     // (node.roles INTERSECT requestRoles) > 0
-    return createTransformListQueryNode(fieldRequest, listNode, fieldRequestStack);
+    return createTransformListQueryNode(fieldRequest, listNode, fieldRequestStack, context);
 }
 
-function createEntitiesMetaFieldNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[]): QueryNode {
-    const listField = findOriginalFieldForMetaFieldInNamespace(fieldRequest, fieldRequestStack);
+function createEntitiesMetaFieldNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[], context: QueryTreeContext): QueryNode {
+    const listField = findOriginalFieldForMetaFieldInNamespace(fieldRequest, fieldRequestStack, context);
     const objectType = getNamedType(listField.type) as GraphQLObjectType;
-    const listNode = new EntitiesQueryNode(objectType);
+    const listNode = createAuthenticatedRootEntitiesQuery(objectType, context.authContext);
     return createListMetaNode(fieldRequest, listNode, objectType);
 }
 
-function findOriginalFieldForMetaFieldInNamespace(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[]) {
+function findOriginalFieldForMetaFieldInNamespace(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[], context: QueryTreeContext) {
     const listFieldName = unwrapMetaFieldName(fieldRequest.field);
     // walk through namespaces, start at root query type.
     let currentNamespaceNode = fieldRequest.schema.getQueryType();
@@ -81,17 +83,17 @@ function findOriginalFieldForMetaFieldInNamespace(fieldRequest: FieldRequest, fi
     return listField;
 }
 
-function createSingleEntityFieldNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[]): QueryNode {
+function createSingleEntityFieldNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[], context: QueryTreeContext): QueryNode {
     const objectType = getNamedType(fieldRequest.field.type) as GraphQLObjectType;
     const entityVarNode = new VariableQueryNode(decapitalize(objectType.name));
     const filterClauses = objectEntries(fieldRequest.args).map(([fieldName, value]) =>
-        new BinaryOperationQueryNode(createScalarFieldValueNode(objectType, fieldName, entityVarNode), BinaryOperator.EQUAL, new LiteralQueryNode(value)));
+        new BinaryOperationQueryNode(createScalarFieldValueNode(objectType, fieldName, entityVarNode, context), BinaryOperator.EQUAL, new LiteralQueryNode(value)));
     if (filterClauses.length != 1) {
         throw new Error(`Must specify exactly one argument to ${fieldRequest.parentType.toString()}.${fieldRequest.field.name}`);
     }
     const filterNode = filterClauses[0];
-    const innerNode = createConditionalObjectNode(fieldRequest.selectionSet, entityVarNode, fieldRequestStack);
-    const listNode = new EntitiesQueryNode(objectType);
+    const innerNode = createConditionalObjectNode(fieldRequest.selectionSet, entityVarNode, fieldRequestStack, context);
+    const listNode = createAuthenticatedRootEntitiesQuery(objectType, context.authContext);
     const filteredListNode = new TransformListQueryNode({
         listNode,
         filterNode,
@@ -108,10 +110,10 @@ function createSingleEntityFieldNode(fieldRequest: FieldRequest, fieldRequestSta
  * @param {FieldRequest[]} fieldRequestStack parent field requests, up to (including) the enclosing fieldRequest of fieldSeletions
  * @returns {ObjectQueryNode}
  */
-export function createEntityObjectNode(fieldSelections: FieldSelection[], sourceObjectNode: QueryNode, fieldRequestStack: FieldRequest[]) {
+export function createEntityObjectNode(fieldSelections: FieldSelection[], sourceObjectNode: QueryNode, fieldRequestStack: FieldRequest[], context: QueryTreeContext) {
     return new ObjectQueryNode(fieldSelections.map(
         sel => new PropertySpecification(sel.propertyName,
-            createEntityFieldQueryNode(sel.fieldRequest, sourceObjectNode, [...fieldRequestStack, sel.fieldRequest]))));
+            createEntityFieldQueryNode(sel.fieldRequest, sourceObjectNode, [...fieldRequestStack, sel.fieldRequest], context))));
 }
 
 /**
@@ -121,7 +123,7 @@ export function createEntityObjectNode(fieldSelections: FieldSelection[], source
  * @param {FieldRequest[]} fieldRequestStack parent field requests, up to (including) the fieldRequest arg
  * @returns {QueryNode}
  */
-function createEntityFieldQueryNode(fieldRequest: FieldRequest, objectNode: QueryNode, fieldRequestStack: FieldRequest[]): QueryNode {
+function createEntityFieldQueryNode(fieldRequest: FieldRequest, objectNode: QueryNode, fieldRequestStack: FieldRequest[], context: QueryTreeContext): QueryNode {
     if (fieldRequest.fieldName == CURSOR_FIELD) {
         return createCursorQueryNode(fieldRequestStack[fieldRequestStack.length - 2], objectNode);
     }
@@ -150,7 +152,7 @@ function createEntityFieldQueryNode(fieldRequest: FieldRequest, objectNode: Quer
             field: fieldRequest.field});
         if (rawType instanceof GraphQLObjectType) {
             // support filters, order by and pagination
-            return createTransformListQueryNode(fieldRequest, listNode, fieldRequestStack);
+            return createTransformListQueryNode(fieldRequest, listNode, fieldRequestStack, context);
         } else {
             return listNode;
         }
@@ -160,18 +162,19 @@ function createEntityFieldQueryNode(fieldRequest: FieldRequest, objectNode: Quer
         objectNode,
         parentType: fieldRequest.parentType as GraphQLObjectType,
         field: fieldRequest.field,
-        innerNodeFn: valueNode => rawType instanceof GraphQLObjectType ? createConditionalObjectNode(fieldRequest.selectionSet, valueNode, fieldRequestStack) : valueNode
+        innerNodeFn: valueNode => rawType instanceof GraphQLObjectType ? createConditionalObjectNode(fieldRequest.selectionSet, valueNode, fieldRequestStack, context) : valueNode,
+        context
     });
 }
 
-function createConditionalObjectNode(fieldSelections: FieldSelection[], contextNode: QueryNode, fieldRequestStack: FieldRequest[]) {
+function createConditionalObjectNode(fieldSelections: FieldSelection[], contextNode: QueryNode, fieldRequestStack: FieldRequest[], context: QueryTreeContext) {
     return new ConditionalQueryNode(
         new TypeCheckQueryNode(contextNode, BasicType.OBJECT),
-        createEntityObjectNode(fieldSelections, contextNode, fieldRequestStack),
+        createEntityObjectNode(fieldSelections, contextNode, fieldRequestStack, context),
         new NullQueryNode());
 }
 
-function createTransformListQueryNode(fieldRequest: FieldRequest, listNode: QueryNode, fieldRequestStack: FieldRequest[]): QueryNode {
+function createTransformListQueryNode(fieldRequest: FieldRequest, listNode: QueryNode, fieldRequestStack: FieldRequest[], context: QueryTreeContext): QueryNode {
     let variableAssignmentNodes: VariableAssignmentQueryNode[] = [];
     const objectType = getNamedType(fieldRequest.field.type) as GraphQLObjectType;
     const itemVariable = new VariableQueryNode(decapitalize(objectType.name));
@@ -179,7 +182,7 @@ function createTransformListQueryNode(fieldRequest: FieldRequest, listNode: Quer
     const basicFilterNode = createFilterNode(fieldRequest.args[FILTER_ARG], objectType, itemVariable);
     const paginationFilterNode = createPaginationFilterNode(objectType, fieldRequest, itemVariable);
     let filterNode: QueryNode = new BinaryOperationQueryNode(basicFilterNode, BinaryOperator.AND, paginationFilterNode);
-    let innerNode: QueryNode = createEntityObjectNode(fieldRequest.selectionSet, itemVariable, fieldRequestStack);
+    let innerNode: QueryNode = createEntityObjectNode(fieldRequest.selectionSet, itemVariable, fieldRequestStack, context);
 
     // pull the variables assignments up as they might have been duplicated
     orderBy = extractVariableAssignmentsInOrderSpecification(orderBy, variableAssignmentNodes);

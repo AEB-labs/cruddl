@@ -35,7 +35,7 @@ const postMergeValidators: ASTValidator[] = [
     new NoUnusedNonRootObjectTypesValidator(),
     new NoEmptyObjectTypesValidator(),
     new NoListsOfListsValidator(),
-    new EveryRootEntityMustDeclareOneRoleValidator(),
+    //new EveryRootEntityMustDeclareOneRoleValidator(),
     new NoRolesOnValueObjectsValidator(),
     new KnownFieldDirectivesValidator(),
     new KnownObjectTypeDirectivesValidator(),

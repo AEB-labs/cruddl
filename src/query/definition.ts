@@ -196,6 +196,15 @@ export class NullQueryNode {
 }
 
 /**
+ * A node which can never evaluate to any value and thus prevents a query from being executed
+ */
+export class UnknownValueQueryNode implements QueryNode {
+    public describe() {
+        return `unknown`;
+    }
+}
+
+/**
  * A node that evaluates either to true or to false
  */
 export class ConstBoolQueryNode {

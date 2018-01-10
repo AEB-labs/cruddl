@@ -1,0 +1,20 @@
+{
+  "restricted": {
+    "permissions": [
+      {
+        "roles": ["admin"],
+        "access": "readWrite"
+      },
+      {
+        "roles": ["accounting"],
+        "access": "readWrite",
+        "restrictToAccessGroups": "accounting"
+      },
+      {
+        "roles": ["logistics"],
+        "access": "readWrite",
+        "restrictToAccessGroups": "logistics"
+      }
+    ]
+  }
+}

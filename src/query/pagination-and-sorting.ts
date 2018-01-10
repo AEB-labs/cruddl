@@ -1,20 +1,20 @@
 import { FieldRequest } from '../graphql/query-distiller';
 import { getNamedType, GraphQLField, GraphQLObjectType, GraphQLType } from 'graphql';
 import {
-    BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, FieldQueryNode, LiteralQueryNode, NullQueryNode,
-    ObjectQueryNode, OrderClause, OrderDirection, OrderSpecification, PropertySpecification, QueryNode,
-    RootEntityIDQueryNode, UnaryOperationQueryNode, UnaryOperator
+    BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, LiteralQueryNode, NullQueryNode, ObjectQueryNode,
+    OrderClause, OrderDirection, OrderSpecification, PropertySpecification, QueryNode, UnaryOperationQueryNode,
+    UnaryOperator
 } from './definition';
 import { isArray } from 'util';
 import { isListType } from '../graphql/schema-utils';
 import {
-    AFTER_ARG,
-    FIRST_ARG, ID_FIELD, ORDER_BY_ARG, ORDER_BY_ASC_SUFFIX, ORDER_BY_DESC_SUFFIX
+    AFTER_ARG, FIRST_ARG, ID_FIELD, ORDER_BY_ARG, ORDER_BY_ASC_SUFFIX, ORDER_BY_DESC_SUFFIX
 } from '../schema/schema-defaults';
 import { sortedByAsc, sortedByDesc } from '../graphql/names';
 import { createNonListFieldValueNode } from './fields';
+import { QueryTreeContext } from './query-tree-base';
 
-export function createPaginationFilterNode(objectType: GraphQLObjectType, listFieldRequest: FieldRequest, itemNode: QueryNode) {
+export function createPaginationFilterNode(objectType: GraphQLObjectType, listFieldRequest: FieldRequest, itemNode: QueryNode, context: QueryTreeContext) {
     const afterArg = listFieldRequest.args[AFTER_ARG];
     if (!afterArg) {
         return new ConstBoolQueryNode(true);
@@ -63,7 +63,7 @@ export function createPaginationFilterNode(objectType: GraphQLObjectType, listFi
     const clauses = clauseNames.map(name => {
         let direction = name.endsWith(ORDER_BY_DESC_SUFFIX) ? OrderDirection.DESCENDING : OrderDirection.ASCENDING;
         const fieldPath = getFieldPathFromOrderByClause(name);
-        const valueNode = createScalarFieldPathValueNode(objectType, fieldPath, itemNode);
+        const valueNode = createScalarFieldPathValueNode(objectType, fieldPath, itemNode, context);
         return {
             fieldPath,
             direction,
@@ -73,12 +73,12 @@ export function createPaginationFilterNode(objectType: GraphQLObjectType, listFi
     return filterForClause(clauses);
 }
 
-export function createOrderSpecification(objectType: GraphQLObjectType, listFieldRequest: FieldRequest, itemNode: QueryNode) {
+export function createOrderSpecification(objectType: GraphQLObjectType, listFieldRequest: FieldRequest, itemNode: QueryNode, context: QueryTreeContext) {
     const clauseNames = getOrderByClauseNames(objectType, listFieldRequest);
     const clauses = clauseNames.map(name => {
         let dir = name.endsWith(ORDER_BY_DESC_SUFFIX) ? OrderDirection.DESCENDING : OrderDirection.ASCENDING;
         const fieldPath = getFieldPathFromOrderByClause(name);
-        const fieldQuery = createScalarFieldPathValueNode(objectType, fieldPath, itemNode);
+        const fieldQuery = createScalarFieldPathValueNode(objectType, fieldPath, itemNode, context);
         return new OrderClause(fieldQuery, dir);
     });
     return new OrderSpecification(clauses);
@@ -90,7 +90,7 @@ export function createOrderSpecification(objectType: GraphQLObjectType, listFiel
  * @param {FieldRequest} listFieldRequest
  * @param {QueryNode} itemNode
  */
-export function createCursorQueryNode(listFieldRequest: FieldRequest, itemNode: QueryNode) {
+export function createCursorQueryNode(listFieldRequest: FieldRequest, itemNode: QueryNode, context: QueryTreeContext) {
     if (!listFieldRequest || !isListType(listFieldRequest.field.type)) {
         return new NullQueryNode(); // not in context of a list
     }
@@ -99,7 +99,7 @@ export function createCursorQueryNode(listFieldRequest: FieldRequest, itemNode: 
     const clauses = getOrderByClauseNames(objectType, listFieldRequest);
     const fieldPaths = clauses.map(clause => getFieldPathFromOrderByClause(clause)).sort();
     const objectNode = new ObjectQueryNode(fieldPaths.map( fieldPath =>
-        new PropertySpecification(fieldPath, createScalarFieldPathValueNode(objectType, fieldPath, itemNode))));
+        new PropertySpecification(fieldPath, createScalarFieldPathValueNode(objectType, fieldPath, itemNode, context))));
     return new UnaryOperationQueryNode(objectNode, UnaryOperator.JSON_STRINGIFY);
 }
 
@@ -113,7 +113,7 @@ function getFieldPathFromOrderByClause(clause: string): string {
     return clause;
 }
 
-function createScalarFieldPathValueNode(baseType: GraphQLObjectType, fieldPath: string, baseNode: QueryNode): QueryNode {
+function createScalarFieldPathValueNode(baseType: GraphQLObjectType, fieldPath: string, baseNode: QueryNode, context: QueryTreeContext): QueryNode {
     const segments = fieldPath.split('_');
     if (!segments.length) {
         throw new Error(`Invalid field path: ${fieldPath}`);
@@ -135,7 +135,8 @@ function createScalarFieldPathValueNode(baseType: GraphQLObjectType, fieldPath: 
         currentNode = createNonListFieldValueNode({
             field,
             parentType: currentType,
-            objectNode: currentNode
+            objectNode: currentNode,
+            context
         });
 
         currentType = field.type;

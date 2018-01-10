@@ -185,3 +185,50 @@ export function assert(condition: boolean, message: string) {
         throw new Error(message);
     }
 }
+
+export let escapeRegExp: (input: string) => string;
+(function () {
+    // Referring to the table here:
+    // https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/regexp
+    // these characters should be escaped
+    // \ ^ $ * + ? . ( ) | { } [ ]
+    // These characters only have special meaning inside of brackets
+    // they do not need to be escaped, but they MAY be escaped
+    // without any adverse effects (to the best of my knowledge and casual testing)
+    // : ! , =
+    // my test "~!@#$%^&*(){}[]`/=?+\|-_;:'\",<.>".match(/[\#]/g)
+
+    // source: https://stackoverflow.com/questions/3446170/escape-string-for-use-in-javascript-regex
+
+    const specials = [
+            // order matters for these
+            "-"
+            , "["
+            , "]"
+            // order doesn't matter for any of these
+            , "/"
+            , "{"
+            , "}"
+            , "("
+            , ")"
+            , "*"
+            , "+"
+            , "?"
+            , "."
+            , "\\"
+            , "^"
+            , "$"
+            , "|"
+        ]
+
+        // I choose to escape every character with '\'
+        // even though only some strictly require it when inside of []
+        , regex = RegExp('[' + specials.join('\\') + ']', 'g')
+    ;
+
+    escapeRegExp = function (str) {
+        return str.replace(regex, "\\$&");
+    };
+
+    // test escapeRegExp("/path/to/res?search=this.that")
+}());

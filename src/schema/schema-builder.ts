@@ -1,13 +1,15 @@
 import {buildASTSchema, DocumentNode, GraphQLSchema, parse, print, Source} from "graphql";
 import {
+    ASTTransformationContext,
     executePostMergeTransformationPipeline,
     executePreMergeTransformationPipeline
-} from "./preparation/transformation-pipeline";
+} from './preparation/transformation-pipeline';
 import { validatePostMerge, ValidationResult } from './preparation/ast-validator';
 import {implementScalarTypes} from './scalars/implement-scalar-types';
 import {SchemaConfig} from "../config/schema-config";
 import {cloneDeep} from "lodash";
 import {SchemaContext, globalContext} from "../config/global";
+import { createPermissionMap } from '../authorization/permission-profile';
 
 /**
  * Validates a schema config and thus determines whether createSchema() would succeed
@@ -15,9 +17,12 @@ import {SchemaContext, globalContext} from "../config/global";
 export function validateSchema(inputSchemaConfig: SchemaConfig): ValidationResult {
     const schemaConfig = parseSchemaParts(inputSchemaConfig);
 
-    const { schemaParts, ...rootContext } = schemaConfig;
+    const rootContext: ASTTransformationContext = {
+        defaultNamespace: schemaConfig.defaultNamespace,
+        permissionProfiles: createPermissionMap(schemaConfig.permissionProfiles)
+    };
 
-    executePreMergeTransformationPipeline(schemaParts, rootContext);
+    executePreMergeTransformationPipeline(schemaConfig.schemaParts, rootContext);
     const mergedSchema: DocumentNode = mergeSchemaDefinition(schemaConfig);
 
     return validatePostMerge(mergedSchema);
@@ -36,9 +41,12 @@ export function createSchema(inputSchemaConfig: SchemaConfig, context?: SchemaCo
 
         const schemaConfig = parseSchemaParts(inputSchemaConfig);
 
-        const {schemaParts, ...rootContext} = schemaConfig;
+        const rootContext: ASTTransformationContext = {
+            defaultNamespace: schemaConfig.defaultNamespace,
+            permissionProfiles: createPermissionMap(schemaConfig.permissionProfiles)
+        };
 
-        executePreMergeTransformationPipeline(schemaParts, rootContext);
+        executePreMergeTransformationPipeline(schemaConfig.schemaParts, rootContext);
         const mergedSchema: DocumentNode = mergeSchemaDefinition(schemaConfig);
 
         const validationResult = validatePostMerge(mergedSchema);

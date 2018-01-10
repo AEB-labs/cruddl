@@ -1,13 +1,15 @@
-import {defaultFieldResolver, GraphQLError, GraphQLSchema, OperationDefinitionNode, print, ResponsePath} from 'graphql';
-import {DatabaseAdapter} from '../database/database-adapter';
-import {addOperationBasedResolvers} from '../graphql/operation-based-resolvers';
-import {distillOperation} from '../graphql/query-distiller';
-import {createQueryTree} from './query-tree-builder';
-import {addAliasBasedResolvers} from '../graphql/alias-based-resolvers';
-import {AuthorizationCheckResult, checkAuthorization} from './authorization-inspector';
-import {transformSchema} from 'graphql-transformer/dist';
+import {
+    defaultFieldResolver, GraphQLError, GraphQLSchema, OperationDefinitionNode, print, ResponsePath
+} from 'graphql';
+import { DatabaseAdapter } from '../database/database-adapter';
+import { addOperationBasedResolvers } from '../graphql/operation-based-resolvers';
+import { distillOperation } from '../graphql/query-distiller';
+import { createQueryTree } from './query-tree-builder';
+import { addAliasBasedResolvers } from '../graphql/alias-based-resolvers';
+import { AuthorizationCheckResult, checkAuthorization } from './authorization-inspector';
+import { transformSchema } from 'graphql-transformer/dist';
 import { globalContext, SchemaContext } from '../config/global';
-import { ObjectQueryNode, QueryNode } from './definition';
+import { ObjectQueryNode } from './definition';
 
 export function addQueryResolvers(schema: GraphQLSchema, databaseAdapter: DatabaseAdapter, schemaContext?: SchemaContext) {
     globalContext.registerContext(schemaContext);
@@ -59,7 +61,7 @@ export function addQueryResolvers(schema: GraphQLSchema, databaseAdapter: Databa
                     }
                     authorizationCheckResultsByOperation.set(operationInfo.operation, authorizationCheckResult);
 
-                    queryTree = createQueryTree(authorizationCheckResult.sanitizedOperation);
+                    queryTree = createQueryTree(authorizationCheckResult.sanitizedOperation, { authContext: { authRoles: requestRoles}});
                     logger.debug(queryTree.describe());
                 } finally {
                     globalContext.unregisterContext();

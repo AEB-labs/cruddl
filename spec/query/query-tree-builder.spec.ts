@@ -1,5 +1,6 @@
 import {
-    buildASTSchema, GraphQLID, GraphQLList, GraphQLObjectType, GraphQLSchema, GraphQLString, parse
+    buildASTSchema, GraphQLID, GraphQLList, GraphQLObjectType, GraphQLSchema, GraphQLString, ObjectTypeDefinitionNode,
+    parse
 } from 'graphql';
 import { distillQuery } from '../../src/graphql/query-distiller';
 import { createQueryTree } from '../../src/query/query-tree-builder';
@@ -7,6 +8,8 @@ import any = jasmine.any;
 import { EntitiesQueryNode, FieldQueryNode, TransformListQueryNode, ObjectQueryNode } from '../../src/query/definition';
 import objectContaining = jasmine.objectContaining;
 import {globalContext} from "../../src/config/global";
+import { setPermissionDescriptor } from '../../src/authorization/permission-descriptors-in-schema';
+import { StaticPermissionDescriptor } from '../../src/authorization/permission-descriptors';
 
 describe('query-tree-builder', () => {
     const schema = buildASTSchema(parse(`
@@ -21,11 +24,12 @@ describe('query-tree-builder', () => {
       name: String
     }
     `));
+    setPermissionDescriptor(schema.getType('User').astNode as ObjectTypeDefinitionNode, new StaticPermissionDescriptor([], ['admin']));
 
     it('builds a simple entity fetch tree', () => {
         const query = `{ allUsers { code: id, name } }`;
         const op = distillQuery(parse(query), schema);
-        const queryTree = createQueryTree(op);
+        const queryTree = createQueryTree(op, { authContext:{authRoles:['admin']}});
         expect(queryTree.properties.length).toBe(1);
         expect(queryTree.properties[0].propertyName).toBe('allUsers');
         expect(queryTree.properties[0].valueNode).toEqual(any(TransformListQueryNode));

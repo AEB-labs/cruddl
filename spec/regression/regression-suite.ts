@@ -37,9 +37,12 @@ export class RegressionSuite {
         const dbConfig = await createTempDatabase();
         const dbAdapter = new ArangoDBAdapter(dbConfig);
 
+        const permissionProfilesPath = path.resolve(this.path, 'model/permission-profiles.json');
         const schemaConfig: SchemaConfig = {
             schemaParts: fs.readdirSync(path.resolve(this.path, 'model'))
-                .map(file => fileToSchemaPartConfig(path.resolve(this.path, 'model', file)))
+                .filter(file => file.endsWith('.graphqls'))
+                .map(file => fileToSchemaPartConfig(path.resolve(this.path, 'model', file))),
+            permissionProfiles: fs.existsSync(permissionProfilesPath) ? JSON.parse(fs.readFileSync(permissionProfilesPath, 'utf-8')) : undefined
         };
         const dumbSchema = createSchema(schemaConfig);
         this.schema = addQueryResolvers(dumbSchema, dbAdapter);

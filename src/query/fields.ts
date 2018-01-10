@@ -9,8 +9,11 @@ import { ID_FIELD } from '../schema/schema-defaults';
 import { getEdgeType } from '../schema/edges';
 import { isListType } from '../graphql/schema-utils';
 import { createSafeListQueryNode } from './queries';
+import { createAuthenticatedRootEntitiesQuery } from './root-entities';
+import { AuthContext } from '../authorization/auth-basics';
+import { QueryTreeContext } from './query-tree-base';
 
-export function createScalarFieldValueNode(objectType: GraphQLObjectType, fieldName: string, contextNode: QueryNode): QueryNode {
+export function createScalarFieldValueNode(objectType: GraphQLObjectType, fieldName: string, contextNode: QueryNode, context: QueryTreeContext): QueryNode {
     const field = objectType.getFields()[fieldName];
     if (!field || !(field.type instanceof GraphQLScalarType || field.type instanceof GraphQLEnumType)) {
         throw new Error(`Field ${fieldName} is not a field of ${objectType.name} with scalar type`);
@@ -18,7 +21,8 @@ export function createScalarFieldValueNode(objectType: GraphQLObjectType, fieldN
     return createNonListFieldValueNode({
         parentType: objectType,
         field,
-        objectNode: contextNode
+        objectNode: contextNode,
+        context
     });
 }
 
@@ -27,7 +31,7 @@ export function createScalarFieldValueNode(objectType: GraphQLObjectType, fieldN
  * Complex field lookups are cached for the mapping function.
  * If a mapping function is specified and the field lookup is complex, wraps the value in a variable.
  */
-export function createNonListFieldValueNode(params: {field: GraphQLField<any, any>, parentType: GraphQLObjectType, objectNode: QueryNode, innerNodeFn?: (valueNode: QueryNode) => QueryNode }) {
+export function createNonListFieldValueNode(params: {field: GraphQLField<any, any>, parentType: GraphQLObjectType, objectNode: QueryNode, innerNodeFn?: (valueNode: QueryNode) => QueryNode, context: QueryTreeContext }) {
     params.innerNodeFn = params.innerNodeFn || (a => a);
 
     function mapInnerFn(node: QueryNode) {
@@ -51,7 +55,7 @@ export function createNonListFieldValueNode(params: {field: GraphQLField<any, an
         return mapInnerFnWithVariable(createTo1RelationNode(params.field, params.parentType, params.objectNode));
     }
     if (isReferenceField(params.field)) {
-        return mapInnerFnWithVariable(createTo1ReferenceNode(params.field, params.objectNode));
+        return mapInnerFnWithVariable(createTo1ReferenceNode(params.field, params.objectNode, params.context));
     }
     if (isRootEntityType(params.parentType) && params.field.name == ID_FIELD) {
         return mapInnerFn(new RootEntityIDQueryNode(params.objectNode));
@@ -65,7 +69,7 @@ function createTo1RelationNode(field: GraphQLField<any, any>, parentType: GraphQ
     return new FirstOfListQueryNode(followNode);
 }
 
-function createTo1ReferenceNode(field: GraphQLField<any, any>, objectNode: QueryNode): QueryNode {
+function createTo1ReferenceNode(field: GraphQLField<any, any>, objectNode: QueryNode, context: QueryTreeContext): QueryNode {
     const referencedEntityType = getNamedType(field.type) as GraphQLObjectType;
     const keyFieldInReferencedEntity = getSingleKeyField(referencedEntityType);
     if (!keyFieldInReferencedEntity) {
@@ -80,7 +84,7 @@ function createTo1ReferenceNode(field: GraphQLField<any, any>, objectNode: Query
         keyNode
     );
 
-    const listNode = new EntitiesQueryNode(referencedEntityType);
+    const listNode = createAuthenticatedRootEntitiesQuery(referencedEntityType, context.authContext);
     const filteredListNode = new TransformListQueryNode({
         listNode,
         filterNode,
