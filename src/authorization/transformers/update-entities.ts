@@ -13,24 +13,25 @@ export function transformUpdateEntitiesQueryNode(node: UpdateEntitiesQueryNode, 
         return new RuntimeErrorQueryNode(`Not authorized to update ${node.objectType.name} objects`);
     }
 
-    // TODO check updated fields (might want to add some more metadata to the UpdateSpecification objects)
-    const updates = node.updates;
-
     let filterNode = node.filterNode;
     if (access != PermissionResult.GRANTED) {
-        const accessGroupField = node.objectType.getFields()['accessGroup'];
-        if (!accessGroupField) {
-            throw new Error(`Root entity ${node.objectType.name} has an accessGroup-based permission profile, but no accessGroup field`);
+        const readAccess = permissionDescriptor.canAccess(authContext, AccessOperation.READ);
+        // If we can't write unconditionally, we might still be able to read unconditionally and wouldn't need a filter
+        if (readAccess != PermissionResult.GRANTED) {
+            const accessGroupField = node.objectType.getFields()['accessGroup'];
+            if (!accessGroupField) {
+                throw new Error(`Root entity ${node.objectType.name} has an accessGroup-based permission profile, but no accessGroup field`);
+            }
+            const itemVar = node.currentEntityVariable;
+            const accessGroupNode = new FieldQueryNode(itemVar, accessGroupField, node.objectType);
+            filterNode = new BinaryOperationQueryNode(filterNode, BinaryOperator.AND, permissionDescriptor.getAccessCondition(authContext, AccessOperation.READ, accessGroupNode));
         }
-        const itemVar = node.currentEntityVariable;
-        const accessGroupNode = new FieldQueryNode(itemVar, accessGroupField, node.objectType);
-        filterNode = new BinaryOperationQueryNode(filterNode, BinaryOperator.AND, permissionDescriptor.getAccessCondition(authContext, AccessOperation.WRITE, accessGroupNode));
+        // TODO add preExecQuery if write access is conditional
     }
 
-    if (updates != node.updates || filterNode != node.filterNode) {
+    if (filterNode != node.filterNode) {
         return new UpdateEntitiesQueryNode({
             ...node,
-            updates,
             filterNode,
         });
     }

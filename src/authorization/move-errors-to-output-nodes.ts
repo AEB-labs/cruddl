@@ -11,6 +11,7 @@ import { error } from 'util';
  */
 export function moveErrorsToOutputNodes(queryTree: QueryNode): QueryNode {
     let errorList: RuntimeErrorQueryNode[] = [];
+    let minErrorDepth: number|undefined = undefined;
     type StackFrame = {
         clazz: Function,
         isOutputNode: boolean
@@ -24,6 +25,7 @@ export function moveErrorsToOutputNodes(queryTree: QueryNode): QueryNode {
             }
             if (node instanceof RuntimeErrorQueryNode) {
                 errorList.push(node);
+                minErrorDepth = Math.min(minErrorDepth === undefined ? stack.length : minErrorDepth, stack.length);
             }
             if (!stack.length) {
                 stack.push({
@@ -43,13 +45,20 @@ export function moveErrorsToOutputNodes(queryTree: QueryNode): QueryNode {
 
         leave(node: QueryNode, key: string) {
             const frame = stack.pop();
-            if (frame && frame.isOutputNode && errorList.length) {
-                const errors = errorList;
-                errorList = [];
-                if (errors.length == 1) {
-                    return errors[0];
+            // only take care of the errors if all of them occurred within this node
+            if (errorList.length) {
+                if (frame && frame.isOutputNode && stack.length <= minErrorDepth!) {
+                    const errors = errorList;
+                    errorList = [];
+                    minErrorDepth = undefined;
+                    if (errors.length == 1) {
+                        return errors[0];
+                    } else {
+                        return new RuntimeErrorQueryNode(errors.map(err => err.message).join(', '))
+                    }
                 } else {
-                    return new RuntimeErrorQueryNode(errors.map(err => err.message).join(', '))
+                    // before entering the next sibling, make sure that the next sibling won't take care of these errors, because they now belong to the parent
+                    minErrorDepth = Math.min(minErrorDepth!, stack.length - 1);
                 }
             }
             return node;

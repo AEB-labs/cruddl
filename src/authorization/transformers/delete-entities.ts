@@ -23,6 +23,8 @@ export function transformDeleteEntitiesQueryNode(node: DeleteEntitiesQueryNode, 
         const itemVar = node.currentEntityVariable;
         const accessGroupNode = new FieldQueryNode(itemVar, accessGroupField, node.objectType);
         filterNode = new BinaryOperationQueryNode(filterNode, BinaryOperator.AND, permissionDescriptor.getAccessCondition(authContext, AccessOperation.WRITE, accessGroupNode));
+
+        // TODO add preExecQuery if write access is conditional
     }
 
     if (filterNode != node.filterNode) {

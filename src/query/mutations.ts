@@ -23,7 +23,7 @@ import {
     QueryNode,
     RemoveEdgesQueryNode,
     RootEntityIDQueryNode,
-    SetEdgeQueryNode,
+    SetEdgeQueryNode, SetFieldQueryNode,
     TransformListQueryNode,
     TypeCheckQueryNode,
     UnaryOperationQueryNode,
@@ -464,12 +464,12 @@ function getCurrentISODate() {
     return new Date().toISOString();
 }
 
-function createUpdatePropertiesSpecification(obj: any, objectType: GraphQLObjectType, oldEntityNode: QueryNode): PropertySpecification[] {
+function createUpdatePropertiesSpecification(obj: any, objectType: GraphQLObjectType, oldEntityNode: QueryNode): SetFieldQueryNode[] {
     if (typeof obj != 'object') {
         return [];
     }
 
-    const properties: PropertySpecification[] = [];
+    const properties: SetFieldQueryNode[] = [];
     for (const field of objectValues(objectType.getFields())) {
         if (isEntityExtensionType(getNamedType(field.type)) && field.name in obj) {
             // call recursively and use update semantic (leave fields that are not specified as-is
@@ -478,7 +478,7 @@ function createUpdatePropertiesSpecification(obj: any, objectType: GraphQLObject
                 createSafeObjectQueryNode(sourceNode),
                 new ObjectQueryNode(createUpdatePropertiesSpecification(obj[field.name], getNamedType(field.type) as GraphQLObjectType, sourceNode))
             ]);
-            properties.push(new PropertySpecification(field.name, valueNode));
+            properties.push(new SetFieldQueryNode(field, objectType, valueNode));
         } else if (isChildEntityType(getNamedType(field.type))) {
             const childEntityType = getNamedType(field.type) as GraphQLObjectType;
             const idField = childEntityType.getFields()[ID_FIELD];
@@ -549,7 +549,7 @@ function createUpdatePropertiesSpecification(obj: any, objectType: GraphQLObject
                 });
             }
 
-            properties.push(new PropertySpecification(field.name, currentNode));
+            properties.push(new SetFieldQueryNode(field, objectType, currentNode));
         } else if (isRelationField(field)) {
             // do nothing because relations are not represented in the update property specification, they are
             // considered by createUpdateEntityQueryNode directly
@@ -577,14 +577,15 @@ function createUpdatePropertiesSpecification(obj: any, objectType: GraphQLObject
             }
 
             if(valueNode) {
-                properties.push(new PropertySpecification(field.name, valueNode));
+                properties.push(new SetFieldQueryNode(field, objectType, valueNode));
             }
         }
     }
 
     // if any property has been updated on an entity, set its update timestamp
     if (properties.length && isTypeWithIdentity(objectType)) {
-        properties.push(new PropertySpecification(UPDATE_ENTITY_FIELD_PREFIX, new LiteralQueryNode(getCurrentISODate())));
+        const field = objectType.getFields()[ENTITY_UPDATED_AT];
+        properties.push(new SetFieldQueryNode(field, objectType, new LiteralQueryNode(getCurrentISODate())));
     }
 
     return properties;

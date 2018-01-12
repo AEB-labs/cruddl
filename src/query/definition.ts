@@ -687,7 +687,7 @@ export class UpdateEntitiesQueryNode extends QueryNode {
     constructor(params: {
         objectType: GraphQLObjectType,
         filterNode: QueryNode,
-        updates: PropertySpecification[],
+        updates: SetFieldQueryNode[],
         maxCount?: number,
         currentEntityVariable?: VariableQueryNode
     }) {
@@ -701,7 +701,7 @@ export class UpdateEntitiesQueryNode extends QueryNode {
 
     public readonly objectType: GraphQLObjectType;
     public readonly filterNode: QueryNode;
-    public readonly updates: PropertySpecification[];
+    public readonly updates: SetFieldQueryNode[];
     public readonly maxCount: number | undefined;
     public readonly currentEntityVariable: VariableQueryNode;
 
@@ -711,6 +711,17 @@ export class UpdateEntitiesQueryNode extends QueryNode {
             `with values (${this.currentEntityVariable.describe()} => {\n` +
             indent(this.updates.map(p => p.describe()).join(',\n')) +
             `\n})`;
+    }
+}
+
+/**
+ * Specifies one property of a an ObjectQueryNode, and indicates that this will set a field of an object
+ */
+export class SetFieldQueryNode extends PropertySpecification {
+    constructor(public readonly field: GraphQLField<any, any>,
+                public readonly objectType: GraphQLObjectType,
+                public readonly valueNode: QueryNode) {
+        super(field.name, valueNode);
     }
 }
 

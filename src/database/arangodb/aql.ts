@@ -323,7 +323,7 @@ export namespace aql {
     export function isSafeIdentifier(str: string) {
         // being pessimistic for security reasons
         // TODO collisions with collection names / keywords?
-        return str.match(/^[a-zA-Z0-9_]+$/);
+        return typeof str == 'string' && str.match(/^[a-zA-Z0-9_]+$/);
     }
 }
 
