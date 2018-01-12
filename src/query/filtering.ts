@@ -12,9 +12,8 @@ import {
 } from '../schema/schema-defaults';
 import { createListFieldValueNode, createNonListFieldValueNode, createScalarFieldValueNode } from './fields';
 import { assert, decapitalize } from '../utils/utils';
-import { QueryTreeContext } from './query-tree-base';
 
-export function createFilterNode(filterArg: any, objectType: GraphQLObjectType|GraphQLScalarType|GraphQLEnumType, contextNode: QueryNode, context: QueryTreeContext): QueryNode {
+export function createFilterNode(filterArg: any, objectType: GraphQLObjectType|GraphQLScalarType|GraphQLEnumType, contextNode: QueryNode): QueryNode {
     if (!filterArg || !Object.keys(filterArg).length) {
         return new ConstBoolQueryNode(true);
     }
@@ -22,7 +21,7 @@ export function createFilterNode(filterArg: any, objectType: GraphQLObjectType|G
     for (const key of Object.getOwnPropertyNames(filterArg)) {
         let newClause;
         if (objectType instanceof GraphQLObjectType) {
-            newClause = getObjectTypeFilterClauseNode(key, filterArg[key], contextNode, objectType, context);
+            newClause = getObjectTypeFilterClauseNode(key, filterArg[key], contextNode, objectType);
         } else {
             // handle scalars and enums
             newClause = getScalarTypeFilterClauseNode(key, filterArg[key], contextNode);
@@ -55,7 +54,7 @@ const filterOperators: { [suffix: string]: (fieldNode: QueryNode, valueNode: Que
     [INPUT_FIELD_ENDS_WITH]: (fieldNode, valueNode) => new BinaryOperationQueryNode(fieldNode, BinaryOperator.ENDS_WITH, valueNode)
 };
 
-function getObjectTypeFilterClauseNode(key: string, value: any, contextNode: QueryNode, objectType: GraphQLObjectType, context: QueryTreeContext): QueryNode {
+function getObjectTypeFilterClauseNode(key: string, value: any, contextNode: QueryNode, objectType: GraphQLObjectType): QueryNode {
     // special nodes
     switch (key) {
         case ARGUMENT_AND:
@@ -63,7 +62,7 @@ function getObjectTypeFilterClauseNode(key: string, value: any, contextNode: Que
                 return new ConstBoolQueryNode(true);
             }
             return value
-                .map(itemValue => createFilterNode(itemValue, objectType, contextNode, context))
+                .map(itemValue => createFilterNode(itemValue, objectType, contextNode))
                 .reduce((prev, current) => new BinaryOperationQueryNode(prev, BinaryOperator.AND, current));
         case ARGUMENT_OR:
             if (!isArray(value)) {
@@ -73,7 +72,7 @@ function getObjectTypeFilterClauseNode(key: string, value: any, contextNode: Que
                 return new ConstBoolQueryNode(false); // proper boolean logic (neutral element of OR is FALSE)
             }
             return value
-                .map(itemValue => createFilterNode(itemValue, objectType, contextNode, context))
+                .map(itemValue => createFilterNode(itemValue, objectType, contextNode))
                 .reduce((prev, current) => new BinaryOperationQueryNode(prev, BinaryOperator.OR, current));
     }
 
@@ -101,7 +100,7 @@ function getObjectTypeFilterClauseNode(key: string, value: any, contextNode: Que
         const itemVarNode = new VariableQueryNode(decapitalize(rawFieldType.name));
         const filteredListNode = new TransformListQueryNode({
             listNode,
-            filterNode: createFilterNode(value, rawFieldType as GraphQLObjectType|GraphQLScalarType|GraphQLEnumType, itemVarNode, context),
+            filterNode: createFilterNode(value, rawFieldType as GraphQLObjectType|GraphQLScalarType|GraphQLEnumType, itemVarNode),
             itemVariable: itemVarNode
         });
 
@@ -118,8 +117,7 @@ function getObjectTypeFilterClauseNode(key: string, value: any, contextNode: Que
                 const fieldNode = createNonListFieldValueNode({
                     parentType: objectType,
                     field,
-                    objectNode: contextNode,
-                    context
+                    objectNode: contextNode
                 });
                 const isObjectNode = new TypeCheckQueryNode(fieldNode, BasicType.OBJECT);
                 return new UnaryOperationQueryNode(isObjectNode, UnaryOperator.NOT);
@@ -133,18 +131,17 @@ function getObjectTypeFilterClauseNode(key: string, value: any, contextNode: Que
                 innerNodeFn: (valueNode: QueryNode) => {
                     // this function maps the object (field value, referenced object, related object) to the filter condition
                     const isObjectNode = new TypeCheckQueryNode(valueNode, BasicType.OBJECT);
-                    const rawFilterNode = createFilterNode(value, rawFieldType, valueNode, context);
+                    const rawFilterNode = createFilterNode(value, rawFieldType, valueNode);
                     if (!rawFilterNode) {
                         return isObjectNode; // an empty filter only checks if the object is present and a real object
                     }
                     // make sure to check for object type before doing the filter
                     return new BinaryOperationQueryNode(isObjectNode, BinaryOperator.AND, rawFilterNode);
-                },
-                context
+                }
             });
         } else {
             // simple scalar equality filter
-            const fieldNode = createScalarFieldValueNode(objectType, key, contextNode, context);
+            const fieldNode = createScalarFieldValueNode(objectType, key, contextNode);
             const valueNode = new LiteralQueryNode(value);
             return new BinaryOperationQueryNode(fieldNode, BinaryOperator.EQUAL, valueNode);
         }
@@ -155,7 +152,7 @@ function getObjectTypeFilterClauseNode(key: string, value: any, contextNode: Que
         const suffix = INPUT_FIELD_SEPARATOR + operatorKey;
         if (key.endsWith(suffix)) {
             const fieldName = key.substr(0, key.length - suffix.length);
-            const fieldNode = createScalarFieldValueNode(objectType, fieldName, contextNode, context);
+            const fieldNode = createScalarFieldValueNode(objectType, fieldName, contextNode);
             const valueNode =  new LiteralQueryNode(value);
             return filterOperators[operatorKey](fieldNode, valueNode);
         }

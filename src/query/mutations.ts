@@ -73,7 +73,6 @@ import { RelationFieldEdgeSide, EdgeType, getEdgeType } from '../schema/edges';
 import uuid = require('uuid');
 import {flattenValueNode} from "../schema/directive-arg-flattener";
 import {globalContext} from "../config/global";
-import { QueryTreeContext } from './query-tree-base';
 import { ErrorIfNotTruthyResultValidator } from './query-result-validators';
 
 /**
@@ -81,42 +80,42 @@ import { ErrorIfNotTruthyResultValidator } from './query-result-validators';
  * @param {FieldRequest} fieldRequest the mutation field, such as createSomeEntity
  * @param fieldRequestStack
  */
-export function createMutationNamespaceNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[], context: QueryTreeContext): QueryNode {
+export function createMutationNamespaceNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[]): QueryNode {
     if (fieldRequest.fieldName.startsWith(CREATE_ENTITY_FIELD_PREFIX)) {
-        return createCreateEntityQueryNode(fieldRequest, [...fieldRequestStack, fieldRequest], context);
+        return createCreateEntityQueryNode(fieldRequest, [...fieldRequestStack, fieldRequest]);
     }
 
     if (fieldRequest.fieldName.startsWith(UPDATE_ENTITY_FIELD_PREFIX)) {
-        return createUpdateEntityQueryNode(fieldRequest, [...fieldRequestStack, fieldRequest], context);
+        return createUpdateEntityQueryNode(fieldRequest, [...fieldRequestStack, fieldRequest]);
     }
 
     if (fieldRequest.fieldName.startsWith(DELETE_ENTITY_FIELD_PREFIX)) {
-        return createDeleteEntityQueryNode(fieldRequest, [...fieldRequestStack, fieldRequest], context);
+        return createDeleteEntityQueryNode(fieldRequest, [...fieldRequestStack, fieldRequest]);
     }
 
     if (fieldRequest.field.type instanceof GraphQLObjectType && hasDirectiveWithName(fieldRequest.field.astNode as FieldDefinitionNode, NAMESPACE_FIELD_PATH_DIRECTIVE)) {
-        return createMutationNamespaceFieldNode(fieldRequest, [...fieldRequestStack, fieldRequest], context)
+        return createMutationNamespaceFieldNode(fieldRequest, [...fieldRequestStack, fieldRequest])
     }
 
     globalContext.loggerProvider.getLogger('mutations').warn(`unknown field: ${fieldRequest.fieldName}`);
     return new NullQueryNode();
 }
 
-function createMutationNamespaceFieldNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[], context: QueryTreeContext): QueryNode {
+function createMutationNamespaceFieldNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[]): QueryNode {
     return new ObjectQueryNode(fieldRequest.selectionSet.map(
         sel => new PropertySpecification(sel.propertyName,
             // a namespace can be interpreted as pushing the root node down.
-            createMutationNamespaceNode(sel.fieldRequest, fieldRequestStack, context))));
+            createMutationNamespaceNode(sel.fieldRequest, fieldRequestStack))));
 }
 
-function createCreateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[], context: QueryTreeContext): QueryNode {
+function createCreateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[]): QueryNode {
     const entityName = fieldRequest.fieldName.substr('create'.length);
     const entityType = fieldRequest.schema.getTypeMap()[entityName];
     if (!entityType || !(entityType instanceof GraphQLObjectType)) {
         throw new Error(`Object type ${entityName} not found but needed for field ${fieldRequest.fieldName}`);
     }
     const input = fieldRequest.args[MUTATION_INPUT_ARG];
-    const objectNode = new LiteralQueryNode(prepareMutationInput(input, entityType, MutationType.CREATE, context));
+    const objectNode = new LiteralQueryNode(prepareMutationInput(input, entityType, MutationType.CREATE));
 
     // Create new entity
     const createEntityNode = new CreateEntityQueryNode(entityType, objectNode);
@@ -133,7 +132,7 @@ function createCreateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestSta
 
     // Build up result query node
     const newEntityVarNode = new VariableQueryNode('newEntity');
-    const objectQueryNode = createEntityObjectNode(fieldRequest.selectionSet, newEntityVarNode, fieldRequestStack, context);
+    const objectQueryNode = createEntityObjectNode(fieldRequest.selectionSet, newEntityVarNode, fieldRequestStack);
     const resultNode = new VariableAssignmentQueryNode({
         variableNode: newEntityVarNode,
         variableValueNode: new EntityFromIdQueryNode(entityType, newEntityIdVarNode),
@@ -147,7 +146,7 @@ function createCreateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestSta
     });
 }
 
-function prepareMutationInput(input: PlainObject, objectType: GraphQLObjectType, mutationType: MutationType, context: QueryTreeContext): PlainObject {
+function prepareMutationInput(input: PlainObject, objectType: GraphQLObjectType, mutationType: MutationType): PlainObject {
 
     let preparedInput: PlainObject = { ...input };
 
@@ -241,7 +240,7 @@ function prepareMutationInput(input: PlainObject, objectType: GraphQLObjectType,
             return (value as AnyValue[]).map(itemValue => prepareFieldValue(itemValue, rawType, mutationType));
         }
         if (rawType instanceof GraphQLObjectType && (isEntityExtensionType(rawType) || isChildEntityType(rawType))) {
-            return prepareMutationInput(value as PlainObject, rawType, mutationType, context);
+            return prepareMutationInput(value as PlainObject, rawType, mutationType);
         }
         // scalars and value objects can be used as-is
         return value;
@@ -294,13 +293,13 @@ function prepareMutationInput(input: PlainObject, objectType: GraphQLObjectType,
     });
 }
 
-function createUpdateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[], context: QueryTreeContext): QueryNode {
+function createUpdateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[]): QueryNode {
     const entityName = fieldRequest.fieldName.substr('create'.length);
     const entityType = fieldRequest.schema.getTypeMap()[entityName];
     if (!entityType || !(entityType instanceof GraphQLObjectType)) {
         throw new Error(`Object type ${entityName} not found but needed for field ${fieldRequest.fieldName}`);
     }
-    const input = prepareMutationInput(fieldRequest.args[MUTATION_INPUT_ARG], entityType, MutationType.UPDATE, context);
+    const input = prepareMutationInput(fieldRequest.args[MUTATION_INPUT_ARG], entityType, MutationType.UPDATE);
 
     // Update entity query
     const currentEntityVarNode = new VariableQueryNode('currentEntity');
@@ -310,7 +309,7 @@ function createUpdateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestSta
     const updateEntityNode = new FirstOfListQueryNode(new UpdateEntitiesQueryNode({
         objectType: entityType,
         filterNode,
-        updates: createUpdatePropertiesSpecification(input, entityType, currentEntityVarNode, context),
+        updates: createUpdatePropertiesSpecification(input, entityType, currentEntityVarNode),
         maxCount: 1,
         currentEntityVariable: currentEntityVarNode
     }));
@@ -331,7 +330,7 @@ function createUpdateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestSta
     const objectQueryNode = new ConditionalQueryNode( // updated entity may not exist
         new TypeCheckQueryNode(updatedEntityVarNode, BasicType.NULL),
         new NullQueryNode(),
-        createEntityObjectNode(fieldRequest.selectionSet, updatedEntityVarNode, fieldRequestStack, context));
+        createEntityObjectNode(fieldRequest.selectionSet, updatedEntityVarNode, fieldRequestStack));
     const resultNode = new VariableAssignmentQueryNode({
         variableNode: updatedEntityVarNode,
         variableValueNode: new EntityFromIdQueryNode(entityType, updatedEntityIdVarNode),
@@ -465,7 +464,7 @@ function getCurrentISODate() {
     return new Date().toISOString();
 }
 
-function createUpdatePropertiesSpecification(obj: any, objectType: GraphQLObjectType, oldEntityNode: QueryNode, context: QueryTreeContext): PropertySpecification[] {
+function createUpdatePropertiesSpecification(obj: any, objectType: GraphQLObjectType, oldEntityNode: QueryNode): PropertySpecification[] {
     if (typeof obj != 'object') {
         return [];
     }
@@ -474,10 +473,10 @@ function createUpdatePropertiesSpecification(obj: any, objectType: GraphQLObject
     for (const field of objectValues(objectType.getFields())) {
         if (isEntityExtensionType(getNamedType(field.type)) && field.name in obj) {
             // call recursively and use update semantic (leave fields that are not specified as-is
-            const sourceNode = new FieldQueryNode(oldEntityNode, field);
+            const sourceNode = new FieldQueryNode(oldEntityNode, field, objectType);
             const valueNode = new MergeObjectsQueryNode([
                 createSafeObjectQueryNode(sourceNode),
-                new ObjectQueryNode(createUpdatePropertiesSpecification(obj[field.name], getNamedType(field.type) as GraphQLObjectType, sourceNode, context))
+                new ObjectQueryNode(createUpdatePropertiesSpecification(obj[field.name], getNamedType(field.type) as GraphQLObjectType, sourceNode))
             ]);
             properties.push(new PropertySpecification(field.name, valueNode));
         } else if (isChildEntityType(getNamedType(field.type))) {
@@ -490,7 +489,7 @@ function createUpdatePropertiesSpecification(obj: any, objectType: GraphQLObject
             // -> update operates on reduced list (delete ones do not generate overhead)
             // generates a query like this:
             // FOR obj IN [...existing, ...newValues] FILTER !(obj.id IN removedIDs) RETURN obj.id == updateID ? update(obj) : obj
-            const rawExistingNode = new FieldQueryNode(oldEntityNode, field);
+            const rawExistingNode = new FieldQueryNode(oldEntityNode, field, objectType);
             let currentNode: QueryNode = new ConditionalQueryNode( // fall back to empty list if property is not a list
                 new TypeCheckQueryNode(rawExistingNode, BasicType.LIST), rawExistingNode, new ListQueryNode([]));
 
@@ -498,13 +497,13 @@ function createUpdatePropertiesSpecification(obj: any, objectType: GraphQLObject
             if (newValues) {
                 // call prepareMutationInput() to assign uuids to new child entities (possibly recursively)
                 // wrap the whole thing into a LiteralQueryNode instead of them individually so that only one bound variable is used
-                const preparedNewValues = newValues.map(value => prepareMutationInput(value, childEntityType, MutationType.CREATE, context));
+                const preparedNewValues = newValues.map(value => prepareMutationInput(value, childEntityType, MutationType.CREATE));
                 const newNode = new LiteralQueryNode(preparedNewValues);
                 currentNode = new ConcatListsQueryNode([currentNode, newNode]);
             }
 
             const childEntityVarNode = new VariableQueryNode(decapitalize(childEntityType.name));
-            const childIDQueryNode = new FieldQueryNode(childEntityVarNode, idField);
+            const childIDQueryNode = new FieldQueryNode(childEntityVarNode, idField, objectType);
 
             const removedIDs: number[] | undefined = obj[getRemoveChildEntityFieldName(field.name)];
             let removalFilterNode: QueryNode | undefined = undefined;
@@ -535,7 +534,7 @@ function createUpdatePropertiesSpecification(obj: any, objectType: GraphQLObject
                     const filterNode = new BinaryOperationQueryNode(childIDQueryNode, BinaryOperator.EQUAL, new LiteralQueryNode(value[ID_FIELD]));
                     const updateNode = new MergeObjectsQueryNode([
                         createSafeObjectQueryNode(childEntityVarNode),
-                        new ObjectQueryNode(createUpdatePropertiesSpecification(value, childEntityType, childEntityVarNode, context))
+                        new ObjectQueryNode(createUpdatePropertiesSpecification(value, childEntityType, childEntityVarNode))
                     ]);
                     updateMapNode = new ConditionalQueryNode(filterNode, updateNode, updateMapNode);
                 }
@@ -570,7 +569,7 @@ function createUpdatePropertiesSpecification(obj: any, objectType: GraphQLObject
                     if((inputCalcFieldName) in obj) {
                         // TODO ArangoDB implicitly converts null to 0 during arithmetic operations. Is this ok?
                         valueNode = new BinaryOperationQueryNode(
-                            valueNode || new FieldQueryNode(oldEntityNode, field),
+                            valueNode || new FieldQueryNode(oldEntityNode, field, objectType),
                             binaryOperator,
                             new LiteralQueryNode(obj[inputCalcFieldName]))
                     }
@@ -591,7 +590,7 @@ function createUpdatePropertiesSpecification(obj: any, objectType: GraphQLObject
     return properties;
 }
 
-function createDeleteEntityQueryNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[], context: QueryTreeContext): QueryNode {
+function createDeleteEntityQueryNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[]): QueryNode {
     const entityName = fieldRequest.fieldName.substr('create'.length);
     const entityType = fieldRequest.schema.getTypeMap()[entityName];
     if (!entityType || !(entityType instanceof GraphQLObjectType)) {
@@ -610,7 +609,7 @@ function createDeleteEntityQueryNode(fieldRequest: FieldRequest, fieldRequestSta
         currentEntityVariable: currentEntityVarNode
     }));
     const deletedEntityVarNode = new VariableQueryNode('deletedEntity');
-    const resultNode = createEntityObjectNode(fieldRequest.selectionSet, deletedEntityVarNode, fieldRequestStack, context);
+    const resultNode = createEntityObjectNode(fieldRequest.selectionSet, deletedEntityVarNode, fieldRequestStack);
     const conditionalResultNode = new ConditionalQueryNode( // updated entity may not exist
         new TypeCheckQueryNode(deletedEntityVarNode, BasicType.OBJECT),
         resultNode,

@@ -17,6 +17,7 @@ export const WILDCARD_CHARACTER = '*';
 export const ROOT_ENTITY_DIRECTIVE = 'rootEntity';
 export const CHILD_ENTITY_DIRECTIVE = 'childEntity';
 export const ENTITY_EXTENSION_DIRECTIVE = 'entityExtension';
+export const FIELD_DIRECTIVE = 'field';
 
 /**
  * Value object according to DDD. Some people know this kind of type as Composite.

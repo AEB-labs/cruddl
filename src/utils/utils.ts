@@ -232,3 +232,7 @@ export let escapeRegExp: (input: string) => string;
 
     // test escapeRegExp("/path/to/res?search=this.that")
 }());
+
+export function isPromise<T>(value: any): value is Promise<T> {
+    return typeof value === 'object' && value !== null && typeof value.then === 'function';
+}

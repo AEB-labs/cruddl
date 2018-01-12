@@ -2,8 +2,6 @@ import { WILDCARD_CHARACTER } from '../schema/schema-defaults';
 import { escapeRegExp, mapValues } from '../utils/utils';
 import { AccessOperation, AuthContext } from './auth-basics';
 
-export type PermissionProfileMap = { [name: string]: PermissionProfile }
-
 export type PermissionProfileConfigMap = { [name: string]: { permissions: PermissionConfig[] } }
 
 export interface PermissionProfileConfig {
@@ -28,7 +26,9 @@ export interface PermissionConfig {
     restrictToAccessGroups?: string[]
 }
 
-type PermissionAccessKind = "read"|"readWrite";
+export type PermissionAccessKind = "read"|"readWrite";
+
+export type PermissionProfileMap = { [name: string]: PermissionProfile }
 
 export class PermissionProfile {
     public readonly permissions: Permission[];

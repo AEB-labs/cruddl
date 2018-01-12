@@ -3,9 +3,9 @@ import {
     ConstBoolQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeFilter, EdgeIdentifier,
     EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode,
     LiteralQueryNode, MergeObjectsQueryNode, ObjectQueryNode, OrderDirection, OrderSpecification, PartialEdgeIdentifier,
-    QueryNode, RemoveEdgesQueryNode, RootEntityIDQueryNode, SetEdgeQueryNode, TransformListQueryNode,
-    TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode,
-    VariableQueryNode, WithPreExecutionQueryNode
+    QueryNode, RemoveEdgesQueryNode, RootEntityIDQueryNode, RuntimeErrorQueryNode, SetEdgeQueryNode,
+    TransformListQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode,
+    VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode
 } from '../../query/definition';
 import { aql, AQLCompoundQuery, AQLFragment, AQLQueryResultVariable, AQLVariable } from './aql';
 import { getCollectionNameForEdge, getCollectionNameForRootEntity } from './arango-basics';
@@ -13,6 +13,7 @@ import { GraphQLNamedType, GraphQLObjectType } from 'graphql';
 import { EdgeType, RelationFieldEdgeSide } from '../../schema/edges';
 import { simplifyBooleans } from '../../query/query-tree-utils';
 import { QueryResultValidator } from '../../query/query-result-validators';
+import { RUNTIME_ERROR_TOKEN } from '../../query/runtime-errors';
 
 enum AccessType {
     READ,
@@ -181,6 +182,11 @@ const processors : { [name: string]: NodeProcessor<any> } = {
 
     Null(): AQLFragment {
         return aql`null`;
+    },
+
+    RuntimeError(node: RuntimeErrorQueryNode): AQLFragment {
+        const runtimeErrorToken = aql.code(RUNTIME_ERROR_TOKEN);
+        return aql`{${runtimeErrorToken}: ${node.message}}`;
     },
 
     ConstBool(node: ConstBoolQueryNode): AQLFragment {

@@ -6,7 +6,15 @@ import {STRING} from "graphql/language/kinds";
 export enum RelationFieldEdgeSide {
     FROM_SIDE,
     TO_SIDE
+}
 
+export function invertRelationFieldEdgeSide(side: RelationFieldEdgeSide) {
+    switch (side) {
+        case RelationFieldEdgeSide.TO_SIDE:
+            return RelationFieldEdgeSide.FROM_SIDE;
+        case RelationFieldEdgeSide.FROM_SIDE:
+            return RelationFieldEdgeSide.TO_SIDE;
+    }
 }
 
 export class EdgeType {
@@ -30,6 +38,24 @@ export class EdgeType {
             return RelationFieldEdgeSide.TO_SIDE
         } else {
             throw new Error(`Edge does not include the field ${field.name}`);
+        }
+    }
+
+    public getFieldOfSide(side: RelationFieldEdgeSide): GraphQLField<any, any>|undefined {
+        switch (side) {
+            case RelationFieldEdgeSide.FROM_SIDE:
+                return this.fromField;
+            case RelationFieldEdgeSide.TO_SIDE:
+                return this.toField;
+        }
+    }
+
+    public getTypeOfSide(side: RelationFieldEdgeSide): GraphQLObjectType {
+        switch (side) {
+            case RelationFieldEdgeSide.FROM_SIDE:
+                return this.fromType;
+            case RelationFieldEdgeSide.TO_SIDE:
+                return this.toType;
         }
     }
 

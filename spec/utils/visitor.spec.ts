@@ -8,13 +8,16 @@ describe('visitObject', () => {
     describe('enter', () => {
         it('is called', () => {
             const visitedObjects: any[] = [];
+            const visitedKeys: any[] = [];
             visitObject(composite, {
-                enter(obj: any) {
+                enter(obj: any, key) {
                     visitedObjects.push(obj);
+                    visitedKeys.push(key);
                     return obj;
                 }
             });
             expect(visitedObjects).toEqual([composite, a, b, {deepB: true}]);
+            expect(visitedKeys).toEqual([undefined, 'a', 'b', 'inB']);
         });
 
         it('replaces objects with result', () => {
@@ -74,13 +77,16 @@ describe('visitObject', () => {
     describe('leave', () => {
         it('is called', () => {
             const visitedObjects: any[] = [];
+            const visitedKeys: any[] = [];
             visitObject(composite, {
-                leave(obj: any) {
+                leave(obj: any, key) {
                     visitedObjects.push(obj);
+                    visitedKeys.push(key);
                     return obj;
                 }
             });
             expect(visitedObjects).toEqual([a, {deepB: true}, b, composite]);
+            expect(visitedKeys).toEqual(['a', 'inB', 'b', undefined]);
         });
 
         it('replaces objects with result', () => {

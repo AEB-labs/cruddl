@@ -6,13 +6,12 @@ import {
 import { createFilterNode } from './filtering';
 import { COUNT_META_FIELD, FILTER_ARG } from '../schema/schema-defaults';
 import { decapitalize } from '../utils/utils';
-import { QueryTreeContext } from './query-tree-base';
 
-export function createListMetaNode(fieldRequest: FieldRequest, listNode: QueryNode, objectType: GraphQLObjectType, context: QueryTreeContext) {
+export function createListMetaNode(fieldRequest: FieldRequest, listNode: QueryNode, objectType: GraphQLObjectType) {
     const itemVarNode = new VariableQueryNode(decapitalize(objectType.name));
 
     if (FILTER_ARG in fieldRequest.args) {
-        const filterNode = createFilterNode(fieldRequest.args[FILTER_ARG], objectType, itemVarNode, context);
+        const filterNode = createFilterNode(fieldRequest.args[FILTER_ARG], objectType, itemVarNode);
         listNode = new TransformListQueryNode({
             listNode,
             filterNode,

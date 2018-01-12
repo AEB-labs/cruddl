@@ -48,6 +48,17 @@ export enum PermissionResult {
     DENIED
 }
 
+export class AlwaysGrantPermissionDescriptor extends PermissionDescriptor {
+    getAccessCondition(authContext: AuthContext, operation: AccessOperation): QueryNode {
+        return ConstBoolQueryNode.TRUE;
+    }
+
+    canAccess(authContext: AuthContext, operation: AccessOperation): PermissionResult {
+        return PermissionResult.GRANTED;
+    }
+
+    static INSTANCE = new AlwaysGrantPermissionDescriptor();
+}
 
 export class ConjunctivePermissionDescriptor extends PermissionDescriptor {
     constructor(public readonly lhs: PermissionDescriptor, public readonly rhs: PermissionDescriptor) {

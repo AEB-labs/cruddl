@@ -5,12 +5,12 @@ export enum VisitAction {
 }
 
 export type Visitor<T> = {
-    enter?(object: T): T | VisitAction,
-    leave?(object: T): T
+    enter?(object: T, key: string|undefined): T | VisitAction,
+    leave?(object: T, key: string|undefined): T
 };
 
-export function visitObject<T>(node: T, visitor: Visitor<any>): T {
-    const visitResult = enter(node, visitor);
+export function visitObject<T>(node: T, visitor: Visitor<any>, key?: string): T {
+    const visitResult = enter(node, visitor, key);
 
     if (visitResult == VisitAction.SKIP_NODE) {
         return node;
@@ -25,7 +25,7 @@ export function visitObject<T>(node: T, visitor: Visitor<any>): T {
     let hasChanged = false;
     for (const field of Object.keys(node)) {
         const oldValue = (node as any)[field];
-        const newValue = visitObjectOrArray(oldValue, visitor);
+        const newValue = visitObjectOrArray(oldValue, visitor, field);
         if (newValue != oldValue) {
             newFieldValues[field] = newValue;
             hasChanged = true;
@@ -38,29 +38,29 @@ export function visitObject<T>(node: T, visitor: Visitor<any>): T {
         node = newObj;
     }
 
-    return leave(node, visitor);
+    return leave(node, visitor, key);
 }
 
-function visitObjectOrArray<T>(nodeOrArray: T|T[], visitor: Visitor<any>): T|T[] {
+function visitObjectOrArray<T>(nodeOrArray: T|T[], visitor: Visitor<any>, key: string|undefined): T|T[] {
     if (typeof nodeOrArray != 'object' || nodeOrArray === null) {
         return nodeOrArray;
     }
     if (!isArray(nodeOrArray)) {
-        return visitObject(nodeOrArray as T, visitor);
+        return visitObject(nodeOrArray as T, visitor, key);
     }
-    return nodeOrArray.map(item => visitObject(item, visitor));
+    return nodeOrArray.map(item => visitObject(item, visitor, key));
 }
 
-function enter<T>(obj: T, visitor: Visitor<any>): T|VisitAction {
+function enter<T>(obj: T, visitor: Visitor<any>, key: string|undefined): T|VisitAction {
     if (visitor.enter) {
-        return visitor.enter(obj);
+        return visitor.enter(obj, key);
     }
     return obj;
 }
 
-function leave<T>(obj: T, visitor: Visitor<any>): T {
+function leave<T>(obj: T, visitor: Visitor<any>, key: string|undefined): T {
     if (visitor.leave) {
-        return visitor.leave(obj);
+        return visitor.leave(obj, key);
     }
     return obj;
 }
