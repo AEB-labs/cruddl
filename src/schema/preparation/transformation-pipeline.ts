@@ -16,7 +16,6 @@ import {AddValueObjectInputTypesTransformer} from "./post-merge-ast-transformati
 import {AddRootMutationTypeTransformer} from "./post-merge-ast-transformation-modules/add-root-mutation-type-transformer";
 import {AddMetaFieldsAlongWithFilterableFieldsTransformer} from "./post-merge-ast-transformation-modules/add-meta-fields-along-with-filterable-fields-transformer";
 import {AddQueryMetaTypeTransformer} from "./post-merge-ast-transformation-modules/add-query-meta-type-transformer";
-import {PropagateTypeRolesToFieldsTransformer} from './post-merge-ast-transformation-modules/propagate-type-roles-to-fields-transformer';
 import {SchemaPartConfig} from "../../config/schema-config";
 import {AddNamespacesToTypesTransformer} from "./pre-merge-ast-transformation-modules/add-namespaces-to-types-transformer";
 import {PermissionProfileMap} from '../../authorization/permission-profile';
@@ -52,9 +51,6 @@ const postMergePipeline: ASTTransformer[] = [
 
     // build mutation stuff
     new AddRootMutationTypeTransformer(),
-
-    // Complete object fields
-    new PropagateTypeRolesToFieldsTransformer(),
 
     new AddPermissionDescriptorsTransformer(),
 

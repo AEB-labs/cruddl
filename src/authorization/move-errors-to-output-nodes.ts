@@ -1,9 +1,8 @@
 import {
-    ConditionalQueryNode, ListQueryNode, ObjectQueryNode, PropertySpecification, QueryNode, RuntimeErrorQueryNode,
-    TransformListQueryNode, VariableAssignmentQueryNode
+    ConditionalQueryNode, FirstOfListQueryNode, ListQueryNode, ObjectQueryNode, PropertySpecification, QueryNode,
+    RuntimeErrorQueryNode, TransformListQueryNode, VariableAssignmentQueryNode
 } from '../query/definition';
 import { VisitAction, visitObject } from '../utils/visitor';
-import { error } from 'util';
 
 /**
  * Moves RuntimeErrorQueryNodes up to its their deepest ancestor that is an output node, i.e., its value directly occurs
@@ -14,7 +13,7 @@ export function moveErrorsToOutputNodes(queryTree: QueryNode): QueryNode {
     let minErrorDepth: number|undefined = undefined;
     type StackFrame = {
         clazz: Function,
-        isOutputNode: boolean
+        outputNodeKind: OutputNodeKind
     }
     const stack: StackFrame[] = [];
 
@@ -30,14 +29,14 @@ export function moveErrorsToOutputNodes(queryTree: QueryNode): QueryNode {
             if (!stack.length) {
                 stack.push({
                     clazz: node.constructor,
-                    isOutputNode: true
+                    outputNodeKind: OutputNodeKind.OUTPUT
                 });
             } else {
                 const parentFrame = stack[stack.length - 1];
-                const isOutputNode = parentFrame.isOutputNode && outputNodes.isOutputNode(parentFrame.clazz, key);
+                const kind = parentFrame.outputNodeKind != OutputNodeKind.INTERNAL ? outputNodes.getOutputKind(parentFrame.clazz, key) : OutputNodeKind.INTERNAL;
                 stack.push({
                     clazz: node.constructor,
-                    isOutputNode
+                    outputNodeKind: kind
                 });
             }
             return node;
@@ -47,7 +46,7 @@ export function moveErrorsToOutputNodes(queryTree: QueryNode): QueryNode {
             const frame = stack.pop();
             // only take care of the errors if all of them occurred within this node
             if (errorList.length) {
-                if (frame && frame.isOutputNode && stack.length <= minErrorDepth!) {
+                if (frame && frame.outputNodeKind == OutputNodeKind.OUTPUT && stack.length <= minErrorDepth!) {
                     const errors = errorList;
                     errorList = [];
                     minErrorDepth = undefined;
@@ -66,11 +65,34 @@ export function moveErrorsToOutputNodes(queryTree: QueryNode): QueryNode {
     });
 }
 
+export enum OutputNodeKind {
+    /**
+     * The value of these kind of nodes and its children is not directly visible in the output (like filters)
+     */
+    INTERNAL,
+
+    /**
+     * The value of these kind of nodes is directly visible in the output
+     */
+
+    OUTPUT,
+    /**
+     * The value of these kind of nodes are not directly visible, buts the value of its children may be
+     */
+
+    OUTPUT_INTERMEDIATE
+}
+
+
 namespace outputNodes {
-    const map = new Map<Function, Set<string>>();
+    const map = new Map<Function, Map<string, OutputNodeKind>>();
 
     function add<T>(clazz: {new(...a: any[]): T}, ...fields: (keyof T)[]) {
-        map.set(clazz, new Set(fields));
+        addExt(clazz, OutputNodeKind.OUTPUT, ...fields);
+    }
+
+    function addExt<T>(clazz: {new(...a: any[]): T}, kind: OutputNodeKind, ...fields: (keyof T)[]) {
+        map.set(clazz, new Map(fields.map((field): [string, OutputNodeKind] => ([field, kind]))));
     }
 
     /**
@@ -83,18 +105,22 @@ namespace outputNodes {
      * @param fieldName the field name of the node to check within its parent class
      * @returns true, if the child node is an output node, false otherwise
      */
-    export function isOutputNode(clazz: Function, fieldName: string) {
+    export function getOutputKind(clazz: Function, fieldName: string): OutputNodeKind {
         const set = map.get(clazz);
         if (!set) {
-            return false;
+            return OutputNodeKind.INTERNAL;
         }
-        return set.has(fieldName);
+        return set.get(fieldName) || OutputNodeKind.INTERNAL;
     }
 
     add(VariableAssignmentQueryNode, 'resultNode');
-    add(ObjectQueryNode, 'properties');
+    addExt(ObjectQueryNode, OutputNodeKind.OUTPUT_INTERMEDIATE, 'properties');
     add(PropertySpecification, 'valueNode');
     add(ListQueryNode, 'itemNodes');
     add(ConditionalQueryNode, 'expr1', 'expr2');
     add(TransformListQueryNode, 'innerNode');
+
+    // this one with a grain of salt... errors in any item that is not the first will get ignored
+    // but we need this for single-entity queries to work properly
+    addExt(FirstOfListQueryNode, OutputNodeKind.OUTPUT_INTERMEDIATE, 'listNode');
 }

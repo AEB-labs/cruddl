@@ -41,7 +41,7 @@ export function addQueryResolvers(schema: GraphQLSchema, databaseAdapter: Databa
                 if (!canEvaluateStatically) {
                     result = await databaseAdapter.execute(queryTree);
                 }
-                logger.debug('Evaluated query successfully');
+                logger.debug('Evaluated query successfully: ' + JSON.stringify(result, undefined, '  '));
                 return result;
             } catch (e) {
                 logger.error("Error evaluating GraphQL query: " + e.stack);

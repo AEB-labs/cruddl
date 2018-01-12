@@ -658,12 +658,25 @@ export class FollowEdgeQueryNode extends QueryNode {
  * A node that creates a new entity and evaluates to that new entity object
  */
 export class CreateEntityQueryNode extends QueryNode {
-    constructor(public readonly objectType: GraphQLObjectType, public readonly objectNode: QueryNode) {
+    constructor(public readonly objectType: GraphQLObjectType, public readonly objectNode: QueryNode, public readonly affectedFields: AffectedFieldInfoQueryNode[]) {
         super();
     }
 
     describe() {
-        return `create ${this.objectType.name} entity with values ${this.objectNode.describe()}`;
+        return `create ${this.objectType.name} entity with values ${this.objectNode.describe()} (affects fields ${this.affectedFields.map(f => f.describe()).join(', ')})`;
+    }
+}
+
+/**
+ * A node that indicates that a field of a node is set, without being evaluated
+ */
+export class AffectedFieldInfoQueryNode extends QueryNode {
+    constructor(public readonly objectType: GraphQLObjectType, public readonly field: GraphQLField<any, any>) {
+        super();
+    }
+
+    describe() {
+        return `${this.objectType}.${this.field.name}`;
     }
 }
 
@@ -689,7 +702,8 @@ export class UpdateEntitiesQueryNode extends QueryNode {
         filterNode: QueryNode,
         updates: SetFieldQueryNode[],
         maxCount?: number,
-        currentEntityVariable?: VariableQueryNode
+        currentEntityVariable?: VariableQueryNode,
+        affectedFields: AffectedFieldInfoQueryNode[]
     }) {
         super();
         this.objectType = params.objectType;
@@ -697,6 +711,7 @@ export class UpdateEntitiesQueryNode extends QueryNode {
         this.updates = params.updates;
         this.maxCount = params.maxCount;
         this.currentEntityVariable = params.currentEntityVariable || new VariableQueryNode();
+        this.affectedFields = params.affectedFields;
     }
 
     public readonly objectType: GraphQLObjectType;
@@ -704,13 +719,14 @@ export class UpdateEntitiesQueryNode extends QueryNode {
     public readonly updates: SetFieldQueryNode[];
     public readonly maxCount: number | undefined;
     public readonly currentEntityVariable: VariableQueryNode;
+    public readonly affectedFields: AffectedFieldInfoQueryNode[];
 
     describe() {
         return `update ${this.objectType.name} entities ` +
             `where (${this.currentEntityVariable.describe()} => ${this.filterNode.describe()}) ` +
             `with values (${this.currentEntityVariable.describe()} => {\n` +
             indent(this.updates.map(p => p.describe()).join(',\n')) +
-            `\n})`;
+            `\n} (affects fields ${this.affectedFields.map(f => f.describe()).join(', ')})`;
     }
 }
 
