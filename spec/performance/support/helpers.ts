@@ -1,14 +1,15 @@
-import { createTempDatabase, initTestData } from '../../regression/initialization';
-import {Database} from "arangojs";
-import {range} from "../../../src/utils/utils";
-import { ArangoDBAdapter } from '../../../src/database/arangodb/arangodb-adapter';
+import { createTempDatabase } from '../../regression/initialization';
+import { Database } from 'arangojs';
+import { range } from '../../../src/utils/utils';
+import { ArangoDBAdapter } from '../../../src/database/arangodb';
 import { graphql, GraphQLSchema, Source } from 'graphql';
 import * as fs from 'fs';
 import * as path from 'path';
 import { createSchema } from '../../../src/schema/schema-builder';
 import { addQueryResolvers } from '../../../src/query/query-resolvers';
-import {SchemaConfig, SchemaPartConfig} from "../../../src/config/schema-config";
-import { getLogger, Logger } from 'log4js';
+import { SchemaConfig, SchemaPartConfig } from '../../../src/config/schema-config';
+import { getLogger } from 'log4js';
+import { LoggerProvider, SchemaContext } from '../../../src/config/global';
 
 // arangojs typings for this are completely broken
 export const aql: (template: TemplateStringsArray, ...args: any[]) => any = require('arangojs').aql;
@@ -20,26 +21,28 @@ export interface TestEnvironment {
     exec(graphql: string, variables?: {[name: string]: any}): any
 }
 
+class BenchmarkLoggerProvider implements LoggerProvider {
+    getLogger(category: string) {
+        const logger = getLogger(category);
+        logger.level = 'warn';
+        return logger;
+    }
+}
+
+const schemaContext: SchemaContext = { loggerProvider: new BenchmarkLoggerProvider() };
+
 export function createDumbSchema(modelPath: string): GraphQLSchema {
     const schemaConfig: SchemaConfig = {
         schemaParts: fs.readdirSync(modelPath)
             .map(file => fileToSchemaPartConfig(path.resolve(modelPath, file)))
     };
-    return createSchema(schemaConfig, {
-        loggerProvider: {
-            getLogger: category => {
-                const logger = getLogger(category);
-                logger.level = 'warn';
-                return logger;
-            }
-        }
-    });
+    return createSchema(schemaConfig, schemaContext);
 }
 
 export async function initEnvironment(): Promise<TestEnvironment> {
     const dbConfig = await createTempDatabase();
-    const dbAdapter = new ArangoDBAdapter(dbConfig);
-    const schema = addQueryResolvers(createDumbSchema(MODEL_PATH), dbAdapter);
+    const dbAdapter = new ArangoDBAdapter(dbConfig, schemaContext);
+    const schema = addQueryResolvers(createDumbSchema(MODEL_PATH), dbAdapter, schemaContext);
     await dbAdapter.updateSchema(schema);
 
     return {
