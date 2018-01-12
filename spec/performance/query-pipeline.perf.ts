@@ -7,6 +7,7 @@ import { createQueryTree } from '../../src/query/query-tree-builder';
 import { getAQLQuery } from '../../src/database/arangodb/aql-generator';
 import { QueryNode } from '../../src/query/definition';
 import { compact } from '../../src/utils/utils';
+import { applyAuthorizationToQueryTree } from '../../src/authorization/execution';
 
 const QUERIES = [
 `{
@@ -88,24 +89,27 @@ interface PreparedQuery {
     document: DocumentNode;
     distilledOperation: DistilledOperation;
     queryTree: QueryNode;
+    authorizedQueryTree: QueryNode;
 }
 
 function prepareQuery(gql: string): PreparedQuery {
     const document = parse(gql);
     validate(schema, document);
     const distilledOperation = distillQuery(document, schema, {});
-    const queryTree = createQueryTree(distilledOperation, { authContext: { authRoles: []} });
+    const queryTree = createQueryTree(distilledOperation);
+    const authorizedQueryTree = applyAuthorizationToQueryTree(queryTree,  { authRoles: []});
     return {
         gql,
         document,
         distilledOperation,
-        queryTree
+        queryTree,
+        authorizedQueryTree
     };
 }
 
 const PREPARED_QUERIES = QUERIES.map(gql => prepareQuery(gql));
 
-function testQueryPipeline(params: { parser: boolean, queryDistiller: boolean, queryTree: boolean, aql: boolean }): BenchmarkConfig {
+function testQueryPipeline(params: { parser: boolean, queryDistiller: boolean, queryTree: boolean, auth: boolean, aql: boolean }): BenchmarkConfig {
     const optionsStr = compact([
         params.parser ? 'parser' : undefined,
         params.queryDistiller ? 'query-distiller' : undefined,
@@ -126,10 +130,13 @@ function testQueryPipeline(params: { parser: boolean, queryDistiller: boolean, q
                 distillQuery(preparedQuery.document, schema, {});
             }
             if (params.queryTree) {
-                createQueryTree(preparedQuery.distilledOperation, { authContext: { authRoles: []} });
+                createQueryTree(preparedQuery.distilledOperation);
+            }
+            if (params.auth) {
+                applyAuthorizationToQueryTree(preparedQuery.queryTree, { authRoles: []});
             }
             if (params.aql) {
-                const transaction = getAQLQuery(preparedQuery.queryTree);
+                const transaction = getAQLQuery(preparedQuery.authorizedQueryTree);
                 transaction.getExecutableQueries();
             }
         }
@@ -137,11 +144,12 @@ function testQueryPipeline(params: { parser: boolean, queryDistiller: boolean, q
 }
 
 const benchmarks: BenchmarkFactories = [
-    () => testQueryPipeline({parser: true, queryDistiller: false, queryTree: false, aql: false }),
-    () => testQueryPipeline({parser: false, queryDistiller: true, queryTree: false, aql: false }),
-    () => testQueryPipeline({parser: false, queryDistiller: false, queryTree: true, aql: false }),
-    () => testQueryPipeline({parser: false, queryDistiller: false, queryTree: false, aql: true }),
-    () => testQueryPipeline({parser: true, queryDistiller: true, queryTree: true, aql: true })
+    () => testQueryPipeline({parser: true, queryDistiller: false, queryTree: false, auth: false, aql: false }),
+    () => testQueryPipeline({parser: false, queryDistiller: true, queryTree: false, auth: false, aql: false }),
+    () => testQueryPipeline({parser: false, queryDistiller: false, queryTree: true, auth: false, aql: false }),
+    () => testQueryPipeline({parser: false, queryDistiller: false, queryTree: true, auth: true, aql: false }),
+    () => testQueryPipeline({parser: false, queryDistiller: false, queryTree: false, auth: false, aql: true }),
+    () => testQueryPipeline({parser: true, queryDistiller: true, queryTree: true, auth: true, aql: true })
 ];
 
 export default benchmarks;
