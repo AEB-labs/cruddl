@@ -58,7 +58,6 @@
           "street": "675 Kurtis Route",
           "city": "Port Neldahaven",
           "zipCode": "17624"
-          //"country": "US" // schema is currently wrong (accepts CreateCountry instead of String)
         },
         "contentInfo": [{
           "languageIsoCode": "DE",
@@ -99,6 +98,23 @@
             "itemNumber": "2002"
           }
         ]
+      },
+      {
+        "@id": "3",
+        "deliveryNumber": "1000522",
+        "contentInfo": [{
+          "languageIsoCode": "DE",
+          "translation": "Metall-Bausteine"
+        }],
+        "items": [
+          {
+            "itemNumber": "3001"
+          },
+          {
+            "itemNumber": "3002"
+          }
+        ],
+        "destinationCountry": "US"
       }
     ],
 

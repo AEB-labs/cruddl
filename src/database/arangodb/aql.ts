@@ -22,7 +22,7 @@ function indentLineBreaks(val: string, level: number) {
     return val.replace(/\n/g, '\n' + indent);
 }
 
-class AQLCodeBuildingContext {
+export class AQLCodeBuildingContext {
     private boundValues: any[] = [];
     private variableBindings = new Map<AQLVariable, string>();
     private preExecInjectedVariablesMap = new Map<AQLQueryResultVariable, string>();
@@ -53,6 +53,10 @@ class AQLCodeBuildingContext {
 
     bindValue(value: any): string {
         const index = this.boundValues.length;
+        if (value === undefined) {
+            // AQL does not know about "undefined" and would complain about a missing value for bind parameter.
+            value = null;
+        }
         this.boundValues.push(value);
         return AQLCodeBuildingContext.getBoundValueName(index);
     }
@@ -110,7 +114,7 @@ export abstract class AQLFragment {
     abstract getCodeWithContext(context: AQLCodeBuildingContext): string;
 }
 
-class AQLCodeFragment extends AQLFragment {
+export class AQLCodeFragment extends AQLFragment {
     constructor(public readonly aql: string) {
         super();
     }

@@ -27,7 +27,7 @@ import {getOrderByEnumTypeName, sortedByAsc, sortedByDesc} from '../../../graphq
 import {ROLES_DIRECTIVE} from '../../schema-defaults';
 import {intersectRolesDirectives} from './add-input-type-transformation-helper-transformer';
 
-interface EnumValueWithDirectives {
+export interface EnumValueWithDirectives {
     name: string;
     directives: DirectiveNode[]
 }

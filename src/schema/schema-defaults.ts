@@ -17,6 +17,7 @@ export const WILDCARD_CHARACTER = '*';
 export const ROOT_ENTITY_DIRECTIVE = 'rootEntity';
 export const CHILD_ENTITY_DIRECTIVE = 'childEntity';
 export const ENTITY_EXTENSION_DIRECTIVE = 'entityExtension';
+
 /**
  * Value object according to DDD. Some people know this kind of type as Composite.
  */
@@ -25,6 +26,8 @@ export const VALUE_OBJECT_DIRECTIVE = 'valueObject';
 export const RELATION_DIRECTIVE = 'relation';
 export const REFERENCE_DIRECTIVE = 'reference';
 export const DEFAULT_VALUE_DIRECTIVE = 'defaultValue';
+
+export const INVERSE_OF_ARG = 'inverseOf';
 
 export const QUERY_TYPE = 'Query';
 export const MUTATION_TYPE = 'Mutation';
@@ -114,7 +117,16 @@ export const NAMESPACE_NAME_ARG = 'name';
 export const NAMESPACE_SEPARATOR = '.';
 export const NAMESPACE_FIELD_PATH_DIRECTIVE = 'namespaceFieldPath';
 
-export const ALL_FIELD_DIRECTIVES = [KEY_FIELD_DIRECTIVE, RELATION_DIRECTIVE, REFERENCE_DIRECTIVE, ROLES_DIRECTIVE, CALC_MUTATIONS_DIRECTIVE, DEFAULT_VALUE_DIRECTIVE];
+export const INDICES_DIRECTIVE = 'indices';
+export const INDEX_DIRECTIVE = 'index'; // for fields
+export const UNIQUE_DIRECTIVE = 'unique'; // for fields
+export const INDICES_ARG = INDICES_DIRECTIVE;
+export const INDEX_DEFINITION_INPUT_TYPE = 'IndexDefinition';
+export const INDEX_NAME_FIELD = 'name';
+export const INDEX_FIELDS_FIELD = 'fields';
+export const INDEX_UNIQUE_FIELD = 'unique';
+
+export const ALL_FIELD_DIRECTIVES = [KEY_FIELD_DIRECTIVE, RELATION_DIRECTIVE, REFERENCE_DIRECTIVE, ROLES_DIRECTIVE, CALC_MUTATIONS_DIRECTIVE, DEFAULT_VALUE_DIRECTIVE, INDEX_DIRECTIVE, UNIQUE_DIRECTIVE];
 export const ALL_OBJECT_TYPE_DIRECTIVES = [
     ROOT_ENTITY_DIRECTIVE,
     CHILD_ENTITY_DIRECTIVE,
@@ -122,6 +134,7 @@ export const ALL_OBJECT_TYPE_DIRECTIVES = [
     VALUE_OBJECT_DIRECTIVE,
     NAMESPACE_DIRECTIVE,
     ROLES_DIRECTIVE,
+    INDICES_DIRECTIVE
 ];
 
 export const MUTATION_FIELD = 'mutation';

@@ -19,4 +19,7 @@ query {
     emptyPage: allPapers(orderBy: title_ASC, first: 0) {
         ...PapersPage
     }
+    missingCursorField: allPapers(orderBy: title_ASC, first: 2, after: "{\"id\":\"xxx\"}") {
+        ...PapersPage
+    }
 }

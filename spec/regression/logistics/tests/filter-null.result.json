@@ -1,0 +1,51 @@
+{
+  "filterNullRelation": {
+    "data": {
+      "allHandlingUnits": [
+        {
+          "id": "@{ids/HandlingUnit/1}"
+        },
+        {
+          "id": "@{ids/HandlingUnit/2}"
+        },
+        {
+          "id": "@{ids/HandlingUnit/3}"
+        }
+      ]
+    }
+  },
+  "filterNullReference": {
+    "data": {
+      "allDeliveries": [
+        {
+          "id": "@{ids/Delivery/1}"
+        },
+        {
+          "id": "@{ids/Delivery/2}"
+        }
+      ]
+    }
+  },
+  "filterNullValueObject": {
+    "data": {
+      "allDeliveries": [
+        {
+          "id": "@{ids/Delivery/3}"
+        }
+      ]
+    }
+  },
+  "filterNullEntityExtension": {
+    "data": {
+      "allDeliveries": [
+        {
+          "id": "@{ids/Delivery/2}"
+        },
+        {
+          "id": "@{ids/Delivery/3}"
+        }
+      ]
+    }
+  }
+
+}

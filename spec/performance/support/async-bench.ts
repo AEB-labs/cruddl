@@ -18,7 +18,7 @@ export interface BenchmarkConfig {
 
 export type BenchmarkFactories = Array<() => BenchmarkConfig>;
 
-interface Timings {
+export interface Timings {
     readonly sampleCount: number;
     readonly meanTime: number;
     readonly relativeMarginOfError: number;
@@ -74,7 +74,7 @@ export class BenchmarkCycleDetails {
     }
 }
 
-interface BenchmarkResultConfig {
+export interface BenchmarkResultConfig {
     readonly cycles: number;
     readonly iterationCount: number;
     readonly meanTime: number;

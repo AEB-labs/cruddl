@@ -32,6 +32,14 @@
         "title": "Object-oriented modeling and design"
       }
     ],
-    "emptyPage": []
+    "emptyPage": [],
+    "missingCursorField": [
+      {
+        "title": "Brewer's conjecture and the feasibility of consistent, available, partition-tolerant web services"
+      },
+      {
+        "title": "Object-oriented modeling and design"
+      }
+    ]
   }
 }

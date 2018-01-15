@@ -7,7 +7,7 @@ import { validatePostMerge, ValidationResult } from './preparation/ast-validator
 import {implementScalarTypes} from './scalars/implement-scalar-types';
 import {SchemaConfig} from "../config/schema-config";
 import {cloneDeep} from "lodash";
-import {GlobalContext, globalContext} from "../config/global";
+import {SchemaContext, globalContext} from "../config/global";
 
 /**
  * Validates a schema config and thus determines whether createSchema() would succeed
@@ -29,30 +29,32 @@ export function validateSchema(inputSchemaConfig: SchemaConfig): ValidationResul
  as a (sourced) SDL string or AST document.
  Use the optional context to inject your logging framework.
   */
-export function createSchema(inputSchemaConfig: SchemaConfig, context?: GlobalContext): GraphQLSchema {
-    if (context) {
-        globalContext.registerContext(context);
+export function createSchema(inputSchemaConfig: SchemaConfig, context?: SchemaContext): GraphQLSchema {
+    globalContext.registerContext(context);
+    try {
+        const logger = globalContext.loggerProvider.getLogger('schema-builder');
+
+        const schemaConfig = parseSchemaParts(inputSchemaConfig);
+
+        const {schemaParts, ...rootContext} = schemaConfig;
+
+        executePreMergeTransformationPipeline(schemaParts, rootContext);
+        const mergedSchema: DocumentNode = mergeSchemaDefinition(schemaConfig);
+
+        const validationResult = validatePostMerge(mergedSchema);
+        if (validationResult.hasErrors()) {
+            throw new Error('Invalid model:\n' + validationResult.messages.map(msg => msg.toString()).join('\n'))
+        } else {
+            logger.info('Schema successfully created.')
+        }
+
+        executePostMergeTransformationPipeline(mergedSchema, {...rootContext});
+        logger.debug(print(mergedSchema));
+        const executableGraphQLSchema = buildASTSchema(mergedSchema);
+        return implementScalarTypes(executableGraphQLSchema);
+    } finally {
+        globalContext.unregisterContext();
     }
-    const logger = globalContext.loggerProvider.getLogger('schema-builder');
-
-    const schemaConfig = parseSchemaParts(inputSchemaConfig);
-
-    const { schemaParts, ...rootContext } = schemaConfig;
-
-    executePreMergeTransformationPipeline(schemaParts, rootContext);
-    const mergedSchema: DocumentNode = mergeSchemaDefinition(schemaConfig);
-
-    const validationResult = validatePostMerge(mergedSchema);
-    if(validationResult.hasErrors()) {
-        throw new Error('Invalid model:\n' + validationResult.messages.map(msg => msg.toString()).join('\n'))
-    } else {
-        logger.info('Schema successfully created.')
-    }
-
-    executePostMergeTransformationPipeline(mergedSchema, {...rootContext});
-    logger.debug(print(mergedSchema));
-    const executableGraphQLSchema = buildASTSchema(mergedSchema);
-    return implementScalarTypes(executableGraphQLSchema);
 }
 
 function mergeSchemaDefinition(schemaConfig: SchemaConfig): DocumentNode {

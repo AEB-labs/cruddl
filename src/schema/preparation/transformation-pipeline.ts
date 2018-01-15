@@ -19,6 +19,7 @@ import {AddQueryMetaTypeTransformer} from "./post-merge-ast-transformation-modul
 import {PropagateTypeRolesToFieldsTransformer} from './post-merge-ast-transformation-modules/propagate-type-roles-to-fields-transformer';
 import {SchemaPartConfig} from "../../config/schema-config";
 import {AddNamespacesToTypesTransformer} from "./pre-merge-ast-transformation-modules/add-namespaces-to-types-transformer";
+import {MoveUpFieldIndicesTransformer} from "./pre-merge-ast-transformation-modules/move-up-field-indices-transformer";
 
 const postMergePipeline: ASTTransformer[] = [
     // Add basic stuff to object types
@@ -59,7 +60,8 @@ const postMergePipeline: ASTTransformer[] = [
 ];
 
 const preMergePipeline: ASTTransformer[] = [
-    new AddNamespacesToTypesTransformer()
+    new AddNamespacesToTypesTransformer(),
+    new MoveUpFieldIndicesTransformer()
 ];
 
 export function executePostMergeTransformationPipeline(ast: DocumentNode, context: {[key: string]: any}) {

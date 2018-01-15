@@ -22,10 +22,8 @@ deploy-npm:
   script:
     - npm install
     - npm publish
-  #only:
-  #  - /^release-.*$/
-  when: manual
-
+  only:
+    - tags
 
 benchmark:
   stage: test

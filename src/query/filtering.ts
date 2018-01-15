@@ -129,6 +129,17 @@ function getObjectTypeFilterClauseNode(key: string, value: any, contextNode: Que
     const rawFieldType = field ? getNamedType(field.type) : undefined;
     if (field) {
         if (rawFieldType instanceof GraphQLObjectType) {
+            if (value === null) {
+                // don't check inside the object but check if the object an object anyway.
+                const fieldNode = createNonListFieldValueNode({
+                    parentType: objectType,
+                    field,
+                    objectNode: contextNode
+                });
+                const isObjectNode = new TypeCheckQueryNode(fieldNode, BasicType.OBJECT);
+                return new UnaryOperationQueryNode(isObjectNode, UnaryOperator.NOT);
+            }
+
             // possibly complex field lookup (references, relations)
             return createNonListFieldValueNode({
                 field,

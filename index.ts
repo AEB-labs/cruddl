@@ -6,4 +6,4 @@ export { addQueryResolvers } from './src/query/query-resolvers';
 export { DatabaseAdapter } from './src/database/database-adapter';
 export { DIRECTIVES, CORE_SCALARS } from './src/schema/graphql-base';
 export * from './src/database/arangodb';
-export { GlobalContext, Logger, LoggerProvider } from './src/config/global';
+export { SchemaContext, Logger, LoggerProvider } from './src/config/global';
