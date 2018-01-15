@@ -1,32 +1,122 @@
 import {
     AddEdgesQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode,
     ConstBoolQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeFilter, EdgeIdentifier,
-    EntitiesQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode,
-    MergeObjectsQueryNode, ObjectQueryNode, OrderDirection, OrderSpecification, PartialEdgeIdentifier, QueryNode,
-    RemoveEdgesQueryNode, RootEntityIDQueryNode, SetEdgeQueryNode, TransformListQueryNode, TypeCheckQueryNode,
-    UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode
+    EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode,
+    LiteralQueryNode, MergeObjectsQueryNode, ObjectQueryNode, OrderDirection, OrderSpecification, PartialEdgeIdentifier,
+    QueryNode, RemoveEdgesQueryNode, RootEntityIDQueryNode, SetEdgeQueryNode, TransformListQueryNode,
+    TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode,
+    VariableQueryNode, WithPreExecutionQueryNode
 } from '../../query/definition';
-import { aql, AQLFragment, AQLVariable } from './aql';
+import { aql, AQLCompoundQuery, AQLFragment, AQLQueryResultVariable, AQLVariable } from './aql';
 import { getCollectionNameForEdge, getCollectionNameForRootEntity } from './arango-basics';
 import { GraphQLNamedType, GraphQLObjectType } from 'graphql';
 import { EdgeType, RelationFieldEdgeSide } from '../../schema/edges';
 import { simplifyBooleans } from '../../query/query-tree-utils';
+import { QueryResultValidator } from '../../query/query-result-validators';
+
+enum AccessType {
+    READ,
+    WRITE
+}
 
 class QueryContext {
     private variableMap = new Map<VariableQueryNode, AQLVariable>();
+    private preExecQueries: AQLCompoundQuery[] = [];
+    private readAccessedCollections = new Set<string>();
+    private writeAccessedCollections = new Set<string>();
 
-    introduceVariable(variableNode: VariableQueryNode): QueryContext {
-        if (this.variableMap.has(variableNode)) {
-            throw new Error(`Variable ${variableNode} is introduced twice`);
-        }
-        const variable = new AQLVariable(variableNode.label);
-        const newMap = new Map(this.variableMap);
-        newMap.set(variableNode, variable);
+    /**
+     * Creates a new QueryContext with an independent variable map except that all query result variables of this
+     * context are available.
+     */
+    private newPreExecContext(): QueryContext{
         const newContext = new QueryContext();
-        newContext.variableMap = newMap;
+        this.variableMap.forEach((aqlVar, varNode) => {
+            if (aqlVar instanceof AQLQueryResultVariable) {
+                newContext.variableMap.set(varNode, aqlVar);
+            }
+        });
+        newContext.readAccessedCollections = this.readAccessedCollections;
+        newContext.writeAccessedCollections = this.writeAccessedCollections;
         return newContext;
     }
 
+    /**
+     * Creates a new QueryContext that is identical to this one but has one additional variable binding
+     * @param variableNode the variable token as it is referenced in the query tree
+     * @param aqlVariable the variable token as it will be available within the AQL fragment
+     */
+    private newNestedContextWithNewVariable(variableNode: VariableQueryNode, aqlVariable: AQLVariable): QueryContext {
+        if (this.variableMap.has(variableNode)) {
+            throw new Error(`Variable ${variableNode} is introduced twice`);
+        }
+        const newContext = new QueryContext();
+        newContext.variableMap = new Map(this.variableMap);
+        newContext.variableMap.set(variableNode, aqlVariable);
+        newContext.preExecQueries = this.preExecQueries;
+        newContext.readAccessedCollections = this.readAccessedCollections;
+        newContext.writeAccessedCollections = this.writeAccessedCollections;
+        return newContext;
+    }
+
+    /**
+     * Creates a new QueryContext that is identical to this one but has one additional variable binding
+     *
+     * The AQLFragment for the variable will be available via getVariable().
+     *
+     * @param {VariableQueryNode} variableNode the variable as referenced in the query tree
+     * @returns {QueryContext} the nested context
+     */
+    introduceVariable(variableNode: VariableQueryNode): QueryContext {
+        const variable = new AQLVariable(variableNode.label);
+        return this.newNestedContextWithNewVariable(variableNode, variable);
+    }
+
+    /**
+     * Creates a new QueryContext that includes an additional transaction step and adds resultVariable to the scope
+     * which will contain the result of the query
+     *
+     * The preExecQuery is evaluated in an independent context that has access to all previous preExecQuery result
+     * variables.
+     *
+     * @param preExecQuery the query to execute as transaction step
+     * @param resultVariable the variable to store the query result
+     * @param resultValidator an optional validator for the query result
+     */
+    addPreExecuteQuery(preExecQuery: QueryNode, resultVariable?: VariableQueryNode, resultValidator?: QueryResultValidator): QueryContext {
+        let resultVar: AQLQueryResultVariable|undefined;
+        let newContext: QueryContext;
+        if (resultVariable) {
+            resultVar = new AQLQueryResultVariable(resultVariable.label)
+            newContext = this.newNestedContextWithNewVariable(resultVariable, resultVar);
+        } else {
+            resultVar = undefined;
+            newContext = this;
+        }
+
+        const aqlQuery = createAQLCompoundQuery(preExecQuery, resultVar, resultValidator, this.newPreExecContext());
+
+        this.preExecQueries.push(aqlQuery);
+        return newContext;
+    }
+
+    /**
+     * Adds the information (in-place) that a collection is accessed
+     */
+    addCollectionAccess(collection: string, accessType: AccessType): void {
+        switch (accessType) {
+            case AccessType.READ:
+                this.readAccessedCollections.add(collection);
+                break;
+            case AccessType.WRITE:
+                this.writeAccessedCollections.add(collection);
+                break;
+        }
+    }
+
+    /**
+     * Gets an AQLFragment that evaluates to the value of a variable in the current scope
+     */
     getVariable(variableNode: VariableQueryNode): AQLFragment {
         const variable = this.variableMap.get(variableNode);
         if (!variable) {
@@ -34,6 +124,30 @@ class QueryContext {
         }
         return aql`${variable}`;
     }
+
+    getPreExecuteQueries(): AQLCompoundQuery[] {
+        return this.preExecQueries;
+    }
+
+    getReadAccessedCollections(): string[]{
+        return Array.from(this.readAccessedCollections);
+    }
+
+    getWriteAccessedCollections(): string[]{
+        return Array.from(this.writeAccessedCollections);
+    }
+}
+
+function createAQLCompoundQuery(node: QueryNode,
+                                resultVariable: AQLQueryResultVariable|undefined,
+                                resultValidator: QueryResultValidator|undefined,
+                                context: QueryContext): AQLCompoundQuery {
+    const aqlQuery = aql`RETURN ${processNode(node, context)}`;
+    const preExecQueries = context.getPreExecuteQueries();
+    const readAccessedCollections = context.getReadAccessedCollections();
+    const writeAccessedCollections = context.getWriteAccessedCollections();
+
+    return new AQLCompoundQuery(preExecQueries, aqlQuery, resultVariable, resultValidator, readAccessedCollections, writeAccessedCollections);
 }
 
 type NodeProcessor<T extends QueryNode> = (node: T, context: QueryContext) => AQLFragment;
@@ -88,7 +202,6 @@ const processors : { [name: string]: NodeProcessor<any> } = {
     },
 
     List(node: ListQueryNode, context): AQLFragment {
-        const test = aql`"${aql.string('"test')}`;
         if (!node.itemNodes.length) {
             return aql`[]`;
         }
@@ -121,6 +234,20 @@ const processors : { [name: string]: NodeProcessor<any> } = {
             aql`LET ${tmpVar} = ${processNode(node.variableValueNode, newContext)}`,
             aql`RETURN ${processNode(node.resultNode, newContext)}`
         );
+    },
+
+    WithPreExecution(node: WithPreExecutionQueryNode, context): AQLFragment {
+        let currentContext = context;
+        for (const preExecParm of node.preExecQueries) {
+            currentContext = currentContext.addPreExecuteQuery(preExecParm.query, preExecParm.resultVariable, preExecParm.resultValidator);
+        }
+
+        return aql`${processNode(node.resultNode, currentContext)}`;
+    },
+
+    EntityFromId(node:  EntityFromIdQueryNode, context): AQLFragment {
+        const collection = getCollectionForType(node.objectType, AccessType.READ, context);
+        return aql`DOCUMENT(${collection}, ${processNode(node.idNode, context)})`;
     },
 
     Field(node: FieldQueryNode, context): AQLFragment {
@@ -259,8 +386,8 @@ const processors : { [name: string]: NodeProcessor<any> } = {
         }
     },
 
-    Entities(node: EntitiesQueryNode): AQLFragment {
-        return getCollectionForType(node.objectType);
+    Entities(node: EntitiesQueryNode, context): AQLFragment {
+        return getCollectionForType(node.objectType, AccessType.READ, context);
     },
 
     FollowEdge(node: FollowEdgeQueryNode, context): AQLFragment {
@@ -276,8 +403,8 @@ const processors : { [name: string]: NodeProcessor<any> } = {
 
     CreateEntity(node: CreateEntityQueryNode, context): AQLFragment {
         return aqlExt.parenthesizeObject(
-            aql`INSERT ${processNode(node.objectNode, context)} IN ${getCollectionForType(node.objectType)}`,
-            aql`RETURN NEW`
+            aql`INSERT ${processNode(node.objectNode, context)} IN ${getCollectionForType(node.objectType, AccessType.WRITE, context)}`,
+            aql`RETURN NEW._key`
         );
     },
 
@@ -286,14 +413,14 @@ const processors : { [name: string]: NodeProcessor<any> } = {
         const entityVar = newContext.getVariable(node.currentEntityVariable);
         return aqlExt.parenthesizeList(
             aql`FOR ${entityVar}`,
-            aql`IN ${getCollectionForType(node.objectType)}`,
+            aql`IN ${getCollectionForType(node.objectType, AccessType.READ, context)}`,
             aql`FILTER ${processNode(node.filterNode, newContext)}`,
             node.maxCount !== undefined ? aql`LIMIT ${node.maxCount}` : aql``,
             aql`UPDATE ${entityVar}`,
             aql`WITH ${processNode(new ObjectQueryNode(node.updates), newContext)}`,
-            aql`IN ${getCollectionForType(node.objectType)}`,
+            aql`IN ${getCollectionForType(node.objectType, AccessType.WRITE, context)}`,
             aql`OPTIONS { mergeObjects: false }`,
-            aql`RETURN NEW`
+            aql`RETURN NEW._key`
         );
     },
 
@@ -302,11 +429,11 @@ const processors : { [name: string]: NodeProcessor<any> } = {
         const entityVar = newContext.getVariable(node.currentEntityVariable);
         return aqlExt.parenthesizeList(
             aql`FOR ${entityVar}`,
-            aql`IN ${getCollectionForType(node.objectType)}`,
+            aql`IN ${getCollectionForType(node.objectType, AccessType.READ, context)}`,
             aql`FILTER ${processNode(node.filterNode, newContext)}`,
             node.maxCount !== undefined ? aql`LIMIT ${node.maxCount}` : aql``,
             aql`REMOVE ${entityVar}`,
-            aql`IN ${getCollectionForType(node.objectType)}`,
+            aql`IN ${getCollectionForType(node.objectType, AccessType.WRITE, context)}`,
             aql`RETURN OLD`
         );
     },
@@ -319,7 +446,7 @@ const processors : { [name: string]: NodeProcessor<any> } = {
             aql`UPSERT { _from: ${edgeVar}._from, _to: ${edgeVar}._to }`, // need to unpack avoid dynamic property names in UPSERT example filter
             aql`INSERT ${edgeVar}`,
             aql`UPDATE {}`,
-            aql`IN ${getCollectionForEdge(node.edgeType)}`
+            aql`IN ${getCollectionForEdge(node.edgeType, AccessType.WRITE, context)}`
         );
     },
 
@@ -327,10 +454,10 @@ const processors : { [name: string]: NodeProcessor<any> } = {
         const edgeVar = aql.variable('edge');
         return aqlExt.parenthesizeList(
             aql`FOR ${edgeVar}`,
-            aql`IN ${getCollectionForEdge(node.edgeType)}`,
+            aql`IN ${getCollectionForEdge(node.edgeType, AccessType.READ, context)}`,
             aql`FILTER ${formatEdgeFilter(node.edgeType, node.edgeFilter, edgeVar, context)}`,
             aql`REMOVE ${edgeVar}`,
-            aql`IN ${getCollectionForEdge(node.edgeType)}`
+            aql`IN ${getCollectionForEdge(node.edgeType, AccessType.WRITE, context)}`
         );
     },
 
@@ -340,7 +467,7 @@ const processors : { [name: string]: NodeProcessor<any> } = {
             aql`UPSERT ${formatEdge(node.edgeType, node.existingEdge, context)}`,
             aql`INSERT ${formatEdge(node.edgeType, node.newEdge, context)}`,
             aql`UPDATE ${formatEdge(node.edgeType, node.newEdge, context)}`,
-            aql`IN ${getCollectionForEdge(node.edgeType)}`
+            aql`IN ${getCollectionForEdge(node.edgeType, AccessType.WRITE, context)}`
         );
     }
 };
@@ -457,16 +584,20 @@ function processNode(node: QueryNode, context: QueryContext): AQLFragment {
     return processorMap[type](node, context);
 }
 
-export function getAQLForQuery(node: QueryNode): AQLFragment {
-    return aql`RETURN ${processNode(node, new QueryContext())}`;
+export function getAQLQuery(node: QueryNode): AQLCompoundQuery {
+    return createAQLCompoundQuery(node, aql.queryResultVariable('result'), undefined, new QueryContext());
 }
 
-export function getCollectionForType(type: GraphQLNamedType) {
-    return aql.collection(getCollectionNameForRootEntity(type));
+function getCollectionForType(type: GraphQLNamedType, accessType: AccessType, context: QueryContext) {
+    const name = getCollectionNameForRootEntity(type);
+    context.addCollectionAccess(name, accessType);
+    return aql.collection(name);
 }
 
-export function getCollectionForEdge(edgeType: EdgeType) {
-    return aql.collection(getCollectionNameForEdge(edgeType));
+function getCollectionForEdge(edgeType: EdgeType, accessType: AccessType, context: QueryContext) {
+    const name = getCollectionNameForEdge(edgeType);
+    context.addCollectionAccess(name, accessType);
+    return aql.collection(name);
 }
 
 /**
@@ -476,9 +607,9 @@ export function getCollectionForEdge(edgeType: EdgeType) {
 function getSimpleFollowEdgeFragment(node: FollowEdgeQueryNode, context: QueryContext): AQLFragment {
     switch (node.sourceFieldSide) {
         case RelationFieldEdgeSide.FROM_SIDE:
-            return aql`OUTBOUND ${processNode(node.sourceEntityNode, context)} ${getCollectionForEdge(node.edgeType)}`;
+            return aql`OUTBOUND ${processNode(node.sourceEntityNode, context)} ${getCollectionForEdge(node.edgeType, AccessType.READ, context)}`;
         case RelationFieldEdgeSide.TO_SIDE:
-            return aql`INBOUND ${processNode(node.sourceEntityNode, context)} ${getCollectionForEdge(node.edgeType)}`;
+            return aql`INBOUND ${processNode(node.sourceEntityNode, context)} ${getCollectionForEdge(node.edgeType, AccessType.READ, context)}`;
     }
 
 }

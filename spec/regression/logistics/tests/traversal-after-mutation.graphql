@@ -1,0 +1,17 @@
+mutation create {
+    createDelivery(input: { deliveryNumber: "123", handlingUnits: [ "@{ids/HandlingUnit/1}" ] }) {
+        deliveryNumber,
+        handlingUnits {
+            huNumber
+        }
+    }
+}
+
+mutation update {
+    updateDelivery(input: { id: "@{ids/Delivery/1}", deliveryNumber: "123", addHandlingUnits: [ "@{ids/HandlingUnit/1}" ] }) {
+        deliveryNumber
+        handlingUnits {
+            huNumber
+        }
+    }
+}

@@ -1,0 +1,26 @@
+{
+  "create": {
+    "data": {
+      "createDelivery": {
+        "deliveryNumber": "123",
+        "handlingUnits": [
+          {
+            "huNumber": "1000007"
+          }
+        ]
+      }
+    }
+  },
+  "update": {
+    "data": {
+      "updateDelivery": {
+        "deliveryNumber": "123",
+        "handlingUnits": [
+          {
+            "huNumber": "1000007"
+          }
+        ]
+      }
+    }
+  }
+}

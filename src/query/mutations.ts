@@ -10,7 +10,7 @@ import {
     CreateEntityQueryNode,
     DeleteEntitiesQueryNode,
     EdgeFilter,
-    EdgeIdentifier,
+    EdgeIdentifier, EntityFromIdQueryNode,
     FieldQueryNode,
     FirstOfListQueryNode,
     ListQueryNode,
@@ -18,7 +18,7 @@ import {
     MergeObjectsQueryNode,
     NullQueryNode,
     ObjectQueryNode,
-    PartialEdgeIdentifier,
+    PartialEdgeIdentifier, PreExecQueryParms,
     PropertySpecification,
     QueryNode,
     RemoveEdgesQueryNode,
@@ -30,7 +30,7 @@ import {
     UnaryOperator,
     UpdateEntitiesQueryNode,
     VariableAssignmentQueryNode,
-    VariableQueryNode
+    VariableQueryNode, WithPreExecutionQueryNode
 } from './definition';
 import {
     ADD_CHILD_ENTITIES_FIELD_PREFIX,
@@ -73,6 +73,7 @@ import { RelationFieldEdgeSide, EdgeType, getEdgeType } from '../schema/edges';
 import uuid = require('uuid');
 import {flattenValueNode} from "../schema/directive-arg-flattener";
 import {globalContext} from "../config/global";
+import { ErrorIfNotTruthyResultValidator } from './query-result-validators';
 
 /**
  * Creates a QueryNode for a field of the root mutation type
@@ -115,20 +116,33 @@ function createCreateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestSta
     }
     const input = fieldRequest.args[MUTATION_INPUT_ARG];
     const objectNode = new LiteralQueryNode(prepareMutationInput(input, entityType, MutationType.CREATE));
+
+    // Create new entity
     const createEntityNode = new CreateEntityQueryNode(entityType, objectNode);
-    const newEntityVarNode = new VariableQueryNode('newEntity');
-    let resultNode: QueryNode = createEntityObjectNode(fieldRequest.selectionSet, newEntityVarNode, fieldRequestStack);
-    const relationStatements = getRelationAddRemoveStatements(input, entityType, newEntityVarNode, false);
+    const newEntityIdVarNode = new VariableQueryNode('newEntityId');
+    const newEntityPreExec: PreExecQueryParms = {query: createEntityNode, resultVariable: newEntityIdVarNode};
+
+    // Add relations if needed
+    let createRelationsPreExec: PreExecQueryParms|undefined = undefined;
+    const relationStatements = getRelationAddRemoveStatements(input, entityType, newEntityIdVarNode, false);
     if (relationStatements.length) {
-        resultNode = new FirstOfListQueryNode(new ListQueryNode([
-            resultNode,
-            ...relationStatements
-        ]));
+        createRelationsPreExec = { query:
+            new FirstOfListQueryNode(new ListQueryNode([new NullQueryNode(),...relationStatements]))};
     }
-    return new VariableAssignmentQueryNode({
-        variableValueNode: createEntityNode,
+
+    // Build up result query node
+    const newEntityVarNode = new VariableQueryNode('newEntity');
+    const objectQueryNode = createEntityObjectNode(fieldRequest.selectionSet, newEntityVarNode, fieldRequestStack);
+    const resultNode = new VariableAssignmentQueryNode({
+        variableNode: newEntityVarNode,
+        variableValueNode: new EntityFromIdQueryNode(entityType, newEntityIdVarNode),
+        resultNode: objectQueryNode
+    });
+
+    // PreExecute creation and relation queries and return result
+    return new WithPreExecutionQueryNode({
         resultNode,
-        variableNode: newEntityVarNode
+        preExecQueries: [newEntityPreExec, createRelationsPreExec]
     });
 }
 
@@ -286,6 +300,8 @@ function createUpdateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestSta
         throw new Error(`Object type ${entityName} not found but needed for field ${fieldRequest.fieldName}`);
     }
     const input = prepareMutationInput(fieldRequest.args[MUTATION_INPUT_ARG], entityType, MutationType.UPDATE);
+
+    // Update entity query
     const currentEntityVarNode = new VariableQueryNode('currentEntity');
     const filterNode = new BinaryOperationQueryNode(new RootEntityIDQueryNode(currentEntityVarNode),
         BinaryOperator.EQUAL,
@@ -297,31 +313,38 @@ function createUpdateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestSta
         maxCount: 1,
         currentEntityVariable: currentEntityVarNode
     }));
+    const updatedEntityIdVarNode = new VariableQueryNode('updatedEntityId');
+    const updateEntityResultValidator = new ErrorIfNotTruthyResultValidator(`${entityType.name} with id ${input[ID_FIELD]} could not be found.`)
+    const updatedEntityPreExec: PreExecQueryParms = {query: updateEntityNode, resultVariable: updatedEntityIdVarNode, resultValidator: updateEntityResultValidator};
 
-    const updatedEntityVarNode = new VariableQueryNode('updatedEntity');
-    let resultNode: QueryNode = createEntityObjectNode(fieldRequest.selectionSet, updatedEntityVarNode, fieldRequestStack);
-
-    // put these statements here because they need to be executed in the context of the updated variable
-    const relationStatements = getRelationAddRemoveStatements(input, entityType, updatedEntityVarNode, true);
+    // update relations if needed
+    let updateRelationsPreExec: PreExecQueryParms|undefined = undefined;
+    const relationStatements = getRelationAddRemoveStatements(input, entityType, updatedEntityIdVarNode, true);
     if (relationStatements.length) {
-        resultNode = new FirstOfListQueryNode(new ListQueryNode([
-            resultNode,
-            ...relationStatements
-        ]));
+        updateRelationsPreExec = { query:
+            new FirstOfListQueryNode(new ListQueryNode([new NullQueryNode(), ...relationStatements]))};
     }
 
-    const conditionalResultNode = new ConditionalQueryNode( // updated entity may not exist
-        new TypeCheckQueryNode(updatedEntityVarNode, BasicType.OBJECT),
-        resultNode,
-        new NullQueryNode());
-    return new VariableAssignmentQueryNode({
+    // Build up result query node
+    const updatedEntityVarNode = new VariableQueryNode('updatedEntity');
+    const objectQueryNode = new ConditionalQueryNode( // updated entity may not exist
+        new TypeCheckQueryNode(updatedEntityVarNode, BasicType.NULL),
+        new NullQueryNode(),
+        createEntityObjectNode(fieldRequest.selectionSet, updatedEntityVarNode, fieldRequestStack));
+    const resultNode = new VariableAssignmentQueryNode({
         variableNode: updatedEntityVarNode,
-        variableValueNode: updateEntityNode,
-        resultNode: conditionalResultNode
+        variableValueNode: new EntityFromIdQueryNode(entityType, updatedEntityIdVarNode),
+        resultNode: objectQueryNode
+    });
+
+    // PreExecute update and relation queries and return result
+    return new WithPreExecutionQueryNode({
+        resultNode,
+        preExecQueries: [updatedEntityPreExec, updateRelationsPreExec]
     });
 }
 
-function getRelationAddRemoveStatements(obj: PlainObject, parentType: GraphQLObjectType, sourceEntityNode: QueryNode, isAddRemove: boolean): QueryNode[] {
+function getRelationAddRemoveStatements(obj: PlainObject, parentType: GraphQLObjectType, sourceIDNode: QueryNode, isAddRemove: boolean): QueryNode[] {
     // note: we don't check if the target ids exists. This would be a constraint that will be checked in Foxx once we
     // implement Foxx. It's not easy to do this in AQL because we can't throw errors in AQL.
 
@@ -329,7 +352,6 @@ function getRelationAddRemoveStatements(obj: PlainObject, parentType: GraphQLObj
     const statements: QueryNode[] = [];
     for (const field of relationFields) {
         const edgeType = getEdgeType(parentType, field);
-        const sourceIDNode = new RootEntityIDQueryNode(sourceEntityNode);
         if (isListType(field.type)) {
             // to-n relation
             const idsToBeAdded = (isAddRemove ? obj[getAddRelationFieldName(field.name)] : obj[field.name]) as string[] | undefined || [];
