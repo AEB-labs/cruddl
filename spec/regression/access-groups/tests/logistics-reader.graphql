@@ -21,3 +21,21 @@ mutation updateReadRestricted {
         name
     }
 }
+
+mutation deletePublic {
+    deleteFile(id: "@{ids/File/3}") {
+        name
+    }
+}
+
+mutation deleteWriteRestricted {
+    deleteFile(id: "@{ids/File/2}") {
+        name
+    }
+}
+
+mutation deleteReadRestricted {
+    deleteFile(id: "@{ids/File/1}") {
+        name
+    }
+}

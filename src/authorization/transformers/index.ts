@@ -6,8 +6,7 @@ import {
 import { transformFieldQueryNode } from './field';
 import { AuthContext } from '../auth-basics';
 import { transformEntitiesQueryNode } from './entities';
-import { transformUpdateEntitiesQueryNode } from './update-entities';
-import { transformDeleteEntitiesQueryNode } from './delete-entities';
+import { transformDeleteEntitiesQueryNode, transformUpdateEntitiesQueryNode } from './update-delete-entities';
 import { transformFollowEdgeQueryNode } from './follow-edge';
 import { transformAffectedFieldInfoQueryNode } from './affected-field-info';
 import { transformCreateEntityQueryNode } from './create-entity';

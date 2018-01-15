@@ -55,5 +55,36 @@
     "data": {
       "updateFile": null
     }
+  },
+  "deletePublic": {
+    "data": {
+      "deleteFile": {
+        "name": "public2"
+      }
+    }
+  },
+  "deleteWriteRestricted": {
+    "errors": [
+      {
+        "message": "Not authorized to delete File objects with this accessGroup",
+        "locations": [
+          {
+            "line": 32,
+            "column": 5
+          }
+        ],
+        "path": [
+          "deleteFile"
+        ]
+      }
+    ],
+    "data": {
+      "deleteFile": null
+    }
+  },
+  "deleteReadRestricted": {
+    "data": {
+      "deleteFile": null
+    }
   }
 }

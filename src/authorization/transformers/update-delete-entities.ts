@@ -1,7 +1,8 @@
 import { getPermissionDescriptor } from '../permission-descriptors-in-schema';
 import { AccessOperation, AuthContext } from '../auth-basics';
 import {
-    BinaryOperationQueryNode, BinaryOperator, ConstIntQueryNode, CountQueryNode, EntitiesQueryNode, FieldQueryNode,
+    BinaryOperationQueryNode, BinaryOperator, ConstIntQueryNode, CountQueryNode, DeleteEntitiesQueryNode,
+    EntitiesQueryNode, FieldQueryNode,
     PreExecQueryParms, QueryNode, RuntimeErrorQueryNode, TransformListQueryNode, UnaryOperationQueryNode, UnaryOperator,
     UpdateEntitiesQueryNode, VariableQueryNode, WithPreExecutionQueryNode
 } from '../../query/definition';
@@ -9,12 +10,20 @@ import { PermissionResult } from '../permission-descriptors';
 import { ErrorIfNotTruthyResultValidator } from '../../query/query-result-validators';
 
 export function transformUpdateEntitiesQueryNode(node: UpdateEntitiesQueryNode, authContext: AuthContext): QueryNode {
+    return transformUpdateOrDeleteEntitiesQueryNode(node, authContext, 'update');
+}
+
+export function transformDeleteEntitiesQueryNode(node: DeleteEntitiesQueryNode, authContext: AuthContext): QueryNode {
+    return transformUpdateOrDeleteEntitiesQueryNode(node, authContext, 'delete');
+}
+
+function transformUpdateOrDeleteEntitiesQueryNode(node: UpdateEntitiesQueryNode|DeleteEntitiesQueryNode, authContext: AuthContext, actionDescription: string): QueryNode {
     const permissionDescriptor = getPermissionDescriptor(node.objectType);
     const access = permissionDescriptor.canAccess(authContext, AccessOperation.WRITE);
 
     switch (access) {
         case PermissionResult.DENIED:
-            return new RuntimeErrorQueryNode(`Not authorized to update ${node.objectType.name} objects`);
+            return new RuntimeErrorQueryNode(`Not authorized to ${actionDescription} ${node.objectType.name} objects`);
         case PermissionResult.GRANTED:
             return node;
     }
@@ -33,7 +42,8 @@ export function transformUpdateEntitiesQueryNode(node: UpdateEntitiesQueryNode, 
     let readCondition: QueryNode|undefined = undefined;
     if (readAccess != PermissionResult.GRANTED) {
         readCondition = permissionDescriptor.getAccessCondition(authContext, AccessOperation.READ, accessGroupNode);
-        node = new UpdateEntitiesQueryNode({...node, filterNode: new BinaryOperationQueryNode(node.filterNode, BinaryOperator.AND, readCondition) });
+        const constructor = node.constructor as {new(...a: any[]): UpdateEntitiesQueryNode|DeleteEntitiesQueryNode};
+        node = new constructor({...node, filterNode: new BinaryOperationQueryNode(node.filterNode, BinaryOperator.AND, readCondition) });
     }
 
     // TODO only add a check if the object is readable, but not writeable (only needed if read and write access differ)
@@ -57,7 +67,7 @@ export function transformUpdateEntitiesQueryNode(node: UpdateEntitiesQueryNode, 
         preExecQueries: [ new PreExecQueryParms({
             query: canWrite,
             resultVariable: filterResultVar,
-            resultValidator: new ErrorIfNotTruthyResultValidator(`Not authorized to update ${node.objectType.name} objects with this accessGroup`)
+            resultValidator: new ErrorIfNotTruthyResultValidator(`Not authorized to ${actionDescription} ${node.objectType.name} objects with this accessGroup`)
         })]
     });
 }
