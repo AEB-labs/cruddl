@@ -5,6 +5,7 @@ import { GraphQLServer } from './graphql-server';
 import { createSchema } from '../../src/schema/schema-builder';
 import { SchemaConfig, SchemaPartConfig } from '../../src/config/schema-config';
 import { globalContext } from '../../src/config/global';
+import * as path from "path";
 
 const port = 3000;
 const databaseName = 'momo';
@@ -18,9 +19,12 @@ export async function start() {
         autoremoveIndices: true
     });
 
+    const permissionProfilesPath = path.resolve(__dirname, 'model/permission-profiles.json');
     const schemaConfig: SchemaConfig = {
-        schemaParts: fs.readdirSync('spec/dev/model').map(file => fileToSchemaPartConfig('spec/dev/model/' + file)),
-        // defaultNamespace: "model"
+        schemaParts: fs.readdirSync(path.resolve(__dirname, 'model'))
+            .filter(file => file.endsWith('.graphqls'))
+            .map(file => fileToSchemaPartConfig(path.resolve(__dirname, 'model', file))),
+        permissionProfiles: fs.existsSync(permissionProfilesPath) ? JSON.parse(fs.readFileSync(permissionProfilesPath, 'utf-8')) : undefined
     };
 
     const schema = createSchema(schemaConfig);
