@@ -348,7 +348,7 @@ function createUpdateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestSta
         affectedFields: fieldCollector.getFields()
     }));
     const updatedEntityIdVarNode = new VariableQueryNode('updatedEntityId');
-    const updateEntityResultValidator = new ErrorIfNotTruthyResultValidator(`${entityType.name} with id ${input[ID_FIELD]} could not be found.`)
+    const updateEntityResultValidator = new ErrorIfNotTruthyResultValidator(`${entityType.name} with id ${input[ID_FIELD]} could not be found.`, 'NotFoundError');
     const updatedEntityPreExec = new PreExecQueryParms({query: updateEntityNode, resultVariable: updatedEntityIdVarNode, resultValidator: updateEntityResultValidator});
 
     // update relations if needed

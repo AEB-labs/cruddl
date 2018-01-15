@@ -1,7 +1,7 @@
 {
   "errors": [
     {
-      "message": "Delivery with id not-found could not be found.",
+      "message": "NotFoundError: Delivery with id not-found could not be found.",
       "locations": [
         {
           "line": 2,

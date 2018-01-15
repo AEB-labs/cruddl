@@ -67,7 +67,7 @@ function transformUpdateOrDeleteEntitiesQueryNode(node: UpdateEntitiesQueryNode|
         preExecQueries: [ new PreExecQueryParms({
             query: canWrite,
             resultVariable: filterResultVar,
-            resultValidator: new ErrorIfNotTruthyResultValidator(`Not authorized to ${actionDescription} ${node.objectType.name} objects with this accessGroup`)
+            resultValidator: new ErrorIfNotTruthyResultValidator(`Not authorized to ${actionDescription} ${node.objectType.name} objects with this accessGroup`, 'AuthorizationError')
         })]
     });
 }
