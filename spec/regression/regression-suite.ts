@@ -1,4 +1,4 @@
-import { ArangoDBAdapter } from '../../src/database/arangodb/arangodb-adapter';
+import { ArangoDBAdapter, ArangoDBConfig } from '../../src/database/arangodb/arangodb-adapter';
 import {
     graphql, GraphQLError, GraphQLSchema, OperationDefinitionNode, parse, separateOperations, Source
 } from 'graphql';
@@ -10,6 +10,8 @@ import { createTempDatabase, initTestData, TestDataEnvironment } from './initial
 import * as stripJsonComments from 'strip-json-comments';
 import { PlainObject } from '../../src/utils/utils';
 import {SchemaConfig, SchemaPartConfig} from "../../src/config/schema-config";
+import { Log4jsLoggerProvider } from '../helpers/log4js-logger-provider';
+import { SchemaContext } from '../../src/config/global';
 
 interface TestResult {
     actualResult: any
@@ -34,8 +36,10 @@ export class RegressionSuite {
     }
 
     private async setUp() {
+        const warnLevelContext = { loggerProvider: new Log4jsLoggerProvider('warn') };
+        const debugLevelContext = { loggerProvider: new Log4jsLoggerProvider('debug') };
+
         const dbConfig = await createTempDatabase();
-        const dbAdapter = new ArangoDBAdapter(dbConfig);
 
         const permissionProfilesPath = path.resolve(this.path, 'model/permission-profiles.json');
         const schemaConfig: SchemaConfig = {
@@ -44,14 +48,22 @@ export class RegressionSuite {
                 .map(file => fileToSchemaPartConfig(path.resolve(this.path, 'model', file))),
             permissionProfiles: fs.existsSync(permissionProfilesPath) ? JSON.parse(fs.readFileSync(permissionProfilesPath, 'utf-8')) : undefined
         };
-        const dumbSchema = createSchema(schemaConfig);
-        this.schema = addQueryResolvers(dumbSchema, dbAdapter);
-        await dbAdapter.updateSchema(this.schema);
-        this.testDataEnvironment = await initTestData(path.resolve(this.path, 'test-data.json'), this.schema);
+
+        this.schema = this.createSchema(dbConfig, schemaConfig, debugLevelContext);
+
+        // use a schema that logs less for initTestData
+        const initDataSchema = this.createSchema(dbConfig, schemaConfig, warnLevelContext);
+        await new ArangoDBAdapter(dbConfig, warnLevelContext).updateSchema(this.schema);
+        this.testDataEnvironment = await initTestData(path.resolve(this.path, 'test-data.json'), initDataSchema);
+
         this._isSetUpClean = true;
     }
 
-    async initData() {
+    private createSchema(dbConfig: ArangoDBConfig, schemaConfig: SchemaConfig, context: SchemaContext) {
+        const dbAdapter = new ArangoDBAdapter(dbConfig, context);
+        // we never want debug output of createSchema() in regression tests
+        const dumbSchema = createSchema(schemaConfig, { loggerProvider: new Log4jsLoggerProvider('warn') });
+        return addQueryResolvers(dumbSchema, dbAdapter, context);
     }
 
     getTestNames() {

@@ -10,6 +10,7 @@ import { addQueryResolvers } from '../../../src/query/query-resolvers';
 import { SchemaConfig, SchemaPartConfig } from '../../../src/config/schema-config';
 import { getLogger } from 'log4js';
 import { LoggerProvider, SchemaContext } from '../../../src/config/global';
+import { Log4jsLoggerProvider } from '../../helpers/log4js-logger-provider';
 
 // arangojs typings for this are completely broken
 export const aql: (template: TemplateStringsArray, ...args: any[]) => any = require('arangojs').aql;
@@ -21,15 +22,7 @@ export interface TestEnvironment {
     exec(graphql: string, variables?: {[name: string]: any}): any
 }
 
-class BenchmarkLoggerProvider implements LoggerProvider {
-    getLogger(category: string) {
-        const logger = getLogger(category);
-        logger.level = 'warn';
-        return logger;
-    }
-}
-
-const schemaContext: SchemaContext = { loggerProvider: new BenchmarkLoggerProvider() };
+const schemaContext: SchemaContext = { loggerProvider: new Log4jsLoggerProvider('warn') };
 
 export function createDumbSchema(modelPath: string): GraphQLSchema {
     const schemaConfig: SchemaConfig = {
