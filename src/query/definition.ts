@@ -112,7 +112,24 @@ export class VariableAssignmentQueryNode extends QueryNode {
     }
 }
 
-export type PreExecQueryParms = { query: QueryNode, resultVariable?: VariableQueryNode, resultValidator?: QueryResultValidator };
+export class PreExecQueryParms extends QueryNode {
+    constructor(params: { query: QueryNode, resultVariable?: VariableQueryNode, resultValidator?: QueryResultValidator}) {
+        super();
+        this.query = params.query;
+        this.resultVariable = params.resultVariable;
+        this.resultValidator = params.resultValidator;
+    }
+
+    public readonly query: QueryNode;
+    public readonly resultVariable: VariableQueryNode|undefined;
+    public readonly resultValidator: QueryResultValidator|undefined;
+
+    describe() {
+        const resultVarDescr = this.resultVariable ? `${this.resultVariable.describe()} = ` : '';
+        const validatorDescr = this.resultValidator ? ' validate result: ' + this.resultValidator.describe(): '';
+        return resultVarDescr + '(\n' + indent(this.query.describe()) + '\n)' + validatorDescr;
+    }
+}
 
 /**
  * A node that appends (maybe multiple) queries to a list of pre execution queries and then evaluates to a result node.
@@ -135,7 +152,7 @@ export type PreExecQueryParms = { query: QueryNode, resultVariable?: VariableQue
  * exists before adding an edge to that entity. In contrast to a simple (AQL) query, it ist possible to throw an error
  * within a result validator, which then causes a rollback of the whole transaction.
  */
-export class WithPreExecutionQueryNode implements QueryNode {
+export class WithPreExecutionQueryNode extends QueryNode {
 
     public readonly resultNode: QueryNode;
     public readonly preExecQueries: PreExecQueryParms[];
@@ -144,6 +161,7 @@ export class WithPreExecutionQueryNode implements QueryNode {
         resultNode: QueryNode,
         preExecQueries: (PreExecQueryParms|undefined)[]
     }) {
+        super();
         this.resultNode = params.resultNode;
         this.preExecQueries = compact(params.preExecQueries);
     }
@@ -153,21 +171,19 @@ export class WithPreExecutionQueryNode implements QueryNode {
             return this.resultNode.describe();
         }
 
-        const preExecDescriptions = this.preExecQueries.map(parms => {
-            const resultVarDescr = parms.resultVariable ? `${parms.resultVariable.describe()} = ` : '';
-            const validatorDescr = parms.resultValidator ? ' validate result: ' + parms.resultValidator.describe(): '';
-            return resultVarDescr + '(\n' + indent(parms.query.describe()) + '\n)' + validatorDescr;
-        })
+        const preExecDescriptions = this.preExecQueries.map(q => q.describe());
         const resultDescr = '(\n' + indent(this.resultNode.describe()) + '\n)';
 
         return 'pre execute\n' + indent('' + // '' to move the arg label here in WebStorm
             preExecDescriptions.join('\nthen ') + '\n' +
-            `return ${resultDescr}`);
+            `return ${resultDescr}`
+        );
     }
 }
 
-export class EntityFromIdQueryNode implements QueryNode {
+export class EntityFromIdQueryNode extends QueryNode {
     constructor(public readonly objectType: GraphQLObjectType, public readonly idNode: QueryNode) {
+        super();
     }
 
     public describe() {

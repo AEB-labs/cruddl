@@ -123,14 +123,14 @@ function createCreateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestSta
     // Create new entity
     const createEntityNode = new CreateEntityQueryNode(entityType, objectNode, fieldCollector.getFields());
     const newEntityIdVarNode = new VariableQueryNode('newEntityId');
-    const newEntityPreExec: PreExecQueryParms = {query: createEntityNode, resultVariable: newEntityIdVarNode};
+    const newEntityPreExec = new PreExecQueryParms({query: createEntityNode, resultVariable: newEntityIdVarNode});
 
     // Add relations if needed
     let createRelationsPreExec: PreExecQueryParms|undefined = undefined;
     const relationStatements = getRelationAddRemoveStatements(input, entityType, newEntityIdVarNode, false);
     if (relationStatements.length) {
-        createRelationsPreExec = { query:
-            new FirstOfListQueryNode(new ListQueryNode([new NullQueryNode(),...relationStatements]))};
+        createRelationsPreExec = new PreExecQueryParms({ query:
+            new FirstOfListQueryNode(new ListQueryNode([new NullQueryNode(),...relationStatements]))});
     }
 
     // Build up result query node
@@ -349,14 +349,14 @@ function createUpdateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestSta
     }));
     const updatedEntityIdVarNode = new VariableQueryNode('updatedEntityId');
     const updateEntityResultValidator = new ErrorIfNotTruthyResultValidator(`${entityType.name} with id ${input[ID_FIELD]} could not be found.`)
-    const updatedEntityPreExec: PreExecQueryParms = {query: updateEntityNode, resultVariable: updatedEntityIdVarNode, resultValidator: updateEntityResultValidator};
+    const updatedEntityPreExec = new PreExecQueryParms({query: updateEntityNode, resultVariable: updatedEntityIdVarNode, resultValidator: updateEntityResultValidator});
 
     // update relations if needed
     let updateRelationsPreExec: PreExecQueryParms|undefined = undefined;
     const relationStatements = getRelationAddRemoveStatements(input, entityType, updatedEntityIdVarNode, true);
     if (relationStatements.length) {
-        updateRelationsPreExec = { query:
-            new FirstOfListQueryNode(new ListQueryNode([new NullQueryNode(), ...relationStatements]))};
+        updateRelationsPreExec = new PreExecQueryParms({ query:
+            new FirstOfListQueryNode(new ListQueryNode([new NullQueryNode(), ...relationStatements]))});
     }
 
     // Build up result query node
