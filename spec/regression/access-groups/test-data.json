@@ -11,6 +11,11 @@
         "@id": "2",
         "name": "logistics",
         "accessGroup": "logistics"
+      },
+      {
+        "@id": "3",
+        "name": "public",
+        "accessGroup": "public"
       }
     ]
   }

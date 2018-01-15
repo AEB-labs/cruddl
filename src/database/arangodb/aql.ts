@@ -320,6 +320,10 @@ export namespace aql {
         return code(JSON.stringify(str));
     }
 
+    export function integer(number: number): AQLFragment {
+        return code(JSON.stringify(Number(number)));
+    }
+
     export function isSafeIdentifier(str: string) {
         // being pessimistic for security reasons
         // TODO collisions with collection names / keywords?

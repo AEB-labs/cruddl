@@ -1,0 +1,59 @@
+{
+  "q": {
+    "data": {
+      "allFiles": [
+        {
+          "name": "public"
+        },
+        {
+          "name": "logistics"
+        }
+      ]
+    }
+  },
+  "updatePublic": {
+    "data": {
+      "updateFile": {
+        "name": "public2"
+      }
+    }
+  },
+  "updateWriteRestricted": {
+    "errors": [
+      {
+        "message": "Not authorized to update File objects with this accessGroup",
+        "locations": [
+          {
+            "line": 14,
+            "column": 5
+          }
+        ],
+        "path": [
+          "updateFile"
+        ]
+      }
+    ],
+    "data": {
+      "updateFile": null
+    }
+  },
+  "updateReadRestricted": {
+    "errors": [
+      {
+        "message": "File with id 152656266 could not be found.",
+        "locations": [
+          {
+            "line": 20,
+            "column": 5
+          }
+        ],
+        "path": [
+          "updateFile"
+        ]
+      }
+    ],
+    "data": {
+      "updateFile": null
+    }
+  }
+}

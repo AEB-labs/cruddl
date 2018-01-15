@@ -14,6 +14,16 @@
         "roles": ["logistics"],
         "access": "readWrite",
         "restrictToAccessGroups": "logistics"
+      },
+      {
+        "roles": ["logistics-reader"],
+        "access": "read",
+        "restrictToAccessGroups": "logistics"
+      },
+      {
+        "roles": ["logistics-reader", "logistics", "accounting", "admin"],
+        "access": "readWrite",
+        "restrictToAccessGroups": "public"
       }
     ]
   }

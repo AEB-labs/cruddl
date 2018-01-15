@@ -42,6 +42,20 @@ import { QueryResultValidator } from './query-result-validators';
  */
 export abstract class QueryNode {
     abstract describe(): string;
+
+    public equals(other: this) {
+        if (!other || other.constructor !== this.constructor) {
+            return false;
+        }
+        return Object.keys(this).every(key => this.fieldEquals(key, (this as any)[key], (other as any)[key]));
+    }
+
+    protected fieldEquals(key: string, lhs: any, rhs: any): boolean {
+        if (lhs instanceof QueryNode && rhs instanceof QueryNode) {
+            return lhs.equals(rhs);
+        }
+        return lhs === rhs;
+    }
 }
 
 namespace varIndices {
@@ -66,6 +80,11 @@ export class VariableQueryNode extends QueryNode {
     }
 
     public readonly index: number;
+
+    equals(other: this) {
+        // use reference equality because VariableQueryNodes are used as tokens, the label is only informational
+        return other === this;
+    }
 
     toString() {
         return `$${this.label || 'var'}_${this.index}`;
@@ -199,6 +218,11 @@ export class LiteralQueryNode extends QueryNode {
         super();
     }
 
+    equals(other: this) {
+        // Consider LiteralQueryNodes as tokens - we might later decide to put the "value" behind a getter function
+        return other === this;
+    }
+
     public describe() {
         const json = this.value === undefined ? 'undefined' : JSON.stringify(this.value);
         return `literal ${json.magenta}`;
@@ -253,6 +277,25 @@ export class ConstBoolQueryNode extends QueryNode {
 
     public describe() {
         return `${!!this.value}`;
+    }
+}
+
+/**
+ * A node that evaluates to a constant integer
+ */
+export class ConstIntQueryNode extends QueryNode {
+    constructor(public readonly value: number) {
+        super();
+        if (!Number.isSafeInteger(value)) {
+            throw new Error(`Invalid integer: ${value}`);
+        }
+    }
+
+    static readonly ZERO = new ConstIntQueryNode(0);
+    static readonly ONE = new ConstIntQueryNode(1);
+
+    public describe() {
+        return `${this.value}`;
     }
 }
 

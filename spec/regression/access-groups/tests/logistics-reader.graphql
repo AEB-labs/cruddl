@@ -1,0 +1,23 @@
+query q {
+    allFiles {
+        name
+    }
+}
+
+mutation updatePublic {
+    updateFile(input: {id: "@{ids/File/3}", name: "public2"}) {
+        name
+    }
+}
+
+mutation updateWriteRestricted {
+    updateFile(input: {id: "@{ids/File/2}", name: "logistics2"}) {
+        name
+    }
+}
+
+mutation updateReadRestricted {
+    updateFile(input: {id: "@{ids/File/1}", name: "accounting"}) {
+        name
+    }
+}

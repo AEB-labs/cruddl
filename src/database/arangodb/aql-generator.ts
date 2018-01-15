@@ -1,6 +1,7 @@
 import {
     AddEdgesQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode,
-    ConstBoolQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeFilter, EdgeIdentifier,
+    ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeFilter,
+    EdgeIdentifier,
     EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode,
     LiteralQueryNode, MergeObjectsQueryNode, ObjectQueryNode, OrderDirection, OrderSpecification, PartialEdgeIdentifier,
     QueryNode, RemoveEdgesQueryNode, RootEntityIDQueryNode, RuntimeErrorQueryNode, SetEdgeQueryNode,
@@ -191,6 +192,10 @@ const processors : { [name: string]: NodeProcessor<any> } = {
 
     ConstBool(node: ConstBoolQueryNode): AQLFragment {
         return node.value ? aql`true` : aql`false`;
+    },
+
+    ConstInt(node: ConstIntQueryNode): AQLFragment {
+        return aql.integer(node.value);
     },
 
     Object(node: ObjectQueryNode, context): AQLFragment {

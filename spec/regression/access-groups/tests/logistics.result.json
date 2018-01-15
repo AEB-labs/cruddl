@@ -3,6 +3,9 @@
     "allFiles": [
       {
         "name": "logistics"
+      },
+      {
+        "name": "public"
       }
     ]
   }
