@@ -40,7 +40,7 @@
   "updateReadRestricted": {
     "errors": [
       {
-        "message": "File with id 152677917 could not be found.",
+        "message": "File with id @{ids/File/1} could not be found.",
         "locations": [
           {
             "line": 20,

@@ -92,10 +92,13 @@ export class RegressionSuite {
             const operationNames = operations.map(def => def.name!.value);
             actualResult = {};
             for (const operationName of operationNames) {
-                actualResult[operationName] = await graphql(this.schema, gqlSource, {} /* root */, context, variableValues, operationName);
+                let operationResult = await graphql(this.schema, gqlSource, {} /* root */, context, variableValues, operationName);
+                operationResult = JSON.parse(JSON.stringify(operationResult)); // serialize e.g. errors as they would be in a GraphQL server
+                actualResult[operationName] = operationResult;
             }
         } else {
             actualResult = await graphql(this.schema, gqlSource, {} /* root */, context, variableValues);
+            actualResult = JSON.parse(JSON.stringify(actualResult)); // serialize e.g. errors as they would be in a GraphQL server
         }
 
         if (this.options.saveActualAsExpected && !(jasmine as any).matchersUtil.equals(actualResult, expectedResult)) {
