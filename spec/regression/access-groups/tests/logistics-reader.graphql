@@ -1,5 +1,5 @@
 query q {
-    allFiles {
+    allFiles(orderBy: name_ASC) {
         name
     }
 }

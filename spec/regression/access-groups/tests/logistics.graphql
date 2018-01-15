@@ -1,5 +1,5 @@
 {
-    allFiles {
+    allFiles(orderBy: name_ASC) {
         name
     }
 }
