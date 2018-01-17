@@ -21,7 +21,7 @@
   "updateToAccessGroupWithoutReadPermissions": {
     "errors": [
       {
-        "message": "AuthorizationError: Not authorized to update this File with these values",
+        "message": "AuthorizationError: Not authorized to set File.accessGroup to this value (allowed values: public)",
         "locations": [
           {
             "line": 15,
@@ -40,7 +40,7 @@
   "updateToAccessGroupWithoutWritePermissions": {
     "errors": [
       {
-        "message": "AuthorizationError: Not authorized to update this File with these values",
+        "message": "AuthorizationError: Not authorized to set File.accessGroup to this value (allowed values: public)",
         "locations": [
           {
             "line": 22,
@@ -66,7 +66,7 @@
   "createWithAccessGroupWithoutWritePermissions": {
     "errors": [
       {
-        "message": "AuthorizationError: Not authorized to create File objects with these values",
+        "message": "AuthorizationError: Not authorized to set File.accessGroup to this value (allowed values: public)",
         "locations": [
           {
             "line": 36,
@@ -83,7 +83,7 @@
   "updateWriteRestricted": {
     "errors": [
       {
-        "message": "AuthorizationError: Not authorized to update this File",
+        "message": "AuthorizationError: Not authorized to update File objects with this access group (allowed access groups: public)",
         "locations": [
           {
             "line": 42,
@@ -102,7 +102,7 @@
   "updateWriteRestrictedToAccessGroupWithoutWritePermissions": {
     "errors": [
       {
-        "message": "AuthorizationError: Not authorized to update this File",
+        "message": "AuthorizationError: Not authorized to update File objects with this access group (allowed access groups: public)",
         "locations": [
           {
             "line": 49,
@@ -166,7 +166,7 @@
   "deleteWriteRestricted": {
     "errors": [
       {
-        "message": "AuthorizationError: Not authorized to delete this File",
+        "message": "AuthorizationError: Not authorized to delete File objects with this access group (allowed access groups: public)",
         "locations": [
           {
             "line": 74,

@@ -6,7 +6,7 @@ import {
     PreExecQueryParms, QueryNode, RuntimeErrorQueryNode, TransformListQueryNode, UnaryOperationQueryNode, UnaryOperator,
     UpdateEntitiesQueryNode, VariableQueryNode, WithPreExecutionQueryNode
 } from '../../query/definition';
-import { PermissionResult } from '../permission-descriptors';
+import { ConditionExplanationContext, PermissionResult } from '../permission-descriptors';
 import { ErrorIfNotTruthyResultValidator } from '../../query/query-result-validators';
 
 export function transformUpdateEntitiesQueryNode(node: UpdateEntitiesQueryNode, authContext: AuthContext): QueryNode {
@@ -57,13 +57,11 @@ function transformUpdateOrDeleteEntitiesQueryNode(node: UpdateEntitiesQueryNode|
     // see if any entities matched by the filter are write-restricted
     const rawWriteCondition = permissionDescriptor.getAccessCondition(authContext, AccessOperation.WRITE, itemVar);
     const canWrite = getNoneMatchesQueryNode(rawWriteCondition);
-
-    // TODO add better error messages, maybe a static message from the PermissionDescriptor?
-
+    const explanation = permissionDescriptor.getExplanationForCondition(authContext, AccessOperation.WRITE, ConditionExplanationContext.BEFORE_WRITE);
     let preExecQueries: PreExecQueryParms[] = [
         new PreExecQueryParms({
             query: canWrite,
-            resultValidator: new ErrorIfNotTruthyResultValidator(`Not authorized to ${actionDescription} this ${node.objectType.name}`, 'AuthorizationError')
+            resultValidator: new ErrorIfNotTruthyResultValidator(`Not authorized to ${actionDescription} ${explanation}`, 'AuthorizationError')
         })
     ];
 
@@ -72,10 +70,11 @@ function transformUpdateOrDeleteEntitiesQueryNode(node: UpdateEntitiesQueryNode|
         // TODO add a fast-lane way for PermissionDescriptors to statically check updated values? Or at least to specify that they don't need the merge?
         const postUpdateNode = new MergeObjectsQueryNode([ itemVar, new ObjectQueryNode(node.updates) ]);
         const writeConditionPostUpdate = permissionDescriptor.getAccessCondition(authContext, AccessOperation.WRITE, postUpdateNode);
+        const explanation = permissionDescriptor.getExplanationForCondition(authContext, AccessOperation.WRITE, ConditionExplanationContext.SET);
         const canWriteTheseValues = getNoneMatchesQueryNode(writeConditionPostUpdate);
         preExecQueries.push(new PreExecQueryParms({
             query: canWriteTheseValues,
-            resultValidator: new ErrorIfNotTruthyResultValidator(`Not authorized to ${actionDescription} this ${node.objectType.name} with these values`, 'AuthorizationError')
+            resultValidator: new ErrorIfNotTruthyResultValidator(`Not authorized to ${explanation}`, 'AuthorizationError')
         }));
     }
 

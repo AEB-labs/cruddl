@@ -3,11 +3,16 @@ import {
     UnknownValueQueryNode
 } from '../query/definition';
 import { simplifyBooleans } from '../query/query-tree-utils';
-import { PermissionProfile } from './permission-profile';
+import { Permission, PermissionProfile } from './permission-profile';
 import { flatMap } from 'lodash';
 import { AccessOperation, AuthContext } from './auth-basics';
 import { GraphQLField, GraphQLObjectType } from 'graphql';
 import { ACCESS_GROUP_FIELD } from '../schema/schema-defaults';
+
+export enum ConditionExplanationContext {
+    BEFORE_WRITE,
+    SET
+}
 
 /**
  * Determines whether a user can access information, possibly dependent on the instance containing the information
@@ -31,6 +36,13 @@ export abstract class PermissionDescriptor {
             return condition.value ? PermissionResult.GRANTED : PermissionResult.DENIED;
         }
         return PermissionResult.CONDITIONAL;
+    }
+
+    /**
+     * Gets a human-readable explanation fragment that explains why some instance could not be accessed
+     */
+    getExplanationForCondition(authContext: AuthContext, operation: AccessOperation, context: ConditionExplanationContext): string|undefined {
+        return undefined;
     }
 }
 
@@ -109,8 +121,7 @@ export class ProfileBasedPermissionDescriptor extends PermissionDescriptor {
     }
 
     getAccessCondition(authContext: AuthContext, operation: AccessOperation, instanceNode: QueryNode): QueryNode {
-        const applicablePermissions = this.profile.permissions
-            .filter(permission => permission.allowsOperation(operation) && permission.appliesToAuthContext(authContext));
+        const applicablePermissions = this.getApplicablePermissions(authContext, operation);
 
         if (!applicablePermissions.length) {
             return ConstBoolQueryNode.FALSE;
@@ -120,11 +131,42 @@ export class ProfileBasedPermissionDescriptor extends PermissionDescriptor {
             return ConstBoolQueryNode.TRUE;
         }
 
-        const allowedAccessGroups = flatMap(applicablePermissions, permission => permission.restrictToAccessGroups!);
+        const allowedAccessGroups = this.getAllowedAccessGroups(applicablePermissions);
         if (!this.accessGroupField) {
             throw new Error(`Using accessGroup-restricted permission profile on type ${this.objectType.name} which does not have an accessGroup field`);
         }
         const accessGroupNode = new FieldQueryNode(instanceNode, this.accessGroupField, this.objectType);
         return new BinaryOperationQueryNode(accessGroupNode, BinaryOperator.IN, new LiteralQueryNode(allowedAccessGroups));
+    }
+
+    private getApplicablePermissions(authContext: AuthContext, operation: AccessOperation): Permission[] {
+        return this.profile.permissions.filter(permission => permission.allowsOperation(operation) && permission.appliesToAuthContext(authContext));
+    }
+
+    private getAllowedAccessGroups(applicablePermissions: Permission[]) {
+        return flatMap(applicablePermissions, permission => permission.restrictToAccessGroups!);
+    }
+
+    getExplanationForCondition(authContext: AuthContext, operation: AccessOperation, context: ConditionExplanationContext): string|undefined {
+        const applicablePermissions = this.getApplicablePermissions(authContext, operation);
+
+        // if we don't have accessGroup restrictions, there is nothing to explain
+        if (applicablePermissions.every(permission => !permission.restrictToAccessGroups)) {
+            return undefined;
+        }
+
+        const allowedAccessGroups = this.getAllowedAccessGroups(applicablePermissions);
+        const prefix = this.getExplanationPrefix(context);
+        return `${prefix}${allowedAccessGroups.join(', ')})`;
+    }
+
+    getExplanationPrefix(context: ConditionExplanationContext): string {
+        const accessGroupFieldName = this.accessGroupField ? this.accessGroupField.name : this.accessGroupField;
+        switch (context) {
+            case ConditionExplanationContext.BEFORE_WRITE:
+                return `${this.objectType.name} objects with this access group (allowed access groups: `;
+            case ConditionExplanationContext.SET:
+                return `set ${this.objectType}.${accessGroupFieldName} to this value (allowed values: `;
+        }
     }
 }

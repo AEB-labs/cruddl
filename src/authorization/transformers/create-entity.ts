@@ -3,7 +3,7 @@ import { AccessOperation, AuthContext } from '../auth-basics';
 import {
     CreateEntityQueryNode, PreExecQueryParms, QueryNode, RuntimeErrorQueryNode, WithPreExecutionQueryNode
 } from '../../query/definition';
-import { PermissionResult } from '../permission-descriptors';
+import { ConditionExplanationContext, PermissionResult } from '../permission-descriptors';
 import { ErrorIfNotTruthyResultValidator } from '../../query/query-result-validators';
 
 export function transformCreateEntityQueryNode(node: CreateEntityQueryNode, authContext: AuthContext): QueryNode {
@@ -17,11 +17,12 @@ export function transformCreateEntityQueryNode(node: CreateEntityQueryNode, auth
             return new RuntimeErrorQueryNode(`Not authorized to create ${node.objectType.name} objects`);
         default:
             const condition = permissionDescriptor.getAccessCondition(authContext, AccessOperation.WRITE, node.objectNode);
+            const explanation = permissionDescriptor.getExplanationForCondition(authContext, AccessOperation.WRITE, ConditionExplanationContext.SET);
             return new WithPreExecutionQueryNode({
                 resultNode: node,
                 preExecQueries: [ new PreExecQueryParms({
                     query: condition,
-                    resultValidator: new ErrorIfNotTruthyResultValidator(`Not authorized to create ${node.objectType.name} objects with these values`, 'AuthorizationError')
+                    resultValidator: new ErrorIfNotTruthyResultValidator(`Not authorized to ${explanation}`, 'AuthorizationError')
                 })]
             });
     }
