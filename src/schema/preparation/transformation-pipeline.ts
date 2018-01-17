@@ -1,4 +1,4 @@
-import {DocumentNode, Source} from "graphql";
+import {DocumentNode, GraphQLSchema, Source} from 'graphql';
 import {AddMissingEntityFieldsTransformer} from "./post-merge-ast-transformation-modules/add-missing-entity-fields-transformer";
 import {AddFilterInputTypesTransformer} from "./post-merge-ast-transformation-modules/add-filter-input-types-transformer";
 import {AddScalarTypesTransformer} from "./post-merge-ast-transformation-modules/add-scalar-types-transformer";
@@ -21,6 +21,12 @@ import {AddNamespacesToTypesTransformer} from "./pre-merge-ast-transformation-mo
 import {PermissionProfileMap} from '../../authorization/permission-profile';
 import {AddPermissionDescriptorsTransformer} from './post-merge-ast-transformation-modules/add-permission-descriptors';
 import {MoveUpFieldIndicesTransformer} from "./pre-merge-ast-transformation-modules/move-up-field-indices-transformer";
+import {ImplementScalarTypesTransformer} from './schema-transformation-modules/implement-scalar-types';
+
+const preMergePipeline: ASTTransformer[] = [
+    new AddNamespacesToTypesTransformer(),
+    new MoveUpFieldIndicesTransformer()
+];
 
 const postMergePipeline: ASTTransformer[] = [
     // Add basic stuff to object types
@@ -59,9 +65,8 @@ const postMergePipeline: ASTTransformer[] = [
 
 ];
 
-const preMergePipeline: ASTTransformer[] = [
-    new AddNamespacesToTypesTransformer(),
-    new MoveUpFieldIndicesTransformer()
+const schemaPipeline: SchemaTransformer[] = [
+    new ImplementScalarTypesTransformer(),
 ];
 
 export function executePostMergeTransformationPipeline(ast: DocumentNode, context: ASTTransformationContext) {
@@ -80,6 +85,10 @@ export function executePreMergeTransformationPipeline(schemaParts: SchemaPartCon
     ) ;
 }
 
+export function executeSchemaTransformationPipeline(schema: GraphQLSchema): GraphQLSchema {
+    return schemaPipeline.reduce((s, transformer) => transformer.transform(s), schema);
+}
+
 export interface ASTTransformationContext {
     defaultNamespace?: string
     localNamespace?: string
@@ -90,4 +99,6 @@ export interface ASTTransformer {
     transform(ast: DocumentNode, context: ASTTransformationContext): void;
 }
 
-
+export interface SchemaTransformer {
+    transform(schema: GraphQLSchema): GraphQLSchema;
+}

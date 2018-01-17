@@ -1,11 +1,10 @@
-import {buildASTSchema, DocumentNode, GraphQLSchema, parse, print, Source} from "graphql";
+import { buildASTSchema, DocumentNode, graphql, GraphQLSchema, parse, print, Source } from 'graphql';
 import {
     ASTTransformationContext,
     executePostMergeTransformationPipeline,
-    executePreMergeTransformationPipeline
+    executePreMergeTransformationPipeline, executeSchemaTransformationPipeline
 } from './preparation/transformation-pipeline';
 import { validatePostMerge, ValidationResult } from './preparation/ast-validator';
-import {implementScalarTypes} from './scalars/implement-scalar-types';
 import {SchemaConfig} from "../config/schema-config";
 import {cloneDeep} from "lodash";
 import {SchemaContext, globalContext} from "../config/global";
@@ -58,8 +57,8 @@ export function createSchema(inputSchemaConfig: SchemaConfig, context?: SchemaCo
 
         executePostMergeTransformationPipeline(mergedSchema, {...rootContext});
         logger.debug(print(mergedSchema));
-        const executableGraphQLSchema = buildASTSchema(mergedSchema);
-        return implementScalarTypes(executableGraphQLSchema);
+        const graphQLSchema = buildASTSchema(mergedSchema);
+        return executeSchemaTransformationPipeline(graphQLSchema);
     } finally {
         globalContext.unregisterContext();
     }
