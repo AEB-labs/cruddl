@@ -169,7 +169,7 @@
         ]
       },
       {
-        "message": "AuthorizationError: Not authorized to read Delivery.totalValue, AuthorizationError: Not authorized to read Delivery.totalValue",
+        "message": "AuthorizationError: Not authorized to read Delivery.totalValue",
         "locations": [
           {
             "line": 59,

@@ -53,7 +53,8 @@ export function moveErrorsToOutputNodes(queryTree: QueryNode): QueryNode {
                     if (errors.length == 1) {
                         return errors[0];
                     } else {
-                        return new RuntimeErrorQueryNode(errors.map(err => err.message).join(', '))
+                        const uniqueErrorMessages = Array.from(new Set(errors.map(err => err.message)));
+                        return new RuntimeErrorQueryNode(uniqueErrorMessages.join(', '))
                     }
                 } else {
                     // before entering the next sibling, make sure that the next sibling won't take care of these errors, because they now belong to the parent
