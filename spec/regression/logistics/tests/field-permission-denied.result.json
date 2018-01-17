@@ -275,11 +275,24 @@
         "path": [
           "updateForwarder"
         ]
+      },
+      {
+        "message": "SkipError: Skipped because other mutations reported errors",
+        "locations": [
+          {
+            "line": 97,
+            "column": 5
+          }
+        ],
+        "path": [
+          "update2"
+        ]
       }
     ],
     "data": {
       "updateDelivery": null,
-      "updateForwarder": null
+      "updateForwarder": null,
+      "update2": null
     }
   },
   "delete": {
@@ -288,7 +301,7 @@
         "message": "AuthorizationError: Not authorized to delete Forwarder objects",
         "locations": [
           {
-            "line": 99,
+            "line": 103,
             "column": 5
           }
         ],

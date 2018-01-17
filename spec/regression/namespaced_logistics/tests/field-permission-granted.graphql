@@ -116,6 +116,10 @@ mutation update {
             updateDelivery(input: { id: "@{ids/logistics.delivery.Delivery/1}", totalValue: "EUR 5.50"}) {
                 deliveryNumber
             }
+
+            update2: updateDelivery(input: { id: "@{ids/logistics.delivery.Delivery/1}", deliveryNumber: "2" }) {
+                deliveryNumber
+            }
         }
 
         updateForwarder(input: { id: "@{ids/logistics.Forwarder/1}", name: "DPD"}) {

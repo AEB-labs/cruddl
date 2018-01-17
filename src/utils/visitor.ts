@@ -9,7 +9,11 @@ export type Visitor<T> = {
     leave?(object: T, key: string|undefined): T
 };
 
-export function visitObject<T>(node: T, visitor: Visitor<any>, key?: string): T {
+export function visitObject<T>(node: T, visitor: Visitor<any>): T {
+    return visitObject0(node, visitor);
+}
+
+function visitObject0<T>(node: T, visitor: Visitor<any>, key?: string): T {
     const visitResult = enter(node, visitor, key);
 
     if (visitResult == VisitAction.SKIP_NODE) {
@@ -46,9 +50,9 @@ function visitObjectOrArray<T>(nodeOrArray: T|T[], visitor: Visitor<any>, key: s
         return nodeOrArray;
     }
     if (!isArray(nodeOrArray)) {
-        return visitObject(nodeOrArray as T, visitor, key);
+        return visitObject0(nodeOrArray as T, visitor, key);
     }
-    return nodeOrArray.map(item => visitObject(item, visitor, key));
+    return nodeOrArray.map(item => visitObject0(item, visitor, key));
 }
 
 function enter<T>(obj: T, visitor: Visitor<any>, key: string|undefined): T|VisitAction {

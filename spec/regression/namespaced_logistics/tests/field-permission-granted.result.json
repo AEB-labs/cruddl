@@ -59,11 +59,6 @@
   },
   "filter": {
     "data": {
-      "accounting": {
-        "simple": {
-          "value": "everything"
-        }
-      },
       "logistics": {
         "delivery": {
           "direct": [],
@@ -78,6 +73,11 @@
               "deliveryNumber": "1000173"
             }
           ]
+        }
+      },
+      "accounting": {
+        "simple": {
+          "value": "everything"
         }
       }
     }
@@ -115,7 +115,10 @@
       "logistics": {
         "delivery": {
           "updateDelivery": {
-            "deliveryNumber": "1000173"
+            "deliveryNumber": "2"
+          },
+          "update2": {
+            "deliveryNumber": "2"
           }
         },
         "updateForwarder": {

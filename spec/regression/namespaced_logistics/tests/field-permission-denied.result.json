@@ -330,10 +330,24 @@
         ]
       },
       {
+        "message": "SkipError: Skipped because other mutations reported errors",
+        "locations": [
+          {
+            "line": 121,
+            "column": 13
+          }
+        ],
+        "path": [
+          "logistics",
+          "delivery",
+          "update2"
+        ]
+      },
+      {
         "message": "AuthorizationError: Not authorized to update Forwarder objects",
         "locations": [
           {
-            "line": 120,
+            "line": 125,
             "column": 9
           }
         ],
@@ -346,7 +360,8 @@
     "data": {
       "logistics": {
         "delivery": {
-          "updateDelivery": null
+          "updateDelivery": null,
+          "update2": null
         },
         "updateForwarder": null
       }
@@ -358,7 +373,7 @@
         "message": "AuthorizationError: Not authorized to delete Forwarder objects",
         "locations": [
           {
-            "line": 128,
+            "line": 133,
             "column": 9
           }
         ],
