@@ -225,7 +225,7 @@ export class LiteralQueryNode extends QueryNode {
 
     public describe() {
         const json = this.value === undefined ? 'undefined' : JSON.stringify(this.value);
-        return `literal ${json.magenta}`;
+        return `literal ${json.cyan}`;
     }
 }
 

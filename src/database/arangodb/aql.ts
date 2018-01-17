@@ -150,7 +150,7 @@ export class AQLVariable extends AQLFragment {
     }
 
     toColoredStringWithContext(context: AQLCodeBuildingContext): string {
-        return this.toStringWithContext(context).blue;
+        return this.toStringWithContext(context).magenta;
     }
 }
 
@@ -171,7 +171,7 @@ export class AQLBoundValue extends AQLFragment {
     }
 
     toColoredStringWithContext(): string {
-        return this.toString().magenta;
+        return this.toString().cyan;
     }
 
     getCodeWithContext(context: AQLCodeBuildingContext): string {
