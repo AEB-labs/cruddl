@@ -2,7 +2,7 @@ import { getPermissionDescriptor } from '../permission-descriptors-in-schema';
 import { AccessOperation, AuthContext } from '../auth-basics';
 import {
     BinaryOperationQueryNode, BinaryOperator, ConstIntQueryNode, CountQueryNode, DeleteEntitiesQueryNode,
-    EntitiesQueryNode, FieldQueryNode,
+    EntitiesQueryNode, FieldQueryNode, MergeObjectsQueryNode, ObjectQueryNode,
     PreExecQueryParms, QueryNode, RuntimeErrorQueryNode, TransformListQueryNode, UnaryOperationQueryNode, UnaryOperator,
     UpdateEntitiesQueryNode, VariableQueryNode, WithPreExecutionQueryNode
 } from '../../query/definition';
@@ -40,27 +40,47 @@ function transformUpdateOrDeleteEntitiesQueryNode(node: UpdateEntitiesQueryNode|
         node = new constructor({...node, filterNode: new BinaryOperationQueryNode(node.filterNode, BinaryOperator.AND, readCondition) });
     }
 
-    // TODO only add a check if the object is readable, but not writeable (only needed if read and write access differ)
+    function getNoneMatchesQueryNode(condition: QueryNode) {
+        const entitiesWithWriteRestrictions = new TransformListQueryNode({
+            itemVariable: node.currentEntityVariable,
+            listNode: new EntitiesQueryNode(node.objectType),
+            filterNode: new BinaryOperationQueryNode(node.filterNode, BinaryOperator.AND, new UnaryOperationQueryNode(condition, UnaryOperator.NOT))
+        });
+        return new BinaryOperationQueryNode(new CountQueryNode(entitiesWithWriteRestrictions), BinaryOperator.EQUAL, ConstIntQueryNode.ZERO);
+    }
+
+    // TODO only add a check if the object is readable, but not writable (only needed if read and write access differ)
     // a check using QueryNode.equals does not work because both use LiteralQueryNodes for the roles, and
-    //  LiteralQueryNodes use referential equality instead of structural equality
+    // LiteralQueryNodes use referential equality instead of structural equality
     // in the general case, structural equality for literal values may not be the best thing for filters
 
     // see if any entities matched by the filter are write-restricted
-    const filterResultVar = new VariableQueryNode('canWrite');
     const rawWriteCondition = permissionDescriptor.getAccessCondition(authContext, AccessOperation.WRITE, itemVar);
-    const entitiesWithWriteRestrictions = new TransformListQueryNode({
-        itemVariable: node.currentEntityVariable,
-        listNode: new EntitiesQueryNode(node.objectType),
-        filterNode: new BinaryOperationQueryNode(node.filterNode, BinaryOperator.AND, new UnaryOperationQueryNode(rawWriteCondition, UnaryOperator.NOT))
-    });
-    const canWrite = new BinaryOperationQueryNode(new CountQueryNode(entitiesWithWriteRestrictions), BinaryOperator.EQUAL, ConstIntQueryNode.ZERO);
+    const canWrite = getNoneMatchesQueryNode(rawWriteCondition);
+
+    // TODO add better error messages, maybe a static message from the PermissionDescriptor?
+
+    let preExecQueries: PreExecQueryParms[] = [
+        new PreExecQueryParms({
+            query: canWrite,
+            resultValidator: new ErrorIfNotTruthyResultValidator(`Not authorized to ${actionDescription} this ${node.objectType.name}`, 'AuthorizationError')
+        })
+    ];
+
+    if (node instanceof UpdateEntitiesQueryNode) {
+        // this is the most general approach, but also inefficient because it constructs the whole "post-update" objects just to check one field which may not even have been modified
+        // TODO add a fast-lane way for PermissionDescriptors to statically check updated values? Or at least to specify that they don't need the merge?
+        const postUpdateNode = new MergeObjectsQueryNode([ itemVar, new ObjectQueryNode(node.updates) ]);
+        const writeConditionPostUpdate = permissionDescriptor.getAccessCondition(authContext, AccessOperation.WRITE, postUpdateNode);
+        const canWriteTheseValues = getNoneMatchesQueryNode(writeConditionPostUpdate);
+        preExecQueries.push(new PreExecQueryParms({
+            query: canWriteTheseValues,
+            resultValidator: new ErrorIfNotTruthyResultValidator(`Not authorized to ${actionDescription} this ${node.objectType.name} with these values`, 'AuthorizationError')
+        }));
+    }
 
     return new WithPreExecutionQueryNode({
         resultNode: node,
-        preExecQueries: [ new PreExecQueryParms({
-            query: canWrite,
-            resultVariable: filterResultVar,
-            resultValidator: new ErrorIfNotTruthyResultValidator(`Not authorized to ${actionDescription} this ${node.objectType.name}`, 'AuthorizationError')
-        })]
+        preExecQueries
     });
 }

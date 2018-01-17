@@ -18,13 +18,94 @@
       }
     }
   },
+  "updateToAccessGroupWithoutReadPermissions": {
+    "errors": [
+      {
+        "message": "AuthorizationError: Not authorized to update this File with these values",
+        "locations": [
+          {
+            "line": 15,
+            "column": 5
+          }
+        ],
+        "path": [
+          "updateFile"
+        ]
+      }
+    ],
+    "data": {
+      "updateFile": null
+    }
+  },
+  "updateToAccessGroupWithoutWritePermissions": {
+    "errors": [
+      {
+        "message": "AuthorizationError: Not authorized to update this File with these values",
+        "locations": [
+          {
+            "line": 22,
+            "column": 5
+          }
+        ],
+        "path": [
+          "updateFile"
+        ]
+      }
+    ],
+    "data": {
+      "updateFile": null
+    }
+  },
+  "createWithAccessGroupWithWritePermissions": {
+    "data": {
+      "createFile": {
+        "name": "test"
+      }
+    }
+  },
+  "createWithAccessGroupWithoutWritePermissions": {
+    "errors": [
+      {
+        "message": "AuthorizationError: Not authorized to create File objects with these values",
+        "locations": [
+          {
+            "line": 36,
+            "column": 5
+          }
+        ],
+        "path": [
+          "createFile"
+        ]
+      }
+    ],
+    "data": null
+  },
   "updateWriteRestricted": {
     "errors": [
       {
         "message": "AuthorizationError: Not authorized to update this File",
         "locations": [
           {
-            "line": 14,
+            "line": 42,
+            "column": 5
+          }
+        ],
+        "path": [
+          "updateFile"
+        ]
+      }
+    ],
+    "data": {
+      "updateFile": null
+    }
+  },
+  "updateWriteRestrictedToAccessGroupWithoutWritePermissions": {
+    "errors": [
+      {
+        "message": "AuthorizationError: Not authorized to update this File",
+        "locations": [
+          {
+            "line": 49,
             "column": 5
           }
         ],
@@ -43,7 +124,26 @@
         "message": "NotFoundError: File with id @{ids/File/1} could not be found.",
         "locations": [
           {
-            "line": 20,
+            "line": 55,
+            "column": 5
+          }
+        ],
+        "path": [
+          "updateFile"
+        ]
+      }
+    ],
+    "data": {
+      "updateFile": null
+    }
+  },
+  "updateReadRestrictedToAccessGroupWithoutWritePermissions": {
+    "errors": [
+      {
+        "message": "NotFoundError: File with id @{ids/File/1} could not be found.",
+        "locations": [
+          {
+            "line": 62,
             "column": 5
           }
         ],
@@ -69,7 +169,7 @@
         "message": "AuthorizationError: Not authorized to delete this File",
         "locations": [
           {
-            "line": 32,
+            "line": 74,
             "column": 5
           }
         ],

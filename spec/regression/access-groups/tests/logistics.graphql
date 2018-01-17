@@ -1,5 +1,26 @@
-{
+query q {
     allFiles(orderBy: name_ASC) {
+        name
+    }
+}
+
+# should pass
+mutation updateToAccessGroupWithPermissions {
+    updateFile(input: {id: "@{ids/File/3}", accessGroup: "logistics"}) {
+        name
+    }
+}
+
+# should fail
+mutation createWithAccessGroupWithoutPermissions {
+    createFile(input: { name: "test", accessGroup: "accounting" }) {
+        name
+    }
+}
+
+# should pass
+mutation createWithAccessGroupWithPermissions {
+    createFile(input: { name: "test", accessGroup: "logistics" }) {
         name
     }
 }

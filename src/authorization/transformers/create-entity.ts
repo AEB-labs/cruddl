@@ -1,7 +1,10 @@
 import { getPermissionDescriptor } from '../permission-descriptors-in-schema';
 import { AccessOperation, AuthContext } from '../auth-basics';
-import { CreateEntityQueryNode, QueryNode, RuntimeErrorQueryNode } from '../../query/definition';
+import {
+    CreateEntityQueryNode, PreExecQueryParms, QueryNode, RuntimeErrorQueryNode, WithPreExecutionQueryNode
+} from '../../query/definition';
 import { PermissionResult } from '../permission-descriptors';
+import { ErrorIfNotTruthyResultValidator } from '../../query/query-result-validators';
 
 export function transformCreateEntityQueryNode(node: CreateEntityQueryNode, authContext: AuthContext): QueryNode {
     const permissionDescriptor = getPermissionDescriptor(node.objectType);
@@ -13,7 +16,13 @@ export function transformCreateEntityQueryNode(node: CreateEntityQueryNode, auth
         case PermissionResult.DENIED:
             return new RuntimeErrorQueryNode(`Not authorized to create ${node.objectType.name} objects`);
         default:
-            // TODO check the value of accessGroup
-            return node;
+            const condition = permissionDescriptor.getAccessCondition(authContext, AccessOperation.WRITE, node.objectNode);
+            return new WithPreExecutionQueryNode({
+                resultNode: node,
+                preExecQueries: [ new PreExecQueryParms({
+                    query: condition,
+                    resultValidator: new ErrorIfNotTruthyResultValidator(`Not authorized to create ${node.objectType.name} objects with these values`, 'AuthorizationError')
+                })]
+            });
     }
 }

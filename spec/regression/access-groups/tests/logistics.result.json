@@ -1,12 +1,45 @@
 {
-  "data": {
-    "allFiles": [
-      {
-        "name": "logistics"
-      },
-      {
+  "q": {
+    "data": {
+      "allFiles": [
+        {
+          "name": "logistics"
+        },
+        {
+          "name": "public"
+        }
+      ]
+    }
+  },
+  "updateToAccessGroupWithPermissions": {
+    "data": {
+      "updateFile": {
         "name": "public"
       }
-    ]
+    }
+  },
+  "createWithAccessGroupWithoutPermissions": {
+    "errors": [
+      {
+        "message": "AuthorizationError: Not authorized to create File objects with these values",
+        "locations": [
+          {
+            "line": 16,
+            "column": 5
+          }
+        ],
+        "path": [
+          "createFile"
+        ]
+      }
+    ],
+    "data": null
+  },
+  "createWithAccessGroupWithPermissions": {
+    "data": {
+      "createFile": {
+        "name": "test"
+      }
+    }
   }
 }
