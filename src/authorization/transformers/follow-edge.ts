@@ -18,7 +18,7 @@ export function transformFollowEdgeQueryNode(node: FollowEdgeQueryNode, authCont
         case PermissionResult.DENIED:
             return new RuntimeErrorQueryNode(`Not authorized to read ${sourceType.name}.${sourceField.name}`);
         case PermissionResult.CONDITIONAL:
-            throw new Error(`Permission profiles with accessGroup restrictions are currently not supported on fields, but used in ${sourceType.name}.${sourceField.name}`);
+            throw new Error(`Conditional permission profiles are currently not supported on fields, but used in ${sourceType.name}.${sourceField.name}`);
     }
 
     const targetType = node.edgeType.getTypeOfSide(invertRelationFieldEdgeSide(node.sourceFieldSide));
@@ -28,15 +28,10 @@ export function transformFollowEdgeQueryNode(node: FollowEdgeQueryNode, authCont
         case PermissionResult.GRANTED:
             return node;
         case PermissionResult.DENIED:
-            return new RuntimeErrorQueryNode(`Not authorized to read ${targetType.name} objects by following ${sourceType.name}.${sourceField.name}`);
+            return new RuntimeErrorQueryNode(`Not authorized to read ${targetType.name} objects (in ${sourceType.name}.${sourceField.name})`);
         default:
-            const accessGroupField = targetType.getFields()['accessGroup'];
-            if (!accessGroupField) {
-                throw new Error(`Root entity ${targetType.name} has an accessGroup-based permission profile, but no accessGroup field`);
-            }
             const itemVar = new VariableQueryNode('item');
-            const accessGroupNode = new FieldQueryNode(itemVar, accessGroupField, targetType);
-            const condition = entityPermissionDescriptor.getAccessCondition(authContext, AccessOperation.READ, accessGroupNode);
+            const condition = entityPermissionDescriptor.getAccessCondition(authContext, AccessOperation.READ, itemVar);
             return new TransformListQueryNode({
                 listNode: node,
                 filterNode: condition,

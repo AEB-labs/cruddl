@@ -19,7 +19,7 @@ import {AddQueryMetaTypeTransformer} from "./post-merge-ast-transformation-modul
 import {SchemaPartConfig} from "../../config/schema-config";
 import {AddNamespacesToTypesTransformer} from "./pre-merge-ast-transformation-modules/add-namespaces-to-types-transformer";
 import {PermissionProfileMap} from '../../authorization/permission-profile';
-import {AddPermissionDescriptorsTransformer} from './post-merge-ast-transformation-modules/add-permission-descriptors';
+import {AddPermissionDescriptorsTransformer} from './schema-transformation-modules/add-permission-descriptors';
 import {MoveUpFieldIndicesTransformer} from "./pre-merge-ast-transformation-modules/move-up-field-indices-transformer";
 import {ImplementScalarTypesTransformer} from './schema-transformation-modules/implement-scalar-types';
 
@@ -58,8 +58,6 @@ const postMergePipeline: ASTTransformer[] = [
     // build mutation stuff
     new AddRootMutationTypeTransformer(),
 
-    new AddPermissionDescriptorsTransformer(),
-
     // compose schema
     new AddRootSchemaTransformer()
 
@@ -67,6 +65,7 @@ const postMergePipeline: ASTTransformer[] = [
 
 const schemaPipeline: SchemaTransformer[] = [
     new ImplementScalarTypesTransformer(),
+    new AddPermissionDescriptorsTransformer(),
 ];
 
 export function executePostMergeTransformationPipeline(ast: DocumentNode, context: ASTTransformationContext) {
@@ -85,8 +84,8 @@ export function executePreMergeTransformationPipeline(schemaParts: SchemaPartCon
     ) ;
 }
 
-export function executeSchemaTransformationPipeline(schema: GraphQLSchema): GraphQLSchema {
-    return schemaPipeline.reduce((s, transformer) => transformer.transform(s), schema);
+export function executeSchemaTransformationPipeline(schema: GraphQLSchema, context: ASTTransformationContext): GraphQLSchema {
+    return schemaPipeline.reduce((s, transformer) => transformer.transform(s, context), schema);
 }
 
 export interface ASTTransformationContext {
@@ -100,5 +99,5 @@ export interface ASTTransformer {
 }
 
 export interface SchemaTransformer {
-    transform(schema: GraphQLSchema): GraphQLSchema;
+    transform(schema: GraphQLSchema, context: ASTTransformationContext): GraphQLSchema;
 }

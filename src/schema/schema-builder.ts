@@ -55,10 +55,10 @@ export function createSchema(inputSchemaConfig: SchemaConfig, context?: SchemaCo
             logger.info('Schema successfully created.')
         }
 
-        executePostMergeTransformationPipeline(mergedSchema, {...rootContext});
+        executePostMergeTransformationPipeline(mergedSchema, rootContext);
         logger.debug(print(mergedSchema));
         const graphQLSchema = buildASTSchema(mergedSchema);
-        return executeSchemaTransformationPipeline(graphQLSchema);
+        return executeSchemaTransformationPipeline(graphQLSchema, rootContext);
     } finally {
         globalContext.unregisterContext();
     }

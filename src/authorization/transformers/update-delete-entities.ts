@@ -29,19 +29,13 @@ function transformUpdateOrDeleteEntitiesQueryNode(node: UpdateEntitiesQueryNode|
     }
 
     // conditional access
-
-    const accessGroupField = node.objectType.getFields()['accessGroup'];
-    if (!accessGroupField) {
-        throw new Error(`Root entity ${node.objectType.name} has an accessGroup-based permission profile, but no accessGroup field`);
-    }
     const itemVar = node.currentEntityVariable;
-    const accessGroupNode = new FieldQueryNode(itemVar, accessGroupField, node.objectType);
 
     // If we can't write unconditionally, we might still be able to read unconditionally and wouldn't need a filter
     const readAccess = permissionDescriptor.canAccess(authContext, AccessOperation.READ);
     let readCondition: QueryNode|undefined = undefined;
     if (readAccess != PermissionResult.GRANTED) {
-        readCondition = permissionDescriptor.getAccessCondition(authContext, AccessOperation.READ, accessGroupNode);
+        readCondition = permissionDescriptor.getAccessCondition(authContext, AccessOperation.READ, itemVar);
         const constructor = node.constructor as {new(...a: any[]): UpdateEntitiesQueryNode|DeleteEntitiesQueryNode};
         node = new constructor({...node, filterNode: new BinaryOperationQueryNode(node.filterNode, BinaryOperator.AND, readCondition) });
     }
@@ -53,7 +47,7 @@ function transformUpdateOrDeleteEntitiesQueryNode(node: UpdateEntitiesQueryNode|
 
     // see if any entities matched by the filter are write-restricted
     const filterResultVar = new VariableQueryNode('canWrite');
-    const rawWriteCondition = permissionDescriptor.getAccessCondition(authContext, AccessOperation.WRITE, accessGroupNode);
+    const rawWriteCondition = permissionDescriptor.getAccessCondition(authContext, AccessOperation.WRITE, itemVar);
     const entitiesWithWriteRestrictions = new TransformListQueryNode({
         itemVariable: node.currentEntityVariable,
         listNode: new EntitiesQueryNode(node.objectType),
@@ -61,13 +55,12 @@ function transformUpdateOrDeleteEntitiesQueryNode(node: UpdateEntitiesQueryNode|
     });
     const canWrite = new BinaryOperationQueryNode(new CountQueryNode(entitiesWithWriteRestrictions), BinaryOperator.EQUAL, ConstIntQueryNode.ZERO);
 
-    // It would be good to include the accessGroup value in the error message, but this is not possible with the current ErrorIfNotTruthyResultValidator
     return new WithPreExecutionQueryNode({
         resultNode: node,
         preExecQueries: [ new PreExecQueryParms({
             query: canWrite,
             resultVariable: filterResultVar,
-            resultValidator: new ErrorIfNotTruthyResultValidator(`Not authorized to ${actionDescription} ${node.objectType.name} objects with this accessGroup`, 'AuthorizationError')
+            resultValidator: new ErrorIfNotTruthyResultValidator(`Not authorized to ${actionDescription} this ${node.objectType.name}`, 'AuthorizationError')
         })]
     });
 }

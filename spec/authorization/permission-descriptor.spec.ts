@@ -4,9 +4,12 @@ import {
 import { PermissionProfile } from '../../src/authorization/permission-profile';
 import { AccessOperation, AuthContext } from '../../src/authorization/auth-basics';
 import {
-    BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, LiteralQueryNode, QueryNode, VariableQueryNode
+    BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, FieldQueryNode, LiteralQueryNode, QueryNode,
+    VariableQueryNode
 } from '../../src/query/definition';
 import any = jasmine.any;
+import { GraphQLObjectType, GraphQLString } from 'graphql';
+import { ACCESS_GROUP_FIELD } from '../../src/schema/schema-defaults';
 
 describe('PermissionDescriptor', () => {
     describe('canAccess', () => {
@@ -44,7 +47,8 @@ describe('ProfileBasedPermissionDescriptor', () => {
             restrictToAccessGroups: [ 'groupA', 'groupB' ]
         }]
     });
-    const descriptor = new ProfileBasedPermissionDescriptor(profile);
+    const objectType = new GraphQLObjectType({ name: 'Test', fields: { [ACCESS_GROUP_FIELD]: { type: GraphQLString }}});
+    const descriptor = new ProfileBasedPermissionDescriptor(profile, objectType);
 
     it('grants access if role matches', () => {
         expect(descriptor.canAccess({ authRoles: [ 'theRole', 'other' ]}, AccessOperation.READ)).toBe(PermissionResult.GRANTED);
@@ -60,12 +64,14 @@ describe('ProfileBasedPermissionDescriptor', () => {
 
     it('produces conditional QueryNode if only accessGroup-based permissions match', () => {
         expect(descriptor.canAccess({ authRoles: [ 'restricted' ]}, AccessOperation.READ)).toBe(PermissionResult.CONDITIONAL);
-        const accessGroupNode = new VariableQueryNode('accessGroup');
-        const condition = descriptor.getAccessCondition({ authRoles: [ 'restricted' ]}, AccessOperation.READ, accessGroupNode);
+        const instanceNode = new VariableQueryNode('instance');
+        const condition = descriptor.getAccessCondition({ authRoles: [ 'restricted' ]}, AccessOperation.READ, instanceNode) as BinaryOperationQueryNode;
         expect(condition).toEqual(any(BinaryOperationQueryNode));
-        expect((condition as BinaryOperationQueryNode).lhs).toBe(accessGroupNode);
-        expect((condition as BinaryOperationQueryNode).operator).toBe(BinaryOperator.IN);
-        expect((condition as BinaryOperationQueryNode).rhs).toEqual(any(LiteralQueryNode));
-        expect(((condition as BinaryOperationQueryNode).rhs as LiteralQueryNode).value).toEqual([ 'groupA', 'groupB']);
+        expect((condition as BinaryOperationQueryNode).lhs).toEqual(any(FieldQueryNode));
+        const fieldNode = (condition as BinaryOperationQueryNode).lhs as FieldQueryNode;
+        expect(fieldNode.objectNode).toBe(instanceNode);
+        expect(condition.operator).toBe(BinaryOperator.IN);
+        expect(condition.rhs).toEqual(any(LiteralQueryNode));
+        expect((condition.rhs as LiteralQueryNode).value).toEqual([ 'groupA', 'groupB']);
     });
 });

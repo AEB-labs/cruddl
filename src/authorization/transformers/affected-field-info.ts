@@ -14,7 +14,7 @@ export function transformAffectedFieldInfoQueryNode(node: AffectedFieldInfoQuery
         case PermissionResult.DENIED:
             return new RuntimeErrorQueryNode(`Not authorized to set ${node.objectType.name}.${node.field.name}`);
         case PermissionResult.CONDITIONAL:
-            throw new Error(`Permission profiles with accessGroup restrictions are currently not supported on fields, but used in ${node.objectType.name}.${node.field.name}`);
+            throw new Error(`Conditional permission profiles are currently not supported on fields, but used in ${node.objectType.name}.${node.field.name}`);
     }
 
     // check if this is setting the accessGroup

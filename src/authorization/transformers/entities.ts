@@ -14,13 +14,8 @@ export function transformEntitiesQueryNode(node: EntitiesQueryNode, authContext:
         case PermissionResult.DENIED:
             return new RuntimeErrorQueryNode(`Not authorized to read ${node.objectType.name} objects`);
         default:
-            const accessGroupField = node.objectType.getFields()['accessGroup'];
-            if (!accessGroupField) {
-                throw new Error(`Root entity ${node.objectType.name} has an accessGroup-based permission profile, but no accessGroup field`);
-            }
             const itemVar = new VariableQueryNode('item');
-            const accessGroupNode = new FieldQueryNode(itemVar, accessGroupField, node.objectType);
-            const condition = permissionDescriptor.getAccessCondition(authContext, AccessOperation.READ, accessGroupNode);
+            const condition = permissionDescriptor.getAccessCondition(authContext, AccessOperation.READ, itemVar);
             return new TransformListQueryNode({
                 listNode: node,
                 filterNode: condition,

@@ -12,6 +12,6 @@ export function transformFieldQueryNode(node: FieldQueryNode, authContext: AuthC
         case PermissionResult.DENIED:
             return new RuntimeErrorQueryNode(`Not authorized to read ${node.objectType.name}.${node.field.name}`);
         default:
-            throw new Error(`Permission profiles with accessGroup restrictions are currently not supported on fields, but used in ${node.objectType.name}.${node.field.name}`);
+            throw new Error(`Conditional permission profiles are currently not supported on fields, but used in ${node.objectType.name}.${node.field.name}`);
     }
 }

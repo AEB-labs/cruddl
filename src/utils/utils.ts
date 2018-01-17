@@ -1,5 +1,6 @@
 export type PlainObject = {[key: string]: AnyValue};
 export type AnyValue = {}|undefined|null;
+export type Constructor<T> = { new(...args: any[]): T };
 
 export function flatMap<TOut, TIn>(arr: TIn[], f: (t: TIn) => TOut[]): TOut[] {
     return arr.reduce((ys: any, x: any) => {
@@ -141,6 +142,10 @@ export function objectValues<T>(obj: { [name: string]: T }): T[] {
     return Object.keys(obj).map(i => obj[i]);
 }
 
+export function filterType<T>(arr: AnyValue[], type: Constructor<T>): T[] {
+    return arr.filter(obj => obj instanceof type) as T[];
+}
+
 export function objectEntries<T>(obj: { [name: string]: T }): [string, T][] {
     return Object.keys(obj).map((k): [string,T] => [k, obj[k]]);
 }
@@ -173,6 +178,10 @@ export function mapNullable<TIn, TOut>(value: TIn|undefined, fn: (vlaue: TIn) =>
 
 export function sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+export function pair<S, T>(a: S, b: T): [ S, T ] {
+    return [a, b];
 }
 
 /**

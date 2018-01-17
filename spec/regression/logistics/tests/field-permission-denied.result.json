@@ -22,7 +22,7 @@
         ]
       },
       {
-        "message": "Not authorized to read Forwarder objects by following Delivery.forwarder",
+        "message": "Not authorized to read Forwarder objects (in Delivery.forwarder)",
         "locations": [
           {
             "line": 11,
@@ -181,7 +181,7 @@
         ]
       },
       {
-        "message": "Not authorized to read Forwarder objects by following Delivery.forwarder",
+        "message": "Not authorized to read Forwarder objects (in Delivery.forwarder)",
         "locations": [
           {
             "line": 63,

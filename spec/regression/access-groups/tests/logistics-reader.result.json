@@ -21,7 +21,7 @@
   "updateWriteRestricted": {
     "errors": [
       {
-        "message": "AuthorizationError: Not authorized to update File objects with this accessGroup",
+        "message": "AuthorizationError: Not authorized to update this File",
         "locations": [
           {
             "line": 14,
@@ -66,7 +66,7 @@
   "deleteWriteRestricted": {
     "errors": [
       {
-        "message": "AuthorizationError: Not authorized to delete File objects with this accessGroup",
+        "message": "AuthorizationError: Not authorized to delete this File",
         "locations": [
           {
             "line": 32,

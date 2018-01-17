@@ -1,9 +1,6 @@
 import { getPermissionDescriptor } from '../permission-descriptors-in-schema';
 import { AccessOperation, AuthContext } from '../auth-basics';
-import {
-    BinaryOperationQueryNode, BinaryOperator, CreateEntityQueryNode, FieldQueryNode, QueryNode, RuntimeErrorQueryNode,
-    UpdateEntitiesQueryNode
-} from '../../query/definition';
+import { CreateEntityQueryNode, QueryNode, RuntimeErrorQueryNode } from '../../query/definition';
 import { PermissionResult } from '../permission-descriptors';
 
 export function transformCreateEntityQueryNode(node: CreateEntityQueryNode, authContext: AuthContext): QueryNode {
