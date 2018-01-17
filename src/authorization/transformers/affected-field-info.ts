@@ -1,5 +1,5 @@
 import { getPermissionDescriptor } from '../permission-descriptors-in-schema';
-import { AccessOperation, AuthContext } from '../auth-basics';
+import { AccessOperation, AuthContext, AUTHORIZATION_ERROR_NAME } from '../auth-basics';
 import {
     AffectedFieldInfoQueryNode, FieldQueryNode, QueryNode, RuntimeErrorQueryNode, SetFieldQueryNode
 } from '../../query/definition';
@@ -12,7 +12,7 @@ export function transformAffectedFieldInfoQueryNode(node: AffectedFieldInfoQuery
     const access = permissionDescriptor.canAccess(authContext, AccessOperation.WRITE);
     switch (access) {
         case PermissionResult.DENIED:
-            return new RuntimeErrorQueryNode(`Not authorized to set ${node.objectType.name}.${node.field.name}`);
+            return new RuntimeErrorQueryNode(`${AUTHORIZATION_ERROR_NAME}: Not authorized to set ${node.objectType.name}.${node.field.name}`);
         case PermissionResult.CONDITIONAL:
             throw new Error(`Conditional permission profiles are currently not supported on fields, but used in ${node.objectType.name}.${node.field.name}`);
     }

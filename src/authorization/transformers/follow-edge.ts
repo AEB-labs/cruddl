@@ -1,5 +1,5 @@
 import { getPermissionDescriptor } from '../permission-descriptors-in-schema';
-import { AccessOperation, AuthContext } from '../auth-basics';
+import { AccessOperation, AuthContext, AUTHORIZATION_ERROR_NAME } from '../auth-basics';
 import {
     FieldQueryNode, FollowEdgeQueryNode, QueryNode, RuntimeErrorQueryNode, TransformListQueryNode, VariableQueryNode
 } from '../../query/definition';
@@ -28,7 +28,7 @@ export function transformFollowEdgeQueryNode(node: FollowEdgeQueryNode, authCont
         case PermissionResult.GRANTED:
             return node;
         case PermissionResult.DENIED:
-            return new RuntimeErrorQueryNode(`Not authorized to read ${targetType.name} objects (in ${sourceType.name}.${sourceField.name})`);
+            return new RuntimeErrorQueryNode(`${AUTHORIZATION_ERROR_NAME}: Not authorized to read ${targetType.name} objects (in ${sourceType.name}.${sourceField.name})`);
         default:
             const itemVar = new VariableQueryNode('item');
             const condition = entityPermissionDescriptor.getAccessCondition(authContext, AccessOperation.READ, itemVar);

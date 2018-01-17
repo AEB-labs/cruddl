@@ -9,7 +9,7 @@
   "select": {
     "errors": [
       {
-        "message": "Not authorized to read Delivery.totalValue",
+        "message": "AuthorizationError: Not authorized to read Delivery.totalValue",
         "locations": [
           {
             "line": 10,
@@ -22,7 +22,7 @@
         ]
       },
       {
-        "message": "Not authorized to read Forwarder objects (in Delivery.forwarder)",
+        "message": "AuthorizationError: Not authorized to read Forwarder objects (in Delivery.forwarder)",
         "locations": [
           {
             "line": 11,
@@ -35,7 +35,7 @@
         ]
       },
       {
-        "message": "Not authorized to read Delivery.totalValue",
+        "message": "AuthorizationError: Not authorized to read Delivery.totalValue",
         "locations": [
           {
             "line": 18,
@@ -49,7 +49,7 @@
         ]
       },
       {
-        "message": "Not authorized to read Delivery.totalValue",
+        "message": "AuthorizationError: Not authorized to read Delivery.totalValue",
         "locations": [
           {
             "line": 24,
@@ -63,7 +63,7 @@
         ]
       },
       {
-        "message": "Not authorized to read Country.totalInvestment",
+        "message": "AuthorizationError: Not authorized to read Country.totalInvestment",
         "locations": [
           {
             "line": 30,
@@ -103,7 +103,7 @@
   "selectMeta": {
     "errors": [
       {
-        "message": "Not authorized to read Forwarder objects",
+        "message": "AuthorizationError: Not authorized to read Forwarder objects",
         "locations": [
           {
             "line": 37,
@@ -115,7 +115,7 @@
         ]
       },
       {
-        "message": "Not authorized to read Forwarder objects",
+        "message": "AuthorizationError: Not authorized to read Forwarder objects",
         "locations": [
           {
             "line": 42,
@@ -133,7 +133,7 @@
   "filter": {
     "errors": [
       {
-        "message": "Not authorized to read Delivery.totalValue",
+        "message": "AuthorizationError: Not authorized to read Delivery.totalValue",
         "locations": [
           {
             "line": 47,
@@ -145,7 +145,7 @@
         ]
       },
       {
-        "message": "Not authorized to read SecretKey.key",
+        "message": "AuthorizationError: Not authorized to read SecretKey.key",
         "locations": [
           {
             "line": 51,
@@ -157,7 +157,7 @@
         ]
       },
       {
-        "message": "Not authorized to read Delivery.totalValue",
+        "message": "AuthorizationError: Not authorized to read Delivery.totalValue",
         "locations": [
           {
             "line": 55,
@@ -169,7 +169,7 @@
         ]
       },
       {
-        "message": "Not authorized to read Delivery.totalValue, Not authorized to read Delivery.totalValue",
+        "message": "AuthorizationError: Not authorized to read Delivery.totalValue, AuthorizationError: Not authorized to read Delivery.totalValue",
         "locations": [
           {
             "line": 59,
@@ -181,7 +181,7 @@
         ]
       },
       {
-        "message": "Not authorized to read Forwarder objects (in Delivery.forwarder)",
+        "message": "AuthorizationError: Not authorized to read Forwarder objects (in Delivery.forwarder)",
         "locations": [
           {
             "line": 63,
@@ -204,7 +204,7 @@
   "sort": {
     "errors": [
       {
-        "message": "Not authorized to read Delivery.totalValue",
+        "message": "AuthorizationError: Not authorized to read Delivery.totalValue",
         "locations": [
           {
             "line": 69,
@@ -216,7 +216,7 @@
         ]
       },
       {
-        "message": "Not authorized to read Delivery.totalValue",
+        "message": "AuthorizationError: Not authorized to read Delivery.totalValue",
         "locations": [
           {
             "line": 73,
@@ -236,7 +236,7 @@
   "create": {
     "errors": [
       {
-        "message": "Not authorized to set Delivery.totalValue",
+        "message": "AuthorizationError: Not authorized to set Delivery.totalValue",
         "locations": [
           {
             "line": 79,
@@ -253,7 +253,7 @@
   "update": {
     "errors": [
       {
-        "message": "Not authorized to set Delivery.totalValue",
+        "message": "AuthorizationError: Not authorized to set Delivery.totalValue",
         "locations": [
           {
             "line": 89,
@@ -265,7 +265,7 @@
         ]
       },
       {
-        "message": "Not authorized to update Forwarder objects",
+        "message": "AuthorizationError: Not authorized to update Forwarder objects",
         "locations": [
           {
             "line": 93,
@@ -285,7 +285,7 @@
   "delete": {
     "errors": [
       {
-        "message": "Not authorized to delete Forwarder objects",
+        "message": "AuthorizationError: Not authorized to delete Forwarder objects",
         "locations": [
           {
             "line": 99,

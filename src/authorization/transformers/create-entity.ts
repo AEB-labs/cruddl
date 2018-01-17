@@ -1,5 +1,5 @@
 import { getPermissionDescriptor } from '../permission-descriptors-in-schema';
-import { AccessOperation, AuthContext } from '../auth-basics';
+import { AccessOperation, AuthContext, AUTHORIZATION_ERROR_NAME } from '../auth-basics';
 import {
     CreateEntityQueryNode, PreExecQueryParms, QueryNode, RuntimeErrorQueryNode, WithPreExecutionQueryNode
 } from '../../query/definition';
@@ -14,7 +14,7 @@ export function transformCreateEntityQueryNode(node: CreateEntityQueryNode, auth
         case PermissionResult.GRANTED:
             return node;
         case PermissionResult.DENIED:
-            return new RuntimeErrorQueryNode(`Not authorized to create ${node.objectType.name} objects`);
+            return new RuntimeErrorQueryNode(`${AUTHORIZATION_ERROR_NAME}: Not authorized to create ${node.objectType.name} objects`);
         default:
             const condition = permissionDescriptor.getAccessCondition(authContext, AccessOperation.WRITE, node.objectNode);
             const explanation = permissionDescriptor.getExplanationForCondition(authContext, AccessOperation.WRITE, ConditionExplanationContext.SET);
@@ -22,7 +22,7 @@ export function transformCreateEntityQueryNode(node: CreateEntityQueryNode, auth
                 resultNode: node,
                 preExecQueries: [ new PreExecQueryParms({
                     query: condition,
-                    resultValidator: new ErrorIfNotTruthyResultValidator(`Not authorized to ${explanation}`, 'AuthorizationError')
+                    resultValidator: new ErrorIfNotTruthyResultValidator(`Not authorized to ${explanation}`, AUTHORIZATION_ERROR_NAME)
                 })]
             });
     }

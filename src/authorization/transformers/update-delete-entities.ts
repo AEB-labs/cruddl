@@ -1,5 +1,5 @@
 import { getPermissionDescriptor } from '../permission-descriptors-in-schema';
-import { AccessOperation, AuthContext } from '../auth-basics';
+import { AccessOperation, AuthContext, AUTHORIZATION_ERROR_NAME } from '../auth-basics';
 import {
     BinaryOperationQueryNode, BinaryOperator, ConstIntQueryNode, CountQueryNode, DeleteEntitiesQueryNode,
     EntitiesQueryNode, FieldQueryNode, MergeObjectsQueryNode, ObjectQueryNode,
@@ -23,7 +23,7 @@ function transformUpdateOrDeleteEntitiesQueryNode(node: UpdateEntitiesQueryNode|
 
     switch (access) {
         case PermissionResult.DENIED:
-            return new RuntimeErrorQueryNode(`Not authorized to ${actionDescription} ${node.objectType.name} objects`);
+            return new RuntimeErrorQueryNode(`${AUTHORIZATION_ERROR_NAME}: Not authorized to ${actionDescription} ${node.objectType.name} objects`);
         case PermissionResult.GRANTED:
             return node;
     }
@@ -61,7 +61,7 @@ function transformUpdateOrDeleteEntitiesQueryNode(node: UpdateEntitiesQueryNode|
     let preExecQueries: PreExecQueryParms[] = [
         new PreExecQueryParms({
             query: canWrite,
-            resultValidator: new ErrorIfNotTruthyResultValidator(`Not authorized to ${actionDescription} ${explanation}`, 'AuthorizationError')
+            resultValidator: new ErrorIfNotTruthyResultValidator(`Not authorized to ${actionDescription} ${explanation}`, AUTHORIZATION_ERROR_NAME)
         })
     ];
 
@@ -74,7 +74,7 @@ function transformUpdateOrDeleteEntitiesQueryNode(node: UpdateEntitiesQueryNode|
         const canWriteTheseValues = getNoneMatchesQueryNode(writeConditionPostUpdate);
         preExecQueries.push(new PreExecQueryParms({
             query: canWriteTheseValues,
-            resultValidator: new ErrorIfNotTruthyResultValidator(`Not authorized to ${explanation}`, 'AuthorizationError')
+            resultValidator: new ErrorIfNotTruthyResultValidator(`Not authorized to ${explanation}`, AUTHORIZATION_ERROR_NAME)
         }));
     }
 
