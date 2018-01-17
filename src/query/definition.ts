@@ -256,7 +256,7 @@ export class RuntimeErrorQueryNode extends QueryNode {
     }
 
     public describe() {
-        return `error ${JSON.stringify(this.message)}`;
+        return `error ${JSON.stringify(this.message)}`.red;
     }
 }
 
@@ -583,11 +583,11 @@ export class TransformListQueryNode extends QueryNode {
     public readonly variableAssignmentNodes: VariableAssignmentQueryNode[];
 
     describe() {
-        return `${this.listNode.describe()} as list\n` + indent('' + // '' to move the arg label here in WebStorm
+        return `${this.listNode.describe()} as list with ${this.itemVariable.describe()} => \n` + indent('' + // '' to move the arg label here in WebStorm
             `where ${this.filterNode.describe()}\n` +
-            `order by ${this.orderBy.describe()}` +
-            this.variableAssignmentNodes.map(node => `let ${node.variableNode.describe()} = ${node.variableValueNode}`).join('\n') +
-            `${this.maxCount != undefined ? `\nlimit ${this.maxCount}` : ''}\n` +
+            `order by ${this.orderBy.describe()}\n` +
+            this.variableAssignmentNodes.map(node => `let ${node.variableNode.describe()} = ${node.variableValueNode.describe()}\n`).join('') +
+            `${this.maxCount != undefined ? `limit ${this.maxCount}\n` : ''}` +
             `as ${this.innerNode.describe()}`
         );
     }
@@ -706,9 +706,9 @@ export class FollowEdgeQueryNode extends QueryNode {
     describe() {
         switch (this.sourceFieldSide) {
             case RelationFieldEdgeSide.FROM_SIDE:
-                return `follow forward ${this.edgeType} of ${this.sourceEntityNode.describe()}`;
+                return `follow forward ${this.edgeType.toString().blue} of ${this.sourceEntityNode.describe()}`;
             case RelationFieldEdgeSide.TO_SIDE:
-                return `follow backward ${this.edgeType} of ${this.sourceEntityNode.describe()}`;
+                return `follow backward ${this.edgeType.toString().blue} of ${this.sourceEntityNode.describe()}`;
         }
     }
 }
