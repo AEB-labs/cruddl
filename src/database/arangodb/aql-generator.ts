@@ -595,6 +595,8 @@ function processNode(node: QueryNode, context: QueryContext): AQLFragment {
     return processorMap[type](node, context);
 }
 
+// TODO I think AQLCompoundQuery (AQL transaction node) should not be the exported type
+// we should rather export AQLExecutableQuery[] (as AQL transaction) directly.
 export function getAQLQuery(node: QueryNode): AQLCompoundQuery {
     return createAQLCompoundQuery(node, aql.queryResultVariable('result'), undefined, new QueryContext());
 }

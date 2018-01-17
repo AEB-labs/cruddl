@@ -321,7 +321,7 @@ export namespace aql {
     }
 
     export function integer(number: number): AQLFragment {
-        return code(JSON.stringify(Number(number)));
+        return code(JSON.stringify(Number(number)))
     }
 
     export function isSafeIdentifier(str: string) {
@@ -332,6 +332,14 @@ export namespace aql {
 }
 
 //TODO Refactor. AQLCompoundQuery isn't a real AQLFragment.
+/**
+ * A node in an AQL transaction tree
+ *
+ * This is an intermediate representation in the process of converting a query tree to an AQL transaction. The
+ * transaction tree's root is the root query. Children of a transaction node are the direct preExec queries of a query.
+ * Thus, the query tree is reduced to WithPreExecQueryNodes as nodes, all other kinds of nodes are already processed
+ * into AQLFragments.
+ */
 export class AQLCompoundQuery extends AQLFragment {
 
     constructor(
@@ -344,6 +352,11 @@ export class AQLCompoundQuery extends AQLFragment {
         super();
     }
 
+    /**
+     * Gets the linear AQL transaction for this transaction tree
+     *
+     * The returned transaction steps are to be executed sequentially.
+     */
     getExecutableQueries(): AQLExecutableQuery[] {
         const resultVarToNameMap = new Map<AQLQueryResultVariable, string>();
         return this.getExecutableQueriesRecursive(resultVarToNameMap);
@@ -408,7 +421,10 @@ export class AQLCompoundQuery extends AQLFragment {
     }
 }
 
-export class AQLExecutableQuery{
+/**
+ * A step in an AQL transaction
+ */
+export class AQLExecutableQuery {
     constructor(
         public readonly code: string,
         public readonly boundValues: {[p: string]: any},
