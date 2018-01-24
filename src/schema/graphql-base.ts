@@ -3,7 +3,7 @@ import { DocumentNode } from 'graphql';
 
 export const DIRECTIVES: DocumentNode = gql`
     # Declares a type for root-level objects with ids that are stored directly in the data base
-    directive @rootEntity(indices: [IndexDefinition!]) on OBJECT
+    directive @rootEntity(indices: [IndexDefinition!], permissionProfile: String) on OBJECT
     
     # Declares a type for objects with ids that can be embedded as a list within another entity
     directive @childEntity on OBJECT
