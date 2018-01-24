@@ -3,7 +3,7 @@ import {
     ASTTransformationContext, executePostMergeTransformationPipeline, executePreMergeTransformationPipeline,
     executeSchemaTransformationPipeline, SchemaTransformationContext
 } from './preparation/transformation-pipeline';
-import { validatePostMerge, ValidationResult } from './preparation/ast-validator';
+import { validatePostMerge, validateSource, ValidationResult } from './preparation/ast-validator';
 import { SchemaConfig, SchemaPartConfig } from '../config/schema-config';
 import { globalContext } from '../config/global';
 import { createPermissionMap } from '../authorization/permission-profile';
@@ -11,22 +11,48 @@ import { Project } from '../project/project';
 import { DatabaseAdapter } from '../database/database-adapter';
 import { SourceType } from '../project/source';
 import { load as loadYaml } from 'js-yaml';
+import { ValidationMessage } from './preparation/validation-message';
+import { flatMap } from '../utils/utils';
 
 /**
  * Validates a project and thus determines whether createSchema() would succeed
  */
 export function validateSchema(project: Project): ValidationResult {
-    const schemaConfig = parseSchemaParts(project);
+    globalContext.registerContext({ loggerProvider: project.loggerProvider });
+    try {
+        return validateAndPrepareSchema(project).validationResult;
+    } finally {
+        globalContext.unregisterContext();
+    }
+}
 
+
+function validateAndPrepareSchema(project: Project):
+        { validationResult: ValidationResult, schemaConfig: SchemaConfig, mergedSchema: DocumentNode, rootContext: ASTTransformationContext } {
+    const messages: ValidationMessage[] = [];
+
+    const sources = flatMap(project.sources, source => {
+        const sourceResult = validateSource(source);
+        messages.push(...sourceResult.messages);
+        if (sourceResult.hasErrors()) {
+            return [];
+        }
+        return [ source ];
+    });
+
+    const schemaConfig = parseSchemaParts(new Project({...project, sources}));
     const rootContext: ASTTransformationContext = {
         defaultNamespace: schemaConfig.defaultNamespace,
         permissionProfiles: createPermissionMap(schemaConfig.permissionProfiles)
     };
-
     executePreMergeTransformationPipeline(schemaConfig.schemaParts, rootContext);
     const mergedSchema: DocumentNode = mergeSchemaDefinition(schemaConfig);
 
-    return validatePostMerge(mergedSchema);
+    const result = validatePostMerge(mergedSchema);
+    messages.push(...result.messages);
+
+    const validationResult = new ValidationResult(messages);
+    return { validationResult, schemaConfig, mergedSchema, rootContext };
 }
 
 /**
@@ -40,29 +66,24 @@ export function createSchema(project: Project, databaseAdapter: DatabaseAdapter)
     try {
         const logger = globalContext.loggerProvider.getLogger('schema-builder');
 
-        const schemaConfig = parseSchemaParts(project);
-
-        const rootContext: SchemaTransformationContext = {
-            defaultNamespace: schemaConfig.defaultNamespace,
-            permissionProfiles: createPermissionMap(schemaConfig.permissionProfiles),
-            loggerProvider: project.loggerProvider,
-            databaseAdapter
-        };
-
-        executePreMergeTransformationPipeline(schemaConfig.schemaParts, rootContext);
-        const mergedSchema: DocumentNode = mergeSchemaDefinition(schemaConfig);
-
-        const validationResult = validatePostMerge(mergedSchema);
+        const { validationResult, schemaConfig, mergedSchema, rootContext } = validateAndPrepareSchema(project);
         if (validationResult.hasErrors()) {
-            throw new Error('Invalid model:\n' + validationResult.messages.map(msg => msg.toString()).join('\n'))
-        } else {
-            logger.info('Schema successfully created.')
+            throw new Error('Project has errors:\n' + validationResult.messages.map(msg => msg.toString()).join('\n'))
         }
 
         executePostMergeTransformationPipeline(mergedSchema, rootContext);
         logger.debug(print(mergedSchema));
+
+        const schemaContext: SchemaTransformationContext = {
+            ...rootContext,
+            loggerProvider: project.loggerProvider,
+            databaseAdapter
+        };
+
         const graphQLSchema = buildASTSchema(mergedSchema);
-        return executeSchemaTransformationPipeline(graphQLSchema, rootContext);
+        const finalSchema = executeSchemaTransformationPipeline(graphQLSchema, schemaContext);
+        logger.info('Schema successfully created.');
+        return finalSchema;
     } finally {
         globalContext.unregisterContext();
     }

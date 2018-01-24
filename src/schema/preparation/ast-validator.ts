@@ -1,4 +1,4 @@
-import {DocumentNode} from "graphql";
+import { DocumentNode, Source } from 'graphql';
 import {Severity, ValidationMessage} from "./validation-message";
 import {flatMap} from "../../utils/utils";
 import {NoDuplicateTypesValidator} from "./ast-validation-modules/no-duplicate-types-validator";
@@ -21,6 +21,13 @@ import { CalcMutationsDirectiveValidator } from './ast-validation-modules/calc-m
 import {DefaultValueValidator} from "./ast-validation-modules/default-value-validator";
 import {CheckDirectedRelationEdgesValidator} from "./ast-validation-modules/check-directed-relation-edges-validator";
 import {IndicesValidator} from "./ast-validation-modules/indices-validator";
+import { ProjectSource } from '../../project/source';
+import { CheckGraphQLSyntaxValidator } from './source-validation-modules/check-graphql-syntax';
+import { Project } from '../../project/project';
+
+const sourceValidators: SourceValidator[]  = [
+    new CheckGraphQLSyntaxValidator()
+];
 
 const postMergeValidators: ASTValidator[] = [
     new NoDuplicateTypesValidator(),
@@ -47,6 +54,14 @@ const postMergeValidators: ASTValidator[] = [
 
 export interface ASTValidator {
     validate(ast: DocumentNode): ValidationMessage[];
+}
+
+export interface SourceValidator {
+    validate(source: ProjectSource): ValidationMessage[];
+}
+
+export function validateSource(source: ProjectSource): ValidationResult {
+    return new ValidationResult(flatMap(sourceValidators, validator => validator.validate(source)));
 }
 
 export function validatePostMerge(ast: DocumentNode): ValidationResult {
