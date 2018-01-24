@@ -30,10 +30,10 @@ function getMessageLocation(error: any, source: ProjectSource): MessageLocation|
     if (!error.mark || !error.mark.column || !error.mark.line || !error.mark.position) {
         return undefined;
     }
-    const endOffset = error.source.body.length;
+    const endOffset = source.body.length;
     const endLoc = end(source.body);
     return new MessageLocation(source.name,
-        new SourcePosition(error.mark.position, error.mark.line, error.mark.column),
+        new SourcePosition(error.mark.position, error.mark.line + 1, error.mark.column + 1),
         new SourcePosition(endOffset, endLoc.line, endLoc.column));
 }
 
@@ -41,6 +41,6 @@ function end(str: string) {
     const lines = str.split('\n');
     return {
         line: lines.length || 1,
-        column: lines.length ? lines[lines.length - 1].length : 1
+        column: lines.length ? (lines[lines.length - 1].length || 1) : 1
     };
 }
