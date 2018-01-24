@@ -112,6 +112,8 @@ export const ROLES_READ_ARG = 'read';
 export const ROLES_READ_WRITE_ARG = 'readWrite';
 export const PERMISSION_PROFILE_ARG = 'permissionProfile';
 
+export const DEFAULT_PERMISSION_PROFILE = 'default';
+
 export const OBJECT_TYPE_ENTITY_DIRECTIVES = [ROOT_ENTITY_DIRECTIVE, CHILD_ENTITY_DIRECTIVE, ENTITY_EXTENSION_DIRECTIVE, VALUE_OBJECT_DIRECTIVE];
 
 export const NAMESPACE_DIRECTIVE = 'namespace';

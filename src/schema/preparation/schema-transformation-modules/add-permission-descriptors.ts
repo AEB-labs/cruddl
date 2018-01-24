@@ -2,7 +2,7 @@ import { ASTTransformationContext, SchemaTransformer } from '../transformation-p
 import { GraphQLField, GraphQLObjectType, GraphQLSchema, StringValueNode } from 'graphql';
 import { findDirectiveWithName, getRoleListFromDirective, hasDirectiveWithName } from '../../schema-utils';
 import {
-    CHILD_ENTITY_DIRECTIVE, ENTITY_EXTENSION_DIRECTIVE,
+    CHILD_ENTITY_DIRECTIVE, DEFAULT_PERMISSION_PROFILE, ENTITY_EXTENSION_DIRECTIVE,
     FIELD_DIRECTIVE, PERMISSION_PROFILE_ARG, ROLES_DIRECTIVE, ROLES_READ_ARG, ROLES_READ_WRITE_ARG,
     ROOT_ENTITY_DIRECTIVE, VALUE_OBJECT_DIRECTIVE
 } from '../../schema-defaults';
@@ -12,6 +12,7 @@ import {
     AlwaysGrantPermissionDescriptor, PermissionDescriptor, ProfileBasedPermissionDescriptor, StaticPermissionDescriptor
 } from '../../../authorization/permission-descriptors';
 import { setPermissionDescriptor } from '../../../authorization/permission-descriptors-in-schema';
+import { DEFAULT_LOGGER_PROVIDER } from '../../../config/global';
 
 export class AddPermissionDescriptorsTransformer implements SchemaTransformer {
 
@@ -46,9 +47,9 @@ export class AddPermissionDescriptorsTransformer implements SchemaTransformer {
             return legacyDescriptor;
         }
         // fall back to default
-        const defaultProfile = (context.permissionProfiles || {})['default'];
+        const defaultProfile = (context.permissionProfiles || {})[DEFAULT_PERMISSION_PROFILE];
         if (!defaultProfile) {
-            throw new Error(`default permission profile missing`);
+            throw new Error(`${DEFAULT_PERMISSION_PROFILE} permission profile missing`);
         }
         return new ProfileBasedPermissionDescriptor(defaultProfile, objectType);
     }

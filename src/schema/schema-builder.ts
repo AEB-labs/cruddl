@@ -48,7 +48,7 @@ function validateAndPrepareSchema(project: Project):
     executePreMergeTransformationPipeline(schemaConfig.schemaParts, rootContext);
     const mergedSchema: DocumentNode = mergeSchemaDefinition(schemaConfig);
 
-    const result = validatePostMerge(mergedSchema);
+    const result = validatePostMerge(mergedSchema, rootContext);
     messages.push(...result.messages);
 
     const validationResult = new ValidationResult(messages);
