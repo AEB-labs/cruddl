@@ -8,9 +8,14 @@ export enum SourceType {
     GRAPHQLS,
 
     /**
+     * A metadata file in JSON format
+     */
+    JSON,
+
+    /**
      * A metadata file in YAML format
      */
-    YAML
+    YAML,
 }
 
 /**
@@ -48,8 +53,11 @@ export interface SourceConfig {
 export type SourceLike = SourceConfig|ProjectSource;
 
 function getTypeFromName(name: string) {
-    if (name.endsWith('.yaml') || name.endsWith('.yml') || name.endsWith('.json')) {
+    if (name.endsWith('.yaml') || name.endsWith('.yml')) {
         return SourceType.YAML;
+    }
+    if (name.endsWith('.json')) {
+        return SourceType.JSON;
     }
     return SourceType.GRAPHQLS;
 }

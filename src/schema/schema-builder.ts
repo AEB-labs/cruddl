@@ -111,10 +111,12 @@ function mergeAST(doc1: DocumentNode, doc2: DocumentNode): DocumentNode {
  * Parse all schema parts sources which aren't AST already and deep clone all AST sources.
  */
 function parseSchemaParts(project: Project): SchemaConfig {
-    // TODO handle parse errors and validate yaml against json-schema, also merge yaml in a better way
-
-    const yamlObjects = project.getSourcesOfType(SourceType.YAML).map(source => loadYaml(source.body));
+    // TODO merge individual properties of yaml somehow
+    const yamlObjects = project.sources
+        .filter(s => s.type == SourceType.YAML || s.type == SourceType.JSON)
+        .map(source => loadYaml(source.body));
     const mergedYaml = Object.assign({}, ...yamlObjects);
+
     return {
         defaultNamespace: project.defaultNamespace,
         schemaParts: project.getSourcesOfType(SourceType.GRAPHQLS).map((source): SchemaPartConfig => ({

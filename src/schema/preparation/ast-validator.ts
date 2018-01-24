@@ -26,11 +26,13 @@ import { CheckGraphQLSyntaxValidator } from './source-validation-modules/check-g
 import { Project } from '../../project/project';
 import { GraphQLRulesValidator } from './source-validation-modules/graphql-rules';
 import { CheckYamlSyntaxValidator } from './source-validation-modules/check-yaml-syntax';
+import { CheckJsonSyntaxValidator } from './source-validation-modules/check-json-syntax';
 
 const sourceValidators: SourceValidator[]  = [
     new CheckGraphQLSyntaxValidator(),
     new GraphQLRulesValidator(),
-    new CheckYamlSyntaxValidator()
+    new CheckYamlSyntaxValidator(),
+    new CheckJsonSyntaxValidator(),
 ];
 
 const postMergeValidators: ASTValidator[] = [
