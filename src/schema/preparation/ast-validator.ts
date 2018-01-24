@@ -25,10 +25,12 @@ import { ProjectSource } from '../../project/source';
 import { CheckGraphQLSyntaxValidator } from './source-validation-modules/check-graphql-syntax';
 import { Project } from '../../project/project';
 import { GraphQLRulesValidator } from './source-validation-modules/graphql-rules';
+import { CheckYamlSyntaxValidator } from './source-validation-modules/check-yaml-syntax';
 
 const sourceValidators: SourceValidator[]  = [
     new CheckGraphQLSyntaxValidator(),
     new GraphQLRulesValidator(),
+    new CheckYamlSyntaxValidator()
 ];
 
 const postMergeValidators: ASTValidator[] = [
