@@ -22,6 +22,9 @@
     "registry": "https://registry.next.labs.aeb.com/repository/next.npm.releases/"
   },
   "author": "",
+  "browser": {
+    "@arangodb": false
+  },
   "devDependencies": {
     "@types/body-parser": "^1.16.3",
     "@types/colors": "^1.1.3",
