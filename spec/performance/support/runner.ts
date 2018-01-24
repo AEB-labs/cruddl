@@ -1,5 +1,4 @@
-import {benchmark, BenchmarkFactories, time} from "./async-bench";
-import {globalContext} from "../../../src/config/global";
+import { benchmark, BenchmarkFactories, time } from './async-bench';
 
 const colors = require('colors');
 colors.enabled = true;

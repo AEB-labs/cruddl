@@ -1,6 +1,5 @@
-import {BenchmarkConfig, BenchmarkFactories} from "./support/async-bench";
-import {Database} from "arangojs";
-import {TestEnvironment, initEnvironment, aql} from "./support/helpers";
+import { BenchmarkConfig, BenchmarkFactories } from './support/async-bench';
+import { aql, initEnvironment, TestEnvironment } from './support/helpers';
 
 export async function addManyPapersWithAQL(environment: TestEnvironment, count: number) {
     await environment.getDB().query(aql`FOR i IN 1..${count} INSERT { title: CONCAT("Test ", RAND()) } IN papers`);

@@ -1,16 +1,9 @@
-import {BenchmarkConfig, BenchmarkFactories} from "./support/async-bench";
-import {takeRandomSample} from "../../src/utils/utils";
-import {Database} from "arangojs";
+import { BenchmarkConfig, BenchmarkFactories } from './support/async-bench';
+import { takeRandomSample } from '../../src/utils/utils';
 import {
-    TestEnvironment,
-    initEnvironment,
-    getRandomPaperIDsWithAQL,
-    addManyPapersWithAQL,
-    getSizeFactorForJSONLength,
-    addPaper,
-    createLargePaper,
-    formatBytes, addManyUsersWithAQL, createUser, aql
-} from "./support/helpers";
+    addManyPapersWithAQL, addManyUsersWithAQL, aql, createLargePaper, createUser, getRandomPaperIDsWithAQL,
+    initEnvironment, TestEnvironment
+} from './support/helpers';
 
 async function setUpPapersAndReaders(environment: TestEnvironment, config: { paperCount: number, userCount: number, associationCount: number}) {
     await Promise.all([

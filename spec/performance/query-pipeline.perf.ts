@@ -1,6 +1,5 @@
 import { BenchmarkConfig, BenchmarkFactories } from './support/async-bench';
-import { DocumentNode, parse, validate } from 'graphql';
-import { createDumbSchema } from './support/helpers';
+import { DocumentNode, GraphQLSchema, parse, validate } from 'graphql';
 import * as path from 'path';
 import { DistilledOperation, distillQuery } from '../../src/graphql/query-distiller';
 import { createQueryTree } from '../../src/query/query-tree-builder';
@@ -8,6 +7,8 @@ import { getAQLQuery } from '../../src/database/arangodb/aql-generator';
 import { QueryNode } from '../../src/query/definition';
 import { compact } from '../../src/utils/utils';
 import { applyAuthorizationToQueryTree } from '../../src/authorization/execution';
+import { loadProjectFromDir } from '../../src/project/project-from-fs';
+import { createTestSchema } from './support/helpers';
 
 const QUERIES = [
 `{
@@ -82,8 +83,6 @@ mutation m {
 `
 ];
 
-const schema = createDumbSchema(path.resolve(__dirname, '../regression/logistics/model'));
-
 interface PreparedQuery {
     gql: string;
     document: DocumentNode;
@@ -92,7 +91,7 @@ interface PreparedQuery {
     authorizedQueryTree: QueryNode;
 }
 
-function prepareQuery(gql: string): PreparedQuery {
+function prepareQuery(gql: string, schema: GraphQLSchema): PreparedQuery {
     const document = parse(gql);
     validate(schema, document);
     const distilledOperation = distillQuery(document, schema, {});
@@ -107,8 +106,6 @@ function prepareQuery(gql: string): PreparedQuery {
     };
 }
 
-const PREPARED_QUERIES = QUERIES.map(gql => prepareQuery(gql));
-
 function testQueryPipeline(params: { parser: boolean, queryDistiller: boolean, queryTree: boolean, auth: boolean, aql: boolean }): BenchmarkConfig {
     const optionsStr = compact([
         params.parser ? 'parser' : undefined,
@@ -117,12 +114,19 @@ function testQueryPipeline(params: { parser: boolean, queryDistiller: boolean, q
         params.aql ? 'aql' : undefined
     ]).join(', ');
 
+    let schema: GraphQLSchema;
+    let preparedQueries: PreparedQuery[];
+
     return {
         name: `Run query pipeline with ${optionsStr}`,
         isSync: true,
         initialCount: params.aql ? 10000 : 100000,
+        async beforeAll() {
+            schema = await createTestSchema(path.resolve(__dirname, '../regression/logistics/model'));
+            preparedQueries = QUERIES.map(gql => prepareQuery(gql, schema));
+        },
         fn() {
-            const preparedQuery = PREPARED_QUERIES[Math.floor(Math.random() * PREPARED_QUERIES.length)];
+            const preparedQuery = preparedQueries[Math.floor(Math.random() * preparedQueries.length)];
             if (params.parser) {
                 parse(preparedQuery.gql)
             }

@@ -2,15 +2,11 @@ import { createTempDatabase } from '../../regression/initialization';
 import { Database } from 'arangojs';
 import { range } from '../../../src/utils/utils';
 import { ArangoDBAdapter } from '../../../src/database/arangodb';
-import { graphql, GraphQLSchema, Source } from 'graphql';
-import * as fs from 'fs';
+import { graphql, GraphQLSchema } from 'graphql';
 import * as path from 'path';
-import { createSchema } from '../../../src/schema/schema-builder';
-import { addQueryResolvers } from '../../../src/query/query-resolvers';
-import { SchemaConfig, SchemaPart } from '../../../src/config/schema-config';
-import { getLogger } from 'log4js';
-import { LoggerProvider, SchemaContext } from '../../../src/config/global';
+import { SchemaContext } from '../../../src/config/global';
 import { Log4jsLoggerProvider } from '../../helpers/log4js-logger-provider';
+import { loadProjectFromDir } from '../../../src/project/project-from-fs';
 
 // arangojs typings for this are completely broken
 export const aql: (template: TemplateStringsArray, ...args: any[]) => any = require('arangojs').aql;
@@ -24,18 +20,18 @@ export interface TestEnvironment {
 
 const schemaContext: SchemaContext = { loggerProvider: new Log4jsLoggerProvider('warn') };
 
-export function createDumbSchema(modelPath: string): GraphQLSchema {
-    const schemaConfig: SchemaConfig = {
-        schemaParts: fs.readdirSync(modelPath)
-            .map(file => fileToSchemaPartConfig(path.resolve(modelPath, file)))
-    };
-    return createSchema(schemaConfig, schemaContext);
+export async function createTestSchema(modelPath: string): Promise<GraphQLSchema> {
+    const project = await loadProjectFromDir(MODEL_PATH, schemaContext);
+    const dbConfig = await createTempDatabase();
+    const dbAdapter = new ArangoDBAdapter(dbConfig, schemaContext);
+    return project.createSchema(dbAdapter);
 }
 
 export async function initEnvironment(): Promise<TestEnvironment> {
     const dbConfig = await createTempDatabase();
+    const project = await loadProjectFromDir(MODEL_PATH, schemaContext);
     const dbAdapter = new ArangoDBAdapter(dbConfig, schemaContext);
-    const schema = addQueryResolvers(createDumbSchema(MODEL_PATH), dbAdapter, schemaContext);
+    const schema = project.createSchema(dbAdapter);
     await dbAdapter.updateSchema(schema);
 
     return {
@@ -50,10 +46,6 @@ export async function initEnvironment(): Promise<TestEnvironment> {
             return res.data;
         }
     };
-}
-
-function fileToSchemaPartConfig(path: string): SchemaPart {
-    return { source: new Source(fs.readFileSync(path).toString(), path) };
 }
 
 function createLiteratureReference(sizeFactor: number) {
