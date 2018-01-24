@@ -90,7 +90,8 @@ export function createSchema(project: Project, databaseAdapter: DatabaseAdapter)
 }
 
 function mergeSchemaDefinition(schemaConfig: SchemaConfig): DocumentNode {
-    return schemaConfig.schemaParts.map(modelDef => (modelDef.source instanceof Source) ? parse(modelDef.source) : modelDef.source).reduce(mergeAST);
+    const emptyDocument: DocumentNode = { kind: "Document", definitions: [] };
+    return schemaConfig.schemaParts.map(part => part.document).reduce(mergeAST, emptyDocument);
 }
 
 /**
@@ -117,7 +118,7 @@ function parseSchemaParts(project: Project): SchemaConfig {
     return {
         defaultNamespace: project.defaultNamespace,
         schemaParts: project.getSourcesOfType(SourceType.GRAPHQLS).map((source): SchemaPartConfig => ({
-            source: parse(new Source(source.body, source.name)),
+            document: parse(new Source(source.body, source.name)),
             localNamespace: getNamespaceFromSourceName(source.name)
         })),
         permissionProfiles: mergedYaml.permissionProfiles

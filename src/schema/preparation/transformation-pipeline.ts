@@ -88,11 +88,11 @@ export function executePostMergeTransformationPipeline(ast: DocumentNode, contex
 export function executePreMergeTransformationPipeline(schemaParts: SchemaPartConfig[], rootContext: ASTTransformationContext) {
     schemaParts.forEach(schemaPart =>
         preMergePipeline.forEach(transformer => {
-            if (schemaPart.source instanceof Source) {
+            if (schemaPart.document instanceof Source) {
                 throw new Error('Expected source with DocumentType');
             }
-            const { source, ...context } = schemaPart;
-            transformer.transform(schemaPart.source, { ...rootContext, ...context })
+            const { document, ...context } = schemaPart;
+            transformer.transform(schemaPart.document, { ...rootContext, ...context })
         })
     ) ;
 }
