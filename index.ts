@@ -1,5 +1,4 @@
 export { Project, ProjectOptions, ProjectConfig } from './src/project/project';
-export { loadProjectFromDir } from './src/project/project-from-fs';
 export { ValidationMessage, Severity, MessageLocation, SourcePosition } from './src/schema/preparation/validation-message';
 export { ValidationResult } from './src/schema/preparation/ast-validator';
 export { DatabaseAdapter } from './src/database/database-adapter';
