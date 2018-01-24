@@ -24,9 +24,11 @@ import {IndicesValidator} from "./ast-validation-modules/indices-validator";
 import { ProjectSource } from '../../project/source';
 import { CheckGraphQLSyntaxValidator } from './source-validation-modules/check-graphql-syntax';
 import { Project } from '../../project/project';
+import { GraphQLRulesValidator } from './source-validation-modules/graphql-rules';
 
 const sourceValidators: SourceValidator[]  = [
-    new CheckGraphQLSyntaxValidator()
+    new CheckGraphQLSyntaxValidator(),
+    new GraphQLRulesValidator(),
 ];
 
 const postMergeValidators: ASTValidator[] = [
