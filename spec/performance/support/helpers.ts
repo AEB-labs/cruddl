@@ -7,7 +7,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { createSchema } from '../../../src/schema/schema-builder';
 import { addQueryResolvers } from '../../../src/query/query-resolvers';
-import { SchemaConfig, SchemaPartConfig } from '../../../src/config/schema-config';
+import { SchemaConfig, SchemaPart } from '../../../src/config/schema-config';
 import { getLogger } from 'log4js';
 import { LoggerProvider, SchemaContext } from '../../../src/config/global';
 import { Log4jsLoggerProvider } from '../../helpers/log4js-logger-provider';
@@ -52,7 +52,7 @@ export async function initEnvironment(): Promise<TestEnvironment> {
     };
 }
 
-function fileToSchemaPartConfig(path: string): SchemaPartConfig {
+function fileToSchemaPartConfig(path: string): SchemaPart {
     return { source: new Source(fs.readFileSync(path).toString(), path) };
 }
 

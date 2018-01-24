@@ -1,20 +1,22 @@
-import { buildASTSchema, DocumentNode, graphql, GraphQLSchema, parse, print, Source } from 'graphql';
+import { buildASTSchema, DocumentNode, GraphQLSchema, parse, print, Source } from 'graphql';
 import {
-    ASTTransformationContext,
-    executePostMergeTransformationPipeline,
-    executePreMergeTransformationPipeline, executeSchemaTransformationPipeline
+    ASTTransformationContext, executePostMergeTransformationPipeline, executePreMergeTransformationPipeline,
+    executeSchemaTransformationPipeline, SchemaTransformationContext
 } from './preparation/transformation-pipeline';
 import { validatePostMerge, ValidationResult } from './preparation/ast-validator';
-import {SchemaConfig} from "../config/schema-config";
-import {cloneDeep} from "lodash";
-import {SchemaContext, globalContext} from "../config/global";
+import { SchemaConfig, SchemaPartConfig } from '../config/schema-config';
+import { globalContext } from '../config/global';
 import { createPermissionMap } from '../authorization/permission-profile';
+import { Project } from '../project/project';
+import { DatabaseAdapter } from '../database/database-adapter';
+import { SourceType } from '../project/source';
+import { load as loadYaml } from 'js-yaml';
 
 /**
- * Validates a schema config and thus determines whether createSchema() would succeed
+ * Validates a project and thus determines whether createSchema() would succeed
  */
-export function validateSchema(inputSchemaConfig: SchemaConfig): ValidationResult {
-    const schemaConfig = parseSchemaParts(inputSchemaConfig);
+export function validateSchema(project: Project): ValidationResult {
+    const schemaConfig = parseSchemaParts(project);
 
     const rootContext: ASTTransformationContext = {
         defaultNamespace: schemaConfig.defaultNamespace,
@@ -33,16 +35,18 @@ export function validateSchema(inputSchemaConfig: SchemaConfig): ValidationResul
  as a (sourced) SDL string or AST document.
  Use the optional context to inject your logging framework.
   */
-export function createSchema(inputSchemaConfig: SchemaConfig, context?: SchemaContext): GraphQLSchema {
-    globalContext.registerContext(context);
+export function createSchema(project: Project, databaseAdapter: DatabaseAdapter): GraphQLSchema {
+    globalContext.registerContext({ loggerProvider: project.loggerProvider });
     try {
         const logger = globalContext.loggerProvider.getLogger('schema-builder');
 
-        const schemaConfig = parseSchemaParts(inputSchemaConfig);
+        const schemaConfig = parseSchemaParts(project);
 
-        const rootContext: ASTTransformationContext = {
+        const rootContext: SchemaTransformationContext = {
             defaultNamespace: schemaConfig.defaultNamespace,
-            permissionProfiles: createPermissionMap(schemaConfig.permissionProfiles)
+            permissionProfiles: createPermissionMap(schemaConfig.permissionProfiles),
+            loggerProvider: project.loggerProvider,
+            databaseAdapter
         };
 
         executePreMergeTransformationPipeline(schemaConfig.schemaParts, rootContext);
@@ -83,15 +87,25 @@ function mergeAST(doc1: DocumentNode, doc2: DocumentNode): DocumentNode {
 
 /**
  * Parse all schema parts sources which aren't AST already and deep clone all AST sources.
- * @param {SchemaConfig} schemaConfig
- * @returns {SchemaConfig}
  */
-function parseSchemaParts(schemaConfig: SchemaConfig): SchemaConfig {
+function parseSchemaParts(project: Project): SchemaConfig {
+    // TODO handle parse errors and validate yaml against json-schema, also merge yaml in a better way
+
+    const yamlObjects = project.getSourcesOfType(SourceType.YAML).map(source => loadYaml(source.body));
+    const mergedYaml = Object.assign({}, ...yamlObjects);
     return {
-        ...schemaConfig,
-        schemaParts: schemaConfig.schemaParts.map(schemaPart => ({
-            ...schemaPart,
-            source: (schemaPart.source instanceof Source) ? parse(schemaPart.source) : cloneDeep(schemaPart.source)
-        }))
+        defaultNamespace: project.defaultNamespace,
+        schemaParts: project.getSourcesOfType(SourceType.GRAPHQLS).map((source): SchemaPartConfig => ({
+            source: parse(new Source(source.body, source.name)),
+            localNamespace: getNamespaceFromSourceName(source.name)
+        })),
+        permissionProfiles: mergedYaml.permissionProfiles
     };
+}
+
+function getNamespaceFromSourceName(name: string): string|undefined {
+    if (name.includes('/')) {
+        return name.substr(0, name.lastIndexOf('/')).replace(/\//g, '.');
+    }
+    return undefined; // default namespace
 }

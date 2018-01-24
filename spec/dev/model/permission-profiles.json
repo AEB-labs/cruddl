@@ -1,30 +1,32 @@
 {
-  "restricted": {
-    "permissions": [
-      {
-        "roles": ["admin"],
-        "access": "readWrite"
-      },
-      {
-        "roles": ["accounting"],
-        "access": "readWrite",
-        "restrictToAccessGroups": "accounting"
-      },
-      {
-        "roles": ["logistics"],
-        "access": "readWrite",
-        "restrictToAccessGroups": "logistics"
-      },
-      {
-        "roles": ["logistics-reader"],
-        "access": "read",
-        "restrictToAccessGroups": "logistics"
-      },
-      {
-        "roles": ["logistics-reader", "logistics", "accounting", "admin"],
-        "access": "readWrite",
-        "restrictToAccessGroups": "public"
-      }
-    ]
+  "permissionProfiles": {
+    "restricted": {
+      "permissions": [
+        {
+          "roles": ["admin"],
+          "access": "readWrite"
+        },
+        {
+          "roles": ["accounting"],
+          "access": "readWrite",
+          "restrictToAccessGroups": "accounting"
+        },
+        {
+          "roles": ["logistics"],
+          "access": "readWrite",
+          "restrictToAccessGroups": "logistics"
+        },
+        {
+          "roles": ["logistics-reader"],
+          "access": "read",
+          "restrictToAccessGroups": "logistics"
+        },
+        {
+          "roles": ["logistics-reader", "logistics", "accounting", "admin"],
+          "access": "readWrite",
+          "restrictToAccessGroups": "public"
+        }
+      ]
+    }
   }
 }

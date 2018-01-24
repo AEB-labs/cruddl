@@ -1,17 +1,12 @@
-import { ArangoDBAdapter, ArangoDBConfig } from '../../src/database/arangodb/arangodb-adapter';
-import {
-    graphql, GraphQLError, GraphQLSchema, OperationDefinitionNode, parse, separateOperations, Source
-} from 'graphql';
-import * as fs from 'fs';
+import { ArangoDBAdapter, ArangoDBConfig } from '../../src/database/arangodb';
+import { graphql, GraphQLSchema, OperationDefinitionNode, parse, Source } from 'graphql';
 import * as path from 'path';
-import { createSchema } from '../../src/schema/schema-builder';
-import { addQueryResolvers } from '../../src/query/query-resolvers';
+import * as fs from 'fs';
 import { createTempDatabase, initTestData, TestDataEnvironment } from './initialization';
 import * as stripJsonComments from 'strip-json-comments';
-import { PlainObject } from '../../src/utils/utils';
-import {SchemaConfig, SchemaPartConfig} from "../../src/config/schema-config";
 import { Log4jsLoggerProvider } from '../helpers/log4js-logger-provider';
-import { SchemaContext } from '../../src/config/global';
+import { loadProjectFromDir } from '../../src/project/project-from-fs';
+import { ProjectOptions } from '../../src/project/project';
 
 interface TestResult {
     actualResult: any
@@ -36,34 +31,25 @@ export class RegressionSuite {
     }
 
     private async setUp() {
-        const warnLevelContext = { loggerProvider: new Log4jsLoggerProvider('warn') };
-        const debugLevelContext = { loggerProvider: new Log4jsLoggerProvider('debug') };
+        const warnLevelOptions = { loggerProvider: new Log4jsLoggerProvider('warn') };
+        const debugLevelOptions = { loggerProvider: new Log4jsLoggerProvider('debug', { 'schema-builder': 'warn'}) };
 
         const dbConfig = await createTempDatabase();
-
-        const permissionProfilesPath = path.resolve(this.path, 'model/permission-profiles.json');
-        const schemaConfig: SchemaConfig = {
-            schemaParts: fs.readdirSync(path.resolve(this.path, 'model'))
-                .filter(file => file.endsWith('.graphqls'))
-                .map(file => fileToSchemaPartConfig(path.resolve(this.path, 'model', file))),
-            permissionProfiles: fs.existsSync(permissionProfilesPath) ? JSON.parse(fs.readFileSync(permissionProfilesPath, 'utf-8')) : undefined
-        };
-
-        this.schema = this.createSchema(dbConfig, schemaConfig, debugLevelContext);
+        this.schema = await this.createSchema(dbConfig, debugLevelOptions);
 
         // use a schema that logs less for initTestData
-        const initDataSchema = this.createSchema(dbConfig, schemaConfig, warnLevelContext);
-        await new ArangoDBAdapter(dbConfig, warnLevelContext).updateSchema(this.schema);
+        const initDataSchema = await this.createSchema(dbConfig, warnLevelOptions);
+        const initDataAdapter = new ArangoDBAdapter(dbConfig, warnLevelOptions);
+        await initDataAdapter.updateSchema(initDataSchema);
         this.testDataEnvironment = await initTestData(path.resolve(this.path, 'test-data.json'), initDataSchema);
 
         this._isSetUpClean = true;
     }
 
-    private createSchema(dbConfig: ArangoDBConfig, schemaConfig: SchemaConfig, context: SchemaContext) {
-        const dbAdapter = new ArangoDBAdapter(dbConfig, context);
-        // we never want debug output of createSchema() in regression tests
-        const dumbSchema = createSchema(schemaConfig, { loggerProvider: new Log4jsLoggerProvider('warn') });
-        return addQueryResolvers(dumbSchema, dbAdapter, context);
+    private async createSchema(dbConfig: ArangoDBConfig, options: ProjectOptions) {
+        const dbAdapter = new ArangoDBAdapter(dbConfig, options);
+        const project = await loadProjectFromDir(path.resolve(this.path, 'model'), options);
+        return project.createSchema(dbAdapter);
     }
 
     getTestNames() {
@@ -122,8 +108,4 @@ export class RegressionSuite {
             expectedResult
         };
     }
-}
-
-function fileToSchemaPartConfig(path: string): SchemaPartConfig {
-    return { source: new Source(fs.readFileSync(path).toString(), path) };
 }

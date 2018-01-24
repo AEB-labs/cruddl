@@ -1,9 +1,9 @@
-import {createSchema} from "../../src/schema/schema-builder";
-import {execute, parse, Source} from "graphql";
-import {ArangoDBAdapter} from "../../src/database/arangodb/arangodb-adapter";
-import {addQueryResolvers} from "../../src/query/query-resolvers";
-import {createTempDatabase} from "../regression/initialization";
-import {sleep} from "../../src/utils/utils";
+import { execute, parse } from 'graphql';
+import { ArangoDBAdapter } from '../../src/database/arangodb';
+import { createTempDatabase } from '../regression/initialization';
+import { sleep } from '../../src/utils/utils';
+import { Project } from '../../src/project/project';
+import { ProjectSource } from '../../src/project/source';
 
 describe('mutation', () => {
 
@@ -81,11 +81,12 @@ describe('mutation', () => {
 
     it('sets createdAt and updatedAt correctly', async() => {
         // on a freshly created delivery
-        const schema = createSchema({ schemaParts: [{ source: new Source(astSchema)}]});
+        const project = new Project([ new ProjectSource('schema.graphql', astSchema) ]);
         const db = new ArangoDBAdapter(await createTempDatabase());
+        const schema = project.createSchema(db);
         await db.updateSchema(schema);
-        const executableSchema = addQueryResolvers(schema, db);
-        const createResult: any = await execute(executableSchema, parse(createDelivery), {}, context);
+
+        const createResult: any = await execute(schema, parse(createDelivery), {}, context);
         const id = createResult.data.createDelivery.id;
         const createCreatedAt = createResult.data.createDelivery.createdAt;
         const createUpdatedAt = createResult.data.createDelivery.updatedAt;
@@ -95,7 +96,7 @@ describe('mutation', () => {
         await sleep(1);
 
         const preparedUpdateDelivery = updateDelivery.replace('%id%', id);
-        const updateResult: any = await execute(executableSchema, parse(preparedUpdateDelivery), {}, context);
+        const updateResult: any = await execute(schema, parse(preparedUpdateDelivery), {}, context);
 
         const updateCreatedAt = updateResult.data.updateDelivery.createdAt;
         const updateUpdatedAt = updateResult.data.updateDelivery.updatedAt;
@@ -107,10 +108,10 @@ describe('mutation', () => {
         expect(Date.parse(updateUpdatedAt)).toBeGreaterThan(minimumEstimatedUpdatedAt);
         expect(Date.parse(updateUpdatedAt)).toBeLessThan(maximumEstimatedUpdatedAt);
 
-        sleep(1);
+        await sleep(1);
 
         // create item
-        const createItemResult: any = await execute(executableSchema, parse(createDeliveryItem), {}, context);
+        const createItemResult: any = await execute(schema, parse(createDeliveryItem), {}, context);
         const createItemCreatedAt = createItemResult.data.createDeliveryItem.createdAt;
         const createItemUpdatedAt = createItemResult.data.createDeliveryItem.updatedAt;
         const itemId = createItemResult.data.createDeliveryItem.id;
@@ -119,14 +120,14 @@ describe('mutation', () => {
 
         // update delivery but set relation only
         const preparedUpdateDeliveryRelationOnly = updateDeliveryRelationOnly.replace('%id%', id).replace('%itemId%', itemId);
-        const updateDeliveryRelationOnlyResult: any = await execute(executableSchema, parse(preparedUpdateDeliveryRelationOnly), {}, context);
+        const updateDeliveryRelationOnlyResult: any = await execute(schema, parse(preparedUpdateDeliveryRelationOnly), {}, context);
         const updateDeliveryRelationOnlyUpdatedAt = updateDeliveryRelationOnlyResult.data.updateDelivery.updatedAt;
         // updatedAt must not have been changed, because only a relation was modified.
         expect(updateDeliveryRelationOnlyUpdatedAt).toBe(updateUpdatedAt);
 
         // update delivery item and remove delivery.
         const preparedUpdateDeliveryItemRelationOnly = updateDeliveryItemRelationOnly.replace('%itemId%', itemId);
-        const updateDeliveryItemRelationOnlyResult: any = await execute(executableSchema, parse(preparedUpdateDeliveryItemRelationOnly), {}, context);
+        const updateDeliveryItemRelationOnlyResult: any = await execute(schema, parse(preparedUpdateDeliveryItemRelationOnly), {}, context);
         const updateItemCreatedAt = updateDeliveryItemRelationOnlyResult.data.updateDeliveryItem.createdAt;
         const updateItemUpdatedAt = updateDeliveryItemRelationOnlyResult.data.updateDeliveryItem.updatedAt;
 
@@ -136,7 +137,7 @@ describe('mutation', () => {
 
         // check persistence of delivery updated at
         const preparedSelectDelivery = selectDelivery.replace('%id%', id);
-        const selectResult: any = await execute(executableSchema, parse(preparedSelectDelivery), {}, context);
+        const selectResult: any = await execute(schema, parse(preparedSelectDelivery), {}, context);
         const selectCreatedAt = selectResult.data.Delivery.createdAt;
         const selectUpdatedAt = selectResult.data.Delivery.updatedAt;
 
@@ -144,11 +145,5 @@ describe('mutation', () => {
         expect(selectCreatedAt).toBe(createCreatedAt);
         // former result is persisted
         expect(selectUpdatedAt).toBe(updateUpdatedAt);
-
-
-
-
-
     });
-
 });

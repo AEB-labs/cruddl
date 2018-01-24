@@ -12,5 +12,5 @@ export interface SchemaConfig {
 
 export interface SchemaPartConfig {
     readonly localNamespace?: string
-    readonly source: Source | DocumentNode
+    readonly source: DocumentNode
 }

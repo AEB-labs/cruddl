@@ -1,5 +1,5 @@
 import { GraphQLSchema } from 'graphql';
-import { GraphQLNamedFieldConfig, transformSchema } from 'graphql-transformer/dist';
+import { GraphQLNamedFieldConfig, transformSchema } from 'graphql-transformer';
 
 export function addAliasBasedResolvers(schema: GraphQLSchema): GraphQLSchema {
     return transformSchema(schema, {
