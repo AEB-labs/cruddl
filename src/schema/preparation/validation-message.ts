@@ -28,37 +28,38 @@ export class MessageLocation {
 }
 
 export class ValidationMessage {
-    public readonly loc: MessageLocation|undefined;
+    public readonly location: MessageLocation|undefined;
 
     constructor(public readonly severity: Severity,
                 public readonly message: string,
-                public readonly params?: { [key: string]: string | number | boolean },
-                loc?: MessageLocation|Location) {
-        if (loc && !(loc instanceof MessageLocation)) {
-            loc = MessageLocation.fromGraphQLLocation(loc);
+                public readonly params: { [key: string]: string | number | boolean } = {},
+                location?: MessageLocation|Location) {
+        if (location && !(location instanceof MessageLocation)) {
+            location = MessageLocation.fromGraphQLLocation(location);
         }
-        this.loc = loc;
+        this.location = location;
     }
 
     public static error(message: string,
-                        params: { [p: string]: string | number | boolean },
-                        loc?: MessageLocation | Location) {
-        return new ValidationMessage(Severity.Error, message, params, loc);
+                        params: { [p: string]: string | number | boolean } = {},
+                        location?: MessageLocation | Location) {
+        return new ValidationMessage(Severity.Error, message, params, location);
     }
 
     public static warn(message: string,
-                       params: { [p: string]: string | number | boolean }, loc?: MessageLocation | Location) {
-        return new ValidationMessage(Severity.Warning, message, params, loc);
+                       params: { [p: string]: string | number | boolean } = {},
+                       location?: MessageLocation | Location) {
+        return new ValidationMessage(Severity.Warning, message, params, location);
     }
 
     public static info(message: string,
-                       params?: { [key: string]: string | number | boolean },
-                       loc?: MessageLocation|Location) {
-        return new ValidationMessage(Severity.Info, message, params, loc);
+                       params: { [key: string]: string | number | boolean } = {},
+                       location?: MessageLocation|Location) {
+        return new ValidationMessage(Severity.Info, message, params, location);
     }
 
     public toString() {
-        const at = this.loc ? ` at ${this.loc.sourceName}:${this.loc.start.line}:${this.loc.start.column}` : '';
+        const at = this.location ? ` at ${this.location.sourceName}:${this.location.start.line}:${this.location.start.column}` : '';
         return `${severityToString(this.severity)}${at}: ${this.message}`;
     }
 }

@@ -8,7 +8,7 @@ describe('check-graphql-syntax validator', () => {
         const messages = validator.validate(new ProjectSource('file.graphql', 'type \nTest invalid'));
         expect(messages.length).toBe(1);
         expect(messages[0].message).toBe("Expected {, found Name \"invalid\"");
-        expect(JSON.parse(JSON.stringify(messages[0].loc))).toEqual({
+        expect(JSON.parse(JSON.stringify(messages[0].location))).toEqual({
             sourceName: 'file.graphql',
             start: { offset: 11, line: 2, column: 6 },
             end: { offset: 18, line: 2, column: 13 }
