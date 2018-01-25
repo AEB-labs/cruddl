@@ -37,6 +37,26 @@ const invalidValue = `{
     }
 }`;
 
+const invalidValueWithComments = `{
+    "permissionProfiles": {
+        "restricted": {
+            "permissions": [
+                {
+                    "roles": ["admin"],
+                    "access": "invalid"
+                },
+                /* block
+                   comment */
+                {
+                    "roles": ["accounting"],
+                    "access": "readWrite",
+                    "restrictToAccessGroups": "accounting"
+                }
+            ]
+        }
+    }
+}`;
+
 describe('sidecar-schema validator', () => {
     const validator = new SidecarSchemaValidator();
 
@@ -56,4 +76,17 @@ describe('sidecar-schema validator', () => {
         const messages = validator.validate(new ProjectSource('file.json', validValue));
         expect(messages).toEqual([]);
     });
+
+    it('reports errors in files with comments', () => {
+        const messages = validator.validate(new ProjectSource('test.json', invalidValueWithComments));
+        expect(messages.length).toBe(2);
+        expect(messages[0].msgKey).toBe("should be equal to one of the allowed values")
+        expect(messages[1].msgKey).toBe("should be array");
+        expect(JSON.parse(JSON.stringify(messages[1].loc))).toEqual({
+            sourceName: 'test.json',
+            start: { offset: 407, line: 14, column: 47 },
+            end: { offset: 419, line: 14, column: 59 }
+        });
+    });
+
 });

@@ -4,6 +4,7 @@ import { MessageLocation, SourcePosition, ValidationMessage } from '../validatio
 import { load } from 'js-yaml';
 import { parse, Pointers } from 'json-source-map';
 import ajv = require('ajv');
+import * as stripJsonComments from 'strip-json-comments';
 
 export class SidecarSchemaValidator implements SourceValidator {
     validate(source: ProjectSource): ValidationMessage[] {
@@ -15,7 +16,9 @@ export class SidecarSchemaValidator implements SourceValidator {
         let data: any;
         try {
             if (source.type == SourceType.JSON) {
-                const result = parse(source.body);
+                // whitespace: true replaces non-whitespace in comments with spaces so that the sourcemap still matches
+                const bodyWithoutComments = stripJsonComments(source.body, { whitespace: true });
+                const result = parse(bodyWithoutComments);
                 pointers = result.pointers;
                 data = result.data;
             } else {
