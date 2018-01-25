@@ -31,6 +31,7 @@ import { NoPermissionProfileValidator } from './ast-validation-modules/no-permis
 import { RolesAndPermissionProfileCombinedValidator } from './ast-validation-modules/roles-and-permission-profile-combined';
 import { UndefinedPermissionProfileValidator } from './ast-validation-modules/undefined-permission-profile';
 import { SidecarSchemaValidator } from './source-validation-modules/sidecar-schema';
+import { UndefinedTypesValidator } from './ast-validation-modules/undefined-types';
 
 const sourceValidators: SourceValidator[]  = [
     new CheckGraphQLSyntaxValidator(),
@@ -44,6 +45,7 @@ const postMergeValidators: ASTValidator[] = [
     new NoDuplicateTypesValidator(),
     new ObjectTypeDirectiveCountValidator(),
     new OnlyAllowedTypesValidator(),
+    new UndefinedTypesValidator(),
     new KeyFieldValidator(),
     new EntityDirectiveNestingValidator(),
     new NoListOfReferencesValidator(),

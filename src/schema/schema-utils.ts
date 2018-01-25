@@ -52,6 +52,7 @@ import {
 import {compact, flatMap, objectValues} from '../utils/utils';
 import {namespacedType} from '../graphql/names';
 import {isEqual} from 'lodash';
+import { CORE_SCALARS } from './graphql-base';
 
 
 /**
@@ -198,16 +199,29 @@ export function getScalarFieldsOfObjectDefinition(ast: DocumentNode, objectDefin
     });
 }
 
-export function getNamedTypeDefinitionAST(ast: DocumentNode, name: string): ObjectTypeDefinitionNode|ScalarTypeDefinitionNode|EnumTypeDefinitionNode|InputObjectTypeDefinitionNode {
+export function getNamedTypeDefinitionASTIfExists(ast: DocumentNode, name: string): ObjectTypeDefinitionNode|ScalarTypeDefinitionNode|EnumTypeDefinitionNode|InputObjectTypeDefinitionNode|undefined {
+    const scalar = CORE_SCALARS.definitions.find(def => def.kind == SCALAR_TYPE_DEFINITION && def.name.value == name);
+    if (scalar) {
+        return scalar as ScalarTypeDefinitionNode;
+    }
+
     if (['String', 'ID', 'Int', 'Float', 'Boolean'].includes(name)) {
         // Fake default scalar types, because they are not present in AST but will be generated later during schema creation.
         return buildScalarDefinitionNode(name);
     }
     const type = ast.definitions.find(def => (def.kind === OBJECT_TYPE_DEFINITION || def.kind === SCALAR_TYPE_DEFINITION || def.kind === ENUM_TYPE_DEFINITION || def.kind === INPUT_OBJECT_TYPE_DEFINITION) && def.name.value === name);
     if (!type) {
-        throw new Error(`Undefined type ${name}`);
+        return undefined;
     }
     return type as ObjectTypeDefinitionNode|ScalarTypeDefinitionNode|EnumTypeDefinitionNode;
+}
+
+export function getNamedTypeDefinitionAST(ast: DocumentNode, name: string): ObjectTypeDefinitionNode|ScalarTypeDefinitionNode|EnumTypeDefinitionNode|InputObjectTypeDefinitionNode {
+    const type = getNamedTypeDefinitionASTIfExists(ast, name);
+    if (!type) {
+        throw new Error(`Undefined type ${name}`);
+    }
+    return type;
 }
 
 export function getTypeNameIgnoringNonNullAndList(typeNode: TypeNode): string {
