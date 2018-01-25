@@ -9,22 +9,22 @@
         {
           "roles": ["accounting"],
           "access": "readWrite",
-          "restrictToAccessGroups": "accounting"
+          "restrictToAccessGroups": ["accounting"]
         },
         {
           "roles": ["logistics"],
           "access": "readWrite",
-          "restrictToAccessGroups": "logistics"
+          "restrictToAccessGroups": ["logistics"]
         },
         {
           "roles": ["logistics-reader"],
           "access": "read",
-          "restrictToAccessGroups": "logistics"
+          "restrictToAccessGroups": ["logistics"]
         },
         {
           "roles": ["logistics-reader", "logistics", "accounting", "admin"],
           "access": "readWrite",
-          "restrictToAccessGroups": "public"
+          "restrictToAccessGroups": ["public"]
         }
       ]
     }
