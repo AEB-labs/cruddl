@@ -1,7 +1,7 @@
 import { ProjectSource } from '../../../src/project/source';
 import { CheckJsonSyntaxValidator } from '../../../src/schema/preparation/source-validation-modules/check-json-syntax';
 
-describe('check-yaml-syntax validator', () => {
+describe('check-json-syntax validator', () => {
     const validator = new CheckJsonSyntaxValidator();
 
     it('reports syntax errors', () => {
@@ -11,7 +11,9 @@ describe('check-yaml-syntax validator', () => {
         expect(JSON.parse(JSON.stringify(messages[0].loc))).toEqual({
             sourceName: 'test.json',
             start: { offset: 12, line: 2, column: 6 },
-            end: { offset: 16, line: 2, column: 9 }
+            end: { offset: 16, line: 2, column: 10 }
+        });
+    });
         });
     });
 

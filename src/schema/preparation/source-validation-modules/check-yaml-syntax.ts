@@ -41,6 +41,6 @@ function end(str: string) {
     const lines = str.split('\n');
     return {
         line: lines.length || 1,
-        column: lines.length ? (lines[lines.length - 1].length || 1) : 1
+        column: (lines[lines.length - 1] || '').length + 1
     };
 }
