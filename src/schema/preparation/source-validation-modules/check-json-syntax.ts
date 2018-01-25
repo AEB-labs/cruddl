@@ -37,7 +37,7 @@ export class CheckJsonSyntaxValidator implements SourceValidator {
 }
 
 function getMessageLocation(result: JSONLintResult, source: ProjectSource): MessageLocation|undefined {
-    if (!result.line || !result.i || !result.character) {
+    if (typeof result.line != 'number' || typeof result.i != 'number' || typeof result.character != 'number') {
         return undefined;
     }
     const endOffset = source.body.length;

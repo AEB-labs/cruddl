@@ -27,7 +27,7 @@ export class CheckYamlSyntaxValidator implements SourceValidator {
 }
 
 function getMessageLocation(error: any, source: ProjectSource): MessageLocation|undefined {
-    if (!error.mark || !error.mark.column || !error.mark.line || !error.mark.position) {
+    if (!error.mark || typeof error.mark.column != 'number' || typeof error.mark.line != 'number' || typeof error.mark.position != 'number') {
         return undefined;
     }
     const endOffset = source.body.length;
