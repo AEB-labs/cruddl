@@ -48,7 +48,7 @@ describe('object directive count validator', () => {
         const validationResult = new ValidationResult(new ObjectTypeDirectiveCountValidator().validate(ast));
         expect(validationResult.hasErrors()).toBeTruthy();
         expect(validationResult.messages.length).toBe(1);
-        expect(validationResult.messages[0].msgKey).toBe(VALIDATION_ERROR_INVALID_COUNT_OF_ENTITY_DIRECTIVES);
+        expect(validationResult.messages[0].message).toBe(VALIDATION_ERROR_INVALID_COUNT_OF_ENTITY_DIRECTIVES);
     });
 
     it('finds types with too many directive', () => {
@@ -56,7 +56,7 @@ describe('object directive count validator', () => {
         const validationResult = new ValidationResult(new ObjectTypeDirectiveCountValidator().validate(ast));
         expect(validationResult.hasErrors()).toBeTruthy();
         expect(validationResult.messages.length).toBe(1);
-        expect(validationResult.messages[0].msgKey).toBe(VALIDATION_ERROR_INVALID_COUNT_OF_ENTITY_DIRECTIVES);
+        expect(validationResult.messages[0].message).toBe(VALIDATION_ERROR_INVALID_COUNT_OF_ENTITY_DIRECTIVES);
     });
 
     it('accepts correct type directives', () => {

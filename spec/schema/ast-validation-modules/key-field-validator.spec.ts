@@ -49,7 +49,7 @@ describe('key field validator', () => {
         const validationResult = new ValidationResult(new KeyFieldValidator().validate(ast));
         expect(validationResult.hasErrors()).toBeTruthy();
         expect(validationResult.messages.length).toBe(1);
-        expect(validationResult.messages[0].msgKey).toBe(VALIDATION_ERROR_DUPLICATE_KEY_FIELD);
+        expect(validationResult.messages[0].message).toBe(VALIDATION_ERROR_DUPLICATE_KEY_FIELD);
     });
 
     it('finds bad type usage', () => {
@@ -57,7 +57,7 @@ describe('key field validator', () => {
         const validationResult = new ValidationResult(new KeyFieldValidator().validate(ast));
         expect(validationResult.hasErrors()).toBeTruthy();
         expect(validationResult.messages.length).toBe(1);
-        expect(validationResult.messages[0].msgKey).toBe(VALIDATION_ERROR_INVALID_KEY_FIELD_TYPE);
+        expect(validationResult.messages[0].message).toBe(VALIDATION_ERROR_INVALID_KEY_FIELD_TYPE);
     });
 
     it('finds bad list type usage', () => {
@@ -65,7 +65,7 @@ describe('key field validator', () => {
         const validationResult = new ValidationResult(new KeyFieldValidator().validate(ast));
         expect(validationResult.hasErrors()).toBeTruthy();
         expect(validationResult.messages.length).toBe(1);
-        expect(validationResult.messages[0].msgKey).toBe(VALIDATION_ERROR_INVALID_KEY_FIELD_LIST_TYPE);
+        expect(validationResult.messages[0].message).toBe(VALIDATION_ERROR_INVALID_KEY_FIELD_LIST_TYPE);
     });
 
     it('finds bad object type usage', () => {
@@ -73,7 +73,7 @@ describe('key field validator', () => {
         const validationResult = new ValidationResult(new KeyFieldValidator().validate(ast));
         expect(validationResult.hasErrors()).toBeTruthy();
         expect(validationResult.messages.length).toBe(1);
-        expect(validationResult.messages[0].msgKey).toBe(VALIDATION_ERROR_INVALID_OBJECT_TYPE);
+        expect(validationResult.messages[0].message).toBe(VALIDATION_ERROR_INVALID_OBJECT_TYPE);
     });
 
     it('accepts correct key usage', () => {

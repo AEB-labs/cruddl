@@ -60,7 +60,7 @@ describe('undefined-permission-profile validator', () => {
         const validationResult = new ValidationResult(new UndefinedPermissionProfileValidator().validate(ast, {}));
         expect(validationResult.hasErrors()).toBeTruthy();
         expect(validationResult.messages.length).toBe(1);
-        expect(validationResult.messages[0].msgKey).toBe(VALIDATION_ERROR_UNDEFINED_PERMISSION_PROFILE);
+        expect(validationResult.messages[0].message).toBe(VALIDATION_ERROR_UNDEFINED_PERMISSION_PROFILE);
     });
 
     it('accepts existing permission profile', () => {
@@ -78,7 +78,7 @@ describe('undefined-permission-profile validator', () => {
         }));
         expect(validationResult.hasErrors()).toBeTruthy();
         expect(validationResult.messages.length).toBe(1);
-        expect(validationResult.messages[0].msgKey).toBe(VALIDATION_ERROR_ACCESS_GROUP_FIELD_MISSING);
+        expect(validationResult.messages[0].message).toBe(VALIDATION_ERROR_ACCESS_GROUP_FIELD_MISSING);
     });
 
     it('accepts existing permission profile with accessGroup if field exists as string', () => {
@@ -104,7 +104,7 @@ describe('undefined-permission-profile validator', () => {
         }));
         expect(validationResult.hasErrors()).toBeTruthy();
         expect(validationResult.messages.length).toBe(1);
-        expect(validationResult.messages[0].msgKey).toBe(VALIDATION_ERROR_ACCESS_GROUP_FIELD_WRONG_TYPE);
+        expect(validationResult.messages[0].message).toBe(VALIDATION_ERROR_ACCESS_GROUP_FIELD_WRONG_TYPE);
     });
 
 });

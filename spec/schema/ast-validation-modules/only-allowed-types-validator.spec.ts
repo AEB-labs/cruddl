@@ -26,7 +26,7 @@ describe('only allowed type definition validator', () => {
         const validationResult = new ValidationResult(new OnlyAllowedTypesValidator().validate(ast));
         expect(validationResult.hasErrors()).toBeTruthy();
         expect(validationResult.messages.length).toBe(1);
-        expect(validationResult.messages[0].msgKey).toBe(VALIDATION_ERROR_INVALID_TYPE_KIND);
+        expect(validationResult.messages[0].message).toBe(VALIDATION_ERROR_INVALID_TYPE_KIND);
     });
 
     it('accepts correct type kinds', () => {

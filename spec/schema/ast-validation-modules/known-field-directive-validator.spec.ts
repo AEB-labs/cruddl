@@ -29,7 +29,7 @@ describe('known field directive validator', () => {
         const validationResult = new ValidationResult(new KnownFieldDirectivesValidator().validate(ast));
         expect(validationResult.hasErrors()).toBeTruthy();
         expect(validationResult.messages.length).toBe(1);
-        expect(validationResult.messages[0].msgKey).toBe(VALIDATION_ERROR_UNKNOWN_FIELD_DIRECTIVE);
+        expect(validationResult.messages[0].message).toBe(VALIDATION_ERROR_UNKNOWN_FIELD_DIRECTIVE);
     });
 
     it('accepts known field directives', () => {

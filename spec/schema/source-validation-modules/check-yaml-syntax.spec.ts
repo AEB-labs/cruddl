@@ -8,7 +8,7 @@ describe('check-yaml-syntax validator', () => {
     it('reports syntax errors', () => {
         const messages = validator.validate(new ProjectSource('test.yaml', 'valid\nfoo: second colon: here\n '));
         expect(messages.length).toBe(1);
-        expect(messages[0].msgKey).toBe("end of the stream or a document separator is expected");
+        expect(messages[0].message).toBe("end of the stream or a document separator is expected");
         expect(JSON.parse(JSON.stringify(messages[0].loc))).toEqual({
             sourceName: 'test.yaml',
             start: { offset: 9, line: 2, column: 4 },

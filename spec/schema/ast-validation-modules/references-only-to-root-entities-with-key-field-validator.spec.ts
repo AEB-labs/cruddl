@@ -39,7 +39,7 @@ describe('references only on root entity with key field validator', () => {
         const validationResult = new ValidationResult(new ReferenceOnlyToRootEntitiesWithKeyFieldValidator().validate(ast));
         expect(validationResult.hasErrors()).toBeTruthy();
         expect(validationResult.messages.length).toBe(1);
-        expect(validationResult.messages[0].msgKey).toBe(VALIDATION_ERROR_REFERENCE_TO_NON_ROOT_ENTITY);
+        expect(validationResult.messages[0].message).toBe(VALIDATION_ERROR_REFERENCE_TO_NON_ROOT_ENTITY);
     });
 
     it('rejects @reference to rootEntity without @key', () => {
@@ -47,7 +47,7 @@ describe('references only on root entity with key field validator', () => {
         const validationResult = new ValidationResult(new ReferenceOnlyToRootEntitiesWithKeyFieldValidator().validate(ast));
         expect(validationResult.hasErrors()).toBeTruthy();
         expect(validationResult.messages.length).toBe(1);
-        expect(validationResult.messages[0].msgKey).toBe(VALIDATION_ERROR_REFERENCE_TO_OBJECT_WITHOUT_KEY_FIELD);
+        expect(validationResult.messages[0].message).toBe(VALIDATION_ERROR_REFERENCE_TO_OBJECT_WITHOUT_KEY_FIELD);
     });
 
     it('accepts @reference to @rootEntity with @key', () => {

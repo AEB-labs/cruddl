@@ -62,7 +62,7 @@ function assertValidatorRejects(expectation: string, model: string, msg: string)
         const validationResult = new ValidationResult(new CheckDirectedRelationEdgesValidator().validate(ast));
         expect(validationResult.hasErrors()).toBeTruthy();
         expect(validationResult.messages.length).toBe(1);
-        expect(validationResult.messages[0].msgKey).toBe(msg);
+        expect(validationResult.messages[0].message).toBe(msg);
     });
 }
 
@@ -71,7 +71,7 @@ function assertValidatorWarns(expectation: string, model: string, msg: string) {
         const ast = parse(model);
         const validationResult = new ValidationResult(new CheckDirectedRelationEdgesValidator().validate(ast));
         expect(validationResult.hasWarnings()).toBeTruthy();
-        expect(validationResult.messages.find(validatedMsg => validatedMsg.msgKey === msg)).toBeDefined()
+        expect(validationResult.messages.find(validatedMsg => validatedMsg.message === msg)).toBeDefined()
     });
 }
 

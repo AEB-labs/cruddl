@@ -30,7 +30,7 @@ describe('root-entities-without-read-roles validator', () => {
         expect(validationResult.hasErrors()).toBeFalsy();
         expect(validationResult.hasWarnings()).toBeTruthy();
         expect(validationResult.messages.length).toBe(1);
-        expect(validationResult.messages[0].msgKey).toBe(VALIDATION_WARNING_MISSING_ROLE_ON_ROOT_ENTITY);
+        expect(validationResult.messages[0].message).toBe(VALIDATION_WARNING_MISSING_ROLE_ON_ROOT_ENTITY);
     });
 
     it('rejects @roles with empty roles', () => {
@@ -39,7 +39,7 @@ describe('root-entities-without-read-roles validator', () => {
         expect(validationResult.hasErrors()).toBeFalsy();
         expect(validationResult.hasWarnings()).toBeTruthy();
         expect(validationResult.messages.length).toBe(1);
-        expect(validationResult.messages[0].msgKey).toBe(VALIDATION_WARNING_MISSING_ROLE_ON_ROOT_ENTITY);
+        expect(validationResult.messages[0].message).toBe(VALIDATION_WARNING_MISSING_ROLE_ON_ROOT_ENTITY);
     });
 
     it('accepts non-nested lists', () => {

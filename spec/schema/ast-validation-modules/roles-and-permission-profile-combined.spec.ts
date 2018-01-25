@@ -35,7 +35,7 @@ describe('no-permission-profile validator', () => {
         const validationResult = new ValidationResult(new RolesAndPermissionProfileCombinedValidator().validate(ast));
         expect(validationResult.hasErrors()).toBeTruthy();
         expect(validationResult.messages.length).toBe(1);
-        expect(validationResult.messages[0].msgKey).toBe(VALIDATION_ERROR_ROLES_AND_PERMISSION_PROFILE_COMBINED);
+        expect(validationResult.messages[0].message).toBe(VALIDATION_ERROR_ROLES_AND_PERMISSION_PROFILE_COMBINED);
     });
 
     it('accepts @roles', () => {

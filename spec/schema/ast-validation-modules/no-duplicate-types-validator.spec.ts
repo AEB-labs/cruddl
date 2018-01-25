@@ -30,7 +30,7 @@ describe('no duplicate type definition validator', () => {
         expect(validationResult.hasErrors()).toBeTruthy();
         // we expect two errors because both types have a duplicate type error
         expect(validationResult.messages.length).toBe(3);
-        expect(validationResult.messages[0].msgKey).toBe(VALIDATION_ERROR_DUPLICATE_TYPE_NAMES);
+        expect(validationResult.messages[0].message).toBe(VALIDATION_ERROR_DUPLICATE_TYPE_NAMES);
     });
 
     it('accepts unique types', () => {

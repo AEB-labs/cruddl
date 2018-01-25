@@ -63,8 +63,8 @@ describe('sidecar-schema validator', () => {
     it('reports errors', () => {
         const messages = validator.validate(new ProjectSource('test.json', invalidValue));
         expect(messages.length).toBe(2);
-        expect(messages[0].msgKey).toBe("should be equal to one of the allowed values")
-        expect(messages[1].msgKey).toBe("should be array");;
+        expect(messages[0].message).toBe("should be equal to one of the allowed values")
+        expect(messages[1].message).toBe("should be array");;
         expect(JSON.parse(JSON.stringify(messages[1].loc))).toEqual({
             sourceName: 'test.json',
             start: { offset: 352, line: 12, column: 47 },
@@ -80,8 +80,8 @@ describe('sidecar-schema validator', () => {
     it('reports errors in files with comments', () => {
         const messages = validator.validate(new ProjectSource('test.json', invalidValueWithComments));
         expect(messages.length).toBe(2);
-        expect(messages[0].msgKey).toBe("should be equal to one of the allowed values")
-        expect(messages[1].msgKey).toBe("should be array");
+        expect(messages[0].message).toBe("should be equal to one of the allowed values")
+        expect(messages[1].message).toBe("should be array");
         expect(JSON.parse(JSON.stringify(messages[1].loc))).toEqual({
             sourceName: 'test.json',
             start: { offset: 407, line: 14, column: 47 },

@@ -29,7 +29,7 @@ describe('relations only on root entities validator', () => {
         const validationResult = new ValidationResult(new RelationsOnlyToRootEntitiesValidator().validate(ast));
         expect(validationResult.hasErrors()).toBeTruthy();
         expect(validationResult.messages.length).toBe(1);
-        expect(validationResult.messages[0].msgKey).toBe(VALIDATION_ERROR_RELATION_TO_NON_ROOT_ENTITY);
+        expect(validationResult.messages[0].message).toBe(VALIDATION_ERROR_RELATION_TO_NON_ROOT_ENTITY);
     });
 
     it('accepts @relation to @rootEntity', () => {

@@ -51,8 +51,8 @@ describe('undefined-types validator', () => {
         const validationResult = new ValidationResult(validator.validate(ast));
         expect(validationResult.hasErrors()).toBeTruthy();
         expect(validationResult.messages.length).toBe(2);
-        expect(validationResult.messages[0].msgKey).toBe(VALIDATION_ERROR_UNDEFINED_TYPE_REFERENCE);
-        expect(validationResult.messages[1].msgKey).toBe(VALIDATION_ERROR_UNDEFINED_TYPE_REFERENCE);
+        expect(validationResult.messages[0].message).toBe(VALIDATION_ERROR_UNDEFINED_TYPE_REFERENCE);
+        expect(validationResult.messages[1].message).toBe(VALIDATION_ERROR_UNDEFINED_TYPE_REFERENCE);
     });
 
     it('accepts valid sources', () => {

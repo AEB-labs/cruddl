@@ -29,7 +29,7 @@ describe('no lists of lists validator', () => {
         const validationResult = new ValidationResult(new NoListsOfListsValidator().validate(ast));
         expect(validationResult.hasErrors()).toBeTruthy();
         expect(validationResult.messages.length).toBe(1);
-        expect(validationResult.messages[0].msgKey).toBe(VALIDATION_ERROR_LISTS_OF_LISTS_NOT_ALLOWED);
+        expect(validationResult.messages[0].message).toBe(VALIDATION_ERROR_LISTS_OF_LISTS_NOT_ALLOWED);
     });
 
     it('rejects non-nullable lists of non-nullable lists of non-nullable elements', () => {
@@ -37,7 +37,7 @@ describe('no lists of lists validator', () => {
         const validationResult = new ValidationResult(new NoListsOfListsValidator().validate(ast));
         expect(validationResult.hasErrors()).toBeTruthy();
         expect(validationResult.messages.length).toBe(1);
-        expect(validationResult.messages[0].msgKey).toBe(VALIDATION_ERROR_LISTS_OF_LISTS_NOT_ALLOWED);
+        expect(validationResult.messages[0].message).toBe(VALIDATION_ERROR_LISTS_OF_LISTS_NOT_ALLOWED);
     });
 
     it('accepts non-nested lists', () => {

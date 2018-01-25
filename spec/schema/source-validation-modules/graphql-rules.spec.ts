@@ -8,7 +8,7 @@ describe('graphql-rules validator', () => {
     it('reports errors', () => {
         const messages = validator.validate(new ProjectSource('file.graphql', 'type Test @unknownDirective { }'));
         expect(messages.length).toBe(1);
-        expect(messages[0].msgKey).toBe('Unknown directive "unknownDirective".');
+        expect(messages[0].message).toBe('Unknown directive "unknownDirective".');
     });
 
     it('accepts valid GraphQL', () => {

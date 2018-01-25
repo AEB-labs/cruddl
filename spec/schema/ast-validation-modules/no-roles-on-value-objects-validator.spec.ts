@@ -29,7 +29,7 @@ describe('no roles on value objects validator', () => {
         const validationResult = new ValidationResult(new NoRolesOnValueObjectsValidator().validate(ast));
         expect(validationResult.hasErrors()).toBeTruthy();
         expect(validationResult.messages.length).toBe(1);
-        expect(validationResult.messages[0].msgKey).toBe(VALIDATION_ERROR_ROLES_NOT_ALLOWED_FOR_VALUE_OBJECTS);
+        expect(validationResult.messages[0].message).toBe(VALIDATION_ERROR_ROLES_NOT_ALLOWED_FOR_VALUE_OBJECTS);
     });
 
     it('rejects value objects with fields with @roles', () => {
@@ -37,7 +37,7 @@ describe('no roles on value objects validator', () => {
         const validationResult = new ValidationResult(new NoRolesOnValueObjectsValidator().validate(ast));
         expect(validationResult.hasErrors()).toBeTruthy();
         expect(validationResult.messages.length).toBe(1);
-        expect(validationResult.messages[0].msgKey).toBe(VALIDATION_ERROR_ROLES_NOT_ALLOWED_FOR_VALUE_OBJECTS);
+        expect(validationResult.messages[0].message).toBe(VALIDATION_ERROR_ROLES_NOT_ALLOWED_FOR_VALUE_OBJECTS);
     });
 
     it('accepts value objects without roles', () => {

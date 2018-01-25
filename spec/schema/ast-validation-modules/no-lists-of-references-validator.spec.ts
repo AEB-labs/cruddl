@@ -29,7 +29,7 @@ describe('no lists of references validator', () => {
         const validationResult = new ValidationResult(new NoListOfReferencesValidator().validate(ast));
         expect(validationResult.hasErrors()).toBeTruthy();
         expect(validationResult.messages.length).toBe(1);
-        expect(validationResult.messages[0].msgKey).toBe(VALIDATION_ERROR_LIST_OF_REFERENCES_NOT_SUPPORTED);
+        expect(validationResult.messages[0].message).toBe(VALIDATION_ERROR_LIST_OF_REFERENCES_NOT_SUPPORTED);
     });
 
     it('accepts non-list references', () => {

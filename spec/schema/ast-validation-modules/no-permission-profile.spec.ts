@@ -32,7 +32,7 @@ describe('no-permission-profile validator', () => {
         const validationResult = new ValidationResult(new NoPermissionProfileValidator().validate(ast, {}));
         expect(validationResult.hasErrors()).toBeTruthy();
         expect(validationResult.messages.length).toBe(1);
-        expect(validationResult.messages[0].msgKey).toBe(VALIDATION_ERROR_NO_PERMISSION_PROFILE);
+        expect(validationResult.messages[0].message).toBe(VALIDATION_ERROR_NO_PERMISSION_PROFILE);
     });
 
     it('accepts with default permission profile', () => {
