@@ -57,12 +57,14 @@
     "typescript": "^2.6.2"
   },
   "dependencies": {
+    "ajv": "^6.0.1",
     "arangojs": "~5.7.1",
     "colors": "^1.1.2",
     "graphql-tag": "^2.5.0",
     "graphql-transformer": "^0.1.2",
     "js-yaml": "^3.10.0",
     "json-lint": "^0.1.0",
+    "json-source-map": "^0.4.0",
     "jsondiffpatch": "^0.2.4",
     "lodash": "^4.17.4",
     "moment": "^2.19.1",
