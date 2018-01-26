@@ -1,10 +1,14 @@
-import { GraphQLSchema } from 'graphql';
+import { GraphQLScalarType, GraphQLSchema } from 'graphql';
 import { GraphQLDateTime } from '../../scalars/date-time';
-import { SchemaTransformationContext, transformSchema } from 'graphql-transformer/dist';
-import { arrayToObject, mapValues } from '../../../utils/utils';
+import { transformSchema } from 'graphql-transformer/dist';
+import { arrayToObject } from '../../../utils/utils';
 import { SchemaTransformer } from '../transformation-pipeline';
+import GraphQLJSON = require('graphql-type-json');
 
-const scalars = [ GraphQLDateTime ];
+const scalars: GraphQLScalarType[] = [
+    GraphQLDateTime,
+    GraphQLJSON
+];
 const scalarMap = arrayToObject(scalars, scalar => scalar.name);
 
 export class ImplementScalarTypesTransformer implements SchemaTransformer {
