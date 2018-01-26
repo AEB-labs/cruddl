@@ -2,7 +2,7 @@
 import {ValidationResult} from "../../../src/schema/preparation/ast-validator";
 import {
     EntityDirectiveNestingValidator, VALIDATION_ERROR_ENTITY_IN_VALUE_OBJECT_NOT_ALLOWED,
-    VALIDATION_ERROR_ROOT_ENTITY_NOT_EMBEDDABLE, VALIDATION_WARNING_EMBEDDED_CHILD_ENTITY_WITHOUT_LIST
+    VALIDATION_ERROR_ROOT_ENTITY_NOT_EMBEDDABLE, VALIDATION_ERROR_EMBEDDED_CHILD_ENTITY_WITHOUT_LIST
 } from "../../../src/schema/preparation/ast-validation-modules/entity-directive-nesting-validator";
 import {parse} from "graphql";
 
@@ -83,10 +83,10 @@ describe('entity directive nesting validator', () => {
         type Bar @valueObject { foo: [Foo!]! @reference }
     `);
 
-    assertValidatorWarns('@childEntity field usage without list', `
+    assertValidatorRejects('@childEntity field usage without list', `
         type Foo @childEntity { fooo: String }
         type Bar @rootEntity { foo: Foo }
-    `, VALIDATION_WARNING_EMBEDDED_CHILD_ENTITY_WITHOUT_LIST);
+    `, VALIDATION_ERROR_EMBEDDED_CHILD_ENTITY_WITHOUT_LIST);
 
 });
 
