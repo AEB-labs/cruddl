@@ -21,18 +21,29 @@ export async function loadProjectFromDir(path: string, options: ProjectOptions =
     });
 }
 
-async function loadSourcesFromDir(dirPath: string, relativePath: string = ''): Promise<ProjectSource[]> {
+async function loadSourcesFromDir(dirPath: string, parentSourcePath: string = ''): Promise<ProjectSource[]> {
     const fileNames: string[] = await readdir(dirPath);
     return flatten(await Promise.all(fileNames.map(processFile)));
 
     async function processFile(fileName: string): Promise<ProjectSource[]> {
-        const relativeFilePath = path.resolve(relativePath, fileName);
+        const sourcePath = concatSourcePaths(parentSourcePath, fileName);
         const filePath = path.resolve(dirPath, fileName);
         const stats = await stat(filePath);
         if (stats.isDirectory()) {
-            return await loadSourcesFromDir(filePath, relativeFilePath);
+            return await loadSourcesFromDir(filePath, sourcePath);
         }
         const body = await readFile(filePath, 'utf-8');
-        return [ new ProjectSource(relativeFilePath, body) ];
+        return [ new ProjectSource(sourcePath, body) ];
     }
+}
+
+function concatSourcePaths(path1: string, path2: string) {
+    if (!path1) {
+        return path2;
+    }
+    if (!path2) {
+        return path1;
+    }
+    // Always use slashes here because we don't want OS directories but logical source paths
+    return `${path1}/${path2}`
 }
