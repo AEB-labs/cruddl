@@ -22,7 +22,7 @@ import {LIST_TYPE, NAMED_TYPE, NON_NULL_TYPE, OBJECT_TYPE_DEFINITION} from "grap
 export const VALIDATION_ERROR_LISTS_OF_ENTITY_EXTENSIONS_NOT_ALLOWED = 'Entity extensions are not allowed in lists. Use child entities instead.';
 export const VALIDATION_ERROR_ROOT_ENTITY_NOT_EMBEDDABLE = 'Root entities are not embeddable. Embed a child entity or entity extension or use @relation or @reference instead.';
 export const VALIDATION_ERROR_EMBEDDED_CHILD_ENTITY_WITHOUT_LIST = 'Child entities are only allowed in lists. Use entity extensions or value objects instead.';
-export const VALIDATION_ERROR_ENTITY_IN_VALUE_OBJECT_NOT_ALLOWED = 'A @valueObject can only contain @valueObject fields. @rootEntity, @childEntity and @entityExtension are not allowed.';
+export const VALIDATION_ERROR_ENTITY_IN_VALUE_OBJECT_NOT_ALLOWED = 'Value objects can only use scalars, enums or value objects as field types.';
 
 export class EntityDirectiveNestingValidator implements ASTValidator {
 

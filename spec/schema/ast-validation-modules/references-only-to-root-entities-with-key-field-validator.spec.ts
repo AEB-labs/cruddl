@@ -2,8 +2,6 @@ import {ValidationResult} from "../../../src/schema/preparation/ast-validator";
 import {parse} from "graphql";
 import {
     ReferenceOnlyToRootEntitiesWithKeyFieldValidator,
-    VALIDATION_ERROR_REFERENCE_TO_NON_ROOT_ENTITY,
-    VALIDATION_ERROR_REFERENCE_TO_OBJECT_WITHOUT_KEY_FIELD
 } from "../../../src/schema/preparation/ast-validation-modules/references-only-to-root-entities-with-key-field-validator";
 
 const modelWithReferenceToNonRoot = `
@@ -39,7 +37,7 @@ describe('references only on root entity with key field validator', () => {
         const validationResult = new ValidationResult(new ReferenceOnlyToRootEntitiesWithKeyFieldValidator().validate(ast));
         expect(validationResult.hasErrors()).toBeTruthy();
         expect(validationResult.messages.length).toBe(1);
-        expect(validationResult.messages[0].message).toBe(VALIDATION_ERROR_REFERENCE_TO_NON_ROOT_ENTITY);
+        expect(validationResult.messages[0].message).toBe('"Stuff" is not a root entity');
     });
 
     it('rejects @reference to rootEntity without @key', () => {
@@ -47,7 +45,7 @@ describe('references only on root entity with key field validator', () => {
         const validationResult = new ValidationResult(new ReferenceOnlyToRootEntitiesWithKeyFieldValidator().validate(ast));
         expect(validationResult.hasErrors()).toBeTruthy();
         expect(validationResult.messages.length).toBe(1);
-        expect(validationResult.messages[0].message).toBe(VALIDATION_ERROR_REFERENCE_TO_OBJECT_WITHOUT_KEY_FIELD);
+        expect(validationResult.messages[0].message).toBe('"Stuff" has no @key field');
     });
 
     it('accepts @reference to @rootEntity with @key', () => {

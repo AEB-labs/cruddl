@@ -16,7 +16,7 @@ import {ENUM_TYPE_DEFINITION, LIST, OBJECT, OBJECT_FIELD, OBJECT_TYPE_DEFINITION
 
 export const VALIDATION_ERROR_INDICES_MISSING_FIELDS = 'Missing argument fields on index definition';
 export const VALIDATION_ERROR_INDICES_INVALID_PATH_BAD_SYNTAX = 'A path should be field names separated by dots';
-export const VALIDATION_ERROR_INDICES_INVALID_FIELDS_ARGUMENT = 'Field "fields" must be a non-empty list of field names from the current rootEntity.';
+export const VALIDATION_ERROR_INDICES_INVALID_FIELDS_ARGUMENT = 'Field "fields" must be a non-empty list of field names from the current root entity.';
 export const VALIDATION_ERROR_INDICES_DUPLICATE_INDEX_DEFINITION = 'Duplicate index definition.';
 export const VALIDATION_ERROR_INDICES_INVALID_PATH_NON_SCALAR_END = 'Indices can only be defined on scalar or enum fields. Specify a dot-separated field path to create an index on an embedded object.';
 export const VALIDATION_ERROR_INDICES_ONLY_ON_ROOT_ENTITIES = "Indices are only allowed in root entity fields. You can add indices to fields of embedded objects with @rootEntities(indices: [...]).";

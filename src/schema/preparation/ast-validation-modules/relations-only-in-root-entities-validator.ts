@@ -4,7 +4,7 @@ import {ValidationMessage} from "../validation-message";
 import {getObjectTypes, hasDirectiveWithName} from "../../schema-utils";
 import {RELATION_DIRECTIVE, ROOT_ENTITY_DIRECTIVE} from "../../schema-defaults";
 
-export const VALIDATION_ERROR_RELATION_IN_NON_ROOT_ENTITY = '@relation is only allowed in @rootEntities.'
+export const VALIDATION_ERROR_RELATION_IN_NON_ROOT_ENTITY = '@relation can only be used on root entity fields.';
 
 export class RelationsOnlyInRootEntitiesValidator implements ASTValidator {
 
