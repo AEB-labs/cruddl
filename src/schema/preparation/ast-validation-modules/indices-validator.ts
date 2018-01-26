@@ -1,8 +1,8 @@
 import {ASTValidator} from "../ast-validator";
 import {
-    DocumentNode, EnumTypeDefinitionNode, GraphQLBoolean, GraphQLInt, GraphQLString, Location,
+    DocumentNode, EnumTypeDefinitionNode, GraphQLBoolean, GraphQLFloat, GraphQLID, GraphQLInt, GraphQLString, Location,
     ObjectTypeDefinitionNode, StringValueNode, ValueNode
-} from "graphql";
+} from 'graphql';
 import {ValidationMessage} from "../validation-message";
 import {
     findDirectiveWithName, getChildEntityTypes, getEntityExtensionTypes, getNamedTypeDefinitionAST, getNodeByName,
@@ -15,14 +15,11 @@ import {
 import {ENUM_TYPE_DEFINITION, LIST, OBJECT, OBJECT_FIELD, OBJECT_TYPE_DEFINITION, STRING} from "graphql/language/kinds";
 
 export const VALIDATION_ERROR_INDICES_MISSING_FIELDS = 'Missing argument fields on index definition';
-export const VALIDATION_ERROR_INDICES_INVALID_PATH_BAD_SYNTAX = 'Invalid path. Only alphanumeric characters divided by dots are allowed.';
-export const VALIDATION_ERROR_INDICES_INVALID_FIELDS_ARGUMENT = 'Field `fields` must be a non-empty list of field names from the current rootEntity.';
-export const VALIDATION_ERROR_INDICES_UNKNOWN_FIELD_ON_PATH = 'Invalid path. Unknown field on type.';
-export const VALIDATION_ERROR_INDICES_INVALID_PATH_FINAL_NODE_HAS_NO_SUBFIELDS = 'Invalid path. The specified field is a final node and has no sub-fields.';
+export const VALIDATION_ERROR_INDICES_INVALID_PATH_BAD_SYNTAX = 'A path should be field names separated by dots';
+export const VALIDATION_ERROR_INDICES_INVALID_FIELDS_ARGUMENT = 'Field "fields" must be a non-empty list of field names from the current rootEntity.';
 export const VALIDATION_ERROR_INDICES_DUPLICATE_INDEX_DEFINITION = 'Duplicate index definition.';
-export const VALIDATION_ERROR_INDICES_INVALID_PATH_INVALID_INTERMEDIATE_NODE = 'Invalid path. A non-final can only be one of @childEntity, @entityExtension or @valueObject.';
-export const VALIDATION_ERROR_INDICES_INVALID_PATH_NON_SCALAR_END = 'Invalid path. The end of the path must be a scalar or enum field.';
-export const VALIDATION_ERROR_INDICES_ONLY_ON_ROOT_ENTITIES = "Indices are only allowed on rootEntities fields";
+export const VALIDATION_ERROR_INDICES_INVALID_PATH_NON_SCALAR_END = 'Indices can only be defined on scalar or enum fields. Specify a dot-separated field path to create an index on an embedded object.';
+export const VALIDATION_ERROR_INDICES_ONLY_ON_ROOT_ENTITIES = "Indices are only allowed in root entity fields. You can add indices to fields of embedded objects with @rootEntities(indices: [...]).";
 
 export class IndicesValidator implements ASTValidator {
 
@@ -96,20 +93,20 @@ function checkASTPath(path: string, type: ObjectTypeDefinitionNode, ast: Documen
     const remainingPath = path.split(/\.([\w]*)/)[1];
     const fieldNode = getNodeByName(type.fields, requiredFieldName);
     if (!fieldNode) {
-        validationMessages.push(ValidationMessage.error(VALIDATION_ERROR_INDICES_UNKNOWN_FIELD_ON_PATH, { field: requiredFieldName, type: type.name.value }, loc));
+        validationMessages.push(ValidationMessage.error(`Type "${type.name.value}" does not have a field "${requiredFieldName}"`, { field: requiredFieldName, type: type.name.value }, loc));
         return;
     }
     const fieldTypeName = getTypeNameIgnoringNonNullAndList(fieldNode.type);
     const fieldType = getNamedTypeDefinitionAST(ast, fieldTypeName);
     if (remainingPath) {
         if (fieldType.kind !== OBJECT_TYPE_DEFINITION) {
-            validationMessages.push(ValidationMessage.error(VALIDATION_ERROR_INDICES_INVALID_PATH_FINAL_NODE_HAS_NO_SUBFIELDS, { field: requiredFieldName, type: type.name.value }, loc));
+            validationMessages.push(ValidationMessage.error(`Field "${requiredFieldName}" is not an object`, { field: requiredFieldName, type: type.name.value }, loc));
             return;
         }
         if (!getNodeByName(fieldType.directives, VALUE_OBJECT_DIRECTIVE)
             && !getNodeByName(fieldType.directives, CHILD_ENTITY_DIRECTIVE)
             && !getNodeByName(fieldType.directives, ENTITY_EXTENSION_DIRECTIVE)) {
-            validationMessages.push(ValidationMessage.error(VALIDATION_ERROR_INDICES_INVALID_PATH_INVALID_INTERMEDIATE_NODE, { field: requiredFieldName, type: type.name.value }, loc));
+            validationMessages.push(ValidationMessage.error(`Field "${requiredFieldName}" resolves to a root entity, but indices can not cross root entity boundaries`, { field: requiredFieldName, type: type.name.value }, loc));
             return;
         }
         checkASTPath(remainingPath, fieldType, ast, validationMessages, loc);
@@ -123,6 +120,6 @@ function checkASTPath(path: string, type: ObjectTypeDefinitionNode, ast: Documen
 
 function getAllowedPathEndIndexTypes(ast: DocumentNode) {
     const enumTypeNames = ast.definitions.filter(def => def.kind === ENUM_TYPE_DEFINITION).map(enumType => (enumType as EnumTypeDefinitionNode).name.value);
-    return [GraphQLString.name, GraphQLInt.name, GraphQLBoolean.name, ...enumTypeNames];
+    return [GraphQLString.name, GraphQLInt.name, GraphQLFloat.name, GraphQLID.name, GraphQLBoolean.name, ...enumTypeNames];
 }
 

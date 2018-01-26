@@ -1,15 +1,11 @@
-import {CheckDirectedRelationEdgesValidator} from "../../../src/schema/preparation/ast-validation-modules/check-directed-relation-edges-validator";
-import {parse} from "graphql";
-import {ValidationResult} from "../../../src/schema/preparation/ast-validator";
+import { parse } from 'graphql';
+import { ValidationResult } from '../../../src/schema/preparation/ast-validator';
 import {
-    IndicesValidator,
-    VALIDATION_ERROR_INDICES_INVALID_FIELDS_ARGUMENT, VALIDATION_ERROR_INDICES_INVALID_PATH_BAD_SYNTAX,
-    VALIDATION_ERROR_INDICES_INVALID_PATH_FINAL_NODE_HAS_NO_SUBFIELDS,
-    VALIDATION_ERROR_INDICES_INVALID_PATH_INVALID_INTERMEDIATE_NODE,
-    VALIDATION_ERROR_INDICES_INVALID_PATH_NON_SCALAR_END,
-    VALIDATION_ERROR_INDICES_MISSING_FIELDS, VALIDATION_ERROR_INDICES_ONLY_ON_ROOT_ENTITIES,
-    VALIDATION_ERROR_INDICES_UNKNOWN_FIELD_ON_PATH
-} from "../../../src/schema/preparation/ast-validation-modules/indices-validator";
+    IndicesValidator, VALIDATION_ERROR_INDICES_INVALID_FIELDS_ARGUMENT,
+    VALIDATION_ERROR_INDICES_INVALID_PATH_BAD_SYNTAX,
+    VALIDATION_ERROR_INDICES_INVALID_PATH_NON_SCALAR_END, VALIDATION_ERROR_INDICES_MISSING_FIELDS,
+    VALIDATION_ERROR_INDICES_ONLY_ON_ROOT_ENTITIES
+} from '../../../src/schema/preparation/ast-validation-modules/indices-validator';
 
 describe('indices validator', () => {
 
@@ -45,16 +41,12 @@ describe('indices validator', () => {
 
     assertValidatorRejects('index with unknown field in path', `
         type Foo @rootEntity(indices:[{ fields: ["bar"]}]) { foo: String }
-    `, VALIDATION_ERROR_INDICES_UNKNOWN_FIELD_ON_PATH);
-
-    assertValidatorRejects('index with unknown field in path', `
-        type Foo @rootEntity(indices:[{ fields: ["bar"]}]) { foo: String }
-    `, VALIDATION_ERROR_INDICES_UNKNOWN_FIELD_ON_PATH);
+    `, 'Type "Foo" does not have a field "bar"');
 
     assertValidatorRejects('index on missing nested field', `
         type Foo @rootEntity(indices:[{ fields: ["bar.bla"]}]) { foo: String, bar: Bar }
         type Bar @entityExtension { baz: String }
-    `, VALIDATION_ERROR_INDICES_UNKNOWN_FIELD_ON_PATH);
+    `, 'Type "Bar" does not have a field "bla"');
 
     assertValidatorRejects('index on non-scalar field', `
         type Foo @rootEntity(indices:[{ fields: ["bar"]}]) { foo: String, bar: Bar }
@@ -63,12 +55,12 @@ describe('indices validator', () => {
 
     assertValidatorRejects('index with sub-path in scalar', `
         type Foo @rootEntity(indices:[{ fields: ["bar.baz"]}]) { foo: String, bar: String }
-    `, VALIDATION_ERROR_INDICES_INVALID_PATH_FINAL_NODE_HAS_NO_SUBFIELDS);
+    `, 'Field "bar" is not an object');
 
     assertValidatorRejects('index on relation', `
         type Foo @rootEntity(indices:[{ fields: ["bar.baz"]}]) { bar: Bar @relation }
         type Bar @rootEntity { baz: String }
-    `, VALIDATION_ERROR_INDICES_INVALID_PATH_INVALID_INTERMEDIATE_NODE);
+    `, 'Field "bar" resolves to a root entity, but indices can not cross root entity boundaries');
 
     assertValidatorRejects('index on field of non-rootEntity', `
         type Foo @valueObject { bar: String @unique }
