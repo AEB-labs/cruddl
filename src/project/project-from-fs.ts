@@ -33,7 +33,7 @@ async function loadSourcesFromDir(dirPath: string, parentSourcePath: string = ''
             return await loadSourcesFromDir(filePath, sourcePath);
         }
         const body = await readFile(filePath, 'utf-8');
-        return [ new ProjectSource(sourcePath, body) ];
+        return [ new ProjectSource(sourcePath, body, filePath) ];
     }
 }
 

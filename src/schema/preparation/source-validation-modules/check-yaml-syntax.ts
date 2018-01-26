@@ -32,7 +32,7 @@ function getMessageLocation(error: any, source: ProjectSource): MessageLocation|
     }
     const endOffset = source.body.length;
     const endLoc = end(source.body);
-    return new MessageLocation(source.name,
+    return new MessageLocation(source,
         new SourcePosition(error.mark.position, error.mark.line + 1, error.mark.column + 1),
         new SourcePosition(endOffset, endLoc.line, endLoc.column));
 }
