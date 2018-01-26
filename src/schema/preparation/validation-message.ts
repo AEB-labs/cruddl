@@ -1,4 +1,4 @@
-import { Location, Source } from 'graphql';
+import { Location } from 'graphql';
 import { ProjectSource } from '../../project/source';
 
 export enum Severity {
@@ -18,16 +18,17 @@ export class SourcePosition {
 
 export class MessageLocation {
     public readonly sourceName: string;
+
     public readonly source: ProjectSource|undefined;
 
     constructor(source: string|ProjectSource, public readonly start: SourcePosition, public readonly end: SourcePosition) {
         if (source instanceof ProjectSource) {
-            this.source = source;
+            Object.defineProperty(this, 'source', {
+                enumerable: false
+            });
             this.sourceName = source.name;
         } else {
             this.sourceName = source;
-        }
-        if (this.source) {
         }
     }
 
