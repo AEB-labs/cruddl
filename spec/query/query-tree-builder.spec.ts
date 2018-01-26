@@ -1,12 +1,10 @@
-import {
-    buildASTSchema, GraphQLID, GraphQLList, GraphQLObjectType, GraphQLSchema, GraphQLString, parse
-} from 'graphql';
+import { buildASTSchema, ObjectTypeDefinitionNode, parse } from 'graphql';
 import { distillQuery } from '../../src/graphql/query-distiller';
 import { createQueryTree } from '../../src/query/query-tree-builder';
+import { EntitiesQueryNode, FieldQueryNode, ObjectQueryNode, TransformListQueryNode } from '../../src/query/definition';
+import { setPermissionDescriptor } from '../../src/authorization/permission-descriptors-in-schema';
+import { StaticPermissionDescriptor } from '../../src/authorization/permission-descriptors';
 import any = jasmine.any;
-import { EntitiesQueryNode, FieldQueryNode, TransformListQueryNode, ObjectQueryNode } from '../../src/query/definition';
-import objectContaining = jasmine.objectContaining;
-import {globalContext} from "../../src/config/global";
 
 describe('query-tree-builder', () => {
     const schema = buildASTSchema(parse(`

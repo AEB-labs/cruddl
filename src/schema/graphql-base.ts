@@ -1,8 +1,9 @@
 import gql from 'graphql-tag';
+import { DocumentNode } from 'graphql';
 
-export const DIRECTIVES = gql`
+export const DIRECTIVES: DocumentNode = gql`
     # Declares a type for root-level objects with ids that are stored directly in the data base
-    directive @rootEntity(indices: [IndexDefinition!]) on OBJECT
+    directive @rootEntity(indices: [IndexDefinition!], permissionProfile: String) on OBJECT
     
     # Declares a type for objects with ids that can be embedded as a list within another entity
     directive @childEntity on OBJECT
@@ -70,9 +71,7 @@ export const DIRECTIVES = gql`
     }
 `;
 
-export const CORE_SCALARS = gql`
+export const CORE_SCALARS: DocumentNode = gql`
     scalar DateTime
-    scalar Date
-    scalar Time
     scalar JSON
 `;

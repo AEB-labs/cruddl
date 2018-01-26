@@ -9,6 +9,7 @@
     "experimentalDecorators": true,
     "removeComments": false,
     "alwaysStrict": true,
+    "strictFunctionTypes": true,
     "noImplicitAny": true,
     "noImplicitThis": true,
     "strictNullChecks": true,

@@ -1,5 +1,5 @@
 import { FieldRequest } from '../graphql/query-distiller';
-import { getNamedType, GraphQLObjectType } from 'graphql';
+import { GraphQLObjectType } from 'graphql';
 import {
     CountQueryNode, ObjectQueryNode, PropertySpecification, QueryNode, TransformListQueryNode, VariableQueryNode
 } from './definition';

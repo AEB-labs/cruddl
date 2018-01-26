@@ -1,11 +1,7 @@
 import {
-    AddEdgesQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode,
-    ConstBoolQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeFilter, EdgeIdentifier,
-    EntitiesQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode,
-    MergeObjectsQueryNode, ObjectQueryNode, OrderClause, OrderDirection, OrderSpecification, PartialEdgeIdentifier,
-    PropertySpecification, QueryNode, RemoveEdgesQueryNode, RootEntityIDQueryNode, SetEdgeQueryNode,
-    TransformListQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode,
-    VariableAssignmentQueryNode, VariableQueryNode
+    BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, FieldQueryNode, FirstOfListQueryNode, ObjectQueryNode,
+    OrderClause, OrderSpecification, PropertySpecification, QueryNode, RootEntityIDQueryNode, UnaryOperationQueryNode,
+    UnaryOperator, VariableAssignmentQueryNode
 } from './definition';
 
 /**
@@ -32,7 +28,7 @@ export function extractVariableAssignments(node: QueryNode, variableAssignmentsL
         return new FirstOfListQueryNode(extractVariableAssignments(node.listNode, variableAssignmentsList));
     }
     if (node instanceof FieldQueryNode) {
-        return new FieldQueryNode(extractVariableAssignments(node.objectNode, variableAssignmentsList), node.field);
+        return new FieldQueryNode(extractVariableAssignments(node.objectNode, variableAssignmentsList), node.field, node.objectType);
     }
     if (node instanceof RootEntityIDQueryNode) {
         return new RootEntityIDQueryNode(extractVariableAssignments(node.objectNode, variableAssignmentsList));

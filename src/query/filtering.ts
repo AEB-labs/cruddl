@@ -1,34 +1,17 @@
-import {getNamedType, GraphQLEnumType, GraphQLObjectType, GraphQLScalarType} from 'graphql';
+import { getNamedType, GraphQLEnumType, GraphQLObjectType, GraphQLScalarType } from 'graphql';
 import {
-    BasicType,
-    BinaryOperationQueryNode,
-    BinaryOperator,
-    ConstBoolQueryNode,
-    CountQueryNode,
-    FieldQueryNode,
-    FollowEdgeQueryNode,
-    LiteralQueryNode,
-    QueryNode,
-    TransformListQueryNode,
-    TypeCheckQueryNode,
-    UnaryOperationQueryNode,
-    UnaryOperator,
-    VariableQueryNode
+    BasicType, BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, CountQueryNode, LiteralQueryNode,
+    QueryNode, TransformListQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, VariableQueryNode
 } from './definition';
-import {isArray} from 'util';
+import { isArray } from 'util';
 import {
     ARGUMENT_AND, ARGUMENT_OR, INPUT_FIELD_CONTAINS, INPUT_FIELD_ENDS_WITH, INPUT_FIELD_EQUAL, INPUT_FIELD_GT,
-    INPUT_FIELD_GTE, INPUT_FIELD_IN,
-    INPUT_FIELD_LT,
-    INPUT_FIELD_LTE,
-    INPUT_FIELD_NOT, INPUT_FIELD_NOT_CONTAINS, INPUT_FIELD_NOT_ENDS_WITH, INPUT_FIELD_NOT_IN,
-    INPUT_FIELD_NOT_STARTS_WITH, INPUT_FIELD_SEPARATOR, INPUT_FIELD_STARTS_WITH
+    INPUT_FIELD_GTE, INPUT_FIELD_IN, INPUT_FIELD_LT, INPUT_FIELD_LTE, INPUT_FIELD_NOT, INPUT_FIELD_NOT_CONTAINS,
+    INPUT_FIELD_NOT_ENDS_WITH, INPUT_FIELD_NOT_IN, INPUT_FIELD_NOT_STARTS_WITH, INPUT_FIELD_SEPARATOR,
+    INPUT_FIELD_STARTS_WITH
 } from '../schema/schema-defaults';
 import { createListFieldValueNode, createNonListFieldValueNode, createScalarFieldValueNode } from './fields';
-import {decapitalize, assert} from "../utils/utils";
-import {isReferenceField, isRelationField} from "../schema/schema-utils";
-import {getEdgeType} from "../schema/edges";
-import {createSafeListQueryNode} from "./queries";
+import { assert, decapitalize } from '../utils/utils';
 
 export function createFilterNode(filterArg: any, objectType: GraphQLObjectType|GraphQLScalarType|GraphQLEnumType, contextNode: QueryNode): QueryNode {
     if (!filterArg || !Object.keys(filterArg).length) {

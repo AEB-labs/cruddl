@@ -93,6 +93,10 @@ mutation update {
     updateForwarder(input: { id: "@{ids/Forwarder/1}", name: "DPD"}) {
         name
     }
+    # this should not be executed because the other mutations fail
+    update2: updateDelivery(input: { id: "@{ids/Delivery/1}", deliveryNumber: "2" }) {
+        deliveryNumber
+    }
 }
 
 mutation delete {

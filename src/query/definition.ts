@@ -1,3 +1,8 @@
+import { GraphQLField, GraphQLObjectType } from 'graphql';
+import { compact, indent } from '../utils/utils';
+import { EdgeType, RelationFieldEdgeSide } from '../schema/edges';
+import { QueryResultValidator } from './query-result-validators';
+
 /**
  *
  * This is kind of a query language definition, tailored for our use case. There is no string representation, but
@@ -35,13 +40,22 @@
  *
  *
  */
-import { GraphQLField, GraphQLObjectType } from 'graphql';
-import { compact, indent } from '../utils/utils';
-import { EdgeType, RelationFieldEdgeSide } from '../schema/edges';
-import { QueryResultValidator } from './query-result-validators';
+export abstract class QueryNode {
+    abstract describe(): string;
 
-export interface QueryNode {
-    describe(): string;
+    public equals(other: this) {
+        if (!other || other.constructor !== this.constructor) {
+            return false;
+        }
+        return Object.keys(this).every(key => this.fieldEquals(key, (this as any)[key], (other as any)[key]));
+    }
+
+    protected fieldEquals(key: string, lhs: any, rhs: any): boolean {
+        if (lhs instanceof QueryNode && rhs instanceof QueryNode) {
+            return lhs.equals(rhs);
+        }
+        return lhs === rhs;
+    }
 }
 
 namespace varIndices {
@@ -59,12 +73,18 @@ namespace varIndices {
  *
  * Use in a VariableAssignmentQueryNode or in a TransformListQueryNode to assign a value
  */
-export class VariableQueryNode implements QueryNode {
+export class VariableQueryNode extends QueryNode {
     constructor(public readonly label?: string) {
+        super();
         this.index = varIndices.next();
     }
 
     public readonly index: number;
+
+    equals(other: this) {
+        // use reference equality because VariableQueryNodes are used as tokens, the label is only informational
+        return other === this;
+    }
 
     toString() {
         return `$${this.label || 'var'}_${this.index}`;
@@ -85,8 +105,9 @@ export class VariableQueryNode implements QueryNode {
  *   return $resultNode
  * })()
  */
-export class VariableAssignmentQueryNode implements QueryNode {
+export class VariableAssignmentQueryNode extends QueryNode {
     constructor(params: { variableValueNode: QueryNode, resultNode: QueryNode, variableNode: VariableQueryNode }) {
+        super();
         this.variableNode = params.variableNode;
         this.variableValueNode = params.variableValueNode;
         this.resultNode = params.resultNode;
@@ -110,7 +131,24 @@ export class VariableAssignmentQueryNode implements QueryNode {
     }
 }
 
-export type PreExecQueryParms = { query: QueryNode, resultVariable?: VariableQueryNode, resultValidator?: QueryResultValidator };
+export class PreExecQueryParms extends QueryNode {
+    constructor(params: { query: QueryNode, resultVariable?: VariableQueryNode, resultValidator?: QueryResultValidator}) {
+        super();
+        this.query = params.query;
+        this.resultVariable = params.resultVariable;
+        this.resultValidator = params.resultValidator;
+    }
+
+    public readonly query: QueryNode;
+    public readonly resultVariable: VariableQueryNode|undefined;
+    public readonly resultValidator: QueryResultValidator|undefined;
+
+    describe() {
+        const resultVarDescr = this.resultVariable ? `${this.resultVariable.describe()} = ` : '';
+        const validatorDescr = this.resultValidator ? ' validate result: ' + this.resultValidator.describe(): '';
+        return resultVarDescr + '(\n' + indent(this.query.describe()) + '\n)' + validatorDescr;
+    }
+}
 
 /**
  * A node that appends (maybe multiple) queries to a list of pre execution queries and then evaluates to a result node.
@@ -133,7 +171,7 @@ export type PreExecQueryParms = { query: QueryNode, resultVariable?: VariableQue
  * exists before adding an edge to that entity. In contrast to a simple (AQL) query, it ist possible to throw an error
  * within a result validator, which then causes a rollback of the whole transaction.
  */
-export class WithPreExecutionQueryNode implements QueryNode {
+export class WithPreExecutionQueryNode extends QueryNode {
 
     public readonly resultNode: QueryNode;
     public readonly preExecQueries: PreExecQueryParms[];
@@ -142,6 +180,7 @@ export class WithPreExecutionQueryNode implements QueryNode {
         resultNode: QueryNode,
         preExecQueries: (PreExecQueryParms|undefined)[]
     }) {
+        super();
         this.resultNode = params.resultNode;
         this.preExecQueries = compact(params.preExecQueries);
     }
@@ -151,21 +190,19 @@ export class WithPreExecutionQueryNode implements QueryNode {
             return this.resultNode.describe();
         }
 
-        const preExecDescriptions = this.preExecQueries.map(parms => {
-            const resultVarDescr = parms.resultVariable ? `${parms.resultVariable.describe()} = ` : '';
-            const validatorDescr = parms.resultValidator ? ' validate result: ' + parms.resultValidator.describe(): '';
-            return resultVarDescr + '(\n' + indent(parms.query.describe()) + '\n)' + validatorDescr;
-        })
+        const preExecDescriptions = this.preExecQueries.map(q => q.describe());
         const resultDescr = '(\n' + indent(this.resultNode.describe()) + '\n)';
 
         return 'pre execute\n' + indent('' + // '' to move the arg label here in WebStorm
             preExecDescriptions.join('\nthen ') + '\n' +
-            `return ${resultDescr}`);
+            `return ${resultDescr}`
+        );
     }
 }
 
-export class EntityFromIdQueryNode implements QueryNode {
+export class EntityFromIdQueryNode extends QueryNode {
     constructor(public readonly objectType: GraphQLObjectType, public readonly idNode: QueryNode) {
+        super();
     }
 
     public describe() {
@@ -176,30 +213,59 @@ export class EntityFromIdQueryNode implements QueryNode {
 /**
  * A node that evaluates to a predefined literal value
  */
-export class LiteralQueryNode {
+export class LiteralQueryNode extends QueryNode {
     constructor(public readonly value: any) {
+        super();
+    }
+
+    equals(other: this) {
+        // Consider LiteralQueryNodes as tokens - we might later decide to put the "value" behind a getter function
+        return other === this;
     }
 
     public describe() {
         const json = this.value === undefined ? 'undefined' : JSON.stringify(this.value);
-        return `literal ${json.magenta}`;
+        return `literal ${json.cyan}`;
     }
 }
 
 /**
  * A node that evaluates either to null
  */
-export class NullQueryNode {
+export class NullQueryNode extends QueryNode {
     public describe() {
         return `null`;
     }
 }
 
 /**
+ * A node which can never evaluate to any value and thus prevents a query from being executed
+ */
+export class UnknownValueQueryNode extends QueryNode {
+    public describe() {
+        return `unknown`;
+    }
+}
+
+/**
+ * A node that evaluates to an error value but does not prevent the rest from the query tree from being evaluated
+ */
+export class RuntimeErrorQueryNode extends QueryNode {
+    constructor(public readonly message: string) {
+        super();
+    }
+
+    public describe() {
+        return `error ${JSON.stringify(this.message)}`.red;
+    }
+}
+
+/**
  * A node that evaluates either to true or to false
  */
-export class ConstBoolQueryNode {
+export class ConstBoolQueryNode extends QueryNode {
     constructor(public readonly value: boolean) {
+        super();
     }
 
     static readonly TRUE = new ConstBoolQueryNode(true);
@@ -215,6 +281,25 @@ export class ConstBoolQueryNode {
 }
 
 /**
+ * A node that evaluates to a constant integer
+ */
+export class ConstIntQueryNode extends QueryNode {
+    constructor(public readonly value: number) {
+        super();
+        if (!Number.isSafeInteger(value)) {
+            throw new Error(`Invalid integer: ${value}`);
+        }
+    }
+
+    static readonly ZERO = new ConstIntQueryNode(0);
+    static readonly ONE = new ConstIntQueryNode(1);
+
+    public describe() {
+        return `${this.value}`;
+    }
+}
+
+/**
  * A node that evaluates to the value of a field of an object
  *
  * Note: this is unrelated to storing the value in a property of a result object, see ObjectQueryNode
@@ -222,8 +307,9 @@ export class ConstBoolQueryNode {
  * Runtime implementation note: if objectNode yields a non-object value (e.g. NULL), the result should be NULL.
  * (this is Arango logic and we currently rely on it in createScalarFieldPathValueNode()
  */
-export class FieldQueryNode implements QueryNode {
-    constructor(public readonly objectNode: QueryNode, public readonly field: GraphQLField<any, any>) {
+export class FieldQueryNode extends QueryNode {
+    constructor(public readonly objectNode: QueryNode, public readonly field: GraphQLField<any, any>, public readonly objectType: GraphQLObjectType) {
+        super();
     }
 
     public describe() {
@@ -234,8 +320,9 @@ export class FieldQueryNode implements QueryNode {
 /**
  * A node that evaluates to the id of a root entity
  */
-export class RootEntityIDQueryNode implements QueryNode {
+export class RootEntityIDQueryNode extends QueryNode {
     constructor(public readonly objectNode: QueryNode) {
+        super();
     }
 
     public describe() {
@@ -246,8 +333,9 @@ export class RootEntityIDQueryNode implements QueryNode {
 /**
  * A node that evaluates in a JSON-like object structure with properties and values
  */
-export class ObjectQueryNode implements QueryNode {
+export class ObjectQueryNode extends QueryNode {
     constructor(public readonly properties: PropertySpecification[]) {
+        super();
 
     }
 
@@ -262,10 +350,10 @@ export class ObjectQueryNode implements QueryNode {
 /**
  * Specifies one property of a an ObjectQueryNode
  */
-export class PropertySpecification implements QueryNode {
+export class PropertySpecification extends QueryNode {
     constructor(public readonly propertyName: string,
                 public readonly valueNode: QueryNode) {
-
+        super();
     }
 
     describe(): string {
@@ -276,9 +364,9 @@ export class PropertySpecification implements QueryNode {
 /**
  * A node that evaluates to a list with query nodes as list entries
  */
-export class ListQueryNode implements QueryNode {
+export class ListQueryNode extends QueryNode {
     constructor(public readonly itemNodes: QueryNode[]) {
-
+        super();
     }
 
     describe(): string {
@@ -292,9 +380,9 @@ export class ListQueryNode implements QueryNode {
 /**
  * A query that evaluates to true if a value is of a certain type, or false otherwise
  */
-export class TypeCheckQueryNode implements QueryNode {
+export class TypeCheckQueryNode extends QueryNode {
     constructor(public readonly valueNode: QueryNode, public type: BasicType) {
-
+        super();
     }
 
     private describeType(type: BasicType) {
@@ -322,9 +410,9 @@ export enum BasicType {
     NULL
 }
 
-export class ConditionalQueryNode implements QueryNode {
+export class ConditionalQueryNode extends QueryNode {
     constructor(public readonly condition: QueryNode, public readonly expr1: QueryNode, public readonly expr2: QueryNode) {
-
+        super();
     }
 
     describe() {
@@ -335,9 +423,9 @@ export class ConditionalQueryNode implements QueryNode {
 /**
  * A node that performs an operation with one operand
  */
-export class UnaryOperationQueryNode implements QueryNode {
+export class UnaryOperationQueryNode extends QueryNode {
     constructor(public readonly valueNode: QueryNode, public readonly operator: UnaryOperator) {
-
+        super();
     }
 
     describe() {
@@ -363,9 +451,9 @@ export enum UnaryOperator {
 /**
  * A node that performs an operation with two operands
  */
-export class BinaryOperationQueryNode implements QueryNode {
+export class BinaryOperationQueryNode extends QueryNode {
     constructor(public readonly lhs: QueryNode, public readonly operator: BinaryOperator, public readonly rhs: QueryNode) {
-
+        super();
     }
 
     describe() {
@@ -446,8 +534,9 @@ export enum BinaryOperator {
 /**
  * A node that evaluates in the list of entities of a given type. use ListQueryNode to further process them
  */
-export class EntitiesQueryNode implements QueryNode {
+export class EntitiesQueryNode extends QueryNode {
     constructor(public readonly objectType: GraphQLObjectType) {
+        super();
     }
 
     describe() {
@@ -460,7 +549,7 @@ export class EntitiesQueryNode implements QueryNode {
  *
  * itemVariable can be used inside filterNode and innerNode to access the current item
  */
-export class TransformListQueryNode implements QueryNode {
+export class TransformListQueryNode extends QueryNode {
     constructor(params: {
         listNode: QueryNode,
         innerNode?: QueryNode,
@@ -470,6 +559,7 @@ export class TransformListQueryNode implements QueryNode {
         itemVariable?: VariableQueryNode
         variableAssignmentNodes?: VariableAssignmentQueryNode[]
     }) {
+        super();
         this.itemVariable = params.itemVariable || new VariableQueryNode();
         this.listNode = params.listNode;
         this.innerNode = params.innerNode || this.itemVariable;
@@ -493,19 +583,19 @@ export class TransformListQueryNode implements QueryNode {
     public readonly variableAssignmentNodes: VariableAssignmentQueryNode[];
 
     describe() {
-        return `${this.listNode.describe()} as list\n` + indent('' + // '' to move the arg label here in WebStorm
+        return `${this.listNode.describe()} as list with ${this.itemVariable.describe()} => \n` + indent('' + // '' to move the arg label here in WebStorm
             `where ${this.filterNode.describe()}\n` +
-            `order by ${this.orderBy.describe()}` +
-            this.variableAssignmentNodes.map(node => `let ${node.variableNode.describe()} = ${node.variableValueNode}`).join('\n') +
-            `${this.maxCount != undefined ? `\nlimit ${this.maxCount}` : ''}\n` +
+            `order by ${this.orderBy.describe()}\n` +
+            this.variableAssignmentNodes.map(node => `let ${node.variableNode.describe()} = ${node.variableValueNode.describe()}\n`).join('') +
+            `${this.maxCount != undefined ? `limit ${this.maxCount}\n` : ''}` +
             `as ${this.innerNode.describe()}`
         );
     }
 }
 
-export class CountQueryNode implements QueryNode {
+export class CountQueryNode extends QueryNode {
     constructor(public readonly listNode: QueryNode) {
-
+        super();
     }
 
     describe() {
@@ -516,8 +606,9 @@ export class CountQueryNode implements QueryNode {
 /**
  * A node that evaluates to the first item of a list
  */
-export class FirstOfListQueryNode implements QueryNode {
+export class FirstOfListQueryNode extends QueryNode {
     constructor(public readonly listNode: QueryNode) {
+        super();
     }
 
     describe() {
@@ -533,9 +624,9 @@ export class FirstOfListQueryNode implements QueryNode {
  *
  * The merge is NOT recursive.
  */
-export class MergeObjectsQueryNode implements QueryNode {
+export class MergeObjectsQueryNode extends QueryNode {
     constructor(public readonly objectNodes: QueryNode[]) {
-
+        super();
     }
 
     describe() {
@@ -550,9 +641,9 @@ export class MergeObjectsQueryNode implements QueryNode {
  *
  * This can be used to append items to an array by using a ListQueryNode as second item
  */
-export class ConcatListsQueryNode implements QueryNode {
+export class ConcatListsQueryNode extends QueryNode {
     constructor(public readonly listNodes: QueryNode[]) {
-
+        super();
     }
 
     describe() {
@@ -565,9 +656,9 @@ export class ConcatListsQueryNode implements QueryNode {
     }
 }
 
-export class OrderClause {
+export class OrderClause extends QueryNode {
     constructor(public readonly valueNode: QueryNode, public readonly direction: OrderDirection) {
-
+        super();
     }
 
     private describeDirection(direction: OrderDirection) {
@@ -582,9 +673,9 @@ export class OrderClause {
     }
 }
 
-export class OrderSpecification {
+export class OrderSpecification extends QueryNode {
     constructor(public readonly clauses: OrderClause[]) {
-
+        super();
     }
 
     isUnordered() {
@@ -607,17 +698,17 @@ export enum OrderDirection {
 /**
  * Evaluates to all root entitites that are connected to a specific root entitity through a specific edge
  */
-export class FollowEdgeQueryNode implements QueryNode {
+export class FollowEdgeQueryNode extends QueryNode {
     constructor(readonly edgeType: EdgeType, readonly sourceEntityNode: QueryNode, readonly sourceFieldSide: RelationFieldEdgeSide) {
-
+        super();
     }
 
     describe() {
         switch (this.sourceFieldSide) {
             case RelationFieldEdgeSide.FROM_SIDE:
-                return `follow forward ${this.edgeType} of ${this.sourceEntityNode.describe()}`;
+                return `follow forward ${this.edgeType.toString().blue} of ${this.sourceEntityNode.describe()}`;
             case RelationFieldEdgeSide.TO_SIDE:
-                return `follow backward ${this.edgeType} of ${this.sourceEntityNode.describe()}`;
+                return `follow backward ${this.edgeType.toString().blue} of ${this.sourceEntityNode.describe()}`;
         }
     }
 }
@@ -625,13 +716,26 @@ export class FollowEdgeQueryNode implements QueryNode {
 /**
  * A node that creates a new entity and evaluates to that new entity object
  */
-export class CreateEntityQueryNode {
-    constructor(public readonly objectType: GraphQLObjectType, public readonly objectNode: QueryNode) {
-
+export class CreateEntityQueryNode extends QueryNode {
+    constructor(public readonly objectType: GraphQLObjectType, public readonly objectNode: QueryNode, public readonly affectedFields: AffectedFieldInfoQueryNode[]) {
+        super();
     }
 
     describe() {
-        return `create ${this.objectType.name} entity with values ${this.objectNode.describe()}`;
+        return `create ${this.objectType.name} entity with values ${this.objectNode.describe()} (affects fields ${this.affectedFields.map(f => f.describe()).join(', ')})`;
+    }
+}
+
+/**
+ * A node that indicates that a field of a node is set, without being evaluated
+ */
+export class AffectedFieldInfoQueryNode extends QueryNode {
+    constructor(public readonly objectType: GraphQLObjectType, public readonly field: GraphQLField<any, any>) {
+        super();
+    }
+
+    describe() {
+        return `${this.objectType}.${this.field.name}`;
     }
 }
 
@@ -651,46 +755,62 @@ export class CreateEntityQueryNode {
  * IN $collection(objectType)
  * OPTIONS { mergeObjects: false }
  */
-export class UpdateEntitiesQueryNode {
+export class UpdateEntitiesQueryNode extends QueryNode {
     constructor(params: {
         objectType: GraphQLObjectType,
         filterNode: QueryNode,
-        updates: PropertySpecification[],
+        updates: SetFieldQueryNode[],
         maxCount?: number,
-        currentEntityVariable?: VariableQueryNode
+        currentEntityVariable?: VariableQueryNode,
+        affectedFields: AffectedFieldInfoQueryNode[]
     }) {
+        super();
         this.objectType = params.objectType;
         this.filterNode = params.filterNode;
         this.updates = params.updates;
         this.maxCount = params.maxCount;
         this.currentEntityVariable = params.currentEntityVariable || new VariableQueryNode();
+        this.affectedFields = params.affectedFields;
     }
 
     public readonly objectType: GraphQLObjectType;
     public readonly filterNode: QueryNode;
-    public readonly updates: PropertySpecification[];
+    public readonly updates: SetFieldQueryNode[];
     public readonly maxCount: number | undefined;
     public readonly currentEntityVariable: VariableQueryNode;
+    public readonly affectedFields: AffectedFieldInfoQueryNode[];
 
     describe() {
         return `update ${this.objectType.name} entities ` +
             `where (${this.currentEntityVariable.describe()} => ${this.filterNode.describe()}) ` +
             `with values (${this.currentEntityVariable.describe()} => {\n` +
             indent(this.updates.map(p => p.describe()).join(',\n')) +
-            `\n})`;
+            `\n} (affects fields ${this.affectedFields.map(f => f.describe()).join(', ')})`;
+    }
+}
+
+/**
+ * Specifies one property of a an ObjectQueryNode, and indicates that this will set a field of an object
+ */
+export class SetFieldQueryNode extends PropertySpecification {
+    constructor(public readonly field: GraphQLField<any, any>,
+                public readonly objectType: GraphQLObjectType,
+                public readonly valueNode: QueryNode) {
+        super(field.name, valueNode);
     }
 }
 
 /**
  * A node that deletes existing entities and evaluates to the entities before deletion
  */
-export class DeleteEntitiesQueryNode implements QueryNode {
+export class DeleteEntitiesQueryNode extends QueryNode {
     constructor(params: {
         objectType: GraphQLObjectType,
         filterNode: QueryNode,
         maxCount?: number,
         currentEntityVariable?: VariableQueryNode
     }) {
+        super();
         this.objectType = params.objectType;
         this.filterNode = params.filterNode;
         this.maxCount = params.maxCount;
@@ -707,12 +827,13 @@ export class DeleteEntitiesQueryNode implements QueryNode {
     }
 }
 
-export class AddEdgesQueryNode implements QueryNode {
+export class AddEdgesQueryNode extends QueryNode {
 
     // TODO: accept one QueryNode which evaluates to the lits of edge ids somehow?
     // (currently, adding 50 edges generates 50 bound variables with the literal values)
 
     constructor(readonly edgeType: EdgeType, readonly edges: EdgeIdentifier[]) {
+        super();
     }
 
     describe() {
@@ -722,8 +843,9 @@ export class AddEdgesQueryNode implements QueryNode {
     }
 }
 
-export class RemoveEdgesQueryNode implements QueryNode {
+export class RemoveEdgesQueryNode extends QueryNode {
     constructor(readonly edgeType: EdgeType, readonly edgeFilter: EdgeFilter) {
+        super();
     }
 
     describe() {
@@ -735,8 +857,9 @@ export class RemoveEdgesQueryNode implements QueryNode {
  * Checks if an edge specified by existingEdgeFilter exists. If it does, replaces it by the newEdge. If it does not,
  * creates newEge.
  */
-export class SetEdgeQueryNode implements QueryNode {
+export class SetEdgeQueryNode extends QueryNode {
     constructor(params: { edgeType: EdgeType, existingEdgeFilter: PartialEdgeIdentifier, newEdge: EdgeIdentifier }) {
+        super();
         this.edgeType = params.edgeType;
         this.existingEdge = params.existingEdgeFilter;
         this.newEdge = params.newEdge;
@@ -756,9 +879,9 @@ export class SetEdgeQueryNode implements QueryNode {
  *
  * pseudo code: from IN [...fromIDNodes] && to IN [...toIDNodes]
  */
-export class EdgeFilter {
+export class EdgeFilter extends QueryNode {
     constructor(readonly fromIDNodes?: QueryNode[], readonly toIDNodes?: QueryNode[]) {
-
+        super();
     }
 
     describe() {
@@ -776,9 +899,9 @@ export class EdgeFilter {
     }
 }
 
-export class PartialEdgeIdentifier {
+export class PartialEdgeIdentifier extends QueryNode {
     constructor(public readonly fromIDNode?: QueryNode, public readonly toIDNode?: QueryNode) {
-
+        super();
     }
 
     describe() {
@@ -793,8 +916,9 @@ export class PartialEdgeIdentifier {
     }
 }
 
-export class EdgeIdentifier {
+export class EdgeIdentifier extends QueryNode {
     constructor(public readonly fromIDNode: QueryNode, public readonly toIDNode: QueryNode) {
+        super();
     }
 
     describe() {

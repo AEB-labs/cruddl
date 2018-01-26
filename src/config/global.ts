@@ -36,14 +36,16 @@ export class ConsoleLogger implements Logger {
     error = this.debug;
 }
 
+export const DEFAULT_LOGGER_PROVIDER = new ConsoleLoggerProvider();
+
 export namespace globalContext {
-    export let loggerProvider: ConsoleLoggerProvider;
+    export let loggerProvider: LoggerProvider;
 
     /**
      * Restores default values in the global context
      */
     export function unregisterContext() {
-        loggerProvider = new ConsoleLoggerProvider();
+        loggerProvider = DEFAULT_LOGGER_PROVIDER;
     }
 
     /**

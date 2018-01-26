@@ -51,12 +51,12 @@ export function createNonListFieldValueNode(params: {field: GraphQLField<any, an
         return mapInnerFnWithVariable(createTo1RelationNode(params.field, params.parentType, params.objectNode));
     }
     if (isReferenceField(params.field)) {
-        return mapInnerFnWithVariable(createTo1ReferenceNode(params.field, params.objectNode));
+        return mapInnerFnWithVariable(createTo1ReferenceNode(params.field, params.parentType, params.objectNode));
     }
     if (isRootEntityType(params.parentType) && params.field.name == ID_FIELD) {
         return mapInnerFn(new RootEntityIDQueryNode(params.objectNode));
     }
-    return mapInnerFn(new FieldQueryNode(params.objectNode, params.field));
+    return mapInnerFn(new FieldQueryNode(params.objectNode, params.field, params.parentType));
 }
 
 function createTo1RelationNode(field: GraphQLField<any, any>, parentType: GraphQLObjectType, objectNode: QueryNode): QueryNode {
@@ -65,17 +65,17 @@ function createTo1RelationNode(field: GraphQLField<any, any>, parentType: GraphQ
     return new FirstOfListQueryNode(followNode);
 }
 
-function createTo1ReferenceNode(field: GraphQLField<any, any>, objectNode: QueryNode): QueryNode {
+function createTo1ReferenceNode(field: GraphQLField<any, any>, parentType: GraphQLObjectType, objectNode: QueryNode): QueryNode {
     const referencedEntityType = getNamedType(field.type) as GraphQLObjectType;
     const keyFieldInReferencedEntity = getSingleKeyField(referencedEntityType);
     if (!keyFieldInReferencedEntity) {
         throw new Error(`Type ${referencedEntityType} referenced in field ${field.name} does not declare a single key field`);
     }
 
-    const keyNode = new FieldQueryNode(objectNode, field);
+    const keyNode = new FieldQueryNode(objectNode, field, parentType);
     const listItemVar = new VariableQueryNode(field.name);
     const filterNode = new BinaryOperationQueryNode(
-        new FieldQueryNode(listItemVar, keyFieldInReferencedEntity),
+        new FieldQueryNode(listItemVar, keyFieldInReferencedEntity, referencedEntityType),
         BinaryOperator.EQUAL,
         keyNode
     );
@@ -97,7 +97,7 @@ export function createListFieldValueNode(params: { field: GraphQLField<any, any>
     if (isReferenceField(params.field)) {
         throw new Error(`${params.field.name}: references in lists are not supported yet`);
     }
-    return createSafeListQueryNode(new FieldQueryNode(params.objectNode, params.field));
+    return createSafeListQueryNode(new FieldQueryNode(params.objectNode, params.field, params.parentType));
 }
 
 function createToNRelationQueryNode(field: GraphQLField<any, any>, parentType: GraphQLObjectType, sourceEntityNode: QueryNode): QueryNode {

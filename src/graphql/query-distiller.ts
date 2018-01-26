@@ -31,7 +31,7 @@ export class FieldRequest {
             .join(',\n');
         const selectionDesc = selectionItemsDesc ? ` with selections {\n${indent(selectionItemsDesc)}\n}` : '';
         const argsDesc = (this.args && Object.getOwnPropertyNames(this.args).length) ?
-            ` with args ${JSON.stringify(this.args, null, INDENTATION).magenta}` : '';
+            ` with args ${JSON.stringify(this.args, null, INDENTATION).cyan}` : '';
 
         return `field ${this.fieldName.blue}${argsDesc}${selectionDesc}`;
     }

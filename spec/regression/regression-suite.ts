@@ -1,15 +1,12 @@
-import { ArangoDBAdapter } from '../../src/database/arangodb/arangodb-adapter';
-import {
-    graphql, GraphQLError, GraphQLSchema, OperationDefinitionNode, parse, separateOperations, Source
-} from 'graphql';
-import * as fs from 'fs';
+import { ArangoDBAdapter, ArangoDBConfig } from '../../src/database/arangodb';
+import { graphql, GraphQLSchema, OperationDefinitionNode, parse, Source } from 'graphql';
 import * as path from 'path';
-import { createSchema } from '../../src/schema/schema-builder';
-import { addQueryResolvers } from '../../src/query/query-resolvers';
+import * as fs from 'fs';
 import { createTempDatabase, initTestData, TestDataEnvironment } from './initialization';
 import * as stripJsonComments from 'strip-json-comments';
-import { PlainObject } from '../../src/utils/utils';
-import {SchemaConfig, SchemaPartConfig} from "../../src/config/schema-config";
+import { Log4jsLoggerProvider } from '../helpers/log4js-logger-provider';
+import { loadProjectFromDir } from '../../src/project/project-from-fs';
+import { ProjectOptions } from '../../src/project/project';
 
 interface TestResult {
     actualResult: any
@@ -34,21 +31,25 @@ export class RegressionSuite {
     }
 
     private async setUp() {
-        const dbConfig = await createTempDatabase();
-        const dbAdapter = new ArangoDBAdapter(dbConfig);
+        const warnLevelOptions = { loggerProvider: new Log4jsLoggerProvider('warn') };
+        const debugLevelOptions = { loggerProvider: new Log4jsLoggerProvider('debug', { 'schema-builder': 'warn'}) };
 
-        const schemaConfig: SchemaConfig = {
-            schemaParts: fs.readdirSync(path.resolve(this.path, 'model'))
-                .map(file => fileToSchemaPartConfig(path.resolve(this.path, 'model', file)))
-        };
-        const dumbSchema = createSchema(schemaConfig);
-        this.schema = addQueryResolvers(dumbSchema, dbAdapter);
-        await dbAdapter.updateSchema(this.schema);
-        this.testDataEnvironment = await initTestData(path.resolve(this.path, 'test-data.json'), this.schema);
+        const dbConfig = await createTempDatabase();
+        this.schema = await this.createSchema(dbConfig, debugLevelOptions);
+
+        // use a schema that logs less for initTestData
+        const initDataSchema = await this.createSchema(dbConfig, warnLevelOptions);
+        const initDataAdapter = new ArangoDBAdapter(dbConfig, warnLevelOptions);
+        await initDataAdapter.updateSchema(initDataSchema);
+        this.testDataEnvironment = await initTestData(path.resolve(this.path, 'test-data.json'), initDataSchema);
+
         this._isSetUpClean = true;
     }
 
-    async initData() {
+    private async createSchema(dbConfig: ArangoDBConfig, options: ProjectOptions) {
+        const dbAdapter = new ArangoDBAdapter(dbConfig, options);
+        const project = await loadProjectFromDir(path.resolve(this.path, 'model'), options);
+        return project.createSchema(dbAdapter);
     }
 
     getTestNames() {
@@ -89,10 +90,13 @@ export class RegressionSuite {
             const operationNames = operations.map(def => def.name!.value);
             actualResult = {};
             for (const operationName of operationNames) {
-                actualResult[operationName] = await graphql(this.schema, gqlSource, {} /* root */, context, variableValues, operationName);
+                let operationResult = await graphql(this.schema, gqlSource, {} /* root */, context, variableValues, operationName);
+                operationResult = JSON.parse(JSON.stringify(operationResult)); // serialize e.g. errors as they would be in a GraphQL server
+                actualResult[operationName] = operationResult;
             }
         } else {
             actualResult = await graphql(this.schema, gqlSource, {} /* root */, context, variableValues);
+            actualResult = JSON.parse(JSON.stringify(actualResult)); // serialize e.g. errors as they would be in a GraphQL server
         }
 
         if (this.options.saveActualAsExpected && !(jasmine as any).matchersUtil.equals(actualResult, expectedResult)) {
@@ -104,8 +108,4 @@ export class RegressionSuite {
             expectedResult
         };
     }
-}
-
-function fileToSchemaPartConfig(path: string): SchemaPartConfig {
-    return { source: new Source(fs.readFileSync(path).toString(), path) };
 }

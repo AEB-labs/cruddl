@@ -1,11 +1,12 @@
 import {
     AddEdgesQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode,
-    ConstBoolQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeFilter, EdgeIdentifier,
+    ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeFilter,
+    EdgeIdentifier,
     EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode,
     LiteralQueryNode, MergeObjectsQueryNode, ObjectQueryNode, OrderDirection, OrderSpecification, PartialEdgeIdentifier,
-    QueryNode, RemoveEdgesQueryNode, RootEntityIDQueryNode, SetEdgeQueryNode, TransformListQueryNode,
-    TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode,
-    VariableQueryNode, WithPreExecutionQueryNode
+    QueryNode, RemoveEdgesQueryNode, RootEntityIDQueryNode, RuntimeErrorQueryNode, SetEdgeQueryNode,
+    TransformListQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode,
+    VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode
 } from '../../query/definition';
 import { aql, AQLCompoundQuery, AQLFragment, AQLQueryResultVariable, AQLVariable } from './aql';
 import { getCollectionNameForEdge, getCollectionNameForRootEntity } from './arango-basics';
@@ -13,6 +14,7 @@ import { GraphQLNamedType, GraphQLObjectType } from 'graphql';
 import { EdgeType, RelationFieldEdgeSide } from '../../schema/edges';
 import { simplifyBooleans } from '../../query/query-tree-utils';
 import { QueryResultValidator } from '../../query/query-result-validators';
+import { RUNTIME_ERROR_TOKEN } from '../../query/runtime-errors';
 
 enum AccessType {
     READ,
@@ -183,8 +185,17 @@ const processors : { [name: string]: NodeProcessor<any> } = {
         return aql`null`;
     },
 
+    RuntimeError(node: RuntimeErrorQueryNode): AQLFragment {
+        const runtimeErrorToken = aql.code(RUNTIME_ERROR_TOKEN);
+        return aql`{${runtimeErrorToken}: ${node.message}}`;
+    },
+
     ConstBool(node: ConstBoolQueryNode): AQLFragment {
         return node.value ? aql`true` : aql`false`;
+    },
+
+    ConstInt(node: ConstIntQueryNode): AQLFragment {
+        return aql.integer(node.value);
     },
 
     Object(node: ObjectQueryNode, context): AQLFragment {
@@ -584,6 +595,8 @@ function processNode(node: QueryNode, context: QueryContext): AQLFragment {
     return processorMap[type](node, context);
 }
 
+// TODO I think AQLCompoundQuery (AQL transaction node) should not be the exported type
+// we should rather export AQLExecutableQuery[] (as AQL transaction) directly.
 export function getAQLQuery(node: QueryNode): AQLCompoundQuery {
     return createAQLCompoundQuery(node, aql.queryResultVariable('result'), undefined, new QueryContext());
 }

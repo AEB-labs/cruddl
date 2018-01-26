@@ -1,10 +1,10 @@
 import gql from 'graphql-tag';
-import { createSchema } from '../../src/schema/schema-builder';
-import { addQueryResolvers } from '../../src/query/query-resolvers';
 import { DatabaseAdapter } from '../../src/database/database-adapter';
 import { QueryNode } from '../../src/query/definition';
-import { graphql, GraphQLSchema, Source, print, GraphQLObjectType } from 'graphql';
+import { graphql, GraphQLSchema, print, GraphQLObjectType } from 'graphql';
 import { EdgeType, getEdgeType } from '../../src/schema/edges';
+import { Project } from '../../src/project/project';
+import { ProjectSource } from '../../src/project/source';
 
 class FakeDBAdatper implements DatabaseAdapter {
     async execute(queryTree: QueryNode): Promise<any> {
@@ -18,7 +18,7 @@ class FakeDBAdatper implements DatabaseAdapter {
 
 describe('edges', () => {
     it('works with unrelated relations between two root entities', async () => {
-        const schemaGQL = gql`
+        const schemaGQL = print(gql`
             type TypeA @rootEntity @roles(readWrite: "admin") {
                 relB: TypeB @relation
             }
@@ -26,17 +26,16 @@ describe('edges', () => {
             type TypeB @rootEntity @roles(readWrite: "admin") {
                 relA: TypeA @relation
             }
-        `;
+        `);
 
-        let schema = createSchema({schemaParts:[{source: schemaGQL}]});
-        schema = addQueryResolvers(schema, new FakeDBAdatper());
+        let schema = new Project([ new ProjectSource('main.graphqls', schemaGQL)]).createSchema(new FakeDBAdatper());
         const source = gql`{ allTypeAS { relB { id } } allTypeBS { relA { id } } }`;
-        const result = await graphql(schema, new Source(print(source)), {}, {authRoles: [ "admin" ]}, {});
+        const result = await graphql(schema, print(source), {}, {authRoles: [ "admin" ]}, {});
         expect(result.errors).toEqual(undefined);
     });
 
     it('correctly builds EdgeType from field', () => {
-        const schemaGQL = gql`
+        const schemaGQL = print(gql`
             type Delivery @rootEntity @roles(readWrite: "admin") {
                 handlingUnits: HandlingUnit @relation
             }
@@ -44,8 +43,8 @@ describe('edges', () => {
             type HandlingUnit @rootEntity @roles(readWrite: "admin") {
                 delivery: Delivery @relation(inverseOf: "handlingUnits")
             }
-        `;
-        let schema = createSchema({schemaParts:[{source: schemaGQL}]});
+        `);
+        let schema = new Project([ new ProjectSource('main.graphqls', schemaGQL)]).createSchema(new FakeDBAdatper());
         const deliveryType = schema.getType('Delivery') as GraphQLObjectType;
         const handlingUnitType = schema.getType('HandlingUnit') as GraphQLObjectType;
         const handlingUnitsField = deliveryType.getFields()['handlingUnits'];

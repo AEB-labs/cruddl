@@ -17,6 +17,7 @@ export const WILDCARD_CHARACTER = '*';
 export const ROOT_ENTITY_DIRECTIVE = 'rootEntity';
 export const CHILD_ENTITY_DIRECTIVE = 'childEntity';
 export const ENTITY_EXTENSION_DIRECTIVE = 'entityExtension';
+export const FIELD_DIRECTIVE = 'field';
 
 /**
  * Value object according to DDD. Some people know this kind of type as Composite.
@@ -42,7 +43,7 @@ export const UPDATE_CHILD_ENTITIES_FIELD_PREFIX = 'update';
 export const REMOVE_CHILD_ENTITIES_FIELD_PREFIX = 'remove';
 
 export const ID_FIELD = 'id';
-
+export const ACCESS_GROUP_FIELD = 'accessGroup';
 export const ENTITY_CREATED_AT = 'createdAt';
 export const ENTITY_UPDATED_AT = 'updatedAt';
 
@@ -109,6 +110,9 @@ export const MUTATION_ID_ARG = 'id';
 export const ROLES_DIRECTIVE = 'roles';
 export const ROLES_READ_ARG = 'read';
 export const ROLES_READ_WRITE_ARG = 'readWrite';
+export const PERMISSION_PROFILE_ARG = 'permissionProfile';
+
+export const DEFAULT_PERMISSION_PROFILE = 'default';
 
 export const OBJECT_TYPE_ENTITY_DIRECTIVES = [ROOT_ENTITY_DIRECTIVE, CHILD_ENTITY_DIRECTIVE, ENTITY_EXTENSION_DIRECTIVE, VALUE_OBJECT_DIRECTIVE];
 

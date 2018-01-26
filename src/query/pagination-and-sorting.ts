@@ -1,15 +1,14 @@
 import { FieldRequest } from '../graphql/query-distiller';
 import { getNamedType, GraphQLField, GraphQLObjectType, GraphQLType } from 'graphql';
 import {
-    BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, FieldQueryNode, LiteralQueryNode, NullQueryNode,
-    ObjectQueryNode, OrderClause, OrderDirection, OrderSpecification, PropertySpecification, QueryNode,
-    RootEntityIDQueryNode, UnaryOperationQueryNode, UnaryOperator
+    BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, LiteralQueryNode, NullQueryNode, ObjectQueryNode,
+    OrderClause, OrderDirection, OrderSpecification, PropertySpecification, QueryNode, UnaryOperationQueryNode,
+    UnaryOperator
 } from './definition';
 import { isArray } from 'util';
 import { isListType } from '../graphql/schema-utils';
 import {
-    AFTER_ARG,
-    FIRST_ARG, ID_FIELD, ORDER_BY_ARG, ORDER_BY_ASC_SUFFIX, ORDER_BY_DESC_SUFFIX
+    AFTER_ARG, FIRST_ARG, ID_FIELD, ORDER_BY_ARG, ORDER_BY_ASC_SUFFIX, ORDER_BY_DESC_SUFFIX
 } from '../schema/schema-defaults';
 import { sortedByAsc, sortedByDesc } from '../graphql/names';
 import { createNonListFieldValueNode } from './fields';

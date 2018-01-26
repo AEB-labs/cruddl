@@ -1,9 +1,9 @@
 import { DistilledOperation, FieldRequest } from '../graphql/query-distiller';
-import { LiteralQueryNode, NullQueryNode, ObjectQueryNode, PropertySpecification, QueryNode } from './definition';
+import { NullQueryNode, ObjectQueryNode, PropertySpecification, QueryNode } from './definition';
 import { MUTATION_TYPE, QUERY_TYPE } from '../schema/schema-defaults';
 import { createQueryNamespaceNode } from './queries';
 import { createMutationNamespaceNode } from './mutations';
-import {globalContext} from '../config/global';
+import { globalContext } from '../config/global';
 
 /**
  * Creates a QueryTree that is used to instruct the DataBase how to perform a GraphQL query

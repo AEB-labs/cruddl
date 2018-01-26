@@ -150,7 +150,7 @@ export class AQLVariable extends AQLFragment {
     }
 
     toColoredStringWithContext(context: AQLCodeBuildingContext): string {
-        return this.toStringWithContext(context).blue;
+        return this.toStringWithContext(context).magenta;
     }
 }
 
@@ -171,7 +171,7 @@ export class AQLBoundValue extends AQLFragment {
     }
 
     toColoredStringWithContext(): string {
-        return this.toString().magenta;
+        return this.toString().cyan;
     }
 
     getCodeWithContext(context: AQLCodeBuildingContext): string {
@@ -320,14 +320,26 @@ export namespace aql {
         return code(JSON.stringify(str));
     }
 
+    export function integer(number: number): AQLFragment {
+        return code(JSON.stringify(Number(number)))
+    }
+
     export function isSafeIdentifier(str: string) {
         // being pessimistic for security reasons
         // TODO collisions with collection names / keywords?
-        return str.match(/^[a-zA-Z0-9_]+$/);
+        return typeof str == 'string' && str.match(/^[a-zA-Z0-9_]+$/);
     }
 }
 
 //TODO Refactor. AQLCompoundQuery isn't a real AQLFragment.
+/**
+ * A node in an AQL transaction tree
+ *
+ * This is an intermediate representation in the process of converting a query tree to an AQL transaction. The
+ * transaction tree's root is the root query. Children of a transaction node are the direct preExec queries of a query.
+ * Thus, the query tree is reduced to WithPreExecQueryNodes as nodes, all other kinds of nodes are already processed
+ * into AQLFragments.
+ */
 export class AQLCompoundQuery extends AQLFragment {
 
     constructor(
@@ -340,6 +352,11 @@ export class AQLCompoundQuery extends AQLFragment {
         super();
     }
 
+    /**
+     * Gets the linear AQL transaction for this transaction tree
+     *
+     * The returned transaction steps are to be executed sequentially.
+     */
     getExecutableQueries(): AQLExecutableQuery[] {
         const resultVarToNameMap = new Map<AQLQueryResultVariable, string>();
         return this.getExecutableQueriesRecursive(resultVarToNameMap);
@@ -404,7 +421,10 @@ export class AQLCompoundQuery extends AQLFragment {
     }
 }
 
-export class AQLExecutableQuery{
+/**
+ * A step in an AQL transaction
+ */
+export class AQLExecutableQuery {
     constructor(
         public readonly code: string,
         public readonly boundValues: {[p: string]: any},

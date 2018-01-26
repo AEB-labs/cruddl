@@ -1,0 +1,19 @@
+{
+  "errors": [
+    {
+      "message": "NotFoundError: Delivery with id not-found could not be found.",
+      "locations": [
+        {
+          "line": 2,
+          "column": 5
+        }
+      ],
+      "path": [
+        "updateDelivery"
+      ]
+    }
+  ],
+  "data": {
+    "updateDelivery": null
+  }
+}

@@ -10,7 +10,7 @@ export interface QueryResultValidator {
 }
 
 export class ErrorIfNotTruthyResultValidator implements QueryResultValidator {
-    constructor (public readonly errorMessage: string, public readonly errorNumber?: number) {
+    constructor (public readonly errorMessage: string, public readonly errorName: string = 'Error', public readonly errorNumber?: number) {
     }
 
     // The following function will be translated to a string and executed within the ArangoDB server itself.
@@ -22,6 +22,8 @@ export class ErrorIfNotTruthyResultValidator implements QueryResultValidator {
         return function(validationData: any, result: any) {
             if(!result) {
                 let err = new Error(validationData.errorMessage);
+                // the name is included in the error message (and can't bet set to '', neither is toString() called)
+                err.name = validationData.errorName;
                 if(validationData.errorNumber != undefined) {
                     (err as any).errorNumber = validationData.errorNumber;
                 }
@@ -40,7 +42,8 @@ export class ErrorIfNotTruthyResultValidator implements QueryResultValidator {
     getValidatorData(){
         return {
             errorMessage: this.errorMessage,
-            errorNumber: this.errorNumber
+            errorNumber: this.errorNumber,
+            errorName: this.errorName
         };
     }
 

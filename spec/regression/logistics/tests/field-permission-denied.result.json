@@ -9,7 +9,7 @@
   "select": {
     "errors": [
       {
-        "message": "Not authorized to select totalValue",
+        "message": "AuthorizationError: Not authorized to read Delivery.totalValue",
         "locations": [
           {
             "line": 10,
@@ -22,7 +22,7 @@
         ]
       },
       {
-        "message": "Not authorized to select forwarder",
+        "message": "AuthorizationError: Not authorized to read Forwarder objects (in Delivery.forwarder)",
         "locations": [
           {
             "line": 11,
@@ -35,7 +35,7 @@
         ]
       },
       {
-        "message": "Not authorized to select totalValue",
+        "message": "AuthorizationError: Not authorized to read Delivery.totalValue",
         "locations": [
           {
             "line": 18,
@@ -49,7 +49,7 @@
         ]
       },
       {
-        "message": "Not authorized to select totalValue",
+        "message": "AuthorizationError: Not authorized to read Delivery.totalValue",
         "locations": [
           {
             "line": 24,
@@ -63,7 +63,7 @@
         ]
       },
       {
-        "message": "Not authorized to select totalInvestment",
+        "message": "AuthorizationError: Not authorized to read Country.totalInvestment",
         "locations": [
           {
             "line": 30,
@@ -103,7 +103,7 @@
   "selectMeta": {
     "errors": [
       {
-        "message": "Not authorized to select allForwarders",
+        "message": "AuthorizationError: Not authorized to read Forwarder objects",
         "locations": [
           {
             "line": 37,
@@ -115,15 +115,16 @@
         ]
       },
       {
-        "message": "Not authorized to select _allForwardersMeta",
+        "message": "AuthorizationError: Not authorized to read Forwarder objects",
         "locations": [
           {
-            "line": 41,
-            "column": 5
+            "line": 42,
+            "column": 9
           }
         ],
         "path": [
-          "_allForwardersMeta"
+          "_allForwardersMeta",
+          "count"
         ]
       }
     ],
@@ -132,7 +133,7 @@
   "filter": {
     "errors": [
       {
-        "message": "Not authorized to select allDeliveries with argument filter (field totalValue)",
+        "message": "AuthorizationError: Not authorized to read Delivery.totalValue",
         "locations": [
           {
             "line": 47,
@@ -144,7 +145,7 @@
         ]
       },
       {
-        "message": "Not authorized to select SecretKey with argument key",
+        "message": "AuthorizationError: Not authorized to read SecretKey.key",
         "locations": [
           {
             "line": 51,
@@ -156,7 +157,7 @@
         ]
       },
       {
-        "message": "Not authorized to select allDeliveries with argument filter (field totalValue_starts_with)",
+        "message": "AuthorizationError: Not authorized to read Delivery.totalValue",
         "locations": [
           {
             "line": 55,
@@ -168,7 +169,7 @@
         ]
       },
       {
-        "message": "Not authorized to select allHandlingUnits with argument filter (field delivery.totalValue)",
+        "message": "AuthorizationError: Not authorized to read Delivery.totalValue",
         "locations": [
           {
             "line": 59,
@@ -180,7 +181,7 @@
         ]
       },
       {
-        "message": "Not authorized to select allDeliveries with argument filter (field forwarder)",
+        "message": "AuthorizationError: Not authorized to read Forwarder objects (in Delivery.forwarder)",
         "locations": [
           {
             "line": 63,
@@ -203,7 +204,7 @@
   "sort": {
     "errors": [
       {
-        "message": "Not authorized to select allDeliveries with argument orderBy ([0] == totalValue_ASC)",
+        "message": "AuthorizationError: Not authorized to read Delivery.totalValue",
         "locations": [
           {
             "line": 69,
@@ -215,7 +216,7 @@
         ]
       },
       {
-        "message": "Not authorized to select allHandlingUnits with argument orderBy ([0] == delivery_totalValue_DESC)",
+        "message": "AuthorizationError: Not authorized to read Delivery.totalValue",
         "locations": [
           {
             "line": 73,
@@ -235,7 +236,7 @@
   "create": {
     "errors": [
       {
-        "message": "Not authorized to call createDelivery with argument input (field totalValue)",
+        "message": "AuthorizationError: Not authorized to set Delivery.totalValue",
         "locations": [
           {
             "line": 79,
@@ -252,7 +253,7 @@
   "update": {
     "errors": [
       {
-        "message": "Not authorized to call updateDelivery with argument input (field totalValue)",
+        "message": "AuthorizationError: Not authorized to set Delivery.totalValue",
         "locations": [
           {
             "line": 89,
@@ -264,7 +265,7 @@
         ]
       },
       {
-        "message": "Not authorized to call updateForwarder",
+        "message": "AuthorizationError: Not authorized to update Forwarder objects",
         "locations": [
           {
             "line": 93,
@@ -274,20 +275,33 @@
         "path": [
           "updateForwarder"
         ]
+      },
+      {
+        "message": "SkipError: Skipped because other mutations reported errors",
+        "locations": [
+          {
+            "line": 97,
+            "column": 5
+          }
+        ],
+        "path": [
+          "update2"
+        ]
       }
     ],
     "data": {
       "updateDelivery": null,
-      "updateForwarder": null
+      "updateForwarder": null,
+      "update2": null
     }
   },
   "delete": {
     "errors": [
       {
-        "message": "Not authorized to call deleteForwarder",
+        "message": "AuthorizationError: Not authorized to delete Forwarder objects",
         "locations": [
           {
-            "line": 99,
+            "line": 103,
             "column": 5
           }
         ],

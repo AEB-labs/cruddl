@@ -1,5 +1,6 @@
 export type PlainObject = {[key: string]: AnyValue};
 export type AnyValue = {}|undefined|null;
+export type Constructor<T> = { new(...args: any[]): T };
 
 export function flatMap<TOut, TIn>(arr: TIn[], f: (t: TIn) => TOut[]): TOut[] {
     return arr.reduce((ys: any, x: any) => {
@@ -141,6 +142,10 @@ export function objectValues<T>(obj: { [name: string]: T }): T[] {
     return Object.keys(obj).map(i => obj[i]);
 }
 
+export function filterType<T>(arr: AnyValue[], type: Constructor<T>): T[] {
+    return arr.filter(obj => obj instanceof type) as T[];
+}
+
 export function objectEntries<T>(obj: { [name: string]: T }): [string, T][] {
     return Object.keys(obj).map((k): [string,T] => [k, obj[k]]);
 }
@@ -175,6 +180,10 @@ export function sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+export function pair<S, T>(a: S, b: T): [ S, T ] {
+    return [a, b];
+}
+
 /**
  * Checks if a condition is met, and if it is not, throws an error with the specified message
  * @param {boolean} condition the condition which should be met
@@ -184,4 +193,55 @@ export function assert(condition: boolean, message: string) {
     if (!condition) {
         throw new Error(message);
     }
+}
+
+export let escapeRegExp: (input: string) => string;
+(function () {
+    // Referring to the table here:
+    // https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/regexp
+    // these characters should be escaped
+    // \ ^ $ * + ? . ( ) | { } [ ]
+    // These characters only have special meaning inside of brackets
+    // they do not need to be escaped, but they MAY be escaped
+    // without any adverse effects (to the best of my knowledge and casual testing)
+    // : ! , =
+    // my test "~!@#$%^&*(){}[]`/=?+\|-_;:'\",<.>".match(/[\#]/g)
+
+    // source: https://stackoverflow.com/questions/3446170/escape-string-for-use-in-javascript-regex
+
+    const specials = [
+            // order matters for these
+            "-"
+            , "["
+            , "]"
+            // order doesn't matter for any of these
+            , "/"
+            , "{"
+            , "}"
+            , "("
+            , ")"
+            , "*"
+            , "+"
+            , "?"
+            , "."
+            , "\\"
+            , "^"
+            , "$"
+            , "|"
+        ]
+
+        // I choose to escape every character with '\'
+        // even though only some strictly require it when inside of []
+        , regex = RegExp('[' + specials.join('\\') + ']', 'g')
+    ;
+
+    escapeRegExp = function (str) {
+        return str.replace(regex, "\\$&");
+    };
+
+    // test escapeRegExp("/path/to/res?search=this.that")
+}());
+
+export function isPromise<T>(value: any): value is Promise<T> {
+    return typeof value === 'object' && value !== null && typeof value.then === 'function';
 }

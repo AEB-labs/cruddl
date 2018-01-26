@@ -1,26 +1,58 @@
-import {buildASTSchema, DocumentNode, GraphQLSchema, parse, print, Source} from "graphql";
+import { buildASTSchema, DocumentNode, GraphQLSchema, parse, print, Source } from 'graphql';
 import {
-    executePostMergeTransformationPipeline,
-    executePreMergeTransformationPipeline
-} from "./preparation/transformation-pipeline";
-import { validatePostMerge, ValidationResult } from './preparation/ast-validator';
-import {implementScalarTypes} from './scalars/implement-scalar-types';
-import {SchemaConfig} from "../config/schema-config";
-import {cloneDeep} from "lodash";
-import {SchemaContext, globalContext} from "../config/global";
+    ASTTransformationContext, executePostMergeTransformationPipeline, executePreMergeTransformationPipeline,
+    executeSchemaTransformationPipeline, SchemaTransformationContext
+} from './preparation/transformation-pipeline';
+import { validatePostMerge, validateSource, ValidationResult } from './preparation/ast-validator';
+import { SchemaConfig, SchemaPartConfig } from '../config/schema-config';
+import { globalContext } from '../config/global';
+import { createPermissionMap } from '../authorization/permission-profile';
+import { Project } from '../project/project';
+import { DatabaseAdapter } from '../database/database-adapter';
+import { SourceType } from '../project/source';
+import { load as loadYaml } from 'js-yaml';
+import { ValidationMessage } from './preparation/validation-message';
+import { flatMap } from '../utils/utils';
 
 /**
- * Validates a schema config and thus determines whether createSchema() would succeed
+ * Validates a project and thus determines whether createSchema() would succeed
  */
-export function validateSchema(inputSchemaConfig: SchemaConfig): ValidationResult {
-    const schemaConfig = parseSchemaParts(inputSchemaConfig);
+export function validateSchema(project: Project): ValidationResult {
+    globalContext.registerContext({ loggerProvider: project.loggerProvider });
+    try {
+        return validateAndPrepareSchema(project).validationResult;
+    } finally {
+        globalContext.unregisterContext();
+    }
+}
 
-    const { schemaParts, ...rootContext } = schemaConfig;
 
-    executePreMergeTransformationPipeline(schemaParts, rootContext);
+function validateAndPrepareSchema(project: Project):
+        { validationResult: ValidationResult, schemaConfig: SchemaConfig, mergedSchema: DocumentNode, rootContext: ASTTransformationContext } {
+    const messages: ValidationMessage[] = [];
+
+    const sources = flatMap(project.sources, source => {
+        const sourceResult = validateSource(source);
+        messages.push(...sourceResult.messages);
+        if (sourceResult.hasErrors()) {
+            return [];
+        }
+        return [ source ];
+    });
+
+    const schemaConfig = parseSchemaParts(new Project({...project, sources}));
+    const rootContext: ASTTransformationContext = {
+        defaultNamespace: schemaConfig.defaultNamespace,
+        permissionProfiles: createPermissionMap(schemaConfig.permissionProfiles)
+    };
+    executePreMergeTransformationPipeline(schemaConfig.schemaParts, rootContext);
     const mergedSchema: DocumentNode = mergeSchemaDefinition(schemaConfig);
 
-    return validatePostMerge(mergedSchema);
+    const result = validatePostMerge(mergedSchema, rootContext);
+    messages.push(...result.messages);
+
+    const validationResult = new ValidationResult(messages);
+    return { validationResult, schemaConfig, mergedSchema, rootContext };
 }
 
 /**
@@ -29,36 +61,37 @@ export function validateSchema(inputSchemaConfig: SchemaConfig): ValidationResul
  as a (sourced) SDL string or AST document.
  Use the optional context to inject your logging framework.
   */
-export function createSchema(inputSchemaConfig: SchemaConfig, context?: SchemaContext): GraphQLSchema {
-    globalContext.registerContext(context);
+export function createSchema(project: Project, databaseAdapter: DatabaseAdapter): GraphQLSchema {
+    globalContext.registerContext({ loggerProvider: project.loggerProvider });
     try {
         const logger = globalContext.loggerProvider.getLogger('schema-builder');
 
-        const schemaConfig = parseSchemaParts(inputSchemaConfig);
-
-        const {schemaParts, ...rootContext} = schemaConfig;
-
-        executePreMergeTransformationPipeline(schemaParts, rootContext);
-        const mergedSchema: DocumentNode = mergeSchemaDefinition(schemaConfig);
-
-        const validationResult = validatePostMerge(mergedSchema);
+        const { validationResult, schemaConfig, mergedSchema, rootContext } = validateAndPrepareSchema(project);
         if (validationResult.hasErrors()) {
-            throw new Error('Invalid model:\n' + validationResult.messages.map(msg => msg.toString()).join('\n'))
-        } else {
-            logger.info('Schema successfully created.')
+            throw new Error('Project has errors:\n' + validationResult.messages.map(msg => msg.toString()).join('\n'))
         }
 
-        executePostMergeTransformationPipeline(mergedSchema, {...rootContext});
+        executePostMergeTransformationPipeline(mergedSchema, rootContext);
         logger.debug(print(mergedSchema));
-        const executableGraphQLSchema = buildASTSchema(mergedSchema);
-        return implementScalarTypes(executableGraphQLSchema);
+
+        const schemaContext: SchemaTransformationContext = {
+            ...rootContext,
+            loggerProvider: project.loggerProvider,
+            databaseAdapter
+        };
+
+        const graphQLSchema = buildASTSchema(mergedSchema);
+        const finalSchema = executeSchemaTransformationPipeline(graphQLSchema, schemaContext);
+        logger.info('Schema successfully created.');
+        return finalSchema;
     } finally {
         globalContext.unregisterContext();
     }
 }
 
 function mergeSchemaDefinition(schemaConfig: SchemaConfig): DocumentNode {
-    return schemaConfig.schemaParts.map(modelDef => (modelDef.source instanceof Source) ? parse(modelDef.source) : modelDef.source).reduce(mergeAST);
+    const emptyDocument: DocumentNode = { kind: "Document", definitions: [] };
+    return schemaConfig.schemaParts.map(part => part.document).reduce(mergeAST, emptyDocument);
 }
 
 /**
@@ -76,15 +109,27 @@ function mergeAST(doc1: DocumentNode, doc2: DocumentNode): DocumentNode {
 
 /**
  * Parse all schema parts sources which aren't AST already and deep clone all AST sources.
- * @param {SchemaConfig} schemaConfig
- * @returns {SchemaConfig}
  */
-function parseSchemaParts(schemaConfig: SchemaConfig): SchemaConfig {
+function parseSchemaParts(project: Project): SchemaConfig {
+    // TODO merge individual properties of yaml somehow
+    const yamlObjects = project.sources
+        .filter(s => s.type == SourceType.YAML || s.type == SourceType.JSON)
+        .map(source => loadYaml(source.body));
+    const mergedYaml = Object.assign({}, ...yamlObjects);
+
     return {
-        ...schemaConfig,
-        schemaParts: schemaConfig.schemaParts.map(schemaPart => ({
-            ...schemaPart,
-            source: (schemaPart.source instanceof Source) ? parse(schemaPart.source) : cloneDeep(schemaPart.source)
-        }))
+        defaultNamespace: project.defaultNamespace,
+        schemaParts: project.getSourcesOfType(SourceType.GRAPHQLS).map((source): SchemaPartConfig => ({
+            document: parse(new Source(source.body, source.name)),
+            localNamespace: getNamespaceFromSourceName(source.name)
+        })),
+        permissionProfiles: mergedYaml.permissionProfiles
     };
+}
+
+function getNamespaceFromSourceName(name: string): string|undefined {
+    if (name.includes('/')) {
+        return name.substr(0, name.lastIndexOf('/')).replace(/\//g, '.');
+    }
+    return undefined; // default namespace
 }

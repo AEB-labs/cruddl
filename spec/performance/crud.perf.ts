@@ -1,16 +1,9 @@
-import {BenchmarkConfig, BenchmarkFactories} from "./support/async-bench";
-import {takeRandomSample} from "../../src/utils/utils";
-import {Database} from "arangojs";
+import { BenchmarkConfig, BenchmarkFactories } from './support/async-bench';
+import { takeRandomSample } from '../../src/utils/utils';
 import {
-    TestEnvironment,
-    initEnvironment,
-    getRandomPaperIDsWithAQL,
-    addManyPapersWithAQL,
-    getSizeFactorForJSONLength,
-    addPaper,
-    createLargePaper,
-    formatBytes
-} from "./support/helpers";
+    addManyPapersWithAQL, addPaper, createLargePaper, formatBytes, getRandomPaperIDsWithAQL, getSizeFactorForJSONLength,
+    initEnvironment, TestEnvironment
+} from './support/helpers';
 
 function testAddRootEntity(config: {documentLength: number }): BenchmarkConfig {
     const sizeFactor = getSizeFactorForJSONLength(config.documentLength);

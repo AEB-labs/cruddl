@@ -1,0 +1,45 @@
+{
+  "q": {
+    "data": {
+      "allFiles": [
+        {
+          "name": "logistics"
+        },
+        {
+          "name": "public"
+        }
+      ]
+    }
+  },
+  "updateToAccessGroupWithPermissions": {
+    "data": {
+      "updateFile": {
+        "name": "public"
+      }
+    }
+  },
+  "createWithAccessGroupWithoutPermissions": {
+    "errors": [
+      {
+        "message": "AuthorizationError: Not authorized to set File.accessGroup to this value (allowed values: logistics, public)",
+        "locations": [
+          {
+            "line": 16,
+            "column": 5
+          }
+        ],
+        "path": [
+          "createFile"
+        ]
+      }
+    ],
+    "data": null
+  },
+  "createWithAccessGroupWithPermissions": {
+    "data": {
+      "createFile": {
+        "name": "test"
+      }
+    }
+  }
+}

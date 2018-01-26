@@ -1,6 +1,6 @@
 {
   "name": "@aeb/momo",
-  "version": "0.2.5",
+  "version": "0.3.0-alpha.5",
   "description": "",
   "main": "dist/index.js",
   "types": "./dist/index.d.ts",
@@ -22,12 +22,17 @@
     "registry": "https://registry.next.labs.aeb.com/repository/next.npm.releases/"
   },
   "author": "",
+  "browser": {
+    "@arangodb": false
+  },
   "devDependencies": {
     "@types/body-parser": "^1.16.3",
     "@types/colors": "^1.1.3",
     "@types/cors": "^2.8.1",
     "@types/graphql": "~0.11.5",
+    "@types/graphql-type-json": "^0.1.2",
     "@types/jasmine": "^2.5.41",
+    "@types/js-yaml": "^3.10.1",
     "@types/lodash": "^4.14.77",
     "@types/moment": "^2.13.0",
     "@types/node": "^8.0.28",
@@ -50,13 +55,18 @@
     "rimraf": "^2.6.2",
     "stats-lite": "^2.1.0",
     "ts-node": "^3.1.0",
-    "typescript": "^2.5.2"
+    "typescript": "^2.6.2"
   },
   "dependencies": {
+    "ajv": "^6.0.1",
     "arangojs": "~5.7.1",
     "colors": "^1.1.2",
     "graphql-tag": "^2.5.0",
     "graphql-transformer": "^0.1.2",
+    "graphql-type-json": "^0.1.4",
+    "js-yaml": "^3.10.0",
+    "json-lint": "^0.1.0",
+    "json-source-map": "^0.4.0",
     "jsondiffpatch": "^0.2.4",
     "lodash": "^4.17.4",
     "moment": "^2.19.1",
@@ -72,6 +82,9 @@
     "include": [
       "src/*.ts",
       "src/**/*.ts"
+    ],
+    "exclude": [
+      "src/**/*.d.ts"
     ],
     "extension": [
       ".ts"
