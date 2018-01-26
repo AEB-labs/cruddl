@@ -1,4 +1,5 @@
 import { Location } from 'graphql';
+import { ProjectSource } from '../../project/source';
 
 export enum Severity {
     Error,
@@ -16,14 +17,37 @@ export class SourcePosition {
 }
 
 export class MessageLocation {
-    constructor(public readonly sourceName: string, public readonly start: SourcePosition, public readonly end: SourcePosition) {
+    public readonly sourceName: string;
+
+    public readonly source: ProjectSource|undefined;
+
+    constructor(source: string|ProjectSource, public readonly start: SourcePosition, public readonly end: SourcePosition) {
+        if (source instanceof ProjectSource) {
+            Object.defineProperty(this, 'source', {
+                enumerable: false
+            });
+            this.sourceName = source.name;
+        } else {
+            this.sourceName = source;
+        }
     }
 
     static fromGraphQLLocation(loc: Location) {
         return new MessageLocation(
-            loc.source.name || '',
+            ProjectSource.fromGraphQLSource(loc.source) || loc.source.name,
             new SourcePosition(loc.start, loc.startToken.line, loc.startToken.column),
             new SourcePosition(loc.end, loc.endToken.line, loc.endToken.column + loc.endToken.end - loc.endToken.start));
+    }
+
+    toString() {
+        return `${this.sourceName}:${this.start.line}:${this.start.column}`;
+    }
+
+    private getSourcePath() {
+        if (this.source && this.source.filePath) {
+            return this.source.filePath;
+        }
+        return this.sourceName;
     }
 }
 
@@ -59,8 +83,8 @@ export class ValidationMessage {
     }
 
     public toString() {
-        const at = this.location ? ` at ${this.location.sourceName}:${this.location.start.line}:${this.location.start.column}` : '';
-        return `${severityToString(this.severity)}${at}: ${this.message}`;
+        const at = this.location ? ` at ${this.location}` : '';
+        return `${severityToString(this.severity)}: ${this.message}${at}`;
     }
 }
 

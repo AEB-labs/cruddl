@@ -39,7 +39,7 @@ function getMessageLocation(error: GraphQLError): MessageLocation|undefined {
     }
     const endOffset = error.source.body.length;
     const endLoc = getLocation(error.source, endOffset);
-    return new MessageLocation(error.source.name,
+    return new MessageLocation(ProjectSource.fromGraphQLSource(error.source) || error.source.name,
         new SourcePosition(error.positions[0], error.locations[0].line, error.locations[0].column),
         new SourcePosition(endOffset, endLoc.line, endLoc.column));
 }

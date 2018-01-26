@@ -1,6 +1,10 @@
 /**
  * The type of a source file
  */
+import { Source } from 'graphql';
+
+const projectSourceLinkSymbol = Symbol('ProjectSource');
+
 export enum SourceType {
     /**
      * A graphql schema definition file defining types
@@ -27,7 +31,7 @@ export class ProjectSource {
      */
     public readonly type: SourceType;
 
-    constructor(public readonly name: string, public readonly body: string) {
+    constructor(public readonly name: string, public readonly body: string, public readonly filePath: string|undefined = undefined) {
         if (typeof name != 'string' || !name) {
             throw new Error(`name must be a non-empty string, but is ${String(name)}`);
         }
@@ -42,6 +46,19 @@ export class ProjectSource {
             return config;
         }
         return new ProjectSource(config.name, config.body);
+    }
+
+    toGraphQLSource(): Source {
+        const source = new Source(this.body, this.name);
+        (source as any)[projectSourceLinkSymbol] = this;
+        return source;
+    }
+
+    static fromGraphQLSource(source: Source): ProjectSource|undefined {
+        if (projectSourceLinkSymbol in source) {
+            return (source as any)[projectSourceLinkSymbol];
+        }
+        return undefined;
     }
 }
 

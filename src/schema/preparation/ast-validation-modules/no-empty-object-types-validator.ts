@@ -15,10 +15,7 @@ export class NoEmptyObjectTypesValidator implements ASTValidator {
                     const entityDirective = objectType.directives!
                         .find(directive => OBJECT_TYPE_ENTITY_DIRECTIVES.includes(directive.name.value))!
                         .name.value;
-                    const severity = [ROOT_ENTITY_DIRECTIVE, CHILD_ENTITY_DIRECTIVE].includes(entityDirective) ?
-                        Severity.Warning : Severity.Error;
-                    validationMessages.push(
-                        new ValidationMessage(severity, VALIDATION_ERROR_OBJECT_TYPE_WITHOUT_FIELDS, {}, objectType.loc))
+                    validationMessages.push(ValidationMessage.error(VALIDATION_ERROR_OBJECT_TYPE_WITHOUT_FIELDS, {}, objectType.loc))
                 }
             });
         return validationMessages;

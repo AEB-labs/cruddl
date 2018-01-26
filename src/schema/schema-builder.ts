@@ -120,7 +120,7 @@ function parseSchemaParts(project: Project): SchemaConfig {
     return {
         defaultNamespace: project.defaultNamespace,
         schemaParts: project.getSourcesOfType(SourceType.GRAPHQLS).map((source): SchemaPartConfig => ({
-            document: parse(new Source(source.body, source.name)),
+            document: parse(source.toGraphQLSource()),
             localNamespace: getNamespaceFromSourceName(source.name)
         })),
         permissionProfiles: mergedYaml.permissionProfiles

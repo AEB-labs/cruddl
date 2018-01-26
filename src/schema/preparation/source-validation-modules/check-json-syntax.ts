@@ -42,7 +42,7 @@ function getMessageLocation(result: JSONLintResult, source: ProjectSource): Mess
     }
     const endOffset = source.body.length;
     const endLoc = end(source.body);
-    return new MessageLocation(source.name,
+    return new MessageLocation(source,
         new SourcePosition(result.i, result.line, result.character),
         new SourcePosition(endOffset, endLoc.line, endLoc.column));
 }

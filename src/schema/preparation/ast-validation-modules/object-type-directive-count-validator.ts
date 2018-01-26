@@ -11,7 +11,9 @@ import {
     VALUE_OBJECT_DIRECTIVE
 } from "../../schema-defaults";
 
-export const VALIDATION_ERROR_INVALID_COUNT_OF_ENTITY_DIRECTIVES = `Every type must have exactly one directive out of @${ROOT_ENTITY_DIRECTIVE}, @${CHILD_ENTITY_DIRECTIVE}, @${ENTITY_EXTENSION_DIRECTIVE} or @${VALUE_OBJECT_DIRECTIVE}.`;
+export const VALIDATION_ERROR_MULTIPLE_OBJECT_TYPE_DIRECTIVES = `Only one of @${ROOT_ENTITY_DIRECTIVE}, @${CHILD_ENTITY_DIRECTIVE}, @${ENTITY_EXTENSION_DIRECTIVE} or @${VALUE_OBJECT_DIRECTIVE} can be used.`;
+export const VALIDATION_ERROR_MISSING_OBJECT_TYPE_DIRECTIVE = `Add one of @${ROOT_ENTITY_DIRECTIVE}, @${CHILD_ENTITY_DIRECTIVE}, @${ENTITY_EXTENSION_DIRECTIVE} or @${VALUE_OBJECT_DIRECTIVE}.`;
+
 
 export class ObjectTypeDirectiveCountValidator implements ASTValidator {
 
@@ -21,7 +23,7 @@ export class ObjectTypeDirectiveCountValidator implements ASTValidator {
 }
 
 function validateObjectType(objectType: ObjectTypeDefinitionNode): ValidationMessage[] {
-    const validationMessages: ValidationMessage[] = []
+    const validationMessages: ValidationMessage[] = [];
     if (!objectType.directives) {
         return [];
     }
@@ -29,12 +31,12 @@ function validateObjectType(objectType: ObjectTypeDefinitionNode): ValidationMes
     objectType.directives.filter(directive => OBJECT_TYPE_ENTITY_DIRECTIVES.includes(directive.name.value)).forEach(directive => {
         count++;
         if (count > 1) {
-            validationMessages.push(ValidationMessage.error(VALIDATION_ERROR_INVALID_COUNT_OF_ENTITY_DIRECTIVES, undefined, directive.loc))
+            validationMessages.push(ValidationMessage.error(VALIDATION_ERROR_MULTIPLE_OBJECT_TYPE_DIRECTIVES, undefined, directive.loc));
             return;
         }
-    })
+    });
     if (count === 0) {
-        validationMessages.push(ValidationMessage.error(VALIDATION_ERROR_INVALID_COUNT_OF_ENTITY_DIRECTIVES, undefined, objectType.loc))
+        validationMessages.push(ValidationMessage.error(VALIDATION_ERROR_MISSING_OBJECT_TYPE_DIRECTIVE, undefined, objectType.name.loc))
     }
     return validationMessages;
 }

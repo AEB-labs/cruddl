@@ -1,11 +1,7 @@
-import { ASTValidationContext, ASTValidator } from '../ast-validator';
-import { DocumentNode, GraphQLString, NamedTypeNode, TypeNode, visit } from 'graphql';
+import { ASTValidator } from '../ast-validator';
+import { DocumentNode, NamedTypeNode, visit } from 'graphql';
 import { ValidationMessage } from '../validation-message';
-import {
-    findDirectiveWithName, getNamedTypeDefinitionAST, getNamedTypeDefinitionASTIfExists, getNodeByName,
-    getRootEntityTypes
-} from '../../schema-utils';
-import { ACCESS_GROUP_FIELD, PERMISSION_PROFILE_ARG, ROOT_ENTITY_DIRECTIVE } from '../../schema-defaults';
+import { getNamedTypeDefinitionASTIfExists } from '../../schema-utils';
 
 export const VALIDATION_ERROR_UNDEFINED_TYPE_REFERENCE = `Type not defined`;
 

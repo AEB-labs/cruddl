@@ -3,7 +3,7 @@ import {DocumentNode} from "graphql";
 import {ValidationMessage} from "../validation-message";
 import {ENUM_TYPE_DEFINITION, OBJECT_TYPE_DEFINITION} from "graphql/language/kinds";
 
-export const VALIDATION_ERROR_INVALID_TYPE_KIND = "This kind of definition is not allowed. Allowed are only object types and enum types.";
+export const VALIDATION_ERROR_INVALID_TYPE_KIND = "This kind of definition is not allowed. Only object and enum type definitions are allowed.";
 
 export class OnlyAllowedTypesValidator implements ASTValidator {
 

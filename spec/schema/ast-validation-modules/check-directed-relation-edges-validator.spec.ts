@@ -1,11 +1,9 @@
-import {ValidationResult} from "../../../src/schema/preparation/ast-validator";
-import {parse} from "graphql";
+import { ValidationResult } from '../../../src/schema/preparation/ast-validator';
+import { parse } from 'graphql';
 import {
     CheckDirectedRelationEdgesValidator,
-    VALIDATION_ERROR_INVALID_ARGUMENT_TYPE,
-    VALIDATION_ERROR_INVERSE_FIELD_NOT_FOUND,
-    VALIDATION_WARNING_UNASSOCIATED_RELATIONS
-} from "../../../src/schema/preparation/ast-validation-modules/check-directed-relation-edges-validator";
+    VALIDATION_ERROR_INVALID_ARGUMENT_TYPE
+} from '../../../src/schema/preparation/ast-validation-modules/check-directed-relation-edges-validator';
 
 describe('check-directed-relation-edges-validator', () => {
 
@@ -37,12 +35,12 @@ describe('check-directed-relation-edges-validator', () => {
     assertValidatorRejects('backward only @relations', `
         type Foo @rootEntity { bar: Bar @relation(inverseOf: "foo") }
         type Bar @rootEntity { bla: String }
-    `, VALIDATION_ERROR_INVERSE_FIELD_NOT_FOUND);
+    `, 'Type "Bar" does not have a field "foo"');
 
     assertValidatorWarns('screwed @relations', `
         type Foo @rootEntity { bar: Bar @relation }
         type Bar @rootEntity { foo: Foo @relation }
-    `, VALIDATION_WARNING_UNASSOCIATED_RELATIONS);
+    `, 'This field and "Bar.foo" define separate relations. Consider using the "inverseOf" argument to add a backlink to an existing relation');
 
     assertValidatorRejects('inverseOf with bad type', `
         type Foo @rootEntity { bar: Bar @relation }

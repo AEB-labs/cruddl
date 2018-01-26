@@ -13,7 +13,7 @@ import { NoUnusedNonRootObjectTypesValidator } from './ast-validation-modules/no
 import { NoEmptyObjectTypesValidator } from './ast-validation-modules/no-empty-object-types-validator';
 import { NoListsOfListsValidator } from './ast-validation-modules/no-lists-of-lists-validator';
 import { RootEntitiesWithoutReadRolesValidator } from './ast-validation-modules/root-entities-without-read-roles';
-import { NoRolesOnValueObjectsValidator } from './ast-validation-modules/no-roles-on-value-objects-validator';
+import { RolesOnNonRootEntityTypesValidator } from './ast-validation-modules/roles-on-non-root-entity-types';
 import { KnownFieldDirectivesValidator } from './ast-validation-modules/known-field-directives-validator';
 import { KnownObjectTypeDirectivesValidator } from './ast-validation-modules/known-object-type-directives-validator';
 import { ObjectTypeDirectiveCountValidator } from './ast-validation-modules/object-type-directive-count-validator';
@@ -59,7 +59,7 @@ const postMergeValidators: ASTValidator[] = [
     new NoPermissionProfileValidator(),
     new UndefinedPermissionProfileValidator(),
     new RolesAndPermissionProfileCombinedValidator(),
-    new NoRolesOnValueObjectsValidator(),
+    new RolesOnNonRootEntityTypesValidator(),
     new KnownFieldDirectivesValidator(),
     new KnownObjectTypeDirectivesValidator(),
     new CalcMutationsDirectiveValidator(),

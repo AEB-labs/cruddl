@@ -1,8 +1,7 @@
 import {ValidationResult} from "../../../src/schema/preparation/ast-validator";
 import {parse} from "graphql";
 import {
-    RelationsOnlyToRootEntitiesValidator,
-    VALIDATION_ERROR_RELATION_TO_NON_ROOT_ENTITY
+    RelationsOnlyToRootEntitiesValidator
 } from "../../../src/schema/preparation/ast-validation-modules/relations-only-to-root-entities-validator";
 
 const modelWithRelationToNonRoot = `
@@ -29,7 +28,7 @@ describe('relations only on root entities validator', () => {
         const validationResult = new ValidationResult(new RelationsOnlyToRootEntitiesValidator().validate(ast));
         expect(validationResult.hasErrors()).toBeTruthy();
         expect(validationResult.messages.length).toBe(1);
-        expect(validationResult.messages[0].message).toBe(VALIDATION_ERROR_RELATION_TO_NON_ROOT_ENTITY);
+        expect(validationResult.messages[0].message).toBe('"Stuff" is not a root entity');
     });
 
     it('accepts @relation to @rootEntity', () => {
