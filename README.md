@@ -146,11 +146,75 @@ type Person @rootEntity {
 ## Examples
 
 # Query
+## Basics
+Entities can be queried either by id (one result object) or by a filter (a list of result objects).
+Relations and references are resolved during query and their fields are available for query.
+
+```graphql
+type Person {
+    name: String
+}
+
+query {
+    Person("42") {
+        name
+    }
+}
+
+query {
+    allPeople(filter: { name: "John" }) {
+        id
+        name
+    }
+}
+```
+## More filtering
+
+An entity can be filtered by all own fields and fields of nested/related entites of cardinality one.
+For to-n relations and other lists, there are the quantifiers `some`, `every`, `none`. (SQL WHERE EXISTS ...) 
+Take care when using quantifiers as they can significantly hit performance due to poor optimization in Arango, especially when dealing with large collections.
+
+## Sorting
+Results can be sorted by all fields of the rootEntity including fields from nested/related objects with a cardinality of one. The schema provides an enum with the name of the entity appended by `OrderBy`
+
 # Mutations
 ## Create
+Create a new object using the create* mutation, e. g.
+```
+mutation {
+    createPerson(input: { name: "John" }) {
+        id
+        name
+    }
+}
+```
+This mutation creates a person with the name "John". The ID will be auto-generated and cannot be set manually (thus is not part of the input type). The person will be return for further query.
 ## Update
+Update an existing object using the update* mutation, e. g.
+```
+mutation {
+    updatePerson(id: "42", input: { name: "John" }) {
+        name
+    }
+}
+```
+This mutation updates the person with the id "42" and set the name to "John". The person will be return for further query.
 ## Delete
+Delete an existing object using the delete* mutation, e. g.
+```
+mutation {
+    deletePerson(id: "42") {
+        name
+    }
+}
+```
+This mutation deletes the person with the id "42". The person will be return for further query. Note: this behaviour will be propably changed in the future. Traversing relationships is not possible after deletion. 
+
 # Misc
 ## DateTime
 Additional to the default GraphQL scalars String, Int, Float and ID, momo also supports the additional scalar type DateTime.
-DateTime is used and represented as specified by the ISO 8601 standard. 
+DateTime is used and represented as specified by the ISO 8601 standard.
+## JSON
+Another scalar type representing a JSON string. The JSON will be deserialized and stored in the DB.
+## id, updatedAt, createdAt
+`id: ID`, `createdAt: DateTime`, `updatedAt: DateTime` are added to all @rootEntity object types. They fields on the corresponding objects are auto-managed by momo. 
