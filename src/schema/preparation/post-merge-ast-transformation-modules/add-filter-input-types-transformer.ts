@@ -179,10 +179,10 @@ export class AddFilterInputTypesTransformer implements ASTTransformer {
                         }
                     case ENUM_TYPE_DEFINITION:
                         return [
-                            this.buildNamedTypeFieldForField(name, namedTypeDefinition.name.value, field),
-                            this.buildNamedTypeFieldForField(notField(name), namedTypeDefinition.name.value, field),
-                            this.buildNamedTypeFieldForField(inField(name), namedTypeDefinition.name.value, field),
-                            this.buildNamedTypeFieldForField(notInField(name), namedTypeDefinition.name.value, field),
+                            this.buildListOfNamedTypeFieldForField(name, namedTypeDefinition.name.value, field),
+                            this.buildListOfNamedTypeFieldForField(notField(name), namedTypeDefinition.name.value, field),
+                            this.buildListOfNamedTypeFieldForField(inField(name), namedTypeDefinition.name.value, field),
+                            this.buildListOfNamedTypeFieldForField(notInField(name), namedTypeDefinition.name.value, field),
                         ];
                     case OBJECT_TYPE_DEFINITION:
                         // use the embedded object filter

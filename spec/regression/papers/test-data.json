@@ -101,13 +101,15 @@
       {
         "@id": "2",
         "firstName": "Nancy",
-        "lastName": "Lynch"
+        "lastName": "Lynch",
+        "category": "Telecommunications"
       },
       {
         "@id": "3",
         "firstName": "Jon",
         "lastName": "Doe",
-        "email": "jon.doe@example.com"
+        "email": "jon.doe@example.com",
+        "category": "Programming"
       },
       {
         "@id": "4",

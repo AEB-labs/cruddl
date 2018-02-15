@@ -3,4 +3,5 @@ type User @rootEntity @roles(readWrite: ["admin"]) {
     firstName: String
     lastName: String
     papers: [Paper] @relation
+    category: Category
 }

@@ -140,6 +140,23 @@
       {
         "title": "Unified modeling language reference manual, the"
       }
+    ],
+    "enum_in":[
+      {
+        "lastName": "Doe"
+      },
+      {
+        "lastName": "Lynch"
+      }
+    ],
+    "enum_not_in":[
+      {
+        "lastName": "Gilbert"
+      },
+      {
+        "lastName": "Mustermann"
+      }
     ]
+
   }
 }

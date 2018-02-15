@@ -45,4 +45,12 @@ query {
         orderBy: title_ASC) {
         title
     }
+
+    enum_in: allUsers(filter: { category_in: [ Telecommunications, Programming ]}, orderBy: lastName_ASC) {
+        lastName
+    }
+    enum_not_in: allUsers(filter: { category_not_in: [ Telecommunications, Programming ]}, orderBy: lastName_ASC) {
+        lastName
+    }
+
 }
