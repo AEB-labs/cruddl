@@ -5,10 +5,11 @@ import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS } from '../../query/query
 import { JSCompoundQuery, JSExecutableQuery } from './js';
 import { getJSQuery } from './js-generator';
 import { GraphQLObjectType, GraphQLSchema } from 'graphql';
+import { isRelationField, isRootEntityType } from '../../schema/schema-utils';
+import { flatMap, objectValues } from '../../utils/utils';
+import { getCollectionNameForEdge, getCollectionNameForRootEntity } from './inmemory-basics';
+import { getEdgeType } from '../../schema/edges';
 import uuid = require('uuid');
-import { isRootEntityType } from '../../schema/schema-utils';
-import { objectValues } from '../../utils/utils';
-import { getCollectionNameForRootEntity } from './inmemory-basics';
 
 export class InMemoryDB {
     collections: { [name: string]: any[] } = {};
@@ -98,8 +99,15 @@ export class InMemoryAdapter implements DatabaseAdapter {
 
     async updateSchema(schema: GraphQLSchema) {
         const rootEntities = objectValues(schema.getTypeMap()).filter(type => isRootEntityType(type)) as GraphQLObjectType[];
+
+        const edgeTypes = flatMap(rootEntities, entity =>
+            objectValues(entity.getFields())
+                .filter(field => isRelationField(field))
+                .map(field => getEdgeType(entity, field)));
+        const requiredEdgeCollections = Array.from(new Set(edgeTypes.map(edge => getCollectionNameForEdge(edge))));
+
         const requiredCollections = rootEntities.map(entity => getCollectionNameForRootEntity(entity));
-        for (const coll of requiredCollections) {
+        for (const coll of [...requiredCollections, ...requiredEdgeCollections]) {
             if (!(coll in this.db.collections)) {
                 this.db.collections[coll] = [];
             }

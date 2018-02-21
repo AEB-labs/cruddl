@@ -12,7 +12,8 @@ import { GraphQLNamedType } from 'graphql';
 import { QueryResultValidator } from '../../query/query-result-validators';
 import { RUNTIME_ERROR_TOKEN } from '../../query/runtime-errors';
 import { decapitalize, flatMap } from '../../utils/utils';
-import { getCollectionNameForRootEntity } from './inmemory-basics';
+import { getCollectionNameForEdge, getCollectionNameForRootEntity } from './inmemory-basics';
+import { EdgeType, invertRelationFieldEdgeSide, RelationFieldEdgeSide } from '../../schema/edges';
 
 const ID_FIELD_NAME = 'id';
 
@@ -238,7 +239,7 @@ const processors : { [name: string]: NodeProcessor<any> } = {
         raw = js`${object}[${identifier}]`;
 
         // mimick arango behavior here which propagates null
-        return js`((typeof ${object} == 'object' && ${object} !== undefined) ? ${raw} : undefined)`;
+        return js`((typeof (${object}) == 'object' && (${object}) !== undefined) ? (${raw}) : undefined)`;
     },
 
     RootEntityID(node: RootEntityIDQueryNode, context): JSFragment {
@@ -364,16 +365,25 @@ const processors : { [name: string]: NodeProcessor<any> } = {
     },
 
     FollowEdge(node: FollowEdgeQueryNode, context): JSFragment {
-        // TODO
-        return js`[]`;
-        /*const tmpVar = js.variable('node');
-        // need to wrap this in a subquery because ANY is not possible as first token of an expression node in JS
-        return jsExt.executingFunction(
-            js`FOR ${tmpVar}`,
-            js`IN ${getSimpleFollowEdgeFragment(node, context)}`,
-            js`FILTER ${tmpVar} != null`,
-            js`RETURN ${tmpVar}`
-        );*/
+        const targetType = node.edgeType.getTypeOfSide(invertRelationFieldEdgeSide(node.sourceFieldSide));
+        const targetColl = getCollectionForType(targetType, context);
+        const edgeColl = getCollectionForEdge(node.edgeType, context);
+        const edgeVar = js.variable('edge');
+        const itemVar = js.variable(decapitalize(targetType.name));
+        const sourceIDOnEdge = node.sourceFieldSide == RelationFieldEdgeSide.FROM_SIDE ? js`${edgeVar}._from` : js`${edgeVar}._to`;
+        const targetIDOnEdge = node.sourceFieldSide == RelationFieldEdgeSide.FROM_SIDE ? js`${edgeVar}._to` : js`${edgeVar}._from`;
+        const sourceID = processNode(new RootEntityIDQueryNode(node.sourceEntityNode), context);
+        const idOnItem = js`${itemVar}.${js.identifier(ID_FIELD_NAME)}`;
+        const idOnItemEqualsTargetIDOnEdge = js`${idOnItem} === ${targetIDOnEdge}`;
+
+        return js.lines(
+            js`${edgeColl}`,
+            js.indent(js.lines(
+                js`.filter(${jsExt.lambda(edgeVar, js`${sourceIDOnEdge} == ${sourceID}`)})`,
+                js`.map(${jsExt.lambda(edgeVar, js`${targetColl}.find(${jsExt.lambda(itemVar, idOnItemEqualsTargetIDOnEdge)})`)})`,
+                js`.filter(${jsExt.lambda(itemVar, itemVar)})` // filter out nulls
+            ))
+        );
     },
 
     CreateEntity(node: CreateEntityQueryNode, context): JSFragment {
@@ -431,7 +441,12 @@ const processors : { [name: string]: NodeProcessor<any> } = {
     },
 
     AddEdges(node: AddEdgesQueryNode, context) {
-        return js`undefined`; // TODO
+        const coll = getCollectionForEdge(node.edgeType, context);
+        return jsExt.executingFunction(
+            js`${coll}.push(`,
+            js.indent(js.lines(...node.edges.map(edge => js`{ _from: ${processNode(edge.fromIDNode, context)}, _to: ${processNode(edge.toIDNode, context)} },`))),
+            js`);`
+        );
     },
 
     RemoveEdges(node: RemoveEdgesQueryNode, context) {
@@ -529,5 +544,10 @@ export function getJSQuery(node: QueryNode): JSCompoundQuery {
 
 function getCollectionForType(type: GraphQLNamedType, context: QueryContext) {
     const name = getCollectionNameForRootEntity(type);
+    return js.collection(name);
+}
+
+function getCollectionForEdge(edgeType: EdgeType, context: QueryContext) {
+    const name = getCollectionNameForEdge(edgeType);
     return js.collection(name);
 }
