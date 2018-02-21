@@ -414,7 +414,7 @@ const processors : { [name: string]: NodeProcessor<any> } = {
         return js.lines(
             js`${getCollectionForType(node.objectType, context)}`,
             js.indent(js.lines(
-                js`.map(${lambda(processNode(node.filterNode, newContext))})`,
+                js`.filter(${lambda(processNode(node.filterNode, newContext))})`,
                 node.maxCount != undefined ? js`.slice(0, ${node.maxCount})` : js`)`,
                 js`.map(${lambda(updateFunction)})`
             ))
