@@ -13,7 +13,7 @@ import { GraphQLNamedType } from 'graphql';
 import { QueryResultValidator } from '../../query/query-result-validators';
 import { RUNTIME_ERROR_TOKEN } from '../../query/runtime-errors';
 import { decapitalize, flatMap } from '../../utils/utils';
-import { getCollectionNameForRootEntity } from '../arangodb/arango-basics';
+import { getCollectionNameForRootEntity } from './inmemory-basics';
 
 enum AccessType {
     READ,

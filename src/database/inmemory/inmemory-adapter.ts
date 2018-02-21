@@ -4,18 +4,14 @@ import { globalContext, Logger, SchemaContext } from '../../config/global';
 import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS } from '../../query/query-result-validators';
 import { JSCompoundQuery, JSExecutableQuery } from './js';
 import { getJSQuery } from './js-generator';
-import { GraphQLSchema } from 'graphql';
+import { GraphQLObjectType, GraphQLSchema } from 'graphql';
 import uuid = require('uuid');
+import { isRootEntityType } from '../../schema/schema-utils';
+import { objectValues } from '../../utils/utils';
+import { getCollectionNameForRootEntity } from './inmemory-basics';
 
 export class InMemoryDB {
-    private collections: { [name: string]: any[] } = {};
-
-    getCollection(name: string) {
-        if (!(name in this.collections)) {
-            this.collections[name] = [];
-        }
-        return this.collections[name];
-    }
+    collections: { [name: string]: any[] } = {};
 
     generateID() {
         return uuid();
@@ -93,6 +89,12 @@ export class InMemoryAdapter implements DatabaseAdapter {
     }
 
     async updateSchema(schema: GraphQLSchema) {
-
+        const rootEntities = objectValues(schema.getTypeMap()).filter(type => isRootEntityType(type)) as GraphQLObjectType[];
+        const requiredCollections = rootEntities.map(entity => getCollectionNameForRootEntity(entity));
+        for (const coll of requiredCollections) {
+            if (!(coll in this.db.collections)) {
+                this.db.collections[coll] = [];
+            }
+        }
     }
 }
