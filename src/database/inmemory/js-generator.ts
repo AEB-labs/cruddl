@@ -1,20 +1,18 @@
 import {
     AddEdgesQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode,
-    ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeFilter,
-    EdgeIdentifier,
+    ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode,
     EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode,
-    LiteralQueryNode, MergeObjectsQueryNode, ObjectQueryNode, OrderDirection, OrderSpecification, PartialEdgeIdentifier,
-    QueryNode, RemoveEdgesQueryNode, RootEntityIDQueryNode, RuntimeErrorQueryNode, SetEdgeQueryNode,
-    TransformListQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode,
-    VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode
+    LiteralQueryNode, MergeObjectsQueryNode, ObjectQueryNode, OrderClause, OrderDirection, OrderSpecification,
+    QueryNode,
+    RemoveEdgesQueryNode, RootEntityIDQueryNode, RuntimeErrorQueryNode, SetEdgeQueryNode, TransformListQueryNode,
+    TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode,
+    VariableQueryNode, WithPreExecutionQueryNode
 } from '../../query/definition';
 import { js, JSCompoundQuery, JSFragment, JSQueryResultVariable, JSVariable } from './js';
-import { GraphQLNamedType, GraphQLObjectType } from 'graphql';
-import { EdgeType, RelationFieldEdgeSide } from '../../schema/edges';
-import { simplifyBooleans } from '../../query/query-tree-utils';
+import { GraphQLNamedType } from 'graphql';
 import { QueryResultValidator } from '../../query/query-result-validators';
 import { RUNTIME_ERROR_TOKEN } from '../../query/runtime-errors';
-import { decapitalize } from '../../utils/utils';
+import { decapitalize, flatMap } from '../../utils/utils';
 import { getCollectionNameForRootEntity } from '../arangodb/arango-basics';
 
 enum AccessType {
@@ -254,9 +252,10 @@ const processors : { [name: string]: NodeProcessor<any> } = {
         let itemContext = context.introduceVariable(node.itemVariable);
         const itemVar = itemContext.getVariable(node.itemVariable);
 
-        function expressionWithVars(exprNode: QueryNode): JSFragment {
+        // TODO this should really be evaluated once and not in filter/map/sort each time
+        function evaluateWithVars(innerFn: (context: QueryContext) => JSFragment): JSFragment {
             if (node.variableAssignmentNodes.length == 0) {
-                return processNode(exprNode, itemContext);
+                return innerFn(itemContext);
             }
             let innerContext = context;
             return jsExt.executingFunction(
@@ -265,26 +264,25 @@ const processors : { [name: string]: NodeProcessor<any> } = {
                     const variable = itemContext.getVariable(assignmentNode.variableNode);
                     return js`const ${variable} = ${assignmentNode.variableValueNode}`
                 }),
-                js`return ${processNode(exprNode, innerContext)}`
+                js`return ${innerFn(innerContext)}`
             );
         }
 
         function lambda(exprNode: QueryNode) {
-            return jsExt.lambda(itemVar, expressionWithVars(exprNode));
+            return jsExt.lambda(itemVar, evaluateWithVars(ctx => processNode(exprNode, ctx)));
         }
 
-        function comparator() {
-            // TODO sorting
-            return jsExt.lambda(itemVar, js`false`);
-        }
+        const comparator = node.orderBy.isUnordered() ? undefined : evaluateWithVars(ctx => getComparatorForOrderSpecification(node.orderBy, itemVar, ctx));
+        const isFiltered = !(node.filterNode instanceof ConstBoolQueryNode) || node.filterNode.value != true;
+        const isMapped = node.innerNode != node.itemVariable;
 
         return js.lines(
             processNode(node.listNode, context),
             js.indent(js.lines(
-                js`.filter(${lambda(node.filterNode)})`,
-                js`.sort(${comparator()})`,
+                isFiltered ? js`.filter(${lambda(node.filterNode)})` : js``,
+                comparator ? js`.slice().sort(${comparator})` : js``, // need slice() to not replace something in-place
                 node.maxCount != undefined ? js`.slice(0, ${node.maxCount})` : js``,
-                js`.map(${lambda(node.innerNode)})`
+                isMapped ? js`.map(${lambda(node.innerNode)})` : js``
             ))
         );
     },
@@ -477,6 +475,38 @@ function getJSOperator(op: BinaryOperator): JSFragment|undefined {
         default:
             return undefined;
     }
+}
+
+function getComparatorForOrderSpecification(orderBy: OrderSpecification, itemVar: JSFragment, context: QueryContext) {
+    const lhsVar = js.variable('lhs');
+    const rhsVar = js.variable('rhs');
+
+    function getComparisonStatementsForOrderClause(clause: OrderClause): JSFragment[] {
+        const valueLambda = jsExt.lambda(itemVar, processNode(clause.valueNode, context));
+        const lhsValueVar = js.variable('lhsVal');
+        const rhsValueVar = js.variable('rhsVal');
+        const smallerRetValue = clause.direction == OrderDirection.ASCENDING ? js`-1` : js`1`;
+        const largerRetValue = clause.direction == OrderDirection.ASCENDING ? js`1` : js`-1`;
+        return [
+            js`const ${lhsValueVar} = (${valueLambda})(${lhsVar});`,
+            js`const ${rhsValueVar} = (${valueLambda})(${rhsVar});`,
+            js`if (${lhsValueVar} < ${rhsValueVar}) { `,
+            js.indent(js`return ${smallerRetValue};`),
+            js`}`,
+            js`if (${lhsValueVar} > ${rhsValueVar}) {`,
+            js.indent(js`return ${largerRetValue};`),
+            js`}`
+        ];
+    }
+
+    return js.lines(
+        js`(function(${lhsVar}, ${rhsVar}) {`,
+        js.indent(js.lines(
+            ...flatMap(orderBy.clauses, clause => getComparisonStatementsForOrderClause(clause)),
+            js`return 0;`
+        )),
+        js`})`
+    );
 }
 
 const processorMap: {[name: string]: NodeProcessor<any>} = {};
