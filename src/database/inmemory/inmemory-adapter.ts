@@ -22,7 +22,10 @@ export class InMemoryAdapter implements DatabaseAdapter {
     private db = new InMemoryDB();
     private logger: Logger;
 
-    constructor(private schemaContext?: SchemaContext, db = new InMemoryDB()) {
+    constructor(options: { db?: InMemoryDB } = {}, private schemaContext?: SchemaContext) {
+        if (options.db) {
+            this.db = options.db;
+        }
         globalContext.registerContext(schemaContext);
         try {
             this.logger = globalContext.loggerProvider.getLogger("InMemoryAdapter");
@@ -41,14 +44,19 @@ export class InMemoryAdapter implements DatabaseAdapter {
 
         let resultHolder: {[p: string]: any} = {};
         for (const query of queries) {
-            const boundValues = query.boundValues;
+            const boundValues = query.boundValues; // used in eval'ed code
             for (const key in query.usedPreExecResultNames) {
                 boundValues[query.usedPreExecResultNames[key]] = resultHolder[key];
             }
-            const db = this.db;
+            const db = this.db; // used in eval'ed code
 
             // Execute the AQL query
-            const result = eval(`(${query.code})`); // eval expects a statement, but code is an expression
+            let result;
+            try {
+                result = eval(`(${query.code})`); // eval expects a statement, but code is an expression
+            } catch (err) {
+                throw err;
+            }
 
             if (query.resultName) {
                 resultHolder[query.resultName] = result;

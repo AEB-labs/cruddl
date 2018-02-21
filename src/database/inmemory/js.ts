@@ -297,7 +297,7 @@ export namespace js {
     }
 
     export function collection(name: string): JSFragment {
-        return js`db.getCollection(${js.string(name)})`;
+        return js`db.collections[${js.string(name)}]`;
     }
 
     export function identifier(name: string): JSFragment {

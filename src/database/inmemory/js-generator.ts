@@ -3,10 +3,9 @@ import {
     ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode,
     EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode,
     LiteralQueryNode, MergeObjectsQueryNode, ObjectQueryNode, OrderClause, OrderDirection, OrderSpecification,
-    QueryNode,
-    RemoveEdgesQueryNode, RootEntityIDQueryNode, RuntimeErrorQueryNode, SetEdgeQueryNode, TransformListQueryNode,
-    TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode,
-    VariableQueryNode, WithPreExecutionQueryNode
+    QueryNode, RemoveEdgesQueryNode, RootEntityIDQueryNode, RuntimeErrorQueryNode, SetEdgeQueryNode,
+    TransformListQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode,
+    VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode
 } from '../../query/definition';
 import { js, JSCompoundQuery, JSFragment, JSQueryResultVariable, JSVariable } from './js';
 import { GraphQLNamedType } from 'graphql';
@@ -15,12 +14,7 @@ import { RUNTIME_ERROR_TOKEN } from '../../query/runtime-errors';
 import { decapitalize, flatMap } from '../../utils/utils';
 import { getCollectionNameForRootEntity } from './inmemory-basics';
 
-enum AccessType {
-    READ,
-    WRITE
-}
-
-const ID_FIELD_NAME = '_key';
+const ID_FIELD_NAME = 'id';
 
 class QueryContext {
     private variableMap = new Map<VariableQueryNode, JSVariable>();
@@ -84,7 +78,7 @@ class QueryContext {
         let resultVar: JSQueryResultVariable|undefined;
         let newContext: QueryContext;
         if (resultVariable) {
-            resultVar = new JSQueryResultVariable(resultVariable.label)
+            resultVar = new JSQueryResultVariable(resultVariable.label);
             newContext = this.newNestedContextWithNewVariable(resultVariable, resultVar);
         } else {
             resultVar = undefined;
@@ -196,10 +190,9 @@ const processors : { [name: string]: NodeProcessor<any> } = {
     },
 
     ConcatLists(node: ConcatListsQueryNode, context): JSFragment {
-        const listNodes = node.listNodes.map(node => processNode(node, context));
+        const listNodes = node.listNodes.map(node => js`...${processNode(node, context)}`);
         const listNodeStr = js.join(listNodes, js`, `);
-        // note: UNION just appends, there is a special UNION_DISTINCT to filter out duplicates
-        return js`UNION(${listNodeStr})`;
+        return js`[${listNodeStr}]`;
     },
 
     Variable(node: VariableQueryNode, context): JSFragment {
@@ -237,11 +230,15 @@ const processors : { [name: string]: NodeProcessor<any> } = {
     Field(node: FieldQueryNode, context): JSFragment {
         const object = processNode(node.objectNode, context);
         let identifier = node.field.name;
+        let raw;
         if (js.isSafeIdentifier(identifier)) {
-            return js`${object}.${js.identifier(identifier)}`;
+            raw = js`${object}.${js.identifier(identifier)}`;
         }
         // fall back to bound values. do not attempt js.string for security reasons - should not be the case normally, anyway.
-        return js`${object}[${identifier}]`;
+        raw = js`${object}[${identifier}]`;
+
+        // mimick arango behavior here which propagates null
+        return js`((typeof ${object} == 'object' && ${object} !== undefined) ? ${raw} : undefined)`;
     },
 
     RootEntityID(node: RootEntityIDQueryNode, context): JSFragment {
@@ -257,11 +254,11 @@ const processors : { [name: string]: NodeProcessor<any> } = {
             if (node.variableAssignmentNodes.length == 0) {
                 return innerFn(itemContext);
             }
-            let innerContext = context;
+            let innerContext = itemContext;
             return jsExt.executingFunction(
                 ...node.variableAssignmentNodes.map(assignmentNode => {
-                    itemContext = itemContext.introduceVariable(assignmentNode.variableNode);
-                    const variable = itemContext.getVariable(assignmentNode.variableNode);
+                    innerContext = innerContext.introduceVariable(assignmentNode.variableNode);
+                    const variable = innerContext.getVariable(assignmentNode.variableNode);
                     return js`const ${variable} = ${assignmentNode.variableValueNode}`
                 }),
                 js`return ${innerFn(innerContext)}`
@@ -304,6 +301,8 @@ const processors : { [name: string]: NodeProcessor<any> } = {
     BinaryOperation(node: BinaryOperationQueryNode, context): JSFragment {
         const lhs = processNode(node.lhs, context);
         const rhs = processNode(node.rhs, context);
+        const lhsListOrString = `(Array.isArray(${lhs}) ? ${lhs} : String(${lhs}))`;
+        const rhsListOrString = `(Array.isArray(${rhs}) ? ${rhs} : String(${rhs}))`;
         const op = getJSOperator(node.operator);
         if (op) {
             return js`(${lhs} ${op} ${rhs})`;
@@ -311,13 +310,13 @@ const processors : { [name: string]: NodeProcessor<any> } = {
 
         switch (node.operator) {
             case BinaryOperator.CONTAINS:
-                return js`${lhs}.includes(${rhs})`;
+                return js`${lhsListOrString}.includes(${rhsListOrString})`;
             case BinaryOperator.IN:
-                return js`${rhs}.includes(${lhs})`;
+                return js`${rhsListOrString}.includes(${lhsListOrString})`;
             case BinaryOperator.STARTS_WITH:
-                return js`${lhs}.startsWith(${rhs})`;
+                return js`String(${lhs}).startsWith(${rhs})`;
             case BinaryOperator.ENDS_WITH:
-                return js`${lhs}.endsWith(${rhs})`;
+                return js`String(${lhs}).endsWith(${rhs})`;
             case BinaryOperator.APPEND: // TODO would not work for lists, is this neccessary?
                 return js`String(${lhs}) + String(${rhs})`;
             case BinaryOperator.PREPEND:
@@ -406,7 +405,7 @@ const processors : { [name: string]: NodeProcessor<any> } = {
             js`${getCollectionForType(node.objectType, context)}`,
             js.indent(js.lines(
                 js`.map(${lambda(processNode(node.filterNode, newContext))})`,
-                node.maxCount != undefined ? js`.slice(0, ${node.maxCount}` : js``,
+                node.maxCount != undefined ? js`.slice(0, ${node.maxCount})` : js`)`,
                 js`.map(${lambda(updateFunction)})`
             ))
         );
@@ -423,11 +422,11 @@ const processors : { [name: string]: NodeProcessor<any> } = {
             js`const ${listVar} = ${getCollectionForType(node.objectType, context)}`,
             js.indent(js.lines(
                 js`.map(${jsExt.lambda(entityVar, processNode(node.filterNode, newContext))})`,
-                node.maxCount != undefined ? js`.slice(0, ${node.maxCount}` : js``
+                node.maxCount != undefined ? js`.slice(0, ${node.maxCount})` : js``
             )),
-            js`const ${idsVar} = new Set(${listVar}.map(${jsExt.lambda(entityVar, js`${entityVar}.${js.identifier(ID_FIELD_NAME)}`)})`,
-            js`${coll} = ${coll}.filter(${jsExt.lambda(entityVar, js`!${idsVar}.has(${entityVar}.${js.identifier(ID_FIELD_NAME)}`)});`,
-            js`return ${listVar}`
+            js`const ${idsVar} = new Set(${listVar}.map(${jsExt.lambda(entityVar, js`${entityVar}.${js.identifier(ID_FIELD_NAME)}`)}));`,
+            js`${coll} = ${coll}.filter(${jsExt.lambda(entityVar, js`!${idsVar}.has(${entityVar}.${js.identifier(ID_FIELD_NAME)}`)}));`,
+            js`return ${listVar};`
         );
     },
 
