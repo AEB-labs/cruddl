@@ -7,6 +7,9 @@ import * as stripJsonComments from 'strip-json-comments';
 import { Log4jsLoggerProvider } from '../helpers/log4js-logger-provider';
 import { loadProjectFromDir } from '../../src/project/project-from-fs';
 import { ProjectOptions } from '../../src/project/project';
+import { DatabaseAdapter } from '../../src/database/database-adapter';
+import { SchemaContext } from '../../src/config/global';
+import { InMemoryAdapter, InMemoryDB } from '../../src/database/inmemory/inmemory-adapter';
 
 interface TestResult {
     actualResult: any
@@ -15,6 +18,7 @@ interface TestResult {
 
 export interface RegressionSuiteOptions {
     saveActualAsExpected?: boolean
+    database?: 'arangodb'|'in-memory';
 }
 
 export class RegressionSuite {
@@ -34,20 +38,31 @@ export class RegressionSuite {
         const warnLevelOptions = { loggerProvider: new Log4jsLoggerProvider('warn') };
         const debugLevelOptions = { loggerProvider: new Log4jsLoggerProvider('debug', { 'schema-builder': 'warn'}) };
 
-        const dbConfig = await createTempDatabase();
-        this.schema = await this.createSchema(dbConfig, debugLevelOptions);
+        const factory = await this.createAdapterFactory();
+        this.schema = await this.createSchema(factory, debugLevelOptions);
 
         // use a schema that logs less for initTestData
-        const initDataSchema = await this.createSchema(dbConfig, warnLevelOptions);
-        const initDataAdapter = new ArangoDBAdapter(dbConfig, warnLevelOptions);
+        const initDataSchema = await this.createSchema(factory, warnLevelOptions);
+        const initDataAdapter = factory(warnLevelOptions);
         await initDataAdapter.updateSchema(initDataSchema);
         this.testDataEnvironment = await initTestData(path.resolve(this.path, 'test-data.json'), initDataSchema);
 
         this._isSetUpClean = true;
     }
 
-    private async createSchema(dbConfig: ArangoDBConfig, options: ProjectOptions) {
-        const dbAdapter = new ArangoDBAdapter(dbConfig, options);
+    private async createAdapterFactory(): Promise<(context: SchemaContext) => DatabaseAdapter> {
+        // TODO this is ugly
+        if (this.options.database == 'in-memory') {
+            const db = new InMemoryDB();
+            return (context: SchemaContext) => new InMemoryAdapter({ db }, context);
+        } else {
+            const dbConfig = await createTempDatabase();
+            return (context: SchemaContext) => new ArangoDBAdapter(dbConfig, context);
+        }
+    }
+
+    private async createSchema(factory: (context: SchemaContext) => DatabaseAdapter, options: ProjectOptions) {
+        const dbAdapter = factory(options);
         const project = await loadProjectFromDir(path.resolve(this.path, 'model'), options);
         return project.createSchema(dbAdapter);
     }

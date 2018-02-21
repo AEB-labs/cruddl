@@ -17,7 +17,8 @@ describe('regression tests', async () => {
         // run npm test -- --save-actual-as-expected to replace the .result file with the actual contents
         // (first npm test run still marked as failure, subsequent runs will pass)
         const options: RegressionSuiteOptions = {
-            saveActualAsExpected: process.argv.includes('--save-actual-as-expected')
+            saveActualAsExpected: process.argv.includes('--save-actual-as-expected'),
+            database: process.argv.includes('--db=in-memory') ? 'in-memory' : 'arangodb'
         };
         const suite = new RegressionSuite(suitePath, options);
         describe(suiteName, () => {
