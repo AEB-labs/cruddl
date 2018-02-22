@@ -43,6 +43,85 @@ export class InMemoryAdapter implements DatabaseAdapter {
         const validators = new Map(ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS.map((provider): [string, Function] =>
             ([provider.getValidatorName(), provider.getValidatorFunction()])));
 
+        const support = {
+            compare(lhs: string|boolean|number|null|undefined, rhs: string|boolean|number|null|undefined) {
+                if (lhs == undefined) {
+                    if (rhs == undefined) {
+                        return 0;
+                    }
+                    return -1;
+                }
+                if (rhs == undefined) {
+                    return 1;
+                }
+
+                if (typeof lhs == 'boolean') {
+                    if (typeof rhs == 'boolean') {
+                        return lhs < rhs ? -1 : lhs > rhs ? 1 : 0;
+                    }
+                    return -1;
+                }
+                if (typeof rhs == 'boolean') {
+                    return 1;
+                }
+
+                if (typeof lhs == 'number') {
+                    if (typeof rhs == 'number') {
+                        return lhs < rhs ? -1 : lhs > rhs ? 1 : 0;
+                    }
+                    return -1;
+                }
+                if (typeof rhs == 'number') {
+                    return 1;
+                }
+
+                if (typeof lhs == 'string') {
+                    if (typeof rhs == 'string') {
+                        return lhs < rhs ? -1 : lhs > rhs ? 1 : 0;
+                    }
+                    return -1;
+                }
+                if (typeof rhs == 'string') {
+                    return 1;
+                }
+
+                return lhs < rhs ? -1 : lhs > rhs ? 1 : 0;
+            },
+
+            getMultiComparator<T>(...valueFns: [((item: T) => string|boolean|number|null|undefined), boolean][]) {
+                if (valueFns.length == 0) {
+                    return () => 0;
+                }
+
+                if (valueFns.length == 1) {
+                    const [valueFn, invert] = valueFns[0];
+                    return (lhs: T, rhs: T) => invert ? support.compare(valueFn(rhs), valueFn(lhs)) : support.compare(valueFn(lhs), valueFn(rhs));
+                }
+
+                if (valueFns.length == 2) {
+                    const [valueFn1, invert1] = valueFns[0];
+                    const [valueFn2, invert2] = valueFns[1];
+                    return (lhs: T, rhs: T) => {
+                        const comparison = invert1 ? support.compare(valueFn1(rhs), valueFn1(lhs)) : support.compare(valueFn1(lhs), valueFn1(rhs));
+                        if (comparison != 0) {
+                            return comparison;
+                        }
+                        return invert2 ? support.compare(valueFn2(rhs), valueFn2(lhs)) : support.compare(valueFn2(lhs), valueFn2(rhs));
+                    };
+                }
+                
+                return (lhs: T, rhs: T): number => {
+                    for (const [valueFn, invert] of valueFns) {
+                        const comparison = invert ? support.compare(valueFn(rhs), valueFn(lhs)) : support.compare(valueFn(lhs), valueFn(rhs));
+                        if (comparison != 0) {
+                            return comparison;
+                        }
+                    }
+                    return 0;
+                };
+            }
+        };
+
         let resultHolder: {[p: string]: any} = {};
         for (const query of queries) {
             const boundValues = query.boundValues; // used in eval'ed code

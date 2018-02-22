@@ -492,35 +492,13 @@ function getJSOperator(op: BinaryOperator): JSFragment|undefined {
 }
 
 function getComparatorForOrderSpecification(orderBy: OrderSpecification, itemVar: JSFragment, context: QueryContext) {
-    const lhsVar = js.variable('lhs');
-    const rhsVar = js.variable('rhs');
-
-    function getComparisonStatementsForOrderClause(clause: OrderClause): JSFragment[] {
+    function getClauseFnAndInvert(clause: OrderClause): JSFragment {
         const valueLambda = jsExt.lambda(itemVar, processNode(clause.valueNode, context));
-        const lhsValueVar = js.variable('lhsVal');
-        const rhsValueVar = js.variable('rhsVal');
-        const smallerRetValue = clause.direction == OrderDirection.ASCENDING ? js`-1` : js`1`;
-        const largerRetValue = clause.direction == OrderDirection.ASCENDING ? js`1` : js`-1`;
-        return [
-            js`const ${lhsValueVar} = (${valueLambda})(${lhsVar});`,
-            js`const ${rhsValueVar} = (${valueLambda})(${rhsVar});`,
-            js`if (${lhsValueVar} < ${rhsValueVar}) { `,
-            js.indent(js`return ${smallerRetValue};`),
-            js`}`,
-            js`if (${lhsValueVar} > ${rhsValueVar}) {`,
-            js.indent(js`return ${largerRetValue};`),
-            js`}`
-        ];
+        return js`[${valueLambda}, ${clause.direction == OrderDirection.DESCENDING ? js`true` : js`false`}]`;
     }
+    const args = orderBy.clauses.map(clause => getClauseFnAndInvert(clause));
 
-    return js.lines(
-        js`(function(${lhsVar}, ${rhsVar}) {`,
-        js.indent(js.lines(
-            ...flatMap(orderBy.clauses, clause => getComparisonStatementsForOrderClause(clause)),
-            js`return 0;`
-        )),
-        js`})`
-    );
+    return js`support.getMultiComparator(${js.join(args, js`, `)})`;
 }
 
 const processorMap: {[name: string]: NodeProcessor<any>} = {};
