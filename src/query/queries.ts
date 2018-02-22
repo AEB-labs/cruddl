@@ -172,7 +172,6 @@ function createConditionalObjectNode(fieldSelections: FieldSelection[], contextN
 }
 
 function createTransformListQueryNode(fieldRequest: FieldRequest, listNode: QueryNode, fieldRequestStack: FieldRequest[]): QueryNode {
-    let variableAssignmentNodes: VariableAssignmentQueryNode[] = [];
     const objectType = getNamedType(fieldRequest.field.type) as GraphQLObjectType;
     const itemVariable = new VariableQueryNode(decapitalize(objectType.name));
     let orderBy = createOrderSpecification(objectType, fieldRequest, itemVariable);
@@ -181,12 +180,6 @@ function createTransformListQueryNode(fieldRequest: FieldRequest, listNode: Quer
     let filterNode: QueryNode = new BinaryOperationQueryNode(basicFilterNode, BinaryOperator.AND, paginationFilterNode);
     let innerNode: QueryNode = createEntityObjectNode(fieldRequest.selectionSet, itemVariable, fieldRequestStack);
 
-    // pull the variables assignments up as they might have been duplicated
-    orderBy = extractVariableAssignmentsInOrderSpecification(orderBy, variableAssignmentNodes);
-    filterNode = extractVariableAssignments(filterNode, variableAssignmentNodes);
-    innerNode = extractVariableAssignments(innerNode, variableAssignmentNodes);
-    variableAssignmentNodes = Array.from(new Set(variableAssignmentNodes)); // deduplicate
-
     const maxCount = fieldRequest.args[FIRST_ARG];
     return new TransformListQueryNode({
         listNode,
@@ -194,8 +187,7 @@ function createTransformListQueryNode(fieldRequest: FieldRequest, listNode: Quer
         filterNode,
         orderBy,
         maxCount,
-        itemVariable,
-        variableAssignmentNodes
+        itemVariable
     });
 }
 

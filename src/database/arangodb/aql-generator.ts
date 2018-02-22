@@ -289,16 +289,9 @@ const processors : { [name: string]: NodeProcessor<any> } = {
         }
         let filter = simplifyBooleans(node.filterNode);
 
-        const variableAssignmentAQL = node.variableAssignmentNodes.map(assignmentNode => {
-            itemContext = itemContext.introduceVariable(assignmentNode.variableNode);
-            const variable = itemContext.getVariable(assignmentNode.variableNode);
-            return aql`LET ${variable} = ${processNode(assignmentNode.variableValueNode, itemContext)}`;
-        });
-
         return aqlExt.parenthesizeList(
             aql`FOR ${itemVar}`,
             aql`IN ${list}`,
-            aql.lines(...variableAssignmentAQL),
             (filter instanceof ConstBoolQueryNode && filter.value) ? aql`` : aql`FILTER ${processNode(filter, itemContext)}`,
             filterDanglingEdges,
             generateSortAQL(node.orderBy, itemContext),

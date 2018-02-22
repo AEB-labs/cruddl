@@ -251,27 +251,11 @@ const processors : { [name: string]: NodeProcessor<any> } = {
         let itemContext = context.introduceVariable(node.itemVariable);
         const itemVar = itemContext.getVariable(node.itemVariable);
 
-        // TODO this should really be evaluated once and not in filter/map/sort each time
-        function evaluateWithVars(innerFn: (context: QueryContext) => JSFragment): JSFragment {
-            if (node.variableAssignmentNodes.length == 0) {
-                return innerFn(itemContext);
-            }
-            let innerContext = itemContext;
-            return jsExt.executingFunction(
-                ...node.variableAssignmentNodes.map(assignmentNode => {
-                    innerContext = innerContext.introduceVariable(assignmentNode.variableNode);
-                    const variable = innerContext.getVariable(assignmentNode.variableNode);
-                    return js`const ${variable} = ${processNode(assignmentNode.variableValueNode, innerContext)}`;
-                }),
-                js`return ${innerFn(innerContext)}`
-            );
-        }
-
         function lambda(exprNode: QueryNode) {
-            return jsExt.lambda(itemVar, evaluateWithVars(ctx => processNode(exprNode, ctx)));
+            return jsExt.lambda(itemVar, processNode(exprNode, itemContext));
         }
 
-        const comparator = node.orderBy.isUnordered() ? undefined : evaluateWithVars(ctx => getComparatorForOrderSpecification(node.orderBy, itemVar, ctx));
+        const comparator = node.orderBy.isUnordered() ? undefined : getComparatorForOrderSpecification(node.orderBy, itemVar, itemContext);
         const isFiltered = !(node.filterNode instanceof ConstBoolQueryNode) || node.filterNode.value != true;
         const isMapped = node.innerNode != node.itemVariable;
 
