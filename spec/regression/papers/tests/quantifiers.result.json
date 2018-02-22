@@ -3,7 +3,7 @@
     "data": {
       "allPapers": [
         {
-          "id": "@{ids/Paper/4}",
+          "key": "Part",
           "literatureReferences": [
             {
               "title": "Achievable cases in an asynchronous environment"
@@ -11,7 +11,7 @@
           ]
         },
         {
-          "id": "@{ids/Paper/5}",
+          "key": "Scal",
           "literatureReferences": [
             {
               "title": null
@@ -21,11 +21,29 @@
       ]
     }
   },
+  "allPapersWihoutLiteraturReferences": {
+    "data": {
+      "allPapers": [
+        {
+          "key": "NoSQL",
+          "literatureReferences": []
+        },
+        {
+          "key": "OOM",
+          "literatureReferences": []
+        },
+        {
+          "key": "UML",
+          "literatureReferences": []
+        }
+      ]
+    }
+  },
   "allPapersHavingACertainLiteraturReferences": {
     "data": {
       "allPapers": [
         {
-          "id": "@{ids/Paper/4}",
+          "key": "Part",
           "literatureReferences": [
             {
               "title": "Achievable cases in an asynchronous environment"
@@ -39,7 +57,7 @@
     "data": {
       "allPapers": [
         {
-          "id": "@{ids/Paper/4}",
+          "key": "Part",
           "literatureReferences": [
             {
               "title": "Achievable cases in an asynchronous environment"
@@ -49,41 +67,11 @@
       ]
     }
   },
-  "allPapersNotInOneOfTheseCategories": {
-    "data": {
-      "allPapers": [
-        {
-          "id": "@{ids/Paper/2}",
-          "categories": []
-        },
-        {
-          "id": "@{ids/Paper/4}",
-          "categories": [
-            "Programming",
-            "Telecommunications"
-          ]
-        },
-        {
-          "id": "@{ids/Paper/5}",
-          "categories": [
-            "Programming"
-          ]
-        }
-      ]
-    }
-  },
   "allPapersOfSomeCategories": {
     "data": {
       "allPapers": [
         {
-          "id": "@{ids/Paper/1}",
-          "categories": [
-            "ITScience",
-            "Programming"
-          ]
-        },
-        {
-          "id": "@{ids/Paper/3}",
+          "key": "NoSQL",
           "categories": [
             "ITScience",
             "Programming",
@@ -91,7 +79,14 @@
           ]
         },
         {
-          "id": "@{ids/Paper/4}",
+          "key": "OOM",
+          "categories": [
+            "ITScience",
+            "Programming"
+          ]
+        },
+        {
+          "key": "Part",
           "categories": [
             "Programming",
             "Telecommunications"
@@ -104,26 +99,31 @@
     "data": {
       "allPapers": [
         {
-          "id": "@{ids/Paper/2}",
+          "key": "UML",
           "categories": []
         }
       ]
     }
   },
-  "allPapersWihoutLiteraturReferences": {
+  "allPapersNotInOneOfTheseCategories": {
     "data": {
       "allPapers": [
         {
-          "id": "@{ids/Paper/1}",
-          "literatureReferences": []
+          "key": "Part",
+          "categories": [
+            "Programming",
+            "Telecommunications"
+          ]
         },
         {
-          "id": "@{ids/Paper/2}",
-          "literatureReferences": []
+          "key": "Scal",
+          "categories": [
+            "Programming"
+          ]
         },
         {
-          "id": "@{ids/Paper/3}",
-          "literatureReferences": []
+          "key": "UML",
+          "categories": []
         }
       ]
     }
