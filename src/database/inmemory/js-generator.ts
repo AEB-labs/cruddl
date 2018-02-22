@@ -424,8 +424,8 @@ const processors : { [name: string]: NodeProcessor<any> } = {
         return jsExt.executingFunction(
             js`const ${listVar} = ${getCollectionForType(node.objectType, context)}`,
             js.indent(js.lines(
-                js`.map(${jsExt.lambda(entityVar, processNode(node.filterNode, newContext))})`,
-                node.maxCount != undefined ? js`.slice(0, ${node.maxCount})` : js``
+                js`.filter(${jsExt.lambda(entityVar, processNode(node.filterNode, newContext))})`,
+                node.maxCount != undefined ? js`.slice(0, ${node.maxCount});` : js``
             )),
             js`const ${idsVar} = new Set(${listVar}.map(${jsExt.lambda(entityVar, js`${entityVar}.${js.identifier(ID_FIELD_NAME)}`)}));`,
             js`${coll} = ${coll}.filter(${jsExt.lambda(entityVar, js`!${idsVar}.has(${entityVar}.${js.identifier(ID_FIELD_NAME)}`)}));`,
