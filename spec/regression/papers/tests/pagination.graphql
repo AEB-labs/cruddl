@@ -1,32 +1,34 @@
 query {
-    allPapers(first: 3, filter: {isPublished: true}) {
+    allPapers(first: 3, filter: {isPublished: true}, orderBy: key_ASC) {
         #pageInfo {
         #    hasNextPage
         #    hasPreviousPage
         #    endCursor
         #}
         #count
+        key
+        _cursor
+        title2: title
+        title
+        readers(first: 3) {
+            lastName
+            #count
+            #pageInfo {
+            #    hasPreviousPage
+            #    hasNextPage
+            #    endCursor
+            #}
+        }
+        b: readers(first: 1) {
+            lastName
             _cursor
-                title2: title
-                title
-                readers(first: 3) {
-                    lastName
-                    #count
-                    #pageInfo {
-                    #    hasPreviousPage
-                    #    hasNextPage
-                    #    endCursor
-                    #}
-                }
-                b: readers(first: 1) {
-                    lastName
-                    _cursor
-                }
-                empty: readers(filter: {id: "nonexistant"}) {
-                    id
-                }
-            }
-    noPagesLeft: allPapers(first: 2, after: "{\"id\":\"@{ids/Paper/5}\"}", filter: {isPublished: true}) {
-        id
+        }
+        empty: readers(filter: {id: "nonexistant"}) {
+            id
+        }
+    }
+
+    noPagesLeft: allPapers(first: 2, after: "{\"id\":\"@{ids/Paper/5}\",\"key\":\"Scal\"}", filter: {isPublished: true}, orderBy: key_ASC) {
+        key
     }
 }
