@@ -302,14 +302,22 @@ const processors : { [name: string]: NodeProcessor<any> } = {
     BinaryOperation(node: BinaryOperationQueryNode, context): JSFragment {
         const lhs = processNode(node.lhs, context);
         const rhs = processNode(node.rhs, context);
-        const lhsListOrString = `(Array.isArray(${lhs}) ? ${lhs} : String(${lhs}))`;
-        const rhsListOrString = `(Array.isArray(${rhs}) ? ${rhs} : String(${rhs}))`;
+        const lhsListOrString = js`(Array.isArray(${lhs}) ? ${lhs} : String(${lhs}))`;
+        const rhsListOrString = js`(Array.isArray(${rhs}) ? ${rhs} : String(${rhs}))`;
         const op = getJSOperator(node.operator);
         if (op) {
             return js`(${lhs} ${op} ${rhs})`;
         }
 
         switch (node.operator) {
+            case BinaryOperator.LESS_THAN:
+                return js`support.compare(${lhs}, ${rhs}) < 0`;
+            case BinaryOperator.LESS_THAN_OR_EQUAL:
+                return js`support.compare(${lhs}, ${rhs}) <= 0`;
+            case BinaryOperator.GREATER_THAN:
+                return js`support.compare(${lhs}, ${rhs}) > 0`;
+            case BinaryOperator.GREATER_THAN_OR_EQUAL:
+                return js`support.compare(${lhs}, ${rhs}) >= 0`;
             case BinaryOperator.CONTAINS:
                 return js`${lhsListOrString}.includes(${rhsListOrString})`;
             case BinaryOperator.IN:
@@ -468,14 +476,6 @@ function getJSOperator(op: BinaryOperator): JSFragment|undefined {
             return js`===`;
         case BinaryOperator.UNEQUAL:
             return js`!==`;
-        case BinaryOperator.LESS_THAN:
-            return js`<`;
-        case BinaryOperator.LESS_THAN_OR_EQUAL:
-            return js`<=`;
-        case BinaryOperator.GREATER_THAN:
-            return js`>`;
-        case BinaryOperator.GREATER_THAN_OR_EQUAL:
-            return js`>=`;
         case BinaryOperator.ADD:
             return js`+`;
         case BinaryOperator.SUBTRACT:
