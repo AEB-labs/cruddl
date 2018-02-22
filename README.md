@@ -19,7 +19,7 @@ This GraphQL schema is generated from a schema definition that contains the type
 * Extensive schema validation
 * Role-based authorization (field and type-based)
 * Advanced modelling features based on document and graph databases (root entities, value objects, relations and more)
-* Pluggable database backends (currently supports ArangoDB)
+* Pluggable database backends (currently supports ArangoDB and an in-memory implementation)
 
 # Usage
 

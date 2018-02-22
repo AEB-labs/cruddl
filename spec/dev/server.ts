@@ -3,18 +3,24 @@ import { GraphQLServer } from './graphql-server';
 import { globalContext } from '../../src/config/global';
 import * as path from 'path';
 import { loadProjectFromDir } from '../../src/project/project-from-fs';
+import { InMemoryAdapter } from '../../src/database/inmemory/inmemory-adapter';
 
 const port = 3000;
 const databaseName = 'momo';
 const databaseURL = 'http://root:@localhost:8529';
 
 export async function start() {
-    const db = new ArangoDBAdapter({
-        databaseName,
-        url: databaseURL,
-        autocreateIndices: true,
-        autoremoveIndices: true
-    });
+    let db;
+    if (process.argv.includes('--db=in-memory')) {
+        db = new InMemoryAdapter();
+    } else {
+        db = new ArangoDBAdapter({
+            databaseName,
+            url: databaseURL,
+            autocreateIndices: true,
+            autoremoveIndices: true
+        });
+    }
 
     const project = await loadProjectFromDir(path.resolve(__dirname, 'model'));
     const schema = project.createSchema(db);

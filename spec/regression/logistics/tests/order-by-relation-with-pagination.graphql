@@ -27,7 +27,7 @@ query ascPage1 {
 }
 
 query ascPage2 {
-    allHandlingUnits(orderBy: delivery_deliveryNumber_ASC, first: 2, after: "{\"delivery_deliveryNumber\":\"1000173\",\"id\":\"@{ids/HandlingUnit/2}\"}") {
+    allHandlingUnits(orderBy: delivery_deliveryNumber_ASC, first: 2, after: "{\"delivery_deliveryNumber\":\"1000173\",\"id\":\"@{ids/HandlingUnit/1}\"}") {
         huNumber
         delivery {
             deliveryNumber

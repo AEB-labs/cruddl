@@ -557,7 +557,6 @@ export class TransformListQueryNode extends QueryNode {
         orderBy?: OrderSpecification,
         maxCount?: number
         itemVariable?: VariableQueryNode
-        variableAssignmentNodes?: VariableAssignmentQueryNode[]
     }) {
         super();
         this.itemVariable = params.itemVariable || new VariableQueryNode();
@@ -566,7 +565,6 @@ export class TransformListQueryNode extends QueryNode {
         this.filterNode = params.filterNode || new ConstBoolQueryNode(true);
         this.orderBy = params.orderBy || new OrderSpecification([]);
         this.maxCount = params.maxCount;
-        this.variableAssignmentNodes = params.variableAssignmentNodes || [];
     }
 
     public readonly listNode: QueryNode;
@@ -576,17 +574,10 @@ export class TransformListQueryNode extends QueryNode {
     public readonly maxCount: number | undefined;
     public readonly itemVariable: VariableQueryNode;
 
-    /**
-     * A list of variables that will be available in filter, order and innerNode
-     * resultNode of these is IGNORED.
-     */
-    public readonly variableAssignmentNodes: VariableAssignmentQueryNode[];
-
     describe() {
         return `${this.listNode.describe()} as list with ${this.itemVariable.describe()} => \n` + indent('' + // '' to move the arg label here in WebStorm
             `where ${this.filterNode.describe()}\n` +
             `order by ${this.orderBy.describe()}\n` +
-            this.variableAssignmentNodes.map(node => `let ${node.variableNode.describe()} = ${node.variableValueNode.describe()}\n`).join('') +
             `${this.maxCount != undefined ? `limit ${this.maxCount}\n` : ''}` +
             `as ${this.innerNode.describe()}`
         );
