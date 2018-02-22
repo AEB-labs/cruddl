@@ -146,7 +146,13 @@ export class InMemoryAdapter implements DatabaseAdapter {
                 for (const key in query.resultValidator) {
                     const validator = validators.get(key);
                     if (validator) {
-                        validator(query.resultValidator[key], result);
+                        try {
+                            validator(query.resultValidator[key], result);
+                        } catch (error) {
+                            // mimic ArangoDB behavior
+                            error.message = error.name + ': ' + error.message;
+                            throw error;
+                        }
                     }
                 }
             }
