@@ -149,7 +149,7 @@ const processors : { [name: string]: NodeProcessor<any> } = {
     },
 
     Null(): JSFragment {
-        return js`undefined`;
+        return js`null`;
     },
 
     RuntimeError(node: RuntimeErrorQueryNode): JSFragment {
@@ -240,7 +240,7 @@ const processors : { [name: string]: NodeProcessor<any> } = {
         raw = js`${object}[${identifier}]`;
 
         // mimick arango behavior here which propagates null
-        return js`((typeof (${object}) == 'object' && (${object}) != undefined) ? (${raw}) : undefined)`;
+        return js`((typeof (${object}) == 'object' && (${object}) != null) ? (${raw}) : null)`;
     },
 
     RootEntityID(node: RootEntityIDQueryNode, context): JSFragment {
@@ -347,9 +347,9 @@ const processors : { [name: string]: NodeProcessor<any> } = {
             case BasicType.LIST:
                 return js`Array.isArray(${value})`;
             case BasicType.OBJECT:
-                return js`typeof ${value} == 'object' && ${value} != undefined && !Array.isArray(${value})`;
+                return js`typeof ${value} == 'object' && ${value} != null && !Array.isArray(${value})`;
             case BasicType.NULL:
-                return js`${value} == undefined`;
+                return js`${value} == null`;
         }
     },
 
