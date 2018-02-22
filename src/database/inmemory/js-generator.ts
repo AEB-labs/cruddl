@@ -7,7 +7,7 @@ import {
     TransformListQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode,
     VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode
 } from '../../query/definition';
-import { js, JSCompoundQuery, JSFragment, JSQueryResultVariable, JSVariable } from './js';
+import { js, JSCompoundQuery, JSExecutableQuery, JSFragment, JSQueryResultVariable, JSVariable } from './js';
 import { GraphQLNamedType } from 'graphql';
 import { QueryResultValidator } from '../../query/query-result-validators';
 import { RUNTIME_ERROR_TOKEN } from '../../query/runtime-errors';
@@ -141,6 +141,10 @@ namespace jsExt {
     export function lambda(variable: JSVariable, expression: JSFragment) {
         return js`${variable} => (${expression})`;
     }
+
+    export function evaluatingLambda(variable: JSVariable, expression: JSFragment, value: JSFragment) {
+        return js`(${jsExt.lambda(variable, expression)})(${value})`;
+    }
 }
 
 const processors : { [name: string]: NodeProcessor<any> } = {
@@ -231,16 +235,17 @@ const processors : { [name: string]: NodeProcessor<any> } = {
 
     Field(node: FieldQueryNode, context): JSFragment {
         const object = processNode(node.objectNode, context);
+        const objectVar = js.variable('object');
         let identifier = node.field.name;
         let raw;
         if (js.isSafeIdentifier(identifier)) {
-            raw = js`${object}.${js.identifier(identifier)}`;
+            raw = js`${objectVar}.${js.identifier(identifier)}`;
         }
         // fall back to bound values. do not attempt js.string for security reasons - should not be the case normally, anyway.
-        raw = js`${object}[${identifier}]`;
+        raw = js`${objectVar}[${identifier}]`;
 
         // mimick arango behavior here which propagates null
-        return js`((typeof (${object}) == 'object' && (${object}) != null) ? (${raw}) : null)`;
+        return jsExt.evaluatingLambda(objectVar, js`((typeof (${objectVar}) == 'object' && (${objectVar}) != null) ? (${raw}) : null)`, object);
     },
 
     RootEntityID(node: RootEntityIDQueryNode, context): JSFragment {
@@ -287,22 +292,35 @@ const processors : { [name: string]: NodeProcessor<any> } = {
     BinaryOperation(node: BinaryOperationQueryNode, context): JSFragment {
         const lhs = processNode(node.lhs, context);
         const rhs = processNode(node.rhs, context);
-        const lhsListOrString = js`(Array.isArray(${lhs}) ? ${lhs} : String(${lhs}))`;
-        const rhsListOrString = js`(Array.isArray(${rhs}) ? ${rhs} : String(${rhs}))`;
+        const lhsVar = js.variable('lhs');
+        const rhsVar = js.variable('rhs');
+        const lhsListOrString = jsExt.evaluatingLambda(lhsVar, js`(Array.isArray(${lhsVar}) ? ${lhsVar} : String(${lhsVar}))`, lhs);
+        const rhsListOrString = jsExt.evaluatingLambda(rhsVar, js`(Array.isArray(${rhsVar}) ? ${rhsVar} : String(${rhsVar}))`, rhs);
         const op = getJSOperator(node.operator);
         if (op) {
             return js`(${lhs} ${op} ${rhs})`;
         }
 
+        function compare(comp: JSFragment) {
+            return js.lines(
+                js`support.compare(`,
+                js.indent(js.lines(
+                    js`${lhs},`,
+                    js`${rhs}`
+                )),
+                js`) ${comp} 0`
+            );
+        }
+
         switch (node.operator) {
             case BinaryOperator.LESS_THAN:
-                return js`support.compare(${lhs}, ${rhs}) < 0`;
+                return compare(js`<`);
             case BinaryOperator.LESS_THAN_OR_EQUAL:
-                return js`support.compare(${lhs}, ${rhs}) <= 0`;
+                return compare(js`<=`);
             case BinaryOperator.GREATER_THAN:
-                return js`support.compare(${lhs}, ${rhs}) > 0`;
+                return compare(js`>`);
             case BinaryOperator.GREATER_THAN_OR_EQUAL:
-                return js`support.compare(${lhs}, ${rhs}) >= 0`;
+                return compare(js`>=`);
             case BinaryOperator.CONTAINS:
                 return js`${lhsListOrString}.includes(${rhsListOrString})`;
             case BinaryOperator.IN:
@@ -340,14 +358,15 @@ const processors : { [name: string]: NodeProcessor<any> } = {
 
     TypeCheck(node: TypeCheckQueryNode, context) {
         const value = js`(${processNode(node.valueNode, context)})`;
+        const valueVar = js.variable('value');
 
         switch (node.type) {
             case BasicType.SCALAR:
-                return js`(typeof ${value} == 'boolean' || typeof ${value} == 'number || typeof ${value} == 'string')`;
+                return jsExt.evaluatingLambda(valueVar, js`(typeof ${valueVar} == 'boolean' || typeof ${valueVar} == 'number || typeof ${valueVar} == 'string')`, value);
             case BasicType.LIST:
                 return js`Array.isArray(${value})`;
             case BasicType.OBJECT:
-                return js`typeof ${value} == 'object' && ${value} != null && !Array.isArray(${value})`;
+                return jsExt.evaluatingLambda(valueVar, js`typeof ${valueVar} == 'object' && ${valueVar} != null && !Array.isArray(${valueVar})`, value);
             case BasicType.NULL:
                 return js`${value} == null`;
         }
