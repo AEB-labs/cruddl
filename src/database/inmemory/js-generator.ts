@@ -239,7 +239,7 @@ const processors : { [name: string]: NodeProcessor<any> } = {
         raw = js`${object}[${identifier}]`;
 
         // mimick arango behavior here which propagates null
-        return js`((typeof (${object}) == 'object' && (${object}) !== undefined) ? (${raw}) : undefined)`;
+        return js`((typeof (${object}) == 'object' && (${object}) != undefined) ? (${raw}) : undefined)`;
     },
 
     RootEntityID(node: RootEntityIDQueryNode, context): JSFragment {
@@ -260,7 +260,7 @@ const processors : { [name: string]: NodeProcessor<any> } = {
                 ...node.variableAssignmentNodes.map(assignmentNode => {
                     innerContext = innerContext.introduceVariable(assignmentNode.variableNode);
                     const variable = innerContext.getVariable(assignmentNode.variableNode);
-                    return js`const ${variable} = ${assignmentNode.variableValueNode}`
+                    return js`const ${variable} = ${processNode(assignmentNode.variableValueNode, innerContext)}`
                 }),
                 js`return ${innerFn(innerContext)}`
             );
