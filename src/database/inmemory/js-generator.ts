@@ -14,6 +14,7 @@ import { RUNTIME_ERROR_TOKEN } from '../../query/runtime-errors';
 import { decapitalize, flatMap } from '../../utils/utils';
 import { getCollectionNameForEdge, getCollectionNameForRootEntity } from './inmemory-basics';
 import { EdgeType, invertRelationFieldEdgeSide, RelationFieldEdgeSide } from '../../schema/edges';
+import { compact } from 'lodash';
 
 const ID_FIELD_NAME = 'id';
 
@@ -138,7 +139,7 @@ namespace jsExt {
     }
 
     export function lambda(variable: JSVariable, expression: JSFragment) {
-        return js`${variable} => (${expression})`
+        return js`${variable} => (${expression})`;
     }
 }
 
@@ -260,7 +261,7 @@ const processors : { [name: string]: NodeProcessor<any> } = {
                 ...node.variableAssignmentNodes.map(assignmentNode => {
                     innerContext = innerContext.introduceVariable(assignmentNode.variableNode);
                     const variable = innerContext.getVariable(assignmentNode.variableNode);
-                    return js`const ${variable} = ${processNode(assignmentNode.variableValueNode, innerContext)}`
+                    return js`const ${variable} = ${processNode(assignmentNode.variableValueNode, innerContext)}`;
                 }),
                 js`return ${innerFn(innerContext)}`
             );
@@ -457,12 +458,35 @@ const processors : { [name: string]: NodeProcessor<any> } = {
         );
     },
 
-    RemoveEdges(node: RemoveEdgesQueryNode, context) {
-        return js`undefined`; // TODO
+    RemoveEdges(node: RemoveEdgesQueryNode, context): JSFragment {
+        const coll = getCollectionForEdge(node.edgeType, context);
+        const edgeVar = js.variable('edge');
+        const fromIDs = node.edgeFilter.fromIDNodes ? js.join(node.edgeFilter.fromIDNodes.map(node => processNode(node, context)), js`, `) : undefined;
+        const toIDs = node.edgeFilter.toIDNodes ? js.join(node.edgeFilter.toIDNodes.map(node => processNode(node, context)), js`, `) : undefined;
+        const edgeRemovalCriteria = compact([
+            fromIDs ? js`[${fromIDs}].includes(${edgeVar}._from)` : undefined,
+            toIDs ? js`[${toIDs}].includes(${edgeVar}._to)` : undefined
+        ]);
+        const edgeShouldStay = js`!(${js.join(edgeRemovalCriteria, js` && `)})`;
+
+        return jsExt.executingFunction(
+            js`${coll} = ${coll}.filter(${jsExt.lambda(edgeVar, edgeShouldStay)});`,
+        );
     },
 
-    SetEdge(node: SetEdgeQueryNode, context) {
-        return js`undefined`; // TODO
+    SetEdge(node: SetEdgeQueryNode, context): JSFragment {
+        const coll = getCollectionForEdge(node.edgeType, context);
+        const edgeVar = js.variable('edge');
+        const edgeRemovalCriteria = compact([
+            node.existingEdge.fromIDNode ? js`${edgeVar}._from == ${processNode(node.existingEdge.fromIDNode, context)}` : undefined,
+            node.existingEdge.toIDNode ? js`${edgeVar}._to == ${processNode(node.existingEdge.toIDNode, context)}` : undefined
+        ]);
+        const edgeShouldStay = js`!(${js.join(edgeRemovalCriteria, js` && `)})`;
+
+        return jsExt.executingFunction(
+            js`${coll} = ${coll}.filter(${jsExt.lambda(edgeVar, edgeShouldStay)});`,
+            js`${coll}.push({ _from: ${processNode(node.newEdge.fromIDNode, context)}, _to: ${processNode(node.newEdge.toIDNode, context)} });`
+        );
     }
 };
 
