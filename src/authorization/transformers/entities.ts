@@ -1,9 +1,7 @@
-import { getPermissionDescriptor } from '../permission-descriptors-in-schema';
+import { ConditionalQueryNode, EntitiesQueryNode, EntityFromIdQueryNode, NullQueryNode, RuntimeErrorQueryNode, TransformListQueryNode, VariableAssignmentQueryNode, VariableQueryNode } from '../../query/definition';
 import { AccessOperation, AuthContext, AUTHORIZATION_ERROR_NAME } from '../auth-basics';
-import {
-    EntitiesQueryNode, FieldQueryNode, RuntimeErrorQueryNode, TransformListQueryNode, VariableQueryNode
-} from '../../query/definition';
 import { PermissionResult } from '../permission-descriptors';
+import { getPermissionDescriptor } from '../permission-descriptors-in-schema';
 
 export function transformEntitiesQueryNode(node: EntitiesQueryNode, authContext: AuthContext) {
     const permissionDescriptor = getPermissionDescriptor(node.objectType);
@@ -20,6 +18,25 @@ export function transformEntitiesQueryNode(node: EntitiesQueryNode, authContext:
                 listNode: node,
                 filterNode: condition,
                 itemVariable: itemVar
+            });
+    }
+}
+
+export function transformEntityFromIdQueryNode(node: EntityFromIdQueryNode, authContext: AuthContext) {
+    const permissionDescriptor = getPermissionDescriptor(node.objectType);
+    const access = permissionDescriptor.canAccess(authContext, AccessOperation.READ);
+    switch (access) {
+        case PermissionResult.GRANTED:
+            return node;
+        case PermissionResult.DENIED:
+            return new RuntimeErrorQueryNode(`${AUTHORIZATION_ERROR_NAME}: Not authorized to read ${node.objectType.name} objects`);
+        default:
+            const entityVar = new VariableQueryNode('entity');
+            const condition = permissionDescriptor.getAccessCondition(authContext, AccessOperation.READ, entityVar);
+            return new VariableAssignmentQueryNode({
+                variableNode: entityVar,
+                variableValueNode: node,
+                resultNode: new ConditionalQueryNode(condition, entityVar, new NullQueryNode())
             });
     }
 }

@@ -417,9 +417,7 @@ const processors : { [name: string]: NodeProcessor<any> } = {
         const entityVar = newContext.getVariable(node.currentEntityVariable);
         return aqlExt.parenthesizeList(
             aql`FOR ${entityVar}`,
-            aql`IN ${getCollectionForType(node.objectType, AccessType.READ, context)}`,
-            aql`FILTER ${processNode(node.filterNode, newContext)}`,
-            node.maxCount !== undefined ? aql`LIMIT ${node.maxCount}` : aql``,
+            aql`IN ${processNode(node.listNode, context)}`,
             aql`UPDATE ${entityVar}`,
             aql`WITH ${processNode(new ObjectQueryNode(node.updates), newContext)}`,
             aql`IN ${getCollectionForType(node.objectType, AccessType.WRITE, context)}`,
@@ -433,9 +431,7 @@ const processors : { [name: string]: NodeProcessor<any> } = {
         const entityVar = newContext.getVariable(node.currentEntityVariable);
         return aqlExt.parenthesizeList(
             aql`FOR ${entityVar}`,
-            aql`IN ${getCollectionForType(node.objectType, AccessType.READ, context)}`,
-            aql`FILTER ${processNode(node.filterNode, newContext)}`,
-            node.maxCount !== undefined ? aql`LIMIT ${node.maxCount}` : aql``,
+            aql`IN ${processNode(node.listNode, context)}`,
             aql`REMOVE ${entityVar}`,
             aql`IN ${getCollectionForType(node.objectType, AccessType.WRITE, context)}`,
             aql`RETURN OLD`

@@ -4,7 +4,7 @@ import {
     ADD_CHILD_ENTITIES_FIELD_PREFIX,
     ALL_ENTITIES_FIELD_PREFIX,
     CHILD_ENTITY_DIRECTIVE,
-    CREATE_ENTITY_FIELD_PREFIX,
+    CREATE_ENTITY_FIELD_PREFIX, DELETE_ALL_ENTITIES_FIELD_PREFIX,
     DELETE_ENTITY_FIELD_PREFIX,
     INPUT_FIELD_CONTAINS,
     INPUT_FIELD_ENDS_WITH,
@@ -25,7 +25,7 @@ import {
     ORDER_BY_ASC_SUFFIX,
     ORDER_BY_DESC_SUFFIX,
     REMOVE_CHILD_ENTITIES_FIELD_PREFIX,
-    ROOT_ENTITY_DIRECTIVE,
+    ROOT_ENTITY_DIRECTIVE, UPDATE_ALL_ENTITIES_FIELD_PREFIX,
     UPDATE_CHILD_ENTITIES_FIELD_PREFIX,
     UPDATE_ENTITY_FIELD_PREFIX
 } from '../schema/schema-defaults';
@@ -61,6 +61,13 @@ export function getUpdateInputTypeName(objectType: ObjectTypeDefinitionNode) {
         return 'Update' + objectType.name.value + 'Input';
     }
     return getInputTypeName(objectType);
+}
+
+export function getUpdateAllInputTypeName(objectType: ObjectTypeDefinitionNode) {
+    if (!hasDirectiveWithName(objectType, ROOT_ENTITY_DIRECTIVE)) {
+        throw new Error(`Calling getUpdateAllInputTypeName() is allowed only for root entities`);
+    }
+    return 'UpdateAll' + pluralize(objectType.name.value) + 'Input';
 }
 
 export function getAddRelationFieldName(fieldName: string) {
@@ -170,8 +177,16 @@ export function updateEntityQuery(entityName: string) {
     return UPDATE_ENTITY_FIELD_PREFIX + entityName;
 }
 
+export function updateAllEntitiesQuery(entityName: string) {
+    return UPDATE_ALL_ENTITIES_FIELD_PREFIX + pluralize(entityName);
+}
+
 export function deleteEntityQuery(entityName: string) {
     return DELETE_ENTITY_FIELD_PREFIX + entityName;
+}
+
+export function deleteAllEntitiesQuery(entityName: string) {
+    return DELETE_ALL_ENTITIES_FIELD_PREFIX + pluralize(entityName);
 }
 
 export function sortedByAsc(name: string) {
