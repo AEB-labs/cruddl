@@ -3,6 +3,7 @@ import {
     RuntimeErrorQueryNode, TransformListQueryNode, VariableAssignmentQueryNode
 } from '../query/definition';
 import { VisitAction, visitObject } from '../utils/visitor';
+import { uniq } from 'lodash';
 
 /**
  * Moves RuntimeErrorQueryNodes up to its their deepest ancestor that is an output node, i.e., its value directly occurs
@@ -53,8 +54,8 @@ export function moveErrorsToOutputNodes(queryTree: QueryNode): QueryNode {
                     if (errors.length == 1) {
                         return errors[0];
                     } else {
-                        const uniqueErrorMessages = Array.from(new Set(errors.map(err => err.message)));
-                        return new RuntimeErrorQueryNode(uniqueErrorMessages.join(', '))
+                        const uniqueErrorMessages = uniq(errors.map(err => err.message));
+                        return new RuntimeErrorQueryNode(uniqueErrorMessages.join(', '));
                     }
                 } else {
                     // before entering the next sibling, make sure that the next sibling won't take care of these errors, because they now belong to the parent

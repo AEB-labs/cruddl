@@ -265,7 +265,7 @@
         ]
       },
       {
-        "message": "AuthorizationError: Not authorized to read Forwarder objects, AuthorizationError: Not authorized to update Forwarder objects",
+        "message": "AuthorizationError: Not authorized to update Forwarder objects, AuthorizationError: Not authorized to read Forwarder objects",
         "locations": [
           {
             "line": 93,
