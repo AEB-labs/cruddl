@@ -6,4 +6,3 @@ script:
   - npm install
   - npm run test:coverage
   - npm run test:dropdb
-  - npm run test:perf
