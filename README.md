@@ -8,7 +8,6 @@ A library to expose a database via GraphQL and model its schema with a GraphQL-b
 
 The purpose of `cruddl` is to create a GraphQL schema that can be used to access a data base via queries and mutations.
 This GraphQL schema is generated from a schema definition that contains the types, fields and relations.
-`createSchema` and `addQueryResolvers` are the two main functions: They take a schema description and a database backend and create an operational GraphQLSchema instance which can be passed directly to a GraphQL server.
 
 ### Features
 
