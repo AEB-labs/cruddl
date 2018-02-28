@@ -1,5 +1,5 @@
 {
-    # momo should just ignore these fields and let the graphql engine handle them
+    # these fields should be ignored and handled by the graphql engine
 
     __type(name: "Delivery") {
         name

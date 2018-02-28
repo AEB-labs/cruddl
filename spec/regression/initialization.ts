@@ -5,7 +5,7 @@ import * as fs from 'fs';
 import stripJsonComments = require('strip-json-comments');
 import {NAMESPACE_SEPARATOR} from "../../src/schema/schema-defaults";
 
-const DATABASE_NAME = 'momo-test-temp';
+const DATABASE_NAME = 'cruddl-test-temp';
 const DATABASE_URL = 'http://root:@localhost:8529';
 
 export async function createTempDatabase(): Promise<ArangoDBConfig> {

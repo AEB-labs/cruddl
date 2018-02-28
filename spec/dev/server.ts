@@ -6,7 +6,7 @@ import { loadProjectFromDir } from '../../src/project/project-from-fs';
 import { InMemoryAdapter } from '../../src/database/inmemory/inmemory-adapter';
 
 const port = 3000;
-const databaseName = 'momo';
+const databaseName = 'cruddl';
 const databaseURL = 'http://root:@localhost:8529';
 
 export async function start() {

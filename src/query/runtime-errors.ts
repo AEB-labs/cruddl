@@ -2,10 +2,10 @@ import { defaultFieldResolver, GraphQLSchema } from 'graphql';
 import { isPromise } from '../utils/utils';
 import { transformSchema } from 'graphql-transformer/dist';
 
-export const RUNTIME_ERROR_TOKEN = '__momo_runtime_error';
+export const RUNTIME_ERROR_TOKEN = '__cruddl_runtime_error';
 
 export interface RuntimeErrorValue {
-    __momo_runtime_error: string
+    __cruddl_runtime_error: string
 }
 
 export function addRuntimeErrorResolvers(schema: GraphQLSchema) {
@@ -38,7 +38,7 @@ export function isRuntimeErrorValue(value: any): value is RuntimeErrorValue {
 }
 
 export function extractRuntimeError(value: RuntimeErrorValue): Error {
-    return new Error(value.__momo_runtime_error);
+    return new Error(value.__cruddl_runtime_error);
 }
 
 export function createRuntimeErrorValue(message: string): RuntimeErrorValue {
