@@ -52,7 +52,6 @@ app.use('/graphiql', graphiqlExpress({endpointURL: '/graphql'}));
 app.listen(1337, () => {
     console.info('GraphQL server started on http://localhost:1337.');
 });
-
 function getGraphQLOptions(): GraphQLOptions {
     ...
     return {
@@ -60,7 +59,7 @@ function getGraphQLOptions(): GraphQLOptions {
         context: { authRoles: ["admin" ]} // this should not be static but extracted from your request token or session or ...
     };
 }
-```  
+```
 
 See a full featured example including server part on <https://github.com/AEB-labs/cruddl-demo>.
 
