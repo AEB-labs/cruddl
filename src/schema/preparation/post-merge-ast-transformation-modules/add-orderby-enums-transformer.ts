@@ -1,36 +1,14 @@
-import {ASTTransformer} from '../transformation-pipeline';
+import { ASTTransformer } from '../transformation-pipeline';
+import { DocumentNode, EnumTypeDefinitionNode, EnumValueDefinitionNode, ObjectTypeDefinitionNode } from 'graphql';
 import {
-    DirectiveNode,
-    DocumentNode,
-    EnumTypeDefinitionNode,
-    EnumValueDefinitionNode,
-    ObjectTypeDefinitionNode
-} from 'graphql';
-import {
-    areRolesDirectivesEqual,
-    buildNameNode,
-    findDirectiveWithName, getAllowedReadRoles,
-    getNamedTypeDefinitionAST,
-    getObjectTypes,
-    getTypeNameIgnoringNonNullAndList
+    buildNameNode, getNamedTypeDefinitionAST, getObjectTypes, getTypeNameIgnoringNonNullAndList
 } from '../../schema-utils';
-import {compact, flatMap} from '../../../utils/utils';
+import { flatMap } from '../../../utils/utils';
 import {
-    ENUM_TYPE_DEFINITION,
-    ENUM_VALUE_DEFINITION,
-    LIST_TYPE,
-    NON_NULL_TYPE,
-    OBJECT_TYPE_DEFINITION,
+    ENUM_TYPE_DEFINITION, ENUM_VALUE_DEFINITION, LIST_TYPE, NON_NULL_TYPE, OBJECT_TYPE_DEFINITION,
     SCALAR_TYPE_DEFINITION
 } from 'graphql/language/kinds';
-import {getOrderByEnumTypeName, sortedByAsc, sortedByDesc} from '../../../graphql/names';
-import {ROLES_DIRECTIVE} from '../../schema-defaults';
-import {intersectRolesDirectives} from './add-input-type-transformation-helper-transformer';
-
-export interface EnumValueWithDirectives {
-    name: string;
-    directives: DirectiveNode[]
-}
+import { getOrderByEnumTypeName, sortedByAsc, sortedByDesc } from '../../../graphql/names';
 
 export class AddOrderbyInputEnumsTransformer implements ASTTransformer {
 
@@ -45,31 +23,23 @@ export class AddOrderbyInputEnumsTransformer implements ASTTransformer {
             name: buildNameNode(getOrderByEnumTypeName(objectType)),
             kind: ENUM_TYPE_DEFINITION,
             loc: objectType.loc,
-            values: flatMap(this.collectOrderByEnumFieldNamesRecurse(ast, objectType, [], ""), ({name, directives}) =>
+            values: flatMap(this.collectOrderByEnumFieldNamesRecurse(ast, objectType, [], ""), name =>
                 [
-                    this.buildEnumValueDefinitionNode(sortedByAsc(name), directives),
-                    this.buildEnumValueDefinitionNode(sortedByDesc(name), directives)
+                    this.buildEnumValueDefinitionNode(sortedByAsc(name)),
+                    this.buildEnumValueDefinitionNode(sortedByDesc(name))
                 ]
             )
         }
     }
 
-    protected buildEnumValueDefinitionNode(name: string, directives?: DirectiveNode[]): EnumValueDefinitionNode {
+    protected buildEnumValueDefinitionNode(name: string): EnumValueDefinitionNode {
         return {
             kind: ENUM_VALUE_DEFINITION,
-            name: buildNameNode(name),
-            directives
+            name: buildNameNode(name)
         }
     }
 
-    protected collectOrderByEnumFieldNamesRecurse(ast: DocumentNode, objectType: ObjectTypeDefinitionNode, ignoreTypeNames: string[], prefix: string, outerRoleDirective?: DirectiveNode): EnumValueWithDirectives[] {
-        // see of the outerRoleDirective really restricts something
-        // this is to work around bug https://gitlab.aeb.com/next-playground/momo/issues/26
-        const objectTypeRoles = findDirectiveWithName(objectType, ROLES_DIRECTIVE);
-        if (outerRoleDirective && (!objectTypeRoles || areRolesDirectivesEqual(outerRoleDirective, objectTypeRoles))) {
-            outerRoleDirective = undefined;
-        }
-
+    protected collectOrderByEnumFieldNamesRecurse(ast: DocumentNode, objectType: ObjectTypeDefinitionNode, ignoreTypeNames: string[], prefix: string): string[] {
         return flatMap(objectType.fields, field => {
             // no sorting on nested lists
             if (field.type.kind === LIST_TYPE || field.type.kind === NON_NULL_TYPE && field.type.type.kind === LIST_TYPE) {
@@ -83,15 +53,12 @@ export class AddOrderbyInputEnumsTransformer implements ASTTransformer {
             }
             const type = getNamedTypeDefinitionAST(ast, typeName);
 
-            let roleDirectives = [ findDirectiveWithName(field, ROLES_DIRECTIVE), outerRoleDirective ];
-
             switch (type.kind) {
                 case SCALAR_TYPE_DEFINITION:
                 case ENUM_TYPE_DEFINITION:
-                    const roleDirective = intersectRolesDirectives(compact(roleDirectives));
-                    return [ { name: prefix + field.name.value, directives: roleDirective ? [ roleDirective ] : [] } ];
+                    return [ prefix + field.name.value ];
                 case OBJECT_TYPE_DEFINITION:
-                    return this.collectOrderByEnumFieldNamesRecurse(ast, type, [...ignoreTypeNames, typeName], prefix + field.name.value + '_', intersectRolesDirectives(compact(roleDirectives)));
+                    return this.collectOrderByEnumFieldNamesRecurse(ast, type, [...ignoreTypeNames, typeName], prefix + field.name.value + '_');
                 default:
                     throw new Error(`Unexpected type of ${typeName} when creating order by enum.`);
             }
