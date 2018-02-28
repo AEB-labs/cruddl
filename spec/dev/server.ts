@@ -1,9 +1,9 @@
 import {  ArangoDBAdapter } from '../..';
-import { GraphQLServer } from './graphql-server';
 import { globalContext } from '../../src/config/global';
 import * as path from 'path';
 import { loadProjectFromDir } from '../../src/project/project-from-fs';
-import { InMemoryAdapter } from '../../src/database/inmemory/inmemory-adapter';
+import { InMemoryAdapter } from '../../src/database/inmemory';
+import { GraphQLServer } from 'graphql-yoga';
 
 const port = 3000;
 const databaseName = 'cruddl';
@@ -30,7 +30,10 @@ export async function start() {
     await db.updateSchema(schema);
     logger.info('Schema is up to date');
 
-    new GraphQLServer({
-        port, schema: schema
+    const server = new GraphQLServer({
+        schema,
+        context: () => ({ authRoles: ["allusers", "logistics-reader" ]})
     });
+    await server.start({port});
+    logger.info(`Server started on http//localhost:${port}`);
 }
