@@ -2,7 +2,7 @@ import {ASTValidator} from "../ast-validator";
 import {DocumentNode} from "graphql";
 import {ValidationMessage} from "../validation-message";
 import {getObjectTypes, hasDirectiveWithName} from "../../schema-utils";
-import {LIST_TYPE, NON_NULL_TYPE} from "graphql/language/kinds";
+import {LIST_TYPE, NON_NULL_TYPE} from "../../../graphql/kinds";
 import {REFERENCE_DIRECTIVE} from "../../schema-defaults";
 
 export const VALIDATION_ERROR_LIST_OF_REFERENCES_NOT_SUPPORTED = 'Lists of @reference are not supported. Use a child entity with a field of the reference instead.';

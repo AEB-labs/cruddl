@@ -1,7 +1,7 @@
 import {ASTValidator} from "../ast-validator";
 import {DocumentNode} from "graphql";
 import {ValidationMessage} from "../validation-message";
-import {ENUM_TYPE_DEFINITION, OBJECT_TYPE_DEFINITION} from "graphql/language/kinds";
+import {ENUM_TYPE_DEFINITION, OBJECT_TYPE_DEFINITION} from "../../../graphql/kinds";
 
 export const VALIDATION_ERROR_INVALID_TYPE_KIND = "This kind of definition is not allowed. Only object and enum type definitions are allowed.";
 

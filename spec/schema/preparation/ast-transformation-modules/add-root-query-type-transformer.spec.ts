@@ -1,5 +1,5 @@
 import {ObjectTypeDefinitionNode, parse} from "graphql";
-import {OBJECT_TYPE_DEFINITION} from "graphql/language/kinds";
+import {OBJECT_TYPE_DEFINITION} from "../../../../src/graphql/kinds";
 import {getNamedTypeDefinitionAST} from "../../../../src/schema/schema-utils";
 import {AddRootQueryTypeTransformer} from "../../../../src/schema/preparation/post-merge-ast-transformation-modules/add-root-query-type-transformer";
 

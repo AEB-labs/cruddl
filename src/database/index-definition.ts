@@ -12,7 +12,7 @@ import {
 } from "../schema/schema-defaults";
 import {getNodeByName, isRootEntityType} from "../schema/schema-utils";
 import {compact, flatMap, objectValues} from "../utils/utils";
-import {DOCUMENT, LIST, OBJECT} from "graphql/language/kinds";
+import {DOCUMENT, LIST, OBJECT} from "../graphql/kinds";
 
 export interface IndexDefinition {
     id: string,

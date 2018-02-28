@@ -2,7 +2,7 @@ import {parse} from "graphql";
 import {findDirectiveWithName, getObjectTypes} from "../../../../src/schema/schema-utils";
 import {AddNamespacesToTypesTransformer} from "../../../../src/schema/preparation/pre-merge-ast-transformation-modules/add-namespaces-to-types-transformer";
 import {NAMESPACE_DIRECTIVE, ROOT_ENTITY_DIRECTIVE} from "../../../../src/schema/schema-defaults";
-import {STRING} from "graphql/language/kinds";
+import {STRING} from "../../../../src/graphql/kinds";
 
 const modelWithRootEntity = `
             type Stuff @rootEntity {

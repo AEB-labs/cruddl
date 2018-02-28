@@ -1,5 +1,5 @@
 import { DocumentNode } from 'graphql';
-import { LIST_TYPE } from 'graphql/language/kinds';
+import { LIST_TYPE } from '../../../graphql/kinds';
 import { CALC_MUTATIONS_DIRECTIVE, CALC_MUTATIONS_OPERATORS_ARG } from '../../schema-defaults';
 import { findDirectiveWithName, getCalcMutationOperatorsFromDirective, getObjectTypes, getTypeNameIgnoringNonNullAndList } from '../../schema-utils';
 import { ASTValidator } from '../ast-validator';

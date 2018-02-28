@@ -8,7 +8,7 @@ import {
     TypeNode
 } from 'graphql';
 import { findDirectiveWithName, getValueObjectTypes } from '../../schema-utils';
-import {INPUT_OBJECT_TYPE_DEFINITION, LIST_TYPE, NAMED_TYPE, NON_NULL_TYPE} from 'graphql/language/kinds';
+import {INPUT_OBJECT_TYPE_DEFINITION, LIST_TYPE, NAMED_TYPE, NON_NULL_TYPE} from '../../../graphql/kinds';
 import {getCreateInputTypeName} from '../../../graphql/names';
 import {
     buildInputFieldFromNonListField,

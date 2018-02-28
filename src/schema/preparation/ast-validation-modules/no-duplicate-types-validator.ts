@@ -8,7 +8,7 @@ import {
     OBJECT_TYPE_DEFINITION,
     SCALAR_TYPE_DEFINITION,
     UNION_TYPE_DEFINITION
-} from "graphql/language/kinds";
+} from "../../../graphql/kinds";
 
 export const VALIDATION_ERROR_DUPLICATE_TYPE_NAMES = "Duplicate type name";
 

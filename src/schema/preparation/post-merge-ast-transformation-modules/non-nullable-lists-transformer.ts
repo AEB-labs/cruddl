@@ -1,6 +1,6 @@
 import {ASTTransformer} from "../transformation-pipeline";
 import {DocumentNode, TypeNode} from "graphql";
-import {LIST_TYPE, NAMED_TYPE, NON_NULL_TYPE} from "graphql/language/kinds";
+import {LIST_TYPE, NAMED_TYPE, NON_NULL_TYPE} from "../../../graphql/kinds";
 import {getFieldDefinitionNodes, nonNullifyType} from "../../schema-utils";
 
 /**

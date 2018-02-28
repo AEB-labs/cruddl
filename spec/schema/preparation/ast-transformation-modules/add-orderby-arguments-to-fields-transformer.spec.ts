@@ -1,5 +1,5 @@
 import {ListTypeNode, NamedTypeNode, NonNullTypeNode, ObjectTypeDefinitionNode, parse} from "graphql";
-import {LIST_TYPE, NAMED_TYPE, NON_NULL_TYPE, OBJECT_TYPE_DEFINITION} from "graphql/language/kinds";
+import {LIST_TYPE, NAMED_TYPE, NON_NULL_TYPE, OBJECT_TYPE_DEFINITION} from "../../../../src/graphql/kinds";
 import {ORDER_BY_ARG} from "../../../../src/schema/schema-defaults";
 import {AddOrderbyArgumentsToFieldsTransformer} from "../../../../src/schema/preparation/post-merge-ast-transformation-modules/add-orderby-arguments-to-fields-transformer";
 

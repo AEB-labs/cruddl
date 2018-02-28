@@ -5,7 +5,7 @@ import {
     INDEX_DIRECTIVE, INDEX_FIELDS_FIELD, INDEX_UNIQUE_FIELD, INDICES_ARG,
     ROOT_ENTITY_DIRECTIVE, UNIQUE_DIRECTIVE
 } from "../../schema-defaults";
-import {ARGUMENT, BOOLEAN, LIST, OBJECT_FIELD, STRING} from "graphql/language/kinds";
+import {ARGUMENT, BOOLEAN, LIST, OBJECT_FIELD, STRING} from "../../../graphql/kinds";
 
 export class MoveUpFieldIndicesTransformer implements ASTTransformer {
 
