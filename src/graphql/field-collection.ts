@@ -14,14 +14,6 @@ export const getArgumentValues: (def: GraphQLField<any, any> | GraphQLDirective,
                           variableValues: {[key: string]: any}) => {[key: string]: any|undefined}
     = require('graphql/execution/values').getArgumentValues;
 
-
-// same for this
-export const getVariableValues: (
-    schema: GraphQLSchema,
-    varDefNodes: Array<VariableDefinitionNode>,
-    inputs: { [key: string]: any }) => { [key: string]: any}
-    = require('graphql/execution/values').getVariableValues;
-
 /**
  * Collects all fields selected by the given selection node
  *
