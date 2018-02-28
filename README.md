@@ -23,6 +23,7 @@ You need a running Arango database with an existing (empty) database.
 ```
 npm install cruddle --save
 ```
+
 * Create a database adapter for Arango DB containing the URL and credentials.
 ```typescript
 const db = new ArangoDBAdapter({
@@ -34,14 +35,17 @@ const db = new ArangoDBAdapter({
     autoremoveIndices: true
 });
 ```
+
 * Load a project with data model and permissions from a directory
 ```typescript
 const project = await loadProjectFromDir(path.resolve(__dirname, 'model'));
 ```
+
 * Create an executable schema
 ```typescript
 const schema = project.createSchema(db);
 ```
+
 * Deploy your schema on a GraphQL server. Be sure to use a server which is able to inject your user roles into the graphql context. An example for graphql-server-express could look like this:
 ```typescript
 const app = express();
@@ -49,8 +53,8 @@ app.use(cors());
 app.get('/', (req, res) => { res.redirect('/graphiql')});
 app.use('/graphql', bodyParser.json(), graphqlExpress(() => getGraphQLOptions()));
 app.use('/graphiql', graphiqlExpress({endpointURL: '/graphql'}));
-app.listen(config.port, () => {
-    console.info(`GraphQL server started on http://localhost:${config.port}.`);
+app.listen(1337, () => {
+    console.info('GraphQL server started on http://localhost:1337.');
 });
 
 function getGraphQLOptions(): GraphQLOptions {
@@ -61,6 +65,7 @@ function getGraphQLOptions(): GraphQLOptions {
     };
 }
 ```  
+
 See a full featured example including server part on <https://github.com/AEB-labs/cruddl-demo>.
 
 # Modelling guide
