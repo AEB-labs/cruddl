@@ -1,9 +1,5 @@
 #cruddl
 ---
-
-[![coverage report](https://gitlab.aeb.com/next-playground/cruddl/badges/master/coverage.svg)](https://gitlab.aeb.com/next-playground/cruddl/commits/master)
-[![pipeline status](https://gitlab.aeb.com/next-playground/cruddl/badges/master/pipeline.svg)](https://gitlab.aeb.com/next-playground/cruddl/commits/master)
-
 A library to expose a database via GraphQL and model its schema with a GraphQL-based DDL
 
 The purpose of `cruddl` is to create a GraphQL schema that can be used to access a data base via queries and mutations.
