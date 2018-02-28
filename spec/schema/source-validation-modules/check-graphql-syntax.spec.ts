@@ -16,7 +16,7 @@ describe('check-graphql-syntax validator', () => {
     });
 
     it('accepts valid GraphQL', () => {
-        const messages = validator.validate(new ProjectSource('file.graphql', 'type Test { }'));
+        const messages = validator.validate(new ProjectSource('file.graphql', 'type Test { field: String }'));
         expect(messages).toEqual([]);
     });
 });

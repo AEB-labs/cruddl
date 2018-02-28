@@ -21,7 +21,20 @@ const modelWithValueObjectsWithoutFields = `
         `;
 
 describe('no empty object types validator', () => {
+    function isSyntaxError() {
+        // If this is already a syntax error (as it is in graphql 0.12), don't test this
+        try {
+            parse(`type Test { }`);
+            return false;
+        } catch {
+            return true;
+        }
+    }
+
     it('rejects rootEntities without fields', () => {
+        if (isSyntaxError()) {
+            return;
+        }
         const ast = parse(modelWithRootEntityWithoutFields);
         const validationResult = new ValidationResult(new NoEmptyObjectTypesValidator().validate(ast));
         expect(validationResult.hasErrors()).toBeTruthy();
@@ -30,6 +43,9 @@ describe('no empty object types validator', () => {
     });
 
     it('rejects valueObjects without fields', () => {
+        if (isSyntaxError()) {
+            return;
+        }
         const ast = parse(modelWithValueObjectsWithoutFields);
         const validationResult = new ValidationResult(new NoEmptyObjectTypesValidator().validate(ast));
         expect(validationResult.hasWarnings()).toBeFalsy();
