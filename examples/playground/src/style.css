@@ -17,4 +17,5 @@ h1, p {
   font-family: monospace;
   font-size: 12px;
   overflow: auto;
+  white-space: pre;
 }
