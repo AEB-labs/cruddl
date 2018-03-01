@@ -10,7 +10,7 @@ import 'brace/mode/graphqlschema';
 import 'brace/theme/chrome';
 import colors from 'colors';
 import ansi2html from 'ansi2html';
-colors.supportsColor = true;
+colors.enabled = true;
 
 const initialSource = `type Order @rootEntity {
   orderNumber: String
@@ -140,7 +140,7 @@ class App extends Component {
           if (mockDB.queryTree) {
             const aql = getAQLQuery(mockDB.queryTree);
             const str = ansi2html(aql.toColoredString()).replace(/_/g, '');
-            document.getElementById('log-view').innerHTML = 'The last query would have used this AQL:\n\n' + aql;
+            document.getElementById('log-view').innerHTML = 'The last query would have used this AQL:\n\n' + str;
           }
         });
       } 
