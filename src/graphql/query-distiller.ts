@@ -4,11 +4,12 @@ import {
     SelectionNode
 } from 'graphql';
 
-import { getArgumentValues, resolveSelections } from './field-collection';
+import { resolveSelections } from './field-collection';
 import { arrayToObject, flatMap, groupArray, indent, INDENTATION } from '../utils/utils';
 import { extractOperation } from './operations';
 import { getOperationRootType } from './schema-utils';
 import { getAliasOrName } from './language-utils';
+import { getArgumentValues } from './argument-values';
 
 /**
  * A request for the value of one field with a specific argument set and selection set

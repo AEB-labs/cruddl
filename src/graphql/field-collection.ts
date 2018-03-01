@@ -7,12 +7,7 @@ import {
     GraphQLDirective,
     GraphQLField, FragmentDefinitionNode, SelectionNode, GraphQLSchema, VariableDefinitionNode
 } from 'graphql';
-
-// This function is not exported, but we really need this to not duplicate a large chunk of graphql-js
-export const getArgumentValues: (def: GraphQLField<any, any> | GraphQLDirective,
-                          node: FieldNode | DirectiveNode,
-                          variableValues: {[key: string]: any}) => {[key: string]: any|undefined}
-    = require('graphql/execution/values').getArgumentValues;
+import { getArgumentValues } from './argument-values';
 
 /**
  * Collects all fields selected by the given selection node
