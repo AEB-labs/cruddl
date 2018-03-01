@@ -6,6 +6,8 @@
 
 This TypeScript library creates an executable GraphQL schema from a model definition and provides queries and mutations to access a database. Currently, it supports the multi-model database [ArangoDB](https://www.arangodb.com/).
 
+**[Try it online](https://stackblitz.com/edit/cruddl?embed=1&file=index.js&hideExplorer=1&hideNavigation=1&view=preview)**
+
 ## Features
 
 * Schema definition using GraphQL types, fields and directives
