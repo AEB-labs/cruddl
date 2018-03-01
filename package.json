@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "rimraf dist && tsc && dependency-check ./package.json --ignore-module @arangodb",
+    "build": "rimraf dist && tsc --skipLibCheck && dependency-check ./package.json --ignore-module @arangodb",
     "prepublishOnly": "npm run build",
     "test": "tsc --noEmit --skipLibCheck && node cruddl-test",
     "test:dropdb": "ts-node ./spec/regression/drop-test-db.ts",
