@@ -17,7 +17,7 @@ const project = new Project([{
     permissionProfiles: {
       default: {
         permissions: [{
-          roles: ['*'],
+          roles: ['users'],
           access: 'readWrite'
         }]
       }
@@ -26,7 +26,7 @@ const project = new Project([{
 }]);
 ```
 
-The file `schema.graphqls` contains type definitions while `permission-profiles.json` provides metadata (in this case, to grant unrestricted access for all users). The two file formats are distinguished by the extension of the `name`.
+The file `schema.graphqls` contains type definitions while `permission-profiles.json` provides metadata (in this case, to grant unrestricted access users with the "users" role). The two file formats are distinguished by the extension of the `name`.
 
 In this example, we define one type `Order` with a scalar field. This project already allows to create, update, delete and read `Order` objects. See the [api documentation](api.md) on how the queries and mutations look like.
 
@@ -157,7 +157,7 @@ The basic example above already specified a permission profile `default` which i
   "permissionProfiles": {
     "default": {
       "permissions": [{
-        "roles": ["*"],
+        "roles": ["users"],
         "access": "readWrite"
       }]
     }
@@ -165,7 +165,7 @@ The basic example above already specified a permission profile `default` which i
 }
 ```
 
-This profile grants unrestricted access for all roles. The following permission profile "restricted" allows read access to all roles starting with "user" and provides full access to the role "admin":
+This profile grants unrestricted access for the "users" role. The roles of a user are take from the `authContext` property on the GraphQL context. The following permission profile "restricted" allows read access to all roles starting with "user" and provides full access to the role "admin":
 
 ```json
 {

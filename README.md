@@ -62,7 +62,7 @@ const project = new Project([{
     permissionProfiles: {
       default: {
         permissions: [{
-          roles: ['*'],
+          roles: ['users'],
           access: 'readWrite'
         }]
       }
@@ -76,7 +76,8 @@ Then, create the GraphQL schema and serve it:
 ```typescript
 import { GraphQLServer } from 'graphql-yoga';
 const schema = project.createSchema(db);
-const server = new GraphQLServer({ schema });
+db.updateSchema(schema); // create missing collections
+const server = new GraphQLServer({ schema, context: () => ({ authRoles: [ 'users' ]}) });
 server.start(() => console.log('Server is running on http://localhost:4000/'));
 ```
 
