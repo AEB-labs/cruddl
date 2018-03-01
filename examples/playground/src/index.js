@@ -139,7 +139,7 @@ class App extends Component {
         this.fetch(params, mockSchema).then(() => {
           if (mockDB.queryTree) {
             const aql = getAQLQuery(mockDB.queryTree);
-            const str = ansi2html(aql.toColoredString()).replace(/_/g, '');
+            const str = ansi2html(aql.toColoredString()).replace(/\u001b/g, ''); // ansi2html does not remove the escape chars
             document.getElementById('log-view').innerHTML = 'The last query would have used this AQL:\n\n' + str;
           }
         });
