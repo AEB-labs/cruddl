@@ -12,7 +12,7 @@
     "brace": "0.11.1",
     "assert": "1.4.1",
     "colors": "1.1.2",
-    "cruddl": "0.4.1-gql12",
+    "cruddl": "0.4.1-gql12.1",
     "graphql": "0.12.3",
     "graphiql": "0.11.11",
     "punycode": "2.1.0",
