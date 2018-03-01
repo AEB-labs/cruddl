@@ -4,7 +4,7 @@ import {
     NAMED_TYPE,
     NON_NULL_TYPE,
     OBJECT_TYPE_DEFINITION
-} from 'graphql/language/kinds';
+} from '../../../graphql/kinds';
 import {
     buildNameNode,
     findDirectiveWithName, getCalcMutationOperatorsFromDirective,

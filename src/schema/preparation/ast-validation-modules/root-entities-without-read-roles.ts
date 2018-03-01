@@ -3,7 +3,7 @@ import { ArgumentNode, DocumentNode } from 'graphql';
 import { ValidationMessage } from '../validation-message';
 import { findDirectiveWithName, getNodeByName, getRootEntityTypes } from '../../schema-utils';
 import { ROLES_DIRECTIVE, ROLES_READ_ARG, ROLES_READ_WRITE_ARG } from '../../schema-defaults';
-import { LIST, STRING } from 'graphql/language/kinds';
+import { LIST, STRING } from '../../../graphql/kinds';
 
 export const VALIDATION_WARNING_MISSING_ROLE_ON_ROOT_ENTITY = 'No roles with read access are specified for this root entity, access is denied for everyone';
 export const VALIDATION_ERROR_MISSING_ROLE_ON_ROOT_ENTITY_ILLEGAL_ARGUMENT_TYPE = 'Invalid argument type. Only String and list of Strings are allowed.';

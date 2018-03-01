@@ -1,7 +1,7 @@
 import {ASTTransformer} from "../transformation-pipeline";
 import {DocumentNode, FieldDefinitionNode} from "graphql";
 import {buildNameNode, getChildEntityTypes, getRootEntityTypes} from "../../schema-utils";
-import {FIELD_DEFINITION, NAMED_TYPE} from "graphql/language/kinds";
+import {FIELD_DEFINITION, NAMED_TYPE} from "../../../graphql/kinds";
 import {CURSOR_FIELD} from "../../schema-defaults";
 
 export class AddCursorFieldToEntitiesTransformer implements ASTTransformer {

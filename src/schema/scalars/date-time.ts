@@ -24,7 +24,8 @@ export const GraphQLDateTime = new GraphQLScalarType({
             if (isValidDateTime(value)) {
                 return value;
             }
+            throw new TypeError(`Invalid ISO 8601 DateTime: ${value}`);
         }
-        return null;
+        throw new TypeError('DateTime must be specified as String value');
     }
 });

@@ -13,7 +13,7 @@ import {
     NAMED_TYPE,
     NON_NULL_TYPE,
     OBJECT_TYPE_DEFINITION
-} from "graphql/language/kinds";
+} from "../../../graphql/kinds";
 import {getFilterTypeName} from "../../../graphql/names";
 import {FILTER_ARG} from "../../schema-defaults";
 

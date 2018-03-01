@@ -1,5 +1,5 @@
 import {parse, SchemaDefinitionNode} from "graphql";
-import {SCHEMA_DEFINITION} from "graphql/language/kinds";
+import {SCHEMA_DEFINITION} from "../../../../src/graphql/kinds";
 import {AddRootSchemaTransformer} from "../../../../src/schema/preparation/post-merge-ast-transformation-modules/add-root-schema-transformer";
 
 const sdl = `

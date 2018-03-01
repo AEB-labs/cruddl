@@ -21,7 +21,7 @@ import {
     NAMED_TYPE,
     NON_NULL_TYPE,
     OBJECT_TYPE_DEFINITION
-} from 'graphql/language/kinds';
+} from '../../../graphql/kinds';
 import {getCreateInputTypeName} from '../../../graphql/names';
 import {
     ENTITY_CREATED_AT, ENTITY_UPDATED_AT, ID_FIELD, RELATION_DIRECTIVE, ROLES_DIRECTIVE

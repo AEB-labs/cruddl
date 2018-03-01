@@ -29,7 +29,7 @@ import {
     NON_NULL_TYPE,
     OBJECT_TYPE_DEFINITION,
     SCALAR_TYPE_DEFINITION
-} from 'graphql/language/kinds';
+} from '../graphql/kinds';
 import {
     CALC_MUTATIONS_DIRECTIVE,
     CALC_MUTATIONS_OPERATORS,

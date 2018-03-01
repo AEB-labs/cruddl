@@ -1,9 +1,12 @@
 import { SourceValidator } from '../ast-validator';
 import { ProjectSource, SourceType } from '../../../project/source';
 import { ValidationMessage } from '../validation-message';
-import { buildASTSchema, DocumentNode, GraphQLError, Location, parse, Source, validate } from 'graphql';
+import { buildASTSchema, DocumentNode, GraphQLError, Location, parse, Source, specifiedRules, validate } from 'graphql';
 import { CORE_SCALARS, DIRECTIVES } from '../../graphql-base';
 import gql from 'graphql-tag';
+
+// ExecutableDefinitions does not allow the SDL definitions
+const rules = specifiedRules.filter(rule => rule.name != 'ExecutableDefinitions');
 
 export class GraphQLRulesValidator implements SourceValidator {
     validate(source: ProjectSource): ValidationMessage[] {
@@ -22,7 +25,7 @@ export class GraphQLRulesValidator implements SourceValidator {
             throw e;
         }
 
-        return validate(coreSchema, ast).map(error => ValidationMessage.error(
+        return validate(coreSchema, ast, rules).map(error => ValidationMessage.error(
             error.message,
             {},
             getMessageLocation(error)

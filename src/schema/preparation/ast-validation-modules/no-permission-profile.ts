@@ -6,7 +6,7 @@ import {
     DEFAULT_PERMISSION_PROFILE,
     PERMISSION_PROFILE_ARG, ROLES_DIRECTIVE, ROLES_READ_ARG, ROLES_READ_WRITE_ARG, ROOT_ENTITY_DIRECTIVE
 } from '../../schema-defaults';
-import { LIST, STRING } from 'graphql/language/kinds';
+import { LIST, STRING } from '../../../graphql/kinds';
 
 export const VALIDATION_ERROR_NO_PERMISSION_PROFILE = `No ${DEFAULT_PERMISSION_PROFILE} permission profile defined. Either specify permissionProfile in @rootEntity or use @roles directive`;
 

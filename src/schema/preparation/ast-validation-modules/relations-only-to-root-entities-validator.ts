@@ -5,7 +5,7 @@ import {
     getNamedTypeDefinitionAST, getObjectTypes, getTypeNameIgnoringNonNullAndList, hasDirectiveWithName
 } from '../../schema-utils';
 import { RELATION_DIRECTIVE, ROOT_ENTITY_DIRECTIVE } from '../../schema-defaults';
-import { OBJECT_TYPE_DEFINITION } from 'graphql/language/kinds';
+import { OBJECT_TYPE_DEFINITION } from '../../../graphql/kinds';
 
 export class RelationsOnlyToRootEntitiesValidator implements ASTValidator {
 

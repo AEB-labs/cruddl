@@ -8,7 +8,7 @@ import {
     getTypeNameIgnoringNonNullAndList
 } from "../../schema-utils";
 import {INVERSE_OF_ARG, RELATION_DIRECTIVE} from "../../schema-defaults";
-import {STRING} from "graphql/language/kinds";
+import {STRING} from "../../../graphql/kinds";
 
 export const VALIDATION_ERROR_INVALID_ARGUMENT_TYPE = 'Invalid argument type.';
 

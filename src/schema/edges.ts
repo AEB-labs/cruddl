@@ -1,7 +1,7 @@
 import {FieldDefinitionNode, getNamedType, GraphQLField, GraphQLObjectType} from 'graphql';
 import {findDirectiveWithName, getNodeByName} from './schema-utils';
 import {INVERSE_OF_ARG, RELATION_DIRECTIVE} from "./schema-defaults";
-import {STRING} from "graphql/language/kinds";
+import {STRING} from "../graphql/kinds";
 
 export enum RelationFieldEdgeSide {
     FROM_SIDE,

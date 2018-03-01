@@ -1,6 +1,6 @@
 import {AnyValue, PlainObject} from "../utils/utils";
 import {ValueNode, VariableNode} from "graphql";
-import {BOOLEAN, ENUM, FLOAT, INT, LIST, NULL, OBJECT, STRING, VARIABLE} from "graphql/language/kinds";
+import {BOOLEAN, ENUM, FLOAT, INT, LIST, NULL, OBJECT, STRING, VARIABLE} from "../graphql/kinds";
 
 export function flattenValueNode(valueNode: ValueNode): any {
     switch (valueNode.kind) {

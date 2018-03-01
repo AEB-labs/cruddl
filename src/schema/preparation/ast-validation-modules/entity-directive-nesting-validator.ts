@@ -17,7 +17,7 @@ import {
     ROOT_ENTITY_DIRECTIVE,
     VALUE_OBJECT_DIRECTIVE
 } from "../../schema-defaults";
-import {LIST_TYPE, NAMED_TYPE, NON_NULL_TYPE, OBJECT_TYPE_DEFINITION} from "graphql/language/kinds";
+import {LIST_TYPE, NAMED_TYPE, NON_NULL_TYPE, OBJECT_TYPE_DEFINITION} from "../../../graphql/kinds";
 
 export const VALIDATION_ERROR_LISTS_OF_ENTITY_EXTENSIONS_NOT_ALLOWED = 'Entity extensions are not allowed in lists. Use child entities instead.';
 export const VALIDATION_ERROR_ROOT_ENTITY_NOT_EMBEDDABLE = 'Root entities are not embeddable. Embed a child entity or entity extension or use @relation or @reference instead.';

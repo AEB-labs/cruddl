@@ -1,5 +1,5 @@
 import {NamedTypeNode, ObjectTypeDefinitionNode, parse} from "graphql";
-import {NAMED_TYPE, OBJECT_TYPE_DEFINITION} from "graphql/language/kinds";
+import {NAMED_TYPE, OBJECT_TYPE_DEFINITION} from "../../../../src/graphql/kinds";
 import {FILTER_ARG} from "../../../../src/schema/schema-defaults";
 import {AddFilterArgumentsToFieldsTransformer} from "../../../../src/schema/preparation/post-merge-ast-transformation-modules/add-filter-arguments-to-fields-transformer";
 

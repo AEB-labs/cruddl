@@ -17,7 +17,7 @@ import {
     NAMED_TYPE,
     NON_NULL_TYPE,
     OBJECT_TYPE_DEFINITION
-} from "graphql/language/kinds";
+} from "../../../graphql/kinds";
 import {getCreateInputTypeName} from "../../../graphql/names";
 import { ROLES_DIRECTIVE, ROOT_ENTITY_DIRECTIVE } from '../../schema-defaults';
 import {

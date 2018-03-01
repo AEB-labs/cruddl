@@ -1,7 +1,10 @@
 import {
-    GraphQLID, GraphQLInputObjectType, GraphQLInt, GraphQLList, GraphQLObjectType, GraphQLSchema, GraphQLString, parse
+    buildASTSchema, graphql, GraphQLBoolean,
+    GraphQLID, GraphQLInputObjectType, GraphQLInt, GraphQLList, GraphQLObjectType, GraphQLResolveInfo, GraphQLSchema,
+    GraphQLString, parse
 } from 'graphql';
 import { DistilledOperation, distillQuery, FieldRequest } from '../../src/graphql/query-distiller';
+import gql from 'graphql-tag';
 
 describe("query-distiller", () => {
     const userType = new GraphQLObjectType({
@@ -70,6 +73,24 @@ describe("query-distiller", () => {
         return executeQuery(query, variableValues).selectionSet[0].fieldRequest;
     }
 
+    it('assumes correctly that GraphQLResolveInfo.variableValues is already coeerced', async () =>{
+        // this is important because the query distiller does not do coercion
+        let info: GraphQLResolveInfo|undefined = undefined;
+        const schema = buildASTSchema(gql(`type Query { field(str: String, int: Int): Int } `));
+        const result = await graphql({
+            schema,
+            source: 'query q($str: String, $int: Int) { field(str: $str, int: $int) }',
+            fieldResolver: (a, b, c, i) => { info = i; return 42; },
+            variableValues: { str: 123, int: '123' } // the wrong way around intentionally to test coercion
+        });
+        expect(result.errors).toBeFalsy();
+        expect(result.data!.field).toBe(42);
+        expect(info!.variableValues.str).toBe('123');
+        expect(info!.variableValues.int).toBe(123);
+        expect(typeof info!.variableValues.str).toBe('string');
+        expect(typeof info!.variableValues.int).toBe('number');
+    });
+
     it("builds tree for simple query", async() => {
         const rootNode = await executeQueryWithRootField(`{ root { currentTime } }`);
         expect(rootNode.fieldName).toBe('root');
@@ -125,13 +146,13 @@ describe("query-distiller", () => {
     it("provides arguments specified in variables", async() => {
         const rootNode = await executeQueryWithRootField(`query($var: ID) { root { user(id: $var) { id } } }`, {var: 123});
         const userNode = rootNode.selectionSet[0].fieldRequest;
-        expect(userNode.args['id']).toBe('123');
+        expect(userNode.args['id']).toBe(123);
     });
 
     it("provides object arguments specified in variables", async() => {
         const rootNode = await executeQueryWithRootField(`query($f: Filter) { root { users(filter: $f) { id } } }`, {f: { id: 123 }});
         const userNode = rootNode.selectionSet[0].fieldRequest;
-        expect(userNode.args['filter'].id).toBe('123');
+        expect(userNode.args['filter'].id).toBe(123);
     });
 
     it("supports fragments", async() => {

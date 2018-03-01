@@ -11,7 +11,7 @@ import {
 import {
     DIRECTIVE, FIELD_DEFINITION, INPUT_VALUE_DEFINITION, NAMED_TYPE, NON_NULL_TYPE,
     STRING
-} from "graphql/language/kinds";
+} from "../../../graphql/kinds";
 import {
     MUTATION_FIELD,
     MUTATION_ID_ARG,

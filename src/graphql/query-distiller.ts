@@ -4,7 +4,7 @@ import {
     SelectionNode
 } from 'graphql';
 
-import { getArgumentValues, getVariableValues, resolveSelections } from './field-collection';
+import { getArgumentValues, resolveSelections } from './field-collection';
 import { arrayToObject, flatMap, groupArray, indent, INDENTATION } from '../utils/utils';
 import { extractOperation } from './operations';
 import { getOperationRootType } from './schema-utils';
@@ -106,9 +106,8 @@ export function distillOperation(params: OperationDistillationParams): Distilled
     // needed to coerce values
     // not really sure when we should do this
     // I think it's idempotent, so won't do much harm except from performance penality
-    const variableValues = getVariableValues(params.schema, params.operation.variableDefinitions || [], params.variableValues);
     const context = {
-        variableValues,
+        variableValues: params.variableValues,
         fragments: params.fragments,
         schema: params.schema
     };

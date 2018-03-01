@@ -1,6 +1,6 @@
 import {ASTTransformer} from "../transformation-pipeline";
 import {DocumentNode, GraphQLInt} from "graphql";
-import {FIELD_DEFINITION, NAMED_TYPE, NON_NULL_TYPE, OBJECT_TYPE_DEFINITION} from "graphql/language/kinds";
+import {FIELD_DEFINITION, NAMED_TYPE, NON_NULL_TYPE, OBJECT_TYPE_DEFINITION} from "../../../graphql/kinds";
 import {buildNameNode} from "../../schema-utils";
 import {COUNT_META_FIELD, QUERY_META_TYPE} from "../../schema-defaults";
 

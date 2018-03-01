@@ -7,7 +7,7 @@ import { flatMap } from '../../../utils/utils';
 import {
     ENUM_TYPE_DEFINITION, ENUM_VALUE_DEFINITION, LIST_TYPE, NON_NULL_TYPE, OBJECT_TYPE_DEFINITION,
     SCALAR_TYPE_DEFINITION
-} from 'graphql/language/kinds';
+} from '../../../graphql/kinds';
 import { getOrderByEnumTypeName, sortedByAsc, sortedByDesc } from '../../../graphql/names';
 
 export class AddOrderbyInputEnumsTransformer implements ASTTransformer {

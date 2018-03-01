@@ -16,7 +16,7 @@ import {
     NAMED_TYPE,
     NON_NULL_TYPE,
     STRING
-} from "graphql/language/kinds";
+} from "../../../graphql/kinds";
 import {mapNullable} from '../../../utils/utils';
 import {
     ENTITY_ID,

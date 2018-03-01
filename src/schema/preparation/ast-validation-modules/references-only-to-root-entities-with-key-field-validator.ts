@@ -8,7 +8,7 @@ import {
     hasDirectiveWithName
 } from "../../schema-utils";
 import {KEY_FIELD_DIRECTIVE, REFERENCE_DIRECTIVE, ROOT_ENTITY_DIRECTIVE} from "../../schema-defaults";
-import {OBJECT_TYPE_DEFINITION} from "graphql/language/kinds";
+import {OBJECT_TYPE_DEFINITION} from "../../../graphql/kinds";
 
 export class ReferenceOnlyToRootEntitiesWithKeyFieldValidator implements ASTValidator {
 
