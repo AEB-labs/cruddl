@@ -4,7 +4,7 @@
 
 **cruddl** - create a cuddly GraphQL API for your database, using the GraphQL SDL to model your schema.
 
-This TypeScript library creates an executable GraphQL schema from a model definition and provides queries and mutations to access a database. Currently, it supports the multi-model database [ArangoDB](https://www.arangodb.com/).
+This TypeScript library creates an executable GraphQL schema from a model definition and provides queries and mutations to access a database. Currently, it supports the multi-model database [ArangoDB](https://www.arangodb.com/). The concept being inspired by existing projects like [prisma](https://github.com/graphcool/prisma) and [join-monster](https://github.com/stems/join-monster), cruddl exploits the expressiveness of the Arango Query Language (AQL) to generate one tailored query for each GraphQL request.
 
 **[Try it online](https://aeb-labs.github.io/cruddl/)**
 
