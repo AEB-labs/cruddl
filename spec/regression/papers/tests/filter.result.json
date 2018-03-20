@@ -156,7 +156,28 @@
       {
         "lastName": "Mustermann"
       }
+    ],
+    "enum_equal":[
+      {
+        "lastName": "Lynch",
+        "category": "Telecommunications"
+      }
+    ],
+    "enum_not_equal":[
+      {
+        "lastName": "Doe",
+        "category": "Programming"
+      },
+      {
+        "lastName": "Gilbert",
+        "category": null
+      },
+      {
+        "lastName": "Mustermann",
+        "category": null
+      }
     ]
+
 
   }
 }

@@ -53,4 +53,14 @@ query {
         lastName
     }
 
+    enum_equal: allUsers(filter: { category: Telecommunications }, orderBy: lastName_ASC) {
+        lastName
+        category
+    }
+
+    enum_not_equal: allUsers(filter: { category_not: Telecommunications }, orderBy: lastName_ASC) {
+        lastName
+        category
+    }
+
 }
