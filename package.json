@@ -7,6 +7,7 @@
   "scripts": {
     "build": "rimraf dist && tsc --skipLibCheck && dependency-check ./package.json --ignore-module @arangodb",
     "prepublishOnly": "npm run build",
+    "typecheck": "tsc --noEmit --skipLibCheck",
     "test": "tsc --noEmit --skipLibCheck && node cruddl-test",
     "test:dropdb": "ts-node ./spec/regression/drop-test-db.ts",
     "test:perf": "node cruddl-bench",
