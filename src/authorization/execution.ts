@@ -27,8 +27,8 @@ export function applyAuthorizationToQueryTree(queryTree: QueryNode, authContext:
 
 function applyTransformations(queryTree: QueryNode, authContext: AuthContext): QueryNode {
     return visitQueryNode(queryTree, {
-        enter(node: QueryNode) {
-            return { newValue: transformNode(node, authContext), recurse: true };
+        leave(node: QueryNode) {
+            return transformNode(node, authContext);
         }
     });
 }

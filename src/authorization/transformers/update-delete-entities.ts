@@ -29,16 +29,6 @@ function transformUpdateOrDeleteEntitiesQueryNode(node: UpdateEntitiesQueryNode|
             return node;
     }
 
-    // conditional read access
-    // TODO This currently required because the transformation visitor doesn't recursively dig in already changed nodes, so the list node of the update node will not be changed by the visitor. Shouldn't we change that?
-    const readAccess = permissionDescriptor.canAccess(authContext, AccessOperation.READ);
-    if (readAccess != PermissionResult.GRANTED) { // If we can't write unconditionally, we might still be able to read unconditionally and wouldn't need a filter
-        const itemVar = new VariableQueryNode(decapitalize(node.objectType.name));
-        const readCondition = permissionDescriptor.getAccessCondition(authContext, AccessOperation.READ, itemVar);
-        const constructor = node.constructor as {new(...a: any[]): UpdateEntitiesQueryNode|DeleteEntitiesQueryNode};
-        node = new constructor({...node, listNode: getFilteredListQueryNode(node.listNode, itemVar, readCondition)});
-    }
-
     // conditional write access
     // TODO only add a check if the object is readable, but not writable (only needed if read and write access differ)
     // a check using QueryNode.equals does not work because both use LiteralQueryNodes for the roles, and
@@ -87,7 +77,7 @@ function getIsTrueInEachItemQueryNode(listNode: QueryNode, itemVarNode: Variable
 function getFilteredListQueryNode(listNode: QueryNode, itemVarNode: VariableQueryNode, condition: QueryNode) {
     return new TransformListQueryNode({
         itemVariable: itemVarNode,
-        listNode: listNode,// new EntitiesQueryNode(node.objectType),
+        listNode: listNode,
         filterNode: condition
     });
 }
