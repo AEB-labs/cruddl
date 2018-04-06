@@ -174,16 +174,16 @@ export class PreExecQueryParms extends QueryNode {
  */
 export class WithPreExecutionQueryNode extends QueryNode {
 
-    public readonly resultNode: QueryNode;
     public readonly preExecQueries: PreExecQueryParms[];
+    public readonly resultNode: QueryNode;
 
     constructor(params:{
         resultNode: QueryNode,
         preExecQueries: (PreExecQueryParms|undefined)[]
     }) {
         super();
-        this.resultNode = params.resultNode;
         this.preExecQueries = compact(params.preExecQueries);
+        this.resultNode = params.resultNode;
     }
 
     public describe() {
@@ -750,31 +750,28 @@ export class AffectedFieldInfoQueryNode extends QueryNode {
 export class UpdateEntitiesQueryNode extends QueryNode {
     constructor(params: {
         objectType: GraphQLObjectType,
-        filterNode: QueryNode,
+        listNode: QueryNode,
         updates: SetFieldQueryNode[],
-        maxCount?: number,
         currentEntityVariable?: VariableQueryNode,
         affectedFields: AffectedFieldInfoQueryNode[]
     }) {
         super();
         this.objectType = params.objectType;
-        this.filterNode = params.filterNode;
+        this.listNode = params.listNode;
         this.updates = params.updates;
-        this.maxCount = params.maxCount;
         this.currentEntityVariable = params.currentEntityVariable || new VariableQueryNode();
         this.affectedFields = params.affectedFields;
     }
 
     public readonly objectType: GraphQLObjectType;
-    public readonly filterNode: QueryNode;
+    public readonly listNode: QueryNode;
     public readonly updates: SetFieldQueryNode[];
-    public readonly maxCount: number | undefined;
     public readonly currentEntityVariable: VariableQueryNode;
     public readonly affectedFields: AffectedFieldInfoQueryNode[];
 
     describe() {
-        return `update ${this.objectType.name} entities ` +
-            `where (${this.currentEntityVariable.describe()} => ${this.filterNode.describe()}) ` +
+        return `update ${this.objectType.name} entities in (\n` +
+            indent(this.listNode.describe()) + '\n) ' +
             `with values (${this.currentEntityVariable.describe()} => {\n` +
             indent(this.updates.map(p => p.describe()).join(',\n')) +
             `\n} (affects fields ${this.affectedFields.map(f => f.describe()).join(', ')})`;
@@ -798,24 +795,22 @@ export class SetFieldQueryNode extends PropertySpecification {
 export class DeleteEntitiesQueryNode extends QueryNode {
     constructor(params: {
         objectType: GraphQLObjectType,
-        filterNode: QueryNode,
-        maxCount?: number,
+        listNode: QueryNode,
         currentEntityVariable?: VariableQueryNode
     }) {
         super();
         this.objectType = params.objectType;
-        this.filterNode = params.filterNode;
-        this.maxCount = params.maxCount;
+        this.listNode = params.listNode;
         this.currentEntityVariable = params.currentEntityVariable || new VariableQueryNode();
     }
 
     public readonly objectType: GraphQLObjectType;
-    public readonly filterNode: QueryNode;
-    public readonly maxCount: number | undefined;
+    public readonly listNode: QueryNode;
     public readonly currentEntityVariable: VariableQueryNode;
 
     describe() {
-        return `delete ${this.objectType.name} entities where (${this.currentEntityVariable.describe()} => ${this.filterNode.describe()})`;
+        return `delete ${this.objectType.name} entities in (\n` +
+            indent(this.listNode.describe()) + '\n)';
     }
 }
 

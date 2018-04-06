@@ -424,10 +424,8 @@ const processors : { [name: string]: NodeProcessor<any> } = {
         );
 
         return js.lines(
-            js`${getCollectionForType(node.objectType, context)}`,
+            js`${processNode(node.listNode, context)}`,
             js.indent(js.lines(
-                js`.filter(${lambda(processNode(node.filterNode, newContext))})`,
-                node.maxCount != undefined ? js`.slice(0, ${node.maxCount})` : js`)`,
                 js`.map(${lambda(updateFunction)})`
             ))
         );
@@ -441,11 +439,7 @@ const processors : { [name: string]: NodeProcessor<any> } = {
         const idsVar = js.variable('ids');
 
         return jsExt.executingFunction(
-            js`const ${listVar} = ${getCollectionForType(node.objectType, context)}`,
-            js.indent(js.lines(
-                js`.filter(${jsExt.lambda(entityVar, processNode(node.filterNode, newContext))})`,
-                node.maxCount != undefined ? js`.slice(0, ${node.maxCount});` : js``
-            )),
+            js`const ${listVar} = ${processNode(node.listNode, context)}`,
             js`const ${idsVar} = new Set(${listVar}.map(${jsExt.lambda(entityVar, js`${entityVar}.${js.identifier(ID_FIELD_NAME)}`)}));`,
             js`${coll} = ${coll}.filter(${jsExt.lambda(entityVar, js`!${idsVar}.has(${entityVar}.${js.identifier(ID_FIELD_NAME)}`)}));`,
             js`return ${listVar};`

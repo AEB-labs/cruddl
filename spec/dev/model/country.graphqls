@@ -1,7 +1,0 @@
-type Country @rootEntity(indices: [{fields: ["description.languageIsoCode"]}])
-        @roles(readWrite: ["allusers"])
-        @namespace(name: "foundation") {
-    isoCode: String @key
-    description: [Translation]
-    totalInvestment: String @roles(readWrite: "accounting")
-}

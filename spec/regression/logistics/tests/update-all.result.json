@@ -1,0 +1,32 @@
+{
+  "onlyFirst": {
+    "data": {
+      "updateAllDeliveries": [
+        {
+          "deliveryNumber": "1000173",
+          "consignee": {
+            "city": null
+          }
+        }
+      ]
+    }
+  },
+  "all": {
+    "data": {
+      "updateAllDeliveries": [
+        {
+          "deliveryNumber": "1000173",
+          "consignee": {
+            "city": null
+          }
+        },
+        {
+          "deliveryNumber": "1000521",
+          "consignee": {
+            "city": null
+          }
+        }
+      ]
+    }
+  }
+}

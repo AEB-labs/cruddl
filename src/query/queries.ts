@@ -50,8 +50,9 @@ function createQueryNamespaceFieldNode(fieldRequest: FieldRequest, fieldRequestS
 function createAllEntitiesFieldNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[]): QueryNode {
     const objectType = getNamedType(fieldRequest.field.type) as GraphQLObjectType;
     const listNode = new EntitiesQueryNode(objectType);
-    // (node.roles INTERSECT requestRoles) > 0
-    return createTransformListQueryNode(fieldRequest, listNode, fieldRequestStack);
+    const itemVariable = new VariableQueryNode(decapitalize(objectType.name));
+    const innerNode = createEntityObjectNode(fieldRequest.selectionSet, itemVariable, fieldRequestStack);
+    return createTransformListQueryNode(fieldRequest, listNode, itemVariable, innerNode, fieldRequestStack);
 }
 
 function createEntitiesMetaFieldNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[]): QueryNode {
@@ -150,7 +151,9 @@ function createEntityFieldQueryNode(fieldRequest: FieldRequest, objectNode: Quer
             field: fieldRequest.field});
         if (rawType instanceof GraphQLObjectType) {
             // support filters, order by and pagination
-            return createTransformListQueryNode(fieldRequest, listNode, fieldRequestStack);
+            const itemVariable = new VariableQueryNode(decapitalize(rawType.name));
+            const innerNode = createEntityObjectNode(fieldRequest.selectionSet, itemVariable, fieldRequestStack);
+            return createTransformListQueryNode(fieldRequest, listNode, itemVariable, innerNode, fieldRequestStack);
         } else {
             return listNode;
         }
@@ -171,16 +174,14 @@ function createConditionalObjectNode(fieldSelections: FieldSelection[], contextN
         new NullQueryNode());
 }
 
-function createTransformListQueryNode(fieldRequest: FieldRequest, listNode: QueryNode, fieldRequestStack: FieldRequest[]): QueryNode {
+export function createTransformListQueryNode(fieldRequest: FieldRequest, listNode: QueryNode, itemVariable: VariableQueryNode, innerNode: QueryNode, fieldRequestStack: FieldRequest[]): QueryNode {
     const objectType = getNamedType(fieldRequest.field.type) as GraphQLObjectType;
-    const itemVariable = new VariableQueryNode(decapitalize(objectType.name));
     let orderBy = createOrderSpecification(objectType, fieldRequest, itemVariable);
     const basicFilterNode = createFilterNode(fieldRequest.args[FILTER_ARG], objectType, itemVariable);
     const paginationFilterNode = createPaginationFilterNode(objectType, fieldRequest, itemVariable);
     let filterNode: QueryNode = new BinaryOperationQueryNode(basicFilterNode, BinaryOperator.AND, paginationFilterNode);
-    let innerNode: QueryNode = createEntityObjectNode(fieldRequest.selectionSet, itemVariable, fieldRequestStack);
-
     const maxCount = fieldRequest.args[FIRST_ARG];
+
     return new TransformListQueryNode({
         listNode,
         innerNode,

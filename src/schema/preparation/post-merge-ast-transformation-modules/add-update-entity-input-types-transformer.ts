@@ -27,7 +27,7 @@ import {
     getAddRelationFieldName,
     getCreateInputTypeName,
     getRemoveChildEntityFieldName,
-    getRemoveRelationFieldName,
+    getRemoveRelationFieldName, getUpdateAllInputTypeName,
     getUpdateChildEntityFieldName,
     getUpdateInputTypeName
 } from '../../../graphql/names';
@@ -50,6 +50,7 @@ export class AddUpdateEntityInputTypesTransformer implements ASTTransformer {
     transform(ast: DocumentNode): void {
         getRootEntityTypes(ast).forEach(objectType => {
             ast.definitions.push(this.createUpdateInputTypeForObjectType(ast, objectType));
+            ast.definitions.push(this.createUpdateAllInputTypeForObjectType(ast, objectType));
         });
         getChildEntityTypes(ast).forEach(objectType => {
             ast.definitions.push(this.createUpdateInputTypeForObjectType(ast, objectType));
@@ -57,19 +58,29 @@ export class AddUpdateEntityInputTypesTransformer implements ASTTransformer {
     }
 
     protected createUpdateInputTypeForObjectType(ast: DocumentNode, objectType: ObjectTypeDefinitionNode): InputObjectTypeDefinitionNode {
-        // create input fields for all entity fields except createdAt, updatedAt
-        const skip = [ID_FIELD, ENTITY_CREATED_AT, ENTITY_UPDATED_AT];
-        const args = [
-            buildInputValueNodeID(),
-            ...flatMap(objectType.fields.filter(field => !skip.includes(field.name.value)), field => this.createInputTypeField(ast, field, field.type))
-        ];
         return {
             kind: INPUT_OBJECT_TYPE_DEFINITION,
             name: { kind: "Name", value: getUpdateInputTypeName(objectType) },
-            fields: args,
+            fields: [buildInputValueNodeID(), ...this.createInputTypeFieldsForObjectType(ast, objectType)],
             loc: objectType.loc,
             directives: compact([ findDirectiveWithName(objectType, ROLES_DIRECTIVE) ])
         }
+    }
+
+    protected createUpdateAllInputTypeForObjectType(ast: DocumentNode, objectType: ObjectTypeDefinitionNode): InputObjectTypeDefinitionNode {
+       return {
+            kind: INPUT_OBJECT_TYPE_DEFINITION,
+            name: { kind: "Name", value: getUpdateAllInputTypeName(objectType) },
+            fields: this.createInputTypeFieldsForObjectType(ast, objectType),
+            loc: objectType.loc,
+            directives: compact([ findDirectiveWithName(objectType, ROLES_DIRECTIVE) ])
+        }
+    }
+
+    protected createInputTypeFieldsForObjectType(ast: DocumentNode, objectType: ObjectTypeDefinitionNode): InputValueDefinitionNode[] {
+        // create input fields for all entity fields except createdAt, updatedAt
+        const skip = [ID_FIELD, ENTITY_CREATED_AT, ENTITY_UPDATED_AT];
+        return flatMap(objectType.fields.filter(field => !skip.includes(field.name.value)), field => this.createInputTypeField(ast, field, field.type))
     }
 
     // undefined currently means not supported.

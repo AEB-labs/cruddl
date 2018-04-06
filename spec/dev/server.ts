@@ -22,7 +22,7 @@ export async function start() {
         });
     }
 
-    const project = await loadProjectFromDir(path.resolve(__dirname, 'model'));
+    const project = await loadProjectFromDir(path.resolve(__dirname, '../regression/logistics/model'));
     const schema = project.createSchema(db);
 
     const logger = globalContext.loggerProvider.getLogger('server');
@@ -35,5 +35,5 @@ export async function start() {
         context: () => ({ authRoles: ["allusers", "logistics-reader" ]})
     });
     await server.start({port});
-    logger.info(`Server started on http//localhost:${port}`);
+    logger.info(`Server started on http://localhost:${port}`);
 }

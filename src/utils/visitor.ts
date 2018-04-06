@@ -1,34 +1,33 @@
 import { isArray } from 'util';
 
-export enum VisitAction {
-    SKIP_NODE
+export type VisitResult<T> = {
+    recurse?: boolean
+    newValue: T
 }
 
 export type Visitor<T> = {
-    enter?(object: T, key: string|undefined): T | VisitAction,
+    enter?(object: T, key: string|undefined): VisitResult<T>,
     leave?(object: T, key: string|undefined): T
 };
 
-export function visitObject<T>(node: T, visitor: Visitor<any>): T {
+export function visitObject<T>(node: T, visitor: Visitor<T>): T {
     return visitObject0(node, visitor);
 }
 
-function visitObject0<T>(node: T, visitor: Visitor<any>, key?: string): T {
-    const visitResult = enter(node, visitor, key);
+function visitObject0<T>(node: T, visitor: Visitor<T>, key?: string): T {
+    const { newValue, recurse } = enter(node, visitor, key);
 
-    if (visitResult == VisitAction.SKIP_NODE) {
-        return node;
-    }
+    // recurse defaults to true
+    const finalValue = recurse === false ? newValue : visitObjectProperties(newValue, visitor);
 
-    if (visitResult != node) {
-        return visitResult;
-    }
+    return leave<T>(finalValue, visitor, key);
+}
 
-    // not changed, so visit recursively
-    const newFieldValues: {[name: string]: T} = {};
+function visitObjectProperties<T>(object: T, visitor: Visitor<T>): T {
+    const newFieldValues: { [name: string]: T } = {};
     let hasChanged = false;
-    for (const field of Object.keys(node)) {
-        const oldValue = (node as any)[field];
+    for (const field of Object.keys(object)) {
+        const oldValue = (object as any)[field];
         const newValue = visitObjectOrArray(oldValue, visitor, field);
         if (newValue != oldValue) {
             newFieldValues[field] = newValue;
@@ -36,13 +35,13 @@ function visitObject0<T>(node: T, visitor: Visitor<any>, key?: string): T {
         }
     }
 
-    if (hasChanged) {
-        const newObj = Object.create(Object.getPrototypeOf(node));
-        Object.assign(newObj, node, newFieldValues);
-        node = newObj;
+    if (!hasChanged) {
+        return object;
     }
 
-    return leave(node, visitor, key);
+    const newObj = Object.create(Object.getPrototypeOf(object));
+    Object.assign(newObj, object, newFieldValues);
+    return newObj;
 }
 
 function visitObjectOrArray<T>(nodeOrArray: T|T[], visitor: Visitor<any>, key: string|undefined): T|T[] {
@@ -55,14 +54,14 @@ function visitObjectOrArray<T>(nodeOrArray: T|T[], visitor: Visitor<any>, key: s
     return nodeOrArray.map(item => visitObject0(item, visitor, key));
 }
 
-function enter<T>(obj: T, visitor: Visitor<any>, key: string|undefined): T|VisitAction {
+function enter<T>(obj: T, visitor: Visitor<T>, key: string|undefined): VisitResult<T> {
     if (visitor.enter) {
         return visitor.enter(obj, key);
     }
-    return obj;
+    return { newValue: obj };
 }
 
-function leave<T>(obj: T, visitor: Visitor<any>, key: string|undefined): T {
+function leave<T>(obj: T, visitor: Visitor<T>, key: string|undefined): T {
     if (visitor.leave) {
         return visitor.leave(obj, key);
     }

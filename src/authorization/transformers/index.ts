@@ -1,11 +1,11 @@
 import {
-    AffectedFieldInfoQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EntitiesQueryNode, FieldQueryNode,
+    AffectedFieldInfoQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode,
     FollowEdgeQueryNode,
     QueryNode, UpdateEntitiesQueryNode
 } from '../../query/definition';
 import { transformFieldQueryNode } from './field';
 import { AuthContext } from '../auth-basics';
-import { transformEntitiesQueryNode } from './entities';
+import { transformEntitiesQueryNode, transformEntityFromIdQueryNode } from './entities';
 import { transformDeleteEntitiesQueryNode, transformUpdateEntitiesQueryNode } from './update-delete-entities';
 import { transformFollowEdgeQueryNode } from './follow-edge';
 import { transformAffectedFieldInfoQueryNode } from './affected-field-info';
@@ -20,6 +20,7 @@ function addTransformer<T extends QueryNode>(clazz: {new(...a: any[]): T}, fn: T
 }
 
 addTransformer(FieldQueryNode, transformFieldQueryNode);
+addTransformer(EntityFromIdQueryNode, transformEntityFromIdQueryNode);
 addTransformer(EntitiesQueryNode, transformEntitiesQueryNode);
 addTransformer(FollowEdgeQueryNode, transformFollowEdgeQueryNode);
 addTransformer(CreateEntityQueryNode, transformCreateEntityQueryNode);
@@ -27,7 +28,7 @@ addTransformer(UpdateEntitiesQueryNode, transformUpdateEntitiesQueryNode);
 addTransformer(DeleteEntitiesQueryNode, transformDeleteEntitiesQueryNode);
 addTransformer(AffectedFieldInfoQueryNode, transformAffectedFieldInfoQueryNode);
 
-export function transformNode(node: QueryNode, authContext: AuthContext) {
+export function transformNode(node: QueryNode, authContext: AuthContext): QueryNode {
     const transformer = map.get(node.constructor);
     if (transformer) {
         return transformer(node, authContext);

@@ -1,4 +1,0 @@
-type File @rootEntity(permissionProfile: "restricted") {
-    name: String
-    accessGroup: String
-}

@@ -1,8 +1,7 @@
-import {
-    ConditionalQueryNode, FirstOfListQueryNode, ListQueryNode, ObjectQueryNode, PropertySpecification, QueryNode,
-    RuntimeErrorQueryNode, TransformListQueryNode, VariableAssignmentQueryNode
-} from '../query/definition';
-import { VisitAction, visitObject } from '../utils/visitor';
+import { uniq } from 'lodash';
+import { ConditionalQueryNode, FirstOfListQueryNode, ListQueryNode, ObjectQueryNode, PropertySpecification, QueryNode, RuntimeErrorQueryNode, TransformListQueryNode, VariableAssignmentQueryNode } from '../query/definition';
+import { visitQueryNode } from '../query/query-visitor';
+import { VisitResult } from '../utils/visitor';
 
 /**
  * Moves RuntimeErrorQueryNodes up to its their deepest ancestor that is an output node, i.e., its value directly occurs
@@ -17,11 +16,8 @@ export function moveErrorsToOutputNodes(queryTree: QueryNode): QueryNode {
     }
     const stack: StackFrame[] = [];
 
-    return visitObject(queryTree, {
-        enter(node: QueryNode, key: string): QueryNode|VisitAction {
-            if (!(node instanceof QueryNode)) {
-                return VisitAction.SKIP_NODE;
-            }
+    return visitQueryNode(queryTree, {
+        enter(node: QueryNode, key: string): VisitResult<QueryNode> {
             if (node instanceof RuntimeErrorQueryNode) {
                 errorList.push(node);
                 minErrorDepth = Math.min(minErrorDepth === undefined ? stack.length : minErrorDepth, stack.length);
@@ -39,7 +35,7 @@ export function moveErrorsToOutputNodes(queryTree: QueryNode): QueryNode {
                     outputNodeKind: kind
                 });
             }
-            return node;
+            return { newValue: node };
         },
 
         leave(node: QueryNode, key: string) {
@@ -53,8 +49,8 @@ export function moveErrorsToOutputNodes(queryTree: QueryNode): QueryNode {
                     if (errors.length == 1) {
                         return errors[0];
                     } else {
-                        const uniqueErrorMessages = Array.from(new Set(errors.map(err => err.message)));
-                        return new RuntimeErrorQueryNode(uniqueErrorMessages.join(', '))
+                        const uniqueErrorMessages = uniq(errors.map(err => err.message));
+                        return new RuntimeErrorQueryNode(uniqueErrorMessages.join(', '));
                     }
                 } else {
                     // before entering the next sibling, make sure that the next sibling won't take care of these errors, because they now belong to the parent

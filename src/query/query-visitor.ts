@@ -1,14 +1,25 @@
-import { VisitAction, visitObject, Visitor } from '../utils/visitor';
+import { visitObject, Visitor, VisitResult } from '../utils/visitor';
 import { QueryNode } from './definition';
 
-export function visitQueryNode<T extends QueryNode>(node: T, visitor: Visitor<any>): T {
+export function visitQueryNode(node: QueryNode, visitor: Visitor<QueryNode>): QueryNode {
     return visitObject(node, {
-        enter(node, key) {
+        enter(node, key): VisitResult<QueryNode> {
             if (!(node instanceof QueryNode)) {
-                return VisitAction.SKIP_NODE;
+                return { newValue: node, recurse: false };
             }
-            return visitor.enter ? visitor.enter(node, key) : node;
+            if (!visitor.enter) {
+                return { newValue: node };
+            }
+            return visitor.enter(node, key);
         },
-        leave: visitor.leave
+        leave(node, key) {
+            if (!(node instanceof QueryNode)) {
+                return node;
+            }
+            if (!visitor.leave) {
+                return node;
+            }
+            return visitor.leave(node, key);
+        },
     })
-};
+}

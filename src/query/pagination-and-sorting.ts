@@ -8,7 +8,7 @@ import {
 import { isArray } from 'util';
 import { isListType } from '../graphql/schema-utils';
 import {
-    AFTER_ARG, FIRST_ARG, ID_FIELD, ORDER_BY_ARG, ORDER_BY_ASC_SUFFIX, ORDER_BY_DESC_SUFFIX
+    AFTER_ARG, CURSOR_FIELD, FIRST_ARG, ID_FIELD, ORDER_BY_ARG, ORDER_BY_ASC_SUFFIX, ORDER_BY_DESC_SUFFIX
 } from '../schema/schema-defaults';
 import { sortedByAsc, sortedByDesc } from '../graphql/names';
 import { createNonListFieldValueNode } from './fields';
@@ -149,7 +149,9 @@ function getOrderByClauseNames(objectType: GraphQLObjectType, listFieldRequest: 
 
     // if pagination is enabled on a list of entities, make sure we filter after a unique key
     // TODO figure a way to do proper pagination on a simple list of embedded objects
-    if (FIRST_ARG in listFieldRequest.args && ID_FIELD in objectType.getFields()) {
+
+    const isCursorRequested = listFieldRequest.selectionSet.some(sel => sel.fieldRequest.fieldName == CURSOR_FIELD);
+    if (isCursorRequested && ID_FIELD in objectType.getFields()) {
         const includesID = clauseNames.some(name => name == sortedByAsc(ID_FIELD) || name == sortedByDesc(ID_FIELD));
         if (!includesID) {
             return [...clauseNames, sortedByAsc(ID_FIELD)];

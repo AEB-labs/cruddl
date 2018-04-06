@@ -1,3 +1,4 @@
+import { AccessOperation } from '../authorization/auth-basics';
 import {FieldRequest} from '../graphql/query-distiller';
 import {FieldDefinitionNode, getNamedType, GraphQLField, GraphQLObjectType, GraphQLType} from 'graphql';
 import {
@@ -30,12 +31,12 @@ import {
     UnaryOperator,
     UpdateEntitiesQueryNode,
     VariableAssignmentQueryNode,
-    VariableQueryNode, WithPreExecutionQueryNode
+    VariableQueryNode, WithPreExecutionQueryNode, EntitiesQueryNode
 } from './definition';
 import {
     ADD_CHILD_ENTITIES_FIELD_PREFIX,
     CALC_MUTATIONS_OPERATORS,
-    CREATE_ENTITY_FIELD_PREFIX, DEFAULT_VALUE_DIRECTIVE,
+    CREATE_ENTITY_FIELD_PREFIX, DEFAULT_VALUE_DIRECTIVE, DELETE_ALL_ENTITIES_FIELD_PREFIX,
     DELETE_ENTITY_FIELD_PREFIX,
     ENTITY_CREATED_AT,
     ENTITY_UPDATED_AT,
@@ -44,11 +45,11 @@ import {
     MUTATION_INPUT_ARG,
     MutationType,
     NAMESPACE_FIELD_PATH_DIRECTIVE,
-    REMOVE_CHILD_ENTITIES_FIELD_PREFIX,
+    REMOVE_CHILD_ENTITIES_FIELD_PREFIX, UPDATE_ALL_ENTITIES_FIELD_PREFIX,
     UPDATE_CHILD_ENTITIES_FIELD_PREFIX,
     UPDATE_ENTITY_FIELD_PREFIX, VALUE_ARG, WILDCARD_CHARACTER
 } from '../schema/schema-defaults';
-import {createEntityObjectNode} from './queries';
+import { createEntityObjectNode, createTransformListQueryNode } from './queries';
 import {
     findDirectiveWithName, getNodeByName,
     hasDirectiveWithName,
@@ -75,7 +76,7 @@ import { RelationFieldEdgeSide, EdgeType, getEdgeType } from '../schema/edges';
 import uuid = require('uuid');
 import {flattenValueNode} from "../schema/directive-arg-flattener";
 import {globalContext} from "../config/global";
-import { ErrorIfNotTruthyResultValidator } from './query-result-validators';
+import { ErrorIfEmptyResultValidator, ErrorIfNotTruthyResultValidator, QueryResultValidator } from './query-result-validators';
 
 /**
  * Creates a QueryNode for a field of the root mutation type
@@ -87,11 +88,11 @@ export function createMutationNamespaceNode(fieldRequest: FieldRequest, fieldReq
         return createCreateEntityQueryNode(fieldRequest, [...fieldRequestStack, fieldRequest]);
     }
 
-    if (fieldRequest.fieldName.startsWith(UPDATE_ENTITY_FIELD_PREFIX)) {
+    if (fieldRequest.fieldName.startsWith(UPDATE_ENTITY_FIELD_PREFIX) || fieldRequest.fieldName.startsWith(UPDATE_ALL_ENTITIES_FIELD_PREFIX)) {
         return createUpdateEntityQueryNode(fieldRequest, [...fieldRequestStack, fieldRequest]);
     }
 
-    if (fieldRequest.fieldName.startsWith(DELETE_ENTITY_FIELD_PREFIX)) {
+    if (fieldRequest.fieldName.startsWith(DELETE_ENTITY_FIELD_PREFIX) || fieldRequest.fieldName.startsWith(DELETE_ALL_ENTITIES_FIELD_PREFIX)) {
         return createDeleteEntityQueryNode(fieldRequest, [...fieldRequestStack, fieldRequest]);
     }
 
@@ -325,56 +326,84 @@ function prepareMutationInput(input: PlainObject, objectType: GraphQLObjectType,
 }
 
 function createUpdateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[]): QueryNode {
-    const entityName = fieldRequest.fieldName.substr('create'.length);
-    const entityType = fieldRequest.schema.getTypeMap()[entityName];
+    const mutationType: MutationType = fieldRequest.fieldName.startsWith(UPDATE_ALL_ENTITIES_FIELD_PREFIX) ?
+        MutationType.UPDATE_ALL :
+        MutationType.UPDATE;
+
+    const entityType = getNamedType(fieldRequest.field.type);
     if (!entityType || !(entityType instanceof GraphQLObjectType)) {
-        throw new Error(`Object type ${entityName} not found but needed for field ${fieldRequest.fieldName}`);
+        throw new Error(`Object type for field ${fieldRequest.fieldName} not found.`);
     }
 
     const fieldCollector = new TypeFieldCollector();
-    const input = prepareMutationInput(fieldRequest.args[MUTATION_INPUT_ARG], entityType, MutationType.UPDATE, fieldCollector);
+    const input = prepareMutationInput(fieldRequest.args[MUTATION_INPUT_ARG], entityType, mutationType, fieldCollector);
 
     // Update entity query
+    let listNode: QueryNode;
+    const listItemVar = new VariableQueryNode(decapitalize(entityType.name));
+    const allEntitiesNode = new EntitiesQueryNode(entityType);
+    if (mutationType === MutationType.UPDATE_ALL) {
+        listNode = createTransformListQueryNode(fieldRequest, allEntitiesNode, listItemVar, listItemVar, fieldRequestStack);
+    } else {
+        const filterNode = new BinaryOperationQueryNode(new RootEntityIDQueryNode(listItemVar),
+            BinaryOperator.EQUAL,
+            new LiteralQueryNode(input[ID_FIELD]));
+        listNode = new TransformListQueryNode({
+            listNode: allEntitiesNode,
+            filterNode: filterNode,
+            maxCount: 1,
+            itemVariable: listItemVar
+        });
+    }
+
     const currentEntityVarNode = new VariableQueryNode('currentEntity');
-    const filterNode = new BinaryOperationQueryNode(new RootEntityIDQueryNode(currentEntityVarNode),
-        BinaryOperator.EQUAL,
-        new LiteralQueryNode(input[ID_FIELD]));
-    const updateEntityNode = new FirstOfListQueryNode(new UpdateEntitiesQueryNode({
+    const updateEntitiesNode = new UpdateEntitiesQueryNode({
         objectType: entityType,
-        filterNode,
+        listNode,
         updates: createUpdatePropertiesSpecification(input, entityType, currentEntityVarNode),
-        maxCount: 1,
         currentEntityVariable: currentEntityVarNode,
         affectedFields: fieldCollector.getFields()
-    }));
-    const updatedEntityIdVarNode = new VariableQueryNode('updatedEntityId');
-    const updateEntityResultValidator = new ErrorIfNotTruthyResultValidator(`${entityType.name} with id ${input[ID_FIELD]} could not be found.`, 'NotFoundError');
-    const updatedEntityPreExec = new PreExecQueryParms({query: updateEntityNode, resultVariable: updatedEntityIdVarNode, resultValidator: updateEntityResultValidator});
+    });
+
+    const updatedEntitiesIDsVarNode = new VariableQueryNode('updatedEntitiesId');
+    let updateEntityResultValidator: QueryResultValidator | undefined = undefined;
+    if (mutationType === MutationType.UPDATE) {
+        updateEntityResultValidator = new ErrorIfEmptyResultValidator(`${entityType.name} with id ${input[ID_FIELD]} could not be found.`, 'NotFoundError');
+    }
+    const updateEntitiesPreExec = new PreExecQueryParms({query: updateEntitiesNode, resultVariable: updatedEntitiesIDsVarNode, resultValidator: updateEntityResultValidator});
 
     // update relations if needed
     let updateRelationsPreExec: PreExecQueryParms|undefined = undefined;
-    const relationStatements = getRelationAddRemoveStatements(input, entityType, updatedEntityIdVarNode, true);
+    const updatedEntityIdVarNode1 = new VariableQueryNode('updatedEntityId1');
+    const relationStatements = getRelationAddRemoveStatements(input, entityType, updatedEntityIdVarNode1, true);
     if (relationStatements.length) {
-        updateRelationsPreExec = new PreExecQueryParms({ query:
-            new FirstOfListQueryNode(new ListQueryNode([new NullQueryNode(), ...relationStatements]))});
+        const updateRelationsNode: QueryNode = new TransformListQueryNode({
+            listNode: updatedEntitiesIDsVarNode,
+            itemVariable: updatedEntityIdVarNode1,
+            innerNode: new FirstOfListQueryNode(new ListQueryNode([new NullQueryNode(), ...relationStatements]))
+        });
+        updateRelationsPreExec = new PreExecQueryParms({ query: new FirstOfListQueryNode(updateRelationsNode) });
     }
 
     // Build up result query node
-    const updatedEntityVarNode = new VariableQueryNode('updatedEntity');
-    const objectQueryNode = new ConditionalQueryNode( // updated entity may not exist
-        new TypeCheckQueryNode(updatedEntityVarNode, BasicType.NULL),
-        new NullQueryNode(),
-        createEntityObjectNode(fieldRequest.selectionSet, updatedEntityVarNode, fieldRequestStack));
-    const resultNode = new VariableAssignmentQueryNode({
-        variableNode: updatedEntityVarNode,
-        variableValueNode: new EntityFromIdQueryNode(entityType, updatedEntityIdVarNode),
-        resultNode: objectQueryNode
+    const updatedEntityIdVarNode2 = new VariableQueryNode('updatedEntityId2');
+    let resultNode: QueryNode = new TransformListQueryNode({
+        listNode: updatedEntitiesIDsVarNode,
+        itemVariable: updatedEntityIdVarNode2,
+        innerNode: createEntityObjectNode(
+            fieldRequest.selectionSet,
+            new EntityFromIdQueryNode(entityType, updatedEntityIdVarNode2),
+            fieldRequestStack)
     });
+
+    if (mutationType === MutationType.UPDATE) {
+        resultNode = new FirstOfListQueryNode(resultNode);
+    }
 
     // PreExecute update and relation queries and return result
     return new WithPreExecutionQueryNode({
         resultNode,
-        preExecQueries: [updatedEntityPreExec, updateRelationsPreExec]
+        preExecQueries: [updateEntitiesPreExec, updateRelationsPreExec]
     });
 }
 
@@ -625,34 +654,56 @@ function createUpdatePropertiesSpecification(obj: any, objectType: GraphQLObject
 }
 
 function createDeleteEntityQueryNode(fieldRequest: FieldRequest, fieldRequestStack: FieldRequest[]): QueryNode {
-    const entityName = fieldRequest.fieldName.substr('create'.length);
-    const entityType = fieldRequest.schema.getTypeMap()[entityName];
+    const mutationType: MutationType = fieldRequest.fieldName.startsWith(DELETE_ALL_ENTITIES_FIELD_PREFIX) ?
+        MutationType.DELETE_ALL :
+        MutationType.DELETE;
+
+    const entityType = getNamedType(fieldRequest.field.type);
     if (!entityType || !(entityType instanceof GraphQLObjectType)) {
-        throw new Error(`Object type ${entityName} not found but needed for field ${fieldRequest.fieldName}`);
+        throw new Error(`Object type for field ${fieldRequest.fieldName} not found.`);
     }
-    const input = fieldRequest.args[MUTATION_ID_ARG];
+
+    // Delete entity query
+    let listNode: QueryNode;
+    const listItemVar = new VariableQueryNode(decapitalize(entityType.name));
+    const allEntitiesNode = new EntitiesQueryNode(entityType);
+    if (mutationType === MutationType.DELETE_ALL) {
+        listNode = createTransformListQueryNode(fieldRequest, allEntitiesNode, listItemVar, listItemVar, fieldRequestStack);
+    } else {
+        const filterNode = new BinaryOperationQueryNode(new RootEntityIDQueryNode(listItemVar),
+            BinaryOperator.EQUAL,
+            new LiteralQueryNode(fieldRequest.args[MUTATION_ID_ARG]));
+        listNode = new TransformListQueryNode({
+            listNode: allEntitiesNode,
+            filterNode: filterNode,
+            maxCount: 1,
+            itemVariable: listItemVar
+        });
+    }
 
     const currentEntityVarNode = new VariableQueryNode('currentEntity');
-    const filterNode = new BinaryOperationQueryNode(new RootEntityIDQueryNode(currentEntityVarNode),
-        BinaryOperator.EQUAL,
-        new LiteralQueryNode(input));
-    const deleteEntityNode = new FirstOfListQueryNode(new DeleteEntitiesQueryNode({
+    const deleteEntitiesNode = new DeleteEntitiesQueryNode({
         objectType: entityType,
-        maxCount: 1,
-        filterNode,
+        listNode,
         currentEntityVariable: currentEntityVarNode
-    }));
-    const deletedEntityVarNode = new VariableQueryNode('deletedEntity');
-    const resultNode = createEntityObjectNode(fieldRequest.selectionSet, deletedEntityVarNode, fieldRequestStack);
-    const conditionalResultNode = new ConditionalQueryNode( // updated entity may not exist
-        new TypeCheckQueryNode(deletedEntityVarNode, BasicType.OBJECT),
-        resultNode,
-        new NullQueryNode());
-    return new VariableAssignmentQueryNode({
-        resultNode: conditionalResultNode,
-        variableValueNode: deleteEntityNode,
-        variableNode: deletedEntityVarNode
     });
+
+    // Build up result query node
+    const deletedEntityVarNode = new VariableQueryNode('deletedEntity');
+    let resultNode: QueryNode = new TransformListQueryNode({
+        listNode: deleteEntitiesNode,
+        itemVariable: deletedEntityVarNode,
+        innerNode: createEntityObjectNode(
+            fieldRequest.selectionSet,
+            deletedEntityVarNode,
+            fieldRequestStack)
+    });
+
+    if (mutationType === MutationType.DELETE) {
+        resultNode = new FirstOfListQueryNode(resultNode);
+    }
+
+    return resultNode;
 }
 
 export function createSafeObjectQueryNode(objectNode: QueryNode) {

@@ -1,4 +1,0 @@
-type Translation @valueObject {
-    languageIsoCode: String
-    translation: String
-}
