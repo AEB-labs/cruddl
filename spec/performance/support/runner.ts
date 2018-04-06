@@ -1,6 +1,6 @@
 import { benchmark, BenchmarkFactories, time } from './async-bench';
+import colors = require('colors');
 
-const colors = require('colors');
 colors.enabled = true;
 
 const SHOW_CYCLE_INFO = false;
