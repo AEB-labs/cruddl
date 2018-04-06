@@ -1,0 +1,17 @@
+mutation onlyFirst {
+    deleteAllDeliveries(filter:{OR:[{deliveryNumber: "1000173"}, {deliveryNumber: "1000521"}]}, orderBy: deliveryNumber_ASC, first: 1) {
+        deliveryNumber
+        consignee {
+            city
+        }
+    }
+}
+
+mutation all {
+    deleteAllDeliveries(filter:{OR:[{deliveryNumber: "1000173"}, {deliveryNumber: "1000521"}]}, orderBy: deliveryNumber_ASC) {
+        deliveryNumber
+        consignee {
+            city
+        }
+    }
+}

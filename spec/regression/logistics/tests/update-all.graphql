@@ -1,0 +1,17 @@
+mutation onlyFirst {
+    updateAllDeliveries(filter:{OR:[{deliveryNumber: "1000173"}, {deliveryNumber: "1000521"}]}, input:{consignee: {}}, orderBy: deliveryNumber_ASC, first: 1) {
+        deliveryNumber
+        consignee {
+            city
+        }
+    }
+}
+
+mutation all {
+    updateAllDeliveries(filter:{OR:[{deliveryNumber: "1000173"}, {deliveryNumber: "1000521"}]}, input:{consignee: {}}, orderBy: deliveryNumber_ASC) {
+        deliveryNumber
+        consignee {
+            city
+        }
+    }
+}
