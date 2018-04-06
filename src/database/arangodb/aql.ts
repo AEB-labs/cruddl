@@ -1,5 +1,6 @@
 import { arrayToObject, flatMap } from '../../utils/utils';
 import { QueryResultValidator } from '../../query/query-result-validators';
+import { cyan, magenta } from 'colors/safe';
 
 require('colors');
 
@@ -150,7 +151,7 @@ export class AQLVariable extends AQLFragment {
     }
 
     toColoredStringWithContext(context: AQLCodeBuildingContext): string {
-        return this.toStringWithContext(context).magenta;
+        return magenta(this.toStringWithContext(context));
     }
 }
 
@@ -171,7 +172,7 @@ export class AQLBoundValue extends AQLFragment {
     }
 
     toColoredStringWithContext(): string {
-        return this.toString().cyan;
+        return cyan(this.toString());
     }
 
     getCodeWithContext(context: AQLCodeBuildingContext): string {

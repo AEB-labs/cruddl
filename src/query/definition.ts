@@ -2,6 +2,7 @@ import { GraphQLField, GraphQLObjectType } from 'graphql';
 import { compact, indent } from '../utils/utils';
 import { EdgeType, RelationFieldEdgeSide } from '../schema/edges';
 import { QueryResultValidator } from './query-result-validators';
+import { blue, cyan, green, magenta, red } from 'colors/safe';
 
 /**
  *
@@ -91,7 +92,7 @@ export class VariableQueryNode extends QueryNode {
     }
 
     describe() {
-        return (this.toString()).magenta;
+        return magenta(this.toString());
     }
 }
 
@@ -206,7 +207,7 @@ export class EntityFromIdQueryNode extends QueryNode {
     }
 
     public describe() {
-        return `${this.objectType.name.blue} with id (${this.idNode.describe()})`;
+        return `${blue(this.objectType.name)} with id (${this.idNode.describe()})`;
     }
 }
 
@@ -225,7 +226,7 @@ export class LiteralQueryNode extends QueryNode {
 
     public describe() {
         const json = this.value === undefined ? 'undefined' : JSON.stringify(this.value);
-        return `literal ${json.cyan}`;
+        return `literal ${cyan(json)}`;
     }
 }
 
@@ -256,7 +257,7 @@ export class RuntimeErrorQueryNode extends QueryNode {
     }
 
     public describe() {
-        return `error ${JSON.stringify(this.message)}`.red;
+        return red(`error ${JSON.stringify(this.message)}`);
     }
 }
 
@@ -313,7 +314,7 @@ export class FieldQueryNode extends QueryNode {
     }
 
     public describe() {
-        return `${this.objectNode.describe()}.${this.field.name.blue}`;
+        return `${this.objectNode.describe()}.${blue(this.field.name)}`;
     }
 }
 
@@ -357,7 +358,7 @@ export class PropertySpecification extends QueryNode {
     }
 
     describe(): string {
-        return `${JSON.stringify(this.propertyName).green}: ${this.valueNode.describe()}`;
+        return `${green(JSON.stringify(this.propertyName))}: ${this.valueNode.describe()}`;
     }
 }
 
@@ -540,7 +541,7 @@ export class EntitiesQueryNode extends QueryNode {
     }
 
     describe() {
-        return `entities of type ${this.objectType.name.blue}`;
+        return `entities of type ${blue(this.objectType.name)}`;
     }
 }
 
@@ -697,9 +698,9 @@ export class FollowEdgeQueryNode extends QueryNode {
     describe() {
         switch (this.sourceFieldSide) {
             case RelationFieldEdgeSide.FROM_SIDE:
-                return `follow forward ${this.edgeType.toString().blue} of ${this.sourceEntityNode.describe()}`;
+                return `follow forward ${blue(this.edgeType.toString())} of ${this.sourceEntityNode.describe()}`;
             case RelationFieldEdgeSide.TO_SIDE:
-                return `follow backward ${this.edgeType.toString().blue} of ${this.sourceEntityNode.describe()}`;
+                return `follow backward ${blue(this.edgeType.toString())} of ${this.sourceEntityNode.describe()}`;
         }
     }
 }

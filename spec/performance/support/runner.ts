@@ -1,7 +1,5 @@
 import { benchmark, BenchmarkFactories, time } from './async-bench';
-import colors = require('colors');
-
-colors.enabled = true;
+import { bold, green, grey, red, yellow } from 'colors/safe';
 
 const SHOW_CYCLE_INFO = false;
 
@@ -26,18 +24,18 @@ async function runAsync(factories: BenchmarkFactories): Promise<BenchmarkSuiteRe
     for (const factory of factories) {
         const config = factory();
         console.log('');
-        console.log(`[${index} / ${factories.length}] ${config.name}...`.yellow.bold);
+        console.log(yellow(bold(`[${index} / ${factories.length}] ${config.name}...`)));
         try {
             const result = await benchmark(config, {
                 onCycleDone: cycle => {
                     if (SHOW_CYCLE_INFO) {
-                        console.log((`  Cycle ${cycle.index + 1}: ${cycle.iterationCount} iterations, ` +
+                        console.log(grey(`  Cycle ${cycle.index + 1}: ${cycle.iterationCount} iterations, ` +
                         `current estimate: ${formatTimings(cycle.timingsSoFar)} per iteration, ` +
-                        `${formatElapsedTime(cycle)}`).grey);
+                        `${formatElapsedTime(cycle)}`));
                     }
                 }
             });
-            console.log(`  ${formatTimings(result)}`.green + ` per iteration`);
+            console.log(green(`  ${formatTimings(result)}`) + ` per iteration`);
             console.log(`  ${formatElapsedTime(result)} for ${result.iterationCount} iterations in ${result.cycles} cycles`);
         } catch (err) {
             console.error(err.message, err.stack);
@@ -53,7 +51,7 @@ async function runAsync(factories: BenchmarkFactories): Promise<BenchmarkSuiteRe
     console.log(`Done.`.bold);
     console.log(`Executed ${factories.length} benchmarks in ${elapsedMinutes} minutes, ${elapsedSeconds} seconds`.bold);
     if (erroredCount) {
-        console.log(`${erroredCount} benchmarks reported an error.`.red.bold);
+        console.log(red(bold(`${erroredCount} benchmarks reported an error.`)));
     }
     console.log('');
     return {

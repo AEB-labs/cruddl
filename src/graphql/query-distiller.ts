@@ -10,6 +10,7 @@ import { extractOperation } from './operations';
 import { getOperationRootType } from './schema-utils';
 import { getAliasOrName } from './language-utils';
 import { getArgumentValues } from './argument-values';
+import { blue, cyan, green } from 'colors/safe';
 
 /**
  * A request for the value of one field with a specific argument set and selection set
@@ -28,13 +29,13 @@ export class FieldRequest {
 
     public describe(): string {
         const selectionItemsDesc = this.selectionSet
-            .map(selection => `${JSON.stringify(selection.propertyName).green}: ${selection.fieldRequest.describe()}`)
+            .map(selection => `${green(JSON.stringify(selection.propertyName))}: ${selection.fieldRequest.describe()}`)
             .join(',\n');
         const selectionDesc = selectionItemsDesc ? ` with selections {\n${indent(selectionItemsDesc)}\n}` : '';
         const argsDesc = (this.args && Object.getOwnPropertyNames(this.args).length) ?
-            ` with args ${JSON.stringify(this.args, null, INDENTATION).cyan}` : '';
+            ` with args ${cyan(JSON.stringify(this.args, null, INDENTATION))}` : '';
 
-        return `field ${this.fieldName.blue}${argsDesc}${selectionDesc}`;
+        return `field ${blue(this.fieldName)}${argsDesc}${selectionDesc}`;
     }
 }
 
@@ -60,7 +61,7 @@ export class DistilledOperation {
 
     public describe(): string {
         const selectionItemsDesc = this.selectionSet
-            .map(selection => `${JSON.stringify(selection.propertyName).green}: ${selection.fieldRequest.describe()}`)
+            .map(selection => `${green(JSON.stringify(selection.propertyName))}: ${selection.fieldRequest.describe()}`)
             .join(',\n');
         return `${this.operation} with selections {\n${indent(selectionItemsDesc)}\n}`;
     }
