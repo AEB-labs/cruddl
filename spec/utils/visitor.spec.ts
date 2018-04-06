@@ -1,4 +1,5 @@
-import { VisitAction, visitObject } from '../../src/utils/visitor';
+import { AnyValue } from '../../src/utils/utils';
+import { visitObject, VisitResult } from '../../src/utils/visitor';
 
 describe('visitObject', () => {
     const a = {inA: true};
@@ -10,10 +11,10 @@ describe('visitObject', () => {
             const visitedObjects: any[] = [];
             const visitedKeys: any[] = [];
             visitObject(composite, {
-                enter(obj: any, key) {
-                    visitedObjects.push(obj);
+                enter(obj: AnyValue, key): VisitResult<any> {
+                    visitedObjects.push(obj as any);
                     visitedKeys.push(key);
-                    return obj;
+                    return { newValue: obj };
                 }
             });
             expect(visitedObjects).toEqual([composite, a, b, {deepB: true}]);
@@ -22,39 +23,53 @@ describe('visitObject', () => {
 
         it('replaces objects with result', () => {
             const result = visitObject(composite, {
-                enter: (obj: any) => {
-                    if (obj.inA) {
-                        return {inA: false};
+                enter: (obj: AnyValue) => {
+                    if ((obj as any).inA) {
+                        return { newValue: {inA: false}, recurse: true };
                     }
-                    return obj;
+                    return { newValue: obj };
                 }
             });
             expect(result).toEqual({a: {inA: false}, b: {inB: {deepB: true}}});
         });
 
-        it('does not visit replacement objects', () => {
+        it('does not visit replacement objects if recurse is false', () => {
             const visitedObjects: any[] = [];
             const result = visitObject(composite, {
-                enter: (obj: any) => {
+                enter: (obj: AnyValue) => {
                     visitedObjects.push(obj);
-                    if (obj.inA) {
-                        return {inA: {deepA: true}};
+                    if ((obj as any).inA) {
+                        return { recurse: false, newValue: {inA: {deepA: true}} };
                     }
-                    return obj;
+                    return { newValue: obj };
                 }
             });
             expect(visitedObjects).toEqual([composite, a, b, {deepB: true}]);
         });
 
+        it('visit replacement objects if recurse is true', () => {
+            const visitedObjects: any[] = [];
+            const result = visitObject(composite, {
+                enter: (obj: AnyValue) => {
+                    visitedObjects.push(obj);
+                    if ((obj as any).inA) {
+                        return { recurse: true, newValue: {inA: {deepA: true}} };
+                    }
+                    return { newValue: obj };
+                }
+            });
+            expect(visitedObjects).toEqual([composite, a, { deepA: true }, b, {deepB: true}]);
+        });
+
         it('skips when SKIP_NODE is returned', () => {
             const visitedObjects: any[] = [];
             const result = visitObject(composite, {
-                enter: (obj: any) => {
+                enter: (obj: AnyValue) => {
                     visitedObjects.push(obj);
-                    if (obj.inB) {
-                        return VisitAction.SKIP_NODE;
+                    if ((obj as any).inB) {
+                        return { newValue: obj, recurse: false };
                     }
-                    return obj;
+                    return { newValue: obj };
                 }
             });
             expect(visitedObjects).toEqual([composite, a, b]);
@@ -65,9 +80,9 @@ describe('visitObject', () => {
             const listObj = {items};
             const visitedObjects: any[] = [];
             visitObject(listObj, {
-                enter(obj: any) {
-                    visitedObjects.push(obj);
-                    return obj;
+                enter(obj: AnyValue) {
+                    visitedObjects.push(obj as any);
+                    return { newValue: obj };
                 }
             });
             expect(visitedObjects).toEqual([listObj, a, b, {deepB: true}]);
@@ -79,7 +94,7 @@ describe('visitObject', () => {
             const visitedObjects: any[] = [];
             const visitedKeys: any[] = [];
             visitObject(composite, {
-                leave(obj: any, key) {
+                leave(obj: AnyValue, key) {
                     visitedObjects.push(obj);
                     visitedKeys.push(key);
                     return obj;
@@ -91,8 +106,8 @@ describe('visitObject', () => {
 
         it('replaces objects with result', () => {
             const result = visitObject(composite, {
-                leave: (obj: any) => {
-                    if (obj.inA) {
+                leave: (obj: AnyValue) => {
+                    if ((obj as any).inA) {
                         return {inA: false};
                     }
                     return obj;

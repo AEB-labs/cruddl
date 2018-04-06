@@ -28,7 +28,7 @@ addTransformer(UpdateEntitiesQueryNode, transformUpdateEntitiesQueryNode);
 addTransformer(DeleteEntitiesQueryNode, transformDeleteEntitiesQueryNode);
 addTransformer(AffectedFieldInfoQueryNode, transformAffectedFieldInfoQueryNode);
 
-export function transformNode(node: QueryNode, authContext: AuthContext) {
+export function transformNode(node: QueryNode, authContext: AuthContext): QueryNode {
     const transformer = map.get(node.constructor);
     if (transformer) {
         return transformer(node, authContext);

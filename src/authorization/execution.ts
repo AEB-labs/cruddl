@@ -1,14 +1,8 @@
-import {
-    AddEdgesQueryNode,
-    CreateEntityQueryNode, DeleteEntitiesQueryNode, QueryNode, RemoveEdgesQueryNode, RuntimeErrorQueryNode,
-    SetEdgeQueryNode,
-    UpdateEntitiesQueryNode
-} from '../query/definition';
-import { AuthContext } from './auth-basics';
-import { VisitAction, visitObject } from '../utils/visitor';
-import { transformNode } from './transformers';
-import { moveErrorsToOutputNodes } from './move-errors-to-output-nodes';
+import { AddEdgesQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, QueryNode, RemoveEdgesQueryNode, RuntimeErrorQueryNode, SetEdgeQueryNode, UpdateEntitiesQueryNode } from '../query/definition';
 import { visitQueryNode } from '../query/query-visitor';
+import { AuthContext } from './auth-basics';
+import { moveErrorsToOutputNodes } from './move-errors-to-output-nodes';
+import { transformNode } from './transformers';
 
 const MUTATIONS: Function[] = [ CreateEntityQueryNode, UpdateEntitiesQueryNode, DeleteEntitiesQueryNode, AddEdgesQueryNode, RemoveEdgesQueryNode, SetEdgeQueryNode ];
 
@@ -34,7 +28,7 @@ export function applyAuthorizationToQueryTree(queryTree: QueryNode, authContext:
 function applyTransformations(queryTree: QueryNode, authContext: AuthContext): QueryNode {
     return visitQueryNode(queryTree, {
         enter(node: QueryNode) {
-            return transformNode(node, authContext);
+            return { newValue: transformNode(node, authContext), recurse: true };
         }
     });
 }
@@ -50,9 +44,9 @@ function containsErrorsAndMutations(queryTree: QueryNode): boolean {
                 containsMutations = true;
             }
             if (containsMutations && containsErrors) {
-                return VisitAction.SKIP_NODE;
+                return { newValue: node, recurse: false };
             }
-            return node;
+            return { newValue: node, recurse: true };
         }
     });
     return containsErrors && containsMutations;
@@ -62,9 +56,9 @@ function replaceMutationsByErrors(queryTree: QueryNode): QueryNode {
     return visitQueryNode(queryTree, {
         enter(node: QueryNode) {
             if (MUTATIONS.includes(node.constructor)) {
-                return new RuntimeErrorQueryNode("SkipError: Skipped because other mutations reported errors")
+                return { newValue: new RuntimeErrorQueryNode("SkipError: Skipped because other mutations reported errors") };
             }
-            return node;
+            return { newValue: node };
         }
     });
 }

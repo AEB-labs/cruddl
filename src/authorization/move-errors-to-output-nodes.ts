@@ -1,9 +1,7 @@
-import {
-    ConditionalQueryNode, FirstOfListQueryNode, ListQueryNode, ObjectQueryNode, PropertySpecification, QueryNode,
-    RuntimeErrorQueryNode, TransformListQueryNode, VariableAssignmentQueryNode
-} from '../query/definition';
-import { VisitAction, visitObject } from '../utils/visitor';
 import { uniq } from 'lodash';
+import { ConditionalQueryNode, FirstOfListQueryNode, ListQueryNode, ObjectQueryNode, PropertySpecification, QueryNode, RuntimeErrorQueryNode, TransformListQueryNode, VariableAssignmentQueryNode } from '../query/definition';
+import { visitQueryNode } from '../query/query-visitor';
+import { VisitResult } from '../utils/visitor';
 
 /**
  * Moves RuntimeErrorQueryNodes up to its their deepest ancestor that is an output node, i.e., its value directly occurs
@@ -18,11 +16,8 @@ export function moveErrorsToOutputNodes(queryTree: QueryNode): QueryNode {
     }
     const stack: StackFrame[] = [];
 
-    return visitObject(queryTree, {
-        enter(node: QueryNode, key: string): QueryNode|VisitAction {
-            if (!(node instanceof QueryNode)) {
-                return VisitAction.SKIP_NODE;
-            }
+    return visitQueryNode(queryTree, {
+        enter(node: QueryNode, key: string): VisitResult<QueryNode> {
             if (node instanceof RuntimeErrorQueryNode) {
                 errorList.push(node);
                 minErrorDepth = Math.min(minErrorDepth === undefined ? stack.length : minErrorDepth, stack.length);
@@ -40,7 +35,7 @@ export function moveErrorsToOutputNodes(queryTree: QueryNode): QueryNode {
                     outputNodeKind: kind
                 });
             }
-            return node;
+            return { newValue: node };
         },
 
         leave(node: QueryNode, key: string) {
