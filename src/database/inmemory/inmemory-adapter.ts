@@ -178,7 +178,7 @@ export class InMemoryAdapter implements DatabaseAdapter {
         } finally {
             globalContext.unregisterContext();
         }
-        this.logger.debug(jsQuery.toColoredString());
+        this.logger.trace(`Executing JavaScript: ${jsQuery.toColoredString()}`);
 
         return this.executeQueries(executableQueries);
     }
