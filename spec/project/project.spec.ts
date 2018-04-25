@@ -1,6 +1,6 @@
-import { Logger, LoggerProvider, SchemaContext } from '../../src/config/global';
+import { Logger, LoggerProvider } from '../../src/config/logging';
 import { createSchema } from '../../src/schema/schema-builder';
-import { graphql, GraphQLSchema, Source } from 'graphql';
+import { graphql, GraphQLSchema } from 'graphql';
 import { QueryNode } from '../../src/query/definition';
 import { DatabaseAdapter } from '../../src/database/database-adapter';
 import { Project } from '../../src/project/project';
@@ -28,8 +28,16 @@ describe('project', () => {
             const loggerProvider: LoggerProvider = {
                 getLogger(categoryName: string): Logger {
                     return {
-                        debug: log, error: log, warn: log, info: log
-                    }
+                        debug: log, error: log, warn: log, info: log, fatal: log, trace: log,
+                        level: 'trace',
+                        isErrorEnabled: () => true,
+                        isLevelEnabled: () => true,
+                        isDebugEnabled: () => true,
+                        isFatalEnabled: () => true,
+                        isInfoEnabled: () => true,
+                        isTraceEnabled: () => true,
+                        isWarnEnabled: () => true
+                    };
                 }
             };
 

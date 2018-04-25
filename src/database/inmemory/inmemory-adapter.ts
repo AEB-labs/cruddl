@@ -1,6 +1,7 @@
 import { DatabaseAdapter } from '../database-adapter';
 import { QueryNode } from '../../query/definition';
-import { globalContext, Logger, SchemaContext } from '../../config/global';
+import { globalContext, SchemaContext } from '../../config/global';
+import { Logger } from '../../config/logging';
 import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS } from '../../query/query-result-validators';
 import { JSCompoundQuery, JSExecutableQuery } from './js';
 import { getJSQuery } from './js-generator';
