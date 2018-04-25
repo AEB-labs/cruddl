@@ -20,16 +20,24 @@ export class AddOperationResolversTransformer implements SchemaTransformer {
                 let queryTree: QueryNode;
                 try {
                     logger.debug(`Executing ${operationInfo.operation.operation} ${operationInfo.operation.name ? operationInfo.operation.name.value : ''}`);
-                    logger.trace(`Operation: ${print(operationInfo.operation)}`);
+                    if (logger.isTraceEnabled()) {
+                        logger.trace(`Operation: ${print(operationInfo.operation)}`);
+                    }
                     const operation = distillOperation(operationInfo);
-                    logger.trace(`DistilledOperation: ${operation.describe()}`);
+                    if (logger.isTraceEnabled()) {
+                        logger.trace(`DistilledOperation: ${operation.describe()}`);
+                    }
 
                     const requestRoles = getRequestRoles(operationInfo.context);
                     logger.debug(`Request roles: ${requestRoles.join(', ')}`);
                     queryTree = createQueryTree(operation);
-                    logger.trace('Before authorization: ' + queryTree.describe());
+                    if (logger.isTraceEnabled()) {
+                        logger.trace('Before authorization: ' + queryTree.describe());
+                    }
                     queryTree = applyAuthorizationToQueryTree(queryTree, { authRoles: requestRoles});
-                    logger.trace('After authorization: ' + queryTree.describe());
+                    if (logger.isTraceEnabled()) {
+                        logger.trace('After authorization: ' + queryTree.describe());
+                    }
                 } finally {
                     globalContext.unregisterContext();
                 }
@@ -40,7 +48,9 @@ export class AddOperationResolversTransformer implements SchemaTransformer {
                 } else {
                     logger.debug(`Execution successful (evaluated statically without database adapter))`);
                 }
-                logger.trace('Result: ' + JSON.stringify(result, undefined, '  '));
+                if (logger.isTraceEnabled()) {
+                    logger.trace('Result: ' + JSON.stringify(result, undefined, '  '));
+                }
                 return result;
             } catch (e) {
                 logger.error("Error evaluating GraphQL query: " + e.stack);

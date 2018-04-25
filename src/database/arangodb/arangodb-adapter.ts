@@ -124,7 +124,9 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         } finally {
             globalContext.unregisterContext();
         }
-        this.logger.trace(`Executing AQL: ${aqlQuery.toColoredString()}`);
+        if (this.logger.isTraceEnabled()) {
+            this.logger.trace(`Executing AQL: ${aqlQuery.toColoredString()}`);
+        }
 
         return await this.db.transaction(
             {

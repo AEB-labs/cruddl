@@ -72,7 +72,9 @@ export function createSchema(project: Project, databaseAdapter: DatabaseAdapter)
         }
 
         executePostMergeTransformationPipeline(mergedSchema, rootContext);
-        logger.trace(`Transformed schema: ${print(mergedSchema)}`);
+        if (logger.isTraceEnabled()) {
+            logger.trace(`Transformed schema: ${print(mergedSchema)}`);
+        }
 
         const schemaContext: SchemaTransformationContext = {
             ...rootContext,
