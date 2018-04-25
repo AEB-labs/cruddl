@@ -12,7 +12,6 @@ import {
     AlwaysGrantPermissionDescriptor, PermissionDescriptor, ProfileBasedPermissionDescriptor, StaticPermissionDescriptor
 } from '../../../authorization/permission-descriptors';
 import { setPermissionDescriptor } from '../../../authorization/permission-descriptors-in-schema';
-import { DEFAULT_LOGGER_PROVIDER } from '../../../config/global';
 
 export class AddPermissionDescriptorsTransformer implements SchemaTransformer {
 

@@ -72,7 +72,9 @@ export function createSchema(project: Project, databaseAdapter: DatabaseAdapter)
         }
 
         executePostMergeTransformationPipeline(mergedSchema, rootContext);
-        logger.debug(print(mergedSchema));
+        if (logger.isTraceEnabled()) {
+            logger.trace(`Transformed schema: ${print(mergedSchema)}`);
+        }
 
         const schemaContext: SchemaTransformationContext = {
             ...rootContext,
@@ -82,7 +84,7 @@ export function createSchema(project: Project, databaseAdapter: DatabaseAdapter)
 
         const graphQLSchema = buildASTSchema(mergedSchema);
         const finalSchema = executeSchemaTransformationPipeline(graphQLSchema, schemaContext);
-        logger.info('Schema successfully created.');
+        logger.info('Schema created successfully.');
         return finalSchema;
     } finally {
         globalContext.unregisterContext();

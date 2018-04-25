@@ -1,6 +1,7 @@
 import { DatabaseAdapter } from '../database-adapter';
 import { QueryNode } from '../../query/definition';
-import { globalContext, Logger, SchemaContext } from '../../config/global';
+import { globalContext, SchemaContext } from '../../config/global';
+import { Logger } from '../../config/logging';
 import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS } from '../../query/query-result-validators';
 import { JSCompoundQuery, JSExecutableQuery } from './js';
 import { getJSQuery } from './js-generator';
@@ -177,7 +178,9 @@ export class InMemoryAdapter implements DatabaseAdapter {
         } finally {
             globalContext.unregisterContext();
         }
-        this.logger.debug(jsQuery.toColoredString());
+        if (this.logger.isTraceEnabled()) {
+            this.logger.trace(`Executing JavaScript: ${jsQuery.toColoredString()}`);
+        }
 
         return this.executeQueries(executableQueries);
     }

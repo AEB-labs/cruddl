@@ -40,7 +40,7 @@
     "@types/uuid": "^3.4.2",
     "dependency-check": "^2.9.1",
     "graphql": "^0.13.1",
-    "graphql-yoga": "^1.4.3",
+    "graphql-yoga": "1.8.3",
     "jasmine": "^2.5.3",
     "jasmine-console-reporter": "^2.0.1",
     "jasmine-promises": "^0.4.1",

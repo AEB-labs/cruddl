@@ -1,7 +1,7 @@
 import { isArray } from 'util';
 import { ProjectSource, SourceLike, SourceType } from './source';
 import { GraphQLSchema } from 'graphql';
-import { DEFAULT_LOGGER_PROVIDER, LoggerProvider } from '../config/global';
+import { DEFAULT_LOGGER_PROVIDER, LoggerProvider } from '../config/logging';
 import { ValidationResult } from '../schema/preparation/ast-validator';
 import { DatabaseAdapter } from '../database/database-adapter';
 import { createSchema, validateSchema } from '../schema/schema-builder';
