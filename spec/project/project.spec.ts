@@ -5,6 +5,7 @@ import { QueryNode } from '../../src/query/definition';
 import { DatabaseAdapter } from '../../src/database/database-adapter';
 import { Project } from '../../src/project/project';
 import { ProjectSource } from '../../src/project/source';
+import { expect } from 'chai';
 
 class FakeDBAdatper implements DatabaseAdapter {
     async execute(queryTree: QueryNode): Promise<any> {
@@ -50,7 +51,7 @@ describe('project', () => {
 
             logs = [];
             const result = await graphql(execSchema, `{ allTests { name } }`, undefined, {authRoles: ['admin']});
-            expect(logs.length).toBeGreaterThan(0);
+            expect(logs.length).to.be.greaterThan(0);
         });
     });
 });

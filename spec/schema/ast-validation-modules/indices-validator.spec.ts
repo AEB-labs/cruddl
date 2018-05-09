@@ -6,6 +6,7 @@ import {
     VALIDATION_ERROR_INDICES_INVALID_PATH_NON_SCALAR_END, VALIDATION_ERROR_INDICES_MISSING_FIELDS,
     VALIDATION_ERROR_INDICES_ONLY_ON_ROOT_ENTITIES
 } from '../../../src/schema/preparation/ast-validation-modules/indices-validator';
+import { expect } from 'chai';
 
 describe('indices validator', () => {
 
@@ -78,9 +79,9 @@ function assertValidatorRejects(expectation: string, model: string, msg: string)
     it('rejects ' + expectation, () => {
         const ast = parse(model);
         const validationResult = new ValidationResult(new IndicesValidator().validate(ast));
-        expect(validationResult.hasErrors()).toBeTruthy();
-        expect(validationResult.messages.length).toBe(1);
-        expect(validationResult.messages[0].message).toBe(msg);
+        expect(validationResult.hasErrors()).to.be.true;
+        expect(validationResult.messages.length).to.equal(1);
+        expect(validationResult.messages[0].message).to.equal(msg);
     });
 }
 
@@ -88,6 +89,6 @@ function assertValidatorAccepts(expectation: string, model: string) {
     it('accepts ' + expectation, () => {
         const ast = parse(model);
         const validationResult = new ValidationResult(new IndicesValidator().validate(ast));
-        expect(validationResult.hasErrors()).toBeFalsy();
+        expect(validationResult.hasErrors()).to.be.false;
     });
 }

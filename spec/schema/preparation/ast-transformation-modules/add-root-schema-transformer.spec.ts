@@ -1,6 +1,7 @@
 import {parse, SchemaDefinitionNode} from "graphql";
 import {SCHEMA_DEFINITION} from "../../../../src/graphql/kinds";
 import {AddRootSchemaTransformer} from "../../../../src/schema/preparation/post-merge-ast-transformation-modules/add-root-schema-transformer";
+import { expect } from 'chai';
 
 const sdl = `
             type Foo @rootEntity {
@@ -29,7 +30,7 @@ describe('add-root-schema', () => {
     it('meets preconditions', () => {
         const ast = parse(sdl);
         // there are no filter/input types before running the transformer.
-        expect(ast.definitions.find(def => def.kind === SCHEMA_DEFINITION)).toBeUndefined();
+        expect(ast.definitions.find(def => def.kind === SCHEMA_DEFINITION)).to.be.undefined;
     });
 
     const ast = parse(sdl);
@@ -37,9 +38,9 @@ describe('add-root-schema', () => {
 
     it ('contains a schema', () => {
         const schema = <SchemaDefinitionNode> ast.definitions.find(def => def.kind === SCHEMA_DEFINITION);
-        expect(schema).toBeDefined();
+        expect(schema).to.not.be.undefined;
         // check for a query operation type
-        expect(schema.operationTypes.find(opType => opType.operation === 'query')).toBeDefined();
+        expect(schema.operationTypes.find(opType => opType.operation === 'query')).to.be.undefined;
     });
 
 });

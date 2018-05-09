@@ -4,6 +4,7 @@ import {
     KnownFieldDirectivesValidator,
     VALIDATION_ERROR_UNKNOWN_FIELD_DIRECTIVE
 } from "../../../src/schema/preparation/ast-validation-modules/known-field-directives-validator";
+import { expect } from 'chai';
 
 const modelWithFieldWithInvalidDirective = `
             type Stuff {
@@ -27,22 +28,22 @@ describe('known field directive validator', () => {
     it('rejects unknown field directives', () => {
         const ast = parse(modelWithFieldWithInvalidDirective);
         const validationResult = new ValidationResult(new KnownFieldDirectivesValidator().validate(ast));
-        expect(validationResult.hasErrors()).toBeTruthy();
-        expect(validationResult.messages.length).toBe(1);
-        expect(validationResult.messages[0].message).toBe(VALIDATION_ERROR_UNKNOWN_FIELD_DIRECTIVE);
+        expect(validationResult.hasErrors()).to.be.true;
+        expect(validationResult.messages.length).to.equal(1);
+        expect(validationResult.messages[0].message).to.equal(VALIDATION_ERROR_UNKNOWN_FIELD_DIRECTIVE);
     });
 
     it('accepts known field directives', () => {
         const ast = parse(modelWithFieldWithValidDirective);
         const validationResult = new ValidationResult(new KnownFieldDirectivesValidator().validate(ast));
-        expect(validationResult.hasErrors()).toBeFalsy();
-        expect(validationResult.messages.length).toBe(0);
+        expect(validationResult.hasErrors()).to.be.false;
+        expect(validationResult.messages.length).to.equal(0);
     });
 
     it('accepts fields without directives', () => {
         const ast = parse(modelWithFieldWithoutDirective);
         const validationResult = new ValidationResult(new KnownFieldDirectivesValidator().validate(ast));
-        expect(validationResult.hasErrors()).toBeFalsy();
-        expect(validationResult.messages.length).toBe(0);
+        expect(validationResult.hasErrors()).to.be.false;
+        expect(validationResult.messages.length).to.equal(0);
     });
 });

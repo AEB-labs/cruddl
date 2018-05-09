@@ -4,6 +4,7 @@ import {
     NoDuplicateTypesValidator,
     VALIDATION_ERROR_DUPLICATE_TYPE_NAMES
 } from "../../../src/schema/preparation/ast-validation-modules/no-duplicate-types-validator";
+import { expect } from 'chai';
 
 const modelWithoutDuplicates = `
             type Stuff {
@@ -27,16 +28,16 @@ describe('no duplicate type definition validator', () => {
     it('finds duplicate types', () => {
         const ast = parse(modelWithDuplicate);
         const validationResult = new ValidationResult(new NoDuplicateTypesValidator().validate(ast));
-        expect(validationResult.hasErrors()).toBeTruthy();
+        expect(validationResult.hasErrors()).to.be.true;
         // we expect two errors because both types have a duplicate type error
-        expect(validationResult.messages.length).toBe(3);
-        expect(validationResult.messages[0].message).toBe(VALIDATION_ERROR_DUPLICATE_TYPE_NAMES);
+        expect(validationResult.messages.length).to.equal(3);
+        expect(validationResult.messages[0].message).to.equal(VALIDATION_ERROR_DUPLICATE_TYPE_NAMES);
     });
 
     it('accepts unique types', () => {
         const ast = parse(modelWithoutDuplicates);
         const validationResult = new ValidationResult(new NoDuplicateTypesValidator().validate(ast));
-        expect(validationResult.hasErrors()).toBeFalsy();
+        expect(validationResult.hasErrors()).to.be.false;
     })
 
 });

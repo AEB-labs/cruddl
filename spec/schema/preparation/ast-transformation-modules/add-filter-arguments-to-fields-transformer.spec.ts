@@ -2,6 +2,7 @@ import {NamedTypeNode, ObjectTypeDefinitionNode, parse} from "graphql";
 import {NAMED_TYPE, OBJECT_TYPE_DEFINITION} from "../../../../src/graphql/kinds";
 import {FILTER_ARG} from "../../../../src/schema/schema-defaults";
 import {AddFilterArgumentsToFieldsTransformer} from "../../../../src/schema/preparation/post-merge-ast-transformation-modules/add-filter-arguments-to-fields-transformer";
+import { expect } from 'chai';
 
 const sdl = `
             type Foo @rootEntity {
@@ -44,7 +45,7 @@ describe('add-filter-arguments-to-fields', () => {
         const queryType: ObjectTypeDefinitionNode = ast.definitions.find(def => def.kind === OBJECT_TYPE_DEFINITION && def.name.value === 'Query') as ObjectTypeDefinitionNode;
         const allFoosField = queryType.fields.find(field => field.name.value === 'allFoos');
         const filterArg = allFoosField!.arguments.find(arg => arg.name.value === FILTER_ARG);
-        expect(filterArg).toBeUndefined();
+        expect(filterArg).to.not.be.undefined;
     });
 
     const ast = parse(sdl);
@@ -54,9 +55,9 @@ describe('add-filter-arguments-to-fields', () => {
         const queryType: ObjectTypeDefinitionNode = ast.definitions.find(def => def.kind === OBJECT_TYPE_DEFINITION && def.name.value === 'Query') as ObjectTypeDefinitionNode;
         const allFoosField = queryType.fields.find(field => field.name.value === 'allFoos');
         const filterArg = allFoosField!.arguments.find(arg => arg.name.value === FILTER_ARG);
-        expect(filterArg).toBeDefined();
-        expect(filterArg!.type.kind).toBe(NAMED_TYPE);
-        expect((filterArg!.type as NamedTypeNode).name.value).toBe('FooFilter');
+        expect(filterArg).to.not.be.undefined;
+        expect(filterArg!.type.kind).to.equal(NAMED_TYPE);
+        expect((filterArg!.type as NamedTypeNode).name.value).to.equal('FooFilter');
     });
 
 });

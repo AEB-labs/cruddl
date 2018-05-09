@@ -2,6 +2,7 @@ import {
     ListQueryNode, ObjectQueryNode, PropertySpecification, RuntimeErrorQueryNode, TransformListQueryNode
 } from '../../src/query/definition';
 import { moveErrorsToOutputNodes } from '../../src/authorization/move-errors-to-output-nodes';
+import { expect } from 'chai';
 
 describe('move-errors-to-output-nodes', () => {
     it('moves errors in filter up', () => {
@@ -12,7 +13,7 @@ describe('move-errors-to-output-nodes', () => {
             }))
         ]);
         const newTree = moveErrorsToOutputNodes(tree);
-        expect((newTree as ObjectQueryNode).properties[0].valueNode.constructor.name).toBe(RuntimeErrorQueryNode.name);
+        expect((newTree as ObjectQueryNode).properties[0].valueNode.constructor.name).to.equal(RuntimeErrorQueryNode.name);
     });
 
     it('keeps errors in innerNode', () => {
@@ -24,7 +25,7 @@ describe('move-errors-to-output-nodes', () => {
         ]);
         const newTree = moveErrorsToOutputNodes(tree);
         const transformList = (newTree as ObjectQueryNode).properties[0].valueNode as TransformListQueryNode;
-        expect(transformList.constructor.name).toBe(TransformListQueryNode.name);
-        expect(transformList.innerNode.constructor.name).toBe(RuntimeErrorQueryNode.name);
+        expect(transformList.constructor.name).to.equal(TransformListQueryNode.name);
+        expect(transformList.innerNode.constructor.name).to.equal(RuntimeErrorQueryNode.name);
     });
 });

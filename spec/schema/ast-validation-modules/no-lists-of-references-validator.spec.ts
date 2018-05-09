@@ -4,6 +4,7 @@ import {
     NoListOfReferencesValidator,
     VALIDATION_ERROR_LIST_OF_REFERENCES_NOT_SUPPORTED
 } from "../../../src/schema/preparation/ast-validation-modules/no-list-of-references-validator";
+import { expect } from 'chai';
 
 const modelWithListOfReferences = `
             type Stuff @rootEntity {
@@ -27,15 +28,15 @@ describe('no lists of references validator', () => {
     it('rejects lists of references', () => {
         const ast = parse(modelWithListOfReferences);
         const validationResult = new ValidationResult(new NoListOfReferencesValidator().validate(ast));
-        expect(validationResult.hasErrors()).toBeTruthy();
-        expect(validationResult.messages.length).toBe(1);
-        expect(validationResult.messages[0].message).toBe(VALIDATION_ERROR_LIST_OF_REFERENCES_NOT_SUPPORTED);
+        expect(validationResult.hasErrors()).to.be.true;
+        expect(validationResult.messages.length).to.equal(1);
+        expect(validationResult.messages[0].message).to.equal(VALIDATION_ERROR_LIST_OF_REFERENCES_NOT_SUPPORTED);
     });
 
     it('accepts non-list references', () => {
         const ast = parse(modelWithoutListOfReferences);
         const validationResult = new ValidationResult(new NoListOfReferencesValidator().validate(ast));
-        expect(validationResult.hasErrors()).toBeFalsy();
+        expect(validationResult.hasErrors()).to.be.false;
     })
 
 });
