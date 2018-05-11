@@ -2,6 +2,7 @@ language: node_js
 node_js:
   - "8"
 install:
+  - npm i -g npm@5.7.1 # this should be deleted once 5.7.X is out of "pre-release"
   - npm ci
 script:
   - mkdir -p arangodb && cd arangodb && curl -L https://download.arangodb.com/travisCI/setup_arangodb_3.2.4.sh | bash
