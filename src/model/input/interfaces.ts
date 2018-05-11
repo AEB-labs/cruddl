@@ -1,5 +1,5 @@
-import { PermissionProfile } from '../authorization/permission-profile';
-import { ValidationResult } from './validation';
+import { PermissionProfile } from '../../authorization/permission-profile';
+import { ValidationResult } from '../validation/index';
 import {
     EnumTypeDefinitionNode, FieldNode, ObjectTypeDefinitionNode, ScalarTypeDefinitionNode, TypeDefinitionNode
 } from 'graphql';

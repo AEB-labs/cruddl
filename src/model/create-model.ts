@@ -1,9 +1,9 @@
 import { SchemaConfig } from '../config/schema-config';
-import { Model } from './interfaces';
-import { ValidationResult } from './validation';
+import { Model } from './implementation';
 
 export function createModel(input: SchemaConfig): Model {
-    return {
-        validationResult: new ValidationResult([])
-    } as Model; // TODO
+    return new Model({
+        types: [],
+        permissionProfiles: input.permissionProfiles
+    });
 }

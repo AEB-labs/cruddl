@@ -1,9 +1,9 @@
-import { buildASTSchema, DocumentNode, GraphQLSchema, parse, print, Source } from 'graphql';
+import { buildASTSchema, DocumentNode, GraphQLSchema, parse, print } from 'graphql';
 import {
     ASTTransformationContext, executePostMergeTransformationPipeline, executePreMergeTransformationPipeline,
     executeSchemaTransformationPipeline, SchemaTransformationContext
 } from './preparation/transformation-pipeline';
-import { validatePostMerge, validateSource} from './preparation/ast-validator';
+import { validatePostMerge, validateSource } from './preparation/ast-validator';
 import { SchemaConfig, SchemaPartConfig } from '../config/schema-config';
 import { globalContext } from '../config/global';
 import { createPermissionMap } from '../authorization/permission-profile';
@@ -11,10 +11,9 @@ import { Project } from '../project/project';
 import { DatabaseAdapter } from '../database/database-adapter';
 import { SourceType } from '../project/source';
 import { load as loadYaml } from 'js-yaml';
-import { ValidationMessage } from '../model/validation/message';
+import { ValidationMessage, ValidationResult } from '../model/validation';
 import { flatMap } from '../utils/utils';
 import { createModel, Model } from '../model';
-import { ValidationResult } from '../model/validation/result';
 
 /**
  * Validates a project and thus determines whether createSchema() would succeed
