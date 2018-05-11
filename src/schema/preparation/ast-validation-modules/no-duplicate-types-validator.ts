@@ -1,6 +1,6 @@
 import {ASTValidator} from "../ast-validator";
 import {DocumentNode, ObjectTypeDefinitionNode, TypeDefinitionNode} from "graphql";
-import {ValidationMessage} from "../validation-message";
+import {ValidationMessage} from "../../../model/validation/message";
 import {
     ENUM_TYPE_DEFINITION,
     INPUT_OBJECT_TYPE_DEFINITION,

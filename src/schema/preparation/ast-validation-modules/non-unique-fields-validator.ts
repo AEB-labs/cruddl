@@ -1,7 +1,7 @@
-import {ASTValidator} from "../ast-validator";
-import {DocumentNode} from "graphql";
-import {ValidationMessage} from "../validation-message";
-import {getObjectTypes} from "../../schema-utils";
+import { ASTValidator } from '../ast-validator';
+import { DocumentNode } from 'graphql';
+import { ValidationMessage } from '../../../model/validation';
+import { getObjectTypes } from '../../schema-utils';
 
 export const VALIDATION_ERROR_NON_UNIQUE_FIELDS = "A field with the same name already exists in this type.";
 

@@ -27,6 +27,7 @@ import { AddAliasBasedResolversTransformer } from './schema-transformation-modul
 import { AddRuntimeErrorResolversTransformer } from './schema-transformation-modules/add-runtime-error-resolvers';
 import { SchemaContext } from '../../config/global';
 import { AddOperationResolversTransformer } from './schema-transformation-modules/add-operation-resolvers';
+import { Model } from '../../model';
 
 const preMergePipeline: ASTTransformer[] = [
     new AddNamespacesToTypesTransformer(),
@@ -81,24 +82,24 @@ const schemaPipeline: SchemaTransformer[] = [
     new AddRuntimeErrorResolversTransformer()
 ];
 
-export function executePostMergeTransformationPipeline(ast: DocumentNode, context: ASTTransformationContext) {
-    postMergePipeline.forEach(transformer => transformer.transform(ast, context));
+export function executePostMergeTransformationPipeline(ast: DocumentNode, context: ASTTransformationContext, model: Model) {
+    postMergePipeline.forEach(transformer => transformer.transform(ast, context, model));
 }
 
-export function executePreMergeTransformationPipeline(schemaParts: SchemaPartConfig[], rootContext: ASTTransformationContext) {
+export function executePreMergeTransformationPipeline(schemaParts: SchemaPartConfig[], rootContext: ASTTransformationContext, model: Model) {
     schemaParts.forEach(schemaPart =>
         preMergePipeline.forEach(transformer => {
             if (schemaPart.document instanceof Source) {
                 throw new Error('Expected source with DocumentType');
             }
             const { document, ...context } = schemaPart;
-            transformer.transform(schemaPart.document, { ...rootContext, ...context })
+            transformer.transform(schemaPart.document, { ...rootContext, ...context }, model)
         })
     ) ;
 }
 
-export function executeSchemaTransformationPipeline(schema: GraphQLSchema, context: SchemaTransformationContext): GraphQLSchema {
-    return schemaPipeline.reduce((s, transformer) => transformer.transform(s, context), schema);
+export function executeSchemaTransformationPipeline(schema: GraphQLSchema, context: SchemaTransformationContext, model: Model): GraphQLSchema {
+    return schemaPipeline.reduce((s, transformer) => transformer.transform(s, context, model), schema);
 }
 
 export interface ASTTransformationContext {
@@ -113,9 +114,9 @@ export interface SchemaTransformationContext extends ASTTransformationContext, S
 }
 
 export interface ASTTransformer {
-    transform(ast: DocumentNode, context: ASTTransformationContext): void;
+    transform(ast: DocumentNode, context: ASTTransformationContext, model: Model): void;
 }
 
 export interface SchemaTransformer {
-    transform(schema: GraphQLSchema, context: SchemaTransformationContext): GraphQLSchema;
+    transform(schema: GraphQLSchema, context: SchemaTransformationContext, model: Model): GraphQLSchema;
 }

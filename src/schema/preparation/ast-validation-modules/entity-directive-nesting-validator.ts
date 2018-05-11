@@ -1,5 +1,5 @@
 import {ASTValidator} from "../ast-validator";
-import {ValidationMessage} from "../validation-message";
+import {ValidationMessage} from "../../../model/validation/message";
 import {DocumentNode, FieldDefinitionNode, Location, ObjectTypeDefinitionNode, TypeNode} from "graphql";
 import {
     getNamedTypeDefinitionAST,

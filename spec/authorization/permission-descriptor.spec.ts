@@ -38,7 +38,7 @@ describe('PermissionDescriptor', () => {
 });
 
 describe('ProfileBasedPermissionDescriptor', () => {
-    const profile = new PermissionProfile({
+    const profile = new PermissionProfile('permissions', {
         permissions: [{
             access: 'read',
             roles: [ 'theRole' ]

@@ -1,6 +1,6 @@
 import {ASTValidator} from "../ast-validator";
 import {DocumentNode} from "graphql";
-import {ValidationMessage} from "../validation-message";
+import {ValidationMessage} from "../../../model/validation/message";
 import {LIST_TYPE, NON_NULL_TYPE, SCALAR_TYPE_DEFINITION} from "../../../graphql/kinds";
 import {getNamedTypeDefinitionAST, getObjectTypes, getTypeNameIgnoringNonNullAndList} from "../../schema-utils";
 import {KEY_FIELD_DIRECTIVE, ROOT_ENTITY_DIRECTIVE} from "../../schema-defaults";

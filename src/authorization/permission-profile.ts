@@ -9,7 +9,7 @@ export interface PermissionProfileConfig {
 }
 
 export function createPermissionMap(map: PermissionProfileConfigMap = {}) {
-    return mapValues(map, profile => new PermissionProfile(profile));
+    return mapValues(map, (profile, name) => new PermissionProfile(name, profile));
 }
 
 export interface PermissionConfig {
@@ -33,7 +33,7 @@ export type PermissionProfileMap = { [name: string]: PermissionProfile }
 export class PermissionProfile {
     public readonly permissions: Permission[];
 
-    constructor(config: PermissionProfileConfig) {
+    constructor(public readonly name: string, config: PermissionProfileConfig) {
         this.permissions = config.permissions.map(permissionConfig => new Permission(permissionConfig));
     }
 }

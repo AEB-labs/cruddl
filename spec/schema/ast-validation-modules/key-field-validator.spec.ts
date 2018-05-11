@@ -1,4 +1,4 @@
-import {ValidationResult} from "../../../src/schema/preparation/ast-validator";
+import {ValidationResult} from "../../../src/model/validation/result";
 import {parse} from "graphql";
 import {OnlyAllowedTypesValidator} from "../../../src/schema/preparation/ast-validation-modules/only-allowed-types-validator";
 import {

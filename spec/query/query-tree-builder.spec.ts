@@ -1,10 +1,9 @@
-import { buildASTSchema, ObjectTypeDefinitionNode, parse } from 'graphql';
+import { buildASTSchema, parse } from 'graphql';
 import { distillQuery } from '../../src/graphql/query-distiller';
 import { createQueryTree } from '../../src/query/query-tree-builder';
 import { EntitiesQueryNode, FieldQueryNode, ObjectQueryNode, TransformListQueryNode } from '../../src/query/definition';
-import { setPermissionDescriptor } from '../../src/authorization/permission-descriptors-in-schema';
-import { StaticPermissionDescriptor } from '../../src/authorization/permission-descriptors';
 import { expect } from 'chai';
+import { Model } from '../../src/model';
 
 describe('query-tree-builder', () => {
     const schema = buildASTSchema(parse(`
@@ -21,9 +20,13 @@ describe('query-tree-builder', () => {
     `));
 
     it('builds a simple entity fetch tree', () => {
+        async function test() {
+            await Promise.resolve(123);
+        }
+        test();
         const query = `{ allUsers { code: id, name } }`;
         const op = distillQuery(parse(query), schema);
-        const queryTree = createQueryTree(op);
+        const queryTree = createQueryTree(op, {} as Model);
         expect(queryTree.properties.length).to.equal(1);
         expect(queryTree.properties[0].propertyName).to.equal('allUsers');
         expect(queryTree.properties[0].valueNode).to.be.an.instanceof(TransformListQueryNode);

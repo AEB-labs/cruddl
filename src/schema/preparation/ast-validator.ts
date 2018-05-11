@@ -1,5 +1,5 @@
 import { DocumentNode } from 'graphql';
-import { Severity, ValidationMessage } from './validation-message';
+import { ValidationMessage } from '../../model/validation/message';
 import { flatMap } from '../../utils/utils';
 import { NoDuplicateTypesValidator } from './ast-validation-modules/no-duplicate-types-validator';
 import { OnlyAllowedTypesValidator } from './ast-validation-modules/only-allowed-types-validator';
@@ -32,6 +32,8 @@ import { RolesAndPermissionProfileCombinedValidator } from './ast-validation-mod
 import { UndefinedPermissionProfileValidator } from './ast-validation-modules/undefined-permission-profile';
 import { SidecarSchemaValidator } from './source-validation-modules/sidecar-schema';
 import { UndefinedTypesValidator } from './ast-validation-modules/undefined-types';
+import { ValidationResult } from '../../model/validation';
+import { Model } from '../../model';
 
 const sourceValidators: SourceValidator[]  = [
     new CheckGraphQLSyntaxValidator(),
@@ -69,7 +71,7 @@ const postMergeValidators: ASTValidator[] = [
 ];
 
 export interface ASTValidator {
-    validate(ast: DocumentNode, context: ASTValidationContext): ValidationMessage[];
+    validate(ast: DocumentNode, context: ASTValidationContext, model: Model): ValidationMessage[];
 }
 
 export interface SourceValidator {
@@ -80,14 +82,14 @@ export function validateSource(source: ProjectSource): ValidationResult {
     return new ValidationResult(flatMap(sourceValidators, validator => validator.validate(source)));
 }
 
-export function validatePostMerge(ast: DocumentNode, context: ASTValidationContext): ValidationResult {
+export function validatePostMerge(ast: DocumentNode, context: ASTValidationContext, model: Model): ValidationResult {
     return new ValidationResult(flatMap(postMergeValidators, validator => {
         // All validators rely on a valid model except for the things they test.
         // That's why they allow them to throw errors due to a bad model.
         // To keep the validators simple, we just ignore these errors and
         // trust on the appropriate validator for the modelling mistake.
         try {
-            return validator.validate(ast, context)
+            return validator.validate(ast, context, model)
         } catch(e) {
             return []
         }
@@ -97,22 +99,4 @@ export function validatePostMerge(ast: DocumentNode, context: ASTValidationConte
 export interface ASTValidationContext {
     defaultNamespace?: string
     permissionProfiles?: PermissionProfileMap
-}
-
-export class ValidationResult {
-
-    constructor(public readonly messages: ValidationMessage[]) {
-    }
-
-    public hasErrors() {
-        return this.messages.some(message => message.severity === Severity.Error)
-    }
-
-    public hasWarnings() {
-        return this.messages.some(message => message.severity === Severity.Warning)
-    }
-
-    public hasInfos() {
-        return this.messages.some(message => message.severity === Severity.Info)
-    }
 }

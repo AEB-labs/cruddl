@@ -1,6 +1,6 @@
 import {ASTValidator} from "../ast-validator";
 import {DocumentNode} from "graphql";
-import {ValidationMessage} from "../validation-message";
+import {ValidationMessage} from "../../../model/validation/message";
 import { findDirectiveWithName, getObjectTypes, getValueObjectTypes, hasDirectiveWithName } from '../../schema-utils';
 import { ROLES_DIRECTIVE, ROOT_ENTITY_DIRECTIVE } from '../../schema-defaults';
 

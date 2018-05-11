@@ -1,6 +1,6 @@
 import {ASTValidator} from "../ast-validator";
 import {DocumentNode} from "graphql";
-import {Severity, ValidationMessage} from "../validation-message";
+import {Severity, ValidationMessage} from "../../../model/validation/message";
 import {getObjectTypes} from "../../schema-utils";
 import {CHILD_ENTITY_DIRECTIVE, OBJECT_TYPE_ENTITY_DIRECTIVES, ROOT_ENTITY_DIRECTIVE} from "../../schema-defaults";
 

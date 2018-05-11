@@ -1,6 +1,6 @@
 import { ASTValidator } from '../ast-validator';
 import { DocumentNode, NamedTypeNode, visit } from 'graphql';
-import { ValidationMessage } from '../validation-message';
+import { ValidationMessage } from '../../../model/validation/message';
 import { getNamedTypeDefinitionASTIfExists } from '../../schema-utils';
 
 export const VALIDATION_ERROR_UNDEFINED_TYPE_REFERENCE = `Type not defined`;

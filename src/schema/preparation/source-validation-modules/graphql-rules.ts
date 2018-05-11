@@ -1,6 +1,6 @@
 import { SourceValidator } from '../ast-validator';
 import { ProjectSource, SourceType } from '../../../project/source';
-import { ValidationMessage } from '../validation-message';
+import { ValidationMessage } from '../../../model/validation/message';
 import { buildASTSchema, DocumentNode, GraphQLError, Location, parse, Source, specifiedRules, validate, KnownDirectivesRule, KnownTypeNamesRule, UniqueDirectivesPerLocationRule,
     KnownArgumentNamesRule,
     VariablesInAllowedPositionRule,

@@ -1,5 +1,5 @@
 import {ASTValidator} from "../ast-validator";
-import {ValidationMessage} from "../validation-message";
+import {ValidationMessage} from "../../../model/validation/message";
 import {DocumentNode, ObjectTypeDefinitionNode} from "graphql";
 import {getObjectTypes} from "../../schema-utils";
 import {flatMap} from "../../../utils/utils";

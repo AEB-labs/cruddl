@@ -1,5 +1,5 @@
 
-import {ValidationResult} from "../../../src/schema/preparation/ast-validator";
+import {ValidationResult} from "../../../src/model/validation/result";
 import {
     EntityDirectiveNestingValidator, VALIDATION_ERROR_ENTITY_IN_VALUE_OBJECT_NOT_ALLOWED,
     VALIDATION_ERROR_ROOT_ENTITY_NOT_EMBEDDABLE, VALIDATION_ERROR_EMBEDDED_CHILD_ENTITY_WITHOUT_LIST

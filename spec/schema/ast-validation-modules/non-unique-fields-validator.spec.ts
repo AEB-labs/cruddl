@@ -1,8 +1,8 @@
-import {ValidationResult} from "../../../src/schema/preparation/ast-validator";
-import {parse} from "graphql";
+import { parse } from 'graphql';
 
 import { NonUniqueFieldsValidator } from '../../../src/schema/preparation/ast-validation-modules/non-unique-fields-validator';
 import { expect } from 'chai';
+import { ValidationResult } from '../../../src/model/validation';
 
 const modelWithNonUniqueFields = `
             type Stuff @rootEntity {

@@ -1,6 +1,6 @@
 import { ASTValidationContext, ASTValidator } from '../ast-validator';
 import { ArgumentNode, DocumentNode } from 'graphql';
-import { ValidationMessage } from '../validation-message';
+import { ValidationMessage } from '../../../model/validation/message';
 import { findDirectiveWithName, getNodeByName, getRootEntityTypes } from '../../schema-utils';
 import {
     DEFAULT_PERMISSION_PROFILE,

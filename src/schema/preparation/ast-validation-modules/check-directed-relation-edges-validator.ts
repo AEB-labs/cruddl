@@ -1,6 +1,6 @@
 import {ASTValidator} from "../ast-validator";
 import {DocumentNode, FieldDefinitionNode, Location, ObjectTypeDefinitionNode} from "graphql";
-import {ValidationMessage} from "../validation-message";
+import {ValidationMessage} from "../../../model/validation/message";
 import {
     findDirectiveWithName,
     getNodeByName,

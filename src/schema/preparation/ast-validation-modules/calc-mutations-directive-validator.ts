@@ -3,7 +3,7 @@ import { LIST_TYPE } from '../../../graphql/kinds';
 import { CALC_MUTATIONS_DIRECTIVE, CALC_MUTATIONS_OPERATORS_ARG } from '../../schema-defaults';
 import { findDirectiveWithName, getCalcMutationOperatorsFromDirective, getObjectTypes, getTypeNameIgnoringNonNullAndList } from '../../schema-utils';
 import { ASTValidator } from '../ast-validator';
-import { ValidationMessage } from '../validation-message';
+import { ValidationMessage } from '../../../model/validation/message';
 
 export const VALIDATION_ERROR_NO_OPERATORS = `Directive "@${CALC_MUTATIONS_DIRECTIVE}" must have an argument named "${CALC_MUTATIONS_OPERATORS_ARG}" with at least one operator.`;
 export const VALIDATION_ERROR_DUPLICATE_OPERATORS = `Each operator may only be included once, in directive "@${CALC_MUTATIONS_DIRECTIVE}"`;

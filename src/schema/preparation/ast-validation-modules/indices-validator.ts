@@ -3,7 +3,7 @@ import {
     DocumentNode, EnumTypeDefinitionNode, GraphQLBoolean, GraphQLFloat, GraphQLID, GraphQLInt, GraphQLString, Location,
     ObjectTypeDefinitionNode, StringValueNode, ValueNode
 } from 'graphql';
-import {ValidationMessage} from "../validation-message";
+import {ValidationMessage} from "../../../model/validation/message";
 import {
     findDirectiveWithName, getChildEntityTypes, getEntityExtensionTypes, getNamedTypeDefinitionAST, getNodeByName,
     getRootEntityTypes, getTypeNameIgnoringNonNullAndList, getValueObjectTypes

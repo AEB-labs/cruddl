@@ -3,7 +3,7 @@ import {
     ASTTransformationContext, executePostMergeTransformationPipeline, executePreMergeTransformationPipeline,
     executeSchemaTransformationPipeline, SchemaTransformationContext
 } from './preparation/transformation-pipeline';
-import { validatePostMerge, validateSource, ValidationResult } from './preparation/ast-validator';
+import { validatePostMerge, validateSource} from './preparation/ast-validator';
 import { SchemaConfig, SchemaPartConfig } from '../config/schema-config';
 import { globalContext } from '../config/global';
 import { createPermissionMap } from '../authorization/permission-profile';
@@ -11,8 +11,10 @@ import { Project } from '../project/project';
 import { DatabaseAdapter } from '../database/database-adapter';
 import { SourceType } from '../project/source';
 import { load as loadYaml } from 'js-yaml';
-import { ValidationMessage } from './preparation/validation-message';
+import { ValidationMessage } from '../model/validation/message';
 import { flatMap } from '../utils/utils';
+import { createModel, Model } from '../model';
+import { ValidationResult } from '../model/validation/result';
 
 /**
  * Validates a project and thus determines whether createSchema() would succeed
@@ -28,7 +30,7 @@ export function validateSchema(project: Project): ValidationResult {
 
 
 function validateAndPrepareSchema(project: Project):
-        { validationResult: ValidationResult, schemaConfig: SchemaConfig, mergedSchema: DocumentNode, rootContext: ASTTransformationContext } {
+        { validationResult: ValidationResult, schemaConfig: SchemaConfig, mergedSchema: DocumentNode, rootContext: ASTTransformationContext, model: Model } {
     const messages: ValidationMessage[] = [];
 
     const sources = flatMap(project.sources, source => {
@@ -45,14 +47,18 @@ function validateAndPrepareSchema(project: Project):
         defaultNamespace: schemaConfig.defaultNamespace,
         permissionProfiles: createPermissionMap(schemaConfig.permissionProfiles)
     };
-    executePreMergeTransformationPipeline(schemaConfig.schemaParts, rootContext);
+
+    const model = createModel(schemaConfig);
+
+    executePreMergeTransformationPipeline(schemaConfig.schemaParts, rootContext, model);
     const mergedSchema: DocumentNode = mergeSchemaDefinition(schemaConfig);
 
-    const result = validatePostMerge(mergedSchema, rootContext);
+    const result = validatePostMerge(mergedSchema, rootContext, model);
     messages.push(...result.messages);
+    messages.push(...model.validationResult.messages);
 
     const validationResult = new ValidationResult(messages);
-    return { validationResult, schemaConfig, mergedSchema, rootContext };
+    return { validationResult, schemaConfig, mergedSchema, rootContext, model };
 }
 
 /**
@@ -66,12 +72,12 @@ export function createSchema(project: Project, databaseAdapter: DatabaseAdapter)
     try {
         const logger = globalContext.loggerProvider.getLogger('schema-builder');
 
-        const { validationResult, schemaConfig, mergedSchema, rootContext } = validateAndPrepareSchema(project);
+        const { validationResult, schemaConfig, mergedSchema, rootContext, model } = validateAndPrepareSchema(project);
         if (validationResult.hasErrors()) {
             throw new Error('Project has errors:\n' + validationResult.messages.map(msg => msg.toString()).join('\n'))
         }
 
-        executePostMergeTransformationPipeline(mergedSchema, rootContext);
+        executePostMergeTransformationPipeline(mergedSchema, rootContext, model);
         if (logger.isTraceEnabled()) {
             logger.trace(`Transformed schema: ${print(mergedSchema)}`);
         }
@@ -83,9 +89,20 @@ export function createSchema(project: Project, databaseAdapter: DatabaseAdapter)
         };
 
         const graphQLSchema = buildASTSchema(mergedSchema);
-        const finalSchema = executeSchemaTransformationPipeline(graphQLSchema, schemaContext);
+        const finalSchema = executeSchemaTransformationPipeline(graphQLSchema, schemaContext, model);
         logger.info('Schema created successfully.');
         return finalSchema;
+    } finally {
+        globalContext.unregisterContext();
+    }
+}
+
+
+export function getModel(project: Project): Model {
+    globalContext.registerContext({loggerProvider: project.loggerProvider});
+    try {
+        const { model} = validateAndPrepareSchema(project);
+        return model;
     } finally {
         globalContext.unregisterContext();
     }

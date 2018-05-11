@@ -1,9 +1,5 @@
-import {ValidationResult} from "../../../src/schema/preparation/ast-validator";
-import {parse} from "graphql";
-import {
-    RootEntitiesWithoutReadRolesValidator,
-    VALIDATION_WARNING_MISSING_ROLE_ON_ROOT_ENTITY
-} from "../../../src/schema/preparation/ast-validation-modules/root-entities-without-read-roles";
+import { ValidationResult } from '../../../src/model/validation';
+import { parse } from 'graphql';
 import {
     NoPermissionProfileValidator, VALIDATION_ERROR_NO_PERMISSION_PROFILE
 } from '../../../src/schema/preparation/ast-validation-modules/no-permission-profile';
@@ -38,7 +34,7 @@ describe('no-permission-profile validator', () => {
 
     it('accepts with default permission profile', () => {
         const ast = parse(modelWithRootEntityWithoutRole);
-        const validationResult = new ValidationResult(new NoPermissionProfileValidator().validate(ast, {permissionProfiles:{[DEFAULT_PERMISSION_PROFILE]: {permissions:[]}}}));
+        const validationResult = new ValidationResult(new NoPermissionProfileValidator().validate(ast, {permissionProfiles:{[DEFAULT_PERMISSION_PROFILE]: {name: 'test', permissions:[]}}}));
         expect(validationResult.hasErrors()).to.be.false;
     });
 

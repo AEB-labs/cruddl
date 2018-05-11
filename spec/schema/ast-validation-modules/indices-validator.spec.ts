@@ -1,5 +1,5 @@
 import { parse } from 'graphql';
-import { ValidationResult } from '../../../src/schema/preparation/ast-validator';
+import { ValidationResult } from '../../../src/model/validation/result';
 import {
     IndicesValidator, VALIDATION_ERROR_INDICES_INVALID_FIELDS_ARGUMENT,
     VALIDATION_ERROR_INDICES_INVALID_PATH_BAD_SYNTAX,
