@@ -1,0 +1,1 @@
+--require ts-node/register --require ./spec/init.mocha.ts ./spec/**/*.spec.ts

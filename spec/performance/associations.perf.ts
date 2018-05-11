@@ -5,6 +5,7 @@ import {
     initEnvironment, TestEnvironment
 } from './support/helpers';
 
+
 async function setUpPapersAndReaders(environment: TestEnvironment, config: { paperCount: number, userCount: number, associationCount: number}) {
     await Promise.all([
         addManyPapersWithAQL(environment, config.paperCount, createLargePaper(1)),

@@ -1,6 +1,7 @@
 import {ListTypeNode, NonNullTypeNode, ObjectTypeDefinitionNode, parse} from "graphql";
 import {NonNullableListsTransformer} from "../../../../src/schema/preparation/post-merge-ast-transformation-modules/non-nullable-lists-transformer";
 import {LIST_TYPE, NAMED_TYPE, NON_NULL_TYPE} from "../../../../src/graphql/kinds";
+import { expect } from 'chai';
 
 const sdl1 = `
             type Stuff {
@@ -53,7 +54,7 @@ describe('non-nullable-lists transformer', () => {
         const stuffDefinition = ast.definitions[0] as ObjectTypeDefinitionNode;
         const listElementStuffDefinition = ast.definitions[1] as ObjectTypeDefinitionNode;
         // check old ast
-        expect(listElementStuffDefinition.fields[0].type.kind).toBe(NAMED_TYPE);
+        expect(listElementStuffDefinition.fields[0].type.kind).to.equal(NAMED_TYPE);
     });
 
     it('transforms [ListElem]', () => {
@@ -61,8 +62,8 @@ describe('non-nullable-lists transformer', () => {
         const stuffDefinition = ast.definitions[0] as ObjectTypeDefinitionNode;
         const listElementStuffDefinition = ast.definitions[1] as ObjectTypeDefinitionNode;
         // check old ast
-        expect(stuffDefinition.fields[2].type.kind).toBe(LIST_TYPE);
-        expect((<ListTypeNode>stuffDefinition.fields[2].type).type.kind).toBe(NAMED_TYPE);
+        expect(stuffDefinition.fields[2].type.kind).to.equal(LIST_TYPE);
+        expect((<ListTypeNode>stuffDefinition.fields[2].type).type.kind).to.equal(NAMED_TYPE);
 
         // check new ast
         new NonNullableListsTransformer().transform(ast);
@@ -70,11 +71,11 @@ describe('non-nullable-lists transformer', () => {
         const listElementStuffDefinitionNew = ast.definitions[1] as ObjectTypeDefinitionNode;
 
         // remains the same, non-list types will not be touched.
-        expect(listElementStuffDefinitionNew.fields[0].type.kind).toBe(NAMED_TYPE);
+        expect(listElementStuffDefinitionNew.fields[0].type.kind).to.equal(NAMED_TYPE);
 
-        expect(stuffDefinitionNew.fields[2].type.kind).toBe(NON_NULL_TYPE);
-        expect((<NonNullTypeNode>stuffDefinitionNew.fields[2].type).type.kind).toBe(LIST_TYPE);
-        expect((<ListTypeNode>(<NonNullTypeNode>stuffDefinitionNew.fields[2].type).type).type.kind).toBe(NON_NULL_TYPE);
+        expect(stuffDefinitionNew.fields[2].type.kind).to.equal(NON_NULL_TYPE);
+        expect((<NonNullTypeNode>stuffDefinitionNew.fields[2].type).type.kind).to.equal(LIST_TYPE);
+        expect((<ListTypeNode>(<NonNullTypeNode>stuffDefinitionNew.fields[2].type).type).type.kind).to.equal(NON_NULL_TYPE);
 
     });
 
@@ -85,11 +86,11 @@ describe('non-nullable-lists transformer', () => {
         const listElementStuffDefinitionNew = ast.definitions[1] as ObjectTypeDefinitionNode;
 
         // remains the same, non-list types will not be touched.
-        expect(listElementStuffDefinitionNew.fields[0].type.kind).toBe(NAMED_TYPE);
+        expect(listElementStuffDefinitionNew.fields[0].type.kind).to.equal(NAMED_TYPE);
 
-        expect(stuffDefinitionNew.fields[2].type.kind).toBe(NON_NULL_TYPE);
-        expect((<NonNullTypeNode>stuffDefinitionNew.fields[2].type).type.kind).toBe(LIST_TYPE);
-        expect((<ListTypeNode>(<NonNullTypeNode>stuffDefinitionNew.fields[2].type).type).type.kind).toBe(NON_NULL_TYPE);
+        expect(stuffDefinitionNew.fields[2].type.kind).to.equal(NON_NULL_TYPE);
+        expect((<NonNullTypeNode>stuffDefinitionNew.fields[2].type).type.kind).to.equal(LIST_TYPE);
+        expect((<ListTypeNode>(<NonNullTypeNode>stuffDefinitionNew.fields[2].type).type).type.kind).to.equal(NON_NULL_TYPE);
 
     });
 
@@ -100,11 +101,11 @@ describe('non-nullable-lists transformer', () => {
         const listElementStuffDefinitionNew = ast.definitions[1] as ObjectTypeDefinitionNode;
 
         // remains the same, non-list types will not be touched.
-        expect(listElementStuffDefinitionNew.fields[0].type.kind).toBe(NAMED_TYPE);
+        expect(listElementStuffDefinitionNew.fields[0].type.kind).to.equal(NAMED_TYPE);
 
-        expect(stuffDefinitionNew.fields[2].type.kind).toBe(NON_NULL_TYPE);
-        expect((<NonNullTypeNode>stuffDefinitionNew.fields[2].type).type.kind).toBe(LIST_TYPE);
-        expect((<ListTypeNode>(<NonNullTypeNode>stuffDefinitionNew.fields[2].type).type).type.kind).toBe(NON_NULL_TYPE);
+        expect(stuffDefinitionNew.fields[2].type.kind).to.equal(NON_NULL_TYPE);
+        expect((<NonNullTypeNode>stuffDefinitionNew.fields[2].type).type.kind).to.equal(LIST_TYPE);
+        expect((<ListTypeNode>(<NonNullTypeNode>stuffDefinitionNew.fields[2].type).type).type.kind).to.equal(NON_NULL_TYPE);
 
     });
 
@@ -115,11 +116,11 @@ describe('non-nullable-lists transformer', () => {
         const listElementStuffDefinitionNew = ast.definitions[1] as ObjectTypeDefinitionNode;
 
         // remains the same, non-list types will not be touched.
-        expect(listElementStuffDefinitionNew.fields[0].type.kind).toBe(NAMED_TYPE);
+        expect(listElementStuffDefinitionNew.fields[0].type.kind).to.equal(NAMED_TYPE);
 
-        expect(stuffDefinitionNew.fields[2].type.kind).toBe(NON_NULL_TYPE);
-        expect((<NonNullTypeNode>stuffDefinitionNew.fields[2].type).type.kind).toBe(LIST_TYPE);
-        expect((<ListTypeNode>(<NonNullTypeNode>stuffDefinitionNew.fields[2].type).type).type.kind).toBe(NON_NULL_TYPE);
+        expect(stuffDefinitionNew.fields[2].type.kind).to.equal(NON_NULL_TYPE);
+        expect((<NonNullTypeNode>stuffDefinitionNew.fields[2].type).type.kind).to.equal(LIST_TYPE);
+        expect((<ListTypeNode>(<NonNullTypeNode>stuffDefinitionNew.fields[2].type).type).type.kind).to.equal(NON_NULL_TYPE);
 
     });
 

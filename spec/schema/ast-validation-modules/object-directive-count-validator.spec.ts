@@ -4,6 +4,7 @@ import {
     ObjectTypeDirectiveCountValidator,
     VALIDATION_ERROR_MISSING_OBJECT_TYPE_DIRECTIVE, VALIDATION_ERROR_MULTIPLE_OBJECT_TYPE_DIRECTIVES
 } from '../../../src/schema/preparation/ast-validation-modules/object-type-directive-count-validator';
+import { expect } from 'chai';
 
 const modelWithTypeWithoutDirective = `
             type Stuff {
@@ -46,23 +47,23 @@ describe('object directive count validator', () => {
     it('finds types without directive', () => {
         const ast = parse(modelWithTypeWithoutDirective);
         const validationResult = new ValidationResult(new ObjectTypeDirectiveCountValidator().validate(ast));
-        expect(validationResult.hasErrors()).toBeTruthy();
-        expect(validationResult.messages.length).toBe(1);
-        expect(validationResult.messages[0].message).toBe(VALIDATION_ERROR_MISSING_OBJECT_TYPE_DIRECTIVE);
+        expect(validationResult.hasErrors()).to.be.true;
+        expect(validationResult.messages.length).to.equal(1);
+        expect(validationResult.messages[0].message).to.equal(VALIDATION_ERROR_MISSING_OBJECT_TYPE_DIRECTIVE);
     });
 
     it('finds types with too many directive', () => {
         const ast = parse(modelWithTypeWithToManyDirectives);
         const validationResult = new ValidationResult(new ObjectTypeDirectiveCountValidator().validate(ast));
-        expect(validationResult.hasErrors()).toBeTruthy();
-        expect(validationResult.messages.length).toBe(1);
-        expect(validationResult.messages[0].message).toBe(VALIDATION_ERROR_MULTIPLE_OBJECT_TYPE_DIRECTIVES);
+        expect(validationResult.hasErrors()).to.be.true;
+        expect(validationResult.messages.length).to.equal(1);
+        expect(validationResult.messages[0].message).to.equal(VALIDATION_ERROR_MULTIPLE_OBJECT_TYPE_DIRECTIVES);
     });
 
     it('accepts correct type directives', () => {
         const ast = parse(modelWithoutDirectiveFlaws);
         const validationResult = new ValidationResult(new ObjectTypeDirectiveCountValidator().validate(ast));
-        expect(validationResult.hasErrors()).toBeFalsy();
+        expect(validationResult.hasErrors()).to.be.false;
     })
 
 });

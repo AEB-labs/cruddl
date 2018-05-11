@@ -3,6 +3,7 @@ import {findDirectiveWithName, getObjectTypes} from "../../../../src/schema/sche
 import {AddNamespacesToTypesTransformer} from "../../../../src/schema/preparation/pre-merge-ast-transformation-modules/add-namespaces-to-types-transformer";
 import {NAMESPACE_DIRECTIVE, ROOT_ENTITY_DIRECTIVE} from "../../../../src/schema/schema-defaults";
 import {STRING} from "../../../../src/graphql/kinds";
+import { expect } from 'chai';
 
 const modelWithRootEntity = `
             type Stuff @rootEntity {
@@ -20,18 +21,18 @@ describe('add namespaces to types transformer', () => {
     it('adds local namespaces to object types', () => {
         const ast = parse(modelWithRootEntity);
         getObjectTypes(ast).forEach(objectType => {
-            expect(objectType.directives!.length).toBe(1);
-            expect(objectType.directives![0].name.value).toBe(ROOT_ENTITY_DIRECTIVE);
+            expect(objectType.directives!.length).to.equal(1);
+            expect(objectType.directives![0].name.value).to.equal(ROOT_ENTITY_DIRECTIVE);
         });
         new AddNamespacesToTypesTransformer().transform(ast, {localNamespace: 'localNS'});
         getObjectTypes(ast).forEach(objectType => {
             const namespaceDirective = findDirectiveWithName(objectType, NAMESPACE_DIRECTIVE);
-            expect(namespaceDirective).toBeDefined();
+            expect(namespaceDirective).to.not.be.undefined;
             const argValue = namespaceDirective!.arguments![0].value;
             if (argValue.kind !== STRING) {
                 fail('Expected argument of type String');
             } else {
-                expect(argValue.value).toBe('localNS')
+                expect(argValue.value).to.equal('localNS')
             }
         });
     });
@@ -39,18 +40,18 @@ describe('add namespaces to types transformer', () => {
     it('adds default namespaces to object types', () => {
         const ast = parse(modelWithRootEntity);
         getObjectTypes(ast).forEach(objectType => {
-            expect(objectType.directives!.length).toBe(1);
-            expect(objectType.directives![0].name.value).toBe(ROOT_ENTITY_DIRECTIVE);
+            expect(objectType.directives!.length).to.equal(1);
+            expect(objectType.directives![0].name.value).to.equal(ROOT_ENTITY_DIRECTIVE);
         });
         new AddNamespacesToTypesTransformer().transform(ast, {defaultNamespace: 'someNS'});
         getObjectTypes(ast).forEach(objectType => {
             const namespaceDirective = findDirectiveWithName(objectType, NAMESPACE_DIRECTIVE);
-            expect(namespaceDirective).toBeDefined();
+            expect(namespaceDirective).to.not.be.undefined;
             const argValue = namespaceDirective!.arguments![0].value;
             if (argValue.kind !== STRING) {
                 fail('Expected argument of type String');
             } else {
-                expect(argValue.value).toBe('someNS')
+                expect(argValue.value).to.equal('someNS')
             }
         });
     });
@@ -58,18 +59,18 @@ describe('add namespaces to types transformer', () => {
     it('local namespace wins over default namespace', () => {
         const ast = parse(modelWithRootEntity);
         getObjectTypes(ast).forEach(objectType => {
-            expect(objectType.directives!.length).toBe(1);
-            expect(objectType.directives![0].name.value).toBe(ROOT_ENTITY_DIRECTIVE);
+            expect(objectType.directives!.length).to.equal(1);
+            expect(objectType.directives![0].name.value).to.equal(ROOT_ENTITY_DIRECTIVE);
         });
         new AddNamespacesToTypesTransformer().transform(ast, {localNamespace: 'localNS', defaultNamespace: 'defaultNS'});
         getObjectTypes(ast).forEach(objectType => {
             const namespaceDirective = findDirectiveWithName(objectType, NAMESPACE_DIRECTIVE);
-            expect(namespaceDirective).toBeDefined();
+            expect(namespaceDirective).to.not.be.undefined;
             const argValue = namespaceDirective!.arguments![0].value;
             if (argValue.kind !== STRING) {
                 fail('Expected argument of type String');
             } else {
-                expect(argValue.value).toBe('localNS')
+                expect(argValue.value).to.equal('localNS')
             }
         });
     });
@@ -77,11 +78,11 @@ describe('add namespaces to types transformer', () => {
     it('ignores non root object types', () => {
         const ast = parse(modelWithoutRootEntity);
         getObjectTypes(ast).forEach(objectType => {
-            expect(objectType.directives!.length).toBe(0);
+            expect(objectType.directives!.length).to.equal(0);
         });
         new AddNamespacesToTypesTransformer().transform(ast, {localNamespace: 'localNS', defaultNamespace: 'defaultNS'});
         getObjectTypes(ast).forEach(objectType => {
-            expect(objectType.directives!.length).toBe(0);
+            expect(objectType.directives!.length).to.equal(0);
         });
     });
 });

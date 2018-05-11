@@ -3,6 +3,7 @@ import {
     UnaryOperator
 } from '../../src/query/definition';
 import { simplifyBooleans } from '../../src/query/query-tree-utils';
+import { expect } from 'chai';
 
 describe('query-tree-utils', () => {
     describe('simplifyBooleans', () => {
@@ -82,7 +83,7 @@ describe('query-tree-utils', () => {
                         const expected = evaluate(testNode);
                         const simplified = simplifyBooleans(testNode);
                         const actual = evaluate(simplified);
-                        expect(actual).toBe(expected, 'simplification output: ' + simplified.describe());
+                        expect(actual).to.equal(expected, 'simplification output: ' + simplified.describe());
                     });
                 }
             }

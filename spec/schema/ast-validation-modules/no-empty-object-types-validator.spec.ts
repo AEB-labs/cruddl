@@ -3,6 +3,7 @@ import { parse } from 'graphql';
 import {
     NoEmptyObjectTypesValidator, VALIDATION_ERROR_OBJECT_TYPE_WITHOUT_FIELDS
 } from '../../../src/schema/preparation/ast-validation-modules/no-empty-object-types-validator';
+import { expect } from 'chai';
 
 const modelWithObjectTypeWithFields = `
             type Stuff {
@@ -37,9 +38,9 @@ describe('no empty object types validator', () => {
         }
         const ast = parse(modelWithRootEntityWithoutFields);
         const validationResult = new ValidationResult(new NoEmptyObjectTypesValidator().validate(ast));
-        expect(validationResult.hasErrors()).toBeTruthy();
-        expect(validationResult.messages.length).toBe(1);
-        expect(validationResult.messages[0].message).toBe(VALIDATION_ERROR_OBJECT_TYPE_WITHOUT_FIELDS);
+        expect(validationResult.hasErrors()).to.be.true;
+        expect(validationResult.messages.length).to.equal(1);
+        expect(validationResult.messages[0].message).to.equal(VALIDATION_ERROR_OBJECT_TYPE_WITHOUT_FIELDS);
     });
 
     it('rejects valueObjects without fields', () => {
@@ -48,16 +49,16 @@ describe('no empty object types validator', () => {
         }
         const ast = parse(modelWithValueObjectsWithoutFields);
         const validationResult = new ValidationResult(new NoEmptyObjectTypesValidator().validate(ast));
-        expect(validationResult.hasWarnings()).toBeFalsy();
-        expect(validationResult.hasErrors()).toBeTruthy();
-        expect(validationResult.messages.length).toBe(1);
-        expect(validationResult.messages[0].message).toBe(VALIDATION_ERROR_OBJECT_TYPE_WITHOUT_FIELDS);
+        expect(validationResult.hasWarnings()).to.be.false;
+        expect(validationResult.hasErrors()).to.be.true;
+        expect(validationResult.messages.length).to.equal(1);
+        expect(validationResult.messages[0].message).to.equal(VALIDATION_ERROR_OBJECT_TYPE_WITHOUT_FIELDS);
     });
 
     it('accepts object types with fields', () => {
         const ast = parse(modelWithObjectTypeWithFields);
         const validationResult = new ValidationResult(new NoEmptyObjectTypesValidator().validate(ast));
-        expect(validationResult.hasWarnings()).toBeFalsy();
+        expect(validationResult.hasWarnings()).to.be.false;
     })
 
 });

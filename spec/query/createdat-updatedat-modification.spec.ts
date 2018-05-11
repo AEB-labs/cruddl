@@ -4,6 +4,7 @@ import { createTempDatabase } from '../regression/initialization';
 import { sleep } from '../../src/utils/utils';
 import { Project } from '../../src/project/project';
 import { ProjectSource } from '../../src/project/source';
+import { expect } from 'chai';
 
 describe('mutation', () => {
 
@@ -90,8 +91,8 @@ describe('mutation', () => {
         const id = createResult.data.createDelivery.id;
         const createCreatedAt = createResult.data.createDelivery.createdAt;
         const createUpdatedAt = createResult.data.createDelivery.updatedAt;
-        expect(createCreatedAt).toBeDefined();
-        expect(createUpdatedAt).toBe(createCreatedAt);
+        expect(createCreatedAt).to.not.be.undefined;
+        expect(createUpdatedAt).to.equal(createCreatedAt);
 
         await sleep(1);
 
@@ -101,12 +102,12 @@ describe('mutation', () => {
         const updateCreatedAt = updateResult.data.updateDelivery.createdAt;
         const updateUpdatedAt = updateResult.data.updateDelivery.updatedAt;
         // createdAt must not be changed.
-        expect(updateCreatedAt).toBe(createCreatedAt);
+        expect(updateCreatedAt).to.equal(createCreatedAt);
         // updatedAt has changed
         const minimumEstimatedUpdatedAt = Date.parse(updateCreatedAt) + 1;
         const maximumEstimatedUpdatedAt = Date.now();
-        expect(Date.parse(updateUpdatedAt)).toBeGreaterThan(minimumEstimatedUpdatedAt);
-        expect(Date.parse(updateUpdatedAt)).toBeLessThan(maximumEstimatedUpdatedAt);
+        expect(Date.parse(updateUpdatedAt)).to.be.greaterThan(minimumEstimatedUpdatedAt);
+        expect(Date.parse(updateUpdatedAt)).to.be.lessThan(maximumEstimatedUpdatedAt);
 
         await sleep(1);
 
@@ -115,15 +116,15 @@ describe('mutation', () => {
         const createItemCreatedAt = createItemResult.data.createDeliveryItem.createdAt;
         const createItemUpdatedAt = createItemResult.data.createDeliveryItem.updatedAt;
         const itemId = createItemResult.data.createDeliveryItem.id;
-        expect(createItemCreatedAt).toBeDefined();
-        expect(createItemUpdatedAt).toBe(createItemCreatedAt);
+        expect(createItemCreatedAt).to.not.be.undefined;
+        expect(createItemUpdatedAt).to.equal(createItemCreatedAt);
 
         // update delivery but set relation only
         const preparedUpdateDeliveryRelationOnly = updateDeliveryRelationOnly.replace('%id%', id).replace('%itemId%', itemId);
         const updateDeliveryRelationOnlyResult: any = await execute(schema, parse(preparedUpdateDeliveryRelationOnly), {}, context);
         const updateDeliveryRelationOnlyUpdatedAt = updateDeliveryRelationOnlyResult.data.updateDelivery.updatedAt;
         // updatedAt must not have been changed, because only a relation was modified.
-        expect(updateDeliveryRelationOnlyUpdatedAt).toBe(updateUpdatedAt);
+        expect(updateDeliveryRelationOnlyUpdatedAt).to.equal(updateUpdatedAt);
 
         // update delivery item and remove delivery.
         const preparedUpdateDeliveryItemRelationOnly = updateDeliveryItemRelationOnly.replace('%itemId%', itemId);
@@ -132,8 +133,8 @@ describe('mutation', () => {
         const updateItemUpdatedAt = updateDeliveryItemRelationOnlyResult.data.updateDeliveryItem.updatedAt;
 
         // item createdAt and updatedAt still the same
-        expect(updateItemCreatedAt).toBe(createItemCreatedAt);
-        expect(updateItemUpdatedAt).toBe(createItemUpdatedAt);
+        expect(updateItemCreatedAt).to.equal(createItemCreatedAt);
+        expect(updateItemUpdatedAt).to.equal(createItemUpdatedAt);
 
         // check persistence of delivery updated at
         const preparedSelectDelivery = selectDelivery.replace('%id%', id);
@@ -142,8 +143,8 @@ describe('mutation', () => {
         const selectUpdatedAt = selectResult.data.Delivery.updatedAt;
 
         // createdAt still not changed
-        expect(selectCreatedAt).toBe(createCreatedAt);
+        expect(selectCreatedAt).to.equal(createCreatedAt);
         // former result is persisted
-        expect(selectUpdatedAt).toBe(updateUpdatedAt);
+        expect(selectUpdatedAt).to.equal(updateUpdatedAt);
     });
 });

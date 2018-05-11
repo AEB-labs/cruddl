@@ -17,6 +17,7 @@ import {
     VALIDATION_ERROR_UNDEFINED_PERMISSION_PROFILE
 } from '../../../src/schema/preparation/ast-validation-modules/undefined-permission-profile';
 import { Permission, PermissionProfile } from '../../../src/authorization/permission-profile';
+import { expect } from 'chai';
 
 const modelWithRootEntityWithPermissionProfile = `
             type Stuff @rootEntity(permissionProfile: "test") {
@@ -58,9 +59,9 @@ describe('undefined-permission-profile validator', () => {
     it('rejects missing permissionProfile', () => {
         const ast = parse(modelWithRootEntityWithPermissionProfile);
         const validationResult = new ValidationResult(new UndefinedPermissionProfileValidator().validate(ast, {}));
-        expect(validationResult.hasErrors()).toBeTruthy();
-        expect(validationResult.messages.length).toBe(1);
-        expect(validationResult.messages[0].message).toBe(VALIDATION_ERROR_UNDEFINED_PERMISSION_PROFILE);
+        expect(validationResult.hasErrors()).to.be.true;
+        expect(validationResult.messages.length).to.equal(1);
+        expect(validationResult.messages[0].message).to.equal(VALIDATION_ERROR_UNDEFINED_PERMISSION_PROFILE);
     });
 
     it('accepts existing permission profile', () => {
@@ -68,7 +69,7 @@ describe('undefined-permission-profile validator', () => {
         const validationResult = new ValidationResult(new UndefinedPermissionProfileValidator().validate(ast, {
             permissionProfiles: { test: testProfile }
         }));
-        expect(validationResult.hasErrors()).toBeFalsy();
+        expect(validationResult.hasErrors()).to.be.false;
     });
 
     it('rejects permissionProfile with accessGroup if field is missing', () => {
@@ -76,9 +77,9 @@ describe('undefined-permission-profile validator', () => {
         const validationResult = new ValidationResult(new UndefinedPermissionProfileValidator().validate(ast, {
             permissionProfiles: { test: testProfileWithAccessGroup }
         }));
-        expect(validationResult.hasErrors()).toBeTruthy();
-        expect(validationResult.messages.length).toBe(1);
-        expect(validationResult.messages[0].message).toBe(VALIDATION_ERROR_ACCESS_GROUP_FIELD_MISSING);
+        expect(validationResult.hasErrors()).to.be.true;
+        expect(validationResult.messages.length).to.equal(1);
+        expect(validationResult.messages[0].message).to.equal(VALIDATION_ERROR_ACCESS_GROUP_FIELD_MISSING);
     });
 
     it('accepts existing permission profile with accessGroup if field exists as string', () => {
@@ -86,7 +87,7 @@ describe('undefined-permission-profile validator', () => {
         const validationResult = new ValidationResult(new UndefinedPermissionProfileValidator().validate(ast, {
             permissionProfiles: { test: testProfileWithAccessGroup }
         }));
-        expect(validationResult.hasErrors()).toBeFalsy();
+        expect(validationResult.hasErrors()).to.be.false;
     });
 
     it('accepts existing permission profile with accessGroup if field exists as enum', () => {
@@ -94,7 +95,7 @@ describe('undefined-permission-profile validator', () => {
         const validationResult = new ValidationResult(new UndefinedPermissionProfileValidator().validate(ast, {
             permissionProfiles: { test: testProfileWithAccessGroup }
         }));
-        expect(validationResult.hasErrors()).toBeFalsy();
+        expect(validationResult.hasErrors()).to.be.false;
     });
 
     it('rejects existing permission profile with accessGroup if field exists as invalid type', () => {
@@ -102,9 +103,9 @@ describe('undefined-permission-profile validator', () => {
         const validationResult = new ValidationResult(new UndefinedPermissionProfileValidator().validate(ast, {
             permissionProfiles: { test: testProfileWithAccessGroup }
         }));
-        expect(validationResult.hasErrors()).toBeTruthy();
-        expect(validationResult.messages.length).toBe(1);
-        expect(validationResult.messages[0].message).toBe(VALIDATION_ERROR_ACCESS_GROUP_FIELD_WRONG_TYPE);
+        expect(validationResult.hasErrors()).to.be.true;
+        expect(validationResult.messages.length).to.equal(1);
+        expect(validationResult.messages[0].message).to.equal(VALIDATION_ERROR_ACCESS_GROUP_FIELD_WRONG_TYPE);
     });
 
 });

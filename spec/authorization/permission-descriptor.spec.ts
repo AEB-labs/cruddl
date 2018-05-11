@@ -7,9 +7,10 @@ import {
     BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, FieldQueryNode, LiteralQueryNode, QueryNode,
     VariableQueryNode
 } from '../../src/query/definition';
-import any = jasmine.any;
 import { GraphQLObjectType, GraphQLString } from 'graphql';
 import { ACCESS_GROUP_FIELD } from '../../src/schema/schema-defaults';
+import { expect } from 'chai';
+
 
 describe('PermissionDescriptor', () => {
     describe('canAccess', () => {
@@ -23,15 +24,15 @@ describe('PermissionDescriptor', () => {
         const operation = AccessOperation.READ;
 
         it('returns GRANTED if constant true', () => {
-            expect(new MockPermissionDescriptor(ConstBoolQueryNode.TRUE).canAccess(authContext, operation)).toBe(PermissionResult.GRANTED);
+            expect(new MockPermissionDescriptor(ConstBoolQueryNode.TRUE).canAccess(authContext, operation)).to.equal(PermissionResult.GRANTED);
         });
 
         it('returns DENIED if constant false', () => {
-            expect(new MockPermissionDescriptor(ConstBoolQueryNode.FALSE).canAccess(authContext, operation)).toBe(PermissionResult.DENIED);
+            expect(new MockPermissionDescriptor(ConstBoolQueryNode.FALSE).canAccess(authContext, operation)).to.equal(PermissionResult.DENIED);
         });
 
         it('returns CONDITIONAL on anything else', () => {
-            expect(new MockPermissionDescriptor(new LiteralQueryNode(true)).canAccess(authContext, operation)).toBe(PermissionResult.CONDITIONAL);
+            expect(new MockPermissionDescriptor(new LiteralQueryNode(true)).canAccess(authContext, operation)).to.equal(PermissionResult.CONDITIONAL);
         });
     })
 });
@@ -51,27 +52,28 @@ describe('ProfileBasedPermissionDescriptor', () => {
     const descriptor = new ProfileBasedPermissionDescriptor(profile, objectType);
 
     it('grants access if role matches', () => {
-        expect(descriptor.canAccess({ authRoles: [ 'theRole', 'other' ]}, AccessOperation.READ)).toBe(PermissionResult.GRANTED);
+        expect(descriptor.canAccess({ authRoles: [ 'theRole', 'other' ]}, AccessOperation.READ)).to.equal(PermissionResult.GRANTED);
     });
 
     it('denies access if no role matches', () => {
-        expect(descriptor.canAccess({ authRoles: [ 'theRole2' ]}, AccessOperation.READ)).toBe(PermissionResult.DENIED);
+        expect(descriptor.canAccess({ authRoles: [ 'theRole2' ]}, AccessOperation.READ)).to.equal(PermissionResult.DENIED);
     });
 
     it('denies write access if role matches but has only read permissions', () => {
-        expect(descriptor.canAccess({ authRoles: [ 'theRole' ]}, AccessOperation.WRITE)).toBe(PermissionResult.DENIED);
+        expect(descriptor.canAccess({ authRoles: [ 'theRole' ]}, AccessOperation.WRITE)).to.equal(PermissionResult.DENIED);
     });
 
     it('produces conditional QueryNode if only accessGroup-based permissions match', () => {
-        expect(descriptor.canAccess({ authRoles: [ 'restricted' ]}, AccessOperation.READ)).toBe(PermissionResult.CONDITIONAL);
+        expect(descriptor.canAccess({ authRoles: [ 'restricted' ]}, AccessOperation.READ)).to.equal(PermissionResult.CONDITIONAL);
         const instanceNode = new VariableQueryNode('instance');
         const condition = descriptor.getAccessCondition({ authRoles: [ 'restricted' ]}, AccessOperation.READ, instanceNode) as BinaryOperationQueryNode;
-        expect(condition).toEqual(any(BinaryOperationQueryNode));
-        expect((condition as BinaryOperationQueryNode).lhs).toEqual(any(FieldQueryNode));
+        expect(condition).to.be.an.instanceof(BinaryOperationQueryNode);
+        expect((condition as BinaryOperationQueryNode).lhs).to.be.an.instanceof(FieldQueryNode);
         const fieldNode = (condition as BinaryOperationQueryNode).lhs as FieldQueryNode;
-        expect(fieldNode.objectNode).toBe(instanceNode);
-        expect(condition.operator).toBe(BinaryOperator.IN);
-        expect(condition.rhs).toEqual(any(LiteralQueryNode));
-        expect((condition.rhs as LiteralQueryNode).value).toEqual([ 'groupA', 'groupB']);
+        expect(fieldNode.objectNode).to.equal(instanceNode);
+        expect(condition.operator).to.equal(BinaryOperator.IN);
+        expect(condition.rhs).to.be.an.instanceof(LiteralQueryNode);
+        expect((condition.rhs as LiteralQueryNode).value).to.contain('groupA');
+        expect((condition.rhs as LiteralQueryNode).value).to.contain('groupB');
     });
 });

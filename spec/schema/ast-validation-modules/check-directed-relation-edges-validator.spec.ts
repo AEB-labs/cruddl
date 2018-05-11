@@ -4,6 +4,7 @@ import {
     CheckDirectedRelationEdgesValidator,
     VALIDATION_ERROR_INVALID_ARGUMENT_TYPE
 } from '../../../src/schema/preparation/ast-validation-modules/check-directed-relation-edges-validator';
+import { expect } from 'chai';
 
 describe('check-directed-relation-edges-validator', () => {
 
@@ -58,9 +59,9 @@ function assertValidatorRejects(expectation: string, model: string, msg: string)
     it('rejects ' + expectation, () => {
         const ast = parse(model);
         const validationResult = new ValidationResult(new CheckDirectedRelationEdgesValidator().validate(ast));
-        expect(validationResult.hasErrors()).toBeTruthy();
-        expect(validationResult.messages.length).toBe(1);
-        expect(validationResult.messages[0].message).toBe(msg);
+        expect(validationResult.hasErrors()).to.be.true;
+        expect(validationResult.messages.length).to.equal(1);
+        expect(validationResult.messages[0].message).to.equal(msg);
     });
 }
 
@@ -68,8 +69,8 @@ function assertValidatorWarns(expectation: string, model: string, msg: string) {
     it('warns ' + expectation, () => {
         const ast = parse(model);
         const validationResult = new ValidationResult(new CheckDirectedRelationEdgesValidator().validate(ast));
-        expect(validationResult.hasWarnings()).toBeTruthy();
-        expect(validationResult.messages.find(validatedMsg => validatedMsg.message === msg)).toBeDefined()
+        expect(validationResult.hasWarnings()).to.be.true;
+        expect(validationResult.messages.find(validatedMsg => validatedMsg.message === msg)).to.not.be.undefined;
     });
 }
 
@@ -77,6 +78,6 @@ function assertValidatorAccepts(expectation: string, model: string) {
     it('accepts ' + expectation, () => {
         const ast = parse(model);
         const validationResult = new ValidationResult(new CheckDirectedRelationEdgesValidator().validate(ast));
-        expect(validationResult.hasErrors()).toBeFalsy();
+        expect(validationResult.hasErrors()).to.be.false;
     });
 }

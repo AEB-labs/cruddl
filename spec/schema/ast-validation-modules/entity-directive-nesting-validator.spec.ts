@@ -5,6 +5,7 @@ import {
     VALIDATION_ERROR_ROOT_ENTITY_NOT_EMBEDDABLE, VALIDATION_ERROR_EMBEDDED_CHILD_ENTITY_WITHOUT_LIST
 } from "../../../src/schema/preparation/ast-validation-modules/entity-directive-nesting-validator";
 import {parse} from "graphql";
+import { expect } from 'chai';
 
 describe('entity directive nesting validator', () => {
 
@@ -94,9 +95,9 @@ function assertValidatorRejects(expectation: string, model: string, msg: string)
     it('rejects ' + expectation, () => {
         const ast = parse(model);
         const validationResult = new ValidationResult(new EntityDirectiveNestingValidator().validate(ast));
-        expect(validationResult.hasErrors()).toBeTruthy();
-        expect(validationResult.messages.length).toBe(1);
-        expect(validationResult.messages[0].message).toBe(msg);
+        expect(validationResult.hasErrors()).to.be.true;
+        expect(validationResult.messages.length).to.not.be.undefined;
+        expect(validationResult.messages[0].message).to.equal(msg);
     });
 }
 
@@ -104,9 +105,9 @@ function assertValidatorWarns(expectation: string, model: string, msg: string) {
     it('warns ' + expectation, () => {
         const ast = parse(model);
         const validationResult = new ValidationResult(new EntityDirectiveNestingValidator().validate(ast));
-        expect(validationResult.hasWarnings()).toBeTruthy();
-        expect(validationResult.messages.length).toBe(1);
-        expect(validationResult.messages[0].message).toBe(msg);
+        expect(validationResult.hasWarnings()).to.be.true;
+        expect(validationResult.messages.length).to.equal(1);
+        expect(validationResult.messages[0].message).to.equal(msg);
     });
 }
 
@@ -114,6 +115,6 @@ function assertValidatorAccepts(expectation: string, model: string) {
     it('accepts ' + expectation, () => {
         const ast = parse(model);
         const validationResult = new ValidationResult(new EntityDirectiveNestingValidator().validate(ast));
-        expect(validationResult.hasErrors()).toBeFalsy();
+        expect(validationResult.hasErrors()).to.be.false;
     });
 }
