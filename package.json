@@ -8,7 +8,7 @@
     "build": "rimraf dist && tsc --skipLibCheck && dependency-check ./package.json --ignore-module @arangodb",
     "prepublishOnly": "npm run build",
     "typecheck": "tsc --noEmit --skipLibCheck",
-    "test": "tsc --noEmit --skipLibCheck && mocha --opts ./spec/mocha.opts --db=in-memory",
+    "test": "tsc --noEmit --skipLibCheck && mocha --opts ./spec/mocha.opts",
     "test:dropdb": "ts-node ./spec/regression/drop-test-db.ts",
     "test:perf": "node cruddl-bench",
     "test:coverage": "nyc --reporter=text-summary npm test",
