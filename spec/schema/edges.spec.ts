@@ -5,6 +5,7 @@ import { graphql, GraphQLSchema, print, GraphQLObjectType } from 'graphql';
 import { EdgeType, getEdgeType } from '../../src/schema/edges';
 import { Project } from '../../src/project/project';
 import { ProjectSource } from '../../src/project/source';
+import { expect } from 'chai';
 
 class FakeDBAdatper implements DatabaseAdapter {
     async execute(queryTree: QueryNode): Promise<any> {
@@ -31,7 +32,7 @@ describe('edges', () => {
         let schema = new Project([ new ProjectSource('main.graphqls', schemaGQL)]).createSchema(new FakeDBAdatper());
         const source = gql`{ allTypeAS { relB { id } } allTypeBS { relA { id } } }`;
         const result = await graphql(schema, print(source), {}, {authRoles: [ "admin" ]}, {});
-        expect(result.errors).toEqual(undefined);
+        expect(result.errors).to.equal(undefined);
     });
 
     it('correctly builds EdgeType from field', () => {
@@ -51,10 +52,10 @@ describe('edges', () => {
         const deliveryField = handlingUnitType.getFields()['delivery'];
 
         function checkEdgeType(edgeType: EdgeType) {
-            expect(edgeType.fromType).toBe(deliveryType);
-            expect(edgeType.fromField).toBe(handlingUnitsField);
-            expect(edgeType.toType).toBe(handlingUnitType);
-            expect(edgeType.toField).toBe(deliveryField);
+            expect(edgeType.fromType).to.equal(deliveryType);
+            expect(edgeType.fromField).to.equal(handlingUnitsField);
+            expect(edgeType.toType).to.equal(handlingUnitType);
+            expect(edgeType.toField).to.equal(deliveryField);
         }
 
         checkEdgeType(getEdgeType(deliveryType, handlingUnitsField));

@@ -40,7 +40,7 @@ describe('add-root-schema', () => {
         const schema = <SchemaDefinitionNode> ast.definitions.find(def => def.kind === SCHEMA_DEFINITION);
         expect(schema).to.not.be.undefined;
         // check for a query operation type
-        expect(schema.operationTypes.find(opType => opType.operation === 'query')).to.be.undefined;
+        expect(schema.operationTypes.find(opType => opType.operation === 'query')).to.not.be.undefined;
     });
 
 });

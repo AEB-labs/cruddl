@@ -73,6 +73,7 @@ describe('ProfileBasedPermissionDescriptor', () => {
         expect(fieldNode.objectNode).to.equal(instanceNode);
         expect(condition.operator).to.equal(BinaryOperator.IN);
         expect(condition.rhs).to.be.an.instanceof(LiteralQueryNode);
-        expect((condition.rhs as LiteralQueryNode).value).to.equal([ 'groupA', 'groupB']);
+        expect((condition.rhs as LiteralQueryNode).value).to.contain('groupA');
+        expect((condition.rhs as LiteralQueryNode).value).to.contain('groupB');
     });
 });

@@ -96,7 +96,7 @@ function assertValidatorRejects(expectation: string, model: string, msg: string)
         const ast = parse(model);
         const validationResult = new ValidationResult(new EntityDirectiveNestingValidator().validate(ast));
         expect(validationResult.hasErrors()).to.be.true;
-        expect(validationResult.messages.length).to.be.true;
+        expect(validationResult.messages.length).to.not.be.undefined;
         expect(validationResult.messages[0].message).to.equal(msg);
     });
 }
