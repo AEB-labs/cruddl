@@ -1,5 +1,5 @@
-import { ArangoDBAdapter, ArangoDBConfig } from '../../src/database/arangodb';
-import { graphql, GraphQLSchema, OperationDefinitionNode, parse, Source } from 'graphql';
+import { ArangoDBAdapter } from '../../src/database/arangodb';
+import { graphql, GraphQLSchema, OperationDefinitionNode, parse } from 'graphql';
 import * as path from 'path';
 import * as fs from 'fs';
 import { createTempDatabase, initTestData, TestDataEnvironment } from './initialization';
@@ -9,7 +9,8 @@ import { loadProjectFromDir } from '../../src/project/project-from-fs';
 import { ProjectOptions } from '../../src/project/project';
 import { DatabaseAdapter } from '../../src/database/database-adapter';
 import { SchemaContext } from '../../src/config/global';
-import { InMemoryAdapter, InMemoryDB } from '../../src/database/inmemory/inmemory-adapter';
+import { InMemoryAdapter, InMemoryDB } from '../../src/database/inmemory';
+import deepEqual = require('deep-equal');
 
 interface TestResult {
     actualResult: any
@@ -114,7 +115,7 @@ export class RegressionSuite {
             actualResult = JSON.parse(JSON.stringify(actualResult)); // serialize e.g. errors as they would be in a GraphQL server
         }
 
-        if (this.options.saveActualAsExpected && !(jasmine as any).matchersUtil.equals(actualResult, expectedResult)) {
+        if (this.options.saveActualAsExpected && !deepEqual(actualResult, expectedResult)) {
             fs.writeFileSync(resultPath, JSON.stringify(actualResult, undefined, '  '), 'utf-8');
         }
 
