@@ -3,6 +3,6 @@ node_js:
   - "8"
 script:
   - mkdir -p arangodb && cd arangodb && curl -L https://download.arangodb.com/travisCI/setup_arangodb_3.2.4.sh | bash
-  - npm install
+  - npm ci
   - npm run test:coverage
   - npm run test:dropdb
