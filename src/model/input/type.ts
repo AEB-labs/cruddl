@@ -1,8 +1,10 @@
 import {
+    ASTNode,
     DirectiveNode,
-    EnumTypeDefinitionNode, ObjectTypeDefinitionNode, ScalarTypeDefinitionNode, TypeDefinitionNode
+    EnumTypeDefinitionNode, ObjectTypeDefinitionNode, ScalarTypeDefinitionNode, TypeDefinitionNode, ValueNode
 } from 'graphql';
 import { FieldInput } from './field';
+import { PermissionsInput } from './permissions';
 
 export enum TypeKind {
     SCALAR,
@@ -16,7 +18,7 @@ export enum TypeKind {
 export interface TypeInputBase {
     kind: TypeKind
     name: string
-    description: string
+    description?: string
     astNode?: TypeDefinitionNode
 }
 
@@ -30,7 +32,7 @@ export interface RootEntityTypeInput extends ObjectTypeInputBase {
     namespacePath: string[]
     indices?: IndexDefinitionInput[]
     keyFieldName?: string
-    permissionProfileName?: string
+    permissions?: PermissionsInput
 }
 
 export interface ValueObjectTypeInput extends ObjectTypeInputBase {
@@ -63,4 +65,5 @@ export interface IndexDefinitionInput {
     astNode?: DirectiveNode
 }
 
-export type TypeInput = RootEntityTypeInput|ChildEntityTypeInput|ValueObjectTypeInput|EntityExtensionTypeInput|ScalarTypeInput|EnumTypeInput;
+export type ObjectTypeInput = RootEntityTypeInput|ChildEntityTypeInput|ValueObjectTypeInput|EntityExtensionTypeInput;
+export type TypeInput = ObjectTypeInput|ScalarTypeInput|EnumTypeInput;
