@@ -4,7 +4,7 @@ import {
     EnumTypeDefinitionNode, FieldNode, ObjectTypeDefinitionNode, ScalarTypeDefinitionNode, TypeDefinitionNode
 } from 'graphql';
 
-export interface Field {
+interface Field {
     readonly declaringType: ObjectType
 
     astNode?: FieldNode
@@ -33,7 +33,7 @@ export interface Field {
     }
 }
 
-export interface Relation {
+interface Relation {
     readonly fromType: RootEntityType
     readonly fromField: Field
     readonly fromCardinality: RelationSideCardinality
@@ -43,19 +43,19 @@ export interface Relation {
     readonly cardinality: RelationCardinality
 }
 
-export enum RelationSideCardinality {
+enum RelationSideCardinality {
     ONE,
     MANY
 }
 
-export enum RelationCardinality {
+enum RelationCardinality {
     ONE_TO_ONE,
     ONE_TO_MANY,
     MANY_TO_ONE,
     MANY_TO_MANY
 }
 
-export enum TypeKind {
+enum TypeKind {
     SCALAR,
     ENUM,
     ROOT_ENTITY,
@@ -64,7 +64,7 @@ export enum TypeKind {
     ENTITY_EXTENSION
 }
 
-export interface TypeBase {
+interface TypeBase {
     kind: TypeKind
     name: string
     description: string
@@ -72,16 +72,16 @@ export interface TypeBase {
     astNode?: TypeDefinitionNode
 }
 
-export type ObjectType = RootEntityType | ValueObjectType | EntityExtensionType | ChildEntityType;
-export type Type = ObjectType | EnumType | ScalarType;
+type ObjectType = RootEntityType | ValueObjectType | EntityExtensionType | ChildEntityType;
+type Type = ObjectType | EnumType | ScalarType;
 
-export interface ObjectTypeBase extends TypeBase {
+interface ObjectTypeBase extends TypeBase {
     fields: Field[]
     isObjectType: false
     astNode: ObjectTypeDefinitionNode
 }
 
-export interface RootEntityType extends ObjectTypeBase {
+interface RootEntityType extends ObjectTypeBase {
     kind: TypeKind.ROOT_ENTITY
     readonly namespace: Namespace
     indices: IndexDefinition[]
@@ -89,29 +89,29 @@ export interface RootEntityType extends ObjectTypeBase {
     permissionProfile: PermissionProfile
 }
 
-export interface ValueObjectType extends ObjectTypeBase {
+interface ValueObjectType extends ObjectTypeBase {
     kind: TypeKind.VALUE_OBJECT
 }
 
-export interface ChildEntityType extends ObjectTypeBase {
+interface ChildEntityType extends ObjectTypeBase {
     kind: TypeKind.CHILD_ENTITY
 }
 
-export interface EntityExtensionType extends ObjectTypeBase {
+interface EntityExtensionType extends ObjectTypeBase {
     kind: TypeKind.ENTITY_EXTENSION
 }
 
-export interface EnumType extends TypeBase {
+interface EnumType extends TypeBase {
     kind: TypeKind.ENUM
     values: string[]
     astNode: EnumTypeDefinitionNode
 }
 
-export interface ScalarType extends TypeBase {
+interface ScalarType extends TypeBase {
     astNode: ScalarTypeDefinitionNode
 }
 
-export interface Namespace {
+interface Namespace {
     readonly parent: Namespace|undefined
     readonly isRoot: boolean
     name: string
@@ -120,7 +120,7 @@ export interface Namespace {
     rootEntities: RootEntityType
 }
 
-export interface Model {
+interface Model {
     rootNamespace: Namespace
     types: Type[]
     permissionProfiles: PermissionProfile[]
@@ -146,13 +146,13 @@ export interface Model {
     validationResult: ValidationResult
 }
 
-export interface IndexDefinition {
+interface IndexDefinition {
     id: string,
     fields: string[],
     unique: boolean
 }
 
-export enum CalcMutationsOperator {
+enum CalcMutationsOperator {
     MULTIPLY,
     DIVIDE,
     ADD,

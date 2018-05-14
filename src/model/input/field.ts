@@ -1,4 +1,4 @@
-import { ASTNode, FieldDefinitionNode, NamedTypeNode, ValueNode } from 'graphql';
+import { ASTNode, DirectiveNode, FieldDefinitionNode, NamedTypeNode, ValueNode } from 'graphql';
 import { PermissionsInput } from './permissions';
 
 export interface FieldInput {
@@ -6,13 +6,14 @@ export interface FieldInput {
     description?: string
     typeName: string
     typeNameAST?: NamedTypeNode
-    isList: boolean
+    isList?: boolean
 
     permissions?: PermissionsInput
     defaultValue?: any
-    calcMutationOperators: CalcMutationsOperator[]
-    isReference: boolean
-    isRelation: boolean
+    defaultValueASTNode?: DirectiveNode;
+    calcMutationOperators?: CalcMutationsOperator[]
+    isReference?: boolean
+    isRelation?: boolean
     inverseOfFieldName?: string
     inverseOfASTNode?: ValueNode
 

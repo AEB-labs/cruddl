@@ -1,10 +1,9 @@
-import { ModelInput } from '../input';
-import { ValidationResult } from '../validation';
-
-export class Model {
-    constructor(input: ModelInput) {
-
-    }
-
-    validationResult: ValidationResult = new ValidationResult([]);
-}
+export { Model } from './model';
+export { Type } from './type';
+export { RootEntityType } from './root-entity-type';
+export { ChildEntityType } from './child-entity-type';
+export { ValueObjectType } from './value-object-type';
+export { EntityExtensionType } from './entity-extension-type';
+export { ScalarType } from './scalar-type';
+export { EnumType } from './enum-type';
+export { Field } from './field';

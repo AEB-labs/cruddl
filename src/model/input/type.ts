@@ -1,7 +1,5 @@
 import {
-    ASTNode,
-    DirectiveNode,
-    EnumTypeDefinitionNode, ObjectTypeDefinitionNode, ScalarTypeDefinitionNode, TypeDefinitionNode, ValueNode
+    DirectiveNode, EnumTypeDefinitionNode, ObjectTypeDefinitionNode, ScalarTypeDefinitionNode, TypeDefinitionNode
 } from 'graphql';
 import { FieldInput } from './field';
 import { PermissionsInput } from './permissions';
@@ -24,12 +22,12 @@ export interface TypeInputBase {
 
 export interface ObjectTypeInputBase extends TypeInputBase {
     fields: FieldInput[]
-    astNode: ObjectTypeDefinitionNode
+    astNode?: ObjectTypeDefinitionNode
 }
 
 export interface RootEntityTypeInput extends ObjectTypeInputBase {
     kind: TypeKind.ROOT_ENTITY
-    namespacePath: string[]
+    namespacePath?: string[]
     indices?: IndexDefinitionInput[]
     keyFieldName?: string
     permissions?: PermissionsInput
