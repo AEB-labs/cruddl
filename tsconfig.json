@@ -16,6 +16,7 @@
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
+    "downlevelIteration": true,
     "lib": [
       "es2016",
       "esnext.asynciterable"

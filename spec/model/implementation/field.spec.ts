@@ -34,6 +34,18 @@ describe('Field', () => {
                 typeName: 'Address'
             }, deliveryType, model);
             expect(field.type).to.equal(model.getType('Address'));
+            expect(field.hasValidType).to.be.true;
+        });
+
+        it('falls back to pseudo type if typeName is not found', () => {
+            // this is important so that the model does not break if it is invalid
+            const field = new Field({
+                name: 'deliveryNumber',
+                typeName: 'Undefined'
+            }, deliveryType, model);
+            expect(field.type).not.to.be.undefined;
+            expect(field.type.name).to.equal('Undefined');
+            expect(field.hasValidType).to.be.false;
         });
     });
 
