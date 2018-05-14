@@ -5,12 +5,12 @@ import { FieldInput } from './field';
 import { PermissionsInput } from './permissions';
 
 export enum TypeKind {
-    SCALAR,
-    ENUM,
-    ROOT_ENTITY,
-    CHILD_ENTITY,
-    VALUE_OBJECT,
-    ENTITY_EXTENSION
+    SCALAR = 'SCALAR',
+    ENUM = 'ENUM',
+    ROOT_ENTITY = 'ROOT_ENTITY',
+    CHILD_ENTITY = 'CHILD_ENTITY',
+    VALUE_OBJECT = 'VALUE_OBJECT',
+    ENTITY_EXTENSION = 'ENTITY_EXTENSION'
 }
 
 export interface TypeInputBase {
