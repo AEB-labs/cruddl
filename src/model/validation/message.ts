@@ -51,34 +51,41 @@ export class MessageLocation {
     }
 }
 
+export type LocationLike = MessageLocation|Location|{loc?: Location};
+
 export class ValidationMessage {
     public readonly location: MessageLocation|undefined;
 
     constructor(public readonly severity: Severity,
                 public readonly message: string,
                 public readonly params: { [key: string]: string | number | boolean } = {},
-                location?: MessageLocation|Location) {
+                location?: LocationLike) {
         if (location && !(location instanceof MessageLocation)) {
-            location = MessageLocation.fromGraphQLLocation(location);
+            if ('loc' in location) {
+                location = location.loc;
+            }
+            if (location) {
+                location = MessageLocation.fromGraphQLLocation(location as Location);
+            }
         }
         this.location = location;
     }
 
     public static error(message: string,
                         params: { [p: string]: string | number | boolean } = {},
-                        location?: MessageLocation | Location) {
+                        location?: LocationLike) {
         return new ValidationMessage(Severity.Error, message, params, location);
     }
 
     public static warn(message: string,
                        params: { [p: string]: string | number | boolean } = {},
-                       location?: MessageLocation | Location) {
+                       location?: LocationLike) {
         return new ValidationMessage(Severity.Warning, message, params, location);
     }
 
     public static info(message: string,
                        params: { [key: string]: string | number | boolean } = {},
-                       location?: MessageLocation|Location) {
+                       location?: LocationLike) {
         return new ValidationMessage(Severity.Info, message, params, location);
     }
 
