@@ -94,6 +94,12 @@ export class Field implements ModelComponent {
         // Especially forbid leading underscores. This is more of a linter rule, but it also ensures there are no collisions with e.g. ArangoDB's predefined fields like _key.
         if (!this.name.match(/^[a-zA-Z][a-zA-Z0-9]+$/)) {
             context.addMessage(ValidationMessage.error(`Field names should only contain alphanumeric characters.`, undefined, this.astNode));
+            return;
+        }
+
+        // this is a linter rule
+        if (!this.name.match(/^[a-z]/)) {
+            context.addMessage(ValidationMessage.warn(`Field names should start with a lowercase character.`, undefined, this.astNode));
         }
     }
 

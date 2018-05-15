@@ -16,8 +16,24 @@ export abstract class TypeBase implements ModelComponent {
     }
 
     validate(context: ValidationContext) {
+        this.validateName(context);
+    }
+
+    private validateName(context: ValidationContext) {
         if (!this.name) {
-            context.addMessage(ValidationMessage.error(`Type declaration is missing a name.`, undefined, this.astNode));
+            context.addMessage(ValidationMessage.error(`Type name is empty.`, undefined, this.astNode));
+            return;
+        }
+
+        // Especially forbid leading underscores. This is more of a linter rule, but it also ensures there are no collisions with internal collections, introspection or the like
+        if (!this.name.match(/^[a-zA-Z][a-zA-Z0-9]+$/)) {
+            context.addMessage(ValidationMessage.error(`Type names should only contain alphanumeric characters.`, undefined, this.astNode));
+            return;
+        }
+
+        // this is a linter rule
+        if (!this.name.match(/^[A-Z]/)) {
+            context.addMessage(ValidationMessage.warn(`Type names should start with an uppercase character.`, undefined, this.astNode));
         }
     }
 

@@ -1,7 +1,9 @@
 import { CalcMutationsOperator, Field, Model, TypeKind } from '../../../src/model/index';
 import { expect } from 'chai';
 import { Severity } from '../../../src/model/validation';
-import { expectSingleErrorToInclude, expectToBeValid, validate } from './validation-utils';
+import {
+    expectSingleErrorToInclude, expectSingleWarningToInclude, expectToBeValid, validate
+} from './validation-utils';
 
 describe('Field', () => {
     const model = new Model({
@@ -152,6 +154,14 @@ describe('Field', () => {
                 typeName: 'String'
             }, deliveryType);
             expectSingleErrorToInclude(field, `Field names should only contain alphanumeric characters.`);
+        });
+
+        it('warns about names starting with an uppercase character', () => {
+            const field = new Field({
+                name: 'ThisIsNotAFieldName',
+                typeName: 'String'
+            }, deliveryType);
+            expectSingleWarningToInclude(field, `Field names should start with a lowercase character.`);
         });
     });
 
