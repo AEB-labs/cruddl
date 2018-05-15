@@ -17,6 +17,8 @@ const graphQLTypes: ReadonlyArray<GraphQLScalarType> = [
 
 export const builtInTypes: ReadonlyArray<Type> = graphQLTypes.map(({name}) => buildScalarType(name));
 
+export const builtInTypeNames: ReadonlySet<string> = new Set(builtInTypes.map(t => t.name));
+
 function buildScalarType(name: string) {
     return new ScalarType({
         kind: TypeKind.SCALAR,

@@ -1,18 +1,20 @@
 import { ModelInput, TypeKind } from '../input';
-import { ValidationResult } from '../validation';
+import { ValidationMessage, ValidationResult } from '../validation';
 import { createPermissionMap, PermissionProfile, PermissionProfileMap } from '../../authorization/permission-profile';
 import { createType, InvalidType, Type } from './type';
 import { Namespace } from './namespace';
-import { ValidationContext } from './validation';
-import { builtInTypes } from './built-in-types';
+import { ModelComponent, ValidationContext } from './validation';
+import { builtInTypeNames, builtInTypes } from './built-in-types';
 import { RootEntityType } from './root-entity-type';
 import { ChildEntityType } from './child-entity-type';
 import { EntityExtensionType } from './entity-extension-type';
 import { ValueObjectType } from './value-object-type';
 import { ScalarType } from './scalar-type';
 import { EnumType } from './enum-type';
+import { groupBy } from 'lodash';
+import { objectValues } from '../../utils/utils';
 
-export class Model {
+export class Model implements ModelComponent{
     private readonly typeMap: ReadonlyMap<string, Type>;
 
     readonly rootNamespace: Namespace;
@@ -31,8 +33,9 @@ export class Model {
         this.typeMap = new Map(this.types.map((type): [string, Type] => ([type.name, type])));
     }
 
-    validate(): ValidationResult {
-        const context = new ValidationContext();
+    validate(context = new ValidationContext()): ValidationResult {
+        this.validateDuplicateTypes(context);
+
         for (const type of this.types) {
             type.validate(context);
         }
@@ -41,6 +44,25 @@ export class Model {
             ...this.input.validationMessages || [],
             ...context.validationMessages
         ]);
+    }
+
+    private validateDuplicateTypes(context: ValidationContext) {
+        const duplicateTypes = objectValues(groupBy(this.types, type => type.name)).filter(types => types.length > 1);
+        for (const types of duplicateTypes) {
+            for (const type of types) {
+                if (builtInTypes.includes(type)) {
+                    // don't report errors for built-in types
+                    continue;
+                }
+
+                if (builtInTypeNames.has(type.name)) {
+                    // user does not see duplicate type, so provide better message
+                    context.addMessage(ValidationMessage.error(`Type name "${type.name}" is reserved by a built-in type.`, undefined, type.astNode));
+                } else {
+                    context.addMessage(ValidationMessage.error(`Duplicate type name: "${type.name}".`, undefined, type.astNode));
+                }
+            }
+        }
     }
 
     getType(name: string): Type | undefined {
@@ -122,7 +144,7 @@ export class Model {
     getTypeOfKindOrThrow<T extends Type>(name: string, kind: TypeKind): T {
         const type = this.getTypeOrThrow(name);
         if (type.kind != kind) {
-            throw new Error(`Expected type "${name}" to be a a ${kind}, but is ${type.kind}`)
+            throw new Error(`Expected type "${name}" to be a a ${kind}, but is ${type.kind}`);
         }
         return type as T;
     }

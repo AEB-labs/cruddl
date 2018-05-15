@@ -1,7 +1,7 @@
-import { ModelComponent, ValidationContext } from '../../../src/model/implementation/validation';
-import { CalcMutationsOperator, Field, Model, TypeKind } from '../../../src/model';
+import { CalcMutationsOperator, Field, Model, TypeKind } from '../../../src/model/index';
 import { expect } from 'chai';
 import { Severity } from '../../../src/model/validation';
+import { expectSingleErrorToInclude, expectToBeValid, validate } from './validation-utils';
 
 describe('Field', () => {
     const model = new Model({
@@ -94,25 +94,6 @@ describe('Field', () => {
     const addressType = model.getValueObjectTypeOrThrow('Address');
     const itemType = model.getChildEntityTypeOrThrow('Item');
     const dangerousGoodsInfoType = model.getEntityExtensionTypeOrThrow('DangerousGoodsInfo');
-
-    function validate(component: ModelComponent) {
-        const context = new ValidationContext();
-        component.validate(context);
-        return context.asResult();
-    }
-
-    function expectToBeValid(component: ModelComponent) {
-        const result = validate(component);
-        expect(result.hasMessages(), result.toString()).to.be.false;
-    }
-
-    function expectSingleErrorToInclude(component: ModelComponent, errorPart: string) {
-        const result = validate(component);
-        expect(result.messages.length, result.toString()).to.equal(1);
-        const message = result.messages[0];
-        expect(message.severity).to.equal(Severity.Error);
-        expect(message.message).to.include(errorPart);
-    }
 
     describe('with type', () => {
         it('accepts built-in type', () => {
