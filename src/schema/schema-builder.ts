@@ -54,7 +54,7 @@ function validateAndPrepareSchema(project: Project):
 
     const result = validatePostMerge(mergedSchema, rootContext, model);
     messages.push(...result.messages);
-    messages.push(...model.validationResult.messages);
+    messages.push(...model.validate().messages);
 
     const validationResult = new ValidationResult(messages);
     return { validationResult, schemaConfig, mergedSchema, rootContext, model };
