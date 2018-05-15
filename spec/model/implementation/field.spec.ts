@@ -137,6 +137,24 @@ describe('Field', () => {
         });
     });
 
+    describe('with name', () => {
+        it('rejects empty names', () => {
+            const field = new Field({
+                name: '',
+                typeName: 'String'
+            }, deliveryType);
+            expectSingleErrorToInclude(field, `Field name is empty.`);
+        });
+
+        it('rejects names starting with an underscore', () => {
+            const field = new Field({
+                name: '_internal',
+                typeName: 'String'
+            }, deliveryType);
+            expectSingleErrorToInclude(field, `Field names should only contain alphanumeric characters.`);
+        });
+    });
+
     describe('with root entity type', () => {
         it('rejects fields with root entity type without @relation or @reference', () => {
             const field = new Field({

@@ -73,14 +73,8 @@ export class Field implements ModelComponent {
     }
 
     validate(context: ValidationContext) {
-        if (!this.name) {
-            context.addMessage(ValidationMessage.error(`Field is missing a name.`, undefined, this.astNode));
-        }
-
-        if (!this.model.getType(this.input.typeName)) {
-            context.addMessage(ValidationMessage.error(`Type "${this.input.typeName}" not found.`, undefined, this.input.typeNameAST || this.astNode));
-        }
-
+        this.validateName(context);
+        this.validateType(context);
         this.validatePermissions(context);
         this.validateRootEntityType(context);
         this.validateEntityExtensionType(context);
@@ -89,6 +83,24 @@ export class Field implements ModelComponent {
         this.validateReference(context);
         this.validateDefaultValue(context);
         this.validateCalcMutations(context);
+    }
+
+    private validateName(context: ValidationContext) {
+        if (!this.name) {
+            context.addMessage(ValidationMessage.error(`Field name is empty.`, undefined, this.astNode));
+            return;
+        }
+
+        // Especially forbid leading underscores. This is more of a linter rule, but it also ensures there are no collisions with e.g. ArangoDB's predefined fields like _key.
+        if (!this.name.match(/^[a-zA-Z][a-zA-Z0-9]+$/)) {
+            context.addMessage(ValidationMessage.error(`Field names should only contain alphanumeric characters.`, undefined, this.astNode));
+        }
+    }
+
+    private validateType(context: ValidationContext) {
+        if (!this.model.getType(this.input.typeName)) {
+            context.addMessage(ValidationMessage.error(`Type "${this.input.typeName}" not found.`, undefined, this.input.typeNameAST || this.astNode));
+        }
     }
 
     private validateRootEntityType(context: ValidationContext) {
