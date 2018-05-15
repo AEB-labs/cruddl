@@ -3,7 +3,7 @@ import { PermissionProfileConfigMap } from '../../authorization/permission-profi
 import { TypeInput } from './type';
 
 export interface ModelInput {
-    types: TypeInput[]
-    permissionProfiles?: PermissionProfileConfigMap
-    validationMessages?: ValidationMessage[]
+    readonly types: ReadonlyArray<TypeInput>
+    readonly permissionProfiles?: PermissionProfileConfigMap
+    readonly validationMessages?: ReadonlyArray<ValidationMessage>
 }

@@ -15,54 +15,54 @@ export enum TypeKind {
 }
 
 export interface TypeInputBase {
-    kind: TypeKind
-    name: string
-    description?: string
-    astNode?: TypeDefinitionNode
+    readonly kind: TypeKind
+    readonly name: string
+    readonly description?: string
+    readonly astNode?: TypeDefinitionNode
 }
 
 export interface ObjectTypeInputBase extends TypeInputBase {
-    fields: FieldInput[]
-    astNode?: ObjectTypeDefinitionNode
+    readonly fields: ReadonlyArray<FieldInput>
+    readonly astNode?: ObjectTypeDefinitionNode
 }
 
 export interface RootEntityTypeInput extends ObjectTypeInputBase {
-    kind: TypeKind.ROOT_ENTITY
-    namespacePath?: string[]
-    indices?: IndexDefinitionInput[]
-    keyFieldName?: string
-    permissions?: PermissionsInput
+    readonly kind: TypeKind.ROOT_ENTITY
+    readonly namespacePath?: string[]
+    readonly indices?: ReadonlyArray<IndexDefinitionInput>
+    readonly keyFieldName?: string
+    readonly permissions?: PermissionsInput
 }
 
 export interface ValueObjectTypeInput extends ObjectTypeInputBase {
-    kind: TypeKind.VALUE_OBJECT
+    readonly kind: TypeKind.VALUE_OBJECT
 }
 
 export interface ChildEntityTypeInput extends ObjectTypeInputBase {
-    kind: TypeKind.CHILD_ENTITY
+    readonly kind: TypeKind.CHILD_ENTITY
 }
 
 export interface EntityExtensionTypeInput extends ObjectTypeInputBase {
-    kind: TypeKind.ENTITY_EXTENSION
+    readonly kind: TypeKind.ENTITY_EXTENSION
 }
 
 export interface EnumTypeInput extends TypeInputBase {
-    kind: TypeKind.ENUM
-    values: string[]
-    astNode?: EnumTypeDefinitionNode
+    readonly kind: TypeKind.ENUM
+    readonly values: ReadonlyArray<string>
+    readonly astNode?: EnumTypeDefinitionNode
 }
 
 export interface ScalarTypeInput extends TypeInputBase {
-    kind: TypeKind.SCALAR
-    astNode?: ScalarTypeDefinitionNode
+    readonly kind: TypeKind.SCALAR
+    readonly astNode?: ScalarTypeDefinitionNode
 }
 
 export interface IndexDefinitionInput {
-    id: string,
-    fields: ReadonlyArray<string>
-    fieldASTNodes?: ReadonlyArray<StringValueNode|undefined>
-    unique: boolean
-    astNode?: DirectiveNode
+    readonly id: string,
+    readonly fields: ReadonlyArray<string>
+    readonly fieldASTNodes?: ReadonlyArray<StringValueNode|undefined>
+    readonly unique: boolean
+    readonly astNode?: DirectiveNode
 }
 
 export type ObjectTypeInput = RootEntityTypeInput|ChildEntityTypeInput|ValueObjectTypeInput|EntityExtensionTypeInput;

@@ -1,12 +1,13 @@
 import { ASTNode } from 'graphql';
 
 export interface PermissionsInput {
-    readonly astNode?: ASTNode
+    readonly permissionProfileNameAstNode?: ASTNode
     readonly permissionProfileName?: string
-    readonly roles?: RolesSpecifier
+    readonly roles?: RolesSpecifierInput
+    readonly rolesASTNode?: ASTNode
 }
 
-export interface RolesSpecifier {
-    readonly read: ReadonlyArray<string>
-    readonly readWrite: ReadonlyArray<string>
+export interface RolesSpecifierInput {
+    readonly read?: ReadonlyArray<string>
+    readonly readWrite?: ReadonlyArray<string>
 }

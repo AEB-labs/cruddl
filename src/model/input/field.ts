@@ -2,22 +2,22 @@ import { ASTNode, DirectiveNode, FieldDefinitionNode, NamedTypeNode, ValueNode }
 import { PermissionsInput } from './permissions';
 
 export interface FieldInput {
-    name: string
-    description?: string
-    typeName: string
-    typeNameAST?: NamedTypeNode
-    isList?: boolean
+    readonly name: string
+    readonly description?: string
+    readonly typeName: string
+    readonly typeNameAST?: NamedTypeNode
+    readonly isList?: boolean
 
-    permissions?: PermissionsInput
-    defaultValue?: any
-    defaultValueASTNode?: DirectiveNode;
-    calcMutationOperators?: CalcMutationsOperator[]
-    isReference?: boolean
-    isRelation?: boolean
-    inverseOfFieldName?: string
-    inverseOfASTNode?: ValueNode
+    readonly permissions?: PermissionsInput
+    readonly defaultValue?: any
+    readonly defaultValueASTNode?: DirectiveNode;
+    readonly calcMutationOperators?: ReadonlyArray<CalcMutationsOperator>
+    readonly isReference?: boolean
+    readonly isRelation?: boolean
+    readonly inverseOfFieldName?: string
+    readonly inverseOfASTNode?: ValueNode
 
-    astNode?: FieldDefinitionNode
+    readonly astNode?: FieldDefinitionNode
 }
 
 export enum CalcMutationsOperator {
