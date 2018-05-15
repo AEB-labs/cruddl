@@ -112,7 +112,7 @@ export class Field implements ModelComponent {
     private validateRootEntityType(context: ValidationContext) {
         // this does not fit anywhere else properly
         if (this.isReference && this.isRelation) {
-            context.addMessage(ValidationMessage.error(`@reference and @relation can not be combined.`, undefined, this.astNode));
+            context.addMessage(ValidationMessage.error(`@reference and @relation cannot be combined.`, undefined, this.astNode));
         }
 
         if (this.type.kind !== TypeKind.ROOT_ENTITY) {
@@ -122,9 +122,9 @@ export class Field implements ModelComponent {
         // root entities are not embeddable
         if (!this.isRelation && !this.isReference) {
             if (this.declaringType.kind == TypeKind.ROOT_ENTITY) {
-                context.addMessage(ValidationMessage.error(`Type "${this.type.name}" is a root entity type and can not be embedded. Consider adding @reference.`, undefined, this.astNode));
+                context.addMessage(ValidationMessage.error(`Type "${this.type.name}" is a root entity type and cannot be embedded. Consider adding @reference.`, undefined, this.astNode));
             } else {
-                context.addMessage(ValidationMessage.error(`Type "${this.type.name}" is a root entity type and can not be embedded. Consider adding @reference or @relation.`, undefined, this.astNode));
+                context.addMessage(ValidationMessage.error(`Type "${this.type.name}" is a root entity type and cannot be embedded. Consider adding @reference or @relation.`, undefined, this.astNode));
             }
         }
     }
@@ -144,7 +144,7 @@ export class Field implements ModelComponent {
         }
 
         if (this.type.kind !== TypeKind.ROOT_ENTITY) {
-            context.addMessage(ValidationMessage.error(`Type "${this.type.name}" can not be used with @relation because it is not a root entity type`, undefined, this.astNode));
+            context.addMessage(ValidationMessage.error(`Type "${this.type.name}" cannot be used with @relation because it is not a root entity type`, undefined, this.astNode));
             return;
         }
 
@@ -191,7 +191,7 @@ export class Field implements ModelComponent {
         }
 
         if (this.type.kind !== TypeKind.ROOT_ENTITY) {
-            context.addMessage(ValidationMessage.error(`"${this.type.name}" can not be used as @reference type because is not a root entity type.`, undefined, this.astNode));
+            context.addMessage(ValidationMessage.error(`"${this.type.name}" cannot be used as @reference type because is not a root entity type.`, undefined, this.astNode));
             return;
         }
 
@@ -200,7 +200,7 @@ export class Field implements ModelComponent {
         }
 
         if (!this.type.keyField) {
-            context.addMessage(ValidationMessage.error(`"${this.type.name}" can not be used as @reference type because is does not have a field annotated with @key.`, undefined, this.astNode));
+            context.addMessage(ValidationMessage.error(`"${this.type.name}" cannot be used as @reference type because is does not have a field annotated with @key.`, undefined, this.astNode));
         }
     }
 
@@ -210,11 +210,11 @@ export class Field implements ModelComponent {
         }
 
         if (this.declaringType.kind === TypeKind.VALUE_OBJECT) {
-            context.addMessage(ValidationMessage.error(`Type "${this.type.name}" is an entity extension and can not be used within value object types. Change "${this.declaringType.name}" to an entity extension type or use a value object type for "${this.name}".`));
+            context.addMessage(ValidationMessage.error(`Type "${this.type.name}" is an entity extension and cannot be used within value object types. Change "${this.declaringType.name}" to an entity extension type or use a value object type for "${this.name}".`));
         }
 
         if (this.isList) {
-            context.addMessage(ValidationMessage.error(`Type "${this.type.name}" can not be used in a list because it is an entity extension type. Use a child entity or value object type, or change the field type to "${this.type.name}".`));
+            context.addMessage(ValidationMessage.error(`Type "${this.type.name}" cannot be used in a list because it is an entity extension type. Use a child entity or value object type, or change the field type to "${this.type.name}".`));
         }
     }
 
@@ -224,7 +224,7 @@ export class Field implements ModelComponent {
         }
 
         if (this.declaringType.kind === TypeKind.VALUE_OBJECT) {
-            context.addMessage(ValidationMessage.error(`Type "${this.type.name}" is an entity extension and can not be used within value object types. Change "${this.declaringType.name}" to an entity extension type or use a value object type for "${this.name}".`));
+            context.addMessage(ValidationMessage.error(`Type "${this.type.name}" is an entity extension and cannot be used within value object types. Change "${this.declaringType.name}" to an entity extension type or use a value object type for "${this.name}".`));
         }
 
         if (!this.isList) {
@@ -236,7 +236,7 @@ export class Field implements ModelComponent {
         const permissions = this.input.permissions || {};
 
         if (permissions.permissionProfileName != undefined && permissions.roles != undefined) {
-            const message = `Permission profile and explicit role specifiers can not be combined.`;
+            const message = `Permission profile and explicit role specifiers cannot be combined.`;
             context.addMessage(ValidationMessage.error(message, undefined, permissions.permissionProfileNameAstNode || this.input.astNode ));
             context.addMessage(ValidationMessage.error(message, undefined, permissions.rolesASTNode || this.input.astNode ));
         }

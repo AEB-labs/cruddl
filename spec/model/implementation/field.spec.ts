@@ -191,7 +191,7 @@ describe('Field', () => {
                 isReference: true
             }, deliveryType);
 
-            expectSingleErrorToInclude(field, '@reference and @relation can not be combined');
+            expectSingleErrorToInclude(field, '@reference and @relation cannot be combined');
         });
     });
 
@@ -212,7 +212,7 @@ describe('Field', () => {
                 isRelation: true
             }, deliveryType);
 
-            expectSingleErrorToInclude(field, 'Type "Address" can not be used with @relation because it is not a root entity type');
+            expectSingleErrorToInclude(field, 'Type "Address" cannot be used with @relation because it is not a root entity type');
         });
 
         describe('without inverseOf', () => {
@@ -392,7 +392,7 @@ describe('Field', () => {
                 isReference: true
             }, deliveryType);
 
-            expectSingleErrorToInclude(field, `"HandlingUnit" can not be used as @reference type because is does not have a field annotated with @key`);
+            expectSingleErrorToInclude(field, `"HandlingUnit" cannot be used as @reference type because is does not have a field annotated with @key`);
         });
 
         it('rejects @reference to value object type', () => {
@@ -402,7 +402,7 @@ describe('Field', () => {
                 isReference: true
             }, deliveryType);
 
-            expectSingleErrorToInclude(field, `"Address" can not be used as @reference type because is not a root entity type.`);
+            expectSingleErrorToInclude(field, `"Address" cannot be used as @reference type because is not a root entity type.`);
         });
 
         it('rejects @reference on list field', () => {
@@ -451,7 +451,7 @@ describe('Field', () => {
                 typeName: 'DangerousGoodsInfo'
             }, addressType);
 
-            expectSingleErrorToInclude(field, `Type "DangerousGoodsInfo" is an entity extension and can not be used within value object types. Change "Address" to an entity extension type or use a value object type for "items".`);
+            expectSingleErrorToInclude(field, `Type "DangerousGoodsInfo" is an entity extension and cannot be used within value object types. Change "Address" to an entity extension type or use a value object type for "items".`);
         });
 
         it('rejects entity extension types on list fields', () => {
@@ -461,7 +461,7 @@ describe('Field', () => {
                 isList: true
             }, deliveryType);
 
-            expectSingleErrorToInclude(field, `Type "DangerousGoodsInfo" can not be used in a list because it is an entity extension type. Use a child entity or value object type, or change the field type to "DangerousGoodsInfo".`);
+            expectSingleErrorToInclude(field, `Type "DangerousGoodsInfo" cannot be used in a list because it is an entity extension type. Use a child entity or value object type, or change the field type to "DangerousGoodsInfo".`);
         });
     });
 
@@ -503,7 +503,7 @@ describe('Field', () => {
                 isList: true
             }, addressType);
 
-            expectSingleErrorToInclude(field, `Type "Item" is an entity extension and can not be used within value object types. Change "Address" to an entity extension type or use a value object type for "items".`);
+            expectSingleErrorToInclude(field, `Type "Item" is an entity extension and cannot be used within value object types. Change "Address" to an entity extension type or use a value object type for "items".`);
         });
 
         it('rejects child entity types on non-list fields', () => {
@@ -592,7 +592,7 @@ describe('Field', () => {
             expect(result.messages.length).to.equal(2);
             for (const message of result.messages) {
                 expect(message.severity).to.equal(Severity.Error);
-                expect(message.message).to.equal(`Permission profile and explicit role specifiers can not be combined`);
+                expect(message.message).to.equal(`Permission profile and explicit role specifiers cannot be combined.`);
             }
         });
 
