@@ -2,9 +2,9 @@ import { Location } from 'graphql';
 import { ProjectSource } from '../../project/source';
 
 export enum Severity {
-    Error,
-    Warning,
-    Info
+    Error = 'ERROR',
+    Warning = 'WARNING',
+    Info = 'INFO'
 }
 
 export class SourcePosition {

@@ -233,17 +233,20 @@ export class Field implements ModelComponent {
     }
 
     private validatePermissions(context: ValidationContext) {
-        const permissions = this.input.permissions;
-        if (permissions != undefined) {
-            if (permissions.permissionProfileName != undefined && permissions.roles != undefined) {
-                const message = `Permission profile and explicit role specifiers can not be combined`;
-                context.addMessage(ValidationMessage.error(message, undefined, permissions.permissionProfileNameAstNode || this.input.astNode ));
-                context.addMessage(ValidationMessage.error(message, undefined, permissions.rolesASTNode || this.input.astNode ));
-            }
+        const permissions = this.input.permissions || {};
 
-            if (permissions.permissionProfileName != undefined && !this.model.getPermissionProfile(permissions.permissionProfileName)) {
-                context.addMessage(ValidationMessage.error(`Permission profile "${permissions.permissionProfileName}" not found`, undefined, permissions.permissionProfileNameAstNode || this.input.astNode ));
-            }
+        if (permissions.permissionProfileName != undefined && permissions.roles != undefined) {
+            const message = `Permission profile and explicit role specifiers can not be combined.`;
+            context.addMessage(ValidationMessage.error(message, undefined, permissions.permissionProfileNameAstNode || this.input.astNode ));
+            context.addMessage(ValidationMessage.error(message, undefined, permissions.rolesASTNode || this.input.astNode ));
+        }
+
+        if (permissions.permissionProfileName != undefined && !this.model.getPermissionProfile(permissions.permissionProfileName)) {
+            context.addMessage(ValidationMessage.error(`Permission profile "${permissions.permissionProfileName}" not found.`, undefined, permissions.permissionProfileNameAstNode || this.input.astNode ));
+        }
+
+        if (this.roles && this.roles.read.length === 0 && this.roles.readWrite.length === 0) {
+            context.addMessage(ValidationMessage.warn(`No roles with read access are specified. Access is denied for everyone.`, undefined, permissions.rolesASTNode || this.astNode ));
         }
     }
 

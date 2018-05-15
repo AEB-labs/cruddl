@@ -1,4 +1,5 @@
 import {
+    ASTNode,
     DirectiveNode, EnumTypeDefinitionNode, ObjectTypeDefinitionNode, ScalarTypeDefinitionNode, StringValueNode,
     TypeDefinitionNode
 } from 'graphql';
@@ -31,6 +32,7 @@ export interface RootEntityTypeInput extends ObjectTypeInputBase {
     readonly namespacePath?: string[]
     readonly indices?: ReadonlyArray<IndexDefinitionInput>
     readonly keyFieldName?: string
+    readonly keyFieldASTNode?: ASTNode
     readonly permissions?: PermissionsInput
 }
 

@@ -13,6 +13,7 @@ import { ScalarType } from './scalar-type';
 import { EnumType } from './enum-type';
 import { groupBy } from 'lodash';
 import { objectValues } from '../../utils/utils';
+import { DEFAULT_PERMISSION_PROFILE } from '../../schema/schema-defaults';
 
 export class Model implements ModelComponent{
     private readonly typeMap: ReadonlyMap<string, Type>;
@@ -91,6 +92,10 @@ export class Model implements ModelComponent{
             throw new Error(`Permission profile "${name}" does not exist`);
         }
         return profile;
+    }
+
+    get defaultPermissionProfile(): PermissionProfile|undefined {
+        return this.getPermissionProfile(DEFAULT_PERMISSION_PROFILE);
     }
 
     get rootEntityTypes(): ReadonlyArray<RootEntityType> {
