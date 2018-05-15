@@ -13,6 +13,7 @@ export interface RolesSpecifier {
 }
 
 export class Field implements ModelComponent {
+    readonly model: Model;
     readonly name: string;
     readonly description: string|undefined;
     readonly astNode: FieldDefinitionNode|undefined;
@@ -22,6 +23,7 @@ export class Field implements ModelComponent {
     readonly defaultValue?: any;
     readonly calcMutationOperators: ReadonlySet<CalcMutationsOperator>;
     readonly roles: RolesSpecifier|undefined;
+    readonly isSystemField: boolean;
 
     public get type(): Type {
         return this.model.getTypeOrFallback(this.input.typeName);
@@ -53,7 +55,8 @@ export class Field implements ModelComponent {
         return this.type.isObjectType ? this.type.fields.find(field => field.inverseOf === this) : undefined;
     }
 
-    constructor(private readonly input: FieldInput, public readonly declaringType: ObjectType, private readonly model: Model) {
+    constructor(private readonly input: FieldInput & { isSystemField?: boolean }, public readonly declaringType: ObjectType) {
+        this.model = declaringType.model;
         this.name = input.name;
         this.description = input.description;
         this.astNode = input.astNode;
@@ -66,6 +69,7 @@ export class Field implements ModelComponent {
             read: input.permissions.roles.read || [],
             readWrite: input.permissions.roles.readWrite || [],
         } : undefined;
+        this.isSystemField = input.isSystemField || false;
     }
 
     validate(context: ValidationContext) {

@@ -1,4 +1,4 @@
-import { RootEntityTypeInput, TypeKind } from '../input';
+import { FieldInput, RootEntityTypeInput, TypeKind } from '../input';
 import { ObjectTypeBase } from './object-type-base';
 import { Field } from './field';
 import { Model } from './model';
@@ -12,7 +12,7 @@ export class RootEntityType extends ObjectTypeBase {
     readonly indices: ReadonlyArray<Index>;
 
     constructor(private readonly input: RootEntityTypeInput, model: Model) {
-        super(input, model);
+        super(input, model, systemFieldInputs);
         this.keyField = input.keyFieldName != undefined ? this.getField(input.keyFieldName) : undefined;
         this.namespacePath = input.namespacePath || [];
         this.indices = (input.indices || []).map(index => new Index(index, this));
@@ -50,3 +50,16 @@ export class RootEntityType extends ObjectTypeBase {
         }
     }
 }
+
+const systemFieldInputs: FieldInput[] = [
+    {
+        name: 'id',
+        typeName: 'ID'
+    }, {
+        name: 'createdAt',
+        typeName: 'DateTime'
+    }, {
+        name: 'updatedAt',
+        typeName: 'DateTime'
+    }
+];

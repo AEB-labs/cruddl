@@ -100,7 +100,7 @@ describe('Field', () => {
             const field = new Field({
                 name: 'deliveryNumber',
                 typeName: 'String'
-            }, deliveryType, model);
+            }, deliveryType);
 
             expectToBeValid(field);
         });
@@ -109,7 +109,7 @@ describe('Field', () => {
             const field = new Field({
                 name: 'address',
                 typeName: 'Address'
-            }, deliveryType, model);
+            }, deliveryType);
 
             expectToBeValid(field);
             expect(field.type).to.equal(model.getType('Address'));
@@ -120,7 +120,7 @@ describe('Field', () => {
             const field = new Field({
                 name: 'deliveryNumber',
                 typeName: 'UndefinedType'
-            }, deliveryType, model);
+            }, deliveryType);
 
             expectSingleErrorToInclude(field, 'UndefinedType');
         });
@@ -130,7 +130,7 @@ describe('Field', () => {
             const field = new Field({
                 name: 'deliveryNumber',
                 typeName: 'Undefined'
-            }, deliveryType, model);
+            }, deliveryType);
             expect(field.type).not.to.be.undefined;
             expect(field.type.name).to.equal('Undefined');
             expect(field.hasValidType).to.be.false;
@@ -142,7 +142,7 @@ describe('Field', () => {
             const field = new Field({
                 name: 'country',
                 typeName: 'Country'
-            }, deliveryType, model);
+            }, deliveryType);
 
             expectSingleErrorToInclude(field, 'root entity');
         });
@@ -153,7 +153,7 @@ describe('Field', () => {
                 typeName: 'Country',
                 isRelation: true,
                 isReference: true
-            }, deliveryType, model);
+            }, deliveryType);
 
             expectSingleErrorToInclude(field, '@reference and @relation can not be combined');
         });
@@ -165,7 +165,7 @@ describe('Field', () => {
                 name: 'handlingUnit',
                 typeName: 'HandlingUnit',
                 isRelation: true
-            }, addressType, model);
+            }, addressType);
             expectSingleErrorToInclude(field, 'Relations can only be defined on root entity types. Consider using @reference instead');
         });
 
@@ -174,7 +174,7 @@ describe('Field', () => {
                 name: 'address',
                 typeName: 'Address',
                 isRelation: true
-            }, deliveryType, model);
+            }, deliveryType);
 
             expectSingleErrorToInclude(field, 'Type "Address" can not be used with @relation because it is not a root entity type');
         });
@@ -253,7 +253,7 @@ describe('Field', () => {
                     typeName: 'Shipment',
                     isRelation: true,
                     inverseOfFieldName: 'delivery'
-                }, deliveryType, model);
+                }, deliveryType);
 
                 it('accepts', () => {
                     expectToBeValid(field);
@@ -270,7 +270,7 @@ describe('Field', () => {
                     typeName: 'Shipment',
                     isRelation: true,
                     inverseOfFieldName: 'deliveries'
-                }, deliveryType, model);
+                }, deliveryType);
 
                 it('accepts', () => {
                     expectToBeValid(field);
@@ -287,7 +287,7 @@ describe('Field', () => {
                     typeName: 'Shipment',
                     isRelation: true,
                     inverseOfFieldName: 'undefinedField'
-                }, deliveryType, model);
+                }, deliveryType);
 
                 expectSingleErrorToInclude(field, 'Field "undefinedField" does not exist on type "Shipment"');
             });
@@ -298,7 +298,7 @@ describe('Field', () => {
                     typeName: 'Shipment',
                     isRelation: true,
                     inverseOfFieldName: 'deliveryNonRelation'
-                }, deliveryType, model);
+                }, deliveryType);
 
                 expectSingleErrorToInclude(field, 'Field "Shipment.deliveryNonRelation" used as inverse field of "Delivery.shipment" does not have the @relation directive');
             });
@@ -309,7 +309,7 @@ describe('Field', () => {
                     typeName: 'Shipment',
                     isRelation: true,
                     inverseOfFieldName: 'deliveryWithInverseOf'
-                }, deliveryType, model);
+                }, deliveryType);
 
                 expectSingleErrorToInclude(field, 'Field "Shipment.deliveryWithInverseOf" used as inverse field of "Delivery.shipment" should not declare inverseOf itself');
             });
@@ -320,7 +320,7 @@ describe('Field', () => {
                     typeName: 'Shipment',
                     isRelation: true,
                     inverseOfFieldName: 'handlingUnits'
-                }, deliveryType, model);
+                }, deliveryType);
 
                 expectSingleErrorToInclude(field, 'Field "Shipment.handlingUnits" used as inverse field of "Delivery.shipment" has named type "HandlingUnit" but should be of type "Delivery"');
             });
@@ -331,7 +331,7 @@ describe('Field', () => {
                     typeName: 'Shipment',
                     isRelation: true,
                     inverseOfFieldName: 'delivery'
-                }, deliveryType, model);
+                }, deliveryType);
 
                 expect(field.inverseField).to.be.undefined;
             });
@@ -344,7 +344,7 @@ describe('Field', () => {
                 name: 'country',
                 typeName: 'Country',
                 isReference: true
-            }, deliveryType, model);
+            }, deliveryType);
 
             expectToBeValid(field);
         });
@@ -354,7 +354,7 @@ describe('Field', () => {
                 name: 'handlingUnit',
                 typeName: 'HandlingUnit',
                 isReference: true
-            }, deliveryType, model);
+            }, deliveryType);
 
             expectSingleErrorToInclude(field, `"HandlingUnit" can not be used as @reference type because is does not have a field annotated with @key`);
         });
@@ -364,7 +364,7 @@ describe('Field', () => {
                 name: 'address',
                 typeName: 'Address',
                 isReference: true
-            }, deliveryType, model);
+            }, deliveryType);
 
             expectSingleErrorToInclude(field, `"Address" can not be used as @reference type because is not a root entity type.`);
         });
@@ -375,7 +375,7 @@ describe('Field', () => {
                 typeName: 'Country',
                 isReference: true,
                 isList: true
-            }, deliveryType, model);
+            }, deliveryType);
 
             expectSingleErrorToInclude(field, `@reference is not supported with list types. Consider wrapping the reference in a child entity or value object type.`);
         });
@@ -386,7 +386,7 @@ describe('Field', () => {
             const field = new Field({
                 name: 'items',
                 typeName: 'DangerousGoodsInfo'
-            }, deliveryType, model);
+            }, deliveryType);
 
             expectToBeValid(field);
         });
@@ -395,7 +395,7 @@ describe('Field', () => {
             const field = new Field({
                 name: 'items',
                 typeName: 'DangerousGoodsInfo'
-            }, itemType, model);
+            }, itemType);
 
             expectToBeValid(field);
         });
@@ -404,7 +404,7 @@ describe('Field', () => {
             const field = new Field({
                 name: 'items',
                 typeName: 'DangerousGoodsInfo'
-            }, dangerousGoodsInfoType, model);
+            }, dangerousGoodsInfoType);
 
             expectToBeValid(field);
         });
@@ -413,7 +413,7 @@ describe('Field', () => {
             const field = new Field({
                 name: 'items',
                 typeName: 'DangerousGoodsInfo'
-            }, addressType, model);
+            }, addressType);
 
             expectSingleErrorToInclude(field, `Type "DangerousGoodsInfo" is an entity extension and can not be used within value object types. Change "Address" to an entity extension type or use a value object type for "items".`);
         });
@@ -423,7 +423,7 @@ describe('Field', () => {
                 name: 'items',
                 typeName: 'DangerousGoodsInfo',
                 isList: true
-            }, deliveryType, model);
+            }, deliveryType);
 
             expectSingleErrorToInclude(field, `Type "DangerousGoodsInfo" can not be used in a list because it is an entity extension type. Use a child entity or value object type, or change the field type to "DangerousGoodsInfo".`);
         });
@@ -435,7 +435,7 @@ describe('Field', () => {
                 name: 'items',
                 typeName: 'Item',
                 isList: true
-            }, deliveryType, model);
+            }, deliveryType);
 
             expectToBeValid(field);
         });
@@ -445,7 +445,7 @@ describe('Field', () => {
                 name: 'items',
                 typeName: 'Item',
                 isList: true
-            }, itemType, model);
+            }, itemType);
 
             expectToBeValid(field);
         });
@@ -455,7 +455,7 @@ describe('Field', () => {
                 name: 'items',
                 typeName: 'Item',
                 isList: true
-            }, dangerousGoodsInfoType, model);
+            }, dangerousGoodsInfoType);
 
             expectToBeValid(field);
         });
@@ -465,7 +465,7 @@ describe('Field', () => {
                 name: 'items',
                 typeName: 'Item',
                 isList: true
-            }, addressType, model);
+            }, addressType);
 
             expectSingleErrorToInclude(field, `Type "Item" is an entity extension and can not be used within value object types. Change "Address" to an entity extension type or use a value object type for "items".`);
         });
@@ -475,7 +475,7 @@ describe('Field', () => {
                 name: 'items',
                 typeName: 'Item',
                 isList: false
-            }, deliveryType, model);
+            }, deliveryType);
 
             expectSingleErrorToInclude(field, `Type "Item" can only be used in a list because it is a child entity type. Use an entity extension or value object type, or change the field type to "[Item]".`);
         });
@@ -487,7 +487,7 @@ describe('Field', () => {
                 name: 'amount',
                 typeName: 'Int',
                 defaultValue: 123
-            }, itemType, model);
+            }, itemType);
 
             const res = validate(field);
             expect(res.messages.length, res.toString()).to.equal(1);
@@ -499,7 +499,7 @@ describe('Field', () => {
                 name: 'address',
                 typeName: 'Address',
                 defaultValue: 123
-            }, deliveryType, model);
+            }, deliveryType);
 
             expectSingleErrorToInclude(field, `Default values are only supported on scalar and enum fields`);
         });
@@ -513,7 +513,7 @@ describe('Field', () => {
                 permissions: {
                     permissionProfileName: 'accounting'
                 }
-            }, deliveryType, model);
+            }, deliveryType);
 
             it('accepts', () => {
                 expectToBeValid(field);
@@ -534,7 +534,7 @@ describe('Field', () => {
                         readWrite: ['admin']
                     }
                 }
-            }, deliveryType, model);
+            }, deliveryType);
 
             expectToBeValid(field);
         });
@@ -550,7 +550,7 @@ describe('Field', () => {
                         readWrite: ['admin']
                     }
                 }
-            }, deliveryType, model);
+            }, deliveryType);
 
             const result = validate(field);
             expect(result.messages.length).to.equal(2);
@@ -567,7 +567,7 @@ describe('Field', () => {
                 permissions: {
                     permissionProfileName: 'undefined'
                 }
-            }, deliveryType, model);
+            }, deliveryType);
 
             expectSingleErrorToInclude(field, `Permission profile "undefined" not found`);
         });
@@ -578,8 +578,8 @@ describe('Field', () => {
             const field = new Field({
                 name: 'amount',
                 typeName: 'Int',
-                calcMutationOperators: [ CalcMutationsOperator.ADD, CalcMutationsOperator.MULTIPLY ]
-            }, itemType, model);
+                calcMutationOperators: [CalcMutationsOperator.ADD, CalcMutationsOperator.MULTIPLY]
+            }, itemType);
 
             expectToBeValid(field);
         });
@@ -588,8 +588,8 @@ describe('Field', () => {
             const field = new Field({
                 name: 'log',
                 typeName: 'String',
-                calcMutationOperators: [ CalcMutationsOperator.APPEND ]
-            }, deliveryType, model);
+                calcMutationOperators: [CalcMutationsOperator.APPEND]
+            }, deliveryType);
 
             expectToBeValid(field);
         });
@@ -598,8 +598,8 @@ describe('Field', () => {
             const field = new Field({
                 name: 'amount',
                 typeName: 'Int',
-                calcMutationOperators: [ CalcMutationsOperator.APPEND ]
-            }, deliveryType, model);
+                calcMutationOperators: [CalcMutationsOperator.APPEND]
+            }, deliveryType);
 
             expectSingleErrorToInclude(field, `Calc mutation operator "APPEND" is not supported on type "Int" (supported types: "String").`);
         });
@@ -608,8 +608,8 @@ describe('Field', () => {
             const field = new Field({
                 name: 'deliveryNumber',
                 typeName: 'String',
-                calcMutationOperators: [ CalcMutationsOperator.MULTIPLY ]
-            }, deliveryType, model);
+                calcMutationOperators: [CalcMutationsOperator.MULTIPLY]
+            }, deliveryType);
 
             expectSingleErrorToInclude(field, `Calc mutation operator "MULTIPLY" is not supported on type "String" (supported types: "Int", "Float").`);
         });
@@ -619,8 +619,8 @@ describe('Field', () => {
                 name: 'amount',
                 typeName: 'String',
                 isList: true,
-                calcMutationOperators: [ CalcMutationsOperator.APPEND ]
-            }, deliveryType, model);
+                calcMutationOperators: [CalcMutationsOperator.APPEND]
+            }, deliveryType);
 
             expectSingleErrorToInclude(field, `Calc mutations are not supported on list fields.`);
         });

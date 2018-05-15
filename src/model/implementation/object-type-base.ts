@@ -1,18 +1,26 @@
-import { ObjectTypeInput } from '../input';
+import { FieldInput, ObjectTypeInput } from '../input';
 import { TypeBase } from './type-base';
 import { Field } from './field';
 import { ObjectType } from './type';
 import { Model } from './model';
 import { ValidationContext } from './validation';
 import { ValidationMessage } from '../validation';
+import { objectValues } from '../../utils/utils';
+import { groupBy } from 'lodash';
 
 export abstract class ObjectTypeBase extends TypeBase {
     readonly fields: ReadonlyArray<Field>;
     private readonly fieldMap: ReadonlyMap<string, Field>;
 
-    protected constructor(input: ObjectTypeInput, protected readonly model: Model) {
+    protected constructor(input: ObjectTypeInput, public readonly model: Model, systemFieldInputs: ReadonlyArray<FieldInput> = []) {
         super(input);
-        this.fields = (input.fields || []).map(field => new Field(field, this as any as ObjectType, model));
+        const thisAsObjectType: ObjectType = this as any;
+        const customFields = (input.fields || []).map(field => new Field(field, thisAsObjectType));
+        const systemFields = (systemFieldInputs || []).map(input => new Field({...input, isSystemField: true}, thisAsObjectType));
+        this.fields = [
+            ...systemFields,
+            ...customFields
+        ];
         this.fieldMap = new Map(this.fields.map((field): [string, Field] => [ field.name, field ]));
     }
 
@@ -23,8 +31,30 @@ export abstract class ObjectTypeBase extends TypeBase {
             context.addMessage(ValidationMessage.error(`Object type "${this.name}" does not declare any fields.`, undefined, this.astNode));
         }
 
+        this.validateDuplicateFields(context);
+
         for (const field of this.fields) {
             field.validate(context);
+        }
+    }
+
+    private validateDuplicateFields(context: ValidationContext) {
+        const duplicateFields = objectValues(groupBy(this.fields, field => field.name)).filter(fields => fields.length > 1);
+        for (const fields of duplicateFields) {
+            const isSystemFieldCollision = fields.some(field => field.isSystemField);
+            for (const field of fields) {
+                if (field.isSystemField) {
+                    // don't report errors for system fields the user didn't even write
+                    continue;
+                }
+
+                if (isSystemFieldCollision) {
+                    // user does not see duplicate field, so provide better message
+                    context.addMessage(ValidationMessage.error(`Field name "${field.name}" is reserved by a system field.`, undefined, field.astNode));
+                } else {
+                    context.addMessage(ValidationMessage.error(`Duplicate field name: "${field.name}".`, undefined, field.astNode));
+                }
+            }
         }
     }
 
