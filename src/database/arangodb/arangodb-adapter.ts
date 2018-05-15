@@ -71,7 +71,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             //inject_validators_here
 
             let resultHolder: {[p: string]: any} = {};
-            for (const query of queries) {
+            queries.forEach(query => {
                 const boundValues = query.boundValues;
                 for (const key in query.usedPreExecResultNames) {
                     boundValues[query.usedPreExecResultNames[key]] = resultHolder[key];
@@ -91,7 +91,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                         }
                     }
                 }
-            }
+            });
 
             // the last query is always the main query, use its result as result of the transaction
             const lastQueryResultName = queries[queries.length - 1].resultName;
