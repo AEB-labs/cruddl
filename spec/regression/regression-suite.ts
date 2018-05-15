@@ -23,8 +23,8 @@ export interface RegressionSuiteOptions {
 }
 
 export class RegressionSuite {
-    private schema: GraphQLSchema;
-    private testDataEnvironment: TestDataEnvironment;
+    private schema: GraphQLSchema|undefined;
+    private testDataEnvironment: TestDataEnvironment|undefined;
     private _isSetUpClean = false;
 
     constructor(private readonly path: string, private options: RegressionSuiteOptions = {}) {
@@ -77,6 +77,10 @@ export class RegressionSuite {
     async runTest(name: string) {
         if (!this._isSetUpClean) {
             await this.setUp();
+        }
+
+        if (!this.testDataEnvironment || !this.schema) {
+            throw new Error(`Regression suite not set up correctly`);
         }
 
         const gqlPath = path.resolve(this.testsPath, name + '.graphql');
