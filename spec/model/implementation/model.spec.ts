@@ -2,8 +2,20 @@ import { Model, TypeKind } from '../../../src/model';
 import { expectSingleErrorToInclude, expectToBeValid, validate } from './validation-utils';
 import { expect } from 'chai';
 import { Severity } from '../../../src/model/validation';
+import { PermissionProfileConfigMap } from '../../../src/authorization/permission-profile';
 
 describe('Model', () => {
+    const permissionProfiles: PermissionProfileConfigMap = {
+        default: {
+            permissions: [
+                {
+                    access: 'read',
+                    roles: ['admin']
+                }
+            ]
+        }
+    };
+
     it('accepts simple model', () => {
         const model = new Model({
             types: [
@@ -26,7 +38,8 @@ describe('Model', () => {
                         }
                     ]
                 }
-            ]
+            ],
+            permissionProfiles
         });
 
         expectToBeValid(model);
@@ -54,7 +67,8 @@ describe('Model', () => {
                         }
                     ]
                 }
-            ]
+            ],
+            permissionProfiles
         });
 
         const result = validate(model);
@@ -78,7 +92,8 @@ describe('Model', () => {
                         }
                     ]
                 }
-            ]
+            ],
+            permissionProfiles
         });
 
         expectSingleErrorToInclude(model, `Type name "Int" is reserved by a built-in type.`);

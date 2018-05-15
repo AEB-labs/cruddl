@@ -80,6 +80,14 @@ describe('Field', () => {
             }
         ],
         permissionProfiles: {
+            default: {
+                permissions: [
+                    {
+                        roles: ['accounting'],
+                        access: 'readWrite'
+                    }
+                ]
+            },
             accounting: {
                 permissions: [
                     {
