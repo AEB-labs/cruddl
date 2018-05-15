@@ -21,11 +21,11 @@ export interface FieldInput {
 }
 
 export enum CalcMutationsOperator {
-    MULTIPLY,
-    DIVIDE,
-    ADD,
-    SUBTRACT,
-    MODULO,
-    APPEND,
-    PREPEND
+    MULTIPLY = 'MULTIPLY',
+    DIVIDE = 'DIVIDE',
+    ADD = 'ADD',
+    SUBTRACT = 'SUBTRACT',
+    MODULO = 'MODULO',
+    APPEND = 'APPEND',
+    PREPEND = 'PREPEND'
 }

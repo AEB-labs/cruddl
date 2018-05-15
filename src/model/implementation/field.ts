@@ -1,11 +1,11 @@
 import { CalcMutationsOperator, FieldInput, TypeKind } from '../input';
-import { ValidationContext } from './validation';
+import { ModelComponent, ValidationContext } from './validation';
 import { ValidationMessage } from '../validation';
 import { FieldDefinitionNode } from 'graphql';
 import { ObjectType, Type } from './type';
-import { ModelComponent } from './validation';
 import { PermissionProfile } from '../../authorization/permission-profile';
 import { Model } from './model';
+import { CALC_MUTATIONS_OPERATORS } from '../../schema/schema-defaults';
 
 export interface RolesSpecifier {
     readonly read: ReadonlyArray<string>
@@ -20,7 +20,7 @@ export class Field implements ModelComponent {
     readonly isReference: boolean;
     readonly isRelation: boolean;
     readonly defaultValue?: any;
-    readonly calcMutationOperators: ReadonlyArray<CalcMutationsOperator>;
+    readonly calcMutationOperators: ReadonlySet<CalcMutationsOperator>;
     readonly roles: RolesSpecifier|undefined;
 
     public get type(): Type {
@@ -61,7 +61,7 @@ export class Field implements ModelComponent {
         this.isReference = input.isReference || false;
         this.isRelation = input.isRelation || false;
         this.isList = input.isList || false;
-        this.calcMutationOperators = input.calcMutationOperators || [];
+        this.calcMutationOperators = new Set(input.calcMutationOperators || []);
         this.roles = input.permissions && input.permissions.roles ? {
             read: input.permissions.roles.read || [],
             readWrite: input.permissions.roles.readWrite || [],
@@ -84,6 +84,7 @@ export class Field implements ModelComponent {
         this.validateRelation(context);
         this.validateReference(context);
         this.validateDefaultValue(context);
+        this.validateCalcMutations(context);
     }
 
     private validateRootEntityType(context: ValidationContext) {
@@ -235,5 +236,27 @@ export class Field implements ModelComponent {
         }
 
         context.addMessage(ValidationMessage.info(`Take care, there are no type checks for default values yet.`, undefined, this.input.defaultValueASTNode || this.astNode));
+    }
+
+    private validateCalcMutations(context: ValidationContext) {
+        if (!this.calcMutationOperators.size) {
+            return;
+        }
+
+        if (this.isList) {
+            context.addMessage(ValidationMessage.error(`Calc mutations are not supported on list fields.`, undefined, this.astNode));
+            return;
+        }
+
+        for (const operator of this.calcMutationOperators) {
+            const desc = CALC_MUTATIONS_OPERATORS.find(op => op.name == operator);
+            if (!desc) {
+                throw new Error(`Unknown calc mutation operator: ${operator}`);
+            }
+            const supportedTypesDesc = desc.supportedTypes.map(t => `"${t}"`).join(", ");
+            if (!(desc.supportedTypes.includes(this.type.name))) {
+                context.addMessage(ValidationMessage.error(`Calc mutation operator "${operator}" is not supported on type "${this.type.name}" (supported types: ${supportedTypesDesc}).`, undefined, this.astNode));
+            }
+        }
     }
 }

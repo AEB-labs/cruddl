@@ -1,5 +1,5 @@
 import { ModelComponent, ValidationContext } from '../../../src/model/implementation/validation';
-import { Field, Model, TypeKind } from '../../../src/model';
+import { CalcMutationsOperator, Field, Model, TypeKind } from '../../../src/model';
 import { expect } from 'chai';
 import { Severity } from '../../../src/model/validation';
 
@@ -589,6 +589,59 @@ describe('Field', () => {
             }, deliveryType, model);
 
             expectSingleErrorToInclude(field, `Permission profile "undefined" not found`);
+        });
+    });
+
+    describe('with calc mutations', () => {
+        it('accepts ADD and MULTIPLY on Int', () => {
+            const field = new Field({
+                name: 'amount',
+                typeName: 'Int',
+                calcMutationOperators: [ CalcMutationsOperator.ADD, CalcMutationsOperator.MULTIPLY ]
+            }, itemType, model);
+
+            expectToBeValid(field);
+        });
+
+        it('accepts APPEND on String', () => {
+            const field = new Field({
+                name: 'log',
+                typeName: 'String',
+                calcMutationOperators: [ CalcMutationsOperator.APPEND ]
+            }, deliveryType, model);
+
+            expectToBeValid(field);
+        });
+
+        it('rejects APPEND on Int', () => {
+            const field = new Field({
+                name: 'amount',
+                typeName: 'Int',
+                calcMutationOperators: [ CalcMutationsOperator.APPEND ]
+            }, deliveryType, model);
+
+            expectSingleErrorToInclude(field, `Calc mutation operator "APPEND" is not supported on type "Int" (supported types: "String").`);
+        });
+
+        it('rejects MULTIPLY on String', () => {
+            const field = new Field({
+                name: 'deliveryNumber',
+                typeName: 'String',
+                calcMutationOperators: [ CalcMutationsOperator.MULTIPLY ]
+            }, deliveryType, model);
+
+            expectSingleErrorToInclude(field, `Calc mutation operator "MULTIPLY" is not supported on type "String" (supported types: "Int", "Float").`);
+        });
+
+        it('rejects APPEND on lists', () => {
+            const field = new Field({
+                name: 'amount',
+                typeName: 'String',
+                isList: true,
+                calcMutationOperators: [ CalcMutationsOperator.APPEND ]
+            }, deliveryType, model);
+
+            expectSingleErrorToInclude(field, `Calc mutations are not supported on list fields.`);
         });
     });
 });
