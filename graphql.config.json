@@ -1,0 +1,16 @@
+{
+  "schema": {
+    "request": {
+      "url" : "http://localhost:3000/",
+      "method" : "POST",
+      "postIntrospectionQuery" : true
+    }
+  },
+
+  "endpoints" : [
+    {
+      "name": "cruddl",
+      "url": "http://localhost:3000/"
+    }
+  ]
+}
