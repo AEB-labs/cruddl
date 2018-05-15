@@ -7,5 +7,5 @@ export class ChildEntityType extends ObjectTypeBase {
         super(input, model);
     }
 
-    kind: TypeKind.CHILD_ENTITY = TypeKind.CHILD_ENTITY;
+    readonly kind: TypeKind.CHILD_ENTITY = TypeKind.CHILD_ENTITY;
 }

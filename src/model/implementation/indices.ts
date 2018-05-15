@@ -23,7 +23,7 @@ export class IndexField implements ModelComponent {
 
     private getField(addMessage: (mess: ValidationMessage) => void): Field | undefined {
         if (!this.dotSeparatedPath.match(/^([\w]+\.)*[\w]+$/)) {
-            addMessage(ValidationMessage.error(`An index field path should be field names separated by dots`, undefined, this.astNode));
+            addMessage(ValidationMessage.error(`An index field path should be field names separated by dots.`, undefined, this.astNode));
             return undefined;
         }
 
@@ -38,7 +38,7 @@ export class IndexField implements ModelComponent {
                     addMessage(ValidationMessage.error(`Field "${field.name}" is not an object`, undefined, this.astNode));
                 } else {
                     // this should not occur - would mean that the root is not an object type
-                    addMessage(ValidationMessage.error(`Index defined on non-object type (this is probably an internal error)`, undefined, this.astNode));
+                    addMessage(ValidationMessage.error(`Index defined on non-object type (this is probably an internal error).`, undefined, this.astNode));
                 }
                 return [undefined, undefined];
             }
@@ -46,12 +46,12 @@ export class IndexField implements ModelComponent {
             const nextField = type.getField(fieldName);
             if (!nextField) {
                 addMessage(ValidationMessage.error(`Type "${type.name}" does not have a field "${fieldName}"`, undefined, this.astNode));
-
                 return [undefined, undefined];
             }
 
             if (nextField.type.kind === TypeKind.ROOT_ENTITY) {
-                addMessage(ValidationMessage.error(`Field "${type.name}.${nextField.name}" resolves to a root entity, but indices can not cross root entity boundaries`, undefined, this.astNode));
+                addMessage(ValidationMessage.error(`Field "${type.name}.${nextField.name}" resolves to a root entity, but indices can not cross root entity boundaries.`, undefined, this.astNode));
+                return [undefined, undefined];
             }
 
             return [nextField.type, nextField];

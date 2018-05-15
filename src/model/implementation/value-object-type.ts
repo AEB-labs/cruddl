@@ -7,5 +7,5 @@ export class ValueObjectType extends ObjectTypeBase {
         super(input, model);
     }
 
-    kind: TypeKind.VALUE_OBJECT = TypeKind.VALUE_OBJECT;
+    readonly kind: TypeKind.VALUE_OBJECT = TypeKind.VALUE_OBJECT;
 }

@@ -7,5 +7,5 @@ export class EntityExtensionType extends ObjectTypeBase {
         super(input, model);
     }
 
-    kind: TypeKind.ENTITY_EXTENSION = TypeKind.ENTITY_EXTENSION;
+    readonly kind: TypeKind.ENTITY_EXTENSION = TypeKind.ENTITY_EXTENSION;
 }

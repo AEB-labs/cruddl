@@ -7,15 +7,21 @@ import { ModelComponent } from './validation';
 import { PermissionProfile } from '../../authorization/permission-profile';
 import { Model } from './model';
 
+export interface RolesSpecifier {
+    readonly read: ReadonlyArray<string>
+    readonly readWrite: ReadonlyArray<string>
+}
+
 export class Field implements ModelComponent {
-    public readonly name: string;
-    public readonly description: string|undefined;
-    public readonly astNode: FieldDefinitionNode|undefined;
-    public readonly isList: boolean;
+    readonly name: string;
+    readonly description: string|undefined;
+    readonly astNode: FieldDefinitionNode|undefined;
+    readonly isList: boolean;
     readonly isReference: boolean;
     readonly isRelation: boolean;
     readonly defaultValue?: any;
-    readonly calcMutationOperators: CalcMutationsOperator[];
+    readonly calcMutationOperators: ReadonlyArray<CalcMutationsOperator>;
+    readonly roles: RolesSpecifier|undefined;
 
     public get type(): Type {
         return this.model.getTypeOrFallback(this.input.typeName);
@@ -47,7 +53,7 @@ export class Field implements ModelComponent {
         return this.type.isObjectType ? this.type.fields.find(field => field.inverseOf === this) : undefined;
     }
 
-    constructor(private input: FieldInput, public readonly declaringType: ObjectType, private model: Model) {
+    constructor(private readonly input: FieldInput, public readonly declaringType: ObjectType, private readonly model: Model) {
         this.name = input.name;
         this.description = input.description;
         this.astNode = input.astNode;
@@ -56,15 +62,19 @@ export class Field implements ModelComponent {
         this.isRelation = input.isRelation || false;
         this.isList = input.isList || false;
         this.calcMutationOperators = input.calcMutationOperators || [];
+        this.roles = input.permissions && input.permissions.roles ? {
+            read: input.permissions.roles.read || [],
+            readWrite: input.permissions.roles.readWrite || [],
+        } : undefined;
     }
 
     validate(context: ValidationContext) {
         if (!this.name) {
-            context.addMessage(ValidationMessage.error(`Field is missing a name`, undefined, this.astNode));
+            context.addMessage(ValidationMessage.error(`Field is missing a name.`, undefined, this.astNode));
         }
 
         if (!this.model.getType(this.input.typeName)) {
-            context.addMessage(ValidationMessage.error(`Type "${this.input.typeName}" not found`, undefined, this.input.typeNameAST || this.astNode));
+            context.addMessage(ValidationMessage.error(`Type "${this.input.typeName}" not found.`, undefined, this.input.typeNameAST || this.astNode));
         }
 
         this.validatePermissions(context);
@@ -79,7 +89,7 @@ export class Field implements ModelComponent {
     private validateRootEntityType(context: ValidationContext) {
         // this does not fit anywhere else properly
         if (this.isReference && this.isRelation) {
-            context.addMessage(ValidationMessage.error(`@reference and @relation can not be combined`, undefined, this.astNode));
+            context.addMessage(ValidationMessage.error(`@reference and @relation can not be combined.`, undefined, this.astNode));
         }
 
         if (this.type.kind !== TypeKind.ROOT_ENTITY) {
@@ -89,9 +99,9 @@ export class Field implements ModelComponent {
         // root entities are not embeddable
         if (!this.isRelation && !this.isReference) {
             if (this.declaringType.kind == TypeKind.ROOT_ENTITY) {
-                context.addMessage(ValidationMessage.error(`Type "${this.type.name}" is a root entity type and can not be embedded. Consider adding @reference`, undefined, this.astNode));
+                context.addMessage(ValidationMessage.error(`Type "${this.type.name}" is a root entity type and can not be embedded. Consider adding @reference.`, undefined, this.astNode));
             } else {
-                context.addMessage(ValidationMessage.error(`Type "${this.type.name}" is a root entity type and can not be embedded. Consider adding @reference or @relation`, undefined, this.astNode));
+                context.addMessage(ValidationMessage.error(`Type "${this.type.name}" is a root entity type and can not be embedded. Consider adding @reference or @relation.`, undefined, this.astNode));
             }
         }
     }
@@ -102,7 +112,7 @@ export class Field implements ModelComponent {
         }
 
         if (this.declaringType.kind !== TypeKind.ROOT_ENTITY) {
-            context.addMessage(ValidationMessage.error(`Relations can only be defined on root entity types. Consider using @reference instead`, undefined, this.astNode));
+            context.addMessage(ValidationMessage.error(`Relations can only be defined on root entity types. Consider using @reference instead.`, undefined, this.astNode));
         }
 
         // do target type validations only if it resolved correctly
@@ -111,20 +121,21 @@ export class Field implements ModelComponent {
         }
 
         if (this.type.kind !== TypeKind.ROOT_ENTITY) {
-            context.addMessage(ValidationMessage.error(`"${this.type.name}" can not be used as @relation type because it is not a root entity type`, undefined, this.astNode));
+            context.addMessage(ValidationMessage.error(`Type "${this.type.name}" can not be used with @relation because it is not a root entity type`, undefined, this.astNode));
             return;
         }
 
         if (this.input.inverseOfFieldName != undefined) {
             const inverseOf = this.type.getField(this.input.inverseOfFieldName);
+            const inverseFieldDesc = `Field "${this.type.name}.${this.input.inverseOfFieldName}" used as inverse field of "${this.declaringType.name}.${this.name}"`;
             if (!inverseOf) {
-                context.addMessage(ValidationMessage.error(`Field "${this.input.inverseOfFieldName}" does not exist on type "${this.type.name}"`, undefined, this.input.inverseOfASTNode || this.astNode));
+                context.addMessage(ValidationMessage.error(`Field "${this.input.inverseOfFieldName}" does not exist on type "${this.type.name}".`, undefined, this.input.inverseOfASTNode || this.astNode));
             } else if (inverseOf.type && inverseOf.type !== this.declaringType) {
-                context.addMessage(ValidationMessage.error(`Field "${this.type.name}.${this.input.inverseOfFieldName}" used as inverse field has named type "${inverseOf.type.name}" but should be of type "${this.declaringType.name}"`, undefined, this.input.inverseOfASTNode || this.astNode));
+                context.addMessage(ValidationMessage.error(`${inverseFieldDesc} has named type "${inverseOf.type.name}" but should be of type "${this.declaringType.name}".`, undefined, this.input.inverseOfASTNode || this.astNode));
             } else if (!inverseOf.isRelation) {
-                context.addMessage(ValidationMessage.error(`Field "${this.type.name}.${this.input.inverseOfFieldName}" used as inverse field does not have the @relation directive`, undefined, this.input.inverseOfASTNode || this.astNode));
-            } else if (!inverseOf.inverseOf) {
-                context.addMessage(ValidationMessage.error(`Field "${this.type.name}.${this.input.inverseOfFieldName}" used as inverse field should not declare inverseOf itself`, undefined, this.input.inverseOfASTNode || this.astNode));
+                context.addMessage(ValidationMessage.error(`${inverseFieldDesc} does not have the @relation directive.`, undefined, this.input.inverseOfASTNode || this.astNode));
+            } else if (inverseOf.inverseOf != undefined) {
+                context.addMessage(ValidationMessage.error(`${inverseFieldDesc} should not declare inverseOf itself.`, undefined, this.input.inverseOfASTNode || this.astNode));
             }
         } else {
             // look for @relation(inverseOf: "thisField") in the target type
@@ -133,14 +144,14 @@ export class Field implements ModelComponent {
                 // no @relation(inverseOf: "thisField") - should be ok, but is suspicious if there is a matching @relation back to this type
                 const matchingRelation = this.type.fields.find(field => field.isRelation && field.type === this.declaringType && field.inverseOf == undefined);
                 if (matchingRelation) {
-                    context.addMessage(ValidationMessage.warn(`This field and "${matchingRelation.declaringType.name}.${matchingRelation.name}" define separate relations. Consider using the "inverseOf" argument to add a backlink to an existing relation`, undefined, this.astNode));
+                    context.addMessage(ValidationMessage.warn(`This field and "${matchingRelation.declaringType.name}.${matchingRelation.name}" define separate relations. Consider using the "inverseOf" argument to add a backlink to an existing relation.`, undefined, this.astNode));
                 }
-            } else if (inverseFields.length > 0) {
-                const names = inverseFields.map(f => `"${f.name}"`).join(', ');
+            } else if (inverseFields.length > 1) {
+                const names = inverseFields.map(f => `"${this.type.name}.${f.name}"`).join(', ');
                 // found multiple inverse fields - this is an error
                 // check this here and not in the inverse fields so we don't report stuff twice
                 for (const inverseField of inverseFields) {
-                    context.addMessage(ValidationMessage.warn(`Multiple fields (${names}) declaring inverseOf to "${this.declaringType.name}"."${this.name}"`, undefined, inverseField.astNode));
+                    context.addMessage(ValidationMessage.error(`Multiple fields (${names}) declare inverseOf to "${this.declaringType.name}.${this.name}".`, undefined, inverseField.astNode));
                 }
             }
         }
@@ -152,21 +163,21 @@ export class Field implements ModelComponent {
         }
 
         // do target type validations only if it resolved correctly
-        if (this.hasValidType) {
+        if (!this.hasValidType) {
             return;
         }
 
         if (this.type.kind !== TypeKind.ROOT_ENTITY) {
-            context.addMessage(ValidationMessage.error(`"${this.type.name}" can not be used as @reference type because is not a root entity type`, undefined, this.astNode));
+            context.addMessage(ValidationMessage.error(`"${this.type.name}" can not be used as @reference type because is not a root entity type.`, undefined, this.astNode));
             return;
         }
 
         if (this.isList) {
-            context.addMessage(ValidationMessage.error(`@reference is not supported with list types. Consider wrapping the reference in a child entity or value object type`, undefined, this.astNode));
+            context.addMessage(ValidationMessage.error(`@reference is not supported with list types. Consider wrapping the reference in a child entity or value object type.`, undefined, this.astNode));
         }
 
-        if (this.type.keyField) {
-            context.addMessage(ValidationMessage.error(`"${this.type.name}" can not be used as @reference type because is does not have a field annotated with @key`, undefined, this.astNode));
+        if (!this.type.keyField) {
+            context.addMessage(ValidationMessage.error(`"${this.type.name}" can not be used as @reference type because is does not have a field annotated with @key.`, undefined, this.astNode));
         }
     }
 
@@ -176,11 +187,11 @@ export class Field implements ModelComponent {
         }
 
         if (this.declaringType.kind === TypeKind.VALUE_OBJECT) {
-            context.addMessage(ValidationMessage.error(`Type "${this.type.name}" is an entity extension and can not be used within value object types. Change "${this.declaringType.name}" to an entity extension type or use a value object type for "${this.name}"`));
+            context.addMessage(ValidationMessage.error(`Type "${this.type.name}" is an entity extension and can not be used within value object types. Change "${this.declaringType.name}" to an entity extension type or use a value object type for "${this.name}".`));
         }
 
         if (this.isList) {
-            context.addMessage(ValidationMessage.error(`Type "${this.type.name}" can not be used in a list because it is an entity extension type. Use a child entity or value object type, or change the field type to "${this.type.name}"`));
+            context.addMessage(ValidationMessage.error(`Type "${this.type.name}" can not be used in a list because it is an entity extension type. Use a child entity or value object type, or change the field type to "${this.type.name}".`));
         }
     }
 
@@ -190,21 +201,26 @@ export class Field implements ModelComponent {
         }
 
         if (this.declaringType.kind === TypeKind.VALUE_OBJECT) {
-            context.addMessage(ValidationMessage.error(`Type "${this.type.name}" is an entity extension and can not be used within value object types. Change "${this.declaringType.name}" to an entity extension type or use a value object type for "${this.name}"`));
+            context.addMessage(ValidationMessage.error(`Type "${this.type.name}" is an entity extension and can not be used within value object types. Change "${this.declaringType.name}" to an entity extension type or use a value object type for "${this.name}".`));
         }
 
         if (!this.isList) {
-            context.addMessage(ValidationMessage.error(`Type "${this.type.name}" can only be used in a list because it is a child entity type. Use an entity extension or value object type, or change the field type to "[${this.type.name}]"`))
+            context.addMessage(ValidationMessage.error(`Type "${this.type.name}" can only be used in a list because it is a child entity type. Use an entity extension or value object type, or change the field type to "[${this.type.name}]".`))
         }
     }
 
     private validatePermissions(context: ValidationContext) {
         const permissions = this.input.permissions;
         if (permissions != undefined) {
-            if (permissions.permissionProfileName != undefined && this.model.getPermissionProfile(permissions.permissionProfileName)) {
-                context.addMessage(ValidationMessage.error(`Permission profile "${permissions.permissionProfileName}" not found`, undefined, permissions.astNode || this.input.astNode ));
+            if (permissions.permissionProfileName != undefined && permissions.roles != undefined) {
+                const message = `Permission profile and explicit role specifiers can not be combined`;
+                context.addMessage(ValidationMessage.error(message, undefined, permissions.permissionProfileNameAstNode || this.input.astNode ));
+                context.addMessage(ValidationMessage.error(message, undefined, permissions.rolesASTNode || this.input.astNode ));
             }
-            // TODO roles
+
+            if (permissions.permissionProfileName != undefined && !this.model.getPermissionProfile(permissions.permissionProfileName)) {
+                context.addMessage(ValidationMessage.error(`Permission profile "${permissions.permissionProfileName}" not found`, undefined, permissions.permissionProfileNameAstNode || this.input.astNode ));
+            }
         }
     }
 
@@ -214,10 +230,10 @@ export class Field implements ModelComponent {
         }
 
         if (this.type.kind !== TypeKind.SCALAR && this.type.kind !== TypeKind.ENUM) {
-            context.addMessage(ValidationMessage.error(`Default values are only supported on scalar and enum fields`, undefined, this.input.defaultValueASTNode || this.astNode));
+            context.addMessage(ValidationMessage.error(`Default values are only supported on scalar and enum fields.`, undefined, this.input.defaultValueASTNode || this.astNode));
             return;
         }
 
-        context.addMessage(ValidationMessage.info(`Take care, there are no type checks for default values yet`, undefined, this.input.defaultValueASTNode || this.astNode));
+        context.addMessage(ValidationMessage.info(`Take care, there are no type checks for default values yet.`, undefined, this.input.defaultValueASTNode || this.astNode));
     }
 }

@@ -6,6 +6,6 @@ export class EnumType extends TypeBase {
         super(input);
     }
 
-    isObjectType: false = false;
-    kind: TypeKind.ENUM = TypeKind.ENUM;
+    readonly isObjectType: false = false;
+    readonly kind: TypeKind.ENUM = TypeKind.ENUM;
 }

@@ -63,6 +63,14 @@ export class Model {
         return this.permissionProfiles[name];
     }
 
+    getPermissionProfileOrThrow(name: string): PermissionProfile {
+        const profile = this.getPermissionProfile(name);
+        if (profile == undefined) {
+            throw new Error(`Permission profile "${name}" does not exist`);
+        }
+        return profile;
+    }
+
     get rootEntityTypes(): ReadonlyArray<RootEntityType> {
         return this.types.filter(t => t.kind === TypeKind.ROOT_ENTITY) as ReadonlyArray<RootEntityType>;
     }

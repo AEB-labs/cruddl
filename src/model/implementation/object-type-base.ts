@@ -20,7 +20,7 @@ export abstract class ObjectTypeBase extends TypeBase {
         super.validate(context);
 
         if (!this.fields.length) {
-            context.addMessage(ValidationMessage.error(`Object type "${this.name}" does not declare any fields`, undefined, this.astNode));
+            context.addMessage(ValidationMessage.error(`Object type "${this.name}" does not declare any fields.`, undefined, this.astNode));
         }
 
         for (const field of this.fields) {
@@ -32,5 +32,13 @@ export abstract class ObjectTypeBase extends TypeBase {
         return this.fieldMap.get(name);
     }
 
-    isObjectType: true = true;
+    getFieldOrThrow(name: string): Field {
+        const field = this.getField(name);
+        if (field == undefined) {
+            throw new Error(`Field "${this.name}.${name}" is not declared`);
+        }
+        return field;
+    }
+
+    readonly isObjectType: true = true;
 }

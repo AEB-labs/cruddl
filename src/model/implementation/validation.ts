@@ -1,7 +1,7 @@
 import { ValidationMessage, ValidationResult } from '../validation';
 
 export class ValidationContext {
-    private _validationMessages: ValidationMessage[] = [];
+    private readonly _validationMessages: ValidationMessage[] = [];
 
     addMessage(message: ValidationMessage) {
         this._validationMessages.push(message);

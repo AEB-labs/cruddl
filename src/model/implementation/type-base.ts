@@ -17,7 +17,7 @@ export abstract class TypeBase implements ModelComponent {
 
     validate(context: ValidationContext) {
         if (!this.name) {
-            context.addMessage(ValidationMessage.error(`Type declaration is missing name`, undefined, this.astNode));
+            context.addMessage(ValidationMessage.error(`Type declaration is missing a name.`, undefined, this.astNode));
         }
     }
 

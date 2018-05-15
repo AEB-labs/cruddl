@@ -12,6 +12,11 @@ describe('IndexField', () => {
                     {
                         name: 'name',
                         typeName: 'String'
+                    },
+                    {
+                        name: 'addressLines',
+                        typeName: 'String',
+                        isList: true
                     }
                 ]
             }, {
@@ -20,6 +25,15 @@ describe('IndexField', () => {
                 fields: [
                     {
                         name: 'itemNumber',
+                        typeName: 'String'
+                    }
+                ]
+            }, {
+                name: 'Shipment',
+                kind: TypeKind.ROOT_ENTITY,
+                fields: [
+                    {
+                        name: 'shipmentNumber',
                         typeName: 'String'
                     }
                 ]
@@ -41,6 +55,10 @@ describe('IndexField', () => {
                 name: 'items',
                 typeName: 'Item',
                 isList: true
+            }, {
+                name: 'shipment',
+                typeName: 'Shipment',
+                isRelation: true
             }
         ]
     }, model);
@@ -63,6 +81,16 @@ describe('IndexField', () => {
 
         it('does not resolve missing fields', () => {
             const indexField = new IndexField('undefined', deliveryType);
+            expect(indexField.field).to.be.undefined;
+        });
+
+        it('does not resolve non-scalar leaves', () => {
+            const indexField = new IndexField('items', deliveryType);
+            expect(indexField.field).to.be.undefined;
+        });
+
+        it('does traverse across root entity boundaries', () => {
+            const indexField = new IndexField('shipment.shipmentNumber', deliveryType);
             expect(indexField.field).to.be.undefined;
         });
     });

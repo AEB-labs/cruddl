@@ -11,7 +11,7 @@ export class RootEntityType extends ObjectTypeBase {
     readonly namespacePath: ReadonlyArray<string>;
     readonly indices: ReadonlyArray<Index>;
 
-    constructor(private input: RootEntityTypeInput, model: Model) {
+    constructor(private readonly input: RootEntityTypeInput, model: Model) {
         super(input, model);
         this.keyField = input.keyFieldName != undefined ? this.getField(input.keyFieldName) : undefined;
         this.namespacePath = input.namespacePath || [];
@@ -37,16 +37,16 @@ export class RootEntityType extends ObjectTypeBase {
         const field = this.getField(this.input.keyFieldName);
 
         if (!field) {
-            context.addMessage(ValidationMessage.error(`Key field "${this.input.keyFieldName}" does not exist on type "${this.name}"`, undefined, this.astNode));
+            context.addMessage(ValidationMessage.error(`Key field "${this.input.keyFieldName}" does not exist on type "${this.name}".`, undefined, this.astNode));
             return;
         }
 
         if (field.type.kind !== TypeKind.SCALAR) {
-            context.addMessage(ValidationMessage.error(`Only fields of scalar type can be used as key field`, undefined, field.astNode || this.astNode));
+            context.addMessage(ValidationMessage.error(`Only fields of scalar type can be used as key field.`, undefined, field.astNode || this.astNode));
         }
 
         if (field.isList) {
-            context.addMessage(ValidationMessage.error(`List fields can not be used as key field`, undefined, field.astNode || this.astNode));
+            context.addMessage(ValidationMessage.error(`List fields can not be used as key field.`, undefined, field.astNode || this.astNode));
         }
     }
 }
