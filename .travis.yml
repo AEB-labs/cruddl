@@ -9,7 +9,8 @@ script:
 - npm run test:dropdb
 - echo "test1"
 - pwd
-- ls
+- cd ..
+- pwd && ls
 deploy:
   - provider: npm
     email: "Nils.Wenzler@aeb.com"
