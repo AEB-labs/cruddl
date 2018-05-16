@@ -10,6 +10,8 @@ import {
 import { GraphQLObjectType, GraphQLString } from 'graphql';
 import { ACCESS_GROUP_FIELD } from '../../src/schema/schema-defaults';
 import { expect } from 'chai';
+import { Model, RootEntityType } from '../../src/model/implementation';
+import { TypeKind } from '../../src/model/input';
 
 
 describe('PermissionDescriptor', () => {
@@ -48,8 +50,19 @@ describe('ProfileBasedPermissionDescriptor', () => {
             restrictToAccessGroups: [ 'groupA', 'groupB' ]
         }]
     });
-    const objectType = new GraphQLObjectType({ name: 'Test', fields: { [ACCESS_GROUP_FIELD]: { type: GraphQLString }}});
-    const descriptor = new ProfileBasedPermissionDescriptor(profile, objectType);
+    const model = new Model({
+        types: [{
+            kind: TypeKind.ROOT_ENTITY,
+            name: 'Test',
+            fields: [
+                {
+                    name: ACCESS_GROUP_FIELD,
+                    typeName: 'String'
+                }
+            ]
+        }]
+    });
+    const descriptor = new ProfileBasedPermissionDescriptor(profile, model.getRootEntityTypeOrThrow('Test'));
 
     it('grants access if role matches', () => {
         expect(descriptor.canAccess({ authRoles: [ 'theRole', 'other' ]}, AccessOperation.READ)).to.equal(PermissionResult.GRANTED);

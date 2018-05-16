@@ -37,6 +37,11 @@ export abstract class TypeBase implements ModelComponent {
         }
     }
 
-    abstract readonly isObjectType: boolean;
-
+    abstract readonly isObjectType: boolean = false;
+    abstract readonly isRootEntityType: boolean = false;
+    abstract readonly isChildEntityType: boolean = false;
+    abstract readonly isEntityExtensionType: boolean = false;
+    abstract readonly isValueObjectType: boolean = false;
+    abstract readonly isScalarType: boolean = false;
+    abstract readonly isEnumType: boolean = false;
 }

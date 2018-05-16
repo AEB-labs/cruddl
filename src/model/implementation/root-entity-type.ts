@@ -8,6 +8,7 @@ import { Index } from './indices';
 import { DEFAULT_PERMISSION_PROFILE } from '../../schema/schema-defaults';
 import { PermissionProfile } from '../../authorization/permission-profile';
 import { PermissionsInput } from '../input/permissions';
+import { EdgeType, getEdgeType } from '../../schema/edges';
 
 export class RootEntityType extends ObjectTypeBase {
     private readonly permissions: PermissionsInput & {};
@@ -17,6 +18,10 @@ export class RootEntityType extends ObjectTypeBase {
     readonly roles: RolesSpecifier|undefined;
 
     readonly kind: TypeKind.ROOT_ENTITY = TypeKind.ROOT_ENTITY;
+    readonly isChildEntityType: false = false;
+    readonly isRootEntityType: true = true;
+    readonly isEntityExtensionType: false = false;
+    readonly isValueObjectType: false = false;
 
     constructor(private readonly input: RootEntityTypeInput, model: Model) {
         super(input, model, systemFieldInputs);
@@ -30,6 +35,13 @@ export class RootEntityType extends ObjectTypeBase {
         } : undefined;
     }
 
+    getKeyFieldOrThrow(): Field {
+        if (!this.keyField) {
+            throw new Error(`Expected "${this.name}" to have a key field`);
+        }
+        return this.keyField;
+    }
+
     get permissionProfile(): PermissionProfile|undefined {
         if (this.permissions.permissionProfileName == undefined) {
             if (this.permissions.roles != undefined) {
@@ -39,6 +51,12 @@ export class RootEntityType extends ObjectTypeBase {
             return this.model.defaultPermissionProfile;
         }
         return this.model.getPermissionProfile(this.permissions.permissionProfileName);
+    }
+
+    get relations(): ReadonlyArray<EdgeType> {
+        return this.fields
+            .filter(field => field.isRelation)
+            .map(field => getEdgeType(field));
     }
 
     validate(context: ValidationContext) {

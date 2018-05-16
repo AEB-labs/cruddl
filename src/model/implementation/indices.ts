@@ -14,25 +14,29 @@ export class IndexField implements ModelComponent {
     }
 
     get field(): Field | undefined {
-        return this.getField(() => undefined);
+        const res = this.traversePath(() => undefined);
+        return res ? res.field : undefined;
+    }
+
+    get fieldsInPath(): ReadonlyArray<Field>|undefined {
+        const res = this.traversePath(() => undefined);
+        return res ? res.fieldsInPath : undefined;
     }
 
     validate(context: ValidationContext) {
-        this.getField(context.addMessage.bind(context));
+        this.traversePath(context.addMessage.bind(context));
     }
 
-    private getField(addMessage: (mess: ValidationMessage) => void): Field | undefined {
+    private traversePath(addMessage: (mess: ValidationMessage) => void): { fieldsInPath: ReadonlyArray<Field>, field: Field }|undefined {
         if (!this.dotSeparatedPath.match(/^([\w]+\.)*[\w]+$/)) {
             addMessage(ValidationMessage.error(`An index field path should be field names separated by dots.`, undefined, this.astNode));
             return undefined;
         }
 
-        const field = this.path.reduce<[Type | undefined, Field | undefined]>(([type, field], fieldName) => {
-            if (!type) {
-                // we already got an error
-                return [undefined, undefined];
-            }
-
+        let type: Type = this.declaringType;
+        let field: Field|undefined = undefined;
+        let fieldsInPath = [];
+        for (const fieldName of this.path) {
             if (!type.isObjectType) {
                 if (field) {
                     addMessage(ValidationMessage.error(`Field "${field.name}" is not an object`, undefined, this.astNode));
@@ -40,22 +44,24 @@ export class IndexField implements ModelComponent {
                     // this should not occur - would mean that the root is not an object type
                     addMessage(ValidationMessage.error(`Index defined on non-object type (this is probably an internal error).`, undefined, this.astNode));
                 }
-                return [undefined, undefined];
+                return undefined;
             }
 
             const nextField = type.getField(fieldName);
             if (!nextField) {
                 addMessage(ValidationMessage.error(`Type "${type.name}" does not have a field "${fieldName}"`, undefined, this.astNode));
-                return [undefined, undefined];
+                return undefined;
             }
 
             if (nextField.type.kind === TypeKind.ROOT_ENTITY) {
                 addMessage(ValidationMessage.error(`Field "${type.name}.${nextField.name}" resolves to a root entity, but indices can not cross root entity boundaries.`, undefined, this.astNode));
-                return [undefined, undefined];
+                return undefined;
             }
 
-            return [nextField.type, nextField];
-        }, [this.declaringType, undefined])[1];
+            field = nextField;
+            type = nextField.type;
+            fieldsInPath.push(nextField);
+        }
 
         if (!field) {
             return undefined;
@@ -71,7 +77,7 @@ export class IndexField implements ModelComponent {
             return undefined;
         }
 
-        return field;
+        return { field, fieldsInPath };
     }
 }
 

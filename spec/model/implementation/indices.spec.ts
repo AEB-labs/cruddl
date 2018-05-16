@@ -1,6 +1,5 @@
-import { Model, RootEntityType, TypeKind } from '../../../src/model';
+import { IndexField, Model, RootEntityType, TypeKind } from '../../../src/model';
 import { expect } from 'chai';
-import { IndexField } from '../../../src/model/implementation/indices';
 
 describe('IndexField', () => {
     const model = new Model({
@@ -63,7 +62,7 @@ describe('IndexField', () => {
         ]
     }, model);
 
-    describe('fields', () => {
+    describe('field', () => {
         it('resolves direct fields', () => {
             const indexField = new IndexField('deliveryNumber', deliveryType);
             expect(indexField.field).to.equal(deliveryType.getField('deliveryNumber'));

@@ -1,10 +1,12 @@
-import { getPermissionDescriptor } from '../permission-descriptors-in-schema';
 import { AccessOperation, AuthContext, AUTHORIZATION_ERROR_NAME } from '../auth-basics';
 import {
-    FieldQueryNode, FollowEdgeQueryNode, QueryNode, RuntimeErrorQueryNode, TransformListQueryNode, VariableQueryNode
+    FollowEdgeQueryNode, QueryNode, RuntimeErrorQueryNode, TransformListQueryNode, VariableQueryNode
 } from '../../query/definition';
 import { PermissionResult } from '../permission-descriptors';
 import { invertRelationFieldEdgeSide } from '../../schema/edges';
+import {
+    getPermissionDescriptorOfField, getPermissionDescriptorOfRootEntityType
+} from '../permission-descriptors-in-model';
 
 export function transformFollowEdgeQueryNode(node: FollowEdgeQueryNode, authContext: AuthContext): QueryNode {
     const sourceType = node.edgeType.getTypeOfSide(node.sourceFieldSide);
@@ -12,7 +14,7 @@ export function transformFollowEdgeQueryNode(node: FollowEdgeQueryNode, authCont
     if (!sourceField) {
         throw new Error(`Encountered FollowEdgeQueryNode which traverses via non-existing inverse field (on ${sourceType.name})`);
     }
-    const fieldPermissionDescriptor = getPermissionDescriptor(sourceType, sourceField);
+    const fieldPermissionDescriptor = getPermissionDescriptorOfField(sourceField);
     const access = fieldPermissionDescriptor.canAccess(authContext, AccessOperation.READ);
     switch (access) {
         case PermissionResult.DENIED:
@@ -22,7 +24,7 @@ export function transformFollowEdgeQueryNode(node: FollowEdgeQueryNode, authCont
     }
 
     const targetType = node.edgeType.getTypeOfSide(invertRelationFieldEdgeSide(node.sourceFieldSide));
-    const entityPermissionDescriptor = getPermissionDescriptor(targetType);
+    const entityPermissionDescriptor = getPermissionDescriptorOfRootEntityType(targetType);
     const entityAccess = entityPermissionDescriptor.canAccess(authContext, AccessOperation.READ);
     switch (entityAccess) {
         case PermissionResult.GRANTED:

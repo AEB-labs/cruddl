@@ -23,7 +23,36 @@ export class Field implements ModelComponent {
     readonly defaultValue?: any;
     readonly calcMutationOperators: ReadonlySet<CalcMutationsOperator>;
     readonly roles: RolesSpecifier|undefined;
+
+    /**
+     * Indicates if this is an inherent field of the declaring type that will be maintained by the system and thus can
+     * only be queried
+     */
     readonly isSystemField: boolean;
+
+    constructor(private readonly input: FieldInput & { isSystemField?: boolean }, public readonly declaringType: ObjectType) {
+        this.model = declaringType.model;
+        this.name = input.name;
+        this.description = input.description;
+        this.astNode = input.astNode;
+        this.defaultValue = input.defaultValue;
+        this.isReference = input.isReference || false;
+        this.isRelation = input.isRelation || false;
+        this.isList = input.isList || false;
+        this.calcMutationOperators = new Set(input.calcMutationOperators || []);
+        this.roles = input.permissions && input.permissions.roles ? {
+            read: input.permissions.roles.read || [],
+            readWrite: input.permissions.roles.readWrite || [],
+        } : undefined;
+        this.isSystemField = input.isSystemField || false;
+    }
+
+    /**
+     * Indicates if this field can never be set manually (independent of permissions)
+     */
+    get isReadOnly(): boolean {
+        return this.isSystemField;
+    }
 
     public get type(): Type {
         return this.model.getTypeOrFallback(this.input.typeName);
@@ -53,23 +82,6 @@ export class Field implements ModelComponent {
 
     public get inverseField(): Field|undefined {
         return this.type.isObjectType ? this.type.fields.find(field => field.inverseOf === this) : undefined;
-    }
-
-    constructor(private readonly input: FieldInput & { isSystemField?: boolean }, public readonly declaringType: ObjectType) {
-        this.model = declaringType.model;
-        this.name = input.name;
-        this.description = input.description;
-        this.astNode = input.astNode;
-        this.defaultValue = input.defaultValue;
-        this.isReference = input.isReference || false;
-        this.isRelation = input.isRelation || false;
-        this.isList = input.isList || false;
-        this.calcMutationOperators = new Set(input.calcMutationOperators || []);
-        this.roles = input.permissions && input.permissions.roles ? {
-            read: input.permissions.roles.read || [],
-            readWrite: input.permissions.roles.readWrite || [],
-        } : undefined;
-        this.isSystemField = input.isSystemField || false;
     }
 
     validate(context: ValidationContext) {

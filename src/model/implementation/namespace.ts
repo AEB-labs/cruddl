@@ -2,6 +2,7 @@ import { RootEntityType } from './root-entity-type';
 
 export class Namespace {
     public readonly rootEntityTypes: ReadonlyArray<RootEntityType>;
+    private readonly rootEntityTypeMap: Map<string, RootEntityType>;
     private readonly childNamespaceMap: ReadonlyMap<string, Namespace>;
     public readonly childNamespaces: ReadonlyArray<Namespace>;
     public readonly descendantNamespaces: ReadonlyArray<Namespace>;
@@ -9,6 +10,9 @@ export class Namespace {
     constructor(public readonly parent: Namespace | undefined, public readonly path: ReadonlyArray<string>, public allRootEntityTypes: ReadonlyArray<RootEntityType>) {
         // find the root entities that do not declare additional path segments
         this.rootEntityTypes = allRootEntityTypes.filter(type => this.extractNextSegment(type) == undefined);
+        this.rootEntityTypeMap = new Map(this.rootEntityTypes.map((type): [string, RootEntityType] => [
+            type.name, type
+        ]));
 
         // now find all direct additional path segments
         const childNamespaceNames = new Set(allRootEntityTypes
@@ -34,12 +38,33 @@ export class Namespace {
         return this.path.join('.');
     }
 
-    public get name(): string|undefined {
+    public get name(): string | undefined {
         return this.path[0];
     }
 
     getChildNamespace(name: string): Namespace | undefined {
         return this.childNamespaceMap.get(name);
+    }
+
+    getChildNamespaceOrThrow(name: string): Namespace {
+        const namespace = this.getChildNamespace(name);
+        if (!namespace) {
+            throw new Error(`Expected namespace "${[...this.path, name].join('.')}" to exist`);
+        }
+        return namespace;
+    }
+
+    getRootEntityType(name: string): RootEntityType | undefined {
+        return this.rootEntityTypeMap.get(name);
+    }
+
+    getRootEntityTypeOrThrow(name: string): RootEntityType {
+        const type = this.getRootEntityType(name);
+        const namespaceDesc = this.isRoot ? `root namespace`: `namespace "${this.dotSeparatedPath}"`;
+        if (!type) {
+            throw new Error(`Expected root entity "${name}" to exist in ${namespaceDesc}`);
+        }
+        return type;
     }
 
     get isRoot(): boolean {

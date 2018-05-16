@@ -1,7 +1,7 @@
 import { ModelInput, TypeKind } from '../input';
 import { ValidationMessage, ValidationResult } from '../validation';
 import { createPermissionMap, PermissionProfile, PermissionProfileMap } from '../../authorization/permission-profile';
-import { createType, InvalidType, Type } from './type';
+import { createType, InvalidType, ObjectType, Type } from './type';
 import { Namespace } from './namespace';
 import { ModelComponent, ValidationContext } from './validation';
 import { builtInTypeNames, builtInTypes } from './built-in-types';
@@ -12,8 +12,9 @@ import { ValueObjectType } from './value-object-type';
 import { ScalarType } from './scalar-type';
 import { EnumType } from './enum-type';
 import { groupBy } from 'lodash';
-import { objectValues } from '../../utils/utils';
+import { flatMap, objectValues } from '../../utils/utils';
 import { DEFAULT_PERMISSION_PROFILE } from '../../schema/schema-defaults';
+import { EdgeType, getEdgeType } from '../../schema/edges';
 
 export class Model implements ModelComponent{
     private readonly typeMap: ReadonlyMap<string, Type>;
@@ -122,6 +123,14 @@ export class Model implements ModelComponent{
         return this.types.filter(t => t.kind === TypeKind.ENUM) as ReadonlyArray<EnumType>;
     }
 
+    getObjectTypeOrThrow(name: string): ObjectType {
+        const type = this.getTypeOrThrow(name);
+        if (!type.isObjectType) {
+            throw new Error(`Expected type "${name}" to be an object type, but is ${type.kind}`);
+        }
+        return type;
+    }
+
     getRootEntityTypeOrThrow(name: string): RootEntityType {
         return this.getTypeOfKindOrThrow(name, TypeKind.ROOT_ENTITY);
     }
@@ -152,5 +161,13 @@ export class Model implements ModelComponent{
             throw new Error(`Expected type "${name}" to be a a ${kind}, but is ${type.kind}`);
         }
         return type as T;
+    }
+
+    get relations(): ReadonlyArray<EdgeType> {
+        return flatMap(this.rootEntityTypes, entity =>
+            entity.fields
+                .filter(field => field.isRelation)
+                .map(field => getEdgeType(field))
+        );
     }
 }

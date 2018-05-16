@@ -1,4 +1,3 @@
-import { getNamedType, GraphQLEnumType, GraphQLObjectType, GraphQLScalarType } from 'graphql';
 import {
     BasicType, BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, CountQueryNode, LiteralQueryNode,
     QueryNode, TransformListQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, VariableQueryNode
@@ -11,17 +10,18 @@ import {
     INPUT_FIELD_STARTS_WITH
 } from '../schema/schema-defaults';
 import { createListFieldValueNode, createNonListFieldValueNode, createScalarFieldValueNode } from './fields';
-import { assert, decapitalize } from '../utils/utils';
+import { decapitalize } from '../utils/utils';
+import { ObjectType, Type } from '../model';
 
-export function createFilterNode(filterArg: any, objectType: GraphQLObjectType|GraphQLScalarType|GraphQLEnumType, contextNode: QueryNode): QueryNode {
+export function createFilterNode(filterArg: any, type: Type, contextNode: QueryNode): QueryNode {
     if (!filterArg || !Object.keys(filterArg).length) {
         return new ConstBoolQueryNode(true);
     }
     let filterNode: QueryNode | undefined = undefined;
     for (const key of Object.getOwnPropertyNames(filterArg)) {
         let newClause;
-        if (objectType instanceof GraphQLObjectType) {
-            newClause = getObjectTypeFilterClauseNode(key, filterArg[key], contextNode, objectType);
+        if (type.isObjectType) {
+            newClause = getObjectTypeFilterClauseNode(key, filterArg[key], contextNode, type);
         } else {
             // handle scalars and enums
             newClause = getScalarTypeFilterClauseNode(key, filterArg[key], contextNode);
@@ -54,7 +54,7 @@ const filterOperators: { [suffix: string]: (fieldNode: QueryNode, valueNode: Que
     [INPUT_FIELD_ENDS_WITH]: (fieldNode, valueNode) => new BinaryOperationQueryNode(fieldNode, BinaryOperator.ENDS_WITH, valueNode)
 };
 
-function getObjectTypeFilterClauseNode(key: string, value: any, contextNode: QueryNode, objectType: GraphQLObjectType): QueryNode {
+function getObjectTypeFilterClauseNode(key: string, value: any, contextNode: QueryNode, objectType: ObjectType): QueryNode {
     // special nodes
     switch (key) {
         case ARGUMENT_AND:
@@ -80,9 +80,7 @@ function getObjectTypeFilterClauseNode(key: string, value: any, contextNode: Que
     const quantifierData = captureListQuantifiers(key);
     if (quantifierData) {
         let { fieldKey, quantifier } = quantifierData;
-        const field = objectType.getFields()[fieldKey];
-        assert(!!field, 'Expected field to be defined');
-        const rawFieldType = getNamedType(field.type);
+        const field = objectType.getFieldOrThrow(fieldKey);
 
         const listNode = createListFieldValueNode({
             objectNode: contextNode,
@@ -97,10 +95,10 @@ function getObjectTypeFilterClauseNode(key: string, value: any, contextNode: Que
             value = { not: value }
         }
         const binaryOp = quantifier === 'some' ? BinaryOperator.GREATER_THAN : BinaryOperator.EQUAL;
-        const itemVarNode = new VariableQueryNode(decapitalize(rawFieldType.name));
+        const itemVarNode = new VariableQueryNode(decapitalize(field.type.name));
         const filteredListNode = new TransformListQueryNode({
             listNode,
-            filterNode: createFilterNode(value, rawFieldType as GraphQLObjectType|GraphQLScalarType|GraphQLEnumType, itemVarNode),
+            filterNode: createFilterNode(value, field.type, itemVarNode),
             itemVariable: itemVarNode
         });
 
@@ -108,10 +106,9 @@ function getObjectTypeFilterClauseNode(key: string, value: any, contextNode: Que
     }
 
     // check for filters in embedded objects
-    const field = objectType.getFields()[key];
-    const rawFieldType = field ? getNamedType(field.type) : undefined;
+    const field = objectType.getField(key);
     if (field) {
-        if (rawFieldType instanceof GraphQLObjectType) {
+        if (field.type.isObjectType) {
             if (value === null) {
                 // don't check inside the object but check if the object an object anyway.
                 const fieldNode = createNonListFieldValueNode({
@@ -131,7 +128,7 @@ function getObjectTypeFilterClauseNode(key: string, value: any, contextNode: Que
                 innerNodeFn: (valueNode: QueryNode) => {
                     // this function maps the object (field value, referenced object, related object) to the filter condition
                     const isObjectNode = new TypeCheckQueryNode(valueNode, BasicType.OBJECT);
-                    const rawFilterNode = createFilterNode(value, rawFieldType, valueNode);
+                    const rawFilterNode = createFilterNode(value, field.type, valueNode);
                     if (!rawFilterNode) {
                         return isObjectNode; // an empty filter only checks if the object is present and a real object
                     }

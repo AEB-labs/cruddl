@@ -28,7 +28,7 @@ export function extractVariableAssignments(node: QueryNode, variableAssignmentsL
         return new FirstOfListQueryNode(extractVariableAssignments(node.listNode, variableAssignmentsList));
     }
     if (node instanceof FieldQueryNode) {
-        return new FieldQueryNode(extractVariableAssignments(node.objectNode, variableAssignmentsList), node.field, node.objectType);
+        return new FieldQueryNode(extractVariableAssignments(node.objectNode, variableAssignmentsList), node.field);
     }
     if (node instanceof RootEntityIDQueryNode) {
         return new RootEntityIDQueryNode(extractVariableAssignments(node.objectNode, variableAssignmentsList));

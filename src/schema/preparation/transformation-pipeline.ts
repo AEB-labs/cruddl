@@ -19,7 +19,6 @@ import { AddQueryMetaTypeTransformer } from './post-merge-ast-transformation-mod
 import { SchemaPartConfig } from '../../config/schema-config';
 import { AddNamespacesToTypesTransformer } from './pre-merge-ast-transformation-modules/add-namespaces-to-types-transformer';
 import { PermissionProfileMap } from '../../authorization/permission-profile';
-import { AddPermissionDescriptorsTransformer } from './schema-transformation-modules/add-permission-descriptors';
 import { MoveUpFieldIndicesTransformer } from './pre-merge-ast-transformation-modules/move-up-field-indices-transformer';
 import { ImplementScalarTypesTransformer } from './schema-transformation-modules/implement-scalar-types';
 import { DatabaseAdapter } from '../../database/database-adapter';
@@ -71,7 +70,6 @@ const postMergePipeline: ASTTransformer[] = [
 
 const schemaPipeline: SchemaTransformer[] = [
     new ImplementScalarTypesTransformer(),
-    new AddPermissionDescriptorsTransformer(),
 
     // this is needed because the query tree already does the alias handling and stores the values in the places where
     // the user expects it - GraphQL should not mess with this by using the *field* instead of the alias in the resolvers

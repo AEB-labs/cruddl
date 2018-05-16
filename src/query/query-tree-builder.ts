@@ -13,15 +13,15 @@ import { Model } from '../model';
 export function createQueryTree(operation: DistilledOperation, model: Model) {
     return new ObjectQueryNode(operation.selectionSet.map(
         sel => new PropertySpecification(sel.propertyName,
-            createQueryNodeForField(sel.fieldRequest))));
+            createQueryNodeForField(sel.fieldRequest, model))));
 }
 
-function createQueryNodeForField(fieldRequest: FieldRequest): QueryNode {
+function createQueryNodeForField(fieldRequest: FieldRequest, model: Model): QueryNode {
     switch (fieldRequest.parentType.name) {
         case QUERY_TYPE:
-            return createQueryNamespaceNode(fieldRequest, []);
+            return createQueryNamespaceNode(fieldRequest, [], model.rootNamespace);
         case MUTATION_TYPE:
-            return createMutationNamespaceNode(fieldRequest, []);
+            return createMutationNamespaceNode(fieldRequest, [], model.rootNamespace);
         default:
             globalContext.loggerProvider.getLogger('query-tree-builder').warn(`unknown root field: ${fieldRequest.fieldName}`);
             return new NullQueryNode();

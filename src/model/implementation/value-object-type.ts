@@ -8,4 +8,8 @@ export class ValueObjectType extends ObjectTypeBase {
     }
 
     readonly kind: TypeKind.VALUE_OBJECT = TypeKind.VALUE_OBJECT;
+    readonly isChildEntityType: false = false;
+    readonly isRootEntityType: false = false;
+    readonly isEntityExtensionType: false = false;
+    readonly isValueObjectType: true = true;
 }

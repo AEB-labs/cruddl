@@ -39,33 +39,29 @@ export class RegressionSuite {
         const warnLevelOptions = { loggerProvider: new Log4jsLoggerProvider('warn') };
         const debugLevelOptions = { loggerProvider: new Log4jsLoggerProvider('debug', { 'schema-builder': 'warn'}) };
 
-        const factory = await this.createAdapterFactory();
-        this.schema = await this.createSchema(factory, debugLevelOptions);
+        const project = await loadProjectFromDir(path.resolve(this.path, 'model'), debugLevelOptions);
+        const adapter = await this.createAdapter(debugLevelOptions);
+        this.schema = project.createSchema(adapter);
 
-        // use a schema that logs less for initTestData
-        const initDataSchema = await this.createSchema(factory, warnLevelOptions);
-        const initDataAdapter = factory(warnLevelOptions);
-        await initDataAdapter.updateSchema(initDataSchema);
-        this.testDataEnvironment = await initTestData(path.resolve(this.path, 'test-data.json'), initDataSchema);
+        // use a schema that logs less for initTestData and for schema migrations
+        const silentProject = await loadProjectFromDir(path.resolve(this.path, 'model'), debugLevelOptions);
+        const silentAdapter = await this.createAdapter(warnLevelOptions);
+        const silentSchema = silentProject.createSchema(silentAdapter);
+        await silentAdapter.updateSchema(silentProject.getModel());
+        this.testDataEnvironment = await initTestData(path.resolve(this.path, 'test-data.json'), silentSchema);
 
         this._isSetUpClean = true;
     }
 
-    private async createAdapterFactory(): Promise<(context: SchemaContext) => DatabaseAdapter> {
+    private async createAdapter(context: SchemaContext): Promise<DatabaseAdapter> {
         // TODO this is ugly
         if (this.options.database == 'in-memory') {
             const db = new InMemoryDB();
-            return (context: SchemaContext) => new InMemoryAdapter({ db }, context);
+            return new InMemoryAdapter({ db }, context);
         } else {
             const dbConfig = await createTempDatabase();
-            return (context: SchemaContext) => new ArangoDBAdapter(dbConfig, context);
+            return new ArangoDBAdapter(dbConfig, context);
         }
-    }
-
-    private async createSchema(factory: (context: SchemaContext) => DatabaseAdapter, options: ProjectOptions) {
-        const dbAdapter = factory(options);
-        const project = await loadProjectFromDir(path.resolve(this.path, 'model'), options);
-        return project.createSchema(dbAdapter);
     }
 
     getTestNames() {

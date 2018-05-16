@@ -27,7 +27,7 @@ export async function start() {
 
     const logger = globalContext.loggerProvider.getLogger('server');
     logger.info('Making sure schema is up to date...');
-    await db.updateSchema(schema);
+    await db.updateSchema(project.getModel());
     logger.info('Schema is up to date');
 
     const server = new GraphQLServer({
