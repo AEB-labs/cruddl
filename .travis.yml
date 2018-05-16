@@ -17,4 +17,8 @@ deploy:
   on:
     tags: true
 after_failure:
+- echo "test1"
+- ls
+after_success:
+- echo "test2"
 - ls
