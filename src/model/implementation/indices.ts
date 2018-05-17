@@ -4,12 +4,12 @@ import { ModelComponent, ValidationContext } from './validation';
 import { Field } from './field';
 import { Type } from './type';
 import { ValidationMessage } from '../validation';
-import { DirectiveNode, StringValueNode } from 'graphql';
+import {DirectiveNode, ObjectValueNode, StringValueNode} from 'graphql';
 
 export class IndexField implements ModelComponent {
     readonly path: string[];
 
-    constructor(public readonly dotSeparatedPath: string, public readonly declaringType: RootEntityType, public readonly astNode?: DirectiveNode | StringValueNode) {
+    constructor(public readonly dotSeparatedPath: string, public readonly declaringType: RootEntityType, public readonly astNode?: DirectiveNode | StringValueNode | ObjectValueNode) {
         this.path = dotSeparatedPath.split('.');
     }
 
@@ -76,10 +76,10 @@ export class IndexField implements ModelComponent {
 }
 
 export class Index implements ModelComponent {
-    readonly id: string;
+    readonly id?: string;
     readonly unique: boolean;
     readonly fields: ReadonlyArray<IndexField>;
-    readonly astNode: DirectiveNode | undefined;
+    readonly astNode?: DirectiveNode | ObjectValueNode;
 
     constructor(private input: IndexDefinitionInput, public readonly declaringType: RootEntityType) {
         this.id = input.id;

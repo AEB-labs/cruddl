@@ -1,6 +1,11 @@
 import {
     ASTNode,
-    DirectiveNode, EnumTypeDefinitionNode, ObjectTypeDefinitionNode, ScalarTypeDefinitionNode, StringValueNode,
+    DirectiveNode,
+    EnumTypeDefinitionNode,
+    ObjectTypeDefinitionNode,
+    ObjectValueNode,
+    ScalarTypeDefinitionNode,
+    StringValueNode,
     TypeDefinitionNode
 } from 'graphql';
 import { FieldInput } from './field';
@@ -60,11 +65,11 @@ export interface ScalarTypeInput extends TypeInputBase {
 }
 
 export interface IndexDefinitionInput {
-    readonly id: string,
+    readonly id?: string,
     readonly fields: ReadonlyArray<string>
     readonly fieldASTNodes?: ReadonlyArray<StringValueNode|undefined>
     readonly unique: boolean
-    readonly astNode?: DirectiveNode
+    readonly astNode?: DirectiveNode|ObjectValueNode
 }
 
 export type ObjectTypeInput = RootEntityTypeInput|ChildEntityTypeInput|ValueObjectTypeInput|EntityExtensionTypeInput;

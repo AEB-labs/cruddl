@@ -1,11 +1,11 @@
-import { ASTNode, DirectiveNode, FieldDefinitionNode, NamedTypeNode, ValueNode } from 'graphql';
+import {ASTNode, DirectiveNode, FieldDefinitionNode, NamedTypeNode, NameNode, ValueNode} from 'graphql';
 import { PermissionsInput } from './permissions';
 
 export interface FieldInput {
     readonly name: string
     readonly description?: string
     readonly typeName: string
-    readonly typeNameAST?: NamedTypeNode
+    readonly typeNameAST?: NameNode
     readonly isList?: boolean
 
     readonly permissions?: PermissionsInput
