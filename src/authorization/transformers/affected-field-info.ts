@@ -11,9 +11,9 @@ export function transformAffectedFieldInfoQueryNode(node: AffectedFieldInfoQuery
     const access = permissionDescriptor.canAccess(authContext, AccessOperation.WRITE);
     switch (access) {
         case PermissionResult.DENIED:
-            return new RuntimeErrorQueryNode(`${AUTHORIZATION_ERROR_NAME}: Not authorized to set ${node.field.type.name}.${node.field.name}`);
+            return new RuntimeErrorQueryNode(`${AUTHORIZATION_ERROR_NAME}: Not authorized to set ${node.field.declaringType.name}.${node.field.name}`);
         case PermissionResult.CONDITIONAL:
-            throw new Error(`Conditional permission profiles are currently not supported on fields, but used in ${node.field.type.name}.${node.field.name}`);
+            throw new Error(`Conditional permission profiles are currently not supported on fields, but used in ${node.field.declaringType.name}.${node.field.name}`);
     }
 
     // check if this is setting the accessGroup

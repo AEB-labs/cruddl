@@ -8,6 +8,7 @@ import { flatMap } from 'lodash';
 import { AccessOperation, AuthContext } from './auth-basics';
 import { ACCESS_GROUP_FIELD } from '../schema/schema-defaults';
 import { Field, RootEntityType } from '../model';
+import { type } from 'os';
 
 export enum ConditionExplanationContext {
     BEFORE_WRITE,
@@ -171,7 +172,7 @@ export class ProfileBasedPermissionDescriptor extends PermissionDescriptor {
             case ConditionExplanationContext.BEFORE_WRITE:
                 return `${typeName} objects with this access group (allowed access groups: `;
             case ConditionExplanationContext.SET:
-                return `set ${this.rootEntityType}.${accessGroupFieldName} to this value (allowed values: `;
+                return `set ${typeName}.${accessGroupFieldName} to this value (allowed values: `;
         }
     }
 }
