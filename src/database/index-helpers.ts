@@ -2,7 +2,7 @@ import { compact, flatMap } from '../utils/utils';
 import { IndexField, Model, RootEntityType } from '../model';
 
 export interface IndexDefinition {
-    id: string,
+    id?: string,
     rootEntity: RootEntityType,
     fields: ReadonlyArray<string>,
     unique: boolean

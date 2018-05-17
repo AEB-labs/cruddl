@@ -156,13 +156,13 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         const {indicesToDelete, indicesToCreate} = calculateRequiredIndexOperations(existingIndices, requiredIndices);
         const deleteIndicesPromises = indicesToDelete.map(indexToDelete => {
             const collection = getCollectionNameForRootEntity(indexToDelete.rootEntity);
-            if (indexToDelete.id.endsWith('/0')) {
+            if (indexToDelete.id!.endsWith('/0')) {
                 // Don't delete primary indices
                 return;
             }
             if (this.autoremoveIndices) {
                 this.logger.info(`Dropping index ${indexToDelete.id} on ${indexToDelete.fields.length > 1 ? 'fields' : 'field'} '${indexToDelete.fields.join(',')}'`);
-                return this.db.collection(collection).dropIndex(indexToDelete.id);
+                return this.db.collection(collection).dropIndex(indexToDelete.id!);
             } else {
                 this.logger.info(`Skipping removal of index ${indexToDelete.id} on ${indexToDelete.fields.length > 1 ? 'fields' : 'field'} '${indexToDelete.fields.join(',')}'`);
                 return undefined;
