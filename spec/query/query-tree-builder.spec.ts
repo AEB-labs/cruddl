@@ -1,12 +1,15 @@
 import { buildASTSchema, parse } from 'graphql';
 import { distillQuery } from '../../src/graphql/query-distiller';
 import { createQueryTree } from '../../src/query/query-tree-builder';
-import { EntitiesQueryNode, FieldQueryNode, ObjectQueryNode, TransformListQueryNode } from '../../src/query/definition';
+import {
+    EntitiesQueryNode, FieldQueryNode, ObjectQueryNode, RootEntityIDQueryNode, TransformListQueryNode
+} from '../../src/query/definition';
 import { expect } from 'chai';
-import { Model } from '../../src/model';
+import { createModel, Model } from '../../src/model';
+import { SchemaConfig } from '../../src/config/schema-config';
 
 describe('query-tree-builder', () => {
-    const schema = buildASTSchema(parse(`
+    const ast = parse(`
     schema {
       query: Query
     }
@@ -17,7 +20,8 @@ describe('query-tree-builder', () => {
       id: ID
       name: String
     }
-    `));
+    `);
+    const schema = buildASTSchema(ast);
 
     it('builds a simple entity fetch tree', () => {
         async function test() {
@@ -26,7 +30,7 @@ describe('query-tree-builder', () => {
         test();
         const query = `{ allUsers { code: id, name } }`;
         const op = distillQuery(parse(query), schema);
-        const queryTree = createQueryTree(op, new Model({types: []}));
+        const queryTree = createQueryTree(op, createModel({ schemaParts: [ { document: ast } ] }));
         expect(queryTree.properties.length).to.equal(1);
         expect(queryTree.properties[0].propertyName).to.equal('allUsers');
         expect(queryTree.properties[0].valueNode).to.be.an.instanceof(TransformListQueryNode);
@@ -38,8 +42,7 @@ describe('query-tree-builder', () => {
         const objectNode = listNode.innerNode as ObjectQueryNode;
         expect(objectNode.properties.length).to.equal(2);
         expect(objectNode.properties[0].propertyName).to.equal('code');
-        expect(objectNode.properties[0].valueNode).to.be.an.instanceof(FieldQueryNode);
-        expect((objectNode.properties[0].valueNode as FieldQueryNode).field.name).to.equal('id');
+        expect(objectNode.properties[0].valueNode).to.be.an.instanceof(RootEntityIDQueryNode);
         expect(objectNode.properties[1].propertyName).to.equal('name');
         expect(objectNode.properties[1].valueNode).to.be.an.instanceof(FieldQueryNode);
         expect((objectNode.properties[1].valueNode as FieldQueryNode).field.name).to.equal('name');
