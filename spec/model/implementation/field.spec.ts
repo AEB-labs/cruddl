@@ -530,14 +530,16 @@ describe('Field', () => {
             expect(res.messages[0].severity, res.toString()).to.equal(Severity.Info); // warning about no type checking for default values
         });
 
-        it('rejects on value object types', () => {
+        it('accepts on value object types', () => {
             const field = new Field({
                 name: 'address',
                 typeName: 'Address',
                 defaultValue: 123
             }, deliveryType);
 
-            expectSingleErrorToInclude(field, `Default values are only supported on scalar and enum fields`);
+            const res = validate(field);
+            expect(res.messages.length, res.toString()).to.equal(1);
+            expect(res.messages[0].severity, res.toString()).to.equal(Severity.Info); // warning about no type checking for default values
         });
     });
 

@@ -255,7 +255,7 @@ export class Field implements ModelComponent {
             return;
         }
 
-        if (this.type.kind !== TypeKind.SCALAR && this.type.kind !== TypeKind.ENUM) {
+        if (this.type.kind !== TypeKind.SCALAR && this.type.kind !== TypeKind.ENUM && this.type.kind !== TypeKind.VALUE_OBJECT) {
             context.addMessage(ValidationMessage.error(`Default values are only supported on scalar and enum fields.`, undefined, this.input.defaultValueASTNode || this.astNode));
             return;
         }
