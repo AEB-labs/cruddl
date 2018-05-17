@@ -198,7 +198,8 @@ function createIndexDefinitionInputs(definition: ObjectTypeDefinitionNode, valid
 }
 
 function createRootEntityBasedIndices(definition: ObjectTypeDefinitionNode, validationMessages: ValidationMessage[]): IndexDefinitionInput[] {
-    const rootEntityDirective = findDirectiveWithName(definition, ROOT_ENTITY_DIRECTIVE)!;
+    const rootEntityDirective = findDirectiveWithName(definition, ROOT_ENTITY_DIRECTIVE);
+    if (!rootEntityDirective) { return []; }
     const indicesArg = getNodeByName(rootEntityDirective.arguments, INDICES_ARG);
     if (!indicesArg) {
         return []
