@@ -11,7 +11,7 @@ import {
     GraphQLType,
     InputObjectTypeDefinitionNode,
     InputValueDefinitionNode,
-    Location,
+    Location, NamedTypeNode,
     NameNode,
     ObjectTypeDefinitionNode,
     ScalarTypeDefinitionNode,
@@ -231,6 +231,16 @@ export function getTypeNameIgnoringNonNullAndList(typeNode: TypeNode): string {
             return getTypeNameIgnoringNonNullAndList(typeNode.type);
         case NAMED_TYPE:
             return typeNode.name.value;
+    }
+}
+
+export function getNamedTypeNodeIgnoringNonNullAndList(typeNode: TypeNode): NamedTypeNode {
+    switch (typeNode.kind) {
+        case NON_NULL_TYPE:
+        case LIST_TYPE:
+            return getNamedTypeNodeIgnoringNonNullAndList(typeNode.type);
+        case NAMED_TYPE:
+            return typeNode;
     }
 }
 
