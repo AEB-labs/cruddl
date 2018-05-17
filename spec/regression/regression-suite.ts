@@ -26,6 +26,9 @@ export class RegressionSuite {
     private schema: GraphQLSchema|undefined;
     private testDataEnvironment: TestDataEnvironment|undefined;
     private _isSetUpClean = false;
+    // TODO: this is ugly but provides a quick fix for things broken with the silentAdapter
+    // TODO: implement better regression test architecture for different db types
+    private inMemoryDB: InMemoryDB = new InMemoryDB();
 
     constructor(private readonly path: string, private options: RegressionSuiteOptions = {}) {
 
@@ -36,6 +39,7 @@ export class RegressionSuite {
     }
 
     private async setUp() {
+        this.inMemoryDB = new InMemoryDB();
         const warnLevelOptions = { loggerProvider: new Log4jsLoggerProvider('warn') };
         const debugLevelOptions = { loggerProvider: new Log4jsLoggerProvider('debug', { 'schema-builder': 'warn'}) };
 
@@ -56,8 +60,7 @@ export class RegressionSuite {
     private async createAdapter(context: SchemaContext): Promise<DatabaseAdapter> {
         // TODO this is ugly
         if (this.options.database == 'in-memory') {
-            const db = new InMemoryDB();
-            return new InMemoryAdapter({ db }, context);
+            return new InMemoryAdapter({ db: this.inMemoryDB }, context);
         } else {
             const dbConfig = await createTempDatabase();
             return new ArangoDBAdapter(dbConfig, context);
