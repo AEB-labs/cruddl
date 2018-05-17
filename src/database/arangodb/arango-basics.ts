@@ -1,9 +1,9 @@
-import { GraphQLNamedType } from 'graphql';
 import * as pluralize from 'pluralize';
 import { decapitalize } from '../../utils/utils';
 import { EdgeType } from '../../schema/edges';
+import { RootEntityType } from '../../model';
 
-export function getCollectionNameForRootEntity(type: GraphQLNamedType) {
+export function getCollectionNameForRootEntity(type: RootEntityType) {
     return decapitalize(pluralize(type.name));
 }
 

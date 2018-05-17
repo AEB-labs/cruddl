@@ -2,16 +2,13 @@ import { DatabaseAdapter } from '../database-adapter';
 import { QueryNode } from '../../query/definition';
 import { getAQLQuery } from './aql-generator';
 import { Database } from 'arangojs';
-import { getNamedType, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLSchema } from 'graphql';
-import { flatMap, objectValues } from '../../utils/utils';
-import { isRelationField, isRootEntityType } from '../../schema/schema-utils';
-import { getEdgeType } from '../../schema/edges';
 import { getCollectionNameForEdge, getCollectionNameForRootEntity } from './arango-basics';
 import { globalContext, SchemaContext } from '../../config/global';
 import { Logger } from '../../config/logging';
 import { AQLCompoundQuery, AQLExecutableQuery } from './aql';
 import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS } from '../../query/query-result-validators';
-import { calculateRequiredIndexOperations, getRequiredIndicesFromSchema, IndexDefinition } from '../index-definition';
+import { calculateRequiredIndexOperations, getRequiredIndicesFromModel, IndexDefinition } from '../index-helpers';
+import { Model, RootEntityType } from '../../model';
 
 const DEFAULT_INDEX_TYPE = 'persistent'; // persistent is a skiplist index
 
@@ -34,7 +31,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
     constructor(config: ArangoDBConfig, private schemaContext?: SchemaContext) {
         globalContext.registerContext(schemaContext);
         try {
-            this.logger = globalContext.loggerProvider.getLogger("ArangoDBAdapter");
+            this.logger = globalContext.loggerProvider.getLogger('ArangoDBAdapter');
         } finally {
             globalContext.unregisterContext();
         }
@@ -42,7 +39,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             url: config.url,
             databaseName: config.databaseName
         });
-        if(config.user) {
+        if (config.user) {
             // Unfortunately the typings of arangojs do not include the method "useBasicAuth" although it is present in the implementation of arangojs.
             // Therefore we cast to any
             (this.db as any).useBasicAuth(config.user, config.password);
@@ -65,12 +62,12 @@ export class ArangoDBAdapter implements DatabaseAdapter {
 
         /* istanbul ignore next */
         const arangoExecutionFunction = function (queries: AQLExecutableQuery[]) {
-            const db = require("@arangodb").db;
+            const db = require('@arangodb').db;
 
-            let validators: {[name:string]: (validationData: any, result:any) => void} = {};
+            let validators: { [name: string]: (validationData: any, result: any) => void } = {};
             //inject_validators_here
 
-            let resultHolder: {[p: string]: any} = {};
+            let resultHolder: { [p: string]: any } = {};
             queries.forEach(query => {
                 const boundValues = query.boundValues;
                 for (const key in query.usedPreExecResultNames) {
@@ -138,18 +135,12 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         );
     }
 
-    async updateSchema(schema: GraphQLSchema): Promise<void> {
-        const rootEntities = objectValues(schema.getTypeMap()).filter(type => isRootEntityType(type)) as GraphQLObjectType[];
-        const edgeTypes = flatMap(rootEntities, entity =>
-            objectValues(entity.getFields())
-                .filter(field => isRelationField(field))
-                .map(field => getEdgeType(entity, field)));
-
+    async updateSchema(model: Model): Promise<void> {
         // Get existing collections in ArangoDB
         const collections = await this.db.collections();
 
         // Creating missing document collections in ArangoDB
-        const requiredCollections = rootEntities.map(entity => getCollectionNameForRootEntity(entity));
+        const requiredCollections = model.rootEntityTypes.map(entity => getCollectionNameForRootEntity(entity));
         const existingCollections = collections.map(coll => (<any>coll).name); // typing for name missing
         const collectionsToCreate = requiredCollections.filter(c => existingCollections.indexOf(c) < 0);
         this.logger.info(`Creating collections ${collectionsToCreate.join(', ')}...`);
@@ -158,12 +149,11 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         this.logger.info(`Done`);
 
         // update indices
-        const requiredIndices = getRequiredIndicesFromSchema(schema);
-        pimpListsWithAsterisk(requiredIndices);
-        const existingIndicesPromises = rootEntities.map(entity => this.getCollectionIndices(entity));
+        const requiredIndices = getRequiredIndicesFromModel(model);
+        const existingIndicesPromises = model.rootEntityTypes.map(rootEntityType => this.getCollectionIndices(rootEntityType));
         let existingIndices: IndexDefinition[] = [];
         await Promise.all(existingIndicesPromises).then(promiseResults => promiseResults.forEach(indices => indices.forEach(index => existingIndices.push(index))));
-        const { indicesToDelete, indicesToCreate } = calculateRequiredIndexOperations(existingIndices, requiredIndices);
+        const {indicesToDelete, indicesToCreate} = calculateRequiredIndexOperations(existingIndices, requiredIndices);
         const deleteIndicesPromises = indicesToDelete.map(indexToDelete => {
             const collection = getCollectionNameForRootEntity(indexToDelete.rootEntity);
             if (indexToDelete.id.endsWith('/0')) {
@@ -188,7 +178,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                     fields: indexToCreate.fields,
                     unique: indexToCreate.unique,
                     type: DEFAULT_INDEX_TYPE
-                })
+                });
             } else {
                 this.logger.info(`Skipping creation of ${ indexToCreate.unique ? 'unique ' : ''}index on collection ${collection} on ${indexToCreate.fields.length > 1 ? 'fields' : 'field'} '${indexToCreate.fields.join(',')}'`);
                 return undefined;
@@ -197,7 +187,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         await Promise.all(createIndicesPromises);
 
         // Creating missing edge collections in ArangoDB
-        const requiredEdgeCollections = Array.from(new Set(edgeTypes.map(edge => getCollectionNameForEdge(edge))));
+        const requiredEdgeCollections = Array.from(new Set(model.relations.map(edge => getCollectionNameForEdge(edge))));
         const existingEdgeCollections = collections.map(coll => (<any>coll).name); // typing for name missing
         const edgeCollectionsToCreate = requiredEdgeCollections.filter(c => existingEdgeCollections.indexOf(c) < 0);
         this.logger.info(`Creating edge collections ${edgeCollectionsToCreate.join(', ')}...`);
@@ -206,29 +196,11 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         this.logger.info(`Done`);
     }
 
-    async getCollectionIndices(rootEntity: GraphQLObjectType): Promise<IndexDefinition[]> {
-        const collectionName = getCollectionNameForRootEntity(rootEntity);
-        return this.db.collection(collectionName).indexes().then(result => result.map(index => {
-            return {...index, rootEntity }
-        }));
-    }
-}
-
-function pimpListsWithAsterisk(indexDefinitions: IndexDefinition[]) {
-    indexDefinitions.forEach(indexDefinition => {
-        indexDefinition.fields = indexDefinition.fields.map(field => {
-            const splitField = field.split('.');
-            let currentNodeOnPath = indexDefinition.rootEntity;
-            let currentFieldIndex: number = 0;
-            while (currentFieldIndex < splitField.length) {
-                const field = (currentNodeOnPath as GraphQLObjectType).getFields()[splitField[currentFieldIndex]];
-                if (field.type instanceof GraphQLList || (field.type instanceof GraphQLNonNull && field.type.ofType instanceof GraphQLList)) {
-                    splitField[currentFieldIndex] += "[*]";
-                }
-                currentFieldIndex++;
-                currentNodeOnPath = getNamedType(field.type);
-            }
-            return splitField.join('.');
+    async getCollectionIndices(rootEntityType: RootEntityType): Promise<ReadonlyArray<IndexDefinition>> {
+        const collectionName = getCollectionNameForRootEntity(rootEntityType);
+        const result = await this.db.collection(collectionName).indexes();
+        return result.map(index => {
+            return {...index, rootEntity: rootEntityType};
         });
-    })
+    }
 }

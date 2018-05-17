@@ -8,12 +8,13 @@ import {
 import { isArray } from 'util';
 import { isListType } from '../graphql/schema-utils';
 import {
-    AFTER_ARG, CURSOR_FIELD, FIRST_ARG, ID_FIELD, ORDER_BY_ARG, ORDER_BY_ASC_SUFFIX, ORDER_BY_DESC_SUFFIX
+    AFTER_ARG, CURSOR_FIELD, ID_FIELD, ORDER_BY_ARG, ORDER_BY_ASC_SUFFIX, ORDER_BY_DESC_SUFFIX
 } from '../schema/schema-defaults';
 import { sortedByAsc, sortedByDesc } from '../graphql/names';
 import { createNonListFieldValueNode } from './fields';
+import { ObjectType, Type } from '../model/implementation';
 
-export function createPaginationFilterNode(objectType: GraphQLObjectType, listFieldRequest: FieldRequest, itemNode: QueryNode) {
+export function createPaginationFilterNode(objectType: ObjectType, listFieldRequest: FieldRequest, itemNode: QueryNode) {
     const afterArg = listFieldRequest.args[AFTER_ARG];
     if (!afterArg) {
         return new ConstBoolQueryNode(true);
@@ -22,7 +23,7 @@ export function createPaginationFilterNode(objectType: GraphQLObjectType, listFi
     let cursorObj: any;
     try {
         cursorObj = JSON.parse(afterArg);
-        if (typeof cursorObj != 'object') {
+        if (typeof cursorObj != 'object' || cursorObj === null) {
             throw new Error('The JSON value provided as "after" argument is not an object');
         }
     } catch (e) {
@@ -72,7 +73,7 @@ export function createPaginationFilterNode(objectType: GraphQLObjectType, listFi
     return filterForClause(clauses);
 }
 
-export function createOrderSpecification(objectType: GraphQLObjectType, listFieldRequest: FieldRequest, itemNode: QueryNode) {
+export function createOrderSpecification(objectType: ObjectType, listFieldRequest: FieldRequest, itemNode: QueryNode) {
     const clauseNames = getOrderByClauseNames(objectType, listFieldRequest);
     const clauses = clauseNames.map(name => {
         let dir = name.endsWith(ORDER_BY_DESC_SUFFIX) ? OrderDirection.DESCENDING : OrderDirection.ASCENDING;
@@ -89,16 +90,15 @@ export function createOrderSpecification(objectType: GraphQLObjectType, listFiel
  * @param {FieldRequest} listFieldRequest
  * @param {QueryNode} itemNode
  */
-export function createCursorQueryNode(listFieldRequest: FieldRequest, itemNode: QueryNode) {
+export function createCursorQueryNode(listFieldRequest: FieldRequest, itemNode: QueryNode, itemType: ObjectType) {
     if (!listFieldRequest || !isListType(listFieldRequest.field.type)) {
         return new NullQueryNode(); // not in context of a list
     }
 
-    const objectType = getNamedType(listFieldRequest.field.type) as GraphQLObjectType;
-    const clauses = getOrderByClauseNames(objectType, listFieldRequest);
+    const clauses = getOrderByClauseNames(itemType, listFieldRequest);
     const fieldPaths = clauses.map(clause => getFieldPathFromOrderByClause(clause)).sort();
     const objectNode = new ObjectQueryNode(fieldPaths.map( fieldPath =>
-        new PropertySpecification(fieldPath, createScalarFieldPathValueNode(objectType, fieldPath, itemNode))));
+        new PropertySpecification(fieldPath, createScalarFieldPathValueNode(itemType, fieldPath, itemNode))));
     return new UnaryOperationQueryNode(objectNode, UnaryOperator.JSON_STRINGIFY);
 }
 
@@ -112,23 +112,20 @@ function getFieldPathFromOrderByClause(clause: string): string {
     return clause;
 }
 
-function createScalarFieldPathValueNode(baseType: GraphQLObjectType, fieldPath: string, baseNode: QueryNode): QueryNode {
+function createScalarFieldPathValueNode(baseType: ObjectType, fieldPath: string, baseNode: QueryNode): QueryNode {
     const segments = fieldPath.split('_');
     if (!segments.length) {
         throw new Error(`Invalid field path: ${fieldPath}`);
     }
-    let currentType: GraphQLType = baseType;
+    let currentType: Type = baseType;
     let currentNode = baseNode;
     for (const fieldName of segments) {
-        if (!(currentType instanceof GraphQLObjectType)) {
+        if (!currentType.isObjectType) {
             throw new Error(`Invalid field path on ${baseType.name}: ${fieldPath} (type ${currentType} does not have subfields`);
         }
-        const field: GraphQLField<any, any> = currentType.getFields()[fieldName];
-        if (!field) {
-            throw new Error(`Invalid field path on ${baseType.name}: ${fieldPath} (field ${fieldName} not found)`)
-        }
+        const field = currentType.getFieldOrThrow(fieldName);
 
-        // we don't do type checks for object because in AQL, property loookups on non-objects yield NULL anyway
+        // we don't do type checks for object because in AQL, property lookups on non-objects yield NULL anyway
         // we might need to change this when targeting different data bases
 
         currentNode = createNonListFieldValueNode({
@@ -143,7 +140,7 @@ function createScalarFieldPathValueNode(baseType: GraphQLObjectType, fieldPath: 
     return currentNode;
 }
 
-function getOrderByClauseNames(objectType: GraphQLObjectType, listFieldRequest: FieldRequest): string[] {
+function getOrderByClauseNames(objectType: ObjectType, listFieldRequest: FieldRequest): string[] {
     const orderBy = listFieldRequest.args[ORDER_BY_ARG];
     const clauseNames = !orderBy ? [] : isArray(orderBy) ? orderBy : [orderBy];
 
@@ -151,7 +148,7 @@ function getOrderByClauseNames(objectType: GraphQLObjectType, listFieldRequest: 
     // TODO figure a way to do proper pagination on a simple list of embedded objects
 
     const isCursorRequested = listFieldRequest.selectionSet.some(sel => sel.fieldRequest.fieldName == CURSOR_FIELD);
-    if (isCursorRequested && ID_FIELD in objectType.getFields()) {
+    if (isCursorRequested && objectType.getField(ID_FIELD)) {
         const includesID = clauseNames.some(name => name == sortedByAsc(ID_FIELD) || name == sortedByDesc(ID_FIELD));
         if (!includesID) {
             return [...clauseNames, sortedByAsc(ID_FIELD)];

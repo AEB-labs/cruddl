@@ -1,55 +1,96 @@
 import gql from 'graphql-tag';
 import { DatabaseAdapter } from '../../src/database/database-adapter';
 import { QueryNode } from '../../src/query/definition';
-import { graphql, GraphQLSchema, print, GraphQLObjectType } from 'graphql';
+import { graphql, GraphQLObjectType, print } from 'graphql';
 import { EdgeType, getEdgeType } from '../../src/schema/edges';
 import { Project } from '../../src/project/project';
 import { ProjectSource } from '../../src/project/source';
 import { expect } from 'chai';
+import { Model } from '../../src/model/implementation';
+import { TypeKind } from '../../src/model/input';
 
 class FakeDBAdatper implements DatabaseAdapter {
     async execute(queryTree: QueryNode): Promise<any> {
-        return { allTypeAS: [{ relB: { id: 5} }], allTypeBS: [{ relA: { id: 2 }}] };
+        return {allTypeAS: [{relB: {id: 5}}], allTypeBS: [{relA: {id: 2}}]};
     }
 
-    async updateSchema(schema: GraphQLSchema): Promise<void> {
+    async updateSchema(schema: Model): Promise<void> {
 
     }
 }
 
 describe('edges', () => {
     it('works with unrelated relations between two root entities', async () => {
-        const schemaGQL = print(gql`
-            type TypeA @rootEntity @roles(readWrite: "admin") {
-                relB: TypeB @relation
-            }
+        const model = new Model({
+            types: [
+                {
+                    kind: TypeKind.ROOT_ENTITY,
+                    name: 'TypeA',
+                    fields: [
+                        {
+                            name: 'relB',
+                            typeName: 'TypeB',
+                            isRelation: true
+                        }
+                    ]
+                },
+                {
+                    kind: TypeKind.ROOT_ENTITY,
+                    name: 'TypeB',
+                    fields: [
+                        {
+                            name: 'relA',
+                            typeName: 'TypeA',
+                            isRelation: true
+                        }
+                    ]
+                }
+            ]
+        });
+        const fieldOnA = model.getRootEntityTypeOrThrow('TypeA').getFieldOrThrow('relB');
+        const fieldOnB = model.getRootEntityTypeOrThrow('TypeB').getFieldOrThrow('relA');
 
-            type TypeB @rootEntity @roles(readWrite: "admin") {
-                relA: TypeA @relation
-            }
-        `);
+        const edgeTypeFromA = getEdgeType(fieldOnA);
+        expect(edgeTypeFromA.fromField).to.equal(fieldOnA);
+        expect(edgeTypeFromA.toField).to.be.undefined;
 
-        let schema = new Project([ new ProjectSource('main.graphqls', schemaGQL)]).createSchema(new FakeDBAdatper());
-        const source = gql`{ allTypeAS { relB { id } } allTypeBS { relA { id } } }`;
-        const result = await graphql(schema, print(source), {}, {authRoles: [ "admin" ]}, {});
-        expect(result.errors).to.equal(undefined);
+        const edgeTypeFromB = getEdgeType(fieldOnB);
+        expect(edgeTypeFromB.fromField).to.equal(fieldOnB);
+        expect(edgeTypeFromA.toField).to.be.undefined;
     });
 
     it('correctly builds EdgeType from field', () => {
-        const schemaGQL = print(gql`
-            type Delivery @rootEntity @roles(readWrite: "admin") {
-                handlingUnits: HandlingUnit @relation
-            }
-
-            type HandlingUnit @rootEntity @roles(readWrite: "admin") {
-                delivery: Delivery @relation(inverseOf: "handlingUnits")
-            }
-        `);
-        let schema = new Project([ new ProjectSource('main.graphqls', schemaGQL)]).createSchema(new FakeDBAdatper());
-        const deliveryType = schema.getType('Delivery') as GraphQLObjectType;
-        const handlingUnitType = schema.getType('HandlingUnit') as GraphQLObjectType;
-        const handlingUnitsField = deliveryType.getFields()['handlingUnits'];
-        const deliveryField = handlingUnitType.getFields()['delivery'];
+        const model = new Model({
+            types: [
+                {
+                    kind: TypeKind.ROOT_ENTITY,
+                    name: 'Delivery',
+                    fields: [
+                        {
+                            name: 'handlingUnits',
+                            typeName: 'HandlingUnit',
+                            isRelation: true
+                        }
+                    ]
+                },
+                {
+                    kind: TypeKind.ROOT_ENTITY,
+                    name: 'HandlingUnit',
+                    fields: [
+                        {
+                            name: 'delivery',
+                            typeName: 'Delivery',
+                            isRelation: true,
+                            inverseOfFieldName: 'handlingUnits'
+                        }
+                    ]
+                }
+            ]
+        });
+        const deliveryType = model.getRootEntityTypeOrThrow('Delivery');
+        const handlingUnitType = model.getRootEntityTypeOrThrow('HandlingUnit');
+        const handlingUnitsField = deliveryType.getFieldOrThrow('handlingUnits');
+        const deliveryField = handlingUnitType.getFieldOrThrow('delivery');
 
         function checkEdgeType(edgeType: EdgeType) {
             expect(edgeType.fromType).to.equal(deliveryType);
@@ -58,7 +99,7 @@ describe('edges', () => {
             expect(edgeType.toField).to.equal(deliveryField);
         }
 
-        checkEdgeType(getEdgeType(deliveryType, handlingUnitsField));
-        checkEdgeType(getEdgeType(handlingUnitType, deliveryField));
-    })
+        checkEdgeType(getEdgeType(handlingUnitsField));
+        checkEdgeType(getEdgeType(deliveryField));
+    });
 });

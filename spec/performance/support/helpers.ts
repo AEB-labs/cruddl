@@ -34,7 +34,7 @@ export async function initEnvironment(): Promise<TestEnvironment> {
     const project = await loadProjectFromDir(MODEL_PATH, schemaContext);
     const dbAdapter = new ArangoDBAdapter(dbConfig, schemaContext);
     const schema = project.createSchema(dbAdapter);
-    await dbAdapter.updateSchema(schema);
+    await dbAdapter.updateSchema(project.getModel());
 
     return {
         getDB() {

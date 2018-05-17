@@ -7,14 +7,14 @@ import {
     TransformListQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode,
     VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode
 } from '../../query/definition';
-import { js, JSCompoundQuery, JSExecutableQuery, JSFragment, JSQueryResultVariable, JSVariable } from './js';
-import { GraphQLNamedType } from 'graphql';
+import { js, JSCompoundQuery, JSFragment, JSQueryResultVariable, JSVariable } from './js';
 import { QueryResultValidator } from '../../query/query-result-validators';
 import { RUNTIME_ERROR_TOKEN } from '../../query/runtime-errors';
-import { decapitalize, flatMap } from '../../utils/utils';
+import { decapitalize } from '../../utils/utils';
 import { getCollectionNameForEdge, getCollectionNameForRootEntity } from './inmemory-basics';
 import { EdgeType, invertRelationFieldEdgeSide, RelationFieldEdgeSide } from '../../schema/edges';
 import { compact } from 'lodash';
+import { RootEntityType } from '../../model';
 
 const ID_FIELD_NAME = 'id';
 
@@ -225,9 +225,9 @@ const processors : { [name: string]: NodeProcessor<any> } = {
     },
 
     EntityFromId(node:  EntityFromIdQueryNode, context): JSFragment {
-        const itemVariable = new VariableQueryNode(decapitalize(node.objectType.name));
+        const itemVariable = new VariableQueryNode(decapitalize(node.rootEntityType.name));
         return processNode(new FirstOfListQueryNode(new TransformListQueryNode({
-            listNode: new EntitiesQueryNode(node.objectType),
+            listNode: new EntitiesQueryNode(node.rootEntityType),
             itemVariable,
             filterNode: new BinaryOperationQueryNode(new RootEntityIDQueryNode(itemVariable), BinaryOperator.EQUAL, node.idNode)
         })), context);
@@ -373,7 +373,7 @@ const processors : { [name: string]: NodeProcessor<any> } = {
     },
 
     Entities(node: EntitiesQueryNode, context): JSFragment {
-        return getCollectionForType(node.objectType, context);
+        return getCollectionForType(node.rootEntityType, context);
     },
 
     FollowEdge(node: FollowEdgeQueryNode, context): JSFragment {
@@ -405,7 +405,7 @@ const processors : { [name: string]: NodeProcessor<any> } = {
             js`const ${objVar} = ${processNode(node.objectNode, context)};`,
             js`const ${idVar} = db.generateID();`,
             js`${objVar}.${js.identifier(ID_FIELD_NAME)} = ${idVar};`,
-            js`${js.collection(getCollectionNameForRootEntity(node.objectType))}.push(${objVar});`,
+            js`${js.collection(getCollectionNameForRootEntity(node.rootEntityType))}.push(${objVar});`,
             js`return ${idVar};`
         );
     },
@@ -435,7 +435,7 @@ const processors : { [name: string]: NodeProcessor<any> } = {
         const newContext = context.introduceVariable(node.currentEntityVariable);
         const entityVar = newContext.getVariable(node.currentEntityVariable);
         const listVar = js.variable('objectsToDelete');
-        const coll = js.collection(getCollectionNameForRootEntity(node.objectType));
+        const coll = js.collection(getCollectionNameForRootEntity(node.rootEntityType));
         const idsVar = js.variable('ids');
 
         return jsExt.executingFunction(
@@ -541,7 +541,7 @@ export function getJSQuery(node: QueryNode): JSCompoundQuery {
     return createJSCompoundQuery(node, js.queryResultVariable('result'), undefined, new QueryContext());
 }
 
-function getCollectionForType(type: GraphQLNamedType, context: QueryContext) {
+function getCollectionForType(type: RootEntityType, context: QueryContext) {
     const name = getCollectionNameForRootEntity(type);
     return js.collection(name);
 }

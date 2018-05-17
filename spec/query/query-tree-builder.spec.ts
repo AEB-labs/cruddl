@@ -26,14 +26,14 @@ describe('query-tree-builder', () => {
         test();
         const query = `{ allUsers { code: id, name } }`;
         const op = distillQuery(parse(query), schema);
-        const queryTree = createQueryTree(op, {} as Model);
+        const queryTree = createQueryTree(op, new Model({types: []}));
         expect(queryTree.properties.length).to.equal(1);
         expect(queryTree.properties[0].propertyName).to.equal('allUsers');
         expect(queryTree.properties[0].valueNode).to.be.an.instanceof(TransformListQueryNode);
         const listNode = queryTree.properties[0].valueNode as TransformListQueryNode;
         expect(listNode.listNode).to.be.an.instanceof(EntitiesQueryNode);
         const entitiesNode = listNode.listNode as EntitiesQueryNode;
-        expect(entitiesNode.objectType.name).to.equal('User');
+        expect(entitiesNode.rootEntityType.name).to.equal('User');
         expect(listNode.innerNode).to.be.an.instanceof(ObjectQueryNode);
         const objectNode = listNode.innerNode as ObjectQueryNode;
         expect(objectNode.properties.length).to.equal(2);

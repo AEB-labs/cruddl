@@ -71,4 +71,6 @@ export abstract class ObjectTypeBase extends TypeBase {
     }
 
     readonly isObjectType: true = true;
+    readonly isScalarType: false = false;
+    readonly isEnumType: false = false;
 }

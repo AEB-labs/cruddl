@@ -8,6 +8,10 @@ export class ChildEntityType extends ObjectTypeBase {
     }
 
     readonly kind: TypeKind.CHILD_ENTITY = TypeKind.CHILD_ENTITY;
+    readonly isChildEntityType: true = true;
+    readonly isRootEntityType: false = false;
+    readonly isEntityExtensionType: false = false;
+    readonly isValueObjectType: false = false;
 }
 
 const systemFieldInputs: FieldInput[] = [

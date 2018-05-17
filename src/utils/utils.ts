@@ -2,7 +2,7 @@ export type PlainObject = {[key: string]: AnyValue};
 export type AnyValue = {}|undefined|null;
 export type Constructor<T> = { new(...args: any[]): T };
 
-export function flatMap<TOut, TIn>(arr: TIn[], f: (t: TIn) => TOut[]): TOut[] {
+export function flatMap<TOut, TIn>(arr: ReadonlyArray<TIn>, f: (t: TIn) => ReadonlyArray<TOut>): TOut[] {
     return arr.reduce((ys: any, x: any) => {
         return ys.concat(f.call(null, x))
     }, []);

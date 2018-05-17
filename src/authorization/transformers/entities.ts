@@ -1,16 +1,19 @@
-import { ConditionalQueryNode, EntitiesQueryNode, EntityFromIdQueryNode, NullQueryNode, RuntimeErrorQueryNode, TransformListQueryNode, VariableAssignmentQueryNode, VariableQueryNode } from '../../query/definition';
+import {
+    ConditionalQueryNode, EntitiesQueryNode, EntityFromIdQueryNode, NullQueryNode, RuntimeErrorQueryNode,
+    TransformListQueryNode, VariableAssignmentQueryNode, VariableQueryNode
+} from '../../query/definition';
 import { AccessOperation, AuthContext, AUTHORIZATION_ERROR_NAME } from '../auth-basics';
 import { PermissionResult } from '../permission-descriptors';
-import { getPermissionDescriptor } from '../permission-descriptors-in-schema';
+import { getPermissionDescriptorOfRootEntityType } from '../permission-descriptors-in-model';
 
 export function transformEntitiesQueryNode(node: EntitiesQueryNode, authContext: AuthContext) {
-    const permissionDescriptor = getPermissionDescriptor(node.objectType);
+    const permissionDescriptor = getPermissionDescriptorOfRootEntityType(node.rootEntityType);
     const access = permissionDescriptor.canAccess(authContext, AccessOperation.READ);
     switch (access) {
         case PermissionResult.GRANTED:
             return node;
         case PermissionResult.DENIED:
-            return new RuntimeErrorQueryNode(`${AUTHORIZATION_ERROR_NAME}: Not authorized to read ${node.objectType.name} objects`);
+            return new RuntimeErrorQueryNode(`${AUTHORIZATION_ERROR_NAME}: Not authorized to read ${node.rootEntityType.name} objects`);
         default:
             const itemVar = new VariableQueryNode('item');
             const condition = permissionDescriptor.getAccessCondition(authContext, AccessOperation.READ, itemVar);
@@ -23,13 +26,13 @@ export function transformEntitiesQueryNode(node: EntitiesQueryNode, authContext:
 }
 
 export function transformEntityFromIdQueryNode(node: EntityFromIdQueryNode, authContext: AuthContext) {
-    const permissionDescriptor = getPermissionDescriptor(node.objectType);
+    const permissionDescriptor = getPermissionDescriptorOfRootEntityType(node.rootEntityType);
     const access = permissionDescriptor.canAccess(authContext, AccessOperation.READ);
     switch (access) {
         case PermissionResult.GRANTED:
             return node;
         case PermissionResult.DENIED:
-            return new RuntimeErrorQueryNode(`${AUTHORIZATION_ERROR_NAME}: Not authorized to read ${node.objectType.name} objects`);
+            return new RuntimeErrorQueryNode(`${AUTHORIZATION_ERROR_NAME}: Not authorized to read ${node.rootEntityType.name} objects`);
         default:
             const entityVar = new VariableQueryNode('entity');
             const condition = permissionDescriptor.getAccessCondition(authContext, AccessOperation.READ, entityVar);

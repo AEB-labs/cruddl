@@ -1,10 +1,9 @@
-import { execute, parse } from 'graphql';
-import { ArangoDBAdapter } from '../../src/database/arangodb';
-import { createTempDatabase } from '../regression/initialization';
+import { execute, graphql, parse } from 'graphql';
 import { sleep } from '../../src/utils/utils';
 import { Project } from '../../src/project/project';
 import { ProjectSource } from '../../src/project/source';
 import { expect } from 'chai';
+import { InMemoryAdapter } from '../../src/database/inmemory';
 
 describe('mutation', () => {
 
@@ -80,14 +79,19 @@ describe('mutation', () => {
         "authRoles": [ "allusers" ]
     };
 
+    function expectNoErrors(result: any) {
+        expect(result.errors, result.errors).to.be.undefined;
+    }
+
     it('sets createdAt and updatedAt correctly', async() => {
         // on a freshly created delivery
         const project = new Project([ new ProjectSource('schema.graphql', astSchema) ]);
-        const db = new ArangoDBAdapter(await createTempDatabase());
+        const db = new InMemoryAdapter();
         const schema = project.createSchema(db);
-        await db.updateSchema(schema);
+        await db.updateSchema(project.getModel());
 
-        const createResult: any = await execute(schema, parse(createDelivery), {}, context);
+        const createResult: any = await graphql(schema, createDelivery, {}, context);
+        expectNoErrors(createResult);
         const id = createResult.data.createDelivery.id;
         const createCreatedAt = createResult.data.createDelivery.createdAt;
         const createUpdatedAt = createResult.data.createDelivery.updatedAt;
@@ -97,7 +101,8 @@ describe('mutation', () => {
         await sleep(1);
 
         const preparedUpdateDelivery = updateDelivery.replace('%id%', id);
-        const updateResult: any = await execute(schema, parse(preparedUpdateDelivery), {}, context);
+        const updateResult: any = await graphql(schema, preparedUpdateDelivery, {}, context);
+        expectNoErrors(updateResult);
 
         const updateCreatedAt = updateResult.data.updateDelivery.createdAt;
         const updateUpdatedAt = updateResult.data.updateDelivery.updatedAt;
@@ -112,7 +117,8 @@ describe('mutation', () => {
         await sleep(1);
 
         // create item
-        const createItemResult: any = await execute(schema, parse(createDeliveryItem), {}, context);
+        const createItemResult: any = await graphql(schema, createDeliveryItem, {}, context);
+        expectNoErrors(createItemResult);
         const createItemCreatedAt = createItemResult.data.createDeliveryItem.createdAt;
         const createItemUpdatedAt = createItemResult.data.createDeliveryItem.updatedAt;
         const itemId = createItemResult.data.createDeliveryItem.id;
@@ -138,7 +144,8 @@ describe('mutation', () => {
 
         // check persistence of delivery updated at
         const preparedSelectDelivery = selectDelivery.replace('%id%', id);
-        const selectResult: any = await execute(schema, parse(preparedSelectDelivery), {}, context);
+        const selectResult: any = await graphql(schema, preparedSelectDelivery, {}, context);
+        expectNoErrors(selectResult);
         const selectCreatedAt = selectResult.data.Delivery.createdAt;
         const selectUpdatedAt = selectResult.data.Delivery.updatedAt;
 
