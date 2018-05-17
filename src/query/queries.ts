@@ -142,7 +142,7 @@ function createEntityFieldQueryNode(fieldRequest: FieldRequest, objectNode: Quer
         if (field.type.isObjectType) {
             // support filters, order by and pagination
             const itemVariable = new VariableQueryNode(decapitalize(field.type.name));
-            const innerNode = createEntityObjectNode(fieldRequest.selectionSet, itemVariable, objectType, fieldRequestStack);
+            const innerNode = createEntityObjectNode(fieldRequest.selectionSet, itemVariable, field.type, fieldRequestStack);
             return createTransformListQueryNode(fieldRequest, listNode, itemVariable, innerNode, field.type, fieldRequestStack);
         } else {
             return listNode;
