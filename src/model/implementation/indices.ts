@@ -1,4 +1,4 @@
-import { IndexDefinitionInput, TypeKind } from '../input';
+import { IndexDefinitionConfig, TypeKind } from '../input';
 import { RootEntityType } from './root-entity-type';
 import { ModelComponent, ValidationContext } from './validation';
 import { Field } from './field';
@@ -87,7 +87,7 @@ export class Index implements ModelComponent {
     readonly fields: ReadonlyArray<IndexField>;
     readonly astNode?: DirectiveNode | ObjectValueNode;
 
-    constructor(private input: IndexDefinitionInput, public readonly declaringType: RootEntityType) {
+    constructor(private input: IndexDefinitionConfig, public readonly declaringType: RootEntityType) {
         this.id = input.id;
         this.unique = input.unique;
         this.fields = (input.fields || []).map((fieldPath, index) => new IndexField(fieldPath, declaringType, (input.fieldASTNodes || [])[index] || this.astNode));

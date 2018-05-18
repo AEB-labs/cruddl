@@ -1,9 +1,9 @@
 import { ObjectTypeBase } from './object-type-base';
-import { EntityExtensionTypeInput, TypeKind } from '../input';
+import { EntityExtensionTypeConfig, TypeKind } from '../input';
 import { Model } from './model';
 
 export class EntityExtensionType extends ObjectTypeBase {
-    constructor(input: EntityExtensionTypeInput, model: Model) {
+    constructor(input: EntityExtensionTypeConfig, model: Model) {
         super(input, model);
     }
 

@@ -1,12 +1,12 @@
 import { ModelComponent, ValidationContext } from './validation';
-import { RolesSpecifierInput } from '../input/permissions';
+import { RolesSpecifierConfig } from '../input/permissions';
 import { ValidationMessage } from '../validation';
 
 export class RolesSpecifier implements ModelComponent {
     readonly read: ReadonlyArray<string>;
     readonly readWrite: ReadonlyArray<string>;
 
-    constructor(private readonly input: RolesSpecifierInput) {
+    constructor(private readonly input: RolesSpecifierConfig) {
         this.read = input.read || [];
         this.readWrite = input.readWrite || [];
     }

@@ -1,8 +1,8 @@
 import { TypeBase } from './type-base';
-import { ScalarTypeInput, TypeKind } from '../input';
+import { ScalarTypeConfig, TypeKind } from '../input';
 
 export class ScalarType extends TypeBase {
-    constructor(input: Exclude<ScalarTypeInput, 'typeKind'>) {
+    constructor(input: Exclude<ScalarTypeConfig, 'typeKind'>) {
         super(input);
     }
 

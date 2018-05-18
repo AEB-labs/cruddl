@@ -1,9 +1,9 @@
 import { ObjectTypeBase } from './object-type-base';
-import { ScalarTypeInput, TypeKind, ValueObjectTypeInput } from '../input';
+import { ScalarTypeConfig, TypeKind, ValueObjectTypeConfig } from '../input';
 import { Model } from './model';
 
 export class ValueObjectType extends ObjectTypeBase {
-    constructor(input: Exclude<ValueObjectTypeInput, 'typeKind'>, model: Model) {
+    constructor(input: Exclude<ValueObjectTypeConfig, 'typeKind'>, model: Model) {
         super(input, model);
     }
 

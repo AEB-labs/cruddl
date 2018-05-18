@@ -1,4 +1,4 @@
-import { ModelInput, TypeKind } from '../input';
+import { ModelConfig, TypeKind } from '../input';
 import { ValidationMessage, ValidationResult } from '../validation';
 import { createPermissionMap, PermissionProfile, PermissionProfileMap } from '../../authorization/permission-profile';
 import { createType, InvalidType, ObjectType, Type } from './type';
@@ -24,7 +24,7 @@ export class Model implements ModelComponent{
     readonly types: ReadonlyArray<Type>;
     readonly permissionProfiles: PermissionProfileMap;
 
-    constructor(private input: ModelInput) {
+    constructor(private input: ModelConfig) {
         this.permissionProfiles = createPermissionMap(input.permissionProfiles);
         this.types = [
             ...builtInTypes,

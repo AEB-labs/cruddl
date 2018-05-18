@@ -1,15 +1,9 @@
 import {
-    ASTNode,
-    DirectiveNode,
-    EnumTypeDefinitionNode, FieldNode,
-    ObjectTypeDefinitionNode,
-    ObjectValueNode,
-    ScalarTypeDefinitionNode,
-    StringValueNode,
-    TypeDefinitionNode
+    ASTNode, DirectiveNode, EnumTypeDefinitionNode, ObjectTypeDefinitionNode, ObjectValueNode, ScalarTypeDefinitionNode,
+    StringValueNode, TypeDefinitionNode
 } from 'graphql';
-import { FieldInput } from './field';
-import { PermissionsInput } from './permissions';
+import { FieldConfig } from './field';
+import { PermissionsConfig } from './permissions';
 
 export enum TypeKind {
     SCALAR = 'SCALAR',
@@ -20,51 +14,51 @@ export enum TypeKind {
     ENTITY_EXTENSION = 'ENTITY_EXTENSION'
 }
 
-export interface TypeInputBase {
+export interface TypeConfigBase {
     readonly kind: TypeKind
     readonly name: string
     readonly description?: string
     readonly astNode?: TypeDefinitionNode
 }
 
-export interface ObjectTypeInputBase extends TypeInputBase {
-    readonly fields: ReadonlyArray<FieldInput>
+export interface ObjectTypeConfigBase extends TypeConfigBase {
+    readonly fields: ReadonlyArray<FieldConfig>
     readonly astNode?: ObjectTypeDefinitionNode
 }
 
-export interface RootEntityTypeInput extends ObjectTypeInputBase {
+export interface RootEntityTypeConfig extends ObjectTypeConfigBase {
     readonly kind: TypeKind.ROOT_ENTITY
     readonly namespacePath?: string[]
-    readonly indices?: ReadonlyArray<IndexDefinitionInput>
+    readonly indices?: ReadonlyArray<IndexDefinitionConfig>
     readonly keyFieldName?: string
     readonly keyFieldASTNode?: ASTNode
-    readonly permissions?: PermissionsInput
+    readonly permissions?: PermissionsConfig
 }
 
-export interface ValueObjectTypeInput extends ObjectTypeInputBase {
+export interface ValueObjectTypeConfig extends ObjectTypeConfigBase {
     readonly kind: TypeKind.VALUE_OBJECT
 }
 
-export interface ChildEntityTypeInput extends ObjectTypeInputBase {
+export interface ChildEntityTypeConfig extends ObjectTypeConfigBase {
     readonly kind: TypeKind.CHILD_ENTITY
 }
 
-export interface EntityExtensionTypeInput extends ObjectTypeInputBase {
+export interface EntityExtensionTypeConfig extends ObjectTypeConfigBase {
     readonly kind: TypeKind.ENTITY_EXTENSION
 }
 
-export interface EnumTypeInput extends TypeInputBase {
+export interface EnumTypeConfig extends TypeConfigBase {
     readonly kind: TypeKind.ENUM
     readonly values: ReadonlyArray<string>
     readonly astNode?: EnumTypeDefinitionNode
 }
 
-export interface ScalarTypeInput extends TypeInputBase {
+export interface ScalarTypeConfig extends TypeConfigBase {
     readonly kind: TypeKind.SCALAR
     readonly astNode?: ScalarTypeDefinitionNode
 }
 
-export interface IndexDefinitionInput {
+export interface IndexDefinitionConfig {
     readonly id?: string,
     readonly fields: ReadonlyArray<string>
     readonly fieldASTNodes?: ReadonlyArray<StringValueNode|DirectiveNode|undefined>
@@ -72,5 +66,5 @@ export interface IndexDefinitionInput {
     readonly astNode?: DirectiveNode|ObjectValueNode
 }
 
-export type ObjectTypeInput = RootEntityTypeInput|ChildEntityTypeInput|ValueObjectTypeInput|EntityExtensionTypeInput;
-export type TypeInput = ObjectTypeInput|ScalarTypeInput|EnumTypeInput;
+export type ObjectTypeConfig = RootEntityTypeConfig|ChildEntityTypeConfig|ValueObjectTypeConfig|EntityExtensionTypeConfig;
+export type TypeConfig = ObjectTypeConfig|ScalarTypeConfig|EnumTypeConfig;

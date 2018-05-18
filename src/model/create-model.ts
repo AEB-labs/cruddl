@@ -1,7 +1,7 @@
 import { SchemaConfig, SchemaPartConfig } from '../config/schema-config';
 import { Model } from './implementation';
 import {
-    CalcMutationsOperator, EnumTypeInput, FieldInput, IndexDefinitionInput, ObjectTypeInput, TypeInput, TypeKind
+    CalcMutationsOperator, EnumTypeConfig, FieldConfig, IndexDefinitionConfig, ObjectTypeConfig, TypeConfig, TypeKind
 } from './input';
 import { compact, flatMap } from '../utils/utils';
 import {
@@ -22,7 +22,7 @@ import {
     ROLES_READ_WRITE_ARG, ROOT_ENTITY_DIRECTIVE, UNIQUE_DIRECTIVE, VALUE_ARG, VALUE_OBJECT_DIRECTIVE
 } from '../schema/schema-defaults';
 import { ValidationMessage } from './validation';
-import { PermissionsInput, RolesSpecifierInput } from './input/permissions';
+import { PermissionsConfig, RolesSpecifierConfig } from './input/permissions';
 import { flattenValueNode } from '../schema/directive-arg-flattener';
 
 export function createModel(input: SchemaConfig): Model {
@@ -46,7 +46,7 @@ const VALIDATION_ERROR_MULTIPLE_OBJECT_TYPE_DIRECTIVES = `Only one of @${ROOT_EN
 const VALIDATION_ERROR_MISSING_OBJECT_TYPE_DIRECTIVE = `Add one of @${ROOT_ENTITY_DIRECTIVE}, @${CHILD_ENTITY_DIRECTIVE}, @${ENTITY_EXTENSION_DIRECTIVE} or @${VALUE_OBJECT_DIRECTIVE}.`;
 const VALIDATION_ERROR_INVALID_DEFINITION_KIND = "This kind of definition is not allowed. Only object and enum type definitions are allowed.";
 
-function createTypeInputs(input: SchemaConfig, validationMessages: ValidationMessage[]): ReadonlyArray<TypeInput> {
+function createTypeInputs(input: SchemaConfig, validationMessages: ValidationMessage[]): ReadonlyArray<TypeConfig> {
     return flatMap(input.schemaParts, (schemaPart => compact(schemaPart.document.definitions.map(definition => {
         // Only look at object types and enums (scalars are not supported yet, they need to be implemented somehow, e.g. via regex check)
         if (definition.kind != OBJECT_TYPE_DEFINITION && definition.kind !== ENUM_TYPE_DEFINITION) {
@@ -61,7 +61,7 @@ function createTypeInputs(input: SchemaConfig, validationMessages: ValidationMes
 
         switch (definition.kind) {
             case ENUM_TYPE_DEFINITION:
-                const enumTypeInput: EnumTypeInput = {
+                const enumTypeInput: EnumTypeConfig = {
                     ...common,
                     astNode: definition,
                     kind: TypeKind.ENUM,
@@ -80,7 +80,7 @@ function createEnumValues(valueNodes: EnumValueDefinitionNode[]): string[] {
     return valueNodes.map(valNode => valNode.name.value);
 }
 
-function createObjectTypeInput(definition: ObjectTypeDefinitionNode, schemaPart: SchemaPartConfig, validationMessages: ValidationMessage[]): ObjectTypeInput {
+function createObjectTypeInput(definition: ObjectTypeDefinitionNode, schemaPart: SchemaPartConfig, validationMessages: ValidationMessage[]): ObjectTypeConfig {
     const entityType = getKindOfObjectTypeNode(definition, validationMessages);
 
     const common = {
@@ -135,7 +135,7 @@ function getDefaultValue(fieldNode: FieldDefinitionNode, validationMessages: Val
     return flattenValueNode(defaultValueArg.value);
 }
 
-function createFieldInput(fieldNode: FieldDefinitionNode, validationMessages: ValidationMessage[]): FieldInput {
+function createFieldInput(fieldNode: FieldDefinitionNode, validationMessages: ValidationMessage[]): FieldConfig {
     const inverseOfASTNode = getInverseOfASTNode(fieldNode, validationMessages);
     return {
         name: fieldNode.name.value,
@@ -182,14 +182,14 @@ function getCalcMutationOperators(fieldNode: FieldDefinitionNode, validationMess
     }
 }
 
-function createIndexDefinitionInputs(definition: ObjectTypeDefinitionNode, validationMessages: ValidationMessage[]): IndexDefinitionInput[] {
+function createIndexDefinitionInputs(definition: ObjectTypeDefinitionNode, validationMessages: ValidationMessage[]): IndexDefinitionConfig[] {
     return [
         ...createRootEntityBasedIndices(definition, validationMessages),
         ...createFieldBasedIndices(definition)
     ];
 }
 
-function createRootEntityBasedIndices(definition: ObjectTypeDefinitionNode, validationMessages: ValidationMessage[]): IndexDefinitionInput[] {
+function createRootEntityBasedIndices(definition: ObjectTypeDefinitionNode, validationMessages: ValidationMessage[]): IndexDefinitionConfig[] {
     const rootEntityDirective = findDirectiveWithName(definition, ROOT_ENTITY_DIRECTIVE);
     if (!rootEntityDirective) { return []; }
     const indicesArg = getNodeByName(rootEntityDirective.arguments, INDICES_ARG);
@@ -212,8 +212,8 @@ function createRootEntityBasedIndices(definition: ObjectTypeDefinitionNode, vali
     }
 }
 
-function createFieldBasedIndices(definition: ObjectTypeDefinitionNode): IndexDefinitionInput[] {
-    return compact(definition.fields.map((field): IndexDefinitionInput|undefined => {
+function createFieldBasedIndices(definition: ObjectTypeDefinitionNode): IndexDefinitionConfig[] {
+    return compact(definition.fields.map((field): IndexDefinitionConfig|undefined => {
         let unique = false;
         let indexDirective = findDirectiveWithName(field, INDEX_DIRECTIVE);
         if (!indexDirective) {
@@ -232,14 +232,14 @@ function createFieldBasedIndices(definition: ObjectTypeDefinitionNode): IndexDef
     }));
 }
 
-function buildIndexDefinitionFromObjectValue(indexDefinitionNode: ObjectValueNode): IndexDefinitionInput {
+function buildIndexDefinitionFromObjectValue(indexDefinitionNode: ObjectValueNode): IndexDefinitionConfig {
     return {
         ...mapIndexDefinition(indexDefinitionNode),
         astNode: indexDefinitionNode
     };
 }
 
-function mapIndexDefinition(index: ObjectValueNode): IndexDefinitionInput {
+function mapIndexDefinition(index: ObjectValueNode): IndexDefinitionConfig {
     return valueFromAST(index, indexDefinitionInputObjectType)
 }
 
@@ -285,7 +285,7 @@ function getKeyFieldASTNode(definition: ObjectTypeDefinitionNode, validationMess
     return keyFields[0];
 }
 
-function getPermissions(node: ObjectTypeDefinitionNode|FieldDefinitionNode, validationMessages: ValidationMessage[]): PermissionsInput|undefined {
+function getPermissions(node: ObjectTypeDefinitionNode|FieldDefinitionNode, validationMessages: ValidationMessage[]): PermissionsConfig|undefined {
     const rootEntityDirective = findDirectiveWithName(node, ROOT_ENTITY_DIRECTIVE);
     const permissionProfileArg = rootEntityDirective ? getNodeByName(rootEntityDirective.arguments, PERMISSION_PROFILE_ARG) : undefined;
     const permissionProfileNameAstNode = getPermissionProfileAstNode(permissionProfileArg, validationMessages);
@@ -293,7 +293,7 @@ function getPermissions(node: ObjectTypeDefinitionNode|FieldDefinitionNode, vali
     if (!permissionProfileArg && !rolesDirective) {
         return undefined;
     }
-    const roles: RolesSpecifierInput|undefined = rolesDirective ? {
+    const roles: RolesSpecifierConfig|undefined = rolesDirective ? {
         read: getRolesOfArg(getNodeByName(rolesDirective.arguments, ROLES_READ_ARG), validationMessages),
         readWrite: getRolesOfArg(getNodeByName(rolesDirective.arguments, ROLES_READ_WRITE_ARG), validationMessages),
         astNode: rolesDirective

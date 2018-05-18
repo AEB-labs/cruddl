@@ -1,4 +1,4 @@
-import { FieldInput, RootEntityTypeInput, TypeKind } from '../input';
+import { FieldConfig, RootEntityTypeConfig, TypeKind } from '../input';
 import { ObjectTypeBase } from './object-type-base';
 import { Field } from './field';
 import { Model } from './model';
@@ -7,13 +7,13 @@ import { ValidationMessage } from '../validation';
 import { Index } from './indices';
 import { ACCESS_GROUP_FIELD, DEFAULT_PERMISSION_PROFILE } from '../../schema/schema-defaults';
 import { PermissionProfile } from '../../authorization/permission-profile';
-import { PermissionsInput } from '../input/permissions';
+import { PermissionsConfig } from '../input/permissions';
 import { EdgeType, getEdgeType } from '../../schema/edges';
 import { GraphQLString } from 'graphql';
 import { RolesSpecifier } from './roles-specifier';
 
 export class RootEntityType extends ObjectTypeBase {
-    private readonly permissions: PermissionsInput & {};
+    private readonly permissions: PermissionsConfig & {};
     readonly keyField: Field|undefined;
     readonly namespacePath: ReadonlyArray<string>;
     readonly indices: ReadonlyArray<Index>;
@@ -25,7 +25,7 @@ export class RootEntityType extends ObjectTypeBase {
     readonly isEntityExtensionType: false = false;
     readonly isValueObjectType: false = false;
 
-    constructor(private readonly input: RootEntityTypeInput, model: Model) {
+    constructor(private readonly input: RootEntityTypeConfig, model: Model) {
         super(input, model, systemFieldInputs);
         this.keyField = input.keyFieldName != undefined ? this.getField(input.keyFieldName) : undefined;
         this.namespacePath = input.namespacePath || [];
@@ -123,7 +123,7 @@ export class RootEntityType extends ObjectTypeBase {
     }
 }
 
-const systemFieldInputs: FieldInput[] = [
+const systemFieldInputs: FieldConfig[] = [
     {
         name: 'id',
         typeName: 'ID'

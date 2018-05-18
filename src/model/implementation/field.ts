@@ -1,4 +1,4 @@
-import { CalcMutationsOperator, FieldInput, TypeKind } from '../input';
+import { CalcMutationsOperator, FieldConfig, TypeKind } from '../input';
 import { ModelComponent, ValidationContext } from './validation';
 import { ValidationMessage } from '../validation';
 import { FieldDefinitionNode } from 'graphql';
@@ -26,7 +26,7 @@ export class Field implements ModelComponent {
      */
     readonly isSystemField: boolean;
 
-    constructor(private readonly input: FieldInput & { isSystemField?: boolean }, public readonly declaringType: ObjectType) {
+    constructor(private readonly input: FieldConfig & { isSystemField?: boolean }, public readonly declaringType: ObjectType) {
         this.model = declaringType.model;
         this.name = input.name;
         this.description = input.description;

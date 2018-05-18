@@ -1,4 +1,4 @@
-import { TypeInput, TypeKind } from '../input';
+import { TypeConfig, TypeKind } from '../input';
 import { RootEntityType } from './root-entity-type';
 import { ScalarType } from './scalar-type';
 import { ChildEntityType } from './child-entity-type';
@@ -19,7 +19,7 @@ export class InvalidType extends ScalarType {
     }
 }
 
-export function createType(typeInput: TypeInput, model: Model): Type {
+export function createType(typeInput: TypeConfig, model: Model): Type {
     switch (typeInput.kind) {
         case TypeKind.ROOT_ENTITY:
             return new RootEntityType(typeInput, model);

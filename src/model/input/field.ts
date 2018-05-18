@@ -1,14 +1,14 @@
-import {ASTNode, DirectiveNode, FieldDefinitionNode, NamedTypeNode, NameNode, ValueNode} from 'graphql';
-import { PermissionsInput } from './permissions';
+import { DirectiveNode, FieldDefinitionNode, NameNode, ValueNode } from 'graphql';
+import { PermissionsConfig } from './permissions';
 
-export interface FieldInput {
+export interface FieldConfig {
     readonly name: string
     readonly description?: string
     readonly typeName: string
     readonly typeNameAST?: NameNode
     readonly isList?: boolean
 
-    readonly permissions?: PermissionsInput
+    readonly permissions?: PermissionsConfig
     readonly defaultValue?: any
     readonly defaultValueASTNode?: DirectiveNode;
     readonly calcMutationOperators?: ReadonlyArray<CalcMutationsOperator>

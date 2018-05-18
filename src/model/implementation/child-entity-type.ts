@@ -1,9 +1,9 @@
 import { ObjectTypeBase } from './object-type-base';
-import { ChildEntityTypeInput, FieldInput, TypeKind } from '../input';
+import { ChildEntityTypeConfig, FieldConfig, TypeKind } from '../input';
 import { Model } from './model';
 
 export class ChildEntityType extends ObjectTypeBase {
-    constructor(input: ChildEntityTypeInput, model: Model) {
+    constructor(input: ChildEntityTypeConfig, model: Model) {
         super(input, model, systemFieldInputs);
     }
 
@@ -14,7 +14,7 @@ export class ChildEntityType extends ObjectTypeBase {
     readonly isValueObjectType: false = false;
 }
 
-const systemFieldInputs: FieldInput[] = [
+const systemFieldInputs: FieldConfig[] = [
     {
         name: 'id',
         typeName: 'ID'

@@ -1,5 +1,5 @@
 import { TypeDefinitionNode } from 'graphql';
-import { TypeInput, TypeKind } from '../input';
+import { TypeConfig, TypeKind } from '../input';
 import { ValidationMessage } from '../validation';
 import { ModelComponent, ValidationContext } from './validation';
 
@@ -9,7 +9,7 @@ export abstract class TypeBase implements ModelComponent {
     abstract readonly kind: TypeKind;
     readonly astNode: TypeDefinitionNode | undefined;
 
-    protected constructor(input: TypeInput) {
+    protected constructor(input: TypeConfig) {
         this.astNode = input.astNode;
         this.name = input.name;
         this.description = input.description;

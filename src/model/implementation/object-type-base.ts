@@ -1,4 +1,4 @@
-import { FieldInput, ObjectTypeInput } from '../input';
+import { FieldConfig, ObjectTypeConfig } from '../input';
 import { TypeBase } from './type-base';
 import { Field } from './field';
 import { ObjectType } from './type';
@@ -12,7 +12,7 @@ export abstract class ObjectTypeBase extends TypeBase {
     readonly fields: ReadonlyArray<Field>;
     private readonly fieldMap: ReadonlyMap<string, Field>;
 
-    protected constructor(input: ObjectTypeInput, public readonly model: Model, systemFieldInputs: ReadonlyArray<FieldInput> = []) {
+    protected constructor(input: ObjectTypeConfig, public readonly model: Model, systemFieldInputs: ReadonlyArray<FieldConfig> = []) {
         super(input);
         const thisAsObjectType: ObjectType = this as any;
         const customFields = (input.fields || []).map(field => new Field(field, thisAsObjectType));
