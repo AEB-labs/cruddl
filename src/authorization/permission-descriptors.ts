@@ -3,12 +3,10 @@ import {
     UnknownValueQueryNode
 } from '../query/definition';
 import { simplifyBooleans } from '../query/query-tree-utils';
-import { Permission, PermissionProfile } from './permission-profile';
+import { Field, Permission, PermissionProfile, RootEntityType } from '../model';
 import { flatMap } from 'lodash';
 import { AccessOperation, AuthContext } from './auth-basics';
 import { ACCESS_GROUP_FIELD } from '../schema/schema-defaults';
-import { Field, RootEntityType } from '../model';
-import { type } from 'os';
 
 export enum ConditionExplanationContext {
     BEFORE_WRITE,

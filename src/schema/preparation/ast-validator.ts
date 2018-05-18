@@ -11,8 +11,7 @@ import { CheckGraphQLSyntaxValidator } from './source-validation-modules/check-g
 import { GraphQLRulesValidator } from './source-validation-modules/graphql-rules';
 import { CheckYamlSyntaxValidator } from './source-validation-modules/check-yaml-syntax';
 import { CheckJsonSyntaxValidator } from './source-validation-modules/check-json-syntax';
-import { PermissionProfileMap } from '../../authorization/permission-profile';
-import { Model } from '../../model';
+import { Model, PermissionProfileMap } from '../../model';
 import { SidecarSchemaValidator } from './source-validation-modules/sidecar-schema';
 
 const sourceValidators: SourceValidator[]  = [

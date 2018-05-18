@@ -9,3 +9,5 @@ export { EnumType } from './enum-type';
 export { Field } from './field';
 export { Namespace } from './namespace';
 export { Index, IndexField } from './indices';
+export { RolesSpecifier } from './roles-specifier';
+export { PermissionProfile, Permission, PermissionProfileMap, RoleSpecifier } from './permission-profile';

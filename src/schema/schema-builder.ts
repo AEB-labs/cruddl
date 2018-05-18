@@ -6,14 +6,14 @@ import {
 import { validatePostMerge, validateSource } from './preparation/ast-validator';
 import { SchemaConfig, SchemaPartConfig } from '../config/schema-config';
 import { globalContext } from '../config/global';
-import { createPermissionMap } from '../authorization/permission-profile';
+import { createModel, Model } from '../model';
 import { Project } from '../project/project';
 import { DatabaseAdapter } from '../database/database-adapter';
 import { SourceType } from '../project/source';
 import { load as loadYaml } from 'js-yaml';
 import { ValidationMessage, ValidationResult } from '../model/validation';
 import { flatMap } from '../utils/utils';
-import { createModel, Model } from '../model';
+import { createPermissionMap } from '../model/implementation/permission-profile';
 
 /**
  * Validates a project and thus determines whether createSchema() would succeed

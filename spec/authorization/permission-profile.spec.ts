@@ -1,4 +1,4 @@
-import { RoleSpecifier } from '../../src/authorization/permission-profile';
+import { RoleSpecifier } from '../../src/model';
 import { expect } from 'chai';
 
 describe('RoleSpecifier', () => {

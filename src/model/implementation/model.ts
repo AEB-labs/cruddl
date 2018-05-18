@@ -1,6 +1,6 @@
 import { ModelConfig, TypeKind } from '../config';
 import { ValidationMessage, ValidationResult } from '../validation';
-import { createPermissionMap, PermissionProfile, PermissionProfileMap } from '../../authorization/permission-profile';
+import { createPermissionMap, PermissionProfile, PermissionProfileMap } from './permission-profile';
 import { createType, InvalidType, ObjectType, Type } from './type';
 import { Namespace } from './namespace';
 import { ModelComponent, ValidationContext } from './validation';

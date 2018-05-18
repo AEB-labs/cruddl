@@ -18,14 +18,13 @@ import { AddMetaFieldsAlongWithFilterableFieldsTransformer } from './post-merge-
 import { AddQueryMetaTypeTransformer } from './post-merge-ast-transformation-modules/add-query-meta-type-transformer';
 import { SchemaPartConfig } from '../../config/schema-config';
 import { AddNamespacesToTypesTransformer } from './pre-merge-ast-transformation-modules/add-namespaces-to-types-transformer';
-import { PermissionProfileMap } from '../../authorization/permission-profile';
+import { Model, PermissionProfileMap } from '../../model';
 import { ImplementScalarTypesTransformer } from './schema-transformation-modules/implement-scalar-types';
 import { DatabaseAdapter } from '../../database/database-adapter';
 import { AddAliasBasedResolversTransformer } from './schema-transformation-modules/add-alias-based-resolvers';
 import { AddRuntimeErrorResolversTransformer } from './schema-transformation-modules/add-runtime-error-resolvers';
 import { SchemaContext } from '../../config/global';
 import { AddOperationResolversTransformer } from './schema-transformation-modules/add-operation-resolvers';
-import { Model } from '../../model';
 
 const preMergePipeline: ASTTransformer[] = [
     new AddNamespacesToTypesTransformer()

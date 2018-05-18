@@ -3,7 +3,7 @@ import { ModelComponent, ValidationContext } from './validation';
 import { ValidationMessage } from '../validation';
 import { FieldDefinitionNode } from 'graphql';
 import { ObjectType, Type } from './type';
-import { PermissionProfile } from '../../authorization/permission-profile';
+import { PermissionProfile } from './permission-profile';
 import { Model } from './model';
 import { CALC_MUTATIONS_OPERATORS } from '../../schema/schema-defaults';
 import { RolesSpecifier } from './roles-specifier';

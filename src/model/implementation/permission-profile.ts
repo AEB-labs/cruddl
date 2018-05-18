@@ -1,7 +1,7 @@
-import { WILDCARD_CHARACTER } from '../schema/schema-defaults';
-import { escapeRegExp, mapValues } from '../utils/utils';
-import { AccessOperation, AuthContext } from './auth-basics';
-import { PermissionAccessKind, PermissionConfig, PermissionProfileConfig, PermissionProfileConfigMap } from '../model';
+import { WILDCARD_CHARACTER } from '../../schema/schema-defaults';
+import { escapeRegExp, mapValues } from '../../utils/utils';
+import { AccessOperation, AuthContext } from '../../authorization/auth-basics';
+import { PermissionAccessKind, PermissionConfig, PermissionProfileConfig, PermissionProfileConfigMap } from '../index';
 
 export function createPermissionMap(map: PermissionProfileConfigMap = {}) {
     return mapValues(map, (profile, name) => new PermissionProfile(name, profile));

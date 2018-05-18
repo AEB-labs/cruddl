@@ -1,7 +1,7 @@
 import {
     PermissionDescriptor, PermissionResult, ProfileBasedPermissionDescriptor
 } from '../../src/authorization/permission-descriptors';
-import { PermissionProfile } from '../../src/authorization/permission-profile';
+import { Model, PermissionProfile, TypeKind } from '../../src/model';
 import { AccessOperation, AuthContext } from '../../src/authorization/auth-basics';
 import {
     BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, FieldQueryNode, LiteralQueryNode, QueryNode,
@@ -9,7 +9,6 @@ import {
 } from '../../src/query/definition';
 import { ACCESS_GROUP_FIELD } from '../../src/schema/schema-defaults';
 import { expect } from 'chai';
-import { Model, TypeKind } from '../../src/model';
 
 
 describe('PermissionDescriptor', () => {
