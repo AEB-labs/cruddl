@@ -3,14 +3,14 @@ import {
     FollowEdgeQueryNode, QueryNode, RuntimeErrorQueryNode, TransformListQueryNode, VariableQueryNode
 } from '../../query/definition';
 import { PermissionResult } from '../permission-descriptors';
-import { invertRelationFieldEdgeSide } from '../../schema/edges';
+import { invertRelationFieldSide } from '../../model';
 import {
     getPermissionDescriptorOfField, getPermissionDescriptorOfRootEntityType
 } from '../permission-descriptors-in-model';
 
 export function transformFollowEdgeQueryNode(node: FollowEdgeQueryNode, authContext: AuthContext): QueryNode {
-    const sourceType = node.edgeType.getTypeOfSide(node.sourceFieldSide);
-    const sourceField = node.edgeType.getFieldOfSide(node.sourceFieldSide);
+    const sourceType = node.relation.getTypeOfSide(node.sourceFieldSide);
+    const sourceField = node.relation.getFieldOfSide(node.sourceFieldSide);
     if (!sourceField) {
         throw new Error(`Encountered FollowEdgeQueryNode which traverses via non-existing inverse field (on ${sourceType.name})`);
     }
@@ -23,7 +23,7 @@ export function transformFollowEdgeQueryNode(node: FollowEdgeQueryNode, authCont
             throw new Error(`Conditional permission profiles are currently not supported on fields, but used in ${sourceType.name}.${sourceField.name}`);
     }
 
-    const targetType = node.edgeType.getTypeOfSide(invertRelationFieldEdgeSide(node.sourceFieldSide));
+    const targetType = node.relation.getTypeOfSide(invertRelationFieldSide(node.sourceFieldSide));
     const entityPermissionDescriptor = getPermissionDescriptorOfRootEntityType(targetType);
     const entityAccess = entityPermissionDescriptor.canAccess(authContext, AccessOperation.READ);
     switch (entityAccess) {

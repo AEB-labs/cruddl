@@ -7,6 +7,7 @@ import { PermissionProfile } from './permission-profile';
 import { Model } from './model';
 import { CALC_MUTATIONS_OPERATORS } from '../../schema/schema-defaults';
 import { RolesSpecifier } from './roles-specifier';
+import { Relation } from './relation';
 
 export class Field implements ModelComponent {
     readonly model: Model;
@@ -75,6 +76,43 @@ export class Field implements ModelComponent {
 
     public get inverseField(): Field|undefined {
         return this.type.isObjectType ? this.type.fields.find(field => field.inverseOf === this) : undefined;
+    }
+
+    public get relation(): Relation|undefined {
+        if (!this.isRelation || !this.declaringType.isRootEntityType || !this.type.isRootEntityType) {
+            return undefined;
+        }
+        if (this.inverseOf) {
+            // this is the to side
+            return new Relation({
+                fromType: this.type,
+                fromField: this.inverseOf,
+                toType: this.declaringType,
+                toField: this
+            });
+        } else {
+            // this is the from side
+            return new Relation({
+                fromType: this.declaringType,
+                fromField: this,
+                toType: this.type,
+                toField: this.inverseField
+            });
+        }
+    }
+
+    public getRelationOrThrow(): Relation {
+        if (this.type.kind != TypeKind.ROOT_ENTITY) {
+            throw new Error(`Expected "${this.type.name}" to be a root entity, but is ${this.type.kind}`);
+        }
+        if (this.declaringType.kind != TypeKind.ROOT_ENTITY) {
+            throw new Error(`Expected "${this.declaringType.name}" to be a root entity, but is ${this.declaringType.kind}`);
+        }
+        const relation = this.relation;
+        if (!relation) {
+            throw new Error(`Expected "${this.declaringType.name}.${this}" to be a relation`);
+        }
+        return relation;
     }
 
     validate(context: ValidationContext) {

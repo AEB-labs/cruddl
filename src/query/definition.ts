@@ -1,8 +1,7 @@
 import { compact, indent } from '../utils/utils';
-import { EdgeType, RelationFieldEdgeSide } from '../schema/edges';
+import { Field, Relation, RelationFieldSide, RootEntityType } from '../model';
 import { QueryResultValidator } from './query-result-validators';
 import { blue, cyan, green, magenta, red } from 'colors/safe';
-import { Field, RootEntityType } from '../model';
 
 /**
  *
@@ -691,16 +690,16 @@ export enum OrderDirection {
  * Evaluates to all root entitites that are connected to a specific root entitity through a specific edge
  */
 export class FollowEdgeQueryNode extends QueryNode {
-    constructor(readonly edgeType: EdgeType, readonly sourceEntityNode: QueryNode, readonly sourceFieldSide: RelationFieldEdgeSide) {
+    constructor(readonly relation: Relation, readonly sourceEntityNode: QueryNode, readonly sourceFieldSide: RelationFieldSide) {
         super();
     }
 
     describe() {
         switch (this.sourceFieldSide) {
-            case RelationFieldEdgeSide.FROM_SIDE:
-                return `follow forward ${blue(this.edgeType.toString())} of ${this.sourceEntityNode.describe()}`;
-            case RelationFieldEdgeSide.TO_SIDE:
-                return `follow backward ${blue(this.edgeType.toString())} of ${this.sourceEntityNode.describe()}`;
+            case RelationFieldSide.FROM_SIDE:
+                return `follow forward ${blue(this.relation.toString())} of ${this.sourceEntityNode.describe()}`;
+            case RelationFieldSide.TO_SIDE:
+                return `follow backward ${blue(this.relation.toString())} of ${this.sourceEntityNode.describe()}`;
         }
     }
 }
@@ -818,24 +817,24 @@ export class AddEdgesQueryNode extends QueryNode {
     // TODO: accept one QueryNode which evaluates to the lits of edge ids somehow?
     // (currently, adding 50 edges generates 50 bound variables with the literal values)
 
-    constructor(readonly edgeType: EdgeType, readonly edges: EdgeIdentifier[]) {
+    constructor(readonly relation: Relation, readonly edges: EdgeIdentifier[]) {
         super();
     }
 
     describe() {
-        return `add edges to ${this.edgeType}: [\n` +
+        return `add edges to ${this.relation}: [\n` +
             indent(this.edges.map(edge => edge.describe()).join(',\n')) +
             `\n]`;
     }
 }
 
 export class RemoveEdgesQueryNode extends QueryNode {
-    constructor(readonly edgeType: EdgeType, readonly edgeFilter: EdgeFilter) {
+    constructor(readonly relation: Relation, readonly edgeFilter: EdgeFilter) {
         super();
     }
 
     describe() {
-        return `remove edges from ${this.edgeType} matching ${this.edgeFilter.describe()}`;
+        return `remove edges from ${this.relation} matching ${this.edgeFilter.describe()}`;
     }
 }
 
@@ -844,19 +843,19 @@ export class RemoveEdgesQueryNode extends QueryNode {
  * creates newEge.
  */
 export class SetEdgeQueryNode extends QueryNode {
-    constructor(params: { edgeType: EdgeType, existingEdgeFilter: PartialEdgeIdentifier, newEdge: EdgeIdentifier }) {
+    constructor(params: { relation: Relation, existingEdgeFilter: PartialEdgeIdentifier, newEdge: EdgeIdentifier }) {
         super();
-        this.edgeType = params.edgeType;
+        this.relation = params.relation;
         this.existingEdge = params.existingEdgeFilter;
         this.newEdge = params.newEdge;
     }
 
-    readonly edgeType: EdgeType;
+    readonly relation: Relation;
     readonly existingEdge: PartialEdgeIdentifier;
     readonly newEdge: EdgeIdentifier;
 
     describe() {
-        return `replace edge ${this.existingEdge.describe()} by ${this.newEdge.describe()} in ${this.edgeType}`;
+        return `replace edge ${this.existingEdge.describe()} by ${this.newEdge.describe()} in ${this.relation}`;
     }
 }
 

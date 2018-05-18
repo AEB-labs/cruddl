@@ -5,7 +5,7 @@ import { Logger } from '../../config/logging';
 import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS } from '../../query/query-result-validators';
 import { JSCompoundQuery, JSExecutableQuery } from './js';
 import { getJSQuery } from './js-generator';
-import { getCollectionNameForEdge, getCollectionNameForRootEntity } from './inmemory-basics';
+import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './inmemory-basics';
 import { Model } from '../../model';
 import uuid = require('uuid');
 
@@ -184,8 +184,7 @@ export class InMemoryAdapter implements DatabaseAdapter {
 
     async updateSchema(model: Model) {
         const rootEntities = model.rootEntityTypes;
-        const edgeTypes = model.relations;
-        const requiredEdgeCollections = Array.from(new Set(edgeTypes.map(edge => getCollectionNameForEdge(edge))));
+        const requiredEdgeCollections = Array.from(new Set(model.relations.map(getCollectionNameForRelation)));
 
         const requiredCollections = rootEntities.map(entity => getCollectionNameForRootEntity(entity));
         for (const coll of [...requiredCollections, ...requiredEdgeCollections]) {

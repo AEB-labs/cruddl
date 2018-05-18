@@ -7,9 +7,10 @@ import { ValidationMessage } from '../validation';
 import { Index } from './indices';
 import { ACCESS_GROUP_FIELD, DEFAULT_PERMISSION_PROFILE } from '../../schema/schema-defaults';
 import { PermissionProfile } from './permission-profile';
-import { EdgeType, getEdgeType } from '../../schema/edges';
+import { Relation } from './relation';
 import { GraphQLString } from 'graphql';
 import { RolesSpecifier } from './roles-specifier';
+import { compact } from '../../utils/utils';
 
 export class RootEntityType extends ObjectTypeBase {
     private readonly permissions: PermissionsConfig & {};
@@ -51,10 +52,8 @@ export class RootEntityType extends ObjectTypeBase {
         return this.model.getPermissionProfile(this.permissions.permissionProfileName);
     }
 
-    get relations(): ReadonlyArray<EdgeType> {
-        return this.fields
-            .filter(field => field.isRelation)
-            .map(field => getEdgeType(field));
+    get relations(): ReadonlyArray<Relation> {
+        return compact(this.fields.map(field => field.relation));
     }
 
     validate(context: ValidationContext) {

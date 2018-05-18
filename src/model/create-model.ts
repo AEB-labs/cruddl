@@ -22,7 +22,7 @@ import {
     ROLES_READ_WRITE_ARG, ROOT_ENTITY_DIRECTIVE, UNIQUE_DIRECTIVE, VALUE_ARG, VALUE_OBJECT_DIRECTIVE
 } from '../schema/schema-defaults';
 import { ValidationMessage } from './validation';
-import { PermissionsConfig, RolesSpecifierConfig } from './config/permissions';
+import { PermissionsConfig, RolesSpecifierConfig } from './config';
 import { flattenValueNode } from '../schema/directive-arg-flattener';
 
 export function createModel(input: SchemaConfig): Model {

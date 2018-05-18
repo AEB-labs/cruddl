@@ -1,5 +1,5 @@
 import { FieldRequest } from '../graphql/query-distiller';
-import { getNamedType, GraphQLObjectType } from 'graphql';
+import { getNamedType } from 'graphql';
 import {
     AddEdgesQueryNode, AffectedFieldInfoQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator,
     ConcatListsQueryNode, ConditionalQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeFilter,
@@ -16,15 +16,15 @@ import {
     UPDATE_ALL_ENTITIES_FIELD_PREFIX, UPDATE_CHILD_ENTITIES_FIELD_PREFIX, UPDATE_ENTITY_FIELD_PREFIX, WILDCARD_CHARACTER
 } from '../schema/schema-defaults';
 import { createEntityObjectNode, createTransformListQueryNode } from './queries';
-import { isTypeWithIdentity } from '../schema/schema-utils';
 import { AnyValue, decapitalize, filterProperties, mapValues, PlainObject } from '../utils/utils';
 import {
     getAddChildEntityFieldName, getAddRelationFieldName, getRemoveChildEntityFieldName, getRemoveRelationFieldName,
     getUpdateChildEntityFieldName
 } from '../graphql/names';
-import { EdgeType, getEdgeType, RelationFieldEdgeSide } from '../schema/edges';
+import {
+    CalcMutationsOperator, Field, Namespace, ObjectType, Relation, RelationFieldSide, RootEntityType
+} from '../model';
 import { ErrorIfEmptyResultValidator, QueryResultValidator } from './query-result-validators';
-import { CalcMutationsOperator, Field, Namespace, ObjectType, RootEntityType } from '../model';
 import uuid = require('uuid');
 
 /**
@@ -343,7 +343,7 @@ function getRelationAddRemoveStatements(obj: PlainObject, parentType: ObjectType
     const relationFields = parentType.fields.filter(f => f.isRelation);
     const statements: QueryNode[] = [];
     for (const field of relationFields) {
-        const edgeType = getEdgeType(field);
+        const relation = field.getRelationOrThrow();
         if (field.isList) {
             // to-n relation
             const idsToBeAdded = (isAddRemove ? obj[getAddRelationFieldName(field.name)] : obj[field.name]) as string[] | undefined || [];
@@ -354,12 +354,12 @@ function getRelationAddRemoveStatements(obj: PlainObject, parentType: ObjectType
 
             if (idsToBeAdded.length) {
                 const edgeNodes = idsToBeAdded.map(id => getEdgeIdentifier({
-                    edgeType,
+                    relation,
                     sourceIDNode,
                     targetIDNode: new LiteralQueryNode(id),
                     sourceField: field
                 }));
-                statements.push(new AddEdgesQueryNode(edgeType, edgeNodes));
+                statements.push(new AddEdgesQueryNode(relation, edgeNodes));
             } else if (idsToBeRemoved.length) {
                 let targetIds;
                 if(idsToBeRemoved.includes(WILDCARD_CHARACTER)) {
@@ -369,8 +369,8 @@ function getRelationAddRemoveStatements(obj: PlainObject, parentType: ObjectType
                     targetIds = idsToBeRemoved.map(id => new LiteralQueryNode(id));
                 }
 
-                statements.push(new RemoveEdgesQueryNode(edgeType, getEdgeFilter({
-                    edgeType,
+                statements.push(new RemoveEdgesQueryNode(relation, getEdgeFilter({
+                    relation,
                     sourceIDNodes: [sourceIDNode],
                     targetIDNodes: targetIds,
                     sourceField: field
@@ -382,14 +382,14 @@ function getRelationAddRemoveStatements(obj: PlainObject, parentType: ObjectType
             if (newID) {
                 // set related entity
                 statements.push(new SetEdgeQueryNode({
-                    edgeType,
+                    relation: relation,
                     existingEdgeFilter: getPartialEdgeIdentifier({
-                        edgeType,
+                        relation,
                         sourceIDNode,
                         sourceField: field
                     }),
                     newEdge: getEdgeIdentifier({
-                        edgeType,
+                        relation,
                         sourceIDNode,
                         targetIDNode: new LiteralQueryNode(newID),
                         sourceField: field
@@ -398,9 +398,9 @@ function getRelationAddRemoveStatements(obj: PlainObject, parentType: ObjectType
             } else {
                 // remove relation
                 statements.push(new RemoveEdgesQueryNode(
-                    edgeType,
+                    relation,
                     getEdgeFilter({
-                        edgeType,
+                        relation,
                         sourceIDNodes: [sourceIDNode],
                         sourceField: field
                     })
@@ -412,13 +412,13 @@ function getRelationAddRemoveStatements(obj: PlainObject, parentType: ObjectType
 }
 
 /**
- * Creates an Edge identifier. Reorders source/target so that they match from/to in the edgeType
+ * Creates an Edge identifier. Reorders source/target so that they match from/to in the relation
  */
-function getEdgeIdentifier(param: { edgeType: EdgeType; sourceIDNode: QueryNode; targetIDNode: QueryNode; sourceField: Field }): EdgeIdentifier {
-    switch (param.edgeType.getRelationFieldEdgeSide(param.sourceField)) {
-        case RelationFieldEdgeSide.FROM_SIDE:
+function getEdgeIdentifier(param: { relation: Relation; sourceIDNode: QueryNode; targetIDNode: QueryNode; sourceField: Field }): EdgeIdentifier {
+    switch (param.relation.getFieldSide(param.sourceField)) {
+        case RelationFieldSide.FROM_SIDE:
             return new EdgeIdentifier(param.sourceIDNode, param.targetIDNode);
-        case RelationFieldEdgeSide.TO_SIDE:
+        case RelationFieldSide.TO_SIDE:
             return new EdgeIdentifier(param.targetIDNode, param.sourceIDNode);
     }
 }
@@ -426,23 +426,23 @@ function getEdgeIdentifier(param: { edgeType: EdgeType; sourceIDNode: QueryNode;
 /**
  * Creates a partial edge identifier of the format ?->id or id->?
  */
-function getPartialEdgeIdentifier(param: { edgeType: EdgeType; sourceIDNode: QueryNode; sourceField: Field }): PartialEdgeIdentifier {
-    switch (param.edgeType.getRelationFieldEdgeSide(param.sourceField)) {
-        case RelationFieldEdgeSide.FROM_SIDE:
+function getPartialEdgeIdentifier(param: { relation: Relation; sourceIDNode: QueryNode; sourceField: Field }): PartialEdgeIdentifier {
+    switch (param.relation.getFieldSide(param.sourceField)) {
+        case RelationFieldSide.FROM_SIDE:
             return new PartialEdgeIdentifier(param.sourceIDNode, undefined);
-        case RelationFieldEdgeSide.TO_SIDE:
+        case RelationFieldSide.TO_SIDE:
             return new PartialEdgeIdentifier(undefined, param.sourceIDNode);
     }
 }
 
 /**
- * Creates an Edge filter. Reorders source/target so that they match from/to in the edgeType
+ * Creates an Edge filter. Reorders source/target so that they match from/to in the relation
  */
-function getEdgeFilter(param: { edgeType: EdgeType; sourceIDNodes?: QueryNode[]; targetIDNodes?: QueryNode[]; sourceField: Field }): EdgeFilter {
-    switch (param.edgeType.getRelationFieldEdgeSide(param.sourceField)) {
-        case RelationFieldEdgeSide.FROM_SIDE:
+function getEdgeFilter(param: { relation: Relation; sourceIDNodes?: QueryNode[]; targetIDNodes?: QueryNode[]; sourceField: Field }): EdgeFilter {
+    switch (param.relation.getFieldSide(param.sourceField)) {
+        case RelationFieldSide.FROM_SIDE:
             return new EdgeFilter(param.sourceIDNodes, param.targetIDNodes);
-        case RelationFieldEdgeSide.TO_SIDE:
+        case RelationFieldSide.TO_SIDE:
             return new EdgeFilter(param.targetIDNodes, param.sourceIDNodes);
     }
 }

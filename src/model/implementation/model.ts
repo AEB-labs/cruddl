@@ -14,7 +14,7 @@ import { EnumType } from './enum-type';
 import { groupBy } from 'lodash';
 import { flatMap, objectValues } from '../../utils/utils';
 import { DEFAULT_PERMISSION_PROFILE } from '../../schema/schema-defaults';
-import { EdgeType, getEdgeType } from '../../schema/edges';
+import { Relation } from './relation';
 
 export class Model implements ModelComponent{
     private readonly typeMap: ReadonlyMap<string, Type>;
@@ -163,11 +163,7 @@ export class Model implements ModelComponent{
         return type as T;
     }
 
-    get relations(): ReadonlyArray<EdgeType> {
-        return flatMap(this.rootEntityTypes, entity =>
-            entity.fields
-                .filter(field => field.isRelation)
-                .map(field => getEdgeType(field))
-        );
+    get relations(): ReadonlyArray<Relation> {
+        return flatMap(this.rootEntityTypes, entity => entity.relations);
     }
 }

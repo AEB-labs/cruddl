@@ -2,7 +2,7 @@ import { DatabaseAdapter } from '../database-adapter';
 import { QueryNode } from '../../query/definition';
 import { getAQLQuery } from './aql-generator';
 import { Database } from 'arangojs';
-import { getCollectionNameForEdge, getCollectionNameForRootEntity } from './arango-basics';
+import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './arango-basics';
 import { globalContext, SchemaContext } from '../../config/global';
 import { Logger } from '../../config/logging';
 import { AQLCompoundQuery, AQLExecutableQuery } from './aql';
@@ -187,7 +187,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         await Promise.all(createIndicesPromises);
 
         // Creating missing edge collections in ArangoDB
-        const requiredEdgeCollections = Array.from(new Set(model.relations.map(edge => getCollectionNameForEdge(edge))));
+        const requiredEdgeCollections = Array.from(new Set(model.relations.map(getCollectionNameForRelation)));
         const existingEdgeCollections = collections.map(coll => (<any>coll).name); // typing for name missing
         const edgeCollectionsToCreate = requiredEdgeCollections.filter(c => existingEdgeCollections.indexOf(c) < 0);
         this.logger.info(`Creating edge collections ${edgeCollectionsToCreate.join(', ')}...`);

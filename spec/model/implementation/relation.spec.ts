@@ -1,8 +1,7 @@
-import { DatabaseAdapter } from '../../src/database/database-adapter';
-import { QueryNode } from '../../src/query/definition';
-import { EdgeType, getEdgeType } from '../../src/schema/edges';
+import { DatabaseAdapter } from '../../../src/database/database-adapter';
+import { QueryNode } from '../../../src/query/definition';
+import { Model, Relation, TypeKind } from '../../../src/model';
 import { expect } from 'chai';
-import { Model, TypeKind } from '../../src/model';
 
 class FakeDBAdatper implements DatabaseAdapter {
     async execute(queryTree: QueryNode): Promise<any> {
@@ -14,7 +13,7 @@ class FakeDBAdatper implements DatabaseAdapter {
     }
 }
 
-describe('edges', () => {
+describe('Relation', () => {
     it('works with unrelated relations between two root entities', async () => {
         const model = new Model({
             types: [
@@ -45,11 +44,11 @@ describe('edges', () => {
         const fieldOnA = model.getRootEntityTypeOrThrow('TypeA').getFieldOrThrow('relB');
         const fieldOnB = model.getRootEntityTypeOrThrow('TypeB').getFieldOrThrow('relA');
 
-        const edgeTypeFromA = getEdgeType(fieldOnA);
+        const edgeTypeFromA = fieldOnA.getRelationOrThrow();
         expect(edgeTypeFromA.fromField).to.equal(fieldOnA);
         expect(edgeTypeFromA.toField).to.be.undefined;
 
-        const edgeTypeFromB = getEdgeType(fieldOnB);
+        const edgeTypeFromB = fieldOnB.getRelationOrThrow();
         expect(edgeTypeFromB.fromField).to.equal(fieldOnB);
         expect(edgeTypeFromA.toField).to.be.undefined;
     });
@@ -87,14 +86,14 @@ describe('edges', () => {
         const handlingUnitsField = deliveryType.getFieldOrThrow('handlingUnits');
         const deliveryField = handlingUnitType.getFieldOrThrow('delivery');
 
-        function checkEdgeType(edgeType: EdgeType) {
+        function checkEdgeType(edgeType: Relation) {
             expect(edgeType.fromType).to.equal(deliveryType);
             expect(edgeType.fromField).to.equal(handlingUnitsField);
             expect(edgeType.toType).to.equal(handlingUnitType);
             expect(edgeType.toField).to.equal(deliveryField);
         }
 
-        checkEdgeType(getEdgeType(handlingUnitsField));
-        checkEdgeType(getEdgeType(deliveryField));
+        checkEdgeType(handlingUnitsField.getRelationOrThrow());
+        checkEdgeType(deliveryField.getRelationOrThrow());
     });
 });

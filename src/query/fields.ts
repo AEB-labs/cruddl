@@ -4,7 +4,6 @@ import {
     VariableQueryNode
 } from './definition';
 import { ID_FIELD } from '../schema/schema-defaults';
-import { getEdgeType } from '../schema/edges';
 import { createSafeListQueryNode } from './queries';
 import { Field, ObjectType, RootEntityType, TypeKind } from '../model';
 
@@ -58,8 +57,8 @@ export function createNonListFieldValueNode(params: {field: Field, parentType: O
 }
 
 function createTo1RelationNode(field: Field, objectNode: QueryNode): QueryNode {
-    const edgeType = getEdgeType(field);
-    const followNode = new FollowEdgeQueryNode(edgeType, objectNode, edgeType.getRelationFieldEdgeSide(field));
+    const relation = field.getRelationOrThrow();
+    const followNode = new FollowEdgeQueryNode(relation, objectNode, relation.getFieldSide(field));
     return new FirstOfListQueryNode(followNode);
 }
 
@@ -96,6 +95,6 @@ export function createListFieldValueNode(params: { field: Field, objectNode: Que
 }
 
 function createToNRelationQueryNode(field: Field, parentType: ObjectType, sourceEntityNode: QueryNode): QueryNode {
-    const edgeType = getEdgeType(field);
-    return new FollowEdgeQueryNode(edgeType, sourceEntityNode, edgeType.getRelationFieldEdgeSide(field));
+    const relation = field.getRelationOrThrow();
+    return new FollowEdgeQueryNode(relation, sourceEntityNode, relation.getFieldSide(field));
 }
