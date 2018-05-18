@@ -1,5 +1,5 @@
 import { ValidationMessage } from '../validation';
-import { PermissionProfileConfigMap } from '../../authorization/permission-profile';
+import { PermissionProfileConfigMap } from '../../model';
 import { TypeConfig } from './type';
 
 export interface ModelConfig {

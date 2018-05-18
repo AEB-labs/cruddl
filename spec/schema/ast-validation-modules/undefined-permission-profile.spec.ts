@@ -1,4 +1,4 @@
-import { PermissionProfileConfig } from '../../../src/authorization/permission-profile';
+import { PermissionProfileConfig } from '../../../src/model';
 import { expect } from 'chai';
 import { assertValidatorRejects, validate } from './helpers';
 

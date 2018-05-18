@@ -1,8 +1,7 @@
-import { Model, TypeKind } from '../../../src/model';
+import { Model, PermissionProfileConfigMap, TypeKind } from '../../../src/model';
 import { expectSingleErrorToInclude, expectToBeValid, validate } from './validation-utils';
 import { expect } from 'chai';
 import { Severity } from '../../../src/model/validation';
-import { PermissionProfileConfigMap } from '../../../src/authorization/permission-profile';
 
 describe('Model', () => {
     const permissionProfiles: PermissionProfileConfigMap = {

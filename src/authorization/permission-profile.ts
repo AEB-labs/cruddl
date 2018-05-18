@@ -1,32 +1,11 @@
 import { WILDCARD_CHARACTER } from '../schema/schema-defaults';
 import { escapeRegExp, mapValues } from '../utils/utils';
 import { AccessOperation, AuthContext } from './auth-basics';
-
-export type PermissionProfileConfigMap = { [name: string]: { permissions: PermissionConfig[] } }
-
-export interface PermissionProfileConfig {
-    permissions: PermissionConfig[]
-}
+import { PermissionAccessKind, PermissionConfig, PermissionProfileConfig, PermissionProfileConfigMap } from '../model';
 
 export function createPermissionMap(map: PermissionProfileConfigMap = {}) {
     return mapValues(map, (profile, name) => new PermissionProfile(name, profile));
 }
-
-export interface PermissionConfig {
-    /**
-     * Roles this permission is granted to. May use wildcards
-     */
-    roles: string[]
-
-    access: PermissionAccessKind
-
-    /**
-     * If specified, the permission is only granted for objects with certain access groups
-     */
-    restrictToAccessGroups?: string[]
-}
-
-export type PermissionAccessKind = "read"|"readWrite";
 
 export type PermissionProfileMap = { [name: string]: PermissionProfile }
 
