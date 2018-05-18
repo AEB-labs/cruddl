@@ -7,8 +7,9 @@ import { getAQLQuery } from '../../src/database/arangodb/aql-generator';
 import { QueryNode } from '../../src/query/definition';
 import { compact } from '../../src/utils/utils';
 import { applyAuthorizationToQueryTree } from '../../src/authorization/execution';
-import { loadProjectFromDir } from '../../src/project/project-from-fs';
-import { createTestSchema } from './support/helpers';
+import { Project } from '../../src/project/project';
+import { createTestProject } from './support/helpers';
+import { Model } from '../../src/model';
 
 const QUERIES = [
 `{
@@ -91,11 +92,11 @@ interface PreparedQuery {
     authorizedQueryTree: QueryNode;
 }
 
-function prepareQuery(gql: string, schema: GraphQLSchema): PreparedQuery {
+function prepareQuery(gql: string, schema: GraphQLSchema, model: Model): PreparedQuery {
     const document = parse(gql);
     validate(schema, document);
     const distilledOperation = distillQuery(document, schema, {});
-    const queryTree = createQueryTree(distilledOperation);
+    const queryTree = createQueryTree(distilledOperation, model);
     const authorizedQueryTree = applyAuthorizationToQueryTree(queryTree,  { authRoles: []});
     return {
         gql,
@@ -115,6 +116,7 @@ function testQueryPipeline(params: { parser: boolean, queryDistiller: boolean, q
     ]).join(', ');
 
     let schema: GraphQLSchema;
+    let model: Model;
     let preparedQueries: PreparedQuery[];
 
     return {
@@ -122,8 +124,10 @@ function testQueryPipeline(params: { parser: boolean, queryDistiller: boolean, q
         isSync: true,
         initialCount: params.aql ? 10000 : 100000,
         async beforeAll() {
-            schema = await createTestSchema(path.resolve(__dirname, '../regression/logistics/model'));
-            preparedQueries = QUERIES.map(gql => prepareQuery(gql, schema));
+            const res = await createTestProject(path.resolve(__dirname, '../regression/logistics/model'));
+            schema = res.schema;
+            model = res.project.getModel();
+            preparedQueries = QUERIES.map(gql => prepareQuery(gql, schema, model));
         },
         fn() {
             const preparedQuery = preparedQueries[Math.floor(Math.random() * preparedQueries.length)];
@@ -134,7 +138,7 @@ function testQueryPipeline(params: { parser: boolean, queryDistiller: boolean, q
                 distillQuery(preparedQuery.document, schema, {});
             }
             if (params.queryTree) {
-                createQueryTree(preparedQuery.distilledOperation);
+                createQueryTree(preparedQuery.distilledOperation, model);
             }
             if (params.auth) {
                 applyAuthorizationToQueryTree(preparedQuery.queryTree, { authRoles: []});

@@ -390,9 +390,10 @@ export class AQLCompoundQuery extends AQLFragment {
         }
 
         const executableQuery = new AQLExecutableQuery(code, boundValues, usedResultNames, queryResultName, queryResultValidator);
-        executableQueries.push(executableQuery);
-
-        return executableQueries;
+        return [
+            ...executableQueries,
+            executableQuery
+        ];
     }
 
     //TODO Refactor the following three methods. AQLCompoundQuery isn't a real AQLFragment.

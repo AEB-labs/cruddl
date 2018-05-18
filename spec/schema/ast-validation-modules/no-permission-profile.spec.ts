@@ -1,14 +1,5 @@
-import {ValidationResult} from "../../../src/schema/preparation/ast-validator";
-import {parse} from "graphql";
-import {
-    RootEntitiesWithoutReadRolesValidator,
-    VALIDATION_WARNING_MISSING_ROLE_ON_ROOT_ENTITY
-} from "../../../src/schema/preparation/ast-validation-modules/root-entities-without-read-roles";
-import {
-    NoPermissionProfileValidator, VALIDATION_ERROR_NO_PERMISSION_PROFILE
-} from '../../../src/schema/preparation/ast-validation-modules/no-permission-profile';
-import { DEFAULT_PERMISSION_PROFILE } from '../../../src/schema/schema-defaults';
 import { expect } from 'chai';
+import { validate } from './helpers';
 
 const modelWithRootEntityWithoutRole = `
             type Stuff @rootEntity {
@@ -28,30 +19,38 @@ const modelWithRootEntityWithRole = `
             }
         `;
 describe('no-permission-profile validator', () => {
+
     it('rejects missing @roles', () => {
-        const ast = parse(modelWithRootEntityWithoutRole);
-        const validationResult = new ValidationResult(new NoPermissionProfileValidator().validate(ast, {}));
+        const validationResult = validate(modelWithRootEntityWithoutRole, {permissionProfiles: {}});
         expect(validationResult.hasErrors()).to.be.true;
-        expect(validationResult.messages.length).to.equal(1);
-        expect(validationResult.messages[0].message).to.equal(VALIDATION_ERROR_NO_PERMISSION_PROFILE);
+        expect(validationResult.messages.length, validationResult.toString()).to.equal(1);
+        expect(validationResult.messages[0].message).to.equal('No permissions specified for root entity "Stuff". Specify "permissionProfile" in @rootEntity, use the @roles directive, or add a permission profile with the name "default".');
     });
 
     it('accepts with default permission profile', () => {
-        const ast = parse(modelWithRootEntityWithoutRole);
-        const validationResult = new ValidationResult(new NoPermissionProfileValidator().validate(ast, {permissionProfiles:{[DEFAULT_PERMISSION_PROFILE]: {permissions:[]}}}));
-        expect(validationResult.hasErrors()).to.be.false;
+        const validationResult = validate(modelWithRootEntityWithoutRole);
+        expect(validationResult.hasErrors(), validationResult.toString()).to.be.false;
     });
 
     it('accepts with specified permission profile', () => {
-        const ast = parse(modelWithRootEntityWithPermissionProfile);
-        const validationResult = new ValidationResult(new NoPermissionProfileValidator().validate(ast, {}));
-        expect(validationResult.hasErrors()).to.be.false;
+        const validationResult = validate(modelWithRootEntityWithPermissionProfile, {
+            permissionProfiles: {
+                test: {
+                    permissions: [
+                        {
+                            access: 'read',
+                            roles: ['admin']
+                        }
+                    ]
+                }
+            }
+        });
+        expect(validationResult.hasErrors(), validationResult.toString()).to.be.false;
     });
 
     it('accepts with roles', () => {
-        const ast = parse(modelWithRootEntityWithRole);
-        const validationResult = new ValidationResult(new NoPermissionProfileValidator().validate(ast, {}));
-        expect(validationResult.hasErrors()).to.be.false;
+        const validationResult = validate(modelWithRootEntityWithRole, {permissionProfiles: {}});
+        expect(validationResult.hasErrors(), validationResult.toString()).to.be.false;
     });
 
 });

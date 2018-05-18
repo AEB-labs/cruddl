@@ -1,1 +1,1 @@
---require ts-node/register --require ./spec/init.mocha.ts ./spec/**/*.spec.ts
+--require ts-node/register --require ./spec/init.mocha.ts ./spec/**/*.spec.ts --timeout 5000

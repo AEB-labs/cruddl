@@ -1,13 +1,12 @@
 import {
-    PermissionResult, PermissionDescriptor, ProfileBasedPermissionDescriptor
+    PermissionDescriptor, PermissionResult, ProfileBasedPermissionDescriptor
 } from '../../src/authorization/permission-descriptors';
-import { PermissionProfile } from '../../src/authorization/permission-profile';
+import { Model, PermissionProfile, TypeKind } from '../../src/model';
 import { AccessOperation, AuthContext } from '../../src/authorization/auth-basics';
 import {
     BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, FieldQueryNode, LiteralQueryNode, QueryNode,
     VariableQueryNode
 } from '../../src/query/definition';
-import { GraphQLObjectType, GraphQLString } from 'graphql';
 import { ACCESS_GROUP_FIELD } from '../../src/schema/schema-defaults';
 import { expect } from 'chai';
 
@@ -38,7 +37,7 @@ describe('PermissionDescriptor', () => {
 });
 
 describe('ProfileBasedPermissionDescriptor', () => {
-    const profile = new PermissionProfile({
+    const profile = new PermissionProfile('permissions', {
         permissions: [{
             access: 'read',
             roles: [ 'theRole' ]
@@ -48,8 +47,19 @@ describe('ProfileBasedPermissionDescriptor', () => {
             restrictToAccessGroups: [ 'groupA', 'groupB' ]
         }]
     });
-    const objectType = new GraphQLObjectType({ name: 'Test', fields: { [ACCESS_GROUP_FIELD]: { type: GraphQLString }}});
-    const descriptor = new ProfileBasedPermissionDescriptor(profile, objectType);
+    const model = new Model({
+        types: [{
+            kind: TypeKind.ROOT_ENTITY,
+            name: 'Test',
+            fields: [
+                {
+                    name: ACCESS_GROUP_FIELD,
+                    typeName: 'String'
+                }
+            ]
+        }]
+    });
+    const descriptor = new ProfileBasedPermissionDescriptor(profile, model.getRootEntityTypeOrThrow('Test'));
 
     it('grants access if role matches', () => {
         expect(descriptor.canAccess({ authRoles: [ 'theRole', 'other' ]}, AccessOperation.READ)).to.equal(PermissionResult.GRANTED);

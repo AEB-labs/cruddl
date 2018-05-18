@@ -7,6 +7,7 @@ import * as path from 'path';
 import { SchemaContext } from '../../../src/config/global';
 import { Log4jsLoggerProvider } from '../../helpers/log4js-logger-provider';
 import { loadProjectFromDir } from '../../../src/project/project-from-fs';
+import { Project } from '../../../src/project/project';
 
 // arangojs typings for this are completely broken
 export const aql: (template: TemplateStringsArray, ...args: any[]) => any = require('arangojs').aql;
@@ -20,11 +21,12 @@ export interface TestEnvironment {
 
 const schemaContext: SchemaContext = { loggerProvider: new Log4jsLoggerProvider('warn') };
 
-export async function createTestSchema(modelPath: string): Promise<GraphQLSchema> {
+export async function createTestProject(modelPath: string): Promise<{project: Project, schema: GraphQLSchema}> {
     const project = await loadProjectFromDir(MODEL_PATH, schemaContext);
     const dbConfig = await createTempDatabase();
     const dbAdapter = new ArangoDBAdapter(dbConfig, schemaContext);
-    return project.createSchema(dbAdapter);
+    const schema = project.createSchema(dbAdapter);
+    return { project, schema };
 }
 
 export async function initEnvironment(): Promise<TestEnvironment> {
@@ -32,7 +34,7 @@ export async function initEnvironment(): Promise<TestEnvironment> {
     const project = await loadProjectFromDir(MODEL_PATH, schemaContext);
     const dbAdapter = new ArangoDBAdapter(dbConfig, schemaContext);
     const schema = project.createSchema(dbAdapter);
-    await dbAdapter.updateSchema(schema);
+    await dbAdapter.updateSchema(project.getModel());
 
     return {
         getDB() {

@@ -384,9 +384,10 @@ export class JSCompoundQuery extends JSFragment {
         }
 
         const executableQuery = new JSExecutableQuery(code, boundValues, usedResultNames, queryResultName, queryResultValidator);
-        executableQueries.push(executableQuery);
-
-        return executableQueries;
+        return [
+            ...executableQueries,
+            executableQuery
+        ];
     }
 
     //TODO Refactor the following three methods. JSCompoundQuery isn't a real JSFragment.

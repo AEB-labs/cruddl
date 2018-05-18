@@ -18,9 +18,7 @@ import { AddMetaFieldsAlongWithFilterableFieldsTransformer } from './post-merge-
 import { AddQueryMetaTypeTransformer } from './post-merge-ast-transformation-modules/add-query-meta-type-transformer';
 import { SchemaPartConfig } from '../../config/schema-config';
 import { AddNamespacesToTypesTransformer } from './pre-merge-ast-transformation-modules/add-namespaces-to-types-transformer';
-import { PermissionProfileMap } from '../../authorization/permission-profile';
-import { AddPermissionDescriptorsTransformer } from './schema-transformation-modules/add-permission-descriptors';
-import { MoveUpFieldIndicesTransformer } from './pre-merge-ast-transformation-modules/move-up-field-indices-transformer';
+import { Model, PermissionProfileMap } from '../../model';
 import { ImplementScalarTypesTransformer } from './schema-transformation-modules/implement-scalar-types';
 import { DatabaseAdapter } from '../../database/database-adapter';
 import { AddAliasBasedResolversTransformer } from './schema-transformation-modules/add-alias-based-resolvers';
@@ -29,8 +27,7 @@ import { SchemaContext } from '../../config/global';
 import { AddOperationResolversTransformer } from './schema-transformation-modules/add-operation-resolvers';
 
 const preMergePipeline: ASTTransformer[] = [
-    new AddNamespacesToTypesTransformer(),
-    new MoveUpFieldIndicesTransformer()
+    new AddNamespacesToTypesTransformer()
 ];
 
 const postMergePipeline: ASTTransformer[] = [
@@ -70,7 +67,6 @@ const postMergePipeline: ASTTransformer[] = [
 
 const schemaPipeline: SchemaTransformer[] = [
     new ImplementScalarTypesTransformer(),
-    new AddPermissionDescriptorsTransformer(),
 
     // this is needed because the query tree already does the alias handling and stores the values in the places where
     // the user expects it - GraphQL should not mess with this by using the *field* instead of the alias in the resolvers
@@ -81,24 +77,24 @@ const schemaPipeline: SchemaTransformer[] = [
     new AddRuntimeErrorResolversTransformer()
 ];
 
-export function executePostMergeTransformationPipeline(ast: DocumentNode, context: ASTTransformationContext) {
-    postMergePipeline.forEach(transformer => transformer.transform(ast, context));
+export function executePostMergeTransformationPipeline(ast: DocumentNode, context: ASTTransformationContext, model: Model) {
+    postMergePipeline.forEach(transformer => transformer.transform(ast, context, model));
 }
 
-export function executePreMergeTransformationPipeline(schemaParts: SchemaPartConfig[], rootContext: ASTTransformationContext) {
+export function executePreMergeTransformationPipeline(schemaParts: SchemaPartConfig[], rootContext: ASTTransformationContext, model: Model) {
     schemaParts.forEach(schemaPart =>
         preMergePipeline.forEach(transformer => {
             if (schemaPart.document instanceof Source) {
                 throw new Error('Expected source with DocumentType');
             }
             const { document, ...context } = schemaPart;
-            transformer.transform(schemaPart.document, { ...rootContext, ...context })
+            transformer.transform(schemaPart.document, { ...rootContext, ...context }, model)
         })
     ) ;
 }
 
-export function executeSchemaTransformationPipeline(schema: GraphQLSchema, context: SchemaTransformationContext): GraphQLSchema {
-    return schemaPipeline.reduce((s, transformer) => transformer.transform(s, context), schema);
+export function executeSchemaTransformationPipeline(schema: GraphQLSchema, context: SchemaTransformationContext, model: Model): GraphQLSchema {
+    return schemaPipeline.reduce((s, transformer) => transformer.transform(s, context, model), schema);
 }
 
 export interface ASTTransformationContext {
@@ -113,9 +109,9 @@ export interface SchemaTransformationContext extends ASTTransformationContext, S
 }
 
 export interface ASTTransformer {
-    transform(ast: DocumentNode, context: ASTTransformationContext): void;
+    transform(ast: DocumentNode, context: ASTTransformationContext, model: Model): void;
 }
 
 export interface SchemaTransformer {
-    transform(schema: GraphQLSchema, context: SchemaTransformationContext): GraphQLSchema;
+    transform(schema: GraphQLSchema, context: SchemaTransformationContext, model: Model): GraphQLSchema;
 }

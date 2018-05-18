@@ -1,14 +1,13 @@
 import { decapitalize } from '../../utils/utils';
-import { getPermissionDescriptor } from '../permission-descriptors-in-schema';
 import { AccessOperation, AuthContext, AUTHORIZATION_ERROR_NAME } from '../auth-basics';
 import {
     BinaryOperationQueryNode, BinaryOperator, ConstIntQueryNode, CountQueryNode, DeleteEntitiesQueryNode,
-    EntitiesQueryNode, FieldQueryNode, MergeObjectsQueryNode, ObjectQueryNode,
-    PreExecQueryParms, QueryNode, RuntimeErrorQueryNode, TransformListQueryNode, UnaryOperationQueryNode, UnaryOperator,
-    UpdateEntitiesQueryNode, VariableQueryNode, WithPreExecutionQueryNode
+    MergeObjectsQueryNode, ObjectQueryNode, PreExecQueryParms, QueryNode, RuntimeErrorQueryNode, TransformListQueryNode,
+    UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableQueryNode, WithPreExecutionQueryNode
 } from '../../query/definition';
 import { ConditionExplanationContext, PermissionResult } from '../permission-descriptors';
 import { ErrorIfNotTruthyResultValidator } from '../../query/query-result-validators';
+import { getPermissionDescriptorOfRootEntityType } from '../permission-descriptors-in-model';
 
 export function transformUpdateEntitiesQueryNode(node: UpdateEntitiesQueryNode, authContext: AuthContext): QueryNode {
     return transformUpdateOrDeleteEntitiesQueryNode(node, authContext, 'update');
@@ -19,12 +18,12 @@ export function transformDeleteEntitiesQueryNode(node: DeleteEntitiesQueryNode, 
 }
 
 function transformUpdateOrDeleteEntitiesQueryNode(node: UpdateEntitiesQueryNode|DeleteEntitiesQueryNode, authContext: AuthContext, actionDescription: string): QueryNode {
-    const permissionDescriptor = getPermissionDescriptor(node.objectType);
+    const permissionDescriptor = getPermissionDescriptorOfRootEntityType(node.rootEntityType);
     const access = permissionDescriptor.canAccess(authContext, AccessOperation.WRITE);
 
     switch (access) {
         case PermissionResult.DENIED:
-            return new RuntimeErrorQueryNode(`${AUTHORIZATION_ERROR_NAME}: Not authorized to ${actionDescription} ${node.objectType.name} objects`);
+            return new RuntimeErrorQueryNode(`${AUTHORIZATION_ERROR_NAME}: Not authorized to ${actionDescription} ${node.rootEntityType.name} objects`);
         case PermissionResult.GRANTED:
             return node;
     }
@@ -36,7 +35,7 @@ function transformUpdateOrDeleteEntitiesQueryNode(node: UpdateEntitiesQueryNode|
     // in the general case, structural equality for literal values may not be the best thing for filters
 
     // see if any entities matched by the filter are write-restricted
-    const listItemVar = new VariableQueryNode(decapitalize(node.objectType.name));
+    const listItemVar = new VariableQueryNode(decapitalize(node.rootEntityType.name));
     const rawWriteCondition = permissionDescriptor.getAccessCondition(authContext, AccessOperation.WRITE, listItemVar);
     const canWrite = getIsTrueInEachItemQueryNode(node.listNode, listItemVar, rawWriteCondition);
     const explanation = permissionDescriptor.getExplanationForCondition(authContext, AccessOperation.WRITE, ConditionExplanationContext.BEFORE_WRITE);

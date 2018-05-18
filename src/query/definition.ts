@@ -1,6 +1,5 @@
-import { GraphQLField, GraphQLObjectType } from 'graphql';
 import { compact, indent } from '../utils/utils';
-import { EdgeType, RelationFieldEdgeSide } from '../schema/edges';
+import { Field, Relation, RelationFieldSide, RootEntityType } from '../model';
 import { QueryResultValidator } from './query-result-validators';
 import { blue, cyan, green, magenta, red } from 'colors/safe';
 
@@ -202,12 +201,12 @@ export class WithPreExecutionQueryNode extends QueryNode {
 }
 
 export class EntityFromIdQueryNode extends QueryNode {
-    constructor(public readonly objectType: GraphQLObjectType, public readonly idNode: QueryNode) {
+    constructor(public readonly rootEntityType: RootEntityType, public readonly idNode: QueryNode) {
         super();
     }
 
     public describe() {
-        return `${blue(this.objectType.name)} with id (${this.idNode.describe()})`;
+        return `${blue(this.rootEntityType.name)} with id (${this.idNode.describe()})`;
     }
 }
 
@@ -309,7 +308,7 @@ export class ConstIntQueryNode extends QueryNode {
  * (this is Arango logic and we currently rely on it in createScalarFieldPathValueNode()
  */
 export class FieldQueryNode extends QueryNode {
-    constructor(public readonly objectNode: QueryNode, public readonly field: GraphQLField<any, any>, public readonly objectType: GraphQLObjectType) {
+    constructor(public readonly objectNode: QueryNode, public readonly field: Field) {
         super();
     }
 
@@ -536,12 +535,12 @@ export enum BinaryOperator {
  * A node that evaluates in the list of entities of a given type. use ListQueryNode to further process them
  */
 export class EntitiesQueryNode extends QueryNode {
-    constructor(public readonly objectType: GraphQLObjectType) {
+    constructor(public readonly rootEntityType: RootEntityType) {
         super();
     }
 
     describe() {
-        return `entities of type ${blue(this.objectType.name)}`;
+        return `entities of type ${blue(this.rootEntityType.name)}`;
     }
 }
 
@@ -691,16 +690,16 @@ export enum OrderDirection {
  * Evaluates to all root entitites that are connected to a specific root entitity through a specific edge
  */
 export class FollowEdgeQueryNode extends QueryNode {
-    constructor(readonly edgeType: EdgeType, readonly sourceEntityNode: QueryNode, readonly sourceFieldSide: RelationFieldEdgeSide) {
+    constructor(readonly relation: Relation, readonly sourceEntityNode: QueryNode, readonly sourceFieldSide: RelationFieldSide) {
         super();
     }
 
     describe() {
         switch (this.sourceFieldSide) {
-            case RelationFieldEdgeSide.FROM_SIDE:
-                return `follow forward ${blue(this.edgeType.toString())} of ${this.sourceEntityNode.describe()}`;
-            case RelationFieldEdgeSide.TO_SIDE:
-                return `follow backward ${blue(this.edgeType.toString())} of ${this.sourceEntityNode.describe()}`;
+            case RelationFieldSide.FROM_SIDE:
+                return `follow forward ${blue(this.relation.toString())} of ${this.sourceEntityNode.describe()}`;
+            case RelationFieldSide.TO_SIDE:
+                return `follow backward ${blue(this.relation.toString())} of ${this.sourceEntityNode.describe()}`;
         }
     }
 }
@@ -709,12 +708,12 @@ export class FollowEdgeQueryNode extends QueryNode {
  * A node that creates a new entity and evaluates to that new entity object
  */
 export class CreateEntityQueryNode extends QueryNode {
-    constructor(public readonly objectType: GraphQLObjectType, public readonly objectNode: QueryNode, public readonly affectedFields: AffectedFieldInfoQueryNode[]) {
+    constructor(public readonly rootEntityType: RootEntityType, public readonly objectNode: QueryNode, public readonly affectedFields: AffectedFieldInfoQueryNode[]) {
         super();
     }
 
     describe() {
-        return `create ${this.objectType.name} entity with values ${this.objectNode.describe()} (affects fields ${this.affectedFields.map(f => f.describe()).join(', ')})`;
+        return `create ${this.rootEntityType.name} entity with values ${this.objectNode.describe()} (affects fields ${this.affectedFields.map(f => f.describe()).join(', ')})`;
     }
 }
 
@@ -722,12 +721,12 @@ export class CreateEntityQueryNode extends QueryNode {
  * A node that indicates that a field of a node is set, without being evaluated
  */
 export class AffectedFieldInfoQueryNode extends QueryNode {
-    constructor(public readonly objectType: GraphQLObjectType, public readonly field: GraphQLField<any, any>) {
+    constructor(public readonly field: Field) {
         super();
     }
 
     describe() {
-        return `${this.objectType}.${this.field.name}`;
+        return `${this.field.declaringType.name}.${this.field.name}`;
     }
 }
 
@@ -749,28 +748,28 @@ export class AffectedFieldInfoQueryNode extends QueryNode {
  */
 export class UpdateEntitiesQueryNode extends QueryNode {
     constructor(params: {
-        objectType: GraphQLObjectType,
+        rootEntityType: RootEntityType,
         listNode: QueryNode,
         updates: SetFieldQueryNode[],
         currentEntityVariable?: VariableQueryNode,
         affectedFields: AffectedFieldInfoQueryNode[]
     }) {
         super();
-        this.objectType = params.objectType;
+        this.rootEntityType = params.rootEntityType;
         this.listNode = params.listNode;
         this.updates = params.updates;
         this.currentEntityVariable = params.currentEntityVariable || new VariableQueryNode();
         this.affectedFields = params.affectedFields;
     }
 
-    public readonly objectType: GraphQLObjectType;
+    public readonly rootEntityType: RootEntityType;
     public readonly listNode: QueryNode;
     public readonly updates: SetFieldQueryNode[];
     public readonly currentEntityVariable: VariableQueryNode;
     public readonly affectedFields: AffectedFieldInfoQueryNode[];
 
     describe() {
-        return `update ${this.objectType.name} entities in (\n` +
+        return `update ${this.rootEntityType.name} entities in (\n` +
             indent(this.listNode.describe()) + '\n) ' +
             `with values (${this.currentEntityVariable.describe()} => {\n` +
             indent(this.updates.map(p => p.describe()).join(',\n')) +
@@ -782,8 +781,7 @@ export class UpdateEntitiesQueryNode extends QueryNode {
  * Specifies one property of a an ObjectQueryNode, and indicates that this will set a field of an object
  */
 export class SetFieldQueryNode extends PropertySpecification {
-    constructor(public readonly field: GraphQLField<any, any>,
-                public readonly objectType: GraphQLObjectType,
+    constructor(public readonly field: Field,
                 public readonly valueNode: QueryNode) {
         super(field.name, valueNode);
     }
@@ -794,22 +792,22 @@ export class SetFieldQueryNode extends PropertySpecification {
  */
 export class DeleteEntitiesQueryNode extends QueryNode {
     constructor(params: {
-        objectType: GraphQLObjectType,
+        rootEntityType: RootEntityType,
         listNode: QueryNode,
         currentEntityVariable?: VariableQueryNode
     }) {
         super();
-        this.objectType = params.objectType;
+        this.rootEntityType = params.rootEntityType;
         this.listNode = params.listNode;
         this.currentEntityVariable = params.currentEntityVariable || new VariableQueryNode();
     }
 
-    public readonly objectType: GraphQLObjectType;
+    public readonly rootEntityType: RootEntityType;
     public readonly listNode: QueryNode;
     public readonly currentEntityVariable: VariableQueryNode;
 
     describe() {
-        return `delete ${this.objectType.name} entities in (\n` +
+        return `delete ${this.rootEntityType.name} entities in (\n` +
             indent(this.listNode.describe()) + '\n)';
     }
 }
@@ -819,24 +817,24 @@ export class AddEdgesQueryNode extends QueryNode {
     // TODO: accept one QueryNode which evaluates to the lits of edge ids somehow?
     // (currently, adding 50 edges generates 50 bound variables with the literal values)
 
-    constructor(readonly edgeType: EdgeType, readonly edges: EdgeIdentifier[]) {
+    constructor(readonly relation: Relation, readonly edges: EdgeIdentifier[]) {
         super();
     }
 
     describe() {
-        return `add edges to ${this.edgeType}: [\n` +
+        return `add edges to ${this.relation}: [\n` +
             indent(this.edges.map(edge => edge.describe()).join(',\n')) +
             `\n]`;
     }
 }
 
 export class RemoveEdgesQueryNode extends QueryNode {
-    constructor(readonly edgeType: EdgeType, readonly edgeFilter: EdgeFilter) {
+    constructor(readonly relation: Relation, readonly edgeFilter: EdgeFilter) {
         super();
     }
 
     describe() {
-        return `remove edges from ${this.edgeType} matching ${this.edgeFilter.describe()}`;
+        return `remove edges from ${this.relation} matching ${this.edgeFilter.describe()}`;
     }
 }
 
@@ -845,19 +843,19 @@ export class RemoveEdgesQueryNode extends QueryNode {
  * creates newEge.
  */
 export class SetEdgeQueryNode extends QueryNode {
-    constructor(params: { edgeType: EdgeType, existingEdgeFilter: PartialEdgeIdentifier, newEdge: EdgeIdentifier }) {
+    constructor(params: { relation: Relation, existingEdgeFilter: PartialEdgeIdentifier, newEdge: EdgeIdentifier }) {
         super();
-        this.edgeType = params.edgeType;
+        this.relation = params.relation;
         this.existingEdge = params.existingEdgeFilter;
         this.newEdge = params.newEdge;
     }
 
-    readonly edgeType: EdgeType;
+    readonly relation: Relation;
     readonly existingEdge: PartialEdgeIdentifier;
     readonly newEdge: EdgeIdentifier;
 
     describe() {
-        return `replace edge ${this.existingEdge.describe()} by ${this.newEdge.describe()} in ${this.edgeType}`;
+        return `replace edge ${this.existingEdge.describe()} by ${this.newEdge.describe()} in ${this.relation}`;
     }
 }
 

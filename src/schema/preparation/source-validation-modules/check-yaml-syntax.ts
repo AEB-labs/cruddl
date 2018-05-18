@@ -1,7 +1,6 @@
 import { SourceValidator } from '../ast-validator';
 import { ProjectSource, SourceType } from '../../../project/source';
-import { MessageLocation, SourcePosition, ValidationMessage } from '../validation-message';
-import { getLocation, GraphQLError, parse, Source } from 'graphql';
+import { MessageLocation, SourcePosition, ValidationMessage } from '../../../model';
 import { load, YAMLException } from 'js-yaml';
 
 export class CheckYamlSyntaxValidator implements SourceValidator {

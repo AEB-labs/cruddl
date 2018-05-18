@@ -1,5 +1,5 @@
-import {DocumentNode, Source} from "graphql";
-import { PermissionProfileConfigMap } from '../authorization/permission-profile';
+import { DocumentNode } from 'graphql';
+import { PermissionProfileConfigMap } from '../model';
 
 export interface SchemaConfig {
     /**

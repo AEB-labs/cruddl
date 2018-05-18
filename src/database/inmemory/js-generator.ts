@@ -7,13 +7,12 @@ import {
     TransformListQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode,
     VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode
 } from '../../query/definition';
-import { js, JSCompoundQuery, JSExecutableQuery, JSFragment, JSQueryResultVariable, JSVariable } from './js';
-import { GraphQLNamedType } from 'graphql';
+import { js, JSCompoundQuery, JSFragment, JSQueryResultVariable, JSVariable } from './js';
 import { QueryResultValidator } from '../../query/query-result-validators';
 import { RUNTIME_ERROR_TOKEN } from '../../query/runtime-errors';
-import { decapitalize, flatMap } from '../../utils/utils';
-import { getCollectionNameForEdge, getCollectionNameForRootEntity } from './inmemory-basics';
-import { EdgeType, invertRelationFieldEdgeSide, RelationFieldEdgeSide } from '../../schema/edges';
+import { decapitalize } from '../../utils/utils';
+import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './inmemory-basics';
+import { invertRelationFieldSide, Relation, RelationFieldSide, RootEntityType } from '../../model';
 import { compact } from 'lodash';
 
 const ID_FIELD_NAME = 'id';
@@ -225,9 +224,9 @@ const processors : { [name: string]: NodeProcessor<any> } = {
     },
 
     EntityFromId(node:  EntityFromIdQueryNode, context): JSFragment {
-        const itemVariable = new VariableQueryNode(decapitalize(node.objectType.name));
+        const itemVariable = new VariableQueryNode(decapitalize(node.rootEntityType.name));
         return processNode(new FirstOfListQueryNode(new TransformListQueryNode({
-            listNode: new EntitiesQueryNode(node.objectType),
+            listNode: new EntitiesQueryNode(node.rootEntityType),
             itemVariable,
             filterNode: new BinaryOperationQueryNode(new RootEntityIDQueryNode(itemVariable), BinaryOperator.EQUAL, node.idNode)
         })), context);
@@ -373,17 +372,17 @@ const processors : { [name: string]: NodeProcessor<any> } = {
     },
 
     Entities(node: EntitiesQueryNode, context): JSFragment {
-        return getCollectionForType(node.objectType, context);
+        return getCollectionForType(node.rootEntityType, context);
     },
 
     FollowEdge(node: FollowEdgeQueryNode, context): JSFragment {
-        const targetType = node.edgeType.getTypeOfSide(invertRelationFieldEdgeSide(node.sourceFieldSide));
+        const targetType = node.relation.getTypeOfSide(invertRelationFieldSide(node.sourceFieldSide));
         const targetColl = getCollectionForType(targetType, context);
-        const edgeColl = getCollectionForEdge(node.edgeType, context);
+        const edgeColl = getCollectionForRelation(node.relation, context);
         const edgeVar = js.variable('edge');
         const itemVar = js.variable(decapitalize(targetType.name));
-        const sourceIDOnEdge = node.sourceFieldSide == RelationFieldEdgeSide.FROM_SIDE ? js`${edgeVar}._from` : js`${edgeVar}._to`;
-        const targetIDOnEdge = node.sourceFieldSide == RelationFieldEdgeSide.FROM_SIDE ? js`${edgeVar}._to` : js`${edgeVar}._from`;
+        const sourceIDOnEdge = node.sourceFieldSide == RelationFieldSide.FROM_SIDE ? js`${edgeVar}._from` : js`${edgeVar}._to`;
+        const targetIDOnEdge = node.sourceFieldSide == RelationFieldSide.FROM_SIDE ? js`${edgeVar}._to` : js`${edgeVar}._from`;
         const sourceID = processNode(new RootEntityIDQueryNode(node.sourceEntityNode), context);
         const idOnItem = js`${itemVar}.${js.identifier(ID_FIELD_NAME)}`;
         const idOnItemEqualsTargetIDOnEdge = js`${idOnItem} === ${targetIDOnEdge}`;
@@ -405,7 +404,7 @@ const processors : { [name: string]: NodeProcessor<any> } = {
             js`const ${objVar} = ${processNode(node.objectNode, context)};`,
             js`const ${idVar} = db.generateID();`,
             js`${objVar}.${js.identifier(ID_FIELD_NAME)} = ${idVar};`,
-            js`${js.collection(getCollectionNameForRootEntity(node.objectType))}.push(${objVar});`,
+            js`${js.collection(getCollectionNameForRootEntity(node.rootEntityType))}.push(${objVar});`,
             js`return ${idVar};`
         );
     },
@@ -435,7 +434,7 @@ const processors : { [name: string]: NodeProcessor<any> } = {
         const newContext = context.introduceVariable(node.currentEntityVariable);
         const entityVar = newContext.getVariable(node.currentEntityVariable);
         const listVar = js.variable('objectsToDelete');
-        const coll = js.collection(getCollectionNameForRootEntity(node.objectType));
+        const coll = js.collection(getCollectionNameForRootEntity(node.rootEntityType));
         const idsVar = js.variable('ids');
 
         return jsExt.executingFunction(
@@ -447,7 +446,7 @@ const processors : { [name: string]: NodeProcessor<any> } = {
     },
 
     AddEdges(node: AddEdgesQueryNode, context) {
-        const coll = getCollectionForEdge(node.edgeType, context);
+        const coll = getCollectionForRelation(node.relation, context);
         return jsExt.executingFunction(
             js`${coll}.push(`,
             js.indent(js.lines(...node.edges.map(edge => js`{ _from: ${processNode(edge.fromIDNode, context)}, _to: ${processNode(edge.toIDNode, context)} },`))),
@@ -456,7 +455,7 @@ const processors : { [name: string]: NodeProcessor<any> } = {
     },
 
     RemoveEdges(node: RemoveEdgesQueryNode, context): JSFragment {
-        const coll = getCollectionForEdge(node.edgeType, context);
+        const coll = getCollectionForRelation(node.relation, context);
         const edgeVar = js.variable('edge');
         const fromIDs = node.edgeFilter.fromIDNodes ? js.join(node.edgeFilter.fromIDNodes.map(node => processNode(node, context)), js`, `) : undefined;
         const toIDs = node.edgeFilter.toIDNodes ? js.join(node.edgeFilter.toIDNodes.map(node => processNode(node, context)), js`, `) : undefined;
@@ -472,7 +471,7 @@ const processors : { [name: string]: NodeProcessor<any> } = {
     },
 
     SetEdge(node: SetEdgeQueryNode, context): JSFragment {
-        const coll = getCollectionForEdge(node.edgeType, context);
+        const coll = getCollectionForRelation(node.relation, context);
         const edgeVar = js.variable('edge');
         const edgeRemovalCriteria = compact([
             node.existingEdge.fromIDNode ? js`${edgeVar}._from == ${processNode(node.existingEdge.fromIDNode, context)}` : undefined,
@@ -541,12 +540,12 @@ export function getJSQuery(node: QueryNode): JSCompoundQuery {
     return createJSCompoundQuery(node, js.queryResultVariable('result'), undefined, new QueryContext());
 }
 
-function getCollectionForType(type: GraphQLNamedType, context: QueryContext) {
+function getCollectionForType(type: RootEntityType, context: QueryContext) {
     const name = getCollectionNameForRootEntity(type);
     return js.collection(name);
 }
 
-function getCollectionForEdge(edgeType: EdgeType, context: QueryContext) {
-    const name = getCollectionNameForEdge(edgeType);
+function getCollectionForRelation(relation: Relation, context: QueryContext) {
+    const name = getCollectionNameForRelation(relation);
     return js.collection(name);
 }

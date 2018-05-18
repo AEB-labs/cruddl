@@ -1,6 +1,6 @@
 import { SourceValidator } from '../ast-validator';
 import { ProjectSource, SourceType } from '../../../project/source';
-import { MessageLocation, SourcePosition, ValidationMessage } from '../validation-message';
+import { MessageLocation, SourcePosition, ValidationMessage } from '../../../model';
 import jsonLint = require('json-lint');
 
 interface JSONLintResult {

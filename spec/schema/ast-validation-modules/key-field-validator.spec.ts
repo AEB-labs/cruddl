@@ -1,86 +1,57 @@
-import {ValidationResult} from "../../../src/schema/preparation/ast-validator";
-import {parse} from "graphql";
-import {OnlyAllowedTypesValidator} from "../../../src/schema/preparation/ast-validation-modules/only-allowed-types-validator";
-import {
-    KeyFieldValidator,
-    VALIDATION_ERROR_DUPLICATE_KEY_FIELD, VALIDATION_ERROR_INVALID_KEY_FIELD_LIST_TYPE,
-    VALIDATION_ERROR_INVALID_KEY_FIELD_TYPE, VALIDATION_ERROR_INVALID_OBJECT_TYPE
-} from "../../../src/schema/preparation/ast-validation-modules/key-field-validator";
 import { expect } from 'chai';
+import { assertValidatorAccepts, assertValidatorRejects, validate } from './helpers';
 
-const modelWithTwoKeyFields = `
+describe('key field validator', () => {
+    it('finds duplicate key usage', () => {
+        const validationResult = validate(`
             type Stuff @rootEntity {
                 foo: String @key
                 bar: String @key
             }
-        `;
+        `);
+        expect(validationResult.hasErrors()).to.be.true;
+        expect(validationResult.messages.length, validationResult.toString()).to.equal(2);
+        expect(validationResult.messages[0].message).to.equal('Only one field can be a @key field.');
+        expect(validationResult.messages[1].message).to.equal('Only one field can be a @key field.');
+    });
 
-const modelWithInvalidKeyFieldType = `
+    it('finds bad type usage', () => {
+        assertValidatorRejects(`
             type Stuff @rootEntity {
                 foo: String
                 bar: Bar @key
             }
-            type Bar {
+            type Bar @valueObject {
                 count: Int
             }
-        `;
+        `,
+            'Only fields of scalar type can be used as key field.');
+    });
 
-const modelWithInvalidKeyFieldListType = `
+    it('finds bad list type usage', () => {
+        assertValidatorRejects(`
             type Stuff @rootEntity {
                 foo: String
                 bar: [Int] @key
             }
-        `;
-
-const modelWithInvalidEntityType = `
-            type Stuff @childEntity {
-                foo: String @key
-            }
-        `;
-
-const modelWithCorrectKeyUsage = `
-            type Stuff @rootEntity {
-                foo: String @key
-            }
-        `;
-
-describe('key field validator', () => {
-    it('finds duplicate key usage', () => {
-        const ast = parse(modelWithTwoKeyFields);
-        const validationResult = new ValidationResult(new KeyFieldValidator().validate(ast));
-        expect(validationResult.hasErrors()).to.be.true;
-        expect(validationResult.messages.length).to.equal(1);
-        expect(validationResult.messages[0].message).to.equal(VALIDATION_ERROR_DUPLICATE_KEY_FIELD);
-    });
-
-    it('finds bad type usage', () => {
-        const ast = parse(modelWithInvalidKeyFieldType);
-        const validationResult = new ValidationResult(new KeyFieldValidator().validate(ast));
-        expect(validationResult.hasErrors()).to.be.true;
-        expect(validationResult.messages.length).to.equal(1);
-        expect(validationResult.messages[0].message).to.equal(VALIDATION_ERROR_INVALID_KEY_FIELD_TYPE);
-    });
-
-    it('finds bad list type usage', () => {
-        const ast = parse(modelWithInvalidKeyFieldListType);
-        const validationResult = new ValidationResult(new KeyFieldValidator().validate(ast));
-        expect(validationResult.hasErrors()).to.be.true;
-        expect(validationResult.messages.length).to.equal(1);
-        expect(validationResult.messages[0].message).to.equal(VALIDATION_ERROR_INVALID_KEY_FIELD_LIST_TYPE);
+        `,
+            'List fields cannot be used as key field.');
     });
 
     it('finds bad object type usage', () => {
-        const ast = parse(modelWithInvalidEntityType);
-        const validationResult = new ValidationResult(new KeyFieldValidator().validate(ast));
-        expect(validationResult.hasErrors()).to.be.true;
-        expect(validationResult.messages.length).to.equal(1);
-        expect(validationResult.messages[0].message).to.equal(VALIDATION_ERROR_INVALID_OBJECT_TYPE);
+        assertValidatorRejects(`
+            type Stuff @childEntity {
+                foo: String @key
+            }
+        `,
+            'A @key field can only be declared on root entities.');
     });
 
     it('accepts correct key usage', () => {
-        const ast = parse(modelWithCorrectKeyUsage);
-        const validationResult = new ValidationResult(new KeyFieldValidator().validate(ast));
-        expect(validationResult.hasErrors()).to.be.false;
-        expect(validationResult.messages.length).to.equal(0);
+        assertValidatorAccepts(`
+            type Stuff @rootEntity {
+                foo: String @key
+            }
+        `);
     });
 });

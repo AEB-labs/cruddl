@@ -1,9 +1,14 @@
 import { QueryNode } from '../query/definition';
-import { GraphQLSchema } from 'graphql';
+import { Model } from '../model';
 
 export interface DatabaseAdapter {
+    /**
+     * Executes a query
+     */
     execute(queryTree: QueryNode): Promise<any>;
 
-    // temporary API: should be much simpler parameter
-    updateSchema(schema: GraphQLSchema): Promise<void>;
+    /**
+     * Performs schema migrations if necessary
+     */
+    updateSchema(schema: Model): Promise<void>;
 }

@@ -1,17 +1,17 @@
 import { FieldRequest } from '../graphql/query-distiller';
-import { GraphQLObjectType } from 'graphql';
 import {
     CountQueryNode, ObjectQueryNode, PropertySpecification, QueryNode, TransformListQueryNode, VariableQueryNode
 } from './definition';
 import { createFilterNode } from './filtering';
 import { COUNT_META_FIELD, FILTER_ARG } from '../schema/schema-defaults';
 import { decapitalize } from '../utils/utils';
+import { Type } from '../model';
 
-export function createListMetaNode(fieldRequest: FieldRequest, listNode: QueryNode, objectType: GraphQLObjectType) {
-    const itemVarNode = new VariableQueryNode(decapitalize(objectType.name));
+export function createListMetaNode(fieldRequest: FieldRequest, listNode: QueryNode, itemType: Type) {
+    const itemVarNode = new VariableQueryNode(decapitalize(itemType.name));
 
     if (FILTER_ARG in fieldRequest.args) {
-        const filterNode = createFilterNode(fieldRequest.args[FILTER_ARG], objectType, itemVarNode);
+        const filterNode = createFilterNode(fieldRequest.args[FILTER_ARG], itemType, itemVarNode);
         listNode = new TransformListQueryNode({
             listNode,
             filterNode,

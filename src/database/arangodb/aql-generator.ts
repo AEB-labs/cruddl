@@ -1,17 +1,15 @@
 import {
     AddEdgesQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode,
     ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeFilter,
-    EdgeIdentifier,
-    EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode,
-    LiteralQueryNode, MergeObjectsQueryNode, ObjectQueryNode, OrderDirection, OrderSpecification, PartialEdgeIdentifier,
-    QueryNode, RemoveEdgesQueryNode, RootEntityIDQueryNode, RuntimeErrorQueryNode, SetEdgeQueryNode,
-    TransformListQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode,
-    VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode
+    EdgeIdentifier, EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode,
+    ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, ObjectQueryNode, OrderDirection, OrderSpecification,
+    PartialEdgeIdentifier, QueryNode, RemoveEdgesQueryNode, RootEntityIDQueryNode, RuntimeErrorQueryNode,
+    SetEdgeQueryNode, TransformListQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator,
+    UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode
 } from '../../query/definition';
 import { aql, AQLCompoundQuery, AQLFragment, AQLQueryResultVariable, AQLVariable } from './aql';
-import { getCollectionNameForEdge, getCollectionNameForRootEntity } from './arango-basics';
-import { GraphQLNamedType, GraphQLObjectType } from 'graphql';
-import { EdgeType, RelationFieldEdgeSide } from '../../schema/edges';
+import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './arango-basics';
+import { Relation, RelationFieldSide, RootEntityType } from '../../model';
 import { simplifyBooleans } from '../../query/query-tree-utils';
 import { QueryResultValidator } from '../../query/query-result-validators';
 import { RUNTIME_ERROR_TOKEN } from '../../query/runtime-errors';
@@ -257,7 +255,7 @@ const processors : { [name: string]: NodeProcessor<any> } = {
     },
 
     EntityFromId(node:  EntityFromIdQueryNode, context): AQLFragment {
-        const collection = getCollectionForType(node.objectType, AccessType.READ, context);
+        const collection = getCollectionForType(node.rootEntityType, AccessType.READ, context);
         return aql`DOCUMENT(${collection}, ${processNode(node.idNode, context)})`;
     },
 
@@ -391,7 +389,7 @@ const processors : { [name: string]: NodeProcessor<any> } = {
     },
 
     Entities(node: EntitiesQueryNode, context): AQLFragment {
-        return getCollectionForType(node.objectType, AccessType.READ, context);
+        return getCollectionForType(node.rootEntityType, AccessType.READ, context);
     },
 
     FollowEdge(node: FollowEdgeQueryNode, context): AQLFragment {
@@ -407,7 +405,7 @@ const processors : { [name: string]: NodeProcessor<any> } = {
 
     CreateEntity(node: CreateEntityQueryNode, context): AQLFragment {
         return aqlExt.parenthesizeObject(
-            aql`INSERT ${processNode(node.objectNode, context)} IN ${getCollectionForType(node.objectType, AccessType.WRITE, context)}`,
+            aql`INSERT ${processNode(node.objectNode, context)} IN ${getCollectionForType(node.rootEntityType, AccessType.WRITE, context)}`,
             aql`RETURN NEW._key`
         );
     },
@@ -420,7 +418,7 @@ const processors : { [name: string]: NodeProcessor<any> } = {
             aql`IN ${processNode(node.listNode, context)}`,
             aql`UPDATE ${entityVar}`,
             aql`WITH ${processNode(new ObjectQueryNode(node.updates), newContext)}`,
-            aql`IN ${getCollectionForType(node.objectType, AccessType.WRITE, context)}`,
+            aql`IN ${getCollectionForType(node.rootEntityType, AccessType.WRITE, context)}`,
             aql`OPTIONS { mergeObjects: false }`,
             aql`RETURN NEW._key`
         );
@@ -433,7 +431,7 @@ const processors : { [name: string]: NodeProcessor<any> } = {
             aql`FOR ${entityVar}`,
             aql`IN ${processNode(node.listNode, context)}`,
             aql`REMOVE ${entityVar}`,
-            aql`IN ${getCollectionForType(node.objectType, AccessType.WRITE, context)}`,
+            aql`IN ${getCollectionForType(node.rootEntityType, AccessType.WRITE, context)}`,
             aql`RETURN OLD`
         );
     },
@@ -442,11 +440,11 @@ const processors : { [name: string]: NodeProcessor<any> } = {
         const edgeVar = aql.variable('edge');
         return aqlExt.parenthesizeList(
             aql`FOR ${edgeVar}`,
-            aql`IN [ ${aql.join(node.edges.map(edge => formatEdge(node.edgeType, edge, context)), aql`, `)} ]`,
+            aql`IN [ ${aql.join(node.edges.map(edge => formatEdge(node.relation, edge, context)), aql`, `)} ]`,
             aql`UPSERT { _from: ${edgeVar}._from, _to: ${edgeVar}._to }`, // need to unpack avoid dynamic property names in UPSERT example filter
             aql`INSERT ${edgeVar}`,
             aql`UPDATE {}`,
-            aql`IN ${getCollectionForEdge(node.edgeType, AccessType.WRITE, context)}`
+            aql`IN ${getCollectionForRelation(node.relation, AccessType.WRITE, context)}`
         );
     },
 
@@ -454,20 +452,20 @@ const processors : { [name: string]: NodeProcessor<any> } = {
         const edgeVar = aql.variable('edge');
         return aqlExt.parenthesizeList(
             aql`FOR ${edgeVar}`,
-            aql`IN ${getCollectionForEdge(node.edgeType, AccessType.READ, context)}`,
-            aql`FILTER ${formatEdgeFilter(node.edgeType, node.edgeFilter, edgeVar, context)}`,
+            aql`IN ${getCollectionForRelation(node.relation, AccessType.READ, context)}`,
+            aql`FILTER ${formatEdgeFilter(node.relation, node.edgeFilter, edgeVar, context)}`,
             aql`REMOVE ${edgeVar}`,
-            aql`IN ${getCollectionForEdge(node.edgeType, AccessType.WRITE, context)}`
+            aql`IN ${getCollectionForRelation(node.relation, AccessType.WRITE, context)}`
         );
     },
 
     SetEdge(node: SetEdgeQueryNode, context) {
         const edgeVar = aql.variable('edge');
         return aqlExt.parenthesizeList(
-            aql`UPSERT ${formatEdge(node.edgeType, node.existingEdge, context)}`,
-            aql`INSERT ${formatEdge(node.edgeType, node.newEdge, context)}`,
-            aql`UPDATE ${formatEdge(node.edgeType, node.newEdge, context)}`,
-            aql`IN ${getCollectionForEdge(node.edgeType, AccessType.WRITE, context)}`
+            aql`UPSERT ${formatEdge(node.relation, node.existingEdge, context)}`,
+            aql`INSERT ${formatEdge(node.relation, node.newEdge, context)}`,
+            aql`UPDATE ${formatEdge(node.relation, node.newEdge, context)}`,
+            aql`IN ${getCollectionForRelation(node.relation, AccessType.WRITE, context)}`
         );
     }
 };
@@ -476,11 +474,11 @@ const processors : { [name: string]: NodeProcessor<any> } = {
  * Gets an aql fragment that evaluates to a string of the format "collectionName/objectKey", given a query node that
  * evaluates to the "object id", which is, in arango terms, the _key.
  */
-function getFullIDFromKeyNode(node: QueryNode, type: GraphQLObjectType, context: QueryContext): AQLFragment {
+function getFullIDFromKeyNode(node: QueryNode, rootEntityType: RootEntityType, context: QueryContext): AQLFragment {
     // special handling to avoid concat if possible - do not alter the behavior
     if (node instanceof LiteralQueryNode && typeof node.value == 'string') {
         // just append the node to the literal key in JavaScript and bind it as a string
-        return aql`${getCollectionNameForRootEntity(type) + '/' + node.value}`;
+        return aql`${getCollectionNameForRootEntity(rootEntityType) + '/' + node.value}`;
     }
     if (node instanceof RootEntityIDQueryNode) {
         // access the _id field. processNode(node) would access the _key field instead.
@@ -488,32 +486,32 @@ function getFullIDFromKeyNode(node: QueryNode, type: GraphQLObjectType, context:
     }
 
     // fall back to general case
-    return aql`CONCAT(${getCollectionNameForRootEntity(type) + '/'}, ${processNode(node, context)})`;
+    return aql`CONCAT(${getCollectionNameForRootEntity(rootEntityType) + '/'}, ${processNode(node, context)})`;
 }
 
-function formatEdge(edgeType: EdgeType, edge: PartialEdgeIdentifier|EdgeIdentifier, context: QueryContext): AQLFragment {
+function formatEdge(relation: Relation, edge: PartialEdgeIdentifier|EdgeIdentifier, context: QueryContext): AQLFragment {
     const conditions = [];
     if (edge.fromIDNode) {
-        conditions.push(aql`_from: ${getFullIDFromKeyNode(edge.fromIDNode, edgeType.fromType, context)}`);
+        conditions.push(aql`_from: ${getFullIDFromKeyNode(edge.fromIDNode, relation.fromType, context)}`);
     }
     if (edge.toIDNode) {
-        conditions.push(aql`_to: ${getFullIDFromKeyNode(edge.toIDNode, edgeType.toType, context)}`);
+        conditions.push(aql`_to: ${getFullIDFromKeyNode(edge.toIDNode, relation.toType, context)}`);
     }
 
     return aql`{${aql.join(conditions, aql`, `)}}`;
 }
 
-function formatEdgeFilter(edgeType: EdgeType, edge: EdgeFilter, edgeFragment: AQLFragment, context: QueryContext) {
-    function makeList(ids: QueryNode[], type: GraphQLObjectType) {
-        return aql`[${aql.join(ids.map(node => getFullIDFromKeyNode(node, type, context)), aql`, `)}]`;
+function formatEdgeFilter(relation: Relation, edge: EdgeFilter, edgeFragment: AQLFragment, context: QueryContext) {
+    function makeList(ids: QueryNode[], rootEntityType: RootEntityType) {
+        return aql`[${aql.join(ids.map(node => getFullIDFromKeyNode(node, rootEntityType, context)), aql`, `)}]`;
     }
 
     const conditions = [];
     if (edge.fromIDNodes) {
-        conditions.push(aql`${edgeFragment}._from IN ${makeList(edge.fromIDNodes, edgeType.fromType)}`);
+        conditions.push(aql`${edgeFragment}._from IN ${makeList(edge.fromIDNodes, relation.fromType)}`);
     }
     if (edge.toIDNodes) {
-        conditions.push(aql`${edgeFragment}._to IN ${makeList(edge.toIDNodes, edgeType.toType)}`);
+        conditions.push(aql`${edgeFragment}._to IN ${makeList(edge.toIDNodes, relation.toType)}`);
     }
 
     return aql.join(conditions, aql` && `);
@@ -590,14 +588,14 @@ export function getAQLQuery(node: QueryNode): AQLCompoundQuery {
     return createAQLCompoundQuery(node, aql.queryResultVariable('result'), undefined, new QueryContext());
 }
 
-function getCollectionForType(type: GraphQLNamedType, accessType: AccessType, context: QueryContext) {
+function getCollectionForType(type: RootEntityType, accessType: AccessType, context: QueryContext) {
     const name = getCollectionNameForRootEntity(type);
     context.addCollectionAccess(name, accessType);
     return aql.collection(name);
 }
 
-function getCollectionForEdge(edgeType: EdgeType, accessType: AccessType, context: QueryContext) {
-    const name = getCollectionNameForEdge(edgeType);
+function getCollectionForRelation(relation: Relation, accessType: AccessType, context: QueryContext) {
+    const name = getCollectionNameForRelation(relation);
     context.addCollectionAccess(name, accessType);
     return aql.collection(name);
 }
@@ -608,10 +606,10 @@ function getCollectionForEdge(edgeType: EdgeType, accessType: AccessType, contex
  */
 function getSimpleFollowEdgeFragment(node: FollowEdgeQueryNode, context: QueryContext): AQLFragment {
     switch (node.sourceFieldSide) {
-        case RelationFieldEdgeSide.FROM_SIDE:
-            return aql`OUTBOUND ${processNode(node.sourceEntityNode, context)} ${getCollectionForEdge(node.edgeType, AccessType.READ, context)}`;
-        case RelationFieldEdgeSide.TO_SIDE:
-            return aql`INBOUND ${processNode(node.sourceEntityNode, context)} ${getCollectionForEdge(node.edgeType, AccessType.READ, context)}`;
+        case RelationFieldSide.FROM_SIDE:
+            return aql`OUTBOUND ${processNode(node.sourceEntityNode, context)} ${getCollectionForRelation(node.relation, AccessType.READ, context)}`;
+        case RelationFieldSide.TO_SIDE:
+            return aql`INBOUND ${processNode(node.sourceEntityNode, context)} ${getCollectionForRelation(node.relation, AccessType.READ, context)}`;
     }
 
 }

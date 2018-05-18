@@ -1,12 +1,11 @@
 import { SourceValidator } from '../ast-validator';
 import { ProjectSource, SourceType } from '../../../project/source';
-import { ValidationMessage } from '../validation-message';
-import { buildASTSchema, DocumentNode, GraphQLError, Location, parse, Source, specifiedRules, validate, KnownDirectivesRule, KnownTypeNamesRule, UniqueDirectivesPerLocationRule,
-    KnownArgumentNamesRule,
-    VariablesInAllowedPositionRule,
-    UniqueInputFieldNamesRule,
-    UniqueArgumentNamesRule,
-    ProvidedNonNullArgumentsRule } from 'graphql';
+import { ValidationMessage } from '../../../model';
+import {
+    buildASTSchema, DocumentNode, GraphQLError, KnownArgumentNamesRule, KnownDirectivesRule, KnownTypeNamesRule,
+    Location, parse, ProvidedNonNullArgumentsRule, Source, UniqueArgumentNamesRule, UniqueDirectivesPerLocationRule,
+    UniqueInputFieldNamesRule, validate, VariablesInAllowedPositionRule
+} from 'graphql';
 import { CORE_SCALARS, DIRECTIVES } from '../../graphql-base';
 import gql from 'graphql-tag';
 
