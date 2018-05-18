@@ -1,4 +1,4 @@
-import { CalcMutationsOperator, FieldConfig, TypeKind } from '../input';
+import { CalcMutationsOperator, FieldConfig, TypeKind } from '../config';
 import { ModelComponent, ValidationContext } from './validation';
 import { ValidationMessage } from '../validation';
 import { FieldDefinitionNode } from 'graphql';

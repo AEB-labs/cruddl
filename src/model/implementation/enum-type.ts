@@ -1,5 +1,5 @@
 import { TypeBase } from './type-base';
-import { EnumTypeConfig, TypeKind } from '../input';
+import { EnumTypeConfig, TypeKind } from '../config';
 
 export class EnumType extends TypeBase {
     constructor(input: EnumTypeConfig) {

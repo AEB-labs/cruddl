@@ -1,5 +1,5 @@
 import { ModelComponent, ValidationContext } from './validation';
-import { RolesSpecifierConfig } from '../input/permissions';
+import { RolesSpecifierConfig } from '../config/permissions';
 import { ValidationMessage } from '../validation';
 
 export class RolesSpecifier implements ModelComponent {

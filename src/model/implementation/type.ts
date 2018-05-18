@@ -1,4 +1,4 @@
-import { TypeConfig, TypeKind } from '../input';
+import { TypeConfig, TypeKind } from '../config';
 import { RootEntityType } from './root-entity-type';
 import { ScalarType } from './scalar-type';
 import { ChildEntityType } from './child-entity-type';

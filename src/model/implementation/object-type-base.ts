@@ -1,4 +1,4 @@
-import { FieldConfig, ObjectTypeConfig } from '../input';
+import { FieldConfig, ObjectTypeConfig } from '../config';
 import { TypeBase } from './type-base';
 import { Field } from './field';
 import { ObjectType } from './type';

@@ -2,7 +2,7 @@ import { SchemaConfig, SchemaPartConfig } from '../config/schema-config';
 import { Model } from './implementation';
 import {
     CalcMutationsOperator, EnumTypeConfig, FieldConfig, IndexDefinitionConfig, ObjectTypeConfig, TypeConfig, TypeKind
-} from './input';
+} from './config';
 import { compact, flatMap } from '../utils/utils';
 import {
     ENUM, ENUM_TYPE_DEFINITION, LIST, LIST_TYPE, NON_NULL_TYPE, OBJECT, OBJECT_TYPE_DEFINITION, STRING
@@ -22,7 +22,7 @@ import {
     ROLES_READ_WRITE_ARG, ROOT_ENTITY_DIRECTIVE, UNIQUE_DIRECTIVE, VALUE_ARG, VALUE_OBJECT_DIRECTIVE
 } from '../schema/schema-defaults';
 import { ValidationMessage } from './validation';
-import { PermissionsConfig, RolesSpecifierConfig } from './input/permissions';
+import { PermissionsConfig, RolesSpecifierConfig } from './config/permissions';
 import { flattenValueNode } from '../schema/directive-arg-flattener';
 
 export function createModel(input: SchemaConfig): Model {

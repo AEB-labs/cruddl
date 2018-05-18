@@ -1,4 +1,4 @@
-import { FieldConfig, RootEntityTypeConfig, TypeKind } from '../input';
+import { FieldConfig, RootEntityTypeConfig, TypeKind } from '../config';
 import { ObjectTypeBase } from './object-type-base';
 import { Field } from './field';
 import { Model } from './model';
@@ -7,7 +7,7 @@ import { ValidationMessage } from '../validation';
 import { Index } from './indices';
 import { ACCESS_GROUP_FIELD, DEFAULT_PERMISSION_PROFILE } from '../../schema/schema-defaults';
 import { PermissionProfile } from '../../authorization/permission-profile';
-import { PermissionsConfig } from '../input/permissions';
+import { PermissionsConfig } from '../config/permissions';
 import { EdgeType, getEdgeType } from '../../schema/edges';
 import { GraphQLString } from 'graphql';
 import { RolesSpecifier } from './roles-specifier';

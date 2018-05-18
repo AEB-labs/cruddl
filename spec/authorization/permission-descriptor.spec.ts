@@ -1,5 +1,5 @@
 import {
-    PermissionResult, PermissionDescriptor, ProfileBasedPermissionDescriptor
+    PermissionDescriptor, PermissionResult, ProfileBasedPermissionDescriptor
 } from '../../src/authorization/permission-descriptors';
 import { PermissionProfile } from '../../src/authorization/permission-profile';
 import { AccessOperation, AuthContext } from '../../src/authorization/auth-basics';
@@ -7,11 +7,9 @@ import {
     BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, FieldQueryNode, LiteralQueryNode, QueryNode,
     VariableQueryNode
 } from '../../src/query/definition';
-import { GraphQLObjectType, GraphQLString } from 'graphql';
 import { ACCESS_GROUP_FIELD } from '../../src/schema/schema-defaults';
 import { expect } from 'chai';
-import { Model, RootEntityType } from '../../src/model/implementation';
-import { TypeKind } from '../../src/model/input';
+import { Model, TypeKind } from '../../src/model';
 
 
 describe('PermissionDescriptor', () => {

@@ -1,4 +1,4 @@
-import { ModelConfig, TypeKind } from '../input';
+import { ModelConfig, TypeKind } from '../config';
 import { ValidationMessage, ValidationResult } from '../validation';
 import { createPermissionMap, PermissionProfile, PermissionProfileMap } from '../../authorization/permission-profile';
 import { createType, InvalidType, ObjectType, Type } from './type';

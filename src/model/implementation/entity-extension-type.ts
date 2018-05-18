@@ -1,5 +1,5 @@
 import { ObjectTypeBase } from './object-type-base';
-import { EntityExtensionTypeConfig, TypeKind } from '../input';
+import { EntityExtensionTypeConfig, TypeKind } from '../config';
 import { Model } from './model';
 
 export class EntityExtensionType extends ObjectTypeBase {

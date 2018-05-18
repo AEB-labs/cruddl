@@ -1,6 +1,6 @@
 import { Type } from './type';
 import { ScalarType } from './scalar-type';
-import { TypeKind } from '../input';
+import { TypeKind } from '../config';
 import { GraphQLBoolean, GraphQLFloat, GraphQLID, GraphQLInt, GraphQLScalarType, GraphQLString } from 'graphql';
 import GraphQLJSON = require('graphql-type-json');
 import { GraphQLDateTime } from '../../schema/scalars/date-time';

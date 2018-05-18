@@ -1,5 +1,5 @@
 import { TypeDefinitionNode } from 'graphql';
-import { TypeConfig, TypeKind } from '../input';
+import { TypeConfig, TypeKind } from '../config';
 import { ValidationMessage } from '../validation';
 import { ModelComponent, ValidationContext } from './validation';
 

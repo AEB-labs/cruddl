@@ -1,5 +1,5 @@
 import { ObjectTypeBase } from './object-type-base';
-import { ScalarTypeConfig, TypeKind, ValueObjectTypeConfig } from '../input';
+import { ScalarTypeConfig, TypeKind, ValueObjectTypeConfig } from '../config';
 import { Model } from './model';
 
 export class ValueObjectType extends ObjectTypeBase {

@@ -1,13 +1,8 @@
-import gql from 'graphql-tag';
 import { DatabaseAdapter } from '../../src/database/database-adapter';
 import { QueryNode } from '../../src/query/definition';
-import { graphql, GraphQLObjectType, print } from 'graphql';
 import { EdgeType, getEdgeType } from '../../src/schema/edges';
-import { Project } from '../../src/project/project';
-import { ProjectSource } from '../../src/project/source';
 import { expect } from 'chai';
-import { Model } from '../../src/model/implementation';
-import { TypeKind } from '../../src/model/input';
+import { Model, TypeKind } from '../../src/model';
 
 class FakeDBAdatper implements DatabaseAdapter {
     async execute(queryTree: QueryNode): Promise<any> {

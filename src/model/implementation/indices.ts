@@ -1,4 +1,4 @@
-import { IndexDefinitionConfig, TypeKind } from '../input';
+import { IndexDefinitionConfig, TypeKind } from '../config';
 import { RootEntityType } from './root-entity-type';
 import { ModelComponent, ValidationContext } from './validation';
 import { Field } from './field';
