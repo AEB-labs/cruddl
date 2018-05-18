@@ -2,7 +2,7 @@ import { TypeBase } from './type-base';
 import { ScalarTypeConfig, TypeKind } from '../config';
 
 export class ScalarType extends TypeBase {
-    constructor(input: Exclude<ScalarTypeConfig, 'typeKind'>) {
+    constructor(input: ScalarTypeConfig) {
         super(input);
     }
 
