@@ -1,7 +1,7 @@
 import {
     ASTNode,
     DirectiveNode,
-    EnumTypeDefinitionNode,
+    EnumTypeDefinitionNode, FieldNode,
     ObjectTypeDefinitionNode,
     ObjectValueNode,
     ScalarTypeDefinitionNode,
@@ -67,7 +67,7 @@ export interface ScalarTypeInput extends TypeInputBase {
 export interface IndexDefinitionInput {
     readonly id?: string,
     readonly fields: ReadonlyArray<string>
-    readonly fieldASTNodes?: ReadonlyArray<StringValueNode|undefined>
+    readonly fieldASTNodes?: ReadonlyArray<StringValueNode|DirectiveNode|undefined>
     readonly unique: boolean
     readonly astNode?: DirectiveNode|ObjectValueNode
 }

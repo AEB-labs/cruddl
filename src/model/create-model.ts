@@ -221,22 +221,23 @@ function createRootEntityBasedIndices(definition: ObjectTypeDefinitionNode, vali
 }
 
 function createFieldBasedIndices(definition: ObjectTypeDefinitionNode): IndexDefinitionInput[] {
-    return compact(definition.fields.map(field => {
+    return compact(definition.fields.map((field): IndexDefinitionInput|undefined => {
         let unique = false;
-        let index = findDirectiveWithName(field, INDEX_DIRECTIVE);
-        if (!index) {
-            index = findDirectiveWithName(field, UNIQUE_DIRECTIVE);
-            unique = !!index
+        let indexDirective = findDirectiveWithName(field, INDEX_DIRECTIVE);
+        if (!indexDirective) {
+            indexDirective = findDirectiveWithName(field, UNIQUE_DIRECTIVE);
+            unique = !!indexDirective
         }
-        if (!index) {
+        if (!indexDirective) {
             return undefined;
         }
         return {
-            astNode: index,
+            astNode: indexDirective,
             fields: [field.name.value],
-            unique: unique
+            unique: unique,
+            fieldASTNodes: [indexDirective]
         };
-    }))
+    }));
 }
 
 function buildIndexDefinitionFromObjectValue(indexDefinitionNode: ObjectValueNode): IndexDefinitionInput {
