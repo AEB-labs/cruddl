@@ -1,5 +1,5 @@
 import { DocumentNode } from 'graphql';
-import { ValidationMessage, ValidationResult } from '../../model/validation';
+import { Model, PermissionProfileMap, ValidationMessage, ValidationResult } from '../../model';
 import { flatMap } from '../../utils/utils';
 import { KeyFieldValidator } from './ast-validation-modules/key-field-validator';
 import { NoUnusedNonRootObjectTypesValidator } from './ast-validation-modules/no-unused-non-root-object-types-validator';
@@ -11,7 +11,6 @@ import { CheckGraphQLSyntaxValidator } from './source-validation-modules/check-g
 import { GraphQLRulesValidator } from './source-validation-modules/graphql-rules';
 import { CheckYamlSyntaxValidator } from './source-validation-modules/check-yaml-syntax';
 import { CheckJsonSyntaxValidator } from './source-validation-modules/check-json-syntax';
-import { Model, PermissionProfileMap } from '../../model';
 import { SidecarSchemaValidator } from './source-validation-modules/sidecar-schema';
 
 const sourceValidators: SourceValidator[]  = [

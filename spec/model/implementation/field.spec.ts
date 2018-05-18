@@ -1,6 +1,6 @@
 import { CalcMutationsOperator, Field, Model, TypeKind } from '../../../src/model/index';
 import { expect } from 'chai';
-import { Severity } from '../../../src/model/validation';
+import { Severity } from '../../../src/model';
 import {
     expectSingleErrorToInclude, expectSingleWarningToInclude, expectToBeValid, validate
 } from './validation-utils';

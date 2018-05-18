@@ -2,10 +2,9 @@ import { isArray } from 'util';
 import { ProjectSource, SourceLike, SourceType } from './source';
 import { GraphQLSchema } from 'graphql';
 import { DEFAULT_LOGGER_PROVIDER, LoggerProvider } from '../config/logging';
-import { ValidationResult } from '../model/validation';
+import { Model, ValidationResult } from '../model';
 import { DatabaseAdapter } from '../database/database-adapter';
 import { createSchema, getModel, validateSchema } from '../schema/schema-builder';
-import { Model } from '../model';
 
 export interface ProjectOptions {
     /**

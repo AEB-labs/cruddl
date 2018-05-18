@@ -1,5 +1,4 @@
-import { ChildEntityType, Model, TypeKind } from '../../../src/model';
-import { Severity } from '../../../src/model/validation';
+import { ChildEntityType, Model, Severity, TypeKind } from '../../../src/model';
 import { expectSingleErrorToInclude, expectToBeValid, validate } from './validation-utils';
 import { expect } from 'chai';
 

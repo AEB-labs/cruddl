@@ -1,6 +1,6 @@
 import { ASTValidator } from '../ast-validator';
 import { DocumentNode } from 'graphql';
-import { ValidationMessage } from '../../../model/validation';
+import { ValidationMessage } from '../../../model';
 import { getObjectTypes } from '../../schema-utils';
 import { LIST_TYPE, NON_NULL_TYPE } from '../../../graphql/kinds';
 

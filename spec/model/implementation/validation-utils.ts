@@ -1,4 +1,4 @@
-import { Severity, ValidationResult } from '../../../src/model/validation';
+import { Severity, ValidationResult } from '../../../src/model';
 import { ModelComponent, ValidationContext } from '../../../src/model/implementation/validation';
 import { expect } from 'chai';
 

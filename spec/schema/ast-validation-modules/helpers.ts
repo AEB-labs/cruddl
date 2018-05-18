@@ -1,5 +1,4 @@
-import { createModel, PermissionProfileConfigMap } from '../../../src/model';
-import { ValidationResult } from '../../../src/model/validation';
+import { createModel, PermissionProfileConfigMap, ValidationResult } from '../../../src/model';
 import { parse, Source } from 'graphql';
 import { expect } from 'chai';
 import { validatePostMerge, validateSource } from '../../../src/schema/preparation/ast-validator';
