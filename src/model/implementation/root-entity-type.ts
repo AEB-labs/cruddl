@@ -1,14 +1,16 @@
 import { FieldInput, RootEntityTypeInput, TypeKind } from '../input';
 import { ObjectTypeBase } from './object-type-base';
-import { Field, RolesSpecifier } from './field';
+import { Field } from './field';
 import { Model } from './model';
 import { ValidationContext } from './validation';
 import { ValidationMessage } from '../validation';
 import { Index } from './indices';
-import { DEFAULT_PERMISSION_PROFILE } from '../../schema/schema-defaults';
+import { ACCESS_GROUP_FIELD, DEFAULT_PERMISSION_PROFILE } from '../../schema/schema-defaults';
 import { PermissionProfile } from '../../authorization/permission-profile';
 import { PermissionsInput } from '../input/permissions';
 import { EdgeType, getEdgeType } from '../../schema/edges';
+import { GraphQLString } from 'graphql';
+import { RolesSpecifier } from './roles-specifier';
 
 export class RootEntityType extends ObjectTypeBase {
     private readonly permissions: PermissionsInput & {};
@@ -29,10 +31,7 @@ export class RootEntityType extends ObjectTypeBase {
         this.namespacePath = input.namespacePath || [];
         this.indices = (input.indices || []).map(index => new Index(index, this));
         this.permissions = input.permissions || {};
-        this.roles = input.permissions && input.permissions.roles ? {
-            read: input.permissions.roles.read || [],
-            readWrite: input.permissions.roles.readWrite || [],
-        } : undefined;
+        this.roles = input.permissions && input.permissions.roles ? new RolesSpecifier(input.permissions.roles) : undefined;
     }
 
     getKeyFieldOrThrow(): Field {
@@ -88,7 +87,7 @@ export class RootEntityType extends ObjectTypeBase {
         }
 
         if (field.isList) {
-            context.addMessage(ValidationMessage.error(`List fields can not be used as key field.`, undefined, astNode));
+            context.addMessage(ValidationMessage.error(`List fields cannot be used as key field.`, undefined, astNode));
         }
     }
 
@@ -97,7 +96,7 @@ export class RootEntityType extends ObjectTypeBase {
         if (permissions.permissionProfileName != undefined && permissions.roles != undefined) {
             const message = `Permission profile and explicit role specifiers cannot be combined.`;
             context.addMessage(ValidationMessage.error(message, undefined, permissions.permissionProfileNameAstNode || this.input.astNode ));
-            context.addMessage(ValidationMessage.error(message, undefined, permissions.rolesASTNode || this.input.astNode ));
+            context.addMessage(ValidationMessage.error(message, undefined, permissions.roles.astNode || this.input.astNode ));
         }
 
         if (permissions.permissionProfileName != undefined && !this.model.getPermissionProfile(permissions.permissionProfileName)) {
@@ -108,8 +107,18 @@ export class RootEntityType extends ObjectTypeBase {
             context.addMessage(ValidationMessage.error(`No permissions specified for root entity "${this.name}". Specify "permissionProfile" in @rootEntity, use the @roles directive, or add a permission profile with the name "${DEFAULT_PERMISSION_PROFILE}".`, undefined, permissions.permissionProfileNameAstNode || this.input.astNode ));
         }
 
-        if (this.roles && this.roles.read.length === 0 && this.roles.readWrite.length === 0) {
-            context.addMessage(ValidationMessage.warn(`No roles with read access are specified. Access is denied for everyone.`, undefined, permissions.rolesASTNode || this.astNode ));
+        if (this.roles) {
+            this.roles.validate(context);
+        }
+
+        const usesAccessGroup = this.permissionProfile && this.permissionProfile.permissions.some(per => !!per.restrictToAccessGroups);
+        if (usesAccessGroup) {
+            const accessGroupField = this.getField(ACCESS_GROUP_FIELD);
+            if (!accessGroupField) {
+                context.addMessage(ValidationMessage.error(`The permission profile "${permissions.permissionProfileName}" uses "restrictToAccessGroups", but this root entity does not have a "${ACCESS_GROUP_FIELD}" field.`, undefined, permissions.permissionProfileNameAstNode || this.astNode));
+            } else if (!accessGroupField.type.isEnumType && accessGroupField.type.name !== GraphQLString.name) {
+                context.addMessage(ValidationMessage.error(`This field must be of String or enum type to be used as "accessGroup" with the permission profile "${permissions.permissionProfileName}".`, undefined, accessGroupField.astNode || this.astNode));
+            }
         }
     }
 }

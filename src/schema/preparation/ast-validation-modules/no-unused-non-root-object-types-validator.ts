@@ -1,12 +1,10 @@
-import {ASTValidator} from "../ast-validator";
-import {DirectiveDefinitionNode, DirectiveNode, DocumentNode, ObjectTypeDefinitionNode} from "graphql";
-import {ValidationMessage} from "../../../model/validation/message";
+import { ASTValidator } from '../ast-validator';
+import { DocumentNode, ObjectTypeDefinitionNode } from 'graphql';
+import { ValidationMessage } from '../../../model/validation';
 import {
-    getNamedTypeDefinitionAST,
-    getObjectTypes, getRootEntityTypes, getTypeNameIgnoringNonNullAndList,
-    hasDirectiveWithName
-} from "../../schema-utils";
-import {ENTITY_EXTENSION_DIRECTIVE, OBJECT_TYPE_ENTITY_DIRECTIVES, ROOT_ENTITY_DIRECTIVE} from "../../schema-defaults";
+    getNamedTypeDefinitionAST, getObjectTypes, getRootEntityTypes, getTypeNameIgnoringNonNullAndList
+} from '../../schema-utils';
+import { OBJECT_TYPE_ENTITY_DIRECTIVES } from '../../schema-defaults';
 
 export const VALIDATION_WARNING_UNUSED_OBJECT_TYPE = "Unused object type.";
 

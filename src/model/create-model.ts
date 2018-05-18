@@ -1,13 +1,11 @@
 import { SchemaConfig, SchemaPartConfig } from '../config/schema-config';
 import { Model } from './implementation';
 import {
-    CalcMutationsOperator, EnumTypeInput, FieldInput, IndexDefinitionInput, ObjectTypeInput, ScalarTypeInput, TypeInput,
-    TypeKind
+    CalcMutationsOperator, EnumTypeInput, FieldInput, IndexDefinitionInput, ObjectTypeInput, TypeInput, TypeKind
 } from './input';
 import { compact, flatMap } from '../utils/utils';
 import {
-    ENUM, ENUM_TYPE_DEFINITION, LIST, LIST_TYPE, NON_NULL_TYPE, OBJECT, OBJECT_TYPE_DEFINITION, SCALAR_TYPE_DEFINITION,
-    STRING
+    ENUM, ENUM_TYPE_DEFINITION, LIST, LIST_TYPE, NON_NULL_TYPE, OBJECT, OBJECT_TYPE_DEFINITION, STRING
 } from '../graphql/kinds';
 import {
     ArgumentNode, EnumValueDefinitionNode, FieldDefinitionNode, GraphQLBoolean, GraphQLInputObjectType, GraphQLList,
@@ -24,13 +22,8 @@ import {
     ROLES_READ_WRITE_ARG, ROOT_ENTITY_DIRECTIVE, UNIQUE_DIRECTIVE, VALUE_ARG, VALUE_OBJECT_DIRECTIVE
 } from '../schema/schema-defaults';
 import { ValidationMessage } from './validation';
-import { VALIDATION_ERROR_MISSING_OBJECT_TYPE_DIRECTIVE } from '../schema/preparation/ast-validation-modules/object-type-directive-count-validator';
-import { VALIDATION_ERROR_DUPLICATE_KEY_FIELD } from '../schema/preparation/ast-validation-modules/key-field-validator';
-import { PermissionsInput } from './input/permissions';
-import { VALIDATION_ERROR_MISSING_ARGUMENT_DEFAULT_VALUE } from '../schema/preparation/ast-validation-modules/default-value-validator';
+import { PermissionsInput, RolesSpecifierInput } from './input/permissions';
 import { flattenValueNode } from '../schema/directive-arg-flattener';
-import { VALIDATION_ERROR_INVALID_PERMISSION_PROFILE } from '../schema/preparation/ast-validation-modules/undefined-permission-profile';
-import { VALIDATION_ERROR_INVALID_ARGUMENT_TYPE } from '../schema/preparation/ast-validation-modules/check-directed-relation-edges-validator';
 
 export function createModel(input: SchemaConfig): Model {
     const validationMessages: ValidationMessage[] = [];
@@ -41,16 +34,23 @@ export function createModel(input: SchemaConfig): Model {
     });
 }
 
-export const VALIDATION_ERROR_EXPECTED_STRING_OR_LIST_OF_STRINGS = 'Expected string or list of strings';
-export const VALIDATION_ERROR_EXPECTED_ENUM_OR_LIST_OF_ENUMS = 'Expected enum or list of enums';
-export const VALIDATION_ERROR_INVERSE_OF_ARG_MUST_BE_STRING = 'inverseOf must be specified as String';
-export const VALIDATION_ERROR_MISSING_ARGUMENT_OPERATORS = 'Missing argument \'operators\'';
-export const VALIDATION_ERROR_MISSING_ARGUMENT_INDICES = 'Missing argument \'indices\'';
+const VALIDATION_ERROR_INVALID_PERMISSION_PROFILE = `Invalid argument value, expected string`;
+const VALIDATION_ERROR_EXPECTED_STRING_OR_LIST_OF_STRINGS = 'Expected string or list of strings';
+const VALIDATION_ERROR_EXPECTED_ENUM_OR_LIST_OF_ENUMS = 'Expected enum or list of enums';
+const VALIDATION_ERROR_INVERSE_OF_ARG_MUST_BE_STRING = 'inverseOf must be specified as String';
+const VALIDATION_ERROR_MISSING_ARGUMENT_OPERATORS = 'Missing argument \'operators\'';
+const VALIDATION_ERROR_MISSING_ARGUMENT_DEFAULT_VALUE = DEFAULT_VALUE_DIRECTIVE + ' needs an argument named ' + VALUE_ARG;
+const VALIDATION_ERROR_INVALID_ARGUMENT_TYPE = 'Invalid argument type.';
+const VALIDATION_ERROR_DUPLICATE_KEY_FIELD = "Only one field can be a @key field.";
+const VALIDATION_ERROR_MULTIPLE_OBJECT_TYPE_DIRECTIVES = `Only one of @${ROOT_ENTITY_DIRECTIVE}, @${CHILD_ENTITY_DIRECTIVE}, @${ENTITY_EXTENSION_DIRECTIVE} or @${VALUE_OBJECT_DIRECTIVE} can be used.`;
+const VALIDATION_ERROR_MISSING_OBJECT_TYPE_DIRECTIVE = `Add one of @${ROOT_ENTITY_DIRECTIVE}, @${CHILD_ENTITY_DIRECTIVE}, @${ENTITY_EXTENSION_DIRECTIVE} or @${VALUE_OBJECT_DIRECTIVE}.`;
+const VALIDATION_ERROR_INVALID_DEFINITION_KIND = "This kind of definition is not allowed. Only object and enum type definitions are allowed.";
 
 function createTypeInputs(input: SchemaConfig, validationMessages: ValidationMessage[]): ReadonlyArray<TypeInput> {
     return flatMap(input.schemaParts, (schemaPart => compact(schemaPart.document.definitions.map(definition => {
-        // Only look at scalars, object types and enums
-        if (definition.kind !== SCALAR_TYPE_DEFINITION && definition.kind != OBJECT_TYPE_DEFINITION && definition.kind !== ENUM_TYPE_DEFINITION) {
+        // Only look at object types and enums (scalars are not supported yet, they need to be implemented somehow, e.g. via regex check)
+        if (definition.kind != OBJECT_TYPE_DEFINITION && definition.kind !== ENUM_TYPE_DEFINITION) {
+            validationMessages.push(ValidationMessage.error(VALIDATION_ERROR_INVALID_DEFINITION_KIND, {kind: definition.kind}, definition.loc))
             return undefined;
         }
 
@@ -60,13 +60,6 @@ function createTypeInputs(input: SchemaConfig, validationMessages: ValidationMes
         };
 
         switch (definition.kind) {
-            case SCALAR_TYPE_DEFINITION:
-                const scalarTypeInput: ScalarTypeInput = {
-                    ...common,
-                    astNode: definition,
-                    kind: TypeKind.SCALAR,
-                };
-                return scalarTypeInput;
             case ENUM_TYPE_DEFINITION:
                 const enumTypeInput: EnumTypeInput = {
                     ...common,
@@ -88,7 +81,7 @@ function createEnumValues(valueNodes: EnumValueDefinitionNode[]): string[] {
 }
 
 function createObjectTypeInput(definition: ObjectTypeDefinitionNode, schemaPart: SchemaPartConfig, validationMessages: ValidationMessage[]): ObjectTypeInput {
-    const entityType = getKindOfObjectTypeNode(definition);
+    const entityType = getKindOfObjectTypeNode(definition, validationMessages);
 
     const common = {
         name: definition.name.value,
@@ -114,10 +107,9 @@ function createObjectTypeInput(definition: ObjectTypeDefinitionNode, schemaPart:
                 ...common
             };
         default:
-            if (entityType === undefined) {
-                validationMessages.push(ValidationMessage.error(VALIDATION_ERROR_MISSING_OBJECT_TYPE_DIRECTIVE, undefined, definition.loc))
-                // interpret as root entity to be able to create the rest of the model input
-            }
+            // interpret unknown kinds as root entity because they are least likely to cause unnecessary errors
+            // (errors are already reported in getKindOfObjectTypeNode)
+
             const keyFieldASTNode: FieldDefinitionNode|undefined = getKeyFieldASTNode(definition, validationMessages);
             return {
                 ...common,
@@ -251,14 +243,21 @@ function mapIndexDefinition(index: ObjectValueNode): IndexDefinitionInput {
     return valueFromAST(index, indexDefinitionInputObjectType)
 }
 
-function getKindOfObjectTypeNode(definition: ObjectTypeDefinitionNode): string | undefined {
-    if (!definition.directives) {
-        return undefined;
-    }
-    const kindDirectives = definition.directives.filter(dir => OBJECT_TYPE_ENTITY_DIRECTIVES.includes(dir.name.value));
+function getKindOfObjectTypeNode(definition: ObjectTypeDefinitionNode, validationMessages?: ValidationMessage[]): string | undefined {
+    const kindDirectives = (definition.directives || []).filter(dir => OBJECT_TYPE_ENTITY_DIRECTIVES.includes(dir.name.value));
     if (kindDirectives.length !== 1) {
+        if (validationMessages) {
+            if (kindDirectives.length === 0) {
+                validationMessages.push(ValidationMessage.error(VALIDATION_ERROR_MISSING_OBJECT_TYPE_DIRECTIVE, undefined, definition.name));
+            } else {
+                for (const directive of kindDirectives) {
+                    validationMessages.push(ValidationMessage.error(VALIDATION_ERROR_MULTIPLE_OBJECT_TYPE_DIRECTIVES, undefined, directive));
+                }
+            }
+        }
         return undefined;
     }
+
     return kindDirectives[0].name.value;
 }
 
@@ -294,15 +293,15 @@ function getPermissions(node: ObjectTypeDefinitionNode|FieldDefinitionNode, vali
     if (!permissionProfileArg && !rolesDirective) {
         return undefined;
     }
-    const roles = rolesDirective ? {
+    const roles: RolesSpecifierInput|undefined = rolesDirective ? {
         read: getRolesOfArg(getNodeByName(rolesDirective.arguments, ROLES_READ_ARG), validationMessages),
-        readWrite: getRolesOfArg(getNodeByName(rolesDirective.arguments, ROLES_READ_WRITE_ARG), validationMessages)
+        readWrite: getRolesOfArg(getNodeByName(rolesDirective.arguments, ROLES_READ_WRITE_ARG), validationMessages),
+        astNode: rolesDirective
     } : undefined;
     return {
         permissionProfileName: permissionProfileNameAstNode ? permissionProfileNameAstNode.value : undefined,
         permissionProfileNameAstNode,
-        roles,
-        rolesASTNode: rolesDirective
+        roles
     };
 }
 

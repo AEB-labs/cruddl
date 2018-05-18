@@ -1,8 +1,5 @@
-import { parse } from 'graphql';
-
-import { NonUniqueFieldsValidator } from '../../../src/schema/preparation/ast-validation-modules/non-unique-fields-validator';
 import { expect } from 'chai';
-import { ValidationResult } from '../../../src/model/validation';
+import { assertValidatorAccepts, validate } from './helpers';
 
 const modelWithNonUniqueFields = `
             type Stuff @rootEntity {
@@ -11,28 +8,24 @@ const modelWithNonUniqueFields = `
             }
         `;
 
-const modelWithUniqueFields = `
-            type Stuff @rootEntity {
-                foo: String
-                bar: Bar @key
-            }
-            type Bar {
-                count: Int
-            }
-        `;
-
 describe('unique field validator', () => {
+
     it('finds non-unique fields', () => {
-        const ast = parse(modelWithNonUniqueFields);
-        const validationResult = new ValidationResult(new NonUniqueFieldsValidator().validate(ast));
+        const validationResult = validate(modelWithNonUniqueFields);
         expect(validationResult.hasErrors()).to.be.true;
         expect(validationResult.messages.length).to.equal(2);
     });
 
     it('finds no problems', () => {
-        const ast = parse(modelWithUniqueFields);
-        const validationResult = new ValidationResult(new NonUniqueFieldsValidator().validate(ast));
-        expect(validationResult.hasErrors()).to.be.false;
-        expect(validationResult.messages.length).to.equal(0);
+        assertValidatorAccepts(`
+            type Stuff @rootEntity {
+                foo: String @key
+                bar: [Bar]
+            }
+            type Bar @childEntity {
+                count: Int
+            }
+        `);
     });
+
 });

@@ -6,11 +6,7 @@ import { ObjectType, Type } from './type';
 import { PermissionProfile } from '../../authorization/permission-profile';
 import { Model } from './model';
 import { CALC_MUTATIONS_OPERATORS } from '../../schema/schema-defaults';
-
-export interface RolesSpecifier {
-    readonly read: ReadonlyArray<string>
-    readonly readWrite: ReadonlyArray<string>
-}
+import { RolesSpecifier } from './roles-specifier';
 
 export class Field implements ModelComponent {
     readonly model: Model;
@@ -40,10 +36,7 @@ export class Field implements ModelComponent {
         this.isRelation = input.isRelation || false;
         this.isList = input.isList || false;
         this.calcMutationOperators = new Set(input.calcMutationOperators || []);
-        this.roles = input.permissions && input.permissions.roles ? {
-            read: input.permissions.roles.read || [],
-            readWrite: input.permissions.roles.readWrite || [],
-        } : undefined;
+        this.roles = input.permissions && input.permissions.roles ? new RolesSpecifier(input.permissions.roles) : undefined;
         this.isSystemField = input.isSystemField || false;
     }
 
@@ -156,7 +149,7 @@ export class Field implements ModelComponent {
         }
 
         if (this.type.kind !== TypeKind.ROOT_ENTITY) {
-            context.addMessage(ValidationMessage.error(`Type "${this.type.name}" cannot be used with @relation because it is not a root entity type`, undefined, this.astNode));
+            context.addMessage(ValidationMessage.error(`Type "${this.type.name}" cannot be used with @relation because it is not a root entity type.`, undefined, this.astNode));
             return;
         }
 
@@ -222,7 +215,8 @@ export class Field implements ModelComponent {
         }
 
         if (this.declaringType.kind === TypeKind.VALUE_OBJECT) {
-            context.addMessage(ValidationMessage.error(`Type "${this.type.name}" is an entity extension and cannot be used within value object types. Change "${this.declaringType.name}" to an entity extension type or use a value object type for "${this.name}".`, undefined, this.astNode));
+            context.addMessage(ValidationMessage.error(`Type "${this.type.name}" is an entity extension type and cannot be used within value object types. Change "${this.declaringType.name}" to an entity extension type or use a value object type for "${this.name}".`, undefined, this.astNode));
+            return;
         }
 
         if (this.isList) {
@@ -236,7 +230,8 @@ export class Field implements ModelComponent {
         }
 
         if (this.declaringType.kind === TypeKind.VALUE_OBJECT) {
-            context.addMessage(ValidationMessage.error(`Type "${this.type.name}" is an entity extension and cannot be used within value object types. Change "${this.declaringType.name}" to an entity extension type or use a value object type for "${this.name}".`, undefined, this.astNode));
+            context.addMessage(ValidationMessage.error(`Type "${this.type.name}" is a child entity type and cannot be used within value object types. Change "${this.declaringType.name}" to an entity extension type or use a value object type for "${this.name}".`, undefined, this.astNode));
+            return;
         }
 
         if (!this.isList) {
@@ -250,15 +245,15 @@ export class Field implements ModelComponent {
         if (permissions.permissionProfileName != undefined && permissions.roles != undefined) {
             const message = `Permission profile and explicit role specifiers cannot be combined.`;
             context.addMessage(ValidationMessage.error(message, undefined, permissions.permissionProfileNameAstNode || this.input.astNode ));
-            context.addMessage(ValidationMessage.error(message, undefined, permissions.rolesASTNode || this.input.astNode ));
+            context.addMessage(ValidationMessage.error(message, undefined, permissions.roles.astNode || this.input.astNode ));
         }
 
         if (permissions.permissionProfileName != undefined && !this.model.getPermissionProfile(permissions.permissionProfileName)) {
             context.addMessage(ValidationMessage.error(`Permission profile "${permissions.permissionProfileName}" not found.`, undefined, permissions.permissionProfileNameAstNode || this.input.astNode ));
         }
 
-        if (this.roles && this.roles.read.length === 0 && this.roles.readWrite.length === 0) {
-            context.addMessage(ValidationMessage.warn(`No roles with read access are specified. Access is denied for everyone.`, undefined, permissions.rolesASTNode || this.astNode ));
+        if (this.roles) {
+            this.roles.validate(context);
         }
     }
 

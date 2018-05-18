@@ -451,7 +451,7 @@ describe('Field', () => {
                 typeName: 'DangerousGoodsInfo'
             }, addressType);
 
-            expectSingleErrorToInclude(field, `Type "DangerousGoodsInfo" is an entity extension and cannot be used within value object types. Change "Address" to an entity extension type or use a value object type for "items".`);
+            expectSingleErrorToInclude(field, `Type "DangerousGoodsInfo" is an entity extension type and cannot be used within value object types. Change "Address" to an entity extension type or use a value object type for "items".`);
         });
 
         it('rejects entity extension types on list fields', () => {
@@ -503,7 +503,7 @@ describe('Field', () => {
                 isList: true
             }, addressType);
 
-            expectSingleErrorToInclude(field, `Type "Item" is an entity extension and cannot be used within value object types. Change "Address" to an entity extension type or use a value object type for "items".`);
+            expectSingleErrorToInclude(field, `Type "Item" is a child entity type and cannot be used within value object types. Change "Address" to an entity extension type or use a value object type for "items".`);
         });
 
         it('rejects child entity types on non-list fields', () => {

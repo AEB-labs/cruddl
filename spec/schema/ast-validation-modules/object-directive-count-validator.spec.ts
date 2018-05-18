@@ -1,10 +1,5 @@
-import {ValidationResult} from "../../../src/model/validation/result";
-import {parse} from "graphql";
-import {
-    ObjectTypeDirectiveCountValidator,
-    VALIDATION_ERROR_MISSING_OBJECT_TYPE_DIRECTIVE, VALIDATION_ERROR_MULTIPLE_OBJECT_TYPE_DIRECTIVES
-} from '../../../src/schema/preparation/ast-validation-modules/object-type-directive-count-validator';
 import { expect } from 'chai';
+import { assertValidatorAccepts, assertValidatorRejects, validate } from './helpers';
 
 const modelWithTypeWithoutDirective = `
             type Stuff {
@@ -44,26 +39,20 @@ const modelWithoutDirectiveFlaws = `
         `;
 
 describe('object directive count validator', () => {
+
     it('finds types without directive', () => {
-        const ast = parse(modelWithTypeWithoutDirective);
-        const validationResult = new ValidationResult(new ObjectTypeDirectiveCountValidator().validate(ast));
-        expect(validationResult.hasErrors()).to.be.true;
-        expect(validationResult.messages.length).to.equal(1);
-        expect(validationResult.messages[0].message).to.equal(VALIDATION_ERROR_MISSING_OBJECT_TYPE_DIRECTIVE);
+        assertValidatorRejects(modelWithTypeWithoutDirective,'Add one of @rootEntity, @childEntity, @entityExtension or @valueObject.');
     });
 
     it('finds types with too many directive', () => {
-        const ast = parse(modelWithTypeWithToManyDirectives);
-        const validationResult = new ValidationResult(new ObjectTypeDirectiveCountValidator().validate(ast));
-        expect(validationResult.hasErrors()).to.be.true;
-        expect(validationResult.messages.length).to.equal(1);
-        expect(validationResult.messages[0].message).to.equal(VALIDATION_ERROR_MULTIPLE_OBJECT_TYPE_DIRECTIVES);
+        const validationResult = validate(modelWithTypeWithToManyDirectives);
+        expect(validationResult.getErrors().length, validationResult.toString()).to.equal(2);
+        expect(validationResult.getErrors()[0].message).to.equal('Only one of @rootEntity, @childEntity, @entityExtension or @valueObject can be used.');
+        expect(validationResult.getErrors()[1].message).to.equal('Only one of @rootEntity, @childEntity, @entityExtension or @valueObject can be used.');
     });
 
     it('accepts correct type directives', () => {
-        const ast = parse(modelWithoutDirectiveFlaws);
-        const validationResult = new ValidationResult(new ObjectTypeDirectiveCountValidator().validate(ast));
-        expect(validationResult.hasErrors()).to.be.false;
+        assertValidatorAccepts(modelWithoutDirectiveFlaws);
     })
 
 });

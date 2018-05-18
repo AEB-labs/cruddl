@@ -1,53 +1,31 @@
-import {ValidationResult} from "../../../src/model/validation/result";
-import {parse} from "graphql";
-import {
-    RootEntitiesWithoutReadRolesValidator,
-    VALIDATION_WARNING_MISSING_ROLE_ON_ROOT_ENTITY
-} from "../../../src/schema/preparation/ast-validation-modules/root-entities-without-read-roles";
-import { expect } from 'chai';
+import { assertValidatorAccepts, assertValidatorRejects, assertValidatorWarns } from './helpers';
 
-const modelWithRootEntityWithBadRole = `
+describe('root-entities-without-read-roles validator', () => {
+
+    it('rejects @roles without read or readWrite', () => {
+        assertValidatorWarns(`
             type Stuff @rootEntity @roles {
                 foo: [String]
             }
-        `;
+        `,
+            'No roles with read access are specified. Access is denied for everyone.');
+    });
 
-const modelWithRootEntityWithEmptyRole = `
+    it('warns @roles with empty roles', () => {
+        assertValidatorWarns(`
             type Stuff @rootEntity @roles(read: "") {
                 foo: [String]
             }
-        `;
-
-const modelWithRootEntityWithCorrectRole = `
-            type Stuff @rootEntity @roles(readWrite: "reader") {
-                foo: [String]
-            }
-        `;
-
-describe('root-entities-without-read-roles validator', () => {
-    it('rejects @roles without read or readWrite', () => {
-        const ast = parse(modelWithRootEntityWithBadRole);
-        const validationResult = new ValidationResult(new RootEntitiesWithoutReadRolesValidator().validate(ast));
-        expect(validationResult.hasErrors()).to.be.false;
-        expect(validationResult.hasWarnings()).to.be.true;
-        expect(validationResult.messages.length).to.equal(1);
-        expect(validationResult.messages[0].message).to.equal(VALIDATION_WARNING_MISSING_ROLE_ON_ROOT_ENTITY);
-    });
-
-    it('rejects @roles with empty roles', () => {
-        const ast = parse(modelWithRootEntityWithEmptyRole);
-        const validationResult = new ValidationResult(new RootEntitiesWithoutReadRolesValidator().validate(ast));
-        expect(validationResult.hasErrors()).to.be.false;
-        expect(validationResult.hasWarnings()).to.be.true;
-        expect(validationResult.messages.length).to.equal(1);
-        expect(validationResult.messages[0].message).to.equal(VALIDATION_WARNING_MISSING_ROLE_ON_ROOT_ENTITY);
+        `,
+            'Specified empty string as role.');
     });
 
     it('accepts non-nested lists', () => {
-        const ast = parse(modelWithRootEntityWithCorrectRole);
-        const validationResult = new ValidationResult(new RootEntitiesWithoutReadRolesValidator().validate(ast));
-        expect(validationResult.hasErrors()).to.be.false;
-        expect(validationResult.hasWarnings()).to.be.false;
-    })
+        assertValidatorAccepts(`
+            type Stuff @rootEntity @roles(readWrite: "reader") {
+                foo: [String]
+            }
+        `);
+    });
 
 });

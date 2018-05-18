@@ -104,7 +104,7 @@ describe('RootEntityType', () => {
                 keyFieldName: 'barCodes'
             }, model);
 
-            expectSingleErrorToInclude(type, `List fields can not be used as key field.`);
+            expectSingleErrorToInclude(type, `List fields cannot be used as key field.`);
         });
 
         it('rejects an object type field', () => {

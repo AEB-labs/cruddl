@@ -1,49 +1,32 @@
-import {ValidationResult} from "../../../src/model/validation/result";
-import {parse} from "graphql";
-import {
-    KnownObjectTypeDirectivesValidator,
-    VALIDATION_ERROR_UNKNOWN_OBJECT_TYPE_DIRECTIVE
-} from "../../../src/schema/preparation/ast-validation-modules/known-object-type-directives-validator";
 import { expect } from 'chai';
-
-const modelWithObjectTypeWithInvalidDirective = `
-            type Stuff @invalid {
-                foo: String
-            }
-        `;
-
-const modelWithObjectTypeWithValidDirective = `
-            type Stuff @rootEntity {
-                foo: String
-            }
-        `;
-
-const modelWithObjectTypeWithoutDirective = `
-            type Stuff {
-                foo: String
-            }
-        `;
+import { assertValidatorAccepts, assertValidatorRejects, validate } from './helpers';
 
 describe('known object type directive validator', () => {
     it('rejects unknown object type directives', () => {
-        const ast = parse(modelWithObjectTypeWithInvalidDirective);
-        const validationResult = new ValidationResult(new KnownObjectTypeDirectivesValidator().validate(ast));
+        const validationResult = validate(`
+            type Stuff @invalid @rootEntity {
+                foo: String
+            }
+        `);
         expect(validationResult.hasErrors()).to.be.true;
-        expect(validationResult.messages.length).to.equal(1);
-        expect(validationResult.messages[0].message).to.equal(VALIDATION_ERROR_UNKNOWN_OBJECT_TYPE_DIRECTIVE);
+        expect(validationResult.messages.length, validationResult.toString()).to.equal(1);
+        expect(validationResult.messages[0].message).to.equal('Unknown directive "invalid".');
     });
 
     it('accepts known object type directives', () => {
-        const ast = parse(modelWithObjectTypeWithValidDirective);
-        const validationResult = new ValidationResult(new KnownObjectTypeDirectivesValidator().validate(ast));
-        expect(validationResult.hasErrors()).to.be.false;
-        expect(validationResult.messages.length).to.equal(0);
+        assertValidatorAccepts(`
+            type Stuff @rootEntity {
+                foo: String
+            }
+        `);
     });
 
-    it('accepts object types without directives', () => {
-        const ast = parse(modelWithObjectTypeWithoutDirective);
-        const validationResult = new ValidationResult(new KnownObjectTypeDirectivesValidator().validate(ast));
-        expect(validationResult.hasErrors()).to.be.false;
-        expect(validationResult.messages.length).to.equal(0);
+    it('rejects object types without directives', () => {
+        assertValidatorRejects(`
+            type Stuff {
+                foo: String
+            }
+        `,
+            'Add one of @rootEntity, @childEntity, @entityExtension or @valueObject.');
     });
 });

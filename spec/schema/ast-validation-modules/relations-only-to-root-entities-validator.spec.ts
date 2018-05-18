@@ -1,41 +1,28 @@
-import {ValidationResult} from "../../../src/model/validation/result";
-import {parse} from "graphql";
-import {
-    RelationsOnlyToRootEntitiesValidator
-} from "../../../src/schema/preparation/ast-validation-modules/relations-only-to-root-entities-validator";
-import { expect } from 'chai';
+import { assertValidatorAccepts, assertValidatorRejects } from './helpers';
 
-const modelWithRelationToNonRoot = `
+describe('relations only on root entities validator', () => {
+
+    it('rejects @relation to non-@rootEntity', () => {
+        assertValidatorRejects(`
             type Stuff @childEntity {
                 foo: String
             }
             type Bar @rootEntity {
                 stuff: [Stuff] @relation
             }
-        `;
+        `,
+            'Type "Stuff" cannot be used with @relation because it is not a root entity type.');
+    });
 
-const modelWithoutRelationToNonRoot = `
+    it('accepts @relation to @rootEntity', () => {
+        assertValidatorAccepts(`
             type Stuff @rootEntity {
                 foo: String
             }
             type Bar @rootEntity {
                 stuff: [Stuff] @relation
             }
-        `;
-
-describe('relations only on root entities validator', () => {
-    it('rejects @relation to non-@rootEntity', () => {
-        const ast = parse(modelWithRelationToNonRoot);
-        const validationResult = new ValidationResult(new RelationsOnlyToRootEntitiesValidator().validate(ast));
-        expect(validationResult.hasErrors()).to.be.true;
-        expect(validationResult.messages.length).to.equal(1);
-        expect(validationResult.messages[0].message).to.equal('"Stuff" is not a root entity');
-    });
-
-    it('accepts @relation to @rootEntity', () => {
-        const ast = parse(modelWithoutRelationToNonRoot);
-        const validationResult = new ValidationResult(new RelationsOnlyToRootEntitiesValidator().validate(ast));
-        expect(validationResult.hasErrors()).to.be.false;
+        `);
     })
 
 });

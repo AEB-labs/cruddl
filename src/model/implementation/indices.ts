@@ -68,7 +68,7 @@ export class IndexField implements ModelComponent {
         }
 
         if (field.type.kind !== TypeKind.SCALAR && field.type.kind !== TypeKind.ENUM) {
-            addMessage(ValidationMessage.error(`Indices can only be defined on scalar or enum fields, but "${field.declaringType.name}.${field.name}" is an object type. Specify a dot-separated field path to create an index on an embedded object.`, undefined, this.astNode));
+            addMessage(ValidationMessage.error(`Indices can only be defined on scalar or enum fields, but the type of "${field.declaringType.name}.${field.name}" is an object type. Specify a dot-separated field path to create an index on an embedded object.`, undefined, this.astNode));
             return undefined;
         }
 
@@ -90,11 +90,15 @@ export class Index implements ModelComponent {
     constructor(private input: IndexDefinitionInput, public readonly declaringType: RootEntityType) {
         this.id = input.id;
         this.unique = input.unique;
-        this.fields = input.fields.map((fieldPath, index) => new IndexField(fieldPath, declaringType, (input.fieldASTNodes || [])[index] || this.astNode));
+        this.fields = (input.fields || []).map((fieldPath, index) => new IndexField(fieldPath, declaringType, (input.fieldASTNodes || [])[index] || this.astNode));
         this.astNode = input.astNode;
     }
 
     validate(context: ValidationContext) {
+        if (!this.fields.length) {
+            context.addMessage(ValidationMessage.error(`An index must specify at least one field.`, undefined, this.astNode))
+        }
+
         for (const field of this.fields) {
             field.validate(context);
         }

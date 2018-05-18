@@ -1,120 +1,103 @@
-
-import {ValidationResult} from "../../../src/model/validation/result";
-import {
-    EntityDirectiveNestingValidator, VALIDATION_ERROR_ENTITY_IN_VALUE_OBJECT_NOT_ALLOWED,
-    VALIDATION_ERROR_ROOT_ENTITY_NOT_EMBEDDABLE, VALIDATION_ERROR_EMBEDDED_CHILD_ENTITY_WITHOUT_LIST
-} from "../../../src/schema/preparation/ast-validation-modules/entity-directive-nesting-validator";
-import {parse} from "graphql";
-import { expect } from 'chai';
+import { assertValidatorAccepts, assertValidatorRejects } from './helpers';
 
 describe('entity directive nesting validator', () => {
 
-    assertValidatorAccepts('field of @rootEntity type as @relation', `
-        type Foo @rootEntity { fooo: String }
-        type Bar @rootEntity { foo: Foo @relation }
-    `);
+    it('accepts field of @rootEntity type as @relation', () => {
+        assertValidatorAccepts(`
+            type Foo @rootEntity { fooo: String }
+            type Bar @rootEntity { foo: Foo @relation }
+        `);
+    });
 
-    assertValidatorAccepts('field of @rootEntity type as @reference', `
-        type Foo @rootEntity { fooo: String } 
-        type Bar @rootEntity { foo: Foo @reference }
-    `);
+    it('accepts field of @rootEntity type as @reference', () => {
+        assertValidatorAccepts(`
+            type Foo @rootEntity { fooo: String @key } 
+            type Bar @rootEntity { foo: Foo @reference }
+        `);
+    });
 
-    assertValidatorAccepts('list of @rootEntity type as @relation', `
-        type Foo @rootEntity { fooo: String }
-        type Bar @rootEntity { foo: [Foo] @relation }
-    `);
+    it('accepts list of @rootEntity type as @relation', () => {
+        assertValidatorAccepts(`
+            type Foo @rootEntity { fooo: String }
+            type Bar @rootEntity { foo: [Foo] @relation }
+        `);
+    });
 
-    assertValidatorRejects('field of @rootEntity type without @relation or @reference', `
-        type Foo @rootEntity { fooo: String }      
-        type Bar @rootEntity { foo: Foo }
-    `, VALIDATION_ERROR_ROOT_ENTITY_NOT_EMBEDDABLE);
+    it('rejects field of @rootEntity type without @relation or @reference', () => {
+        assertValidatorRejects(`
+            type Foo @rootEntity { fooo: String }      
+            type Bar @rootEntity { foo: Foo }
+        `, 'Type "Foo" is a root entity type and cannot be embedded. Consider adding @reference or @relation.');
+    });
 
-    assertValidatorRejects('list of @rootEntity type without @relation or @reference', `
-        type Foo @rootEntity { fooo: String }
-        type Bar @rootEntity { foo: [Foo] }
-    `, VALIDATION_ERROR_ROOT_ENTITY_NOT_EMBEDDABLE);
+    it('rejects list of @rootEntity type without @relation or @reference', () => {
+        assertValidatorRejects(`
+            type Foo @rootEntity { fooo: String }
+            type Bar @rootEntity { foo: [Foo] }
+        `, 'Type "Foo" is a root entity type and cannot be embedded. Consider adding @reference or @relation.');
+    });
 
-    assertValidatorRejects('non nullable list of @rootEntity type without @relation or @reference', `
-        type Foo @rootEntity { fooo: String }
-        type Bar @rootEntity { foo: [Foo!]! }
-    `, VALIDATION_ERROR_ROOT_ENTITY_NOT_EMBEDDABLE);
+    it('rejects non nullable list of @rootEntity type without @relation or @reference', () => {
+        assertValidatorRejects(`
+            type Foo @rootEntity { fooo: String }
+            type Bar @rootEntity { foo: [Foo!]! }
+        `, 'Type "Foo" is a root entity type and cannot be embedded. Consider adding @reference or @relation.');
+    });
 
-    assertValidatorAccepts('nesting @valueObjects', `
-        type Foo @valueObject { fooo: String }
-        type Bar @valueObject { foo: Foo }
-    `);
+    it('accepts nesting @valueObjects', () => {
+        assertValidatorAccepts(`
+            type Foo @valueObject { fooo: String }
+            type Bar @valueObject { foo: Foo }
+        `);
+    });
 
-    assertValidatorAccepts('nesting @valueObject lists', `
-        type Foo @valueObject { fooo: String }
-        type Bar @valueObject { foo: [Foo] }
-    `);
+    it('accepts nesting @valueObject lists', () => {
+        assertValidatorAccepts(`
+            type Foo @valueObject { fooo: String }
+            type Bar @valueObject { foo: [Foo] }
+        `);
+    });
 
-    assertValidatorAccepts('nesting non-nullable @valueObject lists', `
-        type Foo @valueObject { fooo: String }
-        type Bar @valueObject { foo: [Foo!]! }
-    `);
+    it('accepts nesting non-nullable @valueObject lists', () => {
+        assertValidatorAccepts(`
+            type Foo @valueObject { fooo: String }
+            type Bar @valueObject { foo: [Foo!]! }
+        `);
+    });
 
-    assertValidatorRejects('nesting an entity into @valueObjects', `
-        type Foo @childEntity { fooo: String }
-        type Bar @valueObject { foo: Foo }
-    `, VALIDATION_ERROR_ENTITY_IN_VALUE_OBJECT_NOT_ALLOWED);
+    it('rejects nesting an entity into @valueObjects', () => {
+        assertValidatorRejects(`
+            type Foo @childEntity { fooo: String }
+            type Bar @valueObject { foo: Foo }
+        `, 'Type "Foo" is a child entity type and cannot be used within value object types. Change "Bar" to an entity extension type or use a value object type for "foo".');
+    });
 
-    assertValidatorRejects('nesting an entity list into @valueObjects', `
-        type Foo @childEntity { fooo: String }
-        type Bar @valueObject { foo: [Foo] }
-    `, VALIDATION_ERROR_ENTITY_IN_VALUE_OBJECT_NOT_ALLOWED);
+    it('rejects nesting an entity list into @valueObjects', () => {
+        assertValidatorRejects(`
+            type Foo @childEntity { fooo: String }
+            type Bar @valueObject { foo: [Foo] }
+        `, 'Type "Foo" is a child entity type and cannot be used within value object types. Change "Bar" to an entity extension type or use a value object type for "foo".');
+    });
 
-    assertValidatorRejects('nesting an non-null entity list into @valueObjects', `
-        type Foo @childEntity { fooo: String }
-        type Bar @valueObject { foo: [Foo!]! }
-    `, VALIDATION_ERROR_ENTITY_IN_VALUE_OBJECT_NOT_ALLOWED);
+    it('rejects nesting an non-null entity list into @valueObjects', () => {
+        assertValidatorRejects(`
+            type Foo @childEntity { fooo: String }
+            type Bar @valueObject { foo: [Foo!]! }
+        `, 'Type "Foo" is a child entity type and cannot be used within value object types. Change "Bar" to an entity extension type or use a value object type for "foo".');
+    });
 
-    assertValidatorAccepts('valueObjects with reference to @rootEntity', `
-        type Foo @rootEntity { fooo: String }
-        type Bar @valueObject { foo: Foo @reference }
-    `);
+    it('accepts valueObjects with reference to @rootEntity', () => {
+        assertValidatorAccepts(`
+            type Foo @rootEntity { fooo: String @key }
+            type Bar @valueObject { foo: Foo @reference }
+        `);
+    });
 
-    assertValidatorAccepts('valueObjects with list of reference to @rootEntity', `
-        type Foo @rootEntity { fooo: String }
-        type Bar @valueObject { foo: [Foo] @reference }
-    `);
-
-    assertValidatorAccepts('valueObjects with non-nullable list of reference to @rootEntity', `
-        type Foo @rootEntity { fooo: String }
-        type Bar @valueObject { foo: [Foo!]! @reference }
-    `);
-
-    assertValidatorRejects('@childEntity field usage without list', `
-        type Foo @childEntity { fooo: String }
-        type Bar @rootEntity { foo: Foo }
-    `, VALIDATION_ERROR_EMBEDDED_CHILD_ENTITY_WITHOUT_LIST);
+    it('rejects @childEntity field usage without list', () => {
+        assertValidatorRejects(`
+            type Foo @childEntity { fooo: String }
+            type Bar @rootEntity { foo: Foo }
+        `, 'Type "Foo" is a child entity type and can only be used in a list. Change the field type to "[Foo]", or use an entity extension or value object type instead.');
+    });
 
 });
-
-function assertValidatorRejects(expectation: string, model: string, msg: string) {
-    it('rejects ' + expectation, () => {
-        const ast = parse(model);
-        const validationResult = new ValidationResult(new EntityDirectiveNestingValidator().validate(ast));
-        expect(validationResult.hasErrors()).to.be.true;
-        expect(validationResult.messages.length).to.not.be.undefined;
-        expect(validationResult.messages[0].message).to.equal(msg);
-    });
-}
-
-function assertValidatorWarns(expectation: string, model: string, msg: string) {
-    it('warns ' + expectation, () => {
-        const ast = parse(model);
-        const validationResult = new ValidationResult(new EntityDirectiveNestingValidator().validate(ast));
-        expect(validationResult.hasWarnings()).to.be.true;
-        expect(validationResult.messages.length).to.equal(1);
-        expect(validationResult.messages[0].message).to.equal(msg);
-    });
-}
-
-function assertValidatorAccepts(expectation: string, model: string) {
-    it('accepts ' + expectation, () => {
-        const ast = parse(model);
-        const validationResult = new ValidationResult(new EntityDirectiveNestingValidator().validate(ast));
-        expect(validationResult.hasErrors()).to.be.false;
-    });
-}

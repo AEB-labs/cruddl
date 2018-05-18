@@ -4,10 +4,10 @@ export interface PermissionsInput {
     readonly permissionProfileNameAstNode?: ASTNode
     readonly permissionProfileName?: string
     readonly roles?: RolesSpecifierInput
-    readonly rolesASTNode?: ASTNode
 }
 
 export interface RolesSpecifierInput {
+    readonly astNode?: ASTNode
     readonly read?: ReadonlyArray<string>
     readonly readWrite?: ReadonlyArray<string>
 }
