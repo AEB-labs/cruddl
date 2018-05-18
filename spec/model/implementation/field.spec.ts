@@ -461,7 +461,7 @@ describe('Field', () => {
                 isList: true
             }, deliveryType);
 
-            expectSingleErrorToInclude(field, `Type "DangerousGoodsInfo" cannot be used in a list because it is an entity extension type. Use a child entity or value object type, or change the field type to "DangerousGoodsInfo".`);
+            expectSingleErrorToInclude(field, `Type "DangerousGoodsInfo" is an entity extension type and cannot be used in a list. Change the field type to "DangerousGoodsInfo" (without brackets), or use a child entity or value object type instead.`);
         });
     });
 
@@ -513,7 +513,7 @@ describe('Field', () => {
                 isList: false
             }, deliveryType);
 
-            expectSingleErrorToInclude(field, `Type "Item" can only be used in a list because it is a child entity type. Use an entity extension or value object type, or change the field type to "[Item]".`);
+            expectSingleErrorToInclude(field, `Type "Item" is a child entity type and can only be used in a list. Change the field type to "[Item]", or use an entity extension or value object type instead.`);
         });
     });
 

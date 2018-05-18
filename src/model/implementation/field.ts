@@ -133,7 +133,7 @@ export class Field implements ModelComponent {
 
         // root entities are not embeddable
         if (!this.isRelation && !this.isReference) {
-            if (this.declaringType.kind == TypeKind.ROOT_ENTITY) {
+            if (this.declaringType.kind == TypeKind.VALUE_OBJECT) {
                 context.addMessage(ValidationMessage.error(`Type "${this.type.name}" is a root entity type and cannot be embedded. Consider adding @reference.`, undefined, this.astNode));
             } else {
                 context.addMessage(ValidationMessage.error(`Type "${this.type.name}" is a root entity type and cannot be embedded. Consider adding @reference or @relation.`, undefined, this.astNode));
@@ -222,11 +222,11 @@ export class Field implements ModelComponent {
         }
 
         if (this.declaringType.kind === TypeKind.VALUE_OBJECT) {
-            context.addMessage(ValidationMessage.error(`Type "${this.type.name}" is an entity extension and cannot be used within value object types. Change "${this.declaringType.name}" to an entity extension type or use a value object type for "${this.name}".`));
+            context.addMessage(ValidationMessage.error(`Type "${this.type.name}" is an entity extension and cannot be used within value object types. Change "${this.declaringType.name}" to an entity extension type or use a value object type for "${this.name}".`, undefined, this.astNode));
         }
 
         if (this.isList) {
-            context.addMessage(ValidationMessage.error(`Type "${this.type.name}" cannot be used in a list because it is an entity extension type. Use a child entity or value object type, or change the field type to "${this.type.name}".`));
+            context.addMessage(ValidationMessage.error(`Type "${this.type.name}" is an entity extension type and cannot be used in a list. Change the field type to "${this.type.name}" (without brackets), or use a child entity or value object type instead.`, undefined, this.astNode));
         }
     }
 
@@ -236,11 +236,11 @@ export class Field implements ModelComponent {
         }
 
         if (this.declaringType.kind === TypeKind.VALUE_OBJECT) {
-            context.addMessage(ValidationMessage.error(`Type "${this.type.name}" is an entity extension and cannot be used within value object types. Change "${this.declaringType.name}" to an entity extension type or use a value object type for "${this.name}".`));
+            context.addMessage(ValidationMessage.error(`Type "${this.type.name}" is an entity extension and cannot be used within value object types. Change "${this.declaringType.name}" to an entity extension type or use a value object type for "${this.name}".`, undefined, this.astNode));
         }
 
         if (!this.isList) {
-            context.addMessage(ValidationMessage.error(`Type "${this.type.name}" can only be used in a list because it is a child entity type. Use an entity extension or value object type, or change the field type to "[${this.type.name}]".`))
+            context.addMessage(ValidationMessage.error(`Type "${this.type.name}" is a child entity type and can only be used in a list. Change the field type to "[${this.type.name}]", or use an entity extension or value object type instead.`, undefined, this.astNode))
         }
     }
 

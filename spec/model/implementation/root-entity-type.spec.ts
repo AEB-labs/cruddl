@@ -215,7 +215,7 @@ describe('RootEntityType', () => {
                 }]
             }, modelWithoutDefaultProfile);
 
-            expectSingleErrorToInclude(type, `No default permission profile defined. Either specify permissionProfile in @rootEntity or use the @roles directive.`);
+            expectSingleErrorToInclude(type, `No permissions specified for root entity "Delivery". Specify "permissionProfile" in @rootEntity, use the @roles directive, or add a permission profile with the name "default".`);
         });
 
         it('accepts with neither roles nor permission profile, but default profile in model', () => {

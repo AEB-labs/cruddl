@@ -53,7 +53,7 @@ function validateAndPrepareSchema(project: Project):
     const mergedSchema: DocumentNode = mergeSchemaDefinition(schemaConfig);
 
     const result = validatePostMerge(mergedSchema, rootContext, model);
-    messages.push(...result.messages);
+    //messages.push(...result.messages);
     messages.push(...model.validate().messages);
 
     const validationResult = new ValidationResult(messages);
@@ -73,7 +73,7 @@ export function createSchema(project: Project, databaseAdapter: DatabaseAdapter)
 
         const { validationResult, schemaConfig, mergedSchema, rootContext, model } = validateAndPrepareSchema(project);
         if (validationResult.hasErrors()) {
-            throw new Error('Project has errors:\n' + validationResult.messages.map(msg => msg.toString()).join('\n'))
+            throw new Error('Project has errors:\n' + validationResult.toString())
         }
 
         executePostMergeTransformationPipeline(mergedSchema, rootContext, model);

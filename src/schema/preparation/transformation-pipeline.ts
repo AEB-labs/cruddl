@@ -19,7 +19,6 @@ import { AddQueryMetaTypeTransformer } from './post-merge-ast-transformation-mod
 import { SchemaPartConfig } from '../../config/schema-config';
 import { AddNamespacesToTypesTransformer } from './pre-merge-ast-transformation-modules/add-namespaces-to-types-transformer';
 import { PermissionProfileMap } from '../../authorization/permission-profile';
-import { MoveUpFieldIndicesTransformer } from './pre-merge-ast-transformation-modules/move-up-field-indices-transformer';
 import { ImplementScalarTypesTransformer } from './schema-transformation-modules/implement-scalar-types';
 import { DatabaseAdapter } from '../../database/database-adapter';
 import { AddAliasBasedResolversTransformer } from './schema-transformation-modules/add-alias-based-resolvers';
@@ -29,8 +28,7 @@ import { AddOperationResolversTransformer } from './schema-transformation-module
 import { Model } from '../../model';
 
 const preMergePipeline: ASTTransformer[] = [
-    new AddNamespacesToTypesTransformer(),
-    new MoveUpFieldIndicesTransformer()
+    new AddNamespacesToTypesTransformer()
 ];
 
 const postMergePipeline: ASTTransformer[] = [

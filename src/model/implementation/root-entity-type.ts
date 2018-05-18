@@ -105,7 +105,7 @@ export class RootEntityType extends ObjectTypeBase {
         }
 
         if (permissions.permissionProfileName == undefined && permissions.roles == undefined && this.model.defaultPermissionProfile == undefined) {
-            context.addMessage(ValidationMessage.error(`No ${DEFAULT_PERMISSION_PROFILE} permission profile defined. Either specify permissionProfile in @rootEntity or use the @roles directive.`, undefined, permissions.permissionProfileNameAstNode || this.input.astNode ));
+            context.addMessage(ValidationMessage.error(`No permissions specified for root entity "${this.name}". Specify "permissionProfile" in @rootEntity, use the @roles directive, or add a permission profile with the name "${DEFAULT_PERMISSION_PROFILE}".`, undefined, permissions.permissionProfileNameAstNode || this.input.astNode ));
         }
 
         if (this.roles && this.roles.read.length === 0 && this.roles.readWrite.length === 0) {
