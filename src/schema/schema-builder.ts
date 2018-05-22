@@ -1,4 +1,5 @@
 import { buildASTSchema, DocumentNode, GraphQLSchema, parse, print } from 'graphql';
+import { SchemaGenerator } from '../schema-generation/schema-generator';
 import {
     ASTTransformationContext, executePostMergeTransformationPipeline, executePreMergeTransformationPipeline,
     executeSchemaTransformationPipeline, SchemaTransformationContext
@@ -75,18 +76,14 @@ export function createSchema(project: Project, databaseAdapter: DatabaseAdapter)
             throw new Error('Project has errors:\n' + validationResult.toString())
         }
 
-        executePostMergeTransformationPipeline(mergedSchema, rootContext, model);
-        if (logger.isTraceEnabled()) {
-            logger.trace(`Transformed schema: ${print(mergedSchema)}`);
-        }
-
         const schemaContext: SchemaTransformationContext = {
             ...rootContext,
             loggerProvider: project.loggerProvider,
             databaseAdapter
         };
 
-        const graphQLSchema = buildASTSchema(mergedSchema);
+        const generator = new SchemaGenerator(schemaContext);
+        const graphQLSchema = generator.generate(model);
         const finalSchema = executeSchemaTransformationPipeline(graphQLSchema, schemaContext, model);
         logger.info('Schema created successfully.');
         return finalSchema;

@@ -1,3 +1,4 @@
+import { capitalize } from '../../utils/utils';
 import { RootEntityType } from './root-entity-type';
 
 export class Namespace {
@@ -34,8 +35,12 @@ export class Namespace {
         ]));
     }
 
-    public get dotSeparatedPath() {
+    public get dotSeparatedPath(): string {
         return this.path.join('.');
+    }
+
+    public get pascalCasePath(): string {
+        return this.path.map(segment => capitalize(segment)).join('');
     }
 
     public get name(): string | undefined {
