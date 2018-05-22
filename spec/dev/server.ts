@@ -22,7 +22,7 @@ export async function start() {
         });
     }
 
-    const project = await loadProjectFromDir(path.resolve(__dirname, '../regression/logistics/model'));
+    const project = await loadProjectFromDir(path.resolve(__dirname, './model'));
     const schema = project.createSchema(db);
 
     const logger = globalContext.loggerProvider.getLogger('server');
