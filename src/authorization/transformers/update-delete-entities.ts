@@ -1,12 +1,12 @@
-import { decapitalize } from '../../utils/utils';
-import { AccessOperation, AuthContext, AUTHORIZATION_ERROR_NAME } from '../auth-basics';
 import {
     BinaryOperationQueryNode, BinaryOperator, ConstIntQueryNode, CountQueryNode, DeleteEntitiesQueryNode,
-    MergeObjectsQueryNode, ObjectQueryNode, PreExecQueryParms, QueryNode, RuntimeErrorQueryNode, TransformListQueryNode,
-    UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableQueryNode, WithPreExecutionQueryNode
-} from '../../query/definition';
+    ErrorIfNotTruthyResultValidator, MergeObjectsQueryNode, ObjectQueryNode, PreExecQueryParms, QueryNode,
+    RuntimeErrorQueryNode, TransformListQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode,
+    VariableQueryNode, WithPreExecutionQueryNode
+} from '../../query-tree';
+import { decapitalize } from '../../utils/utils';
+import { AccessOperation, AuthContext, AUTHORIZATION_ERROR_NAME } from '../auth-basics';
 import { ConditionExplanationContext, PermissionResult } from '../permission-descriptors';
-import { ErrorIfNotTruthyResultValidator } from '../../query/query-result-validators';
 import { getPermissionDescriptorOfRootEntityType } from '../permission-descriptors-in-model';
 
 export function transformUpdateEntitiesQueryNode(node: UpdateEntitiesQueryNode, authContext: AuthContext): QueryNode {

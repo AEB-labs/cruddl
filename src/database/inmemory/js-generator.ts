@@ -1,19 +1,17 @@
+import { compact } from 'lodash';
+import { invertRelationFieldSide, Relation, RelationFieldSide, RootEntityType } from '../../model';
 import {
     AddEdgesQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode,
     ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode,
     EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode,
     LiteralQueryNode, MergeObjectsQueryNode, ObjectQueryNode, OrderClause, OrderDirection, OrderSpecification,
-    QueryNode, RemoveEdgesQueryNode, RootEntityIDQueryNode, RuntimeErrorQueryNode, SetEdgeQueryNode,
-    TransformListQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode,
-    VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode
-} from '../../query/definition';
-import { js, JSCompoundQuery, JSFragment, JSQueryResultVariable, JSVariable } from './js';
-import { QueryResultValidator } from '../../query/query-result-validators';
-import { RUNTIME_ERROR_TOKEN } from '../../query/runtime-errors';
+    QueryNode, QueryResultValidator, RemoveEdgesQueryNode, RootEntityIDQueryNode, RUNTIME_ERROR_TOKEN,
+    RuntimeErrorQueryNode, SetEdgeQueryNode, TransformListQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode,
+    UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode
+} from '../../query-tree';
 import { decapitalize } from '../../utils/utils';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './inmemory-basics';
-import { invertRelationFieldSide, Relation, RelationFieldSide, RootEntityType } from '../../model';
-import { compact } from 'lodash';
+import { js, JSCompoundQuery, JSFragment, JSQueryResultVariable, JSVariable } from './js';
 
 const ID_FIELD_NAME = 'id';
 

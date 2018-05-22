@@ -3,7 +3,7 @@ import { GraphQLSchema, print } from 'graphql';
 import { evaluateQueryStatically } from '../../../query/static-evaluation';
 import { globalContext } from '../../../config/global';
 import { distillOperation } from '../../../graphql/query-distiller';
-import { QueryNode } from '../../../query/definition';
+import { QueryNode } from '../../../query-tree';
 import { createQueryTree } from '../../../query/query-tree-builder';
 import { applyAuthorizationToQueryTree } from '../../../authorization/execution';
 import { addOperationBasedResolvers } from '../../../graphql/operation-based-resolvers';

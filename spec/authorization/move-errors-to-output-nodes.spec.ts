@@ -1,6 +1,6 @@
 import {
     ListQueryNode, ObjectQueryNode, PropertySpecification, RuntimeErrorQueryNode, TransformListQueryNode
-} from '../../src/query/definition';
+} from '../../src/query-tree';
 import { moveErrorsToOutputNodes } from '../../src/authorization/move-errors-to-output-nodes';
 import { expect } from 'chai';
 

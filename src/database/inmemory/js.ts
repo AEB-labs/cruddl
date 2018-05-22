@@ -1,6 +1,6 @@
-import { arrayToObject, flatMap } from '../../utils/utils';
-import { QueryResultValidator } from '../../query/query-result-validators';
 import { cyan, magenta } from 'colors/safe';
+import { QueryResultValidator } from '../../query-tree';
+import { arrayToObject, flatMap } from '../../utils/utils';
 
 require('colors');
 

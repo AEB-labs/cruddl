@@ -1,4 +1,4 @@
-import { QueryNode } from '../query/definition';
+import { QueryNode } from '../query-tree';
 import { Model } from '../model';
 
 export interface DatabaseAdapter {

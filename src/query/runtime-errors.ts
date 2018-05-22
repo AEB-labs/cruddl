@@ -1,12 +1,7 @@
 import { defaultFieldResolver, GraphQLSchema } from 'graphql';
-import { isPromise } from '../utils/utils';
 import { transformSchema } from 'graphql-transformer/dist';
-
-export const RUNTIME_ERROR_TOKEN = '__cruddl_runtime_error';
-
-export interface RuntimeErrorValue {
-    __cruddl_runtime_error: string
-}
+import { extractRuntimeError, isRuntimeErrorValue } from '../query-tree';
+import { isPromise } from '../utils/utils';
 
 export function addRuntimeErrorResolvers(schema: GraphQLSchema) {
     return transformSchema(schema, {
@@ -31,18 +26,4 @@ export function addRuntimeErrorResolvers(schema: GraphQLSchema) {
             }
         }
     });
-}
-
-export function isRuntimeErrorValue(value: any): value is RuntimeErrorValue {
-    return typeof value == 'object' && value !== null && RUNTIME_ERROR_TOKEN in value;
-}
-
-export function extractRuntimeError(value: RuntimeErrorValue): Error {
-    return new Error(value.__cruddl_runtime_error);
-}
-
-export function createRuntimeErrorValue(message: string): RuntimeErrorValue {
-    return {
-        [RUNTIME_ERROR_TOKEN]: message
-    };
 }

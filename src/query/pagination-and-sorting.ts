@@ -4,7 +4,7 @@ import {
     BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, LiteralQueryNode, NullQueryNode, ObjectQueryNode,
     OrderClause, OrderDirection, OrderSpecification, PropertySpecification, QueryNode, UnaryOperationQueryNode,
     UnaryOperator
-} from './definition';
+} from '../query-tree';
 import { isArray } from 'util';
 import { isListType } from '../graphql/schema-utils';
 import {

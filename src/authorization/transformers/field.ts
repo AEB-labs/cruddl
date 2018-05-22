@@ -1,5 +1,5 @@
 import { AccessOperation, AuthContext, AUTHORIZATION_ERROR_NAME } from '../auth-basics';
-import { FieldQueryNode, QueryNode, RuntimeErrorQueryNode } from '../../query/definition';
+import { FieldQueryNode, QueryNode, RuntimeErrorQueryNode } from '../../query-tree';
 import { PermissionResult } from '../permission-descriptors';
 import { getPermissionDescriptorOfField } from '../permission-descriptors-in-model';
 

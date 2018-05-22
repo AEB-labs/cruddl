@@ -1,9 +1,9 @@
-import { AccessOperation, AuthContext, AUTHORIZATION_ERROR_NAME } from '../auth-basics';
 import {
-    CreateEntityQueryNode, PreExecQueryParms, QueryNode, RuntimeErrorQueryNode, WithPreExecutionQueryNode
-} from '../../query/definition';
+    CreateEntityQueryNode, ErrorIfNotTruthyResultValidator, PreExecQueryParms, QueryNode, RuntimeErrorQueryNode,
+    WithPreExecutionQueryNode
+} from '../../query-tree';
+import { AccessOperation, AuthContext, AUTHORIZATION_ERROR_NAME } from '../auth-basics';
 import { ConditionExplanationContext, PermissionResult } from '../permission-descriptors';
-import { ErrorIfNotTruthyResultValidator } from '../../query/query-result-validators';
 import { getPermissionDescriptorOfRootEntityType } from '../permission-descriptors-in-model';
 
 export function transformCreateEntityQueryNode(node: CreateEntityQueryNode, authContext: AuthContext): QueryNode {

@@ -4,7 +4,7 @@ import * as path from 'path';
 import { DistilledOperation, distillQuery } from '../../src/graphql/query-distiller';
 import { createQueryTree } from '../../src/query/query-tree-builder';
 import { getAQLQuery } from '../../src/database/arangodb/aql-generator';
-import { QueryNode } from '../../src/query/definition';
+import { QueryNode } from '../../src/query-tree';
 import { compact } from '../../src/utils/utils';
 import { applyAuthorizationToQueryTree } from '../../src/authorization/execution';
 import { Project } from '../../src/project/project';

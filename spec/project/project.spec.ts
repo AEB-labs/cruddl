@@ -1,7 +1,7 @@
 import { Logger, LoggerProvider } from '../../src/config/logging';
 import { createSchema } from '../../src/schema/schema-builder';
 import { graphql } from 'graphql';
-import { QueryNode } from '../../src/query/definition';
+import { QueryNode } from '../../src/query-tree';
 import { DatabaseAdapter } from '../../src/database/database-adapter';
 import { Project } from '../../src/project/project';
 import { ProjectSource } from '../../src/project/source';

@@ -4,7 +4,7 @@ import {
     BasicType, BinaryOperationQueryNode, BinaryOperator, ConditionalQueryNode, EntitiesQueryNode, FirstOfListQueryNode,
     ListQueryNode, LiteralQueryNode, NullQueryNode, ObjectQueryNode, PropertySpecification, QueryNode,
     TransformListQueryNode, TypeCheckQueryNode, VariableQueryNode
-} from './definition';
+} from '../query-tree';
 import { createCursorQueryNode, createOrderSpecification, createPaginationFilterNode } from './pagination-and-sorting';
 import { createFilterNode } from './filtering';
 import { ALL_ENTITIES_FIELD_PREFIX, CURSOR_FIELD, FILTER_ARG, FIRST_ARG } from '../schema/schema-defaults';

@@ -1,6 +1,9 @@
 import { uniq } from 'lodash';
-import { ConditionalQueryNode, FirstOfListQueryNode, ListQueryNode, ObjectQueryNode, PropertySpecification, QueryNode, RuntimeErrorQueryNode, TransformListQueryNode, VariableAssignmentQueryNode } from '../query/definition';
-import { visitQueryNode } from '../query/query-visitor';
+import {
+    ConditionalQueryNode, FirstOfListQueryNode, ListQueryNode, ObjectQueryNode, PropertySpecification, QueryNode,
+    RuntimeErrorQueryNode, TransformListQueryNode, VariableAssignmentQueryNode
+} from '../query-tree';
+import { visitQueryNode } from '../query-tree/visitor';
 import { VisitResult } from '../utils/visitor';
 
 /**

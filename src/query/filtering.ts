@@ -1,7 +1,7 @@
 import {
     BasicType, BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, CountQueryNode, LiteralQueryNode,
     QueryNode, TransformListQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, VariableQueryNode
-} from './definition';
+} from '../query-tree';
 import { isArray } from 'util';
 import {
     ARGUMENT_AND, ARGUMENT_OR, INPUT_FIELD_CONTAINS, INPUT_FIELD_ENDS_WITH, INPUT_FIELD_EQUAL, INPUT_FIELD_GT,

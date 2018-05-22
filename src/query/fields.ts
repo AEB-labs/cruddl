@@ -2,7 +2,7 @@ import {
     BinaryOperationQueryNode, BinaryOperator, EntitiesQueryNode, FieldQueryNode, FirstOfListQueryNode,
     FollowEdgeQueryNode, QueryNode, RootEntityIDQueryNode, TransformListQueryNode, VariableAssignmentQueryNode,
     VariableQueryNode
-} from './definition';
+} from '../query-tree';
 import { ID_FIELD } from '../schema/schema-defaults';
 import { createSafeListQueryNode } from './queries';
 import { Field, ObjectType, RootEntityType, TypeKind } from '../model';
