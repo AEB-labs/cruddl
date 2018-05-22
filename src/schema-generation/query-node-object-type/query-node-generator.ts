@@ -1,16 +1,22 @@
 import { FieldRequest, FieldSelection } from '../../graphql/query-distiller';
 import {
-    BasicType, ConditionalQueryNode, ListQueryNode, NullQueryNode, ObjectQueryNode, PropertySpecification, QueryNode,
-    TransformListQueryNode,
-    TypeCheckQueryNode, VariableQueryNode
+    BasicType, ConditionalQueryNode, NullQueryNode, ObjectQueryNode, PropertySpecification, QueryNode,
+    TransformListQueryNode, TypeCheckQueryNode, VariableAssignmentQueryNode, VariableQueryNode
 } from '../../query-tree';
+import { decapitalize } from '../../utils/utils';
+import { buildSafeListQueryNode } from '../query-node-utils';
 import { extractQueryTreeObjectType, isListType, QueryNodeField, QueryNodeObjectType } from './index';
 
 export function buildSafeObjectQueryNode(sourceNode: QueryNode, type: QueryNodeObjectType, selectionSet: ReadonlyArray<FieldSelection>) {
-    return new ConditionalQueryNode(
-        new TypeCheckQueryNode(sourceNode, BasicType.OBJECT),
-        buildObjectQueryNode(sourceNode, type, selectionSet),
-        new NullQueryNode());
+    const variableNode = new VariableQueryNode(decapitalize(type.name));
+    return new VariableAssignmentQueryNode({
+        variableNode,
+        variableValueNode: sourceNode,
+        resultNode: new ConditionalQueryNode(
+            new TypeCheckQueryNode(variableNode, BasicType.OBJECT),
+            buildObjectQueryNode(variableNode, type, selectionSet),
+            new NullQueryNode())
+    });
 }
 
 export function buildObjectQueryNode(sourceNode: QueryNode, type: QueryNodeObjectType, selectionSet: ReadonlyArray<FieldSelection>) {
@@ -26,9 +32,9 @@ export function buildObjectQueryNode(sourceNode: QueryNode, type: QueryNodeObjec
         // see if we need to map the selection set
         if (queryTreeObjectType) {
             if (isListType(field.type)) {
-                fieldQueryNode = buildSafeObjectQueryNode(fieldQueryNode, queryTreeObjectType, sel.fieldRequest.selectionSet);
-            } else {
                 fieldQueryNode = buildSafeTransformListQueryNode(fieldQueryNode, queryTreeObjectType, sel.fieldRequest.selectionSet);
+            } else {
+                fieldQueryNode = buildSafeObjectQueryNode(fieldQueryNode, queryTreeObjectType, sel.fieldRequest.selectionSet);
             }
         }
 
@@ -41,21 +47,17 @@ function buildFieldQueryNode(sourceNode: QueryNode, field: QueryNodeField, field
 }
 
 export function buildSafeTransformListQueryNode(listNode: QueryNode, itemType: QueryNodeObjectType, selectionSet: ReadonlyArray<FieldSelection>): QueryNode {
-    const safeList = buildSafeListQueryNode(listNode);
+    const listVar = new VariableQueryNode('list');
+    const safeList = buildSafeListQueryNode(listVar);
     const itemVariable = new VariableQueryNode(itemType.name);
     const innerNode = buildObjectQueryNode(itemVariable, itemType, selectionSet);
-    return new TransformListQueryNode({
-        listNode: safeList,
-        innerNode,
-        itemVariable
+    return new VariableAssignmentQueryNode({
+        variableNode: listVar,
+        variableValueNode: listNode,
+        resultNode: new TransformListQueryNode({
+            listNode: safeList,
+            innerNode,
+            itemVariable
+        })
     });
-}
-
-export function buildSafeListQueryNode(listNode: QueryNode) {
-    // to avoid errors because of eagerly evaluated list expression, we just convert non-lists to an empty list
-    return new ConditionalQueryNode(
-        new TypeCheckQueryNode(listNode, BasicType.LIST),
-        listNode,
-        new ListQueryNode([])
-    );
 }

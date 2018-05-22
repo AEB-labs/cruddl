@@ -7,13 +7,15 @@ import { Model } from '../model/implementation';
 import { NullQueryNode, QueryNode } from '../query-tree';
 import { evaluateQueryStatically } from '../query/static-evaluation';
 import { SchemaTransformationContext } from '../schema/preparation/transformation-pipeline';
+import { FilterTypeGenerator } from './filter-type-generator';
 import { NamespaceQueryTypeGenerator } from './namespace-query-type-generator';
 import { OutputTypeGenerator } from './output-type-generator';
-import { buildObjectQueryNode, convertToGraphQLObjectType, QueryNodeObjectType } from './query-node-object-type';
+import { buildSafeObjectQueryNode, convertToGraphQLObjectType, QueryNodeObjectType } from './query-node-object-type';
 
 export class SchemaGenerator {
-    private outputTypeGenerator = new OutputTypeGenerator();
-    private namespaceQueryTypeGenerator = new NamespaceQueryTypeGenerator(this.outputTypeGenerator);
+    private readonly filterTypeGenerator = new FilterTypeGenerator();
+    private readonly outputTypeGenerator = new OutputTypeGenerator(this.filterTypeGenerator);
+    private readonly namespaceQueryTypeGenerator = new NamespaceQueryTypeGenerator(this.outputTypeGenerator);
 
     constructor(
         private context: SchemaTransformationContext
@@ -50,7 +52,7 @@ export class SchemaGenerator {
 
                 const requestRoles = this.getRequestRoles(operationInfo.context);
                 logger.debug(`Request roles: ${requestRoles.join(', ')}`);
-                queryTree = buildObjectQueryNode(new NullQueryNode(), rootType, operation.selectionSet);
+                queryTree = buildSafeObjectQueryNode(new NullQueryNode(), rootType, operation.selectionSet);
                 if (logger.isTraceEnabled()) {
                     logger.trace('Before authorization: ' + queryTree.describe());
                 }
@@ -79,7 +81,7 @@ export class SchemaGenerator {
     }
 
     private getRequestRoles(context: any): string[] {
-        if (context.authRoles != undefined) {
+        if (context.authRoles == undefined) {
             return []
         }
         if (!Array.isArray(context.authRoles)) {
@@ -89,5 +91,3 @@ export class SchemaGenerator {
     }
 
 }
-
-
