@@ -1,3 +1,4 @@
+import { GraphQLString } from 'graphql';
 import { TypeConfig, TypeKind } from '../config';
 import { RootEntityType } from './root-entity-type';
 import { ScalarType } from './scalar-type';
@@ -15,7 +16,7 @@ export class InvalidType extends ScalarType {
         super({
             kind: TypeKind.SCALAR,
             name
-        })
+        }, GraphQLString)
     }
 }
 
@@ -30,7 +31,7 @@ export function createType(typeInput: TypeConfig, model: Model): Type {
         case TypeKind.VALUE_OBJECT:
             return new ValueObjectType(typeInput, model);
         case TypeKind.SCALAR:
-            return new ScalarType(typeInput);
+            throw new Error(`Custom scalar types are not yet supported`);
         case TypeKind.ENUM:
             return new EnumType(typeInput);
         default:

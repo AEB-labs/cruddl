@@ -1,3 +1,4 @@
+import { GraphQLString } from 'graphql';
 import { ScalarType, TypeKind } from '../../../src/model';
 import { expectSingleErrorToInclude, expectSingleWarningToInclude, expectToBeValid } from './validation-utils';
 
@@ -8,7 +9,7 @@ describe('Type', () => {
             const type = new ScalarType({
                 kind: TypeKind.SCALAR,
                 name: 'Delivery'
-            });
+            }, GraphQLString);
 
             expectToBeValid(type);
         });
@@ -17,7 +18,7 @@ describe('Type', () => {
             const type = new ScalarType({
                 kind: TypeKind.SCALAR,
                 name: ''
-            });
+            }, GraphQLString);
 
             expectSingleErrorToInclude(type, `Type name is empty.`);
         });
@@ -26,7 +27,7 @@ describe('Type', () => {
             const type = new ScalarType({
                 kind: TypeKind.SCALAR,
                 name: 'This_Is_Ugly'
-            });
+            }, GraphQLString);
 
             expectSingleErrorToInclude(type, `Type names should only contain alphanumeric characters.`);
         });
@@ -35,7 +36,7 @@ describe('Type', () => {
             const type = new ScalarType({
                 kind: TypeKind.SCALAR,
                 name: 'thisIsNotATypeName'
-            });
+            }, GraphQLString);
 
             expectSingleWarningToInclude(type, `Type names should start with an uppercase character.`);
         });
