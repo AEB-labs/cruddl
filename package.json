@@ -67,6 +67,7 @@
     "json-source-map": "^0.4.0",
     "jsondiffpatch": "^0.2.4",
     "lodash": "^4.17.4",
+    "memorize-decorator": "^0.2.1",
     "moment": "^2.19.1",
     "pluralize": "^7.0.0",
     "strip-json-comments": "^2.0.1",
