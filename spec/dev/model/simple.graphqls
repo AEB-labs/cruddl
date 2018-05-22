@@ -1,4 +1,11 @@
 type Hero @rootEntity {
     name: String
     age: Int
+    nickNames: [String]
+    skills: [Skill]
+}
+
+type Skill @valueObject {
+    description: String
+    strength: Float
 }

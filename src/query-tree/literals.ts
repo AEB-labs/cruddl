@@ -27,6 +27,8 @@ export class NullQueryNode extends QueryNode {
     public describe() {
         return `null`;
     }
+
+    static readonly NULL = new NullQueryNode();
 }
 
 /**
