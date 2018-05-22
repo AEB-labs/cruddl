@@ -1,3 +1,4 @@
+import memorize from 'memorize-decorator';
 import { Field, ObjectType, Type } from '../model';
 import { FieldQueryNode, TransformListQueryNode, VariableQueryNode } from '../query-tree';
 import { FILTER_ARG } from '../schema/schema-defaults';
@@ -6,14 +7,20 @@ import { FilterTypeGenerator } from './filter-type-generator';
 import { makeNonNullableList, QueryNodeField, QueryNodeOutputType } from './query-node-object-type';
 import { buildSafeListQueryNode } from './query-node-utils';
 
+let nextIndex = 0;
+
 export class OutputTypeGenerator {
+    private index = nextIndex++;
+
     constructor(
         private readonly filterTypeGenerator: FilterTypeGenerator
     ) {
 
     }
 
+    @memorize()
     generate(type: Type): QueryNodeOutputType {
+        console.log(`OutputTypeGenerator${this.index}.generate(${type.name})`);
         if (type.isObjectType) {
             return this.generateObjectType(type);
         }
@@ -23,7 +30,7 @@ export class OutputTypeGenerator {
         throw new Error(`not implemented yet`);
     }
 
-    generateObjectType(objectType: ObjectType): QueryNodeOutputType {
+    private generateObjectType(objectType: ObjectType): QueryNodeOutputType {
         return {
             name: objectType.name,
             description: objectType.description,

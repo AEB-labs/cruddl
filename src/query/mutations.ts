@@ -95,7 +95,7 @@ function createCreateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestSta
     });
 }
 
-function prepareMutationInput(input: PlainObject, objectType: ObjectType, mutationType: MutationType, fieldCollector: Set<Field>): PlainObject {
+export function prepareMutationInput(input: PlainObject, objectType: ObjectType, mutationType: MutationType, fieldCollector: Set<Field>): PlainObject {
 
     let preparedInput: PlainObject = { ...input };
 
@@ -336,7 +336,7 @@ function createUpdateEntityQueryNode(fieldRequest: FieldRequest, fieldRequestSta
     });
 }
 
-function getRelationAddRemoveStatements(obj: PlainObject, parentType: ObjectType, sourceIDNode: QueryNode, isAddRemove: boolean): QueryNode[] {
+export function getRelationAddRemoveStatements(obj: PlainObject, parentType: ObjectType, sourceIDNode: QueryNode, isAddRemove: boolean): QueryNode[] {
     // note: we don't check if the target ids exists. This would be a constraint that will be checked in Foxx once we
     // implement Foxx. It's not easy to do this in AQL because we can't throw errors in AQL.
 
