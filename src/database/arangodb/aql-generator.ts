@@ -1,18 +1,17 @@
+import { Relation, RelationFieldSide, RootEntityType } from '../../model';
 import {
     AddEdgesQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode,
     ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeFilter,
     EdgeIdentifier, EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode,
     ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, ObjectQueryNode, OrderDirection, OrderSpecification,
-    PartialEdgeIdentifier, QueryNode, RemoveEdgesQueryNode, RootEntityIDQueryNode, RuntimeErrorQueryNode,
-    SetEdgeQueryNode, TransformListQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator,
-    UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode
+    PartialEdgeIdentifier, QueryNode, RemoveEdgesQueryNode, RootEntityIDQueryNode, RUNTIME_ERROR_TOKEN,
+    RuntimeErrorQueryNode, SetEdgeQueryNode, TransformListQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode,
+    UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode
 } from '../../query-tree';
+import { QueryResultValidator } from '../../query/query-result-validators';
+import { simplifyBooleans } from '../../query/query-tree-utils';
 import { aql, AQLCompoundQuery, AQLFragment, AQLQueryResultVariable, AQLVariable } from './aql';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './arango-basics';
-import { Relation, RelationFieldSide, RootEntityType } from '../../model';
-import { simplifyBooleans } from '../../query/query-tree-utils';
-import { QueryResultValidator } from '../../query/query-result-validators';
-import { RUNTIME_ERROR_TOKEN } from '../../query/runtime-errors';
 
 enum AccessType {
     READ,
