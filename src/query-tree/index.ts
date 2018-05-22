@@ -8,4 +8,5 @@ export * from './operators';
 export * from './pre-exec';
 export * from './queries';
 export * from './type-check';
+export * from './validation';
 export * from './variables';

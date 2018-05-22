@@ -1,12 +1,11 @@
-import { DatabaseAdapter } from '../database-adapter';
-import { QueryNode } from '../../query-tree';
 import { globalContext, SchemaContext } from '../../config/global';
 import { Logger } from '../../config/logging';
-import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS } from '../../query/query-result-validators';
+import { Model } from '../../model';
+import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS, QueryNode } from '../../query-tree';
+import { DatabaseAdapter } from '../database-adapter';
+import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './inmemory-basics';
 import { JSCompoundQuery, JSExecutableQuery } from './js';
 import { getJSQuery } from './js-generator';
-import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './inmemory-basics';
-import { Model } from '../../model';
 import uuid = require('uuid');
 
 export class InMemoryDB {

@@ -1,4 +1,5 @@
 /**
+ * A node in an expression tree to be evaluated in a data base
  *
  * This is kind of a query language definition, tailored for our use case. There is no string representation, but
  * the objects can "describe" themselves for a human-readable representation.
@@ -33,7 +34,8 @@
  *      }
  *    }
  *
- *
+ * Classes should extend QueryNode if they are considered part of the query tree. Instances of QueryNode can be visited
+ * by visitQueryNode and they can be structurally compared with `equals`.
  */
 export abstract class QueryNode {
     abstract describe(): string;

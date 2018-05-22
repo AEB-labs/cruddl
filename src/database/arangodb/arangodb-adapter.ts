@@ -1,14 +1,13 @@
-import { DatabaseAdapter } from '../database-adapter';
-import { QueryNode } from '../../query-tree';
-import { getAQLQuery } from './aql-generator';
 import { Database } from 'arangojs';
-import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './arango-basics';
 import { globalContext, SchemaContext } from '../../config/global';
 import { Logger } from '../../config/logging';
-import { AQLCompoundQuery, AQLExecutableQuery } from './aql';
-import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS } from '../../query/query-result-validators';
-import { calculateRequiredIndexOperations, getRequiredIndicesFromModel, IndexDefinition } from '../index-helpers';
 import { Model, RootEntityType } from '../../model';
+import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS, QueryNode } from '../../query-tree';
+import { DatabaseAdapter } from '../database-adapter';
+import { calculateRequiredIndexOperations, getRequiredIndicesFromModel, IndexDefinition } from '../index-helpers';
+import { AQLCompoundQuery, AQLExecutableQuery } from './aql';
+import { getAQLQuery } from './aql-generator';
+import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './arango-basics';
 
 const DEFAULT_INDEX_TYPE = 'persistent'; // persistent is a skiplist index
 

@@ -1,13 +1,21 @@
-import { FieldRequest } from '../graphql/query-distiller';
 import { getNamedType } from 'graphql';
+import {
+    getAddChildEntityFieldName, getAddRelationFieldName, getRemoveChildEntityFieldName, getRemoveRelationFieldName,
+    getUpdateChildEntityFieldName
+} from '../graphql/names';
+import { FieldRequest } from '../graphql/query-distiller';
+import {
+    CalcMutationsOperator, Field, Namespace, ObjectType, Relation, RelationFieldSide, RootEntityType
+} from '../model';
 import {
     AddEdgesQueryNode, AffectedFieldInfoQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator,
     ConcatListsQueryNode, ConditionalQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeFilter,
-    EdgeIdentifier, EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FirstOfListQueryNode, ListQueryNode,
-    LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, PartialEdgeIdentifier, PreExecQueryParms,
-    PropertySpecification, QueryNode, RemoveEdgesQueryNode, RootEntityIDQueryNode, SetEdgeQueryNode, SetFieldQueryNode,
-    TransformListQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode,
-    VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode
+    EdgeIdentifier, EntitiesQueryNode, EntityFromIdQueryNode, ErrorIfEmptyResultValidator, FieldQueryNode,
+    FirstOfListQueryNode, ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode,
+    PartialEdgeIdentifier, PreExecQueryParms, PropertySpecification, QueryNode, QueryResultValidator,
+    RemoveEdgesQueryNode, RootEntityIDQueryNode, SetEdgeQueryNode, SetFieldQueryNode, TransformListQueryNode,
+    TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode,
+    VariableQueryNode, WithPreExecutionQueryNode
 } from '../query-tree';
 import {
     ADD_CHILD_ENTITIES_FIELD_PREFIX, CALC_MUTATIONS_OPERATORS, CREATE_ENTITY_FIELD_PREFIX,
@@ -15,16 +23,8 @@ import {
     MUTATION_ID_ARG, MUTATION_INPUT_ARG, MutationType, REMOVE_CHILD_ENTITIES_FIELD_PREFIX,
     UPDATE_ALL_ENTITIES_FIELD_PREFIX, UPDATE_CHILD_ENTITIES_FIELD_PREFIX, UPDATE_ENTITY_FIELD_PREFIX, WILDCARD_CHARACTER
 } from '../schema/schema-defaults';
-import { createEntityObjectNode, createTransformListQueryNode } from './queries';
 import { AnyValue, decapitalize, filterProperties, mapValues, PlainObject } from '../utils/utils';
-import {
-    getAddChildEntityFieldName, getAddRelationFieldName, getRemoveChildEntityFieldName, getRemoveRelationFieldName,
-    getUpdateChildEntityFieldName
-} from '../graphql/names';
-import {
-    CalcMutationsOperator, Field, Namespace, ObjectType, Relation, RelationFieldSide, RootEntityType
-} from '../model';
-import { ErrorIfEmptyResultValidator, QueryResultValidator } from './query-result-validators';
+import { createEntityObjectNode, createTransformListQueryNode } from './queries';
 import uuid = require('uuid');
 
 /**

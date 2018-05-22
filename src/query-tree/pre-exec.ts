@@ -1,6 +1,6 @@
 import { compact, indent } from '../utils/utils';
-import { QueryResultValidator } from '../query/query-result-validators';
 import { QueryNode } from './base';
+import { QueryResultValidator } from './validation';
 import { VariableQueryNode } from './variables';
 
 export class PreExecQueryParms extends QueryNode {
