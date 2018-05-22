@@ -8,7 +8,7 @@ import {
     PropertySpecification, QueryNode, RemoveEdgesQueryNode, RootEntityIDQueryNode, SetEdgeQueryNode, SetFieldQueryNode,
     TransformListQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode,
     VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode
-} from './definition';
+} from '../query-tree';
 import {
     ADD_CHILD_ENTITIES_FIELD_PREFIX, CALC_MUTATIONS_OPERATORS, CREATE_ENTITY_FIELD_PREFIX,
     DELETE_ALL_ENTITIES_FIELD_PREFIX, DELETE_ENTITY_FIELD_PREFIX, ENTITY_CREATED_AT, ENTITY_UPDATED_AT, ID_FIELD,

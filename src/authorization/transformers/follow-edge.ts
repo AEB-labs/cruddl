@@ -1,7 +1,7 @@
 import { AccessOperation, AuthContext, AUTHORIZATION_ERROR_NAME } from '../auth-basics';
 import {
     FollowEdgeQueryNode, QueryNode, RuntimeErrorQueryNode, TransformListQueryNode, VariableQueryNode
-} from '../../query/definition';
+} from '../../query-tree';
 import { PermissionResult } from '../permission-descriptors';
 import { invertRelationFieldSide } from '../../model';
 import {

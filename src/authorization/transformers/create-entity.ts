@@ -1,7 +1,7 @@
 import { AccessOperation, AuthContext, AUTHORIZATION_ERROR_NAME } from '../auth-basics';
 import {
     CreateEntityQueryNode, PreExecQueryParms, QueryNode, RuntimeErrorQueryNode, WithPreExecutionQueryNode
-} from '../../query/definition';
+} from '../../query-tree';
 import { ConditionExplanationContext, PermissionResult } from '../permission-descriptors';
 import { ErrorIfNotTruthyResultValidator } from '../../query/query-result-validators';
 import { getPermissionDescriptorOfRootEntityType } from '../permission-descriptors-in-model';

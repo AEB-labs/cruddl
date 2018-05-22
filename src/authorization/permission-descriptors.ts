@@ -1,7 +1,7 @@
 import {
     BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, FieldQueryNode, LiteralQueryNode, QueryNode,
     UnknownValueQueryNode
-} from '../query/definition';
+} from '../query-tree';
 import { simplifyBooleans } from '../query/query-tree-utils';
 import { Field, Permission, PermissionProfile, RootEntityType } from '../model';
 import { flatMap } from 'lodash';

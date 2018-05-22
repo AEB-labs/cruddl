@@ -1,5 +1,5 @@
 import { DatabaseAdapter } from '../database-adapter';
-import { QueryNode } from '../../query/definition';
+import { QueryNode } from '../../query-tree';
 import { globalContext, SchemaContext } from '../../config/global';
 import { Logger } from '../../config/logging';
 import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS } from '../../query/query-result-validators';

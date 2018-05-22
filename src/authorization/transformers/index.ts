@@ -2,7 +2,7 @@ import {
     AffectedFieldInfoQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode,
     FollowEdgeQueryNode,
     QueryNode, UpdateEntitiesQueryNode
-} from '../../query/definition';
+} from '../../query-tree';
 import { transformFieldQueryNode } from './field';
 import { AuthContext } from '../auth-basics';
 import { transformEntitiesQueryNode, transformEntityFromIdQueryNode } from './entities';

@@ -4,7 +4,7 @@ import {
     BinaryOperationQueryNode, BinaryOperator, ConstIntQueryNode, CountQueryNode, DeleteEntitiesQueryNode,
     MergeObjectsQueryNode, ObjectQueryNode, PreExecQueryParms, QueryNode, RuntimeErrorQueryNode, TransformListQueryNode,
     UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableQueryNode, WithPreExecutionQueryNode
-} from '../../query/definition';
+} from '../../query-tree';
 import { ConditionExplanationContext, PermissionResult } from '../permission-descriptors';
 import { ErrorIfNotTruthyResultValidator } from '../../query/query-result-validators';
 import { getPermissionDescriptorOfRootEntityType } from '../permission-descriptors-in-model';

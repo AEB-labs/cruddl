@@ -3,7 +3,7 @@ import { distillQuery } from '../../src/graphql/query-distiller';
 import { createQueryTree } from '../../src/query/query-tree-builder';
 import {
     EntitiesQueryNode, FieldQueryNode, ObjectQueryNode, RootEntityIDQueryNode, TransformListQueryNode
-} from '../../src/query/definition';
+} from '../../src/query-tree';
 import { expect } from 'chai';
 import { createModel, Model } from '../../src/model';
 import { SchemaConfig } from '../../src/config/schema-config';

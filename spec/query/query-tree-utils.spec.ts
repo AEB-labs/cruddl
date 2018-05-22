@@ -1,7 +1,7 @@
 import {
     BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, LiteralQueryNode, QueryNode, UnaryOperationQueryNode,
     UnaryOperator
-} from '../../src/query/definition';
+} from '../../src/query-tree';
 import { simplifyBooleans } from '../../src/query/query-tree-utils';
 import { expect } from 'chai';
 

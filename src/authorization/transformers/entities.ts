@@ -1,7 +1,7 @@
 import {
     ConditionalQueryNode, EntitiesQueryNode, EntityFromIdQueryNode, NullQueryNode, RuntimeErrorQueryNode,
     TransformListQueryNode, VariableAssignmentQueryNode, VariableQueryNode
-} from '../../query/definition';
+} from '../../query-tree';
 import { AccessOperation, AuthContext, AUTHORIZATION_ERROR_NAME } from '../auth-basics';
 import { PermissionResult } from '../permission-descriptors';
 import { getPermissionDescriptorOfRootEntityType } from '../permission-descriptors-in-model';

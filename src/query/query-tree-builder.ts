@@ -1,5 +1,5 @@
 import { DistilledOperation, FieldRequest } from '../graphql/query-distiller';
-import { NullQueryNode, ObjectQueryNode, PropertySpecification, QueryNode } from './definition';
+import { NullQueryNode, ObjectQueryNode, PropertySpecification, QueryNode } from '../query-tree';
 import { MUTATION_TYPE, QUERY_TYPE } from '../schema/schema-defaults';
 import { createQueryNamespaceNode } from './queries';
 import { createMutationNamespaceNode } from './mutations';

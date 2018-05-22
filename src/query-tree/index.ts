@@ -1,6 +1,6 @@
 import { compact, indent } from '../utils/utils';
-import { Field, Relation, RelationFieldSide, RootEntityType } from '../model';
-import { QueryResultValidator } from './query-result-validators';
+import { Field, Relation, RelationFieldSide, RootEntityType } from '../model/index';
+import { QueryResultValidator } from '../query/query-result-validators';
 import { blue, cyan, green, magenta, red } from 'colors/safe';
 
 /**

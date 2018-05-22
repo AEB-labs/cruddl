@@ -1,5 +1,5 @@
 import { DatabaseAdapter } from '../database-adapter';
-import { QueryNode } from '../../query/definition';
+import { QueryNode } from '../../query-tree';
 import { getAQLQuery } from './aql-generator';
 import { Database } from 'arangojs';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './arango-basics';

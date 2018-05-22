@@ -1,4 +1,4 @@
-import { AddEdgesQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, QueryNode, RemoveEdgesQueryNode, RuntimeErrorQueryNode, SetEdgeQueryNode, UpdateEntitiesQueryNode } from '../query/definition';
+import { AddEdgesQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, QueryNode, RemoveEdgesQueryNode, RuntimeErrorQueryNode, SetEdgeQueryNode, UpdateEntitiesQueryNode } from '../query-tree';
 import { visitQueryNode } from '../query/query-visitor';
 import { AuthContext } from './auth-basics';
 import { moveErrorsToOutputNodes } from './move-errors-to-output-nodes';

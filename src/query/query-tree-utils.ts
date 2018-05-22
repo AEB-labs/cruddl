@@ -2,7 +2,7 @@ import {
     BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, FieldQueryNode, FirstOfListQueryNode, ObjectQueryNode,
     OrderClause, OrderSpecification, PropertySpecification, QueryNode, RootEntityIDQueryNode, UnaryOperationQueryNode,
     UnaryOperator, VariableAssignmentQueryNode
-} from './definition';
+} from '../query-tree';
 
 /**
  * Traverses recursively through Unary/Binary operations, extracts all variable definitions and replaces them by their

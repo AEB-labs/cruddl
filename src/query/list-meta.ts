@@ -1,7 +1,7 @@
 import { FieldRequest } from '../graphql/query-distiller';
 import {
     CountQueryNode, ObjectQueryNode, PropertySpecification, QueryNode, TransformListQueryNode, VariableQueryNode
-} from './definition';
+} from '../query-tree';
 import { createFilterNode } from './filtering';
 import { COUNT_META_FIELD, FILTER_ARG } from '../schema/schema-defaults';
 import { decapitalize } from '../utils/utils';

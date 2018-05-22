@@ -1,5 +1,5 @@
 import { DatabaseAdapter } from '../../../src/database/database-adapter';
-import { QueryNode } from '../../../src/query/definition';
+import { QueryNode } from '../../../src/query-tree';
 import { Model, Relation, TypeKind } from '../../../src/model';
 import { expect } from 'chai';
 
