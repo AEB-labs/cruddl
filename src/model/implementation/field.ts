@@ -212,7 +212,8 @@ export class Field implements ModelComponent {
             const inverseFields = this.type.fields.filter(field => field.inverseOf === this);
             if (inverseFields.length === 0) {
                 // no @relation(inverseOf: "thisField") - should be ok, but is suspicious if there is a matching @relation back to this type
-                const matchingRelation = this.type.fields.find(field => field.isRelation && field.type === this.declaringType && field.inverseOf == undefined);
+                // (look for inverseOfFieldName instead of inverseOf so that we don't emit this warning if the inverseOf config is invalid)
+                const matchingRelation = this.type.fields.find(field => field.isRelation && field.type === this.declaringType && field.input.inverseOfFieldName == undefined);
                 if (matchingRelation) {
                     context.addMessage(ValidationMessage.warn(`This field and "${matchingRelation.declaringType.name}.${matchingRelation.name}" define separate relations. Consider using the "inverseOf" argument to add a backlink to an existing relation.`, undefined, this.astNode));
                 }
