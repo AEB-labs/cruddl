@@ -3,7 +3,7 @@ import { TypeKind, ValueObjectTypeConfig } from '../config';
 import { Model } from './model';
 
 export class ValueObjectType extends ObjectTypeBase {
-    constructor(input: Exclude<ValueObjectTypeConfig, 'typeKind'>, model: Model) {
+    constructor(input: ValueObjectTypeConfig, model: Model) {
         super(input, model);
     }
 
