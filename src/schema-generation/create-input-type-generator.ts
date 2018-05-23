@@ -1,7 +1,7 @@
 import { GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
 import { flatMap, fromPairs, toPairs } from 'lodash';
 import memorize from 'memorize-decorator';
-import { ChildEntityType, Field, ObjectType, RootEntityType } from '../model';
+import { ChildEntityType, EntityExtensionType, Field, ObjectType, RootEntityType, ValueObjectType } from '../model';
 import { ENTITY_CREATED_AT, ENTITY_UPDATED_AT, ID_FIELD } from '../schema/schema-defaults';
 import { AnyValue, PlainObject } from '../utils/utils';
 import { TypedInputFieldBase, TypedInputObjectType } from './typed-input-object-type';
@@ -206,8 +206,7 @@ export class CreateInputTypeGenerator {
             return this.generateForChildEntityType(type);
         }
 
-        return new CreateObjectInputType(`Create${type.name}Input`,
-            flatMap(type.fields, (field: Field) => this.generateFields(field)));
+        return this.generateForSimpleObjectType(type);
     }
 
     @memorize()
@@ -222,12 +221,18 @@ export class CreateInputTypeGenerator {
             flatMap(type.fields, (field: Field) => this.generateFields(field)));
     }
 
+    @memorize()
+    private generateForSimpleObjectType(type: EntityExtensionType|ValueObjectType): CreateObjectInputType {
+        // TODO when implementing update input types, only use one input type for create+update
+        return new CreateObjectInputType(`${type.name}Input`,
+            flatMap(type.fields, (field: Field) => this.generateFields(field)));
+    }
+
     private generateFields(field: Field): CreateInputField[] {
         if (field.isSystemField) {
             return [];
         }
 
-        // TODO Also allow enum here (needs an EnumTypeGenerator)
         if (field.type.isScalarType) {
             if (field.isList) {
                 // don't allow null values in lists
@@ -237,11 +242,18 @@ export class CreateInputTypeGenerator {
             }
         }
 
-        if (field.type.isChildEntityType) {
-            const inputType = this.generateForChildEntityType(field.type);
-            return [new ObjectListCreateInputField(field, inputType)];
+        if (field.type.isEnumType) {
+            // TODO allow enum above (needs an EnumTypeGenerator)
+            return [];
         }
 
-        return [];
+        if (field.type.isRootEntityType) {
+            // TODO references
+        }
+
+        // child entity, value object, entity extension
+        const inputType = this.generate(field.type);
+        const inputField = field.isList ? new ObjectListCreateInputField(field, inputType) : new ObjectCreateInputField(field, inputType);
+        return [inputField];
     }
 }

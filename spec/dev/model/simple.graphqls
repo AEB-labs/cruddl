@@ -4,6 +4,7 @@ type Hero @rootEntity {
     nickNames: [String]
     movies: [Movie]
     skills: [Skill]
+    suit: Suit
 }
 
 type Skill @valueObject {
@@ -13,4 +14,8 @@ type Skill @valueObject {
 
 type Movie @childEntity {
     name: String
+}
+
+type Suit @entityExtension {
+    color: String
 }
