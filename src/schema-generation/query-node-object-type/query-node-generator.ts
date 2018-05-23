@@ -5,7 +5,8 @@ import {
 } from '../../query-tree';
 import { decapitalize } from '../../utils/utils';
 import { buildSafeListQueryNode } from '../query-node-utils';
-import { extractQueryTreeObjectType, isListType, QueryNodeField, QueryNodeObjectType } from './index';
+import { QueryNodeField, QueryNodeObjectType } from './definition';
+import { extractQueryTreeObjectType, isListType, resolveThunk } from './utils';
 
 export function buildSafeObjectQueryNode(sourceNode: QueryNode, type: QueryNodeObjectType, selectionSet: ReadonlyArray<FieldSelection>) {
     if (sourceNode instanceof ObjectQueryNode) {
@@ -27,7 +28,7 @@ export function buildSafeObjectQueryNode(sourceNode: QueryNode, type: QueryNodeO
 export function buildObjectQueryNode(sourceNode: QueryNode, type: QueryNodeObjectType, selectionSet: ReadonlyArray<FieldSelection>) {
     // TODO build a map of the fields by name somewhere
     return new ObjectQueryNode(selectionSet.map(sel => {
-        const field = type.fields.find(f => f.name == sel.fieldRequest.fieldName);
+        const field = resolveThunk(type.fields).find(f => f.name == sel.fieldRequest.fieldName);
         if (!field) {
             throw new Error(`Missing field ${sel.fieldRequest.fieldName}`);
         }

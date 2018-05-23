@@ -1,7 +1,9 @@
 import { expect } from 'chai';
 import { GraphQLEnumType, GraphQLInputObjectType, GraphQLList, GraphQLNonNull, GraphQLString } from 'graphql';
 import { ChildEntityType, Model, RootEntityType, TypeKind } from '../../src/model';
-import { CreateInputTypeGenerator } from '../../src/schema-generation/create-input-type-generator';
+import {
+    CreateInputTypeGenerator, ObjectCreateInputField
+} from '../../src/schema-generation/create-input-type-generator';
 import { EnumTypeGenerator } from '../../src/schema-generation/enum-type-generator';
 
 describe('CreateInputTypeGenerator', () => {
@@ -547,5 +549,40 @@ describe('CreateInputTypeGenerator', () => {
                 expect(inputType.getInputType().getFields().updatedAt).to.be.undefined;
             });
         });
+    });
+
+    describe('with recursive types', () => {
+        const model = new Model({
+            types: [
+                {
+                    kind: TypeKind.VALUE_OBJECT,
+                    name: 'Node',
+                    fields: [
+                        {
+                            name: 'parent',
+                            typeName: 'Node'
+                        }
+                    ]
+                }
+            ]
+        });
+
+        it ('does not enter an infinite loop on creation', () => {
+            generator.generate(model.getValueObjectTypeOrThrow('Node'));
+        });
+
+        it ('creates a cyclic object structure', () => {
+            const inputType = generator.generate(model.getValueObjectTypeOrThrow('Node'));
+            const parentField = inputType.fields.find(f => f.name == 'parent');
+            expect((parentField as ObjectCreateInputField).objectInputType).to.equal(inputType);
+        });
+
+        it ('creates a cyclic graphql input type structure', () => {
+            const inputType = generator.generate(model.getValueObjectTypeOrThrow('Node'));
+            const graphqlType = inputType.getInputType();
+            const parentField = graphqlType.getFields().parent;
+            expect(parentField.type).to.equal(graphqlType);
+        });
+
     });
 });

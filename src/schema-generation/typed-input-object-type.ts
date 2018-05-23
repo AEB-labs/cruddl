@@ -1,6 +1,7 @@
-import { GraphQLInputFieldConfig, GraphQLInputObjectType, GraphQLInputType } from 'graphql';
+import { GraphQLInputFieldConfig, GraphQLInputObjectType, GraphQLInputType, Thunk } from 'graphql';
 import { chain } from 'lodash';
 import memorize from 'memorize-decorator';
+import { resolveThunk } from './query-node-object-type';
 
 export interface TypedInputFieldBase<TField extends TypedInputFieldBase<TField>> {
     readonly name: string
@@ -8,20 +9,17 @@ export interface TypedInputFieldBase<TField extends TypedInputFieldBase<TField>>
 }
 
 export class TypedInputObjectType<TField extends TypedInputFieldBase<TField>> {
-    private readonly fieldMap: ReadonlyMap<string, TField>;
-
     constructor(
         public readonly name: string,
-        public readonly fields: ReadonlyArray<TField>
+        private readonly _fields: Thunk<ReadonlyArray<TField>>
     ) {
-        this.fieldMap = new Map(fields.map((field): [string, TField] => ([field.name, field])));
     }
 
     @memorize()
     getInputType(): GraphQLInputObjectType {
         return new GraphQLInputObjectType({
             name: this.name,
-            fields: chain(this.fields)
+            fields: () => chain(this.fields)
                 .keyBy(field => field.name)
                 .mapValues((field): GraphQLInputFieldConfig => ({
                     type: field.inputType instanceof TypedInputObjectType ? field.inputType.getInputType() : field.inputType
@@ -36,5 +34,14 @@ export class TypedInputObjectType<TField extends TypedInputFieldBase<TField>> {
             throw new Error(`Expected field "${name}" to exist on input object type "${this.name}"`);
         }
         return field;
+    }
+
+    @memorize()
+    private get fieldMap() {
+        return new Map(this.fields.map((field): [string, TField] => ([field.name, field])));
+    }
+
+    public get fields(): ReadonlyArray<TField> {
+        return resolveThunk(this._fields);
     }
 }

@@ -1,4 +1,4 @@
-import { GraphQLInputType, GraphQLString } from 'graphql';
+import { GraphQLInputType, GraphQLString, Thunk } from 'graphql';
 import { flatMap } from 'lodash';
 import memorize from 'memorize-decorator';
 import { EnumType, Field, ObjectType, ScalarType } from '../model';
@@ -19,7 +19,7 @@ import { TypedInputFieldBase, TypedInputObjectType } from './typed-input-object-
 export class FilterObjectType extends TypedInputObjectType<FilterField> {
     constructor(
         name: string,
-        fields: ReadonlyArray<FilterField>
+        fields: Thunk<ReadonlyArray<FilterField>>
     ) {
         super(name, fields);
     }
@@ -107,7 +107,7 @@ export class FilterTypeGenerator {
     @memorize()
     generate(type: ObjectType): FilterObjectType {
         return new FilterObjectType(`${type.name}Filter`,
-            flatMap(type.fields, (field: Field) => this.generateFilterFields(field)));
+            () => flatMap(type.fields, (field: Field) => this.generateFilterFields(field)));
     }
 
     private generateFilterFields(field: Field): FilterField[] {

@@ -16,7 +16,6 @@ export class OutputTypeGenerator {
 
     }
 
-    @memorize()
     generate(type: Type): QueryNodeOutputType {
         if (type.isObjectType) {
             return this.generateObjectType(type);
@@ -30,11 +29,12 @@ export class OutputTypeGenerator {
         throw new Error(`Unsupported type kind: ${(type as Type).kind}`);
     }
 
+    @memorize()
     private generateObjectType(objectType: ObjectType): QueryNodeOutputType {
         return {
             name: objectType.name,
             description: objectType.description,
-            fields: objectType.fields.map(field => this.createField(field))
+            fields: () => objectType.fields.map(field => this.createField(field))
         };
     }
     private createField(field: Field): QueryNodeField {

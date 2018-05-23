@@ -2,16 +2,18 @@ import { GraphQLFieldConfig, GraphQLList, GraphQLNonNull, GraphQLObjectType, Gra
 import { chain } from 'lodash';
 import memorize from 'memorize-decorator';
 import { aliasBasedResolver } from '../../graphql/alias-based-resolvers';
+import { ObjectType } from '../../model';
 import { QueryNodeListType, QueryNodeNonNullType, QueryNodeObjectType, QueryNodeOutputType } from './definition';
-import { isGraphQLOutputType } from './utils';
+import { isGraphQLOutputType, resolveThunk } from './utils';
 
 export class QueryNodeObjectTypeConverter {
     @memorize()
     convertToGraphQLObjectType(type: QueryNodeObjectType): GraphQLObjectType {
+        console.log(`convert ${type.name}`);
         return new GraphQLObjectType({
             name: type.name,
             description: type.description,
-            fields: chain(type.fields)
+            fields: () => chain(resolveThunk(type.fields))
                 .keyBy(field => field.name)
                 .mapValues((field): GraphQLFieldConfig<any, any> => ({
                     description: field.description,

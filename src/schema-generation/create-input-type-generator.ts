@@ -1,4 +1,4 @@
-import { GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
+import { GraphQLInputType, GraphQLList, GraphQLNonNull, Thunk } from 'graphql';
 import { flatMap, fromPairs, toPairs } from 'lodash';
 import memorize from 'memorize-decorator';
 import { ChildEntityType, EntityExtensionType, Field, ObjectType, RootEntityType, ValueObjectType } from '../model';
@@ -15,7 +15,7 @@ function getCurrentISODate() {
 export class CreateObjectInputType extends TypedInputObjectType<CreateInputField> {
     constructor(
         name: string,
-        fields: ReadonlyArray<CreateInputField>
+        fields: Thunk<ReadonlyArray<CreateInputField>>
     ) {
         super(name, fields);
     }
@@ -218,20 +218,20 @@ export class CreateInputTypeGenerator {
     @memorize()
     generateForRootEntityType(type: RootEntityType): CreateRootEntityInputType {
         return new CreateRootEntityInputType(`Create${type.name}Input`,
-            flatMap(type.fields, (field: Field) => this.generateFields(field)));
+            () => flatMap(type.fields, (field: Field) => this.generateFields(field)));
     }
 
     @memorize()
     generateForChildEntityType(type: ChildEntityType): CreateChildEntityInputType {
         return new CreateChildEntityInputType(`Create${type.name}Input`,
-            flatMap(type.fields, (field: Field) => this.generateFields(field)));
+            () => flatMap(type.fields, (field: Field) => this.generateFields(field)));
     }
 
     @memorize()
     private generateForSimpleObjectType(type: EntityExtensionType | ValueObjectType): CreateObjectInputType {
         // TODO when implementing update input types, only use one input type for create+update
         return new CreateObjectInputType(`${type.name}Input`,
-            flatMap(type.fields, (field: Field) => this.generateFields(field)));
+            () => flatMap(type.fields, (field: Field) => this.generateFields(field)));
     }
 
     private generateFields(field: Field): CreateInputField[] {

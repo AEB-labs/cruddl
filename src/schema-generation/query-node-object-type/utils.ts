@@ -1,6 +1,6 @@
 import {
     GraphQLEnumType, GraphQLInterfaceType, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLOutputType,
-    GraphQLScalarType, GraphQLUnionType
+    GraphQLScalarType, GraphQLUnionType, Thunk
 } from 'graphql';
 import { QueryNodeListType, QueryNodeNonNullType, QueryNodeObjectType, QueryNodeOutputType } from './definition';
 import { QueryNodeNullableType } from './index';
@@ -34,4 +34,8 @@ export function isListType(type: QueryNodeOutputType): boolean {
 
 export function makeNonNullableList<T extends QueryNodeNullableType>(type: T): QueryNodeNonNullType<QueryNodeListType<QueryNodeNonNullType<T>>> {
     return new QueryNodeNonNullType(new QueryNodeListType(new QueryNodeNonNullType(type)));
+}
+
+export function resolveThunk<T>(thunk: Thunk<T>): T {
+    return typeof thunk === 'function' ? thunk() : thunk;
 }

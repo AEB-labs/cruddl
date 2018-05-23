@@ -1,5 +1,6 @@
 import {
-    GraphQLEnumType, GraphQLFieldConfigArgumentMap, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLScalarType
+    GraphQLEnumType, GraphQLFieldConfigArgumentMap, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLScalarType,
+    Thunk
 } from 'graphql';
 import { QueryNode } from '../../query-tree';
 
@@ -14,7 +15,7 @@ export interface QueryNodeField {
 export interface QueryNodeObjectType {
     name: string
     description?: string
-    fields: ReadonlyArray<QueryNodeField>
+    fields: Thunk<ReadonlyArray<QueryNodeField>>
 }
 
 export class QueryNodeNonNullType<T extends QueryNodeNullableType> {
