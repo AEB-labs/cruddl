@@ -3,31 +3,31 @@ import { Field, ObjectType, Type } from '../model';
 import { FieldQueryNode, TransformListQueryNode, VariableQueryNode } from '../query-tree';
 import { FILTER_ARG } from '../schema/schema-defaults';
 import { decapitalize } from '../utils/utils';
+import { EnumTypeGenerator } from './enum-type-generator';
 import { FilterTypeGenerator } from './filter-type-generator';
 import { makeNonNullableList, QueryNodeField, QueryNodeOutputType } from './query-node-object-type';
 import { buildSafeListQueryNode } from './query-node-utils';
 
-let nextIndex = 0;
-
 export class OutputTypeGenerator {
-    private index = nextIndex++;
-
     constructor(
-        private readonly filterTypeGenerator: FilterTypeGenerator
+        private readonly filterTypeGenerator: FilterTypeGenerator,
+        private readonly enumTypeGenerator: EnumTypeGenerator
     ) {
 
     }
 
     @memorize()
     generate(type: Type): QueryNodeOutputType {
-        console.log(`OutputTypeGenerator${this.index}.generate(${type.name})`);
         if (type.isObjectType) {
             return this.generateObjectType(type);
         }
         if (type.isScalarType) {
             return type.graphQLScalarType;
         }
-        throw new Error(`not implemented yet`);
+        if (type.isEnumType) {
+            return this.enumTypeGenerator.generate(type);
+        }
+        throw new Error(`Unsupported type kind: ${(type as Type).kind}`);
     }
 
     private generateObjectType(objectType: ObjectType): QueryNodeOutputType {

@@ -8,6 +8,7 @@ import { ObjectQueryNode, QueryNode } from '../query-tree';
 import { evaluateQueryStatically } from '../query/static-evaluation';
 import { SchemaTransformationContext } from '../schema/preparation/transformation-pipeline';
 import { CreateInputTypeGenerator } from './create-input-type-generator';
+import { EnumTypeGenerator } from './enum-type-generator';
 import { FilterTypeGenerator } from './filter-type-generator';
 import { NamespaceMutationTypeGenerator } from './namespace-mutation-type-generator';
 import { NamespaceQueryTypeGenerator } from './namespace-query-type-generator';
@@ -15,9 +16,10 @@ import { OutputTypeGenerator } from './output-type-generator';
 import { buildSafeObjectQueryNode, QueryNodeObjectType, QueryNodeObjectTypeConverter } from './query-node-object-type';
 
 export class SchemaGenerator {
+    private readonly enumTypeGenerator = new EnumTypeGenerator();
     private readonly filterTypeGenerator = new FilterTypeGenerator();
-    private readonly outputTypeGenerator = new OutputTypeGenerator(this.filterTypeGenerator);
-    private readonly createTypeGenerator = new CreateInputTypeGenerator();
+    private readonly outputTypeGenerator = new OutputTypeGenerator(this.filterTypeGenerator, this.enumTypeGenerator);
+    private readonly createTypeGenerator = new CreateInputTypeGenerator(this.enumTypeGenerator);
     private readonly namespaceQueryTypeGenerator = new NamespaceQueryTypeGenerator(this.outputTypeGenerator);
     private readonly namespaceMutationTypeGenerator = new NamespaceMutationTypeGenerator(this.outputTypeGenerator, this.createTypeGenerator);
     private readonly queryNodeObjectTypeConverter = new QueryNodeObjectTypeConverter();
@@ -63,17 +65,17 @@ export class SchemaGenerator {
                 if (logger.isTraceEnabled()) {
                     logger.trace('Before authorization: ' + queryTree.describe());
                 }
-                queryTree = applyAuthorizationToQueryTree(queryTree, { authRoles: requestRoles});
+                queryTree = applyAuthorizationToQueryTree(queryTree, {authRoles: requestRoles});
                 if (logger.isTraceEnabled()) {
                     logger.trace('After authorization: ' + queryTree.describe());
                 }
             } finally {
                 globalContext.unregisterContext();
             }
-            let { canEvaluateStatically, result } = evaluateQueryStatically(queryTree);
+            let {canEvaluateStatically, result} = evaluateQueryStatically(queryTree);
             if (!canEvaluateStatically) {
                 result = await this.context.databaseAdapter.execute(queryTree);
-                logger.debug(`Execution successful`)
+                logger.debug(`Execution successful`);
             } else {
                 logger.debug(`Execution successful (evaluated statically without database adapter))`);
             }
@@ -82,14 +84,14 @@ export class SchemaGenerator {
             }
             return result;
         } catch (e) {
-            logger.error("Error evaluating GraphQL query: " + e.stack);
+            logger.error('Error evaluating GraphQL query: ' + e.stack);
             throw e;
         }
     }
 
     private getRequestRoles(context: any): string[] {
         if (context.authRoles == undefined) {
-            return []
+            return [];
         }
         if (!Array.isArray(context.authRoles)) {
             throw new Error(`Expected authRoles property in schema context to be an array, but is ${typeof context.authRoles}`);

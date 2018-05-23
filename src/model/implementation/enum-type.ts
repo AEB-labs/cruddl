@@ -4,7 +4,10 @@ import { EnumTypeConfig, TypeKind } from '../config';
 export class EnumType extends TypeBase {
     constructor(input: EnumTypeConfig) {
         super(input);
+        this.values = input.values;
     }
+
+    readonly values: ReadonlyArray<string>;
 
     readonly isObjectType: false = false;
     readonly kind: TypeKind.ENUM = TypeKind.ENUM;

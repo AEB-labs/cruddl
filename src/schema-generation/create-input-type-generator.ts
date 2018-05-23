@@ -4,6 +4,7 @@ import memorize from 'memorize-decorator';
 import { ChildEntityType, EntityExtensionType, Field, ObjectType, RootEntityType, ValueObjectType } from '../model';
 import { ENTITY_CREATED_AT, ENTITY_UPDATED_AT, ID_FIELD } from '../schema/schema-defaults';
 import { AnyValue, PlainObject } from '../utils/utils';
+import { EnumTypeGenerator } from './enum-type-generator';
 import { TypedInputFieldBase, TypedInputObjectType } from './typed-input-object-type';
 import uuid = require('uuid');
 
@@ -197,6 +198,11 @@ export class ObjectListCreateInputField extends BasicCreateInputField {
 }
 
 export class CreateInputTypeGenerator {
+    constructor(
+        private readonly enumTypeGenerator: EnumTypeGenerator
+    ) {
+    }
+
     @memorize()
     generate(type: ObjectType): CreateObjectInputType {
         if (type.isRootEntityType) {
@@ -233,18 +239,14 @@ export class CreateInputTypeGenerator {
             return [];
         }
 
-        if (field.type.isScalarType) {
+        if (field.type.isScalarType || field.type.isEnumType) {
+            const inputType = field.type.isEnumType ? this.enumTypeGenerator.generate(field.type) : field.type.graphQLScalarType;
             if (field.isList) {
                 // don't allow null values in lists
-                return [new BasicListCreateInputField(field, new GraphQLList(new GraphQLNonNull(field.type.graphQLScalarType)))];
+                return [new BasicListCreateInputField(field, new GraphQLList(new GraphQLNonNull(inputType)))];
             } else {
-                return [new BasicCreateInputField(field, field.type.graphQLScalarType)];
+                return [new BasicCreateInputField(field, inputType)];
             }
-        }
-
-        if (field.type.isEnumType) {
-            // TODO allow enum above (needs an EnumTypeGenerator)
-            return [];
         }
 
         if (field.type.isRootEntityType) {

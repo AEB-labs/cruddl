@@ -1,10 +1,13 @@
 import { expect } from 'chai';
-import { GraphQLInputObjectType, GraphQLList, GraphQLNonNull, GraphQLString } from 'graphql';
+import { GraphQLEnumType, GraphQLInputObjectType, GraphQLList, GraphQLNonNull, GraphQLString } from 'graphql';
 import { ChildEntityType, Model, RootEntityType, TypeKind } from '../../src/model';
 import { CreateInputTypeGenerator } from '../../src/schema-generation/create-input-type-generator';
+import { EnumTypeGenerator } from '../../src/schema-generation/enum-type-generator';
 
 describe('CreateInputTypeGenerator', () => {
     const model = new Model({types: []});
+
+    const generator = new CreateInputTypeGenerator(new EnumTypeGenerator);
 
     describe('with simple scalar fields', () => {
         const type = new RootEntityType({
@@ -17,7 +20,7 @@ describe('CreateInputTypeGenerator', () => {
                 }
             ]
         }, model);
-        const inputType = new CreateInputTypeGenerator().generate(type);
+        const inputType = generator.generate(type);
 
         it('includes them in the input type', () => {
             expect(inputType.getInputType().getFields()['name'].type).to.equal(GraphQLString);
@@ -64,6 +67,69 @@ describe('CreateInputTypeGenerator', () => {
         });
     });
 
+    describe('with enum fields', () => {
+        const model = new Model({
+            types: [
+                {
+                    kind: TypeKind.ENUM,
+                    name: 'Morality',
+                    values: ['GOOD', 'EVIL']
+                }
+            ]
+        });
+
+        const type = new RootEntityType({
+            kind: TypeKind.ROOT_ENTITY,
+            name: 'Hero',
+            fields: [
+                {
+                    name: 'morality',
+                    typeName: 'Morality'
+                }
+            ]
+        }, model);
+        const inputType = generator.generate(type);
+
+        it('includes them in the input type', () => {
+            expect(inputType.getInputType().getFields()['morality'].type).to.be.an.instanceOf(GraphQLEnumType);
+        });
+
+        describe('prepare()', () => {
+            it('includes it if specified', () => {
+                const prepared = inputType.prepareValue({morality: 'EVIL'});
+                expect(prepared.morality).to.equal('EVIL');
+            });
+
+            it('includes it if set to null', () => {
+                // mimic the update case where setting to null does not remove the property but sets it to null
+                const prepared = inputType.prepareValue({morality: null});
+                expect(prepared.morality).to.be.null;
+            });
+
+            it('does not include it it if not specified', () => {
+                const prepared = inputType.prepareValue({});
+                expect(prepared.morality).to.be.undefined;
+            });
+        });
+
+        describe('getAffectedFields()', () => {
+            it('includes it if specified', () => {
+                const fields = inputType.getAffectedFields({morality: 'EVIL'});
+                expect(fields).to.deep.equal([type.getFieldOrThrow('morality')]);
+            });
+
+            it('includes it if specified as null', () => {
+                const fields = inputType.getAffectedFields({morality: null});
+                expect(fields).to.deep.equal([type.getFieldOrThrow('morality')]);
+            });
+
+            it('does not include it if not specified', () => {
+                const fields = inputType.getAffectedFields({});
+                expect(fields).be.empty;
+            });
+        });
+    });
+
     describe('with simple scalar fields with default value', () => {
         const type = new RootEntityType({
             kind: TypeKind.ROOT_ENTITY,
@@ -76,7 +142,7 @@ describe('CreateInputTypeGenerator', () => {
                 }
             ]
         }, model);
-        const inputType = new CreateInputTypeGenerator().generate(type);
+        const inputType = generator.generate(type);
 
         describe('prepare()', () => {
             it('includes it if specified', () => {
@@ -120,7 +186,7 @@ describe('CreateInputTypeGenerator', () => {
                 }
             ]
         }, model);
-        const inputType = new CreateInputTypeGenerator().generate(type);
+        const inputType = generator.generate(type);
 
         describe('input field', () => {
             const field = inputType.getInputType().getFields()['nickNames'];
@@ -198,7 +264,7 @@ describe('CreateInputTypeGenerator', () => {
             ]
         }, model);
         const movieType = model.getChildEntityTypeOrThrow('Movie');
-        const inputType = new CreateInputTypeGenerator().generate(type);
+        const inputType = generator.generate(type);
 
         const movies = [
             {name: 'Batman Begins'},
@@ -293,7 +359,7 @@ describe('CreateInputTypeGenerator', () => {
             ]
         }, model);
         const suitType = model.getEntityExtensionTypeOrThrow('Suit');
-        const inputType = new CreateInputTypeGenerator().generate(type);
+        const inputType = generator.generate(type);
 
         describe('input field', () => {
             const field = inputType.getInputType().getFields()['suit'];
@@ -373,7 +439,7 @@ describe('CreateInputTypeGenerator', () => {
                 }
             ]
         }, model);
-        const inputType = new CreateInputTypeGenerator().generate(type);
+        const inputType = generator.generate(type);
 
         it('includes it in the input type', () => {
             expect(inputType.getInputType().getFields()['country'].type).to.equal(GraphQLString);
@@ -427,7 +493,7 @@ describe('CreateInputTypeGenerator', () => {
                 }
             ]
         }, model);
-        const inputType = new CreateInputTypeGenerator().generate(type);
+        const inputType = generator.generate(type);
 
         describe('input type', () => {
             it('does not include createdAt or updatedAt', () => {
@@ -463,7 +529,7 @@ describe('CreateInputTypeGenerator', () => {
                 }
             ]
         }, model);
-        const inputType = new CreateInputTypeGenerator().generate(type);
+        const inputType = generator.generate(type);
 
         describe('prepare()', () => {
             it('includes createdAt, updatedAt and id', () => {

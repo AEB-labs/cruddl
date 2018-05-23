@@ -5,6 +5,7 @@ type Hero @rootEntity {
     movies: [Movie]
     skills: [Skill]
     suit: Suit
+    morality: Morality
     country: Country @reference
 }
 
@@ -23,4 +24,9 @@ type Suit @entityExtension {
 
 type Country @rootEntity {
     isoCode: String @key
+}
+
+enum Morality {
+    GOOD
+    EVIL
 }
