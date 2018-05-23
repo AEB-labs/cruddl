@@ -2,13 +2,13 @@ import { GraphQLID } from 'graphql';
 import memorize from 'memorize-decorator';
 import { Namespace, RootEntityType, ScalarType, Type } from '../model/implementation';
 import {
-    BinaryOperationQueryNode, BinaryOperator, EntitiesQueryNode, FirstOfListQueryNode, LiteralQueryNode, NullQueryNode,
-    QueryNode, TransformListQueryNode, VariableQueryNode
+    BinaryOperationQueryNode, BinaryOperator, EntitiesQueryNode, FirstOfListQueryNode, LiteralQueryNode,
+    ObjectQueryNode, QueryNode, TransformListQueryNode, VariableQueryNode
 } from '../query-tree';
 import { createScalarFieldValueNode } from '../query/fields';
 import { decapitalize, objectEntries } from '../utils/utils';
-import { QueryNodeObjectType, QueryNodeField } from './query-node-object-type';
 import { OutputTypeGenerator } from './output-type-generator';
+import { QueryNodeField, QueryNodeObjectType } from './query-node-object-type';
 
 export class QueryTypeGenerator {
     constructor(private readonly outputTypeGenerator: OutputTypeGenerator) {
@@ -20,7 +20,7 @@ export class QueryTypeGenerator {
         const namespaceFields = namespace.childNamespaces.map((n): QueryNodeField => ({
             name: n.name || '',
             type: this.generate(n),
-            resolve: () => new NullQueryNode()
+            resolve: () => new ObjectQueryNode([])
         }));
 
         const singleRootEntityFields = namespace.rootEntityTypes.map((rootEntityType): QueryNodeField => ({

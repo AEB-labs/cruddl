@@ -4,7 +4,8 @@ import memorize from 'memorize-decorator';
 import { Namespace, RootEntityType } from '../model/implementation';
 import {
     AffectedFieldInfoQueryNode, CreateEntityQueryNode, EntityFromIdQueryNode, FirstOfListQueryNode, ListQueryNode,
-    LiteralQueryNode, NullQueryNode, PreExecQueryParms, QueryNode, VariableQueryNode, WithPreExecutionQueryNode
+    LiteralQueryNode, NullQueryNode, ObjectQueryNode, PreExecQueryParms, QueryNode, VariableQueryNode,
+    WithPreExecutionQueryNode
 } from '../query-tree';
 import { getRelationAddRemoveStatements } from '../query/mutations';
 import { CREATE_ENTITY_FIELD_PREFIX } from '../schema/schema-defaults';
@@ -26,7 +27,7 @@ export class MutationTypeGenerator {
         const namespaceFields = namespace.childNamespaces.map((n): QueryNodeField => ({
             name: n.name || '',
             type: this.generate(n),
-            resolve: () => new NullQueryNode()
+            resolve: () => new ObjectQueryNode([])
         }));
 
         const rootEntityFields = flatMap(namespace.rootEntityTypes, type => this.generateFields(type));
