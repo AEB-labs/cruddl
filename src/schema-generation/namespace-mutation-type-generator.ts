@@ -1,16 +1,15 @@
 import { GraphQLNonNull } from 'graphql';
 import { flatMap } from 'lodash';
 import memorize from 'memorize-decorator';
-import { Field } from '../model';
 import { Namespace, RootEntityType } from '../model/implementation';
 import {
     AffectedFieldInfoQueryNode, CreateEntityQueryNode, EntityFromIdQueryNode, FirstOfListQueryNode, ListQueryNode,
     LiteralQueryNode, NullQueryNode, PreExecQueryParms, QueryNode, VariableQueryNode, WithPreExecutionQueryNode
 } from '../query-tree';
-import { getRelationAddRemoveStatements, prepareMutationInput } from '../query/mutations';
-import { CREATE_ENTITY_FIELD_PREFIX, MutationType } from '../schema/schema-defaults';
+import { getRelationAddRemoveStatements } from '../query/mutations';
+import { CREATE_ENTITY_FIELD_PREFIX } from '../schema/schema-defaults';
 import { PlainObject } from '../utils/utils';
-import { CreateObjectType, CreateTypeGenerator } from './create-type-generator';
+import { CreateObjectInputType, CreateRootEntityInputType, CreateTypeGenerator } from './create-type-generator';
 import { OutputTypeGenerator } from './output-type-generator';
 import { QueryNodeField, QueryNodeObjectType } from './query-node-object-type';
 
@@ -48,7 +47,7 @@ export class NamespaceMutationTypeGenerator {
     }
 
     private generateCreateField(rootEntityType: RootEntityType): QueryNodeField {
-        const inputType = this.createTypeGenerator.generate(rootEntityType);
+        const inputType = this.createTypeGenerator.generateForRootEntityType(rootEntityType);
 
         return {
             name: `${CREATE_ENTITY_FIELD_PREFIX}${rootEntityType.name}`,
@@ -62,13 +61,11 @@ export class NamespaceMutationTypeGenerator {
         };
     }
 
-    private generateCreateQueryNode(rootEntityType: RootEntityType, input: PlainObject, inputType: CreateObjectType): QueryNode {
-        const fieldCollector = new Set<Field>();
-        const objectNode = new LiteralQueryNode(prepareMutationInput(input, rootEntityType, MutationType.CREATE, fieldCollector));
-
+    private generateCreateQueryNode(rootEntityType: RootEntityType, input: PlainObject, inputType: CreateRootEntityInputType): QueryNode {
         // Create new entity
-        const createEntityNode = new CreateEntityQueryNode(rootEntityType, objectNode,
-            Array.from(fieldCollector.values()).map(field => new AffectedFieldInfoQueryNode(field)));
+        const objectNode = new LiteralQueryNode(inputType.prepareValue(input));
+        const affectedFields = inputType.getAffectedFields(input).map(field => new AffectedFieldInfoQueryNode(field));
+        const createEntityNode = new CreateEntityQueryNode(rootEntityType, objectNode, affectedFields);
         const newEntityIdVarNode = new VariableQueryNode('newEntityId');
         const newEntityPreExec = new PreExecQueryParms({query: createEntityNode, resultVariable: newEntityIdVarNode});
 

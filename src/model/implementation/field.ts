@@ -56,6 +56,10 @@ export class Field implements ModelComponent {
         return !!this.model.getType(this.input.typeName);
     }
 
+    public get hasDefaultValue(): boolean {
+        return this.defaultValue !== undefined;
+    }
+
     public get permissionProfile(): PermissionProfile|undefined {
         if (!this.input.permissions || this.input.permissions.permissionProfileName == undefined) {
             return undefined;
@@ -296,7 +300,7 @@ export class Field implements ModelComponent {
     }
 
     private validateDefaultValue(context: ValidationContext) {
-        if (this.defaultValue == undefined) {
+        if (!this.input.defaultValue === undefined) {
             return;
         }
 

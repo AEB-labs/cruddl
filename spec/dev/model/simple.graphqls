@@ -1,6 +1,6 @@
 type Hero @rootEntity {
     name: String
-    age: Int
+    age: Int @defaultValue(value: 42)
     nickNames: [String]
     skills: [Skill]
 }
