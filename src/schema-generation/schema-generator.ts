@@ -4,7 +4,7 @@ import { globalContext } from '../config/global';
 import { addOperationBasedResolvers, OperationParams } from '../graphql/operation-based-resolvers';
 import { distillOperation } from '../graphql/query-distiller';
 import { Model } from '../model/implementation';
-import { NullQueryNode, QueryNode } from '../query-tree';
+import { ObjectQueryNode, QueryNode } from '../query-tree';
 import { evaluateQueryStatically } from '../query/static-evaluation';
 import { SchemaTransformationContext } from '../schema/preparation/transformation-pipeline';
 import { CreateTypeGenerator } from './create-type-generator';
@@ -58,7 +58,8 @@ export class SchemaGenerator {
 
                 const requestRoles = this.getRequestRoles(operationInfo.context);
                 logger.debug(`Request roles: ${requestRoles.join(', ')}`);
-                queryTree = buildSafeObjectQueryNode(new NullQueryNode(), rootType, operation.selectionSet);
+                const rootQueryNode = ObjectQueryNode.EMPTY; // can't use NULL because then the whole operation would yield null
+                queryTree = buildSafeObjectQueryNode(rootQueryNode, rootType, operation.selectionSet);
                 if (logger.isTraceEnabled()) {
                     logger.trace('Before authorization: ' + queryTree.describe());
                 }
