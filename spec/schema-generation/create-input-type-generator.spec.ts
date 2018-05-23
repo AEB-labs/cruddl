@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { GraphQLString } from 'graphql';
+import { GraphQLList, GraphQLNonNull, GraphQLString } from 'graphql';
 import { ChildEntityType, Model, RootEntityType, TypeKind } from '../../src/model';
 import { CreateInputTypeGenerator } from '../../src/schema-generation/create-input-type-generator';
 
@@ -14,7 +14,7 @@ describe('CreateInputTypeGenerator', () => {
                 {
                     name: 'name',
                     typeName: 'String'
-                },
+                }
             ]
         }, model);
         const inputType = new CreateInputTypeGenerator().generate(type);
@@ -25,8 +25,14 @@ describe('CreateInputTypeGenerator', () => {
 
         describe('prepare()', () => {
             it('includes it if specified', () => {
-                const prepared = inputType.prepareValue({name: 'Hero'});
-                expect(prepared.name).to.equal('Hero');
+                const prepared = inputType.prepareValue({name: 'Batman'});
+                expect(prepared.name).to.equal('Batman');
+            });
+
+            it('includes it if set to null', () => {
+                // mimic the update case where setting to null does not remove the property but sets it to null
+                const prepared = inputType.prepareValue({name: null});
+                expect(prepared.name).to.be.null;
             });
 
             it('does not include it it if not specified', () => {
@@ -42,8 +48,76 @@ describe('CreateInputTypeGenerator', () => {
 
         describe('getAffectedFields()', () => {
             it('includes it if specified', () => {
-                const fields = inputType.getAffectedFields({name: 'Hero'});
+                const fields = inputType.getAffectedFields({name: 'Batman'});
                 expect(fields).to.deep.equal([type.getFieldOrThrow('name')]);
+            });
+
+            it('includes it if specified as null', () => {
+                const fields = inputType.getAffectedFields({name: null});
+                expect(fields).to.deep.equal([type.getFieldOrThrow('name')]);
+            });
+
+            it('does not include it if not specified', () => {
+                const fields = inputType.getAffectedFields({});
+                expect(fields).be.empty;
+            });
+        });
+    });
+
+    describe('with list scalar fields', () => {
+        const type = new RootEntityType({
+            kind: TypeKind.ROOT_ENTITY,
+            name: 'Hero',
+            fields: [
+                {
+                    name: 'nickNames',
+                    typeName: 'String',
+                    isList: true
+                }
+            ]
+        }, model);
+        const inputType = new CreateInputTypeGenerator().generate(type);
+
+        describe('input field', () => {
+            const field = inputType.getInputType().getFields()['nickNames'];
+
+            it('exists', () => {
+                expect(field).not.to.be.undefined;
+            });
+
+            it('has correct type', () => {
+                expect(field.type).to.deep.equal(new GraphQLList(new GraphQLNonNull(GraphQLString)));
+            });
+        });
+
+        describe('prepare()', () => {
+            it('includes it if specified', () => {
+                const prepared = inputType.prepareValue({nickNames: ['Dark Knight', 'Batsy']});
+                expect(prepared.nickNames).to.deep.equal(['Dark Knight', 'Batsy']);
+            });
+
+            it('coerces to empty list if specified as null', () => {
+                // when querying/filtering, null is interpreted as [] anyway, so avoid having a mix of both in the db
+                const prepared = inputType.prepareValue({nickNames: null});
+                expect(prepared.nickNames).to.deep.equal([]);
+            });
+
+            it('does not include it if not specified', () => {
+                // when querying/filtering, null is interpreted as [] anyway, so avoid having a mix of both in the db
+                const prepared = inputType.prepareValue({});
+                expect(prepared.nickNames).to.be.undefined;
+            });
+        });
+
+        describe('getAffectedFields()', () => {
+            it('includes it if specified', () => {
+                const fields = inputType.getAffectedFields({nickNames: ['Dark Knight', 'Batsy']});
+                expect(fields).to.deep.equal([type.getFieldOrThrow('nickNames')]);
+            });
+
+            it('includes it if specified null', () => {
+                const fields = inputType.getAffectedFields({nickNames: null});
+                expect(fields).to.deep.equal([type.getFieldOrThrow('nickNames')]);
             });
 
             it('does not include it if not specified', () => {
@@ -62,7 +136,7 @@ describe('CreateInputTypeGenerator', () => {
                     name: 'name',
                     typeName: 'String',
                     defaultValue: 'Batman'
-                },
+                }
             ]
         }, model);
         const inputType = new CreateInputTypeGenerator().generate(type);
@@ -79,7 +153,6 @@ describe('CreateInputTypeGenerator', () => {
             });
 
             it('keeps null values', () => {
-                // TODO is this correct? we need to specify this.
                 const prepared = inputType.prepareValue({name: null});
                 expect(prepared.name).to.be.null;
             });
@@ -91,9 +164,9 @@ describe('CreateInputTypeGenerator', () => {
                 expect(fields).to.deep.equal([type.getFieldOrThrow('name')]);
             });
 
-            it('includes it if not specified', () => {
+            it('does not include it if not specified', () => {
                 const fields = inputType.getAffectedFields({});
-                expect(fields).to.deep.equal([type.getFieldOrThrow('name')]);
+                expect(fields).to.deep.equal([]);
             });
         });
     });
@@ -107,7 +180,7 @@ describe('CreateInputTypeGenerator', () => {
                     name: 'name',
                     typeName: 'String',
                     defaultValue: 'Batman'
-                },
+                }
             ]
         }, model);
         const inputType = new CreateInputTypeGenerator().generate(type);
@@ -143,7 +216,7 @@ describe('CreateInputTypeGenerator', () => {
                     name: 'name',
                     typeName: 'String',
                     defaultValue: 'Batman'
-                },
+                }
             ]
         }, model);
         const inputType = new CreateInputTypeGenerator().generate(type);
