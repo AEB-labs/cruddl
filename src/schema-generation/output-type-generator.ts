@@ -64,7 +64,8 @@ export class OutputTypeGenerator {
                 let listNode = schemaField.resolve(sourceNode, args);
                 listNode = buildSafeListQueryNode(listNode);
                 const itemVariable = new VariableQueryNode(decapitalize(field.type.name));
-                const filterNode = filterType.getFilterNode(itemVariable, args[FILTER_ARG]);
+                const filterValue = args[FILTER_ARG];
+                const filterNode = filterValue != undefined ? filterType.getFilterNode(itemVariable, args[FILTER_ARG]) : undefined;
                 return new TransformListQueryNode({
                     listNode,
                     itemVariable,
