@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { GraphQLList, GraphQLNonNull, GraphQLString } from 'graphql';
+import { GraphQLInputObjectType, GraphQLList, GraphQLNonNull, GraphQLString } from 'graphql';
 import { ChildEntityType, Model, RootEntityType, TypeKind } from '../../src/model';
 import { CreateInputTypeGenerator } from '../../src/schema-generation/create-input-type-generator';
 
@@ -118,6 +118,102 @@ describe('CreateInputTypeGenerator', () => {
             it('includes it if specified null', () => {
                 const fields = inputType.getAffectedFields({nickNames: null});
                 expect(fields).to.deep.equal([type.getFieldOrThrow('nickNames')]);
+            });
+
+            it('does not include it if not specified', () => {
+                const fields = inputType.getAffectedFields({});
+                expect(fields).be.empty;
+            });
+        });
+    });
+
+    describe('with child entity fields', () => {
+        const model = new Model({
+            types: [
+                {
+                    kind: TypeKind.CHILD_ENTITY,
+                    name: 'Movie',
+                    fields: [
+                        {
+                            name: 'name',
+                            typeName: 'String'
+                        }
+                    ]
+                }
+            ]
+        });
+        const type = new RootEntityType({
+            kind: TypeKind.ROOT_ENTITY,
+            name: 'Hero',
+            fields: [
+                {
+                    name: 'movies',
+                    typeName: 'Movie',
+                    isList: true
+                }
+            ]
+        }, model);
+        const movieType = model.getChildEntityTypeOrThrow('Movie');
+        const inputType = new CreateInputTypeGenerator().generate(type);
+
+        const movies = [
+            {name: 'Batman Begins'},
+            {name: 'The dark Knight Rises'},
+            {name: 'The Dark Knight Rises'}
+        ];
+
+        describe('input field', () => {
+            const field = inputType.getInputType().getFields()['movies'];
+
+            it('exists', () => {
+                expect(field).not.to.be.undefined;
+            });
+
+            it('has correct type', () => {
+                expect(field.type).to.be.an.instanceOf(GraphQLList);
+                expect((field.type as GraphQLList<any>).ofType).to.be.an.instanceOf(GraphQLNonNull);
+                const movieInputType = (field.type as GraphQLList<GraphQLNonNull<any>>).ofType.ofType as GraphQLInputObjectType;
+                expect(movieInputType).to.be.an.instanceOf(GraphQLInputObjectType);
+                expect(movieInputType.getFields()['name']).not.to.be.undefined;
+                expect(movieInputType.getFields()['name'].type).to.equal(GraphQLString);
+            });
+        });
+
+        describe('prepare()', () => {
+            it('includes it if specified', () => {
+                const prepared = inputType.prepareValue({movies}) as any;
+                expect(prepared.movies).to.be.an('array');
+                expect(prepared.movies).to.have.lengthOf(3);
+                expect(prepared.movies[0].name).to.equal('Batman Begins');
+            });
+
+            it('adds child-entity specific fields', () => {
+                const prepared = inputType.prepareValue({movies}) as any;
+                expect(prepared.movies[0].id).to.be.a('string');
+            });
+
+            it('coerces to empty list if specified as null', () => {
+                // when querying/filtering, null is interpreted as [] anyway, so avoid having a mix of both in the db
+                const prepared = inputType.prepareValue({movies: null});
+                expect(prepared.movies).to.deep.equal([]);
+            });
+
+            it('does not include it if not specified', () => {
+                // when querying/filtering, null is interpreted as [] anyway, so avoid having a mix of both in the db
+                const prepared = inputType.prepareValue({});
+                expect(prepared.movies).to.be.undefined;
+            });
+        });
+
+        describe('getAffectedFields()', () => {
+            it('includes it and its inner fields if specified', () => {
+                const fields = inputType.getAffectedFields({movies});
+                expect(fields).to.deep.equal([type.getFieldOrThrow('movies'), movieType.getFieldOrThrow('name')]);
+            });
+
+            it('includes it if specified null', () => {
+                const fields = inputType.getAffectedFields({movies: null});
+                expect(fields).to.deep.equal([type.getFieldOrThrow('movies')]);
             });
 
             it('does not include it if not specified', () => {

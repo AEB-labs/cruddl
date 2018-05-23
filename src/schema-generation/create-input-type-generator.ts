@@ -32,9 +32,14 @@ export class CreateObjectInputType extends TypedInputObjectType<CreateInputField
         return {};
     }
 
+    collectAffectedFields(value: PlainObject, fields: Set<Field>) {
+        this.getApplicableInputFields(value).forEach(field => field.collectAffectedFields(value[field.name], fields));
+    }
+
     getAffectedFields(value: PlainObject): ReadonlyArray<Field> {
-        const applicableFields = this.getApplicableInputFields(value);
-        return flatMap(applicableFields, field => field.getAffectedFields(value[field.name]));
+        const fields = new Set<Field>();
+        this.collectAffectedFields(value, fields);
+        return Array.from(fields);
     }
 
     private getApplicableInputFields(value: PlainObject): ReadonlyArray<CreateInputField> {
@@ -68,15 +73,15 @@ export class CreateChildEntityInputType extends CreateObjectInputType {
 export interface CreateInputField extends TypedInputFieldBase<CreateInputField> {
     getProperties(value: AnyValue): PlainObject;
 
-    getAffectedFields(value: AnyValue): Field[];
+    collectAffectedFields(value: AnyValue, fields: Set<Field>): void;
 
     appliesToMissingFields(): boolean;
 }
 
-export class ScalarOrEnumCreateInputField implements CreateInputField {
+export class BasicCreateInputField implements CreateInputField {
     constructor(
         public readonly field: Field,
-        public readonly inputType: GraphQLInputType
+        public readonly inputType: GraphQLInputType | CreateObjectInputType
     ) {
     }
 
@@ -100,14 +105,14 @@ export class ScalarOrEnumCreateInputField implements CreateInputField {
         return value;
     }
 
-    getAffectedFields(value: AnyValue): Field[] {
+    collectAffectedFields(value: AnyValue, fields: Set<Field>) {
         if (value === undefined) {
             // don't consider this field if it is just set to its default value
             // this enables permission-restricted fields with a non-critical default value
-            return [];
+            return;
         }
 
-        return [this.field];
+        fields.add(this.field);
     }
 
     appliesToMissingFields() {
@@ -115,12 +120,9 @@ export class ScalarOrEnumCreateInputField implements CreateInputField {
     }
 }
 
-export class ScalarOrEnumListCreateInputField extends ScalarOrEnumCreateInputField {
-    getProperties(value: AnyValue) {
-        return super.getProperties(value);
-    }
-
+export class BasicListCreateInputField extends BasicCreateInputField {
     protected coerceValue(value: AnyValue): AnyValue {
+        value = super.coerceValue(value);
         if (value === null) {
             // null is not a valid list value - if the user specified it, coerce it to [] to not have a mix of [] and
             // null in the database
@@ -130,6 +132,69 @@ export class ScalarOrEnumListCreateInputField extends ScalarOrEnumCreateInputFie
     }
 }
 
+export class ObjectCreateInputField extends BasicCreateInputField {
+    constructor(
+        field: Field,
+        public readonly objectInputType: CreateObjectInputType,
+        inputType?: GraphQLInputType
+    ) {
+        super(field, inputType || objectInputType.getInputType());
+    }
+
+    protected coerceValue(value: AnyValue): AnyValue {
+        value = super.coerceValue(value);
+        if (value == undefined) {
+            return value;
+        }
+        return this.objectInputType.prepareValue(value);
+    }
+
+    collectAffectedFields(value: AnyValue, fields: Set<Field>) {
+        super.collectAffectedFields(value, fields);
+        if (value == undefined) {
+            return;
+        }
+
+        this.objectInputType.collectAffectedFields(value, fields);
+    }
+}
+
+export class ObjectListCreateInputField extends BasicCreateInputField {
+    constructor(
+        field: Field,
+        public readonly objectInputType: CreateObjectInputType
+    ) {
+        super(field, new GraphQLList(new GraphQLNonNull(objectInputType.getInputType())));
+    }
+
+    protected coerceValue(value: AnyValue): AnyValue {
+        value = super.coerceValue(value);
+        if (value === null) {
+            // null is not a valid list value - if the user specified it, coerce it to [] to not have a mix of [] and
+            // null in the database
+            return [];
+        }
+        if (value === undefined) {
+            return undefined;
+        }
+        if (!Array.isArray(value)) {
+            throw new Error(`Expected value for "${this.name}" to be an array, but is "${typeof value}"`);
+        }
+        return value.map(value => this.objectInputType.prepareValue(value));
+    }
+
+    collectAffectedFields(value: AnyValue, fields: Set<Field>) {
+        super.collectAffectedFields(value, fields);
+        if (value == undefined) {
+            return;
+        }
+        if (!Array.isArray(value)) {
+            throw new Error(`Expected value for "${this.name}" to be an array, but is "${typeof value}"`);
+        }
+
+        value.forEach(value => this.objectInputType.collectAffectedFields(value, fields));
+    }
+}
 
 export class CreateInputTypeGenerator {
     @memorize()
@@ -166,10 +231,15 @@ export class CreateInputTypeGenerator {
         if (field.type.isScalarType) {
             if (field.isList) {
                 // don't allow null values in lists
-                return [new ScalarOrEnumListCreateInputField(field, new GraphQLList(new GraphQLNonNull(field.type.graphQLScalarType)))];
+                return [new BasicListCreateInputField(field, new GraphQLList(new GraphQLNonNull(field.type.graphQLScalarType)))];
             } else {
-                return [new ScalarOrEnumCreateInputField(field, field.type.graphQLScalarType)];
+                return [new BasicCreateInputField(field, field.type.graphQLScalarType)];
             }
+        }
+
+        if (field.type.isChildEntityType) {
+            const inputType = this.generateForChildEntityType(field.type);
+            return [new ObjectListCreateInputField(field, inputType)];
         }
 
         return [];
