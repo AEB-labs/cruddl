@@ -13,7 +13,7 @@ import { CreateInputTypeGenerator, CreateRootEntityInputType } from './create-in
 import { OutputTypeGenerator } from './output-type-generator';
 import { QueryNodeField, QueryNodeObjectType } from './query-node-object-type';
 
-export class NamespaceMutationTypeGenerator {
+export class MutationTypeGenerator {
     constructor(
         private readonly outputTypeGenerator: OutputTypeGenerator,
         private readonly createTypeGenerator: CreateInputTypeGenerator

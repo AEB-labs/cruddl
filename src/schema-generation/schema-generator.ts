@@ -10,8 +10,8 @@ import { SchemaTransformationContext } from '../schema/preparation/transformatio
 import { CreateInputTypeGenerator } from './create-input-types';
 import { EnumTypeGenerator } from './enum-type-generator';
 import { FilterTypeGenerator } from './filter-type-generator';
-import { NamespaceMutationTypeGenerator } from './namespace-mutation-type-generator';
-import { NamespaceQueryTypeGenerator } from './namespace-query-type-generator';
+import { MutationTypeGenerator } from './mutation-type-generator';
+import { QueryTypeGenerator } from './query-type-generator';
 import { OutputTypeGenerator } from './output-type-generator';
 import { buildSafeObjectQueryNode, QueryNodeObjectType, QueryNodeObjectTypeConverter } from './query-node-object-type';
 
@@ -20,8 +20,8 @@ export class SchemaGenerator {
     private readonly filterTypeGenerator = new FilterTypeGenerator();
     private readonly outputTypeGenerator = new OutputTypeGenerator(this.filterTypeGenerator, this.enumTypeGenerator);
     private readonly createTypeGenerator = new CreateInputTypeGenerator(this.enumTypeGenerator);
-    private readonly namespaceQueryTypeGenerator = new NamespaceQueryTypeGenerator(this.outputTypeGenerator);
-    private readonly namespaceMutationTypeGenerator = new NamespaceMutationTypeGenerator(this.outputTypeGenerator, this.createTypeGenerator);
+    private readonly queryTypeGenerator = new QueryTypeGenerator(this.outputTypeGenerator);
+    private readonly mutationTypeGenerator = new MutationTypeGenerator(this.outputTypeGenerator, this.createTypeGenerator);
     private readonly queryNodeObjectTypeConverter = new QueryNodeObjectTypeConverter();
 
     constructor(
@@ -31,8 +31,8 @@ export class SchemaGenerator {
     }
 
     generate(model: Model) {
-        const queryType = this.namespaceQueryTypeGenerator.generate(model.rootNamespace);
-        const mutationType = this.namespaceMutationTypeGenerator.generate(model.rootNamespace);
+        const queryType = this.queryTypeGenerator.generate(model.rootNamespace);
+        const mutationType = this.mutationTypeGenerator.generate(model.rootNamespace);
         const dumbSchema = new GraphQLSchema({
             query: this.queryNodeObjectTypeConverter.convertToGraphQLObjectType(queryType),
             mutation: this.queryNodeObjectTypeConverter.convertToGraphQLObjectType(mutationType)

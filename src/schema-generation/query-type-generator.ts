@@ -10,7 +10,7 @@ import { decapitalize, objectEntries } from '../utils/utils';
 import { QueryNodeObjectType, QueryNodeField } from './query-node-object-type';
 import { OutputTypeGenerator } from './output-type-generator';
 
-export class NamespaceQueryTypeGenerator {
+export class QueryTypeGenerator {
     constructor(private readonly outputTypeGenerator: OutputTypeGenerator) {
 
     }
