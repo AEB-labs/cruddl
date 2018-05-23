@@ -7,7 +7,7 @@ import { Model } from '../model/implementation';
 import { ObjectQueryNode, QueryNode } from '../query-tree';
 import { evaluateQueryStatically } from '../query/static-evaluation';
 import { SchemaTransformationContext } from '../schema/preparation/transformation-pipeline';
-import { CreateInputTypeGenerator } from './create-input-type-generator';
+import { CreateInputTypeGenerator } from './create-input-types';
 import { EnumTypeGenerator } from './enum-type-generator';
 import { FilterTypeGenerator } from './filter-type-generator';
 import { NamespaceMutationTypeGenerator } from './namespace-mutation-type-generator';

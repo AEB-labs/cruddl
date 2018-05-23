@@ -9,7 +9,7 @@ import {
 import { getRelationAddRemoveStatements } from '../query/mutations';
 import { CREATE_ENTITY_FIELD_PREFIX } from '../schema/schema-defaults';
 import { PlainObject } from '../utils/utils';
-import { CreateObjectInputType, CreateRootEntityInputType, CreateInputTypeGenerator } from './create-input-type-generator';
+import { CreateInputTypeGenerator, CreateRootEntityInputType } from './create-input-types';
 import { OutputTypeGenerator } from './output-type-generator';
 import { QueryNodeField, QueryNodeObjectType } from './query-node-object-type';
 

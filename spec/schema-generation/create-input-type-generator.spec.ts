@@ -1,9 +1,7 @@
 import { expect } from 'chai';
 import { GraphQLEnumType, GraphQLInputObjectType, GraphQLList, GraphQLNonNull, GraphQLString } from 'graphql';
 import { ChildEntityType, Model, RootEntityType, TypeKind } from '../../src/model';
-import {
-    CreateInputTypeGenerator, ObjectCreateInputField
-} from '../../src/schema-generation/create-input-type-generator';
+import { CreateInputTypeGenerator, ObjectCreateInputField } from '../../src/schema-generation/create-input-types';
 import { EnumTypeGenerator } from '../../src/schema-generation/enum-type-generator';
 
 describe('CreateInputTypeGenerator', () => {
