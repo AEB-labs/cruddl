@@ -2,6 +2,7 @@ import { FieldConfig, PermissionsConfig, RootEntityTypeConfig, TypeKind } from '
 import { ObjectTypeBase } from './object-type-base';
 import { Field } from './field';
 import { Model } from './model';
+import { ScalarType } from './scalar-type';
 import { ValidationContext } from './validation';
 import { ValidationMessage } from '../validation';
 import { Index } from './indices';
@@ -39,6 +40,14 @@ export class RootEntityType extends ObjectTypeBase {
             throw new Error(`Expected "${this.name}" to have a key field`);
         }
         return this.keyField;
+    }
+
+    getKeyFieldTypeOrThrow(): ScalarType {
+        const field = this.getKeyFieldOrThrow();
+        if (!field.type.isScalarType) {
+            throw new Error(`Expected "${this.name}.${field.name}" to be of scalar type because it is a key field`);
+        }
+        return field.type;
     }
 
     get permissionProfile(): PermissionProfile|undefined {

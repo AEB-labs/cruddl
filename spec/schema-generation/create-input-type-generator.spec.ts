@@ -346,6 +346,75 @@ describe('CreateInputTypeGenerator', () => {
         });
     });
 
+    describe('with reference fields', () => {
+        const model = new Model({
+            types: [
+                {
+                    kind: TypeKind.ROOT_ENTITY,
+                    name: 'Country',
+                    keyFieldName: 'isoCode',
+                    fields: [
+                        {
+                            name: 'isoCode',
+                            typeName: 'String'
+                        }
+                    ]
+                }
+            ]
+        });
+
+        const type = new RootEntityType({
+            kind: TypeKind.ROOT_ENTITY,
+            name: 'Hero',
+            fields: [
+                {
+                    name: 'country',
+                    typeName: 'Country'
+                }
+            ]
+        }, model);
+        const inputType = new CreateInputTypeGenerator().generate(type);
+
+        it('includes it in the input type', () => {
+            expect(inputType.getInputType().getFields()['country'].type).to.equal(GraphQLString);
+        });
+
+        describe('prepare()', () => {
+            it('includes it if specified', () => {
+                const prepared = inputType.prepareValue({country: 'US'});
+                expect(prepared.country).to.equal('US');
+            });
+
+            it('includes it if set to null', () => {
+                // mimic the update case where setting to null does not remove the property but sets it to null
+                const prepared = inputType.prepareValue({country: null});
+                expect(prepared.country).to.be.null;
+            });
+
+            it('does not include it it if not specified', () => {
+                const prepared = inputType.prepareValue({});
+                expect(prepared.country).to.be.undefined;
+            });
+        });
+
+        describe('getAffectedFields()', () => {
+            it('includes it if specified', () => {
+                const fields = inputType.getAffectedFields({country: 'US'});
+                expect(fields).to.deep.equal([type.getFieldOrThrow('country')]);
+            });
+
+            it('includes it if specified as null', () => {
+                const fields = inputType.getAffectedFields({country: null});
+                expect(fields).to.deep.equal([type.getFieldOrThrow('country')]);
+            });
+
+            it('does not include it if not specified', () => {
+                const fields = inputType.getAffectedFields({});
+                expect(fields).be.empty;
+            });
+        });
+    });
+
     describe('for root entities', () => {
         const type = new RootEntityType({
             kind: TypeKind.ROOT_ENTITY,

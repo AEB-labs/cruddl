@@ -5,6 +5,7 @@ type Hero @rootEntity {
     movies: [Movie]
     skills: [Skill]
     suit: Suit
+    country: Country @reference
 }
 
 type Skill @valueObject {
@@ -18,4 +19,8 @@ type Movie @childEntity {
 
 type Suit @entityExtension {
     color: String
+}
+
+type Country @rootEntity {
+    isoCode: String @key
 }

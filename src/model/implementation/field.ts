@@ -247,7 +247,7 @@ export class Field implements ModelComponent {
         }
 
         if (!this.type.keyField) {
-            context.addMessage(ValidationMessage.error(`"${this.type.name}" cannot be used as @reference type because is does not have a field annotated with @key.`, undefined, this.astNode));
+            context.addMessage(ValidationMessage.error(`"${this.type.name}" cannot be used as @reference type because it does not have a field annotated with @key.`, undefined, this.astNode));
         }
     }
 

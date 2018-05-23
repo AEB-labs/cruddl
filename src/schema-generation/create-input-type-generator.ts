@@ -222,7 +222,7 @@ export class CreateInputTypeGenerator {
     }
 
     @memorize()
-    private generateForSimpleObjectType(type: EntityExtensionType|ValueObjectType): CreateObjectInputType {
+    private generateForSimpleObjectType(type: EntityExtensionType | ValueObjectType): CreateObjectInputType {
         // TODO when implementing update input types, only use one input type for create+update
         return new CreateObjectInputType(`${type.name}Input`,
             flatMap(type.fields, (field: Field) => this.generateFields(field)));
@@ -248,7 +248,15 @@ export class CreateInputTypeGenerator {
         }
 
         if (field.type.isRootEntityType) {
-            // TODO references
+            if (field.isRelation) {
+                // TODO relations
+                return [];
+            } else {
+                // reference
+                // we intentionally do not check if the referenced object exists (loose coupling), so this behaves just
+                // like a regular field
+                return [new BasicCreateInputField(field, field.type.getKeyFieldTypeOrThrow().graphQLScalarType)];
+            }
         }
 
         // child entity, value object, entity extension

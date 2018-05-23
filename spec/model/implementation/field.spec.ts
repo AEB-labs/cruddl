@@ -391,7 +391,7 @@ describe('Field', () => {
                 isReference: true
             }, deliveryType);
 
-            expectSingleErrorToInclude(field, `"HandlingUnit" cannot be used as @reference type because is does not have a field annotated with @key`);
+            expectSingleErrorToInclude(field, `"HandlingUnit" cannot be used as @reference type because it does not have a field annotated with @key`);
         });
 
         it('rejects @reference to value object type', () => {
