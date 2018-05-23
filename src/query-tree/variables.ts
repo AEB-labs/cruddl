@@ -1,4 +1,5 @@
 import { magenta } from 'colors/safe';
+import { indent } from '../utils/utils';
 import { QueryNode } from './base';
 
 namespace varIndices {
@@ -70,6 +71,6 @@ export class VariableAssignmentQueryNode extends QueryNode {
     public readonly variableNode: VariableQueryNode;
 
     public describe() {
-        return `let ${this.variableNode.describe()} = ${this.variableValueNode.describe()} in ${this.resultNode.describe()}`;
+        return `let ${this.variableNode.describe()} = (\n${indent(this.variableValueNode.describe())}\n) in (\n${indent(this.resultNode.describe())}\n)`;
     }
 }

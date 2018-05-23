@@ -51,9 +51,9 @@ export class TransformListQueryNode extends QueryNode {
 
     describe() {
         return `${this.listNode.describe()} as list with ${this.itemVariable.describe()} => \n` + indent('' + // '' to move the arg label here in WebStorm
-            `where ${this.filterNode.describe()}\n` +
-            `order by ${this.orderBy.describe()}\n` +
-            `${this.maxCount != undefined ? `limit ${this.maxCount}\n` : ''}` +
+            (this.filterNode.equals(ConstBoolQueryNode.TRUE) ? '' : `where ${this.filterNode.describe()}\n`) +
+            (this.orderBy.isUnordered() ? '' : `order by ${this.orderBy.describe()}\n`) +
+            (this.maxCount != undefined ? `limit ${this.maxCount}\n` : '') +
             `as ${this.innerNode.describe()}`
         );
     }
