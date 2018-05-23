@@ -1,6 +1,6 @@
 import { FieldRequest, FieldSelection } from '../../graphql/query-distiller';
 import {
-    BasicType, ConditionalQueryNode, NullQueryNode, ObjectQueryNode, PropertySpecification, QueryNode,
+    BasicType, ConditionalQueryNode, ListQueryNode, NullQueryNode, ObjectQueryNode, PropertySpecification, QueryNode,
     TransformListQueryNode, TypeCheckQueryNode, VariableAssignmentQueryNode, VariableQueryNode
 } from '../../query-tree';
 import { decapitalize } from '../../utils/utils';
@@ -8,6 +8,11 @@ import { buildSafeListQueryNode } from '../query-node-utils';
 import { extractQueryTreeObjectType, isListType, QueryNodeField, QueryNodeObjectType } from './index';
 
 export function buildSafeObjectQueryNode(sourceNode: QueryNode, type: QueryNodeObjectType, selectionSet: ReadonlyArray<FieldSelection>) {
+    if (sourceNode instanceof ObjectQueryNode) {
+        // shortcut, especially useful for namespace nodes where we always pass through an empty object but ignore it
+        return buildObjectQueryNode(sourceNode, type, selectionSet);
+    }
+
     const variableNode = new VariableQueryNode(decapitalize(type.name));
     return new VariableAssignmentQueryNode({
         variableNode,
@@ -47,17 +52,28 @@ function buildFieldQueryNode(sourceNode: QueryNode, field: QueryNodeField, field
 }
 
 export function buildSafeTransformListQueryNode(listNode: QueryNode, itemType: QueryNodeObjectType, selectionSet: ReadonlyArray<FieldSelection>): QueryNode {
+    if (listNode instanceof ListQueryNode || listNode instanceof TransformListQueryNode) {
+        // shortcut, especially useful if filter, mapping etc. are done separately
+        return buildTransformListQueryNode(listNode, itemType, selectionSet);
+    }
+
+
     const listVar = new VariableQueryNode('list');
     const safeList = buildSafeListQueryNode(listVar);
-    const itemVariable = new VariableQueryNode(itemType.name);
-    const innerNode = buildObjectQueryNode(itemVariable, itemType, selectionSet);
+    const transformedList = buildTransformListQueryNode(listVar, itemType, selectionSet);
     return new VariableAssignmentQueryNode({
         variableNode: listVar,
         variableValueNode: listNode,
-        resultNode: new TransformListQueryNode({
-            listNode: safeList,
-            innerNode,
-            itemVariable
-        })
+        resultNode: transformedList
+    });
+}
+
+export function buildTransformListQueryNode(listNode: QueryNode, itemType: QueryNodeObjectType, selectionSet: ReadonlyArray<FieldSelection>): QueryNode {
+    const itemVariable = new VariableQueryNode(itemType.name);
+    const innerNode = buildObjectQueryNode(itemVariable, itemType, selectionSet);
+    return new TransformListQueryNode({
+        listNode,
+        innerNode,
+        itemVariable
     });
 }

@@ -11,6 +11,11 @@ export class ObjectQueryNode extends QueryNode {
 
     }
 
+    /**
+     * An empty object
+     */
+    static EMPTY = new ObjectQueryNode([]);
+
     describe() {
         if (!this.properties.length) {
             return `{}`;
