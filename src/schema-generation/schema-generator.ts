@@ -7,7 +7,7 @@ import { Model } from '../model/implementation';
 import { ObjectQueryNode, QueryNode } from '../query-tree';
 import { evaluateQueryStatically } from '../query/static-evaluation';
 import { SchemaTransformationContext } from '../schema/preparation/transformation-pipeline';
-import { CreateTypeGenerator } from './create-type-generator';
+import { CreateInputTypeGenerator } from './create-input-type-generator';
 import { FilterTypeGenerator } from './filter-type-generator';
 import { NamespaceMutationTypeGenerator } from './namespace-mutation-type-generator';
 import { NamespaceQueryTypeGenerator } from './namespace-query-type-generator';
@@ -17,7 +17,7 @@ import { buildSafeObjectQueryNode, QueryNodeObjectType, QueryNodeObjectTypeConve
 export class SchemaGenerator {
     private readonly filterTypeGenerator = new FilterTypeGenerator();
     private readonly outputTypeGenerator = new OutputTypeGenerator(this.filterTypeGenerator);
-    private readonly createTypeGenerator = new CreateTypeGenerator();
+    private readonly createTypeGenerator = new CreateInputTypeGenerator();
     private readonly namespaceQueryTypeGenerator = new NamespaceQueryTypeGenerator(this.outputTypeGenerator);
     private readonly namespaceMutationTypeGenerator = new NamespaceMutationTypeGenerator(this.outputTypeGenerator, this.createTypeGenerator);
     private readonly queryNodeObjectTypeConverter = new QueryNodeObjectTypeConverter();

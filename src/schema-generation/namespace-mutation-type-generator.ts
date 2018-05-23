@@ -9,14 +9,14 @@ import {
 import { getRelationAddRemoveStatements } from '../query/mutations';
 import { CREATE_ENTITY_FIELD_PREFIX } from '../schema/schema-defaults';
 import { PlainObject } from '../utils/utils';
-import { CreateObjectInputType, CreateRootEntityInputType, CreateTypeGenerator } from './create-type-generator';
+import { CreateObjectInputType, CreateRootEntityInputType, CreateInputTypeGenerator } from './create-input-type-generator';
 import { OutputTypeGenerator } from './output-type-generator';
 import { QueryNodeField, QueryNodeObjectType } from './query-node-object-type';
 
 export class NamespaceMutationTypeGenerator {
     constructor(
         private readonly outputTypeGenerator: OutputTypeGenerator,
-        private readonly createTypeGenerator: CreateTypeGenerator
+        private readonly createTypeGenerator: CreateInputTypeGenerator
     ) {
 
     }

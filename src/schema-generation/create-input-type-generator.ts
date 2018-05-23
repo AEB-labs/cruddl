@@ -101,7 +101,7 @@ export class ScalarOrEnumCreateInputField implements CreateInputField {
     }
 }
 
-export class CreateTypeGenerator {
+export class CreateInputTypeGenerator {
     @memorize()
     generate(type: ObjectType): CreateObjectInputType {
         if (type.isRootEntityType) {
