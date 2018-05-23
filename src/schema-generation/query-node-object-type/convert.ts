@@ -9,7 +9,6 @@ import { isGraphQLOutputType, resolveThunk } from './utils';
 export class QueryNodeObjectTypeConverter {
     @memorize()
     convertToGraphQLObjectType(type: QueryNodeObjectType): GraphQLObjectType {
-        console.log(`convert ${type.name}`);
         return new GraphQLObjectType({
             name: type.name,
             description: type.description,

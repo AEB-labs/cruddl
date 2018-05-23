@@ -7,7 +7,7 @@ import {
 import { EnumTypeGenerator } from '../enum-type-generator';
 import {
     BasicCreateInputField, BasicListCreateInputField, CreateInputField, ObjectCreateInputField,
-    ObjectListCreateInputField
+    ObjectListCreateInputField, ToManyRelationCreateInputField, ToOneRelationCreateInputField
 } from './input-fields';
 import { CreateChildEntityInputType, CreateObjectInputType, CreateRootEntityInputType } from './input-types';
 
@@ -65,8 +65,11 @@ export class CreateInputTypeGenerator {
 
         if (field.type.isRootEntityType) {
             if (field.isRelation) {
-                // TODO relations
-                return [];
+                if (field.isList) {
+                    return [new ToManyRelationCreateInputField(field)];
+                } else {
+                    return [new ToOneRelationCreateInputField(field)];
+                }
             } else {
                 // reference
                 // we intentionally do not check if the referenced object exists (loose coupling), so this behaves just

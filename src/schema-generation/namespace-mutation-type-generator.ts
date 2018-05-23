@@ -70,6 +70,7 @@ export class NamespaceMutationTypeGenerator {
         const newEntityPreExec = new PreExecQueryParms({query: createEntityNode, resultVariable: newEntityIdVarNode});
 
         // Add relations if needed
+        // TODO do this with the CreateRootEntityInputType
         let createRelationsPreExec: PreExecQueryParms|undefined = undefined;
         const relationStatements = getRelationAddRemoveStatements(input, rootEntityType, newEntityIdVarNode, false);
         if (relationStatements.length) {

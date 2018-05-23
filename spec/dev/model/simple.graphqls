@@ -2,7 +2,7 @@ type Hero @rootEntity {
     name: String
     age: Int @defaultValue(value: 42)
     nickNames: [String]
-    movies: [Movie]
+    movies: [Movie] @relation(inverseOf: "heroes")
     skills: [Skill]
     suit: Suit
     morality: Morality
@@ -12,10 +12,18 @@ type Hero @rootEntity {
 type Skill @valueObject {
     description: String
     strength: Float
+    skills: [Skill]
 }
 
-type Movie @childEntity {
+type Movie @rootEntity {
     name: String
+    heroes: [Hero] @relation
+    director: Director @relation
+}
+
+type Director @rootEntity {
+    name: String
+    movies: Movie @relation(inverseOf: "director")
 }
 
 type Suit @entityExtension {
