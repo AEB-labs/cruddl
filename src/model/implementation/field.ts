@@ -300,7 +300,7 @@ export class Field implements ModelComponent {
     }
 
     private validateDefaultValue(context: ValidationContext) {
-        if (!this.input.defaultValue === undefined) {
+        if (this.input.defaultValue === undefined) {
             return;
         }
 
