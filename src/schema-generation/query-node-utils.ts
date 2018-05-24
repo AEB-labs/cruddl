@@ -1,9 +1,10 @@
 import {
-    BasicType, ConditionalQueryNode, ListQueryNode, QueryNode, TransformListQueryNode, TypeCheckQueryNode
+    BasicType, ConditionalQueryNode, FollowEdgeQueryNode, ListQueryNode, QueryNode, TransformListQueryNode,
+    TypeCheckQueryNode
 } from '../query-tree';
 
 export function buildSafeListQueryNode(listNode: QueryNode) {
-    if (listNode instanceof ListQueryNode || listNode instanceof TransformListQueryNode) {
+    if (listNode instanceof ListQueryNode || listNode instanceof TransformListQueryNode || listNode instanceof FollowEdgeQueryNode) {
         // shortcut, especially useful if filter, mapping etc. are done separately
         return listNode;
     }

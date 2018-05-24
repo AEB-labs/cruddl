@@ -1,6 +1,8 @@
 import memorize from 'memorize-decorator';
 import { Field, ObjectType, Type } from '../model';
-import { FieldQueryNode, TransformListQueryNode, VariableQueryNode } from '../query-tree';
+import {
+    FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, TransformListQueryNode, VariableQueryNode
+} from '../query-tree';
 import { FILTER_ARG } from '../schema/schema-defaults';
 import { decapitalize } from '../utils/utils';
 import { EnumTypeGenerator } from './enum-type-generator';
@@ -38,7 +40,16 @@ export class OutputTypeGenerator {
         };
     }
     private createField(field: Field): QueryNodeField {
-        let schemaField = this.createSimpleField(field);
+        let schemaField;
+        if (field.isRelation) {
+            if (field.isList) {
+                schemaField = this.createToManyRelationField(field);
+            } else {
+                schemaField = this.createToOneRelationField(field);
+            }
+        } else {
+            schemaField = this.createSimpleField(field);
+        }
         if (field.isList) {
             schemaField = this.augmentListField(field, schemaField);
         }
@@ -81,6 +92,28 @@ export class OutputTypeGenerator {
             name: field.name,
             type: field.isList ? makeNonNullableList(type) : type,
             resolve: (sourceNode) => new FieldQueryNode(sourceNode, field)
+        };
+    }
+
+    private createToOneRelationField(field: Field): QueryNodeField {
+        const type = this.generate(field.type);
+        const relation = field.getRelationOrThrow();
+        const side = relation.getFieldSide(field);
+        return {
+            name: field.name,
+            type,
+            resolve: (sourceNode) => new FirstOfListQueryNode(new FollowEdgeQueryNode(relation, sourceNode, side))
+        };
+    }
+
+    private createToManyRelationField(field: Field): QueryNodeField {
+        const type = this.generate(field.type);
+        const relation = field.getRelationOrThrow();
+        const side = relation.getFieldSide(field);
+        return {
+            name: field.name,
+            type: makeNonNullableList(type),
+            resolve: (sourceNode) => new FollowEdgeQueryNode(relation, sourceNode, side)
         };
     }
 }

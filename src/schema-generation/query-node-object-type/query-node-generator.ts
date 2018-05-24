@@ -1,6 +1,7 @@
 import { FieldRequest, FieldSelection } from '../../graphql/query-distiller';
 import {
-    BasicType, ConditionalQueryNode, ListQueryNode, NullQueryNode, ObjectQueryNode, PropertySpecification, QueryNode,
+    BasicType, ConditionalQueryNode, FollowEdgeQueryNode, ListQueryNode, NullQueryNode, ObjectQueryNode,
+    PropertySpecification, QueryNode,
     TransformListQueryNode, TypeCheckQueryNode, VariableAssignmentQueryNode, VariableQueryNode
 } from '../../query-tree';
 import { decapitalize } from '../../utils/utils';
@@ -53,7 +54,7 @@ function buildFieldQueryNode(sourceNode: QueryNode, field: QueryNodeField, field
 }
 
 export function buildSafeTransformListQueryNode(listNode: QueryNode, itemType: QueryNodeObjectType, selectionSet: ReadonlyArray<FieldSelection>): QueryNode {
-    if (listNode instanceof ListQueryNode || listNode instanceof TransformListQueryNode) {
+    if (listNode instanceof ListQueryNode || listNode instanceof TransformListQueryNode || listNode instanceof FollowEdgeQueryNode) {
         // shortcut, especially useful if filter, mapping etc. are done separately
         return buildTransformListQueryNode(listNode, itemType, selectionSet);
     }
@@ -64,7 +65,7 @@ export function buildSafeTransformListQueryNode(listNode: QueryNode, itemType: Q
     const transformedList = buildTransformListQueryNode(listVar, itemType, selectionSet);
     return new VariableAssignmentQueryNode({
         variableNode: listVar,
-        variableValueNode: listNode,
+        variableValueNode: safeList,
         resultNode: transformedList
     });
 }
