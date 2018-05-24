@@ -1,3 +1,4 @@
+import { GraphQLEnumType, GraphQLScalarType } from 'graphql';
 import { TypeBase } from './type-base';
 import { EnumTypeConfig, TypeKind } from '../config';
 

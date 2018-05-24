@@ -1,16 +1,19 @@
 import { GraphQLEnumType, Thunk } from 'graphql';
 import { flatMap } from 'lodash';
 import memorize from 'memorize-decorator';
-import { EnumType, Field, ScalarType, Type } from '../model';
-import { BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, NullQueryNode, QueryNode } from '../query-tree';
-import { INPUT_FIELD_EQUAL } from '../schema/schema-defaults';
-import { AnyValue, objectEntries } from '../utils/utils';
-import { EnumTypeGenerator } from './enum-type-generator';
+import { EnumType, Field, ScalarType, Type } from '../../model/index';
 import {
-    and, ENUM_FILTER_FIELDS, FILTER_FIELDS_BY_TYPE, FILTER_OPERATORS, FilterField, ListFilterField,
-    NestedObjectFilterField, QuantifierFilterField, QUANTIFIERS, ScalarOrEnumFieldFilterField, ScalarOrEnumFilterField
+    BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, NullQueryNode, QueryNode
+} from '../../query-tree';
+import { INPUT_FIELD_EQUAL } from '../../schema/schema-defaults';
+import { AnyValue, objectEntries } from '../../utils/utils';
+import { EnumTypeGenerator } from '../enum-type-generator';
+import { TypedInputObjectType } from '../typed-input-object-type';
+import { and, ENUM_FILTER_FIELDS, FILTER_FIELDS_BY_TYPE, FILTER_OPERATORS, QUANTIFIERS } from './constants';
+import {
+    FilterField, ListFilterField, NestedObjectFilterField, QuantifierFilterField, ScalarOrEnumFieldFilterField,
+    ScalarOrEnumFilterField
 } from './filter-fields';
-import { TypedInputObjectType } from './typed-input-object-type';
 
 export class FilterObjectType extends TypedInputObjectType<FilterField> {
     constructor(

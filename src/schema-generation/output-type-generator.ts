@@ -4,7 +4,7 @@ import { FieldQueryNode, TransformListQueryNode, VariableQueryNode } from '../qu
 import { FILTER_ARG } from '../schema/schema-defaults';
 import { decapitalize } from '../utils/utils';
 import { EnumTypeGenerator } from './enum-type-generator';
-import { FilterTypeGenerator } from './filter-type-generator';
+import { FilterTypeGenerator } from './filter-input-types';
 import { makeNonNullableList, QueryNodeField, QueryNodeOutputType } from './query-node-object-type';
 import { buildSafeListQueryNode } from './query-node-utils';
 

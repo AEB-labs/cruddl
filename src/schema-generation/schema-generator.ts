@@ -9,7 +9,7 @@ import { evaluateQueryStatically } from '../query/static-evaluation';
 import { SchemaTransformationContext } from '../schema/preparation/transformation-pipeline';
 import { CreateInputTypeGenerator } from './create-input-types';
 import { EnumTypeGenerator } from './enum-type-generator';
-import { FilterTypeGenerator } from './filter-type-generator';
+import { FilterTypeGenerator } from './filter-input-types';
 import { MutationTypeGenerator } from './mutation-type-generator';
 import { QueryTypeGenerator } from './query-type-generator';
 import { OutputTypeGenerator } from './output-type-generator';
