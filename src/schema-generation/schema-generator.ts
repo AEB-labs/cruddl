@@ -17,7 +17,7 @@ import { buildSafeObjectQueryNode, QueryNodeObjectType, QueryNodeObjectTypeConve
 
 export class SchemaGenerator {
     private readonly enumTypeGenerator = new EnumTypeGenerator();
-    private readonly filterTypeGenerator = new FilterTypeGenerator();
+    private readonly filterTypeGenerator = new FilterTypeGenerator(this.enumTypeGenerator);
     private readonly outputTypeGenerator = new OutputTypeGenerator(this.filterTypeGenerator, this.enumTypeGenerator);
     private readonly createTypeGenerator = new CreateInputTypeGenerator(this.enumTypeGenerator);
     private readonly queryTypeGenerator = new QueryTypeGenerator(this.outputTypeGenerator);

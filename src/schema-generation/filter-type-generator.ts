@@ -1,21 +1,21 @@
-import { Thunk } from 'graphql';
+import { GraphQLEnumType, Thunk } from 'graphql';
 import { flatMap } from 'lodash';
 import memorize from 'memorize-decorator';
 import { EnumType, Field, ScalarType, Type } from '../model';
 import { BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, NullQueryNode, QueryNode } from '../query-tree';
 import { INPUT_FIELD_EQUAL } from '../schema/schema-defaults';
 import { AnyValue, objectEntries } from '../utils/utils';
+import { EnumTypeGenerator } from './enum-type-generator';
 import {
-    and, FILTER_FIELDS_BY_TYPE, FILTER_OPERATORS, FilterField, ListFilterField, NestedObjectFilterField,
-    QuantifierFilterField, QUANTIFIERS,
-    ScalarOrEnumFieldFilterField, ScalarOrEnumFilterField
+    and, ENUM_FILTER_FIELDS, FILTER_FIELDS_BY_TYPE, FILTER_OPERATORS, FilterField, ListFilterField,
+    NestedObjectFilterField, QuantifierFilterField, QUANTIFIERS, ScalarOrEnumFieldFilterField, ScalarOrEnumFilterField
 } from './filter-fields';
 import { TypedInputObjectType } from './typed-input-object-type';
 
 export class FilterObjectType extends TypedInputObjectType<FilterField> {
     constructor(
         name: string,
-        fields: Thunk<ReadonlyArray<FilterField>>
+        fields: Thunk<ReadonlyArray<FilterField>>,
     ) {
         super(name, fields);
     }
@@ -31,13 +31,17 @@ export class FilterObjectType extends TypedInputObjectType<FilterField> {
 }
 
 export class FilterTypeGenerator {
+
+    constructor(private enumTypeGenerator: EnumTypeGenerator) {
+    }
+
     @memorize()
     generate(type: Type): FilterObjectType {
         if (type instanceof ScalarType) {
             return new FilterObjectType(`${type.name}Filter`, this.buildScalarFilterFields(type))
         }
         if (type instanceof EnumType) {
-            throw new Error('unimplemented');
+            return new FilterObjectType(`${type.name}Filter`, this.buildEnumFilterFields(type))
         }
         return new FilterObjectType(`${type.name}Filter`,
             () => flatMap(type.fields, (field: Field) => this.generateFieldFilterFields(field)));
@@ -55,7 +59,8 @@ export class FilterTypeGenerator {
             return [new NestedObjectFilterField(field, inputType)];
         }
         if (field.type.isEnumType) {
-            // TODO
+            const graphQLEnumType = this.enumTypeGenerator.generate(field.type);
+            return this.generateFilterFieldsForEnumField(field, graphQLEnumType);
         }
         return [];
     }
@@ -70,6 +75,15 @@ export class FilterTypeGenerator {
             .map(name => new ScalarOrEnumFieldFilterField(field, FILTER_OPERATORS[name], name === INPUT_FIELD_EQUAL ? undefined : name, inputType));
     }
 
+    private generateFilterFieldsForEnumField(field: Field, graphQLEnumType: GraphQLEnumType): FilterField[] {
+        if (field.isList || !field.type.isEnumType) {
+            return [];
+        }
+
+        return ENUM_FILTER_FIELDS.map(name =>
+            new ScalarOrEnumFieldFilterField(field, FILTER_OPERATORS[name], name === INPUT_FIELD_EQUAL ? undefined : name, graphQLEnumType));
+    }
+
     private generateListFieldFilterFields(field: Field): ListFilterField[] {
         const inputType = this.generate(field.type);
         return QUANTIFIERS.map((quantifierName) => new QuantifierFilterField(field, quantifierName, inputType));
@@ -79,4 +93,7 @@ export class FilterTypeGenerator {
         return FILTER_FIELDS_BY_TYPE[type.name].map(name => new ScalarOrEnumFilterField(FILTER_OPERATORS[name], name, type.graphQLScalarType))
     }
 
+    private buildEnumFilterFields(type: EnumType) {
+        return ENUM_FILTER_FIELDS.map(name => new ScalarOrEnumFilterField(FILTER_OPERATORS[name], name, this.enumTypeGenerator.generate(type)))
+    }
 }

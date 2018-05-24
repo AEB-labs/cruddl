@@ -1,4 +1,6 @@
-import { GraphQLBoolean, GraphQLFloat, GraphQLID, GraphQLInputType, GraphQLInt, GraphQLString } from 'graphql';
+import {
+    GraphQLBoolean, GraphQLEnumType, GraphQLFloat, GraphQLID, GraphQLInputType, GraphQLInt, GraphQLString
+} from 'graphql';
 import { Field } from '../model/implementation/index';
 import { EnumType, ScalarType } from '../model/index';
 import {
@@ -53,7 +55,7 @@ export class ScalarOrEnumFieldFilterField implements FilterField {
         public readonly field: Field,
         public readonly resolveOperator: (fieldNode: QueryNode, valueNode: QueryNode) => QueryNode,
         public readonly operatorPrefix: string | undefined,
-        public readonly inputType: GraphQLInputType
+        public readonly inputType: GraphQLInputType|FilterObjectType
     ) {
     }
 
@@ -76,7 +78,7 @@ export class ScalarOrEnumFilterField implements FilterField {
     constructor(
         public readonly resolveOperator: (fieldNode: QueryNode, valueNode: QueryNode) => QueryNode,
         public readonly operatorName: string,
-        public readonly inputType: GraphQLInputType
+        public readonly inputType: GraphQLInputType|GraphQLEnumType
     ) {
     }
 
@@ -181,6 +183,10 @@ export const STRING_FILTER_FIELDS = [INPUT_FIELD_EQUAL, INPUT_FIELD_NOT, INPUT_F
 export const NUMERIC_FILTER_FIELDS = [
     INPUT_FIELD_EQUAL, INPUT_FIELD_NOT, INPUT_FIELD_IN, INPUT_FIELD_NOT_IN,
     INPUT_FIELD_LT, INPUT_FIELD_LTE, INPUT_FIELD_GT, INPUT_FIELD_GTE,
+];
+
+export const ENUM_FILTER_FIELDS = [
+    INPUT_FIELD_EQUAL, INPUT_FIELD_NOT, INPUT_FIELD_IN, INPUT_FIELD_NOT_IN
 ];
 
 export const FILTER_FIELDS_BY_TYPE: {[name: string]: string[]} = {
