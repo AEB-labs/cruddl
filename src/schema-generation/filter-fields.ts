@@ -110,7 +110,7 @@ export class QuantifierFilterField implements FilterField {
 
         const listNode = buildSafeListQueryNode(sourceNode);
         const itemVariable = new VariableQueryNode(decapitalize(this.field.name));
-        const filterNode = this.inputType.getFilterNode(itemVariable, filterValueForResult);
+        const filterNode = this.inputType.getFilterNode(sourceNode, filterValueForResult);
         const filteredListNode = new TransformListQueryNode({
             listNode,
             filterNode,
