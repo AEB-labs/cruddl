@@ -123,6 +123,22 @@ export class QuantifierFilterField implements FilterField {
     }
 }
 
+export class NestedObjectFilterField implements FilterField {
+    constructor(
+        public readonly field: Field,
+        public readonly inputType: FilterObjectType
+    ) {
+    }
+
+    get name() {
+        return this.field.name;
+    }
+
+    getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
+        return this.inputType.getFilterNode(sourceNode, filterValue);
+    }
+}
+
 export const FILTER_OPERATORS: { [suffix: string]: (fieldNode: QueryNode, valueNode: QueryNode) => QueryNode } = {
     // not's before the normal fields because they need to be matched first in the suffix-matching algorithm
     [INPUT_FIELD_EQUAL]: binaryOp(BinaryOperator.EQUAL),

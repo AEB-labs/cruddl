@@ -6,7 +6,8 @@ import { BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, NullQuery
 import { INPUT_FIELD_EQUAL } from '../schema/schema-defaults';
 import { AnyValue, objectEntries } from '../utils/utils';
 import {
-    and, FILTER_FIELDS_BY_TYPE, FILTER_OPERATORS, FilterField, ListFilterField, QuantifierFilterField, QUANTIFIERS,
+    and, FILTER_FIELDS_BY_TYPE, FILTER_OPERATORS, FilterField, ListFilterField, NestedObjectFilterField,
+    QuantifierFilterField, QUANTIFIERS,
     ScalarOrEnumFieldFilterField, ScalarOrEnumFilterField
 } from './filter-fields';
 import { TypedInputObjectType } from './typed-input-object-type';
@@ -50,7 +51,8 @@ export class FilterTypeGenerator {
             return this.generateFilterFieldsForNonListScalar(field);
         }
         if (field.type.isObjectType) {
-            // TODO
+            const inputType = this.generate(field.type);
+            return [new NestedObjectFilterField(field, inputType)];
         }
         if (field.type.isEnumType) {
             // TODO
