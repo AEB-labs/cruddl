@@ -6,7 +6,7 @@ import { indent } from '../utils/utils';
  * A node that evaluates in a JSON-like object structure with properties and values
  */
 export class ObjectQueryNode extends QueryNode {
-    constructor(public readonly properties: PropertySpecification[]) {
+    constructor(public readonly properties: ReadonlyArray<PropertySpecification>) {
         super();
 
     }
@@ -47,7 +47,7 @@ export class PropertySpecification extends QueryNode {
  * The merge is NOT recursive.
  */
 export class MergeObjectsQueryNode extends QueryNode {
-    constructor(public readonly objectNodes: QueryNode[]) {
+    constructor(public readonly objectNodes: ReadonlyArray<QueryNode>) {
         super();
     }
 

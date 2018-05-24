@@ -133,7 +133,7 @@ export class ErrorIfEmptyResultValidator extends QueryNode implements QueryResul
     }
 }
 
-export const ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS: QueryResultValidatorFunctionProvider[] = [
+export const ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS: ReadonlyArray<QueryResultValidatorFunctionProvider> = [
     ErrorIfNotTruthyResultValidator,
     ErrorIfEmptyResultValidator
 ];

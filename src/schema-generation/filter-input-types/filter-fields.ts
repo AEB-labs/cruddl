@@ -1,22 +1,14 @@
-import {
-    GraphQLBoolean, GraphQLEnumType, GraphQLFloat, GraphQLID, GraphQLInputType, GraphQLInt, GraphQLString
-} from 'graphql';
+import { GraphQLEnumType, GraphQLInputType } from 'graphql';
 import { Field } from '../../model';
 import {
     BinaryOperationQueryNode, BinaryOperator, CountQueryNode, FieldQueryNode, LiteralQueryNode, QueryNode,
-    TransformListQueryNode, UnaryOperationQueryNode, UnaryOperator, VariableQueryNode
+    TransformListQueryNode, VariableQueryNode
 } from '../../query-tree';
-import { GraphQLDateTime } from '../../schema/scalars/date-time';
-import {
-    INPUT_FIELD_CONTAINS, INPUT_FIELD_ENDS_WITH, INPUT_FIELD_EQUAL, INPUT_FIELD_EVERY, INPUT_FIELD_GT, INPUT_FIELD_GTE,
-    INPUT_FIELD_IN, INPUT_FIELD_LT, INPUT_FIELD_LTE, INPUT_FIELD_NONE, INPUT_FIELD_NOT, INPUT_FIELD_NOT_CONTAINS,
-    INPUT_FIELD_NOT_ENDS_WITH, INPUT_FIELD_NOT_IN, INPUT_FIELD_NOT_STARTS_WITH, INPUT_FIELD_SOME,
-    INPUT_FIELD_STARTS_WITH, SCALAR_DATE, SCALAR_TIME
-} from '../../schema/schema-defaults';
+import { INPUT_FIELD_EVERY, INPUT_FIELD_NONE } from '../../schema/schema-defaults';
 import { AnyValue, decapitalize } from '../../utils/utils';
 import { buildSafeListQueryNode } from '../query-node-utils';
 import { TypedInputFieldBase } from '../typed-input-object-type';
-import { FilterObjectType, FilterTypeGenerator } from './generator';
+import { FilterObjectType } from './generator';
 
 
 export interface FilterField extends TypedInputFieldBase<FilterField> {

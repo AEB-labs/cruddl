@@ -501,7 +501,7 @@ function formatEdge(relation: Relation, edge: PartialEdgeIdentifier|EdgeIdentifi
 }
 
 function formatEdgeFilter(relation: Relation, edge: EdgeFilter, edgeFragment: AQLFragment, context: QueryContext) {
-    function makeList(ids: QueryNode[], rootEntityType: RootEntityType) {
+    function makeList(ids: ReadonlyArray<QueryNode>, rootEntityType: RootEntityType) {
         return aql`[${aql.join(ids.map(node => getFullIDFromKeyNode(node, rootEntityType, context)), aql`, `)}]`;
     }
 

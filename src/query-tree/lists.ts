@@ -7,7 +7,7 @@ import { VariableQueryNode } from './variables';
  * A node that evaluates to a list with query nodes as list entries
  */
 export class ListQueryNode extends QueryNode {
-    constructor(public readonly itemNodes: QueryNode[]) {
+    constructor(public readonly itemNodes: ReadonlyArray<QueryNode>) {
         super();
     }
 
@@ -77,7 +77,7 @@ export class OrderClause extends QueryNode {
 }
 
 export class OrderSpecification extends QueryNode {
-    constructor(public readonly clauses: OrderClause[]) {
+    constructor(public readonly clauses: ReadonlyArray<OrderClause>) {
         super();
     }
 
@@ -104,7 +104,7 @@ export enum OrderDirection {
  * This can be used to append items to an array by using a ListQueryNode as second item
  */
 export class ConcatListsQueryNode extends QueryNode {
-    constructor(public readonly listNodes: QueryNode[]) {
+    constructor(public readonly listNodes: ReadonlyArray<QueryNode>) {
         super();
     }
 
