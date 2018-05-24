@@ -1,25 +1,14 @@
+import { Thunk } from 'graphql';
 import { flatMap } from 'lodash';
-import { GraphQLInputType, GraphQLString, Thunk } from 'graphql';
 import memorize from 'memorize-decorator';
 import { EnumType, Field, ScalarType, Type } from '../model';
+import { BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, NullQueryNode, QueryNode } from '../query-tree';
+import { INPUT_FIELD_EQUAL } from '../schema/schema-defaults';
+import { AnyValue, objectEntries } from '../utils/utils';
 import {
-    BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, CountQueryNode, FieldQueryNode, LiteralQueryNode,
-    NullQueryNode,
-    QueryNode,
-    TransformListQueryNode, VariableQueryNode
-} from '../query-tree';
-import { createListFieldValueNode } from '../query/fields';
-import { createFilterNode } from '../query/filtering';
-import {
-    FILTER_ARG, INPUT_FIELD_EQUAL, INPUT_FIELD_EVERY, INPUT_FIELD_NONE, INPUT_FIELD_SOME
-} from '../schema/schema-defaults';
-import { AnyValue, decapitalize, objectEntries } from '../utils/utils';
-import {
-    and, FILTER_FIELDS_BY_TYPE, FILTER_OPERATORS, FilterField, ListFilterField, QuantifierFilterField,
-    ScalarOrEnumFieldFilterField,
-    ScalarOrEnumFilterField
+    and, FILTER_FIELDS_BY_TYPE, FILTER_OPERATORS, FilterField, ListFilterField, QuantifierFilterField, QUANTIFIERS,
+    ScalarOrEnumFieldFilterField, ScalarOrEnumFilterField
 } from './filter-fields';
-import { buildTransformListQueryNode } from './query-node-object-type';
 import { TypedInputObjectType } from './typed-input-object-type';
 
 export class FilterObjectType extends TypedInputObjectType<FilterField> {
@@ -76,8 +65,7 @@ export class FilterTypeGenerator {
 
     private generateListFieldFilterFields(field: Field): ListFilterField[] {
         const inputType = this.generate(field.type);
-        return [INPUT_FIELD_SOME, INPUT_FIELD_EVERY, INPUT_FIELD_NONE]
-            .map((quantifierName) => new QuantifierFilterField(field, quantifierName, inputType));
+        return QUANTIFIERS.map((quantifierName) => new QuantifierFilterField(field, quantifierName, inputType));
     }
 
     private buildScalarFilterFields(type: ScalarType): ScalarOrEnumFilterField[] {
