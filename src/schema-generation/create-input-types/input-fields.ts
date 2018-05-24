@@ -1,4 +1,4 @@
-import { GraphQLID, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
+import { GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
 import { Field } from '../../model/implementation';
 import { AnyValue, PlainObject } from '../../utils/utils';
 import { TypedInputFieldBase } from '../typed-input-object-type';
@@ -128,40 +128,4 @@ export class ObjectListCreateInputField extends BasicCreateInputField {
 
         value.forEach(value => this.objectInputType.collectAffectedFields(value, fields));
     }
-}
-
-export abstract class AbstractRelationCreateInputField implements CreateInputField {
-    constructor(
-        public readonly field: Field
-    ) {
-
-    }
-
-    abstract readonly inputType: GraphQLInputType;
-
-    get name() {
-        return this.field.name;
-    }
-
-    appliesToMissingFields(): boolean {
-        return false;
-    }
-
-    collectAffectedFields(value: AnyValue, fields: Set<Field>): void {
-        fields.add(this.field);
-    }
-
-    getProperties(value: AnyValue): PlainObject {
-        return {};
-    }
-
-    // TODO something for getRelationAddRemoveStatements()
-}
-
-export class ToOneRelationCreateInputField extends AbstractRelationCreateInputField {
-    readonly inputType: GraphQLInputType = GraphQLID;
-}
-
-export class ToManyRelationCreateInputField extends AbstractRelationCreateInputField {
-    readonly inputType: GraphQLInputType = new GraphQLList(new GraphQLNonNull(GraphQLID));
 }

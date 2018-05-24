@@ -71,18 +71,14 @@ export class MutationTypeGenerator {
         const newEntityPreExec = new PreExecQueryParms({query: createEntityNode, resultVariable: newEntityIdVarNode});
 
         // Add relations if needed
-        // TODO do this with the CreateRootEntityInputType
-        let createRelationsPreExec: PreExecQueryParms|undefined = undefined;
-        const relationStatements = getRelationAddRemoveStatements(input, rootEntityType, newEntityIdVarNode, false);
-        if (relationStatements.length) {
-            createRelationsPreExec = new PreExecQueryParms({ query:
-                    new FirstOfListQueryNode(new ListQueryNode([new NullQueryNode(),...relationStatements]))});
-        }
+        const relationStatements = inputType.getRelationStatements(input, newEntityIdVarNode);
+        // Note: these statements contain validators which should arguably be moved to the front
+        // works with transactional DB adapters, but e.g. not with JavaScript
 
         // PreExecute creation and relation queries and return result
         return new WithPreExecutionQueryNode({
             resultNode: new EntityFromIdQueryNode(rootEntityType, newEntityIdVarNode),
-            preExecQueries: [newEntityPreExec, createRelationsPreExec]
+            preExecQueries: [newEntityPreExec, ...relationStatements ]
         });
     }
 }

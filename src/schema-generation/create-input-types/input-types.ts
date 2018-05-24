@@ -1,10 +1,12 @@
 import { Thunk } from 'graphql';
-import { flatMap, fromPairs, toPairs } from 'lodash';
-import { Field } from '../../model/implementation';
+import { fromPairs, toPairs } from 'lodash';
+import { Field } from '../../model';
+import { PreExecQueryParms, QueryNode } from '../../query-tree';
 import { ENTITY_CREATED_AT, ENTITY_UPDATED_AT, ID_FIELD } from '../../schema/schema-defaults';
-import { PlainObject } from '../../utils/utils';
+import { flatMap, PlainObject } from '../../utils/utils';
 import { TypedInputObjectType } from '../typed-input-object-type';
 import { CreateInputField } from './input-fields';
+import { isRelationCreateField } from './relation-fields';
 import uuid = require('uuid');
 
 function getCurrentISODate() {
@@ -56,7 +58,12 @@ export class CreateRootEntityInputType extends CreateObjectInputType {
         };
     }
 
-    // getRelationAddRemoveStatements() // TODO
+    getRelationStatements(input: PlainObject, idNode: QueryNode): ReadonlyArray<PreExecQueryParms> {
+        const relationFields = this.fields
+            .filter(isRelationCreateField)
+            .filter(field => field.appliesToMissingFields() || field.name in input);
+        return flatMap(relationFields, field => field.getStatements(input[field.name], idNode));
+    }
 }
 
 export class CreateChildEntityInputType extends CreateObjectInputType {
