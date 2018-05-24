@@ -2,7 +2,6 @@ import { GraphQLFieldConfig, GraphQLList, GraphQLNonNull, GraphQLObjectType, Gra
 import { chain } from 'lodash';
 import memorize from 'memorize-decorator';
 import { aliasBasedResolver } from '../../graphql/alias-based-resolvers';
-import { ObjectType } from '../../model';
 import { QueryNodeListType, QueryNodeNonNullType, QueryNodeObjectType, QueryNodeOutputType } from './definition';
 import { isGraphQLOutputType, resolveThunk } from './utils';
 

@@ -1,13 +1,11 @@
 import { GraphQLNonNull } from 'graphql';
 import { flatMap } from 'lodash';
 import memorize from 'memorize-decorator';
-import { Namespace, RootEntityType } from '../model/implementation';
+import { Namespace, RootEntityType } from '../model';
 import {
-    AffectedFieldInfoQueryNode, CreateEntityQueryNode, EntityFromIdQueryNode, FirstOfListQueryNode, ListQueryNode,
-    LiteralQueryNode, NullQueryNode, ObjectQueryNode, PreExecQueryParms, QueryNode, VariableQueryNode,
-    WithPreExecutionQueryNode
+    AffectedFieldInfoQueryNode, CreateEntityQueryNode, EntityFromIdQueryNode, LiteralQueryNode, ObjectQueryNode,
+    PreExecQueryParms, QueryNode, VariableQueryNode, WithPreExecutionQueryNode
 } from '../query-tree';
-import { getRelationAddRemoveStatements } from '../query/mutations';
 import { CREATE_ENTITY_FIELD_PREFIX } from '../schema/schema-defaults';
 import { PlainObject } from '../utils/utils';
 import { CreateInputTypeGenerator, CreateRootEntityInputType } from './create-input-types';

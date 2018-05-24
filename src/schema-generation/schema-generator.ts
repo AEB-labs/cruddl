@@ -3,7 +3,7 @@ import { applyAuthorizationToQueryTree } from '../authorization/execution';
 import { globalContext } from '../config/global';
 import { addOperationBasedResolvers, OperationParams } from '../graphql/operation-based-resolvers';
 import { distillOperation } from '../graphql/query-distiller';
-import { Model } from '../model/implementation';
+import { Model } from '../model';
 import { ObjectQueryNode, QueryNode } from '../query-tree';
 import { evaluateQueryStatically } from '../query/static-evaluation';
 import { SchemaTransformationContext } from '../schema/preparation/transformation-pipeline';
@@ -11,9 +11,9 @@ import { CreateInputTypeGenerator } from './create-input-types';
 import { EnumTypeGenerator } from './enum-type-generator';
 import { FilterTypeGenerator } from './filter-type-generator';
 import { MutationTypeGenerator } from './mutation-type-generator';
-import { QueryTypeGenerator } from './query-type-generator';
 import { OutputTypeGenerator } from './output-type-generator';
 import { buildSafeObjectQueryNode, QueryNodeObjectType, QueryNodeObjectTypeConverter } from './query-node-object-type';
+import { QueryTypeGenerator } from './query-type-generator';
 
 export class SchemaGenerator {
     private readonly enumTypeGenerator = new EnumTypeGenerator();

@@ -1,5 +1,5 @@
 import { GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
-import { Field } from '../../model/implementation';
+import { Field } from '../../model';
 import { AnyValue, PlainObject } from '../../utils/utils';
 import { TypedInputFieldBase } from '../typed-input-object-type';
 import { CreateObjectInputType } from './input-types';
