@@ -141,7 +141,7 @@ export const FILTER_OPERATORS: { [suffix: string]: (fieldNode: QueryNode, valueN
     [INPUT_FIELD_ENDS_WITH]: binaryOp( BinaryOperator.ENDS_WITH)
 };
 
-export const QUANTIFIERS = [INPUT_FIELD_SOME, INPUT_FIELD_EVERY, INPUT_FIELD_NONE]
+export const QUANTIFIERS = [INPUT_FIELD_SOME, INPUT_FIELD_EVERY, INPUT_FIELD_NONE];
 
 export function not(value: QueryNode): QueryNode {
     return new UnaryOperationQueryNode(value, UnaryOperator.NOT);
