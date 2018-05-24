@@ -1,5 +1,5 @@
-import memorize from 'memorize-decorator';
 import { expect } from 'chai';
+import memorize from 'memorize-decorator';
 
 describe('memorize-decorator', () => {
     it('memorizes method result with same arg', () => {

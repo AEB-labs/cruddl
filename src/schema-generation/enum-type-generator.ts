@@ -1,7 +1,7 @@
 import { GraphQLEnumType } from 'graphql';
 import { chain } from 'lodash';
 import memorize from 'memorize-decorator';
-import { EnumType } from '../model/implementation';
+import { EnumType } from '../model';
 
 export class EnumTypeGenerator {
     @memorize()

@@ -37,6 +37,35 @@ export class Relation {
         }
     }
 
+    getOtherField(field: Field): Field|undefined {
+        const thisSide = this.getFieldSide(field);
+        const otherSide = invertRelationFieldSide(thisSide);
+        return this.getFieldOfSide(otherSide);
+    }
+
+    getMultiplicity(side: RelationFieldSide|Field): Multiplicty {
+        let field: Field|undefined;
+        if (side instanceof Field) {
+            field = side;
+        } else {
+            field = this.getFieldOfSide(side);
+        }
+        if (!field) {
+            // if no inverse field exists, many-to-* is implicit
+            return Multiplicty.MANY;
+        }
+        return field.isList ? Multiplicty.MANY : Multiplicty.ONE;
+    }
+
+    /**
+     * Gets the multiplicity of the target field, given the source filed
+     */
+    getTargetMultiplicity(sourceField: Field): Multiplicty {
+        const thisSide = this.getFieldSide(sourceField);
+        const otherSide = invertRelationFieldSide(thisSide);
+        return this.getMultiplicity(otherSide);
+    }
+
     getFieldOfSide(side: RelationFieldSide): Field|undefined {
         switch (side) {
             case RelationFieldSide.FROM_SIDE:
@@ -55,9 +84,18 @@ export class Relation {
         }
     }
 
+    getOtherType(sourceField: Field) {
+        return this.getTypeOfSide(invertRelationFieldSide(this.getFieldSide(sourceField)));
+    }
+
     toString() {
         const fromFieldName = this.fromField ? `.${this.fromField.name}` : '';
         const toFieldName = this.toField ? `.${this.toField.name}` : '';
-        return `edge ${this.fromType.name}${fromFieldName}->${this.toType.name}${toFieldName}`;
+        return `relation ${this.fromType.name}${fromFieldName}->${this.toType.name}${toFieldName}`;
     }
+}
+
+export enum Multiplicty {
+    ONE,
+    MANY
 }

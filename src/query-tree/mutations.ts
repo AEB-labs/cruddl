@@ -8,7 +8,7 @@ import { VariableQueryNode } from './variables';
  * A node that creates a new entity and evaluates to that new entity object
  */
 export class CreateEntityQueryNode extends QueryNode {
-    constructor(public readonly rootEntityType: RootEntityType, public readonly objectNode: QueryNode, public readonly affectedFields: AffectedFieldInfoQueryNode[]) {
+    constructor(public readonly rootEntityType: RootEntityType, public readonly objectNode: QueryNode, public readonly affectedFields: ReadonlyArray<AffectedFieldInfoQueryNode>) {
         super();
     }
 
@@ -50,9 +50,9 @@ export class UpdateEntitiesQueryNode extends QueryNode {
     constructor(params: {
         rootEntityType: RootEntityType,
         listNode: QueryNode,
-        updates: SetFieldQueryNode[],
+        updates: ReadonlyArray<SetFieldQueryNode>,
         currentEntityVariable?: VariableQueryNode,
-        affectedFields: AffectedFieldInfoQueryNode[]
+        affectedFields: ReadonlyArray<AffectedFieldInfoQueryNode>
     }) {
         super();
         this.rootEntityType = params.rootEntityType;
@@ -64,9 +64,9 @@ export class UpdateEntitiesQueryNode extends QueryNode {
 
     public readonly rootEntityType: RootEntityType;
     public readonly listNode: QueryNode;
-    public readonly updates: SetFieldQueryNode[];
+    public readonly updates: ReadonlyArray<SetFieldQueryNode>;
     public readonly currentEntityVariable: VariableQueryNode;
-    public readonly affectedFields: AffectedFieldInfoQueryNode[];
+    public readonly affectedFields: ReadonlyArray<AffectedFieldInfoQueryNode>;
 
     describe() {
         return `update ${this.rootEntityType.name} entities in (\n` +
@@ -117,7 +117,7 @@ export class AddEdgesQueryNode extends QueryNode {
     // TODO: accept one QueryNode which evaluates to the lits of edge ids somehow?
     // (currently, adding 50 edges generates 50 bound variables with the literal values)
 
-    constructor(readonly relation: Relation, readonly edges: EdgeIdentifier[]) {
+    constructor(readonly relation: Relation, readonly edges: ReadonlyArray<EdgeIdentifier>) {
         super();
     }
 
@@ -165,7 +165,7 @@ export class SetEdgeQueryNode extends QueryNode {
  * pseudo code: from IN [...fromIDNodes] && to IN [...toIDNodes]
  */
 export class EdgeFilter extends QueryNode {
-    constructor(readonly fromIDNodes?: QueryNode[], readonly toIDNodes?: QueryNode[]) {
+    constructor(readonly fromIDNodes?: ReadonlyArray<QueryNode>, readonly toIDNodes?: ReadonlyArray<QueryNode>) {
         super();
     }
 
@@ -173,7 +173,7 @@ export class EdgeFilter extends QueryNode {
         return `(${this.describeIDs(this.fromIDNodes)} -> ${this.describeIDs(this.toIDNodes)})`;
     }
 
-    private describeIDs(ids: QueryNode[] | undefined) {
+    private describeIDs(ids: ReadonlyArray<QueryNode> | undefined) {
         if (!ids) {
             return '?';
         }

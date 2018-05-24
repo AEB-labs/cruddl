@@ -1,15 +1,14 @@
 import { GraphQLList, GraphQLNonNull } from 'graphql';
 import { flatMap } from 'lodash';
 import memorize from 'memorize-decorator';
-import {
-    ChildEntityType, EntityExtensionType, Field, ObjectType, RootEntityType, ValueObjectType
-} from '../../model/implementation';
+import { ChildEntityType, EntityExtensionType, Field, ObjectType, RootEntityType, ValueObjectType } from '../../model';
 import { EnumTypeGenerator } from '../enum-type-generator';
 import {
     BasicCreateInputField, BasicListCreateInputField, CreateInputField, ObjectCreateInputField,
-    ObjectListCreateInputField, ToManyRelationCreateInputField, ToOneRelationCreateInputField
+    ObjectListCreateInputField
 } from './input-fields';
 import { CreateChildEntityInputType, CreateObjectInputType, CreateRootEntityInputType } from './input-types';
+import { ToManyRelationCreateInputField, ToOneRelationCreateInputField } from './relation-fields';
 
 export class CreateInputTypeGenerator {
     constructor(

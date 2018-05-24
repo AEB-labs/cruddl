@@ -1,7 +1,7 @@
+import { expect } from 'chai';
 import { TypeKind } from '../../src/model/config';
 import { EnumType } from '../../src/model/implementation';
 import { EnumTypeGenerator } from '../../src/schema-generation/enum-type-generator';
-import { expect } from 'chai';
 
 describe('EnumTypeGenerator', () => {
     it('generates the enum type', () => {

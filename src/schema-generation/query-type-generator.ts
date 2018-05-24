@@ -1,6 +1,6 @@
 import { GraphQLID } from 'graphql';
 import memorize from 'memorize-decorator';
-import { Namespace, RootEntityType, ScalarType, Type } from '../model/implementation';
+import { Namespace, RootEntityType, ScalarType, Type } from '../model';
 import {
     BinaryOperationQueryNode, BinaryOperator, EntitiesQueryNode, FirstOfListQueryNode, LiteralQueryNode,
     ObjectQueryNode, QueryNode, TransformListQueryNode, VariableQueryNode
