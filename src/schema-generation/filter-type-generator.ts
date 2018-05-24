@@ -43,12 +43,17 @@ export class FilterTypeGenerator {
     }
 
     private generateFieldFilterFields(field: Field): FilterField[] {
+        if (field.isList) {
+            return this.generateListFieldFilterFields(field);
+        }
         if (field.type.isScalarType) {
-            if (!field.isList) {
-                return this.generateFilterFieldsForNonListScalar(field);
-            } else {
-                return this.generateListFieldFilterFields(field);
-            }
+            return this.generateFilterFieldsForNonListScalar(field);
+        }
+        if (field.type.isObjectType) {
+            // TODO
+        }
+        if (field.type.isEnumType) {
+            // TODO
         }
         return [];
     }
