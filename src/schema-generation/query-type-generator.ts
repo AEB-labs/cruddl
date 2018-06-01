@@ -1,17 +1,23 @@
 import { GraphQLID } from 'graphql';
 import memorize from 'memorize-decorator';
+import * as pluralize from 'pluralize';
 import { Namespace, RootEntityType, ScalarType, Type } from '../model';
 import {
     BinaryOperationQueryNode, BinaryOperator, EntitiesQueryNode, FirstOfListQueryNode, LiteralQueryNode,
     ObjectQueryNode, QueryNode, TransformListQueryNode, VariableQueryNode
 } from '../query-tree';
 import { createScalarFieldValueNode } from '../query/fields';
+import { ALL_ENTITIES_FIELD_PREFIX } from '../schema/schema-defaults';
 import { decapitalize, objectEntries } from '../utils/utils';
+import { ListAugmentation } from './list-augmentation';
 import { OutputTypeGenerator } from './output-type-generator';
-import { QueryNodeField, QueryNodeObjectType } from './query-node-object-type';
+import { QueryNodeField, QueryNodeListType, QueryNodeNonNullType, QueryNodeObjectType } from './query-node-object-type';
 
 export class QueryTypeGenerator {
-    constructor(private readonly outputTypeGenerator: OutputTypeGenerator) {
+    constructor(
+        private readonly outputTypeGenerator: OutputTypeGenerator,
+        private readonly listAugmentation: ListAugmentation
+    ) {
 
     }
 
@@ -41,11 +47,22 @@ export class QueryTypeGenerator {
             resolve: (_, args) => this.getSingleRootEntity(rootEntityType, args)
         }));
 
+        const allRootEntitiesFields = namespace.rootEntityTypes.map((rootEntityType): QueryNodeField => {
+            const fieldConfig = ({
+                name: ALL_ENTITIES_FIELD_PREFIX + pluralize(rootEntityType.name),
+                type: new QueryNodeNonNullType(new QueryNodeListType(new QueryNodeNonNullType(this.outputTypeGenerator.generate(rootEntityType)))),
+                args: {},
+                resolve: () => this.getAllRootEntities(rootEntityType)
+            });
+            return this.listAugmentation.augment(fieldConfig, rootEntityType);
+        });
+
         return {
             name: `${namespace.pascalCasePath}Query`,
             fields: [
                 ...namespaceFields,
-                ...singleRootEntityFields
+                ...singleRootEntityFields,
+                ...allRootEntitiesFields
             ]
         };
     }
@@ -66,11 +83,15 @@ export class QueryTypeGenerator {
         });
         return new FirstOfListQueryNode(filteredListNode);
     }
+
+    private getAllRootEntities(rootEntityType: RootEntityType): QueryNode {
+        return new EntitiesQueryNode(rootEntityType);
+    }
 }
 
 function getAsScalarTypeOrThrow(type: Type): ScalarType {
     if (!type.isScalarType) {
-        throw new Error(`Expected "${type.name}" to be a scalar type, but is ${type.kind}`)
+        throw new Error(`Expected "${type.name}" to be a scalar type, but is ${type.kind}`);
     }
     return type;
 }

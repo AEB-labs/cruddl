@@ -10,6 +10,7 @@ import { SchemaTransformationContext } from '../schema/preparation/transformatio
 import { CreateInputTypeGenerator } from './create-input-types';
 import { EnumTypeGenerator } from './enum-type-generator';
 import { FilterTypeGenerator } from './filter-input-types';
+import { ListAugmentation } from './list-augmentation';
 import { MutationTypeGenerator } from './mutation-type-generator';
 import { OutputTypeGenerator } from './output-type-generator';
 import { buildSafeObjectQueryNode, QueryNodeObjectType, QueryNodeObjectTypeConverter } from './query-node-object-type';
@@ -18,9 +19,10 @@ import { QueryTypeGenerator } from './query-type-generator';
 export class SchemaGenerator {
     private readonly enumTypeGenerator = new EnumTypeGenerator();
     private readonly filterTypeGenerator = new FilterTypeGenerator(this.enumTypeGenerator);
-    private readonly outputTypeGenerator = new OutputTypeGenerator(this.filterTypeGenerator, this.enumTypeGenerator);
+    private readonly listAugmentation = new ListAugmentation(this.filterTypeGenerator);
+    private readonly outputTypeGenerator = new OutputTypeGenerator(this.listAugmentation, this.enumTypeGenerator);
     private readonly createTypeGenerator = new CreateInputTypeGenerator(this.enumTypeGenerator);
-    private readonly queryTypeGenerator = new QueryTypeGenerator(this.outputTypeGenerator);
+    private readonly queryTypeGenerator = new QueryTypeGenerator(this.outputTypeGenerator, this.listAugmentation);
     private readonly mutationTypeGenerator = new MutationTypeGenerator(this.outputTypeGenerator, this.createTypeGenerator);
     private readonly queryNodeObjectTypeConverter = new QueryNodeObjectTypeConverter();
 

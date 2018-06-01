@@ -1,18 +1,13 @@
 import memorize from 'memorize-decorator';
 import { Field, ObjectType, Type } from '../model';
-import {
-    FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, TransformListQueryNode, VariableQueryNode
-} from '../query-tree';
-import { FILTER_ARG } from '../schema/schema-defaults';
-import { decapitalize } from '../utils/utils';
+import { FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode } from '../query-tree';
 import { EnumTypeGenerator } from './enum-type-generator';
-import { FilterTypeGenerator } from './filter-input-types';
+import { ListAugmentation } from './list-augmentation';
 import { makeNonNullableList, QueryNodeField, QueryNodeOutputType } from './query-node-object-type';
-import { buildSafeListQueryNode } from './query-node-utils';
 
 export class OutputTypeGenerator {
     constructor(
-        private readonly filterTypeGenerator: FilterTypeGenerator,
+        private readonly listAugmentation: ListAugmentation,
         private readonly enumTypeGenerator: EnumTypeGenerator
     ) {
 
@@ -51,40 +46,10 @@ export class OutputTypeGenerator {
             schemaField = this.createSimpleField(field);
         }
         if (field.isList) {
-            schemaField = this.augmentListField(field, schemaField);
+            schemaField = this.listAugmentation.augment(schemaField, field.type);
         }
         return schemaField;
     }
-
-    private augmentListField(field: Field, schemaField: QueryNodeField): QueryNodeField {
-        if (!field.type.isObjectType) {
-            return schemaField;
-        }
-
-        const filterType = this.filterTypeGenerator.generate(field.type);
-
-        return {
-            ...schemaField,
-            args: {
-                ...schemaField.args,
-                [FILTER_ARG]: {
-                    type: filterType.getInputType()
-                }
-            },
-            resolve: (sourceNode, args) => {
-                let listNode = schemaField.resolve(sourceNode, args);
-                listNode = buildSafeListQueryNode(listNode);
-                const itemVariable = new VariableQueryNode(decapitalize(field.type.name));
-                const filterValue = args[FILTER_ARG];
-                const filterNode = filterValue != undefined ? filterType.getFilterNode(itemVariable, args[FILTER_ARG]) : undefined;
-                return new TransformListQueryNode({
-                    listNode,
-                    itemVariable,
-                    filterNode
-                });
-            }
-        };
-    };
 
     private createSimpleField(field: Field): QueryNodeField {
         const type = this.generate(field.type);
