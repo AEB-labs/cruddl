@@ -45,6 +45,7 @@ export class OutputTypeGenerator {
         } else {
             schemaField = this.createSimpleField(field);
         }
+        // TODO references
         if (field.isList) {
             schemaField = this.listAugmentation.augment(schemaField, field.type);
         }
