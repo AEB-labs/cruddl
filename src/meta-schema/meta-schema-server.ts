@@ -76,14 +76,14 @@ const typeDefs = `
     description: String
     fields: [Field]
   }
-  
+        
   type ValueObjectType implements ObjectType & Type {
     name: String
     kind: TypeKind
     description: String
     fields: [Field]
   }
-  
+            
   type ScalarType implements Type {
     name: String
     kind: TypeKind
@@ -120,7 +120,7 @@ const typeDefs = `
     scalarType(name: String!): ScalarType,
     enumTypes: [EnumType]
     enumType(name: String!): EnumType
-    
+
     namespaces: [Namespace]
     rootNamespace: Namespace
   }
