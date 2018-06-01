@@ -53,8 +53,8 @@ export class OrderByEnumValue {
         return this.underscoreSeparatedPath + '_' + (this.direction == OrderDirection.ASCENDING ? 'ASC' : 'DESC');
     }
 
-    getClause(sourceNode: QueryNode): OrderClause {
-        const valueNode = this.path.reduce((node, field) => createFieldNode(field, node), sourceNode);
+    getClause(itemNode: QueryNode): OrderClause {
+        const valueNode = this.path.reduce((node, field) => createFieldNode(field, node), itemNode);
         return new OrderClause(valueNode, this.direction);
     }
 }

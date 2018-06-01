@@ -13,7 +13,7 @@ import { FilterAugmentation } from './filter-augmentation';
 import { FilterTypeGenerator } from './filter-input-types';
 import { ListAugmentation } from './list-augmentation';
 import { MutationTypeGenerator } from './mutation-type-generator';
-import { OrderByAugmentation } from './order-by-augmentation';
+import { OrderByAndPaginationAugmentation } from './order-by-and-pagination-augmentation';
 import { OrderByEnumGenerator } from './order-by-enum-generator';
 import { OutputTypeGenerator } from './output-type-generator';
 import { buildSafeObjectQueryNode, QueryNodeObjectType, QueryNodeObjectTypeConverter } from './query-node-object-type';
@@ -23,7 +23,7 @@ export class SchemaGenerator {
     private readonly enumTypeGenerator = new EnumTypeGenerator();
     private readonly filterTypeGenerator = new FilterTypeGenerator(this.enumTypeGenerator);
     private readonly orderByEnumGenerator = new OrderByEnumGenerator();
-    private readonly orderByAugmentation = new OrderByAugmentation(this.orderByEnumGenerator);
+    private readonly orderByAugmentation = new OrderByAndPaginationAugmentation(this.orderByEnumGenerator);
     private readonly filterAugmentation = new FilterAugmentation(this.filterTypeGenerator);
     private readonly listAugmentation = new ListAugmentation(this.filterAugmentation, this.orderByAugmentation);
     private readonly outputTypeGenerator = new OutputTypeGenerator(this.listAugmentation, this.enumTypeGenerator);

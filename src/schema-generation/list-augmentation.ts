@@ -1,6 +1,6 @@
 import { Type } from '../model';
 import { FilterAugmentation } from './filter-augmentation';
-import { OrderByAugmentation } from './order-by-augmentation';
+import { OrderByAndPaginationAugmentation } from './order-by-and-pagination-augmentation';
 import { QueryNodeField } from './query-node-object-type';
 
 /**
@@ -9,7 +9,7 @@ import { QueryNodeField } from './query-node-object-type';
 export class ListAugmentation {
     constructor(
         private readonly filterAugmentation: FilterAugmentation,
-        private readonly orderByAugmentation: OrderByAugmentation
+        private readonly orderByAugmentation: OrderByAndPaginationAugmentation
     ) {
     }
 
