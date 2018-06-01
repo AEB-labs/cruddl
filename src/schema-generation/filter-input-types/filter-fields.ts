@@ -1,12 +1,12 @@
 import { GraphQLEnumType, GraphQLInputType } from 'graphql';
 import { Field } from '../../model';
 import {
-    BinaryOperationQueryNode, BinaryOperator, CountQueryNode, FieldQueryNode, LiteralQueryNode, QueryNode,
-    TransformListQueryNode, VariableQueryNode
+    BinaryOperationQueryNode, BinaryOperator, CountQueryNode, LiteralQueryNode, QueryNode, TransformListQueryNode,
+    VariableQueryNode
 } from '../../query-tree';
 import { INPUT_FIELD_EVERY, INPUT_FIELD_NONE } from '../../schema/schema-defaults';
 import { AnyValue, decapitalize } from '../../utils/utils';
-import { buildSafeListQueryNode } from '../query-node-utils';
+import { createFieldNode } from '../field-nodes';
 import { TypedInputFieldBase } from '../typed-input-object-type';
 import { FilterObjectType } from './generator';
 
@@ -32,8 +32,7 @@ export class ScalarOrEnumFieldFilterField implements FilterField {
     }
 
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
-        // TODO relations etc.
-        const valueNode = new FieldQueryNode(sourceNode, this.field);
+        const valueNode = createFieldNode(this.field, sourceNode);
         const literalNode = new LiteralQueryNode(filterValue);
         return this.resolveOperator(valueNode, literalNode);
     }
@@ -70,14 +69,14 @@ export class QuantifierFilterField implements FilterField {
     }
 
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
+        const listNode = createFieldNode(this.field, sourceNode);
 
         // every(P(x)) === none(!P(x))
         const quantifierForResult = this.quantifierName === INPUT_FIELD_EVERY ? INPUT_FIELD_NONE : this.quantifierName;
         const filterValueForResult = this.quantifierName === INPUT_FIELD_EVERY ? {not: filterValue} : filterValue;
 
-        const listNode = buildSafeListQueryNode(sourceNode);
         const itemVariable = new VariableQueryNode(decapitalize(this.field.name));
-        const filterNode = this.inputType.getFilterNode(sourceNode, filterValueForResult);
+        const filterNode = this.inputType.getFilterNode(itemVariable, filterValueForResult);
         const filteredListNode = new TransformListQueryNode({
             listNode,
             filterNode,

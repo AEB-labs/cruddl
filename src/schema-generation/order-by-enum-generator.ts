@@ -2,8 +2,9 @@ import { GraphQLEnumType } from 'graphql';
 import { chain } from 'lodash';
 import memorize from 'memorize-decorator';
 import { Field, ObjectType } from '../model/implementation';
-import { FieldQueryNode, OrderClause, OrderDirection, QueryNode } from '../query-tree';
+import { OrderClause, OrderDirection, QueryNode } from '../query-tree';
 import { flatMap } from '../utils/utils';
+import { createFieldNode } from './field-nodes';
 
 export class OrderByEnumType {
     constructor(public readonly name: string, public readonly values: ReadonlyArray<OrderByEnumValue>) {
@@ -53,8 +54,7 @@ export class OrderByEnumValue {
     }
 
     getClause(sourceNode: QueryNode): OrderClause {
-        // TODO relations and references
-        const valueNode = this.path.reduce((node, field) => new FieldQueryNode(node, field), sourceNode);
+        const valueNode = this.path.reduce((node, field) => createFieldNode(field, node), sourceNode);
         return new OrderClause(valueNode, this.direction);
     }
 }
