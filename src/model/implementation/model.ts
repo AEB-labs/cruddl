@@ -163,6 +163,25 @@ export class Model implements ModelComponent{
         return type as T;
     }
 
+    getNamespaceByPath(path: ReadonlyArray<string>): Namespace | undefined {
+        let curNamespace: Namespace | undefined = this.rootNamespace;
+        for(const seg of path) {
+            curNamespace = curNamespace.getChildNamespace(seg);
+            if(!curNamespace){
+                return undefined;
+            }
+        }
+        return curNamespace;
+    }
+
+    getNamespaceByPathOrThrow(path: ReadonlyArray<string>): Namespace {
+        const result = this.getNamespaceByPath(path);
+        if(result == undefined) {
+            throw new Error(`Namespace `+path.join('.')+` does not exist`);
+        }
+        return result;
+    }
+
     get relations(): ReadonlyArray<Relation> {
         return flatMap(this.rootEntityTypes, entity => entity.relations);
     }

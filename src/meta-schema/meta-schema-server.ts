@@ -1,18 +1,24 @@
 import { makeExecutableSchema } from 'graphql-tools';
 import { GraphQLSchema } from 'graphql';
 import { Model } from '../model/implementation/model';
-import { Type } from '../model/implementation/type';
-import { TypeKind } from '../model/input/type';
+import { TypeKind } from '../model/config/type';
+import { RootEntityType } from '../model/implementation/root-entity-type';
 
 
 const typeDefs = `
+  enum TypeKind {
+    ROOT_ENTITY, CHILD_ENTITY, ENTITY_EXTENSION, VALUE_OBJECT, ENUM, SCALAR
+  }
+
   type Field {
     name: String
     description: String
     isList: Boolean
     isReference: Boolean
     isRelation: Boolean
+    isReadOnly: Boolean
     type: Type
+    relation: Relation
   }
   
   type Index {
@@ -25,55 +31,78 @@ const typeDefs = `
     field: Field
     path: [String]
   }
-
-  union Type = RootEntityType | ChildEntityType | EntityExtensionType | ValueObjectType | ScalarType | EnumType | InvalidType
   
-  type RootEntityType {
+  type Relation {
+    fromType: RootEntityType
+    fromField: Field
+    toType: RootEntityType
+    toField: Field
+  }
+
+  interface Type {
     name: String
-    kind: String
+    kind: TypeKind
     description: String
-    namespacePath: [String]
+  }
+  
+  interface ObjectType {
+    name: String
+    kind: TypeKind
+    description: String
+    fields: [Field]
+  }
+  
+  type RootEntityType implements ObjectType & Type {
+    name: String
+    kind: TypeKind
+    description: String
+    namespace: Namespace
     keyField: Field
     indices: [Index]
     fields: [Field]
+    relations: [Relation]
   }
   
-  type ChildEntityType {
+  type ChildEntityType implements ObjectType & Type {
     name: String
-    kind: String
+    kind: TypeKind
     description: String
     fields: [Field]
   }
   
-  type EntityExtensionType {
+  type EntityExtensionType implements ObjectType & Type {
     name: String
-    kind: String
+    kind: TypeKind
     description: String
     fields: [Field]
   }
   
-  type ValueObjectType {
+  type ValueObjectType implements ObjectType & Type {
     name: String
-    kind: String
+    kind: TypeKind
     description: String
     fields: [Field]
   }
   
-  type ScalarType {
+  type ScalarType implements Type {
     name: String
-    kind: String
+    kind: TypeKind
     description: String
   }
   
-  type InvalidType {
+  type EnumType implements Type {
     name: String
-    kind: String
+    kind: TypeKind
+    description: String
+    values: [String]
   }
   
-  type EnumType {
+  type Namespace {
     name: String
-    kind: String
-    description: String
+    path: [String]
+    rootEntityTypes: [RootEntityType]
+    childNamespaces: [Namespace]
+    isRoot: Boolean
   }
 
   type Query {
@@ -91,6 +120,9 @@ const typeDefs = `
     scalarType(name: String!): ScalarType,
     enumTypes: [EnumType]
     enumType(name: String!): EnumType
+    
+    namespaces: [Namespace]
+    rootNamespace: Namespace
   }
 `;
 
@@ -177,7 +209,9 @@ export function getMetaSchema(model: Model): GraphQLSchema{
                     }
                 }
                 return null;
-            }
+            },
+            namespaces: () => model.namespaces,
+            rootNamespace: () => model.rootNamespace
         },
         Type: {
             __resolveType(obj: any, context: any, info: any) {
@@ -188,12 +222,20 @@ export function getMetaSchema(model: Model): GraphQLSchema{
                     case TypeKind.VALUE_OBJECT: return "ValueObjectType";
                     case TypeKind.ENUM: return "EnumType";
                     case TypeKind.SCALAR: return "ScalarType";
-                    default: return "InvalidType";
+                    default: return "ScalarType";
                 }
             }
         },
-        InvalidType: {
-            kind: (type: Type) => "INVALID_TYPE"
+        ObjectType: {
+            __resolveType(obj: any, context: any, info: any) {
+                switch(obj.kind) {
+                    case TypeKind.ROOT_ENTITY: return "RootEntityType";
+                    case TypeKind.CHILD_ENTITY: return "ChildEntityType";
+                    case TypeKind.ENTITY_EXTENSION: return "EntityExtensionType";
+                    case TypeKind.VALUE_OBJECT: return "ValueObjectType";
+                    default: return "ScalarType";
+                }
+            }
         }
     };
 

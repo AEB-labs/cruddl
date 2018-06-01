@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { startMetaServer, stopMetaServer } from '../dev/server';
 import request from 'graphql-request';
-import { TypeKind } from '../../src/model/input/type';
+import { TypeKind } from '../../src/model/index';
 import { Model } from '../../src/model/implementation/model';
 
 describe('Model API', () => {
@@ -38,7 +38,21 @@ describe('Model API', () => {
       scalarTypes {name}
       enumTypes {name}
     }
-`;
+    `;
+
+    const relationQuery = `
+    {
+      rootEntityType(name:"Delivery") {
+        name
+        relations {
+          fromField {name}
+          fromType {name}
+          toField {name}
+          toType {name}
+        }
+      }
+    }
+    `;
 
     const model = new Model({
         types: [
@@ -60,7 +74,8 @@ describe('Model API', () => {
                         name: 'isoCode',
                         typeName: 'String'
                     }
-                ]
+                ],
+                namespacePath: ['generic']
             }, {
                 name: 'Shipment',
                 kind: TypeKind.ROOT_ENTITY,
@@ -88,7 +103,8 @@ describe('Model API', () => {
                         isRelation: true,
                         isList: true
                     }
-                ]
+                ],
+                namespacePath: ['logistics', 'shipments']
             }, {
                 name: 'Delivery',
                 kind: TypeKind.ROOT_ENTITY,
@@ -98,7 +114,8 @@ describe('Model API', () => {
                         typeName: 'Shipment',
                         isRelation: true
                     }
-                ]
+                ],
+                namespacePath: ['logistics']
             }, {
                 name: 'HandlingUnit',
                 kind: TypeKind.ROOT_ENTITY,
@@ -144,7 +161,7 @@ describe('Model API', () => {
         return request(endpointURI, introQuery);
     });
 
-    it('can query over all types as a union type', async () => {
+    it('can query over all types', async () => {
         const result = await request(endpointURI, typeQuery);
         expect(result).to.deep.equal({
             'types': [
@@ -200,8 +217,33 @@ describe('Model API', () => {
 
     it('can query single types', async () => {
         const result = await request(endpointURI, queryPerTypeQuery);
-        expect(result).to.deep.equal({ "rootEntityTypes": [ { "name": "Country" }, { "name": "Shipment" }, { "name": "Delivery" }, { "name": "HandlingUnit" } ], "childEntityTypes": [ { "name": "Item" } ], "entityExtensionTypes": [ { "name": "DangerousGoodsInfo" } ], "valueObjectTypes": [ { "name": "Address" } ], "scalarTypes": [ { "name": "ID" }, { "name": "String" }, { "name": "Boolean" }, { "name": "Int" }, { "name": "Float" }, { "name": "JSON" }, { "name": "DateTime" } ], "enumTypes": [] });
+        expect(result).to.deep.equal({
+            'rootEntityTypes': [
+                { 'name': 'Country' }, { 'name': 'Shipment' }, { 'name': 'Delivery' }, { 'name': 'HandlingUnit' }
+            ], 'childEntityTypes': [{ 'name': 'Item' }], 'entityExtensionTypes': [{ 'name': 'DangerousGoodsInfo' }], 'valueObjectTypes': [{ 'name': 'Address' }], 'scalarTypes': [
+                { 'name': 'ID' }, { 'name': 'String' }, { 'name': 'Boolean' }, { 'name': 'Int' }, { 'name': 'Float' },
+                { 'name': 'JSON' }, { 'name': 'DateTime' }
+            ], 'enumTypes': []
+        });
     });
+
+    it('can query relations', async () => {
+        const result = await request(endpointURI, relationQuery);
+        expect(result).to.deep.equal({ 'rootEntityType': { 'name': 'Delivery', 'relations': [{ 'fromField': { 'name': 'shipment' }, 'fromType': { 'name': 'Delivery' }, 'toField': { 'name': 'deliveryWithInverseOf' }, 'toType': { 'name': 'Shipment' } }] } });
+    });
+
+    it('can query namespaces', async () => {
+        const result = await request(endpointURI, `{namespaces{name path isRoot}}`);
+        expect(result).to.deep.equal({
+            'namespaces': [
+                { 'name': null, 'path': [], 'isRoot': true },
+                { 'name': 'generic', 'path': ['generic'], 'isRoot': false },
+                { 'name': 'logistics', 'path': ['logistics'], 'isRoot': false },
+                { 'name': 'logistics', 'path': ['logistics', 'shipments'], 'isRoot': false }
+            ]
+        });
+    });
+
 
     after(function () {
         return stopMetaServer();
