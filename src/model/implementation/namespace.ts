@@ -44,7 +44,7 @@ export class Namespace {
     }
 
     public get name(): string | undefined {
-        return this.path[0];
+        return this.path[this.path.length - 1];
     }
 
     getChildNamespace(name: string): Namespace | undefined {
