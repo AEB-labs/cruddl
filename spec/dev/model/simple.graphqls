@@ -23,7 +23,7 @@ type Movie @rootEntity {
 
 type Director @rootEntity {
     name: String
-    movies: Movie @relation(inverseOf: "director")
+    movies: [Movie] @relation(inverseOf: "director")
 }
 
 type Suit @entityExtension {
@@ -37,4 +37,8 @@ type Country @rootEntity {
 enum Morality {
     GOOD
     EVIL
+}
+
+type Delivery @namespace(name: "logistics.delivery") @rootEntity {
+    name: String
 }
