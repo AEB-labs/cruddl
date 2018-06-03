@@ -16,7 +16,7 @@ import { MutationTypeGenerator } from './mutation-type-generator';
 import { OrderByAndPaginationAugmentation } from './order-by-and-pagination-augmentation';
 import { OrderByEnumGenerator } from './order-by-enum-generator';
 import { OutputTypeGenerator } from './output-type-generator';
-import { buildSafeObjectQueryNode, QueryNodeObjectType, QueryNodeObjectTypeConverter } from './query-node-object-type';
+import { buildConditionalObjectQueryNode, QueryNodeObjectType, QueryNodeObjectTypeConverter } from './query-node-object-type';
 import { QueryTypeGenerator } from './query-type-generator';
 
 export class SchemaGenerator {
@@ -69,7 +69,7 @@ export class SchemaGenerator {
                 const requestRoles = this.getRequestRoles(operationInfo.context);
                 logger.debug(`Request roles: ${requestRoles.join(', ')}`);
                 const rootQueryNode = ObjectQueryNode.EMPTY; // can't use NULL because then the whole operation would yield null
-                queryTree = buildSafeObjectQueryNode(rootQueryNode, rootType, operation.selectionSet);
+                queryTree = buildConditionalObjectQueryNode(rootQueryNode, rootType, operation.selectionSet);
                 if (logger.isTraceEnabled()) {
                     logger.trace('Before authorization: ' + queryTree.describe());
                 }

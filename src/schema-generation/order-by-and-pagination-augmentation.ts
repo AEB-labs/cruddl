@@ -9,7 +9,6 @@ import { AFTER_ARG, FIRST_ARG, ORDER_BY_ARG } from '../schema/schema-defaults';
 import { decapitalize } from '../utils/utils';
 import { OrderByEnumGenerator, OrderByEnumType, OrderByEnumValue } from './order-by-enum-generator';
 import { QueryNodeField } from './query-node-object-type';
-import { buildSafeListQueryNode } from './query-node-utils';
 
 /**
  * Augments list fields with orderBy argument
@@ -42,12 +41,16 @@ export class OrderByAndPaginationAugmentation {
                 }
             },
             resolve: (sourceNode, args) => {
-                const listNode = buildSafeListQueryNode(schemaField.resolve(sourceNode, args));
+                const listNode = schemaField.resolve(sourceNode, args);
                 const itemVariable = new VariableQueryNode(decapitalize(type.name));
 
                 const orderBy = this.getOrderSpecification(args, orderByType, itemVariable);
                 const maxCount = args[FIRST_ARG];
                 const paginationFilter = this.createPaginationFilterNode(args, type, itemVariable, orderByType);
+
+                if (orderBy.isUnordered() && maxCount == undefined && paginationFilter === ConstBoolQueryNode.TRUE) {
+                    return listNode;
+                }
 
                 return new TransformListQueryNode({
                     listNode,
