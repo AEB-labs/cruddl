@@ -98,12 +98,10 @@ export class DeleteEntitiesQueryNode extends QueryNode {
         super();
         this.rootEntityType = params.rootEntityType;
         this.listNode = params.listNode;
-        this.currentEntityVariable = new VariableQueryNode(); // TODO remove this, it is unnecessary now
     }
 
     public readonly rootEntityType: RootEntityType;
     public readonly listNode: QueryNode;
-    public readonly currentEntityVariable: VariableQueryNode;
 
     describe() {
         return `delete ${this.rootEntityType.name} entities in (\n` +

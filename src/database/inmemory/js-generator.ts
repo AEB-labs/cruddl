@@ -429,8 +429,7 @@ const processors : { [name: string]: NodeProcessor<any> } = {
     },
 
     DeleteEntities(node: DeleteEntitiesQueryNode, context) {
-        const newContext = context.introduceVariable(node.currentEntityVariable);
-        const entityVar = newContext.getVariable(node.currentEntityVariable);
+        const entityVar = js.variable(decapitalize(node.rootEntityType.name));
         const listVar = js.variable('objectsToDelete');
         const coll = js.collection(getCollectionNameForRootEntity(node.rootEntityType));
         const idsVar = js.variable('ids');

@@ -10,6 +10,7 @@ import {
     WithPreExecutionQueryNode
 } from '../../query-tree';
 import { simplifyBooleans } from '../../query/query-tree-utils';
+import { decapitalize } from '../../utils/utils';
 import { aql, AQLCompoundQuery, AQLFragment, AQLQueryResultVariable, AQLVariable } from './aql';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './arango-basics';
 
@@ -424,8 +425,7 @@ const processors : { [name: string]: NodeProcessor<any> } = {
     },
 
     DeleteEntities(node: DeleteEntitiesQueryNode, context) {
-        const newContext = context.introduceVariable(node.currentEntityVariable);
-        const entityVar = newContext.getVariable(node.currentEntityVariable);
+        const entityVar = aql.variable(decapitalize(node.rootEntityType.name));
         return aqlExt.parenthesizeList(
             aql`FOR ${entityVar}`,
             aql`IN ${processNode(node.listNode, context)}`,
