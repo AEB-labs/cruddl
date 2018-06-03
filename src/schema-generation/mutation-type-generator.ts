@@ -1,25 +1,30 @@
 import { GraphQLNonNull } from 'graphql';
 import { flatMap } from 'lodash';
 import memorize from 'memorize-decorator';
+import * as pluralize from 'pluralize';
 import { Namespace, RootEntityType } from '../model';
 import {
-    AffectedFieldInfoQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EntityFromIdQueryNode,
-    FirstOfListQueryNode, LiteralQueryNode, ObjectQueryNode, PreExecQueryParms, QueryNode, VariableQueryNode,
-    WithPreExecutionQueryNode
+    AffectedFieldInfoQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EntitiesQueryNode,
+    EntityFromIdQueryNode, FirstOfListQueryNode, LiteralQueryNode, ObjectQueryNode, PreExecQueryParms, QueryNode,
+    VariableQueryNode, WithPreExecutionQueryNode
 } from '../query-tree';
 import {
-    CREATE_ENTITY_FIELD_PREFIX, DELETE_ENTITY_FIELD_PREFIX, MUTATION_ID_ARG, MUTATION_INPUT_ARG
+    CREATE_ENTITY_FIELD_PREFIX, DELETE_ALL_ENTITIES_FIELD_PREFIX, DELETE_ENTITY_FIELD_PREFIX, FILTER_ARG,
+    MUTATION_INPUT_ARG
 } from '../schema/schema-defaults';
 import { PlainObject } from '../utils/utils';
 import { CreateInputTypeGenerator, CreateRootEntityInputType } from './create-input-types';
+import { FilterObjectType, FilterTypeGenerator } from './filter-input-types';
 import { OutputTypeGenerator } from './output-type-generator';
-import { QueryNodeField, QueryNodeObjectType } from './query-node-object-type';
+import { QueryNodeField, QueryNodeListType, QueryNodeNonNullType, QueryNodeObjectType } from './query-node-object-type';
 import { getArgumentsForUniqueFields, getEntitiesByUniqueFieldQuery } from './utils/entities-by-uinque-field';
+import { buildFilterQueryNode } from './utils/filtering';
 
 export class MutationTypeGenerator {
     constructor(
         private readonly outputTypeGenerator: OutputTypeGenerator,
-        private readonly createTypeGenerator: CreateInputTypeGenerator
+        private readonly createTypeGenerator: CreateInputTypeGenerator,
+        private readonly filterTypeGenerator: FilterTypeGenerator
     ) {
 
     }
@@ -46,7 +51,8 @@ export class MutationTypeGenerator {
     private generateFields(rootEntityType: RootEntityType): QueryNodeField[] {
         return [
             this.generateCreateField(rootEntityType),
-            this.generateDeleteField(rootEntityType)
+            this.generateDeleteField(rootEntityType),
+            this.generateDeleteAllField(rootEntityType)
         ];
     }
 
@@ -106,4 +112,28 @@ export class MutationTypeGenerator {
         return new FirstOfListQueryNode(deleteEntitiesNode);
     }
 
+    private generateDeleteAllField(rootEntityType: RootEntityType): QueryNodeField {
+        const filterType = this.filterTypeGenerator.generate(rootEntityType);
+
+        return {
+            name: `${DELETE_ALL_ENTITIES_FIELD_PREFIX}${pluralize(rootEntityType.name)}`,
+            type: new QueryNodeNonNullType(new QueryNodeListType(new QueryNodeNonNullType(this.outputTypeGenerator.generate(rootEntityType)))),
+            args: {
+                [FILTER_ARG]: {
+                    type: filterType.getInputType()
+                }
+            },
+            resolve: (_, args) => this.generateDeleteAllQueryNode(rootEntityType, args, filterType)
+        };
+    }
+
+    private generateDeleteAllQueryNode(rootEntityType: RootEntityType, args: {[name: string]: any}, filterType: FilterObjectType): QueryNode {
+        const listNode = buildFilterQueryNode(new EntitiesQueryNode(rootEntityType), args, filterType, rootEntityType);
+        // no preexec here because we need to evaluate the result while the entity still exists
+        // and it won't exist if already deleted in the pre-exec
+        return new DeleteEntitiesQueryNode({
+            rootEntityType,
+            listNode
+        });
+    }
 }

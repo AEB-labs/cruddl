@@ -29,7 +29,7 @@ export class SchemaGenerator {
     private readonly outputTypeGenerator = new OutputTypeGenerator(this.listAugmentation, this.enumTypeGenerator);
     private readonly createTypeGenerator = new CreateInputTypeGenerator(this.enumTypeGenerator);
     private readonly queryTypeGenerator = new QueryTypeGenerator(this.outputTypeGenerator, this.listAugmentation);
-    private readonly mutationTypeGenerator = new MutationTypeGenerator(this.outputTypeGenerator, this.createTypeGenerator);
+    private readonly mutationTypeGenerator = new MutationTypeGenerator(this.outputTypeGenerator, this.createTypeGenerator, this.filterTypeGenerator);
     private readonly queryNodeObjectTypeConverter = new QueryNodeObjectTypeConverter();
 
     constructor(
