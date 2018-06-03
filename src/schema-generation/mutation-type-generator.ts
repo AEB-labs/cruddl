@@ -3,14 +3,18 @@ import { flatMap } from 'lodash';
 import memorize from 'memorize-decorator';
 import { Namespace, RootEntityType } from '../model';
 import {
-    AffectedFieldInfoQueryNode, CreateEntityQueryNode, EntityFromIdQueryNode, LiteralQueryNode, ObjectQueryNode,
-    PreExecQueryParms, QueryNode, VariableQueryNode, WithPreExecutionQueryNode
+    AffectedFieldInfoQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EntityFromIdQueryNode,
+    FirstOfListQueryNode, LiteralQueryNode, ObjectQueryNode, PreExecQueryParms, QueryNode, VariableQueryNode,
+    WithPreExecutionQueryNode
 } from '../query-tree';
-import { CREATE_ENTITY_FIELD_PREFIX } from '../schema/schema-defaults';
+import {
+    CREATE_ENTITY_FIELD_PREFIX, DELETE_ENTITY_FIELD_PREFIX, MUTATION_ID_ARG, MUTATION_INPUT_ARG
+} from '../schema/schema-defaults';
 import { PlainObject } from '../utils/utils';
 import { CreateInputTypeGenerator, CreateRootEntityInputType } from './create-input-types';
 import { OutputTypeGenerator } from './output-type-generator';
 import { QueryNodeField, QueryNodeObjectType } from './query-node-object-type';
+import { getArgumentsForUniqueFields, getEntitiesByUniqueFieldQuery } from './utils/entities-by-uinque-field';
 
 export class MutationTypeGenerator {
     constructor(
@@ -41,7 +45,8 @@ export class MutationTypeGenerator {
 
     private generateFields(rootEntityType: RootEntityType): QueryNodeField[] {
         return [
-            this.generateCreateField(rootEntityType)
+            this.generateCreateField(rootEntityType),
+            this.generateDeleteField(rootEntityType)
         ];
     }
 
@@ -52,11 +57,11 @@ export class MutationTypeGenerator {
             name: `${CREATE_ENTITY_FIELD_PREFIX}${rootEntityType.name}`,
             type: this.outputTypeGenerator.generate(rootEntityType),
             args: {
-                input: {
+                [MUTATION_INPUT_ARG]: {
                     type: new GraphQLNonNull(inputType.getInputType())
                 }
             },
-            resolve: (_, args) => this.generateCreateQueryNode(rootEntityType, args.input, inputType)
+            resolve: (_, args) => this.generateCreateQueryNode(rootEntityType, args[MUTATION_INPUT_ARG], inputType)
         };
     }
 
@@ -79,4 +84,26 @@ export class MutationTypeGenerator {
             preExecQueries: [newEntityPreExec, ...relationStatements ]
         });
     }
+
+    private generateDeleteField(rootEntityType: RootEntityType): QueryNodeField {
+        return {
+            name: `${DELETE_ENTITY_FIELD_PREFIX}${rootEntityType.name}`,
+            type: this.outputTypeGenerator.generate(rootEntityType),
+            args: getArgumentsForUniqueFields(rootEntityType),
+            resolve: (_, args) => this.generateDeleteQueryNode(rootEntityType, args)
+        };
+    }
+
+    private generateDeleteQueryNode(rootEntityType: RootEntityType, args: {[name: string]: any}): QueryNode {
+        const listNode = getEntitiesByUniqueFieldQuery(rootEntityType, args);
+        const deleteEntitiesNode = new DeleteEntitiesQueryNode({
+            rootEntityType,
+            listNode
+        });
+
+        // no preexec here because we need to evaluate the result while the entity still exists
+        // and it won't exist if already deleted in the pre-exec
+        return new FirstOfListQueryNode(deleteEntitiesNode);
+    }
+
 }

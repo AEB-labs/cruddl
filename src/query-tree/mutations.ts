@@ -93,13 +93,12 @@ export class SetFieldQueryNode extends PropertySpecification {
 export class DeleteEntitiesQueryNode extends QueryNode {
     constructor(params: {
         rootEntityType: RootEntityType,
-        listNode: QueryNode,
-        currentEntityVariable?: VariableQueryNode
+        listNode: QueryNode
     }) {
         super();
         this.rootEntityType = params.rootEntityType;
         this.listNode = params.listNode;
-        this.currentEntityVariable = params.currentEntityVariable || new VariableQueryNode();
+        this.currentEntityVariable = new VariableQueryNode(); // TODO remove this, it is unnecessary now
     }
 
     public readonly rootEntityType: RootEntityType;
