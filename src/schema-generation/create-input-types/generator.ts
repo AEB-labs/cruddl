@@ -24,8 +24,10 @@ export class CreateInputTypeGenerator {
         if (type.isChildEntityType) {
             return this.generateForChildEntityType(type);
         }
-
-        return this.generateForSimpleObjectType(type);
+        if (type.isEntityExtensionType) {
+            return this.generateForEntityExtensionType(type);
+        }
+        return this.generateForValueObjectType(type);
     }
 
     @memorize()
@@ -41,8 +43,13 @@ export class CreateInputTypeGenerator {
     }
 
     @memorize()
-    private generateForSimpleObjectType(type: EntityExtensionType | ValueObjectType): CreateObjectInputType {
-        // TODO when implementing update input types, only use one input type for create+update
+    generateForEntityExtensionType(type: EntityExtensionType): CreateObjectInputType {
+        return new CreateObjectInputType(`Create${type.name}Input`,
+            () => flatMap(type.fields, (field: Field) => this.generateFields(field)));
+    }
+
+    @memorize()
+    generateForValueObjectType(type: ValueObjectType): CreateObjectInputType {
         return new CreateObjectInputType(`${type.name}Input`,
             () => flatMap(type.fields, (field: Field) => this.generateFields(field)));
     }

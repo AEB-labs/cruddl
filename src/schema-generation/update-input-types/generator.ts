@@ -1,15 +1,15 @@
 import { GraphQLID, GraphQLList, GraphQLNonNull } from 'graphql';
 import { flatMap } from 'lodash';
 import memorize from 'memorize-decorator';
-import { Field, ObjectType, RootEntityType } from '../../model';
+import { ChildEntityType, EntityExtensionType, Field, RootEntityType } from '../../model';
 import { ID_FIELD } from '../../schema/schema-defaults';
 import { CreateInputTypeGenerator } from '../create-input-types';
 import { EnumTypeGenerator } from '../enum-type-generator';
 import {
-    BasicListUpdateInputField, BasicUpdateInputField, UpdateFilterInputField, UpdateInputField,
-    UpdateValueObjectInputField, UpdateValueObjectListInputField
+    BasicListUpdateInputField, BasicUpdateInputField, UpdateEntityExtensionInputField, UpdateFilterInputField,
+    UpdateInputField, UpdateValueObjectInputField, UpdateValueObjectListInputField
 } from './input-fields';
-import { UpdateObjectInputType, UpdateRootEntityInputType } from './input-types';
+import { UpdateEntityExtensionInputType, UpdateObjectInputType, UpdateRootEntityInputType } from './input-types';
 
 export class UpdateInputTypeGenerator {
     constructor(
@@ -19,16 +19,17 @@ export class UpdateInputTypeGenerator {
     }
 
     @memorize()
-    generate(type: ObjectType): UpdateObjectInputType {
+    generate(type: RootEntityType|EntityExtensionType|ChildEntityType): UpdateObjectInputType {
         if (type.isRootEntityType) {
             return this.generateForRootEntityType(type);
         }
-        throw new Error('todo');
-        /*if (type.isChildEntityType) {
-            return this.generateForChildEntityType(type);
+        if (type.isEntityExtensionType) {
+            return this.generateForEntityExtensionType(type);
         }
-
-        return this.generateForSimpleObjectType(type);*/
+        if (type.isChildEntityType) {
+            throw new Error('todo');
+        }
+        throw new Error(`Unsupported type ${(type as any).kind} for update input type generation`);
     }
 
     @memorize()
@@ -37,18 +38,11 @@ export class UpdateInputTypeGenerator {
             () => flatMap(type.fields, (field: Field) => this.generateFields(field)));
     }
 
-    /*@memorize()
-    generateForChildEntityType(type: ChildEntityType): UpdateChildEntityInputType {
-        return new UpdateRootEntityInputType(`Create${type.name}Input`,
+    @memorize()
+    generateForEntityExtensionType(type: EntityExtensionType): UpdateEntityExtensionInputType {
+        return new UpdateEntityExtensionInputType(`Update${type.name}Input`,
             () => flatMap(type.fields, (field: Field) => this.generateFields(field)));
     }
-
-    @memorize()
-    private generateForSimpleObjectType(type: EntityExtensionType | ValueObjectType): UpdateObjectInputType {
-        // TODO when implementing update input types, only use one input type for create+update
-        return new UpdateRootEntityInputType(`${type.name}Input`,
-            () => flatMap(type.fields, (field: Field) => this.generateFields(field)));
-    }*/
 
     private generateFields(field: Field): UpdateInputField[] {
         if (field.isSystemField) {
@@ -75,6 +69,11 @@ export class UpdateInputTypeGenerator {
             } else {
                 return [new UpdateValueObjectInputField(field, inputType)];
             }
+        }
+
+        if (field.type.isEntityExtensionType) {
+            const inputType = this.generate(field.type);
+            return [new UpdateEntityExtensionInputField(field, inputType)];
         }
 
         // TODO

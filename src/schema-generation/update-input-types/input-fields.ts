@@ -1,10 +1,13 @@
 import { GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
 import { Field } from '../../model';
-import { LiteralQueryNode, QueryNode, SetFieldQueryNode } from '../../query-tree';
+import {
+    FieldQueryNode,
+    LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, QueryNode, SetFieldQueryNode
+} from '../../query-tree';
 import { AnyValue } from '../../utils/utils';
 import { CreateObjectInputType } from '../create-input-types';
 import { TypedInputFieldBase } from '../typed-input-object-type';
-import { UpdateObjectInputType } from './input-types';
+import { UpdateEntityExtensionInputType, UpdateObjectInputType } from './input-types';
 
 export interface UpdateInputField extends TypedInputFieldBase<UpdateInputField> {
     getProperties(value: AnyValue, currentEntityNode: QueryNode): ReadonlyArray<SetFieldQueryNode>;
@@ -141,5 +144,46 @@ export class UpdateValueObjectListInputField extends BasicUpdateInputField {
         }
 
         value.forEach(value => this.objectInputType.collectAffectedFields(value, fields));
+    }
+}
+
+export class UpdateEntityExtensionInputField implements UpdateInputField {
+    public readonly name: string;
+    public readonly inputType: GraphQLInputType;
+
+    constructor(
+        public readonly field: Field,
+        public readonly objectInputType: UpdateEntityExtensionInputType
+    ) {
+        this.name = field.name;
+        this.inputType = objectInputType.getInputType();
+    }
+
+    getProperties(value: AnyValue, currentEntityNode: QueryNode) {
+        return [
+            new SetFieldQueryNode(this.field, this.getValueNode(value, currentEntityNode))
+        ];
+    }
+
+    private getValueNode(value: AnyValue, currentEntityNode: QueryNode) {
+        if (value == null) {
+            return NullQueryNode.NULL;
+        }
+
+        return new MergeObjectsQueryNode([
+            new FieldQueryNode(currentEntityNode, this.field),
+            new ObjectQueryNode(this.objectInputType.getProperties(value, currentEntityNode))
+        ]);
+    }
+
+    appliesToMissingFields() {
+        return false;
+    }
+
+    collectAffectedFields(value: AnyValue, fields: Set<Field>) {
+        fields.add(this.field);
+        if (value != undefined) {
+            this.objectInputType.collectAffectedFields(value, fields);
+        }
     }
 }

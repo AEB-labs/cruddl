@@ -68,3 +68,7 @@ export class UpdateRootEntityInputType extends UpdateObjectInputType {
         return flatMap(relationFields, field => field.getStatements(input[field.name], idNode));*/
     }
 }
+
+export class UpdateEntityExtensionInputType extends UpdateObjectInputType {
+
+}
