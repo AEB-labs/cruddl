@@ -605,11 +605,9 @@ function createDeleteEntityQueryNode(fieldRequest: FieldRequest, fieldRequestSta
         });
     }
 
-    const currentEntityVarNode = new VariableQueryNode('currentEntity');
     const deleteEntitiesNode = new DeleteEntitiesQueryNode({
         rootEntityType: rootEntityType,
-        listNode,
-        currentEntityVariable: currentEntityVarNode
+        listNode
     });
 
     // Build up result query node

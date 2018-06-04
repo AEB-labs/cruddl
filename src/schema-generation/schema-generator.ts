@@ -18,6 +18,7 @@ import { OrderByEnumGenerator } from './order-by-enum-generator';
 import { OutputTypeGenerator } from './output-type-generator';
 import { buildConditionalObjectQueryNode, QueryNodeObjectType, QueryNodeObjectTypeConverter } from './query-node-object-type';
 import { QueryTypeGenerator } from './query-type-generator';
+import { UpdateInputTypeGenerator } from './update-input-types';
 
 export class SchemaGenerator {
     private readonly enumTypeGenerator = new EnumTypeGenerator();
@@ -28,8 +29,9 @@ export class SchemaGenerator {
     private readonly listAugmentation = new ListAugmentation(this.filterAugmentation, this.orderByAugmentation);
     private readonly outputTypeGenerator = new OutputTypeGenerator(this.listAugmentation, this.enumTypeGenerator);
     private readonly createTypeGenerator = new CreateInputTypeGenerator(this.enumTypeGenerator);
+    private readonly updateTypeGenerator = new UpdateInputTypeGenerator(this.enumTypeGenerator, this.createTypeGenerator);
     private readonly queryTypeGenerator = new QueryTypeGenerator(this.outputTypeGenerator, this.listAugmentation);
-    private readonly mutationTypeGenerator = new MutationTypeGenerator(this.outputTypeGenerator, this.createTypeGenerator, this.filterTypeGenerator);
+    private readonly mutationTypeGenerator = new MutationTypeGenerator(this.outputTypeGenerator, this.createTypeGenerator, this.updateTypeGenerator, this.filterTypeGenerator);
     private readonly queryNodeObjectTypeConverter = new QueryNodeObjectTypeConverter();
 
     constructor(

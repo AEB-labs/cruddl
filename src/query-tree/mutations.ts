@@ -31,7 +31,7 @@ export class AffectedFieldInfoQueryNode extends QueryNode {
 }
 
 /**
- * A node that updates existing entities
+ * A node that updates existing entities and evaluates to the ids of the updated entities
  *
  * Existing properties of the entities will be kept when not specified in the updateNode. If a property is specified
  * in updates and in the existing entity, it will be replaced with the PropertySpecification's value. To access the old
