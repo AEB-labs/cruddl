@@ -1,13 +1,16 @@
-import { GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
+import { GraphQLID, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
+import {
+    getAddChildEntitiesFieldName, getRemoveChildEntitiesFieldName, getUpdateChildEntitiesFieldName
+} from '../../graphql/names';
 import { Field } from '../../model';
 import {
-    FieldQueryNode,
-    LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, QueryNode, SetFieldQueryNode
+    FieldQueryNode, LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, QueryNode,
+    SetFieldQueryNode
 } from '../../query-tree';
 import { AnyValue } from '../../utils/utils';
-import { CreateObjectInputType } from '../create-input-types';
+import { CreateChildEntityInputType, CreateObjectInputType } from '../create-input-types';
 import { TypedInputFieldBase } from '../typed-input-object-type';
-import { UpdateEntityExtensionInputType, UpdateObjectInputType } from './input-types';
+import { UpdateChildEntityInputType, UpdateEntityExtensionInputType, UpdateObjectInputType } from './input-types';
 
 export interface UpdateInputField extends TypedInputFieldBase<UpdateInputField> {
     getProperties(value: AnyValue, currentEntityNode: QueryNode): ReadonlyArray<SetFieldQueryNode>;
@@ -185,5 +188,78 @@ export class UpdateEntityExtensionInputField implements UpdateInputField {
         if (value != undefined) {
             this.objectInputType.collectAffectedFields(value, fields);
         }
+    }
+}
+
+export abstract class AbstractChildEntityInputField implements UpdateInputField {
+    protected constructor(
+        public readonly name: string,
+        public readonly field: Field
+    ) {
+    }
+
+    abstract readonly inputType: GraphQLInputType;
+
+    appliesToMissingFields() {
+        return false;
+    }
+
+    getProperties() {
+        // the fields can't be set like this because multiple input fields affect the same child entity list
+        // instead, this property is computed in UpdateObjectInputType.getChildEntityProperties().
+        return [];
+    }
+
+    collectAffectedFields(value: AnyValue, fields: Set<Field>) {
+        fields.add(this.field);
+    }
+}
+
+export class AddChildEntitiesInputField extends AbstractChildEntityInputField {
+    public readonly inputType: GraphQLInputType;
+
+    constructor(
+        field: Field,
+        public readonly createInputType: CreateChildEntityInputType
+    ) {
+        super(getAddChildEntitiesFieldName(field.name), field);
+        this.inputType = new GraphQLList(new GraphQLNonNull(createInputType.getInputType()));
+    }
+
+    collectAffectedFields(value: AnyValue, fields: Set<Field>) {
+        super.collectAffectedFields(value, fields);
+        if (value != undefined) {
+            this.createInputType.collectAffectedFields(value, fields);
+        }
+    }
+}
+
+export class UpdateChildEntitiesInputField extends AbstractChildEntityInputField {
+    public readonly inputType: GraphQLInputType;
+
+    constructor(
+        field: Field,
+        public readonly updateInputType: UpdateChildEntityInputType
+    ) {
+        super(getUpdateChildEntitiesFieldName(field.name), field);
+        this.inputType = new GraphQLList(new GraphQLNonNull(updateInputType.getInputType()));
+    }
+
+    collectAffectedFields(value: AnyValue, fields: Set<Field>) {
+        super.collectAffectedFields(value, fields);
+        if (value != undefined) {
+            this.updateInputType.collectAffectedFields(value, fields);
+        }
+    }
+}
+
+export class RemoveChildEntitiesInputField extends AbstractChildEntityInputField {
+    public readonly inputType: GraphQLInputType;
+
+    constructor(
+        field: Field
+    ) {
+        super(getRemoveChildEntitiesFieldName(field.name), field);
+        this.inputType = new GraphQLList(new GraphQLNonNull(GraphQLID));
     }
 }

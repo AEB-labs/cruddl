@@ -1,6 +1,7 @@
 import { GraphQLInputFieldConfig, GraphQLInputObjectType, GraphQLInputType, Thunk } from 'graphql';
 import { chain } from 'lodash';
 import memorize from 'memorize-decorator';
+import { Constructor } from '../utils/utils';
 import { resolveThunk } from './query-node-object-type';
 
 export interface TypedInputFieldBase<TField extends TypedInputFieldBase<TField>> {
@@ -28,12 +29,15 @@ export class TypedInputObjectType<TField extends TypedInputFieldBase<TField>> {
         });
     }
 
-    getFieldOrThrow(name: string): TField {
+    getFieldOrThrow<T extends TField>(name: string, clazz?: Constructor<T>): T {
         const field = this.fieldMap.get(name);
         if (!field) {
             throw new Error(`Expected field "${name}" to exist on input object type "${this.name}"`);
         }
-        return field;
+        if (clazz && !(field instanceof clazz)) {
+            throw new Error(`Expected input field "${this.name}.${name}" to be of type "${clazz.name}", but is of type "${field.constructor.name}"`);
+        }
+        return field as T;
     }
 
     @memorize()

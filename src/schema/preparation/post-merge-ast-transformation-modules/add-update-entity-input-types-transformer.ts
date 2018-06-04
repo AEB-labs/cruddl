@@ -23,12 +23,12 @@ import {
     OBJECT_TYPE_DEFINITION
 } from '../../../graphql/kinds';
 import {
-    getAddChildEntityFieldName,
+    getAddChildEntitiesFieldName,
     getAddRelationFieldName,
     getCreateInputTypeName,
-    getRemoveChildEntityFieldName,
+    getRemoveChildEntitiesFieldName,
     getRemoveRelationFieldName, getUpdateAllInputTypeName,
-    getUpdateChildEntityFieldName,
+    getUpdateChildEntitiesFieldName,
     getUpdateInputTypeName
 } from '../../../graphql/names';
 import {
@@ -107,9 +107,9 @@ export class AddUpdateEntityInputTypesTransformer implements ASTTransformer {
                     if (hasDirectiveWithName(namedTypeOfList, CHILD_ENTITY_DIRECTIVE)) {
                         // add / update /remove with data
                         return [
-                            buildInputValueListNodeFromField(getAddChildEntityFieldName(field.name.value), getCreateInputTypeName(namedTypeOfList), field),
-                            buildInputValueListNodeFromField(getUpdateChildEntityFieldName(field.name.value), getUpdateInputTypeName(namedTypeOfList), field),
-                            buildInputValueListNodeFromField(getRemoveChildEntityFieldName(field.name.value), GraphQLID.name, field),
+                            buildInputValueListNodeFromField(getAddChildEntitiesFieldName(field.name.value), getCreateInputTypeName(namedTypeOfList), field),
+                            buildInputValueListNodeFromField(getUpdateChildEntitiesFieldName(field.name.value), getUpdateInputTypeName(namedTypeOfList), field),
+                            buildInputValueListNodeFromField(getRemoveChildEntitiesFieldName(field.name.value), GraphQLID.name, field),
                         ]
                     }
                     return [buildInputValueListNodeFromField(field.name.value, getUpdateInputTypeName(namedTypeOfList), field)];

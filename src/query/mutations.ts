@@ -1,7 +1,7 @@
 import { getNamedType } from 'graphql';
 import {
-    getAddChildEntityFieldName, getAddRelationFieldName, getRemoveChildEntityFieldName, getRemoveRelationFieldName,
-    getUpdateChildEntityFieldName
+    getAddChildEntitiesFieldName, getAddRelationFieldName, getRemoveChildEntitiesFieldName, getRemoveRelationFieldName,
+    getUpdateChildEntitiesFieldName
 } from '../graphql/names';
 import { FieldRequest } from '../graphql/query-distiller';
 import {
@@ -480,7 +480,7 @@ function createUpdatePropertiesSpecification(obj: any, objectType: ObjectType, o
             let currentNode: QueryNode = new ConditionalQueryNode( // fall back to empty list if property is not a list
                 new TypeCheckQueryNode(rawExistingNode, BasicType.LIST), rawExistingNode, new ListQueryNode([]));
 
-            const newValues: any[] | undefined = obj[getAddChildEntityFieldName(field.name)];
+            const newValues: any[] | undefined = obj[getAddChildEntitiesFieldName(field.name)];
             if (newValues) {
                 // newValues is already prepared, just like everything passed to this function, so uuids are already there
                 // wrap the whole thing into a LiteralQueryNode instead of them individually so that only one bound variable is used
@@ -491,7 +491,7 @@ function createUpdatePropertiesSpecification(obj: any, objectType: ObjectType, o
             const childEntityVarNode = new VariableQueryNode(decapitalize(childEntityType.name));
             const childIDQueryNode = new FieldQueryNode(childEntityVarNode, idField);
 
-            const removedIDs: number[] | undefined = obj[getRemoveChildEntityFieldName(field.name)];
+            const removedIDs: number[] | undefined = obj[getRemoveChildEntitiesFieldName(field.name)];
             let removalFilterNode: QueryNode | undefined = undefined;
             if (removedIDs && removedIDs.length) {
                 // FILTER !(obj.id IN [...removedIDs])
@@ -505,7 +505,7 @@ function createUpdatePropertiesSpecification(obj: any, objectType: ObjectType, o
                 );
             }
 
-            const updatedValues: any[] | undefined = obj[getUpdateChildEntityFieldName(field.name)];
+            const updatedValues: any[] | undefined = obj[getUpdateChildEntitiesFieldName(field.name)];
             let updateMapNode: QueryNode | undefined = undefined;
             if (updatedValues && updatedValues.length) {
                 // build an ugly conditional tree

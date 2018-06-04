@@ -6,10 +6,15 @@ import { ID_FIELD } from '../../schema/schema-defaults';
 import { CreateInputTypeGenerator } from '../create-input-types';
 import { EnumTypeGenerator } from '../enum-type-generator';
 import {
-    BasicListUpdateInputField, BasicUpdateInputField, UpdateEntityExtensionInputField, UpdateFilterInputField,
+    AddChildEntitiesInputField,
+    BasicListUpdateInputField, BasicUpdateInputField, RemoveChildEntitiesInputField, UpdateChildEntitiesInputField,
+    UpdateEntityExtensionInputField,
+    UpdateFilterInputField,
     UpdateInputField, UpdateValueObjectInputField, UpdateValueObjectListInputField
 } from './input-fields';
-import { UpdateEntityExtensionInputType, UpdateObjectInputType, UpdateRootEntityInputType } from './input-types';
+import {
+    UpdateChildEntityInputType, UpdateEntityExtensionInputType, UpdateObjectInputType, UpdateRootEntityInputType
+} from './input-types';
 
 export class UpdateInputTypeGenerator {
     constructor(
@@ -27,7 +32,7 @@ export class UpdateInputTypeGenerator {
             return this.generateForEntityExtensionType(type);
         }
         if (type.isChildEntityType) {
-            throw new Error('todo');
+            return this.generateForChildEntityType(type);
         }
         throw new Error(`Unsupported type ${(type as any).kind} for update input type generation`);
     }
@@ -40,7 +45,13 @@ export class UpdateInputTypeGenerator {
 
     @memorize()
     generateForEntityExtensionType(type: EntityExtensionType): UpdateEntityExtensionInputType {
-        return new UpdateEntityExtensionInputType(`Update${type.name}Input`,
+        return new UpdateEntityExtensionInputType(type, `Update${type.name}Input`,
+            () => flatMap(type.fields, (field: Field) => this.generateFields(field)));
+    }
+
+    @memorize()
+    generateForChildEntityType(type: ChildEntityType): UpdateChildEntityInputType {
+        return new UpdateChildEntityInputType(type, `Update${type.name}Input`,
             () => flatMap(type.fields, (field: Field) => this.generateFields(field)));
     }
 
@@ -76,7 +87,15 @@ export class UpdateInputTypeGenerator {
             return [new UpdateEntityExtensionInputField(field, inputType)];
         }
 
-        // TODO
+        if (field.type.isChildEntityType) {
+            return [
+                new AddChildEntitiesInputField(field, this.createInputTypeGenerator.generateForChildEntityType(field.type)),
+                new UpdateChildEntitiesInputField(field, this.generateForChildEntityType(field.type)),
+                new RemoveChildEntitiesInputField(field),
+            ];
+        }
+
+        // TODO relations and references
         return [];
         //throw new Error('todo');
     }

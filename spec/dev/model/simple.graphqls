@@ -7,6 +7,12 @@ type Hero @rootEntity {
     suit: Suit
     morality: Morality
     country: Country @reference
+    missions: [Mission]
+}
+
+type Mission @childEntity {
+    date: DateTime
+    title: String
 }
 
 type Skill @valueObject {

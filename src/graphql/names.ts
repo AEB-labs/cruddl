@@ -78,15 +78,15 @@ export function getRemoveRelationFieldName(fieldName: string) {
     return 'remove' + capitalize(fieldName);
 }
 
-export function getAddChildEntityFieldName(fieldName: string) {
+export function getAddChildEntitiesFieldName(fieldName: string) {
     return ADD_CHILD_ENTITIES_FIELD_PREFIX + capitalize(fieldName);
 }
 
-export function getUpdateChildEntityFieldName(fieldName: string) {
+export function getUpdateChildEntitiesFieldName(fieldName: string) {
     return UPDATE_CHILD_ENTITIES_FIELD_PREFIX + capitalize(fieldName);
 }
 
-export function getRemoveChildEntityFieldName(fieldName: string) {
+export function getRemoveChildEntitiesFieldName(fieldName: string) {
     return REMOVE_CHILD_ENTITIES_FIELD_PREFIX + capitalize(fieldName);
 }
 
