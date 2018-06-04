@@ -6,11 +6,9 @@ import { ID_FIELD } from '../../schema/schema-defaults';
 import { CreateInputTypeGenerator } from '../create-input-types';
 import { EnumTypeGenerator } from '../enum-type-generator';
 import {
-    AddChildEntitiesInputField,
-    BasicListUpdateInputField, BasicUpdateInputField, RemoveChildEntitiesInputField, UpdateChildEntitiesInputField,
-    UpdateEntityExtensionInputField,
-    UpdateFilterInputField,
-    UpdateInputField, UpdateValueObjectInputField, UpdateValueObjectListInputField
+    AddChildEntitiesInputField, BasicListUpdateInputField, BasicUpdateInputField, RemoveChildEntitiesInputField,
+    UpdateChildEntitiesInputField, UpdateEntityExtensionInputField, UpdateFilterInputField, UpdateInputField,
+    UpdateValueObjectInputField, UpdateValueObjectListInputField
 } from './input-fields';
 import {
     UpdateChildEntityInputType, UpdateEntityExtensionInputType, UpdateObjectInputType, UpdateRootEntityInputType
@@ -95,8 +93,16 @@ export class UpdateInputTypeGenerator {
             ];
         }
 
-        // TODO relations and references
-        return [];
-        //throw new Error('todo');
+        if (field.isReference) {
+            // we intentionally do not check if the referenced object exists (loose coupling), so this behaves just
+            // like a regular field
+            return [new BasicUpdateInputField(field, field.type.getKeyFieldTypeOrThrow().graphQLScalarType)];
+        }
+
+        if (field.isRelation) {
+            return []; // TODO
+        }
+
+        throw new Error(`Field "${field.declaringType.name}.${field.name}" has an unexpected configuration`);
     }
 }
