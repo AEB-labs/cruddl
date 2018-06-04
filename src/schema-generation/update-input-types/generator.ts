@@ -1,6 +1,7 @@
 import { GraphQLID, GraphQLList, GraphQLNonNull } from 'graphql';
 import { flatMap } from 'lodash';
 import memorize from 'memorize-decorator';
+import * as pluralize from 'pluralize';
 import { ChildEntityType, EntityExtensionType, Field, RootEntityType } from '../../model';
 import { ID_FIELD } from '../../schema/schema-defaults';
 import { CreateInputTypeGenerator } from '../create-input-types';
@@ -22,7 +23,7 @@ export class UpdateInputTypeGenerator {
     }
 
     @memorize()
-    generate(type: RootEntityType|EntityExtensionType|ChildEntityType): UpdateObjectInputType {
+    generate(type: RootEntityType | EntityExtensionType | ChildEntityType): UpdateObjectInputType {
         if (type.isRootEntityType) {
             return this.generateForRootEntityType(type);
         }
@@ -42,6 +43,12 @@ export class UpdateInputTypeGenerator {
     }
 
     @memorize()
+    generateUpdateAllRootEntitiesInputType(type: RootEntityType): UpdateRootEntityInputType {
+        return new UpdateRootEntityInputType(type, `UpdateAll${pluralize(type.name)}Input`,
+            () => flatMap(type.fields, (field: Field) => this.generateFields(field, {skipID: true})));
+    }
+
+    @memorize()
     generateForEntityExtensionType(type: EntityExtensionType): UpdateEntityExtensionInputType {
         return new UpdateEntityExtensionInputType(type, `Update${type.name}Input`,
             () => flatMap(type.fields, (field: Field) => this.generateFields(field)));
@@ -53,10 +60,12 @@ export class UpdateInputTypeGenerator {
             () => flatMap(type.fields, (field: Field) => this.generateFields(field)));
     }
 
-    private generateFields(field: Field): UpdateInputField[] {
+    private generateFields(field: Field, {skipID = false}: { skipID?: boolean } = {}): UpdateInputField[] {
         if (field.isSystemField) {
-            if ((field.declaringType.isRootEntityType || field.declaringType.isChildEntityType) && field.name == ID_FIELD) {
-                return [new UpdateFilterInputField(field, GraphQLID)];
+            if (!skipID && (field.declaringType.isRootEntityType || field.declaringType.isChildEntityType) && field.name == ID_FIELD) {
+                // id is always required because it is the filter
+                // (unless skipID is true, then we have a special filter argument and can't set the id at all)
+                return [new UpdateFilterInputField(field, new GraphQLNonNull(GraphQLID))];
             }
             return [];
         }
@@ -89,7 +98,7 @@ export class UpdateInputTypeGenerator {
             return [
                 new AddChildEntitiesInputField(field, this.createInputTypeGenerator.generateForChildEntityType(field.type)),
                 new UpdateChildEntitiesInputField(field, this.generateForChildEntityType(field.type)),
-                new RemoveChildEntitiesInputField(field),
+                new RemoveChildEntitiesInputField(field)
             ];
         }
 

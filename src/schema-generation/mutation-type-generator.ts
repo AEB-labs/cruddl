@@ -10,26 +10,25 @@ import {
     TransformListQueryNode, UpdateEntitiesQueryNode, VariableQueryNode, WithPreExecutionQueryNode
 } from '../query-tree';
 import {
-    CREATE_ENTITY_FIELD_PREFIX, DELETE_ALL_ENTITIES_FIELD_PREFIX, DELETE_ENTITY_FIELD_PREFIX, FILTER_ARG, ID_FIELD,
-    MUTATION_INPUT_ARG, UPDATE_ENTITY_FIELD_PREFIX
+    CREATE_ENTITY_FIELD_PREFIX, DELETE_ALL_ENTITIES_FIELD_PREFIX, DELETE_ENTITY_FIELD_PREFIX, ID_FIELD,
+    MUTATION_INPUT_ARG, UPDATE_ALL_ENTITIES_FIELD_PREFIX, UPDATE_ENTITY_FIELD_PREFIX
 } from '../schema/schema-defaults';
 import { decapitalize, PlainObject } from '../utils/utils';
 import { CreateInputTypeGenerator, CreateRootEntityInputType } from './create-input-types';
-import { FilterObjectType, FilterTypeGenerator } from './filter-input-types';
+import { ListAugmentation } from './list-augmentation';
 import { OutputTypeGenerator } from './output-type-generator';
 import {
     makeNonNullableList, QueryNodeField, QueryNodeNonNullType, QueryNodeObjectType
 } from './query-node-object-type';
 import { UpdateInputTypeGenerator, UpdateRootEntityInputType } from './update-input-types';
 import { getArgumentsForUniqueFields, getEntitiesByUniqueFieldQuery } from './utils/entities-by-uinque-field';
-import { buildFilterQueryNode } from './utils/filtering';
 
 export class MutationTypeGenerator {
     constructor(
         private readonly outputTypeGenerator: OutputTypeGenerator,
         private readonly createTypeGenerator: CreateInputTypeGenerator,
         private readonly updateTypeGenerator: UpdateInputTypeGenerator,
-        private readonly filterTypeGenerator: FilterTypeGenerator
+        private readonly listAugmentation: ListAugmentation
     ) {
 
     }
@@ -57,6 +56,7 @@ export class MutationTypeGenerator {
         return [
             this.generateCreateField(rootEntityType),
             this.generateUpdateField(rootEntityType),
+            this.generateUpdateAllField(rootEntityType),
             this.generateDeleteField(rootEntityType),
             this.generateDeleteAllField(rootEntityType)
         ];
@@ -113,7 +113,6 @@ export class MutationTypeGenerator {
     }
 
     private generateUpdateQueryNode(rootEntityType: RootEntityType, input: PlainObject, inputType: UpdateRootEntityInputType): QueryNode {
-        // Create new entity
         const currentEntityVariable = new VariableQueryNode('currentEntity');
         const updates = inputType.getProperties(input, currentEntityVariable);
         const affectedFields = inputType.getAffectedFields(input).map(field => new AffectedFieldInfoQueryNode(field));
@@ -152,6 +151,63 @@ export class MutationTypeGenerator {
         });
     }
 
+    private generateUpdateAllField(rootEntityType: RootEntityType): QueryNodeField {
+        // we construct this field like a regular query field first so that the list augmentation works
+        const fieldBase: QueryNodeField = {
+            name: `${UPDATE_ALL_ENTITIES_FIELD_PREFIX}${pluralize(rootEntityType.name)}`,
+            type: makeNonNullableList(this.outputTypeGenerator.generate(rootEntityType)),
+            resolve: () => new EntitiesQueryNode(rootEntityType)
+        };
+
+        const fieldWithListArgs = this.listAugmentation.augment(fieldBase, rootEntityType);
+
+        const inputType = this.updateTypeGenerator.generateUpdateAllRootEntitiesInputType(rootEntityType);
+        return {
+            ...fieldWithListArgs,
+            args: {
+                ...fieldWithListArgs.args,
+                [MUTATION_INPUT_ARG]: {
+                    type: new GraphQLNonNull(inputType.getInputType())
+                }
+            },
+            resolve: (_, args) => this.generateUpdateAllQueryNode(rootEntityType, fieldWithListArgs.resolve(_, args), inputType, args[MUTATION_INPUT_ARG])
+        };
+    }
+
+    private generateUpdateAllQueryNode(rootEntityType: RootEntityType, listNode: QueryNode,
+                                       inputType: UpdateRootEntityInputType, input: PlainObject): QueryNode {
+        const currentEntityVariable = new VariableQueryNode('currentEntity');
+        const updates = inputType.getProperties(input, currentEntityVariable);
+        const affectedFields = inputType.getAffectedFields(input).map(field => new AffectedFieldInfoQueryNode(field));
+
+        const updateEntityNode = new UpdateEntitiesQueryNode({
+            rootEntityType,
+            affectedFields,
+            updates,
+            currentEntityVariable,
+            listNode
+        });
+        const updatedIdsVarNode = new VariableQueryNode('updatedIds');
+        const updateEntityPreExec = new PreExecQueryParms({
+            query: updateEntityNode,
+            resultVariable: updatedIdsVarNode
+        });
+
+        // TODO Add relations if needed
+
+        const idVar = new VariableQueryNode('id');
+        const resultNode = new TransformListQueryNode({
+            listNode: updatedIdsVarNode,
+            itemVariable: idVar,
+            innerNode: new EntityFromIdQueryNode(rootEntityType, idVar)
+        });
+
+        return new WithPreExecutionQueryNode({
+            resultNode,
+            preExecQueries: [updateEntityPreExec]
+        });
+    }
+
     private generateDeleteField(rootEntityType: RootEntityType): QueryNodeField {
         return {
             name: `${DELETE_ENTITY_FIELD_PREFIX}${rootEntityType.name}`,
@@ -174,22 +230,23 @@ export class MutationTypeGenerator {
     }
 
     private generateDeleteAllField(rootEntityType: RootEntityType): QueryNodeField {
-        const filterType = this.filterTypeGenerator.generate(rootEntityType);
-
-        return {
+        // we construct this field like a regular query field first so that the list augmentation works
+        const fieldBase: QueryNodeField = {
             name: `${DELETE_ALL_ENTITIES_FIELD_PREFIX}${pluralize(rootEntityType.name)}`,
             type: makeNonNullableList(this.outputTypeGenerator.generate(rootEntityType)),
-            args: {
-                [FILTER_ARG]: {
-                    type: filterType.getInputType()
-                }
-            },
-            resolve: (_, args) => this.generateDeleteAllQueryNode(rootEntityType, args, filterType)
+            resolve: () => new EntitiesQueryNode(rootEntityType)
+        };
+
+        const fieldWithListArgs = this.listAugmentation.augment(fieldBase, rootEntityType);
+
+
+        return {
+            ...fieldWithListArgs,
+            resolve: (_, args) => this.generateDeleteAllQueryNode(rootEntityType, fieldWithListArgs.resolve(_, args))
         };
     }
 
-    private generateDeleteAllQueryNode(rootEntityType: RootEntityType, args: { [name: string]: any }, filterType: FilterObjectType): QueryNode {
-        const listNode = buildFilterQueryNode(new EntitiesQueryNode(rootEntityType), args, filterType, rootEntityType);
+    private generateDeleteAllQueryNode(rootEntityType: RootEntityType, listNode: QueryNode): QueryNode {
         // no preexec here because we need to evaluate the result while the entity still exists
         // and it won't exist if already deleted in the pre-exec
         return new DeleteEntitiesQueryNode({

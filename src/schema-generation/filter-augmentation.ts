@@ -2,7 +2,7 @@ import { Type } from '../model';
 import { FILTER_ARG } from '../schema/schema-defaults';
 import { FilterTypeGenerator } from './filter-input-types';
 import { QueryNodeField } from './query-node-object-type';
-import { buildFilterQueryNode } from './utils/filtering';
+import { buildFilteredListNode } from './utils/filtering';
 
 /**
  * Augments list fields with filter features
@@ -30,7 +30,7 @@ export class FilterAugmentation {
             },
             resolve: (sourceNode, args) => {
                 let listNode = schemaField.resolve(sourceNode, args);
-                return buildFilterQueryNode(listNode, args, filterType, itemType);
+                return buildFilteredListNode(listNode, args, filterType, itemType);
             }
         };
     };

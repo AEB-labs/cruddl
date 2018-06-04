@@ -4,7 +4,7 @@ import { FILTER_ARG } from '../../schema/schema-defaults';
 import { decapitalize } from '../../utils/utils';
 import { FilterObjectType } from '../filter-input-types';
 
-export function buildFilterQueryNode(listNode: QueryNode, args: {[name: string]: any}, filterType: FilterObjectType, itemType: Type) {
+export function buildFilteredListNode(listNode: QueryNode, args: {[name: string]: any}, filterType: FilterObjectType, itemType: Type) {
     const filterValue = args[FILTER_ARG];
     if (filterValue == undefined) {
         return listNode;
