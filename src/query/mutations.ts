@@ -383,7 +383,7 @@ export function getRelationAddRemoveStatements(obj: PlainObject, parentType: Obj
                 // set related entity
                 statements.push(new SetEdgeQueryNode({
                     relation: relation,
-                    existingEdgeFilter: getPartialEdgeIdentifier({
+                    existingEdge: getPartialEdgeIdentifier({
                         relation,
                         sourceIDNode,
                         sourceField: field

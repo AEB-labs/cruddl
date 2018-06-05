@@ -14,6 +14,7 @@ import { ENTITY_UPDATED_AT, ID_FIELD } from '../../schema/schema-defaults';
 import { AnyValue, decapitalize, flatMap, PlainObject } from '../../utils/utils';
 import { TypedInputObjectType } from '../typed-input-object-type';
 import { AddChildEntitiesInputField, UpdateChildEntitiesInputField, UpdateInputField } from './input-fields';
+import { isRelationUpdateField } from './relation-fields';
 
 function getCurrentISODate() {
     return new Date().toISOString();
@@ -160,11 +161,10 @@ export class UpdateRootEntityInputType extends UpdateObjectInputType {
     }
 
     getRelationStatements(input: PlainObject, idNode: QueryNode): ReadonlyArray<PreExecQueryParms> {
-        return []; // TODO
-        /*const relationFields = this.fields
-            .filter(isRelationCreateField)
+        const relationFields = this.fields
+            .filter(isRelationUpdateField)
             .filter(field => field.appliesToMissingFields() || field.name in input);
-        return flatMap(relationFields, field => field.getStatements(input[field.name], idNode));*/
+        return flatMap(relationFields, field => field.getStatements(input[field.name], idNode));
     }
 }
 

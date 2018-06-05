@@ -136,14 +136,14 @@ export class RemoveEdgesQueryNode extends QueryNode {
 }
 
 /**
- * Checks if an edge specified by existingEdgeFilter exists. If it does, replaces it by the newEdge. If it does not,
+ * Checks if an edge specified by existingEdge exists. If it does, replaces it by the newEdge. If it does not,
  * creates newEge.
  */
 export class SetEdgeQueryNode extends QueryNode {
-    constructor(params: { relation: Relation, existingEdgeFilter: PartialEdgeIdentifier, newEdge: EdgeIdentifier }) {
+    constructor(params: { relation: Relation, existingEdge: PartialEdgeIdentifier, newEdge: EdgeIdentifier }) {
         super();
         this.relation = params.relation;
-        this.existingEdge = params.existingEdgeFilter;
+        this.existingEdge = params.existingEdge;
         this.newEdge = params.newEdge;
     }
 

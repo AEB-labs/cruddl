@@ -142,12 +142,15 @@ export class MutationTypeGenerator {
             resultValidator: new ErrorIfEmptyResultValidator(`${rootEntityType.name} with id '${input[ID_FIELD]}' could not be found.`, 'NotFoundError')
         });
 
-        // TODO Add relations if needed
+        const relationStatements = inputType.getRelationStatements(input, new FirstOfListQueryNode(updatedIdsVarNode));
 
         // PreExecute creation and relation queries and return result
         return new WithPreExecutionQueryNode({
             resultNode: new EntityFromIdQueryNode(rootEntityType, new FirstOfListQueryNode(updatedIdsVarNode)),
-            preExecQueries: [updateEntityPreExec]
+            preExecQueries: [
+                updateEntityPreExec,
+                ...relationStatements
+            ]
         });
     }
 

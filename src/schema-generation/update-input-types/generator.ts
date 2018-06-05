@@ -14,6 +14,7 @@ import {
 import {
     UpdateChildEntityInputType, UpdateEntityExtensionInputType, UpdateObjectInputType, UpdateRootEntityInputType
 } from './input-types';
+import { SetEdgeInputField } from './relation-fields';
 
 export class UpdateInputTypeGenerator {
     constructor(
@@ -109,7 +110,11 @@ export class UpdateInputTypeGenerator {
         }
 
         if (field.isRelation) {
-            return []; // TODO
+            if (field.isList) {
+                return []; // TODO
+            } else {
+                return [new SetEdgeInputField(field)];
+            }
         }
 
         throw new Error(`Field "${field.declaringType.name}.${field.name}" has an unexpected configuration`);
