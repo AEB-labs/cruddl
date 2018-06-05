@@ -7,7 +7,7 @@ import {
     AffectedFieldInfoQueryNode, BinaryOperationQueryNode, BinaryOperator, CreateEntityQueryNode,
     DeleteEntitiesQueryNode, EntitiesQueryNode, EntityFromIdQueryNode, ErrorIfEmptyResultValidator,
     FirstOfListQueryNode, LiteralQueryNode, ObjectQueryNode, PreExecQueryParms, QueryNode, RootEntityIDQueryNode,
-    TransformListQueryNode, UpdateEntitiesQueryNode, VariableQueryNode, WithPreExecutionQueryNode
+    TransformListQueryNode, UnknownValueQueryNode, UpdateEntitiesQueryNode, VariableQueryNode, WithPreExecutionQueryNode
 } from '../query-tree';
 import {
     CREATE_ENTITY_FIELD_PREFIX, DELETE_ALL_ENTITIES_FIELD_PREFIX, DELETE_ENTITY_FIELD_PREFIX, ID_FIELD,
@@ -196,7 +196,10 @@ export class MutationTypeGenerator {
             resultVariable: updatedIdsVarNode
         });
 
-        // TODO Add relations if needed
+        if (inputType.getRelationStatements(input, new UnknownValueQueryNode()).length) {
+            // should not occur because the input type generator skips these fields, but just to be sure
+            throw new Error(`updateAll currently does not support relation statements`);
+        }
 
         const idVar = new VariableQueryNode('id');
         const resultNode = new TransformListQueryNode({

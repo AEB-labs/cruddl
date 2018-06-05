@@ -46,7 +46,10 @@ export class UpdateInputTypeGenerator {
     @memorize()
     generateUpdateAllRootEntitiesInputType(type: RootEntityType): UpdateRootEntityInputType {
         return new UpdateRootEntityInputType(type, `UpdateAll${pluralize(type.name)}Input`,
-            () => flatMap(type.fields, (field: Field) => this.generateFields(field, {skipID: true})));
+            () => flatMap(type.fields, (field: Field) => this.generateFields(field, {
+                skipID: true,
+                skipRelations: true // can't do this properly at the moment because it would need a dynamic number of pre-execs
+            })));
     }
 
     @memorize()
@@ -61,7 +64,7 @@ export class UpdateInputTypeGenerator {
             () => flatMap(type.fields, (field: Field) => this.generateFields(field)));
     }
 
-    private generateFields(field: Field, {skipID = false}: { skipID?: boolean } = {}): UpdateInputField[] {
+    private generateFields(field: Field, {skipID = false, skipRelations = false}: { skipID?: boolean, skipRelations?: boolean } = {}): UpdateInputField[] {
         if (field.isSystemField) {
             if (!skipID && (field.declaringType.isRootEntityType || field.declaringType.isChildEntityType) && field.name == ID_FIELD) {
                 // id is always required because it is the filter
@@ -110,6 +113,10 @@ export class UpdateInputTypeGenerator {
         }
 
         if (field.isRelation) {
+            if (skipRelations) {
+                return [];
+            }
+
             if (field.isList) {
                 return []; // TODO
             } else {
