@@ -233,13 +233,9 @@ const processors : { [name: string]: NodeProcessor<any> } = {
     Field(node: FieldQueryNode, context): JSFragment {
         const object = processNode(node.objectNode, context);
         const objectVar = js.variable('object');
-        let identifier = node.field.name;
-        let raw;
-        if (js.isSafeIdentifier(identifier)) {
-            raw = js`${objectVar}.${js.identifier(identifier)}`;
-        }
-        // fall back to bound values. do not attempt js.string for security reasons - should not be the case normally, anyway.
-        raw = js`${objectVar}[${identifier}]`;
+        const identifier = node.field.name;
+        // always use [] access because we could collide with keywords
+        const raw = js`${objectVar}[${jsExt.safeJSONKey(identifier)}]`;
 
         // mimick arango behavior here which propagates null
         return jsExt.evaluatingLambda(objectVar, js`((typeof (${objectVar}) == 'object' && (${objectVar}) != null) ? (${raw}) : null)`, object);
