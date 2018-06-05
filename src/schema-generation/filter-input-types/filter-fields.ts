@@ -101,7 +101,7 @@ export class NestedObjectFilterField implements FilterField {
     }
 
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
-        return this.inputType.getFilterNode(sourceNode, filterValue);
+        return this.inputType.getFilterNode(createFieldNode(this.field, sourceNode), filterValue);
     }
 }
 
