@@ -118,6 +118,9 @@ export class ConcatListsQueryNode extends QueryNode {
     }
 }
 
+/**
+ * A node that evaluates to the number of items in a list
+ */
 export class CountQueryNode extends QueryNode {
     constructor(public readonly listNode: QueryNode) {
         super();
@@ -129,7 +132,7 @@ export class CountQueryNode extends QueryNode {
 }
 
 /**
- * A node that evaluates to the first item of a list
+ * A node that evaluates to the first item of a list, or NULL if the list is empty
  */
 export class FirstOfListQueryNode extends QueryNode {
     constructor(public readonly listNode: QueryNode) {

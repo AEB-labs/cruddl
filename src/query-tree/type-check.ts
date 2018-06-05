@@ -30,5 +30,9 @@ export enum BasicType {
     OBJECT,
     LIST,
     SCALAR,
+
+    /**
+     * The single NULL type (note that there is nothing like undefined - missing properties should evaluate to NULL)
+     */
     NULL
 }

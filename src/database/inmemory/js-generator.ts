@@ -233,9 +233,10 @@ const processors : { [name: string]: NodeProcessor<any> } = {
     Field(node: FieldQueryNode, context): JSFragment {
         const object = processNode(node.objectNode, context);
         const objectVar = js.variable('object');
-        const identifier = node.field.name;
+        const identifier = jsExt.safeJSONKey(node.field.name);
         // always use [] access because we could collide with keywords
-        const raw = js`${objectVar}[${jsExt.safeJSONKey(identifier)}]`;
+        // avoid undefined values because they cause trouble when being compared with === to null
+        const raw = js`${identifier} in ${objectVar} ? ${objectVar}[${identifier}] : null`;
 
         // mimick arango behavior here which propagates null
         return jsExt.evaluatingLambda(objectVar, js`((typeof (${objectVar}) == 'object' && (${objectVar}) != null) ? (${raw}) : null)`, object);
@@ -279,7 +280,8 @@ const processors : { [name: string]: NodeProcessor<any> } = {
     },
 
     FirstOfList(node: FirstOfListQueryNode, context): JSFragment {
-        return js`(${processNode(node.listNode, context)})[0]`;
+        const listVar = js.variable('list');
+        return jsExt.evaluatingLambda(listVar, js`${listVar}.length ? ${listVar}[0] : null`, processNode(node.listNode, context));
     },
 
     BinaryOperation(node: BinaryOperationQueryNode, context): JSFragment {
