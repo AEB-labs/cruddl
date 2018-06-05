@@ -1,8 +1,11 @@
 import { RootEntityType } from '../model';
 import { Field } from '../model/implementation';
 import {
-    BinaryOperationQueryNode, BinaryOperator, EntitiesQueryNode, FieldQueryNode, FirstOfListQueryNode,
-    FollowEdgeQueryNode, QueryNode, RootEntityIDQueryNode, TransformListQueryNode, VariableQueryNode
+    BasicType,
+    BinaryOperationQueryNode, BinaryOperator, ConditionalQueryNode, EntitiesQueryNode, FieldQueryNode,
+    FirstOfListQueryNode,
+    FollowEdgeQueryNode, NullQueryNode, QueryNode, RootEntityIDQueryNode, TransformListQueryNode, TypeCheckQueryNode,
+    VariableQueryNode
 } from '../query-tree';
 import { createSafeListQueryNode } from '../query/queries';
 import { ID_FIELD } from '../schema/schema-defaults';
@@ -52,7 +55,8 @@ function createTo1ReferenceNode(field: Field, sourceNode: QueryNode): QueryNode 
         maxCount: 1,
         itemVariable: listItemVar
     });
-    return new FirstOfListQueryNode(filteredListNode);
+    const rawNode = new FirstOfListQueryNode(filteredListNode);
+    return new ConditionalQueryNode(new TypeCheckQueryNode(keyNode, BasicType.NULL), NullQueryNode.NULL, rawNode);
 }
 
 function createTo1RelationNode(field: Field, sourceNode: QueryNode): QueryNode {
