@@ -3,7 +3,7 @@ import { Type } from '../model';
 import { ObjectType } from '../model/implementation';
 import {
     BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, LiteralQueryNode, OrderDirection, OrderSpecification,
-    QueryNode, TransformListQueryNode, VariableQueryNode
+    QueryNode, RuntimeErrorQueryNode, TransformListQueryNode, VariableQueryNode
 } from '../query-tree';
 import { AFTER_ARG, FIRST_ARG, ORDER_BY_ARG } from '../schema/schema-defaults';
 import { decapitalize } from '../utils/utils';
@@ -83,10 +83,10 @@ export class OrderByAndPaginationAugmentation {
         try {
             cursorObj = JSON.parse(afterArg);
             if (typeof cursorObj != 'object' || cursorObj === null) {
-                throw new Error('The JSON value provided as "after" argument is not an object');
+                return new RuntimeErrorQueryNode('The JSON value provided as "after" argument is not an object');
             }
         } catch (e) {
-            throw new Error(`Invalid cursor ${JSON.stringify(afterArg)} supplied to "after": ${e.message}`);
+            return new RuntimeErrorQueryNode(`Invalid cursor ${JSON.stringify(afterArg)} supplied to "after": ${e.message}`);
         }
 
         // Make sure we only select items after the cursor
@@ -104,7 +104,11 @@ export class OrderByAndPaginationAugmentation {
             }
 
             const clause = clauses[0];
-            const cursorValue = cursorObj[clause.underscoreSeparatedPath];
+            const cursorProperty = clause.underscoreSeparatedPath;
+            if (!(cursorProperty in cursorObj)) {
+                return new RuntimeErrorQueryNode(`Invalid cursor supplied to "after": Property "${cursorProperty}" missing. Make sure this cursor has been obtained with the same orderBy clause.`);
+            }
+            const cursorValue = cursorObj[cursorProperty];
             const valueNode = clause.getValueNode(itemNode);
 
             const operator = clause.direction == OrderDirection.ASCENDING ? BinaryOperator.GREATER_THAN : BinaryOperator.LESS_THAN;
@@ -121,6 +125,4 @@ export class OrderByAndPaginationAugmentation {
 
         return filterForClause(this.getOrderByValues(args, orderByType));
     }
-
-
 }
