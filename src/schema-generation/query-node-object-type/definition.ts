@@ -2,14 +2,19 @@ import {
     GraphQLEnumType, GraphQLFieldConfigArgumentMap, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLScalarType,
     Thunk
 } from 'graphql';
+import { FieldRequest } from '../../graphql/query-distiller';
 import { QueryNode } from '../../query-tree';
+
+export interface QueryNodeResolveInfo {
+    fieldRequestStack: ReadonlyArray<FieldRequest>
+}
 
 export interface QueryNodeField {
     name: string
     description?: string
     type: QueryNodeOutputType
     args?: GraphQLFieldConfigArgumentMap
-    resolve: (sourceNode: QueryNode, args: { [name: string]: any }) => QueryNode
+    resolve: (sourceNode: QueryNode, args: { [name: string]: any }, info: QueryNodeResolveInfo) => QueryNode
 }
 
 export interface QueryNodeObjectType {

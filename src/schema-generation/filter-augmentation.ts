@@ -28,8 +28,8 @@ export class FilterAugmentation {
                     type: filterType.getInputType()
                 }
             },
-            resolve: (sourceNode, args) => {
-                let listNode = schemaField.resolve(sourceNode, args);
+            resolve: (sourceNode, args, info) => {
+                let listNode = schemaField.resolve(sourceNode, args, info);
                 return buildFilteredListNode(listNode, args, filterType, itemType);
             }
         };

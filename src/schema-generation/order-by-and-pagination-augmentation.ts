@@ -1,6 +1,5 @@
 import { GraphQLInt, GraphQLList, GraphQLNonNull, GraphQLString } from 'graphql';
 import { Type } from '../model';
-import { ObjectType } from '../model/implementation';
 import {
     BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, LiteralQueryNode, OrderDirection, OrderSpecification,
     QueryNode, RuntimeErrorQueryNode, TransformListQueryNode, VariableQueryNode
@@ -9,6 +8,7 @@ import { AFTER_ARG, FIRST_ARG, ORDER_BY_ARG } from '../schema/schema-defaults';
 import { decapitalize } from '../utils/utils';
 import { OrderByEnumGenerator, OrderByEnumType, OrderByEnumValue } from './order-by-enum-generator';
 import { QueryNodeField } from './query-node-object-type';
+import { getOrderByValues } from './utils/pagination';
 
 /**
  * Augments list fields with orderBy argument
@@ -40,13 +40,13 @@ export class OrderByAndPaginationAugmentation {
                     type: GraphQLString
                 }
             },
-            resolve: (sourceNode, args) => {
-                const listNode = schemaField.resolve(sourceNode, args);
+            resolve: (sourceNode, args, info) => {
+                const listNode = schemaField.resolve(sourceNode, args, info);
                 const itemVariable = new VariableQueryNode(decapitalize(type.name));
 
                 const orderBy = this.getOrderSpecification(args, orderByType, itemVariable);
                 const maxCount = args[FIRST_ARG];
-                const paginationFilter = this.createPaginationFilterNode(args, type, itemVariable, orderByType);
+                const paginationFilter = this.createPaginationFilterNode(args, itemVariable, orderByType);
 
                 if (orderBy.isUnordered() && maxCount == undefined && paginationFilter === ConstBoolQueryNode.TRUE) {
                     return listNode;
@@ -62,18 +62,14 @@ export class OrderByAndPaginationAugmentation {
             }
         };
     };
-    private getOrderByValues(args: any, orderByType: OrderByEnumType) {
-        const orderByValues = (args[ORDER_BY_ARG] || []) as ReadonlyArray<string>;
-        return orderByValues.map(value => orderByType.getValueOrThrow(value));
-    }
 
     private getOrderSpecification(args: any, orderByType: OrderByEnumType, itemNode: QueryNode) {
-        const mappedValues = this.getOrderByValues(args, orderByType);
+        const mappedValues = getOrderByValues(args, orderByType);
         const clauses = mappedValues.map(value => value.getClause(itemNode));
         return new OrderSpecification(clauses);
     }
 
-    private createPaginationFilterNode(args: any, objectType: ObjectType, itemNode: QueryNode, orderByType: OrderByEnumType) {
+    private createPaginationFilterNode(args: any, itemNode: QueryNode, orderByType: OrderByEnumType) {
         const afterArg = args[AFTER_ARG];
         if (!afterArg) {
             return ConstBoolQueryNode.TRUE;
@@ -123,6 +119,6 @@ export class OrderByAndPaginationAugmentation {
             );
         }
 
-        return filterForClause(this.getOrderByValues(args, orderByType));
+        return filterForClause(getOrderByValues(args, orderByType));
     }
 }

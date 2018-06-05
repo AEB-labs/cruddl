@@ -27,7 +27,7 @@ export class SchemaGenerator {
     private readonly orderByAugmentation = new OrderByAndPaginationAugmentation(this.orderByEnumGenerator);
     private readonly filterAugmentation = new FilterAugmentation(this.filterTypeGenerator);
     private readonly listAugmentation = new ListAugmentation(this.filterAugmentation, this.orderByAugmentation);
-    private readonly outputTypeGenerator = new OutputTypeGenerator(this.listAugmentation, this.enumTypeGenerator);
+    private readonly outputTypeGenerator = new OutputTypeGenerator(this.listAugmentation, this.enumTypeGenerator, this.orderByEnumGenerator);
     private readonly createTypeGenerator = new CreateInputTypeGenerator(this.enumTypeGenerator);
     private readonly updateTypeGenerator = new UpdateInputTypeGenerator(this.enumTypeGenerator, this.createTypeGenerator);
     private readonly queryTypeGenerator = new QueryTypeGenerator(this.outputTypeGenerator, this.listAugmentation);

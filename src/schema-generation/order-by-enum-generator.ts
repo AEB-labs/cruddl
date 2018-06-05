@@ -7,8 +7,12 @@ import { flatMap } from '../utils/utils';
 import { createFieldNode } from './field-nodes';
 
 export class OrderByEnumType {
-    constructor(public readonly name: string, public readonly values: ReadonlyArray<OrderByEnumValue>) {
+    constructor(public readonly objectType: ObjectType, public readonly values: ReadonlyArray<OrderByEnumValue>) {
 
+    }
+
+    get name() {
+        return `${this.objectType.name}OrderBy`;
     }
 
     @memorize()
@@ -65,7 +69,7 @@ export class OrderByEnumValue {
 export class OrderByEnumGenerator {
     @memorize()
     generate(objectType: ObjectType) {
-        return new OrderByEnumType(objectType.name + 'OrderBy', this.getValues(objectType, []));
+        return new OrderByEnumType(objectType, this.getValues(objectType, []));
     }
 
     private getValues(type: ObjectType, path: ReadonlyArray<Field>): ReadonlyArray<OrderByEnumValue> {
