@@ -34,10 +34,13 @@ export class UpdateObjectInputType extends TypedInputObjectType<UpdateInputField
 
     getProperties(value: PlainObject, currentEntityNode: QueryNode): ReadonlyArray<SetFieldQueryNode> {
         const applicableFields = this.getApplicableInputFields(value);
-        return [
+        const regularProperties = [
             ...flatMap(applicableFields, field => field.getProperties(value[field.name], currentEntityNode)),
-            ...flatMap(this.childEntityFields, field => this.getChildEntityProperties(value, currentEntityNode, field)),
-            ...this.getAdditionalProperties(value)
+            ...flatMap(this.childEntityFields, field => this.getChildEntityProperties(value, currentEntityNode, field))
+        ];
+        return [
+            ...regularProperties,
+            ...this.getAdditionalProperties(value, currentEntityNode, regularProperties)
         ];
     }
 
@@ -126,7 +129,7 @@ export class UpdateObjectInputType extends TypedInputObjectType<UpdateInputField
         return [new SetFieldQueryNode(field, currentNode)];
     }
 
-    protected getAdditionalProperties(value: PlainObject): ReadonlyArray<SetFieldQueryNode> {
+    protected getAdditionalProperties(value: PlainObject, currentEntityNode: QueryNode, properties: ReadonlyArray<SetFieldQueryNode>): ReadonlyArray<SetFieldQueryNode> {
         return [];
     }
 
@@ -153,7 +156,11 @@ export class UpdateRootEntityInputType extends UpdateObjectInputType {
         this.updatedAtField = this.rootEntityType.getFieldOrThrow(ENTITY_UPDATED_AT);
     }
 
-    getAdditionalProperties() {
+    getAdditionalProperties(value: PlainObject, currentEntityNode: QueryNode, properties: ReadonlyArray<SetFieldQueryNode>) {
+        if (!properties.length) {
+            // don't change updatedAt if only relations change
+            return [];
+        }
         const now = getCurrentISODate();
         return [
             new SetFieldQueryNode(this.updatedAtField, new LiteralQueryNode(now))
@@ -182,6 +189,7 @@ export class UpdateChildEntityInputType extends UpdateObjectInputType {
 
     getAdditionalProperties() {
         const now = getCurrentISODate();
+        // always update updatedAt because all input fields directly affect the child entity
         return [
             new SetFieldQueryNode(this.updatedAtField, new LiteralQueryNode(now))
         ];
