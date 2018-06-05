@@ -43,6 +43,8 @@ export const DELETE_ALL_ENTITIES_FIELD_PREFIX = 'deleteAll';
 export const ADD_CHILD_ENTITIES_FIELD_PREFIX = 'add';
 export const UPDATE_CHILD_ENTITIES_FIELD_PREFIX = 'update';
 export const REMOVE_CHILD_ENTITIES_FIELD_PREFIX = 'remove';
+export const ADD_EDGES_FIELD_PREFIX = 'add';
+export const REMOVE_EDGES_FIELD_PREFIX = 'remove';
 
 export const ID_FIELD = 'id';
 export const ACCESS_GROUP_FIELD = 'accessGroup';

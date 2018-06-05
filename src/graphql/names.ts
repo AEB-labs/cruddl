@@ -1,7 +1,7 @@
 import {ObjectTypeDefinitionNode, TypeDefinitionNode} from "graphql";
 import * as pluralize from "pluralize";
 import {
-    ADD_CHILD_ENTITIES_FIELD_PREFIX,
+    ADD_CHILD_ENTITIES_FIELD_PREFIX, ADD_EDGES_FIELD_PREFIX,
     ALL_ENTITIES_FIELD_PREFIX,
     CHILD_ENTITY_DIRECTIVE,
     CREATE_ENTITY_FIELD_PREFIX, DELETE_ALL_ENTITIES_FIELD_PREFIX,
@@ -24,7 +24,7 @@ import {
     INPUT_FIELD_STARTS_WITH,
     ORDER_BY_ASC_SUFFIX,
     ORDER_BY_DESC_SUFFIX,
-    REMOVE_CHILD_ENTITIES_FIELD_PREFIX,
+    REMOVE_CHILD_ENTITIES_FIELD_PREFIX, REMOVE_EDGES_FIELD_PREFIX,
     ROOT_ENTITY_DIRECTIVE, UPDATE_ALL_ENTITIES_FIELD_PREFIX,
     UPDATE_CHILD_ENTITIES_FIELD_PREFIX,
     UPDATE_ENTITY_FIELD_PREFIX
@@ -71,11 +71,11 @@ export function getUpdateAllInputTypeName(objectType: ObjectTypeDefinitionNode) 
 }
 
 export function getAddRelationFieldName(fieldName: string) {
-    return 'add' + capitalize(fieldName);
+    return ADD_EDGES_FIELD_PREFIX + capitalize(fieldName);
 }
 
 export function getRemoveRelationFieldName(fieldName: string) {
-    return 'remove' + capitalize(fieldName);
+    return REMOVE_EDGES_FIELD_PREFIX + capitalize(fieldName);
 }
 
 export function getAddChildEntitiesFieldName(fieldName: string) {
