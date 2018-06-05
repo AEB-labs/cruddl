@@ -16,8 +16,8 @@
       "es2016",
       "esnext.asynciterable"
     ],
-    "typeRoots": [
-      "node_modules/@types"
+    "types": [
+      "mocha"
     ],
     "outDir": "dist"
   },
