@@ -86,7 +86,7 @@ export class FilterTypeGenerator {
 
     private generateFilterFieldsForNonListScalar(field: Field): FilterField[] {
         if (field.isList || !field.type.isScalarType) {
-            return [];
+            throw new Error(`Expected "${field.name}" to be a non-list scalar`);
         }
 
         const inputType = field.type.graphQLScalarType;
@@ -96,7 +96,7 @@ export class FilterTypeGenerator {
 
     private generateFilterFieldsForEnumField(field: Field, graphQLEnumType: GraphQLEnumType): FilterField[] {
         if (field.isList || !field.type.isEnumType) {
-            return [];
+            throw new Error(`Expected "${field.name}" to be a non-list enum`);
         }
 
         return ENUM_FILTER_FIELDS.map(name =>

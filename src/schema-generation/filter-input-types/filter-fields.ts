@@ -9,6 +9,7 @@ import { AND_FILTER_FIELD, INPUT_FIELD_EVERY, INPUT_FIELD_NONE, OR_FILTER_FIELD 
 import { AnyValue, decapitalize, PlainObject } from '../../utils/utils';
 import { createFieldNode } from '../field-nodes';
 import { TypedInputFieldBase } from '../typed-input-object-type';
+import { OPERATORS_WITH_LIST_OPERAND } from './constants';
 import { FilterObjectType } from './generator';
 
 
@@ -17,12 +18,15 @@ export interface FilterField extends TypedInputFieldBase<FilterField> {
 }
 
 export class ScalarOrEnumFieldFilterField implements FilterField {
+    public readonly inputType: GraphQLInputType;
+
     constructor(
         public readonly field: Field,
         public readonly resolveOperator: (fieldNode: QueryNode, valueNode: QueryNode) => QueryNode,
         public readonly operatorPrefix: string | undefined,
-        public readonly inputType: GraphQLInputType | FilterObjectType
+        baseInputType: GraphQLInputType
     ) {
+        this.inputType = OPERATORS_WITH_LIST_OPERAND.includes(operatorPrefix || '') ? new GraphQLList(new GraphQLNonNull(baseInputType)) : baseInputType;
     }
 
     get name() {
@@ -40,11 +44,14 @@ export class ScalarOrEnumFieldFilterField implements FilterField {
 }
 
 export class ScalarOrEnumFilterField implements FilterField {
+    public readonly inputType: GraphQLInputType;
+
     constructor(
         public readonly resolveOperator: (fieldNode: QueryNode, valueNode: QueryNode) => QueryNode,
         public readonly operatorName: string,
-        public readonly inputType: GraphQLInputType | GraphQLEnumType
+        baseInputType: GraphQLInputType
     ) {
+        this.inputType = OPERATORS_WITH_LIST_OPERAND.includes(operatorName) ? new GraphQLList(new GraphQLNonNull(baseInputType)) : baseInputType;
     }
 
     get name() {
