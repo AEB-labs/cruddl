@@ -440,11 +440,20 @@ const processors : { [name: string]: NodeProcessor<any> } = {
 
     AddEdges(node: AddEdgesQueryNode, context) {
         const coll = getCollectionForRelation(node.relation, context);
-        return jsExt.executingFunction(
-            js`${coll}.push(`,
-            js.indent(js.lines(...node.edges.map(edge => js`{ _from: ${processNode(edge.fromIDNode, context)}, _to: ${processNode(edge.toIDNode, context)} },`))),
-            js`);`
+
+        const edgesJS = js.lines(
+            js`[`,
+            js.indent(js.join(node.edges.map(edge => js`{ _from: ${processNode(edge.fromIDNode, context)}, _to: ${processNode(edge.toIDNode, context)} }`), js`,\n`)),
+            js`]`
         );
+
+        function edgeExists(edge: JSFragment) {
+            const edgeVar = js.variable('edge');
+            return js`${coll}.some(${jsExt.lambda(edgeVar, js`${edgeVar}._from == ${edge}._from && ${edgeVar}._to === ${edge}._to`)})`;
+        }
+
+        const toAdd = js.variable(`toAdd`);
+        return js`${edgesJS}.forEach(${jsExt.lambda(toAdd, js`${edgeExists(toAdd)} ? undefined : ${coll}.push(${toAdd})`)})`;
     },
 
     RemoveEdges(node: RemoveEdgesQueryNode, context): JSFragment {

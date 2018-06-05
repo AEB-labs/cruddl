@@ -109,6 +109,11 @@ export class DeleteEntitiesQueryNode extends QueryNode {
     }
 }
 
+/**
+ * A node that adds edges if they do not yet exist
+ *
+ * No multiplicity constraints are checked.
+ */
 export class AddEdgesQueryNode extends QueryNode {
 
     // TODO: accept one QueryNode which evaluates to the lits of edge ids somehow?
@@ -125,6 +130,9 @@ export class AddEdgesQueryNode extends QueryNode {
     }
 }
 
+/**
+ * A node that removes edges if they exist
+ */
 export class RemoveEdgesQueryNode extends QueryNode {
     constructor(readonly relation: Relation, readonly edgeFilter: EdgeFilter) {
         super();
@@ -138,6 +146,8 @@ export class RemoveEdgesQueryNode extends QueryNode {
 /**
  * Checks if an edge specified by existingEdge exists. If it does, replaces it by the newEdge. If it does not,
  * creates newEge.
+ *
+ * No multiplicity constraints are checked.
  */
 export class SetEdgeQueryNode extends QueryNode {
     constructor(params: { relation: Relation, existingEdge: PartialEdgeIdentifier, newEdge: EdgeIdentifier }) {
