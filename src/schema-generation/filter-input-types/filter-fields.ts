@@ -1,11 +1,12 @@
-import { GraphQLEnumType, GraphQLInputType } from 'graphql';
+import { GraphQLEnumType, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
+import { isArray } from 'util';
 import { Field } from '../../model';
 import {
-    BinaryOperationQueryNode, BinaryOperator, CountQueryNode, LiteralQueryNode, QueryNode, TransformListQueryNode,
-    VariableQueryNode
+    BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, CountQueryNode, LiteralQueryNode, QueryNode,
+    TransformListQueryNode, VariableQueryNode
 } from '../../query-tree';
-import { INPUT_FIELD_EVERY, INPUT_FIELD_NONE } from '../../schema/schema-defaults';
-import { AnyValue, decapitalize } from '../../utils/utils';
+import { AND_FILTER_FIELD, INPUT_FIELD_EVERY, INPUT_FIELD_NONE, OR_FILTER_FIELD } from '../../schema/schema-defaults';
+import { AnyValue, decapitalize, PlainObject } from '../../utils/utils';
 import { createFieldNode } from '../field-nodes';
 import { TypedInputFieldBase } from '../typed-input-object-type';
 import { FilterObjectType } from './generator';
@@ -20,7 +21,7 @@ export class ScalarOrEnumFieldFilterField implements FilterField {
         public readonly field: Field,
         public readonly resolveOperator: (fieldNode: QueryNode, valueNode: QueryNode) => QueryNode,
         public readonly operatorPrefix: string | undefined,
-        public readonly inputType: GraphQLInputType|FilterObjectType
+        public readonly inputType: GraphQLInputType | FilterObjectType
     ) {
     }
 
@@ -42,7 +43,7 @@ export class ScalarOrEnumFilterField implements FilterField {
     constructor(
         public readonly resolveOperator: (fieldNode: QueryNode, valueNode: QueryNode) => QueryNode,
         public readonly operatorName: string,
-        public readonly inputType: GraphQLInputType|GraphQLEnumType
+        public readonly inputType: GraphQLInputType | GraphQLEnumType
     ) {
     }
 
@@ -60,7 +61,7 @@ export class QuantifierFilterField implements FilterField {
     constructor(
         public readonly field: Field,
         public readonly quantifierName: string,
-        public readonly inputType: FilterObjectType,
+        public readonly inputType: FilterObjectType
     ) {
     }
 
@@ -108,5 +109,48 @@ export class NestedObjectFilterField implements FilterField {
 export interface ListFilterField extends FilterField {
     readonly inputType: FilterObjectType
     readonly field: Field
+}
+
+export class AndFilterField implements FilterField {
+    public readonly name: string;
+    public readonly inputType: GraphQLInputType;
+
+    constructor(
+        public readonly filterType: FilterObjectType) {
+        this.name = AND_FILTER_FIELD;
+        this.inputType = new GraphQLList(new GraphQLNonNull(filterType.getInputType()));
+    }
+
+    getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
+        if (!isArray(filterValue) || !filterValue.length) {
+            return new ConstBoolQueryNode(true);
+        }
+        const values = (filterValue || []) as ReadonlyArray<PlainObject>;
+        const nodes = values.map(value => this.filterType.getFilterNode(sourceNode, value));
+        return nodes.reduce((prev, node) => new BinaryOperationQueryNode(prev, BinaryOperator.AND, node));
+    }
+}
+
+export class OrFilterField implements FilterField {
+    public readonly name: string;
+    public readonly inputType: GraphQLInputType;
+
+    constructor(
+        public readonly filterType: FilterObjectType) {
+        this.name = OR_FILTER_FIELD;
+        this.inputType = new GraphQLList(new GraphQLNonNull(filterType.getInputType()));
+    }
+
+    getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
+        if (!isArray(filterValue)) {
+            return new ConstBoolQueryNode(true); // regard as omitted
+        }
+        const values = filterValue as ReadonlyArray<PlainObject>;
+        if (!values.length) {
+            return ConstBoolQueryNode.FALSE; // neutral element of OR
+        }
+        const nodes = values.map(value => this.filterType.getFilterNode(sourceNode, value));
+        return nodes.reduce((prev, node) => new BinaryOperationQueryNode(prev, BinaryOperator.OR, node));
+    }
 }
 

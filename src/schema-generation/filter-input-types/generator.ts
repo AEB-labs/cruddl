@@ -8,10 +8,13 @@ import {
 import { INPUT_FIELD_EQUAL } from '../../schema/schema-defaults';
 import { AnyValue, objectEntries } from '../../utils/utils';
 import { EnumTypeGenerator } from '../enum-type-generator';
+import { resolveThunk } from '../query-node-object-type';
 import { TypedInputObjectType } from '../typed-input-object-type';
 import { and, ENUM_FILTER_FIELDS, FILTER_FIELDS_BY_TYPE, FILTER_OPERATORS, QUANTIFIERS } from './constants';
 import {
-    FilterField, ListFilterField, NestedObjectFilterField, QuantifierFilterField, ScalarOrEnumFieldFilterField,
+    AndFilterField,
+    FilterField, ListFilterField, NestedObjectFilterField, OrFilterField, QuantifierFilterField,
+    ScalarOrEnumFieldFilterField,
     ScalarOrEnumFilterField
 } from './filter-fields';
 
@@ -41,13 +44,26 @@ export class FilterTypeGenerator {
     @memorize()
     generate(type: Type): FilterObjectType {
         if (type instanceof ScalarType) {
-            return new FilterObjectType(`${type.name}Filter`, this.buildScalarFilterFields(type))
+            return this.generateFilterType(type, this.buildScalarFilterFields(type))
         }
         if (type instanceof EnumType) {
-            return new FilterObjectType(`${type.name}Filter`, this.buildEnumFilterFields(type))
+            return this.generateFilterType(type, this.buildEnumFilterFields(type))
         }
-        return new FilterObjectType(`${type.name}Filter`,
+        return this.generateFilterType(type,
             () => flatMap(type.fields, (field: Field) => this.generateFieldFilterFields(field)));
+    }
+
+    private generateFilterType(type: Type, fields: Thunk<ReadonlyArray<FilterField>>): FilterObjectType {
+        function getFields(): ReadonlyArray<FilterField> {
+            return [
+                ...resolveThunk(fields),
+                new AndFilterField(filterType),
+                new OrFilterField(filterType),
+            ]
+        }
+
+        const filterType = new FilterObjectType(`${type.name}Filter`, getFields);
+        return filterType;
     }
 
     private generateFieldFilterFields(field: Field): FilterField[] {

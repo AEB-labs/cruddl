@@ -58,9 +58,8 @@ export const SCALAR_JSON = 'JSON';
 
 export const ENTITY_ID = 'id';
 
-export const ARGUMENT_AND = 'AND';
-export const ARGUMENT_OR = 'OR';
-export const ARGUMENT_NOT = 'NOT';
+export const AND_FILTER_FIELD = 'AND';
+export const OR_FILTER_FIELD = 'OR';
 
 export const ORDER_BY_ASC_SUFFIX = '_ASC';
 export const ORDER_BY_DESC_SUFFIX = '_DESC';

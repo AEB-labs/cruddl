@@ -1,5 +1,5 @@
 import { GraphQLInputFieldConfig, GraphQLInputObjectType, GraphQLInputType, Thunk } from 'graphql';
-import { chain } from 'lodash';
+import { chain, uniqBy } from 'lodash';
 import memorize from 'memorize-decorator';
 import { Constructor } from '../utils/utils';
 import { resolveThunk } from './query-node-object-type';
@@ -45,7 +45,16 @@ export class TypedInputObjectType<TField extends TypedInputFieldBase<TField>> {
         return new Map(this.fields.map((field): [string, TField] => ([field.name, field])));
     }
 
+    @memorize()
     public get fields(): ReadonlyArray<TField> {
-        return resolveThunk(this._fields);
+        return resolveAndCheckFields(this._fields, this.name);
     }
+}
+
+function resolveAndCheckFields<TField extends TypedInputFieldBase<TField>>(thunk: Thunk<ReadonlyArray<TField>>, typeName: string): ReadonlyArray<TField> {
+    const fields = resolveThunk(thunk);
+    if (uniqBy(fields, field => field.name).length !== fields.length) {
+        throw new Error(`Input type "${typeName}" has duplicate fields (fields: ${fields.map(f => f.name).join(', ')})`);
+    }
+    return fields;
 }

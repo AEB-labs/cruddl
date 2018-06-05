@@ -4,7 +4,7 @@ import {
 } from '../query-tree';
 import { isArray } from 'util';
 import {
-    ARGUMENT_AND, ARGUMENT_OR, INPUT_FIELD_CONTAINS, INPUT_FIELD_ENDS_WITH, INPUT_FIELD_EQUAL, INPUT_FIELD_GT,
+    AND_FILTER_FIELD, OR_FILTER_FIELD, INPUT_FIELD_CONTAINS, INPUT_FIELD_ENDS_WITH, INPUT_FIELD_EQUAL, INPUT_FIELD_GT,
     INPUT_FIELD_GTE, INPUT_FIELD_IN, INPUT_FIELD_LT, INPUT_FIELD_LTE, INPUT_FIELD_NOT, INPUT_FIELD_NOT_CONTAINS,
     INPUT_FIELD_NOT_ENDS_WITH, INPUT_FIELD_NOT_IN, INPUT_FIELD_NOT_STARTS_WITH, INPUT_FIELD_SEPARATOR,
     INPUT_FIELD_STARTS_WITH
@@ -57,14 +57,14 @@ const filterOperators: { [suffix: string]: (fieldNode: QueryNode, valueNode: Que
 function getObjectTypeFilterClauseNode(key: string, value: any, contextNode: QueryNode, objectType: ObjectType): QueryNode {
     // special nodes
     switch (key) {
-        case ARGUMENT_AND:
+        case AND_FILTER_FIELD:
             if (!isArray(value) || !value.length) {
                 return new ConstBoolQueryNode(true);
             }
             return value
                 .map(itemValue => createFilterNode(itemValue, objectType, contextNode))
                 .reduce((prev, current) => new BinaryOperationQueryNode(prev, BinaryOperator.AND, current));
-        case ARGUMENT_OR:
+        case OR_FILTER_FIELD:
             if (!isArray(value)) {
                 return new ConstBoolQueryNode(true); // regard as omitted
             }

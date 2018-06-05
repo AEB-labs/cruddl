@@ -219,7 +219,7 @@ export class MutationTypeGenerator {
             name: `${DELETE_ENTITY_FIELD_PREFIX}${rootEntityType.name}`,
             type: this.outputTypeGenerator.generate(rootEntityType),
             args: getArgumentsForUniqueFields(rootEntityType),
-            resolve: (_, args) => this.generateDeleteQueryNode(rootEntityType, args)
+            resolve: (source, args) => this.generateDeleteQueryNode(rootEntityType, args)
         };
     }
 
@@ -245,10 +245,9 @@ export class MutationTypeGenerator {
 
         const fieldWithListArgs = this.listAugmentation.augment(fieldBase, rootEntityType);
 
-
         return {
             ...fieldWithListArgs,
-            resolve: (_, args, info) => this.generateDeleteAllQueryNode(rootEntityType, fieldWithListArgs.resolve(_, args, info))
+            resolve: (source, args, info) => this.generateDeleteAllQueryNode(rootEntityType, fieldWithListArgs.resolve(source, args, info))
         };
     }
 

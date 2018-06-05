@@ -46,8 +46,8 @@ import {
 } from "../../../graphql/names";
 import {compact, flatMap} from '../../../utils/utils';
 import {
-    ARGUMENT_AND,
-    ARGUMENT_OR,
+    AND_FILTER_FIELD,
+    OR_FILTER_FIELD,
     INPUT_FIELD_CONTAINS,
     INPUT_FIELD_ENDS_WITH,
     INPUT_FIELD_EQUAL,
@@ -105,8 +105,8 @@ export class AddFilterInputTypesTransformer implements ASTTransformer {
     protected createInputFilterTypeForObjectType(ast: DocumentNode, objectType: ObjectTypeDefinitionNode): InputObjectTypeDefinitionNode {
         const args = [
             ...flatMap(objectType.fields, field => this.createInputFilterTypeFields(ast, field, field.type)),
-            this.buildListOfNamedTypeField(ARGUMENT_AND, getFilterTypeName(objectType)),
-            this.buildListOfNamedTypeField(ARGUMENT_OR, getFilterTypeName(objectType)),
+            this.buildListOfNamedTypeField(AND_FILTER_FIELD, getFilterTypeName(objectType)),
+            this.buildListOfNamedTypeField(OR_FILTER_FIELD, getFilterTypeName(objectType)),
             // TODO add if supported: this.buildInputValueNamedType(ARGUMENT_NOT, getFilterTypeName(objectType))
         ];
         return {
