@@ -2,7 +2,7 @@ import {ASTTransformer} from "../transformation-pipeline";
 import {DocumentNode, FieldDefinitionNode} from "graphql";
 import {buildNameNode, getObjectTypes} from "../../schema-utils";
 import {FILTER_ARG, QUERY_META_TYPE, ROLES_DIRECTIVE} from '../../schema-defaults';
-import {getMetaNameFieldFor} from "../../../graphql/names";
+import {getMetaFieldName} from "../../../graphql/names";
 import {FIELD_DEFINITION, NAMED_TYPE, NON_NULL_TYPE} from "../../../graphql/kinds";
 import {mapNullable} from '../../../utils/utils';
 
@@ -22,7 +22,7 @@ export class AddMetaFieldsAlongWithFilterableFieldsTransformer implements ASTTra
 
 function buildMetaField(field: FieldDefinitionNode): FieldDefinitionNode {
     return {
-        name: buildNameNode(getMetaNameFieldFor(field.name.value)),
+        name: buildNameNode(getMetaFieldName(field.name.value)),
         // meta fields have only the filter arg of the original field.
         arguments: field.arguments.filter(arg => arg.name.value === FILTER_ARG),
         type: { kind: NON_NULL_TYPE, type: { kind: NAMED_TYPE, name: buildNameNode(QUERY_META_TYPE)}},

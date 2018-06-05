@@ -27,7 +27,7 @@ import {
     QUERY_TYPE,
     ROLES_DIRECTIVE
 } from '../../schema-defaults';
-import {allEntitiesQueryBy} from "../../../graphql/names";
+import {getAllEntitiesFieldName} from "../../../graphql/names";
 
 export class AddRootQueryTypeTransformer implements ASTTransformer {
 
@@ -78,7 +78,7 @@ function buildQueryOneEntityField(entityDef: ObjectTypeDefinitionNode): FieldDef
 function buildQueryAllEntityField(entityDef: ObjectTypeDefinitionNode): FieldDefinitionNode {
     return {
         kind: FIELD_DEFINITION,
-        name: buildNameNode(allEntitiesQueryBy(entityDef.name.value)),
+        name: buildNameNode(getAllEntitiesFieldName(entityDef.name.value)),
         type: { kind: LIST_TYPE, type: { kind: NON_NULL_TYPE, type: { kind: NAMED_TYPE, name: buildNameNode(entityDef.name.value) }} },
         arguments: [], // arguments will be added later
         loc: entityDef.loc,

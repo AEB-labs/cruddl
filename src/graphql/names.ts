@@ -161,11 +161,11 @@ export function noneField(name: string) {
     return name + INPUT_FIELD_SEPARATOR + INPUT_FIELD_NONE;
 }
 
-export function allEntitiesQueryBy(entityName: string) {
+export function getAllEntitiesFieldName(entityName: string) {
     return ALL_ENTITIES_FIELD_PREFIX + pluralize(entityName);
 }
 
-export function getMetaNameFieldFor(field: string) {
+export function getMetaFieldName(field: string) {
     return '_' + field + 'Meta';
 }
 

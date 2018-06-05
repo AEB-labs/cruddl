@@ -13,14 +13,20 @@ export function buildConditionalObjectQueryNode(sourceNode: QueryNode, type: Que
         return buildObjectQueryNode(sourceNode, type, selectionSet, fieldRequestStack);
     }
 
+    if (sourceNode instanceof NullQueryNode) {
+        return NullQueryNode.NULL;
+    }
+
+    // we don't check for type=object because the source might be something else, like a list or whatever, just null should be treated specially
+    // this becomes apparent in the case of the Meta field - it evaluates to a list, and its fields do list operations like COUNT
     const variableNode = new VariableQueryNode(decapitalize(type.name));
     return new VariableAssignmentQueryNode({
         variableNode,
         variableValueNode: sourceNode,
         resultNode: new ConditionalQueryNode(
-            new TypeCheckQueryNode(variableNode, BasicType.OBJECT),
-            buildObjectQueryNode(variableNode, type, selectionSet, fieldRequestStack),
-            new NullQueryNode())
+            new TypeCheckQueryNode(variableNode, BasicType.NULL),
+            new NullQueryNode(),
+            buildObjectQueryNode(variableNode, type, selectionSet, fieldRequestStack))
     });
 }
 

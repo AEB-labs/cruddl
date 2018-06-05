@@ -1,6 +1,7 @@
 import { GraphQLString } from 'graphql';
 import { sortBy } from 'lodash';
 import memorize from 'memorize-decorator';
+import { getMetaFieldName } from '../graphql/names';
 import { FieldRequest } from '../graphql/query-distiller';
 import { isListType } from '../graphql/schema-utils';
 import { Field, ObjectType, Type } from '../model';
@@ -8,18 +9,25 @@ import {
     NullQueryNode, ObjectQueryNode, PropertySpecification, QueryNode, UnaryOperationQueryNode, UnaryOperator
 } from '../query-tree';
 import { CURSOR_FIELD } from '../schema/schema-defaults';
+import { flatMap } from '../utils/utils';
 import { EnumTypeGenerator } from './enum-type-generator';
 import { createFieldNode } from './field-nodes';
+import { FilterAugmentation } from './filter-augmentation';
 import { ListAugmentation } from './list-augmentation';
+import { MetaTypeGenerator } from './meta-type-generator';
 import { OrderByEnumGenerator, OrderByEnumType } from './order-by-enum-generator';
-import { makeNonNullableList, QueryNodeField, QueryNodeOutputType } from './query-node-object-type';
+import {
+    makeNonNullableList, QueryNodeField, QueryNodeNonNullType, QueryNodeOutputType
+} from './query-node-object-type';
 import { getOrderByValues } from './utils/pagination';
 
 export class OutputTypeGenerator {
     constructor(
         private readonly listAugmentation: ListAugmentation,
+        private readonly filterAugmentation: FilterAugmentation,
         private readonly enumTypeGenerator: EnumTypeGenerator,
-        private readonly orderByEnumGenerator: OrderByEnumGenerator
+        private readonly orderByEnumGenerator: OrderByEnumGenerator,
+        private readonly metaTypeGenerator: MetaTypeGenerator
     ) {
 
     }
@@ -47,7 +55,7 @@ export class OutputTypeGenerator {
     }
 
     private getFields(objectType: ObjectType): ReadonlyArray<QueryNodeField> {
-        const fields = objectType.fields.map(field => this.createField(field));
+        const fields = flatMap(objectType.fields, field => this.createFields(field));
 
         // include cursor fields in all types that could occur in lists
         const specialFields = objectType.isEntityExtensionType ? [] : [
@@ -76,23 +84,40 @@ export class OutputTypeGenerator {
 
         const clauses = getOrderByValues(listFieldRequest.args, orderByType);
         const sortedClauses = sortBy(clauses, clause => clause.name);
-        const objectNode = new ObjectQueryNode(sortedClauses.map( clause =>
+        const objectNode = new ObjectQueryNode(sortedClauses.map(clause =>
             new PropertySpecification(clause.underscoreSeparatedPath, clause.getValueNode(itemNode))));
         return new UnaryOperationQueryNode(objectNode, UnaryOperator.JSON_STRINGIFY);
     }
 
-    private createField(field: Field): QueryNodeField {
+    private createFields(field: Field): ReadonlyArray<QueryNodeField> {
         const type = this.generate(field.type);
-        let schemaField: QueryNodeField = {
+        const schemaField: QueryNodeField = {
             name: field.name,
             type: field.isList ? makeNonNullableList(type) : type,
             resolve: (sourceNode) => createFieldNode(field, sourceNode)
         };
 
-        if (field.isList) {
-            schemaField = this.listAugmentation.augment(schemaField, field.type);
+        if (field.isList && field.type.isObjectType) {
+            return [
+                this.listAugmentation.augment(schemaField, field.type),
+                this.createMetaField(field)
+            ];
+        } else {
+            return [schemaField];
         }
-        return schemaField;
     }
 
+    private createMetaField(field: Field): QueryNodeField {
+        if (!field.type.isObjectType) {
+            throw new Error(`Can only create meta field for object types`);
+        }
+
+        const metaType = this.metaTypeGenerator.generate(field.type);
+        const plainField: QueryNodeField = {
+            name: getMetaFieldName(field.name),
+            type: new QueryNodeNonNullType(metaType),
+            resolve: (sourceNode) => createFieldNode(field, sourceNode)
+        };
+        return this.filterAugmentation.augment(plainField, field.type);
+    }
 }
