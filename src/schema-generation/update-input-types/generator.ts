@@ -2,14 +2,14 @@ import { GraphQLID, GraphQLList, GraphQLNonNull } from 'graphql';
 import { flatMap } from 'lodash';
 import memorize from 'memorize-decorator';
 import * as pluralize from 'pluralize';
-import { ChildEntityType, EntityExtensionType, Field, RootEntityType } from '../../model';
-import { ID_FIELD } from '../../schema/schema-defaults';
+import { CalcMutationsOperator, ChildEntityType, EntityExtensionType, Field, RootEntityType } from '../../model';
+import { CALC_MUTATIONS_OPERATORS, CalcMutationOperator, ID_FIELD } from '../../schema/schema-defaults';
 import { CreateInputTypeGenerator } from '../create-input-types';
 import { EnumTypeGenerator } from '../enum-type-generator';
 import {
-    AddChildEntitiesInputField, BasicListUpdateInputField, BasicUpdateInputField, RemoveChildEntitiesInputField,
-    UpdateChildEntitiesInputField, UpdateEntityExtensionInputField, UpdateFilterInputField, UpdateInputField,
-    UpdateValueObjectInputField, UpdateValueObjectListInputField
+    AddChildEntitiesInputField, BasicListUpdateInputField, BasicUpdateInputField, CalcMutationInputField,
+    RemoveChildEntitiesInputField, UpdateChildEntitiesInputField, UpdateEntityExtensionInputField,
+    UpdateFilterInputField, UpdateInputField, UpdateValueObjectInputField, UpdateValueObjectListInputField
 } from './input-fields';
 import {
     UpdateChildEntityInputType, UpdateEntityExtensionInputType, UpdateObjectInputType, UpdateRootEntityInputType
@@ -80,7 +80,15 @@ export class UpdateInputTypeGenerator {
                 // don't allow null values in lists
                 return [new BasicListUpdateInputField(field, new GraphQLList(new GraphQLNonNull(inputType)))];
             } else {
-                return [new BasicUpdateInputField(field, inputType)];
+                const calcMutationOperators = Array.from(field.calcMutationOperators).map(getCalcMutationOperatorOrThrow);
+                const calcMutationFields = calcMutationOperators.map(op => new CalcMutationInputField(field, inputType, op.operator, op.prefix));
+                // TODO this implementation does not work with multiple calcMutations or them mixed with a regular set, which worked before
+                // Either support this or at least throw an error in this case
+
+                return [
+                    new BasicUpdateInputField(field, inputType),
+                    ...calcMutationFields
+                ];
             }
         }
 
@@ -129,4 +137,15 @@ export class UpdateInputTypeGenerator {
 
         throw new Error(`Field "${field.declaringType.name}.${field.name}" has an unexpected configuration`);
     }
+}
+
+function getCalcMutationOperatorOrThrow(operator: CalcMutationsOperator): CalcMutationOperator & { operator: CalcMutationsOperator } {
+    const value = CALC_MUTATIONS_OPERATORS.find(op => op.name == operator);
+    if (!value) {
+        throw new Error(`Calc mutation operator "${operator}" is not defined`);
+    }
+    return {
+        ...value,
+        operator
+    };
 }

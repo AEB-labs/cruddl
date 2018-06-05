@@ -2,13 +2,16 @@ import { GraphQLID, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphq
 import {
     getAddChildEntitiesFieldName, getRemoveChildEntitiesFieldName, getUpdateChildEntitiesFieldName
 } from '../../graphql/names';
-import { Field } from '../../model';
+import { CalcMutationsOperator, Field } from '../../model';
 import {
+    BinaryOperationQueryNode,
+    BinaryOperator,
     FieldQueryNode, LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, QueryNode,
     SetFieldQueryNode
 } from '../../query-tree';
 import { AnyValue } from '../../utils/utils';
 import { CreateChildEntityInputType, CreateObjectInputType } from '../create-input-types';
+import { createFieldNode } from '../field-nodes';
 import { TypedInputFieldBase } from '../typed-input-object-type';
 import { UpdateChildEntityInputType, UpdateEntityExtensionInputType, UpdateObjectInputType } from './input-types';
 
@@ -54,7 +57,7 @@ export class BasicUpdateInputField implements UpdateInputField {
         return this.field.name;
     }
 
-    getProperties(value: AnyValue) {
+    getProperties(value: AnyValue, currentEntityNode: QueryNode): ReadonlyArray<SetFieldQueryNode> {
         value = this.coerceValue(value);
 
         return [
@@ -84,6 +87,29 @@ export class BasicListUpdateInputField extends BasicUpdateInputField {
             return [];
         }
         return value;
+    }
+}
+
+export class CalcMutationInputField extends BasicUpdateInputField {
+    constructor(field: Field, inputType: GraphQLInputType, public readonly operator: CalcMutationsOperator, private readonly prefix: string) {
+        super(field, inputType);
+    }
+
+    get name() {
+        return this.prefix + this.field.name;
+    }
+
+    getProperties(value: AnyValue, currentEntityNode: QueryNode): ReadonlyArray<SetFieldQueryNode> {
+        const currentValueNode = createFieldNode(this.field, currentEntityNode);
+        value = this.coerceValue(value);
+
+        return [
+            new SetFieldQueryNode(this.field, this.getValueNode(currentValueNode, new LiteralQueryNode(value)))
+        ];
+    }
+
+    private getValueNode(currentNode: QueryNode, operandNode: QueryNode): QueryNode {
+        return new BinaryOperationQueryNode(currentNode, BinaryOperator[this.operator], operandNode);
     }
 }
 
