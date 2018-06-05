@@ -67,7 +67,7 @@ export class MutationTypeGenerator {
 
         return {
             name: `${CREATE_ENTITY_FIELD_PREFIX}${rootEntityType.name}`,
-            type: this.outputTypeGenerator.generate(rootEntityType),
+            type: new QueryNodeNonNullType(this.outputTypeGenerator.generate(rootEntityType)),
             args: {
                 [MUTATION_INPUT_ARG]: {
                     type: new GraphQLNonNull(inputType.getInputType())
@@ -102,7 +102,7 @@ export class MutationTypeGenerator {
 
         return {
             name: `${UPDATE_ENTITY_FIELD_PREFIX}${rootEntityType.name}`,
-            type: new QueryNodeNonNullType(this.outputTypeGenerator.generate(rootEntityType)),
+            type: this.outputTypeGenerator.generate(rootEntityType),
             args: {
                 [MUTATION_INPUT_ARG]: {
                     type: new GraphQLNonNull(inputType.getInputType())

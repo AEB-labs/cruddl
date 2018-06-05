@@ -65,7 +65,7 @@ export class QueryTypeGenerator {
     private getAllRootEntitiesField(rootEntityType: RootEntityType): QueryNodeField {
         const fieldConfig = ({
             name: getAllEntitiesFieldName(rootEntityType.name),
-            type: new QueryNodeNonNullType(new QueryNodeListType(new QueryNodeNonNullType(this.outputTypeGenerator.generate(rootEntityType)))),
+            type: new QueryNodeListType(new QueryNodeNonNullType(this.outputTypeGenerator.generate(rootEntityType))),
             resolve: () => this.getAllRootEntitiesNode(rootEntityType)
         });
         return this.listAugmentation.augment(fieldConfig, rootEntityType);

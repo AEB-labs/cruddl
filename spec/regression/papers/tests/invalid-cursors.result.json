@@ -1,6 +1,8 @@
 {
   "invalidJSON": {
-    "data": null,
+    "data": {
+      "allPapers": null
+    },
     "errors": [
       {
         "locations": [
@@ -17,7 +19,12 @@
     ]
   },
   "missingProperty": {
-    "data": null,
+    "data": {
+      "Paper": {
+        "title": "Object-oriented modeling and design"
+      },
+      "allPapers": null
+    },
     "errors": [
       {
         "locations": [
@@ -34,7 +41,9 @@
     ]
   },
   "nonObjectJSON": {
-    "data": null,
+    "data": {
+      "allPapers": null
+    },
     "errors": [
       {
         "locations": [
