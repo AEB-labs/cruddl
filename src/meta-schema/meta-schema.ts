@@ -9,119 +9,119 @@ const typeDefs = gql`
     }
 
     type Field {
-        name: String
+        name: String!
         description: String
-        isList: Boolean
-        isReference: Boolean
-        isRelation: Boolean
-        isReadOnly: Boolean
-        type: Type
+        isList: Boolean!
+        isReference: Boolean!
+        isRelation: Boolean!
+        isReadOnly: Boolean!
+        type: Type!
         relation: Relation
     }
 
     type Index {
         id: String
-        unique: Boolean
-        fields: [IndexField]
+        unique: Boolean!
+        fields: [IndexField!]!
     }
 
     type IndexField {
-        field: Field
-        path: [String]
+        field: Field!
+        path: [String!]!
     }
 
     type Relation {
-        fromType: RootEntityType
-        fromField: Field
-        toType: RootEntityType
+        fromType: RootEntityType!
+        fromField: Field!
+        toType: RootEntityType!
         toField: Field
     }
 
     interface Type {
-        name: String
-        kind: TypeKind
+        name: String!
+        kind: TypeKind!
         description: String
     }
 
     interface ObjectType {
-        name: String
-        kind: TypeKind
+        name: String!
+        kind: TypeKind!
         description: String
-        fields: [Field]
+        fields: [Field!]!
     }
 
     type RootEntityType implements ObjectType & Type {
-        name: String
-        kind: TypeKind
+        name: String!
+        kind: TypeKind!
         description: String
-        namespace: Namespace
+        namespace: Namespace!
         keyField: Field
-        indices: [Index]
-        fields: [Field]
-        relations: [Relation]
+        indices: [Index!]!
+        fields: [Field!]!
+        relations: [Relation!]!
     }
 
     type ChildEntityType implements ObjectType & Type {
-        name: String
-        kind: TypeKind
+        name: String!
+        kind: TypeKind!
         description: String
-        fields: [Field]
+        fields: [Field!]!
     }
 
     type EntityExtensionType implements ObjectType & Type {
-        name: String
-        kind: TypeKind
+        name: String!
+        kind: TypeKind!
         description: String
-        fields: [Field]
+        fields: [Field!]!
     }
 
     type ValueObjectType implements ObjectType & Type {
-        name: String
-        kind: TypeKind
+        name: String!
+        kind: TypeKind!
         description: String
-        fields: [Field]
+        fields: [Field!]!
     }
 
     type ScalarType implements Type {
-        name: String
-        kind: TypeKind
+        name: String!
+        kind: TypeKind!
         description: String
     }
 
     type EnumType implements Type {
-        name: String
-        kind: TypeKind
+        name: String!
+        kind: TypeKind!
         description: String
-        values: [String]
+        values: [String!]!
     }
 
     type Namespace {
         name: String
-        path: [String]
-        rootEntityTypes: [RootEntityType]
-        childNamespaces: [Namespace]
-        isRoot: Boolean
+        path: [String!]!
+        rootEntityTypes: [RootEntityType!]!
+        childNamespaces: [Namespace!]!
+        isRoot: Boolean!
     }
 
     type Query {
+        types: [Type!]!
         type(name: String!): Type
-        types: [Type]
-        rootEntityTypes: [RootEntityType]
+        rootEntityTypes: [RootEntityType!]!
         rootEntityType(name: String!): RootEntityType
-        childEntityTypes: [ChildEntityType]
+        childEntityTypes: [ChildEntityType!]!
         childEntityType(name: String!): ChildEntityType
-        entityExtensionTypes: [EntityExtensionType]
+        entityExtensionTypes: [EntityExtensionType!]!
         entityExtensionType(name: String!): EntityExtensionType
-        valueObjectTypes: [ValueObjectType]
+        valueObjectTypes: [ValueObjectType!]!
         valueObjectType(name: String!): ValueObjectType
-        scalarTypes: [ScalarType]
+        scalarTypes: [ScalarType!]!
         scalarType(name: String!): ScalarType
-        enumTypes: [EnumType]
+        enumTypes: [EnumType!]!
         enumType(name: String!): EnumType
         
-        namespaces: [Namespace]
+        namespaces: [Namespace!]!
         namespace(path: [String!]!): Namespace
-        rootNamespace: Namespace
+        rootNamespace: Namespace!
     }
 `;
 
