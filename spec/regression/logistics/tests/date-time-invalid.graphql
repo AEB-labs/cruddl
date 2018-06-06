@@ -1,5 +1,5 @@
 mutation invalidFormat {
-    updateDelivery(input: { id: "@{ids/Delivery/1}", shippedAt: "this-is-not-a-date-time"}) {
+    updateDelivery(input: { shippedAt: "this-is-not-a-date-time", id: "@{ids/Delivery/1}"}) {
         shippedAt
     }
 }
