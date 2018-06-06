@@ -40,6 +40,8 @@ export async function start() {
     });
     await server.start({port});
     logger.info(`Server started on http://localhost:${port}`);
+
+    await startMetaServer(project.getModel());
 }
 
 let expressServerReference: any;
