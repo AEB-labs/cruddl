@@ -2,14 +2,13 @@ import { GraphQLList, GraphQLNonNull } from 'graphql';
 import { flatMap } from 'lodash';
 import memorize from 'memorize-decorator';
 import { ChildEntityType, EntityExtensionType, Field, ObjectType, RootEntityType, ValueObjectType } from '../../model';
-import { getCreateInputTypeName } from '../../schema/names';
 import { EnumTypeGenerator } from '../enum-type-generator';
 import {
     BasicCreateInputField, BasicListCreateInputField, CreateInputField, ObjectCreateInputField,
     ObjectListCreateInputField
 } from './input-fields';
 import { CreateChildEntityInputType, CreateObjectInputType, CreateRootEntityInputType } from './input-types';
-import { ToManyRelationCreateInputField, ToOneRelationCreateInputField } from './relation-fields';
+import { AddEdgesCreateInputField, CreateAndAddEdgesCreateInputField, AddEdgeCreateInputField } from './relation-fields';
 
 export class CreateInputTypeGenerator {
     constructor(
@@ -33,25 +32,25 @@ export class CreateInputTypeGenerator {
 
     @memorize()
     generateForRootEntityType(type: RootEntityType): CreateRootEntityInputType {
-        return new CreateRootEntityInputType(getCreateInputTypeName(type.name),
+        return new CreateRootEntityInputType(type,
             () => flatMap(type.fields, (field: Field) => this.generateFields(field)));
     }
 
     @memorize()
     generateForChildEntityType(type: ChildEntityType): CreateChildEntityInputType {
-        return new CreateChildEntityInputType(getCreateInputTypeName(type.name),
+        return new CreateChildEntityInputType(type,
             () => flatMap(type.fields, (field: Field) => this.generateFields(field)));
     }
 
     @memorize()
     generateForEntityExtensionType(type: EntityExtensionType): CreateObjectInputType {
-        return new CreateObjectInputType(getCreateInputTypeName(type.name),
+        return new CreateObjectInputType(type,
             () => flatMap(type.fields, (field: Field) => this.generateFields(field)));
     }
 
     @memorize()
     generateForValueObjectType(type: ValueObjectType): CreateObjectInputType {
-        return new CreateObjectInputType(getCreateInputTypeName(type.name),
+        return new CreateObjectInputType(type,
             () => flatMap(type.fields, (field: Field) => this.generateFields(field)));
     }
 
@@ -72,10 +71,11 @@ export class CreateInputTypeGenerator {
 
         if (field.type.isRootEntityType) {
             if (field.isRelation) {
+                const inputType = this.generateForRootEntityType(field.type);
                 if (field.isList) {
-                    return [new ToManyRelationCreateInputField(field)];
+                    return [new AddEdgesCreateInputField(field), new CreateAndAddEdgesCreateInputField(field, inputType)];
                 } else {
-                    return [new ToOneRelationCreateInputField(field)];
+                    return [new AddEdgeCreateInputField(field), new CreateAndAddEdgesCreateInputField(field, inputType)];
                 }
             } else {
                 // reference

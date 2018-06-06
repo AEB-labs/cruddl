@@ -22,6 +22,7 @@ export const QUERY_META_TYPE = '_QueryMeta';
 
 export const ALL_ENTITIES_FIELD_PREFIX = 'all';
 export const CREATE_ENTITY_FIELD_PREFIX = 'create';
+export const CREATE_ENTITY_TYPE_SUFFIX = 'Input';
 export const UPDATE_ENTITY_FIELD_PREFIX = 'update';
 export const UPDATE_ALL_ENTITIES_FIELD_PREFIX = 'updateAll';
 export const DELETE_ENTITY_FIELD_PREFIX = 'delete';
@@ -31,6 +32,7 @@ export const UPDATE_CHILD_ENTITIES_FIELD_PREFIX = 'update';
 export const REMOVE_CHILD_ENTITIES_FIELD_PREFIX = 'remove';
 export const ADD_EDGES_FIELD_PREFIX = 'add';
 export const REMOVE_EDGES_FIELD_PREFIX = 'remove';
+export const CREATE_RELATED_ENTITY_FIELD_PREFIX = 'create';
 
 export const ID_FIELD = 'id';
 export const ACCESS_GROUP_FIELD = 'accessGroup';

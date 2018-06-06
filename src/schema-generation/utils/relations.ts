@@ -3,6 +3,10 @@ import {
     AddEdgesQueryNode, EdgeFilter, EdgeIdentifier, EntityFromIdQueryNode, ErrorIfNotTruthyResultValidator,
     LiteralQueryNode, PartialEdgeIdentifier, PreExecQueryParms, QueryNode, RemoveEdgesQueryNode, SetEdgeQueryNode
 } from '../../query-tree';
+import { AffectedFieldInfoQueryNode, CreateEntityQueryNode } from '../../query-tree/mutations';
+import { VariableQueryNode } from '../../query-tree/variables';
+import { CreateRootEntityInputType } from '../create-input-types/input-types';
+import { PlainObject } from '../../utils/utils';
 
 export function getSetEdgeStatements(sourceField: Field, sourceIDNode: QueryNode, targetID: string | null): ReadonlyArray<PreExecQueryParms> {
     const relation = sourceField.getRelationOrThrow();
@@ -120,6 +124,34 @@ export function getAddEdgesStatements(sourceField: Field, sourceIDNode: QueryNod
     }
 }
 
+export function getCreateAndAddEdgesStatements(sourceField: Field, sourceIDNode: QueryNode, createRootEntityInputType: CreateRootEntityInputType, createInputs: ReadonlyArray<PlainObject>) {
+    const relation = sourceField.getRelationOrThrow();
+
+    const variableQueryNodes : VariableQueryNode[] = [];
+    let statements : PreExecQueryParms[] = [];
+
+
+    createInputs.forEach(createInput => {
+        const newEntityIdVarNode = new VariableQueryNode('newEntityId');
+        const createStatements = createRootEntityInputType.getCreateStatements(createInput, newEntityIdVarNode);
+        variableQueryNodes.push(newEntityIdVarNode);
+        statements = [...statements, ...createStatements];
+    });
+
+    const edges = variableQueryNodes.map(id => getEdgeIdentifier({
+        relation,
+        sourceIDNode,
+        targetIDNode: id,
+        sourceField
+    }));
+
+    const addEdgesStatement = new PreExecQueryParms({
+        query: new AddEdgesQueryNode(relation, edges)
+    });
+
+    return [...statements, addEdgesStatement];
+}
+
 export function getRemoveEdgesStatements(sourceField: Field, sourceIDNode: QueryNode, targetIDs: ReadonlyArray<string>): ReadonlyArray<PreExecQueryParms> {
     const relation = sourceField.getRelationOrThrow();
     return [
@@ -127,7 +159,7 @@ export function getRemoveEdgesStatements(sourceField: Field, sourceIDNode: Query
             query: new RemoveEdgesQueryNode(relation, getEdgeFilter({
                 relation,
                 sourceField,
-                sourceIDNodes: [ sourceIDNode ],
+                sourceIDNodes: [sourceIDNode],
                 targetIDNodes: targetIDs.map(id => new LiteralQueryNode(id))
             }))
         })
