@@ -1,0 +1,8 @@
+mutation createDeliveryAndForwarder{
+  createDelivery(input: {deliveryNumber: "10", createHandlingUnits: [{huNumber:"A"},{huNumber:"B"}]}) {
+    deliveryNumber
+    handlingUnits{
+      huNumber
+    }
+  }
+}

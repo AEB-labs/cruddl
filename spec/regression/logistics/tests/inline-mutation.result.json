@@ -1,0 +1,17 @@
+{
+  "createDeliveryAndForwarder": {
+    "data": {
+      "createDelivery": {
+        "deliveryNumber": "10",
+        "handlingUnits": [
+          {
+            "huNumber": "A"
+          },
+          {
+            "huNumber": "B"
+          }
+        ]
+      }
+    }
+  }
+}
