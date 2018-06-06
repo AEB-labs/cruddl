@@ -4,7 +4,7 @@ import * as path from 'path';
 import { loadProjectFromDir } from '../../src/project/project-from-fs';
 import { InMemoryAdapter } from '../../src/database/inmemory';
 import { GraphQLServer } from 'graphql-yoga';
-import { getMetaSchema } from '../../src/meta-schema/meta-schema-server';
+import { getMetaSchema } from '../../src/meta-schema/meta-schema';
 import { Model } from '../../src/model/implementation/model';
 import { Server } from 'http';
 import { Server as HttpsServer } from 'https';
@@ -42,7 +42,7 @@ export async function start() {
     logger.info(`Server started on http://localhost:${port}`);
 }
 
-let expressServerReference: Server | HttpsServer;
+let expressServerReference: any;
 
 /**
  * starts an active GraphQL endpoint for testing and debugging the meta server API
