@@ -19,6 +19,7 @@ interface TestResult {
 
 export interface RegressionSuiteOptions {
     saveActualAsExpected?: boolean
+    trace?: boolean
     database?: 'arangodb'|'in-memory';
 }
 
@@ -41,7 +42,7 @@ export class RegressionSuite {
     private async setUp() {
         this.inMemoryDB = new InMemoryDB();
         const warnLevelOptions = { loggerProvider: new Log4jsLoggerProvider('warn') };
-        const debugLevelOptions = { loggerProvider: new Log4jsLoggerProvider('trace', { 'schema-builder': 'warn'}) };
+        const debugLevelOptions = { loggerProvider: new Log4jsLoggerProvider(this.options.trace ? 'trace' : 'warn', { 'schema-builder': 'warn'}) };
 
         const project = await loadProjectFromDir(path.resolve(this.path, 'model'), debugLevelOptions);
         const adapter = await this.createAdapter(debugLevelOptions);
