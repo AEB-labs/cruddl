@@ -1,56 +1,57 @@
 import { expect } from 'chai';
-import request from 'graphql-request';
+import { DocumentNode, graphql, print } from 'graphql';
+import gql from 'graphql-tag';
+import { getMetaSchema } from '../../src/meta-schema/meta-schema';
 import { Model, TypeKind } from '../../src/model';
-import { startMetaServer, stopMetaServer } from '../dev/server';
+import { stopMetaServer } from '../dev/server';
 
 describe('Meta schema API', () => {
 
-    const endpointURI = 'http://localhost:3001/';
-    const introQuery = `
-    query {   
-      __schema {
-        types {
-          name
-          kind
+    const introQuery = gql`
+        query {
+            __schema {
+                types {
+                    name
+                    kind
+                }
+            }
         }
-      }
-    }
     `;
-    const typeQuery = `
-    {
-      types {
-        ... on ScalarType {name kind description}
-        ... on RootEntityType {name kind keyField { name } fields { name description isList isReference isRelation type { __typename }}}
-        ... on ValueObjectType {name kind description fields { name description isList isReference isRelation type { __typename }}}
-        ... on ChildEntityType {name kind description fields { name description isList isReference isRelation type { __typename }}}
-        ... on EntityExtensionType {name kind description fields { name description isList isReference isRelation type { __typename }}}
-      }
-    }
+    const typeQuery = gql`
+        {
+            types {
+                ... on ScalarType {name kind description}
+                ... on RootEntityType {name kind keyField { name } fields { name description isList isReference isRelation type { __typename }}}
+                ... on ValueObjectType {name kind description fields { name description isList isReference isRelation type { __typename }}}
+                ... on ChildEntityType {name kind description fields { name description isList isReference isRelation type { __typename }}}
+                ... on EntityExtensionType {name kind description fields { name description isList isReference isRelation type { __typename }}}
+            }
+        }
     `;
 
-    const queryPerTypeQuery = `
-    {
-      rootEntityTypes {name}
-      childEntityTypes {name}
-      entityExtensionTypes {name}
-      valueObjectTypes {name}
-      scalarTypes {name}
-      enumTypes {name}
-    }
+    const queryPerTypeQuery = gql`
+        {
+            rootEntityTypes {name}
+            childEntityTypes {name}
+            entityExtensionTypes {name}
+            valueObjectTypes {name}
+            scalarTypes {name}
+            enumTypes {name}
+        }
     `;
 
-    const relationQuery = `
-    {
-      rootEntityType(name:"Delivery") {
-        name
-        relations {
-          fromField {name}
-          fromType {name}
-          toField {name}
-          toType {name}
+    const relationQuery = gql`
+        {
+            rootEntityType(name:"Delivery") {
+                name
+                relations {
+                    fromField {name}
+                    fromType {name}
+                    toField {name}
+                    toType {name}
+                }
+            }
         }
-      }
-    }
     `;
 
     const model = new Model({
@@ -149,19 +150,18 @@ describe('Meta schema API', () => {
         }
     });
 
-    before(function () {
+    const metaSchema = getMetaSchema(model);
 
-        return startMetaServer(model).then(() => {
-
-        });
-    });
-
-    it('starts a GraphQL endpoint', () => {
-        return request(endpointURI, introQuery);
-    });
+    async function execute(doc: DocumentNode) {
+        const { data, errors } = await graphql(metaSchema, print(doc));
+        if (errors) {
+            throw new Error(JSON.stringify(errors));
+        }
+        return data;
+    }
 
     it('can query over all types', async () => {
-        const result = await request(endpointURI, typeQuery);
+        const result = await execute(typeQuery);
         expect(result).to.deep.equal({
             'types': [
                 {'name': 'ID', 'kind': 'SCALAR', 'description': null},
@@ -288,7 +288,7 @@ describe('Meta schema API', () => {
     });
 
     it('can query single types', async () => {
-        const result = await request(endpointURI, queryPerTypeQuery);
+        const result = await execute(queryPerTypeQuery);
         expect(result).to.deep.equal({
             'rootEntityTypes': [
                 {'name': 'Country'}, {'name': 'Shipment'}, {'name': 'Delivery'}, {'name': 'HandlingUnit'}
@@ -301,7 +301,7 @@ describe('Meta schema API', () => {
     });
 
     it('can query relations', async () => {
-        const result = await request(endpointURI, relationQuery);
+        const result = await execute(relationQuery);
         expect(result).to.deep.equal({
             'rootEntityType': {
                 'name': 'Delivery', 'relations': [
@@ -315,7 +315,7 @@ describe('Meta schema API', () => {
     });
 
     it('can query namespaces', async () => {
-        const result = await request(endpointURI, `{namespaces{name path isRoot}}`);
+        const result = await execute(gql`{namespaces{name path isRoot}}`);
         expect(result).to.deep.equal({
             'namespaces': [
                 {'name': null, 'path': [], 'isRoot': true},
@@ -327,7 +327,7 @@ describe('Meta schema API', () => {
     });
 
     it('can query namespace by path', async () => {
-        const result = await request(endpointURI, `{logistics: namespace(path: ["logistics"]) { name path } root: namespace(path: []) { name path } }`);
+        const result = await execute(gql`{logistics: namespace(path: ["logistics"]) { name path } root: namespace(path: []) { name path } }`);
         expect(result).to.deep.equal({
             'logistics': {'name': 'logistics', 'path': ['logistics']},
             'root': {'name': null, 'path': []}
