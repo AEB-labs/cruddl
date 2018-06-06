@@ -1,18 +1,19 @@
-import { buildASTSchema, DocumentNode, GraphQLSchema, parse, print } from 'graphql';
-import {
-    ASTTransformationContext, executePostMergeTransformationPipeline, executePreMergeTransformationPipeline,
-    executeSchemaTransformationPipeline, SchemaTransformationContext
-} from './preparation/transformation-pipeline';
-import { validatePostMerge, validateSource } from './preparation/ast-validator';
-import { SchemaConfig, SchemaPartConfig } from '../config/schema-config';
-import { globalContext } from '../config/global';
-import { createModel, Model, ValidationMessage, ValidationResult } from '../model';
-import { Project } from '../project/project';
-import { DatabaseAdapter } from '../database/database-adapter';
-import { SourceType } from '../project/source';
+import { DocumentNode, GraphQLSchema, parse } from 'graphql';
 import { load as loadYaml } from 'js-yaml';
-import { flatMap } from '../utils/utils';
+import { globalContext } from '../config/global';
+import { SchemaConfig, SchemaPartConfig } from '../config/schema-config';
+import { DatabaseAdapter } from '../database/database-adapter';
+import { createModel, Model, ValidationMessage, ValidationResult } from '../model';
 import { createPermissionMap } from '../model/implementation/permission-profile';
+import { Project } from '../project/project';
+import { SourceType } from '../project/source';
+import { SchemaGenerator } from '../schema-generation/schema-generator';
+import { flatMap } from '../utils/utils';
+import { validatePostMerge, validateSource } from './preparation/ast-validator';
+import {
+    ASTTransformationContext, executePreMergeTransformationPipeline, executeSchemaTransformationPipeline,
+    SchemaTransformationContext
+} from './preparation/transformation-pipeline';
 
 /**
  * Validates a project and thus determines whether createSchema() would succeed
@@ -28,7 +29,7 @@ export function validateSchema(project: Project): ValidationResult {
 
 
 function validateAndPrepareSchema(project: Project):
-        { validationResult: ValidationResult, schemaConfig: SchemaConfig, mergedSchema: DocumentNode, rootContext: ASTTransformationContext, model: Model } {
+        { validationResult: ValidationResult, rootContext: ASTTransformationContext, model: Model } {
     const messages: ValidationMessage[] = [];
 
     const sources = flatMap(project.sources, source => {
@@ -52,11 +53,11 @@ function validateAndPrepareSchema(project: Project):
     const mergedSchema: DocumentNode = mergeSchemaDefinition(schemaConfig);
 
     const result = validatePostMerge(mergedSchema, rootContext, model);
-    //messages.push(...result.messages);
+    messages.push(...result.messages);
     messages.push(...model.validate().messages);
 
     const validationResult = new ValidationResult(messages);
-    return { validationResult, schemaConfig, mergedSchema, rootContext, model };
+    return { validationResult, rootContext, model };
 }
 
 /**
@@ -70,14 +71,9 @@ export function createSchema(project: Project, databaseAdapter: DatabaseAdapter)
     try {
         const logger = globalContext.loggerProvider.getLogger('schema-builder');
 
-        const { validationResult, schemaConfig, mergedSchema, rootContext, model } = validateAndPrepareSchema(project);
+        const { validationResult, rootContext, model } = validateAndPrepareSchema(project);
         if (validationResult.hasErrors()) {
             throw new Error('Project has errors:\n' + validationResult.toString())
-        }
-
-        executePostMergeTransformationPipeline(mergedSchema, rootContext, model);
-        if (logger.isTraceEnabled()) {
-            logger.trace(`Transformed schema: ${print(mergedSchema)}`);
         }
 
         const schemaContext: SchemaTransformationContext = {
@@ -86,7 +82,8 @@ export function createSchema(project: Project, databaseAdapter: DatabaseAdapter)
             databaseAdapter
         };
 
-        const graphQLSchema = buildASTSchema(mergedSchema);
+        const generator = new SchemaGenerator(schemaContext);
+        const graphQLSchema = generator.generate(model);
         const finalSchema = executeSchemaTransformationPipeline(graphQLSchema, schemaContext, model);
         logger.info('Schema created successfully.');
         return finalSchema;

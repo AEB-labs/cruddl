@@ -5,7 +5,7 @@ import { FieldDefinitionNode } from 'graphql';
 import { ObjectType, Type } from './type';
 import { PermissionProfile } from './permission-profile';
 import { Model } from './model';
-import { CALC_MUTATIONS_OPERATORS } from '../../schema/schema-defaults';
+import { CALC_MUTATIONS_OPERATORS } from '../../schema/constants';
 import { RolesSpecifier } from './roles-specifier';
 import { Relation } from './relation';
 
@@ -54,6 +54,10 @@ export class Field implements ModelComponent {
 
     public get hasValidType(): boolean {
         return !!this.model.getType(this.input.typeName);
+    }
+
+    public get hasDefaultValue(): boolean {
+        return this.defaultValue !== undefined;
     }
 
     public get permissionProfile(): PermissionProfile|undefined {
@@ -208,7 +212,8 @@ export class Field implements ModelComponent {
             const inverseFields = this.type.fields.filter(field => field.inverseOf === this);
             if (inverseFields.length === 0) {
                 // no @relation(inverseOf: "thisField") - should be ok, but is suspicious if there is a matching @relation back to this type
-                const matchingRelation = this.type.fields.find(field => field.isRelation && field.type === this.declaringType && field.inverseOf == undefined);
+                // (look for inverseOfFieldName instead of inverseOf so that we don't emit this warning if the inverseOf config is invalid)
+                const matchingRelation = this.type.fields.find(field => field.isRelation && field.type === this.declaringType && field.input.inverseOfFieldName == undefined);
                 if (matchingRelation) {
                     context.addMessage(ValidationMessage.warn(`This field and "${matchingRelation.declaringType.name}.${matchingRelation.name}" define separate relations. Consider using the "inverseOf" argument to add a backlink to an existing relation.`, undefined, this.astNode));
                 }
@@ -243,7 +248,7 @@ export class Field implements ModelComponent {
         }
 
         if (!this.type.keyField) {
-            context.addMessage(ValidationMessage.error(`"${this.type.name}" cannot be used as @reference type because is does not have a field annotated with @key.`, undefined, this.astNode));
+            context.addMessage(ValidationMessage.error(`"${this.type.name}" cannot be used as @reference type because it does not have a field annotated with @key.`, undefined, this.astNode));
         }
     }
 
@@ -296,7 +301,7 @@ export class Field implements ModelComponent {
     }
 
     private validateDefaultValue(context: ValidationContext) {
-        if (this.defaultValue == undefined) {
+        if (this.input.defaultValue === undefined) {
             return;
         }
 

@@ -12,5 +12,43 @@
         "number": 6
       }
     }
+  },
+  "twoOperatorsCombinedError": {
+    "data": {
+      "updateNumberRange": null
+    },
+    "errors": [
+      {
+        "locations": [
+          {
+            "column": 5,
+            "line": 20
+          }
+        ],
+        "message": "Can't combine \"addTo_number\" and \"multiplyWith_number\" in \"UpdateNumberRangeInput\"",
+        "path": [
+          "updateNumberRange"
+        ]
+      }
+    ]
+  },
+  "operatorCombinedWithPlainUpdateError": {
+    "data": {
+      "updateNumberRange": null
+    },
+    "errors": [
+      {
+        "locations": [
+          {
+            "column": 5,
+            "line": 30
+          }
+        ],
+        "message": "Can't combine \"number\" and \"multiplyWith_number\" in \"UpdateNumberRangeInput\"",
+        "path": [
+          "updateNumberRange"
+        ]
+      }
+    ]
   }
 }

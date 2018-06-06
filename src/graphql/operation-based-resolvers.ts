@@ -44,6 +44,9 @@ export function addOperationBasedResolvers(schema: GraphQLSchema, operationResol
                 args: arrayToObject(field.args, arg => arg.name),
                 resolve: async (oldSource, args, context, info) => {
                     const newSource = await resolveOp(oldSource,args,context,info);
+                    if (newSource == undefined) {
+                        return newSource;
+                    }
                     return oldResolver(newSource, args, context, info);
                 },
                 astNode: field.astNode

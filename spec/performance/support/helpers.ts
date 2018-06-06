@@ -21,8 +21,8 @@ export interface TestEnvironment {
 
 const schemaContext: SchemaContext = { loggerProvider: new Log4jsLoggerProvider('warn') };
 
-export async function createTestProject(modelPath: string): Promise<{project: Project, schema: GraphQLSchema}> {
-    const project = await loadProjectFromDir(MODEL_PATH, schemaContext);
+export async function createTestProject(modelPath: string = MODEL_PATH): Promise<{project: Project, schema: GraphQLSchema}> {
+    const project = await loadProjectFromDir(modelPath, schemaContext);
     const dbConfig = await createTempDatabase();
     const dbAdapter = new ArangoDBAdapter(dbConfig, schemaContext);
     const schema = project.createSchema(dbAdapter);

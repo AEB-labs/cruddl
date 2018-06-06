@@ -2,7 +2,7 @@ import { ASTTransformationContext, ASTTransformer } from '../transformation-pipe
 import {DocumentNode} from "graphql";
 import {buildNameNode, getRootEntityTypes, hasDirectiveWithName} from "../../schema-utils";
 import {ARGUMENT, DIRECTIVE, STRING} from "../../../graphql/kinds";
-import {NAMESPACE_DIRECTIVE, NAMESPACE_NAME_ARG} from "../../schema-defaults";
+import {NAMESPACE_DIRECTIVE, NAMESPACE_NAME_ARG} from "../../constants";
 
 export class AddNamespacesToTypesTransformer implements ASTTransformer {
 

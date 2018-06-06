@@ -23,6 +23,7 @@ describe('regression tests', async () => {
                 // (first npm test run still marked as failure, subsequent runs will pass)
                 const options: RegressionSuiteOptions = {
                     saveActualAsExpected: process.argv.includes('--save-actual-as-expected'),
+                    trace: process.argv.includes('--trace'),
                     database
                 };
                 const suite = new RegressionSuite(suitePath, options);
@@ -31,7 +32,7 @@ describe('regression tests', async () => {
                         it(testName, async () => {
                             const {expectedResult, actualResult} = await suite.runTest(testName);
                             expect(actualResult).to.deep.equal(expectedResult);
-                        });
+                        }).timeout(10000); // travis is sometimes on the slower side
                     }
                 });
             }

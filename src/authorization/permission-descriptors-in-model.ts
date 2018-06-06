@@ -1,7 +1,6 @@
-import { Field, RootEntityType } from '../model/implementation';
+import { Field, RootEntityType } from '../model';
 import {
-    AlwaysGrantPermissionDescriptor,
-    PermissionDescriptor, ProfileBasedPermissionDescriptor, StaticPermissionDescriptor
+    AlwaysGrantPermissionDescriptor, PermissionDescriptor, ProfileBasedPermissionDescriptor, StaticPermissionDescriptor
 } from './permission-descriptors';
 
 export function getPermissionDescriptorOfRootEntityType(rootEntityType: RootEntityType): PermissionDescriptor{

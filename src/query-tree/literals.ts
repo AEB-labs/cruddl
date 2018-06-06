@@ -1,4 +1,5 @@
 import { cyan } from 'colors/safe';
+import { INDENTATION } from '../utils/utils';
 import { QueryNode } from './base';
 
 /**
@@ -15,7 +16,7 @@ export class LiteralQueryNode extends QueryNode {
     }
 
     public describe() {
-        const json = this.value === undefined ? 'undefined' : JSON.stringify(this.value);
+        const json = this.value === undefined ? 'undefined' : JSON.stringify(this.value, undefined, INDENTATION);
         return `literal ${cyan(json)}`;
     }
 }
@@ -27,6 +28,8 @@ export class NullQueryNode extends QueryNode {
     public describe() {
         return `null`;
     }
+
+    static readonly NULL = new NullQueryNode();
 }
 
 /**

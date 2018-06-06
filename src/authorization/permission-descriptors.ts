@@ -2,11 +2,11 @@ import {
     BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, FieldQueryNode, LiteralQueryNode, QueryNode,
     UnknownValueQueryNode
 } from '../query-tree';
-import { simplifyBooleans } from '../query/query-tree-utils';
+import { simplifyBooleans } from '../query-tree/utils';
 import { Field, Permission, PermissionProfile, RootEntityType } from '../model';
 import { flatMap } from 'lodash';
 import { AccessOperation, AuthContext } from './auth-basics';
-import { ACCESS_GROUP_FIELD } from '../schema/schema-defaults';
+import { ACCESS_GROUP_FIELD } from '../schema/constants';
 
 export enum ConditionExplanationContext {
     BEFORE_WRITE,

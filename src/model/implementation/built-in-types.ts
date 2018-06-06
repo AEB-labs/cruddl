@@ -15,13 +15,13 @@ const graphQLTypes: ReadonlyArray<GraphQLScalarType> = [
     GraphQLDateTime
 ];
 
-export const builtInTypes: ReadonlyArray<Type> = graphQLTypes.map(({name}) => buildScalarType(name));
+export const builtInTypes: ReadonlyArray<Type> = graphQLTypes.map(type => buildScalarType(type));
 
 export const builtInTypeNames: ReadonlySet<string> = new Set(builtInTypes.map(t => t.name));
 
-function buildScalarType(name: string) {
+function buildScalarType(type: GraphQLScalarType) {
     return new ScalarType({
         kind: TypeKind.SCALAR,
-        name
-    });
+        name: type.name,
+    }, type);
 }
