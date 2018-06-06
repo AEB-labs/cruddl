@@ -15,7 +15,7 @@ import {
 import {
     UpdateChildEntityInputType, UpdateEntityExtensionInputType, UpdateObjectInputType, UpdateRootEntityInputType
 } from './input-types';
-import { AddEdgesInputField, RemoveEdgesInputField, SetEdgeInputField } from './relation-fields';
+import { AddEdgesInputField, CreateAndAddEdgeInputField, CreateAndAddEdgesInputField, RemoveEdgesInputField, SetEdgeInputField } from './relation-fields';
 
 export class UpdateInputTypeGenerator {
     constructor(
@@ -126,13 +126,16 @@ export class UpdateInputTypeGenerator {
                 return [];
             }
 
+            const inputType = this.createInputTypeGenerator.generateForRootEntityType(field.type);
             if (field.isList) {
                 return [
                     new AddEdgesInputField(field),
-                    new RemoveEdgesInputField(field)
+                    new RemoveEdgesInputField(field),
+                    new CreateAndAddEdgesInputField(field, inputType)
                 ];
             } else {
-                return [new SetEdgeInputField(field)];
+                return [new SetEdgeInputField(field),
+                    new CreateAndAddEdgeInputField(field, inputType)];
             }
         }
 

@@ -15,6 +15,8 @@ import { AnyValue, decapitalize, flatMap, joinWithAnd, objectEntries, PlainObjec
 import { TypedInputObjectType } from '../typed-input-object-type';
 import { AddChildEntitiesInputField, UpdateChildEntitiesInputField, UpdateInputField } from './input-fields';
 import { isRelationUpdateField } from './relation-fields';
+import { AffectedFieldInfoQueryNode, CreateEntityQueryNode } from '../../query-tree/mutations';
+import { fromPairs, toPairs } from 'lodash';
 
 function getCurrentISODate() {
     return new Date().toISOString();
@@ -160,14 +162,30 @@ export class UpdateObjectInputType extends TypedInputObjectType<UpdateInputField
     private getApplicableInputFields(value: PlainObject): ReadonlyArray<UpdateInputField> {
         return this.fields.filter(field => field.name in value || field.appliesToMissingFields());
     }
+
 }
 
 export class UpdateRootEntityInputType extends UpdateObjectInputType {
     private readonly updatedAtField: Field;
 
-    constructor(private readonly rootEntityType: RootEntityType, name: string, fields: Thunk<ReadonlyArray<UpdateInputField>>) {
+    constructor(public readonly rootEntityType: RootEntityType, name: string, fields: Thunk<ReadonlyArray<UpdateInputField>>) {
         super(rootEntityType, name, fields);
         this.updatedAtField = this.rootEntityType.getFieldOrThrow(ENTITY_UPDATED_AT);
+    }
+
+    getCreateStatements(input: PlainObject, newEntityIdVarNode: VariableQueryNode) {
+        // Create new entity
+        const objectNode = new LiteralQueryNode(input);
+        const affectedFields = this.getAffectedFields(input).map(field => new AffectedFieldInfoQueryNode(field));
+        const createEntityNode = new CreateEntityQueryNode(this.rootEntityType, objectNode, affectedFields);
+        const newEntityPreExec = new PreExecQueryParms({query: createEntityNode, resultVariable: newEntityIdVarNode});
+
+        // Add relations if needed
+        const relationStatements = this.getRelationStatements(input, newEntityIdVarNode);
+        // Note: these statements contain validators which should arguably be moved to the front
+        // works with transactional DB adapters, but e.g. not with JavaScript
+
+        return [newEntityPreExec, ...relationStatements];
     }
 
     getAdditionalProperties(value: PlainObject, currentEntityNode: QueryNode, properties: ReadonlyArray<SetFieldQueryNode>) {

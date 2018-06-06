@@ -2,9 +2,12 @@ import { GraphQLID, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphq
 import { getAddRelationFieldName, getRemoveRelationFieldName } from '../../schema/names';
 import { Field } from '../../model';
 import { PreExecQueryParms, QueryNode, SetFieldQueryNode } from '../../query-tree';
-import { AnyValue } from '../../utils/utils';
-import { getAddEdgesStatements, getRemoveEdgesStatements, getSetEdgeStatements } from '../utils/relations';
+import { AnyValue, capitalize, PlainObject } from '../../utils/utils';
+import { getAddEdgesStatements, getCreateAndAddEdgesStatements, getRemoveEdgesStatements, getSetEdgeStatements } from '../utils/relations';
 import { UpdateInputField } from './input-fields';
+import { CreateRootEntityInputType } from '../create-input-types/input-types';
+import { UpdateRootEntityInputType } from './input-types';
+import { CREATE_RELATED_ENTITY_FIELD_PREFIX } from '../../schema/schema-defaults';
 
 export abstract class AbstractRelationUpdateInputField implements UpdateInputField {
     constructor(
@@ -77,6 +80,60 @@ export class RemoveEdgesInputField extends AbstractRelationUpdateInputField {
         }
 
         return getRemoveEdgesStatements(this.field, sourceIDNode, value as ReadonlyArray<string>);
+    }
+}
+
+export class CreateAndAddEdgesInputField extends AbstractRelationUpdateInputField {
+    readonly inputType: GraphQLInputType;
+
+    constructor(
+        public readonly field: Field,
+        public readonly objectInputType: CreateRootEntityInputType
+    ) {
+        super(field);
+
+        this.inputType = new GraphQLList(new GraphQLNonNull(objectInputType.getInputType()));
+    }
+    get name() {
+        return CREATE_RELATED_ENTITY_FIELD_PREFIX+capitalize(this.field.name);
+    }
+
+    getStatements(value: AnyValue, sourceIDNode: QueryNode): ReadonlyArray<PreExecQueryParms> {
+        if (value == undefined) {
+            return [];
+        }
+        if (!Array.isArray(value)) {
+            throw new Error(`Expected value of "${this.name}" to be an array, but is ${typeof value}`);
+        }
+
+        return getCreateAndAddEdgesStatements(this.field, sourceIDNode, this.objectInputType, value as ReadonlyArray<PlainObject>);
+    }
+}
+
+export class CreateAndAddEdgeInputField extends AbstractRelationUpdateInputField {
+    readonly inputType: GraphQLInputType;
+
+    constructor(
+        public readonly field: Field,
+        public readonly objectInputType: CreateRootEntityInputType
+    ) {
+        super(field);
+
+        this.inputType = objectInputType.getInputType();
+    }
+    get name() {
+        return CREATE_RELATED_ENTITY_FIELD_PREFIX+capitalize(this.field.name);
+    }
+
+    getStatements(value: AnyValue, sourceIDNode: QueryNode): ReadonlyArray<PreExecQueryParms> {
+        if (value == undefined) {
+            return [];
+        }
+        if (Array.isArray(value)) {
+            throw new Error(`Expected value of "${this.name}" to be an object, but is ${typeof value}`);
+        }
+
+        return getCreateAndAddEdgesStatements(this.field, sourceIDNode, this.objectInputType, [value] as ReadonlyArray<PlainObject>);
     }
 }
 

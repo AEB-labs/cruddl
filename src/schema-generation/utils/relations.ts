@@ -7,6 +7,7 @@ import { AffectedFieldInfoQueryNode, CreateEntityQueryNode } from '../../query-t
 import { VariableQueryNode } from '../../query-tree/variables';
 import { CreateRootEntityInputType } from '../create-input-types/input-types';
 import { PlainObject } from '../../utils/utils';
+import { UpdateRootEntityInputType } from '../update-input-types/input-types';
 
 export function getSetEdgeStatements(sourceField: Field, sourceIDNode: QueryNode, targetID: string | null): ReadonlyArray<PreExecQueryParms> {
     const relation = sourceField.getRelationOrThrow();
@@ -124,7 +125,7 @@ export function getAddEdgesStatements(sourceField: Field, sourceIDNode: QueryNod
     }
 }
 
-export function getCreateAndAddEdgesStatements(sourceField: Field, sourceIDNode: QueryNode, createRootEntityInputType: CreateRootEntityInputType, createInputs: ReadonlyArray<PlainObject>) {
+export function getCreateAndAddEdgesStatements(sourceField: Field, sourceIDNode: QueryNode, createRootEntityInputType: CreateRootEntityInputType | UpdateRootEntityInputType, createInputs: ReadonlyArray<PlainObject>) {
     const relation = sourceField.getRelationOrThrow();
 
     const variableQueryNodes : VariableQueryNode[] = [];

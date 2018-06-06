@@ -90,6 +90,33 @@ export class CreateAndAddEdgesCreateInputField extends AbstractRelationCreateInp
     }
 }
 
+export class CreateAndAddEdgeCreateInputField extends AbstractRelationCreateInputField {
+    readonly inputType: GraphQLInputType;
+
+    constructor(
+        public readonly field: Field,
+        public readonly objectInputType: CreateRootEntityInputType
+    ) {
+        super(field);
+
+        this.inputType = objectInputType.getInputType();
+    }
+
+    get name() {
+        return CREATE_RELATED_ENTITY_FIELD_PREFIX+capitalize(this.field.name);
+    }
+
+    getStatements(value: AnyValue, sourceIDNode: QueryNode): ReadonlyArray<PreExecQueryParms> {
+        if (value == undefined) {
+            return [];
+        }
+        if (Array.isArray(value)) {
+            throw new Error(`Expected value of "${this.name}" to be an object, but is ${typeof value}`);
+        }
+
+        return getCreateAndAddEdgesStatements(this.field, sourceIDNode, this.objectInputType, [value] as ReadonlyArray<PlainObject>);
+    }
+}
 
 export function isRelationCreateField(field: CreateInputField): field is AbstractRelationCreateInputField {
     return field instanceof AbstractRelationCreateInputField;
