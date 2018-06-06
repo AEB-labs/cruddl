@@ -8,7 +8,7 @@ import { VariableQueryNode } from './variables';
  * A node that creates a new entity and evaluates to that new entity object
  */
 export class CreateEntityQueryNode extends QueryNode {
-    constructor(public readonly rootEntityType: RootEntityType, public readonly objectNode: QueryNode, public readonly affectedFields: AffectedFieldInfoQueryNode[]) {
+    constructor(public readonly rootEntityType: RootEntityType, public readonly objectNode: QueryNode, public readonly affectedFields: ReadonlyArray<AffectedFieldInfoQueryNode>) {
         super();
     }
 
@@ -31,7 +31,7 @@ export class AffectedFieldInfoQueryNode extends QueryNode {
 }
 
 /**
- * A node that updates existing entities
+ * A node that updates existing entities and evaluates to the ids of the updated entities
  *
  * Existing properties of the entities will be kept when not specified in the updateNode. If a property is specified
  * in updates and in the existing entity, it will be replaced with the PropertySpecification's value. To access the old
@@ -50,9 +50,9 @@ export class UpdateEntitiesQueryNode extends QueryNode {
     constructor(params: {
         rootEntityType: RootEntityType,
         listNode: QueryNode,
-        updates: SetFieldQueryNode[],
+        updates: ReadonlyArray<SetFieldQueryNode>,
         currentEntityVariable?: VariableQueryNode,
-        affectedFields: AffectedFieldInfoQueryNode[]
+        affectedFields: ReadonlyArray<AffectedFieldInfoQueryNode>
     }) {
         super();
         this.rootEntityType = params.rootEntityType;
@@ -64,9 +64,9 @@ export class UpdateEntitiesQueryNode extends QueryNode {
 
     public readonly rootEntityType: RootEntityType;
     public readonly listNode: QueryNode;
-    public readonly updates: SetFieldQueryNode[];
+    public readonly updates: ReadonlyArray<SetFieldQueryNode>;
     public readonly currentEntityVariable: VariableQueryNode;
-    public readonly affectedFields: AffectedFieldInfoQueryNode[];
+    public readonly affectedFields: ReadonlyArray<AffectedFieldInfoQueryNode>;
 
     describe() {
         return `update ${this.rootEntityType.name} entities in (\n` +
@@ -93,18 +93,15 @@ export class SetFieldQueryNode extends PropertySpecification {
 export class DeleteEntitiesQueryNode extends QueryNode {
     constructor(params: {
         rootEntityType: RootEntityType,
-        listNode: QueryNode,
-        currentEntityVariable?: VariableQueryNode
+        listNode: QueryNode
     }) {
         super();
         this.rootEntityType = params.rootEntityType;
         this.listNode = params.listNode;
-        this.currentEntityVariable = params.currentEntityVariable || new VariableQueryNode();
     }
 
     public readonly rootEntityType: RootEntityType;
     public readonly listNode: QueryNode;
-    public readonly currentEntityVariable: VariableQueryNode;
 
     describe() {
         return `delete ${this.rootEntityType.name} entities in (\n` +
@@ -112,12 +109,17 @@ export class DeleteEntitiesQueryNode extends QueryNode {
     }
 }
 
+/**
+ * A node that adds edges if they do not yet exist
+ *
+ * No multiplicity constraints are checked.
+ */
 export class AddEdgesQueryNode extends QueryNode {
 
     // TODO: accept one QueryNode which evaluates to the lits of edge ids somehow?
     // (currently, adding 50 edges generates 50 bound variables with the literal values)
 
-    constructor(readonly relation: Relation, readonly edges: EdgeIdentifier[]) {
+    constructor(readonly relation: Relation, readonly edges: ReadonlyArray<EdgeIdentifier>) {
         super();
     }
 
@@ -128,6 +130,9 @@ export class AddEdgesQueryNode extends QueryNode {
     }
 }
 
+/**
+ * A node that removes edges if they exist
+ */
 export class RemoveEdgesQueryNode extends QueryNode {
     constructor(readonly relation: Relation, readonly edgeFilter: EdgeFilter) {
         super();
@@ -139,14 +144,16 @@ export class RemoveEdgesQueryNode extends QueryNode {
 }
 
 /**
- * Checks if an edge specified by existingEdgeFilter exists. If it does, replaces it by the newEdge. If it does not,
+ * Checks if an edge specified by existingEdge exists. If it does, replaces it by the newEdge. If it does not,
  * creates newEge.
+ *
+ * No multiplicity constraints are checked.
  */
 export class SetEdgeQueryNode extends QueryNode {
-    constructor(params: { relation: Relation, existingEdgeFilter: PartialEdgeIdentifier, newEdge: EdgeIdentifier }) {
+    constructor(params: { relation: Relation, existingEdge: PartialEdgeIdentifier, newEdge: EdgeIdentifier }) {
         super();
         this.relation = params.relation;
-        this.existingEdge = params.existingEdgeFilter;
+        this.existingEdge = params.existingEdge;
         this.newEdge = params.newEdge;
     }
 
@@ -165,7 +172,7 @@ export class SetEdgeQueryNode extends QueryNode {
  * pseudo code: from IN [...fromIDNodes] && to IN [...toIDNodes]
  */
 export class EdgeFilter extends QueryNode {
-    constructor(readonly fromIDNodes?: QueryNode[], readonly toIDNodes?: QueryNode[]) {
+    constructor(readonly fromIDNodes?: ReadonlyArray<QueryNode>, readonly toIDNodes?: ReadonlyArray<QueryNode>) {
         super();
     }
 
@@ -173,7 +180,7 @@ export class EdgeFilter extends QueryNode {
         return `(${this.describeIDs(this.fromIDNodes)} -> ${this.describeIDs(this.toIDNodes)})`;
     }
 
-    private describeIDs(ids: QueryNode[] | undefined) {
+    private describeIDs(ids: ReadonlyArray<QueryNode> | undefined) {
         if (!ids) {
             return '?';
         }

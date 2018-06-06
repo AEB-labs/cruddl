@@ -2,10 +2,11 @@ import { FieldConfig, PermissionsConfig, RootEntityTypeConfig, TypeKind } from '
 import { ObjectTypeBase } from './object-type-base';
 import { Field } from './field';
 import { Model } from './model';
+import { ScalarType } from './scalar-type';
 import { ValidationContext } from './validation';
 import { ValidationMessage } from '../validation';
 import { Index } from './indices';
-import { ACCESS_GROUP_FIELD, DEFAULT_PERMISSION_PROFILE } from '../../schema/schema-defaults';
+import { ACCESS_GROUP_FIELD, DEFAULT_PERMISSION_PROFILE } from '../../schema/constants';
 import { PermissionProfile } from './permission-profile';
 import { Relation } from './relation';
 import { GraphQLString } from 'graphql';
@@ -40,6 +41,14 @@ export class RootEntityType extends ObjectTypeBase {
             throw new Error(`Expected "${this.name}" to have a key field`);
         }
         return this.keyField;
+    }
+
+    getKeyFieldTypeOrThrow(): ScalarType {
+        const field = this.getKeyFieldOrThrow();
+        if (!field.type.isScalarType) {
+            throw new Error(`Expected "${this.name}.${field.name}" to be of scalar type because it is a key field`);
+        }
+        return field.type;
     }
 
     get permissionProfile(): PermissionProfile|undefined {

@@ -1,6 +1,5 @@
-import { CalcMutationsOperator, Field, Model, TypeKind } from '../../../src/model/index';
 import { expect } from 'chai';
-import { Severity } from '../../../src/model';
+import { CalcMutationsOperator, Field, Model, Severity, TypeKind } from '../../../src/model';
 import {
     expectSingleErrorToInclude, expectSingleWarningToInclude, expectToBeValid, validate
 } from './validation-utils';
@@ -276,7 +275,7 @@ describe('Field', () => {
             describe('warns if there is an unrelated inverse relation', () => {
                 const field = shipmentType.getFieldOrThrow('delivery');
                 const result = validate(field);
-                expect(result.messages.length).to.equal(1);
+                expect(result.messages.length, result.toString()).to.equal(1);
                 expect(result.messages[0].severity).to.equal(Severity.Warning);
                 expect(result.messages[0].message).to.equal('This field and "Delivery.shipment" define separate relations. Consider using the "inverseOf" argument to add a backlink to an existing relation.');
             });
@@ -392,7 +391,7 @@ describe('Field', () => {
                 isReference: true
             }, deliveryType);
 
-            expectSingleErrorToInclude(field, `"HandlingUnit" cannot be used as @reference type because is does not have a field annotated with @key`);
+            expectSingleErrorToInclude(field, `"HandlingUnit" cannot be used as @reference type because it does not have a field annotated with @key`);
         });
 
         it('rejects @reference to value object type', () => {

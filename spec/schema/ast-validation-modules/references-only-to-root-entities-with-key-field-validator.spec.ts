@@ -36,7 +36,7 @@ describe('references only on root entity with key field validator', () => {
 
     it('rejects @reference to rootEntity without @key', () => {
         assertValidatorRejects(modelWithReferenceToRootWithoutKeyField,
-            '"Stuff" cannot be used as @reference type because is does not have a field annotated with @key.');
+            '"Stuff" cannot be used as @reference type because it does not have a field annotated with @key.');
     });
 
     it('accepts @reference to @rootEntity with @key', () => {

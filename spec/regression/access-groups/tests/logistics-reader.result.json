@@ -121,7 +121,7 @@
   "updateReadRestricted": {
     "errors": [
       {
-        "message": "NotFoundError: File with id @{ids/File/1} could not be found.",
+        "message": "NotFoundError: File with id '@{ids/File/1}' could not be found.",
         "locations": [
           {
             "line": 55,
@@ -140,7 +140,7 @@
   "updateReadRestrictedToAccessGroupWithoutWritePermissions": {
     "errors": [
       {
-        "message": "NotFoundError: File with id @{ids/File/1} could not be found.",
+        "message": "NotFoundError: File with id '@{ids/File/1}' could not be found.",
         "locations": [
           {
             "line": 62,

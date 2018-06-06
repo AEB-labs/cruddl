@@ -4,7 +4,7 @@ import { ValidationMessage } from '../../../model';
 import {
     getNamedTypeDefinitionAST, getObjectTypes, getRootEntityTypes, getTypeNameIgnoringNonNullAndList
 } from '../../schema-utils';
-import { OBJECT_TYPE_ENTITY_DIRECTIVES } from '../../schema-defaults';
+import { OBJECT_TYPE_KIND_DIRECTIVES } from '../../constants';
 
 export const VALIDATION_WARNING_UNUSED_OBJECT_TYPE = "Unused object type.";
 
@@ -24,7 +24,7 @@ export class NoUnusedNonRootObjectTypesValidator implements ASTValidator {
                     VALIDATION_WARNING_UNUSED_OBJECT_TYPE,
                     {
                         entityKind: unusedType.directives!.find(
-                            directive => OBJECT_TYPE_ENTITY_DIRECTIVES.includes(directive.name.value))!.name.value
+                            directive => OBJECT_TYPE_KIND_DIRECTIVES.includes(directive.name.value))!.name.value
                     },
                     unusedType.loc)
         );

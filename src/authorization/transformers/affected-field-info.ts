@@ -1,7 +1,7 @@
 import { AccessOperation, AuthContext, AUTHORIZATION_ERROR_NAME } from '../auth-basics';
 import { AffectedFieldInfoQueryNode, QueryNode, RuntimeErrorQueryNode } from '../../query-tree';
 import { PermissionResult } from '../permission-descriptors';
-import { ACCESS_GROUP_FIELD } from '../../schema/schema-defaults';
+import { ACCESS_GROUP_FIELD } from '../../schema/constants';
 import {
     getPermissionDescriptorOfField, getPermissionDescriptorOfRootEntityType
 } from '../permission-descriptors-in-model';

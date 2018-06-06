@@ -311,7 +311,7 @@ export namespace js {
     /**
      * Should be used when fairly certain that string can't be malicious
      *
-     * As the string is json-encoded, it *should* be fine in any case, but still, user-supplied strings in queries is scary
+     * As the string is json-encoded, it *should* be fine in any case, but still, user-supplied strings in queries are scary
      */
     export function string(str: string): JSFragment {
         return code(JSON.stringify(str));

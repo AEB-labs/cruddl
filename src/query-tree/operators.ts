@@ -92,8 +92,17 @@ export class BinaryOperationQueryNode extends QueryNode {
 export enum BinaryOperator {
     AND,
     OR,
+
+    /**
+     * Strict equality (values of different types are considered unequal)
+     */
     EQUAL,
+
+    /**
+     * Strict inequality (values of different types are considered unequal)
+     */
     UNEQUAL,
+
     LESS_THAN,
     LESS_THAN_OR_EQUAL,
     GREATER_THAN,

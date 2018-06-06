@@ -7,7 +7,7 @@ import { VariableQueryNode } from './variables';
  * A node that evaluates to a list with query nodes as list entries
  */
 export class ListQueryNode extends QueryNode {
-    constructor(public readonly itemNodes: QueryNode[]) {
+    constructor(public readonly itemNodes: ReadonlyArray<QueryNode>) {
         super();
     }
 
@@ -51,9 +51,9 @@ export class TransformListQueryNode extends QueryNode {
 
     describe() {
         return `${this.listNode.describe()} as list with ${this.itemVariable.describe()} => \n` + indent('' + // '' to move the arg label here in WebStorm
-            `where ${this.filterNode.describe()}\n` +
-            `order by ${this.orderBy.describe()}\n` +
-            `${this.maxCount != undefined ? `limit ${this.maxCount}\n` : ''}` +
+            (this.filterNode.equals(ConstBoolQueryNode.TRUE) ? '' : `where ${this.filterNode.describe()}\n`) +
+            (this.orderBy.isUnordered() ? '' : `order by ${this.orderBy.describe()}\n`) +
+            (this.maxCount != undefined ? `limit ${this.maxCount}\n` : '') +
             `as ${this.innerNode.describe()}`
         );
     }
@@ -77,7 +77,7 @@ export class OrderClause extends QueryNode {
 }
 
 export class OrderSpecification extends QueryNode {
-    constructor(public readonly clauses: OrderClause[]) {
+    constructor(public readonly clauses: ReadonlyArray<OrderClause>) {
         super();
     }
 
@@ -104,7 +104,7 @@ export enum OrderDirection {
  * This can be used to append items to an array by using a ListQueryNode as second item
  */
 export class ConcatListsQueryNode extends QueryNode {
-    constructor(public readonly listNodes: QueryNode[]) {
+    constructor(public readonly listNodes: ReadonlyArray<QueryNode>) {
         super();
     }
 
@@ -118,6 +118,9 @@ export class ConcatListsQueryNode extends QueryNode {
     }
 }
 
+/**
+ * A node that evaluates to the number of items in a list
+ */
 export class CountQueryNode extends QueryNode {
     constructor(public readonly listNode: QueryNode) {
         super();
@@ -129,7 +132,7 @@ export class CountQueryNode extends QueryNode {
 }
 
 /**
- * A node that evaluates to the first item of a list
+ * A node that evaluates to the first item of a list, or NULL if the list is empty
  */
 export class FirstOfListQueryNode extends QueryNode {
     constructor(public readonly listNode: QueryNode) {

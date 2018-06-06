@@ -233,13 +233,10 @@ const processors : { [name: string]: NodeProcessor<any> } = {
     Field(node: FieldQueryNode, context): JSFragment {
         const object = processNode(node.objectNode, context);
         const objectVar = js.variable('object');
-        let identifier = node.field.name;
-        let raw;
-        if (js.isSafeIdentifier(identifier)) {
-            raw = js`${objectVar}.${js.identifier(identifier)}`;
-        }
-        // fall back to bound values. do not attempt js.string for security reasons - should not be the case normally, anyway.
-        raw = js`${objectVar}[${identifier}]`;
+        const identifier = jsExt.safeJSONKey(node.field.name);
+        // always use [] access because we could collide with keywords
+        // avoid undefined values because they cause trouble when being compared with === to null
+        const raw = js`${identifier} in ${objectVar} ? ${objectVar}[${identifier}] : null`;
 
         // mimick arango behavior here which propagates null
         return jsExt.evaluatingLambda(objectVar, js`((typeof (${objectVar}) == 'object' && (${objectVar}) != null) ? (${raw}) : null)`, object);
@@ -283,7 +280,8 @@ const processors : { [name: string]: NodeProcessor<any> } = {
     },
 
     FirstOfList(node: FirstOfListQueryNode, context): JSFragment {
-        return js`(${processNode(node.listNode, context)})[0]`;
+        const listVar = js.variable('list');
+        return jsExt.evaluatingLambda(listVar, js`${listVar}.length ? ${listVar}[0] : null`, processNode(node.listNode, context));
     },
 
     BinaryOperation(node: BinaryOperationQueryNode, context): JSFragment {
@@ -429,8 +427,7 @@ const processors : { [name: string]: NodeProcessor<any> } = {
     },
 
     DeleteEntities(node: DeleteEntitiesQueryNode, context) {
-        const newContext = context.introduceVariable(node.currentEntityVariable);
-        const entityVar = newContext.getVariable(node.currentEntityVariable);
+        const entityVar = js.variable(decapitalize(node.rootEntityType.name));
         const listVar = js.variable('objectsToDelete');
         const coll = js.collection(getCollectionNameForRootEntity(node.rootEntityType));
         const idsVar = js.variable('ids');
@@ -445,11 +442,20 @@ const processors : { [name: string]: NodeProcessor<any> } = {
 
     AddEdges(node: AddEdgesQueryNode, context) {
         const coll = getCollectionForRelation(node.relation, context);
-        return jsExt.executingFunction(
-            js`${coll}.push(`,
-            js.indent(js.lines(...node.edges.map(edge => js`{ _from: ${processNode(edge.fromIDNode, context)}, _to: ${processNode(edge.toIDNode, context)} },`))),
-            js`);`
+
+        const edgesJS = js.lines(
+            js`[`,
+            js.indent(js.join(node.edges.map(edge => js`{ _from: ${processNode(edge.fromIDNode, context)}, _to: ${processNode(edge.toIDNode, context)} }`), js`,\n`)),
+            js`]`
         );
+
+        function edgeExists(edge: JSFragment) {
+            const edgeVar = js.variable('edge');
+            return js`${coll}.some(${jsExt.lambda(edgeVar, js`${edgeVar}._from == ${edge}._from && ${edgeVar}._to === ${edge}._to`)})`;
+        }
+
+        const toAdd = js.variable(`toAdd`);
+        return js`${edgesJS}.forEach(${jsExt.lambda(toAdd, js`${edgeExists(toAdd)} ? undefined : ${coll}.push(${toAdd})`)})`;
     },
 
     RemoveEdges(node: RemoveEdgesQueryNode, context): JSFragment {

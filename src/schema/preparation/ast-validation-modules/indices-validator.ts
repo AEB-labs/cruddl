@@ -4,7 +4,7 @@ import { ValidationMessage } from '../../../model';
 import {
     findDirectiveWithName, getChildEntityTypes, getEntityExtensionTypes, getValueObjectTypes
 } from '../../schema-utils';
-import { INDEX_DIRECTIVE, UNIQUE_DIRECTIVE } from '../../schema-defaults';
+import { INDEX_DIRECTIVE, UNIQUE_DIRECTIVE } from '../../constants';
 
 export const VALIDATION_ERROR_INDICES_ONLY_ON_ROOT_ENTITIES = "Indices are only allowed in root entity fields. You can add indices to fields of embedded objects with @rootEntities(indices: [...]).";
 

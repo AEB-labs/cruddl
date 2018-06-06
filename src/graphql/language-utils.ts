@@ -373,6 +373,3 @@ export function getAliasOrName(fieldNode: FieldNode) {
     }
     return fieldNode.name.value;
 }
-
-export const introspectionTypes = ['_ExtendedIntrospection', '_ExtendedType', '_ExtendedField', '_FieldMetadata', '_FieldLink', '_FieldJoin'];
-

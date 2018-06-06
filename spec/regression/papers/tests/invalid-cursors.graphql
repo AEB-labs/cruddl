@@ -1,0 +1,21 @@
+query missingProperty {
+    # this is so we can assert that the error is thrown at the correct node (allPapers)
+    Paper(id: "@{ids/Paper/1}") {
+        title
+    }
+    allPapers(orderBy: title_ASC, after: "{\"id\":\"xxx\"}") {
+        title
+    }
+}
+
+query invalidJSON {
+    allPapers(orderBy: title_ASC, after: "this-is-not-json") {
+        title
+    }
+}
+
+query nonObjectJSON {
+    allPapers(orderBy: title_ASC, after: "123") {
+        title
+    }
+}

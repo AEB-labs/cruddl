@@ -1,7 +1,7 @@
 import { parse } from 'graphql';
 import { findDirectiveWithName, getObjectTypes } from '../../../../src/schema/schema-utils';
 import { AddNamespacesToTypesTransformer } from '../../../../src/schema/preparation/pre-merge-ast-transformation-modules/add-namespaces-to-types-transformer';
-import { NAMESPACE_DIRECTIVE, ROOT_ENTITY_DIRECTIVE } from '../../../../src/schema/schema-defaults';
+import { NAMESPACE_DIRECTIVE, ROOT_ENTITY_DIRECTIVE } from '../../../../src/schema/constants';
 import { STRING } from '../../../../src/graphql/kinds';
 import { expect } from 'chai';
 

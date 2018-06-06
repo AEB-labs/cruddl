@@ -45,12 +45,12 @@ export class PreExecQueryParms extends QueryNode {
  */
 export class WithPreExecutionQueryNode extends QueryNode {
 
-    public readonly preExecQueries: PreExecQueryParms[];
+    public readonly preExecQueries: ReadonlyArray<PreExecQueryParms>;
     public readonly resultNode: QueryNode;
 
     constructor(params:{
         resultNode: QueryNode,
-        preExecQueries: (PreExecQueryParms|undefined)[]
+        preExecQueries: ReadonlyArray<(PreExecQueryParms|undefined)>
     }) {
         super();
         this.preExecQueries = compact(params.preExecQueries);

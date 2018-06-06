@@ -9,7 +9,8 @@ import {
     UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode,
     WithPreExecutionQueryNode
 } from '../../query-tree';
-import { simplifyBooleans } from '../../query/query-tree-utils';
+import { simplifyBooleans } from '../../query-tree/utils';
+import { decapitalize } from '../../utils/utils';
 import { aql, AQLCompoundQuery, AQLFragment, AQLQueryResultVariable, AQLVariable } from './aql';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './arango-basics';
 
@@ -424,8 +425,7 @@ const processors : { [name: string]: NodeProcessor<any> } = {
     },
 
     DeleteEntities(node: DeleteEntitiesQueryNode, context) {
-        const newContext = context.introduceVariable(node.currentEntityVariable);
-        const entityVar = newContext.getVariable(node.currentEntityVariable);
+        const entityVar = aql.variable(decapitalize(node.rootEntityType.name));
         return aqlExt.parenthesizeList(
             aql`FOR ${entityVar}`,
             aql`IN ${processNode(node.listNode, context)}`,
@@ -501,7 +501,7 @@ function formatEdge(relation: Relation, edge: PartialEdgeIdentifier|EdgeIdentifi
 }
 
 function formatEdgeFilter(relation: Relation, edge: EdgeFilter, edgeFragment: AQLFragment, context: QueryContext) {
-    function makeList(ids: QueryNode[], rootEntityType: RootEntityType) {
+    function makeList(ids: ReadonlyArray<QueryNode>, rootEntityType: RootEntityType) {
         return aql`[${aql.join(ids.map(node => getFullIDFromKeyNode(node, rootEntityType, context)), aql`, `)}]`;
     }
 

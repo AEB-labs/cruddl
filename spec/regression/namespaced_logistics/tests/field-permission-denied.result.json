@@ -138,14 +138,13 @@
         "message": "AuthorizationError: Not authorized to read Forwarder objects",
         "locations": [
           {
-            "line": 53,
-            "column": 13
+            "line": 52,
+            "column": 9
           }
         ],
         "path": [
           "logistics",
-          "_allForwardersMeta",
-          "count"
+          "_allForwardersMeta"
         ]
       }
     ],

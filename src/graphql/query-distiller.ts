@@ -1,16 +1,15 @@
+import { blue, cyan, green } from 'colors/safe';
 import {
     DocumentNode, FieldNode, FragmentDefinitionNode, getNamedType, GraphQLCompositeType, GraphQLField,
     GraphQLObjectType, GraphQLOutputType, GraphQLSchema, isCompositeType, OperationDefinitionNode, OperationTypeNode,
     SelectionNode
 } from 'graphql';
-
-import { resolveSelections } from './field-collection';
 import { arrayToObject, flatMap, groupArray, indent, INDENTATION } from '../utils/utils';
+import { getArgumentValues } from './argument-values';
+import { resolveSelections } from './field-collection';
+import { getAliasOrName } from './language-utils';
 import { extractOperation } from './operations';
 import { getOperationRootType } from './schema-utils';
-import { getAliasOrName } from './language-utils';
-import { getArgumentValues } from './argument-values';
-import { blue, cyan, green } from 'colors/safe';
 
 /**
  * A request for the value of one field with a specific argument set and selection set
@@ -120,13 +119,6 @@ export function distillOperation(params: OperationDistillationParams): Distilled
     }
     const selections = distillSelections(params.operation.selectionSet.selections, parentType, context);
     return new DistilledOperation(params.operation.operation, selections)
-}
-
-export interface QueryDistillationParams {
-    schema: GraphQLSchema
-    document: DocumentNode
-    variableValues: { [name: string]: any }
-    operationName?: string
 }
 
 /**
