@@ -1,8 +1,6 @@
-import { makeExecutableSchema } from 'graphql-tools';
 import { GraphQLSchema } from 'graphql';
-import { Model } from '../model/implementation/model';
-import { TypeKind } from '../model/config/type';
-import { RootEntityType } from '../model/implementation/root-entity-type';
+import { IResolvers, makeExecutableSchema } from 'graphql-tools';
+import { Model, RootEntityType, TypeKind } from '../model';
 
 
 const typeDefs = `
@@ -122,6 +120,7 @@ const typeDefs = `
     enumType(name: String!): EnumType
 
     namespaces: [Namespace]
+    namespace(path: [String!]!): Namespace
     rootNamespace: Namespace
   }
 `;
@@ -132,108 +131,123 @@ const typeDefs = `
  * @param {Model} model the model holding the information which the the GraphQLSchema will operate on
  * @returns {GraphQLSchema} an executable GraphQLSchema which allows to query the meat schema.
  */
-export function getMetaSchema(model: Model): GraphQLSchema{
+export function getMetaSchema(model: Model): GraphQLSchema {
 
-    const resolvers = {
+    const resolvers: IResolvers<{}, {}> = {
         Query: {
             types: () => model.types,
             type: (_: any, parameters: any) => {
-                if(parameters && parameters.name) {
+                if (parameters && parameters.name) {
                     return model.getType(parameters.name);
-                }else{
+                } else {
                     return null;
                 }
             },
             rootEntityTypes: () => model.rootEntityTypes,
-            rootEntityType: (_:any, parameters: any) => {
-                if(parameters && parameters.name) {
+            rootEntityType: (_: any, parameters: any) => {
+                if (parameters && parameters.name) {
                     try {
                         return model.getRootEntityTypeOrThrow(parameters.name);
-                    }catch(e){
+                    } catch (e) {
                         return null;
                     }
                 }
                 return null;
             },
             childEntityTypes: () => model.childEntityTypes,
-            childEntityType: (_:any, parameters: any) => {
-                if(parameters && parameters.name) {
+            childEntityType: (_: any, parameters: any) => {
+                if (parameters && parameters.name) {
                     try {
                         return model.getChildEntityTypeOrThrow(parameters.name);
-                    }catch(e){
+                    } catch (e) {
                         return null;
                     }
                 }
                 return null;
             },
             entityExtensionTypes: () => model.entityExtensionTypes,
-            entityExtensionType: (_:any, parameters: any) => {
-                if(parameters && parameters.name) {
+            entityExtensionType: (_: any, parameters: any) => {
+                if (parameters && parameters.name) {
                     try {
                         return model.getEntityExtensionTypeOrThrow(parameters.name);
-                    }catch(e){
+                    } catch (e) {
                         return null;
                     }
                 }
                 return null;
             },
             valueObjectTypes: () => model.valueObjectTypes,
-            valueObjectType: (_:any, parameters: any) => {
-                if(parameters && parameters.name) {
+            valueObjectType: (_: any, parameters: any) => {
+                if (parameters && parameters.name) {
                     try {
                         return model.getValueObjectTypeOrThrow(parameters.name);
-                    }catch(e){
+                    } catch (e) {
                         return null;
                     }
                 }
                 return null;
             },
             scalarTypes: () => model.scalarTypes,
-            scalarType: (_:any, parameters: any) => {
-                if(parameters && parameters.name) {
+            scalarType: (_: any, parameters: any) => {
+                if (parameters && parameters.name) {
                     try {
                         return model.getScalarTypeOrThrow(parameters.name);
-                    }catch(e){
+                    } catch (e) {
                         return null;
                     }
                 }
                 return null;
             },
             enumTypes: () => model.enumTypes,
-            enumType: (_:any, parameters: any) => {
-                if(parameters && parameters.name) {
+            enumType: (_: any, parameters: any) => {
+                if (parameters && parameters.name) {
                     try {
                         return model.getEnumTypeOrThrow(parameters.name);
-                    }catch(e){
+                    } catch (e) {
                         return null;
                     }
                 }
                 return null;
             },
             namespaces: () => model.namespaces,
-            rootNamespace: () => model.rootNamespace
+            rootNamespace: () => model.rootNamespace,
+            namespace: (source: {}, {path}: any) => {
+                return model.getNamespaceByPath(path);
+            }
         },
         Type: {
             __resolveType(obj: any, context: any, info: any) {
-                switch(obj.kind) {
-                    case TypeKind.ROOT_ENTITY: return "RootEntityType";
-                    case TypeKind.CHILD_ENTITY: return "ChildEntityType";
-                    case TypeKind.ENTITY_EXTENSION: return "EntityExtensionType";
-                    case TypeKind.VALUE_OBJECT: return "ValueObjectType";
-                    case TypeKind.ENUM: return "EnumType";
-                    case TypeKind.SCALAR: return "ScalarType";
-                    default: return "ScalarType";
+                switch (obj.kind) {
+                    case TypeKind.ROOT_ENTITY:
+                        return 'RootEntityType';
+                    case TypeKind.CHILD_ENTITY:
+                        return 'ChildEntityType';
+                    case TypeKind.ENTITY_EXTENSION:
+                        return 'EntityExtensionType';
+                    case TypeKind.VALUE_OBJECT:
+                        return 'ValueObjectType';
+                    case TypeKind.ENUM:
+                        return 'EnumType';
+                    case TypeKind.SCALAR:
+                        return 'ScalarType';
+                    default:
+                        return 'ScalarType';
                 }
             }
         },
         ObjectType: {
             __resolveType(obj: any, context: any, info: any) {
-                switch(obj.kind) {
-                    case TypeKind.ROOT_ENTITY: return "RootEntityType";
-                    case TypeKind.CHILD_ENTITY: return "ChildEntityType";
-                    case TypeKind.ENTITY_EXTENSION: return "EntityExtensionType";
-                    case TypeKind.VALUE_OBJECT: return "ValueObjectType";
-                    default: return "ScalarType";
+                switch (obj.kind) {
+                    case TypeKind.ROOT_ENTITY:
+                        return 'RootEntityType';
+                    case TypeKind.CHILD_ENTITY:
+                        return 'ChildEntityType';
+                    case TypeKind.ENTITY_EXTENSION:
+                        return 'EntityExtensionType';
+                    case TypeKind.VALUE_OBJECT:
+                        return 'ValueObjectType';
+                    default:
+                        return 'ScalarType';
                 }
             }
         }
@@ -241,6 +255,6 @@ export function getMetaSchema(model: Model): GraphQLSchema{
 
     return makeExecutableSchema({
         typeDefs,
-        resolvers,
+        resolvers
     });
 }
