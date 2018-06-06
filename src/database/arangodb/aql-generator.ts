@@ -9,7 +9,7 @@ import {
     UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode,
     WithPreExecutionQueryNode
 } from '../../query-tree';
-import { simplifyBooleans } from '../../query/query-tree-utils';
+import { simplifyBooleans } from '../../query-tree/utils';
 import { decapitalize } from '../../utils/utils';
 import { aql, AQLCompoundQuery, AQLFragment, AQLQueryResultVariable, AQLVariable } from './aql';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './arango-basics';

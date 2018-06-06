@@ -7,7 +7,7 @@ import {
     BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, FieldQueryNode, LiteralQueryNode, QueryNode,
     VariableQueryNode
 } from '../../src/query-tree';
-import { ACCESS_GROUP_FIELD } from '../../src/schema/schema-defaults';
+import { ACCESS_GROUP_FIELD } from '../../src/schema/constants';
 import { expect } from 'chai';
 
 

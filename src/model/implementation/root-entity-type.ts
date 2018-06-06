@@ -6,7 +6,7 @@ import { ScalarType } from './scalar-type';
 import { ValidationContext } from './validation';
 import { ValidationMessage } from '../validation';
 import { Index } from './indices';
-import { ACCESS_GROUP_FIELD, DEFAULT_PERMISSION_PROFILE } from '../../schema/schema-defaults';
+import { ACCESS_GROUP_FIELD, DEFAULT_PERMISSION_PROFILE } from '../../schema/constants';
 import { PermissionProfile } from './permission-profile';
 import { Relation } from './relation';
 import { GraphQLString } from 'graphql';

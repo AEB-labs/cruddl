@@ -1,8 +1,10 @@
 import { GraphQLEnumType } from 'graphql';
 import { chain } from 'lodash';
 import memorize from 'memorize-decorator';
-import { Field, ObjectType } from '../model/implementation';
+import { Field, ObjectType } from '../model';
 import { OrderClause, OrderDirection, QueryNode } from '../query-tree';
+import { ORDER_BY_ASC_SUFFIX, ORDER_BY_DESC_SUFFIX } from '../schema/constants';
+import { getOrderByTypeName } from '../schema/names';
 import { flatMap } from '../utils/utils';
 import { createFieldNode } from './field-nodes';
 
@@ -12,7 +14,7 @@ export class OrderByEnumType {
     }
 
     get name() {
-        return `${this.objectType.name}OrderBy`;
+        return getOrderByTypeName(this.objectType.name);
     }
 
     @memorize()
@@ -54,7 +56,7 @@ export class OrderByEnumValue {
     }
 
     get name() {
-        return this.underscoreSeparatedPath + '_' + (this.direction == OrderDirection.ASCENDING ? 'ASC' : 'DESC');
+        return this.underscoreSeparatedPath + (this.direction == OrderDirection.ASCENDING ? ORDER_BY_ASC_SUFFIX : ORDER_BY_DESC_SUFFIX);
     }
 
     getValueNode(itemNode: QueryNode): QueryNode {

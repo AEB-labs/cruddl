@@ -1,9 +1,8 @@
 import memorize from 'memorize-decorator';
-import * as pluralize from 'pluralize';
-import { getAllEntitiesFieldName, getMetaFieldName } from '../graphql/names';
 import { Namespace, RootEntityType } from '../model';
 import { EntitiesQueryNode, FirstOfListQueryNode, ObjectQueryNode, QueryNode } from '../query-tree';
-import { ALL_ENTITIES_FIELD_PREFIX } from '../schema/schema-defaults';
+import { QUERY_TYPE } from '../schema/constants';
+import { getAllEntitiesFieldName, getMetaFieldName } from '../schema/names';
 import { flatMap } from '../utils/utils';
 import { FilterAugmentation } from './filter-augmentation';
 import { ListAugmentation } from './list-augmentation';
@@ -25,7 +24,7 @@ export class QueryTypeGenerator {
     @memorize()
     generate(namespace: Namespace): QueryNodeObjectType {
         return {
-            name: `${namespace.pascalCasePath}Query`,
+            name: namespace.pascalCasePath + QUERY_TYPE,
             fields: [
                 ...namespace.childNamespaces.map(namespace => this.getNamespaceField(namespace)),
                 ...flatMap(namespace.rootEntityTypes, type => this.getFields(type)),
@@ -76,7 +75,7 @@ export class QueryTypeGenerator {
     }
 
     private getAllRootEntitiesMetaField(rootEntityType: RootEntityType): QueryNodeField {
-        const metaType = this.metaTypeGenerator.generate(rootEntityType);
+        const metaType = this.metaTypeGenerator.generate();
         const fieldConfig = ({
             name: getMetaFieldName(getAllEntitiesFieldName(rootEntityType.name)),
             type: new QueryNodeNonNullType(metaType),

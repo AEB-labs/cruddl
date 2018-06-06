@@ -5,40 +5,15 @@ import { addOperationBasedResolvers, OperationParams } from '../graphql/operatio
 import { distillOperation } from '../graphql/query-distiller';
 import { Model } from '../model';
 import { ObjectQueryNode, QueryNode } from '../query-tree';
-import { evaluateQueryStatically } from '../query/static-evaluation';
+import { evaluateQueryStatically } from '../query-tree/utils';
 import { SchemaTransformationContext } from '../schema/preparation/transformation-pipeline';
-import { CreateInputTypeGenerator } from './create-input-types';
-import { EnumTypeGenerator } from './enum-type-generator';
-import { FilterAugmentation } from './filter-augmentation';
-import { FilterTypeGenerator } from './filter-input-types';
-import { ListAugmentation } from './list-augmentation';
-import { MetaTypeGenerator } from './meta-type-generator';
-import { MutationTypeGenerator } from './mutation-type-generator';
-import { OrderByAndPaginationAugmentation } from './order-by-and-pagination-augmentation';
-import { OrderByEnumGenerator } from './order-by-enum-generator';
-import { OutputTypeGenerator } from './output-type-generator';
 import {
     buildConditionalObjectQueryNode, QueryNodeObjectType, QueryNodeObjectTypeConverter
 } from './query-node-object-type';
-import { QueryTypeGenerator } from './query-type-generator';
-import { UpdateInputTypeGenerator } from './update-input-types';
+import { RootTypesGenerator } from './root-types-generator';
 
 export class SchemaGenerator {
-    private readonly enumTypeGenerator = new EnumTypeGenerator();
-    private readonly filterTypeGenerator = new FilterTypeGenerator(this.enumTypeGenerator);
-    private readonly orderByEnumGenerator = new OrderByEnumGenerator();
-    private readonly orderByAugmentation = new OrderByAndPaginationAugmentation(this.orderByEnumGenerator);
-    private readonly filterAugmentation = new FilterAugmentation(this.filterTypeGenerator);
-    private readonly listAugmentation = new ListAugmentation(this.filterAugmentation, this.orderByAugmentation);
-    private readonly metaTypeGenerator = new MetaTypeGenerator();
-    private readonly outputTypeGenerator = new OutputTypeGenerator(this.listAugmentation, this.filterAugmentation,
-        this.enumTypeGenerator, this.orderByEnumGenerator, this.metaTypeGenerator);
-    private readonly createTypeGenerator = new CreateInputTypeGenerator(this.enumTypeGenerator);
-    private readonly updateTypeGenerator = new UpdateInputTypeGenerator(this.enumTypeGenerator, this.createTypeGenerator);
-    private readonly queryTypeGenerator = new QueryTypeGenerator(this.outputTypeGenerator, this.listAugmentation,
-        this.filterAugmentation, this.metaTypeGenerator);
-    private readonly mutationTypeGenerator = new MutationTypeGenerator(this.outputTypeGenerator, this.createTypeGenerator,
-        this.updateTypeGenerator, this.listAugmentation);
+    private readonly rootTypesGenerator = new RootTypesGenerator();
     private readonly queryNodeObjectTypeConverter = new QueryNodeObjectTypeConverter();
 
     constructor(
@@ -48,8 +23,8 @@ export class SchemaGenerator {
     }
 
     generate(model: Model) {
-        const queryType = this.queryTypeGenerator.generate(model.rootNamespace);
-        const mutationType = this.mutationTypeGenerator.generate(model.rootNamespace);
+        const queryType = this.rootTypesGenerator.generateQueryType(model);
+        const mutationType = this.rootTypesGenerator.generateMutationType(model);
         const dumbSchema = new GraphQLSchema({
             query: this.queryNodeObjectTypeConverter.convertToGraphQLObjectType(queryType),
             mutation: this.queryNodeObjectTypeConverter.convertToGraphQLObjectType(mutationType)

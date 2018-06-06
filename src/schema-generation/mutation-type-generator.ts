@@ -1,7 +1,6 @@
 import { GraphQLNonNull } from 'graphql';
 import { flatMap } from 'lodash';
 import memorize from 'memorize-decorator';
-import * as pluralize from 'pluralize';
 import { Namespace, RootEntityType } from '../model';
 import {
     AffectedFieldInfoQueryNode, BinaryOperationQueryNode, BinaryOperator, CreateEntityQueryNode,
@@ -9,10 +8,11 @@ import {
     FirstOfListQueryNode, LiteralQueryNode, ObjectQueryNode, PreExecQueryParms, QueryNode, RootEntityIDQueryNode,
     TransformListQueryNode, UnknownValueQueryNode, UpdateEntitiesQueryNode, VariableQueryNode, WithPreExecutionQueryNode
 } from '../query-tree';
+import { ID_FIELD, MUTATION_INPUT_ARG, MUTATION_TYPE } from '../schema/constants';
 import {
-    CREATE_ENTITY_FIELD_PREFIX, DELETE_ALL_ENTITIES_FIELD_PREFIX, DELETE_ENTITY_FIELD_PREFIX, ID_FIELD,
-    MUTATION_INPUT_ARG, UPDATE_ALL_ENTITIES_FIELD_PREFIX, UPDATE_ENTITY_FIELD_PREFIX
-} from '../schema/schema-defaults';
+    getCreateEntityFieldName, getDeleteAllEntitiesFieldName, getDeleteEntityFieldName, getUpdateAllEntitiesFieldName,
+    getUpdateEntityFieldName
+} from '../schema/names';
 import { decapitalize, PlainObject } from '../utils/utils';
 import { CreateInputTypeGenerator, CreateRootEntityInputType } from './create-input-types';
 import { ListAugmentation } from './list-augmentation';
@@ -44,7 +44,7 @@ export class MutationTypeGenerator {
         const rootEntityFields = flatMap(namespace.rootEntityTypes, type => this.generateFields(type));
 
         return {
-            name: `${namespace.pascalCasePath}Mutation`,
+            name: namespace.pascalCasePath + MUTATION_TYPE,
             fields: [
                 ...namespaceFields,
                 ...rootEntityFields
@@ -66,7 +66,7 @@ export class MutationTypeGenerator {
         const inputType = this.createTypeGenerator.generateForRootEntityType(rootEntityType);
 
         return {
-            name: `${CREATE_ENTITY_FIELD_PREFIX}${rootEntityType.name}`,
+            name: getCreateEntityFieldName(rootEntityType.name),
             type: new QueryNodeNonNullType(this.outputTypeGenerator.generate(rootEntityType)),
             args: {
                 [MUTATION_INPUT_ARG]: {
@@ -101,7 +101,7 @@ export class MutationTypeGenerator {
         const inputType = this.updateTypeGenerator.generateForRootEntityType(rootEntityType);
 
         return {
-            name: `${UPDATE_ENTITY_FIELD_PREFIX}${rootEntityType.name}`,
+            name: getUpdateEntityFieldName(rootEntityType.name),
             type: this.outputTypeGenerator.generate(rootEntityType),
             args: {
                 [MUTATION_INPUT_ARG]: {
@@ -162,7 +162,7 @@ export class MutationTypeGenerator {
     private generateUpdateAllField(rootEntityType: RootEntityType): QueryNodeField {
         // we construct this field like a regular query field first so that the list augmentation works
         const fieldBase: QueryNodeField = {
-            name: `${UPDATE_ALL_ENTITIES_FIELD_PREFIX}${pluralize(rootEntityType.name)}`,
+            name: getUpdateAllEntitiesFieldName(rootEntityType.name),
             type: makeNonNullableList(this.outputTypeGenerator.generate(rootEntityType)),
             resolve: () => new EntitiesQueryNode(rootEntityType)
         };
@@ -226,7 +226,7 @@ export class MutationTypeGenerator {
 
     private generateDeleteField(rootEntityType: RootEntityType): QueryNodeField {
         return {
-            name: `${DELETE_ENTITY_FIELD_PREFIX}${rootEntityType.name}`,
+            name: getDeleteEntityFieldName(rootEntityType.name),
             type: this.outputTypeGenerator.generate(rootEntityType),
             args: getArgumentsForUniqueFields(rootEntityType),
             resolve: (source, args) => this.generateDeleteQueryNode(rootEntityType, args)
@@ -248,7 +248,7 @@ export class MutationTypeGenerator {
     private generateDeleteAllField(rootEntityType: RootEntityType): QueryNodeField {
         // we construct this field like a regular query field first so that the list augmentation works
         const fieldBase: QueryNodeField = {
-            name: `${DELETE_ALL_ENTITIES_FIELD_PREFIX}${pluralize(rootEntityType.name)}`,
+            name: getDeleteAllEntitiesFieldName(rootEntityType.name),
             type: makeNonNullableList(this.outputTypeGenerator.generate(rootEntityType)),
             resolve: () => new EntitiesQueryNode(rootEntityType)
         };

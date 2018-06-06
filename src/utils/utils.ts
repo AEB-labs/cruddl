@@ -93,31 +93,6 @@ export function takeRandomSample<T>(arr: ReadonlyArray<T>): T|undefined {
     return arr[Math.floor(Math.random() * arr.length)];
 }
 
-/**
- * Takes {@code count} samples randomly of the given array. The same sample may occur mulitple times
- * @param arr the source population
- * @param count the number of samples
- * @returns the samples, or undefined if the input array is empty
- */
-export function takeRandomSamples<T>(arr: ReadonlyArray<T>, count: number): T[]|undefined {
-    if (arr.length == 0) {
-        return undefined;
-    }
-    return range(count).map(() => takeRandomSample(arr)!);
-}
-
-export function removeDuplicates<T, U>(list: ReadonlyArray<T>, keyFn: (item: T) => U): T[] {
-    const existingKeys = new Set<U>();
-    return list.filter(item => {
-        const key = keyFn(item);
-        if (existingKeys.has(key)) {
-            return false;
-        }
-        existingKeys.add(key);
-        return true;
-    });
-}
-
 export function arrayToObject<TValue>(array: ReadonlyArray<TValue>, keyFn: (item: TValue, index: number) => string): { [name: string]: TValue } {
     const result: { [name: string]: TValue } = {};
     for (let i = 0; i < array.length; i++) {

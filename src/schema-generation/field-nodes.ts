@@ -1,14 +1,11 @@
 import { RootEntityType } from '../model';
 import { Field } from '../model/implementation';
 import {
-    BasicType,
-    BinaryOperationQueryNode, BinaryOperator, ConditionalQueryNode, EntitiesQueryNode, FieldQueryNode,
-    FirstOfListQueryNode,
-    FollowEdgeQueryNode, NullQueryNode, QueryNode, RootEntityIDQueryNode, TransformListQueryNode, TypeCheckQueryNode,
-    VariableQueryNode
+    BasicType, BinaryOperationQueryNode, BinaryOperator, ConditionalQueryNode, EntitiesQueryNode, FieldQueryNode,
+    FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, NullQueryNode, QueryNode, RootEntityIDQueryNode,
+    TransformListQueryNode, TypeCheckQueryNode, VariableQueryNode
 } from '../query-tree';
-import { createSafeListQueryNode } from '../query/queries';
-import { ID_FIELD } from '../schema/schema-defaults';
+import { ID_FIELD } from '../schema/constants';
 
 export function createFieldNode(field: Field, sourceNode: QueryNode): QueryNode {
     if (field.isList) {
@@ -68,4 +65,13 @@ function createTo1RelationNode(field: Field, sourceNode: QueryNode): QueryNode {
 function createToNRelationNode(field: Field, sourceNode: QueryNode): QueryNode {
     const relation = field.getRelationOrThrow();
     return new FollowEdgeQueryNode(relation, sourceNode, relation.getFieldSide(field));
+}
+
+function createSafeListQueryNode(listNode: QueryNode) {
+    // to avoid errors because of eagerly evaluated list expression, we just convert non-lists to an empty list
+    return new ConditionalQueryNode(
+        new TypeCheckQueryNode(listNode, BasicType.LIST),
+        listNode,
+        new ListQueryNode([])
+    );
 }

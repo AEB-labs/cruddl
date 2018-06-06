@@ -1,4 +1,4 @@
-import { ObjectQueryNode, QueryNode } from '../query-tree';
+import { ObjectQueryNode, QueryNode } from '..';
 
 export interface StaticEvaluationResult {
     canEvaluateStatically: boolean

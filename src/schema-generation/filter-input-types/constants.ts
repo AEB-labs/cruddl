@@ -8,7 +8,7 @@ import {
     INPUT_FIELD_IN, INPUT_FIELD_LT, INPUT_FIELD_LTE, INPUT_FIELD_NONE, INPUT_FIELD_NOT, INPUT_FIELD_NOT_CONTAINS,
     INPUT_FIELD_NOT_ENDS_WITH, INPUT_FIELD_NOT_IN, INPUT_FIELD_NOT_STARTS_WITH, INPUT_FIELD_SOME,
     INPUT_FIELD_STARTS_WITH, SCALAR_DATE, SCALAR_TIME
-} from '../../schema/schema-defaults';
+} from '../../schema/constants';
 
 export const FILTER_OPERATORS: { [suffix: string]: (fieldNode: QueryNode, valueNode: QueryNode) => QueryNode } = {
     [INPUT_FIELD_EQUAL]: binaryOp(BinaryOperator.EQUAL),

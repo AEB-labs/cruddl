@@ -1,6 +1,6 @@
 import { Type } from '../../model';
 import { QueryNode, TransformListQueryNode, VariableQueryNode } from '../../query-tree';
-import { FILTER_ARG } from '../../schema/schema-defaults';
+import { FILTER_ARG } from '../../schema/constants';
 import { decapitalize } from '../../utils/utils';
 import { FilterObjectType } from '../filter-input-types';
 

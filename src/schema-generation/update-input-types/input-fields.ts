@@ -1,7 +1,7 @@
 import { GraphQLID, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
 import {
     getAddChildEntitiesFieldName, getRemoveChildEntitiesFieldName, getUpdateChildEntitiesFieldName
-} from '../../graphql/names';
+} from '../../schema/names';
 import { CalcMutationsOperator, Field } from '../../model';
 import {
     BinaryOperationQueryNode, BinaryOperator, FieldQueryNode, LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode,

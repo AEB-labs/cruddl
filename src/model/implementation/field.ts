@@ -5,7 +5,7 @@ import { FieldDefinitionNode } from 'graphql';
 import { ObjectType, Type } from './type';
 import { PermissionProfile } from './permission-profile';
 import { Model } from './model';
-import { CALC_MUTATIONS_OPERATORS } from '../../schema/schema-defaults';
+import { CALC_MUTATIONS_OPERATORS } from '../../schema/constants';
 import { RolesSpecifier } from './roles-specifier';
 import { Relation } from './relation';
 

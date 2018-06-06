@@ -5,7 +5,8 @@ import { EnumType, Field, ScalarType, Type } from '../../model/index';
 import {
     BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, NullQueryNode, QueryNode
 } from '../../query-tree';
-import { INPUT_FIELD_EQUAL } from '../../schema/schema-defaults';
+import { INPUT_FIELD_EQUAL } from '../../schema/constants';
+import { getFilterTypeName } from '../../schema/names';
 import { AnyValue, objectEntries } from '../../utils/utils';
 import { EnumTypeGenerator } from '../enum-type-generator';
 import { resolveThunk } from '../query-node-object-type';
@@ -62,7 +63,7 @@ export class FilterTypeGenerator {
             ]
         }
 
-        const filterType = new FilterObjectType(`${type.name}Filter`, getFields);
+        const filterType = new FilterObjectType(getFilterTypeName(type.name), getFields);
         return filterType;
     }
 

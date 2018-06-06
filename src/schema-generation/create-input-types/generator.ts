@@ -2,6 +2,7 @@ import { GraphQLList, GraphQLNonNull } from 'graphql';
 import { flatMap } from 'lodash';
 import memorize from 'memorize-decorator';
 import { ChildEntityType, EntityExtensionType, Field, ObjectType, RootEntityType, ValueObjectType } from '../../model';
+import { getCreateInputTypeName } from '../../schema/names';
 import { EnumTypeGenerator } from '../enum-type-generator';
 import {
     BasicCreateInputField, BasicListCreateInputField, CreateInputField, ObjectCreateInputField,
@@ -32,25 +33,25 @@ export class CreateInputTypeGenerator {
 
     @memorize()
     generateForRootEntityType(type: RootEntityType): CreateRootEntityInputType {
-        return new CreateRootEntityInputType(`Create${type.name}Input`,
+        return new CreateRootEntityInputType(getCreateInputTypeName(type.name),
             () => flatMap(type.fields, (field: Field) => this.generateFields(field)));
     }
 
     @memorize()
     generateForChildEntityType(type: ChildEntityType): CreateChildEntityInputType {
-        return new CreateChildEntityInputType(`Create${type.name}Input`,
+        return new CreateChildEntityInputType(getCreateInputTypeName(type.name),
             () => flatMap(type.fields, (field: Field) => this.generateFields(field)));
     }
 
     @memorize()
     generateForEntityExtensionType(type: EntityExtensionType): CreateObjectInputType {
-        return new CreateObjectInputType(`Create${type.name}Input`,
+        return new CreateObjectInputType(getCreateInputTypeName(type.name),
             () => flatMap(type.fields, (field: Field) => this.generateFields(field)));
     }
 
     @memorize()
     generateForValueObjectType(type: ValueObjectType): CreateObjectInputType {
-        return new CreateObjectInputType(`${type.name}Input`,
+        return new CreateObjectInputType(getCreateInputTypeName(type.name),
             () => flatMap(type.fields, (field: Field) => this.generateFields(field)));
     }
 

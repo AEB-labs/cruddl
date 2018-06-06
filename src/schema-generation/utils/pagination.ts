@@ -1,5 +1,5 @@
 import { OrderDirection } from '../../query-tree';
-import { ID_FIELD, ORDER_BY_ARG } from '../../schema/schema-defaults';
+import { ID_FIELD, ORDER_BY_ARG } from '../../schema/constants';
 import { OrderByEnumType, OrderByEnumValue } from '../order-by-enum-generator';
 
 export function getOrderByValues(args: any, orderByType: OrderByEnumType): ReadonlyArray<OrderByEnumValue> {

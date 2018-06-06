@@ -2,7 +2,7 @@ import { Thunk } from 'graphql';
 import { groupBy } from 'lodash';
 import {
     getAddChildEntitiesFieldName, getRemoveChildEntitiesFieldName, getUpdateChildEntitiesFieldName
-} from '../../graphql/names';
+} from '../../schema/names';
 import { ChildEntityType, Field, ObjectType, RootEntityType } from '../../model';
 import {
     BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode, FieldQueryNode,
@@ -10,8 +10,7 @@ import {
     RuntimeErrorQueryNode, SetFieldQueryNode, TransformListQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode,
     UnaryOperator, VariableQueryNode
 } from '../../query-tree';
-import { createSafeObjectQueryNode } from '../../query/mutations';
-import { ENTITY_UPDATED_AT, ID_FIELD } from '../../schema/schema-defaults';
+import { ENTITY_UPDATED_AT, ID_FIELD } from '../../schema/constants';
 import { AnyValue, decapitalize, flatMap, joinWithAnd, objectEntries, PlainObject } from '../../utils/utils';
 import { TypedInputObjectType } from '../typed-input-object-type';
 import { AddChildEntitiesInputField, UpdateChildEntitiesInputField, UpdateInputField } from './input-fields';
@@ -125,7 +124,7 @@ export class UpdateObjectInputType extends TypedInputObjectType<UpdateInputField
                 const filterNode = new BinaryOperationQueryNode(childIDQueryNode, BinaryOperator.EQUAL, new LiteralQueryNode((value as any)[ID_FIELD]));
                 const updates = updateField.updateInputType.getProperties(value as PlainObject, childEntityVarNode);
                 const updateNode = new MergeObjectsQueryNode([
-                    createSafeObjectQueryNode(childEntityVarNode),
+                    childEntityVarNode,
                     new ObjectQueryNode(updates)
                 ]);
                 updateMapNode = new ConditionalQueryNode(filterNode, updateNode, updateMapNode);

@@ -13,7 +13,7 @@ import { ScalarType } from './scalar-type';
 import { EnumType } from './enum-type';
 import { groupBy } from 'lodash';
 import { flatMap, objectValues } from '../../utils/utils';
-import { DEFAULT_PERMISSION_PROFILE } from '../../schema/schema-defaults';
+import { DEFAULT_PERMISSION_PROFILE } from '../../schema/constants';
 import { Relation } from './relation';
 
 export class Model implements ModelComponent{

@@ -1,9 +1,9 @@
+import { expect } from 'chai';
 import {
     BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, LiteralQueryNode, QueryNode, UnaryOperationQueryNode,
     UnaryOperator
-} from '../../src/query-tree';
-import { simplifyBooleans } from '../../src/query/query-tree-utils';
-import { expect } from 'chai';
+} from '../../../src/query-tree';
+import { simplifyBooleans } from '../../../src/query-tree/utils';
 
 describe('query-tree-utils', () => {
     describe('simplifyBooleans', () => {

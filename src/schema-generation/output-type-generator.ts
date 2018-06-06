@@ -1,14 +1,14 @@
 import { GraphQLString } from 'graphql';
 import { sortBy } from 'lodash';
 import memorize from 'memorize-decorator';
-import { getMetaFieldName } from '../graphql/names';
+import { getMetaFieldName } from '../schema/names';
 import { FieldRequest } from '../graphql/query-distiller';
 import { isListType } from '../graphql/schema-utils';
 import { Field, ObjectType, Type } from '../model';
 import {
     NullQueryNode, ObjectQueryNode, PropertySpecification, QueryNode, UnaryOperationQueryNode, UnaryOperator
 } from '../query-tree';
-import { CURSOR_FIELD } from '../schema/schema-defaults';
+import { CURSOR_FIELD } from '../schema/constants';
 import { flatMap } from '../utils/utils';
 import { EnumTypeGenerator } from './enum-type-generator';
 import { createFieldNode } from './field-nodes';
@@ -112,7 +112,7 @@ export class OutputTypeGenerator {
             throw new Error(`Can only create meta field for object types`);
         }
 
-        const metaType = this.metaTypeGenerator.generate(field.type);
+        const metaType = this.metaTypeGenerator.generate();
         const plainField: QueryNodeField = {
             name: getMetaFieldName(field.name),
             type: new QueryNodeNonNullType(metaType),

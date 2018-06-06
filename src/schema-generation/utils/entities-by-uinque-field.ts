@@ -1,18 +1,17 @@
 import { GraphQLFieldConfigArgumentMap, GraphQLID } from 'graphql';
-import { ScalarType, Type } from '../../model';
-import { RootEntityType } from '../../model/implementation';
+import { RootEntityType, ScalarType, Type } from '../../model';
 import {
     BinaryOperationQueryNode, BinaryOperator, EntitiesQueryNode, LiteralQueryNode, TransformListQueryNode,
     VariableQueryNode
 } from '../../query-tree';
-import { createScalarFieldValueNode } from '../../query/fields';
-import { ID_FIELD } from '../../schema/schema-defaults';
+import { ID_FIELD } from '../../schema/constants';
 import { decapitalize, objectEntries } from '../../utils/utils';
+import { createFieldNode } from '../field-nodes';
 
 export function getEntitiesByUniqueFieldQuery(rootEntityType: RootEntityType, args: {[name:string]: any}) {
     const entityVarNode = new VariableQueryNode(decapitalize(rootEntityType.name));
     const filterClauses = objectEntries(args).map(([fieldName, value]) =>
-        new BinaryOperationQueryNode(createScalarFieldValueNode(rootEntityType, fieldName, entityVarNode), BinaryOperator.EQUAL, new LiteralQueryNode(value)));
+        new BinaryOperationQueryNode(createFieldNode(rootEntityType.getFieldOrThrow(fieldName), entityVarNode), BinaryOperator.EQUAL, new LiteralQueryNode(value)));
     if (filterClauses.length != 1) {
         throw new Error(`Must specify exactly one argument to ${rootEntityType.toString()}`); // TODO throw this at the correct GraphQL query location
     }

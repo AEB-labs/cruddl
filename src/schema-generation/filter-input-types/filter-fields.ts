@@ -5,7 +5,9 @@ import {
     BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, CountQueryNode, LiteralQueryNode, QueryNode,
     TransformListQueryNode, VariableQueryNode
 } from '../../query-tree';
-import { AND_FILTER_FIELD, INPUT_FIELD_EVERY, INPUT_FIELD_NONE, OR_FILTER_FIELD } from '../../schema/schema-defaults';
+import {
+    AND_FILTER_FIELD, INPUT_FIELD_EVERY, INPUT_FIELD_NONE, FILTER_FIELD_PREFIX_SEPARATOR, OR_FILTER_FIELD
+} from '../../schema/constants';
 import { AnyValue, decapitalize, PlainObject } from '../../utils/utils';
 import { createFieldNode } from '../field-nodes';
 import { TypedInputFieldBase } from '../typed-input-object-type';
@@ -33,7 +35,7 @@ export class ScalarOrEnumFieldFilterField implements FilterField {
         if (this.operatorPrefix == undefined) {
             return this.field.name;
         }
-        return `${this.field.name}_${this.operatorPrefix}`;
+        return this.field.name + FILTER_FIELD_PREFIX_SEPARATOR + this.operatorPrefix;
     }
 
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
@@ -160,4 +162,3 @@ export class OrFilterField implements FilterField {
         return nodes.reduce((prev, node) => new BinaryOperationQueryNode(prev, BinaryOperator.OR, node));
     }
 }
-

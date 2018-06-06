@@ -3,7 +3,8 @@ import { flatMap } from 'lodash';
 import memorize from 'memorize-decorator';
 import * as pluralize from 'pluralize';
 import { CalcMutationsOperator, ChildEntityType, EntityExtensionType, Field, RootEntityType } from '../../model';
-import { CALC_MUTATIONS_OPERATORS, CalcMutationOperator, ID_FIELD } from '../../schema/schema-defaults';
+import { CALC_MUTATIONS_OPERATORS, CalcMutationOperator, ID_FIELD } from '../../schema/constants';
+import { getUpdateAllInputTypeName, getUpdateInputTypeName } from '../../schema/names';
 import { CreateInputTypeGenerator } from '../create-input-types';
 import { EnumTypeGenerator } from '../enum-type-generator';
 import {
@@ -39,13 +40,13 @@ export class UpdateInputTypeGenerator {
 
     @memorize()
     generateForRootEntityType(type: RootEntityType): UpdateRootEntityInputType {
-        return new UpdateRootEntityInputType(type, `Update${type.name}Input`,
+        return new UpdateRootEntityInputType(type, getUpdateInputTypeName(type.name),
             () => flatMap(type.fields, (field: Field) => this.generateFields(field)));
     }
 
     @memorize()
     generateUpdateAllRootEntitiesInputType(type: RootEntityType): UpdateRootEntityInputType {
-        return new UpdateRootEntityInputType(type, `UpdateAll${pluralize(type.name)}Input`,
+        return new UpdateRootEntityInputType(type, getUpdateAllInputTypeName(type.name),
             () => flatMap(type.fields, (field: Field) => this.generateFields(field, {
                 skipID: true,
                 skipRelations: true // can't do this properly at the moment because it would need a dynamic number of pre-execs
@@ -54,13 +55,13 @@ export class UpdateInputTypeGenerator {
 
     @memorize()
     generateForEntityExtensionType(type: EntityExtensionType): UpdateEntityExtensionInputType {
-        return new UpdateEntityExtensionInputType(type, `Update${type.name}Input`,
+        return new UpdateEntityExtensionInputType(type, getUpdateInputTypeName(type.name),
             () => flatMap(type.fields, (field: Field) => this.generateFields(field)));
     }
 
     @memorize()
     generateForChildEntityType(type: ChildEntityType): UpdateChildEntityInputType {
-        return new UpdateChildEntityInputType(type, `Update${type.name}Input`,
+        return new UpdateChildEntityInputType(type, getUpdateInputTypeName(type.name),
             () => flatMap(type.fields, (field: Field) => this.generateFields(field)));
     }
 

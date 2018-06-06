@@ -3,7 +3,7 @@ import { Database } from 'arangojs';
 import {ExecutionResult, graphql, GraphQLSchema} from 'graphql';
 import * as fs from 'fs';
 import stripJsonComments = require('strip-json-comments');
-import {NAMESPACE_SEPARATOR} from "../../src/schema/schema-defaults";
+import {NAMESPACE_SEPARATOR} from "../../src/schema/constants";
 
 const DATABASE_NAME = 'cruddl-test-temp';
 const DATABASE_URL = 'http://root:@localhost:8529';

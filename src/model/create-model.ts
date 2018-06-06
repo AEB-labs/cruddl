@@ -17,13 +17,13 @@ import {
 import {
     CALC_MUTATIONS_DIRECTIVE, CALC_MUTATIONS_OPERATORS_ARG, CHILD_ENTITY_DIRECTIVE, DEFAULT_VALUE_DIRECTIVE,
     ENTITY_EXTENSION_DIRECTIVE, INDEX_DEFINITION_INPUT_TYPE, INDEX_DIRECTIVE, INDICES_ARG, INVERSE_OF_ARG,
-    KEY_FIELD_DIRECTIVE, NAMESPACE_DIRECTIVE, NAMESPACE_NAME_ARG, NAMESPACE_SEPARATOR, OBJECT_TYPE_ENTITY_DIRECTIVES,
+    KEY_FIELD_DIRECTIVE, NAMESPACE_DIRECTIVE, NAMESPACE_NAME_ARG, NAMESPACE_SEPARATOR, OBJECT_TYPE_KIND_DIRECTIVES,
     PERMISSION_PROFILE_ARG, REFERENCE_DIRECTIVE, RELATION_DIRECTIVE, ROLES_DIRECTIVE, ROLES_READ_ARG,
     ROLES_READ_WRITE_ARG, ROOT_ENTITY_DIRECTIVE, UNIQUE_DIRECTIVE, VALUE_ARG, VALUE_OBJECT_DIRECTIVE
-} from '../schema/schema-defaults';
+} from '../schema/constants';
 import { ValidationMessage } from './validation';
 import { PermissionsConfig, RolesSpecifierConfig } from './config';
-import { flattenValueNode } from '../schema/directive-arg-flattener';
+import { getValueFromAST } from '../graphql/value-from-ast';
 
 export function createModel(input: SchemaConfig): Model {
     const validationMessages: ValidationMessage[] = [];
@@ -132,7 +132,7 @@ function getDefaultValue(fieldNode: FieldDefinitionNode, validationMessages: Val
         validationMessages.push(ValidationMessage.error(VALIDATION_ERROR_MISSING_ARGUMENT_DEFAULT_VALUE, {}, defaultValueDirective.loc));
         return undefined;
     }
-    return flattenValueNode(defaultValueArg.value);
+    return getValueFromAST(defaultValueArg.value);
 }
 
 function createFieldInput(fieldNode: FieldDefinitionNode, validationMessages: ValidationMessage[]): FieldConfig {
@@ -244,7 +244,7 @@ function mapIndexDefinition(index: ObjectValueNode): IndexDefinitionConfig {
 }
 
 function getKindOfObjectTypeNode(definition: ObjectTypeDefinitionNode, validationMessages?: ValidationMessage[]): string | undefined {
-    const kindDirectives = (definition.directives || []).filter(dir => OBJECT_TYPE_ENTITY_DIRECTIVES.includes(dir.name.value));
+    const kindDirectives = (definition.directives || []).filter(dir => OBJECT_TYPE_KIND_DIRECTIVES.includes(dir.name.value));
     if (kindDirectives.length !== 1) {
         if (validationMessages) {
             if (kindDirectives.length === 0) {

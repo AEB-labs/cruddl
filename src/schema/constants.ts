@@ -1,17 +1,3 @@
-export const defaultModelDefTypes = `
-        scalar DateTime
-   
-        type EntityMeta {
-            createdAt: DateTime!
-            updatedAt: DateTime!
-            createdBy: User
-        }
-        
-        type User @rootEntity {
-            name: String!
-        }
-    `;
-
 export const WILDCARD_CHARACTER = '*';
 
 export const ROOT_ENTITY_DIRECTIVE = 'rootEntity';
@@ -56,11 +42,6 @@ export const SCALAR_DATE = 'Date';
 export const SCALAR_TIME = 'Time';
 export const SCALAR_JSON = 'JSON';
 
-export const ENTITY_ID = 'id';
-
-export const AND_FILTER_FIELD = 'AND';
-export const OR_FILTER_FIELD = 'OR';
-
 export const ORDER_BY_ASC_SUFFIX = '_ASC';
 export const ORDER_BY_DESC_SUFFIX = '_DESC';
 
@@ -73,7 +54,7 @@ export const FIRST_ARG = 'first';
 export const VALUE_ARG = 'value';
 export const KEY_FIELD_DIRECTIVE = 'key';
 
-export const INPUT_FIELD_SEPARATOR = '_';
+export const FILTER_FIELD_PREFIX_SEPARATOR = '_';
 export const INPUT_FIELD_EQUAL = 'equal';
 export const INPUT_FIELD_NOT = 'not';
 export const INPUT_FIELD_IN = 'in';
@@ -91,6 +72,8 @@ export const INPUT_FIELD_NOT_ENDS_WITH = 'not_ends_with';
 export const INPUT_FIELD_SOME = 'some';
 export const INPUT_FIELD_EVERY = 'every';
 export const INPUT_FIELD_NONE = 'none';
+export const AND_FILTER_FIELD = 'AND';
+export const OR_FILTER_FIELD = 'OR';
 
 export const CALC_MUTATIONS_DIRECTIVE = 'calcMutations';
 export const CALC_MUTATIONS_OPERATORS_ARG = 'operators';
@@ -108,7 +91,6 @@ export const CALC_MUTATIONS_OPERATORS: CalcMutationOperator[] = [
 export const COUNT_META_FIELD = 'count';
 
 export const MUTATION_INPUT_ARG = 'input';
-export const MUTATION_ID_ARG = 'id';
 
 export const ROLES_DIRECTIVE = 'roles';
 export const ROLES_READ_ARG = 'read';
@@ -117,21 +99,17 @@ export const PERMISSION_PROFILE_ARG = 'permissionProfile';
 
 export const DEFAULT_PERMISSION_PROFILE = 'default';
 
-export const OBJECT_TYPE_ENTITY_DIRECTIVES = [ROOT_ENTITY_DIRECTIVE, CHILD_ENTITY_DIRECTIVE, ENTITY_EXTENSION_DIRECTIVE, VALUE_OBJECT_DIRECTIVE];
+export const OBJECT_TYPE_KIND_DIRECTIVES = [ROOT_ENTITY_DIRECTIVE, CHILD_ENTITY_DIRECTIVE, ENTITY_EXTENSION_DIRECTIVE, VALUE_OBJECT_DIRECTIVE];
 
 export const NAMESPACE_DIRECTIVE = 'namespace';
 export const NAMESPACE_NAME_ARG = 'name';
 export const NAMESPACE_SEPARATOR = '.';
-export const NAMESPACE_FIELD_PATH_DIRECTIVE = 'namespaceFieldPath';
 
 export const INDICES_DIRECTIVE = 'indices';
 export const INDEX_DIRECTIVE = 'index'; // for fields
 export const UNIQUE_DIRECTIVE = 'unique'; // for fields
 export const INDICES_ARG = INDICES_DIRECTIVE;
 export const INDEX_DEFINITION_INPUT_TYPE = 'IndexDefinition';
-export const INDEX_NAME_FIELD = 'name';
-export const INDEX_FIELDS_FIELD = 'fields';
-export const INDEX_UNIQUE_FIELD = 'unique';
 
 export const ALL_FIELD_DIRECTIVES = [KEY_FIELD_DIRECTIVE, RELATION_DIRECTIVE, REFERENCE_DIRECTIVE, ROLES_DIRECTIVE, CALC_MUTATIONS_DIRECTIVE, DEFAULT_VALUE_DIRECTIVE, INDEX_DIRECTIVE, UNIQUE_DIRECTIVE];
 export const ALL_OBJECT_TYPE_DIRECTIVES = [
@@ -143,13 +121,3 @@ export const ALL_OBJECT_TYPE_DIRECTIVES = [
     ROLES_DIRECTIVE,
     INDICES_DIRECTIVE
 ];
-
-export const MUTATION_FIELD = 'mutation';
-
-export enum MutationType {
-    CREATE,
-    UPDATE,
-    UPDATE_ALL,
-    DELETE,
-    DELETE_ALL
-}

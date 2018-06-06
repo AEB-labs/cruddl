@@ -1,5 +1,5 @@
 import { GraphQLID, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
-import { getAddRelationFieldName, getRemoveRelationFieldName } from '../../graphql/names';
+import { getAddRelationFieldName, getRemoveRelationFieldName } from '../../schema/names';
 import { Field } from '../../model';
 import { PreExecQueryParms, QueryNode, SetFieldQueryNode } from '../../query-tree';
 import { AnyValue } from '../../utils/utils';

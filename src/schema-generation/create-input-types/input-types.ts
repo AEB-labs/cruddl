@@ -2,7 +2,7 @@ import { Thunk } from 'graphql';
 import { fromPairs, toPairs } from 'lodash';
 import { Field } from '../../model';
 import { PreExecQueryParms, QueryNode } from '../../query-tree';
-import { ENTITY_CREATED_AT, ENTITY_UPDATED_AT, ID_FIELD } from '../../schema/schema-defaults';
+import { ENTITY_CREATED_AT, ENTITY_UPDATED_AT, ID_FIELD } from '../../schema/constants';
 import { flatMap, PlainObject } from '../../utils/utils';
 import { TypedInputObjectType } from '../typed-input-object-type';
 import { CreateInputField } from './input-fields';

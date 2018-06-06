@@ -1,5 +1,5 @@
 import { Type } from '../model';
-import { FILTER_ARG } from '../schema/schema-defaults';
+import { FILTER_ARG } from '../schema/constants';
 import { FilterTypeGenerator } from './filter-input-types';
 import { QueryNodeField } from './query-node-object-type';
 import { buildFilteredListNode } from './utils/filtering';

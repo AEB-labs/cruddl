@@ -1,4 +1,4 @@
-import { WILDCARD_CHARACTER } from '../../schema/schema-defaults';
+import { WILDCARD_CHARACTER } from '../../schema/constants';
 import { escapeRegExp, mapValues } from '../../utils/utils';
 import { AccessOperation, AuthContext } from '../../authorization/auth-basics';
 import { PermissionAccessKind, PermissionConfig, PermissionProfileConfig, PermissionProfileConfigMap } from '../index';

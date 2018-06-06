@@ -2,7 +2,7 @@ import { ASTValidator } from '../ast-validator';
 import { DocumentNode } from 'graphql';
 import { ValidationMessage } from '../../../model';
 import { getObjectTypes } from '../../schema-utils';
-import { KEY_FIELD_DIRECTIVE, ROOT_ENTITY_DIRECTIVE } from '../../schema-defaults';
+import { KEY_FIELD_DIRECTIVE, ROOT_ENTITY_DIRECTIVE } from '../../constants';
 
 export const VALIDATION_ERROR_INVALID_OBJECT_TYPE = "A @key field can only be declared on root entities.";
 

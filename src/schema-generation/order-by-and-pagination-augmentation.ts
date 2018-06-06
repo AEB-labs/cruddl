@@ -4,7 +4,7 @@ import {
     BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, LiteralQueryNode, OrderDirection, OrderSpecification,
     QueryNode, RuntimeErrorQueryNode, TransformListQueryNode, VariableQueryNode
 } from '../query-tree';
-import { AFTER_ARG, FIRST_ARG, ORDER_BY_ARG } from '../schema/schema-defaults';
+import { AFTER_ARG, FIRST_ARG, ORDER_BY_ARG } from '../schema/constants';
 import { decapitalize } from '../utils/utils';
 import { OrderByEnumGenerator, OrderByEnumType, OrderByEnumValue } from './order-by-enum-generator';
 import { QueryNodeField } from './query-node-object-type';
