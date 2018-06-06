@@ -5,6 +5,7 @@ import { DEFAULT_LOGGER_PROVIDER, LoggerProvider } from '../config/logging';
 import { Model, ValidationResult } from '../model';
 import { DatabaseAdapter } from '../database/database-adapter';
 import { createSchema, getModel, validateSchema } from '../schema/schema-builder';
+import { getMetaSchema } from '../meta-schema/meta-schema';
 
 export interface ProjectOptions {
     /**
@@ -68,5 +69,12 @@ export class Project {
      */
     createSchema(databaseAdapter: DatabaseAdapter): GraphQLSchema {
         return createSchema(this, databaseAdapter);
+    }
+
+    /**
+     * Creates an executable GraphQLSchema that allows to inspect the active model with its types and fields
+     */
+    createMetaSchema(): GraphQLSchema {
+        return getMetaSchema(this.getModel());
     }
 }

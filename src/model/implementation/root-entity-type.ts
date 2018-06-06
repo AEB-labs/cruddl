@@ -12,6 +12,7 @@ import { Relation } from './relation';
 import { GraphQLString } from 'graphql';
 import { RolesSpecifier } from './roles-specifier';
 import { compact } from '../../utils/utils';
+import { Namespace } from './namespace';
 
 export class RootEntityType extends ObjectTypeBase {
     private readonly permissions: PermissionsConfig & {};
@@ -63,6 +64,10 @@ export class RootEntityType extends ObjectTypeBase {
 
     get relations(): ReadonlyArray<Relation> {
         return compact(this.fields.map(field => field.relation));
+    }
+
+    get namespace(): Namespace | undefined {
+        return this.model.getNamespaceByPath(this.namespacePath);
     }
 
     validate(context: ValidationContext) {
