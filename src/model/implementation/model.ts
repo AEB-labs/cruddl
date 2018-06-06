@@ -155,10 +155,42 @@ export class Model implements ModelComponent{
         return this.getTypeOfKindOrThrow(name, TypeKind.ENUM);
     }
 
+    getRootEntityType(name: string): RootEntityType|undefined {
+        return this.getTypeOfKind(name, TypeKind.ROOT_ENTITY);
+    }
+
+    getChildEntityType(name: string): ChildEntityType|undefined {
+        return this.getTypeOfKind(name, TypeKind.CHILD_ENTITY);
+    }
+
+    getValueObjectType(name: string): ValueObjectType|undefined {
+        return this.getTypeOfKind(name, TypeKind.VALUE_OBJECT);
+    }
+
+    getEntityExtensionType(name: string): EntityExtensionType|undefined {
+        return this.getTypeOfKind(name, TypeKind.ENTITY_EXTENSION);
+    }
+
+    getScalarType(name: string): ScalarType|undefined {
+        return this.getTypeOfKind(name, TypeKind.SCALAR);
+    }
+
+    getEnumType(name: string): EnumType|undefined {
+        return this.getTypeOfKind(name, TypeKind.ENUM);
+    }
+
     getTypeOfKindOrThrow<T extends Type>(name: string, kind: TypeKind): T {
         const type = this.getTypeOrThrow(name);
         if (type.kind != kind) {
             throw new Error(`Expected type "${name}" to be a a ${kind}, but is ${type.kind}`);
+        }
+        return type as T;
+    }
+
+    getTypeOfKind<T extends Type>(name: string, kind: TypeKind): T|undefined {
+        const type = this.getType(name);
+        if (!type || type.kind != kind) {
+            return undefined;
         }
         return type as T;
     }
