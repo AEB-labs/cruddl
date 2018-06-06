@@ -72,9 +72,9 @@ export class Project {
     }
 
     /**
-     * Creates an executable GraphQLSchema that returns information about the meta schema
+     * Creates an executable GraphQLSchema that allows to inspect the active model with its types and fields
      */
-    createMetaSchema(databaseAdapter: DatabaseAdapter): GraphQLSchema {
+    createMetaSchema(): GraphQLSchema {
         return getMetaSchema(this.getModel());
     }
 }
