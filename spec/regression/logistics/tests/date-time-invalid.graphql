@@ -1,0 +1,5 @@
+mutation invalidFormat {
+    updateDelivery(input: { id: "@{ids/Delivery/1}", shippedAt: "this-is-not-a-date-time"}) {
+        shippedAt
+    }
+}

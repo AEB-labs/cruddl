@@ -7,6 +7,7 @@ type Delivery @rootEntity @roles(readWrite: ["allusers"]) {
     items: [DeliveryItem]
     handlingUnits: [HandlingUnit] @relation
     destinationCountry: Country @reference
+    shippedAt: DateTime
 
     totalValue: String @roles(readWrite: ["accounting"])
     forwarder: Forwarder @relation
