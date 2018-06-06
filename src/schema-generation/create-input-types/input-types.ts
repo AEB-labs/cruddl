@@ -1,18 +1,14 @@
 import { Thunk } from 'graphql';
 import { fromPairs, toPairs } from 'lodash';
-import { Field } from '../../model';
-import { PreExecQueryParms, QueryNode } from '../../query-tree';
-import { CREATE_ENTITY_FIELD_PREFIX, CREATE_ENTITY_TYPE_SUFFIX, ENTITY_CREATED_AT, ENTITY_UPDATED_AT, ID_FIELD } from '../../schema/constants';
-import { capitalize, flatMap, PlainObject } from '../../utils/utils';
+import { Field, ObjectType, RootEntityType } from '../../model';
+import { AffectedFieldInfoQueryNode, CreateEntityQueryNode, LiteralQueryNode, PreExecQueryParms, QueryNode, VariableQueryNode } from '../../query-tree';
+import { ENTITY_CREATED_AT, ENTITY_UPDATED_AT, ID_FIELD } from '../../schema/constants';
+import { getCreateInputTypeName } from '../../schema/names';
+import { flatMap, PlainObject } from '../../utils/utils';
 import { TypedInputObjectType } from '../typed-input-object-type';
 import { CreateInputField } from './input-fields';
 import { isRelationCreateField } from './relation-fields';
 import uuid = require('uuid');
-import { AffectedFieldInfoQueryNode, CreateEntityQueryNode } from '../../query-tree/mutations';
-import { LiteralQueryNode } from '../../query-tree/literals';
-import { ObjectType } from '../../model/implementation/type';
-import { VariableQueryNode } from '../../query-tree/variables';
-import { RootEntityType } from '../../model/implementation/root-entity-type';
 
 function getCurrentISODate() {
     return new Date().toISOString();
@@ -23,7 +19,7 @@ export class CreateObjectInputType extends TypedInputObjectType<CreateInputField
         type: ObjectType,
         fields: Thunk<ReadonlyArray<CreateInputField>>
     ) {
-        super(capitalize(CREATE_ENTITY_FIELD_PREFIX)+type.name+CREATE_ENTITY_TYPE_SUFFIX, fields);
+        super(getCreateInputTypeName(type.name), fields);
     }
 
     prepareValue(value: PlainObject): PlainObject {

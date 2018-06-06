@@ -1,11 +1,11 @@
 import { GraphQLID, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
 import { Field } from '../../model';
 import { PreExecQueryParms, QueryNode } from '../../query-tree';
+import { CREATE_RELATED_ENTITY_FIELD_PREFIX } from '../../schema/constants';
 import { AnyValue, capitalize, PlainObject } from '../../utils/utils';
 import { getAddEdgesStatements, getCreateAndAddEdgesStatements, getSetEdgeStatements } from '../utils/relations';
 import { CreateInputField } from './input-fields';
-import { CREATE_RELATED_ENTITY_FIELD_PREFIX } from '../../schema/schema-defaults';
-import { CreateObjectInputType, CreateRootEntityInputType } from './input-types';
+import { CreateRootEntityInputType } from './input-types';
 
 export abstract class AbstractRelationCreateInputField implements CreateInputField {
     constructor(

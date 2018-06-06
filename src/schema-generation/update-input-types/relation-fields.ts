@@ -1,13 +1,12 @@
 import { GraphQLID, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
-import { getAddRelationFieldName, getRemoveRelationFieldName } from '../../schema/names';
 import { Field } from '../../model';
 import { PreExecQueryParms, QueryNode, SetFieldQueryNode } from '../../query-tree';
+import { CREATE_RELATED_ENTITY_FIELD_PREFIX } from '../../schema/constants';
+import { getAddRelationFieldName, getRemoveRelationFieldName } from '../../schema/names';
 import { AnyValue, capitalize, PlainObject } from '../../utils/utils';
+import { CreateRootEntityInputType } from '../create-input-types/input-types';
 import { getAddEdgesStatements, getCreateAndAddEdgesStatements, getRemoveEdgesStatements, getSetEdgeStatements } from '../utils/relations';
 import { UpdateInputField } from './input-fields';
-import { CreateRootEntityInputType } from '../create-input-types/input-types';
-import { UpdateRootEntityInputType } from './input-types';
-import { CREATE_RELATED_ENTITY_FIELD_PREFIX } from '../../schema/schema-defaults';
 
 export abstract class AbstractRelationUpdateInputField implements UpdateInputField {
     constructor(
