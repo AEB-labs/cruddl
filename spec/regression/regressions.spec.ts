@@ -32,7 +32,7 @@ describe('regression tests', async () => {
                         it(testName, async () => {
                             const {expectedResult, actualResult} = await suite.runTest(testName);
                             expect(actualResult).to.deep.equal(expectedResult);
-                        });
+                        }).timeout(10000); // travis is sometimes on the slower side
                     }
                 });
             }
