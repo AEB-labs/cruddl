@@ -113,6 +113,11 @@ export class MutationTypeGenerator {
     }
 
     private generateUpdateQueryNode(rootEntityType: RootEntityType, input: PlainObject, inputType: UpdateRootEntityInputType): QueryNode {
+        const checkResult = inputType.check(input);
+        if (checkResult) {
+            return checkResult;
+        }
+
         const currentEntityVariable = new VariableQueryNode('currentEntity');
         const updates = inputType.getProperties(input, currentEntityVariable);
         const affectedFields = inputType.getAffectedFields(input).map(field => new AffectedFieldInfoQueryNode(field));
@@ -179,6 +184,11 @@ export class MutationTypeGenerator {
 
     private generateUpdateAllQueryNode(rootEntityType: RootEntityType, listNode: QueryNode,
                                        inputType: UpdateRootEntityInputType, input: PlainObject): QueryNode {
+        const checkResult = inputType.check(input);
+        if (checkResult) {
+            return checkResult;
+        }
+
         const currentEntityVariable = new VariableQueryNode('currentEntity');
         const updates = inputType.getProperties(input, currentEntityVariable);
         const affectedFields = inputType.getAffectedFields(input).map(field => new AffectedFieldInfoQueryNode(field));

@@ -1,4 +1,5 @@
 import { Thunk } from 'graphql';
+import { groupBy } from 'lodash';
 import {
     getAddChildEntitiesFieldName, getRemoveChildEntitiesFieldName, getUpdateChildEntitiesFieldName
 } from '../../graphql/names';
@@ -6,12 +7,12 @@ import { ChildEntityType, Field, ObjectType, RootEntityType } from '../../model'
 import {
     BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode, FieldQueryNode,
     ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, ObjectQueryNode, PreExecQueryParms, QueryNode,
-    SetFieldQueryNode, TransformListQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator,
-    VariableQueryNode
+    RuntimeErrorQueryNode, SetFieldQueryNode, TransformListQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode,
+    UnaryOperator, VariableQueryNode
 } from '../../query-tree';
 import { createSafeObjectQueryNode } from '../../query/mutations';
 import { ENTITY_UPDATED_AT, ID_FIELD } from '../../schema/schema-defaults';
-import { AnyValue, decapitalize, flatMap, PlainObject } from '../../utils/utils';
+import { AnyValue, decapitalize, flatMap, joinWithAnd, objectEntries, PlainObject } from '../../utils/utils';
 import { TypedInputObjectType } from '../typed-input-object-type';
 import { AddChildEntitiesInputField, UpdateChildEntitiesInputField, UpdateInputField } from './input-fields';
 import { isRelationUpdateField } from './relation-fields';
@@ -42,6 +43,20 @@ export class UpdateObjectInputType extends TypedInputObjectType<UpdateInputField
             ...regularProperties,
             ...this.getAdditionalProperties(value, currentEntityNode, regularProperties)
         ];
+    }
+
+    check(value: PlainObject): RuntimeErrorQueryNode | undefined {
+        const applicableFields = this.getApplicableInputFields(value);
+        const fields = applicableFields
+            .filter(f => f.field.type.isScalarType);
+        const groups = objectEntries(groupBy(fields, f => f.field.name));
+        const duplicateGroups = groups.filter(([key, value]) => value.length > 1);
+        const firstDuplicateGroup: [string, ReadonlyArray<UpdateInputField>] = duplicateGroups[0];
+        if (!firstDuplicateGroup) {
+            return undefined;
+        }
+        const fieldNames = firstDuplicateGroup[1].map(inputField => `"${inputField.name}"`);
+        return new RuntimeErrorQueryNode(`Can't combine ${joinWithAnd(fieldNames)} in "${this.name}"`);
     }
 
     private getChildEntityProperties(objectValue: PlainObject, currentEntityNode: QueryNode, field: Field): ReadonlyArray<SetFieldQueryNode> {

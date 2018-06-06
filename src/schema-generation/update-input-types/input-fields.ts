@@ -4,10 +4,8 @@ import {
 } from '../../graphql/names';
 import { CalcMutationsOperator, Field } from '../../model';
 import {
-    BinaryOperationQueryNode,
-    BinaryOperator,
-    FieldQueryNode, LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, QueryNode,
-    SetFieldQueryNode
+    BinaryOperationQueryNode, BinaryOperator, FieldQueryNode, LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode,
+    ObjectQueryNode, QueryNode, SetFieldQueryNode
 } from '../../query-tree';
 import { AnyValue } from '../../utils/utils';
 import { CreateChildEntityInputType, CreateObjectInputType } from '../create-input-types';
@@ -16,6 +14,8 @@ import { TypedInputFieldBase } from '../typed-input-object-type';
 import { UpdateChildEntityInputType, UpdateEntityExtensionInputType, UpdateObjectInputType } from './input-types';
 
 export interface UpdateInputField extends TypedInputFieldBase<UpdateInputField> {
+    readonly field: Field
+
     getProperties(value: AnyValue, currentEntityNode: QueryNode): ReadonlyArray<SetFieldQueryNode>;
 
     collectAffectedFields(value: AnyValue, fields: Set<Field>): void;

@@ -245,3 +245,12 @@ export let escapeRegExp: (input: string) => string;
 export function isPromise<T>(value: any): value is Promise<T> {
     return typeof value === 'object' && value !== null && typeof value.then === 'function';
 }
+
+export function joinWithAnd(items: ReadonlyArray<string>): string {
+    if (items.length <= 2) {
+        return items.join(' and ');
+    }
+    const upToSecondLast = items.slice();
+    const last = upToSecondLast.pop();
+    return upToSecondLast.join(', ') + ', and ' + last;
+}
