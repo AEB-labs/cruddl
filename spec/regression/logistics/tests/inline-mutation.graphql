@@ -5,4 +5,9 @@ mutation createDeliveryAndForwarder{
       huNumber
     }
   }
+  updateDelivery(input: {id: "@{ids/Delivery/1}", createHandlingUnits: [{huNumber: "C"},{huNumber:"D"}]}){
+    handlingUnits {
+      huNumber
+    }
+  }
 }

@@ -11,6 +11,16 @@
             "huNumber": "B"
           }
         ]
+      },
+      "updateDelivery": {
+        "handlingUnits": [
+          {
+            "huNumber": "C"
+          },
+          {
+            "huNumber": "D"
+          }
+        ]
       }
     }
   }
