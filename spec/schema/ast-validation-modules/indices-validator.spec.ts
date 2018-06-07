@@ -28,12 +28,6 @@ describe('indices validator', () => {
         `);
     });
 
-    it('rejects index without fields', () => {
-        assertValidatorRejects(`
-            type Foo @rootEntity(indices:[{}]) { foo: String }
-        `, 'An index must specify at least one field.');
-    });
-
     it('rejects index with empty fields list', () => {
         assertValidatorRejects(`
             type Foo @rootEntity(indices:[{ fields: []}]) { foo: String }
