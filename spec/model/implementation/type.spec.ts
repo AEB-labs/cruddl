@@ -29,7 +29,7 @@ describe('Type', () => {
                 name: 'This_Is_Ugly'
             }, GraphQLString);
 
-            expectSingleErrorToInclude(type, `Type names should only contain alphanumeric characters.`);
+            expectSingleWarningToInclude(type, `Type names should only contain alphanumeric characters.`);
         });
 
         it('warns about type names starting with a lowercase character', () => {

@@ -160,7 +160,7 @@ describe('Field', () => {
                 name: '_internal',
                 typeName: 'String'
             }, deliveryType);
-            expectSingleErrorToInclude(field, `Field names should only contain alphanumeric characters.`);
+            expectSingleWarningToInclude(field, `Field names should only contain alphanumeric characters.`);
         });
 
         it('warns about names starting with an uppercase character', () => {
