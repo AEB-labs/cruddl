@@ -13,7 +13,7 @@ import {
     getCreateEntityFieldName, getDeleteAllEntitiesFieldName, getDeleteEntityFieldName, getUpdateAllEntitiesFieldName,
     getUpdateEntityFieldName
 } from '../schema/names';
-import { decapitalize, PlainObject } from '../utils/utils';
+import { compact, decapitalize, PlainObject } from '../utils/utils';
 import { CreateInputTypeGenerator, CreateRootEntityInputType } from './create-input-types';
 import { ListAugmentation } from './list-augmentation';
 import { OutputTypeGenerator } from './output-type-generator';
@@ -53,13 +53,13 @@ export class MutationTypeGenerator {
     }
 
     private generateFields(rootEntityType: RootEntityType): QueryNodeField[] {
-        return [
+        return compact([
             this.generateCreateField(rootEntityType),
             this.generateUpdateField(rootEntityType),
             this.generateUpdateAllField(rootEntityType),
             this.generateDeleteField(rootEntityType),
             this.generateDeleteAllField(rootEntityType)
-        ];
+        ]);
     }
 
     private generateCreateField(rootEntityType: RootEntityType): QueryNodeField {
@@ -150,7 +150,7 @@ export class MutationTypeGenerator {
         });
     }
 
-    private generateUpdateAllField(rootEntityType: RootEntityType): QueryNodeField {
+    private generateUpdateAllField(rootEntityType: RootEntityType): QueryNodeField|undefined {
         // we construct this field like a regular query field first so that the list augmentation works
         const fieldBase: QueryNodeField = {
             name: getUpdateAllEntitiesFieldName(rootEntityType.name),
@@ -161,6 +161,10 @@ export class MutationTypeGenerator {
         const fieldWithListArgs = this.listAugmentation.augment(fieldBase, rootEntityType);
 
         const inputType = this.updateTypeGenerator.generateUpdateAllRootEntitiesInputType(rootEntityType);
+        if (!inputType.fields.length) {
+            // this can occur for types that only define relations as updateAll does not support relations
+            return undefined;
+        }
         return {
             ...fieldWithListArgs,
             args: {

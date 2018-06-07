@@ -33,6 +33,11 @@ type Forwarder @rootEntity @roles(readWrite: ["logistics"]) {
     deliveries: [Delivery] @relation(inverseOf:"forwarder")
 }
 
+# this can cause problems in schema generation because some input types might be empty
+type OnlyRelations @rootEntity  @roles(readWrite: ["allusers"]) {
+    deliveries: [Delivery] @relation
+}
+
 enum Foobarit {
     Foo
     Bar
