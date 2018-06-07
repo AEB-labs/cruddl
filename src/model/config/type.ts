@@ -28,7 +28,7 @@ export interface ObjectTypeConfigBase extends TypeConfigBase {
 
 export interface RootEntityTypeConfig extends ObjectTypeConfigBase {
     readonly kind: TypeKind.ROOT_ENTITY
-    readonly namespacePath?: string[]
+    readonly namespacePath?: ReadonlyArray<string>
     readonly indices?: ReadonlyArray<IndexDefinitionConfig>
     readonly keyFieldName?: string
     readonly keyFieldASTNode?: ASTNode

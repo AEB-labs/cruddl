@@ -7,7 +7,7 @@ import { createModel, Model, ValidationMessage, ValidationResult } from '../mode
 import { createPermissionMap } from '../model/implementation/permission-profile';
 import { Project } from '../project/project';
 import { SourceType } from '../project/source';
-import { SchemaGenerator } from '../schema-generation/schema-generator';
+import { SchemaGenerator } from '../schema-generation';
 import { flatMap } from '../utils/utils';
 import { validatePostMerge, validateSource } from './preparation/ast-validator';
 import {
@@ -41,15 +41,19 @@ function validateAndPrepareSchema(project: Project):
         return [ source ];
     });
 
-    const schemaConfig = parseSchemaParts(new Project({...project, sources}));
+    const rawSchemaConfig = parseSchemaParts(new Project({...project, sources}));
     const rootContext: ASTTransformationContext = {
-        defaultNamespace: schemaConfig.defaultNamespace,
-        permissionProfiles: createPermissionMap(schemaConfig.permissionProfiles)
+        defaultNamespace: rawSchemaConfig.defaultNamespace,
+        permissionProfiles: createPermissionMap(rawSchemaConfig.permissionProfiles)
+    };
+
+    const schemaConfig = {
+        ...rawSchemaConfig,
+        schemaParts: executePreMergeTransformationPipeline(rawSchemaConfig.schemaParts, rootContext)
     };
 
     const model = createModel(schemaConfig);
 
-    executePreMergeTransformationPipeline(schemaConfig.schemaParts, rootContext, model);
     const mergedSchema: DocumentNode = mergeSchemaDefinition(schemaConfig);
 
     const result = validatePostMerge(mergedSchema, rootContext, model);

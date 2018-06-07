@@ -3,7 +3,7 @@ import { ObjectTypeBase } from './object-type-base';
 import { Field } from './field';
 import { Model } from './model';
 import { ScalarType } from './scalar-type';
-import { ValidationContext } from './validation';
+import { ValidationContext } from '../validation/validation-context';
 import { ValidationMessage } from '../validation';
 import { Index } from './indices';
 import { ACCESS_GROUP_FIELD, DEFAULT_PERMISSION_PROFILE } from '../../schema/constants';

@@ -3,7 +3,7 @@ import { GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLSchema, GraphQLT
 export function getOperationRootType(schema: GraphQLSchema, operation: OperationTypeNode): GraphQLObjectType|undefined {
     switch (operation) {
         case 'query':
-            return schema.getQueryType();
+            return schema.getQueryType() || undefined;
         case 'mutation':
             return schema.getMutationType() || undefined;
         case 'subscription':

@@ -13,7 +13,7 @@ import { CheckYamlSyntaxValidator } from './source-validation-modules/check-yaml
 import { CheckJsonSyntaxValidator } from './source-validation-modules/check-json-syntax';
 import { SidecarSchemaValidator } from './source-validation-modules/sidecar-schema';
 
-const sourceValidators: SourceValidator[]  = [
+const sourceValidators: ReadonlyArray<SourceValidator>  = [
     new CheckGraphQLSyntaxValidator(),
     new GraphQLRulesValidator(),
     new CheckYamlSyntaxValidator(),
@@ -21,7 +21,7 @@ const sourceValidators: SourceValidator[]  = [
     new SidecarSchemaValidator(),
 ];
 
-const postMergeValidators: ASTValidator[] = [
+const postMergeValidators: ReadonlyArray<ASTValidator> = [
     new KeyFieldValidator(),
     new NoUnusedNonRootObjectTypesValidator(),
     new NoListsOfListsValidator(),
@@ -30,11 +30,11 @@ const postMergeValidators: ASTValidator[] = [
 ];
 
 export interface ASTValidator {
-    validate(ast: DocumentNode, context: ASTValidationContext, model: Model): ValidationMessage[];
+    validate(ast: DocumentNode, context: ASTValidationContext, model: Model): ReadonlyArray<ValidationMessage>;
 }
 
 export interface SourceValidator {
-    validate(source: ProjectSource): ValidationMessage[];
+    validate(source: ProjectSource): ReadonlyArray<ValidationMessage>;
 }
 
 export function validateSource(source: ProjectSource): ValidationResult {
@@ -56,6 +56,6 @@ export function validatePostMerge(ast: DocumentNode, context: ASTValidationConte
 }
 
 export interface ASTValidationContext {
-    defaultNamespace?: string
-    permissionProfiles?: PermissionProfileMap
+    readonly defaultNamespace?: string
+    readonly permissionProfiles?: PermissionProfileMap
 }

@@ -1,11 +1,5 @@
 import {
-    SelectionSetNode,
-    FieldNode,
-    DirectiveNode,
-    GraphQLSkipDirective,
-    GraphQLIncludeDirective,
-    GraphQLDirective,
-    GraphQLField, FragmentDefinitionNode, SelectionNode, GraphQLSchema, VariableDefinitionNode
+    DirectiveNode, FieldNode, FragmentDefinitionNode, GraphQLIncludeDirective, GraphQLSkipDirective, SelectionNode
 } from 'graphql';
 import { getArgumentValues } from './argument-values';
 
@@ -23,14 +17,14 @@ import { getArgumentValues } from './argument-values';
  *
  * This is similar to expandSelections from language-utils but does a shouldIncludeNode filter at each level
  */
-export function resolveSelections(selections: SelectionNode[], context: {
+export function resolveSelections(selections: ReadonlyArray<SelectionNode>, context: {
     variableValues: {[key: string]: any},
     fragments: {[key: string]: FragmentDefinitionNode|undefined}
-}): FieldNode[] {
+}): ReadonlyArray<FieldNode> {
     const visitedFragmentNames = new Set<string>();
     const nodes: FieldNode[] = [];
 
-    function walk(selections: SelectionNode[]) {
+    function walk(selections: ReadonlyArray<SelectionNode>) {
         for (const selection of selections) {
             // Here,
             if (!shouldIncludeNode(selection.directives || [], context.variableValues)) {
@@ -75,7 +69,7 @@ export function resolveSelections(selections: SelectionNode[], context: {
  * @param variableValues variables supplied to the query
  * @returns true if the node should be included, false if it should be skipped
  */
-export function shouldIncludeNode(directives: DirectiveNode[], variableValues: {[key: string]: any}) {
+export function shouldIncludeNode(directives: ReadonlyArray<DirectiveNode>, variableValues: {[key: string]: any}) {
     const skipNode = directives.find(d => d.name.value == GraphQLSkipDirective.name);
     if (skipNode) {
         const {if: skipIf} = getArgumentValues(

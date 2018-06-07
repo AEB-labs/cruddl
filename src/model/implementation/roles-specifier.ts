@@ -1,4 +1,4 @@
-import { ModelComponent, ValidationContext } from './validation';
+import { ModelComponent, ValidationContext } from '../validation/validation-context';
 import { RolesSpecifierConfig } from '../config';
 import { ValidationMessage } from '../validation';
 

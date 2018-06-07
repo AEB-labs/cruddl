@@ -3,7 +3,7 @@ import { ValidationMessage, ValidationResult } from '../validation';
 import { createPermissionMap, PermissionProfile, PermissionProfileMap } from './permission-profile';
 import { createType, InvalidType, ObjectType, Type } from './type';
 import { Namespace } from './namespace';
-import { ModelComponent, ValidationContext } from './validation';
+import { ModelComponent, ValidationContext } from '../validation/validation-context';
 import { builtInTypeNames, builtInTypes } from './built-in-types';
 import { RootEntityType } from './root-entity-type';
 import { ChildEntityType } from './child-entity-type';

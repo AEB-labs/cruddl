@@ -18,7 +18,7 @@ export class FieldRequest {
     constructor(public readonly field: GraphQLField<any, any>,
                 public readonly parentType: GraphQLCompositeType,
                 public readonly schema: GraphQLSchema,
-                public readonly selectionSet: FieldSelection[] = [],
+                public readonly selectionSet: ReadonlyArray<FieldSelection> = [],
                 public readonly args: { [argumentName: string ]: any } = {}) {
     }
 
@@ -56,7 +56,7 @@ export class FieldSelection {
  * A simple description of a GraphQL operation
  */
 export class DistilledOperation {
-    constructor(public readonly operation: OperationTypeNode, public readonly selectionSet: FieldSelection[]) {}
+    constructor(public readonly operation: OperationTypeNode, public readonly selectionSet: ReadonlyArray<FieldSelection>) {}
 
     public describe(): string {
         const selectionItemsDesc = this.selectionSet
@@ -85,7 +85,7 @@ export function createFieldRequest(config: FieldRequestConfig) {
     return new FieldRequest(config.field, config.parentType, config.schema, createSelectionSet(config.selectionSet || {}), config.args || {});
 }
 
-function createSelectionSet(config: SelectionSetConfig): FieldSelection[] {
+function createSelectionSet(config: SelectionSetConfig): ReadonlyArray<FieldSelection> {
     const selections = [];
     for (const key in config) {
         selections.push(new FieldSelection(key, createFieldRequest(config[key])));
@@ -128,7 +128,7 @@ export function distillQuery(document: DocumentNode, schema: GraphQLSchema, vari
     return distillOperation({
         schema,
         operation: extractOperation(document, operationName),
-        fragments: arrayToObject(document.definitions.filter(def => def.kind == 'FragmentDefinition') as FragmentDefinitionNode[], def => def.name.value),
+        fragments: arrayToObject(document.definitions.filter(def => def.kind == 'FragmentDefinition') as ReadonlyArray<FragmentDefinitionNode>, def => def.name.value),
         variableValues
     });
 }
@@ -142,8 +142,8 @@ interface Context {
 /**
  * Creates simplified FieldSelection objects for a set of SelectionNodes
  */
-function distillSelections(selections: SelectionNode[], parentType: GraphQLCompositeType, context: Context): FieldSelection[] {
-    const allFieldNodes: FieldNode[] = resolveSelections(selections, context);
+function distillSelections(selections: ReadonlyArray<SelectionNode>, parentType: GraphQLCompositeType, context: Context): ReadonlyArray<FieldSelection> {
+    const allFieldNodes: ReadonlyArray<FieldNode> = resolveSelections(selections, context);
     const allButSystemFieldNodes = allFieldNodes.filter(node => !node.name.value.startsWith('__'));
     const fieldNodesByPropertyName = groupArray(allButSystemFieldNodes, selection => getAliasOrName(selection));
     return Array.from(fieldNodesByPropertyName).map(([propertyName, fieldNodes]) =>
@@ -172,7 +172,7 @@ function buildFieldRequest(fieldNodes: Array<FieldNode>, parentType: GraphQLComp
         throw new Error(`Field ${fieldName} is not defined in parent type ${parentType}`);
     }
 
-    let selections: FieldSelection[] = [];
+    let selections: ReadonlyArray<FieldSelection> = [];
     const compositeFieldType = unwrapToCompositeType(fieldDef.type);
     if (compositeFieldType) {
         const childFieldNodes = flatMap(fieldNodes, node => node.selectionSet ? node.selectionSet.selections : []);

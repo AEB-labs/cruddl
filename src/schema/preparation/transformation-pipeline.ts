@@ -14,16 +14,19 @@ const schemaPipeline: SchemaTransformer[] = [
     new AddRuntimeErrorResolversTransformer()
 ];
 
-export function executePreMergeTransformationPipeline(schemaParts: SchemaPartConfig[], rootContext: ASTTransformationContext, model: Model) {
-    schemaParts.forEach(schemaPart =>
-        preMergePipeline.forEach(transformer => {
-            if (schemaPart.document instanceof Source) {
-                throw new Error('Expected source with DocumentType');
-            }
-            const { document, ...context } = schemaPart;
-            transformer.transform(schemaPart.document, { ...rootContext, ...context }, model)
-        })
-    ) ;
+export function executePreMergeTransformationPipeline(schemaParts: SchemaPartConfig[], rootContext: ASTTransformationContext) {
+    return schemaParts.map(({document, ...context}) => {
+        if (document instanceof Source) {
+            throw new Error('Expected source with DocumentType');
+        }
+        for (const transformer of preMergePipeline) {
+            document = transformer.transform(document, {...rootContext, ...context});
+        }
+        return {
+            ...context,
+            document
+        };
+    });
 }
 
 export function executeSchemaTransformationPipeline(schema: GraphQLSchema, context: SchemaTransformationContext, model: Model): GraphQLSchema {
@@ -42,7 +45,7 @@ export interface SchemaTransformationContext extends ASTTransformationContext, S
 }
 
 export interface ASTTransformer {
-    transform(ast: DocumentNode, context: ASTTransformationContext, model: Model): void;
+    transform(ast: DocumentNode, context: ASTTransformationContext): DocumentNode;
 }
 
 export interface SchemaTransformer {

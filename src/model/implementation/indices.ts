@@ -1,6 +1,6 @@
 import { IndexDefinitionConfig, TypeKind } from '../config';
 import { RootEntityType } from './root-entity-type';
-import { ModelComponent, ValidationContext } from './validation';
+import { ModelComponent, ValidationContext } from '../validation/validation-context';
 import { Field } from './field';
 import { Type } from './type';
 import { ValidationMessage } from '../validation';
