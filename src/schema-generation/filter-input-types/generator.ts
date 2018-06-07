@@ -91,8 +91,8 @@ export class FilterTypeGenerator {
         }
 
         const inputType = field.type.graphQLScalarType;
-        return FILTER_FIELDS_BY_TYPE[field.type.graphQLScalarType.name]
-            .map(name => new ScalarOrEnumFieldFilterField(field, FILTER_OPERATORS[name], name === INPUT_FIELD_EQUAL ? undefined : name, inputType));
+        const filterFields = FILTER_FIELDS_BY_TYPE[field.type.graphQLScalarType.name] || [];
+        return filterFields.map(name => new ScalarOrEnumFieldFilterField(field, FILTER_OPERATORS[name], name === INPUT_FIELD_EQUAL ? undefined : name, inputType));
     }
 
     private generateFilterFieldsForEnumField(field: Field, graphQLEnumType: GraphQLEnumType): FilterField[] {
@@ -110,7 +110,8 @@ export class FilterTypeGenerator {
     }
 
     private buildScalarFilterFields(type: ScalarType): ScalarOrEnumFilterField[] {
-        return FILTER_FIELDS_BY_TYPE[type.name].map(name => new ScalarOrEnumFilterField(FILTER_OPERATORS[name], name, type.graphQLScalarType))
+        const filterFields = FILTER_FIELDS_BY_TYPE[type.name] || [];
+        return filterFields.map(name => new ScalarOrEnumFilterField(FILTER_OPERATORS[name], name, type.graphQLScalarType))
     }
 
     private buildEnumFilterFields(type: EnumType) {

@@ -20,6 +20,8 @@ type Delivery @rootEntity @roles(readWrite: ["allusers"]) {
     defaultValueFalse: Boolean @defaultValue(value: false)
     defaultValueFloat: Float @defaultValue(value: 3.14)
     defaultValueEnum: Foobarit @defaultValue(value: Bar)
+
+    dynamicData: JSON
 }
 
 type DeliveryItem @childEntity {
