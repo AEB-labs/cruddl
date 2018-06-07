@@ -13,7 +13,7 @@ export class IndicesValidator implements ASTValidator {
     validate(ast: DocumentNode): ValidationMessage[] {
         const validationMessages: ValidationMessage[] = [];
         [...getChildEntityTypes(ast), ...getEntityExtensionTypes(ast), ...getValueObjectTypes(ast)].forEach(nonRootEntityType => {
-            nonRootEntityType.fields.forEach(field => {
+            (nonRootEntityType.fields || []).forEach(field => {
                 const index = findDirectiveWithName(field, INDEX_DIRECTIVE);
                 const unique = findDirectiveWithName(field, UNIQUE_DIRECTIVE);
                 if (index) {

@@ -1,4 +1,4 @@
-import { ValidationMessage, ValidationResult } from '../validation';
+import { ValidationMessage, ValidationResult } from './index';
 
 export class ValidationContext {
     private readonly _validationMessages: ValidationMessage[] = [];

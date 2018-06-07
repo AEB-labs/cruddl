@@ -3,7 +3,7 @@ import { TypeBase } from './type-base';
 import { Field } from './field';
 import { ObjectType } from './type';
 import { Model } from './model';
-import { ValidationContext } from './validation';
+import { ValidationContext } from '../validation/validation-context';
 import { ValidationMessage } from '../validation';
 import { objectValues } from '../../utils/utils';
 import { groupBy } from 'lodash';

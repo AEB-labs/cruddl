@@ -7,23 +7,23 @@ import {
     ENUM_TYPE_DEFINITION, INPUT_OBJECT_TYPE_DEFINITION, LIST_TYPE, NAME, NAMED_TYPE, NON_NULL_TYPE,
     OBJECT_TYPE_DEFINITION, SCALAR_TYPE_DEFINITION
 } from '../graphql/kinds';
-import { CORE_SCALARS } from './graphql-base';
 import {
     CHILD_ENTITY_DIRECTIVE, ENTITY_EXTENSION_DIRECTIVE, ROOT_ENTITY_DIRECTIVE, VALUE_OBJECT_DIRECTIVE
 } from './constants';
+import { CORE_SCALARS } from './graphql-base';
 
 /**
  * Get all @link ObjectTypeDefinitionNode a model.
  * @param {DocumentNode} model (ast)
  * @returns {ObjectTypeDefinitionNode[]}
  */
-export function getObjectTypes(model: DocumentNode): ObjectTypeDefinitionNode[] {
+export function getObjectTypes(model: DocumentNode): ReadonlyArray<ObjectTypeDefinitionNode> {
     return <ObjectTypeDefinitionNode[]> model.definitions.filter(
         def => def.kind === OBJECT_TYPE_DEFINITION
     );
 }
 
-export function getEnumTypes(model: DocumentNode): ObjectTypeDefinitionNode[] {
+export function getEnumTypes(model: DocumentNode): ReadonlyArray<ObjectTypeDefinitionNode> {
     return <ObjectTypeDefinitionNode[]> model.definitions.filter(
         def => def.kind === ENUM_TYPE_DEFINITION
     );
@@ -34,7 +34,7 @@ export function getEnumTypes(model: DocumentNode): ObjectTypeDefinitionNode[] {
  * @param {DocumentNode} model (ast)
  * @returns {ObjectTypeDefinitionNode[]}
  */
-export function getRootEntityTypes(model: DocumentNode): ObjectTypeDefinitionNode[] {
+export function getRootEntityTypes(model: DocumentNode): ReadonlyArray<ObjectTypeDefinitionNode> {
     return <ObjectTypeDefinitionNode[]> model.definitions.filter(
         def => def.kind === OBJECT_TYPE_DEFINITION && def.directives && def.directives.some(
             directive => directive.name.value === ROOT_ENTITY_DIRECTIVE
@@ -47,7 +47,7 @@ export function getRootEntityTypes(model: DocumentNode): ObjectTypeDefinitionNod
  * @param {DocumentNode} model (ast)
  * @returns {ObjectTypeDefinitionNode[]}
  */
-export function getChildEntityTypes(model: DocumentNode): ObjectTypeDefinitionNode[] {
+export function getChildEntityTypes(model: DocumentNode): ReadonlyArray<ObjectTypeDefinitionNode> {
     return <ObjectTypeDefinitionNode[]> model.definitions.filter(
         def => def.kind === OBJECT_TYPE_DEFINITION && def.directives && def.directives.some(
             directive => directive.name.value === CHILD_ENTITY_DIRECTIVE
@@ -60,7 +60,7 @@ export function getChildEntityTypes(model: DocumentNode): ObjectTypeDefinitionNo
  * @param {DocumentNode} model (ast)
  * @returns {ObjectTypeDefinitionNode[]}
  */
-export function getEntityExtensionTypes(model: DocumentNode): ObjectTypeDefinitionNode[] {
+export function getEntityExtensionTypes(model: DocumentNode): ReadonlyArray<ObjectTypeDefinitionNode> {
     return <ObjectTypeDefinitionNode[]> model.definitions.filter(
         def => def.kind === OBJECT_TYPE_DEFINITION && def.directives && def.directives.some(
             directive => directive.name.value === ENTITY_EXTENSION_DIRECTIVE
@@ -73,7 +73,7 @@ export function getEntityExtensionTypes(model: DocumentNode): ObjectTypeDefiniti
  * @param {DocumentNode} model (ast)
  * @returns {ObjectTypeDefinitionNode[]}
  */
-export function getValueObjectTypes(model: DocumentNode): ObjectTypeDefinitionNode[] {
+export function getValueObjectTypes(model: DocumentNode): ReadonlyArray<ObjectTypeDefinitionNode> {
     return <ObjectTypeDefinitionNode[]> model.definitions.filter(
         def => def.kind === OBJECT_TYPE_DEFINITION && def.directives && def.directives.some(
             directive => directive.name.value === VALUE_OBJECT_DIRECTIVE
@@ -81,8 +81,8 @@ export function getValueObjectTypes(model: DocumentNode): ObjectTypeDefinitionNo
     );
 }
 
-function getScalarFieldsOfObjectDefinition(ast: DocumentNode, objectDefinition: ObjectTypeDefinitionNode): FieldDefinitionNode[] {
-    return objectDefinition.fields.filter(field => {
+function getScalarFieldsOfObjectDefinition(ast: DocumentNode, objectDefinition: ObjectTypeDefinitionNode): ReadonlyArray<FieldDefinitionNode> {
+    return (objectDefinition.fields || []).filter(field => {
         switch (field.type.kind) {
             case NAMED_TYPE:
                 return getNamedTypeDefinitionAST(ast, field.type.name.value).kind === SCALAR_TYPE_DEFINITION;
@@ -172,7 +172,7 @@ export function hasDirectiveWithName(typeOrField: ObjectTypeDefinitionNode|Field
     return !!findDirectiveWithName(typeOrField, directiveName);
 }
 
-export function getNodeByName<T extends {name: NameNode}>(listOfNodes: T[]|undefined, name: string): T|undefined {
+export function getNodeByName<T extends {name: NameNode}>(listOfNodes: ReadonlyArray<T>|undefined, name: string): T|undefined {
     if (!listOfNodes) {
         return undefined;
     }

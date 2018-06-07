@@ -1,5 +1,5 @@
 import { Severity, ValidationResult } from '../../../src/model';
-import { ModelComponent, ValidationContext } from '../../../src/model/implementation/validation';
+import { ModelComponent, ValidationContext } from '../../../src/model/validation/validation-context';
 import { expect } from 'chai';
 
 export function validate(component: ModelComponent): ValidationResult {

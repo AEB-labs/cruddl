@@ -17,7 +17,7 @@ export class NoUnusedNonRootObjectTypesValidator implements ASTValidator {
             objectTypeNames.delete(rootType);
         });
         // remove all object types from the set which are referenced by some fields
-        getObjectTypes(ast).forEach(objectType => objectType.fields.forEach(field => objectTypeNames.delete(getNamedTypeDefinitionAST(ast, getTypeNameIgnoringNonNullAndList(field.type)) as ObjectTypeDefinitionNode)));
+        getObjectTypes(ast).forEach(objectType => (objectType.fields || []).forEach(field => objectTypeNames.delete(getNamedTypeDefinitionAST(ast, getTypeNameIgnoringNonNullAndList(field.type)) as ObjectTypeDefinitionNode)));
         // remaining object types in set are unused, create warnings for them
         return Array.from(objectTypeNames).map(
             unusedType => ValidationMessage.warn(

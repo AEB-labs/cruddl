@@ -1,7 +1,7 @@
 import { TypeDefinitionNode } from 'graphql';
 import { TypeConfig, TypeKind } from '../config';
 import { ValidationMessage } from '../validation';
-import { ModelComponent, ValidationContext } from './validation';
+import { ModelComponent, ValidationContext } from '../validation/validation-context';
 
 export abstract class TypeBase implements ModelComponent {
     readonly name: string;
