@@ -4,7 +4,7 @@ import { ValidationMessage } from '../../../model';
 import {
     buildASTSchema, DocumentNode, GraphQLError, KnownArgumentNamesRule, KnownDirectivesRule, KnownTypeNamesRule,
     Location, parse, ProvidedNonNullArgumentsRule, Source, UniqueArgumentNamesRule, UniqueDirectivesPerLocationRule,
-    UniqueInputFieldNamesRule, validate, VariablesInAllowedPositionRule
+    UniqueInputFieldNamesRule, validate, ValuesOfCorrectTypeRule, VariablesInAllowedPositionRule
 } from 'graphql';
 import { CORE_SCALARS, DIRECTIVES } from '../../graphql-base';
 import gql from 'graphql-tag';
@@ -18,9 +18,9 @@ const rules = [
     UniqueDirectivesPerLocationRule,
     KnownArgumentNamesRule,
     UniqueArgumentNamesRule,
-    //ValuesOfCorrectTypeRule, // this and VariablesDefaultValueAllowedRule is not in the types of graphql 0.12 (and the types of 0.13 are incompatible due to readonly stuff)
+    ValuesOfCorrectTypeRule,
+    // note for the future (graphql 0.14): this will be replaced, see https://github.com/graphql/graphql-js/commit/4d2438a26c1027825b201d0f68bd4854c88ece0d
     ProvidedNonNullArgumentsRule,
-    //VariablesDefaultValueAllowedRule,
     VariablesInAllowedPositionRule,
     UniqueInputFieldNamesRule
 ];
