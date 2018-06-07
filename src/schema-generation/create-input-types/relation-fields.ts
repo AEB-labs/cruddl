@@ -3,7 +3,9 @@ import { Field } from '../../model';
 import { PreExecQueryParms, QueryNode } from '../../query-tree';
 import { CREATE_RELATED_ENTITY_FIELD_PREFIX } from '../../schema/constants';
 import { AnyValue, capitalize, PlainObject } from '../../utils/utils';
-import { getAddEdgesStatements, getCreateAndAddEdgesStatements, getSetEdgeStatements } from '../utils/relations';
+import {
+    getAddEdgesStatements, getCreateAndAddEdgesStatements, getCreateAndSetEdgeStatements, getSetEdgeStatements
+} from '../utils/relations';
 import { CreateInputField } from './input-fields';
 import { CreateRootEntityInputType } from './input-types';
 
@@ -35,7 +37,7 @@ export abstract class AbstractRelationCreateInputField implements CreateInputFie
     abstract getStatements(value: AnyValue, idNode: QueryNode): ReadonlyArray<PreExecQueryParms>
 }
 
-export class AddEdgeCreateInputField extends AbstractRelationCreateInputField {
+export class SetEdgeCreateInputField extends AbstractRelationCreateInputField {
     readonly inputType: GraphQLInputType = GraphQLID;
 
     getStatements(targetID: AnyValue, sourceIDNode: QueryNode): ReadonlyArray<PreExecQueryParms> {
@@ -90,7 +92,7 @@ export class CreateAndAddEdgesCreateInputField extends AbstractRelationCreateInp
     }
 }
 
-export class CreateAndAddEdgeCreateInputField extends AbstractRelationCreateInputField {
+export class CreateAndSetEdgeCreateInputField extends AbstractRelationCreateInputField {
     readonly inputType: GraphQLInputType;
 
     constructor(
@@ -114,7 +116,7 @@ export class CreateAndAddEdgeCreateInputField extends AbstractRelationCreateInpu
             throw new Error(`Expected value of "${this.name}" to be an object, but is ${typeof value}`);
         }
 
-        return getCreateAndAddEdgesStatements(this.field, sourceIDNode, this.objectInputType, [value] as ReadonlyArray<PlainObject>);
+        return getCreateAndSetEdgeStatements(this.field, sourceIDNode, this.objectInputType, value as PlainObject);
     }
 }
 

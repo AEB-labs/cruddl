@@ -8,7 +8,7 @@ import {
     ObjectListCreateInputField
 } from './input-fields';
 import { CreateChildEntityInputType, CreateObjectInputType, CreateRootEntityInputType } from './input-types';
-import { AddEdgesCreateInputField, CreateAndAddEdgesCreateInputField, AddEdgeCreateInputField, CreateAndAddEdgeCreateInputField } from './relation-fields';
+import { AddEdgesCreateInputField, CreateAndAddEdgesCreateInputField, SetEdgeCreateInputField, CreateAndSetEdgeCreateInputField } from './relation-fields';
 
 export class CreateInputTypeGenerator {
     constructor(
@@ -75,7 +75,7 @@ export class CreateInputTypeGenerator {
                 if (field.isList) {
                     return [new AddEdgesCreateInputField(field), new CreateAndAddEdgesCreateInputField(field, inputType)];
                 } else {
-                    return [new AddEdgeCreateInputField(field), new CreateAndAddEdgeCreateInputField(field, inputType)];
+                    return [new SetEdgeCreateInputField(field), new CreateAndSetEdgeCreateInputField(field, inputType)];
                 }
             } else {
                 // reference

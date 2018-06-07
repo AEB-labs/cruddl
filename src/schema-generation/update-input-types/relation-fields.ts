@@ -15,7 +15,6 @@ export abstract class AbstractRelationUpdateInputField implements UpdateInputFie
     constructor(
         public readonly field: Field
     ) {
-
     }
 
     abstract readonly inputType: GraphQLInputType;
@@ -93,9 +92,9 @@ export class CreateAndAddEdgesInputField extends AbstractRelationUpdateInputFiel
         public readonly objectInputType: CreateRootEntityInputType
     ) {
         super(field);
-
         this.inputType = new GraphQLList(new GraphQLNonNull(objectInputType.getInputType()));
     }
+
     get name() {
         return CREATE_RELATED_ENTITY_FIELD_PREFIX+capitalize(this.field.name);
     }
@@ -120,9 +119,9 @@ export class CreateAndSetEdgeInputField extends AbstractRelationUpdateInputField
         public readonly objectInputType: CreateRootEntityInputType
     ) {
         super(field);
-
         this.inputType = objectInputType.getInputType();
     }
+
     get name() {
         return CREATE_RELATED_ENTITY_FIELD_PREFIX+capitalize(this.field.name);
     }

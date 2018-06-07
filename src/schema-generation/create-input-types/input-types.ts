@@ -82,7 +82,7 @@ export class CreateRootEntityInputType extends CreateObjectInputType {
         };
     }
 
-    getRelationStatements(input: PlainObject, idNode: QueryNode): ReadonlyArray<PreExecQueryParms> {
+    private getRelationStatements(input: PlainObject, idNode: QueryNode): ReadonlyArray<PreExecQueryParms> {
         const relationFields = this.fields
             .filter(isRelationCreateField)
             .filter(field => field.appliesToMissingFields() || field.name in input);

@@ -78,9 +78,7 @@ export class MutationTypeGenerator {
     }
 
     private generateCreateQueryNode(rootEntityType: RootEntityType, input: PlainObject, inputType: CreateRootEntityInputType): QueryNode {
-
         const newEntityIdVarNode = new VariableQueryNode('newEntityId');
-
         const createStatements = inputType.getCreateStatements(input, newEntityIdVarNode);
 
         // PreExecute creation and relation queries and return result
