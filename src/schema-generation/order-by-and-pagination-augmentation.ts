@@ -4,7 +4,7 @@ import {
     BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, LiteralQueryNode, OrderDirection, OrderSpecification,
     QueryNode, RuntimeErrorQueryNode, TransformListQueryNode, VariableQueryNode
 } from '../query-tree';
-import { AFTER_ARG, FIRST_ARG, ORDER_BY_ARG } from '../schema/constants';
+import { AFTER_ARG, FIRST_ARG, ORDER_BY_ARG, SKIP_ARG } from '../schema/constants';
 import { decapitalize } from '../utils/utils';
 import { OrderByEnumGenerator, OrderByEnumType, OrderByEnumValue } from './order-by-enum-generator';
 import { QueryNodeField } from './query-node-object-type';
@@ -33,6 +33,9 @@ export class OrderByAndPaginationAugmentation {
                 [ORDER_BY_ARG]: {
                     type: new GraphQLList(new GraphQLNonNull(orderByType.getEnumType()))
                 },
+                [SKIP_ARG]: {
+                    type: GraphQLInt
+                },
                 [FIRST_ARG]: {
                     type: GraphQLInt
                 },
@@ -46,6 +49,7 @@ export class OrderByAndPaginationAugmentation {
 
                 const orderBy = this.getOrderSpecification(args, orderByType, itemVariable);
                 const maxCount = args[FIRST_ARG];
+                const skip = args[SKIP_ARG];
                 const paginationFilter = this.createPaginationFilterNode(args, itemVariable, orderByType);
 
                 if (orderBy.isUnordered() && maxCount == undefined && paginationFilter === ConstBoolQueryNode.TRUE) {
@@ -56,6 +60,7 @@ export class OrderByAndPaginationAugmentation {
                     listNode,
                     itemVariable,
                     orderBy,
+                    skip,
                     maxCount,
                     filterNode: paginationFilter
                 });
