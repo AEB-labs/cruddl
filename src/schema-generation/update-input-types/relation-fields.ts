@@ -1,9 +1,10 @@
 import { GraphQLID, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
 import { Field } from '../../model';
 import { PreExecQueryParms, QueryNode, SetFieldQueryNode } from '../../query-tree';
-import { CREATE_RELATED_ENTITY_FIELD_PREFIX } from '../../schema/constants';
-import { getAddRelationFieldName, getRemoveRelationFieldName } from '../../schema/names';
-import { AnyValue, capitalize, PlainObject } from '../../utils/utils';
+import {
+    getAddRelationFieldName, getCreateRelatedEntityFieldName, getRemoveRelationFieldName
+} from '../../schema/names';
+import { AnyValue, PlainObject } from '../../utils/utils';
 import { CreateRootEntityInputType } from '../create-input-types';
 import {
     getAddEdgesStatements, getCreateAndAddEdgesStatements, getCreateAndSetEdgeStatements, getRemoveEdgesStatements,
@@ -96,7 +97,7 @@ export class CreateAndAddEdgesInputField extends AbstractRelationUpdateInputFiel
     }
 
     get name() {
-        return CREATE_RELATED_ENTITY_FIELD_PREFIX+capitalize(this.field.name);
+        return getCreateRelatedEntityFieldName(this.field.name);
     }
 
     getStatements(value: AnyValue, sourceIDNode: QueryNode): ReadonlyArray<PreExecQueryParms> {
@@ -123,7 +124,7 @@ export class CreateAndSetEdgeInputField extends AbstractRelationUpdateInputField
     }
 
     get name() {
-        return CREATE_RELATED_ENTITY_FIELD_PREFIX+capitalize(this.field.name);
+        return getCreateRelatedEntityFieldName(this.field.name);
     }
 
     getStatements(value: AnyValue, sourceIDNode: QueryNode): ReadonlyArray<PreExecQueryParms> {

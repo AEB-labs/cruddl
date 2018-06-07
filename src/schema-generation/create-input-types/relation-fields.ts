@@ -1,8 +1,8 @@
 import { GraphQLID, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
 import { Field } from '../../model';
 import { PreExecQueryParms, QueryNode } from '../../query-tree';
-import { CREATE_RELATED_ENTITY_FIELD_PREFIX } from '../../schema/constants';
-import { AnyValue, capitalize, PlainObject } from '../../utils/utils';
+import { getCreateRelatedEntityFieldName } from '../../schema/names';
+import { AnyValue, PlainObject } from '../../utils/utils';
 import {
     getAddEdgesStatements, getCreateAndAddEdgesStatements, getCreateAndSetEdgeStatements, getSetEdgeStatements
 } from '../utils/relations';
@@ -77,7 +77,7 @@ export class CreateAndAddEdgesCreateInputField extends AbstractRelationCreateInp
     }
 
     get name() {
-        return CREATE_RELATED_ENTITY_FIELD_PREFIX+capitalize(this.field.name);
+        return getCreateRelatedEntityFieldName(this.field.name);
     }
 
     getStatements(value: AnyValue, sourceIDNode: QueryNode): ReadonlyArray<PreExecQueryParms> {
@@ -105,7 +105,7 @@ export class CreateAndSetEdgeCreateInputField extends AbstractRelationCreateInpu
     }
 
     get name() {
-        return CREATE_RELATED_ENTITY_FIELD_PREFIX+capitalize(this.field.name);
+        return getCreateRelatedEntityFieldName(this.field.name);
     }
 
     getStatements(value: AnyValue, sourceIDNode: QueryNode): ReadonlyArray<PreExecQueryParms> {
