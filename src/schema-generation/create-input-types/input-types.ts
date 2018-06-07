@@ -1,8 +1,9 @@
 import { Thunk } from 'graphql';
 import { fromPairs, toPairs } from 'lodash';
-import { Field } from '../../model';
-import { PreExecQueryParms, QueryNode } from '../../query-tree';
+import { Field, ObjectType, RootEntityType } from '../../model';
+import { AffectedFieldInfoQueryNode, CreateEntityQueryNode, LiteralQueryNode, PreExecQueryParms, QueryNode, VariableQueryNode } from '../../query-tree';
 import { ENTITY_CREATED_AT, ENTITY_UPDATED_AT, ID_FIELD } from '../../schema/constants';
+import { getCreateInputTypeName } from '../../schema/names';
 import { flatMap, PlainObject } from '../../utils/utils';
 import { TypedInputObjectType } from '../typed-input-object-type';
 import { CreateInputField } from './input-fields';
@@ -15,10 +16,10 @@ function getCurrentISODate() {
 
 export class CreateObjectInputType extends TypedInputObjectType<CreateInputField> {
     constructor(
-        name: string,
+        type: ObjectType,
         fields: Thunk<ReadonlyArray<CreateInputField>>
     ) {
-        super(name, fields);
+        super(getCreateInputTypeName(type.name), fields);
     }
 
     prepareValue(value: PlainObject): PlainObject {
@@ -50,6 +51,29 @@ export class CreateObjectInputType extends TypedInputObjectType<CreateInputField
 }
 
 export class CreateRootEntityInputType extends CreateObjectInputType {
+
+    constructor(
+        public readonly rootEntityType: RootEntityType,
+        fields: Thunk<ReadonlyArray<CreateInputField>>
+    ) {
+        super(rootEntityType, fields);
+    }
+
+    getCreateStatements(input: PlainObject, newEntityIdVarNode: VariableQueryNode) {
+        // Create new entity
+        const objectNode = new LiteralQueryNode(this.prepareValue(input));
+        const affectedFields = this.getAffectedFields(input).map(field => new AffectedFieldInfoQueryNode(field));
+        const createEntityNode = new CreateEntityQueryNode(this.rootEntityType, objectNode, affectedFields);
+        const newEntityPreExec = new PreExecQueryParms({query: createEntityNode, resultVariable: newEntityIdVarNode});
+
+        // Add relations if needed
+        const relationStatements = this.getRelationStatements(input, newEntityIdVarNode);
+        // Note: these statements contain validators which should arguably be moved to the front
+        // works with transactional DB adapters, but e.g. not with JavaScript
+
+        return [newEntityPreExec, ...relationStatements];
+    }
+
     getAdditionalProperties() {
         const now = getCurrentISODate();
         return {
@@ -58,7 +82,7 @@ export class CreateRootEntityInputType extends CreateObjectInputType {
         };
     }
 
-    getRelationStatements(input: PlainObject, idNode: QueryNode): ReadonlyArray<PreExecQueryParms> {
+    private getRelationStatements(input: PlainObject, idNode: QueryNode): ReadonlyArray<PreExecQueryParms> {
         const relationFields = this.fields
             .filter(isRelationCreateField)
             .filter(field => field.appliesToMissingFields() || field.name in input);

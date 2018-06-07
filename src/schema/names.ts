@@ -2,9 +2,9 @@ import * as pluralize from 'pluralize';
 import { capitalize } from '../utils/utils';
 import {
     ADD_CHILD_ENTITIES_FIELD_PREFIX, ADD_EDGES_FIELD_PREFIX, ALL_ENTITIES_FIELD_PREFIX, CREATE_ENTITY_FIELD_PREFIX,
-    DELETE_ALL_ENTITIES_FIELD_PREFIX, DELETE_ENTITY_FIELD_PREFIX, REMOVE_CHILD_ENTITIES_FIELD_PREFIX,
-    REMOVE_EDGES_FIELD_PREFIX, UPDATE_ALL_ENTITIES_FIELD_PREFIX, UPDATE_CHILD_ENTITIES_FIELD_PREFIX,
-    UPDATE_ENTITY_FIELD_PREFIX
+    CREATE_RELATED_ENTITY_FIELD_PREFIX, DELETE_ALL_ENTITIES_FIELD_PREFIX, DELETE_ENTITY_FIELD_PREFIX,
+    REMOVE_CHILD_ENTITIES_FIELD_PREFIX, REMOVE_EDGES_FIELD_PREFIX, UPDATE_ALL_ENTITIES_FIELD_PREFIX,
+    UPDATE_CHILD_ENTITIES_FIELD_PREFIX, UPDATE_ENTITY_FIELD_PREFIX
 } from './constants';
 
 export function getAllEntitiesFieldName(entityName: string) {
@@ -53,6 +53,10 @@ export function getUpdateChildEntitiesFieldName(fieldName: string) {
 
 export function getRemoveChildEntitiesFieldName(fieldName: string) {
     return REMOVE_CHILD_ENTITIES_FIELD_PREFIX + capitalize(fieldName);
+}
+
+export function getCreateRelatedEntityFieldName(fieldName: string) {
+    return CREATE_RELATED_ENTITY_FIELD_PREFIX + capitalize(fieldName);
 }
 
 export function getFilterTypeName(typeName: string) {

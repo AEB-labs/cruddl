@@ -78,22 +78,13 @@ export class MutationTypeGenerator {
     }
 
     private generateCreateQueryNode(rootEntityType: RootEntityType, input: PlainObject, inputType: CreateRootEntityInputType): QueryNode {
-        // Create new entity
-        const objectNode = new LiteralQueryNode(inputType.prepareValue(input));
-        const affectedFields = inputType.getAffectedFields(input).map(field => new AffectedFieldInfoQueryNode(field));
-        const createEntityNode = new CreateEntityQueryNode(rootEntityType, objectNode, affectedFields);
         const newEntityIdVarNode = new VariableQueryNode('newEntityId');
-        const newEntityPreExec = new PreExecQueryParms({query: createEntityNode, resultVariable: newEntityIdVarNode});
-
-        // Add relations if needed
-        const relationStatements = inputType.getRelationStatements(input, newEntityIdVarNode);
-        // Note: these statements contain validators which should arguably be moved to the front
-        // works with transactional DB adapters, but e.g. not with JavaScript
+        const createStatements = inputType.getCreateStatements(input, newEntityIdVarNode);
 
         // PreExecute creation and relation queries and return result
         return new WithPreExecutionQueryNode({
             resultNode: new EntityFromIdQueryNode(rootEntityType, newEntityIdVarNode),
-            preExecQueries: [newEntityPreExec, ...relationStatements]
+            preExecQueries: [...createStatements]
         });
     }
 

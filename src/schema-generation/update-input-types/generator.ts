@@ -1,7 +1,6 @@
 import { GraphQLID, GraphQLList, GraphQLNonNull } from 'graphql';
 import { flatMap } from 'lodash';
 import memorize from 'memorize-decorator';
-import * as pluralize from 'pluralize';
 import { CalcMutationsOperator, ChildEntityType, EntityExtensionType, Field, RootEntityType } from '../../model';
 import { CALC_MUTATIONS_OPERATORS, CalcMutationOperator, ID_FIELD } from '../../schema/constants';
 import { getUpdateAllInputTypeName, getUpdateInputTypeName } from '../../schema/names';
@@ -15,7 +14,10 @@ import {
 import {
     UpdateChildEntityInputType, UpdateEntityExtensionInputType, UpdateObjectInputType, UpdateRootEntityInputType
 } from './input-types';
-import { AddEdgesInputField, RemoveEdgesInputField, SetEdgeInputField } from './relation-fields';
+import {
+    AddEdgesInputField, CreateAndAddEdgesInputField, CreateAndSetEdgeInputField, RemoveEdgesInputField,
+    SetEdgeInputField
+} from './relation-fields';
 
 export class UpdateInputTypeGenerator {
     constructor(
@@ -126,13 +128,16 @@ export class UpdateInputTypeGenerator {
                 return [];
             }
 
+            const inputType = this.createInputTypeGenerator.generateForRootEntityType(field.type);
             if (field.isList) {
                 return [
                     new AddEdgesInputField(field),
-                    new RemoveEdgesInputField(field)
+                    new RemoveEdgesInputField(field),
+                    new CreateAndAddEdgesInputField(field, inputType)
                 ];
             } else {
-                return [new SetEdgeInputField(field)];
+                return [new SetEdgeInputField(field),
+                    new CreateAndSetEdgeInputField(field, inputType)];
             }
         }
 

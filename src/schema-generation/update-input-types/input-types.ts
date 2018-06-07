@@ -1,8 +1,5 @@
 import { Thunk } from 'graphql';
 import { groupBy } from 'lodash';
-import {
-    getAddChildEntitiesFieldName, getRemoveChildEntitiesFieldName, getUpdateChildEntitiesFieldName
-} from '../../schema/names';
 import { ChildEntityType, Field, ObjectType, RootEntityType } from '../../model';
 import {
     BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode, FieldQueryNode,
@@ -11,6 +8,9 @@ import {
     UnaryOperator, VariableQueryNode
 } from '../../query-tree';
 import { ENTITY_UPDATED_AT, ID_FIELD } from '../../schema/constants';
+import {
+    getAddChildEntitiesFieldName, getRemoveChildEntitiesFieldName, getUpdateChildEntitiesFieldName
+} from '../../schema/names';
 import { AnyValue, decapitalize, flatMap, joinWithAnd, objectEntries, PlainObject } from '../../utils/utils';
 import { TypedInputObjectType } from '../typed-input-object-type';
 import { AddChildEntitiesInputField, UpdateChildEntitiesInputField, UpdateInputField } from './input-fields';
@@ -160,12 +160,13 @@ export class UpdateObjectInputType extends TypedInputObjectType<UpdateInputField
     private getApplicableInputFields(value: PlainObject): ReadonlyArray<UpdateInputField> {
         return this.fields.filter(field => field.name in value || field.appliesToMissingFields());
     }
+
 }
 
 export class UpdateRootEntityInputType extends UpdateObjectInputType {
     private readonly updatedAtField: Field;
 
-    constructor(private readonly rootEntityType: RootEntityType, name: string, fields: Thunk<ReadonlyArray<UpdateInputField>>) {
+    constructor(public readonly rootEntityType: RootEntityType, name: string, fields: Thunk<ReadonlyArray<UpdateInputField>>) {
         super(rootEntityType, name, fields);
         this.updatedAtField = this.rootEntityType.getFieldOrThrow(ENTITY_UPDATED_AT);
     }
