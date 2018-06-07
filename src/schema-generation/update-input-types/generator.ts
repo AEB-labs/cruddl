@@ -15,7 +15,7 @@ import {
 import {
     UpdateChildEntityInputType, UpdateEntityExtensionInputType, UpdateObjectInputType, UpdateRootEntityInputType
 } from './input-types';
-import { AddEdgesInputField, CreateAndAddEdgeInputField, CreateAndAddEdgesInputField, RemoveEdgesInputField, SetEdgeInputField } from './relation-fields';
+import { AddEdgesInputField, CreateAndSetEdgeInputField, CreateAndAddEdgesInputField, RemoveEdgesInputField, SetEdgeInputField } from './relation-fields';
 
 export class UpdateInputTypeGenerator {
     constructor(
@@ -135,7 +135,7 @@ export class UpdateInputTypeGenerator {
                 ];
             } else {
                 return [new SetEdgeInputField(field),
-                    new CreateAndAddEdgeInputField(field, inputType)];
+                    new CreateAndSetEdgeInputField(field, inputType)];
             }
         }
 

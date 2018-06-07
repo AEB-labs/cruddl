@@ -1,5 +1,5 @@
 {
-  "createDeliveryAndForwarder": {
+  "toManyRelation": {
     "data": {
       "createDelivery": {
         "deliveryNumber": "10",

@@ -4,8 +4,11 @@ import { PreExecQueryParms, QueryNode, SetFieldQueryNode } from '../../query-tre
 import { CREATE_RELATED_ENTITY_FIELD_PREFIX } from '../../schema/constants';
 import { getAddRelationFieldName, getRemoveRelationFieldName } from '../../schema/names';
 import { AnyValue, capitalize, PlainObject } from '../../utils/utils';
-import { CreateRootEntityInputType } from '../create-input-types/input-types';
-import { getAddEdgesStatements, getCreateAndAddEdgesStatements, getRemoveEdgesStatements, getSetEdgeStatements } from '../utils/relations';
+import { CreateRootEntityInputType } from '../create-input-types';
+import {
+    getAddEdgesStatements, getCreateAndAddEdgesStatements, getCreateAndSetEdgeStatements, getRemoveEdgesStatements,
+    getSetEdgeStatements
+} from '../utils/relations';
 import { UpdateInputField } from './input-fields';
 
 export abstract class AbstractRelationUpdateInputField implements UpdateInputField {
@@ -109,7 +112,7 @@ export class CreateAndAddEdgesInputField extends AbstractRelationUpdateInputFiel
     }
 }
 
-export class CreateAndAddEdgeInputField extends AbstractRelationUpdateInputField {
+export class CreateAndSetEdgeInputField extends AbstractRelationUpdateInputField {
     readonly inputType: GraphQLInputType;
 
     constructor(
@@ -132,7 +135,7 @@ export class CreateAndAddEdgeInputField extends AbstractRelationUpdateInputField
             throw new Error(`Expected value of "${this.name}" to be an object, but is ${typeof value}`);
         }
 
-        return getCreateAndAddEdgesStatements(this.field, sourceIDNode, this.objectInputType, [value] as ReadonlyArray<PlainObject>);
+        return getCreateAndSetEdgeStatements(this.field, sourceIDNode, this.objectInputType, value as PlainObject);
     }
 }
 

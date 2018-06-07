@@ -1,0 +1,40 @@
+mutation createWithNestedToOne {
+    createDelivery(input: {deliveryNumber: "10", createForwarder: { name: "A" }}) {
+        forwarder {
+            name
+        }
+    }
+}
+
+mutation updateWithNestedToOne {
+    updateDelivery(input: {id: "@{ids/Delivery/1}", createForwarder: { name: "old" }}) {
+        forwarder {
+            name
+        }
+    }
+}
+
+mutation updateWithNewNestedToOne {
+    updateDelivery(input: {id: "@{ids/Delivery/1}", createForwarder: { name: "new" }}) {
+        forwarder {
+            name
+        }
+    }
+}
+
+# check that the create-and-set mutation "createForwarder" removes the old edge
+query checkOldGotRemoved {
+    old: allForwarders(filter: { name: "old"}) {
+        name
+        deliveries {
+            deliveryNumber
+        }
+    }
+
+    new: allForwarders(filter: { name: "new"}) {
+        name
+        deliveries {
+            deliveryNumber
+        }
+    }
+}
