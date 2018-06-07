@@ -287,13 +287,26 @@ const processors : { [name: string]: NodeProcessor<any> } = {
         }
         let filter = simplifyBooleans(node.filterNode);
 
+        let limitClause;
+        if (node.maxCount != undefined) {
+            if (node.skip === 0) {
+                limitClause = aql`LIMIT ${node.maxCount}`;
+            } else {
+                limitClause = aql`LIMIT ${node.skip}, ${node.maxCount}`;
+            }
+        } else if (node.skip > 0) {
+            limitClause = aql`LIMIT ${node.skip}, ${Number.MAX_SAFE_INTEGER}`;
+        } else {
+            limitClause = aql``;
+        }
+
         return aqlExt.parenthesizeList(
             aql`FOR ${itemVar}`,
             aql`IN ${list}`,
             (filter instanceof ConstBoolQueryNode && filter.value) ? aql`` : aql`FILTER ${processNode(filter, itemContext)}`,
             filterDanglingEdges,
             generateSortAQL(node.orderBy, itemContext),
-            node.maxCount != undefined ? aql`LIMIT ${node.maxCount}` : aql``,
+            limitClause,
             aql`RETURN ${processNode(node.innerNode, itemContext)}`
         );
     },

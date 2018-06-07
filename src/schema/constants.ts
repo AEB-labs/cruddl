@@ -51,6 +51,7 @@ export const FILTER_ARG = 'filter';
 export const ORDER_BY_ARG = 'orderBy';
 
 export const CURSOR_FIELD = '_cursor';
+export const SKIP_ARG = 'skip';
 export const AFTER_ARG = 'after';
 export const FIRST_ARG = 'first';
 export const VALUE_ARG = 'value';

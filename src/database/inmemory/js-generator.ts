@@ -258,12 +258,21 @@ const processors : { [name: string]: NodeProcessor<any> } = {
         const isFiltered = !(node.filterNode instanceof ConstBoolQueryNode) || node.filterNode.value != true;
         const isMapped = node.innerNode != node.itemVariable;
 
+        let sliceClause;
+        if (node.maxCount != undefined) {
+            sliceClause = js`.slice(${node.skip}, ${node.skip + node.maxCount})`;
+        } else if (node.skip > 0) {
+            sliceClause = js`.slice(${node.skip})`;
+        } else {
+            sliceClause = js``;
+        }
+
         return js.lines(
             processNode(node.listNode, context),
             js.indent(js.lines(
                 isFiltered ? js`.filter(${lambda(node.filterNode)})` : js``,
                 comparator ? js`.slice().sort(${comparator})` : js``, // need slice() to not replace something in-place
-                node.maxCount != undefined ? js`.slice(0, ${node.maxCount})` : js``,
+                sliceClause,
                 isMapped ? js`.map(${lambda(node.innerNode)})` : js``
             ))
         );
