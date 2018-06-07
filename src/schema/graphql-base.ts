@@ -67,7 +67,7 @@ export const DIRECTIVES: DocumentNode = gql`
     input IndexDefinition {
         id: String,
         fields: [String!]!
-        unique: Boolean
+        unique: Boolean = false
     }
 `;
 
