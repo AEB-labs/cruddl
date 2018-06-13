@@ -94,10 +94,6 @@ export class RootEntityType extends ObjectTypeBase {
             return;
         }
 
-        /*if (field.type.kind !== TypeKind.SCALAR) {
-            context.addMessage(ValidationMessage.error(`Only fields of scalar type can be used as key field.`, undefined, astNode));
-        }*/
-
         if (field.type.kind !== TypeKind.SCALAR || !(field.type.name === SCALAR_INT || field.type.name === SCALAR_STRING)) {
             context.addMessage(ValidationMessage.error(`Only fields of type "String" and "Int" can be used as key field.`, undefined, astNode));
         }
