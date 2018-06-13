@@ -57,7 +57,7 @@
     "arangojs": "~5.7.1",
     "colors": "^1.2.1",
     "graphql-tag": "^2.5.0",
-    "graphql-transformer": "^0.1.4",
+    "graphql-transformer": "0.1.4",
     "graphql-type-json": "^0.1.4",
     "js-yaml": "^3.10.0",
     "json-lint": "^0.1.0",
