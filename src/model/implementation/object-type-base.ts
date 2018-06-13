@@ -28,7 +28,7 @@ export abstract class ObjectTypeBase extends TypeBase {
         super.validate(context);
 
         if (!this.fields.length) {
-            context.addMessage(ValidationMessage.error(`Object type "${this.name}" does not declare any fields.`, undefined, this.astNode));
+            context.addMessage(ValidationMessage.error(`Object type "${this.name}" does not declare any fields.`, undefined, this.getValidationLocation()));
         }
 
         this.validateDuplicateFields(context);

@@ -638,7 +638,7 @@ describe('Field', () => {
                 calcMutationOperators: [CalcMutationsOperator.APPEND]
             }, deliveryType);
 
-            expectSingleErrorToInclude(field, `Calc mutation operator "APPEND" is not supported on type "Int" (supported types: "String").`);
+            expectSingleErrorToInclude(field, `Calc mutation operator "APPEND" is not supported on type "Int" (supported operators: "MULTIPLY", "DIVIDE", "ADD", "SUBTRACT", "MODULO").`);
         });
 
         it('rejects MULTIPLY on String', () => {
@@ -648,7 +648,7 @@ describe('Field', () => {
                 calcMutationOperators: [CalcMutationsOperator.MULTIPLY]
             }, deliveryType);
 
-            expectSingleErrorToInclude(field, `Calc mutation operator "MULTIPLY" is not supported on type "String" (supported types: "Int", "Float").`);
+            expectSingleErrorToInclude(field, `Calc mutation operator "MULTIPLY" is not supported on type "String" (supported operators: "APPEND", "PREPEND").`);
         });
 
         it('rejects APPEND on lists', () => {

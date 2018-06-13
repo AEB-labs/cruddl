@@ -6,7 +6,7 @@ import { ScalarType } from './scalar-type';
 import { ValidationContext } from '../validation/validation-context';
 import { ValidationMessage } from '../validation';
 import { Index } from './indices';
-import { ACCESS_GROUP_FIELD, DEFAULT_PERMISSION_PROFILE } from '../../schema/constants';
+import { ACCESS_GROUP_FIELD, DEFAULT_PERMISSION_PROFILE, SCALAR_INT, SCALAR_STRING } from '../../schema/constants';
 import { PermissionProfile } from './permission-profile';
 import { Relation } from './relation';
 import { GraphQLString } from 'graphql';
@@ -94,8 +94,8 @@ export class RootEntityType extends ObjectTypeBase {
             return;
         }
 
-        if (field.type.kind !== TypeKind.SCALAR) {
-            context.addMessage(ValidationMessage.error(`Only fields of scalar type can be used as key field.`, undefined, astNode));
+        if (field.type.kind !== TypeKind.SCALAR || !(field.type.name === SCALAR_INT || field.type.name === SCALAR_STRING)) {
+            context.addMessage(ValidationMessage.error(`Only fields of type "String" and "Int" can be used as key field.`, undefined, astNode));
         }
 
         if (field.isList) {

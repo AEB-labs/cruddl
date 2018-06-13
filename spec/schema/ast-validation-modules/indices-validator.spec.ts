@@ -79,6 +79,18 @@ describe('indices validator', () => {
         `, 'Indices are only allowed in root entity fields. You can add indices to fields of embedded objects with @rootEntities(indices: [...]).');
     });
 
+    it('rejects index on field of JSON type', () => {
+        assertValidatorRejects(`
+            type Foo @rootEntity { bar: JSON @index }
+        `, 'Indices can not be defined on scalar fields of type "JSON", but the type of "Foo.bar" is "JSON".');
+        assertValidatorRejects(`
+            type Foo @rootEntity { bar: JSON @unique }
+        `, 'Indices can not be defined on scalar fields of type "JSON", but the type of "Foo.bar" is "JSON".');
+        assertValidatorRejects(`
+            type Foo @rootEntity(indices:[{ fields: ["bar"]}]) { bar: JSON }
+        `, 'Indices can not be defined on scalar fields of type "JSON", but the type of "Foo.bar" is "JSON".');
+    });
+
     it('rejects index on field of non-rootEntity', () => {
         assertValidatorRejects(`
             type Foo @childEntity { bar: String @index }

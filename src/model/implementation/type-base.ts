@@ -2,6 +2,7 @@ import { TypeDefinitionNode } from 'graphql';
 import { TypeConfig, TypeKind } from '../config';
 import { ValidationMessage } from '../validation';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
+import { LocationLike } from '../validation/message';
 
 export abstract class TypeBase implements ModelComponent {
     readonly name: string;
@@ -20,21 +21,34 @@ export abstract class TypeBase implements ModelComponent {
     }
 
     private validateName(context: ValidationContext) {
+        let location = this.getValidationLocation();
+
         if (!this.name) {
-            context.addMessage(ValidationMessage.error(`Type name is empty.`, undefined, this.astNode));
+            context.addMessage(ValidationMessage.error(`Type name is empty.`, undefined, location));
             return;
         }
 
         // Especially forbid leading underscores. This is more of a linter rule, but it also ensures there are no collisions with internal collections, introspection or the like
         if (!this.name.match(/^[a-zA-Z][a-zA-Z0-9]+$/)) {
-            context.addMessage(ValidationMessage.error(`Type names should only contain alphanumeric characters.`, undefined, this.astNode));
+            context.addMessage(ValidationMessage.error(`Type names should only contain alphanumeric characters.`, undefined, location));
             return;
         }
 
         // this is a linter rule
         if (!this.name.match(/^[A-Z]/)) {
-            context.addMessage(ValidationMessage.warn(`Type names should start with an uppercase character.`, undefined, this.astNode));
+            context.addMessage(ValidationMessage.warn(`Type names should start with an uppercase character.`, undefined, location));
         }
+    }
+
+    protected getValidationLocation(): LocationLike | undefined {
+        let location: LocationLike | undefined;
+        if (this.astNode && this.astNode.loc) {
+            location = this.astNode.loc;
+        }
+        if (this.astNode && this.astNode.name) {
+            location = this.astNode.name.loc;
+        }
+        return location;
     }
 
     abstract readonly isObjectType: boolean = false;

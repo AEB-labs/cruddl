@@ -25,7 +25,7 @@ describe('key field validator', () => {
                 count: Int
             }
         `,
-            'Only fields of scalar type can be used as key field.');
+            'Only fields of type "String" and "Int" can be used as key field.');
     });
 
     it('finds bad list type usage', () => {
@@ -45,6 +45,16 @@ describe('key field validator', () => {
             }
         `,
             'A @key field can only be declared on root entities.');
+    });
+
+    it('disallows keys on fields which are not String or Int', () => {
+        assertValidatorRejects(`
+            type Stuff @rootEntity {
+                foo: String
+                bar: JSON @key
+            }
+        `,
+            'Only fields of type "String" and "Int" can be used as key field.');
     });
 
     it('accepts correct key usage', () => {
