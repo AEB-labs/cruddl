@@ -12,14 +12,14 @@ import { Relation } from './relation';
 export class Field implements ModelComponent {
     readonly model: Model;
     readonly name: string;
-    readonly description: string|undefined;
-    readonly astNode: FieldDefinitionNode|undefined;
+    readonly description: string | undefined;
+    readonly astNode: FieldDefinitionNode | undefined;
     readonly isList: boolean;
     readonly isReference: boolean;
     readonly isRelation: boolean;
     readonly defaultValue?: any;
     readonly calcMutationOperators: ReadonlySet<CalcMutationsOperator>;
-    readonly roles: RolesSpecifier|undefined;
+    readonly roles: RolesSpecifier | undefined;
 
     /**
      * Indicates if this is an inherent field of the declaring type that will be maintained by the system and thus can
@@ -60,14 +60,14 @@ export class Field implements ModelComponent {
         return this.defaultValue !== undefined;
     }
 
-    public get permissionProfile(): PermissionProfile|undefined {
+    public get permissionProfile(): PermissionProfile | undefined {
         if (!this.input.permissions || this.input.permissions.permissionProfileName == undefined) {
             return undefined;
         }
         return this.model.getPermissionProfile(this.input.permissions.permissionProfileName);
     }
 
-    public get inverseOf(): Field|undefined {
+    public get inverseOf(): Field | undefined {
         if (this.input.inverseOfFieldName == undefined) {
             return undefined;
         }
@@ -78,11 +78,11 @@ export class Field implements ModelComponent {
         return type.getField(this.input.inverseOfFieldName);
     }
 
-    public get inverseField(): Field|undefined {
+    public get inverseField(): Field | undefined {
         return this.type.isObjectType ? this.type.fields.find(field => field.inverseOf === this) : undefined;
     }
 
-    public get relation(): Relation|undefined {
+    public get relation(): Relation | undefined {
         if (!this.isRelation || !this.declaringType.isRootEntityType || !this.type.isRootEntityType) {
             return undefined;
         }
@@ -278,7 +278,7 @@ export class Field implements ModelComponent {
         }
 
         if (!this.isList) {
-            context.addMessage(ValidationMessage.error(`Type "${this.type.name}" is a child entity type and can only be used in a list. Change the field type to "[${this.type.name}]", or use an entity extension or value object type instead.`, undefined, this.astNode))
+            context.addMessage(ValidationMessage.error(`Type "${this.type.name}" is a child entity type and can only be used in a list. Change the field type to "[${this.type.name}]", or use an entity extension or value object type instead.`, undefined, this.astNode));
         }
     }
 
@@ -287,12 +287,12 @@ export class Field implements ModelComponent {
 
         if (permissions.permissionProfileName != undefined && permissions.roles != undefined) {
             const message = `Permission profile and explicit role specifiers cannot be combined.`;
-            context.addMessage(ValidationMessage.error(message, undefined, permissions.permissionProfileNameAstNode || this.input.astNode ));
-            context.addMessage(ValidationMessage.error(message, undefined, permissions.roles.astNode || this.input.astNode ));
+            context.addMessage(ValidationMessage.error(message, undefined, permissions.permissionProfileNameAstNode || this.input.astNode));
+            context.addMessage(ValidationMessage.error(message, undefined, permissions.roles.astNode || this.input.astNode));
         }
 
         if (permissions.permissionProfileName != undefined && !this.model.getPermissionProfile(permissions.permissionProfileName)) {
-            context.addMessage(ValidationMessage.error(`Permission profile "${permissions.permissionProfileName}" not found.`, undefined, permissions.permissionProfileNameAstNode || this.input.astNode ));
+            context.addMessage(ValidationMessage.error(`Permission profile "${permissions.permissionProfileName}" not found.`, undefined, permissions.permissionProfileNameAstNode || this.input.astNode));
         }
 
         if (this.roles) {
@@ -328,9 +328,12 @@ export class Field implements ModelComponent {
             if (!desc) {
                 throw new Error(`Unknown calc mutation operator: ${operator}`);
             }
-            const supportedTypesDesc = desc.supportedTypes.map(t => `"${t}"`).join(", ");
+
+            const supportedOperators = CALC_MUTATIONS_OPERATORS.filter(op => op.supportedTypes.includes(this.type.name));
+            const supportedOperatorsDesc = supportedOperators.map(op => '"' + op.name + '"').join(', ');
+
             if (!(desc.supportedTypes.includes(this.type.name))) {
-                context.addMessage(ValidationMessage.error(`Calc mutation operator "${operator}" is not supported on type "${this.type.name}" (supported types: ${supportedTypesDesc}).`, undefined, this.astNode));
+                context.addMessage(ValidationMessage.error(`Calc mutation operator "${operator}" is not supported on type "${this.type.name}" (supported operators: ${supportedOperatorsDesc}).`, undefined, this.astNode));
             }
         }
     }
