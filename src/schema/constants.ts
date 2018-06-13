@@ -43,6 +43,8 @@ export const SCALAR_DATETIME = 'DateTime';
 export const SCALAR_DATE = 'Date';
 export const SCALAR_TIME = 'Time';
 export const SCALAR_JSON = 'JSON';
+export const SCALAR_INT = 'Int';
+export const SCALAR_STRING = 'String';
 
 export const ORDER_BY_ASC_SUFFIX = '_ASC';
 export const ORDER_BY_DESC_SUFFIX = '_DESC';

@@ -74,7 +74,7 @@ export class IndexField implements ModelComponent {
         }
 
         if (field.type.kind == TypeKind.SCALAR && field.type.name == SCALAR_JSON) {
-            addMessage(ValidationMessage.error(`Indices can not be defined on scalar fields of type JSON, but the type of "${field.declaringType.name}.${field.name}" is JSON.`, undefined, this.astNode));
+            addMessage(ValidationMessage.error(`Indices can not be defined on scalar fields of type "JSON", but the type of "${field.declaringType.name}.${field.name}" is "JSON".`, undefined, this.astNode));
             return undefined;
         }
 
