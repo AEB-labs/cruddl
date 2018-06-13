@@ -340,10 +340,9 @@ const processors : { [name: string]: NodeProcessor<any> } = {
             return aql`(${lhs} ${op} ${rhs})`;
         }
 
-        // TODO maybe use LIKE for fulltext indices
         switch (node.operator) {
             case BinaryOperator.CONTAINS:
-                return aql`CONTAINS(${lhs}, ${rhs})`;
+                return aql`${lhs} LIKE CONCAT("%", ${rhs}, "%")`;
             case BinaryOperator.STARTS_WITH:
                 return aql`(LEFT(${lhs}, LENGTH(${rhs})) == ${rhs})`;
             case BinaryOperator.ENDS_WITH:
