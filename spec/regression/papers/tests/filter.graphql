@@ -26,7 +26,13 @@ query {
     contains: allPapers(filter: { key_contains: "a"}, orderBy: key_ASC) {
         key
     }
+    contains_empty_string: allPapers(filter: { key_contains: ""}, orderBy: key_ASC) {
+        key
+    }
     not_contains: allPapers(filter: { key_not_contains: "a"}, orderBy: key_ASC) {
+        key
+    }
+    not_contains_empty_string: allPapers(filter: { key_not_contains: ""}, orderBy: key_ASC) {
         key
     }
     starts_with: allPapers(filter: { key_starts_with: "O"}, orderBy: key_ASC) {
