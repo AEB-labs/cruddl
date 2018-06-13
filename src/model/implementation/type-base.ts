@@ -27,6 +27,12 @@ export abstract class TypeBase implements ModelComponent {
             return;
         }
 
+        // Leading underscores are reserved for internal names
+        if (this.name.startsWith('_')) {
+            context.addMessage(ValidationMessage.error(`Type names should not start with an underscore.`, undefined, location));
+            return;
+        }
+
         // Especially forbid leading underscores. This is more of a linter rule, but it also ensures there are no collisions with internal collections, introspection or the like
         if (!this.name.match(/^[a-zA-Z][a-zA-Z0-9]+$/)) {
             context.addMessage(ValidationMessage.warn(`Type names should only contain alphanumeric characters.`, undefined, location));

@@ -155,12 +155,20 @@ describe('Field', () => {
             expectSingleErrorToInclude(field, `Field name is empty.`);
         });
 
+        it('warns about names starting with an underscore', () => {
+            const field = new Field({
+                name: 'some_field_name',
+                typeName: 'String'
+            }, deliveryType);
+            expectSingleWarningToInclude(field, `Field names should only contain alphanumeric characters.`);
+        });
+
         it('rejects names starting with an underscore', () => {
             const field = new Field({
                 name: '_internal',
                 typeName: 'String'
             }, deliveryType);
-            expectSingleWarningToInclude(field, `Field names should only contain alphanumeric characters.`);
+            expectSingleErrorToInclude(field, `Field names should not start with an underscore.`);
         });
 
         it('warns about names starting with an uppercase character', () => {
