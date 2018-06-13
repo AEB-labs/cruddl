@@ -5,6 +5,7 @@ import { Field } from './field';
 import { Type } from './type';
 import { ValidationMessage } from '../validation';
 import {DirectiveNode, ObjectValueNode, StringValueNode} from 'graphql';
+import { SCALAR_JSON } from '../../schema/constants';
 
 export class IndexField implements ModelComponent {
     readonly path: string[];
@@ -69,6 +70,11 @@ export class IndexField implements ModelComponent {
 
         if (field.type.kind !== TypeKind.SCALAR && field.type.kind !== TypeKind.ENUM) {
             addMessage(ValidationMessage.error(`Indices can only be defined on scalar or enum fields, but the type of "${field.declaringType.name}.${field.name}" is an object type. Specify a dot-separated field path to create an index on an embedded object.`, undefined, this.astNode));
+            return undefined;
+        }
+
+        if (field.type.kind == TypeKind.SCALAR && field.type.name == SCALAR_JSON) {
+            addMessage(ValidationMessage.error(`Indices can not be defined on scalar fields of type JSON, but the type of "${field.declaringType.name}.${field.name}" is JSON.`, undefined, this.astNode));
             return undefined;
         }
 
