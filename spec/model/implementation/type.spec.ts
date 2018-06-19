@@ -23,13 +23,21 @@ describe('Type', () => {
             expectSingleErrorToInclude(type, `Type name is empty.`);
         });
 
-        it('rejects type with name containing underscores', () => {
+        it('warns about type names containing underscores', () => {
             const type = new ScalarType({
                 kind: TypeKind.SCALAR,
                 name: 'This_Is_Ugly'
             }, GraphQLString);
 
-            expectSingleErrorToInclude(type, `Type names should only contain alphanumeric characters.`);
+            expectSingleWarningToInclude(type, `Type names should only contain alphanumeric characters.`);
+        });
+
+        it('rejects names starting with an underscore', () => {
+            const type = new ScalarType({
+                kind: TypeKind.SCALAR,
+                name: '_Internal'
+            }, GraphQLString);
+            expectSingleErrorToInclude(type, `Type names should not start with an underscore.`);
         });
 
         it('warns about type names starting with a lowercase character', () => {

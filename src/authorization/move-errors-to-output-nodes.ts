@@ -41,7 +41,7 @@ export function moveErrorsToOutputNodes(queryTree: QueryNode): QueryNode {
             return { newValue: node };
         },
 
-        leave(node: QueryNode, key: string) {
+        leave(node: QueryNode) {
             const frame = stack.pop();
             // only take care of the errors if all of them occurred within this node
             if (errorList.length) {
@@ -87,11 +87,11 @@ export enum OutputNodeKind {
 namespace outputNodes {
     const map = new Map<Function, Map<string, OutputNodeKind>>();
 
-    function add<T>(clazz: {new(...a: any[]): T}, ...fields: (keyof T)[]) {
+    function add<T>(clazz: {new(...a: any[]): T}, ...fields: ((keyof T) & string)[]) {
         addExt(clazz, OutputNodeKind.OUTPUT, ...fields);
     }
 
-    function addExt<T>(clazz: {new(...a: any[]): T}, kind: OutputNodeKind, ...fields: (keyof T)[]) {
+    function addExt<T>(clazz: {new(...a: any[]): T}, kind: OutputNodeKind, ...fields: ((keyof T) & string)[]) {
         map.set(clazz, new Map(fields.map((field): [string, OutputNodeKind] => ([field, kind]))));
     }
 

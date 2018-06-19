@@ -1,6 +1,6 @@
 import {
-    ArgumentNode, EnumValueDefinitionNode, FieldDefinitionNode, GraphQLBoolean, GraphQLInputObjectType, GraphQLList,
-    GraphQLNonNull, GraphQLString, ObjectTypeDefinitionNode, ObjectValueNode, StringValueNode, valueFromAST
+    ArgumentNode, EnumValueDefinitionNode, FieldDefinitionNode, GraphQLBoolean, GraphQLID, GraphQLInputObjectType,
+    GraphQLList, GraphQLNonNull, GraphQLString, ObjectTypeDefinitionNode, ObjectValueNode, StringValueNode, valueFromAST
 } from 'graphql';
 import { SchemaConfig, SchemaPartConfig } from '../config/schema-config';
 import {
@@ -9,7 +9,7 @@ import {
 import { getValueFromAST } from '../graphql/value-from-ast';
 import {
     CALC_MUTATIONS_DIRECTIVE, CALC_MUTATIONS_OPERATORS_ARG, CHILD_ENTITY_DIRECTIVE, DEFAULT_VALUE_DIRECTIVE,
-    ENTITY_EXTENSION_DIRECTIVE, INDEX_DEFINITION_INPUT_TYPE, INDEX_DIRECTIVE, INDICES_ARG, INVERSE_OF_ARG,
+    ENTITY_EXTENSION_DIRECTIVE, ID_FIELD, INDEX_DEFINITION_INPUT_TYPE, INDEX_DIRECTIVE, INDICES_ARG, INVERSE_OF_ARG,
     KEY_FIELD_DIRECTIVE, NAMESPACE_DIRECTIVE, NAMESPACE_NAME_ARG, NAMESPACE_SEPARATOR, OBJECT_TYPE_KIND_DIRECTIVES,
     PERMISSION_PROFILE_ARG, REFERENCE_DIRECTIVE, RELATION_DIRECTIVE, ROLES_DIRECTIVE, ROLES_READ_ARG,
     ROLES_READ_WRITE_ARG, ROOT_ENTITY_DIRECTIVE, UNIQUE_DIRECTIVE, VALUE_ARG, VALUE_OBJECT_DIRECTIVE
@@ -112,18 +112,51 @@ function createObjectTypeInput(definition: ObjectTypeDefinitionNode, schemaPart:
             // interpret unknown kinds as root entity because they are least likely to cause unnecessary errors
             // (errors are already reported in getKindOfObjectTypeNode)
 
-            const keyFieldASTNode: FieldDefinitionNode | undefined = getKeyFieldASTNode(definition, context);
             return {
                 ...common,
+                ...processKeyField(definition, common.fields, context),
                 kind: TypeKind.ROOT_ENTITY,
                 permissions: getPermissions(definition, context),
                 namespacePath: getNamespacePath(definition, schemaPart.localNamespace),
                 indices: createIndexDefinitionInputs(definition, context),
-                keyFieldASTNode,
-                keyFieldName: keyFieldASTNode ? keyFieldASTNode.name.value : undefined
             };
     }
+}
 
+/**
+ * Extract the @key field
+ *
+ * id: ID @key means that 'id' is the @key field
+ * for backwards compatibility, we also support _key: String @key
+ */
+function processKeyField(definition: ObjectTypeDefinitionNode, fields: ReadonlyArray<FieldConfig>, context: ValidationContext) {
+    let keyFieldASTNode: FieldDefinitionNode | undefined = getKeyFieldASTNode(definition, context);
+    let keyFieldName: string | undefined = keyFieldASTNode ? keyFieldASTNode.name.value : undefined;
+    const underscoreKeyField = fields.find(field => field.name == '_key');
+    if (underscoreKeyField) {
+        fields = fields.filter(f => f !== underscoreKeyField);
+        if (keyFieldASTNode && keyFieldASTNode.name.value === underscoreKeyField.name) {
+            keyFieldASTNode = underscoreKeyField.astNode;
+            keyFieldName = ID_FIELD;
+            context.addMessage(ValidationMessage.warn(`The field "_key" is deprecated and should be replaced with "id" (of type "ID").`));
+        } else {
+            context.addMessage(ValidationMessage.error(`The field name "_key" is reserved and can only be used in combination with @key.`));
+        }
+    }
+    const idField = fields.find(field => field.name == ID_FIELD);
+    if (idField) {
+        fields = fields.filter(f => f !== idField);
+        if (keyFieldASTNode && keyFieldASTNode.name.value === idField.name) {
+            keyFieldASTNode = idField.astNode;
+            keyFieldName = ID_FIELD;
+        } else {
+            context.addMessage(ValidationMessage.warn(`The field "id" is redundant and should only be explicitly added when used with @key.`));
+        }
+        if (idField.typeName !== GraphQLID.name) {
+            context.addMessage(ValidationMessage.error(`The field "id" must be of type "ID".`));
+        }
+    }
+    return {fields, keyFieldASTNode, keyFieldName};
 }
 
 function getDefaultValue(fieldNode: FieldDefinitionNode, context: ValidationContext): any {
@@ -246,7 +279,13 @@ function buildIndexDefinitionFromObjectValue(indexDefinitionNode: ObjectValueNod
 }
 
 function mapIndexDefinition(index: ObjectValueNode): IndexDefinitionConfig {
-    return valueFromAST(index, indexDefinitionInputObjectType);
+    const value = valueFromAST(index, indexDefinitionInputObjectType);
+    const fieldsField = index.fields.find(f => f.name.value === 'fields');
+    const fieldASTNodes = fieldsField && fieldsField.value.kind === 'ListValue' ? fieldsField.value.values : undefined;
+    return {
+        ...value,
+        fieldASTNodes
+    };
 }
 
 function getKindOfObjectTypeNode(definition: ObjectTypeDefinitionNode, context?: ValidationContext): string | undefined {

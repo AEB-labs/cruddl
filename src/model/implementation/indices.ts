@@ -96,7 +96,7 @@ export class Index implements ModelComponent {
     constructor(private input: IndexDefinitionConfig, public readonly declaringType: RootEntityType) {
         this.id = input.id;
         this.unique = input.unique;
-        this.fields = (input.fields || []).map((fieldPath, index) => new IndexField(fieldPath, declaringType, (input.fieldASTNodes || [])[index] || this.astNode));
+        this.fields = (input.fields || []).map((fieldPath, index) => new IndexField(fieldPath, declaringType, (input.fieldASTNodes || [])[index] || input.astNode));
         this.astNode = input.astNode;
     }
 

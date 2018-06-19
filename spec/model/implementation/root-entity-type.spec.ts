@@ -119,7 +119,7 @@ describe('RootEntityType', () => {
                 keyFieldName: 'address'
             }, model);
 
-            expectSingleErrorToInclude(type, `Only fields of type "String" and "Int" can be used as key field.`);
+            expectSingleErrorToInclude(type, `Only fields of type "String", "Int", and "ID" can be used as key field.`);
         });
     });
 

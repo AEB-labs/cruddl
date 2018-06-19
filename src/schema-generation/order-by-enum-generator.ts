@@ -84,6 +84,11 @@ export class OrderByEnumGenerator {
             return [];
         }
 
+        // can't sort by list value
+        if (field.isList) {
+            return [];
+        }
+
         const newPath = [...path, field];
         if (field.type.isObjectType) {
             return this.getValues(field.type, newPath);

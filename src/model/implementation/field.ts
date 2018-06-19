@@ -138,9 +138,14 @@ export class Field implements ModelComponent {
             return;
         }
 
-        // Especially forbid leading underscores. This is more of a linter rule, but it also ensures there are no collisions with e.g. ArangoDB's predefined fields like _key.
+        // Leading underscores are reserved for internal names, like ArangoDB's _key field
+        if (this.name.startsWith('_')) {
+            context.addMessage(ValidationMessage.error(`Field names should not start with an underscore.`, undefined, this.astNode));
+            return;
+        }
+
         if (!this.name.match(/^[a-zA-Z][a-zA-Z0-9]+$/)) {
-            context.addMessage(ValidationMessage.error(`Field names should only contain alphanumeric characters.`, undefined, this.astNode));
+            context.addMessage(ValidationMessage.warn(`Field names should only contain alphanumeric characters.`, undefined, this.astNode));
             return;
         }
 
