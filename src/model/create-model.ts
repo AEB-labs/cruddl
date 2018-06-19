@@ -279,7 +279,13 @@ function buildIndexDefinitionFromObjectValue(indexDefinitionNode: ObjectValueNod
 }
 
 function mapIndexDefinition(index: ObjectValueNode): IndexDefinitionConfig {
-    return valueFromAST(index, indexDefinitionInputObjectType);
+    const value = valueFromAST(index, indexDefinitionInputObjectType);
+    const fieldsField = index.fields.find(f => f.name.value === 'fields');
+    const fieldASTNodes = fieldsField && fieldsField.value.kind === 'ListValue' ? fieldsField.value.values : undefined;
+    return {
+        ...value,
+        fieldASTNodes
+    };
 }
 
 function getKindOfObjectTypeNode(definition: ObjectTypeDefinitionNode, context?: ValidationContext): string | undefined {
