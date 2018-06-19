@@ -1,4 +1,4 @@
-import { Location } from 'graphql';
+import { ASTNode, Location } from 'graphql';
 import { ProjectSource } from '../../project/source';
 
 export enum Severity {
@@ -51,7 +51,7 @@ export class MessageLocation {
     }
 }
 
-export type LocationLike = MessageLocation|Location|{loc?: Location};
+export type LocationLike = MessageLocation|Location|ASTNode;
 
 export class ValidationMessage {
     public readonly location: MessageLocation|undefined;
@@ -61,11 +61,11 @@ export class ValidationMessage {
                 public readonly params: { [key: string]: string | number | boolean } = {},
                 location?: LocationLike) {
         if (location && !(location instanceof MessageLocation)) {
-            if ('loc' in location) {
+            if (isASTNode(location)) {
                 location = location.loc;
             }
             if (location) {
-                location = MessageLocation.fromGraphQLLocation(location as Location);
+                location = MessageLocation.fromGraphQLLocation(location);
             }
         }
         this.location = location;
@@ -104,4 +104,8 @@ function severityToString(severity: Severity) {
         case Severity.Warning:
             return 'Warning'
     }
+}
+
+function isASTNode(obj: any): obj is ASTNode {
+    return 'kind' in obj;
 }

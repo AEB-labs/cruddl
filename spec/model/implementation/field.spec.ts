@@ -155,7 +155,7 @@ describe('Field', () => {
             expectSingleErrorToInclude(field, `Field name is empty.`);
         });
 
-        it('warns about names starting with an underscore', () => {
+        it('warns about names including an underscore', () => {
             const field = new Field({
                 name: 'some_field_name',
                 typeName: 'String'

@@ -1,5 +1,7 @@
 import { expect } from 'chai';
-import { assertValidatorAccepts, assertValidatorRejects, validate } from './helpers';
+import {
+    assertValidatorAccepts, assertValidatorAcceptsAndDoesNotWarn, assertValidatorRejects, assertValidatorWarns, validate
+} from './helpers';
 
 describe('key field validator', () => {
     it('finds duplicate key usage', () => {
@@ -25,7 +27,7 @@ describe('key field validator', () => {
                 count: Int
             }
         `,
-            'Only fields of type "String" and "Int" can be used as key field.');
+            'Only fields of type "String", "Int", and "ID" can be used as key field.');
     });
 
     it('finds bad list type usage', () => {
@@ -54,7 +56,7 @@ describe('key field validator', () => {
                 bar: JSON @key
             }
         `,
-            'Only fields of type "String" and "Int" can be used as key field.');
+            'Only fields of type "String", "Int", and "ID" can be used as key field.');
     });
 
     it('accepts correct key usage', () => {
@@ -63,5 +65,62 @@ describe('key field validator', () => {
                 foo: String @key
             }
         `);
+    });
+
+    it('accepts id: ID @key', () => {
+        assertValidatorAcceptsAndDoesNotWarn(`
+            type Stuff @rootEntity {
+                id: ID @key
+            }
+        `);
+    });
+
+    it('warns about id: ID (without @key)', () => {
+        assertValidatorWarns(`
+            type Stuff @rootEntity {
+                id: ID
+            }
+        `, 'The field "id" is redundant and should only be explicitly added when used with @key.');
+    });
+
+    it('warns about _key: String (without @key)', () => {
+        assertValidatorWarns(`
+            type Stuff @rootEntity {
+                _key: String @key
+            }
+        `, 'The field "_key" is deprecated and should be replaced with "id" (of type "ID").');
+    });
+
+    it('rejects id: String @key (wrong type)', () => {
+        assertValidatorRejects(`
+            type Stuff @rootEntity {
+                id: String @key
+            }
+        `, 'The field "id" must be of type "ID".');
+    });
+
+    it('rejects id: String (wrong type, without @key)', () => {
+        assertValidatorRejects(`
+            type Stuff @rootEntity {
+                id: String
+            }
+        `, 'The field "id" must be of type "ID".');
+    });
+
+    it('rejects _key: String (without @key)', () => {
+        assertValidatorRejects(`
+            type Stuff @rootEntity {
+                _key: String
+            }
+        `, 'The field name "_key" is reserved and can only be used in combination with @key.');
+    });
+
+    // just to make it clear - _key is an exception here.
+    it('rejects other fields starting with an underscore', () => {
+        assertValidatorRejects(`
+            type Stuff @rootEntity {
+                _internal: String
+            }
+        `, 'Field names should not start with an underscore.');
     });
 });
