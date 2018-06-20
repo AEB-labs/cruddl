@@ -60,9 +60,9 @@ export class Model implements ModelComponent {
 
                 if (builtInTypeNames.has(type.name)) {
                     // user does not see duplicate type, so provide better message
-                    context.addMessage(ValidationMessage.error(`Type name "${type.name}" is reserved by a built-in type.`, undefined, type.astNode));
+                    context.addMessage(ValidationMessage.error(`Type name "${type.name}" is reserved by a built-in type.`, type.nameASTNode));
                 } else {
-                    context.addMessage(ValidationMessage.error(`Duplicate type name: "${type.name}".`, undefined, type.astNode));
+                    context.addMessage(ValidationMessage.error(`Duplicate type name: "${type.name}".`, type.nameASTNode));
                 }
             }
         }

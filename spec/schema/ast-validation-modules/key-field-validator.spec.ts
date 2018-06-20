@@ -121,6 +121,6 @@ describe('key field validator', () => {
             type Stuff @rootEntity {
                 _internal: String
             }
-        `, 'Field names should not start with an underscore.');
+        `, 'Field names cannot start with an underscore.');
     });
 });

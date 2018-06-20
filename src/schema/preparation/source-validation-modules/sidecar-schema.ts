@@ -43,9 +43,9 @@ export class SidecarSchemaValidator implements SourceValidator {
                 const loc = new MessageLocation(source,
                     new SourcePosition(pointer.value.pos, pointer.value.line + 1, pointer.value.column + 1),
                     new SourcePosition(pointer.valueEnd.pos, pointer.valueEnd.line + 1, pointer.valueEnd.column + 1));
-                return ValidationMessage.error(err.message!, {}, loc);
+                return ValidationMessage.error(err.message!, loc);
             } else {
-                return ValidationMessage.error(`${err.message} (at ${err.dataPath}`);
+                return ValidationMessage.error(`${err.message} (at ${err.dataPath}`, undefined);
             }
         });
     }

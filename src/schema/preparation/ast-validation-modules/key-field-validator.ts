@@ -15,7 +15,7 @@ export class KeyFieldValidator implements ASTValidator {
             const keyFields = (objectTypeDefinition.fields || []).filter(field => field.directives != undefined && field.directives.some(directive => directive.name.value === KEY_FIELD_DIRECTIVE)).forEach(keyField => {
                 counter++;
                 if (objectTypeDefinition.directives != undefined && !objectTypeDefinition.directives.some(directive => directive.name.value === ROOT_ENTITY_DIRECTIVE)) {
-                    validationMessages.push(ValidationMessage.error(VALIDATION_ERROR_INVALID_OBJECT_TYPE, {type: objectTypeDefinition.name.value}, keyField.loc));
+                    validationMessages.push(ValidationMessage.error(VALIDATION_ERROR_INVALID_OBJECT_TYPE, keyField));
                 }
             })
         });

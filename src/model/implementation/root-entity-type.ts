@@ -115,17 +115,17 @@ export class RootEntityType extends ObjectTypeBase {
         const field = this.getField(this.input.keyFieldName);
 
         if (!field) {
-            context.addMessage(ValidationMessage.error(`Field "${this.input.keyFieldName}" does not exist on type "${this.name}".`, undefined, astNode));
+            context.addMessage(ValidationMessage.error(`Field "${this.input.keyFieldName}" does not exist on type "${this.name}".`, astNode));
             return;
         }
 
         // support for ID is needed because id: ID @key is possible
         if (field.type.kind !== TypeKind.SCALAR || !(field.type.name === SCALAR_INT || field.type.name === SCALAR_STRING || field.type.name === GraphQLID.name)) {
-            context.addMessage(ValidationMessage.error(`Only fields of type "String", "Int", and "ID" can be used as key field.`, undefined, astNode));
+            context.addMessage(ValidationMessage.error(`Only fields of type "String", "Int", and "ID" can be used as key field.`, astNode));
         }
 
         if (field.isList) {
-            context.addMessage(ValidationMessage.error(`List fields cannot be used as key field.`, undefined, astNode));
+            context.addMessage(ValidationMessage.error(`List fields cannot be used as key field.`, astNode));
         }
     }
 
@@ -133,16 +133,16 @@ export class RootEntityType extends ObjectTypeBase {
         const permissions = this.permissions;
         if (permissions.permissionProfileName != undefined && permissions.roles != undefined) {
             const message = `Permission profile and explicit role specifiers cannot be combined.`;
-            context.addMessage(ValidationMessage.error(message, undefined, permissions.permissionProfileNameAstNode || this.input.astNode ));
-            context.addMessage(ValidationMessage.error(message, undefined, permissions.roles.astNode || this.input.astNode ));
+            context.addMessage(ValidationMessage.error(message, permissions.permissionProfileNameAstNode || this.nameASTNode));
+            context.addMessage(ValidationMessage.error(message, permissions.roles.astNode || this.nameASTNode));
         }
 
         if (permissions.permissionProfileName != undefined && !this.model.getPermissionProfile(permissions.permissionProfileName)) {
-            context.addMessage(ValidationMessage.error(`Permission profile "${permissions.permissionProfileName}" not found.`, undefined, permissions.permissionProfileNameAstNode || this.input.astNode ));
+            context.addMessage(ValidationMessage.error(`Permission profile "${permissions.permissionProfileName}" not found.`, permissions.permissionProfileNameAstNode || this.nameASTNode));
         }
 
         if (permissions.permissionProfileName == undefined && permissions.roles == undefined && this.model.defaultPermissionProfile == undefined) {
-            context.addMessage(ValidationMessage.error(`No permissions specified for root entity "${this.name}". Specify "permissionProfile" in @rootEntity, use the @roles directive, or add a permission profile with the name "${DEFAULT_PERMISSION_PROFILE}".`, undefined, permissions.permissionProfileNameAstNode || this.input.astNode ));
+            context.addMessage(ValidationMessage.error(`No permissions specified for root entity "${this.name}". Specify "permissionProfile" in @rootEntity, use the @roles directive, or add a permission profile with the name "${DEFAULT_PERMISSION_PROFILE}".`, permissions.permissionProfileNameAstNode || this.nameASTNode));
         }
 
         if (this.roles) {
@@ -153,9 +153,9 @@ export class RootEntityType extends ObjectTypeBase {
         if (usesAccessGroup) {
             const accessGroupField = this.getField(ACCESS_GROUP_FIELD);
             if (!accessGroupField) {
-                context.addMessage(ValidationMessage.error(`The permission profile "${permissions.permissionProfileName}" uses "restrictToAccessGroups", but this root entity does not have a "${ACCESS_GROUP_FIELD}" field.`, undefined, permissions.permissionProfileNameAstNode || this.astNode));
+                context.addMessage(ValidationMessage.error(`The permission profile "${permissions.permissionProfileName}" uses "restrictToAccessGroups", but this root entity does not have a "${ACCESS_GROUP_FIELD}" field.`, permissions.permissionProfileNameAstNode || this.nameASTNode));
             } else if (!accessGroupField.type.isEnumType && accessGroupField.type.name !== GraphQLString.name) {
-                context.addMessage(ValidationMessage.error(`This field must be of String or enum type to be used as "accessGroup" with the permission profile "${permissions.permissionProfileName}".`, undefined, accessGroupField.astNode || this.astNode));
+                context.addMessage(ValidationMessage.error(`This field must be of String or enum type to be used as "accessGroup" with the permission profile "${permissions.permissionProfileName}".`, accessGroupField.astNode || this.nameASTNode));
             }
         }
     }

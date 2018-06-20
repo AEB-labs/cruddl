@@ -16,7 +16,7 @@ export class CheckYamlSyntaxValidator implements SourceValidator {
                 const message = (e as any).reason || e.message;
                 const location = getMessageLocation(e, source);
                 return [
-                    ValidationMessage.error(message, {}, location)
+                    ValidationMessage.error(message, location)
                 ]
             }
             throw e;

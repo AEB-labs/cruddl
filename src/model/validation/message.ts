@@ -58,7 +58,6 @@ export class ValidationMessage {
 
     constructor(public readonly severity: Severity,
                 public readonly message: string,
-                public readonly params: { [key: string]: string | number | boolean } = {},
                 location?: LocationLike) {
         if (location && !(location instanceof MessageLocation)) {
             if (isASTNode(location)) {
@@ -72,21 +71,18 @@ export class ValidationMessage {
     }
 
     public static error(message: string,
-                        params: { [p: string]: string | number | boolean } = {},
-                        location?: LocationLike) {
-        return new ValidationMessage(Severity.Error, message, params, location);
+                        location: LocationLike | undefined) {
+        return new ValidationMessage(Severity.Error, message, location);
     }
 
     public static warn(message: string,
-                       params: { [p: string]: string | number | boolean } = {},
-                       location?: LocationLike) {
-        return new ValidationMessage(Severity.Warning, message, params, location);
+                       location: LocationLike | undefined) {
+        return new ValidationMessage(Severity.Warning, message, location);
     }
 
     public static info(message: string,
-                       params: { [key: string]: string | number | boolean } = {},
-                       location?: LocationLike) {
-        return new ValidationMessage(Severity.Info, message, params, location);
+                       location: LocationLike | undefined) {
+        return new ValidationMessage(Severity.Info, message, location);
     }
 
     public toString() {

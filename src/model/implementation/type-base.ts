@@ -1,6 +1,6 @@
-import { TypeDefinitionNode } from 'graphql';
+import { NameNode, TypeDefinitionNode } from 'graphql';
 import { TypeConfig, TypeKind } from '../config';
-import { LocationLike, ValidationMessage } from '../validation';
+import { ValidationMessage } from '../validation';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
 
 export abstract class TypeBase implements ModelComponent {
@@ -8,9 +8,11 @@ export abstract class TypeBase implements ModelComponent {
     readonly description: string | undefined;
     abstract readonly kind: TypeKind;
     readonly astNode: TypeDefinitionNode | undefined;
+    readonly nameASTNode: NameNode | undefined;
 
     protected constructor(input: TypeConfig) {
         this.astNode = input.astNode;
+        this.nameASTNode = input.astNode ? input.astNode.name : undefined;
         this.name = input.name;
         this.description = input.description;
     }
@@ -20,40 +22,27 @@ export abstract class TypeBase implements ModelComponent {
     }
 
     private validateName(context: ValidationContext) {
-        let location = this.getValidationLocation();
-
         if (!this.name) {
-            context.addMessage(ValidationMessage.error(`Type name is empty.`, undefined, location));
+            context.addMessage(ValidationMessage.error(`Type name is empty.`, this.nameASTNode));
             return;
         }
 
         // Leading underscores are reserved for internal names
         if (this.name.startsWith('_')) {
-            context.addMessage(ValidationMessage.error(`Type names should not start with an underscore.`, undefined, location));
+            context.addMessage(ValidationMessage.error(`Type names cannot start with an underscore.`, this.nameASTNode));
             return;
         }
 
-        // Especially forbid leading underscores. This is more of a linter rule, but it also ensures there are no collisions with internal collections, introspection or the like
-        if (!this.name.match(/^[a-zA-Z][a-zA-Z0-9]+$/)) {
-            context.addMessage(ValidationMessage.warn(`Type names should only contain alphanumeric characters.`, undefined, location));
+        // some naming convention rules
+
+        if (this.name.includes('_')) {
+            context.addMessage(ValidationMessage.warn(`Type names should not include underscores.`, this.nameASTNode));
             return;
         }
 
-        // this is a linter rule
         if (!this.name.match(/^[A-Z]/)) {
-            context.addMessage(ValidationMessage.warn(`Type names should start with an uppercase character.`, undefined, location));
+            context.addMessage(ValidationMessage.warn(`Type names should start with an uppercase character.`, this.nameASTNode));
         }
-    }
-
-    protected getValidationLocation(): LocationLike | undefined {
-        let location: LocationLike | undefined;
-        if (this.astNode && this.astNode.loc) {
-            location = this.astNode.loc;
-        }
-        if (this.astNode && this.astNode.name) {
-            location = this.astNode.name.loc;
-        }
-        return location;
     }
 
     abstract readonly isObjectType: boolean = false;

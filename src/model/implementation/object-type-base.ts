@@ -28,7 +28,7 @@ export abstract class ObjectTypeBase extends TypeBase {
         super.validate(context);
 
         if (!this.fields.length) {
-            context.addMessage(ValidationMessage.error(`Object type "${this.name}" does not declare any fields.`, undefined, this.getValidationLocation()));
+            context.addMessage(ValidationMessage.error(`Object type "${this.name}" does not declare any fields.`, this.nameASTNode));
         }
 
         this.validateDuplicateFields(context);
@@ -50,9 +50,9 @@ export abstract class ObjectTypeBase extends TypeBase {
 
                 if (isSystemFieldCollision) {
                     // user does not see duplicate field, so provide better message
-                    context.addMessage(ValidationMessage.error(`Field name "${field.name}" is reserved by a system field.`, undefined, field.astNode));
+                    context.addMessage(ValidationMessage.error(`Field name "${field.name}" is reserved by a system field.`, field.astNode));
                 } else {
-                    context.addMessage(ValidationMessage.error(`Duplicate field name: "${field.name}".`, undefined, field.astNode));
+                    context.addMessage(ValidationMessage.error(`Duplicate field name: "${field.name}".`, field.astNode));
                 }
             }
         }

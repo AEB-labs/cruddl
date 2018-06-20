@@ -17,10 +17,10 @@ export class IndicesValidator implements ASTValidator {
                 const index = findDirectiveWithName(field, INDEX_DIRECTIVE);
                 const unique = findDirectiveWithName(field, UNIQUE_DIRECTIVE);
                 if (index) {
-                    validationMessages.push(ValidationMessage.error(VALIDATION_ERROR_INDICES_ONLY_ON_ROOT_ENTITIES, { type: nonRootEntityType.name.value, field: field.name.value }, index.loc));
+                    validationMessages.push(ValidationMessage.error(VALIDATION_ERROR_INDICES_ONLY_ON_ROOT_ENTITIES, index));
                 }
                 if (unique) {
-                    validationMessages.push(ValidationMessage.error(VALIDATION_ERROR_INDICES_ONLY_ON_ROOT_ENTITIES, { type: nonRootEntityType.name.value, field: field.name.value }, unique.loc));
+                    validationMessages.push(ValidationMessage.error(VALIDATION_ERROR_INDICES_ONLY_ON_ROOT_ENTITIES, unique));
                 }
             })
         });

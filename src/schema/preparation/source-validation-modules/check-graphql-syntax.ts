@@ -16,7 +16,7 @@ export class CheckGraphQLSyntaxValidator implements SourceValidator {
                 const message = getMessageFromSyntaxError(e);
                 const location = getMessageLocation(e);
                 return [
-                    ValidationMessage.error(message, {}, location)
+                    ValidationMessage.error(message, location)
                 ]
             }
             throw e;
