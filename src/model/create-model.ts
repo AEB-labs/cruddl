@@ -152,7 +152,7 @@ function processKeyField(definition: ObjectTypeDefinitionNode, fields: ReadonlyA
         } else {
             context.addMessage(ValidationMessage.warn(`The field "id" is redundant and should only be explicitly added when used with @key.`, idField.astNode));
         }
-        if (idField.typeName !== GraphQLID.name) {
+        if (idField.typeName !== GraphQLID.name || idField.isList) {
             context.addMessage(ValidationMessage.error(`The field "id" must be of type "ID".`, idField.astNode));
         }
     }
