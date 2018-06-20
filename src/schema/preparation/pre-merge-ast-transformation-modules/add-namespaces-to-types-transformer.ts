@@ -1,16 +1,12 @@
 import { ASTNode, DocumentNode, ObjectTypeDefinitionNode } from 'graphql';
 import { ARGUMENT, DIRECTIVE, STRING } from '../../../graphql/kinds';
-import { NAMESPACE_DIRECTIVE, NAMESPACE_NAME_ARG, ROOT_ENTITY_DIRECTIVE } from '../../constants';
+import { NAMESPACE_DIRECTIVE, NAMESPACE_NAME_ARG, NAMESPACE_SEPARATOR, ROOT_ENTITY_DIRECTIVE } from '../../constants';
 import { buildNameNode, hasDirectiveWithName } from '../../schema-utils';
 import { ASTTransformationContext, ASTTransformer } from '../transformation-pipeline';
 
 export class AddNamespacesToTypesTransformer implements ASTTransformer {
     transform(ast: DocumentNode, context: ASTTransformationContext): DocumentNode {
-        if (!context) {
-            return ast;
-        }
-        const namespace = context.localNamespace || context.defaultNamespace;
-        if (!namespace) {
+        if (!context || !context.namespacePath || context.namespacePath.length === 0) {
             return ast;
         }
         return {
@@ -33,7 +29,7 @@ export class AddNamespacesToTypesTransformer implements ASTTransformer {
                                     name: buildNameNode(NAMESPACE_NAME_ARG),
                                     value: {
                                         kind: STRING,
-                                        value: namespace
+                                        value: context.namespacePath.join(NAMESPACE_SEPARATOR)
                                     }
                                 }
                             ]

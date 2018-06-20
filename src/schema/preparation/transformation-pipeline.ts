@@ -1,8 +1,8 @@
-import { DocumentNode, GraphQLSchema, Source } from 'graphql';
+import { DocumentNode, GraphQLSchema } from 'graphql';
 import { SchemaContext } from '../../config/global';
-import { SchemaPartConfig } from '../../config/schema-config';
+import { ParsedProject, ParsedProjectSourceBaseKind } from '../../config/parsed-project';
 import { DatabaseAdapter } from '../../database/database-adapter';
-import { Model, PermissionProfileMap } from '../../model';
+import { Model } from '../../model';
 import { AddNamespacesToTypesTransformer } from './pre-merge-ast-transformation-modules/add-namespaces-to-types-transformer';
 import { AddRuntimeErrorResolversTransformer } from './schema-transformation-modules/add-runtime-error-resolvers';
 
@@ -14,19 +14,23 @@ const schemaPipeline: SchemaTransformer[] = [
     new AddRuntimeErrorResolversTransformer()
 ];
 
-export function executePreMergeTransformationPipeline(schemaParts: SchemaPartConfig[], rootContext: ASTTransformationContext) {
-    return schemaParts.map(({document, ...context}) => {
-        if (document instanceof Source) {
-            throw new Error('Expected source with DocumentType');
-        }
-        for (const transformer of preMergePipeline) {
-            document = transformer.transform(document, {...rootContext, ...context});
-        }
-        return {
-            ...context,
-            document
-        };
-    });
+export function executePreMergeTransformationPipeline(parsedProject: ParsedProject): ParsedProject {
+    return {
+        sources: parsedProject.sources.map((source) => {
+            // don't transform object sources
+            if (source.kind !== ParsedProjectSourceBaseKind.GRAPHQL) {
+                return source
+            }
+            let document = source.document;
+            for (const transformer of preMergePipeline) {
+                document = transformer.transform(document, { namespacePath: source.namespacePath });
+            }
+            return {
+                ...source,
+                document
+            };
+        })
+    };
 }
 
 export function executeSchemaTransformationPipeline(schema: GraphQLSchema, context: SchemaTransformationContext, model: Model): GraphQLSchema {
@@ -34,12 +38,10 @@ export function executeSchemaTransformationPipeline(schema: GraphQLSchema, conte
 }
 
 export interface ASTTransformationContext {
-    defaultNamespace?: string
-    localNamespace?: string
-    permissionProfiles?: PermissionProfileMap
+    namespacePath: ReadonlyArray<string>
 }
 
-export interface SchemaTransformationContext extends ASTTransformationContext, SchemaContext {
+export interface SchemaTransformationContext extends SchemaContext {
     databaseAdapter: DatabaseAdapter
 
 }

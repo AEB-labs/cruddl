@@ -1,18 +1,16 @@
-import { isArray } from 'util';
-import { ProjectSource, SourceLike, SourceType } from './source';
 import { GraphQLSchema } from 'graphql';
+import { isArray } from 'util';
 import { DEFAULT_LOGGER_PROVIDER, LoggerProvider } from '../config/logging';
-import { Model, ValidationResult } from '../model';
 import { DatabaseAdapter } from '../database/database-adapter';
-import { createSchema, getModel, validateSchema } from '../schema/schema-builder';
 import { getMetaSchema } from '../meta-schema/meta-schema';
+import { Model, ValidationResult } from '../model';
+import { createSchema, getModel, validateSchema } from '../schema/schema-builder';
+import { ProjectSource, SourceLike, SourceType } from './source';
 
 export interface ProjectOptions {
     /**
      * This namespace applies to all type operations for which no namespace is defined.
      */
-    readonly defaultNamespace?: string
-
     readonly loggerProvider?: LoggerProvider;
 }
 
@@ -31,12 +29,7 @@ export class Project {
      *
      * The name of each source identifies its type, so files ending with .yaml are interpreted as YAML files
      */
-    readonly sources: ProjectSource[];
-
-    /**
-     * This namespace applies to all type operations for which no namespace is defined.
-     */
-    readonly defaultNamespace?: string;
+    readonly sources: ReadonlyArray<ProjectSource>;
 
     readonly loggerProvider: LoggerProvider;
 
@@ -45,7 +38,6 @@ export class Project {
             config = { sources: config };
         }
         this.sources = config.sources.map(config => ProjectSource.fromConfig(config));
-        this.defaultNamespace = config.defaultNamespace;
         this.loggerProvider = config.loggerProvider || DEFAULT_LOGGER_PROVIDER;
     }
 

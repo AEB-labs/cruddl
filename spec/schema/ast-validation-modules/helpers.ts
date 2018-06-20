@@ -1,8 +1,9 @@
-import { createModel, PermissionProfileConfigMap, ValidationResult } from '../../../src/model';
-import { parse, Source } from 'graphql';
 import { expect } from 'chai';
-import { validatePostMerge, validateSource } from '../../../src/schema/preparation/ast-validator';
+import { parse, Source } from 'graphql';
+import { ParsedProjectSourceBaseKind } from '../../../src/config/parsed-project';
+import { createModel, PermissionProfileConfigMap, ValidationResult } from '../../../src/model';
 import { ProjectSource } from '../../../src/project/source';
+import { validatePostMerge, validateSource } from '../../../src/schema/preparation/ast-validator';
 
 export function assertValidatorRejects(source: string, msg: string) {
     const validationResult = validate(source);
@@ -31,19 +32,32 @@ export function assertValidatorAcceptsAndDoesNotWarn(source: string) {
 export function validate(source: string, options: { permissionProfiles?: PermissionProfileConfigMap } = {}): ValidationResult {
     const ast = parse(new Source(source, 'schema.graphqls'));
     const model = createModel({
-        schemaParts: [{document: ast}],
-        permissionProfiles: options.permissionProfiles || {
-            default: {
-                permissions: [
-                    {
-                        roles: ['admin'],
-                        access: 'readWrite'
-                    }
-                ]
-            }
-        }
+        sources:
+            [
+                {
+                    kind: ParsedProjectSourceBaseKind.GRAPHQL,
+                    document: ast,
+                    namespacePath: []
+                },
+                {
+                    kind: ParsedProjectSourceBaseKind.OBJECT,
+                    object: {
+                        permissionProfiles: options.permissionProfiles || {
+                            default: {
+                                permissions: [
+                                    {
+                                        roles: ['admin'],
+                                        access: 'readWrite'
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    namespacePath: []
+                }
+            ]
     });
-    const astResults = validatePostMerge(ast, {}, model);
+    const astResults = validatePostMerge(ast, model);
     const sourceResults = validateSource(new ProjectSource('schema.graphqls', source));
     return new ValidationResult([
         ...model.validate().messages,
