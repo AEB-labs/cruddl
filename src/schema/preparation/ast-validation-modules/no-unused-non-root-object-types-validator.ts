@@ -1,12 +1,9 @@
-import { ASTValidator } from '../ast-validator';
 import { DocumentNode, ObjectTypeDefinitionNode } from 'graphql';
 import { ValidationMessage } from '../../../model';
 import {
     getNamedTypeDefinitionAST, getObjectTypes, getRootEntityTypes, getTypeNameIgnoringNonNullAndList
 } from '../../schema-utils';
-import { OBJECT_TYPE_KIND_DIRECTIVES } from '../../constants';
-
-export const VALIDATION_WARNING_UNUSED_OBJECT_TYPE = "Unused object type.";
+import { ASTValidator } from '../ast-validator';
 
 export class NoUnusedNonRootObjectTypesValidator implements ASTValidator {
     validate(ast: DocumentNode): ValidationMessage[] {
@@ -20,13 +17,7 @@ export class NoUnusedNonRootObjectTypesValidator implements ASTValidator {
         getObjectTypes(ast).forEach(objectType => (objectType.fields || []).forEach(field => objectTypeNames.delete(getNamedTypeDefinitionAST(ast, getTypeNameIgnoringNonNullAndList(field.type)) as ObjectTypeDefinitionNode)));
         // remaining object types in set are unused, create warnings for them
         return Array.from(objectTypeNames).map(
-            unusedType => ValidationMessage.warn(
-                    VALIDATION_WARNING_UNUSED_OBJECT_TYPE,
-                    {
-                        entityKind: unusedType.directives!.find(
-                            directive => OBJECT_TYPE_KIND_DIRECTIVES.includes(directive.name.value))!.name.value
-                    },
-                    unusedType.loc)
+            unusedType => ValidationMessage.warn(`Type "${unusedType.name.value}" is not used.`, unusedType.name)
         );
     }
 

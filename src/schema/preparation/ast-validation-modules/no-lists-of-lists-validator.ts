@@ -23,7 +23,7 @@ export class NoListsOfListsValidator implements ASTValidator {
                 type = type.type;
             }
             if (type.kind === LIST_TYPE) {
-                validationMessages.push(ValidationMessage.error(VALIDATION_ERROR_LISTS_OF_LISTS_NOT_ALLOWED, {}, field.type.loc));
+                validationMessages.push(ValidationMessage.error(VALIDATION_ERROR_LISTS_OF_LISTS_NOT_ALLOWED, field.type));
             }
         }));
         return validationMessages;

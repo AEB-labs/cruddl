@@ -30,7 +30,7 @@ export class CheckJsonSyntaxValidator implements SourceValidator {
 
         const result = jsonLint(source.body, { comments: true });
         if (result.error) {
-            return [ ValidationMessage.error(result.error, {}, getMessageLocation(result, source)) ];
+            return [ ValidationMessage.error(result.error, getMessageLocation(result, source)) ];
         }
         return [];
     }

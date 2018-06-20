@@ -51,7 +51,7 @@ function createTypeInputs(input: SchemaConfig, context: ValidationContext): Read
     return flatMap(input.schemaParts, (schemaPart => compact(schemaPart.document.definitions.map(definition => {
         // Only look at object types and enums (scalars are not supported yet, they need to be implemented somehow, e.g. via regex check)
         if (definition.kind != OBJECT_TYPE_DEFINITION && definition.kind !== ENUM_TYPE_DEFINITION) {
-            context.addMessage(ValidationMessage.error(VALIDATION_ERROR_INVALID_DEFINITION_KIND, {kind: definition.kind}, definition.loc));
+            context.addMessage(ValidationMessage.error(VALIDATION_ERROR_INVALID_DEFINITION_KIND, definition));
             return undefined;
         }
 
@@ -138,9 +138,9 @@ function processKeyField(definition: ObjectTypeDefinitionNode, fields: ReadonlyA
         if (keyFieldASTNode && keyFieldASTNode.name.value === underscoreKeyField.name) {
             keyFieldASTNode = underscoreKeyField.astNode;
             keyFieldName = ID_FIELD;
-            context.addMessage(ValidationMessage.warn(`The field "_key" is deprecated and should be replaced with "id" (of type "ID").`, undefined, underscoreKeyField.astNode));
+            context.addMessage(ValidationMessage.warn(`The field "_key" is deprecated and should be replaced with "id" (of type "ID").`, underscoreKeyField.astNode));
         } else {
-            context.addMessage(ValidationMessage.error(`The field name "_key" is reserved and can only be used in combination with @key.`, undefined, underscoreKeyField.astNode));
+            context.addMessage(ValidationMessage.error(`The field name "_key" is reserved and can only be used in combination with @key.`, underscoreKeyField.astNode));
         }
     }
     const idField = fields.find(field => field.name == ID_FIELD);
@@ -150,10 +150,10 @@ function processKeyField(definition: ObjectTypeDefinitionNode, fields: ReadonlyA
             keyFieldASTNode = idField.astNode;
             keyFieldName = ID_FIELD;
         } else {
-            context.addMessage(ValidationMessage.warn(`The field "id" is redundant and should only be explicitly added when used with @key.`, undefined, idField.astNode));
+            context.addMessage(ValidationMessage.warn(`The field "id" is redundant and should only be explicitly added when used with @key.`, idField.astNode));
         }
         if (idField.typeName !== GraphQLID.name) {
-            context.addMessage(ValidationMessage.error(`The field "id" must be of type "ID".`, undefined, idField.astNode));
+            context.addMessage(ValidationMessage.error(`The field "id" must be of type "ID".`, idField.astNode));
         }
     }
     return {fields, keyFieldASTNode, keyFieldName};
@@ -166,7 +166,7 @@ function getDefaultValue(fieldNode: FieldDefinitionNode, context: ValidationCont
     }
     const defaultValueArg = getNodeByName(defaultValueDirective.arguments, VALUE_ARG);
     if (!defaultValueArg) {
-        context.addMessage(ValidationMessage.error(VALIDATION_ERROR_MISSING_ARGUMENT_DEFAULT_VALUE, {}, defaultValueDirective.loc));
+        context.addMessage(ValidationMessage.error(VALIDATION_ERROR_MISSING_ARGUMENT_DEFAULT_VALUE, defaultValueDirective));
         return undefined;
     }
     return getValueFromAST(defaultValueArg.value);
@@ -199,7 +199,7 @@ function getCalcMutationOperators(fieldNode: FieldDefinitionNode, context: Valid
     }
     const calcMutationsArg = getNodeByName(calcMutationsDirective.arguments, CALC_MUTATIONS_OPERATORS_ARG);
     if (!calcMutationsArg) {
-        context.addMessage(ValidationMessage.error(VALIDATION_ERROR_MISSING_ARGUMENT_OPERATORS, undefined, calcMutationsDirective.loc));
+        context.addMessage(ValidationMessage.error(VALIDATION_ERROR_MISSING_ARGUMENT_OPERATORS, calcMutationsDirective.loc));
         return [];
     }
     if (calcMutationsArg.value.kind === ENUM) {
@@ -207,14 +207,14 @@ function getCalcMutationOperators(fieldNode: FieldDefinitionNode, context: Valid
     } else if (calcMutationsArg.value.kind === LIST) {
         return compact(calcMutationsArg.value.values.map(val => {
             if (val.kind !== ENUM) {
-                context.addMessage(ValidationMessage.error(VALIDATION_ERROR_EXPECTED_ENUM_OR_LIST_OF_ENUMS, undefined, val.loc));
+                context.addMessage(ValidationMessage.error(VALIDATION_ERROR_EXPECTED_ENUM_OR_LIST_OF_ENUMS, val.loc));
                 return undefined;
             } else {
                 return val.value as CalcMutationsOperator;
             }
         }));
     } else {
-        context.addMessage(ValidationMessage.error(VALIDATION_ERROR_EXPECTED_ENUM_OR_LIST_OF_ENUMS, undefined, calcMutationsArg.value.loc));
+        context.addMessage(ValidationMessage.error(VALIDATION_ERROR_EXPECTED_ENUM_OR_LIST_OF_ENUMS, calcMutationsArg.value.loc));
         return [];
     }
 }
@@ -240,13 +240,13 @@ function createRootEntityBasedIndices(definition: ObjectTypeDefinitionNode, cont
     } else if (indicesArg.value.kind === LIST) {
         return compact(indicesArg.value.values.map(val => {
             if (val.kind !== OBJECT) {
-                context.addMessage(ValidationMessage.error(VALIDATION_ERROR_INVALID_ARGUMENT_TYPE, undefined, val.loc));
+                context.addMessage(ValidationMessage.error(VALIDATION_ERROR_INVALID_ARGUMENT_TYPE, val.loc));
                 return undefined;
             }
             return buildIndexDefinitionFromObjectValue(val);
         }));
     } else {
-        context.addMessage(ValidationMessage.error(VALIDATION_ERROR_INVALID_ARGUMENT_TYPE, undefined, indicesArg.loc));
+        context.addMessage(ValidationMessage.error(VALIDATION_ERROR_INVALID_ARGUMENT_TYPE, indicesArg.loc));
         return [];
     }
 }
@@ -293,10 +293,10 @@ function getKindOfObjectTypeNode(definition: ObjectTypeDefinitionNode, context?:
     if (kindDirectives.length !== 1) {
         if (context) {
             if (kindDirectives.length === 0) {
-                context.addMessage(ValidationMessage.error(VALIDATION_ERROR_MISSING_OBJECT_TYPE_DIRECTIVE, undefined, definition.name));
+                context.addMessage(ValidationMessage.error(VALIDATION_ERROR_MISSING_OBJECT_TYPE_DIRECTIVE, definition.name));
             } else {
                 for (const directive of kindDirectives) {
-                    context.addMessage(ValidationMessage.error(VALIDATION_ERROR_MULTIPLE_OBJECT_TYPE_DIRECTIVES, undefined, directive));
+                    context.addMessage(ValidationMessage.error(VALIDATION_ERROR_MULTIPLE_OBJECT_TYPE_DIRECTIVES, directive));
                 }
             }
         }
@@ -322,9 +322,7 @@ function getKeyFieldASTNode(definition: ObjectTypeDefinitionNode, context: Valid
     }
     if (keyFields.length > 1) {
         keyFields.forEach(f => context.addMessage(
-            ValidationMessage.error(VALIDATION_ERROR_DUPLICATE_KEY_FIELD,
-                undefined,
-                findDirectiveWithName(f, KEY_FIELD_DIRECTIVE))));
+            ValidationMessage.error(VALIDATION_ERROR_DUPLICATE_KEY_FIELD, findDirectiveWithName(f, KEY_FIELD_DIRECTIVE))));
         return undefined;
     }
     return keyFields[0];
@@ -359,7 +357,7 @@ function getRolesOfArg(rolesArg: ArgumentNode | undefined, context: ValidationCo
         if (rolesArg.value.kind === LIST) {
             roles = compact(rolesArg.value.values.map(val => {
                 if (val.kind !== STRING) {
-                    context.addMessage(ValidationMessage.error(VALIDATION_ERROR_EXPECTED_STRING_OR_LIST_OF_STRINGS, undefined, val.loc));
+                    context.addMessage(ValidationMessage.error(VALIDATION_ERROR_EXPECTED_STRING_OR_LIST_OF_STRINGS, val.loc));
                     return undefined;
                 } else {
                     return val.value;
@@ -369,7 +367,7 @@ function getRolesOfArg(rolesArg: ArgumentNode | undefined, context: ValidationCo
         else if (rolesArg.value.kind === STRING) {
             roles = [rolesArg.value.value];
         } else {
-            context.addMessage(ValidationMessage.error(VALIDATION_ERROR_EXPECTED_STRING_OR_LIST_OF_STRINGS, undefined, rolesArg.value.loc));
+            context.addMessage(ValidationMessage.error(VALIDATION_ERROR_EXPECTED_STRING_OR_LIST_OF_STRINGS, rolesArg.value.loc));
         }
     }
     return roles;
@@ -379,7 +377,7 @@ function getPermissionProfileAstNode(permissionProfileArg: ArgumentNode | undefi
     let permissionProfileNameAstNode = undefined;
     if (permissionProfileArg) {
         if (permissionProfileArg.value.kind !== STRING) {
-            context.addMessage(ValidationMessage.error(VALIDATION_ERROR_INVALID_PERMISSION_PROFILE, {}, permissionProfileArg.value.loc));
+            context.addMessage(ValidationMessage.error(VALIDATION_ERROR_INVALID_PERMISSION_PROFILE, permissionProfileArg.value.loc));
         } else {
             permissionProfileNameAstNode = permissionProfileArg.value;
         }
@@ -397,7 +395,7 @@ function getInverseOfASTNode(fieldNode: FieldDefinitionNode, context: Validation
         return undefined;
     }
     if (inverseOfArg.value.kind !== STRING) {
-        context.addMessage(ValidationMessage.error(VALIDATION_ERROR_INVERSE_OF_ARG_MUST_BE_STRING, undefined, inverseOfArg.value.loc));
+        context.addMessage(ValidationMessage.error(VALIDATION_ERROR_INVERSE_OF_ARG_MUST_BE_STRING, inverseOfArg.value.loc));
         return undefined;
     }
     return inverseOfArg.value;

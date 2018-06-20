@@ -23,25 +23,25 @@ export abstract class TypeBase implements ModelComponent {
 
     private validateName(context: ValidationContext) {
         if (!this.name) {
-            context.addMessage(ValidationMessage.error(`Type name is empty.`, undefined, this.nameASTNode));
+            context.addMessage(ValidationMessage.error(`Type name is empty.`, this.nameASTNode));
             return;
         }
 
         // Leading underscores are reserved for internal names
         if (this.name.startsWith('_')) {
-            context.addMessage(ValidationMessage.error(`Type names cannot start with an underscore.`, undefined, this.nameASTNode));
+            context.addMessage(ValidationMessage.error(`Type names cannot start with an underscore.`, this.nameASTNode));
             return;
         }
 
         // some naming convention rules
 
         if (this.name.includes('_')) {
-            context.addMessage(ValidationMessage.warn(`Type names should not include underscores.`, undefined, this.nameASTNode));
+            context.addMessage(ValidationMessage.warn(`Type names should not include underscores.`, this.nameASTNode));
             return;
         }
 
         if (!this.name.match(/^[A-Z]/)) {
-            context.addMessage(ValidationMessage.warn(`Type names should start with an uppercase character.`, undefined, this.nameASTNode));
+            context.addMessage(ValidationMessage.warn(`Type names should start with an uppercase character.`, this.nameASTNode));
         }
     }
 

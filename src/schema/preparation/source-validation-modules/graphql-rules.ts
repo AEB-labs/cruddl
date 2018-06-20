@@ -42,11 +42,7 @@ export class GraphQLRulesValidator implements SourceValidator {
             throw e;
         }
 
-        return validate(coreSchema, ast, rules).map(error => ValidationMessage.error(
-            error.message,
-            {},
-            getMessageLocation(error)
-        ));
+        return validate(coreSchema, ast, rules).map(error => ValidationMessage.error(error.message, getMessageLocation(error)));
     }
 }
 
