@@ -29,7 +29,7 @@ describe('Type', () => {
                 name: 'This_Is_Ugly'
             }, GraphQLString);
 
-            expectSingleWarningToInclude(type, `Type names should only contain alphanumeric characters.`);
+            expectSingleWarningToInclude(type, `Type names should not include underscores.`);
         });
 
         it('rejects names starting with an underscore', () => {
@@ -37,7 +37,7 @@ describe('Type', () => {
                 kind: TypeKind.SCALAR,
                 name: '_Internal'
             }, GraphQLString);
-            expectSingleErrorToInclude(type, `Type names should not start with an underscore.`);
+            expectSingleErrorToInclude(type, `Type names cannot start with an underscore.`);
         });
 
         it('warns about type names starting with a lowercase character', () => {
