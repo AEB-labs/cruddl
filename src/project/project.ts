@@ -1,3 +1,4 @@
+import memorize from 'memorize-decorator';
 import { isArray } from 'util';
 import { ProjectSource, SourceLike, SourceType } from './source';
 import { GraphQLSchema } from 'graphql';
@@ -56,10 +57,12 @@ export class Project {
     /**
      * Validates this project ot identify if createSchema() would succeed
      */
+    @memorize()
     validate(): ValidationResult {
         return validateSchema(this);
     }
 
+    @memorize()
     getModel(): Model {
         return getModel(this);
     }
@@ -74,6 +77,7 @@ export class Project {
     /**
      * Creates an executable GraphQLSchema that allows to inspect the active model with its types and fields
      */
+    @memorize()
     createMetaSchema(): GraphQLSchema {
         return getMetaSchema(this.getModel());
     }
