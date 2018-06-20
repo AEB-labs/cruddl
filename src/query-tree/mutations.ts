@@ -169,6 +169,8 @@ export class SetEdgeQueryNode extends QueryNode {
 /**
  * Filters edges by from and to id (from and to are and-combined, but the individual ids are or-combined)
  *
+ * If e.g. fromIDNodes is undefined, this filter applies to all edges, regardless of the from id
+ *
  * pseudo code: from IN [...fromIDNodes] && to IN [...toIDNodes]
  */
 export class EdgeFilter extends QueryNode {

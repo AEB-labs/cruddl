@@ -57,14 +57,14 @@ function createTo1ReferenceNode(field: Field, sourceNode: QueryNode): QueryNode 
 }
 
 function createTo1RelationNode(field: Field, sourceNode: QueryNode): QueryNode {
-    const relation = field.getRelationOrThrow();
-    const followNode = new FollowEdgeQueryNode(relation, sourceNode, relation.getFieldSide(field));
+    const relationSide = field.getRelationSideOrThrow();
+    const followNode = new FollowEdgeQueryNode(relationSide, sourceNode);
     return new FirstOfListQueryNode(followNode);
 }
 
 function createToNRelationNode(field: Field, sourceNode: QueryNode): QueryNode {
-    const relation = field.getRelationOrThrow();
-    return new FollowEdgeQueryNode(relation, sourceNode, relation.getFieldSide(field));
+    const relationSide = field.getRelationSideOrThrow();
+    return new FollowEdgeQueryNode(relationSide, sourceNode);
 }
 
 function createSafeListQueryNode(listNode: QueryNode) {

@@ -153,7 +153,7 @@ describe('Meta schema API', () => {
     const metaSchema = getMetaSchema(model);
 
     async function execute(doc: DocumentNode) {
-        const { data, errors } = await graphql(metaSchema, print(doc));
+        const {data, errors} = await graphql(metaSchema, print(doc));
         if (errors) {
             throw new Error(JSON.stringify(errors));
         }
@@ -306,8 +306,22 @@ describe('Meta schema API', () => {
             'rootEntityType': {
                 'name': 'Delivery', 'relations': [
                     {
-                        'fromField': {'name': 'shipment'}, 'fromType': {'name': 'Delivery'},
-                        'toField': {'name': 'deliveryWithInverseOf'}, 'toType': {'name': 'Shipment'}
+                        'fromField': {'name': 'deliveries'},
+                        'fromType': {'name': 'Shipment'},
+                        'toField': null,
+                        'toType': {'name': 'Delivery'}
+                    },
+                    {
+                        'fromField': {'name': 'delivery'},
+                        'fromType': {'name': 'Shipment'},
+                        'toField': null,
+                        'toType': {'name': 'Delivery'}
+                    },
+                    {
+                        'fromField': {'name': 'shipment'},
+                        'fromType': {'name': 'Delivery'},
+                        'toField': {'name': 'deliveryWithInverseOf'},
+                        'toType': {'name': 'Shipment'}
                     }
                 ]
             }

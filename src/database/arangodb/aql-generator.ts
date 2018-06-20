@@ -1,4 +1,4 @@
-import { Relation, RelationFieldSide, RootEntityType } from '../../model';
+import { Relation, RootEntityType } from '../../model';
 import {
     AddEdgesQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode,
     ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeFilter,
@@ -616,11 +616,6 @@ function getCollectionForRelation(relation: Relation, accessType: AccessType, co
  * expression context)
  */
 function getSimpleFollowEdgeFragment(node: FollowEdgeQueryNode, context: QueryContext): AQLFragment {
-    switch (node.sourceFieldSide) {
-        case RelationFieldSide.FROM_SIDE:
-            return aql`OUTBOUND ${processNode(node.sourceEntityNode, context)} ${getCollectionForRelation(node.relation, AccessType.READ, context)}`;
-        case RelationFieldSide.TO_SIDE:
-            return aql`INBOUND ${processNode(node.sourceEntityNode, context)} ${getCollectionForRelation(node.relation, AccessType.READ, context)}`;
-    }
-
+    const dir = node.relationSide.isFromSide ? aql`OUTBOUND` : aql`INBOUND`;
+    return aql`${dir}  ${processNode(node.sourceEntityNode, context)} ${getCollectionForRelation(node.relationSide.relation, AccessType.READ, context)}`;
 }

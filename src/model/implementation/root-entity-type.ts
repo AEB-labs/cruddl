@@ -1,18 +1,19 @@
-import { FieldConfig, PermissionsConfig, RootEntityTypeConfig, TypeKind } from '../config';
-import { ObjectTypeBase } from './object-type-base';
-import { Field } from './field';
-import { Model } from './model';
-import { ScalarType } from './scalar-type';
-import { ValidationContext } from '../validation/validation-context';
-import { ValidationMessage } from '../validation';
-import { Index } from './indices';
-import { ACCESS_GROUP_FIELD, DEFAULT_PERMISSION_PROFILE, SCALAR_INT, SCALAR_STRING } from '../../schema/constants';
-import { PermissionProfile } from './permission-profile';
-import { Relation } from './relation';
 import { GraphQLID, GraphQLString } from 'graphql';
-import { RolesSpecifier } from './roles-specifier';
+import memorize from 'memorize-decorator';
+import { ACCESS_GROUP_FIELD, DEFAULT_PERMISSION_PROFILE, SCALAR_INT, SCALAR_STRING } from '../../schema/constants';
 import { compact } from '../../utils/utils';
+import { FieldConfig, PermissionsConfig, RootEntityTypeConfig, TypeKind } from '../config';
+import { ValidationMessage } from '../validation';
+import { ValidationContext } from '../validation/validation-context';
+import { Field } from './field';
+import { Index } from './indices';
+import { Model } from './model';
 import { Namespace } from './namespace';
+import { ObjectTypeBase } from './object-type-base';
+import { PermissionProfile } from './permission-profile';
+import { Relation, RelationSide } from './relation';
+import { RolesSpecifier } from './roles-specifier';
+import { ScalarType } from './scalar-type';
 
 export class RootEntityType extends ObjectTypeBase {
     private readonly permissions: PermissionsConfig & {};
@@ -62,8 +63,32 @@ export class RootEntityType extends ObjectTypeBase {
         return this.model.getPermissionProfile(this.permissions.permissionProfileName);
     }
 
-    get relations(): ReadonlyArray<Relation> {
+    /**
+     * A list of all relations that have a field in this type
+     *
+     * (as opposed to the relation only existing because a different type has a relation field to this root entity)
+     */
+    get explicitRelations(): ReadonlyArray<Relation> {
         return compact(this.fields.map(field => field.relation));
+    }
+
+    /**
+     * A list of all relations concerning this type, regardless of whether there is a field on this type for it
+     */
+    @memorize()
+    get relations(): ReadonlyArray<Relation> {
+        return this.model.relations.filter(rel => rel.fromType === this || rel.toType === this);
+    }
+
+    /**
+     * A list of all relations sides concerning this type, regardless of whether there is a field on this type for it
+     */
+    @memorize()
+    get relationSides(): ReadonlyArray<RelationSide> {
+        return [
+            ...this.model.relations.filter(rel => rel.fromType === this).map(rel => rel.fromSide),
+            ...this.model.relations.filter(rel => rel.toType === this).map(rel => rel.toSide)
+        ];
     }
 
     get namespace(): Namespace | undefined {

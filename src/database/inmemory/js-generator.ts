@@ -1,5 +1,5 @@
 import { compact } from 'lodash';
-import { invertRelationFieldSide, Relation, RelationFieldSide, RootEntityType } from '../../model';
+import { Relation, RootEntityType } from '../../model';
 import {
     AddEdgesQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode,
     ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode,
@@ -381,13 +381,13 @@ const processors : { [name: string]: NodeProcessor<any> } = {
     },
 
     FollowEdge(node: FollowEdgeQueryNode, context): JSFragment {
-        const targetType = node.relation.getTypeOfSide(invertRelationFieldSide(node.sourceFieldSide));
+        const targetType = node.relationSide.targetType;
         const targetColl = getCollectionForType(targetType, context);
-        const edgeColl = getCollectionForRelation(node.relation, context);
+        const edgeColl = getCollectionForRelation(node.relationSide.relation, context);
         const edgeVar = js.variable('edge');
         const itemVar = js.variable(decapitalize(targetType.name));
-        const sourceIDOnEdge = node.sourceFieldSide == RelationFieldSide.FROM_SIDE ? js`${edgeVar}._from` : js`${edgeVar}._to`;
-        const targetIDOnEdge = node.sourceFieldSide == RelationFieldSide.FROM_SIDE ? js`${edgeVar}._to` : js`${edgeVar}._from`;
+        const sourceIDOnEdge = node.relationSide.isFromSide ? js`${edgeVar}._from` : js`${edgeVar}._to`;
+        const targetIDOnEdge = node.relationSide.isFromSide ? js`${edgeVar}._to` : js`${edgeVar}._from`;
         const sourceID = processNode(new RootEntityIDQueryNode(node.sourceEntityNode), context);
         const idOnItem = js`${itemVar}.${js.identifier(ID_FIELD_NAME)}`;
         const idOnItemEqualsTargetIDOnEdge = js`${idOnItem} === ${targetIDOnEdge}`;

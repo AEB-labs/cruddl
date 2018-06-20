@@ -1,6 +1,6 @@
-import { Field, Relation, RelationFieldSide, RootEntityType } from '../model';
-import { QueryNode } from './base';
 import { blue } from 'colors/safe';
+import { Field, RelationSide, RootEntityType } from '../model';
+import { QueryNode } from './base';
 
 export class EntityFromIdQueryNode extends QueryNode {
     constructor(public readonly rootEntityType: RootEntityType, public readonly idNode: QueryNode) {
@@ -56,19 +56,15 @@ export class RootEntityIDQueryNode extends QueryNode {
 }
 
 /**
- * Evaluates to all root entitites that are connected to a specific root entitity through a specific edge
+ * Evaluates to all root entities that are connected to a specific root entitity through a specific edge
  */
 export class FollowEdgeQueryNode extends QueryNode {
-    constructor(readonly relation: Relation, readonly sourceEntityNode: QueryNode, readonly sourceFieldSide: RelationFieldSide) {
+    constructor(readonly relationSide: RelationSide, readonly sourceEntityNode: QueryNode) {
         super();
     }
 
     describe() {
-        switch (this.sourceFieldSide) {
-            case RelationFieldSide.FROM_SIDE:
-                return `follow forward ${blue(this.relation.toString())} of ${this.sourceEntityNode.describe()}`;
-            case RelationFieldSide.TO_SIDE:
-                return `follow backward ${blue(this.relation.toString())} of ${this.sourceEntityNode.describe()}`;
-        }
+        const dir = this.relationSide.isFromSide ? 'forward' : 'backward';
+        return `follow ${dir} ${blue(this.relationSide.relation.toString())} of ${this.sourceEntityNode.describe()}`;
     }
 }
