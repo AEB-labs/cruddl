@@ -138,9 +138,9 @@ function processKeyField(definition: ObjectTypeDefinitionNode, fields: ReadonlyA
         if (keyFieldASTNode && keyFieldASTNode.name.value === underscoreKeyField.name) {
             keyFieldASTNode = underscoreKeyField.astNode;
             keyFieldName = ID_FIELD;
-            context.addMessage(ValidationMessage.warn(`The field "_key" is deprecated and should be replaced with "id" (of type "ID").`));
+            context.addMessage(ValidationMessage.warn(`The field "_key" is deprecated and should be replaced with "id" (of type "ID").`, undefined, underscoreKeyField.astNode));
         } else {
-            context.addMessage(ValidationMessage.error(`The field name "_key" is reserved and can only be used in combination with @key.`));
+            context.addMessage(ValidationMessage.error(`The field name "_key" is reserved and can only be used in combination with @key.`, undefined, underscoreKeyField.astNode));
         }
     }
     const idField = fields.find(field => field.name == ID_FIELD);
@@ -150,10 +150,10 @@ function processKeyField(definition: ObjectTypeDefinitionNode, fields: ReadonlyA
             keyFieldASTNode = idField.astNode;
             keyFieldName = ID_FIELD;
         } else {
-            context.addMessage(ValidationMessage.warn(`The field "id" is redundant and should only be explicitly added when used with @key.`));
+            context.addMessage(ValidationMessage.warn(`The field "id" is redundant and should only be explicitly added when used with @key.`, undefined, idField.astNode));
         }
         if (idField.typeName !== GraphQLID.name) {
-            context.addMessage(ValidationMessage.error(`The field "id" must be of type "ID".`));
+            context.addMessage(ValidationMessage.error(`The field "id" must be of type "ID".`, undefined, idField.astNode));
         }
     }
     return {fields, keyFieldASTNode, keyFieldName};
