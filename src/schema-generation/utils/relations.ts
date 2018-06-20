@@ -171,6 +171,25 @@ export function getRemoveEdgesStatements(sourceField: Field, sourceIDNode: Query
 }
 
 /**
+ * Gets statements that collectively remove any incoming or outgoing edges of the given root entities
+ */
+export function getRemoveAllEntityEdgesStatements(sourceType: RootEntityType, sourceIDsNode: QueryNode): ReadonlyArray<PreExecQueryParms> {
+    return sourceType.relationSides.map(relationSide => getRemoveAllEdgesStatements(relationSide, sourceIDsNode));
+}
+
+/**
+ * Get a statement that removes all edges in a relation related to the given root entities
+ */
+export function getRemoveAllEdgesStatements(relationSide: RelationSide, sourceIDsNode: QueryNode): PreExecQueryParms {
+    return new PreExecQueryParms({
+        query: new RemoveEdgesQueryNode(relationSide.relation, getEdgeFilter({
+            relationSide,
+            sourceIDsNode
+        }))
+    });
+}
+
+/**
  * Creates an Edge identifier. Reorders source/target so that they match from/to in the relation
  */
 function getEdgeIdentifier({relationSide, sourceIDNode, targetIDNode}: { relationSide: RelationSide; sourceIDNode: QueryNode; targetIDNode: QueryNode; }): EdgeIdentifier {
