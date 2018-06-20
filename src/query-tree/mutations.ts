@@ -89,6 +89,8 @@ export class SetFieldQueryNode extends PropertySpecification {
 
 /**
  * A node that deletes existing entities and evaluates to the entities before deletion
+ *
+ * Does not delete edges related to the entities.
  */
 export class DeleteEntitiesQueryNode extends QueryNode {
     constructor(params: {
@@ -169,27 +171,26 @@ export class SetEdgeQueryNode extends QueryNode {
 /**
  * Filters edges by from and to id (from and to are and-combined, but the individual ids are or-combined)
  *
- * If e.g. fromIDNodes is undefined, this filter applies to all edges, regardless of the from id
+ * If e.g. fromIDsNode is undefined, this filter applies to all edges, regardless of the from id
  *
- * pseudo code: from IN [...fromIDNodes] && to IN [...toIDNodes]
+ * fromIDsNode and toIDsNode should evaluate to a *list* of ids.
+ *
+ * pseudo code: from IN fromIDsNode && to IN toIDsNode
  */
 export class EdgeFilter extends QueryNode {
-    constructor(readonly fromIDNodes?: ReadonlyArray<QueryNode>, readonly toIDNodes?: ReadonlyArray<QueryNode>) {
+    constructor(readonly fromIDsNode?: QueryNode, readonly toIDsNode?: QueryNode) {
         super();
     }
 
     describe() {
-        return `(${this.describeIDs(this.fromIDNodes)} -> ${this.describeIDs(this.toIDNodes)})`;
+        return `(${this.describeIDs(this.fromIDsNode)} -> ${this.describeIDs(this.toIDsNode)})`;
     }
 
-    private describeIDs(ids: ReadonlyArray<QueryNode> | undefined) {
+    private describeIDs(ids: QueryNode | undefined) {
         if (!ids) {
             return '?';
         }
-        if (ids.length == 1) {
-            return ids[0].describe();
-        }
-        return `[ ` + ids.map(id => id.describe()).join(' | ') + ` ]`;
+        return ids.describe();
     }
 }
 

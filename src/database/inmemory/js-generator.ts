@@ -470,11 +470,11 @@ const processors : { [name: string]: NodeProcessor<any> } = {
     RemoveEdges(node: RemoveEdgesQueryNode, context): JSFragment {
         const coll = getCollectionForRelation(node.relation, context);
         const edgeVar = js.variable('edge');
-        const fromIDs = node.edgeFilter.fromIDNodes ? js.join(node.edgeFilter.fromIDNodes.map(node => processNode(node, context)), js`, `) : undefined;
-        const toIDs = node.edgeFilter.toIDNodes ? js.join(node.edgeFilter.toIDNodes.map(node => processNode(node, context)), js`, `) : undefined;
+        const fromIDs = node.edgeFilter.fromIDsNode ? processNode(node.edgeFilter.fromIDsNode, context) : undefined;
+        const toIDs = node.edgeFilter.toIDsNode ? processNode(node.edgeFilter.toIDsNode, context) : undefined;
         const edgeRemovalCriteria = compact([
-            fromIDs ? js`[${fromIDs}].includes(${edgeVar}._from)` : undefined,
-            toIDs ? js`[${toIDs}].includes(${edgeVar}._to)` : undefined
+            fromIDs ? js`${fromIDs}.includes(${edgeVar}._from)` : undefined,
+            toIDs ? js`${toIDs}.includes(${edgeVar}._to)` : undefined
         ]);
         const edgeShouldStay = js`!(${js.join(edgeRemovalCriteria, js` && `)})`;
 

@@ -1,6 +1,7 @@
 import { Field, Multiplicity, RelationSide, RootEntityType } from '../../model';
 import {
     AddEdgesQueryNode, EdgeFilter, EdgeIdentifier, EntityFromIdQueryNode, ErrorIfNotTruthyResultValidator,
+    ListQueryNode,
     LiteralQueryNode, PartialEdgeIdentifier, PreExecQueryParms, QueryNode, RemoveEdgesQueryNode, SetEdgeQueryNode,
     VariableQueryNode
 } from '../../query-tree';
@@ -41,7 +42,7 @@ export function getSetEdgeStatements(sourceField: Field, sourceIDNode: QueryNode
             new PreExecQueryParms({
                 query: new RemoveEdgesQueryNode(relationSide.relation, getEdgeFilter({
                     relationSide,
-                    sourceIDNodes: [sourceIDNode]
+                    sourceIDsNode: new ListQueryNode([sourceIDNode])
                 }))
             })
         ];
@@ -64,7 +65,7 @@ export function getSetEdgeStatements(sourceField: Field, sourceIDNode: QueryNode
         const removeExistingEdgeStatement = new PreExecQueryParms({
             query: new RemoveEdgesQueryNode(relationSide.relation, getEdgeFilter({
                 relationSide,
-                targetIDNodes: [targetIDNode]
+                targetIDsNode: new ListQueryNode([targetIDNode])
             }))
         });
 
@@ -106,7 +107,7 @@ export function getAddEdgesStatements(sourceField: Field, sourceIDNode: QueryNod
         const removeExistingEdgeStatement = new PreExecQueryParms({
             query: new RemoveEdgesQueryNode(relationSide.relation, getEdgeFilter({
                 relationSide,
-                targetIDNodes: targetIDs.map(id => new LiteralQueryNode(id))
+                targetIDsNode: new LiteralQueryNode(targetIDs)
             }))
         });
 
@@ -162,8 +163,8 @@ export function getRemoveEdgesStatements(sourceField: Field, sourceIDNode: Query
         new PreExecQueryParms({
             query: new RemoveEdgesQueryNode(relationSide.relation, getEdgeFilter({
                 relationSide,
-                sourceIDNodes: [sourceIDNode],
-                targetIDNodes: targetIDs.map(id => new LiteralQueryNode(id))
+                sourceIDsNode: new ListQueryNode([sourceIDNode]),
+                targetIDsNode: new LiteralQueryNode(targetIDs)
             }))
         })
     ];
@@ -194,10 +195,10 @@ function getPartialEdgeIdentifier({relationSide, sourceIDNode}: { relationSide: 
 /**
  * Creates an Edge filter. Reorders source/target so that they match from/to in the relation
  */
-function getEdgeFilter({relationSide, sourceIDNodes, targetIDNodes}: { relationSide: RelationSide; sourceIDNodes?: QueryNode[]; targetIDNodes?: QueryNode[] }): EdgeFilter {
+function getEdgeFilter({relationSide, sourceIDsNode, targetIDsNode}: { relationSide: RelationSide; sourceIDsNode?: QueryNode; targetIDsNode?: QueryNode }): EdgeFilter {
     if (relationSide.isFromSide) {
-        return new EdgeFilter(sourceIDNodes, targetIDNodes);
+        return new EdgeFilter(sourceIDsNode, targetIDsNode);
     } else {
-        return new EdgeFilter(targetIDNodes, sourceIDNodes);
+        return new EdgeFilter(targetIDsNode, sourceIDsNode);
     }
 }
