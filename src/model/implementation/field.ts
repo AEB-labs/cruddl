@@ -341,14 +341,19 @@ export class Field implements ModelComponent {
             return;
         }
 
+        const supportedOperators = CALC_MUTATIONS_OPERATORS.filter(op => op.supportedTypes.includes(this.type.name));
+        const supportedOperatorsDesc = supportedOperators.map(op => '"' + op.name + '"').join(', ');
+
+        if (this.calcMutationOperators.size > 0 && !supportedOperators.length) {
+            context.addMessage(ValidationMessage.error(`Type "${this.type.name}" does not support any calc mutation operators.`, this.astNode));
+            return;
+        }
+
         for (const operator of this.calcMutationOperators) {
             const desc = CALC_MUTATIONS_OPERATORS.find(op => op.name == operator);
             if (!desc) {
                 throw new Error(`Unknown calc mutation operator: ${operator}`);
             }
-
-            const supportedOperators = CALC_MUTATIONS_OPERATORS.filter(op => op.supportedTypes.includes(this.type.name));
-            const supportedOperatorsDesc = supportedOperators.map(op => '"' + op.name + '"').join(', ');
 
             if (!(desc.supportedTypes.includes(this.type.name))) {
                 context.addMessage(ValidationMessage.error(`Calc mutation operator "${operator}" is not supported on type "${this.type.name}" (supported operators: ${supportedOperatorsDesc}).`, this.astNode));

@@ -648,6 +648,16 @@ describe('Field', () => {
             expectToBeValid(field);
         });
 
+        it('rejects APPEND on Boolean', () => {
+            const field = new Field({
+                name: 'isConfirmed',
+                typeName: 'Boolean',
+                calcMutationOperators: [CalcMutationsOperator.APPEND]
+            }, deliveryType);
+
+            expectSingleErrorToInclude(field, `Type "Boolean" does not support any calc mutation operators.`);
+        });
+
         it('rejects APPEND on Int', () => {
             const field = new Field({
                 name: 'amount',
