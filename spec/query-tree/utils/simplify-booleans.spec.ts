@@ -13,7 +13,7 @@ describe('query-tree-utils', () => {
                     return op.value;
                 }
                 if (op instanceof LiteralQueryNode) {
-                    return op.value;
+                    return op.value as boolean;
                 }
                 if (op instanceof BinaryOperationQueryNode && op.operator == BinaryOperator.AND) {
                     return evaluate(op.lhs) && evaluate(op.rhs);

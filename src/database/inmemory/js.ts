@@ -238,7 +238,7 @@ export class JSIndentationFragment extends JSFragment {
     }
 }
 
-export function js(strings: ReadonlyArray<string>, ...values: any[]): JSFragment {
+export function js(strings: ReadonlyArray<string>, ...values: (JSFragment|string|number|boolean)[]): JSFragment {
     let snippets = [...strings];
     let fragments: JSFragment[] = [];
     while (snippets.length || values.length) {
@@ -251,8 +251,10 @@ export function js(strings: ReadonlyArray<string>, ...values: any[]): JSFragment
                 fragments.push(...value.fragments);
             } else if (value instanceof JSFragment) {
                 fragments.push(value);
-            } else {
+            } else if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
                 fragments.push(new JSBoundValue(value));
+            } else {
+                throw new Error(`js: Received a value that is neither a JSFragment, nor a primitive`)
             }
         }
     }
@@ -291,6 +293,10 @@ export namespace js {
 
     export function variable(label?: string): JSFragment {
         return new JSVariable(label);
+    }
+
+    export function value(value: any): JSBoundValue {
+        return new JSBoundValue(value);
     }
 
     export function queryResultVariable(label?: string): JSQueryResultVariable {

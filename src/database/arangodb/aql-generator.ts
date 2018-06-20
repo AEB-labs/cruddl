@@ -1,4 +1,4 @@
-import { Relation, RelationFieldSide, RootEntityType } from '../../model';
+import { Relation, RootEntityType } from '../../model';
 import {
     AddEdgesQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode,
     ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeFilter,
@@ -176,7 +176,7 @@ namespace aqlExt {
 
 const processors : { [name: string]: NodeProcessor<any> } = {
     Literal(node: LiteralQueryNode): AQLFragment {
-        return aql`${node.value}`;
+        return aql.value(node.value);
     },
 
     Null(): AQLFragment {
@@ -497,7 +497,22 @@ function getFullIDFromKeyNode(node: QueryNode, rootEntityType: RootEntityType, c
     }
 
     // fall back to general case
-    return aql`CONCAT(${getCollectionNameForRootEntity(rootEntityType) + '/'}, ${processNode(node, context)})`;
+    return getFullIDFromKeyFragment(processNode(node, context), rootEntityType);
+}
+
+function getFullIDsFromKeysNode(idsNode: QueryNode, rootEntityType: RootEntityType, context: QueryContext): AQLFragment {
+    if (idsNode instanceof ListQueryNode) {
+        // this probably generates cleaner AQL without dynamic concat
+        const idFragments = idsNode.itemNodes.map(idNode => getFullIDFromKeyNode(idNode, rootEntityType, context));
+        return aql`[${aql.join(idFragments, aql`, `)}]`;
+    }
+
+    const idVar = aql.variable('id');
+    return aql`(FOR ${idVar} IN ${processNode(idsNode, context)} RETURN ${getFullIDFromKeyFragment(idVar, rootEntityType)})`;
+}
+
+function getFullIDFromKeyFragment(keyFragment: AQLFragment, rootEntityType: RootEntityType): AQLFragment {
+    return aql`CONCAT(${getCollectionNameForRootEntity(rootEntityType) + '/'}, ${keyFragment})`;
 }
 
 function formatEdge(relation: Relation, edge: PartialEdgeIdentifier|EdgeIdentifier, context: QueryContext): AQLFragment {
@@ -513,16 +528,12 @@ function formatEdge(relation: Relation, edge: PartialEdgeIdentifier|EdgeIdentifi
 }
 
 function formatEdgeFilter(relation: Relation, edge: EdgeFilter, edgeFragment: AQLFragment, context: QueryContext) {
-    function makeList(ids: ReadonlyArray<QueryNode>, rootEntityType: RootEntityType) {
-        return aql`[${aql.join(ids.map(node => getFullIDFromKeyNode(node, rootEntityType, context)), aql`, `)}]`;
-    }
-
     const conditions = [];
-    if (edge.fromIDNodes) {
-        conditions.push(aql`${edgeFragment}._from IN ${makeList(edge.fromIDNodes, relation.fromType)}`);
+    if (edge.fromIDsNode) {
+        conditions.push(aql`${edgeFragment}._from IN ${getFullIDsFromKeysNode(edge.fromIDsNode, relation.fromType, context)}`);
     }
-    if (edge.toIDNodes) {
-        conditions.push(aql`${edgeFragment}._to IN ${makeList(edge.toIDNodes, relation.toType)}`);
+    if (edge.toIDsNode) {
+        conditions.push(aql`${edgeFragment}._to IN ${getFullIDsFromKeysNode(edge.toIDsNode, relation.toType, context)}`);
     }
 
     return aql.join(conditions, aql` && `);
@@ -616,11 +627,6 @@ function getCollectionForRelation(relation: Relation, accessType: AccessType, co
  * expression context)
  */
 function getSimpleFollowEdgeFragment(node: FollowEdgeQueryNode, context: QueryContext): AQLFragment {
-    switch (node.sourceFieldSide) {
-        case RelationFieldSide.FROM_SIDE:
-            return aql`OUTBOUND ${processNode(node.sourceEntityNode, context)} ${getCollectionForRelation(node.relation, AccessType.READ, context)}`;
-        case RelationFieldSide.TO_SIDE:
-            return aql`INBOUND ${processNode(node.sourceEntityNode, context)} ${getCollectionForRelation(node.relation, AccessType.READ, context)}`;
-    }
-
+    const dir = node.relationSide.isFromSide ? aql`OUTBOUND` : aql`INBOUND`;
+    return aql`${dir}  ${processNode(node.sourceEntityNode, context)} ${getCollectionForRelation(node.relationSide.relation, AccessType.READ, context)}`;
 }

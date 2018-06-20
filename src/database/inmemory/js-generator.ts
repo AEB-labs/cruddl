@@ -1,5 +1,5 @@
 import { compact } from 'lodash';
-import { invertRelationFieldSide, Relation, RelationFieldSide, RootEntityType } from '../../model';
+import { Relation, RootEntityType } from '../../model';
 import {
     AddEdgesQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode,
     ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode,
@@ -146,7 +146,7 @@ namespace jsExt {
 
 const processors : { [name: string]: NodeProcessor<any> } = {
     Literal(node: LiteralQueryNode): JSFragment {
-        return js`${node.value}`;
+        return js.value(node.value);
     },
 
     Null(): JSFragment {
@@ -381,13 +381,13 @@ const processors : { [name: string]: NodeProcessor<any> } = {
     },
 
     FollowEdge(node: FollowEdgeQueryNode, context): JSFragment {
-        const targetType = node.relation.getTypeOfSide(invertRelationFieldSide(node.sourceFieldSide));
+        const targetType = node.relationSide.targetType;
         const targetColl = getCollectionForType(targetType, context);
-        const edgeColl = getCollectionForRelation(node.relation, context);
+        const edgeColl = getCollectionForRelation(node.relationSide.relation, context);
         const edgeVar = js.variable('edge');
         const itemVar = js.variable(decapitalize(targetType.name));
-        const sourceIDOnEdge = node.sourceFieldSide == RelationFieldSide.FROM_SIDE ? js`${edgeVar}._from` : js`${edgeVar}._to`;
-        const targetIDOnEdge = node.sourceFieldSide == RelationFieldSide.FROM_SIDE ? js`${edgeVar}._to` : js`${edgeVar}._from`;
+        const sourceIDOnEdge = node.relationSide.isFromSide ? js`${edgeVar}._from` : js`${edgeVar}._to`;
+        const targetIDOnEdge = node.relationSide.isFromSide ? js`${edgeVar}._to` : js`${edgeVar}._from`;
         const sourceID = processNode(new RootEntityIDQueryNode(node.sourceEntityNode), context);
         const idOnItem = js`${itemVar}.${js.identifier(ID_FIELD_NAME)}`;
         const idOnItemEqualsTargetIDOnEdge = js`${idOnItem} === ${targetIDOnEdge}`;
@@ -470,11 +470,11 @@ const processors : { [name: string]: NodeProcessor<any> } = {
     RemoveEdges(node: RemoveEdgesQueryNode, context): JSFragment {
         const coll = getCollectionForRelation(node.relation, context);
         const edgeVar = js.variable('edge');
-        const fromIDs = node.edgeFilter.fromIDNodes ? js.join(node.edgeFilter.fromIDNodes.map(node => processNode(node, context)), js`, `) : undefined;
-        const toIDs = node.edgeFilter.toIDNodes ? js.join(node.edgeFilter.toIDNodes.map(node => processNode(node, context)), js`, `) : undefined;
+        const fromIDs = node.edgeFilter.fromIDsNode ? processNode(node.edgeFilter.fromIDsNode, context) : undefined;
+        const toIDs = node.edgeFilter.toIDsNode ? processNode(node.edgeFilter.toIDsNode, context) : undefined;
         const edgeRemovalCriteria = compact([
-            fromIDs ? js`[${fromIDs}].includes(${edgeVar}._from)` : undefined,
-            toIDs ? js`[${toIDs}].includes(${edgeVar}._to)` : undefined
+            fromIDs ? js`${fromIDs}.includes(${edgeVar}._from)` : undefined,
+            toIDs ? js`${toIDs}.includes(${edgeVar}._to)` : undefined
         ]);
         const edgeShouldStay = js`!(${js.join(edgeRemovalCriteria, js` && `)})`;
 

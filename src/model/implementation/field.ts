@@ -1,13 +1,13 @@
-import { CalcMutationsOperator, FieldConfig, TypeKind } from '../config';
-import { ModelComponent, ValidationContext } from '../validation/validation-context';
-import { ValidationMessage } from '../validation';
 import { FieldDefinitionNode } from 'graphql';
-import { ObjectType, Type } from './type';
-import { PermissionProfile } from './permission-profile';
-import { Model } from './model';
 import { CALC_MUTATIONS_OPERATORS } from '../../schema/constants';
+import { CalcMutationsOperator, FieldConfig, TypeKind } from '../config';
+import { ValidationMessage } from '../validation';
+import { ModelComponent, ValidationContext } from '../validation/validation-context';
+import { Model } from './model';
+import { PermissionProfile } from './permission-profile';
+import { Relation, RelationSide } from './relation';
 import { RolesSpecifier } from './roles-specifier';
-import { Relation } from './relation';
+import { ObjectType, Type } from './type';
 
 export class Field implements ModelComponent {
     readonly model: Model;
@@ -83,6 +83,14 @@ export class Field implements ModelComponent {
     }
 
     public get relation(): Relation | undefined {
+        const relationSide = this.relationSide;
+        if (!relationSide) {
+            return undefined;
+        }
+        return relationSide.relation;
+    }
+
+    public get relationSide(): RelationSide | undefined {
         if (!this.isRelation || !this.declaringType.isRootEntityType || !this.type.isRootEntityType) {
             return undefined;
         }
@@ -93,7 +101,7 @@ export class Field implements ModelComponent {
                 fromField: this.inverseOf,
                 toType: this.declaringType,
                 toField: this
-            });
+            }).toSide;
         } else {
             // this is the from side
             return new Relation({
@@ -101,22 +109,26 @@ export class Field implements ModelComponent {
                 fromField: this,
                 toType: this.type,
                 toField: this.inverseField
-            });
+            }).fromSide;
         }
     }
 
-    public getRelationOrThrow(): Relation {
+    public getRelationSideOrThrow(): RelationSide {
         if (this.type.kind != TypeKind.ROOT_ENTITY) {
             throw new Error(`Expected "${this.type.name}" to be a root entity, but is ${this.type.kind}`);
         }
         if (this.declaringType.kind != TypeKind.ROOT_ENTITY) {
             throw new Error(`Expected "${this.declaringType.name}" to be a root entity, but is ${this.declaringType.kind}`);
         }
-        const relation = this.relation;
-        if (!relation) {
+        const relationSide = this.relationSide;
+        if (!relationSide) {
             throw new Error(`Expected "${this.declaringType.name}.${this}" to be a relation`);
         }
-        return relation;
+        return relationSide;
+    }
+
+    public getRelationOrThrow(): Relation {
+        return this.getRelationSideOrThrow().relation;
     }
 
     validate(context: ValidationContext) {
