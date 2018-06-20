@@ -27,7 +27,7 @@ export abstract class ObjectTypeBase extends TypeBase {
     validate(context: ValidationContext) {
         super.validate(context);
 
-        if (!this.fields.length) {
+        if (!this.fields.filter(f => !f.isSystemField).length) {
             context.addMessage(ValidationMessage.error(`Object type "${this.name}" does not declare any fields.`, this.nameASTNode));
         }
 

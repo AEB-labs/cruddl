@@ -71,6 +71,7 @@ describe('key field validator', () => {
         assertValidatorAcceptsAndDoesNotWarn(`
             type Stuff @rootEntity {
                 id: ID @key
+                test: String
             }
         `);
     });
@@ -79,6 +80,7 @@ describe('key field validator', () => {
         assertValidatorWarns(`
             type Stuff @rootEntity {
                 id: ID
+                test: String
             }
         `, 'The field "id" is redundant and should only be explicitly added when used with @key.');
     });
@@ -87,6 +89,7 @@ describe('key field validator', () => {
         assertValidatorWarns(`
             type Stuff @rootEntity {
                 _key: String @key
+                test: String
             }
         `, 'The field "_key" is deprecated and should be replaced with "id" (of type "ID").');
     });
@@ -95,6 +98,7 @@ describe('key field validator', () => {
         assertValidatorRejects(`
             type Stuff @rootEntity {
                 id: String @key
+                test: String
             }
         `, 'The field "id" must be of type "ID".');
     });
@@ -103,6 +107,7 @@ describe('key field validator', () => {
         assertValidatorRejects(`
             type Stuff @rootEntity {
                 id: String
+                test: String
             }
         `, 'The field "id" must be of type "ID".');
     });
@@ -111,8 +116,18 @@ describe('key field validator', () => {
         assertValidatorRejects(`
             type Stuff @rootEntity {
                 _key: String
+                test: String
             }
         `, 'The field name "_key" is reserved and can only be used in combination with @key.');
+    });
+
+    it('rejects object types with only id field', () => {
+        // this is important because update input types would be empty and cause a crash
+        assertValidatorRejects(`
+            type Stuff @rootEntity {
+                id: ID @key
+            }
+        `, 'Object type "Stuff" does not declare any fields.');
     });
 
     // just to make it clear - _key is an exception here.
