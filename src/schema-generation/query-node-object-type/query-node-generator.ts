@@ -1,10 +1,11 @@
 import { FieldRequest, FieldSelection } from '../../graphql/query-distiller';
 import {
-    BasicType, ConditionalQueryNode, NullQueryNode, ObjectQueryNode, PropertySpecification, QueryNode,
-    TransformListQueryNode, TypeCheckQueryNode, VariableAssignmentQueryNode, VariableQueryNode
+    BasicType, ConditionalQueryNode, NullQueryNode, ObjectQueryNode, PreExecQueryParms, PropertySpecification,
+    QueryNode, TransformListQueryNode, TypeCheckQueryNode, VariableAssignmentQueryNode, VariableQueryNode,
+    WithPreExecutionQueryNode
 } from '../../query-tree';
 import { decapitalize } from '../../utils/utils';
-import { QueryNodeObjectType } from './definition';
+import { QueryNodeField, QueryNodeObjectType } from './definition';
 import { extractQueryTreeObjectType, isListType, resolveThunk } from './utils';
 
 export function buildConditionalObjectQueryNode(sourceNode: QueryNode, type: QueryNodeObjectType, selectionSet: ReadonlyArray<FieldSelection>, fieldRequestStack: ReadonlyArray<FieldRequest> = []) {
@@ -37,33 +38,56 @@ function buildObjectQueryNode(sourceNode: QueryNode, type: QueryNodeObjectType, 
         if (!field) {
             throw new Error(`Missing field ${sel.fieldRequest.fieldName}`);
         }
-        const newFieldRequestStack = [
-            ...fieldRequestStack,
-            sel.fieldRequest
-        ];
-        let fieldQueryNode = field.resolve(sourceNode, sel.fieldRequest.args, {
-            fieldRequestStack: newFieldRequestStack
-        });
-        const queryTreeObjectType = extractQueryTreeObjectType(field.type);
-
-        // see if we need to map the selection set
-        if (queryTreeObjectType) {
-            if (isListType(field.type)) {
-                // Note: previously, we had a safeguard here that converted non-lists to empty lists
-                // This is no longer necessary because createFieldNode() already does this where necessary (only for simple field lookups)
-                // All other code should return lists where lists are expected
-                fieldQueryNode = buildTransformListQueryNode(fieldQueryNode, queryTreeObjectType, sel.fieldRequest.selectionSet, newFieldRequestStack);
-            } else {
-                // This is necessary because we want to return `null` if a field is null, and not pass `null` through as
-                // `source`, just as the graphql engine would do, too.
-                // It currently also treats non-objects as `null` (just because it's free), but we may move this to
-                // createFieldNode() later.
-                fieldQueryNode = buildConditionalObjectQueryNode(fieldQueryNode, queryTreeObjectType, sel.fieldRequest.selectionSet, newFieldRequestStack);
-            }
-        }
-
+        const fieldQueryNode = buildFieldQueryNode(sourceNode, field, sel.fieldRequest, fieldRequestStack);
         return new PropertySpecification(sel.propertyName, fieldQueryNode);
     }));
+}
+
+function buildFieldQueryNode(sourceNode: QueryNode, field: QueryNodeField, fieldRequest: FieldRequest, fieldRequestStack: ReadonlyArray<FieldRequest>): QueryNode {
+    const node = buildFieldQueryNode0(sourceNode, field, fieldRequest, fieldRequestStack);
+    if (!field.isSerial) {
+        return node;
+    }
+
+    const variableNode = new VariableQueryNode(field.name);
+    return new WithPreExecutionQueryNode({
+        preExecQueries: [
+            new PreExecQueryParms({
+                query: node,
+                resultVariable: variableNode
+            })
+        ],
+        resultNode: variableNode
+    });
+}
+
+function buildFieldQueryNode0(sourceNode: QueryNode, field: QueryNodeField, fieldRequest: FieldRequest, fieldRequestStack: ReadonlyArray<FieldRequest>): QueryNode {
+    const newFieldRequestStack = [
+        ...fieldRequestStack,
+        fieldRequest
+    ];
+    const fieldQueryNode = field.resolve(sourceNode, fieldRequest.args, {
+        fieldRequestStack: newFieldRequestStack
+    });
+
+    // see if we need to map the selection set
+    const queryTreeObjectType = extractQueryTreeObjectType(field.type);
+    if (!queryTreeObjectType) {
+        return fieldQueryNode;
+    }
+
+    if (isListType(field.type)) {
+        // Note: previously, we had a safeguard here that converted non-lists to empty lists
+        // This is no longer necessary because createFieldNode() already does this where necessary (only for simple field lookups)
+        // All other code should return lists where lists are expected
+        return buildTransformListQueryNode(fieldQueryNode, queryTreeObjectType, fieldRequest.selectionSet, newFieldRequestStack);
+    } else {
+        // This is necessary because we want to return `null` if a field is null, and not pass `null` through as
+        // `source`, just as the graphql engine would do, too.
+        // It currently also treats non-objects as `null` (just because it's free), but we may move this to
+        // createFieldNode() later.
+        return buildConditionalObjectQueryNode(fieldQueryNode, queryTreeObjectType, fieldRequest.selectionSet, newFieldRequestStack);
+    }
 }
 
 function buildTransformListQueryNode(listNode: QueryNode, itemType: QueryNodeObjectType, selectionSet: ReadonlyArray<FieldSelection>, fieldRequestStack: ReadonlyArray<FieldRequest>): QueryNode {

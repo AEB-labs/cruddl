@@ -15,6 +15,11 @@ export interface QueryNodeField {
     type: QueryNodeOutputType
     args?: GraphQLFieldConfigArgumentMap
     resolve: (sourceNode: QueryNode, args: { [name: string]: any }, info: QueryNodeResolveInfo) => QueryNode
+
+    /**
+     * Indicates whether this field should be resolved in the user-specified sequence among other serial fields
+     */
+    isSerial?: boolean
 }
 
 export interface QueryNodeObjectType {

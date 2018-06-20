@@ -75,6 +75,7 @@ export class MutationTypeGenerator {
                     type: new GraphQLNonNull(inputType.getInputType())
                 }
             },
+            isSerial: true,
             resolve: (_, args) => this.generateCreateQueryNode(rootEntityType, args[MUTATION_INPUT_ARG], inputType)
         };
     }
@@ -101,6 +102,7 @@ export class MutationTypeGenerator {
                     type: new GraphQLNonNull(inputType.getInputType())
                 }
             },
+            isSerial: true,
             resolve: (_, args) => this.generateUpdateQueryNode(rootEntityType, args[MUTATION_INPUT_ARG], inputType)
         };
     }
@@ -175,6 +177,7 @@ export class MutationTypeGenerator {
                     type: new GraphQLNonNull(inputType.getInputType())
                 }
             },
+            isSerial: true,
             resolve: (_, args, info) => this.generateUpdateAllQueryNode(rootEntityType, fieldWithListArgs.resolve(_, args, info), inputType, args[MUTATION_INPUT_ARG])
         };
     }
@@ -226,6 +229,7 @@ export class MutationTypeGenerator {
             name: getDeleteEntityFieldName(rootEntityType.name),
             type: this.outputTypeGenerator.generate(rootEntityType),
             args: getArgumentsForUniqueFields(rootEntityType),
+            isSerial: true,
             resolve: (source, args) => this.generateDeleteQueryNode(rootEntityType, args)
         };
     }
@@ -260,6 +264,7 @@ export class MutationTypeGenerator {
 
         return {
             ...fieldWithListArgs,
+            isSerial: true,
             resolve: (source, args, info) => this.generateDeleteAllQueryNode(rootEntityType, fieldWithListArgs.resolve(source, args, info))
         };
     }
