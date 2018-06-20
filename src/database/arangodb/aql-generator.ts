@@ -176,7 +176,7 @@ namespace aqlExt {
 
 const processors : { [name: string]: NodeProcessor<any> } = {
     Literal(node: LiteralQueryNode): AQLFragment {
-        return aql`${node.value}`;
+        return aql.value(node.value);
     },
 
     Null(): AQLFragment {

@@ -146,7 +146,7 @@ namespace jsExt {
 
 const processors : { [name: string]: NodeProcessor<any> } = {
     Literal(node: LiteralQueryNode): JSFragment {
-        return js`${node.value}`;
+        return js.value(node.value);
     },
 
     Null(): JSFragment {
