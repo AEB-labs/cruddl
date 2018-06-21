@@ -2,7 +2,10 @@ import {
     ArgumentNode, EnumValueDefinitionNode, FieldDefinitionNode, GraphQLBoolean, GraphQLID, GraphQLInputObjectType,
     GraphQLList, GraphQLNonNull, GraphQLString, ObjectTypeDefinitionNode, ObjectValueNode, StringValueNode, valueFromAST
 } from 'graphql';
-import { ParsedGraphQLProjectSource, ParsedProject, ParsedProjectSourceBaseKind } from '../config/parsed-project';
+import { merge } from 'lodash';
+import {
+    ParsedGraphQLProjectSource, ParsedObjectProjectSource, ParsedProject, ParsedProjectSourceBaseKind
+} from '../config/parsed-project';
 import {
     ENUM, ENUM_TYPE_DEFINITION, LIST, LIST_TYPE, NON_NULL_TYPE, OBJECT, OBJECT_TYPE_DEFINITION, STRING
 } from '../graphql/kinds';
@@ -23,6 +26,7 @@ import {
     PermissionProfileConfigMap, PermissionsConfig, RolesSpecifierConfig, TypeConfig, TypeKind
 } from './config';
 import { Model } from './implementation';
+import { ModelTranslationsMap, normalizeTranslationInput } from './translation';
 import { ValidationMessage } from './validation';
 import { ValidationContext } from './validation/validation-context';
 
@@ -31,6 +35,7 @@ export function createModel(parsedProject: ParsedProject): Model {
     return new Model({
         types: createTypeInputs(parsedProject, validationContext),
         permissionProfiles: extractPermissionProfiles(parsedProject, validationContext),
+        translations: extractTranslations(parsedProject, validationContext),
         validationMessages: validationContext.validationMessages
     });
 }
@@ -120,7 +125,7 @@ function createObjectTypeInput(definition: ObjectTypeDefinitionNode, schemaPart:
                 kind: TypeKind.ROOT_ENTITY,
                 permissions: getPermissions(definition, context),
                 namespacePath: getNamespacePath(definition, schemaPart.namespacePath),
-                indices: createIndexDefinitionInputs(definition, context),
+                indices: createIndexDefinitionInputs(definition, context)
             };
     }
 }
@@ -408,12 +413,12 @@ function getInverseOfASTNode(fieldNode: FieldDefinitionNode, context: Validation
 function extractPermissionProfiles(parsedProject: ParsedProject, validationContext: ValidationContext): PermissionProfileConfigMap {
     const permissionProfilesList = parsedProject.sources.map(s => {
         if (s.kind !== ParsedProjectSourceBaseKind.OBJECT) {
-            return undefined
+            return undefined;
         }
         if (!s.object.permissionProfiles) {
-            return undefined
+            return undefined;
         }
-        return s.object.permissionProfiles as PermissionProfileConfigMap
+        return s.object.permissionProfiles as PermissionProfileConfigMap;
     });
     // merge list / create map
     return compact(permissionProfilesList).reduce((prev, current) => {
@@ -425,6 +430,12 @@ function extractPermissionProfiles(parsedProject: ParsedProject, validationConte
         }
         return Object.assign(prev, current);
     }, {});
+}
+
+function extractTranslations(parsedProject: ParsedProject, validationContext: ValidationContext): ModelTranslationsMap {
+    const languageInput = parsedProject.sources.filter(s => s.kind === ParsedProjectSourceBaseKind.OBJECT) as ParsedObjectProjectSource[];
+    // deep merge translations
+    return compact(languageInput).reduce((result, currentSource) => merge(result, normalizeTranslationInput(currentSource, validationContext)), {});
 }
 
 // fake input type for index mapping
