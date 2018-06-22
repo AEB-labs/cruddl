@@ -5,13 +5,9 @@ import { decapitalize } from '../../utils/utils';
 import { FilterObjectType } from '../filter-input-types';
 
 export function buildFilteredListNode(listNode: QueryNode, args: {[name: string]: any}, filterType: FilterObjectType, itemType: Type) {
-    const filterValue = args[FILTER_ARG];
-    if (filterValue == undefined) {
-        return listNode;
-    }
-
+    const filterValue = args[FILTER_ARG] || {};
     const itemVariable = new VariableQueryNode(decapitalize(itemType.name));
-    const filterNode = filterValue != undefined ? filterType.getFilterNode(itemVariable, args[FILTER_ARG]) : undefined;
+    const filterNode = filterType.getFilterNode(itemVariable, filterValue);
     return new TransformListQueryNode({
         listNode,
         itemVariable,
