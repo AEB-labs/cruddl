@@ -2,10 +2,7 @@ import {
     ArgumentNode, EnumValueDefinitionNode, FieldDefinitionNode, GraphQLBoolean, GraphQLID, GraphQLInputObjectType,
     GraphQLList, GraphQLNonNull, GraphQLString, ObjectTypeDefinitionNode, ObjectValueNode, StringValueNode, valueFromAST
 } from 'graphql';
-import { merge } from 'lodash';
-import {
-    ParsedGraphQLProjectSource, ParsedObjectProjectSource, ParsedProject, ParsedProjectSourceBaseKind
-} from '../config/parsed-project';
+import { ParsedGraphQLProjectSource, ParsedProject, ParsedProjectSourceBaseKind } from '../config/parsed-project';
 import {
     ENUM, ENUM_TYPE_DEFINITION, LIST, LIST_TYPE, NON_NULL_TYPE, OBJECT, OBJECT_TYPE_DEFINITION, STRING
 } from '../graphql/kinds';
@@ -25,10 +22,9 @@ import {
     CalcMutationsOperator, EnumTypeConfig, FieldConfig, IndexDefinitionConfig, ObjectTypeConfig,
     PermissionProfileConfigMap, PermissionsConfig, RolesSpecifierConfig, TypeConfig, TypeKind
 } from './config';
+import { TranslationConfig } from './config/translation';
 import { Model } from './implementation';
-import { ModelTranslationsMap, normalizeTranslationInput } from './translation';
-import { ValidationMessage } from './validation';
-import { ValidationContext } from './validation/validation-context';
+import { ValidationContext, ValidationMessage } from './validation';
 
 export function createModel(parsedProject: ParsedProject): Model {
     const validationContext = new ValidationContext();
@@ -96,7 +92,8 @@ function createObjectTypeInput(definition: ObjectTypeDefinitionNode, schemaPart:
         name: definition.name.value,
         description: definition.description ? definition.description.value : undefined,
         astNode: definition,
-        fields: (definition.fields || []).map(field => createFieldInput(field, context))
+        fields: (definition.fields || []).map(field => createFieldInput(field, context)),
+        namespacePath: getNamespacePath(definition, schemaPart.namespacePath),
     };
 
     switch (entityType) {
@@ -124,7 +121,6 @@ function createObjectTypeInput(definition: ObjectTypeDefinitionNode, schemaPart:
                 ...processKeyField(definition, common.fields, context),
                 kind: TypeKind.ROOT_ENTITY,
                 permissions: getPermissions(definition, context),
-                namespacePath: getNamespacePath(definition, schemaPart.namespacePath),
                 indices: createIndexDefinitionInputs(definition, context)
             };
     }
@@ -432,10 +428,9 @@ function extractPermissionProfiles(parsedProject: ParsedProject, validationConte
     }, {});
 }
 
-function extractTranslations(parsedProject: ParsedProject, validationContext: ValidationContext): ModelTranslationsMap {
-    const languageInput = parsedProject.sources.filter(s => s.kind === ParsedProjectSourceBaseKind.OBJECT) as ParsedObjectProjectSource[];
-    // deep merge translations
-    return compact(languageInput).reduce((result, currentSource) => merge(result, normalizeTranslationInput(currentSource, validationContext)), {});
+function extractTranslations(parsedProject: ParsedProject, validationContext: ValidationContext): ReadonlyArray<TranslationConfig> {
+    // TODO
+    return []
 }
 
 // fake input type for index mapping
