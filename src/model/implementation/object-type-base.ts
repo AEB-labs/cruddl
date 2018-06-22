@@ -23,7 +23,7 @@ export abstract class ObjectTypeBase extends TypeBase {
             ...customFields
         ];
         this.fieldMap = new Map(this.fields.map((field): [string, Field] => [ field.name, field ]));
-        this.namespacePath = input.namespacePath;
+        this.namespacePath = input.namespacePath || [];
     }
 
     validate(context: ValidationContext) {
