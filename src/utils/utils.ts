@@ -18,6 +18,22 @@ export function endsWith(str: string, suffix: string) {
     return str.substr(-suffix.length) == suffix;
 }
 
+/**
+ * Check if {array} starts with {start}
+ * @param {ReadonlyArray<T>} array
+ * @param {ReadonlyArray<T>} start
+ * @returns {boolean}
+ */
+export function arrayStartsWith<T>(array: ReadonlyArray<T>, start: ReadonlyArray<T>): boolean {
+    let i = 0;
+    while(i < start.length) {
+        if (array[i] !== start[i]) {
+            return false;
+        }
+    }
+    return true
+}
+
 export function capitalize(string: string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
