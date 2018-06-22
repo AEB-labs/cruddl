@@ -178,3 +178,19 @@ export function getNodeByName<T extends {name: NameNode}>(listOfNodes: ReadonlyA
     }
     return listOfNodes.find(node => node.name.value === name);
 }
+
+export function getLineAndColumnFromPosition(position: number, source: string) {
+    let curIndex = 0;
+    let line = 0;
+    while (curIndex < position){
+        const nextLinebreakIndex = source.indexOf('\n', curIndex);
+        if(nextLinebreakIndex < 0 || nextLinebreakIndex >= nextLinebreakIndex){
+            break;
+        }else{
+            line++;
+            curIndex = nextLinebreakIndex;
+        }
+    }
+
+    return {line: line, column: position-curIndex};
+}

@@ -13,6 +13,10 @@ import { validatePostMerge, validateSource } from './preparation/ast-validator';
 import {
     executePreMergeTransformationPipeline, executeSchemaTransformationPipeline, SchemaTransformationContext
 } from './preparation/transformation-pipeline';
+import { parse as JSONparse, Pointer, Pointers } from 'json-source-map';
+import stripJsonComments = require('strip-json-comments');
+import { Kind, load, YAMLAnchorReference, YamlMap, YAMLMapping, YAMLNode, YAMLScalar, YAMLSequence } from 'yaml-ast-parser';
+import { MessageLocation } from '../model/validation/message';
 
 /**
  * Validates a project and thus determines whether createSchema() would succeed
@@ -27,8 +31,7 @@ export function validateSchema(project: Project): ValidationResult {
 }
 
 
-function validateAndPrepareSchema(project: Project):
-        { validationResult: ValidationResult, model: Model } {
+function validateAndPrepareSchema(project: Project): { validationResult: ValidationResult, model: Model } {
     const messages: ValidationMessage[] = [];
 
     const sources = flatMap(project.sources, source => {
@@ -37,10 +40,10 @@ function validateAndPrepareSchema(project: Project):
         if (sourceResult.hasErrors()) {
             return [];
         }
-        return [ source ];
+        return [source];
     });
 
-    const parsedProject = parseProject(new Project({...project, sources}));
+    const parsedProject = parseProject(new Project({ ...project, sources }));
 
     const preparedProject = executePreMergeTransformationPipeline(parsedProject);
 
@@ -61,7 +64,7 @@ function validateAndPrepareSchema(project: Project):
  A schema definition is an array of definition parts, represented
  as a (sourced) SDL string or AST document.
  Use the optional context to inject your logging framework.
-  */
+ */
 export function createSchema(project: Project, databaseAdapter: DatabaseAdapter): GraphQLSchema {
     globalContext.registerContext({ loggerProvider: project.loggerProvider });
     try {
@@ -89,9 +92,9 @@ export function createSchema(project: Project, databaseAdapter: DatabaseAdapter)
 
 
 export function getModel(project: Project): Model {
-    globalContext.registerContext({loggerProvider: project.loggerProvider});
+    globalContext.registerContext({ loggerProvider: project.loggerProvider });
     try {
-        const { model} = validateAndPrepareSchema(project);
+        const { model } = validateAndPrepareSchema(project);
         return model;
     } finally {
         globalContext.unregisterContext();
@@ -132,14 +135,46 @@ function parseProject(project: Project): ParsedProject {
     };
 }
 
-function parseProjectSource(projectSource: ProjectSource): ParsedProjectSource|undefined {
+function parseProjectSource(projectSource: ProjectSource): ParsedProjectSource | undefined {
     switch (projectSource.type) {
-        case SourceType.JSON:
         case SourceType.YAML:
+            const yamlData = loadYaml(projectSource.body);
+
+            const pathLocationMap = extractMessageLocationsFromYAML(projectSource);
+
             return {
                 kind: ParsedProjectSourceBaseKind.OBJECT,
                 namespacePath: getNamespaceFromSourceName(projectSource.name),
-                object: loadYaml(projectSource.body) as PlainObject || {}
+                object: yamlData as PlainObject || {},
+                pathLocationMap: pathLocationMap
+            };
+            break;
+        case SourceType.JSON:
+            let data = {} as PlainObject;
+
+            const jsonPathLocationMap: {[path: string]: MessageLocation} = {};
+
+            try {
+                // whitespace: true replaces non-whitespace in comments with spaces so that the sourcemap still matches
+                const bodyWithoutComments = stripJsonComments(projectSource.body, { whitespace: true });
+                const result = JSONparse(bodyWithoutComments);
+                const pointers = result.pointers;
+
+                for(const key in pointers) {
+                    const pointer = pointers[key];
+                    jsonPathLocationMap[key] = new MessageLocation(projectSource, pointer.key.pos, pointer.valueEnd.pos);
+                }
+
+                data = result.data;
+            } catch (e) {
+                throw new Error("No valid JSON supplied in "+projectSource.name);
+            }
+
+            return {
+                kind: ParsedProjectSourceBaseKind.OBJECT,
+                namespacePath: getNamespaceFromSourceName(projectSource.name),
+                object: data as PlainObject || {},
+                pathLocationMap: jsonPathLocationMap
             };
         case SourceType.GRAPHQLS:
             return {
@@ -155,4 +190,50 @@ function getNamespaceFromSourceName(name: string): ReadonlyArray<string> {
         return name.substr(0, name.lastIndexOf('/')).replace(/\//g, '.').split('.');
     }
     return []; // default namespace
+}
+
+function extractMessageLocationsFromYAML(source: ProjectSource): { [path: string]: MessageLocation } {
+    const root: YAMLNode | undefined = load(source.body);
+    if (!root) {
+        throw new Error("No valid yaml suplied in "+source.name);
+    }
+    const result = extractAllPaths(root, [] as ReadonlyArray<(string | number)>);
+    let messageLocations: { [path: string]: MessageLocation } = {};
+    result.forEach(val => messageLocations[val.path.join('/')] = new MessageLocation(source, val.node.startPosition, val.node.endPosition));
+
+    return messageLocations;
+}
+
+function extractAllPaths(node: YAMLNode, curPath: ReadonlyArray<(string | number)>): { path: ReadonlyArray<(string | number)>, node: YAMLNode }[] {
+    switch (node.kind) {
+        case Kind.MAP:
+            const mapNode = node as YamlMap;
+            const mergedMap = ([] as { path: ReadonlyArray<(string | number)>, node: YAMLNode }[]).concat(...(mapNode.mappings.map(
+                (childNode) => extractAllPaths(childNode, [...curPath]))));
+            return [...mergedMap];
+        case Kind.MAPPING:
+            const mappingNode = node as YAMLMapping;
+            console.log(mappingNode.key.value);
+            if (mappingNode.value) {
+                return [
+                    { path: curPath, node: mappingNode },
+                    ...extractAllPaths(mappingNode.value, [...curPath, mappingNode.key.value])
+                ];
+            }
+            break;
+        case Kind.SCALAR:
+            const scalarNode = node as YAMLScalar;
+            console.log(curPath);
+            return [{ path: curPath, node: scalarNode.parent }];
+        case Kind.SEQ:
+            const seqNode = node as YAMLSequence;
+            const mergedSequence = ([] as { path: ReadonlyArray<(string | number)>, node: YAMLNode }[]).concat(...(seqNode.items.map(
+                (childNode, index) => extractAllPaths(childNode, [...curPath, index]))));
+            return [...mergedSequence];
+        case Kind.INCLUDE_REF:
+        case Kind.ANCHOR_REF:
+            const refNode = node as YAMLAnchorReference;
+            return extractAllPaths(refNode.value, [...curPath]);
+    }
+    return [{ path: curPath, node: node }];
 }

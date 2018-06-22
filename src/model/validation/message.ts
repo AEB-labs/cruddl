@@ -1,5 +1,6 @@
 import { ASTNode, Location } from 'graphql';
 import { ProjectSource } from '../../project/source';
+import { getLineAndColumnFromPosition } from '../../schema/schema-utils';
 
 export enum Severity {
     Error = 'ERROR',
@@ -21,7 +22,7 @@ export class MessageLocation {
 
     public readonly source: ProjectSource|undefined;
 
-    constructor(source: string|ProjectSource, public readonly start: SourcePosition, public readonly end: SourcePosition) {
+    constructor(source: string|ProjectSource, readonly _start: SourcePosition | number, readonly _end: SourcePosition | number) {
         if (source instanceof ProjectSource) {
             Object.defineProperty(this, 'source', {
                 enumerable: false
@@ -37,6 +38,30 @@ export class MessageLocation {
             ProjectSource.fromGraphQLSource(loc.source) || loc.source.name,
             new SourcePosition(loc.start, loc.startToken.line, loc.startToken.column),
             new SourcePosition(loc.end, loc.endToken.line, loc.endToken.column + loc.endToken.end - loc.endToken.start));
+    }
+
+    get start(): SourcePosition {
+        if(this._start instanceof  SourcePosition) {
+            return this.start;
+        }
+        if(!this.source){
+            throw new Error("Can not calculate start position without reference to source");
+        }
+        const lineAndColumn = getLineAndColumnFromPosition(this._start, this.source.body);
+
+        return {offset: this._start, line: lineAndColumn.line, column: lineAndColumn.column};
+    }
+
+    get end(): SourcePosition {
+        if(this._end instanceof  SourcePosition) {
+            return this._end;
+        }
+        if(!this.source){
+            throw new Error("Can not calculate end position without reference to source");
+        }
+        const lineAndColumn = getLineAndColumnFromPosition(this._end, this.source.body);
+
+        return {offset: this._end, line: lineAndColumn.line, column: lineAndColumn.column};
     }
 
     toString() {

@@ -12,6 +12,7 @@ import { CheckJsonSyntaxValidator } from './source-validation-modules/check-json
 import { CheckYamlSyntaxValidator } from './source-validation-modules/check-yaml-syntax';
 import { GraphQLRulesValidator } from './source-validation-modules/graphql-rules';
 import { SidecarSchemaValidator } from './source-validation-modules/sidecar-schema';
+import { ParsedProjectSource } from '../../config/parsed-project';
 
 const sourceValidators: ReadonlyArray<SourceValidator>  = [
     new CheckGraphQLSyntaxValidator(),
@@ -31,6 +32,10 @@ const postMergeValidators: ReadonlyArray<ASTValidator> = [
 
 export interface ASTValidator {
     validate(ast: DocumentNode, model: Model): ReadonlyArray<ValidationMessage>;
+}
+
+export interface ParsedSourceValidator {
+    validate(source: ParsedProjectSource): ReadonlyArray<ValidationMessage>;
 }
 
 export interface SourceValidator {
