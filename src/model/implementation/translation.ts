@@ -1,5 +1,7 @@
 import { arrayStartsWith, compact, flatMap, groupArray } from '../../utils/utils';
-import { TranslationConfig, TranslationNamespaceConfig, TypeTranslationConfig } from '../config/translation';
+import {
+    FieldTranslationConfig, TranslationConfig, TranslationNamespaceConfig, TypeTranslationConfig
+} from '../config/translation';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
 import { Field } from './field';
 import { ObjectType } from './type';
@@ -78,7 +80,7 @@ export class TranslationNamespace {
     public readonly namespacePath: ReadonlyArray<string>;
     private readonly typeTranslations: ReadonlyArray<TypeTranslation>;
     private readonly fieldTranslations: ReadonlyArray<FieldTranslation>;
-    constructor(input: FlatTranslationNamespaceConfig) {
+    constructor(input: PreparedTranslationNamespaceConfig) {
         this.namespacePath = input.namespacePath;
         this.typeTranslations = this.extractTypes(input);
         this.fieldTranslations = this.extractFields(input);
@@ -95,7 +97,7 @@ export class TranslationNamespace {
         ]);
     }
 
-    private extractFields(input: FlatTranslationNamespaceConfig): ReadonlyArray<TypeTranslation> {
+    private extractFields(input: PreparedTranslationNamespaceConfig): ReadonlyArray<TypeTranslation> {
         return [
             // Namespace fields
             ...Object.keys(input.fields).map(fieldName =>
@@ -107,13 +109,13 @@ export class TranslationNamespace {
                 )
             ),
             // Fields from types
-            ...flatMap(Object.keys(input.definitions), typeName =>
-                Object.keys(input.definitions[typeName].fields)
+            ...flatMap(Object.keys(input.types), typeName =>
+                Object.keys(input.types[typeName].fields)
                     .map(fieldName =>
                         new FieldTranslation(
                             fieldName,
-                            input.definitions[typeName].fields[fieldName].label,
-                            input.definitions[typeName].fields[fieldName].hint,
+                            input.types[typeName].fields[fieldName].label,
+                            input.types[typeName].fields[fieldName].hint,
                             typeName
                         )
                     )
@@ -121,12 +123,12 @@ export class TranslationNamespace {
         ];
     }
 
-    private extractTypes(input: FlatTranslationNamespaceConfig): ReadonlyArray<FieldTranslation> {
-        return Object.keys(input.definitions).map(typeName => new TypeTranslation(
+    private extractTypes(input: PreparedTranslationNamespaceConfig): ReadonlyArray<FieldTranslation> {
+        return Object.keys(input.types).map(typeName => new TypeTranslation(
             typeName,
-            input.definitions[typeName].singular,
-            input.definitions[typeName].plural,
-            input.definitions[typeName].hint
+            input.types[typeName].singular,
+            input.types[typeName].plural,
+            input.types[typeName].hint
             )
         )
     }
@@ -151,20 +153,17 @@ export class FieldTranslation {
     }
 }
 
-function flattenNamespaceConfigs(namespace: TranslationNamespaceConfig, basePath: ReadonlyArray<string>): ReadonlyArray<FlatTranslationNamespaceConfig> {
-    const definitions = {};
-    const subNamespaces: FlatTranslationNamespaceConfig[] = [];
-    Object.keys(namespace.definitions).forEach(key => {
-        const child = namespace.definitions[key];
-        if (child.kind === 'TranslationNamespaceConfig') {
-            subNamespaces.push(
-                ...flattenNamespaceConfigs({ ...child }, [...basePath, key])
-            )
-        }
-    });
-    const flattenedNamespace: FlatTranslationNamespaceConfig = {
-        ...namespace,
-        definitions,
+function flattenNamespaceConfigs(namespace: TranslationNamespaceConfig, basePath: ReadonlyArray<string>): ReadonlyArray<PreparedTranslationNamespaceConfig> {
+    const types = {};
+    const subNamespaces: PreparedTranslationNamespaceConfig[] = flatMap(Object.keys(namespace.namespaces), key =>
+        [...flattenNamespaceConfigs({
+            ...namespace.namespaces[key] },
+            [...basePath, key])
+        ]
+    );
+    const flattenedNamespace: PreparedTranslationNamespaceConfig = {
+        fields: namespace.fields,
+        types,
         namespacePath: basePath
     };
     return [flattenedNamespace, ...subNamespaces];
@@ -173,7 +172,9 @@ function flattenNamespaceConfigs(namespace: TranslationNamespaceConfig, basePath
 /**
  * A namespace which does not have sub-namespaces
  */
-export interface FlatTranslationNamespaceConfig extends TranslationNamespaceConfig {
+export interface PreparedTranslationNamespaceConfig {
+    readonly types: { [name: string]: TypeTranslationConfig }
     readonly namespacePath: ReadonlyArray<string>
-    readonly definitions: { [name: string]: TypeTranslationConfig }
+    readonly fields: { [name: string]: FieldTranslationConfig }
 }
+

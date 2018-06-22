@@ -4,28 +4,25 @@ export interface TranslationConfig {
     readonly localRoot: TranslationNamespaceConfig
 }
 
-export interface TranslationNamespaceConfig extends TranslationConfigNodeBase {
-    readonly kind: 'TranslationNamespaceConfig'
-    readonly definitions: { [name: string]: TranslationConfigNode }
+export interface FlatTranslationNamespaceConfig {
+    readonly types: { [name: string]: TypeTranslationConfig }
     readonly fields: { [name: string]: FieldTranslationConfig }
 }
 
-export interface TypeTranslationConfig extends TranslationConfigNodeBase {
-    readonly kind: 'TypeTranslationConfig'
+export interface TranslationNamespaceConfig extends FlatTranslationNamespaceConfig {
+    readonly types: { [name: string]: TypeTranslationConfig }
+    readonly namespaces: { [name: string ]: TranslationNamespaceConfig }
+    readonly fields: { [name: string]: FieldTranslationConfig }
+}
+
+export interface TypeTranslationConfig {
     readonly singular?: string
     readonly plural?: string
     readonly hint?: string
     readonly fields: { [name: string]: FieldTranslationConfig }
 }
 
-export interface FieldTranslationConfig extends TranslationConfigNodeBase{
-    readonly kind: 'FieldTranslationConfig'
+export interface FieldTranslationConfig {
     readonly label: string
     readonly hint?: string
 }
-
-export interface TranslationConfigNodeBase {
-    kind: string
-}
-
-export type TranslationConfigNode = TranslationNamespaceConfig|TypeTranslationConfig
