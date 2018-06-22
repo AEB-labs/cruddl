@@ -67,15 +67,14 @@ export class ScalarOrEnumFilterField implements FilterField {
 }
 
 export class QuantifierFilterField implements FilterField {
+    readonly name: string;
+
     constructor(
         public readonly field: Field,
         public readonly quantifierName: string,
         public readonly inputType: FilterObjectType
     ) {
-    }
-
-    get name() {
-        return `${this.field.name}_${this.quantifierName}`;
+        this.name = `${this.field.name}_${this.quantifierName}`;
     }
 
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
@@ -100,14 +99,15 @@ export class QuantifierFilterField implements FilterField {
 }
 
 export class NestedObjectFilterField implements FilterField {
+    readonly name: string;
+    readonly description: string;
+
     constructor(
         public readonly field: Field,
         public readonly inputType: FilterObjectType
     ) {
-    }
-
-    get name() {
-        return this.field.name;
+        this.name = this.field.name;
+        this.description = `Checks if \`${this.field.name}\` is not null, and allows to filter based on its fields.`;
     }
 
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
@@ -121,12 +121,14 @@ export interface ListFilterField extends FilterField {
 }
 
 export class AndFilterField implements FilterField {
-    public readonly name: string;
-    public readonly inputType: GraphQLInputType;
+    readonly name: string;
+    readonly description: string;
+    readonly inputType: GraphQLInputType;
 
     constructor(
         public readonly filterType: FilterObjectType) {
         this.name = AND_FILTER_FIELD;
+        this.description = `A field that checks if all filters in the list apply\n\nIf the list is empty, this filter applies to all objects.`;
         this.inputType = new GraphQLList(new GraphQLNonNull(filterType.getInputType()));
     }
 
@@ -142,11 +144,13 @@ export class AndFilterField implements FilterField {
 
 export class OrFilterField implements FilterField {
     public readonly name: string;
+    public readonly description?: string;
     public readonly inputType: GraphQLInputType;
 
     constructor(
         public readonly filterType: FilterObjectType) {
         this.name = OR_FILTER_FIELD;
+        this.description = `A field that checks if any of the filters in the list apply.\n\nIf the list is empty, this filter applies to no objects.\n\nNote that only the items in the list *or*-combined; this complete \`OR\` field is *and*-combined with outer fields in the parent filter type.`;
         this.inputType = new GraphQLList(new GraphQLNonNull(filterType.getInputType()));
     }
 

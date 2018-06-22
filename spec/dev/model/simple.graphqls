@@ -1,4 +1,6 @@
+"A supehero"
 type Hero @rootEntity {
+    "The hero's screen name"
     name: String
     age: Int @defaultValue(value: 42)
     nickNames: [String]
@@ -8,31 +10,41 @@ type Hero @rootEntity {
     morality: Morality
     country: Country @reference
     missions: [Mission]
+    info: JSON
 }
 
+"A heroic mission"
 type Mission @childEntity {
     date: DateTime
     title: String
 }
 
+"A special skill of a superhero"
 type Skill @valueObject {
     description: String
+    "A value between 0 and 11"
     strength: Float
     skills: [Skill]
 }
 
+"A superhero movie"
 type Movie @rootEntity {
     name: String
+    "All the heroes starring in this movie"
     heroes: [Hero] @relation
+    "The real superhero"
     director: Director @relation
 }
 
+"A movie director"
 type Director @rootEntity {
     name: String
     movies: [Movie] @relation(inverseOf: "director")
 }
 
+"A description of a hero suit"
 type Suit @entityExtension {
+    "The dominant color of the suit"
     color: String
 }
 

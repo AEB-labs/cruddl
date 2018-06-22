@@ -4,7 +4,9 @@ import {
     BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, LiteralQueryNode, OrderDirection, OrderSpecification,
     QueryNode, RuntimeErrorQueryNode, TransformListQueryNode, VariableQueryNode
 } from '../query-tree';
-import { AFTER_ARG, FIRST_ARG, ORDER_BY_ARG, SKIP_ARG } from '../schema/constants';
+import {
+    AFTER_ARG, CURSOR_FIELD, FIRST_ARG, ID_FIELD, ORDER_BY_ARG, ORDER_BY_ASC_SUFFIX, SKIP_ARG
+} from '../schema/constants';
 import { decapitalize } from '../utils/utils';
 import { OrderByEnumGenerator, OrderByEnumType, OrderByEnumValue } from './order-by-enum-generator';
 import { QueryNodeField } from './query-node-object-type';
@@ -31,16 +33,26 @@ export class OrderByAndPaginationAugmentation {
             args: {
                 ...schemaField.args,
                 [ORDER_BY_ARG]: {
-                    type: new GraphQLList(new GraphQLNonNull(orderByType.getEnumType()))
+                    type: new GraphQLList(new GraphQLNonNull(orderByType.getEnumType())),
+                    description: `Specifies the how this ${type.isRootEntityType ? 'collection' : 'list'} should be sorted. If omitted, ` + (
+                        type.isRootEntityType ? `the result order is not specified. ` : `the order of the list in the object is preserved. `
+                    ) + (
+                        type.isRootEntityType || type.isChildEntityType ?
+                            `If pagination is used (i.e., the \`${FIRST_ARG}\` is specified), \`${ID_FIELD}${ORDER_BY_ASC_SUFFIX}\` will be implicitly added as last sort criterion so that the sort order is deterministic.` :
+                            `When using cursor-based pagination, ensure that you specify a field with unique values so that the order is deterministic.`
+                    )
                 },
                 [SKIP_ARG]: {
-                    type: GraphQLInt
+                    type: GraphQLInt,
+                    description: `The number of items in the list or collection to skip. Is applied after the \`${AFTER_ARG}\` argument if both are specified.`
                 },
                 [FIRST_ARG]: {
-                    type: GraphQLInt
+                    type: GraphQLInt,
+                    description: `The number of items to include in the result. If omitted, all remaining items will be included (which can cause performance problems on large collections).`
                 },
                 [AFTER_ARG]: {
-                    type: GraphQLString
+                    type: GraphQLString,
+                    description: `If this is set to the value of the \`${CURSOR_FIELD}\` field of an item, only items after that one will be included in the result. The value of the \`${AFTER_ARG}\` of this query must match the one where the \`${CURSOR_FIELD}\` value has been retrieved from.`
                 }
             },
             resolve: (sourceNode, args, info) => {

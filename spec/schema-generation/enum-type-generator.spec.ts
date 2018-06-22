@@ -1,6 +1,5 @@
 import { expect } from 'chai';
-import { TypeKind } from '../../src/model/config';
-import { EnumType } from '../../src/model/implementation';
+import { EnumType, TypeKind } from '../../src/model';
 import { EnumTypeGenerator } from '../../src/schema-generation/enum-type-generator';
 
 describe('EnumTypeGenerator', () => {
@@ -8,7 +7,7 @@ describe('EnumTypeGenerator', () => {
         const enumType = new EnumType({
             kind: TypeKind.ENUM,
             name: 'Color',
-            values: ['RED', 'GREEN', 'BLUE']
+            values: [{value: 'RED'}, {value: 'GREEN'}, {value: 'BLUE'}]
         });
 
         const graphQLType = new EnumTypeGenerator().generate(enumType);

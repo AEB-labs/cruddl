@@ -1,0 +1,12 @@
+{
+    __schema {
+        types {
+            name
+            description
+            fields {
+                name
+                description
+            }
+        }
+    }
+}

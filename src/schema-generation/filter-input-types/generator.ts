@@ -1,7 +1,7 @@
 import { GraphQLEnumType, Thunk } from 'graphql';
 import { flatMap } from 'lodash';
 import memorize from 'memorize-decorator';
-import { EnumType, Field, ScalarType, Type } from '../../model/index';
+import { EnumType, Field, ObjectType, ScalarType, Type } from '../../model/index';
 import {
     BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, NullQueryNode, QueryNode
 } from '../../query-tree';
@@ -21,10 +21,10 @@ import {
 
 export class FilterObjectType extends TypedInputObjectType<FilterField> {
     constructor(
-        name: string,
+        type: Type,
         fields: Thunk<ReadonlyArray<FilterField>>,
     ) {
-        super(name, fields);
+        super(getFilterTypeName(type.name), fields, `Filter type for \`${type.name}\`.\n\nAll fields in this type are *and*-combined; see the \`or\` field for *or*-combination.`);
     }
 
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
@@ -63,7 +63,7 @@ export class FilterTypeGenerator {
             ]
         }
 
-        const filterType = new FilterObjectType(getFilterTypeName(type.name), getFields);
+        const filterType = new FilterObjectType(type, getFields);
         return filterType;
     }
 

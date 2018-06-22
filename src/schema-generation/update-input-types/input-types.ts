@@ -1,6 +1,6 @@
 import { Thunk } from 'graphql';
 import { groupBy } from 'lodash';
-import { ChildEntityType, Field, ObjectType, RootEntityType } from '../../model';
+import { ChildEntityType, EntityExtensionType, Field, ObjectType, RootEntityType, ValueObjectType } from '../../model';
 import {
     BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode, FieldQueryNode,
     ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, ObjectQueryNode, PreExecQueryParms, QueryNode,
@@ -165,9 +165,11 @@ export class UpdateObjectInputType extends TypedInputObjectType<UpdateInputField
 
 export class UpdateRootEntityInputType extends UpdateObjectInputType {
     private readonly updatedAtField: Field;
+    readonly description: string;
 
     constructor(public readonly rootEntityType: RootEntityType, name: string, fields: Thunk<ReadonlyArray<UpdateInputField>>) {
         super(rootEntityType, name, fields);
+        this.description = `The update type for the root entity type \`${rootEntityType.name}\`.\n\nThe \`${ENTITY_UPDATED_AT}\` field is updated automatically unless only relations are updated. If fields are omitted, their value is left unchanged. Explicitly set fields to \`null\` to clear their value.`;
         this.updatedAtField = this.rootEntityType.getFieldOrThrow(ENTITY_UPDATED_AT);
     }
 
@@ -191,15 +193,22 @@ export class UpdateRootEntityInputType extends UpdateObjectInputType {
 }
 
 export class UpdateEntityExtensionInputType extends UpdateObjectInputType {
+    readonly description: string;
 
+    constructor(public readonly entityExtensionType: EntityExtensionType, name: string, fields: Thunk<ReadonlyArray<UpdateInputField>>) {
+        super(entityExtensionType, name, fields);
+        this.description = `The update type for the entity extension type \`${entityExtensionType.name}\`.\n\nIf fields are omitted, their value is left unchanged. Explicitly set fields to \`null\` to clear their value.`;
+    }
 }
 
 export class UpdateChildEntityInputType extends UpdateObjectInputType {
     private readonly updatedAtField: Field;
+    readonly description: string;
 
     constructor(private readonly childEntityType: ChildEntityType, name: string, fields: Thunk<ReadonlyArray<UpdateInputField>>) {
         super(childEntityType, name, fields);
         this.updatedAtField = this.childEntityType.getFieldOrThrow(ENTITY_UPDATED_AT);
+        this.description = `The update type for the child entity type \`${this.childEntityType.name}\`.\n\nIf fields are omitted, their value is left unchanged. Explicitly set fields to \`null\` to clear their value.`;
     }
 
     getAdditionalProperties() {

@@ -1,9 +1,10 @@
 import {
-    ASTNode, EnumTypeDefinitionNode, ObjectTypeDefinitionNode, ScalarTypeDefinitionNode, TypeDefinitionNode
+    ASTNode, EnumTypeDefinitionNode, EnumValueDefinitionNode, ObjectTypeDefinitionNode, ScalarTypeDefinitionNode,
+    TypeDefinitionNode
 } from 'graphql';
 import { FieldConfig } from './field';
-import { PermissionsConfig } from './permissions';
 import { IndexDefinitionConfig } from './indices';
+import { PermissionsConfig } from './permissions';
 
 export enum TypeKind {
     SCALAR = 'SCALAR',
@@ -49,8 +50,14 @@ export interface EntityExtensionTypeConfig extends ObjectTypeConfigBase {
 
 export interface EnumTypeConfig extends TypeConfigBase {
     readonly kind: TypeKind.ENUM
-    readonly values: ReadonlyArray<string>
+    readonly values: ReadonlyArray<EnumValueConfig>
     readonly astNode?: EnumTypeDefinitionNode
+}
+
+export interface EnumValueConfig {
+    readonly value: string
+    readonly description?: string
+    readonly astNode?: EnumValueDefinitionNode
 }
 
 export interface ScalarTypeConfig extends TypeConfigBase {
@@ -58,5 +65,9 @@ export interface ScalarTypeConfig extends TypeConfigBase {
     readonly astNode?: ScalarTypeDefinitionNode
 }
 
-export type ObjectTypeConfig = RootEntityTypeConfig|ChildEntityTypeConfig|ValueObjectTypeConfig|EntityExtensionTypeConfig;
-export type TypeConfig = ObjectTypeConfig|ScalarTypeConfig|EnumTypeConfig;
+export type ObjectTypeConfig =
+    RootEntityTypeConfig
+    | ChildEntityTypeConfig
+    | ValueObjectTypeConfig
+    | EntityExtensionTypeConfig;
+export type TypeConfig = ObjectTypeConfig | ScalarTypeConfig | EnumTypeConfig;

@@ -73,7 +73,7 @@ describe('CreateInputTypeGenerator', () => {
                 {
                     kind: TypeKind.ENUM,
                     name: 'Morality',
-                    values: ['GOOD', 'EVIL']
+                    values: [{value: 'GOOD'}, {value: 'EVIL'}]
                 }
             ]
         });
@@ -565,17 +565,17 @@ describe('CreateInputTypeGenerator', () => {
             ]
         });
 
-        it ('does not enter an infinite loop on creation', () => {
+        it('does not enter an infinite loop on creation', () => {
             generator.generate(model.getValueObjectTypeOrThrow('Node'));
         });
 
-        it ('creates a cyclic object structure', () => {
+        it('creates a cyclic object structure', () => {
             const inputType = generator.generate(model.getValueObjectTypeOrThrow('Node'));
             const parentField = inputType.fields.find(f => f.name == 'parent');
             expect((parentField as ObjectCreateInputField).objectInputType).to.equal(inputType);
         });
 
-        it ('creates a cyclic graphql input type structure', () => {
+        it('creates a cyclic graphql input type structure', () => {
             const inputType = generator.generate(model.getValueObjectTypeOrThrow('Node'));
             const graphqlType = inputType.getInputType();
             const parentField = graphqlType.getFields().parent;
