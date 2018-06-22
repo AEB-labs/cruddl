@@ -71,6 +71,10 @@ export function getCreateInputTypeName(typeName: string) {
     return `Create${typeName}Input`;
 }
 
+export function getValueObjectInputTypeName(typeName: string) {
+    return `${typeName}Input`;
+}
+
 export function getUpdateInputTypeName(typeName: string) {
     return `Update${typeName}Input`;
 }

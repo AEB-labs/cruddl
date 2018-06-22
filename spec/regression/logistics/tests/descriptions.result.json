@@ -789,7 +789,7 @@
           "fields": null
         },
         {
-          "name": "CreateTranslationInput",
+          "name": "TranslationInput",
           "description": "The create/update type for the value object type `Translation`.\n\nIf this is used in an update mutation, missing fields are set to `null`.",
           "fields": null
         },
@@ -809,7 +809,7 @@
           "fields": null
         },
         {
-          "name": "CreateAddressInput",
+          "name": "AddressInput",
           "description": "The create/update type for the value object type `Address`.\n\nIf this is used in an update mutation, missing fields are set to `null`.",
           "fields": null
         },

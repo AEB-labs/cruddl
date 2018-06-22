@@ -5,7 +5,7 @@ import {
     AffectedFieldInfoQueryNode, CreateEntityQueryNode, LiteralQueryNode, PreExecQueryParms, QueryNode, VariableQueryNode
 } from '../../query-tree';
 import { ENTITY_CREATED_AT, ENTITY_UPDATED_AT, ID_FIELD } from '../../schema/constants';
-import { getCreateInputTypeName } from '../../schema/names';
+import { getCreateInputTypeName, getValueObjectInputTypeName } from '../../schema/names';
 import { flatMap, PlainObject } from '../../utils/utils';
 import { TypedInputObjectType } from '../typed-input-object-type';
 import { CreateInputField } from './input-fields';
@@ -122,7 +122,7 @@ export class CreateEntityExtensionInputType extends CreateObjectInputType {
 
 export class ValueObjectInputType extends CreateObjectInputType {
     constructor(public readonly valueObjectType: ValueObjectType, fields: Thunk<ReadonlyArray<CreateInputField>>) {
-        super(valueObjectType, getCreateInputTypeName(valueObjectType.name), fields,
+        super(valueObjectType, getValueObjectInputTypeName(valueObjectType.name), fields,
             `The create/update type for the value object type \`${valueObjectType.name}\`.\n\nIf this is used in an update mutation, missing fields are set to \`null\`.`);
     }
 }
