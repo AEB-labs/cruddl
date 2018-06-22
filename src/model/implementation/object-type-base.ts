@@ -10,6 +10,7 @@ import { groupBy } from 'lodash';
 
 export abstract class ObjectTypeBase extends TypeBase {
     readonly fields: ReadonlyArray<Field>;
+    readonly namespacePath: ReadonlyArray<string>;
     private readonly fieldMap: ReadonlyMap<string, Field>;
 
     protected constructor(input: ObjectTypeConfig, public readonly model: Model, systemFieldInputs: ReadonlyArray<FieldConfig> = []) {
@@ -22,6 +23,7 @@ export abstract class ObjectTypeBase extends TypeBase {
             ...customFields
         ];
         this.fieldMap = new Map(this.fields.map((field): [string, Field] => [ field.name, field ]));
+        this.namespacePath = input.namespacePath;
     }
 
     validate(context: ValidationContext) {
