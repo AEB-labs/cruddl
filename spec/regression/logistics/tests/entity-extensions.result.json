@@ -1,0 +1,79 @@
+{
+  "before": {
+    "data": {
+      "withValue": {
+        "dgInfo": {
+          "unNumber": "1863",
+          "notices": [
+            "No special treatment necessary."
+          ]
+        }
+      },
+      "withoutValue": {
+        "dgInfo": {
+          "unNumber": null,
+          "notices": [
+            "No special treatment necessary."
+          ]
+        }
+      }
+    }
+  },
+  "update": {
+    "data": {
+      "updateDelivery": {
+        "dgInfo": {
+          "unNumber": "1234",
+          "notices": [
+            "No special treatment necessary."
+          ]
+        }
+      }
+    }
+  },
+  "afterUpdate": {
+    "data": {
+      "Delivery": {
+        "dgInfo": {
+          "unNumber": "1234",
+          "notices": [
+            "No special treatment necessary."
+          ]
+        }
+      }
+    }
+  },
+  "updateWithNull": {
+    "data": {
+      "updateDelivery": {
+        "dgInfo": {
+          "unNumber": "1234"
+        }
+      }
+    }
+  },
+  "createWithNull": {
+    "data": {
+      "createDelivery": {
+        "dgInfo": {
+          "unNumber": null,
+          "notices": [
+            "No special treatment necessary."
+          ]
+        }
+      }
+    }
+  },
+  "createWithValue": {
+    "data": {
+      "createDelivery": {
+        "dgInfo": {
+          "unNumber": "1234",
+          "notices": [
+            "No special treatment necessary."
+          ]
+        }
+      }
+    }
+  }
+}

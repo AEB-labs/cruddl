@@ -7,7 +7,7 @@ import {
     BinaryOperationQueryNode, BinaryOperator, FieldQueryNode, LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode,
     ObjectQueryNode, QueryNode, SetFieldQueryNode
 } from '../../query-tree';
-import { AnyValue } from '../../utils/utils';
+import { AnyValue, PlainObject } from '../../utils/utils';
 import { CreateChildEntityInputType, CreateObjectInputType } from '../create-input-types';
 import { createFieldNode } from '../field-nodes';
 import { TypedInputFieldBase } from '../typed-input-object-type';
@@ -182,23 +182,25 @@ export class UpdateEntityExtensionInputField implements UpdateInputField {
         public readonly objectInputType: UpdateEntityExtensionInputType
     ) {
         this.name = field.name;
-        this.description = field.description;
+        this.description = (field.description ? field.description + '\n\n' : '') +
+            'This field is an entity extension and thus is never \'null\' - passing \'null\' here does not change the field value.';
         this.inputType = objectInputType.getInputType();
     }
 
     getProperties(value: AnyValue, currentEntityNode: QueryNode) {
+        // setting to null is the same as setting to {} - does not change anything (entity extensions can't be null)
+        if (value == null || Object.keys(value).length === 0) {
+            return [];
+        }
+
         return [
             new SetFieldQueryNode(this.field, this.getValueNode(value, currentEntityNode))
         ];
     }
 
-    private getValueNode(value: AnyValue, currentEntityNode: QueryNode) {
-        if (value == null) {
-            return NullQueryNode.NULL;
-        }
-
+    private getValueNode(value: PlainObject, currentEntityNode: QueryNode) {
         return new MergeObjectsQueryNode([
-            new FieldQueryNode(currentEntityNode, this.field),
+            createFieldNode(this.field, currentEntityNode), // this function wraps the field in a conditional node to fall back to {} on null values
             new ObjectQueryNode(this.objectInputType.getProperties(value, currentEntityNode))
         ]);
     }

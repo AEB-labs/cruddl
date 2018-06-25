@@ -4,7 +4,8 @@ import memorize from 'memorize-decorator';
 import { ChildEntityType, EntityExtensionType, Field, ObjectType, RootEntityType, ValueObjectType } from '../../model';
 import { EnumTypeGenerator } from '../enum-type-generator';
 import {
-    BasicCreateInputField, BasicListCreateInputField, CreateInputField, ObjectCreateInputField,
+    BasicCreateInputField, BasicListCreateInputField, CreateEntityExtensionInputField, CreateInputField,
+    CreateObjectInputField,
     ObjectListCreateInputField
 } from './input-fields';
 import {
@@ -86,9 +87,14 @@ export class CreateInputTypeGenerator {
             }
         }
 
+        if (field.type.isEntityExtensionType) {
+            const inputType = this.generateForEntityExtensionType(field.type);
+            return [new CreateEntityExtensionInputField(field, inputType)];
+        }
+
         // child entity, value object, entity extension
         const inputType = this.generate(field.type);
-        const inputField = field.isList ? new ObjectListCreateInputField(field, inputType) : new ObjectCreateInputField(field, inputType);
+        const inputField = field.isList ? new ObjectListCreateInputField(field, inputType) : new CreateObjectInputField(field, inputType);
         return [inputField];
     }
 }

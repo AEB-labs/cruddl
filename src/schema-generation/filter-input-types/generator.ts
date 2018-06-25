@@ -13,7 +13,7 @@ import { resolveThunk } from '../query-node-object-type';
 import { TypedInputObjectType } from '../typed-input-object-type';
 import { and, ENUM_FILTER_FIELDS, FILTER_FIELDS_BY_TYPE, FILTER_OPERATORS, QUANTIFIERS } from './constants';
 import {
-    AndFilterField,
+    AndFilterField, EntityExtensionFilterField,
     FilterField, ListFilterField, NestedObjectFilterField, OrFilterField, QuantifierFilterField,
     ScalarOrEnumFieldFilterField,
     ScalarOrEnumFilterField
@@ -76,7 +76,11 @@ export class FilterTypeGenerator {
         }
         if (field.type.isObjectType) {
             const inputType = this.generate(field.type);
-            return [new NestedObjectFilterField(field, inputType)];
+            if (field.type.isEntityExtensionType) {
+                return [new EntityExtensionFilterField(field, inputType)];
+            } else {
+                return [new NestedObjectFilterField(field, inputType)];
+            }
         }
         if (field.type.isEnumType) {
             const graphQLEnumType = this.enumTypeGenerator.generate(field.type);
