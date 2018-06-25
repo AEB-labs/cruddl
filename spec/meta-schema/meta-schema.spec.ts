@@ -25,6 +25,7 @@ describe('Meta schema API', () => {
                 ... on ValueObjectType {name kind description fields { name description isList isReference isRelation type { __typename }}}
                 ... on ChildEntityType {name kind description fields { name description isList isReference isRelation type { __typename }}}
                 ... on EntityExtensionType {name kind description fields { name description isList isReference isRelation type { __typename }}}
+                ... on EnumType { name description values { value description } }
             }
         }
     `;
@@ -49,6 +50,17 @@ describe('Meta schema API', () => {
                     fromType {name}
                     toField {name}
                     toType {name}
+                }
+            }
+        }
+    `;
+
+    const enumQuery = gql`
+        {
+            enumType(name: "TransportKind") {
+                name
+                values {
+                    value
                 }
             }
         }
@@ -102,6 +114,9 @@ describe('Meta schema API', () => {
                         typeName: 'HandlingUnit',
                         isRelation: true,
                         isList: true
+                    }, {
+                        name: 'transportKind',
+                        typeName: 'TransportKind'
                     }
                 ],
                 namespacePath: ['logistics', 'shipments']
@@ -128,6 +143,10 @@ describe('Meta schema API', () => {
                 name: 'DangerousGoodsInfo',
                 kind: TypeKind.ENTITY_EXTENSION,
                 fields: []
+            }, {
+                name: 'TransportKind',
+                kind: TypeKind.ENUM,
+                values: [{value: 'AIR'}, {value: 'ROAD'}, {value: 'SEA'}]
             }
         ],
         permissionProfiles: {
@@ -231,6 +250,10 @@ describe('Meta schema API', () => {
                         {
                             'name': 'handlingUnits', 'description': null, 'isList': true, 'isReference': false,
                             'isRelation': true, 'type': {'__typename': 'RootEntityType'}
+                        },
+                        {
+                            'description': null, 'isList': false, 'isReference': false, 'isRelation': false,
+                            'name': 'transportKind', 'type': {'__typename': 'EnumType'}
                         }
                     ]
                 }, {
@@ -282,7 +305,17 @@ describe('Meta schema API', () => {
                             'isRelation': false, 'type': {'__typename': 'ScalarType'}
                         }
                     ]
-                }, {'name': 'DangerousGoodsInfo', 'kind': 'ENTITY_EXTENSION', 'description': null, 'fields': []}
+                },
+                {'name': 'DangerousGoodsInfo', 'kind': 'ENTITY_EXTENSION', 'description': null, 'fields': []},
+                {
+                    'name': 'TransportKind',
+                    'description': null,
+                    'values': [
+                        {'description': null, 'value': 'AIR'},
+                        {'description': null, 'value': 'ROAD'},
+                        {'description': null, 'value': 'SEA'}
+                    ]
+                }
             ]
         });
     });
@@ -292,11 +325,17 @@ describe('Meta schema API', () => {
         expect(result).to.deep.equal({
             'rootEntityTypes': [
                 {'name': 'Country'}, {'name': 'Shipment'}, {'name': 'Delivery'}, {'name': 'HandlingUnit'}
-            ], 'childEntityTypes': [{'name': 'Item'}], 'entityExtensionTypes': [{'name': 'DangerousGoodsInfo'}],
-            'valueObjectTypes': [{'name': 'Address'}], 'scalarTypes': [
+            ],
+            'childEntityTypes': [{'name': 'Item'}],
+            'entityExtensionTypes': [{'name': 'DangerousGoodsInfo'}],
+            'valueObjectTypes': [{'name': 'Address'}],
+            'scalarTypes': [
                 {'name': 'ID'}, {'name': 'String'}, {'name': 'Boolean'}, {'name': 'Int'}, {'name': 'Float'},
                 {'name': 'JSON'}, {'name': 'DateTime'}
-            ], 'enumTypes': []
+            ],
+            'enumTypes': [
+                {'name': 'TransportKind'}
+            ]
         });
     });
 
@@ -345,6 +384,26 @@ describe('Meta schema API', () => {
         expect(result).to.deep.equal({
             'logistics': {'name': 'logistics', 'path': ['logistics']},
             'root': {'name': null, 'path': []}
+        });
+    });
+
+    it('can query enum values', async () => {
+        const result = await execute(enumQuery);
+        expect(result).to.deep.equal({
+            'enumType': {
+                'name': 'TransportKind',
+                'values': [
+                    {
+                        'value': 'AIR'
+                    },
+                    {
+                        'value': 'ROAD'
+                    },
+                    {
+                        'value': 'SEA'
+                    }
+                ]
+            }
         });
     });
 
