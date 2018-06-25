@@ -1,7 +1,7 @@
 import { GraphQLSchema } from 'graphql';
 import gql from 'graphql-tag';
 import { IResolvers, makeExecutableSchema } from 'graphql-tools';
-import { Model, RootEntityType, Type, TypeKind } from '../model';
+import { Field, Model, ObjectType, RootEntityType, Type, TypeKind } from '../model';
 
 const typeDefs = gql`
     enum TypeKind {
@@ -17,6 +17,18 @@ const typeDefs = gql`
         isReadOnly: Boolean!
         type: Type!
         relation: Relation
+        translation(language: String!): FieldTranslation
+    }
+    
+    type TypeTranslation {
+        singular: String
+        plural: String
+        hint: String
+    }
+    
+    type FieldTranslation {
+        label: String
+        hint: String
     }
 
     type Index {
@@ -48,6 +60,7 @@ const typeDefs = gql`
         kind: TypeKind!
         description: String
         fields: [Field!]!
+        translation(language: String!): TypeTranslation
     }
 
     type RootEntityType implements ObjectType & Type {
@@ -59,6 +72,7 @@ const typeDefs = gql`
         indices: [Index!]!
         fields: [Field!]!
         relations: [Relation!]!
+        translation(language: String!): TypeTranslation
     }
 
     type ChildEntityType implements ObjectType & Type {
@@ -66,6 +80,7 @@ const typeDefs = gql`
         kind: TypeKind!
         description: String
         fields: [Field!]!
+        translation(language: String!): TypeTranslation
     }
 
     type EntityExtensionType implements ObjectType & Type {
@@ -73,6 +88,7 @@ const typeDefs = gql`
         kind: TypeKind!
         description: String
         fields: [Field!]!
+        translation(language: String!): TypeTranslation
     }
 
     type ValueObjectType implements ObjectType & Type {
@@ -80,6 +96,7 @@ const typeDefs = gql`
         kind: TypeKind!
         description: String
         fields: [Field!]!
+        translation(language: String!): TypeTranslation
     }
 
     type ScalarType implements Type {
@@ -157,6 +174,12 @@ export function getMetaSchema(model: Model): GraphQLSchema {
         },
         ObjectType: {
             __resolveType: type => resolveType(type as Type)
+        },
+        RootEntityType: {
+            translation: (type, {language}) => model.translations.getTypeTranslation(type as ObjectType, language)
+        },
+        Field: {
+            translation: (field, {language}) => model.translations.getFieldTranslation(field as Field, language)
         }
     };
 

@@ -1,9 +1,11 @@
+import memorize from 'memorize-decorator';
 import { arrayStartsWith, compact, flatMap, groupArray, mapValues } from '../../utils/utils';
 import {
     FieldTranslationConfig, TranslationConfig, TranslationNamespaceConfig, TypeTranslationConfig
 } from '../config/translation';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
 import { Field } from './field';
+import { ObjectTypeBase } from './object-type-base';
 import { ObjectType } from './type';
 
 export class Translations implements ModelComponent {
@@ -27,12 +29,13 @@ export class Translations implements ModelComponent {
     public validate(context: ValidationContext): void {
     }
 
-    protected getRawTypeTranslations(type: ObjectType, language: string): ReadonlyArray<TypeTranslation> {
+    protected getRawTypeTranslations(type: ObjectTypeBase, language: string): ReadonlyArray<TypeTranslation> {
         const translationSets = this.getMatchingNamespaces(type.namespacePath, language);
         return compact(translationSets.map(t => t.getTypeTranslation(type.name)));
     }
 
-    public getTypeTranslation(type: ObjectType, language: string): TypeTranslation {
+    @memorize()
+    public getTypeTranslation(type: ObjectTypeBase, language: string): TypeTranslation {
         const matchingTypeTranslations = this.getRawTypeTranslations(type, language);
         // try to build one complete type translation out of the available possibly partial translations
         return new TypeTranslation(
@@ -48,7 +51,8 @@ export class Translations implements ModelComponent {
         return flatMap(namespaces, t => t.getFieldTranslation(field.name, field.type.name));
     }
 
-    public getFieldTranslation(field: Field, language: string): FieldTranslation|undefined {
+    @memorize()
+    public getFieldTranslation(field: Field, language: string): FieldTranslation {
         const matchingFieldTranslations = this.getRawFieldTranslations(field, language);
         // try to build one complete field translation out of the available possibly partial translations
         return new FieldTranslation(
@@ -67,10 +71,11 @@ export class Translations implements ModelComponent {
      * @returns {ReadonlyArray<TranslationNamespace>}
      */
     private getMatchingNamespaces(namespacePath: ReadonlyArray<string>, language: string): ReadonlyArray<TranslationNamespace> {
-        if (this.namespacesByCountry.get(language)) {
-            return [];
+        const namespaces = this.namespacesByCountry.get(language);
+        if (!namespaces || namespaces.length === 0) {
+            return []
         }
-        return this.namespacesByCountry.get(language)!.filter(set => arrayStartsWith(namespacePath, set.namespacePath))
+        return namespaces.filter(set => arrayStartsWith(namespacePath, set.namespacePath))
             .sort((lhs, rhs) => lhs.namespacePath.length - rhs.namespacePath.length)
     }
 
@@ -154,15 +159,19 @@ export class FieldTranslation {
 }
 
 function flattenNamespaceConfigs(namespace: TranslationNamespaceConfig, basePath: ReadonlyArray<string>): ReadonlyArray<PreparedTranslationNamespaceConfig> {
-    const subNamespaces: PreparedTranslationNamespaceConfig[] = flatMap(Object.keys(namespace.namespaces), key =>
-        [...flattenNamespaceConfigs({
-            ...namespace.namespaces[key] },
-            [...basePath, key])
-        ]
-    );
+    const subNamespaces: PreparedTranslationNamespaceConfig[] =
+        namespace.namespaces ?
+            flatMap(Object.keys(namespace.namespaces), key =>
+                [
+                    ...flattenNamespaceConfigs({
+                            ...namespace.namespaces[key]
+                        },
+                        [...basePath, key])
+                ]
+            ) : [];
     const flattenedNamespace: PreparedTranslationNamespaceConfig = {
         fields: normalizeFieldConfig(namespace.fields),
-        types: mapValues(namespace.types, type => ({ ...type, fields: normalizeFieldConfig(type.fields)})),
+        types: mapValues(namespace.types, type => ({...type, fields: normalizeFieldConfig(type.fields)})),
         namespacePath: basePath
     };
     return [flattenedNamespace, ...subNamespaces];

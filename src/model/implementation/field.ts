@@ -119,6 +119,10 @@ export class Field implements ModelComponent {
         return relation;
     }
 
+    public getTranslation(language: string) {
+        this.model.translations.getFieldTranslation(this, language)
+    }
+
     validate(context: ValidationContext) {
         this.validateName(context);
         this.validateType(context);

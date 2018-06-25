@@ -72,6 +72,10 @@ export abstract class ObjectTypeBase extends TypeBase {
         return field;
     }
 
+    public getTranslation(language: string) {
+        this.model.translations.getTypeTranslation(this, language)
+    }
+
     readonly isObjectType: true = true;
     readonly isScalarType: false = false;
     readonly isEnumType: false = false;

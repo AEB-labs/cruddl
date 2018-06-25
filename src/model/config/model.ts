@@ -7,5 +7,5 @@ export interface ModelConfig {
     readonly types: ReadonlyArray<TypeConfig>
     readonly permissionProfiles?: PermissionProfileConfigMap
     readonly validationMessages?: ReadonlyArray<ValidationMessage>
-    readonly translations?: ReadonlyArray<TranslationConfig>
+    readonly translations: ReadonlyArray<TranslationConfig>
 }
