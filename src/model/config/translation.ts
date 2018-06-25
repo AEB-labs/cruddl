@@ -1,5 +1,5 @@
 import { ParsedObjectProjectSource } from '../../config/parsed-project';
-import { compact, mapValues } from '../../utils/utils';
+import { compact } from '../../utils/utils';
 
 export interface TranslationConfig {
     readonly namespacePath: ReadonlyArray<string>
@@ -27,13 +27,17 @@ export interface FieldTranslationConfig {
 
 export function parseTranslationConfigs(source: ParsedObjectProjectSource): ReadonlyArray<TranslationConfig> {
     // TODO implement validation
-    return compact(Object.keys(source.object).map(key => {
-        const obj = source.object[key];
-        if (typeof obj !== 'object' || !key.match(/^[a-zA-Z]{2}$/)) {
+    if (!source.object || !source.object.translations || typeof source.object.translations !== 'object') {
+        return []
+    }
+    const translations = source.object.translations as {[language: string]: TranslationNamespaceConfig};
+    return compact(Object.keys(source.object.translations).map((key: string) => {
+        const namespace = translations[key];
+        if (typeof namespace !== 'object') {
             return undefined;
         }
         return {
-            localRoot: obj as TranslationNamespaceConfig,
+            localRoot: namespace as TranslationNamespaceConfig,
             language: key,
             namespacePath: source.namespacePath
         };
