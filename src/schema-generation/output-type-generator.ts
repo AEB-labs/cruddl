@@ -73,6 +73,7 @@ export class OutputTypeGenerator {
         return {
             name: CURSOR_FIELD,
             type: GraphQLString,
+            description: `Provides a value that can be supplied to the \`after\` argument for pagination. Depends on the value of the \`orderBy\` argument.`,
             resolve: (source, args, info) => this.getCursorNode(source, info.fieldRequestStack[info.fieldRequestStack.length - 2], orderByType)
         };
     }
@@ -96,6 +97,7 @@ export class OutputTypeGenerator {
         const schemaField: QueryNodeField = {
             name: field.name,
             type: field.isList ? makeNonNullableList(type) : type,
+            description: field.description,
             resolve: (sourceNode) => createFieldNode(field, sourceNode)
         };
 
@@ -118,6 +120,7 @@ export class OutputTypeGenerator {
         const plainField: QueryNodeField = {
             name: getMetaFieldName(field.name),
             type: new QueryNodeNonNullType(metaType),
+            description: field.description,
             resolve: (sourceNode) => createFieldNode(field, sourceNode)
         };
         return this.filterAugmentation.augment(plainField, field.type);

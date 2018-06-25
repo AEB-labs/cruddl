@@ -6,13 +6,15 @@ import { resolveThunk } from './query-node-object-type';
 
 export interface TypedInputFieldBase<TField extends TypedInputFieldBase<TField>> {
     readonly name: string
+    readonly description?: string
     readonly inputType: GraphQLInputType | TypedInputObjectType<TField>
 }
 
 export class TypedInputObjectType<TField extends TypedInputFieldBase<TField>> {
     constructor(
         public readonly name: string,
-        private readonly _fields: Thunk<ReadonlyArray<TField>>
+        private readonly _fields: Thunk<ReadonlyArray<TField>>,
+        public readonly description?: string
     ) {
     }
 
@@ -20,10 +22,12 @@ export class TypedInputObjectType<TField extends TypedInputFieldBase<TField>> {
     getInputType(): GraphQLInputObjectType {
         return new GraphQLInputObjectType({
             name: this.name,
+            description: this.description,
             fields: () => chain(this.fields)
                 .keyBy(field => field.name)
                 .mapValues((field): GraphQLInputFieldConfig => ({
-                    type: field.inputType instanceof TypedInputObjectType ? field.inputType.getInputType() : field.inputType
+                    type: field.inputType instanceof TypedInputObjectType ? field.inputType.getInputType() : field.inputType,
+                    description: field.description
                 }))
                 .value()
         });

@@ -7,7 +7,10 @@ import {
     BasicCreateInputField, BasicListCreateInputField, CreateInputField, ObjectCreateInputField,
     ObjectListCreateInputField
 } from './input-fields';
-import { CreateChildEntityInputType, CreateObjectInputType, CreateRootEntityInputType } from './input-types';
+import {
+    CreateChildEntityInputType, CreateEntityExtensionInputType, CreateObjectInputType, CreateRootEntityInputType,
+    ValueObjectInputType
+} from './input-types';
 import { AddEdgesCreateInputField, CreateAndAddEdgesCreateInputField, SetEdgeCreateInputField, CreateAndSetEdgeCreateInputField } from './relation-fields';
 
 export class CreateInputTypeGenerator {
@@ -44,14 +47,12 @@ export class CreateInputTypeGenerator {
 
     @memorize()
     generateForEntityExtensionType(type: EntityExtensionType): CreateObjectInputType {
-        return new CreateObjectInputType(type,
-            () => flatMap(type.fields, (field: Field) => this.generateFields(field)));
+        return new CreateEntityExtensionInputType(type, () => flatMap(type.fields, (field: Field) => this.generateFields(field)));
     }
 
     @memorize()
     generateForValueObjectType(type: ValueObjectType): CreateObjectInputType {
-        return new CreateObjectInputType(type,
-            () => flatMap(type.fields, (field: Field) => this.generateFields(field)));
+        return new ValueObjectInputType(type, () => flatMap(type.fields, (field: Field) => this.generateFields(field)));
     }
 
     private generateFields(field: Field): CreateInputField[] {

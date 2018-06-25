@@ -19,8 +19,8 @@ import {
 } from '../schema/schema-utils';
 import { compact, flatMap } from '../utils/utils';
 import {
-    CalcMutationsOperator, EnumTypeConfig, FieldConfig, IndexDefinitionConfig, ObjectTypeConfig, PermissionsConfig,
-    RolesSpecifierConfig, TypeConfig, TypeKind
+    CalcMutationsOperator, EnumTypeConfig, EnumValueConfig, FieldConfig, IndexDefinitionConfig, ObjectTypeConfig,
+    PermissionsConfig, RolesSpecifierConfig, TypeConfig, TypeKind
 } from './config';
 import { Model } from './implementation';
 import { ValidationMessage } from './validation';
@@ -78,8 +78,12 @@ function createTypeInputs(input: SchemaConfig, context: ValidationContext): Read
     }))));
 }
 
-function createEnumValues(valueNodes: ReadonlyArray<EnumValueDefinitionNode>): ReadonlyArray<string> {
-    return valueNodes.map(valNode => valNode.name.value);
+function createEnumValues(valueNodes: ReadonlyArray<EnumValueDefinitionNode>): ReadonlyArray<EnumValueConfig> {
+    return valueNodes.map((valNode): EnumValueConfig => ({
+        value: valNode.name.value,
+        description: valNode.description && valNode.description.value,
+        astNode: valNode
+    }));
 }
 
 function createObjectTypeInput(definition: ObjectTypeDefinitionNode, schemaPart: SchemaPartConfig, context: ValidationContext): ObjectTypeConfig {
@@ -118,7 +122,7 @@ function createObjectTypeInput(definition: ObjectTypeDefinitionNode, schemaPart:
                 kind: TypeKind.ROOT_ENTITY,
                 permissions: getPermissions(definition, context),
                 namespacePath: getNamespacePath(definition, schemaPart.localNamespace),
-                indices: createIndexDefinitionInputs(definition, context),
+                indices: createIndexDefinitionInputs(definition, context)
             };
     }
 }

@@ -1,10 +1,12 @@
 import { NameNode, TypeDefinitionNode } from 'graphql';
+import * as pluralize from 'pluralize';
 import { TypeConfig, TypeKind } from '../config';
 import { ValidationMessage } from '../validation';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
 
 export abstract class TypeBase implements ModelComponent {
     readonly name: string;
+    readonly pluralName: string;
     readonly description: string | undefined;
     abstract readonly kind: TypeKind;
     readonly astNode: TypeDefinitionNode | undefined;
@@ -15,6 +17,7 @@ export abstract class TypeBase implements ModelComponent {
         this.nameASTNode = input.astNode ? input.astNode.name : undefined;
         this.name = input.name;
         this.description = input.description;
+        this.pluralName = pluralize(this.name);
     }
 
     validate(context: ValidationContext) {

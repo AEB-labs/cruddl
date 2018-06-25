@@ -28,12 +28,14 @@ export function getEntitiesByUniqueFieldQuery(rootEntityType: RootEntityType, ar
 export function getArgumentsForUniqueFields(rootEntityType: RootEntityType): GraphQLFieldConfigArgumentMap {
     return {
         [ID_FIELD]: {
-            type: GraphQLID
+            type: GraphQLID,
+            description: rootEntityType.getFieldOrThrow('id').description
         },
         ...(
             rootEntityType.keyField ? {
                 [rootEntityType.keyField.name]: {
-                    type: getAsScalarTypeOrThrow(rootEntityType.keyField.type).graphQLScalarType
+                    type: getAsScalarTypeOrThrow(rootEntityType.keyField.type).graphQLScalarType,
+                    description: rootEntityType.keyField.description
                 }
             } : {}
         )

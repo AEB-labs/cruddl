@@ -1,9 +1,11 @@
 import { Thunk } from 'graphql';
 import { fromPairs, toPairs } from 'lodash';
-import { Field, ObjectType, RootEntityType } from '../../model';
-import { AffectedFieldInfoQueryNode, CreateEntityQueryNode, LiteralQueryNode, PreExecQueryParms, QueryNode, VariableQueryNode } from '../../query-tree';
+import { ChildEntityType, EntityExtensionType, Field, ObjectType, RootEntityType, ValueObjectType } from '../../model';
+import {
+    AffectedFieldInfoQueryNode, CreateEntityQueryNode, LiteralQueryNode, PreExecQueryParms, QueryNode, VariableQueryNode
+} from '../../query-tree';
 import { ENTITY_CREATED_AT, ENTITY_UPDATED_AT, ID_FIELD } from '../../schema/constants';
-import { getCreateInputTypeName } from '../../schema/names';
+import { getCreateInputTypeName, getValueObjectInputTypeName } from '../../schema/names';
 import { flatMap, PlainObject } from '../../utils/utils';
 import { TypedInputObjectType } from '../typed-input-object-type';
 import { CreateInputField } from './input-fields';
@@ -17,9 +19,11 @@ function getCurrentISODate() {
 export class CreateObjectInputType extends TypedInputObjectType<CreateInputField> {
     constructor(
         type: ObjectType,
-        fields: Thunk<ReadonlyArray<CreateInputField>>
+        name: string,
+        fields: Thunk<ReadonlyArray<CreateInputField>>,
+        description: string
     ) {
-        super(getCreateInputTypeName(type.name), fields);
+        super(name, fields, description);
     }
 
     prepareValue(value: PlainObject): PlainObject {
@@ -51,12 +55,12 @@ export class CreateObjectInputType extends TypedInputObjectType<CreateInputField
 }
 
 export class CreateRootEntityInputType extends CreateObjectInputType {
-
     constructor(
         public readonly rootEntityType: RootEntityType,
         fields: Thunk<ReadonlyArray<CreateInputField>>
     ) {
-        super(rootEntityType, fields);
+        super(rootEntityType, getCreateInputTypeName(rootEntityType.name), fields,
+            `The create type for the root entity type \`${rootEntityType.name}\`.\n\nThe fields \`id\`, \`createdAt\`, and \`updatedAt\` are set automatically.`);
     }
 
     getCreateStatements(input: PlainObject, newEntityIdVarNode: VariableQueryNode) {
@@ -91,6 +95,14 @@ export class CreateRootEntityInputType extends CreateObjectInputType {
 }
 
 export class CreateChildEntityInputType extends CreateObjectInputType {
+    constructor(
+        public readonly childEntityType: ChildEntityType,
+        fields: Thunk<ReadonlyArray<CreateInputField>>
+    ) {
+        super(childEntityType, getCreateInputTypeName(childEntityType.name), fields,
+            `The create type for the child entity type \`${childEntityType.name}\`.\n\nThe fields \`id\`, \`createdAt\`, and \`updatedAt\` are set automatically.`);
+    }
+
     getAdditionalProperties() {
         const now = getCurrentISODate();
         return {
@@ -98,5 +110,19 @@ export class CreateChildEntityInputType extends CreateObjectInputType {
             [ENTITY_CREATED_AT]: now,
             [ENTITY_UPDATED_AT]: now
         };
+    }
+}
+
+export class CreateEntityExtensionInputType extends CreateObjectInputType {
+    constructor(public readonly entityExtensionType: EntityExtensionType, fields: Thunk<ReadonlyArray<CreateInputField>>) {
+        super(entityExtensionType, getCreateInputTypeName(entityExtensionType.name), fields,
+            `The create type for the entity extension type \`${entityExtensionType.name}\`.`);
+    }
+}
+
+export class ValueObjectInputType extends CreateObjectInputType {
+    constructor(public readonly valueObjectType: ValueObjectType, fields: Thunk<ReadonlyArray<CreateInputField>>) {
+        super(valueObjectType, getValueObjectInputTypeName(valueObjectType.name), fields,
+            `The create/update type for the value object type \`${valueObjectType.name}\`.\n\nIf this is used in an update mutation, missing fields are set to \`null\`.`);
     }
 }

@@ -1,14 +1,14 @@
-import { GraphQLEnumType, GraphQLScalarType } from 'graphql';
+import { EnumValueDefinitionNode } from 'graphql';
+import { EnumTypeConfig, EnumValueConfig, TypeKind } from '../config';
 import { TypeBase } from './type-base';
-import { EnumTypeConfig, TypeKind } from '../config';
 
 export class EnumType extends TypeBase {
     constructor(input: EnumTypeConfig) {
         super(input);
-        this.values = input.values;
+        this.values = input.values.map(v => new EnumValue(v));
     }
 
-    readonly values: ReadonlyArray<string>;
+    readonly values: ReadonlyArray<EnumValue>;
 
     readonly isObjectType: false = false;
     readonly kind: TypeKind.ENUM = TypeKind.ENUM;
@@ -18,4 +18,16 @@ export class EnumType extends TypeBase {
     readonly isValueObjectType: false = false;
     readonly isScalarType: false = false;
     readonly isEnumType: true = true;
+}
+
+export class EnumValue {
+    readonly value: string;
+    readonly description: string | undefined;
+    readonly astNode: EnumValueDefinitionNode | undefined;
+
+    constructor(input: EnumValueConfig) {
+        this.value = input.value;
+        this.description = input.description;
+        this.astNode = input.astNode;
+    }
 }

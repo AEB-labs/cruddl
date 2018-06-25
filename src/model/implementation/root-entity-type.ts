@@ -161,15 +161,18 @@ export class RootEntityType extends ObjectTypeBase {
     }
 }
 
-const systemFieldInputs: FieldConfig[] = [
+const systemFieldInputs: ReadonlyArray<FieldConfig> = [
     {
         name: 'id',
-        typeName: 'ID'
+        typeName: 'ID',
+        description: 'An auto-generated string that identifies this root entity uniquely among others of the same type'
     }, {
         name: 'createdAt',
-        typeName: 'DateTime'
+        typeName: 'DateTime',
+        description: 'The instant this object has been created'
     }, {
         name: 'updatedAt',
-        typeName: 'DateTime'
+        typeName: 'DateTime',
+        description: 'The instant this object has been updated the last time (not including relation updates)'
     }
 ];

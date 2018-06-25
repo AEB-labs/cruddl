@@ -47,6 +47,7 @@ export class MutationTypeGenerator {
 
         return {
             name: namespace.pascalCasePath + MUTATION_TYPE,
+            description: `The Mutation type for the namespace "${namespace.dotSeparatedPath}"`,
             fields: [
                 ...namespaceFields,
                 ...rootEntityFields
@@ -76,6 +77,7 @@ export class MutationTypeGenerator {
                 }
             },
             isSerial: true,
+            description: `Creates a new ${rootEntityType.name}`,
             resolve: (_, args) => this.generateCreateQueryNode(rootEntityType, args[MUTATION_INPUT_ARG], inputType)
         };
     }
@@ -103,6 +105,7 @@ export class MutationTypeGenerator {
                 }
             },
             isSerial: true,
+            description: `Updates an existing ${rootEntityType.name}`,
             resolve: (_, args) => this.generateUpdateQueryNode(rootEntityType, args[MUTATION_INPUT_ARG], inputType)
         };
     }
@@ -178,6 +181,7 @@ export class MutationTypeGenerator {
                 }
             },
             isSerial: true,
+            description: `Updates ${rootEntityType.pluralName} that match a specified filter`,
             resolve: (_, args, info) => this.generateUpdateAllQueryNode(rootEntityType, fieldWithListArgs.resolve(_, args, info), inputType, args[MUTATION_INPUT_ARG])
         };
     }
@@ -230,6 +234,7 @@ export class MutationTypeGenerator {
             type: this.outputTypeGenerator.generate(rootEntityType),
             args: getArgumentsForUniqueFields(rootEntityType),
             isSerial: true,
+            description: `Deletes a ${rootEntityType.name} by id${rootEntityType.keyField ? ` or ${rootEntityType.keyField.name}` : ''}`,
             resolve: (source, args) => this.generateDeleteQueryNode(rootEntityType, args)
         };
     }
@@ -265,6 +270,7 @@ export class MutationTypeGenerator {
         return {
             ...fieldWithListArgs,
             isSerial: true,
+            description: `Deletes ${rootEntityType.pluralName} that match a specified filter`,
             resolve: (source, args, info) => this.generateDeleteAllQueryNode(rootEntityType, fieldWithListArgs.resolve(source, args, info))
         };
     }

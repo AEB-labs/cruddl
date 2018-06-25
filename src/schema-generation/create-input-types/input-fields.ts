@@ -23,6 +23,10 @@ export class BasicCreateInputField implements CreateInputField {
         return this.field.name;
     }
 
+    get description() {
+        return this.field.description;
+    }
+
     getProperties(value: AnyValue) {
         if (value === undefined && this.field.hasDefaultValue) {
             value = this.field.defaultValue;
