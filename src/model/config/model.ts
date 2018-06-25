@@ -1,11 +1,11 @@
 import { ValidationMessage } from '../validation';
 import { PermissionProfileConfigMap } from '../../model';
-import { TranslationConfig, TranslationNamespaceConfig } from './translation';
+import { I18nConfig } from './i18n';
 import { TypeConfig } from './type';
 
 export interface ModelConfig {
     readonly types: ReadonlyArray<TypeConfig>
     readonly permissionProfiles?: PermissionProfileConfigMap
     readonly validationMessages?: ReadonlyArray<ValidationMessage>
-    readonly translations: ReadonlyArray<TranslationConfig>
+    readonly i18n?: ReadonlyArray<I18nConfig>
 }

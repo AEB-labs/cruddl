@@ -1,4 +1,4 @@
-translations:
+i18n:
   en:
     types:
       Hero:
@@ -14,7 +14,9 @@ translations:
       createdAt:
         label: Created at
         hint: When this hero's record was created
-      updatedAt: Updated at
+      updatedAt:
+        label: Updated at
+        hint: Last change date
       id: ID
   de:
     types:

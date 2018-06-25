@@ -120,7 +120,7 @@ export class Field implements ModelComponent {
     }
 
     public getTranslation(language: string) {
-        this.model.translations.getFieldTranslation(this, language)
+        this.model.i18n.getFieldLocalization(this, language)
     }
 
     validate(context: ValidationContext) {

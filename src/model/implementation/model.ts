@@ -8,12 +8,12 @@ import { builtInTypeNames, builtInTypes } from './built-in-types';
 import { ChildEntityType } from './child-entity-type';
 import { EntityExtensionType } from './entity-extension-type';
 import { EnumType } from './enum-type';
+import { ModelI18n } from './i18n';
 import { Namespace } from './namespace';
 import { createPermissionMap, PermissionProfile, PermissionProfileMap } from './permission-profile';
 import { Relation } from './relation';
 import { RootEntityType } from './root-entity-type';
 import { ScalarType } from './scalar-type';
-import { Translations } from './translation';
 import { createType, InvalidType, ObjectType, Type } from './type';
 import { ValueObjectType } from './value-object-type';
 
@@ -24,7 +24,7 @@ export class Model implements ModelComponent{
     readonly namespaces: ReadonlyArray<Namespace>;
     readonly types: ReadonlyArray<Type>;
     readonly permissionProfiles: PermissionProfileMap;
-    readonly translations: Translations;
+    readonly i18n: ModelI18n;
 
     constructor(private input: ModelConfig) {
         this.permissionProfiles = createPermissionMap(input.permissionProfiles);
@@ -35,7 +35,7 @@ export class Model implements ModelComponent{
         this.rootNamespace = new Namespace(undefined, [], this.rootEntityTypes);
         this.namespaces = [this.rootNamespace, ...this.rootNamespace.descendantNamespaces];
         this.typeMap = new Map(this.types.map((type): [string, Type] => ([type.name, type])));
-        this.translations = new Translations(input.translations)
+        this.i18n = new ModelI18n(input.i18n || [])
     }
 
     validate(context = new ValidationContext()): ValidationResult {

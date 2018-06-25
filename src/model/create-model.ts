@@ -24,7 +24,7 @@ import {
     CalcMutationsOperator, EnumTypeConfig, FieldConfig, IndexDefinitionConfig, ObjectTypeConfig,
     PermissionProfileConfigMap, PermissionsConfig, RolesSpecifierConfig, TypeConfig, TypeKind
 } from './config';
-import { parseTranslationConfigs, TranslationConfig } from './config/translation';
+import { I18nConfig, parseI18nConfigs } from './config/i18n';
 import { Model } from './implementation';
 import { ValidationContext, ValidationMessage } from './validation';
 
@@ -33,7 +33,7 @@ export function createModel(parsedProject: ParsedProject): Model {
     return new Model({
         types: createTypeInputs(parsedProject, validationContext),
         permissionProfiles: extractPermissionProfiles(parsedProject, validationContext),
-        translations: extractTranslations(parsedProject, validationContext),
+        i18n: extractI18n(parsedProject, validationContext),
         validationMessages: validationContext.validationMessages
     });
 }
@@ -430,10 +430,10 @@ function extractPermissionProfiles(parsedProject: ParsedProject, validationConte
     }, {});
 }
 
-function extractTranslations(parsedProject: ParsedProject, validationContext: ValidationContext): ReadonlyArray<TranslationConfig> {
+function extractI18n(parsedProject: ParsedProject, validationContext: ValidationContext): ReadonlyArray<I18nConfig> {
     const objectSchemaParts = parsedProject.sources
         .filter(parsedSource => parsedSource.kind === ParsedProjectSourceBaseKind.OBJECT) as ReadonlyArray<ParsedObjectProjectSource>;
-    return flatMap(objectSchemaParts, source => parseTranslationConfigs(source));
+    return flatMap(objectSchemaParts, source => parseI18nConfigs(source));
 }
 
 // fake input type for index mapping

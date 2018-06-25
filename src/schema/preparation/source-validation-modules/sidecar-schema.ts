@@ -76,7 +76,7 @@ const schemaJSON = JSON.parse(`{
         }
       }
     },
-    "translations": {
+    "i18n": {
       "type": "object",
       "additionalProperties": false,
       "patternProperties": {

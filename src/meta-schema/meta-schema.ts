@@ -176,10 +176,10 @@ export function getMetaSchema(model: Model): GraphQLSchema {
             __resolveType: type => resolveType(type as Type)
         },
         RootEntityType: {
-            translation: (type, {language}) => model.translations.getTypeTranslation(type as ObjectType, language)
+            translation: (type, {language}) => model.i18n.getTypeLocalization(type as ObjectType, language)
         },
         Field: {
-            translation: (field, {language}) => model.translations.getFieldTranslation(field as Field, language)
+            translation: (field, {language}) => model.i18n.getFieldLocalization(field as Field, language)
         }
     };
 
