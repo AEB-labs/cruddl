@@ -4,12 +4,7 @@ export interface TranslationConfig {
     readonly localRoot: TranslationNamespaceConfig
 }
 
-export interface FlatTranslationNamespaceConfig {
-    readonly types: { [name: string]: TypeTranslationConfig }
-    readonly fields: { [name: string]: FieldTranslationConfig }
-}
-
-export interface TranslationNamespaceConfig extends FlatTranslationNamespaceConfig {
+export interface TranslationNamespaceConfig {
     readonly types: { [name: string]: TypeTranslationConfig }
     readonly namespaces: { [name: string ]: TranslationNamespaceConfig }
     readonly fields: { [name: string]: FieldTranslationConfig }
