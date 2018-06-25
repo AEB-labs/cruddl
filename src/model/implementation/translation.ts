@@ -18,7 +18,7 @@ export class Translations implements ModelComponent {
         const namespacesByCountry = new Map<string, ReadonlyArray<TranslationNamespace>>();
         Array.from(configsByLanguage.keys()).forEach(language =>
             namespacesByCountry.set(language, flatMap(configsByLanguage.get(language)!,
-                config => flattenNamespaceConfigs(config.localRoot, config.namespacePath)
+                config => flattenNamespaceConfigs(config.namespaceContent, config.namespacePath)
                     .map(flatNamespace => new TranslationNamespace(flatNamespace))))
         );
         this.namespacesByCountry = namespacesByCountry;

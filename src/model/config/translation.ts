@@ -4,7 +4,7 @@ import { compact } from '../../utils/utils';
 export interface TranslationConfig {
     readonly namespacePath: ReadonlyArray<string>
     readonly language: string
-    readonly localRoot: TranslationNamespaceConfig
+    readonly namespaceContent: TranslationNamespaceConfig
 }
 
 export interface TranslationNamespaceConfig {
@@ -37,7 +37,7 @@ export function parseTranslationConfigs(source: ParsedObjectProjectSource): Read
             return undefined;
         }
         return {
-            localRoot: namespace as TranslationNamespaceConfig,
+            namespaceContent: namespace as TranslationNamespaceConfig,
             language: key,
             namespacePath: source.namespacePath
         };
