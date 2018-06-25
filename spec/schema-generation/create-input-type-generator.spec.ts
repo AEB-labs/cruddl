@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { GraphQLEnumType, GraphQLInputObjectType, GraphQLList, GraphQLNonNull, GraphQLString } from 'graphql';
 import { ChildEntityType, Model, RootEntityType, TypeKind } from '../../src/model';
-import { CreateInputTypeGenerator, ObjectCreateInputField } from '../../src/schema-generation/create-input-types';
+import { CreateInputTypeGenerator, CreateObjectInputField } from '../../src/schema-generation/create-input-types';
 import { EnumTypeGenerator } from '../../src/schema-generation/enum-type-generator';
 
 describe('CreateInputTypeGenerator', () => {
@@ -380,17 +380,14 @@ describe('CreateInputTypeGenerator', () => {
                 expect(prepared.suit).to.deep.equal({color: 'black'});
             });
 
-            it('keeps null values', () => {
+            it('defaults to {} on null value', () => {
                 const prepared = inputType.prepareValue({suit: null}) as any;
-                expect(prepared.suit).to.be.null;
+                expect(prepared.suit).to.deep.equal({});
             });
 
-            it('does not include it if not specified', () => {
-                // TODO should it be this way?
-                // It is currently, but this also prevents defaultValues on the fields in the entity extension if
-                // the entity extension is omitted (or set to null, see above)
+            it('defaults to {} if not specified', () => {
                 const prepared = inputType.prepareValue({});
-                expect(prepared.suit).to.be.undefined;
+                expect(prepared.suit).to.deep.equal({});
             });
         });
 
@@ -572,7 +569,7 @@ describe('CreateInputTypeGenerator', () => {
         it('creates a cyclic object structure', () => {
             const inputType = generator.generate(model.getValueObjectTypeOrThrow('Node'));
             const parentField = inputType.fields.find(f => f.name == 'parent');
-            expect((parentField as ObjectCreateInputField).objectInputType).to.equal(inputType);
+            expect((parentField as CreateObjectInputField).objectInputType).to.equal(inputType);
         });
 
         it('creates a cyclic graphql input type structure', () => {

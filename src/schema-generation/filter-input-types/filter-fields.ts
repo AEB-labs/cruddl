@@ -115,6 +115,27 @@ export class NestedObjectFilterField implements FilterField {
     }
 }
 
+export class EntityExtensionFilterField implements FilterField {
+    readonly name: string;
+    readonly description: string;
+
+    constructor(
+        public readonly field: Field,
+        public readonly inputType: FilterObjectType
+    ) {
+        this.name = this.field.name;
+        this.description = `Allows to filter on the fields of \`${this.field.name}\`.\n\nNote that \`${this.field.name}\` is an entity extension and thus can never be \`null\`, so specifying \`null\` to this filter field has no effect.`;
+    }
+
+    getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
+        if (filterValue == undefined) {
+            // entity extensions can't ever be null, and null is always coerced to {}, so this filter just shouldn't have any effect
+            return ConstBoolQueryNode.TRUE;
+        }
+        return this.inputType.getFilterNode(createFieldNode(this.field, sourceNode), filterValue);
+    }
+}
+
 export interface ListFilterField extends FilterField {
     readonly inputType: FilterObjectType
     readonly field: Field

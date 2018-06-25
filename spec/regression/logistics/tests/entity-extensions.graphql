@@ -1,0 +1,61 @@
+query before {
+    # this one has dgInfo
+    withValue: Delivery(id: "@{ids/Delivery/1}") {
+        dgInfo {
+            unNumber
+            notices
+        }
+    }
+
+    # this one doesn't
+    withoutValue: Delivery(id: "@{ids/Delivery/2}") {
+        dgInfo {
+            unNumber
+            notices
+        }
+    }
+}
+
+mutation update {
+    updateDelivery(input: { id: "@{ids/Delivery/2}", dgInfo: { unNumber: "1234" } }) {
+        dgInfo {
+            unNumber
+            notices
+        }
+    }
+}
+
+query afterUpdate {
+    Delivery(id: "@{ids/Delivery/2}") {
+        dgInfo {
+            unNumber
+            notices
+        }
+    }
+}
+
+mutation updateWithNull {
+    updateDelivery(input: { id: "@{ids/Delivery/2}", dgInfo: null }) {
+        dgInfo {
+            unNumber
+        }
+    }
+}
+
+mutation createWithNull {
+    createDelivery(input: { dgInfo: null }) {
+        dgInfo {
+            unNumber
+            notices
+        }
+    }
+}
+
+mutation createWithValue {
+    createDelivery(input: { dgInfo: { unNumber: "1234" } }) {
+        dgInfo {
+            unNumber
+            notices
+        }
+    }
+}

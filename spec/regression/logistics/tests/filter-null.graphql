@@ -18,6 +18,7 @@ query filterNullValueObject {
 }
 
 query filterNullEntityExtension {
+    # this finds all root entities because null is coerced to {} for entity extensions
     allDeliveries(filter: { dgInfo: null }, orderBy: deliveryNumber_ASC) {
         id
     }

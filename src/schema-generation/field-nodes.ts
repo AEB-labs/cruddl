@@ -2,7 +2,8 @@ import { RootEntityType } from '../model';
 import { Field } from '../model/implementation';
 import {
     BasicType, BinaryOperationQueryNode, BinaryOperator, ConditionalQueryNode, EntitiesQueryNode, FieldQueryNode,
-    FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, NullQueryNode, QueryNode, RootEntityIDQueryNode,
+    FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, NullQueryNode, ObjectQueryNode, QueryNode,
+    RootEntityIDQueryNode,
     TransformListQueryNode, TypeCheckQueryNode, VariableQueryNode
 } from '../query-tree';
 import { ID_FIELD } from '../schema/constants';
@@ -30,7 +31,12 @@ export function createFieldNode(field: Field, sourceNode: QueryNode): QueryNode 
         return new RootEntityIDQueryNode(sourceNode);
     }
 
-    return new FieldQueryNode(sourceNode, field);
+    const fieldNode = new FieldQueryNode(sourceNode, field);
+    if (field.type.isEntityExtensionType) {
+        return new ConditionalQueryNode(new TypeCheckQueryNode(fieldNode, BasicType.OBJECT), fieldNode, ObjectQueryNode.EMPTY);
+    }
+
+    return fieldNode;
 }
 
 function createTo1ReferenceNode(field: Field, sourceNode: QueryNode): QueryNode {
