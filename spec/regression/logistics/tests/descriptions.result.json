@@ -108,15 +108,15 @@
           "fields": [
             {
               "name": "id",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "createdAt",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "updatedAt",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "isoCode",
@@ -204,15 +204,15 @@
           "fields": [
             {
               "name": "id",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "createdAt",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "updatedAt",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "deliveryNumber",
@@ -372,15 +372,15 @@
           "fields": [
             {
               "name": "id",
-              "description": null
+              "description": "An auto-generated string that identifies this child entity uniquely within this collection of child entities"
             },
             {
               "name": "createdAt",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "updatedAt",
-              "description": null
+              "description": "The instant this object has been updated the last time"
             },
             {
               "name": "itemNumber",
@@ -448,15 +448,15 @@
           "fields": [
             {
               "name": "id",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "createdAt",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "updatedAt",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "huNumber",
@@ -478,15 +478,15 @@
           "fields": [
             {
               "name": "id",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "createdAt",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "updatedAt",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "name",
@@ -527,15 +527,15 @@
           "fields": [
             {
               "name": "id",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "createdAt",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "updatedAt",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "deliveries",
@@ -567,15 +567,15 @@
           "fields": [
             {
               "name": "id",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "createdAt",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "updatedAt",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "name",
@@ -607,15 +607,15 @@
           "fields": [
             {
               "name": "id",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "createdAt",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "updatedAt",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "key",
