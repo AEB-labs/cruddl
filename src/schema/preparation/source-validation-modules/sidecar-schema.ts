@@ -59,6 +59,7 @@ function reformatPath(path: string) {
         .replace(/\[([^\]])*\]/g, (_, name) => `/${name}`);
 }
 
+// TODO: JSON Schema should be extracted into separate file
 const schemaJSON = JSON.parse(`{
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "Sidecar file for schema definitions",
@@ -72,6 +73,15 @@ const schemaJSON = JSON.parse(`{
       "patternProperties": {
         "^[a-zA-Z0-9]+$": {
           "$ref": "#/definitions/PermissionProfile"
+        }
+      }
+    },
+    "translations": {
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^[a-zA-Z0-9_-]+$": {
+          "$ref": "#/definitions/TranslationNamespace"
         }
       }
     }
@@ -125,6 +135,77 @@ const schemaJSON = JSON.parse(`{
           }
         }
       }
+    },
+    "TranslationNamespace": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "types": {
+          "patternProperties": {
+            "^[a-zA-Z0-9_$]+$": {
+              "$ref": "#/definitions/TypeTranslation"
+            }
+          }
+        },
+        "fields": {
+          "patternProperties": {
+            "^[a-zA-Z0-9_$]+$": {
+              "anyOf": [
+                { "$ref": "#/definitions/FieldTranslation" },
+                { "type": "string" }
+              ]
+            }
+          }
+        },
+        "namespaces": {
+          "^[a-zA-Z0-9_$]+$": {
+            "anyOf": [
+              { "$ref": "#/definitions/FieldTranslation" },
+              { "type": "string" }
+            ]
+          }
+        }
+      }
+    },
+    "TypeTranslation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "fields": {
+          "patternProperties": {
+            "^[a-zA-Z0-9_$]+$": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/FieldTranslation"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        "singular": {
+          "type": "string"
+        },
+        "plural": {
+          "type": "string"
+        },
+        "hint": {
+          "type": "string"
+        }
+      }
+    },
+    "FieldTranslation": {
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "hint": {
+          "type": "string"
+        }
+      }
     }
   }
-}`);
+}
+`);
