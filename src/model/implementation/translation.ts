@@ -1,4 +1,4 @@
-import { arrayStartsWith, compact, flatMap, groupArray } from '../../utils/utils';
+import { arrayStartsWith, compact, flatMap, groupArray, mapValues } from '../../utils/utils';
 import {
     FieldTranslationConfig, TranslationConfig, TranslationNamespaceConfig, TypeTranslationConfig
 } from '../config/translation';
@@ -154,7 +154,6 @@ export class FieldTranslation {
 }
 
 function flattenNamespaceConfigs(namespace: TranslationNamespaceConfig, basePath: ReadonlyArray<string>): ReadonlyArray<PreparedTranslationNamespaceConfig> {
-    const types = {};
     const subNamespaces: PreparedTranslationNamespaceConfig[] = flatMap(Object.keys(namespace.namespaces), key =>
         [...flattenNamespaceConfigs({
             ...namespace.namespaces[key] },
@@ -162,19 +161,34 @@ function flattenNamespaceConfigs(namespace: TranslationNamespaceConfig, basePath
         ]
     );
     const flattenedNamespace: PreparedTranslationNamespaceConfig = {
-        fields: namespace.fields,
-        types,
+        fields: normalizeFieldConfig(namespace.fields),
+        types: mapValues(namespace.types, type => ({ ...type, fields: normalizeFieldConfig(type.fields)})),
         namespacePath: basePath
     };
     return [flattenedNamespace, ...subNamespaces];
 }
 
+function normalizeFieldConfig(fieldConfigs: { [name: string]: FieldTranslationConfig|string }): { [name: string]: FieldTranslationConfig } {
+    return mapValues(fieldConfigs, fieldConfig => typeof fieldConfig === 'string' ? { label: fieldConfig } : fieldConfig);
+}
+
+// Intermediate types
+
 /**
  * A namespace which does not have sub-namespaces
  */
 export interface PreparedTranslationNamespaceConfig {
-    readonly types: { [name: string]: TypeTranslationConfig }
+    readonly types: { [name: string]: NormalizedTypeTranslationConfig }
     readonly namespacePath: ReadonlyArray<string>
     readonly fields: { [name: string]: FieldTranslationConfig }
 }
+
+/** A type translation which uses a FieldTranslationConfig for each label */
+export interface NormalizedTypeTranslationConfig {
+    readonly singular?: string
+    readonly plural?: string
+    readonly hint?: string
+    readonly fields: { [name: string]: FieldTranslationConfig }
+}
+
 

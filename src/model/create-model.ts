@@ -2,7 +2,9 @@ import {
     ArgumentNode, EnumValueDefinitionNode, FieldDefinitionNode, GraphQLBoolean, GraphQLID, GraphQLInputObjectType,
     GraphQLList, GraphQLNonNull, GraphQLString, ObjectTypeDefinitionNode, ObjectValueNode, StringValueNode, valueFromAST
 } from 'graphql';
-import { ParsedGraphQLProjectSource, ParsedProject, ParsedProjectSourceBaseKind } from '../config/parsed-project';
+import {
+    ParsedGraphQLProjectSource, ParsedObjectProjectSource, ParsedProject, ParsedProjectSourceBaseKind
+} from '../config/parsed-project';
 import {
     ENUM, ENUM_TYPE_DEFINITION, LIST, LIST_TYPE, NON_NULL_TYPE, OBJECT, OBJECT_TYPE_DEFINITION, STRING
 } from '../graphql/kinds';
@@ -22,7 +24,7 @@ import {
     CalcMutationsOperator, EnumTypeConfig, FieldConfig, IndexDefinitionConfig, ObjectTypeConfig,
     PermissionProfileConfigMap, PermissionsConfig, RolesSpecifierConfig, TypeConfig, TypeKind
 } from './config';
-import { TranslationConfig } from './config/translation';
+import { parseTranslationConfigs, TranslationConfig } from './config/translation';
 import { Model } from './implementation';
 import { ValidationContext, ValidationMessage } from './validation';
 
@@ -429,8 +431,9 @@ function extractPermissionProfiles(parsedProject: ParsedProject, validationConte
 }
 
 function extractTranslations(parsedProject: ParsedProject, validationContext: ValidationContext): ReadonlyArray<TranslationConfig> {
-    // TODO
-    return []
+    const objectSchemaParts = parsedProject.sources
+        .filter(parsedSource => parsedSource.kind === ParsedProjectSourceBaseKind.OBJECT) as ReadonlyArray<ParsedObjectProjectSource>;
+    return flatMap(objectSchemaParts, source => parseTranslationConfigs(source));
 }
 
 // fake input type for index mapping
