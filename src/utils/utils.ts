@@ -49,6 +49,7 @@ export function arrayStartsWith<T>(array: ReadonlyArray<T>, start: ReadonlyArray
         if (array[i] !== start[i]) {
             return false;
         }
+        i++;
     }
     return true
 }
