@@ -2,6 +2,7 @@ import { CalcMutationsOperator, FieldConfig, TypeKind } from '../config';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
 import { ValidationMessage } from '../validation';
 import { FieldDefinitionNode } from 'graphql';
+import { FieldI18n } from './i18n';
 import { ObjectType, Type } from './type';
 import { PermissionProfile } from './permission-profile';
 import { Model } from './model';
@@ -119,8 +120,8 @@ export class Field implements ModelComponent {
         return relation;
     }
 
-    public getLocalization(languageOrder: ReadonlyArray<string>) {
-        this.model.i18n.getFieldLocalization(this, languageOrder)
+    public getLocalization(languageOrder: ReadonlyArray<string>): FieldI18n {
+        return this.model.i18n.getFieldLocalization(this, languageOrder)
     }
 
     validate(context: ValidationContext) {

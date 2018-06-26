@@ -1,4 +1,5 @@
 import { FieldConfig, ObjectTypeConfig } from '../config';
+import { TypeI18n } from './i18n';
 import { TypeBase } from './type-base';
 import { Field } from './field';
 import { ObjectType } from './type';
@@ -72,8 +73,8 @@ export abstract class ObjectTypeBase extends TypeBase {
         return field;
     }
 
-    public getLocalization(languageOrder: ReadonlyArray<string>) {
-        this.model.i18n.getTypeLocalization(this, languageOrder)
+    public getLocalization(languageOrder: ReadonlyArray<string>): TypeI18n {
+        return this.model.i18n.getTypeLocalization(this, languageOrder)
     }
 
     readonly isObjectType: true = true;
