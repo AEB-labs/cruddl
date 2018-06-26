@@ -8,16 +8,16 @@ export interface I18nConfig {
 }
 
 export interface NamespaceI18nConfig {
-    readonly types: { [name: string]: TypeI18nConfig }
-    readonly namespaces: { [name: string ]: NamespaceI18nConfig }
-    readonly fields: { [name: string]: FieldI18nConfig|string }
+    readonly types?: { [name: string]: TypeI18nConfig }
+    readonly namespaces?: { [name: string ]: NamespaceI18nConfig }
+    readonly fields?: { [name: string]: FieldI18nConfig|string }
 }
 
 export interface TypeI18nConfig {
     readonly singular?: string
     readonly plural?: string
     readonly hint?: string
-    readonly fields: { [name: string]: FieldI18nConfig|string }
+    readonly fields?: { [name: string]: FieldI18nConfig|string }
 }
 
 export interface FieldI18nConfig {

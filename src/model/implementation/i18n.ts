@@ -159,20 +159,23 @@ function flattenNamespaceConfigs(namespace: NamespaceI18nConfig, basePath: Reado
             flatMap(Object.keys(namespace.namespaces), key =>
                 [
                     ...flattenNamespaceConfigs({
-                            ...namespace.namespaces[key]
+                            ...namespace.namespaces![key]
                         },
                         [...basePath, key])
                 ]
             ) : [];
     const flattenedNamespace: FlatNamespaceI18nConfig = {
         fields: normalizeFieldConfig(namespace.fields),
-        types: mapValues(namespace.types, type => ({...type, fields: normalizeFieldConfig(type.fields)})),
+        types: namespace.types ? mapValues(namespace.types, type => ({...type, fields: normalizeFieldConfig(type.fields)})) : {},
         namespacePath: basePath
     };
     return [flattenedNamespace, ...subNamespaces];
 }
 
-function normalizeFieldConfig(fieldConfigs: { [name: string]: FieldI18nConfig|string }): { [name: string]: FieldI18nConfig } {
+function normalizeFieldConfig(fieldConfigs: { [name: string]: FieldI18nConfig|string }|undefined): { [name: string]: FieldI18nConfig } {
+    if (!fieldConfigs) {
+        return {};
+    }
     return mapValues(fieldConfigs, fieldConfig => typeof fieldConfig === 'string' ? { label: fieldConfig } : fieldConfig);
 }
 
