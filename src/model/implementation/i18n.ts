@@ -1,5 +1,5 @@
 import memorize from 'memorize-decorator';
-import { arrayStartsWith, compact, flatMap, groupArray, mapValues } from '../../utils/utils';
+import { arrayStartsWith, compact, flatMap, groupArray, mapFirstDefined, mapValues } from '../../utils/utils';
 import { FieldI18nConfig, I18nConfig, NamespaceI18nConfig } from '../config/i18n';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
 import { Field } from './field';
@@ -26,54 +26,52 @@ export class ModelI18n implements ModelComponent {
     public validate(context: ValidationContext): void {
     }
 
-    protected getAvailableTypeLocalizations(type: ObjectTypeBase, language: string): ReadonlyArray<TypeI18n> {
-        const matchingNamespaces = this.getMatchingNamespaces(type.namespacePath, language);
+    protected getAvailableTypeLocalizations(type: ObjectTypeBase, languages: ReadonlyArray<string>): ReadonlyArray<TypeI18n> {
+        const matchingNamespaces = this.getMatchingNamespaces(type.namespacePath, languages);
         return compact(matchingNamespaces.map(t => t.getAllLocalizationsForType(type.name)));
     }
 
     @memorize()
-    public getTypeLocalization(type: ObjectTypeBase, language: string): TypeI18n {
-        const availableTypeLocalizations = this.getAvailableTypeLocalizations(type, language);
+    public getTypeLocalization(type: ObjectTypeBase, languageOrder: ReadonlyArray<string>): TypeI18n {
+        const availableTypeLocalizations = this.getAvailableTypeLocalizations(type, languageOrder);
         // try to build one complete type localization out of the available possibly partial localizations
         return new TypeI18n(
             type.name,
-            availableTypeLocalizations.map(t => t.singular)[0],
-            availableTypeLocalizations.map(t => t.plural)[0],
-            availableTypeLocalizations.map(t => t.hint)[0]
+            mapFirstDefined(availableTypeLocalizations, t => t.singular),
+            mapFirstDefined(availableTypeLocalizations, t => t.plural),
+            mapFirstDefined(availableTypeLocalizations, t => t.hint)
         );
     }
 
-    protected getAvailableFieldLocalizations(field: Field, language: string): ReadonlyArray<FieldI18n> {
-        const matchingNamespaces = this.getMatchingNamespaces(field.declaringType.namespacePath, language);
-        return flatMap(matchingNamespaces, t => t.getAllLocalizationsField(field.name, field.type.name));
+    protected getAvailableFieldLocalizations(field: Field, languageOrder: ReadonlyArray<string>): ReadonlyArray<FieldI18n> {
+        const matchingNamespaces = this.getMatchingNamespaces(field.declaringType.namespacePath, languageOrder);
+        return flatMap(matchingNamespaces, t => t.getAllLocalizationsForField(field.name, field.type.name));
     }
 
     @memorize()
-    public getFieldLocalization(field: Field, language: string): FieldI18n {
-        const availableFieldLocalizations = this.getAvailableFieldLocalizations(field, language);
+    public getFieldLocalization(field: Field, languageOrder: ReadonlyArray<string>): FieldI18n {
+        const availableFieldLocalizations = this.getAvailableFieldLocalizations(field, languageOrder);
         // try to build one complete field localization out of the available possibly partial localizations
         return new FieldI18n(
             field.name,
-            availableFieldLocalizations.map(t => t.label)[0],
-            availableFieldLocalizations.map(t => t.hint)[0],
+            mapFirstDefined(availableFieldLocalizations, f => f.label),
+            mapFirstDefined(availableFieldLocalizations, f => f.hint),
             field.type.name
         );
-
     }
 
     /**
-     * Get namespaces including parent ordered by namespace depth
-     * @param {ReadonlyArray<string>} namespacePath
-     * @param {string} language
-     * @returns {ReadonlyArray<I18nNamespace>}
+     * Get namespaces including parent ordered by language and namespace depth (deeper first)
      */
-    private getMatchingNamespaces(namespacePath: ReadonlyArray<string>, language: string): ReadonlyArray<I18nNamespace> {
-        const namespaces = this.namespacesByCountry.get(language);
-        if (!namespaces || namespaces.length === 0) {
-            return []
-        }
-        return namespaces.filter(set => arrayStartsWith(namespacePath, set.namespacePath))
-            .sort((lhs, rhs) => lhs.namespacePath.length - rhs.namespacePath.length)
+    private getMatchingNamespaces(namespacePath: ReadonlyArray<string>, languages: ReadonlyArray<string>): ReadonlyArray<I18nNamespace> {
+        return flatMap(languages, lang => {
+            const namespaces = this.namespacesByCountry.get(lang);
+            if (!namespaces || namespaces.length === 0) {
+                return []
+            }
+            return namespaces.filter(set => arrayStartsWith(namespacePath, set.namespacePath))
+                .sort((lhs, rhs) => lhs.namespacePath.length - rhs.namespacePath.length)
+        });
     }
 
 }
@@ -92,7 +90,7 @@ export class I18nNamespace {
         return this.typeI18n.find(typeTrans => typeTrans.name === name);
     }
 
-    public getAllLocalizationsField(name: string, type: string|undefined): ReadonlyArray<FieldI18n> {
+    public getAllLocalizationsForField(name: string, type: string|undefined): ReadonlyArray<FieldI18n> {
         return compact([
             this.fieldI18n.find(fieldTrans => fieldTrans.name === name && fieldTrans.type === type),
             this.fieldI18n.find(fieldTrans => fieldTrans.name === name && fieldTrans.type === undefined),

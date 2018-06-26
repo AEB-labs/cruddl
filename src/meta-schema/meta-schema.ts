@@ -17,20 +17,9 @@ const typeDefs = gql`
         isReadOnly: Boolean!
         type: Type!
         relation: Relation
-        translation(language: String!): FieldTranslation
+        localization(languageOrder: [String!]!): FieldLocalization
     }
     
-    type TypeTranslation {
-        singular: String
-        plural: String
-        hint: String
-    }
-    
-    type FieldTranslation {
-        label: String
-        hint: String
-    }
-
     type Index {
         id: String
         unique: Boolean!
@@ -60,7 +49,7 @@ const typeDefs = gql`
         kind: TypeKind!
         description: String
         fields: [Field!]!
-        translation(language: String!): TypeTranslation
+        localization(languageOrder: [String!]!): TypeLocalization
     }
 
     type RootEntityType implements ObjectType & Type {
@@ -72,7 +61,7 @@ const typeDefs = gql`
         indices: [Index!]!
         fields: [Field!]!
         relations: [Relation!]!
-        translation(language: String!): TypeTranslation
+        localization(languageOrder: [String!]!): TypeLocalization
     }
 
     type ChildEntityType implements ObjectType & Type {
@@ -80,7 +69,7 @@ const typeDefs = gql`
         kind: TypeKind!
         description: String
         fields: [Field!]!
-        translation(language: String!): TypeTranslation
+        localization(languageOrder: [String!]!): TypeLocalization
     }
 
     type EntityExtensionType implements ObjectType & Type {
@@ -88,7 +77,7 @@ const typeDefs = gql`
         kind: TypeKind!
         description: String
         fields: [Field!]!
-        translation(language: String!): TypeTranslation
+        localization(languageOrder: [String!]!): TypeLocalization
     }
 
     type ValueObjectType implements ObjectType & Type {
@@ -96,7 +85,7 @@ const typeDefs = gql`
         kind: TypeKind!
         description: String
         fields: [Field!]!
-        translation(language: String!): TypeTranslation
+        localization(languageOrder: [String!]!): TypeLocalization
     }
 
     type ScalarType implements Type {
@@ -118,6 +107,17 @@ const typeDefs = gql`
         rootEntityTypes: [RootEntityType!]!
         childNamespaces: [Namespace!]!
         isRoot: Boolean!
+    }
+
+    type TypeLocalization {
+        singular: String
+        plural: String
+        hint: String
+    }
+
+    type FieldLocalization {
+        label: String
+        hint: String
     }
 
     type Query {
@@ -173,13 +173,23 @@ export function getMetaSchema(model: Model): GraphQLSchema {
             __resolveType: type => resolveType(type as Type)
         },
         ObjectType: {
-            __resolveType: type => resolveType(type as Type)
+            __resolveType: type => resolveType(type as Type),
+            localization: (type, {languageOrder}) => model.i18n.getTypeLocalization(type as ObjectType, languageOrder)
         },
         RootEntityType: {
-            translation: (type, {language}) => model.i18n.getTypeLocalization(type as ObjectType, language)
+            localization: (type, {languageOrder}) => model.i18n.getTypeLocalization(type as ObjectType, languageOrder)
+        },
+        ChildEntityType: {
+            localization: (type, {languageOrder}) => model.i18n.getTypeLocalization(type as ObjectType, languageOrder)
+        },
+        EntityExtensionType: {
+            localization: (type, {languageOrder}) => model.i18n.getTypeLocalization(type as ObjectType, languageOrder)
+        },
+        ValueObjectType: {
+            localization: (type, {languageOrder}) => model.i18n.getTypeLocalization(type as ObjectType, languageOrder)
         },
         Field: {
-            translation: (field, {language}) => model.i18n.getFieldLocalization(field as Field, language)
+            localization: (field, {languageOrder}) => model.i18n.getFieldLocalization(field as Field, languageOrder)
         }
     };
 

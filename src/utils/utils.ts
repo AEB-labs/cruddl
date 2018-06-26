@@ -8,6 +8,25 @@ export function flatMap<TOut, TIn>(arr: ReadonlyArray<TIn>, f: (t: TIn) => Reado
     }, []);
 }
 
+/**
+ * Maps an array and returns the first defined result. Undefined elements in array will be ignored.
+ * @param {ReadonlyArray<TIn>} array.
+ * @param {(t: TIn) => TOut} fn
+ * @returns TOut|undefined
+ */
+export function mapFirstDefined<TIn, TOut>(array: ReadonlyArray<TIn|undefined>, fn: (t: TIn) => TOut) {
+    for (const i of array) {
+        if (i == undefined) {
+            continue;
+        }
+        const out = fn(i);
+        if (out != undefined) {
+            return out
+        }
+    }
+    return undefined
+}
+
 export function flatten<T>(arr: ReadonlyArray<ReadonlyArray<T>>): T[] {
     return arr.reduce((ys: any, x: any) => {
         return ys.concat(x)

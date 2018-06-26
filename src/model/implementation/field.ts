@@ -119,8 +119,8 @@ export class Field implements ModelComponent {
         return relation;
     }
 
-    public getTranslation(language: string) {
-        this.model.i18n.getFieldLocalization(this, language)
+    public getLocalization(languageOrder: ReadonlyArray<string>) {
+        this.model.i18n.getFieldLocalization(this, languageOrder)
     }
 
     validate(context: ValidationContext) {
