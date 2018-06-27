@@ -115,13 +115,13 @@ describe('I18n', () => {
             expect(localization.plural).to.be.undefined;
             expect(localization.hint).to.be.undefined;
         });
-        it('falls back to a less preferred language for missing localization info', () => {
+        it('falls back to a less preferred language for missing localization property', () => {
             const localization = model.getRootEntityType('A')!.getLocalization([PARTIALLY, FULLY]);
             expect(localization.singular).to.equal('A_PARTIALLY_SINGULAR');
             expect(localization.plural).to.equal('A_FULLY_PLURAL');
             expect(localization.hint).to.equal('A_FULLY_HINT');
         });
-        it('falls back to a less preferred language for missing localization types', () => {
+        it('falls back to a less preferred language for missing type localization', () => {
             const localization = model.getRootEntityType('B')!.getLocalization([PARTIALLY, FULLY]);
             expect(localization.singular).to.equal('B_FULLY_SINGULAR');
             expect(localization.plural).to.equal('B_FULLY_PLURAL');
