@@ -43,7 +43,7 @@ export class MessageLocation {
 
     get start(): SourcePosition {
         if(this._start instanceof  SourcePosition) {
-            return this.start;
+            return this._start;
         }
         if(!this.source){
             throw new Error("Can not calculate start position without reference to source");
