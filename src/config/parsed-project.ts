@@ -3,7 +3,7 @@ import { PlainObject } from '../utils/utils';
 import { MessageLocation } from '../model/validation/message';
 
 export interface ParsedProject {
-    readonly sources: ReadonlyArray<ParsedProjectSource>
+    readonly sources: ParsedProjectSource[]
 }
 
 export type ParsedProjectSource = ParsedGraphQLProjectSource | ParsedObjectProjectSource

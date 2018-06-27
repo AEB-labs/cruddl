@@ -55,8 +55,7 @@ function createSimpleParsedProject(document: DocumentNode): ParsedProject {
             {
                 kind: ParsedProjectSourceBaseKind.GRAPHQL,
                 namespacePath: [],
-                document,
-                pathLocationMap: {}
+                document
             },
             {
                 kind: ParsedProjectSourceBaseKind.OBJECT,
@@ -64,6 +63,6 @@ function createSimpleParsedProject(document: DocumentNode): ParsedProject {
                 object: { permissionProfiles },
                 pathLocationMap: {}
             }
-        ] as ReadonlyArray<ParsedProjectSource>
+        ]
     }
 }

@@ -53,9 +53,10 @@ export function validate(source: string, options: { permissionProfiles?: Permiss
                             }
                         }
                     },
-                    namespacePath: []
+                    namespacePath: [],
+                    pathLocationMap: {}
                 }
-            ] as ReadonlyArray<ParsedProjectSource>
+            ]
     });
     const astResults = validatePostMerge(ast, model);
     const sourceResults = validateSource(new ProjectSource('schema.graphqls', source));
