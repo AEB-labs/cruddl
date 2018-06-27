@@ -2,6 +2,8 @@ import { GraphQLSchema } from 'graphql';
 import gql from 'graphql-tag';
 import { IResolvers, makeExecutableSchema } from 'graphql-tools';
 import { Field, Model, ObjectType, RootEntityType, Type, TypeKind } from '../model';
+import { compact } from '../utils/utils';
+import { LOCALE_LANG } from './constants';
 
 const typeDefs = gql`
     enum TypeKind {
@@ -17,7 +19,10 @@ const typeDefs = gql`
         isReadOnly: Boolean!
         type: Type!
         relation: Relation
-        localization(languageOrder: [String!]!): FieldLocalization
+        localization(
+            " Order of localization resolution. Can contain languages from yaml/json or special features like '_LOCALE_LANG', see documentation. " 
+            resolutionOrder: [String]
+        ): FieldLocalization
     }
     
     type Index {
@@ -49,7 +54,10 @@ const typeDefs = gql`
         kind: TypeKind!
         description: String
         fields: [Field!]!
-        localization(languageOrder: [String!]!): TypeLocalization
+        localization(
+            " Order of localization resolution. Can contain languages from yaml/json or special features like '_LOCALE_LANG', see documentation. "
+            resolutionOrder: [String]
+        ): TypeLocalization
     }
 
     type RootEntityType implements ObjectType & Type {
@@ -61,7 +69,10 @@ const typeDefs = gql`
         indices: [Index!]!
         fields: [Field!]!
         relations: [Relation!]!
-        localization(languageOrder: [String!]!): TypeLocalization
+        localization(
+            " Order of localization resolution. Can contain languages from yaml/json or special features like '_LOCALE_LANG', see documentation. "
+            resolutionOrder: [String]
+        ): TypeLocalization
     }
 
     type ChildEntityType implements ObjectType & Type {
@@ -69,7 +80,10 @@ const typeDefs = gql`
         kind: TypeKind!
         description: String
         fields: [Field!]!
-        localization(languageOrder: [String!]!): TypeLocalization
+        localization(
+            " Order of localization resolution. Can contain languages from yaml/json or special features like '_LOCALE_LANG', see documentation. "
+            resolutionOrder: [String]
+        ): TypeLocalization
     }
 
     type EntityExtensionType implements ObjectType & Type {
@@ -77,7 +91,10 @@ const typeDefs = gql`
         kind: TypeKind!
         description: String
         fields: [Field!]!
-        localization(languageOrder: [String!]!): TypeLocalization
+        localization(
+            " Order of localization resolution. Can contain languages from yaml/json or special features like '_LOCALE_LANG', see documentation. "
+            resolutionOrder: [String]
+        ): TypeLocalization
     }
 
     type ValueObjectType implements ObjectType & Type {
@@ -85,7 +102,10 @@ const typeDefs = gql`
         kind: TypeKind!
         description: String
         fields: [Field!]!
-        localization(languageOrder: [String!]!): TypeLocalization
+        localization(
+            " Order of localization resolution. Can contain languages from yaml/json or special features like '_LOCALE_LANG', see documentation. "
+            resolutionOrder: [String]
+        ): TypeLocalization
     }
 
     type ScalarType implements Type {
@@ -149,7 +169,7 @@ const typeDefs = gql`
  * @returns {GraphQLSchema} an executable GraphQLSchema which allows to query the meat schema.
  */
 export function getMetaSchema(model: Model): GraphQLSchema {
-    const resolvers: IResolvers<{}, {}> = {
+    const resolvers: IResolvers<{}, { locale_lang: string }> = {
         Query: {
             types: () => model.types,
             type: (_, {name}) => model.getType(name),
@@ -174,24 +194,44 @@ export function getMetaSchema(model: Model): GraphQLSchema {
         },
         ObjectType: {
             __resolveType: type => resolveType(type as Type),
-            localization: (type, {languageOrder}) => model.i18n.getTypeLocalization(type as ObjectType, languageOrder)
+            localization: localizeType
         },
         RootEntityType: {
-            localization: (type, {languageOrder}) => model.i18n.getTypeLocalization(type as ObjectType, languageOrder)
+            localization: localizeType
         },
         ChildEntityType: {
-            localization: (type, {languageOrder}) => model.i18n.getTypeLocalization(type as ObjectType, languageOrder)
+            localization: localizeType
         },
         EntityExtensionType: {
-            localization: (type, {languageOrder}) => model.i18n.getTypeLocalization(type as ObjectType, languageOrder)
+            localization: localizeType
         },
         ValueObjectType: {
-            localization: (type, {languageOrder}) => model.i18n.getTypeLocalization(type as ObjectType, languageOrder)
+            localization: localizeType
         },
         Field: {
-            localization: (field, {languageOrder}) => model.i18n.getFieldLocalization(field as Field, languageOrder)
+            localization: localizeField
         }
     };
+
+    function localizeType(type: {}, {resolutionOrder}: {resolutionOrder?: ReadonlyArray<string>}, context: {locale_lang: string}) {
+        // default resolutionOrder
+        if (!resolutionOrder) {
+            resolutionOrder = [LOCALE_LANG];
+        }
+        // replace locale_lang
+        const localizedresolutionOrder = compact(resolutionOrder.map(l => l === LOCALE_LANG ? context.locale_lang : l));
+        return model.i18n.getTypeLocalization(type as ObjectType, localizedresolutionOrder)
+    }
+
+    function localizeField(field: {}, {resolutionOrder}: {resolutionOrder?: ReadonlyArray<string>}, context: {locale_lang: string}) {
+        // default resolutionOrder
+        if (!resolutionOrder) {
+            resolutionOrder = [LOCALE_LANG];
+        }
+        // replace locale_lang
+        const localizedresolutionOrder = compact(resolutionOrder.map(l => l === LOCALE_LANG ? context.locale_lang : l));
+        return model.i18n.getFieldLocalization(field as Field, localizedresolutionOrder)
+    }
 
     return makeExecutableSchema({
         typeDefs,

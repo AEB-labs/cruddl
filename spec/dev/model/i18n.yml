@@ -35,3 +35,11 @@ i18n:
         hint: Wann der Held in diesem System angelegt wurde
       updatedAt: Geändert am
       id: ID
+    namespaces:
+      logistics:
+        namespaces:
+          delivery:
+            types:
+              Delivery:
+                fields:
+                  deliveryNumber: Sendungsnummer

@@ -73,8 +73,8 @@ export abstract class ObjectTypeBase extends TypeBase {
         return field;
     }
 
-    public getLocalization(languageOrder: ReadonlyArray<string>): TypeI18n {
-        return this.model.i18n.getTypeLocalization(this, languageOrder)
+    public getLocalization(resolutionOrder: ReadonlyArray<string>): TypeI18n {
+        return this.model.i18n.getTypeLocalization(this, resolutionOrder)
     }
 
     readonly isObjectType: true = true;

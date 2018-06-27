@@ -120,8 +120,8 @@ export class Field implements ModelComponent {
         return relation;
     }
 
-    public getLocalization(languageOrder: ReadonlyArray<string>): FieldI18n {
-        return this.model.i18n.getFieldLocalization(this, languageOrder)
+    public getLocalization(resolutionOrder: ReadonlyArray<string>): FieldI18n {
+        return this.model.i18n.getFieldLocalization(this, resolutionOrder)
     }
 
     validate(context: ValidationContext) {

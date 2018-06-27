@@ -1,0 +1,1 @@
+export const LOCALE_LANG = '_LOCALE_LANG';
