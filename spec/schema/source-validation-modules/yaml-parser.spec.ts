@@ -1,53 +1,77 @@
+import { ParsedObjectProjectSource, ParsedProjectSource, ParsedProjectSourceBaseKind } from '../../../src/config/parsed-project';
 import { ProjectSource } from '../../../src/project/source';
 import { SidecarSchemaValidator } from '../../../src/schema/preparation/source-validation-modules/sidecar-schema';
 import { expect } from 'chai';
 import { Kind, load, YAMLAnchorReference, YamlMap, YAMLMapping, YAMLNode, YAMLScalar, YAMLSequence } from 'yaml-ast-parser';
+import { parseProjectSource } from '../../../src/schema/schema-builder';
 
-const validValue = `
-a: {b: {c: apfel}}
+const yamlContent = `
+a: 
+  b: 
+    c: apfel
+d: 
+  - test1
+  - test2
+  - test3
+e:
+  - 0
+  - 1
+  - 2
+
 `;
 
-describe('sidecar-schema validator', () => {
-    const validator = new SidecarSchemaValidator();
+const correspondingObject = {"a":{"b":{"c":"apfel"}},"d":["test1","test2","test3"],"e":[0,1,2]};
 
-    function extractAllPaths(node: YAMLNode, curPath: (string | number)[]): ((string | number)[])[] {
-        switch (node.kind) {
-            case Kind.MAP:
-                const mapNode = node as YamlMap;
-                const temp = ([] as ((string | number)[])[]).concat(...(mapNode.mappings.map(
-                    (childNode, index) => extractAllPaths(childNode, [...curPath]))));
-                return [...temp];
-                break;
-            case Kind.MAPPING:
-                const mappingNode = node as YAMLMapping;
-                console.log(mappingNode.key.value);
-                if (mappingNode.value) {
-                    return [curPath, ...extractAllPaths(mappingNode.value, [...curPath, mappingNode.key.value])];
-                }
-                break;
-            case Kind.SCALAR:
-                const scalarNode = node as YAMLScalar;
-                console.log(curPath);
-                return [curPath];
-                break;
-            case Kind.SEQ:
-                const seqNode = node as YAMLSequence;
-                seqNode.items.forEach((childNode, index) => extractAllPaths(childNode, [...curPath, index]));
-                break;
-            case Kind.INCLUDE_REF:
-            case Kind.ANCHOR_REF:
-                const refNode = node as YAMLAnchorReference;
-                return extractAllPaths(refNode.value, [...curPath]);
-                break;
+describe('YAML parser and validator', () => {
+
+    it('returns the right message locations', () => {
+        const source = new ProjectSource('test.yaml', yamlContent);
+        const result = parseProjectSource(source);
+        if (!result) {
+            expect(result).not.to.be.undefined;
+            return;
         }
-        return [curPath];
-    }
 
-    it('reports errors', () => {
-        const root: YAMLNode = load(validValue);
-        console.log(root);
-        const paths = extractAllPaths(root, []);
-        console.log(paths);
+        console.log(result);
+
+        if (result.kind == ParsedProjectSourceBaseKind.OBJECT) {
+            expect(result.pathLocationMap['a']._start).to.be.eq(1);
+            expect(result.pathLocationMap['a']._end).to.be.eq(23);
+
+            expect(result.pathLocationMap['a/b']._start).to.be.eq(7);
+            expect(result.pathLocationMap['a/b']._end).to.be.eq(23);
+
+            expect(result.pathLocationMap['a/b/c']._start).to.be.eq(15);
+            expect(result.pathLocationMap['a/b/c']._end).to.be.eq(23);
+
+            expect(result.pathLocationMap['a'].start.line).to.be.eq(1);
+            expect(result.pathLocationMap['a/b'].start.line).to.be.eq(2);
+            expect(result.pathLocationMap['a/b/c'].start.line).to.be.eq(3);
+
+            expect(result.pathLocationMap['d/0'].start.line).to.be.eq(5);
+            expect(result.pathLocationMap['d/0'].start.column).to.be.eq(4);
+            expect(result.pathLocationMap['d/0'].end.line).to.be.eq(5);
+            expect(result.pathLocationMap['d/0'].end.column).to.be.eq(9);
+        }else{
+            expect(result.kind).to.eq(ParsedProjectSourceBaseKind.OBJECT);
+        }
+    });
+
+    it('can extract the corresponding json data', () => {
+        const source = new ProjectSource('test.yaml', yamlContent);
+        const result = parseProjectSource(source);
+        if(!result){
+            expect(result).not.to.be.undefined;
+            return;
+        }
+
+
+        if(result.kind == ParsedProjectSourceBaseKind.OBJECT){
+            console.log(JSON.stringify(result.object));
+            expect(result.object).to.deep.equals(correspondingObject);
+        }else{
+            expect(result.kind).to.eq(ParsedProjectSourceBaseKind.OBJECT);
+        }
     });
 
 });

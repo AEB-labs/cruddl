@@ -25,7 +25,8 @@ export class MessageLocation {
     constructor(source: string|ProjectSource, readonly _start: SourcePosition | number, readonly _end: SourcePosition | number) {
         if (source instanceof ProjectSource) {
             Object.defineProperty(this, 'source', {
-                enumerable: false
+                enumerable: false,
+                value: source
             });
             this.sourceName = source.name;
         } else {

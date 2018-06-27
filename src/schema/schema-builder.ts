@@ -1,5 +1,4 @@
 import { DocumentNode, GraphQLSchema, parse } from 'graphql';
-import { load as loadYaml } from 'js-yaml';
 import { compact } from 'lodash';
 import { globalContext } from '../config/global';
 import { ParsedProject, ParsedProjectSource, ParsedProjectSourceBaseKind } from '../config/parsed-project';
@@ -13,10 +12,10 @@ import { validatePostMerge, validateSource } from './preparation/ast-validator';
 import {
     executePreMergeTransformationPipeline, executeSchemaTransformationPipeline, SchemaTransformationContext
 } from './preparation/transformation-pipeline';
-import { parse as JSONparse, Pointer, Pointers } from 'json-source-map';
+import { parse as JSONparse } from 'json-source-map';
 import stripJsonComments = require('strip-json-comments');
 import { Kind, load, YAMLAnchorReference, YamlMap, YAMLMapping, YAMLNode, YAMLScalar, YAMLSequence } from 'yaml-ast-parser';
-import { MessageLocation } from '../model/validation/message';
+import { MessageLocation } from '../model/';
 
 /**
  * Validates a project and thus determines whether createSchema() would succeed
@@ -135,10 +134,10 @@ function parseProject(project: Project): ParsedProject {
     };
 }
 
-function parseProjectSource(projectSource: ProjectSource): ParsedProjectSource | undefined {
+export function parseProjectSource(projectSource: ProjectSource): ParsedProjectSource | undefined {
     switch (projectSource.type) {
         case SourceType.YAML:
-            const yamlData = loadYaml(projectSource.body);
+            const yamlData = extractJSONFromYAML(projectSource.body);
 
             const pathLocationMap = extractMessageLocationsFromYAML(projectSource);
 
@@ -148,11 +147,10 @@ function parseProjectSource(projectSource: ProjectSource): ParsedProjectSource |
                 object: yamlData as PlainObject || {},
                 pathLocationMap: pathLocationMap
             };
-            break;
         case SourceType.JSON:
             let data = {} as PlainObject;
 
-            const jsonPathLocationMap: {[path: string]: MessageLocation} = {};
+            const jsonPathLocationMap: { [path: string]: MessageLocation } = {};
 
             try {
                 // whitespace: true replaces non-whitespace in comments with spaces so that the sourcemap still matches
@@ -160,14 +158,14 @@ function parseProjectSource(projectSource: ProjectSource): ParsedProjectSource |
                 const result = JSONparse(bodyWithoutComments);
                 const pointers = result.pointers;
 
-                for(const key in pointers) {
+                for (const key in pointers) {
                     const pointer = pointers[key];
                     jsonPathLocationMap[key] = new MessageLocation(projectSource, pointer.key.pos, pointer.valueEnd.pos);
                 }
 
                 data = result.data;
             } catch (e) {
-                throw new Error("No valid JSON supplied in "+projectSource.name);
+                throw new Error('No valid JSON supplied in ' + projectSource.name);
             }
 
             return {
@@ -192,10 +190,15 @@ function getNamespaceFromSourceName(name: string): ReadonlyArray<string> {
     return []; // default namespace
 }
 
+/**
+ * extracts out of a given YAML a set of paths (fields concatenated with '/') and returns corresponding MessageLocations
+ * @param {ProjectSource} source containing valid YAML (returns error if source is not valid)
+ * @returns {{[p: string]: MessageLocation}} a map of paths to message locations
+ */
 function extractMessageLocationsFromYAML(source: ProjectSource): { [path: string]: MessageLocation } {
     const root: YAMLNode | undefined = load(source.body);
     if (!root) {
-        throw new Error("No valid yaml suplied in "+source.name);
+        throw new Error('No valid yaml suplied in ' + source.name);
     }
     const result = extractAllPaths(root, [] as ReadonlyArray<(string | number)>);
     let messageLocations: { [path: string]: MessageLocation } = {};
@@ -204,6 +207,12 @@ function extractMessageLocationsFromYAML(source: ProjectSource): { [path: string
     return messageLocations;
 }
 
+/**
+ * recursive function which traverses the abstract syntax tree of the YAML source
+ * @param {YAMLNode} node root node
+ * @param {ReadonlyArray<string | number>} curPath
+ * @returns {{path: ReadonlyArray<string | number>; node: YAMLNode}[]}
+ */
 function extractAllPaths(node: YAMLNode, curPath: ReadonlyArray<(string | number)>): { path: ReadonlyArray<(string | number)>, node: YAMLNode }[] {
     switch (node.kind) {
         case Kind.MAP:
@@ -216,7 +225,7 @@ function extractAllPaths(node: YAMLNode, curPath: ReadonlyArray<(string | number
             console.log(mappingNode.key.value);
             if (mappingNode.value) {
                 return [
-                    { path: curPath, node: mappingNode },
+                    { path: [...curPath, mappingNode.key.value], node: mappingNode },
                     ...extractAllPaths(mappingNode.value, [...curPath, mappingNode.key.value])
                 ];
             }
@@ -224,7 +233,11 @@ function extractAllPaths(node: YAMLNode, curPath: ReadonlyArray<(string | number
         case Kind.SCALAR:
             const scalarNode = node as YAMLScalar;
             console.log(curPath);
-            return [{ path: curPath, node: scalarNode.parent }];
+            if (scalarNode.parent && scalarNode.parent.kind == Kind.SEQ) {
+                return [{ path: curPath, node: scalarNode }];
+            } else {
+                return [{ path: curPath, node: scalarNode.parent }];
+            }
         case Kind.SEQ:
             const seqNode = node as YAMLSequence;
             const mergedSequence = ([] as { path: ReadonlyArray<(string | number)>, node: YAMLNode }[]).concat(...(seqNode.items.map(
@@ -236,4 +249,46 @@ function extractAllPaths(node: YAMLNode, curPath: ReadonlyArray<(string | number
             return extractAllPaths(refNode.value, [...curPath]);
     }
     return [{ path: curPath, node: node }];
+}
+
+export function extractJSONFromYAML(yamlSource: string): PlainObject {
+    const root: YAMLNode | undefined = load(yamlSource);
+    if (!root) {
+        throw new Error("No valid yaml suplied");
+    }
+
+    const result = recursiveObjectExtraction(root, {});
+    if(typeof result === 'object'){
+        return result as PlainObject;
+    }else{
+        throw new Error("Provided YAML does not have an object type on root level.");
+    }
+}
+
+function recursiveObjectExtraction(node: YAMLNode, object: PlainObject): any {
+    switch (node.kind) {
+        case Kind.MAP:
+            const mapNode = node as YamlMap;
+            mapNode.mappings.forEach(val => {
+                object[val.key.value] = recursiveObjectExtraction(val.value, {});
+            });
+            return object;
+        case Kind.MAPPING:
+            throw new Error("Should never be reached since a mapping can not exist without a map.");
+        case Kind.SCALAR:
+            const scalarNode = node as YAMLScalar;
+            // check whether string or number scalar
+            if(scalarNode.doubleQuoted || scalarNode.singleQuoted || isNaN(Number(scalarNode.value))) {
+                return scalarNode.value;
+            }else{
+                return Number(scalarNode.value);
+            }
+        case Kind.SEQ:
+            const seqNode = node as YAMLSequence;
+            return seqNode.items.map(val => recursiveObjectExtraction(val, {}));
+        case Kind.INCLUDE_REF:
+        case Kind.ANCHOR_REF:
+            throw new Error("No support for parsing include references and anchor references.");
+    }
+    throw new Error("An error occured while parsing the YAML file");
 }

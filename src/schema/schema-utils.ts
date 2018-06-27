@@ -184,11 +184,11 @@ export function getLineAndColumnFromPosition(position: number, source: string) {
     let line = 0;
     while (curIndex < position){
         const nextLinebreakIndex = source.indexOf('\n', curIndex);
-        if(nextLinebreakIndex < 0 || nextLinebreakIndex >= nextLinebreakIndex){
+        if(nextLinebreakIndex < 0 || nextLinebreakIndex >= position){
             break;
         }else{
             line++;
-            curIndex = nextLinebreakIndex;
+            curIndex = nextLinebreakIndex+1;
         }
     }
 
