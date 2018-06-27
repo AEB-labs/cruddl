@@ -21,7 +21,7 @@ export interface TypeI18nConfig {
 }
 
 export interface FieldI18nConfig {
-    readonly label: string
+    readonly label?: string
     readonly hint?: string
 }
 
