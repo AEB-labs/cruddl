@@ -73,7 +73,8 @@
     "moment": "^2.19.1",
     "pluralize": "^7.0.0",
     "strip-json-comments": "^2.0.1",
-    "uuid": "^3.1.0"
+    "uuid": "^3.1.0",
+    "yaml-ast-parser": "0.0.40"
   },
   "peerDependencies": {
     "@types/graphql": "~0.10.4 || ~0.11.0 || ~0.12.0 || ~0.13.0",

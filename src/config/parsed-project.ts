@@ -1,8 +1,9 @@
 import { DocumentNode } from 'graphql';
 import { PlainObject } from '../utils/utils';
+import { MessageLocation } from '../model/validation/message';
 
 export interface ParsedProject {
-    readonly sources: ReadonlyArray<ParsedProjectSource>
+    readonly sources: ParsedProjectSource[]
 }
 
 export type ParsedProjectSource = ParsedGraphQLProjectSource | ParsedObjectProjectSource
@@ -20,6 +21,7 @@ export interface ParsedGraphQLProjectSource extends ParsedProjectSourceBase {
 export interface ParsedObjectProjectSource extends ParsedProjectSourceBase {
     readonly kind: ParsedProjectSourceBaseKind.OBJECT
     readonly object: PlainObject
+    readonly pathLocationMap: { [path: string]: MessageLocation }
 }
 
 export enum ParsedProjectSourceBaseKind {

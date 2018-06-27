@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { DocumentNode } from 'graphql';
 import gql from 'graphql-tag';
-import { ParsedProject, ParsedProjectSourceBaseKind } from '../../src/config/parsed-project';
+import { ParsedProject, ParsedProjectSource, ParsedProjectSourceBaseKind } from '../../src/config/parsed-project';
 import { createModel, PermissionProfileConfigMap } from '../../src/model';
 
 describe('createModel', () => {
@@ -60,7 +60,8 @@ function createSimpleParsedProject(document: DocumentNode): ParsedProject {
             {
                 kind: ParsedProjectSourceBaseKind.OBJECT,
                 namespacePath: [],
-                object: { permissionProfiles }
+                object: { permissionProfiles },
+                pathLocationMap: {}
             }
         ]
     }
