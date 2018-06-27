@@ -10,9 +10,17 @@ describe('check-json-syntax validator', () => {
         expect(messages.length).to.equal(1);
         expect(messages[0].message).to.equal("Unknown Character 't', expecting a comma or a closing '}'");
         expect(JSON.parse(JSON.stringify(messages[0].location))).to.deep.equal({
-            sourceName: 'test.json',
-            start: { offset: 12, line: 2, column: 6 },
-            end: { offset: 16, line: 2, column: 10 }
+            "_end": {
+                "column": 10,
+                "line": 2,
+                "offset": 16
+            },
+            "_start": {
+                "column": 6,
+                "line": 2,
+                "offset": 12
+            },
+            "sourceName": "test.json"
         });
     });
 
@@ -21,9 +29,17 @@ describe('check-json-syntax validator', () => {
         expect(messages.length).to.equal(1);
         expect(messages[0].message).to.equal("Unknown character 'a', expecting opening block '{' or '[', or maybe a comment");
         expect(JSON.parse(JSON.stringify(messages[0].location))).to.deep.equal({
-            sourceName: 'test.json',
-            start: { offset: 0, line: 1, column: 1 },
-            end: { offset: 3, line: 1, column: 4 }
+            "_end": {
+                "column": 4,
+                "line": 1,
+                "offset": 3
+            },
+            "_start": {
+                "column": 1,
+                "line": 1,
+                "offset": 0
+            },
+            "sourceName": "test.json"
         });
     });
 

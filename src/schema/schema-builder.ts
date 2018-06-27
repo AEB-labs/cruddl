@@ -160,12 +160,12 @@ export function parseProjectSource(projectSource: ProjectSource): ParsedProjectS
 
                 for (const key in pointers) {
                     const pointer = pointers[key];
-                    jsonPathLocationMap[key] = new MessageLocation(projectSource, pointer.key.pos, pointer.valueEnd.pos);
+                    jsonPathLocationMap[key] = new MessageLocation(projectSource, pointer.value.pos, pointer.valueEnd.pos);
                 }
 
                 data = result.data;
             } catch (e) {
-                throw new Error('No valid JSON supplied in ' + projectSource.name);
+                throw new Error('No valid JSON supplied in ' + projectSource.name + ' ' + e);
             }
 
             return {
@@ -254,14 +254,14 @@ function extractAllPaths(node: YAMLNode, curPath: ReadonlyArray<(string | number
 export function extractJSONFromYAML(yamlSource: string): PlainObject {
     const root: YAMLNode | undefined = load(yamlSource);
     if (!root) {
-        throw new Error("No valid yaml suplied");
+        throw new Error('No valid yaml suplied');
     }
 
     const result = recursiveObjectExtraction(root, {});
-    if(typeof result === 'object'){
+    if (typeof result === 'object') {
         return result as PlainObject;
-    }else{
-        throw new Error("Provided YAML does not have an object type on root level.");
+    } else {
+        throw new Error('Provided YAML does not have an object type on root level.');
     }
 }
 
@@ -274,13 +274,13 @@ function recursiveObjectExtraction(node: YAMLNode, object: PlainObject): any {
             });
             return object;
         case Kind.MAPPING:
-            throw new Error("Should never be reached since a mapping can not exist without a map.");
+            throw new Error('Should never be reached since a mapping can not exist without a map.');
         case Kind.SCALAR:
             const scalarNode = node as YAMLScalar;
             // check whether string or number scalar
-            if(scalarNode.doubleQuoted || scalarNode.singleQuoted || isNaN(Number(scalarNode.value))) {
+            if (scalarNode.doubleQuoted || scalarNode.singleQuoted || isNaN(Number(scalarNode.value))) {
                 return scalarNode.value;
-            }else{
+            } else {
                 return Number(scalarNode.value);
             }
         case Kind.SEQ:
@@ -288,7 +288,7 @@ function recursiveObjectExtraction(node: YAMLNode, object: PlainObject): any {
             return seqNode.items.map(val => recursiveObjectExtraction(val, {}));
         case Kind.INCLUDE_REF:
         case Kind.ANCHOR_REF:
-            throw new Error("No support for parsing include references and anchor references.");
+            throw new Error('No support for parsing include references and anchor references.');
     }
-    throw new Error("An error occured while parsing the YAML file");
+    throw new Error('An error occured while parsing the YAML file');
 }

@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { parse, Source } from 'graphql';
-import { ParsedProjectSourceBaseKind } from '../../../src/config/parsed-project';
+import { ParsedProjectSource, ParsedProjectSourceBaseKind } from '../../../src/config/parsed-project';
 import { createModel, PermissionProfileConfigMap, ValidationResult } from '../../../src/model';
 import { ProjectSource } from '../../../src/project/source';
 import { validatePostMerge, validateSource } from '../../../src/schema/preparation/ast-validator';
@@ -55,7 +55,7 @@ export function validate(source: string, options: { permissionProfiles?: Permiss
                     },
                     namespacePath: []
                 }
-            ]
+            ] as ReadonlyArray<ParsedProjectSource>
     });
     const astResults = validatePostMerge(ast, model);
     const sourceResults = validateSource(new ProjectSource('schema.graphqls', source));
