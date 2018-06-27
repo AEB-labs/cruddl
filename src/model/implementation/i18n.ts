@@ -45,7 +45,7 @@ export class ModelI18n implements ModelComponent {
 
     protected getAvailableFieldLocalizations(field: Field, languageOrder: ReadonlyArray<string>): ReadonlyArray<FieldI18n> {
         const matchingNamespaces = this.getMatchingNamespaces(field.declaringType.namespacePath, languageOrder);
-        return flatMap(matchingNamespaces, t => t.getAllLocalizationsForField(field.name, field.type.name));
+        return flatMap(matchingNamespaces, t => t.getAllLocalizationsForField(field.name, field.declaringType.name));
     }
 
     @memorize()
