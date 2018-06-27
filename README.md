@@ -93,3 +93,4 @@ Although the feature set is already quite extensive, this project is still in ac
 
 * [Modelling guide](docs/modelling.md)
 * [GraphQL API](docs/api.md)
+* [I18n](docs/i18n.md)
