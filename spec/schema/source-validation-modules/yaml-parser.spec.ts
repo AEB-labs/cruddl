@@ -32,8 +32,6 @@ describe('YAML parser and validator', () => {
             return;
         }
 
-        console.log(result);
-
         if (result.kind == ParsedProjectSourceBaseKind.OBJECT) {
             expect(result.pathLocationMap['a']._start).to.be.eq(1);
             expect(result.pathLocationMap['a']._end).to.be.eq(23);
@@ -67,7 +65,6 @@ describe('YAML parser and validator', () => {
 
 
         if(result.kind == ParsedProjectSourceBaseKind.OBJECT){
-            console.log(JSON.stringify(result.object));
             expect(result.object).to.deep.equals(correspondingObject);
         }else{
             expect(result.kind).to.eq(ParsedProjectSourceBaseKind.OBJECT);
