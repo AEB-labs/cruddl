@@ -3,7 +3,7 @@ import gql from 'graphql-tag';
 import { IResolvers, makeExecutableSchema } from 'graphql-tools';
 import { Field, Model, ObjectType, RootEntityType, Type, TypeKind } from '../model';
 import { compact } from '../utils/utils';
-import { LOCALE_LANG } from './constants';
+import { I18N_GENERIC, I18N_LOCALE_LANGUAGE, I18N_WARNING } from './constants';
 
 const typeDefs = gql`
     enum TypeKind {
@@ -169,7 +169,7 @@ const typeDefs = gql`
  * @returns {GraphQLSchema} an executable GraphQLSchema which allows to query the meat schema.
  */
 export function getMetaSchema(model: Model): GraphQLSchema {
-    const resolvers: IResolvers<{}, { locale_lang: string }> = {
+    const resolvers: IResolvers<{}, { locale_language: string }> = {
         Query: {
             types: () => model.types,
             type: (_, {name}) => model.getType(name),
@@ -213,24 +213,24 @@ export function getMetaSchema(model: Model): GraphQLSchema {
         }
     };
 
-    function localizeType(type: {}, {resolutionOrder}: {resolutionOrder?: ReadonlyArray<string>}, context: {locale_lang: string}) {
+    function localizeType(type: {}, {resolutionOrder}: {resolutionOrder?: ReadonlyArray<string>}, context: {locale_language: string}) {
         // default resolutionOrder
         if (!resolutionOrder) {
-            resolutionOrder = [LOCALE_LANG];
+            resolutionOrder = [I18N_LOCALE_LANGUAGE, I18N_WARNING, I18N_GENERIC];
         }
-        // replace locale_lang
-        const localizedresolutionOrder = compact(resolutionOrder.map(l => l === LOCALE_LANG ? context.locale_lang : l));
-        return model.i18n.getTypeLocalization(type as ObjectType, localizedresolutionOrder)
+        // replace locale_language
+        const localizedResolutionOrder = compact(resolutionOrder.map(l => l === I18N_LOCALE_LANGUAGE ? context.locale_language : l));
+        return model.i18n.getTypeLocalization(type as ObjectType, localizedResolutionOrder)
     }
 
-    function localizeField(field: {}, {resolutionOrder}: {resolutionOrder?: ReadonlyArray<string>}, context: {locale_lang: string}) {
+    function localizeField(field: {}, {resolutionOrder}: {resolutionOrder?: ReadonlyArray<string>}, context: {locale_language: string}) {
         // default resolutionOrder
         if (!resolutionOrder) {
-            resolutionOrder = [LOCALE_LANG];
+            resolutionOrder = [I18N_LOCALE_LANGUAGE, I18N_WARNING, I18N_GENERIC];
         }
-        // replace locale_lang
-        const localizedresolutionOrder = compact(resolutionOrder.map(l => l === LOCALE_LANG ? context.locale_lang : l));
-        return model.i18n.getFieldLocalization(field as Field, localizedresolutionOrder)
+        // replace locale_language
+        const localizedResolutionOrder = compact(resolutionOrder.map(l => l === I18N_LOCALE_LANGUAGE ? context.locale_language : l));
+        return model.i18n.getFieldLocalization(field as Field, localizedResolutionOrder)
     }
 
     return makeExecutableSchema({

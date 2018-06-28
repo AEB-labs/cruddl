@@ -1,5 +1,11 @@
+import * as pluralize from 'pluralize';
 import memorize from 'memorize-decorator';
-import { arrayStartsWith, compact, flatMap, groupArray, mapFirstDefined, mapValues } from '../../utils/utils';
+import { globalContext } from '../../config/global';
+import { I18N_GENERIC, I18N_WARNING } from '../../meta-schema/constants';
+import { NAMESPACE_SEPARATOR } from '../../schema/constants';
+import {
+    arrayStartsWith, capitalize, compact, decapitalize, flatMap, groupArray, mapFirstDefined, mapValues
+} from '../../utils/utils';
 import { FieldI18nConfig, I18nConfig, NamespaceI18nConfig } from '../config/i18n';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
 import { Field } from './field';
@@ -50,7 +56,10 @@ export class ModelI18n implements ModelComponent {
     private getResolutionProviders(resolutionOrder: ReadonlyArray<string>): ReadonlyArray<LocalizationProvider> {
         return compact(resolutionOrder.map(providerName => {
             switch (providerName) {
-                    // TODO implement more cool stuff
+                case I18N_GENERIC:
+                    return new GenericLocalizationProvider();
+                case I18N_WARNING:
+                    return new WarningLocalizationProvider(resolutionOrder);
                 default:
                     return this.languageLocalizationProvidersByLanguage.get(providerName);
             }
@@ -219,4 +228,58 @@ class LanguageLocalizationProvider implements LocalizationProvider {
 
 }
 
+class GenericLocalizationProvider implements LocalizationProvider {
 
+    localizeField(field: Field): FieldLocalization {
+        return {
+            label: generateGenericName(field.name)
+        }
+    }
+
+    localizeType(type: ObjectTypeBase): TypeLocalization {
+        return {
+            singular: generateGenericName(type.name),
+            plural: GenericLocalizationProvider.generatePluralName(type.name)
+        }
+    }
+
+    static generatePluralName(name: string|undefined): string|undefined {
+        name = generateGenericName(name);
+        if (name == undefined || name === '') {
+            return undefined;
+        }
+        let splitName = name.split(' ');
+        return [...splitName, pluralize(splitName.pop()!)].join(' ');
+    }
+}
+
+function generateGenericName(name: string|undefined): string|undefined {
+    if (name == undefined) {
+        return undefined;
+    }
+    return capitalize(name.replace(/([a-z])([A-Z])/g, (str, arg1, arg2) => `${arg1} ${decapitalize(arg2)}`));
+}
+
+class WarningLocalizationProvider implements LocalizationProvider {
+
+    private resolutionOrderWithoutResult: ReadonlyArray<string>;
+
+    constructor(resolutionOrder: ReadonlyArray<string>) {
+        // create a list of all tried languages.
+        this.resolutionOrderWithoutResult = resolutionOrder.slice(0, resolutionOrder.indexOf(I18N_WARNING))
+    }
+
+    logger = globalContext.loggerProvider.getLogger('i18n');
+
+    localizeField(field: Field): FieldLocalization {
+        this.logger.warn(`Missing i18n for field ${field.declaringType.namespacePath.join(NAMESPACE_SEPARATOR)}.${field.declaringType.name}.${field.name} in language: ${this.resolutionOrderWithoutResult.join(', ')}`);
+        return {
+        }
+    }
+
+    localizeType(type: ObjectTypeBase): TypeLocalization {
+        this.logger.warn(`Missing i18n for type ${type.namespacePath.join(NAMESPACE_SEPARATOR)}.${type.name} in language: ${this.resolutionOrderWithoutResult.join(', ')}`);
+        return {
+        }
+    }
+}
