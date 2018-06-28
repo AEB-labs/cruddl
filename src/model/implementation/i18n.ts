@@ -7,72 +7,56 @@ import { ObjectTypeBase } from './object-type-base';
 
 export class ModelI18n implements ModelComponent {
 
-    readonly namespacesByCountry: ReadonlyMap<string, ReadonlyArray<I18nNamespace>>;
+    private readonly languageLocalizationProvidersByLanguage: ReadonlyMap<string, LanguageLocalizationProvider>;
 
     constructor(input: ReadonlyArray<I18nConfig>) {
         // collect configs by language and create one list of namespaces per language
         // collect all countries for which namespaces must be created
         const configsByLanguage = groupArray(input, config => config.language);
         // const namespacesByCountryPrepared
-        const namespacesByCountry = new Map<string, ReadonlyArray<I18nNamespace>>();
+        const namespacesByCountry = new Map<string, LanguageLocalizationProvider>();
         Array.from(configsByLanguage.keys()).forEach(language =>
-            namespacesByCountry.set(language, flatMap(configsByLanguage.get(language)!,
+            namespacesByCountry.set(language, new LanguageLocalizationProvider(flatMap(configsByLanguage.get(language)!,
                 config => flattenNamespaceConfigs(config.namespaceContent, config.namespacePath)
-                    .map(flatNamespace => new I18nNamespace(flatNamespace))))
+                    .map(flatNamespace => new I18nNamespace(flatNamespace)))))
         );
-        this.namespacesByCountry = namespacesByCountry;
+        this.languageLocalizationProvidersByLanguage = namespacesByCountry;
     }
 
     public validate(context: ValidationContext): void {
     }
 
-    protected getAvailableTypeLocalizations(type: ObjectTypeBase, languages: ReadonlyArray<string>): ReadonlyArray<TypeI18n> {
-        const matchingNamespaces = this.getMatchingNamespaces(type.namespacePath, languages);
-        return compact(matchingNamespaces.map(t => t.getAllLocalizationsForType(type.name)));
-    }
-
     @memorize()
-    public getTypeLocalization(type: ObjectTypeBase, resolutionOrder: ReadonlyArray<string>): TypeI18n {
-        const availableTypeLocalizations = this.getAvailableTypeLocalizations(type, resolutionOrder);
+    public getTypeLocalization(type: ObjectTypeBase, resolutionOrder: ReadonlyArray<string>): TypeLocalization {
+        const resolutionProviders = this.getResolutionProviders(resolutionOrder);
         // try to build one complete type localization out of the available possibly partial localizations
         return {
-            name: type.name,
-            singular: mapFirstDefined(availableTypeLocalizations, t => t.singular),
-            plural: mapFirstDefined(availableTypeLocalizations, t => t.plural),
-            hint: mapFirstDefined(availableTypeLocalizations, t => t.hint)
+            singular: mapFirstDefined(resolutionProviders,rp => rp.localizeType(type).singular),
+            plural: mapFirstDefined(resolutionProviders,rp => rp.localizeType(type).plural),
+            hint: mapFirstDefined(resolutionProviders,rp => rp.localizeType(type).hint)
         };
-    }
-
-    protected getAvailableFieldLocalizations(field: Field, resolutionOrder: ReadonlyArray<string>): ReadonlyArray<FieldI18n> {
-        const matchingNamespaces = this.getMatchingNamespaces(field.declaringType.namespacePath, resolutionOrder);
-        return flatMap(matchingNamespaces, t => t.getAllLocalizationsForField(field.name, field.declaringType.name));
     }
 
     @memorize()
-    public getFieldLocalization(field: Field, resolutionOrder: ReadonlyArray<string>): FieldI18n {
-        const availableFieldLocalizations = this.getAvailableFieldLocalizations(field, resolutionOrder);
+    public getFieldLocalization(field: Field, resolutionOrder: ReadonlyArray<string>): FieldLocalization {
+        const resolutionProviders = this.getResolutionProviders(resolutionOrder);
         // try to build one complete field localization out of the available possibly partial localizations
         return {
-            name: field.name,
-            label: mapFirstDefined(availableFieldLocalizations, f => f.label),
-            hint: mapFirstDefined(availableFieldLocalizations, f => f.hint),
-            type: field.type.name
+            label: mapFirstDefined(resolutionProviders,rp => rp.localizeField(field).label),
+            hint: mapFirstDefined(resolutionProviders,rp => rp.localizeField(field).hint)
         };
     }
 
-    /**
-     * Get namespaces including parent ordered by language and namespace depth (deeper first)
-     */
-    private getMatchingNamespaces(namespacePath: ReadonlyArray<string>, languages: ReadonlyArray<string>): ReadonlyArray<I18nNamespace> {
-        return flatMap(languages, lang => {
-            const namespaces = this.namespacesByCountry.get(lang);
-            if (!namespaces || namespaces.length === 0) {
-                return [];
+    private getResolutionProviders(resolutionOrder: ReadonlyArray<string>): ReadonlyArray<LocalizationProvider> {
+        return compact(resolutionOrder.map(providerName => {
+            switch (providerName) {
+                    // TODO implement more cool stuff
+                default:
+                    return this.languageLocalizationProvidersByLanguage.get(providerName);
             }
-            return namespaces.filter(set => arrayStartsWith(namespacePath, set.namespacePath))
-                .sort((lhs, rhs) => lhs.namespacePath.length - rhs.namespacePath.length);
-        });
+        }));
     }
+
 
 }
 
@@ -134,19 +118,26 @@ export class I18nNamespace {
 
 }
 
-export interface TypeI18n {
-    readonly name: string,
+export interface TypeLocalization {
     readonly singular?: string,
     readonly plural?: string,
     readonly hint?: string
 }
 
-export interface FieldI18n {
-    readonly name: string,
+export interface FieldLocalization {
     readonly label?: string,
     readonly hint?: string,
+}
+
+export interface TypeI18n extends TypeLocalization {
+    readonly name: string,
+}
+
+export interface FieldI18n extends FieldLocalization {
+    readonly name: string,
     readonly type?: string
 }
+
 
 function flattenNamespaceConfigs(namespace: NamespaceI18nConfig, basePath: ReadonlyArray<string>): ReadonlyArray<FlatNamespaceI18nConfig> {
     const subNamespaces: FlatNamespaceI18nConfig[] =
@@ -192,3 +183,40 @@ export interface NormalizedTypeI18nConfig {
     readonly hint?: string
     readonly fields: { [name: string]: FieldI18nConfig }
 }
+
+interface LocalizationProvider {
+    localizeType(type: ObjectTypeBase): TypeLocalization;
+    localizeField(field: Field): FieldLocalization;
+}
+
+class LanguageLocalizationProvider implements LocalizationProvider {
+
+    constructor(private namespaces: ReadonlyArray<I18nNamespace>) {}
+
+    private getMatchingNamespaces(namespacePath: ReadonlyArray<string>): ReadonlyArray<I18nNamespace> {
+        return this.namespaces.filter(set => arrayStartsWith(namespacePath, set.namespacePath))
+            .sort((lhs, rhs) => lhs.namespacePath.length - rhs.namespacePath.length);
+    }
+
+    localizeType(type: ObjectTypeBase): TypeLocalization {
+        const matchingNamespaces = this.getMatchingNamespaces(type.namespacePath);
+        const matchingTypeLocalization = compact(matchingNamespaces.map(ns => ns.getAllLocalizationsForType(type.name)));
+        return {
+            singular: mapFirstDefined(matchingTypeLocalization, t => t.singular),
+            plural: mapFirstDefined(matchingTypeLocalization, t => t.plural),
+            hint: mapFirstDefined(matchingTypeLocalization, t => t.hint)
+        };
+    }
+
+    localizeField(field: Field): FieldLocalization {
+        const matchingNamespaces = this.getMatchingNamespaces(field.declaringType.namespacePath);
+        const matchingFieldLocalization = flatMap(matchingNamespaces, ns => ns.getAllLocalizationsForField(field.name, field.declaringType.name));
+        return {
+            label: mapFirstDefined(matchingFieldLocalization, t => t.label),
+            hint: mapFirstDefined(matchingFieldLocalization, t => t.hint)
+        };
+    }
+
+}
+
+
