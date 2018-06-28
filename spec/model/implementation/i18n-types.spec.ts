@@ -95,62 +95,59 @@ const model = new Model({
     i18n
 });
 
-describe('I18n', () => {
-    describe('Type localization', () => {
-        it('provides localization for a fully translated type', () => {
-          const localization = model.getRootEntityType('A')!.getLocalization([FULLY]);
-            expect(localization.singular).to.equal('A_FULLY_SINGULAR');
-            expect(localization.plural).to.equal('A_FULLY_PLURAL');
-            expect(localization.hint).to.equal('A_FULLY_HINT');
-        });
-        it('prefers languages in their given order', () => {
-            const localization = model.getRootEntityType('A')!.getLocalization([FULLY, PARTIALLY]);
-            expect(localization.singular).to.equal('A_FULLY_SINGULAR');
-            expect(localization.plural).to.equal('A_FULLY_PLURAL');
-            expect(localization.hint).to.equal('A_FULLY_HINT');
-        });
-        it('provides partial localization for a partially translated type', () => {
-            const localization = model.getRootEntityType('A')!.getLocalization([PARTIALLY]);
-            expect(localization.singular).to.equal('A_PARTIALLY_SINGULAR');
-            expect(localization.plural).to.be.undefined;
-            expect(localization.hint).to.be.undefined;
-        });
-        it('falls back to a less preferred language for missing localization property', () => {
-            const localization = model.getRootEntityType('A')!.getLocalization([PARTIALLY, FULLY]);
-            expect(localization.singular).to.equal('A_PARTIALLY_SINGULAR');
-            expect(localization.plural).to.equal('A_FULLY_PLURAL');
-            expect(localization.hint).to.equal('A_FULLY_HINT');
-        });
-        it('falls back to a less preferred language for missing type localization', () => {
-            const localization = model.getRootEntityType('B')!.getLocalization([PARTIALLY, FULLY]);
-            expect(localization.singular).to.equal('B_FULLY_SINGULAR');
-            expect(localization.plural).to.equal('B_FULLY_PLURAL');
-            expect(localization.hint).to.equal('B_FULLY_HINT');
-        });
-        it('finds localization within namespaces', () => {
-            const localization = model.getRootEntityType('C')!.getLocalization([NAMESPACED]);
-            expect(localization.singular).to.equal('C_NAMESPACED_SINGULAR');
-            expect(localization.plural).to.equal('C_NAMESPACED_PLURAL');
-            expect(localization.hint).to.equal('C_NAMESPACED_HINT');
-        });
-        it('travels up namespaces to find more info', () => {
-            const localization = model.getRootEntityType('C')!.getLocalization([FULLY]);
-            expect(localization.singular).to.equal('C_FULLY_SINGULAR');
-            expect(localization.plural).to.equal('C_FULLY_PLURAL');
-            expect(localization.hint).to.equal('C_FULLY_HINT');
-        });
-        it('never travels down namespaces to find more info', () => {
-            const localization = model.getRootEntityType('A')!.getLocalization([NAMESPACED]);
-            expect(localization.singular).to.be.undefined;
-            expect(localization.plural).to.be.undefined;
-            expect(localization.hint).to.be.undefined;
-        });
-        it('prefers a super namespace over fallback language', () => {
-            const localization = model.getRootEntityType('C')!.getLocalization([FULLY, NAMESPACED]);
-            expect(localization.singular).to.equal('C_FULLY_SINGULAR');
-            expect(localization.plural).to.equal('C_FULLY_PLURAL');
-            expect(localization.hint).to.equal('C_FULLY_HINT');
-        });
+describe('I18n type localization', () => {
+    it('provides localization for a fully translated type', () => {
+      const localization = model.getRootEntityType('A')!.getLocalization([FULLY]);
+        expect(localization.singular).to.equal('A_FULLY_SINGULAR');
+        expect(localization.plural).to.equal('A_FULLY_PLURAL');
+        expect(localization.hint).to.equal('A_FULLY_HINT');
     });
-
+    it('prefers languages in their given order', () => {
+        const localization = model.getRootEntityType('A')!.getLocalization([FULLY, PARTIALLY]);
+        expect(localization.singular).to.equal('A_FULLY_SINGULAR');
+        expect(localization.plural).to.equal('A_FULLY_PLURAL');
+        expect(localization.hint).to.equal('A_FULLY_HINT');
+    });
+    it('provides partial localization for a partially translated type', () => {
+        const localization = model.getRootEntityType('A')!.getLocalization([PARTIALLY]);
+        expect(localization.singular).to.equal('A_PARTIALLY_SINGULAR');
+        expect(localization.plural).to.be.undefined;
+        expect(localization.hint).to.be.undefined;
+    });
+    it('falls back to a less preferred language for missing localization property', () => {
+        const localization = model.getRootEntityType('A')!.getLocalization([PARTIALLY, FULLY]);
+        expect(localization.singular).to.equal('A_PARTIALLY_SINGULAR');
+        expect(localization.plural).to.equal('A_FULLY_PLURAL');
+        expect(localization.hint).to.equal('A_FULLY_HINT');
+    });
+    it('falls back to a less preferred language for missing type localization', () => {
+        const localization = model.getRootEntityType('B')!.getLocalization([PARTIALLY, FULLY]);
+        expect(localization.singular).to.equal('B_FULLY_SINGULAR');
+        expect(localization.plural).to.equal('B_FULLY_PLURAL');
+        expect(localization.hint).to.equal('B_FULLY_HINT');
+    });
+    it('finds localization within namespaces', () => {
+        const localization = model.getRootEntityType('C')!.getLocalization([NAMESPACED]);
+        expect(localization.singular).to.equal('C_NAMESPACED_SINGULAR');
+        expect(localization.plural).to.equal('C_NAMESPACED_PLURAL');
+        expect(localization.hint).to.equal('C_NAMESPACED_HINT');
+    });
+    it('travels up namespaces to find more info', () => {
+        const localization = model.getRootEntityType('C')!.getLocalization([FULLY]);
+        expect(localization.singular).to.equal('C_FULLY_SINGULAR');
+        expect(localization.plural).to.equal('C_FULLY_PLURAL');
+        expect(localization.hint).to.equal('C_FULLY_HINT');
+    });
+    it('never travels down namespaces to find more info', () => {
+        const localization = model.getRootEntityType('A')!.getLocalization([NAMESPACED]);
+        expect(localization.singular).to.be.undefined;
+        expect(localization.plural).to.be.undefined;
+        expect(localization.hint).to.be.undefined;
+    });
+    it('prefers a super namespace over fallback language', () => {
+        const localization = model.getRootEntityType('C')!.getLocalization([FULLY, NAMESPACED]);
+        expect(localization.singular).to.equal('C_FULLY_SINGULAR');
+        expect(localization.plural).to.equal('C_FULLY_PLURAL');
+        expect(localization.hint).to.equal('C_FULLY_HINT');
+    });
 });

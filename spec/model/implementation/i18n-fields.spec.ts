@@ -104,67 +104,64 @@ const model = new Model({
     i18n
 });
 
-describe('I18n', () => {
-    describe('Field localization', () => {
-        it('provides localization for a fully translated type', () => {
-            const localization = model.getRootEntityType('A')!.getField('a1')!.getLocalization([FULLY]);
-            expect(localization.label).to.equal('A1_FULLY_LABEL');
-            expect(localization.hint).to.equal('A1_FULLY_HINT');
-        });
+describe('I18n field localization', () => {
+    it('provides localization for a fully translated type', () => {
+        const localization = model.getRootEntityType('A')!.getField('a1')!.getLocalization([FULLY]);
+        expect(localization.label).to.equal('A1_FULLY_LABEL');
+        expect(localization.hint).to.equal('A1_FULLY_HINT');
+    });
 
-        it('prefers languages in their given order', () => {
-            const localization = model.getRootEntityType('A')!.getField('a1')!.getLocalization([FULLY, PARTIALLY]);
-            expect(localization.label).to.equal('A1_FULLY_LABEL');
-            expect(localization.hint).to.equal('A1_FULLY_HINT');
-        });
+    it('prefers languages in their given order', () => {
+        const localization = model.getRootEntityType('A')!.getField('a1')!.getLocalization([FULLY, PARTIALLY]);
+        expect(localization.label).to.equal('A1_FULLY_LABEL');
+        expect(localization.hint).to.equal('A1_FULLY_HINT');
+    });
 
-        it('provides partial localization for a partially translated type', () => {
-            const localization = model.getRootEntityType('A')!.getField('a1')!.getLocalization([PARTIALLY]);
-            expect(localization.label).to.equal('A1_PARTIALLY_LABEL');
-            expect(localization.hint).to.be.undefined;
-        });
+    it('provides partial localization for a partially translated type', () => {
+        const localization = model.getRootEntityType('A')!.getField('a1')!.getLocalization([PARTIALLY]);
+        expect(localization.label).to.equal('A1_PARTIALLY_LABEL');
+        expect(localization.hint).to.be.undefined;
+    });
 
-        it('falls back to a less preferred language for missing localization property', () => {
-            const localization = model.getRootEntityType('A')!.getField('a1')!.getLocalization([PARTIALLY, FULLY]);
-            expect(localization.label).to.equal('A1_PARTIALLY_LABEL');
-            expect(localization.hint).to.equal('A1_FULLY_HINT');
-        });
+    it('falls back to a less preferred language for missing localization property', () => {
+        const localization = model.getRootEntityType('A')!.getField('a1')!.getLocalization([PARTIALLY, FULLY]);
+        expect(localization.label).to.equal('A1_PARTIALLY_LABEL');
+        expect(localization.hint).to.equal('A1_FULLY_HINT');
+    });
 
-        it('falls back to a less preferred language for missing field localization', () => {
-            const localization = model.getRootEntityType('B')!.getField('b1')!.getLocalization([PARTIALLY, FULLY]);
-            expect(localization.label).to.equal('B1_FULLY_LABEL');
-            expect(localization.hint).to.equal('B1_FULLY_HINT');
-        });
+    it('falls back to a less preferred language for missing field localization', () => {
+        const localization = model.getRootEntityType('B')!.getField('b1')!.getLocalization([PARTIALLY, FULLY]);
+        expect(localization.label).to.equal('B1_FULLY_LABEL');
+        expect(localization.hint).to.equal('B1_FULLY_HINT');
+    });
 
-        it('falls back to a less preferred language for missing type localization', () => {
-            const localization = model.getRootEntityType('C')!.getField('c1')!.getLocalization([PARTIALLY, FULLY]);
-            expect(localization.label).to.equal('C1_FULLY_LABEL');
-            expect(localization.hint).to.equal('C1_FULLY_HINT');
-        });
+    it('falls back to a less preferred language for missing type localization', () => {
+        const localization = model.getRootEntityType('C')!.getField('c1')!.getLocalization([PARTIALLY, FULLY]);
+        expect(localization.label).to.equal('C1_FULLY_LABEL');
+        expect(localization.hint).to.equal('C1_FULLY_HINT');
+    });
 
-        it('falls back to a common field translation missing localization properties', () => {
-            const localization = model.getRootEntityType('A')!.getField('g1')!.getLocalization([PARTIALLY]);
-            expect(localization.label).to.be.undefined;
-            expect(localization.hint).to.equal('G1_PARTIALLY_HINT');
-        });
+    it('falls back to a common field translation missing localization properties', () => {
+        const localization = model.getRootEntityType('A')!.getField('g1')!.getLocalization([PARTIALLY]);
+        expect(localization.label).to.be.undefined;
+        expect(localization.hint).to.equal('G1_PARTIALLY_HINT');
+    });
 
-        it('falls back to a common field translation missing localization type', () => {
-            const localization = model.getRootEntityType('A')!.getField('g1')!.getLocalization([PARTIALLY]);
-            expect(localization.label).to.be.undefined;
-            expect(localization.hint).to.equal('G1_PARTIALLY_HINT');
-        });
+    it('falls back to a common field translation missing localization type', () => {
+        const localization = model.getRootEntityType('A')!.getField('g1')!.getLocalization([PARTIALLY]);
+        expect(localization.label).to.be.undefined;
+        expect(localization.hint).to.equal('G1_PARTIALLY_HINT');
+    });
 
-        it('falls back to a common field translation missing localization field', () => {
-            const localization = model.getRootEntityType('A')!.getField('g2')!.getLocalization([PARTIALLY]);
-            expect(localization.label).to.equal('G2_PARTIALLY_LABEL_DIRECT');
-            expect(localization.hint).to.equal('G2_PARTIALLY_HINT');
-        });
+    it('falls back to a common field translation missing localization field', () => {
+        const localization = model.getRootEntityType('A')!.getField('g2')!.getLocalization([PARTIALLY]);
+        expect(localization.label).to.equal('G2_PARTIALLY_LABEL_DIRECT');
+        expect(localization.hint).to.equal('G2_PARTIALLY_HINT');
+    });
 
-        it('falls back to a common field of a super namespace', () => {
-            const localization = model.getRootEntityType('C')!.getField('c1')!.getLocalization([NAMESPACED]);
-            expect(localization.label).to.equal('C1_NAMESPACED_LABEL_DIRECT');
-            expect(localization.hint).to.equal('C1_NON_NAMESPACED_HINT');
-        });
-
+    it('falls back to a common field of a super namespace', () => {
+        const localization = model.getRootEntityType('C')!.getField('c1')!.getLocalization([NAMESPACED]);
+        expect(localization.label).to.equal('C1_NAMESPACED_LABEL_DIRECT');
+        expect(localization.hint).to.equal('C1_NON_NAMESPACED_HINT');
     });
 });
