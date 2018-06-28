@@ -222,7 +222,6 @@ function extractAllPaths(node: YAMLNode, curPath: ReadonlyArray<(string | number
             return [...mergedMap];
         case Kind.MAPPING:
             const mappingNode = node as YAMLMapping;
-            console.log(mappingNode.key.value);
             if (mappingNode.value) {
                 return [
                     { path: [...curPath, mappingNode.key.value], node: mappingNode },
@@ -232,7 +231,6 @@ function extractAllPaths(node: YAMLNode, curPath: ReadonlyArray<(string | number
             break;
         case Kind.SCALAR:
             const scalarNode = node as YAMLScalar;
-            console.log(curPath);
             if (scalarNode.parent && scalarNode.parent.kind == Kind.SEQ) {
                 return [{ path: curPath, node: scalarNode }];
             } else {
