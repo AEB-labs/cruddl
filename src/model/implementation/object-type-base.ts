@@ -1,13 +1,12 @@
-import { FieldConfig, ObjectTypeConfig } from '../config';
-import { TypeI18n } from './i18n';
-import { TypeBase } from './type-base';
-import { Field } from './field';
-import { ObjectType } from './type';
-import { Model } from './model';
-import { ValidationContext } from '../validation/validation-context';
-import { ValidationMessage } from '../validation';
-import { objectValues } from '../../utils/utils';
 import { groupBy } from 'lodash';
+import { objectValues } from '../../utils/utils';
+import { FieldConfig, ObjectTypeConfig } from '../config';
+import { ValidationContext, ValidationMessage } from '../validation';
+import { Field } from './field';
+import { TypeLocalization } from './i18n';
+import { Model } from './model';
+import { ObjectType } from './type';
+import { TypeBase } from './type-base';
 
 export abstract class ObjectTypeBase extends TypeBase {
     readonly fields: ReadonlyArray<Field>;
@@ -30,8 +29,8 @@ export abstract class ObjectTypeBase extends TypeBase {
     validate(context: ValidationContext) {
         super.validate(context);
 
-        if (!this.fields.length) {
-            context.addMessage(ValidationMessage.error(`Object type "${this.name}" does not declare any fields.`, undefined, this.getValidationLocation()));
+        if (!this.fields.filter(f => !f.isSystemField).length) {
+            context.addMessage(ValidationMessage.error(`Object type "${this.name}" does not declare any fields.`, this.nameASTNode));
         }
 
         this.validateDuplicateFields(context);
@@ -53,9 +52,9 @@ export abstract class ObjectTypeBase extends TypeBase {
 
                 if (isSystemFieldCollision) {
                     // user does not see duplicate field, so provide better message
-                    context.addMessage(ValidationMessage.error(`Field name "${field.name}" is reserved by a system field.`, undefined, field.astNode));
+                    context.addMessage(ValidationMessage.error(`Field name "${field.name}" is reserved by a system field.`, field.astNode));
                 } else {
-                    context.addMessage(ValidationMessage.error(`Duplicate field name: "${field.name}".`, undefined, field.astNode));
+                    context.addMessage(ValidationMessage.error(`Duplicate field name: "${field.name}".`, field.astNode));
                 }
             }
         }
@@ -73,7 +72,7 @@ export abstract class ObjectTypeBase extends TypeBase {
         return field;
     }
 
-    public getLocalization(resolutionOrder: ReadonlyArray<string>): TypeI18n {
+    public getLocalization(resolutionOrder: ReadonlyArray<string>): TypeLocalization {
         return this.model.i18n.getTypeLocalization(this, resolutionOrder)
     }
 

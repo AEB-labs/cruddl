@@ -78,7 +78,7 @@ Then, create the GraphQL schema and serve it:
 ```typescript
 import { GraphQLServer } from 'graphql-yoga';
 const schema = project.createSchema(db);
-db.updateSchema(schema); // create missing collections
+db.updateSchema(project.getModel()); // create missing collections
 const server = new GraphQLServer({ schema, context: () => ({ authRoles: [ 'users' ]}) });
 server.start(() => console.log('Server is running on http://localhost:4000/'));
 ```

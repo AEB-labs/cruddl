@@ -81,7 +81,7 @@ type Order @rootEntity {
 }
 ```
 
-Entity extension can be used within root entities, child entities and other entity extensions. If you omit fields when updating an entity extension, those are kept as-is.
+Entity extension can be used within root entities, child entities and other entity extensions. If you omit fields when updating an entity extension, those are kept as-is. Entity extensions are never `null` - if you omit it entirely, or an object was created before it was added, the field evaluates to an empty object.
 
 ### Value objects
 

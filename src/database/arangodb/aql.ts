@@ -238,7 +238,7 @@ export class AQLIndentationFragment extends AQLFragment {
     }
 }
 
-export function aql(strings: ReadonlyArray<string>, ...values: any[]): AQLFragment {
+export function aql(strings: ReadonlyArray<string>, ...values: (AQLFragment|string|number|boolean)[]): AQLFragment {
     let snippets = [...strings];
     let fragments: AQLFragment[] = [];
     while (snippets.length || values.length) {
@@ -251,8 +251,10 @@ export function aql(strings: ReadonlyArray<string>, ...values: any[]): AQLFragme
                 fragments.push(...value.fragments);
             } else if (value instanceof AQLFragment) {
                 fragments.push(value);
-            } else {
+            } else if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
                 fragments.push(new AQLBoundValue(value));
+            } else {
+                throw new Error(`aql: Received a value that is neither an AQLFragment, nor a primitive`)
             }
         }
     }
@@ -291,6 +293,10 @@ export namespace aql {
 
     export function variable(label?: string): AQLFragment {
         return new AQLVariable(label);
+    }
+
+    export function value(value: any): AQLFragment {
+        return new AQLBoundValue(value);
     }
 
     export function queryResultVariable(label?: string): AQLQueryResultVariable {

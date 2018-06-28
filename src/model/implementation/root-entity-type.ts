@@ -1,18 +1,19 @@
-import { FieldConfig, PermissionsConfig, RootEntityTypeConfig, TypeKind } from '../config';
-import { ObjectTypeBase } from './object-type-base';
-import { Field } from './field';
-import { Model } from './model';
-import { ScalarType } from './scalar-type';
-import { ValidationContext } from '../validation/validation-context';
-import { ValidationMessage } from '../validation';
-import { Index } from './indices';
-import { ACCESS_GROUP_FIELD, DEFAULT_PERMISSION_PROFILE, SCALAR_INT, SCALAR_STRING } from '../../schema/constants';
-import { PermissionProfile } from './permission-profile';
-import { Relation } from './relation';
 import { GraphQLID, GraphQLString } from 'graphql';
-import { RolesSpecifier } from './roles-specifier';
+import memorize from 'memorize-decorator';
+import { ACCESS_GROUP_FIELD, DEFAULT_PERMISSION_PROFILE, SCALAR_INT, SCALAR_STRING } from '../../schema/constants';
 import { compact } from '../../utils/utils';
+import { FieldConfig, PermissionsConfig, RootEntityTypeConfig, TypeKind } from '../config';
+import { ValidationMessage } from '../validation';
+import { ValidationContext } from '../validation/validation-context';
+import { Field } from './field';
+import { Index } from './indices';
+import { Model } from './model';
 import { Namespace } from './namespace';
+import { ObjectTypeBase } from './object-type-base';
+import { PermissionProfile } from './permission-profile';
+import { Relation, RelationSide } from './relation';
+import { RolesSpecifier } from './roles-specifier';
+import { ScalarType } from './scalar-type';
 
 export class RootEntityType extends ObjectTypeBase {
     private readonly permissions: PermissionsConfig & {};
@@ -60,8 +61,32 @@ export class RootEntityType extends ObjectTypeBase {
         return this.model.getPermissionProfile(this.permissions.permissionProfileName);
     }
 
-    get relations(): ReadonlyArray<Relation> {
+    /**
+     * A list of all relations that have a field in this type
+     *
+     * (as opposed to the relation only existing because a different type has a relation field to this root entity)
+     */
+    get explicitRelations(): ReadonlyArray<Relation> {
         return compact(this.fields.map(field => field.relation));
+    }
+
+    /**
+     * A list of all relations concerning this type, regardless of whether there is a field on this type for it
+     */
+    @memorize()
+    get relations(): ReadonlyArray<Relation> {
+        return this.model.relations.filter(rel => rel.fromType === this || rel.toType === this);
+    }
+
+    /**
+     * A list of all relations sides concerning this type, regardless of whether there is a field on this type for it
+     */
+    @memorize()
+    get relationSides(): ReadonlyArray<RelationSide> {
+        return [
+            ...this.model.relations.filter(rel => rel.fromType === this).map(rel => rel.fromSide),
+            ...this.model.relations.filter(rel => rel.toType === this).map(rel => rel.toSide)
+        ];
     }
 
     get namespace(): Namespace | undefined {
@@ -88,17 +113,17 @@ export class RootEntityType extends ObjectTypeBase {
         const field = this.getField(this.input.keyFieldName);
 
         if (!field) {
-            context.addMessage(ValidationMessage.error(`Field "${this.input.keyFieldName}" does not exist on type "${this.name}".`, undefined, astNode));
+            context.addMessage(ValidationMessage.error(`Field "${this.input.keyFieldName}" does not exist on type "${this.name}".`, astNode));
             return;
         }
 
         // support for ID is needed because id: ID @key is possible
         if (field.type.kind !== TypeKind.SCALAR || !(field.type.name === SCALAR_INT || field.type.name === SCALAR_STRING || field.type.name === GraphQLID.name)) {
-            context.addMessage(ValidationMessage.error(`Only fields of type "String", "Int", and "ID" can be used as key field.`, undefined, astNode));
+            context.addMessage(ValidationMessage.error(`Only fields of type "String", "Int", and "ID" can be used as key field.`, astNode));
         }
 
         if (field.isList) {
-            context.addMessage(ValidationMessage.error(`List fields cannot be used as key field.`, undefined, astNode));
+            context.addMessage(ValidationMessage.error(`List fields cannot be used as key field.`, astNode));
         }
     }
 
@@ -106,16 +131,16 @@ export class RootEntityType extends ObjectTypeBase {
         const permissions = this.permissions;
         if (permissions.permissionProfileName != undefined && permissions.roles != undefined) {
             const message = `Permission profile and explicit role specifiers cannot be combined.`;
-            context.addMessage(ValidationMessage.error(message, undefined, permissions.permissionProfileNameAstNode || this.input.astNode ));
-            context.addMessage(ValidationMessage.error(message, undefined, permissions.roles.astNode || this.input.astNode ));
+            context.addMessage(ValidationMessage.error(message, permissions.permissionProfileNameAstNode || this.nameASTNode));
+            context.addMessage(ValidationMessage.error(message, permissions.roles.astNode || this.nameASTNode));
         }
 
         if (permissions.permissionProfileName != undefined && !this.model.getPermissionProfile(permissions.permissionProfileName)) {
-            context.addMessage(ValidationMessage.error(`Permission profile "${permissions.permissionProfileName}" not found.`, undefined, permissions.permissionProfileNameAstNode || this.input.astNode ));
+            context.addMessage(ValidationMessage.error(`Permission profile "${permissions.permissionProfileName}" not found.`, permissions.permissionProfileNameAstNode || this.nameASTNode));
         }
 
         if (permissions.permissionProfileName == undefined && permissions.roles == undefined && this.model.defaultPermissionProfile == undefined) {
-            context.addMessage(ValidationMessage.error(`No permissions specified for root entity "${this.name}". Specify "permissionProfile" in @rootEntity, use the @roles directive, or add a permission profile with the name "${DEFAULT_PERMISSION_PROFILE}".`, undefined, permissions.permissionProfileNameAstNode || this.input.astNode ));
+            context.addMessage(ValidationMessage.error(`No permissions specified for root entity "${this.name}". Specify "permissionProfile" in @rootEntity, use the @roles directive, or add a permission profile with the name "${DEFAULT_PERMISSION_PROFILE}".`, permissions.permissionProfileNameAstNode || this.nameASTNode));
         }
 
         if (this.roles) {
@@ -126,23 +151,26 @@ export class RootEntityType extends ObjectTypeBase {
         if (usesAccessGroup) {
             const accessGroupField = this.getField(ACCESS_GROUP_FIELD);
             if (!accessGroupField) {
-                context.addMessage(ValidationMessage.error(`The permission profile "${permissions.permissionProfileName}" uses "restrictToAccessGroups", but this root entity does not have a "${ACCESS_GROUP_FIELD}" field.`, undefined, permissions.permissionProfileNameAstNode || this.astNode));
+                context.addMessage(ValidationMessage.error(`The permission profile "${permissions.permissionProfileName}" uses "restrictToAccessGroups", but this root entity does not have a "${ACCESS_GROUP_FIELD}" field.`, permissions.permissionProfileNameAstNode || this.nameASTNode));
             } else if (!accessGroupField.type.isEnumType && accessGroupField.type.name !== GraphQLString.name) {
-                context.addMessage(ValidationMessage.error(`This field must be of String or enum type to be used as "accessGroup" with the permission profile "${permissions.permissionProfileName}".`, undefined, accessGroupField.astNode || this.astNode));
+                context.addMessage(ValidationMessage.error(`This field must be of String or enum type to be used as "accessGroup" with the permission profile "${permissions.permissionProfileName}".`, accessGroupField.astNode || this.nameASTNode));
             }
         }
     }
 }
 
-const systemFieldInputs: FieldConfig[] = [
+const systemFieldInputs: ReadonlyArray<FieldConfig> = [
     {
         name: 'id',
-        typeName: 'ID'
+        typeName: 'ID',
+        description: 'An auto-generated string that identifies this root entity uniquely among others of the same type'
     }, {
         name: 'createdAt',
-        typeName: 'DateTime'
+        typeName: 'DateTime',
+        description: 'The instant this object has been created'
     }, {
         name: 'updatedAt',
-        typeName: 'DateTime'
+        typeName: 'DateTime',
+        description: 'The instant this object has been updated the last time (not including relation updates)'
     }
 ];

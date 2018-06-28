@@ -3,10 +3,10 @@ import { flatMap } from 'lodash';
 import memorize from 'memorize-decorator';
 import { Namespace, RootEntityType } from '../model';
 import {
-    AffectedFieldInfoQueryNode, BinaryOperationQueryNode, BinaryOperator, CreateEntityQueryNode,
-    DeleteEntitiesQueryNode, EntitiesQueryNode, EntityFromIdQueryNode, ErrorIfEmptyResultValidator,
-    FirstOfListQueryNode, LiteralQueryNode, ObjectQueryNode, PreExecQueryParms, QueryNode, RootEntityIDQueryNode,
-    TransformListQueryNode, UnknownValueQueryNode, UpdateEntitiesQueryNode, VariableQueryNode, WithPreExecutionQueryNode
+    AffectedFieldInfoQueryNode, BinaryOperationQueryNode, BinaryOperator, DeleteEntitiesQueryNode, EntitiesQueryNode,
+    EntityFromIdQueryNode, ErrorIfEmptyResultValidator, FirstOfListQueryNode, LiteralQueryNode, ObjectQueryNode,
+    PreExecQueryParms, QueryNode, RootEntityIDQueryNode, TransformListQueryNode, UnknownValueQueryNode,
+    UpdateEntitiesQueryNode, VariableQueryNode, WithPreExecutionQueryNode
 } from '../query-tree';
 import { ID_FIELD, MUTATION_INPUT_ARG, MUTATION_TYPE } from '../schema/constants';
 import {
@@ -22,6 +22,8 @@ import {
 } from './query-node-object-type';
 import { UpdateInputTypeGenerator, UpdateRootEntityInputType } from './update-input-types';
 import { getArgumentsForUniqueFields, getEntitiesByUniqueFieldQuery } from './utils/entities-by-uinque-field';
+import { getMapNode } from './utils/map';
+import { getRemoveAllEntityEdgesStatements } from './utils/relations';
 
 export class MutationTypeGenerator {
     constructor(
@@ -45,6 +47,7 @@ export class MutationTypeGenerator {
 
         return {
             name: namespace.pascalCasePath + MUTATION_TYPE,
+            description: `The Mutation type for the namespace "${namespace.dotSeparatedPath}"`,
             fields: [
                 ...namespaceFields,
                 ...rootEntityFields
@@ -73,6 +76,8 @@ export class MutationTypeGenerator {
                     type: new GraphQLNonNull(inputType.getInputType())
                 }
             },
+            isSerial: true,
+            description: `Creates a new ${rootEntityType.name}`,
             resolve: (_, args) => this.generateCreateQueryNode(rootEntityType, args[MUTATION_INPUT_ARG], inputType)
         };
     }
@@ -99,6 +104,8 @@ export class MutationTypeGenerator {
                     type: new GraphQLNonNull(inputType.getInputType())
                 }
             },
+            isSerial: true,
+            description: `Updates an existing ${rootEntityType.name}`,
             resolve: (_, args) => this.generateUpdateQueryNode(rootEntityType, args[MUTATION_INPUT_ARG], inputType)
         };
     }
@@ -150,7 +157,7 @@ export class MutationTypeGenerator {
         });
     }
 
-    private generateUpdateAllField(rootEntityType: RootEntityType): QueryNodeField|undefined {
+    private generateUpdateAllField(rootEntityType: RootEntityType): QueryNodeField | undefined {
         // we construct this field like a regular query field first so that the list augmentation works
         const fieldBase: QueryNodeField = {
             name: getUpdateAllEntitiesFieldName(rootEntityType.name),
@@ -173,6 +180,8 @@ export class MutationTypeGenerator {
                     type: new GraphQLNonNull(inputType.getInputType())
                 }
             },
+            isSerial: true,
+            description: `Updates ${rootEntityType.pluralName} that match a specified filter`,
             resolve: (_, args, info) => this.generateUpdateAllQueryNode(rootEntityType, fieldWithListArgs.resolve(_, args, info), inputType, args[MUTATION_INPUT_ARG])
         };
     }
@@ -224,6 +233,8 @@ export class MutationTypeGenerator {
             name: getDeleteEntityFieldName(rootEntityType.name),
             type: this.outputTypeGenerator.generate(rootEntityType),
             args: getArgumentsForUniqueFields(rootEntityType),
+            isSerial: true,
+            description: `Deletes a ${rootEntityType.name} by id${rootEntityType.keyField ? ` or ${rootEntityType.keyField.name}` : ''}`,
             resolve: (source, args) => this.generateDeleteQueryNode(rootEntityType, args)
         };
     }
@@ -235,9 +246,15 @@ export class MutationTypeGenerator {
             listNode
         });
 
-        // no preexec here because we need to evaluate the result while the entity still exists
+        const idsNode = getMapNode(listNode, itemNode => new RootEntityIDQueryNode(itemNode));
+        const removeEdgesStatements = getRemoveAllEntityEdgesStatements(rootEntityType, idsNode);
+
+        // no preexec for the actual deletion here because we need to evaluate the result while the entity still exists
         // and it won't exist if already deleted in the pre-exec
-        return new FirstOfListQueryNode(deleteEntitiesNode);
+        return new WithPreExecutionQueryNode({
+            preExecQueries: removeEdgesStatements,
+            resultNode: new FirstOfListQueryNode(deleteEntitiesNode)
+        });
     }
 
     private generateDeleteAllField(rootEntityType: RootEntityType): QueryNodeField {
@@ -252,16 +269,26 @@ export class MutationTypeGenerator {
 
         return {
             ...fieldWithListArgs,
+            isSerial: true,
+            description: `Deletes ${rootEntityType.pluralName} that match a specified filter`,
             resolve: (source, args, info) => this.generateDeleteAllQueryNode(rootEntityType, fieldWithListArgs.resolve(source, args, info))
         };
     }
 
     private generateDeleteAllQueryNode(rootEntityType: RootEntityType, listNode: QueryNode): QueryNode {
-        // no preexec here because we need to evaluate the result while the entity still exists
+        // no preexec for the actual deletion here because we need to evaluate the result while the entity still exists
         // and it won't exist if already deleted in the pre-exec
-        return new DeleteEntitiesQueryNode({
+        const deleteEntitiesNode = new DeleteEntitiesQueryNode({
             rootEntityType,
             listNode
+        });
+
+        const idsNode = getMapNode(listNode, itemNode => new RootEntityIDQueryNode(itemNode));
+        const removeEdgesStatements = getRemoveAllEntityEdgesStatements(rootEntityType, idsNode);
+
+        return new WithPreExecutionQueryNode({
+            preExecQueries: removeEdgesStatements,
+            resultNode: deleteEntitiesNode
         });
     }
 }

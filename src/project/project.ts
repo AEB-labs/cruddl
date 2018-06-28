@@ -1,4 +1,5 @@
 import { GraphQLSchema } from 'graphql';
+import memorize from 'memorize-decorator';
 import { isArray } from 'util';
 import { DEFAULT_LOGGER_PROVIDER, LoggerProvider } from '../config/logging';
 import { DatabaseAdapter } from '../database/database-adapter';
@@ -48,10 +49,12 @@ export class Project {
     /**
      * Validates this project ot identify if createSchema() would succeed
      */
+    @memorize()
     validate(): ValidationResult {
         return validateSchema(this);
     }
 
+    @memorize()
     getModel(): Model {
         return getModel(this);
     }
@@ -66,6 +69,7 @@ export class Project {
     /**
      * Creates an executable GraphQLSchema that allows to inspect the active model with its types and fields
      */
+    @memorize()
     createMetaSchema(): GraphQLSchema {
         return getMetaSchema(this.getModel());
     }

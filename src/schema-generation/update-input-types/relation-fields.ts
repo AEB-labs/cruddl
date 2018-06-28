@@ -1,5 +1,5 @@
 import { GraphQLID, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
-import { Field } from '../../model';
+import { Field, Multiplicity } from '../../model';
 import { PreExecQueryParms, QueryNode, SetFieldQueryNode } from '../../query-tree';
 import {
     getAddRelationFieldName, getCreateRelatedEntityFieldName, getRemoveRelationFieldName
@@ -13,16 +13,17 @@ import {
 import { UpdateInputField } from './input-fields';
 
 export abstract class AbstractRelationUpdateInputField implements UpdateInputField {
+    readonly description: string;
+
     constructor(
-        public readonly field: Field
+        public readonly field: Field,
+        public readonly name: string,
+        description: string
     ) {
+        this.description = description + (field.description ? '\n\n' + field.description : '');
     }
 
     abstract readonly inputType: GraphQLInputType;
-
-    get name() {
-        return this.field.name;
-    }
 
     appliesToMissingFields(): boolean {
         return false;
@@ -42,16 +43,31 @@ export abstract class AbstractRelationUpdateInputField implements UpdateInputFie
 export class SetEdgeInputField extends AbstractRelationUpdateInputField {
     readonly inputType: GraphQLInputType = GraphQLID;
 
+    constructor(field: Field) {
+        super(field, field.name,
+            `Sets the \`${field.name}\` relation to an existing \`${field.type.name}\` by its id.\n\n` +
+            `If this \`${field.declaringType.name}\` already has a \`${field.name}\` relation` + (
+                field.getRelationSideOrThrow().targetMultiplicity === Multiplicity.ONE ?
+                    `, or the \`${field.type.name}\` is already related to a different \`${field.declaringType.name}\``
+                    : ''
+            ) + `, this relation is removed first.`);
+    }
+
     getStatements(targetID: AnyValue, sourceIDNode: QueryNode): ReadonlyArray<PreExecQueryParms> {
-        return getSetEdgeStatements(this.field, sourceIDNode, targetID as string|null);
+        return getSetEdgeStatements(this.field, sourceIDNode, targetID as string | null);
     }
 }
 
 export class AddEdgesInputField extends AbstractRelationUpdateInputField {
     readonly inputType: GraphQLInputType = new GraphQLList(new GraphQLNonNull(GraphQLID));
 
-    get name() {
-        return getAddRelationFieldName(this.field.name);
+    constructor(field: Field) {
+        super(field, getAddRelationFieldName(field.name),
+            `Adds \`${field.name}\` relations to existing \`${field.type.pluralName}\` by their ids.` + (
+                field.getRelationSideOrThrow().targetMultiplicity === Multiplicity.ONE ?
+                    `\n\nIf one of the \`${field.type.pluralName}\` is already related to a different \`${field.declaringType.name}\`, these relations are removed first.`
+                    : ''
+            ));
     }
 
     getStatements(value: AnyValue, sourceIDNode: QueryNode): ReadonlyArray<PreExecQueryParms> {
@@ -69,8 +85,9 @@ export class AddEdgesInputField extends AbstractRelationUpdateInputField {
 export class RemoveEdgesInputField extends AbstractRelationUpdateInputField {
     readonly inputType: GraphQLInputType = new GraphQLList(new GraphQLNonNull(GraphQLID));
 
-    get name() {
-        return getRemoveRelationFieldName(this.field.name);
+    constructor(field: Field) {
+        super(field, getRemoveRelationFieldName(field.name),
+            `Removes \`${field.name}\` relations to existing \`${field.type.pluralName}\` by their ids.`);
     }
 
     getStatements(value: AnyValue, sourceIDNode: QueryNode): ReadonlyArray<PreExecQueryParms> {
@@ -88,16 +105,12 @@ export class RemoveEdgesInputField extends AbstractRelationUpdateInputField {
 export class CreateAndAddEdgesInputField extends AbstractRelationUpdateInputField {
     readonly inputType: GraphQLInputType;
 
-    constructor(
-        public readonly field: Field,
-        public readonly objectInputType: CreateRootEntityInputType
+    constructor(field: Field,
+                public readonly objectInputType: CreateRootEntityInputType
     ) {
-        super(field);
+        super(field, getCreateRelatedEntityFieldName(field.name),
+            `Creates new \`${field.type.pluralName}\` and adds \`${field.name}\` relations between them and this \`${field.declaringType.name}\`.`);
         this.inputType = new GraphQLList(new GraphQLNonNull(objectInputType.getInputType()));
-    }
-
-    get name() {
-        return getCreateRelatedEntityFieldName(this.field.name);
     }
 
     getStatements(value: AnyValue, sourceIDNode: QueryNode): ReadonlyArray<PreExecQueryParms> {
@@ -116,15 +129,13 @@ export class CreateAndSetEdgeInputField extends AbstractRelationUpdateInputField
     readonly inputType: GraphQLInputType;
 
     constructor(
-        public readonly field: Field,
+        field: Field,
         public readonly objectInputType: CreateRootEntityInputType
     ) {
-        super(field);
+        super(field, getCreateRelatedEntityFieldName(field.name),
+            `Creates a new \`${field.type.name}\` and sets the \`${field.name}\` relation to the created object.\n\n` +
+            `If this \`${field.declaringType.name}\` already has a \`${field.name}\` relation, this relation is removed first.`);
         this.inputType = objectInputType.getInputType();
-    }
-
-    get name() {
-        return getCreateRelatedEntityFieldName(this.field.name);
     }
 
     getStatements(value: AnyValue, sourceIDNode: QueryNode): ReadonlyArray<PreExecQueryParms> {

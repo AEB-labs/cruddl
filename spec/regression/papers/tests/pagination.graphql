@@ -31,4 +31,8 @@ query {
     noPagesLeft: allPapers(first: 2, after: "{\"id\":\"@{ids/Paper/5}\",\"key\":\"Scal\"}", filter: {isPublished: true}, orderBy: key_ASC) {
         key
     }
+
+    noPaginationButCursor: allPapers(filter: { id: "@{ids/Paper/1}" }) {
+        _cursor
+    }
 }

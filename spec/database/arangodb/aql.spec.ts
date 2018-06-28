@@ -10,12 +10,12 @@ describe('aql', () => {
     });
 
     it('works with simple values', () => {
-        const fragment = aql`RETURN ${{ flag: true }}`;
+        const fragment = aql`RETURN ${123}`;
         expect(fragment.getCode().code).to.equal('RETURN @var1');
-        expect(fragment.toString()).to.equal('RETURN {"flag":true}');
+        expect(fragment.toString()).to.equal('RETURN 123');
         const boundValues = fragment.getCode().boundValues;
         expect(Object.keys(boundValues).length).to.equal(1);
-        expect(boundValues.var1).to.be.deep.equal({ flag: true });
+        expect(boundValues.var1).to.be.deep.equal(123);
         console.log(fragment.toColoredString());
     });
 

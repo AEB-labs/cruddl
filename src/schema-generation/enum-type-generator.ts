@@ -1,4 +1,4 @@
-import { GraphQLEnumType } from 'graphql';
+import { GraphQLEnumType, GraphQLEnumValueConfig } from 'graphql';
 import { chain } from 'lodash';
 import memorize from 'memorize-decorator';
 import { EnumType } from '../model';
@@ -10,8 +10,11 @@ export class EnumTypeGenerator {
             name: enumType.name,
             description: enumType.description,
             values: chain(enumType.values)
-                .keyBy(value => value)
-                .mapValues(value => ({value}))
+                .keyBy(value => value.value)
+                .mapValues((value): GraphQLEnumValueConfig => ({
+                    value: value.value,
+                    description: value.description
+                }))
                 .value()
         });
     }

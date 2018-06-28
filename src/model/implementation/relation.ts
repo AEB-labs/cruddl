@@ -1,11 +1,11 @@
 import { Field, RootEntityType } from '../index';
 
-export enum RelationFieldSide {
+enum RelationFieldSide {
     FROM_SIDE,
     TO_SIDE
 }
 
-export function invertRelationFieldSide(side: RelationFieldSide) {
+function invertRelationFieldSide(side: RelationFieldSide) {
     switch (side) {
         case RelationFieldSide.TO_SIDE:
             return RelationFieldSide.FROM_SIDE;
@@ -15,6 +15,11 @@ export function invertRelationFieldSide(side: RelationFieldSide) {
 }
 
 export class Relation {
+    readonly fromType: RootEntityType;
+    readonly fromField: Field;
+    readonly toType: RootEntityType;
+    readonly toField: Field | undefined;
+
     constructor(params: { fromType: RootEntityType, fromField: Field, toType: RootEntityType, toField?: Field }) {
         this.fromType = params.fromType;
         this.fromField = params.fromField;
@@ -22,70 +27,19 @@ export class Relation {
         this.toField = params.toField;
     }
 
-    readonly fromType: RootEntityType;
-    readonly fromField: Field;
-    readonly toType: RootEntityType;
-    readonly toField: Field|undefined;
-
-    getFieldSide(field: Field): RelationFieldSide {
-        if (this.fromField == field) {
-            return RelationFieldSide.FROM_SIDE
-        } else if (this.toField == field) {
-            return RelationFieldSide.TO_SIDE
-        } else {
-            throw new Error(`Edge does not include the field ${field.name}`);
-        }
+    get fromSide() {
+        return new RelationSide(this, RelationFieldSide.FROM_SIDE);
     }
 
-    getOtherField(field: Field): Field|undefined {
-        const thisSide = this.getFieldSide(field);
-        const otherSide = invertRelationFieldSide(thisSide);
-        return this.getFieldOfSide(otherSide);
-    }
-
-    getMultiplicity(side: RelationFieldSide|Field): Multiplicty {
-        let field: Field|undefined;
-        if (side instanceof Field) {
-            field = side;
-        } else {
-            field = this.getFieldOfSide(side);
-        }
-        if (!field) {
-            // if no inverse field exists, many-to-* is implicit
-            return Multiplicty.MANY;
-        }
-        return field.isList ? Multiplicty.MANY : Multiplicty.ONE;
+    get toSide() {
+        return new RelationSide(this, RelationFieldSide.TO_SIDE);
     }
 
     /**
-     * Gets the multiplicity of the target field, given the source filed
+     * Gets a string that uniquely identifies this relation
      */
-    getTargetMultiplicity(sourceField: Field): Multiplicty {
-        const thisSide = this.getFieldSide(sourceField);
-        const otherSide = invertRelationFieldSide(thisSide);
-        return this.getMultiplicity(otherSide);
-    }
-
-    getFieldOfSide(side: RelationFieldSide): Field|undefined {
-        switch (side) {
-            case RelationFieldSide.FROM_SIDE:
-                return this.fromField;
-            case RelationFieldSide.TO_SIDE:
-                return this.toField;
-        }
-    }
-
-    getTypeOfSide(side: RelationFieldSide): RootEntityType {
-        switch (side) {
-            case RelationFieldSide.FROM_SIDE:
-                return this.fromType;
-            case RelationFieldSide.TO_SIDE:
-                return this.toType;
-        }
-    }
-
-    getOtherType(sourceField: Field) {
-        return this.getTypeOfSide(invertRelationFieldSide(this.getFieldSide(sourceField)));
+    get identifier() {
+        return `${this.fromType.name}.${this.fromField.name}`;
     }
 
     toString() {
@@ -95,7 +49,58 @@ export class Relation {
     }
 }
 
-export enum Multiplicty {
+export class RelationSide {
+    public readonly sourceType: RootEntityType;
+    public readonly sourceField: Field|undefined;
+    public readonly targetType: RootEntityType;
+    public readonly targetField: Field|undefined;
+
+    constructor(
+        public readonly relation: Relation,
+        private readonly side: RelationFieldSide
+    ) {
+        switch (side) {
+            case RelationFieldSide.FROM_SIDE:
+                this.sourceType = relation.fromType;
+                this.sourceField = relation.fromField;
+                this.targetType = relation.toType;
+                this.targetField = relation.toField;
+                break;
+            default:
+                this.sourceType = relation.toType;
+                this.sourceField = relation.toField;
+                this.targetType = relation.fromType;
+                this.targetField = relation.fromField;
+        }
+    }
+
+    get isFromSide() {
+        return this.side === RelationFieldSide.FROM_SIDE
+    }
+
+    get isToSide() {
+        return this.side === RelationFieldSide.TO_SIDE;
+    }
+
+    get otherSide() {
+        return new RelationSide(this.relation, invertRelationFieldSide(this.side));
+    }
+
+    get sourceMultiplicity(): Multiplicity {
+        if (!this.sourceField) {
+            // if no inverse field exists, many-to-* is implicit
+            return Multiplicity.MANY;
+        }
+
+        return this.sourceField.isList ? Multiplicity.MANY : Multiplicity.ONE;
+    }
+
+    get targetMultiplicity(): Multiplicity {
+        return this.otherSide.sourceMultiplicity;
+    }
+}
+
+export enum Multiplicity {
     ONE,
     MANY
 }

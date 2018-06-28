@@ -11,7 +11,7 @@ describe('unused object validator', () => {
                 stuff: Int
             }
         `,
-            'Unused object type.');
+            'Type "Child" is not used.');
     });
 
     it('accepts used objects', () => {

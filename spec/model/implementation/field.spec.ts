@@ -155,12 +155,21 @@ describe('Field', () => {
             expectSingleErrorToInclude(field, `Field name is empty.`);
         });
 
+        it('accepts one-character names', () => {
+            // describe('me', () => it('is not stupid') );
+            const field = new Field({
+                name: 'a',
+                typeName: 'String'
+            }, deliveryType);
+            expectToBeValid(field);
+        });
+
         it('warns about names including an underscore', () => {
             const field = new Field({
                 name: 'some_field_name',
                 typeName: 'String'
             }, deliveryType);
-            expectSingleWarningToInclude(field, `Field names should only contain alphanumeric characters.`);
+            expectSingleWarningToInclude(field, `Field names should not include underscores.`);
         });
 
         it('rejects names starting with an underscore', () => {
@@ -168,7 +177,7 @@ describe('Field', () => {
                 name: '_internal',
                 typeName: 'String'
             }, deliveryType);
-            expectSingleErrorToInclude(field, `Field names should not start with an underscore.`);
+            expectSingleErrorToInclude(field, `Field names cannot start with an underscore.`);
         });
 
         it('warns about names starting with an uppercase character', () => {
@@ -637,6 +646,16 @@ describe('Field', () => {
             }, deliveryType);
 
             expectToBeValid(field);
+        });
+
+        it('rejects APPEND on Boolean', () => {
+            const field = new Field({
+                name: 'isConfirmed',
+                typeName: 'Boolean',
+                calcMutationOperators: [CalcMutationsOperator.APPEND]
+            }, deliveryType);
+
+            expectSingleErrorToInclude(field, `Type "Boolean" does not support any calc mutation operators.`);
         });
 
         it('rejects APPEND on Int', () => {

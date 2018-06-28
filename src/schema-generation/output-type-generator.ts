@@ -1,14 +1,14 @@
 import { GraphQLString } from 'graphql';
 import { sortBy } from 'lodash';
 import memorize from 'memorize-decorator';
-import { getMetaFieldName } from '../schema/names';
 import { FieldRequest } from '../graphql/query-distiller';
 import { isListType } from '../graphql/schema-utils';
 import { Field, ObjectType, Type } from '../model';
 import {
     NullQueryNode, ObjectQueryNode, PropertySpecification, QueryNode, UnaryOperationQueryNode, UnaryOperator
 } from '../query-tree';
-import { CURSOR_FIELD } from '../schema/constants';
+import { CURSOR_FIELD, ID_FIELD, ORDER_BY_ASC_SUFFIX } from '../schema/constants';
+import { getMetaFieldName } from '../schema/names';
 import { flatMap } from '../utils/utils';
 import { EnumTypeGenerator } from './enum-type-generator';
 import { createFieldNode } from './field-nodes';
@@ -73,6 +73,7 @@ export class OutputTypeGenerator {
         return {
             name: CURSOR_FIELD,
             type: GraphQLString,
+            description: `Provides a value that can be supplied to the \`after\` argument for pagination. Depends on the value of the \`orderBy\` argument.`,
             resolve: (source, args, info) => this.getCursorNode(source, info.fieldRequestStack[info.fieldRequestStack.length - 2], orderByType)
         };
     }
@@ -82,7 +83,9 @@ export class OutputTypeGenerator {
             return NullQueryNode.NULL;
         }
 
-        const clauses = getOrderByValues(listFieldRequest.args, orderByType);
+        // force the absolute-order-behavior we normally only have if the 'first' argument is present
+        // so one can use a _cursor value from a query without orderBy as 'after' argument without orderBy.
+        const clauses = getOrderByValues(listFieldRequest.args, orderByType, {forceAbsoluteOrder: true});
         const sortedClauses = sortBy(clauses, clause => clause.name);
         const objectNode = new ObjectQueryNode(sortedClauses.map(clause =>
             new PropertySpecification(clause.underscoreSeparatedPath, clause.getValueNode(itemNode))));
@@ -94,6 +97,7 @@ export class OutputTypeGenerator {
         const schemaField: QueryNodeField = {
             name: field.name,
             type: field.isList ? makeNonNullableList(type) : type,
+            description: field.description,
             resolve: (sourceNode) => createFieldNode(field, sourceNode)
         };
 
@@ -116,6 +120,7 @@ export class OutputTypeGenerator {
         const plainField: QueryNodeField = {
             name: getMetaFieldName(field.name),
             type: new QueryNodeNonNullType(metaType),
+            description: field.description,
             resolve: (sourceNode) => createFieldNode(field, sourceNode)
         };
         return this.filterAugmentation.augment(plainField, field.type);

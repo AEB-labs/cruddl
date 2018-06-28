@@ -36,6 +36,7 @@ export class QueryTypeGenerator {
         return {
             name: namespace.name || '',
             type: this.generate(namespace),
+            description: `The Query type for the namespace "${namespace.dotSeparatedPath}"`,
             resolve: () => new ObjectQueryNode([])
         };
     }
@@ -53,6 +54,7 @@ export class QueryTypeGenerator {
             name: rootEntityType.name,
             type: this.outputTypeGenerator.generate(rootEntityType),
             args: getArgumentsForUniqueFields(rootEntityType),
+            description: rootEntityType.description,
             resolve: (_, args) => this.getSingleRootEntityNode(rootEntityType, args)
         };
     }
@@ -65,6 +67,7 @@ export class QueryTypeGenerator {
         const fieldConfig = ({
             name: getAllEntitiesFieldName(rootEntityType.name),
             type: new QueryNodeListType(new QueryNodeNonNullType(this.outputTypeGenerator.generate(rootEntityType))),
+            description: rootEntityType.description,
             resolve: () => this.getAllRootEntitiesNode(rootEntityType)
         });
         return this.listAugmentation.augment(fieldConfig, rootEntityType);
@@ -79,6 +82,7 @@ export class QueryTypeGenerator {
         const fieldConfig = ({
             name: getMetaFieldName(getAllEntitiesFieldName(rootEntityType.name)),
             type: new QueryNodeNonNullType(metaType),
+            description: rootEntityType.description,
             resolve: () => this.getAllRootEntitiesNode(rootEntityType)
         });
         return this.filterAugmentation.augment(fieldConfig, rootEntityType);

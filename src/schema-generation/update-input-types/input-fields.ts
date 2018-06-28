@@ -7,7 +7,7 @@ import {
     BinaryOperationQueryNode, BinaryOperator, FieldQueryNode, LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode,
     ObjectQueryNode, QueryNode, SetFieldQueryNode
 } from '../../query-tree';
-import { AnyValue } from '../../utils/utils';
+import { AnyValue, PlainObject } from '../../utils/utils';
 import { CreateChildEntityInputType, CreateObjectInputType } from '../create-input-types';
 import { createFieldNode } from '../field-nodes';
 import { TypedInputFieldBase } from '../typed-input-object-type';
@@ -24,12 +24,12 @@ export interface UpdateInputField extends TypedInputFieldBase<UpdateInputField> 
 }
 
 export class UpdateFilterInputField implements UpdateInputField {
+    readonly name: string;
+    readonly description: string;
+
     constructor(public readonly field: Field, public readonly inputType: GraphQLInputType) {
-
-    }
-
-    get name() {
-        return this.field.name;
+        this.name = this.field.name;
+        this.description = `The \`${this.field.name}\` of the \`${field.declaringType.name}\` to be updated (does not change the \`${this.field.name}\`).`;
     }
 
     appliesToMissingFields() {
@@ -47,14 +47,14 @@ export class UpdateFilterInputField implements UpdateInputField {
 }
 
 export class BasicUpdateInputField implements UpdateInputField {
+    readonly description: string|undefined;
+
     constructor(
         public readonly field: Field,
-        public readonly inputType: GraphQLInputType | UpdateObjectInputType
+        public readonly inputType: GraphQLInputType | UpdateObjectInputType,
+        public readonly name = field.name
     ) {
-    }
-
-    get name() {
-        return this.field.name;
+        this.description = this.field.description;
     }
 
     getProperties(value: AnyValue, currentEntityNode: QueryNode): ReadonlyArray<SetFieldQueryNode> {
@@ -92,11 +92,7 @@ export class BasicListUpdateInputField extends BasicUpdateInputField {
 
 export class CalcMutationInputField extends BasicUpdateInputField {
     constructor(field: Field, inputType: GraphQLInputType, public readonly operator: CalcMutationsOperator, private readonly prefix: string) {
-        super(field, inputType);
-    }
-
-    get name() {
-        return this.prefix + this.field.name;
+        super(field, inputType, prefix + field.name);
     }
 
     getProperties(value: AnyValue, currentEntityNode: QueryNode): ReadonlyArray<SetFieldQueryNode> {
@@ -177,30 +173,34 @@ export class UpdateValueObjectListInputField extends BasicUpdateInputField {
 }
 
 export class UpdateEntityExtensionInputField implements UpdateInputField {
-    public readonly name: string;
-    public readonly inputType: GraphQLInputType;
+    readonly name: string;
+    readonly description: string|undefined;
+    readonly inputType: GraphQLInputType;
 
     constructor(
         public readonly field: Field,
         public readonly objectInputType: UpdateEntityExtensionInputType
     ) {
         this.name = field.name;
+        this.description = (field.description ? field.description + '\n\n' : '') +
+            'This field is an entity extension and thus is never \'null\' - passing \'null\' here does not change the field value.';
         this.inputType = objectInputType.getInputType();
     }
 
     getProperties(value: AnyValue, currentEntityNode: QueryNode) {
+        // setting to null is the same as setting to {} - does not change anything (entity extensions can't be null)
+        if (value == null || Object.keys(value).length === 0) {
+            return [];
+        }
+
         return [
             new SetFieldQueryNode(this.field, this.getValueNode(value, currentEntityNode))
         ];
     }
 
-    private getValueNode(value: AnyValue, currentEntityNode: QueryNode) {
-        if (value == null) {
-            return NullQueryNode.NULL;
-        }
-
+    private getValueNode(value: PlainObject, currentEntityNode: QueryNode) {
         return new MergeObjectsQueryNode([
-            new FieldQueryNode(currentEntityNode, this.field),
+            createFieldNode(this.field, currentEntityNode), // this function wraps the field in a conditional node to fall back to {} on null values
             new ObjectQueryNode(this.objectInputType.getProperties(value, currentEntityNode))
         ]);
     }
@@ -218,10 +218,14 @@ export class UpdateEntityExtensionInputField implements UpdateInputField {
 }
 
 export abstract class AbstractChildEntityInputField implements UpdateInputField {
+    readonly description: string;
+
     protected constructor(
+        public readonly field: Field,
         public readonly name: string,
-        public readonly field: Field
+        description: string
     ) {
+        this.description = description + (this.field.description ? '\n\n' + this.field.description : '');
     }
 
     abstract readonly inputType: GraphQLInputType;
@@ -248,7 +252,8 @@ export class AddChildEntitiesInputField extends AbstractChildEntityInputField {
         field: Field,
         public readonly createInputType: CreateChildEntityInputType
     ) {
-        super(getAddChildEntitiesFieldName(field.name), field);
+        super(field, getAddChildEntitiesFieldName(field.name),
+            `Adds new \`${field.type.pluralName}\` to the list of \`${field.name}\``);
         this.inputType = new GraphQLList(new GraphQLNonNull(createInputType.getInputType()));
     }
 
@@ -267,7 +272,8 @@ export class UpdateChildEntitiesInputField extends AbstractChildEntityInputField
         field: Field,
         public readonly updateInputType: UpdateChildEntityInputType
     ) {
-        super(getUpdateChildEntitiesFieldName(field.name), field);
+        super(field, getUpdateChildEntitiesFieldName(field.name),
+            `Updates \`${field.type.pluralName}\` in the list of \`${field.name}\``);
         this.inputType = new GraphQLList(new GraphQLNonNull(updateInputType.getInputType()));
     }
 
@@ -285,7 +291,8 @@ export class RemoveChildEntitiesInputField extends AbstractChildEntityInputField
     constructor(
         field: Field
     ) {
-        super(getRemoveChildEntitiesFieldName(field.name), field);
+        super(field, getRemoveChildEntitiesFieldName(field.name),
+            `Deletes \`${field.type.pluralName}\` by ids in the list of \`${field.name}\``);
         this.inputType = new GraphQLList(new GraphQLNonNull(GraphQLID));
     }
 }

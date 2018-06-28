@@ -17,12 +17,15 @@ export class ChildEntityType extends ObjectTypeBase {
 const systemFieldInputs: FieldConfig[] = [
     {
         name: 'id',
-        typeName: 'ID'
+        typeName: 'ID',
+        description: 'An auto-generated string that identifies this child entity uniquely within this collection of child entities'
     }, {
         name: 'createdAt',
-        typeName: 'DateTime'
+        typeName: 'DateTime',
+        description: 'The instant this object has been created'
     }, {
         name: 'updatedAt',
-        typeName: 'DateTime'
+        typeName: 'DateTime',
+        description: 'The instant this object has been updated the last time'
     }
 ];

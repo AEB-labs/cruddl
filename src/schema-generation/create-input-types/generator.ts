@@ -4,10 +4,14 @@ import memorize from 'memorize-decorator';
 import { ChildEntityType, EntityExtensionType, Field, ObjectType, RootEntityType, ValueObjectType } from '../../model';
 import { EnumTypeGenerator } from '../enum-type-generator';
 import {
-    BasicCreateInputField, BasicListCreateInputField, CreateInputField, ObjectCreateInputField,
+    BasicCreateInputField, BasicListCreateInputField, CreateEntityExtensionInputField, CreateInputField,
+    CreateObjectInputField,
     ObjectListCreateInputField
 } from './input-fields';
-import { CreateChildEntityInputType, CreateObjectInputType, CreateRootEntityInputType } from './input-types';
+import {
+    CreateChildEntityInputType, CreateEntityExtensionInputType, CreateObjectInputType, CreateRootEntityInputType,
+    ValueObjectInputType
+} from './input-types';
 import { AddEdgesCreateInputField, CreateAndAddEdgesCreateInputField, SetEdgeCreateInputField, CreateAndSetEdgeCreateInputField } from './relation-fields';
 
 export class CreateInputTypeGenerator {
@@ -44,14 +48,12 @@ export class CreateInputTypeGenerator {
 
     @memorize()
     generateForEntityExtensionType(type: EntityExtensionType): CreateObjectInputType {
-        return new CreateObjectInputType(type,
-            () => flatMap(type.fields, (field: Field) => this.generateFields(field)));
+        return new CreateEntityExtensionInputType(type, () => flatMap(type.fields, (field: Field) => this.generateFields(field)));
     }
 
     @memorize()
     generateForValueObjectType(type: ValueObjectType): CreateObjectInputType {
-        return new CreateObjectInputType(type,
-            () => flatMap(type.fields, (field: Field) => this.generateFields(field)));
+        return new ValueObjectInputType(type, () => flatMap(type.fields, (field: Field) => this.generateFields(field)));
     }
 
     private generateFields(field: Field): CreateInputField[] {
@@ -85,9 +87,14 @@ export class CreateInputTypeGenerator {
             }
         }
 
+        if (field.type.isEntityExtensionType) {
+            const inputType = this.generateForEntityExtensionType(field.type);
+            return [new CreateEntityExtensionInputField(field, inputType)];
+        }
+
         // child entity, value object, entity extension
         const inputType = this.generate(field.type);
-        const inputField = field.isList ? new ObjectListCreateInputField(field, inputType) : new ObjectCreateInputField(field, inputType);
+        const inputField = field.isList ? new ObjectListCreateInputField(field, inputType) : new CreateObjectInputField(field, inputType);
         return [inputField];
     }
 }

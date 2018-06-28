@@ -1,10 +1,14 @@
+"A delivery"
 type Delivery @rootEntity @roles(readWrite: ["allusers"]) {
     deliveryNumber: String @key
+    "The list of serial numbers associated with this delivery"
     serialNumbers: [String]
+    "The address of the delivery's consignee"
     consignee: Address
     contentInfo: [Translation]
     dgInfo: DangerousGoodsInfo
     items: [DeliveryItem]
+    "The handling units the items of this delivery are packaged in"
     handlingUnits: [HandlingUnit] @relation
     destinationCountry: Country @reference
     shippedAt: DateTime

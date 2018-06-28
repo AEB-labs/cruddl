@@ -11,4 +11,4 @@ export { Namespace } from './namespace';
 export { Index, IndexField } from './indices';
 export { RolesSpecifier } from './roles-specifier';
 export { PermissionProfile, Permission, PermissionProfileMap, RoleSpecifier } from './permission-profile';
-export { Relation, RelationFieldSide, invertRelationFieldSide, Multiplicty } from './relation';
+export { Relation, RelationSide, Multiplicity } from './relation';

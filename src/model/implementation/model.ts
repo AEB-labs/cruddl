@@ -1,4 +1,5 @@
-import { groupBy } from 'lodash';
+import { groupBy, uniqBy } from 'lodash';
+import memorize from 'memorize-decorator';
 import { DEFAULT_PERMISSION_PROFILE } from '../../schema/constants';
 import { flatMap, objectValues } from '../../utils/utils';
 import { ModelConfig, TypeKind } from '../config';
@@ -17,7 +18,7 @@ import { ScalarType } from './scalar-type';
 import { createType, InvalidType, ObjectType, Type } from './type';
 import { ValueObjectType } from './value-object-type';
 
-export class Model implements ModelComponent{
+export class Model implements ModelComponent {
     private readonly typeMap: ReadonlyMap<string, Type>;
 
     readonly rootNamespace: Namespace;
@@ -35,7 +36,7 @@ export class Model implements ModelComponent{
         this.rootNamespace = new Namespace(undefined, [], this.rootEntityTypes);
         this.namespaces = [this.rootNamespace, ...this.rootNamespace.descendantNamespaces];
         this.typeMap = new Map(this.types.map((type): [string, Type] => ([type.name, type])));
-        this.i18n = new ModelI18n(input.i18n || [])
+        this.i18n = new ModelI18n(input.i18n || []);
     }
 
     validate(context = new ValidationContext()): ValidationResult {
@@ -62,9 +63,9 @@ export class Model implements ModelComponent{
 
                 if (builtInTypeNames.has(type.name)) {
                     // user does not see duplicate type, so provide better message
-                    context.addMessage(ValidationMessage.error(`Type name "${type.name}" is reserved by a built-in type.`, undefined, type.astNode));
+                    context.addMessage(ValidationMessage.error(`Type name "${type.name}" is reserved by a built-in type.`, type.nameASTNode));
                 } else {
-                    context.addMessage(ValidationMessage.error(`Duplicate type name: "${type.name}".`, undefined, type.astNode));
+                    context.addMessage(ValidationMessage.error(`Duplicate type name: "${type.name}".`, type.nameASTNode));
                 }
             }
         }
@@ -98,7 +99,7 @@ export class Model implements ModelComponent{
         return profile;
     }
 
-    get defaultPermissionProfile(): PermissionProfile|undefined {
+    get defaultPermissionProfile(): PermissionProfile | undefined {
         return this.getPermissionProfile(DEFAULT_PERMISSION_PROFILE);
     }
 
@@ -158,27 +159,27 @@ export class Model implements ModelComponent{
         return this.getTypeOfKindOrThrow(name, TypeKind.ENUM);
     }
 
-    getRootEntityType(name: string): RootEntityType|undefined {
+    getRootEntityType(name: string): RootEntityType | undefined {
         return this.getTypeOfKind(name, TypeKind.ROOT_ENTITY);
     }
 
-    getChildEntityType(name: string): ChildEntityType|undefined {
+    getChildEntityType(name: string): ChildEntityType | undefined {
         return this.getTypeOfKind(name, TypeKind.CHILD_ENTITY);
     }
 
-    getValueObjectType(name: string): ValueObjectType|undefined {
+    getValueObjectType(name: string): ValueObjectType | undefined {
         return this.getTypeOfKind(name, TypeKind.VALUE_OBJECT);
     }
 
-    getEntityExtensionType(name: string): EntityExtensionType|undefined {
+    getEntityExtensionType(name: string): EntityExtensionType | undefined {
         return this.getTypeOfKind(name, TypeKind.ENTITY_EXTENSION);
     }
 
-    getScalarType(name: string): ScalarType|undefined {
+    getScalarType(name: string): ScalarType | undefined {
         return this.getTypeOfKind(name, TypeKind.SCALAR);
     }
 
-    getEnumType(name: string): EnumType|undefined {
+    getEnumType(name: string): EnumType | undefined {
         return this.getTypeOfKind(name, TypeKind.ENUM);
     }
 
@@ -190,7 +191,7 @@ export class Model implements ModelComponent{
         return type as T;
     }
 
-    getTypeOfKind<T extends Type>(name: string, kind: TypeKind): T|undefined {
+    getTypeOfKind<T extends Type>(name: string, kind: TypeKind): T | undefined {
         const type = this.getType(name);
         if (!type || type.kind != kind) {
             return undefined;
@@ -200,9 +201,9 @@ export class Model implements ModelComponent{
 
     getNamespaceByPath(path: ReadonlyArray<string>): Namespace | undefined {
         let curNamespace: Namespace | undefined = this.rootNamespace;
-        for(const seg of path) {
+        for (const seg of path) {
             curNamespace = curNamespace.getChildNamespace(seg);
-            if(!curNamespace){
+            if (!curNamespace) {
                 return undefined;
             }
         }
@@ -211,13 +212,18 @@ export class Model implements ModelComponent{
 
     getNamespaceByPathOrThrow(path: ReadonlyArray<string>): Namespace {
         const result = this.getNamespaceByPath(path);
-        if(result == undefined) {
-            throw new Error(`Namespace `+path.join('.')+` does not exist`);
+        if (result == undefined) {
+            throw new Error(`Namespace ` + path.join('.') + ` does not exist`);
         }
         return result;
     }
 
+    /**
+     * Gets a list of all relations between any
+     */
+    @memorize()
     get relations(): ReadonlyArray<Relation> {
-        return flatMap(this.rootEntityTypes, entity => entity.relations);
+        const withDuplicates = flatMap(this.rootEntityTypes, entity => entity.explicitRelations);
+        return uniqBy(withDuplicates, rel => rel.identifier);
     }
 }

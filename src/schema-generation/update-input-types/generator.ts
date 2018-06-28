@@ -105,7 +105,7 @@ export class UpdateInputTypeGenerator {
         }
 
         if (field.type.isEntityExtensionType) {
-            const inputType = this.generate(field.type);
+            const inputType = this.generateForEntityExtensionType(field.type);
             return [new UpdateEntityExtensionInputField(field, inputType)];
         }
 

@@ -23,6 +23,10 @@ export class BasicCreateInputField implements CreateInputField {
         return this.field.name;
     }
 
+    get description() {
+        return this.field.description;
+    }
+
     getProperties(value: AnyValue) {
         if (value === undefined && this.field.hasDefaultValue) {
             value = this.field.defaultValue;
@@ -66,7 +70,7 @@ export class BasicListCreateInputField extends BasicCreateInputField {
     }
 }
 
-export class ObjectCreateInputField extends BasicCreateInputField {
+export class CreateObjectInputField extends BasicCreateInputField {
     constructor(
         field: Field,
         public readonly objectInputType: CreateObjectInputType,
@@ -127,5 +131,17 @@ export class ObjectListCreateInputField extends BasicCreateInputField {
         }
 
         value.forEach(value => this.objectInputType.collectAffectedFields(value, fields));
+    }
+}
+
+export class CreateEntityExtensionInputField extends CreateObjectInputField {
+    protected coerceValue(value: AnyValue): AnyValue {
+        // this should always be an object so the default values of entity extensions apply
+        return super.coerceValue(value == undefined ? {} : value);
+    }
+
+    appliesToMissingFields() {
+        // this is important because we always fall back to {} to get apply default values in the entity extension type
+        return true;
     }
 }

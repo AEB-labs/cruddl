@@ -1,6 +1,7 @@
-import { Field, Multiplicty, Relation, RelationFieldSide } from '../../model';
+import { Field, Multiplicity, RelationSide, RootEntityType } from '../../model';
 import {
     AddEdgesQueryNode, EdgeFilter, EdgeIdentifier, EntityFromIdQueryNode, ErrorIfNotTruthyResultValidator,
+    ListQueryNode,
     LiteralQueryNode, PartialEdgeIdentifier, PreExecQueryParms, QueryNode, RemoveEdgesQueryNode, SetEdgeQueryNode,
     VariableQueryNode
 } from '../../query-tree';
@@ -12,22 +13,20 @@ import { CreateRootEntityInputType } from '../create-input-types';
  * incoming edges of the target
  */
 function getNonCheckingSetEdgeStatement(sourceField: Field, sourceIDNode: QueryNode, targetIDNode: QueryNode): PreExecQueryParms {
-    const relation = sourceField.getRelationOrThrow();
+    const relationSide = sourceField.getRelationSideOrThrow();
     const newEdge = getEdgeIdentifier({
-        relation,
+        relationSide,
         sourceIDNode,
-        targetIDNode,
-        sourceField
+        targetIDNode
     });
     // this one removes existing *outgoing* edges - see the multiplicity check for *incoming* edges of the target
     const existingEdge = getPartialEdgeIdentifier({
-        relation,
-        sourceIDNode,
-        sourceField
+        relationSide,
+        sourceIDNode
     });
     return new PreExecQueryParms({
         query: new SetEdgeQueryNode({
-            relation,
+            relation: relationSide.relation,
             newEdge,
             existingEdge
         })
@@ -35,41 +34,38 @@ function getNonCheckingSetEdgeStatement(sourceField: Field, sourceIDNode: QueryN
 }
 
 export function getSetEdgeStatements(sourceField: Field, sourceIDNode: QueryNode, targetID: string | null): ReadonlyArray<PreExecQueryParms> {
-    const relation = sourceField.getRelationOrThrow();
+    const relationSide = sourceField.getRelationSideOrThrow();
 
     if (targetID == undefined) {
         // remove edge
         return [
             new PreExecQueryParms({
-                query: new RemoveEdgesQueryNode(relation, getEdgeFilter({
-                    relation,
-                    sourceField,
-                    sourceIDNodes: [sourceIDNode]
+                query: new RemoveEdgesQueryNode(relationSide.relation, getEdgeFilter({
+                    relationSide,
+                    sourceIDsNode: new ListQueryNode([sourceIDNode])
                 }))
             })
         ];
     }
 
-    const otherType = relation.getOtherType(sourceField);
+    const targetType = relationSide.otherSide.sourceType;
 
     const targetIDNode = new LiteralQueryNode(targetID);
     const setEdgeStatement = getNonCheckingSetEdgeStatement(sourceField, sourceIDNode, targetIDNode);
 
     // check that target exists
     const targetExistsCheck = new PreExecQueryParms({
-        query: new EntityFromIdQueryNode(otherType, targetIDNode),
-        resultValidator: new ErrorIfNotTruthyResultValidator(`${otherType.name} with id '${targetID}' does not exist`)
+        query: new EntityFromIdQueryNode(targetType, targetIDNode),
+        resultValidator: new ErrorIfNotTruthyResultValidator(`${targetType.name} with id '${targetID}' does not exist`)
     });
 
-    const targetMultiplicity = relation.getTargetMultiplicity(sourceField);
-    if (targetMultiplicity == Multiplicty.ONE) {
+    if (relationSide.targetMultiplicity == Multiplicity.ONE) {
         // target should link to at most one source, so we need to remove an edge to the target if exists
 
         const removeExistingEdgeStatement = new PreExecQueryParms({
-            query: new RemoveEdgesQueryNode(relation, getEdgeFilter({
-                relation,
-                sourceField,
-                targetIDNodes: [targetIDNode]
+            query: new RemoveEdgesQueryNode(relationSide.relation, getEdgeFilter({
+                relationSide,
+                targetIDsNode: new ListQueryNode([targetIDNode])
             }))
         });
 
@@ -88,34 +84,30 @@ export function getSetEdgeStatements(sourceField: Field, sourceIDNode: QueryNode
 }
 
 export function getAddEdgesStatements(sourceField: Field, sourceIDNode: QueryNode, targetIDs: ReadonlyArray<string>) {
-    const relation = sourceField.getRelationOrThrow();
-    const targetType = relation.getOtherType(sourceField);
+    const relationSide = sourceField.getRelationSideOrThrow();
 
     // check that all targets exist
     const targetsExistChecks = targetIDs.map(id => new PreExecQueryParms({
-        query: new EntityFromIdQueryNode(targetType, new LiteralQueryNode(id)),
-        resultValidator: new ErrorIfNotTruthyResultValidator(`${targetType.name} with id '${id}' does not exist`)
+        query: new EntityFromIdQueryNode(relationSide.targetType, new LiteralQueryNode(id)),
+        resultValidator: new ErrorIfNotTruthyResultValidator(`${relationSide.targetType.name} with id '${id}' does not exist`)
     }));
 
     const edges = targetIDs.map(id => getEdgeIdentifier({
-        relation,
+        relationSide,
         sourceIDNode,
-        targetIDNode: new LiteralQueryNode(id),
-        sourceField
+        targetIDNode: new LiteralQueryNode(id)
     }));
     const addEdgesStatement = new PreExecQueryParms({
-        query: new AddEdgesQueryNode(relation, edges)
+        query: new AddEdgesQueryNode(relationSide.relation, edges)
     });
 
-    const targetMultiplicity = relation.getTargetMultiplicity(sourceField);
-    if (targetMultiplicity == Multiplicty.ONE) {
+    if (relationSide.targetMultiplicity === Multiplicity.ONE) {
         // target should link to at most one source, so we need to remove an edges to the targets if they exist
 
         const removeExistingEdgeStatement = new PreExecQueryParms({
-            query: new RemoveEdgesQueryNode(relation, getEdgeFilter({
-                relation,
-                sourceField,
-                targetIDNodes: targetIDs.map(id => new LiteralQueryNode(id))
+            query: new RemoveEdgesQueryNode(relationSide.relation, getEdgeFilter({
+                relationSide,
+                targetIDsNode: new LiteralQueryNode(targetIDs)
             }))
         });
 
@@ -133,7 +125,7 @@ export function getAddEdgesStatements(sourceField: Field, sourceIDNode: QueryNod
 }
 
 export function getCreateAndAddEdgesStatements(sourceField: Field, sourceIDNode: QueryNode, createRootEntityInputType: CreateRootEntityInputType, createInputs: ReadonlyArray<PlainObject>) {
-    const relation = sourceField.getRelationOrThrow();
+    const relationSide = sourceField.getRelationSideOrThrow();
 
     const variableQueryNodes: VariableQueryNode[] = [];
     let statements: PreExecQueryParms[] = [];
@@ -146,14 +138,13 @@ export function getCreateAndAddEdgesStatements(sourceField: Field, sourceIDNode:
     });
 
     const edges = variableQueryNodes.map(id => getEdgeIdentifier({
-        relation,
+        relationSide,
         sourceIDNode,
-        targetIDNode: id,
-        sourceField
+        targetIDNode: id
     }));
 
     const addEdgesStatement = new PreExecQueryParms({
-        query: new AddEdgesQueryNode(relation, edges)
+        query: new AddEdgesQueryNode(relationSide.relation, edges)
     });
 
     return [...statements, addEdgesStatement];
@@ -167,51 +158,66 @@ export function getCreateAndSetEdgeStatements(sourceField: Field, sourceIDNode: 
 }
 
 export function getRemoveEdgesStatements(sourceField: Field, sourceIDNode: QueryNode, targetIDs: ReadonlyArray<string>): ReadonlyArray<PreExecQueryParms> {
-    const relation = sourceField.getRelationOrThrow();
+    const relationSide = sourceField.getRelationSideOrThrow();
     return [
         new PreExecQueryParms({
-            query: new RemoveEdgesQueryNode(relation, getEdgeFilter({
-                relation,
-                sourceField,
-                sourceIDNodes: [sourceIDNode],
-                targetIDNodes: targetIDs.map(id => new LiteralQueryNode(id))
+            query: new RemoveEdgesQueryNode(relationSide.relation, getEdgeFilter({
+                relationSide,
+                sourceIDsNode: new ListQueryNode([sourceIDNode]),
+                targetIDsNode: new LiteralQueryNode(targetIDs)
             }))
         })
     ];
 }
 
 /**
+ * Gets statements that collectively remove any incoming or outgoing edges of the given root entities
+ */
+export function getRemoveAllEntityEdgesStatements(sourceType: RootEntityType, sourceIDsNode: QueryNode): ReadonlyArray<PreExecQueryParms> {
+    return sourceType.relationSides.map(relationSide => getRemoveAllEdgesStatements(relationSide, sourceIDsNode));
+}
+
+/**
+ * Get a statement that removes all edges in a relation related to the given root entities
+ */
+export function getRemoveAllEdgesStatements(relationSide: RelationSide, sourceIDsNode: QueryNode): PreExecQueryParms {
+    return new PreExecQueryParms({
+        query: new RemoveEdgesQueryNode(relationSide.relation, getEdgeFilter({
+            relationSide,
+            sourceIDsNode
+        }))
+    });
+}
+
+/**
  * Creates an Edge identifier. Reorders source/target so that they match from/to in the relation
  */
-function getEdgeIdentifier(param: { relation: Relation; sourceIDNode: QueryNode; targetIDNode: QueryNode; sourceField: Field }): EdgeIdentifier {
-    switch (param.relation.getFieldSide(param.sourceField)) {
-        case RelationFieldSide.FROM_SIDE:
-            return new EdgeIdentifier(param.sourceIDNode, param.targetIDNode);
-        case RelationFieldSide.TO_SIDE:
-            return new EdgeIdentifier(param.targetIDNode, param.sourceIDNode);
+function getEdgeIdentifier({relationSide, sourceIDNode, targetIDNode}: { relationSide: RelationSide; sourceIDNode: QueryNode; targetIDNode: QueryNode; }): EdgeIdentifier {
+    if (relationSide.isFromSide) {
+        return new EdgeIdentifier(sourceIDNode, targetIDNode);
+    } else {
+        return new EdgeIdentifier(targetIDNode, sourceIDNode);
     }
 }
 
 /**
  * Creates a partial edge identifier of the format ?->id or id->?
  */
-function getPartialEdgeIdentifier(param: { relation: Relation; sourceIDNode: QueryNode; sourceField: Field }): PartialEdgeIdentifier {
-    switch (param.relation.getFieldSide(param.sourceField)) {
-        case RelationFieldSide.FROM_SIDE:
-            return new PartialEdgeIdentifier(param.sourceIDNode, undefined);
-        case RelationFieldSide.TO_SIDE:
-            return new PartialEdgeIdentifier(undefined, param.sourceIDNode);
+function getPartialEdgeIdentifier({relationSide, sourceIDNode}: { relationSide: RelationSide; sourceIDNode: QueryNode }): PartialEdgeIdentifier {
+    if (relationSide.isFromSide) {
+        return new PartialEdgeIdentifier(sourceIDNode, undefined);
+    } else {
+        return new PartialEdgeIdentifier(undefined, sourceIDNode);
     }
 }
 
 /**
  * Creates an Edge filter. Reorders source/target so that they match from/to in the relation
  */
-function getEdgeFilter(param: { relation: Relation; sourceIDNodes?: QueryNode[]; targetIDNodes?: QueryNode[]; sourceField: Field }): EdgeFilter {
-    switch (param.relation.getFieldSide(param.sourceField)) {
-        case RelationFieldSide.FROM_SIDE:
-            return new EdgeFilter(param.sourceIDNodes, param.targetIDNodes);
-        case RelationFieldSide.TO_SIDE:
-            return new EdgeFilter(param.targetIDNodes, param.sourceIDNodes);
+function getEdgeFilter({relationSide, sourceIDsNode, targetIDsNode}: { relationSide: RelationSide; sourceIDsNode?: QueryNode; targetIDsNode?: QueryNode }): EdgeFilter {
+    if (relationSide.isFromSide) {
+        return new EdgeFilter(sourceIDsNode, targetIDsNode);
+    } else {
+        return new EdgeFilter(targetIDsNode, sourceIDsNode);
     }
 }
