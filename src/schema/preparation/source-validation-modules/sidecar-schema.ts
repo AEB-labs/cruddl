@@ -81,7 +81,7 @@ const schemaJSON = JSON.parse(`{
       "additionalProperties": false,
       "patternProperties": {
         "^[a-zA-Z0-9_-]+$": {
-          "$ref": "#/definitions/TranslationNamespace"
+          "$ref": "#/definitions/NamespaceI18nConfig"
         }
       }
     }
@@ -136,38 +136,38 @@ const schemaJSON = JSON.parse(`{
         }
       }
     },
-    "TranslationNamespace": {
+    "NamespaceI18nConfig": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
         "types": {
           "patternProperties": {
-            "^[a-zA-Z0-9_$]+$": {
-              "$ref": "#/definitions/TypeTranslation"
+            "^[a-zA-Z0-9_]+$": {
+              "$ref": "#/definitions/TypeI18nConfig"
             }
           }
         },
         "fields": {
           "patternProperties": {
-            "^[a-zA-Z0-9_$]+$": {
+            "^[a-zA-Z0-9_]+$": {
               "anyOf": [
-                { "$ref": "#/definitions/FieldTranslation" },
+                { "$ref": "#/definitions/FieldI18nConfig" },
                 { "type": "string" }
               ]
             }
           }
         },
         "namespaces": {
-          "^[a-zA-Z0-9_$]+$": {
+          "^[a-zA-Z0-9_]+$": {
             "anyOf": [
-              { "$ref": "#/definitions/FieldTranslation" },
+              { "$ref": "#/definitions/FieldI18nConfig" },
               { "type": "string" }
             ]
           }
         }
       }
     },
-    "TypeTranslation": {
+    "TypeI18nConfig": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -176,7 +176,7 @@ const schemaJSON = JSON.parse(`{
             "^[a-zA-Z0-9_$]+$": {
               "anyOf": [
                 {
-                  "$ref": "#/definitions/FieldTranslation"
+                  "$ref": "#/definitions/FieldI18nConfig"
                 },
                 {
                   "type": "string"
@@ -196,7 +196,7 @@ const schemaJSON = JSON.parse(`{
         }
       }
     },
-    "FieldTranslation": {
+    "FieldI18nConfig": {
       "properties": {
         "label": {
           "type": "string"
