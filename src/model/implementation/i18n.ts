@@ -4,7 +4,6 @@ import { FieldI18nConfig, I18nConfig, NamespaceI18nConfig } from '../config/i18n
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
 import { Field } from './field';
 import { ObjectTypeBase } from './object-type-base';
-import { LOCALE_LANG } from '../../meta-schema/constants';
 
 export class ModelI18n implements ModelComponent {
 
@@ -36,12 +35,12 @@ export class ModelI18n implements ModelComponent {
     public getTypeLocalization(type: ObjectTypeBase, resolutionOrder: ReadonlyArray<string>): TypeI18n {
         const availableTypeLocalizations = this.getAvailableTypeLocalizations(type, resolutionOrder);
         // try to build one complete type localization out of the available possibly partial localizations
-        return new TypeI18n(
-            type.name,
-            mapFirstDefined(availableTypeLocalizations, t => t.singular),
-            mapFirstDefined(availableTypeLocalizations, t => t.plural),
-            mapFirstDefined(availableTypeLocalizations, t => t.hint)
-        );
+        return {
+            name: type.name,
+            singular: mapFirstDefined(availableTypeLocalizations, t => t.singular),
+            plural: mapFirstDefined(availableTypeLocalizations, t => t.plural),
+            hint: mapFirstDefined(availableTypeLocalizations, t => t.hint)
+        };
     }
 
     protected getAvailableFieldLocalizations(field: Field, resolutionOrder: ReadonlyArray<string>): ReadonlyArray<FieldI18n> {
@@ -53,12 +52,12 @@ export class ModelI18n implements ModelComponent {
     public getFieldLocalization(field: Field, resolutionOrder: ReadonlyArray<string>): FieldI18n {
         const availableFieldLocalizations = this.getAvailableFieldLocalizations(field, resolutionOrder);
         // try to build one complete field localization out of the available possibly partial localizations
-        return new FieldI18n(
-            field.name,
-            mapFirstDefined(availableFieldLocalizations, f => f.label),
-            mapFirstDefined(availableFieldLocalizations, f => f.hint),
-            field.type.name
-        );
+        return {
+            name: field.name,
+            label: mapFirstDefined(availableFieldLocalizations, f => f.label),
+            hint: mapFirstDefined(availableFieldLocalizations, f => f.hint),
+            type: field.type.name
+        };
     }
 
     /**
@@ -102,56 +101,51 @@ export class I18nNamespace {
         return [
             // Namespace fields
             ...Object.keys(input.fields).map(fieldName =>
-                new FieldI18n(
-                    fieldName,
-                    input.fields[fieldName].label,
-                    input.fields[fieldName].hint,
-                    undefined
-                )
+                ({
+                    name: fieldName,
+                    label: input.fields[fieldName].label,
+                    hint: input.fields[fieldName].hint
+                })
             ),
             // Fields from types
             ...flatMap(Object.keys(input.types), typeName =>
                 Object.keys(input.types[typeName].fields)
                     .map(fieldName =>
-                        new FieldI18n(
-                            fieldName,
-                            input.types[typeName].fields[fieldName].label,
-                            input.types[typeName].fields[fieldName].hint,
-                            typeName
-                        )
+                        ({
+                            name: fieldName,
+                            label: input.types[typeName].fields[fieldName].label,
+                            hint: input.types[typeName].fields[fieldName].hint,
+                            type: typeName
+                        })
                     )
             )
         ];
     }
 
     private extractTypes(input: FlatNamespaceI18nConfig): ReadonlyArray<FieldI18n> {
-        return Object.keys(input.types).map(typeName => new TypeI18n(
-            typeName,
-            input.types[typeName].singular,
-            input.types[typeName].plural,
-            input.types[typeName].hint
-            )
+        return Object.keys(input.types).map(typeName => ({
+                name: typeName,
+                singular: input.types[typeName].singular,
+                plural: input.types[typeName].plural,
+                hint: input.types[typeName].hint
+            })
         );
     }
 
 }
 
-export class TypeI18n {
-    constructor(
-        public readonly name: string,
-        public readonly singular?: string,
-        public readonly plural?: string,
-        public readonly hint?: string) {
-    }
+export interface TypeI18n {
+    readonly name: string,
+    readonly singular?: string,
+    readonly plural?: string,
+    readonly hint?: string
 }
 
-export class FieldI18n {
-    constructor(
-        public readonly name: string,
-        public readonly label?: string,
-        public readonly hint?: string,
-        public readonly type?: string) {
-    }
+export interface FieldI18n {
+    readonly name: string,
+    readonly label?: string,
+    readonly hint?: string,
+    readonly type?: string
 }
 
 function flattenNamespaceConfigs(namespace: NamespaceI18nConfig, basePath: ReadonlyArray<string>): ReadonlyArray<FlatNamespaceI18nConfig> {
@@ -198,5 +192,3 @@ export interface NormalizedTypeI18nConfig {
     readonly hint?: string
     readonly fields: { [name: string]: FieldI18nConfig }
 }
-
-
