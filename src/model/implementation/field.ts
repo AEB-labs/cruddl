@@ -323,8 +323,8 @@ export class Field implements ModelComponent {
             return;
         }
 
-        if (this.type.kind !== TypeKind.SCALAR && this.type.kind !== TypeKind.ENUM && this.type.kind !== TypeKind.VALUE_OBJECT) {
-            context.addMessage(ValidationMessage.error(`Default values are only supported on fields of scalar, enum, and value object type.`, this.input.defaultValueASTNode || this.astNode));
+        if (this.isRelation) {
+            context.addMessage(ValidationMessage.error(`Default values are not supported on relations.`, this.input.defaultValueASTNode || this.astNode));
             return;
         }
 
