@@ -1,33 +1,15 @@
-import { SourceValidator } from '../ast-validator';
-import { ProjectSource, SourceType } from '../../../project/source';
-import { MessageLocation, SourcePosition, ValidationMessage } from '../../../model';
-import { load } from 'js-yaml';
-import { parse, Pointers } from 'json-source-map';
-import * as stripJsonComments from 'strip-json-comments';
+import { ParsedProjectSource, ParsedProjectSourceBaseKind } from '../../../config/parsed-project';
+import { ParsedSourceValidator } from '../ast-validator';
+import { ValidationMessage } from '../../../model';
 import ajv = require('ajv');
 
-export class SidecarSchemaValidator implements SourceValidator {
-    validate(source: ProjectSource): ValidationMessage[] {
-        if (source.type != SourceType.JSON && source.type != SourceType.YAML) {
+export class SidecarSchemaValidator implements ParsedSourceValidator {
+    validate(source: ParsedProjectSource): ValidationMessage[] {
+        if (source.kind != ParsedProjectSourceBaseKind.OBJECT) {
             return [];
         }
 
-        let pointers: Pointers;
-        let data: any;
-        try {
-            if (source.type == SourceType.JSON) {
-                // whitespace: true replaces non-whitespace in comments with spaces so that the sourcemap still matches
-                const bodyWithoutComments = stripJsonComments(source.body, { whitespace: true });
-                const result = parse(bodyWithoutComments);
-                pointers = result.pointers;
-                data = result.data;
-            } else {
-                data = load(source.body);
-                pointers = {};
-            }
-        } catch (e) {
-            return [];
-        }
+        let data = source.object;
 
         const validate = ajv({
             allErrors: true
@@ -38,12 +20,9 @@ export class SidecarSchemaValidator implements SourceValidator {
 
         return validate.errors.map((err): ValidationMessage => {
             const path = reformatPath(err.dataPath);
-            if (path in pointers) {
-                const pointer = pointers[path];
-                const loc = new MessageLocation(source,
-                    new SourcePosition(pointer.value.pos, pointer.value.line + 1, pointer.value.column + 1),
-                    new SourcePosition(pointer.valueEnd.pos, pointer.valueEnd.line + 1, pointer.valueEnd.column + 1));
-                return ValidationMessage.error(err.message!, loc);
+            if (path in source.pathLocationMap) {
+                const loc = source.pathLocationMap[path];
+                return ValidationMessage.error(err.message!,  loc);
             } else {
                 return ValidationMessage.error(`${err.message} (at ${err.dataPath}`, undefined);
             }

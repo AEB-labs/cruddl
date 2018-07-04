@@ -1,8 +1,7 @@
-import { ParsedObjectProjectSource, ParsedProjectSource, ParsedProjectSourceBaseKind } from '../../../src/config/parsed-project';
+import { ParsedProjectSourceBaseKind } from '../../../src/config/parsed-project';
+import { ValidationContext } from '../../../src/model/validation';
 import { ProjectSource } from '../../../src/project/source';
-import { SidecarSchemaValidator } from '../../../src/schema/preparation/source-validation-modules/sidecar-schema';
 import { expect } from 'chai';
-import { Kind, load, YAMLAnchorReference, YamlMap, YAMLMapping, YAMLNode, YAMLScalar, YAMLSequence } from 'yaml-ast-parser';
 import { parseProjectSource } from '../../../src/schema/schema-builder';
 
 const yamlContent = `
@@ -26,7 +25,8 @@ describe('YAML parser and validator', () => {
 
     it('returns the right message locations', () => {
         const source = new ProjectSource('test.yaml', yamlContent);
-        const result = parseProjectSource(source);
+        const validationContext = new ValidationContext();
+        const result = parseProjectSource(source, validationContext);
         if (!result) {
             expect(result).not.to.be.undefined;
             return;
@@ -42,14 +42,14 @@ describe('YAML parser and validator', () => {
             expect(result.pathLocationMap['a/b/c']._start).to.be.eq(15);
             expect(result.pathLocationMap['a/b/c']._end).to.be.eq(23);
 
-            expect(result.pathLocationMap['a'].start.line).to.be.eq(1);
-            expect(result.pathLocationMap['a/b'].start.line).to.be.eq(2);
-            expect(result.pathLocationMap['a/b/c'].start.line).to.be.eq(3);
+            expect(result.pathLocationMap['a'].start.line).to.be.eq(2);
+            expect(result.pathLocationMap['a/b'].start.line).to.be.eq(3);
+            expect(result.pathLocationMap['a/b/c'].start.line).to.be.eq(4);
 
-            expect(result.pathLocationMap['d/0'].start.line).to.be.eq(5);
-            expect(result.pathLocationMap['d/0'].start.column).to.be.eq(4);
-            expect(result.pathLocationMap['d/0'].end.line).to.be.eq(5);
-            expect(result.pathLocationMap['d/0'].end.column).to.be.eq(9);
+            expect(result.pathLocationMap['d/0'].start.line).to.be.eq(6);
+            expect(result.pathLocationMap['d/0'].start.column).to.be.eq(5);
+            expect(result.pathLocationMap['d/0'].end.line).to.be.eq(6);
+            expect(result.pathLocationMap['d/0'].end.column).to.be.eq(10);
         }else{
             expect(result.kind).to.eq(ParsedProjectSourceBaseKind.OBJECT);
         }
@@ -57,7 +57,8 @@ describe('YAML parser and validator', () => {
 
     it('can extract the corresponding json data', () => {
         const source = new ProjectSource('test.yaml', yamlContent);
-        const result = parseProjectSource(source);
+        const validationContext = new ValidationContext();
+        const result = parseProjectSource(source, validationContext);
         if(!result){
             expect(result).not.to.be.undefined;
             return;
@@ -71,4 +72,12 @@ describe('YAML parser and validator', () => {
         }
     });
 
+    it('accepts empty files', () => {
+        const source = new ProjectSource('test.yaml', '');
+        const validationContext = new ValidationContext();
+        const result = parseProjectSource(source, validationContext);
+
+        expect(validationContext.asResult().hasErrors(),validationContext.asResult().toString()).to.be.false;
+        expect(result).to.be.undefined;
+    });
 });

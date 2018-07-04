@@ -1,9 +1,10 @@
 import { expect } from 'chai';
 import { parse, Source } from 'graphql';
-import { ParsedProjectSource, ParsedProjectSourceBaseKind } from '../../../src/config/parsed-project';
-import { createModel, PermissionProfileConfigMap, ValidationResult } from '../../../src/model';
+import { ParsedProjectSourceBaseKind } from '../../../src/config/parsed-project';
+import { createModel, PermissionProfileConfigMap, ValidationContext, ValidationResult } from '../../../src/model';
 import { ProjectSource } from '../../../src/project/source';
-import { validatePostMerge, validateSource } from '../../../src/schema/preparation/ast-validator';
+import { validateParsedProjectSource, validatePostMerge, validateSource } from '../../../src/schema/preparation/ast-validator';
+import { parseProjectSource } from '../../../src/schema/schema-builder';
 
 export function assertValidatorRejects(source: string, msg: string) {
     const validationResult = validate(source);
@@ -59,10 +60,20 @@ export function validate(source: string, options: { permissionProfiles?: Permiss
             ]
     });
     const astResults = validatePostMerge(ast, model);
-    const sourceResults = validateSource(new ProjectSource('schema.graphqls', source));
+    const projectSource = new ProjectSource('schema.graphqls', source);
+    const sourceResults = validateSource(projectSource);
+    const validationContext = new ValidationContext();
+    const parsedSource = parseProjectSource(projectSource, validationContext);
+    let parsedSourceResults: ValidationResult | undefined;
+    if(parsedSource) {
+        parsedSourceResults = validateParsedProjectSource(parsedSource);
+    }
+
     return new ValidationResult([
         ...model.validate().messages,
         ...sourceResults.messages,
-        ...astResults.messages
+        ...astResults.messages,
+        ...validationContext.asResult().messages,
+        ...((parsedSourceResults)?parsedSourceResults.messages:[])
     ]);
 }

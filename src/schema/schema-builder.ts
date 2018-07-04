@@ -1,14 +1,15 @@
-import { DocumentNode, GraphQLSchema, parse } from 'graphql';
+import { DocumentNode, getLocation, GraphQLError, GraphQLSchema, parse } from 'graphql';
 import { compact } from 'lodash';
 import { globalContext } from '../config/global';
 import { ParsedProject, ParsedProjectSource, ParsedProjectSourceBaseKind } from '../config/parsed-project';
 import { DatabaseAdapter } from '../database/database-adapter';
-import { createModel, Model, ValidationMessage, ValidationResult } from '../model';
+import { createModel, Model, Severity, SourcePosition, ValidationMessage, ValidationResult } from '../model';
+import { ValidationContext } from '../model/validation';
 import { Project } from '../project/project';
 import { ProjectSource, SourceType } from '../project/source';
 import { SchemaGenerator } from '../schema-generation';
 import { flatMap, PlainObject } from '../utils/utils';
-import { validatePostMerge, validateSource } from './preparation/ast-validator';
+import { validateParsedProjectSource, validatePostMerge, validateSource } from './preparation/ast-validator';
 import {
     executePreMergeTransformationPipeline, executeSchemaTransformationPipeline, SchemaTransformationContext
 } from './preparation/transformation-pipeline';
@@ -16,6 +17,8 @@ import { parse as JSONparse } from 'json-source-map';
 import stripJsonComments = require('strip-json-comments');
 import { Kind, load, YAMLAnchorReference, YamlMap, YAMLMapping, YAMLNode, YAMLScalar, YAMLSequence } from 'yaml-ast-parser';
 import { MessageLocation } from '../model/';
+import { getLineEndPosition } from './schema-utils';
+import jsonLint = require('json-lint');
 
 /**
  * Validates a project and thus determines whether createSchema() would succeed
@@ -31,18 +34,20 @@ export function validateSchema(project: Project): ValidationResult {
 
 
 function validateAndPrepareSchema(project: Project): { validationResult: ValidationResult, model: Model } {
-    const messages: ValidationMessage[] = [];
+    const validationContext = new ValidationContext();
 
     const sources = flatMap(project.sources, source => {
         const sourceResult = validateSource(source);
-        messages.push(...sourceResult.messages);
+        validationContext.addMessage(...sourceResult.messages);
         if (sourceResult.hasErrors()) {
             return [];
         }
         return [source];
     });
 
-    const parsedProject = parseProject(new Project({ ...project, sources }));
+    const parsedProject = parseProject(new Project({ ...project, sources }), validationContext);
+
+    parsedProject.sources.forEach(parsedSource => validateParsedProjectSource(parsedSource));
 
     const preparedProject = executePreMergeTransformationPipeline(parsedProject);
 
@@ -51,10 +56,10 @@ function validateAndPrepareSchema(project: Project): { validationResult: Validat
     const mergedSchema: DocumentNode = mergeSchemaDefinition(preparedProject);
 
     const result = validatePostMerge(mergedSchema, model);
-    messages.push(...result.messages);
-    messages.push(...model.validate().messages);
+    validationContext.addMessage(...result.messages);
+    validationContext.addMessage(...model.validate().messages);
 
-    const validationResult = new ValidationResult(messages);
+    const validationResult = new ValidationResult([]);
     return { validationResult, model };
 }
 
@@ -128,18 +133,36 @@ function mergeAST(doc1: DocumentNode, doc2: DocumentNode): DocumentNode {
 /**
  * Parse all schema parts sources which aren't AST already and deep clone all AST sources.
  */
-function parseProject(project: Project): ParsedProject {
+function parseProject(project: Project, validationContext: ValidationContext): ParsedProject {
     return {
-        sources: compact(project.sources.map(source => parseProjectSource(source)))
+        sources: compact(project.sources.map(source => parseProjectSource(source, validationContext)))
     };
 }
 
-export function parseProjectSource(projectSource: ProjectSource): ParsedProjectSource | undefined {
+export function parseProjectSource(projectSource: ProjectSource, validationContext: ValidationContext): ParsedProjectSource | undefined {
     switch (projectSource.type) {
         case SourceType.YAML:
-            const yamlData = extractJSONFromYAML(projectSource.body);
 
-            const pathLocationMap = extractMessageLocationsFromYAML(projectSource);
+            const root: YAMLNode | undefined = load(projectSource.body);
+
+            if (!root) {
+                return undefined;
+            }
+
+            root.errors.forEach(error => {
+                const severity = error.isWarning ? Severity.Warning : Severity.Error;
+                const endPos = getLineEndPosition(error.mark.line+1, projectSource);
+                validationContext.addMessage(new ValidationMessage(severity, error.reason, {}, new MessageLocation(projectSource, new SourcePosition(error.mark.position, error.mark.line + 1, error.mark.column + 1), endPos)));
+            });
+
+            if(root.errors.some(error => !error.isWarning)){
+                // returning undefined will lead to ignoring this source file in future steps
+                return undefined;
+            }
+
+            const yamlData = extractJSONFromYAML(root);
+
+            const pathLocationMap = extractMessageLocationsFromYAML(root, projectSource);
 
             return {
                 kind: ParsedProjectSourceBaseKind.OBJECT,
@@ -150,6 +173,17 @@ export function parseProjectSource(projectSource: ProjectSource): ParsedProjectS
         case SourceType.JSON:
             let data = {} as PlainObject;
 
+            // perform general JSON syntax check
+            const result = jsonLint(projectSource.body, { comments: true });
+            if (result.error) {
+                let loc: MessageLocation|undefined;
+                if (typeof result.line == 'number' && typeof result.i == 'number' && typeof result.character == 'number') {
+                    loc = new MessageLocation(projectSource, result.i, projectSource.body.length);
+                }
+                validationContext.addMessage(ValidationMessage.error(result.error, {}, loc));
+            }
+
+            // parse JSON
             const jsonPathLocationMap: { [path: string]: MessageLocation } = {};
 
             try {
@@ -165,7 +199,8 @@ export function parseProjectSource(projectSource: ProjectSource): ParsedProjectS
 
                 data = result.data;
             } catch (e) {
-                throw new Error('No valid JSON supplied in ' + projectSource.name + ' ' + e);
+                // returning undefined will lead to ignoring this source file in future steps
+                return undefined;
             }
 
             return {
@@ -175,10 +210,23 @@ export function parseProjectSource(projectSource: ProjectSource): ParsedProjectS
                 pathLocationMap: jsonPathLocationMap
             };
         case SourceType.GRAPHQLS:
+            let document: DocumentNode;
+            try{
+                document = parse(projectSource.toGraphQLSource())
+            } catch (e) {
+                if (e instanceof GraphQLError) {
+                    const message = getMessageFromGraphQLSyntaxError(e);
+                    const location = getGraphQLMessageLocation(e);
+                    validationContext.addMessage(ValidationMessage.error(message, {}, location));
+                    return undefined;
+                }
+                throw e;
+            }
+
             return {
                 kind: ParsedProjectSourceBaseKind.GRAPHQL,
                 namespacePath: getNamespaceFromSourceName(projectSource.name),
-                document: parse(projectSource.toGraphQLSource())
+                document: document
             };
     }
 }
@@ -195,11 +243,8 @@ function getNamespaceFromSourceName(name: string): ReadonlyArray<string> {
  * @param {ProjectSource} source containing valid YAML (returns error if source is not valid)
  * @returns {{[p: string]: MessageLocation}} a map of paths to message locations
  */
-function extractMessageLocationsFromYAML(source: ProjectSource): { [path: string]: MessageLocation } {
-    const root: YAMLNode | undefined = load(source.body);
-    if (!root) {
-        throw new Error('No valid yaml suplied in ' + source.name);
-    }
+function extractMessageLocationsFromYAML(root: YAMLNode, source:ProjectSource): { [path: string]: MessageLocation } {
+
     const result = extractAllPaths(root, [] as ReadonlyArray<(string | number)>);
     let messageLocations: { [path: string]: MessageLocation } = {};
     result.forEach(val => messageLocations[val.path.join('/')] = new MessageLocation(source, val.node.startPosition, val.node.endPosition));
@@ -249,11 +294,7 @@ function extractAllPaths(node: YAMLNode, curPath: ReadonlyArray<(string | number
     return [{ path: curPath, node: node }];
 }
 
-export function extractJSONFromYAML(yamlSource: string): PlainObject {
-    const root: YAMLNode | undefined = load(yamlSource);
-    if (!root) {
-        throw new Error('No valid yaml suplied');
-    }
+export function extractJSONFromYAML(root: YAMLNode): PlainObject {
 
     const result = recursiveObjectExtraction(root, {});
     if (typeof result === 'object') {
@@ -289,4 +330,23 @@ function recursiveObjectExtraction(node: YAMLNode, object: PlainObject): any {
             throw new Error('No support for parsing include references and anchor references.');
     }
     throw new Error('An error occured while parsing the YAML file');
+}
+
+function getMessageFromGraphQLSyntaxError(error: GraphQLError): string {
+    const captures = error.message.match(/^Syntax Error .* \(\d+:\d+\) (.*)/);
+    if (captures) {
+        return captures[1];
+    }
+    return error.message;
+}
+
+function getGraphQLMessageLocation(error: GraphQLError): MessageLocation|undefined {
+    if (!error.source || !error.locations || !error.locations.length || !error.positions || !error.positions.length) {
+        return undefined;
+    }
+    const endOffset = error.source.body.length;
+    const endLoc = getLocation(error.source, endOffset);
+    return new MessageLocation(ProjectSource.fromGraphQLSource(error.source) || error.source.name,
+        new SourcePosition(error.positions[0], error.locations[0].line, error.locations[0].column),
+        new SourcePosition(endOffset, endLoc.line, endLoc.column));
 }

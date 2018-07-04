@@ -1,5 +1,5 @@
 import { DocumentNode } from 'graphql';
-import { Model, PermissionProfileMap, ValidationMessage, ValidationResult } from '../../model';
+import { Model, ValidationMessage, ValidationResult } from '../../model';
 import { ProjectSource } from '../../project/source';
 import { flatMap } from '../../utils/utils';
 import { IndicesValidator } from './ast-validation-modules/indices-validator';
@@ -7,19 +7,15 @@ import { KeyFieldValidator } from './ast-validation-modules/key-field-validator'
 import { NoListsOfListsValidator } from './ast-validation-modules/no-lists-of-lists-validator';
 import { NoUnusedNonRootObjectTypesValidator } from './ast-validation-modules/no-unused-non-root-object-types-validator';
 import { RolesOnNonRootEntityTypesValidator } from './ast-validation-modules/roles-on-non-root-entity-types';
-import { CheckGraphQLSyntaxValidator } from './source-validation-modules/check-graphql-syntax';
-import { CheckJsonSyntaxValidator } from './source-validation-modules/check-json-syntax';
-import { CheckYamlSyntaxValidator } from './source-validation-modules/check-yaml-syntax';
 import { GraphQLRulesValidator } from './source-validation-modules/graphql-rules';
 import { SidecarSchemaValidator } from './source-validation-modules/sidecar-schema';
 import { ParsedProjectSource } from '../../config/parsed-project';
 
-const sourceValidators: ReadonlyArray<SourceValidator>  = [
-    new CheckGraphQLSyntaxValidator(),
+const sourceValidators: ReadonlyArray<SourceValidator>  = [];
+
+const parsedProjectSourceValidators: ReadonlyArray<ParsedSourceValidator>  = [
     new GraphQLRulesValidator(),
-    new CheckYamlSyntaxValidator(),
-    new CheckJsonSyntaxValidator(),
-    new SidecarSchemaValidator(),
+    new SidecarSchemaValidator()
 ];
 
 const postMergeValidators: ReadonlyArray<ASTValidator> = [
@@ -44,6 +40,10 @@ export interface SourceValidator {
 
 export function validateSource(source: ProjectSource): ValidationResult {
     return new ValidationResult(flatMap(sourceValidators, validator => validator.validate(source)));
+}
+
+export function validateParsedProjectSource(source: ParsedProjectSource): ValidationResult {
+    return new ValidationResult(flatMap(parsedProjectSourceValidators, validator => validator.validate(source)));
 }
 
 export function validatePostMerge(ast: DocumentNode, model: Model): ValidationResult {
