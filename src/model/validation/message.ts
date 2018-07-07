@@ -31,6 +31,9 @@ export class MessageLocation {
             this.sourceName = source.name;
         } else {
             this.sourceName = source;
+            if (!(_start instanceof SourcePosition) || !(_end instanceof SourcePosition)) {
+                throw new Error(`If no ProjectSource is given, start and end positions must be SourcePositions.`);
+            }
         }
     }
 
