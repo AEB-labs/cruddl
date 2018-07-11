@@ -6,30 +6,32 @@ import { NAMESPACE_SEPARATOR } from '../../schema/constants';
 import {
     arrayStartsWith, capitalize, compact, decapitalize, flatMap, groupArray, mapFirstDefined, mapValues
 } from '../../utils/utils';
-import { FieldI18nConfig, I18nConfig, NamespaceI18nConfig } from '../config/i18n';
+import { FieldLocalizationConfig, LocalizationConfig, NamespaceLocalizationConfig } from '../config/i18n';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
 import { Field } from './field';
+import { Model } from './model';
 import { ObjectTypeBase } from './object-type-base';
 
 export class ModelI18n implements ModelComponent {
 
-    private readonly languageLocalizationProvidersByLanguage: ReadonlyMap<string, LanguageLocalizationProvider>;
+    private readonly languageLocalizationProvidersByLanguage: ReadonlyMap<string, ModelLocalizationProvider>;
 
-    constructor(input: ReadonlyArray<I18nConfig>) {
+    constructor(input: ReadonlyArray<LocalizationConfig>, private readonly model: Model) {
         // collect configs by language and create one list of namespaces per language
         // collect all countries for which namespaces must be created
         const configsByLanguage = groupArray(input, config => config.language);
         // const namespacesByCountryPrepared
-        const namespacesByCountry = new Map<string, LanguageLocalizationProvider>();
+        const localizationMap = new Map<string, ModelLocalizationProvider>();
         Array.from(configsByLanguage.keys()).forEach(language =>
-            namespacesByCountry.set(language, new LanguageLocalizationProvider(flatMap(configsByLanguage.get(language)!,
+            localizationMap.set(language, new ModelLocalizationProvider(flatMap(configsByLanguage.get(language)!,
                 config => flattenNamespaceConfigs(config.namespaceContent, config.namespacePath)
-                    .map(flatNamespace => new I18nNamespace(flatNamespace)))))
+                    .map(flatNamespace => new NamespaceLocalization(flatNamespace)))))
         );
-        this.languageLocalizationProvidersByLanguage = namespacesByCountry;
+        this.languageLocalizationProvidersByLanguage = localizationMap;
     }
 
     public validate(context: ValidationContext): void {
+        // todo perform localization checks
     }
 
     @memorize()
@@ -69,11 +71,11 @@ export class ModelI18n implements ModelComponent {
 
 }
 
-export class I18nNamespace {
+export class NamespaceLocalization {
     public readonly namespacePath: ReadonlyArray<string>;
     private readonly typeI18n: ReadonlyArray<TypeI18n>;
     private readonly fieldI18n: ReadonlyArray<FieldI18n>;
-    constructor(input: FlatNamespaceI18nConfig) {
+    constructor(input: FlatNamespaceLocalizationConfig) {
         this.namespacePath = input.namespacePath;
         this.typeI18n = this.extractTypes(input);
         this.fieldI18n = this.extractFields(input);
@@ -90,10 +92,10 @@ export class I18nNamespace {
         ]);
     }
 
-    private extractFields(input: FlatNamespaceI18nConfig): ReadonlyArray<TypeI18n> {
+    private extractFields(input: FlatNamespaceLocalizationConfig): ReadonlyArray<FieldI18n> {
         return [
             // Namespace fields
-            ...Object.keys(input.fields).map(fieldName =>
+            ...Object.keys(input.fields).map((fieldName): FieldI18n =>
                 ({
                     name: fieldName,
                     label: input.fields[fieldName].label,
@@ -103,7 +105,7 @@ export class I18nNamespace {
             // Fields from types
             ...flatMap(Object.keys(input.types), typeName =>
                 Object.keys(input.types[typeName].fields)
-                    .map(fieldName =>
+                    .map((fieldName): FieldI18n =>
                         ({
                             name: fieldName,
                             label: input.types[typeName].fields[fieldName].label,
@@ -115,7 +117,7 @@ export class I18nNamespace {
         ];
     }
 
-    private extractTypes(input: FlatNamespaceI18nConfig): ReadonlyArray<FieldI18n> {
+    private extractTypes(input: FlatNamespaceLocalizationConfig): ReadonlyArray<TypeI18n> {
         return Object.keys(input.types).map(typeName => ({
                 name: typeName,
                 singular: input.types[typeName].singular,
@@ -148,8 +150,8 @@ export interface FieldI18n extends FieldLocalization {
 }
 
 
-function flattenNamespaceConfigs(namespace: NamespaceI18nConfig, basePath: ReadonlyArray<string>): ReadonlyArray<FlatNamespaceI18nConfig> {
-    const subNamespaces: FlatNamespaceI18nConfig[] =
+function flattenNamespaceConfigs(namespace: NamespaceLocalizationConfig, basePath: ReadonlyArray<string>): ReadonlyArray<FlatNamespaceLocalizationConfig> {
+    const subNamespaces: FlatNamespaceLocalizationConfig[] =
         namespace.namespaces ?
             flatMap(Object.keys(namespace.namespaces), key =>
                 [
@@ -159,7 +161,7 @@ function flattenNamespaceConfigs(namespace: NamespaceI18nConfig, basePath: Reado
                         [...basePath, key])
                 ]
             ) : [];
-    const flattenedNamespace: FlatNamespaceI18nConfig = {
+    const flattenedNamespace: FlatNamespaceLocalizationConfig = {
         fields: normalizeFieldConfig(namespace.fields),
         types: namespace.types ? mapValues(namespace.types, type => ({...type, fields: normalizeFieldConfig(type.fields)})) : {},
         namespacePath: basePath
@@ -167,7 +169,7 @@ function flattenNamespaceConfigs(namespace: NamespaceI18nConfig, basePath: Reado
     return [flattenedNamespace, ...subNamespaces];
 }
 
-function normalizeFieldConfig(fieldConfigs: { [name: string]: FieldI18nConfig|string }|undefined): { [name: string]: FieldI18nConfig } {
+function normalizeFieldConfig(fieldConfigs: { [name: string]: FieldLocalizationConfig|string }|undefined): { [name: string]: FieldLocalizationConfig } {
     if (!fieldConfigs) {
         return {};
     }
@@ -179,18 +181,19 @@ function normalizeFieldConfig(fieldConfigs: { [name: string]: FieldI18nConfig|st
 /**
  * A namespace which does not have sub-namespaces
  */
-export interface FlatNamespaceI18nConfig {
+export interface FlatNamespaceLocalizationConfig {
     readonly types: { [name: string]: NormalizedTypeI18nConfig }
     readonly namespacePath: ReadonlyArray<string>
-    readonly fields: { [name: string]: FieldI18nConfig }
+    readonly fields: { [name: string]: FieldLocalizationConfig }
 }
 
-/** A type localization which uses a FieldI18nConfig for each label */
+/** A type localization which uses a FieldLocalizationConfig for each label */
 export interface NormalizedTypeI18nConfig {
+    // TODO replace by TypeLocalizationConfig
     readonly singular?: string
     readonly plural?: string
     readonly hint?: string
-    readonly fields: { [name: string]: FieldI18nConfig }
+    readonly fields: { [name: string]: FieldLocalizationConfig }
 }
 
 interface LocalizationProvider {
@@ -198,11 +201,12 @@ interface LocalizationProvider {
     localizeField(field: Field): FieldLocalization;
 }
 
-class LanguageLocalizationProvider implements LocalizationProvider {
+class ModelLocalizationProvider implements LocalizationProvider {
 
-    constructor(private namespaces: ReadonlyArray<I18nNamespace>) {}
+    constructor(private namespaces: ReadonlyArray<NamespaceLocalization>) {}
 
-    private getMatchingNamespaces(namespacePath: ReadonlyArray<string>): ReadonlyArray<I18nNamespace> {
+
+    private getMatchingNamespaces(namespacePath: ReadonlyArray<string>): ReadonlyArray<NamespaceLocalization> {
         return this.namespaces.filter(set => arrayStartsWith(namespacePath, set.namespacePath))
             .sort((lhs, rhs) => lhs.namespacePath.length - rhs.namespacePath.length);
     }
@@ -224,6 +228,21 @@ class LanguageLocalizationProvider implements LocalizationProvider {
             label: mapFirstDefined(matchingFieldLocalization, t => t.label),
             hint: mapFirstDefined(matchingFieldLocalization, t => t.hint)
         };
+        /**
+         * types:
+         *   Delivery
+         *     fields:
+         *       createdAt
+         * namespaces:
+         *   types:
+         *     Delivery
+         *       fields:
+         *         createdAt
+         *   model
+         *     fields:
+         *       createdAt
+         *
+         */
     }
 
 }

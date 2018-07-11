@@ -26,7 +26,7 @@ import {
     PermissionsConfig,
     RolesSpecifierConfig, TypeConfig, TypeKind
 } from './config';
-import { I18nConfig, parseI18nConfigs } from './config/i18n';
+import { LocalizationConfig, parseI18nConfigs } from './config/i18n';
 import { Model } from './implementation';
 import { ValidationContext, ValidationMessage } from './validation';
 
@@ -436,7 +436,7 @@ function extractPermissionProfiles(parsedProject: ParsedProject, validationConte
     }, {});
 }
 
-function extractI18n(parsedProject: ParsedProject, validationContext: ValidationContext): ReadonlyArray<I18nConfig> {
+function extractI18n(parsedProject: ParsedProject, validationContext: ValidationContext): ReadonlyArray<LocalizationConfig> {
     const objectSchemaParts = parsedProject.sources
         .filter(parsedSource => parsedSource.kind === ParsedProjectSourceBaseKind.OBJECT) as ReadonlyArray<ParsedObjectProjectSource>;
     return flatMap(objectSchemaParts, source => parseI18nConfigs(source));

@@ -1,12 +1,12 @@
 import { expect } from 'chai';
 import { Model, TypeKind } from '../../../src/model';
-import { I18nConfig } from '../../../src/model/config/i18n';
+import { LocalizationConfig } from '../../../src/model/config/i18n';
 
 const FULLY = 'fully';
 const PARTIALLY = 'partially';
 const NAMESPACED = 'namespaced';
 
-const i18n: I18nConfig[] = [
+const i18n: LocalizationConfig[] = [
     {
         language: FULLY,
         namespaceContent: {

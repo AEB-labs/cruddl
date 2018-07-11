@@ -36,7 +36,7 @@ export class Model implements ModelComponent {
         this.rootNamespace = new Namespace(undefined, [], this.rootEntityTypes);
         this.namespaces = [this.rootNamespace, ...this.rootNamespace.descendantNamespaces];
         this.typeMap = new Map(this.types.map((type): [string, Type] => ([type.name, type])));
-        this.i18n = new ModelI18n(input.i18n || []);
+        this.i18n = new ModelI18n(input.i18n || [], this);
     }
 
     validate(context = new ValidationContext()): ValidationResult {

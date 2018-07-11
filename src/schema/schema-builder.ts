@@ -152,7 +152,7 @@ export function parseProjectSource(projectSource: ProjectSource, validationConte
             root.errors.forEach(error => {
                 const severity = error.isWarning ? Severity.Warning : Severity.Error;
                 const endPos = getLineEndPosition(error.mark.line+1, projectSource);
-                validationContext.addMessage(new ValidationMessage(severity, error.reason, {}, new MessageLocation(projectSource, new SourcePosition(error.mark.position, error.mark.line + 1, error.mark.column + 1), endPos)));
+                validationContext.addMessage(new ValidationMessage(severity, error.reason, new MessageLocation(projectSource, new SourcePosition(error.mark.position, error.mark.line + 1, error.mark.column + 1), endPos)));
             });
 
             if(root.errors.some(error => !error.isWarning)){
@@ -180,7 +180,7 @@ export function parseProjectSource(projectSource: ProjectSource, validationConte
                 if (typeof result.line == 'number' && typeof result.i == 'number' && typeof result.character == 'number') {
                     loc = new MessageLocation(projectSource, result.i, projectSource.body.length);
                 }
-                validationContext.addMessage(ValidationMessage.error(result.error, {}, loc));
+                validationContext.addMessage(ValidationMessage.error(result.error, loc));
             }
 
             // parse JSON
@@ -217,7 +217,7 @@ export function parseProjectSource(projectSource: ProjectSource, validationConte
                 if (e instanceof GraphQLError) {
                     const message = getMessageFromGraphQLSyntaxError(e);
                     const location = getGraphQLMessageLocation(e);
-                    validationContext.addMessage(ValidationMessage.error(message, {}, location));
+                    validationContext.addMessage(ValidationMessage.error(message, location));
                     return undefined;
                 }
                 throw e;

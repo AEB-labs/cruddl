@@ -104,7 +104,7 @@ const model = new Model({
     i18n
 });
 
-describe('I18n field localization', () => {
+describe('I18n validation', () => {
     it('provides localization for a fully translated type', () => {
         const localization = model.getRootEntityTypeOrThrow('A').getFieldOrThrow('a1').getLocalization([FULLY]);
         expect(localization.label).to.equal('A1_FULLY_LABEL');
