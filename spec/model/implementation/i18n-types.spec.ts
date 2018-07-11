@@ -68,7 +68,7 @@ const i18n: LocalizationConfig[] = [
                 }
             },
 
-            namespacePath: []
+            namespacePath: ['namespace']
         }
     }
 ];
