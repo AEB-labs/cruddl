@@ -33,7 +33,8 @@ const i18n: LocalizationConfig[] = [
             },
             fields: {
                 g1: { label: 'G1_FULLY_LABEL', hint: 'G1_FULLY_HINT'}
-            }
+            },
+            namespacePath: []
         },
         namespacePath: []
     },
@@ -56,29 +57,35 @@ const i18n: LocalizationConfig[] = [
             fields: {
                 g1: {hint: 'G1_PARTIALLY_HINT'},
                 g2: {hint: 'G2_PARTIALLY_HINT'}
-            }
+            },
+            namespacePath: []
         },
         namespacePath: []
     },
     {
         language: NAMESPACED,
         namespaceContent: {
-            namespaces: {
-                namespace: {
-                    types: {
-                        C: {
-                            fields: {
-                                c1: { label: 'C1_NAMESPACED_LABEL_DIRECT' },
-                            }
-                        }
-                    },
-                }
-            },
             fields: {
                 c1: { hint: 'C1_NON_NAMESPACED_HINT' }
-            }
+            },
+            namespacePath: []
         },
         namespacePath: []
+    },
+    {
+        language: NAMESPACED,
+        namespaceContent: {
+
+            types: {
+                C: {
+                    fields: {
+                        c1: { label: 'C1_NAMESPACED_LABEL_DIRECT' },
+                    }
+                }
+            },
+            namespacePath: ['namespace']
+        },
+        namespacePath: ['namespace']
     }
 ];
 

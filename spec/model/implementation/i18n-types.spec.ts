@@ -27,7 +27,8 @@ const i18n: LocalizationConfig[] = [
                     plural: 'C_FULLY_PLURAL',
                     hint: 'C_FULLY_HINT'
                 }
-            }
+            },
+            namespacePath: []
         },
         namespacePath: []
     },
@@ -36,38 +37,38 @@ const i18n: LocalizationConfig[] = [
         namespaceContent: {
             types: {
                 A: {
-                    singular: 'A_PARTIALLY_SINGULAR',
+                    singular: 'A_PARTIALLY_SINGULAR'
                 },
                 // B missing
                 // C is actually located in 'namespace' but translated in root here
                 C: {
                     singular: 'C_PARTIALLY_SINGULAR'
                 }
-            }
+            },
+            namespacePath: []
         },
         namespacePath: []
     },
     {
         language: NAMESPACED,
-        namespacePath: [],
+        namespacePath: ['namespace'],
         namespaceContent: {
-            namespaces: {
-                namespace: {
-                    types: {
-                        // A is not namespaced in model, this localization must never be used
-                        A: {
-                            singular: 'A_NAMESPACED_SINGULAR',
-                            plural: 'A_NAMESPACED_PLURAL',
-                            hint: 'A_NAMESPACED_HINT'
-                        },
-                        C: {
-                            singular: 'C_NAMESPACED_SINGULAR',
-                            plural: 'C_NAMESPACED_PLURAL',
-                            hint: 'C_NAMESPACED_HINT',
-                        }
-                    }
+
+            types: {
+                // A is not namespaced in model, this localization must never be used
+                A: {
+                    singular: 'A_NAMESPACED_SINGULAR',
+                    plural: 'A_NAMESPACED_PLURAL',
+                    hint: 'A_NAMESPACED_HINT'
+                },
+                C: {
+                    singular: 'C_NAMESPACED_SINGULAR',
+                    plural: 'C_NAMESPACED_PLURAL',
+                    hint: 'C_NAMESPACED_HINT'
                 }
-            }
+            },
+
+            namespacePath: []
         }
     }
 ];
@@ -77,18 +78,27 @@ const model = new Model({
         {
             kind: TypeKind.ROOT_ENTITY,
             name: 'A',
-            fields: [{ name: 'field1', typeName: 'String' }, { name: 'field2', typeName: 'String' }, { name: 'field3', typeName: 'String' }]
+            fields: [
+                { name: 'field1', typeName: 'String' }, { name: 'field2', typeName: 'String' },
+                { name: 'field3', typeName: 'String' }
+            ]
         },
         {
             kind: TypeKind.ROOT_ENTITY,
             name: 'B',
-            fields: [{ name: 'field1', typeName: 'String' }, { name: 'field2', typeName: 'String' }, { name: 'field3', typeName: 'String' }]
+            fields: [
+                { name: 'field1', typeName: 'String' }, { name: 'field2', typeName: 'String' },
+                { name: 'field3', typeName: 'String' }
+            ]
         },
         {
             kind: TypeKind.ROOT_ENTITY,
             name: 'C',
             namespacePath: ['namespace'],
-            fields: [{ name: 'field1', typeName: 'String' }, { name: 'field2', typeName: 'String' }, { name: 'field3', typeName: 'String' }]
+            fields: [
+                { name: 'field1', typeName: 'String' }, { name: 'field2', typeName: 'String' },
+                { name: 'field3', typeName: 'String' }
+            ]
         }
     ],
     i18n
@@ -96,7 +106,7 @@ const model = new Model({
 
 describe('I18n type localization', () => {
     it('provides localization for a fully translated type', () => {
-      const localization = model.getRootEntityTypeOrThrow('A').getLocalization([FULLY]);
+        const localization = model.getRootEntityTypeOrThrow('A').getLocalization([FULLY]);
         expect(localization.singular).to.equal('A_FULLY_SINGULAR');
         expect(localization.plural).to.equal('A_FULLY_PLURAL');
         expect(localization.hint).to.equal('A_FULLY_HINT');

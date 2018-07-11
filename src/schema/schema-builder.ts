@@ -133,7 +133,7 @@ function mergeAST(doc1: DocumentNode, doc2: DocumentNode): DocumentNode {
 /**
  * Parse all schema parts sources which aren't AST already and deep clone all AST sources.
  */
-function parseProject(project: Project, validationContext: ValidationContext): ParsedProject {
+export function parseProject(project: Project, validationContext: ValidationContext): ParsedProject {
     return {
         sources: compact(project.sources.map(source => parseProjectSource(source, validationContext)))
     };

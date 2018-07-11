@@ -1,167 +1,72 @@
 import { expect } from "chai";
-import { Model, TypeKind } from '../../../src/model';
-import { LocalizationConfig } from '../../../src/model/config/i18n';
+import {  Source } from 'graphql';
+import { createModel, ValidationContext } from '../../../src/model';
+import { Project } from '../../../src/project/project';
+import { parseProject } from '../../../src/schema/schema-builder';
 
-const FULLY = 'fully';
-const PARTIALLY = 'partially';
-const NAMESPACED = 'namespaced';
-
-const i18n: LocalizationConfig[] = [
-    {
-        language: FULLY,
-        namespaceContent: {
-            types: {
-                A: {
-                    fields: {
-                        a1: { label: 'A1_FULLY_LABEL', hint: 'A1_FULLY_HINT' },
-                        a2: { label: 'A2_FULLY_LABEL', hint: 'A2_FULLY_HINT' }
-                    },
-                },
-                // C is actually located in 'namespace' but translated in root here
-                B: {
-                    fields: {
-                        b1: { label: 'B1_FULLY_LABEL', hint: 'B1_FULLY_HINT' },
-                        b2: { label: 'B2_FULLY_LABEL', hint: 'B2_FULLY_HINT' }
-                    },
-                },
-                C: {
-                    fields: {
-                        c1: { label: 'C1_FULLY_LABEL', hint: 'C1_FULLY_HINT' },
-                        c2: { label: 'C2_FULLY_LABEL', hint: 'C2_FULLY_HINT' }
-                    },
-                }
-            },
-            fields: {
-                g1: { label: 'G1_FULLY_LABEL', hint: 'G1_FULLY_HINT'}
-            }
-        },
-        namespacePath: []
-    },
-    {
-        language: PARTIALLY,
-        namespaceContent: {
-            types: {
-                A: {
-                    fields: {
-                        a1: {label: 'A1_PARTIALLY_LABEL'},
-                        g2: {label: 'G2_PARTIALLY_LABEL_DIRECT'}
-                    },
-                },
-                B: {
-                    fields: {
-                        b2: { label: 'B2_PARTIALLY_LABEL', hint: 'B2_PARTIALLY_HINT' }
-                    },
-                },
-            },
-            fields: {
-                g1: {hint: 'G1_PARTIALLY_HINT'},
-                g2: {hint: 'G2_PARTIALLY_HINT'}
-            }
-        },
-        namespacePath: []
-    },
-    {
-        language: NAMESPACED,
-        namespaceContent: {
-            namespaces: {
-                namespace: {
-                    types: {
-                        C: {
-                            fields: {
-                                c1: { label: 'C1_NAMESPACED_LABEL_DIRECT' },
-                            }
-                        }
-                    },
-                }
-            },
-            fields: {
-                c1: { hint: 'C1_NON_NAMESPACED_HINT' }
-            }
-        },
-        namespacePath: []
+const permissionProfiles = `{
+  "permissionProfiles": {
+    "default": {
+      "permissions": [{
+        "access": "readWrite",
+        "roles": ["allusers"]
+      }]
     }
-];
+  }
+}`;
 
-const model = new Model({
-    types: [
-        {
-            kind: TypeKind.ROOT_ENTITY,
-            name: 'A',
-            fields: [{ name: 'a1', typeName: 'String' }, { name: 'a2', typeName: 'String' }, { name: 'g1', typeName: 'String' }, { name: 'g2', typeName: 'String' }]
-        },
-        {
-            kind: TypeKind.ROOT_ENTITY,
-            name: 'B',
-            fields: [{ name: 'b1', typeName: 'String' }, { name: 'b2', typeName: 'String' }]
-        },
-        {
-            kind: TypeKind.ROOT_ENTITY,
-            name: 'C',
-            namespacePath: ['namespace'],
-            fields: [{ name: 'c1', typeName: 'String' }]
-        }
-    ],
-    i18n
-});
+const graphql = `
+"A heroic mission"
+type Mission @childEntity {
+    date: DateTime
+    title: String
+}
+
+"A special skill of a superhero"
+type Skill @valueObject {
+    description: String
+    "A value between 0 and 11"
+    strength: Float
+    skills: [Skill]
+}
+`;
+
+const i18n1 = `
+i18n:
+  en:
+    types:
+      Skill:
+        singular: Skill
+        plural: Skills
+        hint: Something you are good at.
+        fields:
+          description:
+            label: Description
+            hint: A more detailed description.
+          age: age
+    fields:
+      strength:
+        label: Strength
+        hint: How established something is.`;
 
 describe('I18n validation', () => {
-    it('provides localization for a fully translated type', () => {
-        const localization = model.getRootEntityTypeOrThrow('A').getFieldOrThrow('a1').getLocalization([FULLY]);
-        expect(localization.label).to.equal('A1_FULLY_LABEL');
-        expect(localization.hint).to.equal('A1_FULLY_HINT');
+    it('reports no warnings and errors for a valid model', () => {
+        const validationContext = new ValidationContext();
+        const parsedProject = parseProject(new Project([new Source(permissionProfiles, 'perm.json'), new Source(graphql, 'graphql.graphql'), new Source(i18n1, 'i18n.yaml')]), new ValidationContext());
+        const model = createModel(parsedProject);
+
+        model.i18n.validate(validationContext);
+
+        expect(validationContext.asResult().hasMessages()).is.false;
     });
 
-    it('prefers languages in their given order', () => {
-        const localization = model.getRootEntityTypeOrThrow('A').getFieldOrThrow('a1').getLocalization([FULLY, PARTIALLY]);
-        expect(localization.label).to.equal('A1_FULLY_LABEL');
-        expect(localization.hint).to.equal('A1_FULLY_HINT');
-    });
+    it('reports double definitions of fields', () => {
+        const validationContext = new ValidationContext();
+        const parsedProject = parseProject(new Project([new Source(permissionProfiles, 'perm.json'), new Source(graphql, 'graphql.graphql'), new Source(i18n1, 'i18n.yaml'), new Source(i18n1, 'i18n.yaml')]), new ValidationContext());
+        const model = createModel(parsedProject);
 
-    it('provides partial localization for a partially translated type', () => {
-        const localization = model.getRootEntityTypeOrThrow('A').getFieldOrThrow('a1').getLocalization([PARTIALLY]);
-        expect(localization.label).to.equal('A1_PARTIALLY_LABEL');
-        expect(localization.hint).to.be.undefined;
-    });
+        model.i18n.validate(validationContext);
 
-    it('falls back to a less preferred language for missing localization property', () => {
-        const localization = model.getRootEntityTypeOrThrow('A').getFieldOrThrow('a1').getLocalization([PARTIALLY, FULLY]);
-        expect(localization.label).to.equal('A1_PARTIALLY_LABEL');
-        expect(localization.hint).to.equal('A1_FULLY_HINT');
-    });
-
-    it('falls back to a less preferred language for missing field localization', () => {
-        const localization = model.getRootEntityTypeOrThrow('B').getFieldOrThrow('b1').getLocalization([PARTIALLY, FULLY]);
-        expect(localization.label).to.equal('B1_FULLY_LABEL');
-        expect(localization.hint).to.equal('B1_FULLY_HINT');
-    });
-
-    it('falls back to a less preferred language for missing type localization', () => {
-        const localization = model.getRootEntityTypeOrThrow('C').getFieldOrThrow('c1').getLocalization([PARTIALLY, FULLY]);
-        expect(localization.label).to.equal('C1_FULLY_LABEL');
-        expect(localization.hint).to.equal('C1_FULLY_HINT');
-    });
-
-    it('falls back to a common field translation missing localization properties', () => {
-        const localization = model.getRootEntityTypeOrThrow('A').getFieldOrThrow('g1').getLocalization([PARTIALLY]);
-        expect(localization.label).to.be.undefined;
-        expect(localization.hint).to.equal('G1_PARTIALLY_HINT');
-    });
-
-    it('falls back to a common field translation missing localization type', () => {
-        const localization = model.getRootEntityTypeOrThrow('A').getFieldOrThrow('g1').getLocalization([PARTIALLY]);
-        expect(localization.label).to.be.undefined;
-        expect(localization.hint).to.equal('G1_PARTIALLY_HINT');
-    });
-
-    it('falls back to a common field translation missing localization field', () => {
-        const localization = model.getRootEntityTypeOrThrow('A').getFieldOrThrow('g2').getLocalization([PARTIALLY]);
-        expect(localization.label).to.equal('G2_PARTIALLY_LABEL_DIRECT');
-        expect(localization.hint).to.equal('G2_PARTIALLY_HINT');
-    });
-
-    it('falls back to a common field of a super namespace', () => {
-        const localization = model.getRootEntityTypeOrThrow('C').getFieldOrThrow('c1').getLocalization([NAMESPACED]);
-        expect(localization.label).to.equal('C1_NAMESPACED_LABEL_DIRECT');
-        expect(localization.hint).to.equal('C1_NON_NAMESPACED_HINT');
+        expect(validationContext.asResult().hasMessages()).is.true;
     });
 });
