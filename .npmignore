@@ -64,5 +64,5 @@ coverage/
 /src/
 /*.ts
 
-# arangodb directory contains ArangoDB in gitlab-ci build
-/arangodb/
+# arangodb-bin directory contains ArangoDB in travis build
+/arangodb-bin/
