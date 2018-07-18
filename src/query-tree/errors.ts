@@ -1,4 +1,4 @@
-import { red } from 'colors/safe';
+import { red } from '../utils/colors';
 import { QueryNode } from './base';
 
 /**

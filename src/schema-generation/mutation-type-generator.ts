@@ -44,10 +44,11 @@ export class MutationTypeGenerator {
         }));
 
         const rootEntityFields = flatMap(namespace.rootEntityTypes, type => this.generateFields(type));
+        const namespaceDesc = namespace.isRoot ? `the root namespace` : `the namespace \`${namespace.dotSeparatedPath}\``;
 
         return {
             name: namespace.pascalCasePath + MUTATION_TYPE,
-            description: `The Mutation type for the namespace "${namespace.dotSeparatedPath}"`,
+            description: `The Mutation type for ${namespaceDesc}\n\nFields are executed serially in the order they occur in the selection set (the result of the first field does not see the changes made by the second field). All mutations are executed atomically - if any of them fail, the complete operation is rolled back.`,
             fields: [
                 ...namespaceFields,
                 ...rootEntityFields

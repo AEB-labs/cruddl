@@ -1,4 +1,4 @@
-import { blue } from 'colors/safe';
+import { blue } from '../utils/colors';
 import { Field, RelationSide, RootEntityType } from '../model';
 import { QueryNode } from './base';
 

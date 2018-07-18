@@ -23,8 +23,11 @@ export class QueryTypeGenerator {
 
     @memorize()
     generate(namespace: Namespace): QueryNodeObjectType {
+        const namespaceDesc = namespace.isRoot ? `the root namespace` : `the namespace \`${namespace.dotSeparatedPath}\``;
+
         return {
             name: namespace.pascalCasePath + QUERY_TYPE,
+            description: `The Query type for ${namespaceDesc}`,
             fields: [
                 ...namespace.childNamespaces.map(namespace => this.getNamespaceField(namespace)),
                 ...flatMap(namespace.rootEntityTypes, type => this.getFields(type)),

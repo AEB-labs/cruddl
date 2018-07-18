@@ -1,4 +1,4 @@
-import { blue, cyan, green } from 'colors/safe';
+import { blue, cyan, green } from '../utils/colors';
 import {
     DocumentNode, FieldNode, FragmentDefinitionNode, getNamedType, GraphQLCompositeType, GraphQLField,
     GraphQLObjectType, GraphQLOutputType, GraphQLSchema, isCompositeType, OperationDefinitionNode, OperationTypeNode,

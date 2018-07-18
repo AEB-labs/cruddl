@@ -1,0 +1,5 @@
+{
+  "name": "cruddl/inmemory",
+  "typings": "../dist/src/database/inmemory/index.d.ts",
+  "main": "../dist/src/database/inmemory/index.js"
+}
