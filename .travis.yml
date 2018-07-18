@@ -2,7 +2,7 @@ language: node_js
 node_js:
 - '8'
 script:
-- mkdir -p arangodb && cd arangodb-bin && curl -L https://download.arangodb.com/travisCI/setup_arangodb_3.2.4.sh
+- mkdir -p arangodb-bin && cd arangodb-bin && curl -L https://download.arangodb.com/travisCI/setup_arangodb_3.2.4.sh
   | bash > /dev/null
 - npm install
 - npm run test:coverage
