@@ -15,28 +15,13 @@ export interface NamespaceLocalizationConfig {
     readonly loc?: MessageLocation;
 }
 
-export type TypeLocalizationConfig = ObjectTypeLocalizationConfig | EnumTypeLocalizationConfig;
 
-export enum TypeLocalizationConfigKind {
-    OBJECT = 'OBJECT',
-    ENUM = 'ENUM'
-}
-
-export interface TypeLocalizationBaseConfig {
-    readonly kind: TypeLocalizationConfigKind
+export interface TypeLocalizationConfig {
     readonly singular?: string
     readonly plural?: string
     readonly hint?: string
     readonly loc?: MessageLocation
-}
-
-export interface ObjectTypeLocalizationConfig extends TypeLocalizationBaseConfig {
-    readonly kind: TypeLocalizationConfigKind.OBJECT
     readonly fields?: { [name: string]: LocalizationBaseConfig }
-}
-
-export interface EnumTypeLocalizationConfig extends TypeLocalizationBaseConfig {
-    readonly kind: TypeLocalizationConfigKind.ENUM
     readonly values?: { [name: string]: LocalizationBaseConfig }
 }
 
@@ -46,37 +31,26 @@ export interface LocalizationBaseConfig {
     readonly loc?: MessageLocation
 }
 
-function normalizeLocalizationBaseConfig(fieldConfigs: { [name: string]: LocalizationBaseConfig | string } | undefined, curYamlPath: string, source: ParsedObjectProjectSource): { [name: string]: LocalizationBaseConfig } {
+function normalizeLocalizationBaseConfig(fieldConfigs: { [name: string]: LocalizationBaseConfig | string } | undefined, curYamlPath: string, source: ParsedObjectProjectSource): { [name: string]: LocalizationBaseConfig } | undefined {
     if (!fieldConfigs) {
-        return {};
+        return;
     }
     return mapValues(fieldConfigs, (fieldConfig, key) => typeof fieldConfig === 'string' ? { label: fieldConfig, loc: source.pathLocationMap[curYamlPath + '/' + key] } : { label: fieldConfig.label, hint: fieldConfig.hint, loc: source.pathLocationMap[curYamlPath + '/' + key] });
 }
 
-function normalizeTypeConfig(typeConfigs: { [name: string]: TypeLocalizationConfig } | undefined, curYamlPath: string, source: ParsedObjectProjectSource): { [name: string]: TypeLocalizationConfig } {
+function normalizeTypeConfig(typeConfigs: { [name: string]: TypeLocalizationConfig } | undefined, curYamlPath: string, source: ParsedObjectProjectSource): { [name: string]: TypeLocalizationConfig | TypeLocalizationConfig } {
     if (!typeConfigs) {
         return {};
     }
     return mapValues(typeConfigs, (typeConfig, key) => {
-            if ((typeConfig as any).fields) {
-                return {
-                    kind: TypeLocalizationConfigKind.OBJECT,
-                    singular: typeConfig.singular,
-                    plural: typeConfig.plural,
-                    hint: typeConfig.hint,
-                    fields: normalizeLocalizationBaseConfig((typeConfig as ObjectTypeLocalizationConfig).fields, curYamlPath + '/types/' + key, source),
-                    loc: source.pathLocationMap[curYamlPath + '/types/' + key]
-                } as ObjectTypeLocalizationConfig;
-            } else {
-                return {
-                    kind: TypeLocalizationConfigKind.ENUM,
-                    singular: typeConfig.singular,
-                    plural: typeConfig.plural,
-                    hint: typeConfig.hint,
-                    values: normalizeLocalizationBaseConfig((typeConfig as EnumTypeLocalizationConfig).values, curYamlPath + '/types/' + key, source),
-                    loc: source.pathLocationMap[curYamlPath + '/types/' + key]
-                } as EnumTypeLocalizationConfig;
-            }
+            return {
+                singular: typeConfig.singular,
+                plural: typeConfig.plural,
+                hint: typeConfig.hint,
+                fields: normalizeLocalizationBaseConfig(typeConfig.fields, curYamlPath + '/types/' + key, source),
+                values: normalizeLocalizationBaseConfig(typeConfig.values, curYamlPath + '/types/' + key, source),
+                loc: source.pathLocationMap[curYamlPath + '/types/' + key]
+            };
         }
     );
 }

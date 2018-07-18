@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { Model, TypeKind } from '../../../src/model';
-import { LocalizationConfig, TypeLocalizationConfigKind } from '../../../src/model/config/i18n';
+import { LocalizationConfig } from '../../../src/model/config/i18n';
 
 const FULLY = 'fully';
 const PARTIALLY = 'partially';
@@ -12,20 +12,17 @@ const i18n: LocalizationConfig[] = [
         namespaceContent: {
             types: {
                 A: {
-                    kind: TypeLocalizationConfigKind.OBJECT,
                     singular: 'A_FULLY_SINGULAR',
                     plural: 'A_FULLY_PLURAL',
                     hint: 'A_FULLY_HINT'
                 },
                 B: {
-                    kind: TypeLocalizationConfigKind.OBJECT,
                     singular: 'B_FULLY_SINGULAR',
                     plural: 'B_FULLY_PLURAL',
                     hint: 'B_FULLY_HINT'
                 },
                 // C is actually located in 'namespace' but translated in root here
                 C: {
-                    kind: TypeLocalizationConfigKind.OBJECT,
                     singular: 'C_FULLY_SINGULAR',
                     plural: 'C_FULLY_PLURAL',
                     hint: 'C_FULLY_HINT'
@@ -40,13 +37,11 @@ const i18n: LocalizationConfig[] = [
         namespaceContent: {
             types: {
                 A: {
-                    kind: TypeLocalizationConfigKind.OBJECT,
                     singular: 'A_PARTIALLY_SINGULAR'
                 },
                 // B missing
                 // C is actually located in 'namespace' but translated in root here
                 C: {
-                    kind: TypeLocalizationConfigKind.OBJECT,
                     singular: 'C_PARTIALLY_SINGULAR'
                 }
             },
@@ -62,13 +57,11 @@ const i18n: LocalizationConfig[] = [
             types: {
                 // A is not namespaced in model, this localization must never be used
                 A: {
-                    kind: TypeLocalizationConfigKind.OBJECT,
                     singular: 'A_NAMESPACED_SINGULAR',
                     plural: 'A_NAMESPACED_PLURAL',
                     hint: 'A_NAMESPACED_HINT'
                 },
                 C: {
-                    kind: TypeLocalizationConfigKind.OBJECT,
                     singular: 'C_NAMESPACED_SINGULAR',
                     plural: 'C_NAMESPACED_PLURAL',
                     hint: 'C_NAMESPACED_HINT'

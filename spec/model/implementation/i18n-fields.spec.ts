@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { Model, TypeKind } from '../../../src/model';
-import { LocalizationConfig, TypeLocalizationConfigKind } from '../../../src/model/config/i18n';
+import { LocalizationConfig } from '../../../src/model/config/i18n';
 
 const FULLY = 'fully';
 const PARTIALLY = 'partially';
@@ -12,7 +12,6 @@ const i18n: LocalizationConfig[] = [
         namespaceContent: {
             types: {
                 A: {
-                    kind: TypeLocalizationConfigKind.OBJECT,
                     fields: {
                         a1: { label: 'A1_FULLY_LABEL', hint: 'A1_FULLY_HINT' },
                         a2: { label: 'A2_FULLY_LABEL', hint: 'A2_FULLY_HINT' }
@@ -20,14 +19,12 @@ const i18n: LocalizationConfig[] = [
                 },
                 // C is actually located in 'namespace' but translated in root here
                 B: {
-                    kind: TypeLocalizationConfigKind.OBJECT,
                     fields: {
                         b1: { label: 'B1_FULLY_LABEL', hint: 'B1_FULLY_HINT' },
                         b2: { label: 'B2_FULLY_LABEL', hint: 'B2_FULLY_HINT' }
                     },
                 },
                 C: {
-                    kind: TypeLocalizationConfigKind.OBJECT,
                     fields: {
                         c1: { label: 'C1_FULLY_LABEL', hint: 'C1_FULLY_HINT' },
                         c2: { label: 'C2_FULLY_LABEL', hint: 'C2_FULLY_HINT' }
@@ -46,14 +43,12 @@ const i18n: LocalizationConfig[] = [
         namespaceContent: {
             types: {
                 A: {
-                    kind: TypeLocalizationConfigKind.OBJECT,
                     fields: {
                         a1: {label: 'A1_PARTIALLY_LABEL'},
                         g2: {label: 'G2_PARTIALLY_LABEL_DIRECT'}
                     },
                 },
                 B: {
-                    kind: TypeLocalizationConfigKind.OBJECT,
                     fields: {
                         b2: { label: 'B2_PARTIALLY_LABEL', hint: 'B2_PARTIALLY_HINT' }
                     },
@@ -83,7 +78,6 @@ const i18n: LocalizationConfig[] = [
 
             types: {
                 C: {
-                    kind: TypeLocalizationConfigKind.OBJECT,
                     fields: {
                         c1: { label: 'C1_NAMESPACED_LABEL_DIRECT' },
                     }

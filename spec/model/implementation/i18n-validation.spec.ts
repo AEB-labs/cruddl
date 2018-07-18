@@ -47,7 +47,6 @@ i18n:
           description:
             label: Description
             hint: A more detailed description.
-          age: age
     fields:
       strength:
         label: Strength
@@ -117,5 +116,76 @@ i18n:
         expect(validationContext.asResult().getErrors().length).to.eq(1);
         expect(validationContext.asResult().getErrors()[0].message).to.contain("The type \"Skill\" is not an enum type. It does not have \"values\" attribute. Did you mean to use \"fields\" instead?");
 
+    });
+
+    it('reports translations for non existing fields', ()=>{
+        const wrongBody = `
+i18n:
+  en:
+    types:
+      Skill:
+        fields:
+          foo: Some non-existing field.
+        `;
+
+        const validationContext = new ValidationContext();
+        const parsedProject = parseProject(new Project([new Source(permissionProfiles, 'perm.json'), new Source(graphql, 'graphql.graphql'), new Source(wrongBody, 'i18n2.yaml')]), new ValidationContext());
+        const model = createModel(parsedProject);
+
+        model.i18n.validate(validationContext);
+
+        expect(validationContext.asResult().hasMessages()).is.true;
+        expect(validationContext.asResult().hasErrors()).is.false;
+        expect(validationContext.asResult().getWarnings().length).to.eq(1);
+        expect(validationContext.asResult().getWarnings()[0].message).to.contain('The type "Skill" has no field "foo". This might be a spelling error.');
+    });
+
+    it('reports translations for non existing values', () => {
+        const wrongBody = `
+i18n:
+  en:
+    types:
+      Importance:
+        values:
+          foo: Some non-existing field.
+        `;
+
+        const validationContext = new ValidationContext();
+        const parsedProject = parseProject(new Project([
+            new Source(permissionProfiles, 'perm.json'), new Source(graphql, 'graphql.graphql'),
+            new Source(wrongBody, 'i18n2.yaml')
+        ]), new ValidationContext());
+        const model = createModel(parsedProject);
+
+        model.i18n.validate(validationContext);
+
+        expect(validationContext.asResult().hasMessages()).is.true;
+        expect(validationContext.asResult().hasErrors()).is.false;
+        expect(validationContext.asResult().getWarnings().length).to.eq(1);
+        expect(validationContext.asResult().getWarnings()[0].message).to.contain('The enum type "Importance" has no value "foo". This might be a spelling error.');
+    });
+
+    it('reports translations for non existing types as warnings', () => {
+        const wrongBody = `
+i18n:
+  en:
+    types:
+      Foo:
+        singular: Test
+        `;
+
+        const validationContext = new ValidationContext();
+        const parsedProject = parseProject(new Project([
+            new Source(permissionProfiles, 'perm.json'), new Source(graphql, 'graphql.graphql'),
+            new Source(wrongBody, 'i18n2.yaml')
+        ]), new ValidationContext());
+        const model = createModel(parsedProject);
+
+        model.i18n.validate(validationContext);
+
+        expect(validationContext.asResult().hasMessages()).is.true;
+        expect(validationContext.asResult().hasErrors()).is.false;
+        expect(validationContext.asResult().getWarnings().length).to.eq(1);
+        expect(validationContext.asResult().getWarnings()[0].message).to.contain('There is no type "Foo" in the model specification. This might be a spelling error.');
     });
 });

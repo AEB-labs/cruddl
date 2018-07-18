@@ -6,12 +6,13 @@ import { NAMESPACE_SEPARATOR } from '../../schema/constants';
 import {
     arrayStartsWith, capitalize, compact, decapitalize, groupArray, mapFirstDefined
 } from '../../utils/utils';
-import { LocalizationBaseConfig, LocalizationConfig, NamespaceLocalizationConfig, TypeLocalizationConfigKind } from '../config/i18n';
+import { LocalizationBaseConfig, LocalizationConfig, NamespaceLocalizationConfig } from '../config/i18n';
 import { MessageLocation, ValidationMessage } from '../validation';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
 import { Field } from './field';
 import { Model } from './model';
 import { ObjectTypeBase } from './object-type-base';
+import { TypeBase } from './type-base';
 
 export class ModelI18n implements ModelComponent {
 
@@ -105,7 +106,7 @@ export class NamespaceLocalization {
             const typeConf = this.namespaceLocalizationConfig.types[type];
             let localisationBases: { [name: string]: LocalizationBaseConfig } | undefined;
 
-            if (typeConf.kind === TypeLocalizationConfigKind.OBJECT) {
+            if (typeConf.fields) {
                 localisationBases = typeConf.fields;
             } else {
                 localisationBases = typeConf.values;
@@ -252,16 +253,38 @@ function checkForTypeConstraints(namespaces: NamespaceLocalizationConfig[], mode
         if (ns.types) {
             for (const typeKey in ns.types) {
                 const type = ns.types[typeKey];
-                if (type && type.kind === TypeLocalizationConfigKind.OBJECT) {
+                let modelType: TypeBase | undefined;
+                if (type.fields) {
                     try {
-                        model.getObjectTypeOrThrow(typeKey);
+                        const objectType = model.getObjectTypeOrThrow(typeKey);
+                        modelType = objectType;
+                        for (const field in type.fields) {
+                            if (!objectType.fields.find(f => f.name === field)) {
+                                validationContext.addMessage(ValidationMessage.warn('The type "' + typeKey + '" has no field "' + field + '". This might be a spelling error.', type.loc));
+                            }
+                        }
+
                     } catch (e) {
                         validationContext.addMessage(ValidationMessage.error('The type "' + typeKey + '" is a non-object-type. It does not have "fields" attribute. Did you mean to use "values" instead?', type.loc));
                     }
-                } else if (type && type.kind === TypeLocalizationConfigKind.ENUM) {
-                    if (!model.getEnumType(typeKey)) {
+                } else if (type.values) {
+                    const enumType = model.getEnumType(typeKey);
+                    modelType = enumType;
+                    if (!enumType) {
                         validationContext.addMessage(ValidationMessage.error('The type "' + typeKey + '" is not an enum type. It does not have "values" attribute. Did you mean to use "fields" instead?', type.loc));
+                    } else {
+                        if (type.values) {
+                            for (const value in type.values) {
+                                if (!enumType.values.find(v => v.value === value)) {
+                                    validationContext.addMessage(ValidationMessage.warn('The enum type "' + typeKey + '" has no value "' + value + '". This might be a spelling error.', type.loc));
+                                }
+                            }
+                        }
                     }
+                }
+
+                if (!modelType) {
+                    validationContext.addMessage(ValidationMessage.warn('There is no type "' + typeKey + '" in the model specification. This might be a spelling error.', type.loc));
                 }
             }
         }
@@ -285,14 +308,25 @@ function checkForDoubleDefinitions(namespaces: NamespaceLocalizationConfig[], va
                     validationContext.addMessage(ValidationMessage.error('The attribute "plural" in type "' + type + '" was defined several times in the i18n translation', typeConf.loc));
                 }
 
-                if (typeConf && typeConf.kind == TypeLocalizationConfigKind.OBJECT && typeConf.fields) {
-                    for (const field in typeConf.fields) {
-                        const fieldConf = typeConf.fields[field];
-                        if (fieldConf && fieldConf.label && isExistingAndAdd(type + '/' + field + '/label', alreadySeen)) {
-                            validationContext.addMessage(ValidationMessage.error('The attribute "label" in field "' + field + '" of type "' + type + '" was defined several times in the i18n translation', typeConf.loc));
+                if (typeConf && typeConf.fields) {
+                    for (const locBase in typeConf.fields) {
+                        const fieldConf = typeConf.fields[locBase];
+                        if (fieldConf && fieldConf.label && isExistingAndAdd(type + '/' + locBase + '/label', alreadySeen)) {
+                            validationContext.addMessage(ValidationMessage.error('The attribute "label" in field "' + locBase + '" of type "' + type + '" was defined several times in the i18n translation', typeConf.loc));
                         }
-                        if (fieldConf && fieldConf.hint && isExistingAndAdd(type + '/' + field + '/hint', alreadySeen)) {
-                            validationContext.addMessage(ValidationMessage.error('The attribute "hint" in field "' + field + '" of type "' + type + '" was defined several times in the i18n translation', typeConf.loc));
+                        if (fieldConf && fieldConf.hint && isExistingAndAdd(type + '/' + locBase + '/hint', alreadySeen)) {
+                            validationContext.addMessage(ValidationMessage.error('The attribute "hint" in field "' + locBase + '" of type "' + type + '" was defined several times in the i18n translation', typeConf.loc));
+                        }
+                    }
+                }
+                if (typeConf && typeConf.values) {
+                    for (const locBase in typeConf.values) {
+                        const valueConf = typeConf.values[locBase];
+                        if (valueConf && valueConf.label && isExistingAndAdd(type + '/' + locBase + '/label', alreadySeen)) {
+                            validationContext.addMessage(ValidationMessage.error('The attribute "label" in value "' + locBase + '" of type "' + type + '" was defined several times in the i18n translation', typeConf.loc));
+                        }
+                        if (valueConf && valueConf.hint && isExistingAndAdd(type + '/' + locBase + '/hint', alreadySeen)) {
+                            validationContext.addMessage(ValidationMessage.error('The attribute "hint" in value "' + locBase + '" of type "' + type + '" was defined several times in the i18n translation', typeConf.loc));
                         }
                     }
                 }
