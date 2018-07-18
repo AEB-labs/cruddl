@@ -1,4 +1,4 @@
-import { magenta } from 'colors/safe';
+import { magenta } from '../utils/colors';
 import { indent } from '../utils/utils';
 import { QueryNode } from './base';
 

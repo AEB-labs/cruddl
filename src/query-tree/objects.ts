@@ -1,5 +1,5 @@
 import { QueryNode } from './base';
-import { green } from 'colors/safe';
+import { green } from '../utils/colors';
 import { indent } from '../utils/utils';
 
 /**

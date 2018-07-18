@@ -1,4 +1,4 @@
-import { cyan } from 'colors/safe';
+import { cyan } from '../utils/colors';
 import { INDENTATION } from '../utils/utils';
 import { QueryNode } from './base';
 

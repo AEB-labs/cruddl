@@ -1,8 +1,6 @@
-import { cyan, magenta } from 'colors/safe';
+import { cyan, magenta } from '../../utils/colors';
 import { QueryResultValidator } from '../../query-tree';
 import { arrayToObject, flatMap } from '../../utils/utils';
-
-require('colors');
 
 function stringify(val: any) {
     if (val === undefined) {
