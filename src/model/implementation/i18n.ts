@@ -6,7 +6,7 @@ import { NAMESPACE_SEPARATOR } from '../../schema/constants';
 import {
     arrayStartsWith, capitalize, compact, decapitalize, groupArray, mapFirstDefined
 } from '../../utils/utils';
-import { LocalizationBaseConfig, LocalizationConfig, NamespaceLocalizationConfig } from '../config/i18n';
+import { LocalizationBaseConfig, LocalizationConfig, NamespaceLocalizationConfig, TypeLocalizationConfig } from '../config/i18n';
 import { MessageLocation, ValidationMessage } from '../validation';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
 import { Field } from './field';
@@ -145,7 +145,7 @@ export class NamespaceLocalization {
         return this.namespaceLocalizationConfig.loc;
     }
 
-    get types() {
+    get types(): { [name: string]: TypeLocalizationConfig } | undefined {
         return this.namespaceLocalizationConfig.types;
     }
 
