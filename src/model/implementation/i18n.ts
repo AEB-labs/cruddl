@@ -4,8 +4,9 @@ import { globalContext } from '../../config/global';
 import { I18N_GENERIC, I18N_WARNING } from '../../meta-schema/constants';
 import { NAMESPACE_SEPARATOR } from '../../schema/constants';
 import {
-    arrayStartsWith, capitalize, compact, decapitalize, groupArray, mapFirstDefined} from '../../utils/utils';
-import { LocalizationConfig, NamespaceLocalizationConfig } from '../config/i18n';
+    arrayStartsWith, capitalize, compact, decapitalize, groupArray, mapFirstDefined
+} from '../../utils/utils';
+import { LocalizationBaseConfig, LocalizationConfig, NamespaceLocalizationConfig, TypeLocalizationConfigKind } from '../config/i18n';
 import { MessageLocation, ValidationMessage } from '../validation';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
 import { Field } from './field';
@@ -32,7 +33,7 @@ export class ModelI18n implements ModelComponent {
 
     public validate(context: ValidationContext): void {
         for (const locPro of this.languageLocalizationProvidersByLanguage.values()) {
-            locPro.validate(context);
+            locPro.validate(context, this.model);
         }
     }
 
@@ -99,11 +100,19 @@ export class NamespaceLocalization {
         return null;
     }
 
-    public getTypeLocalizationForField(name: string, type: string): FieldI18n | undefined {
+    public getTypeLocalizationForLocalisationBase(name: string, type: string): FieldI18n | undefined {
         if (this.namespaceLocalizationConfig.types && this.namespaceLocalizationConfig.types[type]) {
-            const fields = this.namespaceLocalizationConfig.types[type].fields;
-            if (fields) {
-                const field = fields[name];
+            const typeConf = this.namespaceLocalizationConfig.types[type];
+            let localisationBases: { [name: string]: LocalizationBaseConfig } | undefined;
+
+            if (typeConf.kind === TypeLocalizationConfigKind.OBJECT) {
+                localisationBases = typeConf.fields;
+            } else {
+                localisationBases = typeConf.values;
+            }
+
+            if (localisationBases) {
+                const field = localisationBases[name];
                 if (field) {
                     return {
                         name: name,
@@ -184,54 +193,16 @@ class ModelLocalizationProvider implements LocalizationProvider {
             .sort((lhs, rhs) => lhs.namespacePath.length - rhs.namespacePath.length);
     }
 
-    validate(validationContext: ValidationContext) {
+    validate(validationContext: ValidationContext, model: Model) {
         const groupedNamespaceLocalizations = groupArray(this.namespaces, ns => ns.namespacePath.join('/'));
         for (const key of groupedNamespaceLocalizations.keys()) {
             const namespaces = groupedNamespaceLocalizations.get(key);
 
             if (namespaces) {
-                const alreadySeen: string[] = [];
-
-                for (const ns of namespaces) {
-                    if (ns.types) {
-                        for (const type in ns.types) {
-                            const typeConf = ns.types[type];
-                            if (typeConf.hint && this.isExistingAndAdd(type + '/hint', alreadySeen)) {
-                                validationContext.addMessage(ValidationMessage.error('The attribute "hint" in type "' + type + '" was defined several times in the i18n translation', typeConf.loc));
-                            }
-                            if (typeConf.singular && this.isExistingAndAdd(type + '/singular', alreadySeen)) {
-                                validationContext.addMessage(ValidationMessage.error('The attribute "singular" in type "' + type + '" was defined several times in the i18n translation', typeConf.loc));
-                            }
-                            if (typeConf.plural && this.isExistingAndAdd(type + '/plural', alreadySeen)) {
-                                validationContext.addMessage(ValidationMessage.error('The attribute "plural" in type "' + type + '" was defined several times in the i18n translation', typeConf.loc));
-                            }
-
-                            if (typeConf && typeConf.fields) {
-                                for (const field in typeConf.fields) {
-                                    const fieldConf = typeConf.fields[field];
-                                    if (fieldConf&&fieldConf.label && this.isExistingAndAdd(type +'/'+field+'/label', alreadySeen)) {
-                                        validationContext.addMessage(ValidationMessage.error('The attribute "label" in field "'+field+'" of type "' + type + '" was defined several times in the i18n translation', typeConf.loc));
-                                    }
-                                    if (fieldConf&&fieldConf.hint && this.isExistingAndAdd(type +'/'+field+'/hint', alreadySeen)) {
-                                        validationContext.addMessage(ValidationMessage.error('The attribute "hint" in field "'+field+'" of type "' + type + '" was defined several times in the i18n translation', typeConf.loc));
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                checkForDoubleDefinitions(namespaces, validationContext);
+                checkForTypeConstraints(namespaces, model, validationContext);
             }
-
         }
-    }
-
-    private isExistingAndAdd(search: string, array: string[]) {
-        if (array.indexOf(search) >= 0) {
-            array.push(search);
-            return true;
-        }
-        array.push(search);
-        return false;
     }
 
     localizeType(type: ObjectTypeBase): TypeLocalization {
@@ -251,7 +222,7 @@ class ModelLocalizationProvider implements LocalizationProvider {
         let hint: string | undefined;
 
         for (const namespace of matchingNamespaces) {
-            const typeField = namespace.getTypeLocalizationForField(field.name, field.declaringType.name);
+            const typeField = namespace.getTypeLocalizationForLocalisationBase(field.name, field.declaringType.name);
             if (typeField) {
                 label = label ? label : typeField.label;
                 hint = hint ? hint : typeField.hint;
@@ -274,6 +245,69 @@ class ModelLocalizationProvider implements LocalizationProvider {
         return { label: label, hint: hint };
     }
 
+}
+
+function checkForTypeConstraints(namespaces: NamespaceLocalizationConfig[], model: Model, validationContext: ValidationContext) {
+    for (const ns of namespaces) {
+        if (ns.types) {
+            for (const typeKey in ns.types) {
+                const type = ns.types[typeKey];
+                if (type && type.kind === TypeLocalizationConfigKind.OBJECT) {
+                    try {
+                        model.getObjectTypeOrThrow(typeKey);
+                    } catch (e) {
+                        validationContext.addMessage(ValidationMessage.error('The type "' + typeKey + '" is a non-object-type. It does not have "fields" attribute. Did you mean to use "values" instead?', type.loc));
+                    }
+                } else if (type && type.kind === TypeLocalizationConfigKind.ENUM) {
+                    if (!model.getEnumType(typeKey)) {
+                        validationContext.addMessage(ValidationMessage.error('The type "' + typeKey + '" is not an enum type. It does not have "values" attribute. Did you mean to use "fields" instead?', type.loc));
+                    }
+                }
+            }
+        }
+    }
+}
+
+function checkForDoubleDefinitions(namespaces: NamespaceLocalizationConfig[], validationContext: ValidationContext) {
+    const alreadySeen: string[] = [];
+
+    for (const ns of namespaces) {
+        if (ns.types) {
+            for (const type in ns.types) {
+                const typeConf = ns.types[type];
+                if (typeConf.hint && isExistingAndAdd(type + '/hint', alreadySeen)) {
+                    validationContext.addMessage(ValidationMessage.error('The attribute "hint" in type "' + type + '" was defined several times in the i18n translation', typeConf.loc));
+                }
+                if (typeConf.singular && isExistingAndAdd(type + '/singular', alreadySeen)) {
+                    validationContext.addMessage(ValidationMessage.error('The attribute "singular" in type "' + type + '" was defined several times in the i18n translation', typeConf.loc));
+                }
+                if (typeConf.plural && isExistingAndAdd(type + '/plural', alreadySeen)) {
+                    validationContext.addMessage(ValidationMessage.error('The attribute "plural" in type "' + type + '" was defined several times in the i18n translation', typeConf.loc));
+                }
+
+                if (typeConf && typeConf.kind == TypeLocalizationConfigKind.OBJECT && typeConf.fields) {
+                    for (const field in typeConf.fields) {
+                        const fieldConf = typeConf.fields[field];
+                        if (fieldConf && fieldConf.label && isExistingAndAdd(type + '/' + field + '/label', alreadySeen)) {
+                            validationContext.addMessage(ValidationMessage.error('The attribute "label" in field "' + field + '" of type "' + type + '" was defined several times in the i18n translation', typeConf.loc));
+                        }
+                        if (fieldConf && fieldConf.hint && isExistingAndAdd(type + '/' + field + '/hint', alreadySeen)) {
+                            validationContext.addMessage(ValidationMessage.error('The attribute "hint" in field "' + field + '" of type "' + type + '" was defined several times in the i18n translation', typeConf.loc));
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+function isExistingAndAdd(search: string, array: string[]) {
+    if (array.indexOf(search) >= 0) {
+        array.push(search);
+        return true;
+    }
+    array.push(search);
+    return false;
 }
 
 class GenericLocalizationProvider implements LocalizationProvider {
