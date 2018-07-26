@@ -12,7 +12,7 @@ import { ObjectType, Type } from './type';
 export class Field implements ModelComponent {
     readonly model: Model;
     readonly name: string;
-    readonly description: string | undefined;
+    description: string | undefined;
     readonly astNode: FieldDefinitionNode | undefined;
     readonly isList: boolean;
     readonly isReference: boolean;

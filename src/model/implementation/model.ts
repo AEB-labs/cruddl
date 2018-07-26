@@ -34,6 +34,7 @@ export class Model implements ModelComponent {
         this.rootNamespace = new Namespace(undefined, [], this.rootEntityTypes);
         this.namespaces = [this.rootNamespace, ...this.rootNamespace.descendantNamespaces];
         this.typeMap = new Map(this.types.map((type): [string, Type] => ([type.name, type])));
+        this.autoExtendDescriptions();
     }
 
     validate(context = new ValidationContext()): ValidationResult {
@@ -64,6 +65,19 @@ export class Model implements ModelComponent {
                 } else {
                     context.addMessage(ValidationMessage.error(`Duplicate type name: "${type.name}".`, type.nameASTNode));
                 }
+            }
+        }
+    }
+
+    private autoExtendDescriptions() {
+        for (const type of this.typeMap.values()) {
+            if (type.kind !== TypeKind.ENUM && type.kind !== TypeKind.SCALAR) {
+                type.fields.filter(field => field.isReference).forEach(field => {
+                    const type = field.type;
+                    if (type && type.kind == TypeKind.ROOT_ENTITY) {
+                        field.description = (field.description ? field.description + '\n\n' : '') + 'This field references a ' + type.name + ' by its ' + (type.keyField ? type.keyField.name : 'key') + ' field';
+                    }
+                });
             }
         }
     }
