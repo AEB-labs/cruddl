@@ -34,7 +34,7 @@ export function validateSchema(project: Project): ValidationResult {
 
 
 function validateAndPrepareSchema(project: Project): { validationResult: ValidationResult, model: Model } {
-    const validationContext = new ValidationContext();
+    const validationContext: ValidationContext = new ValidationContext();
 
     const sources = flatMap(project.sources, source => {
         const sourceResult = validateSource(source);
@@ -59,8 +59,7 @@ function validateAndPrepareSchema(project: Project): { validationResult: Validat
     validationContext.addMessage(...result.messages);
     validationContext.addMessage(...model.validate().messages);
 
-    const validationResult = new ValidationResult([]);
-    return { validationResult, model };
+    return { validationResult: validationContext.asResult(), model };
 }
 
 /**
