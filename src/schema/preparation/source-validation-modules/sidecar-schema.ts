@@ -5,7 +5,7 @@ import ajv = require('ajv');
 
 export class SidecarSchemaValidator implements ParsedSourceValidator {
     validate(source: ParsedProjectSource): ValidationMessage[] {
-        if (source.kind != ParsedProjectSourceBaseKind.OBJECT) {
+        if (source.kind != ParsedProjectSourceBaseKind.OBJECT ) {
             return [];
         }
 
@@ -24,7 +24,7 @@ export class SidecarSchemaValidator implements ParsedSourceValidator {
                 const loc = source.pathLocationMap[path];
                 return ValidationMessage.error(err.message!,  loc);
             } else {
-                return ValidationMessage.error(`${err.message} (at ${err.dataPath}`, undefined);
+                return ValidationMessage.error(`${err.message} (at ${err.dataPath})`, undefined);
             }
         });
     }

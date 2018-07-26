@@ -33,23 +33,23 @@ describe('YAML parser and validator', () => {
         }
 
         if (result.kind == ParsedProjectSourceBaseKind.OBJECT) {
-            expect(result.pathLocationMap['a']._start).to.be.eq(1);
-            expect(result.pathLocationMap['a']._end).to.be.eq(23);
+            expect(result.pathLocationMap['/a']._start).to.be.eq(1);
+            expect(result.pathLocationMap['/a']._end).to.be.eq(23);
 
-            expect(result.pathLocationMap['a/b']._start).to.be.eq(7);
-            expect(result.pathLocationMap['a/b']._end).to.be.eq(23);
+            expect(result.pathLocationMap['/a/b']._start).to.be.eq(7);
+            expect(result.pathLocationMap['/a/b']._end).to.be.eq(23);
 
-            expect(result.pathLocationMap['a/b/c']._start).to.be.eq(15);
-            expect(result.pathLocationMap['a/b/c']._end).to.be.eq(23);
+            expect(result.pathLocationMap['/a/b/c']._start).to.be.eq(15);
+            expect(result.pathLocationMap['/a/b/c']._end).to.be.eq(23);
 
-            expect(result.pathLocationMap['a'].start.line).to.be.eq(2);
-            expect(result.pathLocationMap['a/b'].start.line).to.be.eq(3);
-            expect(result.pathLocationMap['a/b/c'].start.line).to.be.eq(4);
+            expect(result.pathLocationMap['/a'].start.line).to.be.eq(2);
+            expect(result.pathLocationMap['/a/b'].start.line).to.be.eq(3);
+            expect(result.pathLocationMap['/a/b/c'].start.line).to.be.eq(4);
 
-            expect(result.pathLocationMap['d/0'].start.line).to.be.eq(6);
-            expect(result.pathLocationMap['d/0'].start.column).to.be.eq(5);
-            expect(result.pathLocationMap['d/0'].end.line).to.be.eq(6);
-            expect(result.pathLocationMap['d/0'].end.column).to.be.eq(10);
+            expect(result.pathLocationMap['/d/0'].start.line).to.be.eq(6);
+            expect(result.pathLocationMap['/d/0'].start.column).to.be.eq(5);
+            expect(result.pathLocationMap['/d/0'].end.line).to.be.eq(6);
+            expect(result.pathLocationMap['/d/0'].end.column).to.be.eq(10);
         }else{
             expect(result.kind).to.eq(ParsedProjectSourceBaseKind.OBJECT);
         }

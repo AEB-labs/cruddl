@@ -59,6 +59,7 @@ export function parseI18nConfigs(source: ParsedObjectProjectSource): ReadonlyArr
     if (!source.object || !source.object.i18n || typeof source.object.i18n !== 'object') {
         return [];
     }
+
     const i18n = source.object.i18n as { [language: string]: NamespaceLocalizationConfig };
     return compact(Object.keys(source.object.i18n).map((key: string) => {
         const namespace = i18n[key];
@@ -66,7 +67,7 @@ export function parseI18nConfigs(source: ParsedObjectProjectSource): ReadonlyArr
             return undefined;
         }
 
-        const curYamlPath = 'i18n/' + key;
+        const curYamlPath = '/i18n/' + key;
         const normalizedFields = normalizeLocalizationBaseConfig(namespace.fields, curYamlPath + '/fields', source);
         const normalizedTypes = normalizeTypeConfig(namespace.types, curYamlPath, source);
         const namespaceConfig: NamespaceLocalizationConfig = {

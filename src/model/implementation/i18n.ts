@@ -253,11 +253,16 @@ function checkForTypeConstraints(namespaces: NamespaceLocalizationConfig[], mode
         if (ns.types) {
             for (const typeKey in ns.types) {
                 const type = ns.types[typeKey];
-                let modelType: TypeBase | undefined;
+                const modelType: TypeBase | undefined = model.getType(typeKey);
+
+                if (!modelType) {
+                    validationContext.addMessage(ValidationMessage.warn('There is no type "' + typeKey + '" in the model specification. This might be a spelling error.', type.loc));
+                    continue;
+                }
+
                 if (type.fields) {
                     try {
                         const objectType = model.getObjectTypeOrThrow(typeKey);
-                        modelType = objectType;
                         for (const field in type.fields) {
                             if (!objectType.fields.find(f => f.name === field)) {
                                 validationContext.addMessage(ValidationMessage.warn('The type "' + typeKey + '" has no field "' + field + '". This might be a spelling error.', type.loc));
@@ -269,7 +274,6 @@ function checkForTypeConstraints(namespaces: NamespaceLocalizationConfig[], mode
                     }
                 } else if (type.values) {
                     const enumType = model.getEnumType(typeKey);
-                    modelType = enumType;
                     if (!enumType) {
                         validationContext.addMessage(ValidationMessage.error('The type "' + typeKey + '" is not an enum type. It does not have "values" attribute. Did you mean to use "fields" instead?', type.loc));
                     } else {
@@ -281,10 +285,6 @@ function checkForTypeConstraints(namespaces: NamespaceLocalizationConfig[], mode
                             }
                         }
                     }
-                }
-
-                if (!modelType) {
-                    validationContext.addMessage(ValidationMessage.warn('There is no type "' + typeKey + '" in the model specification. This might be a spelling error.', type.loc));
                 }
             }
         }

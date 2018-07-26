@@ -2,6 +2,7 @@ import { expect } from "chai";
 import {  Source } from 'graphql';
 import { createModel, ValidationContext } from '../../../src/model';
 import { Project } from '../../../src/project/project';
+import { validateParsedProjectSource } from '../../../src/schema/preparation/ast-validator';
 import { parseProject } from '../../../src/schema/schema-builder';
 
 const permissionProfiles = `{
@@ -187,5 +188,25 @@ i18n:
         expect(validationContext.asResult().hasErrors()).is.false;
         expect(validationContext.asResult().getWarnings().length).to.eq(1);
         expect(validationContext.asResult().getWarnings()[0].message).to.contain('There is no type "Foo" in the model specification. This might be a spelling error.');
+    });
+
+    it('reports schema-violations of i18n files', ()=>{
+        const wrongBody = `
+i18n:
+  en:
+    typess:
+      Skill:
+        fields:
+          name: The name of the skill.
+        `;
+
+        const validationContext = new ValidationContext();
+        const parsedProject = parseProject(new Project([new Source(permissionProfiles, 'perm.json'), new Source(graphql, 'graphql.graphql'), new Source(i18n1, 'i18n.yaml'), new Source(wrongBody, 'i18n2.yaml')]), validationContext);
+
+        parsedProject.sources.forEach(s => validationContext.addMessage(...validateParsedProjectSource(s).messages));
+
+        expect(validationContext.asResult().hasMessages()).is.true;
+        expect(validationContext.asResult().getErrors().length).to.eq(1);
+        expect(validationContext.asResult().messages[0].location).to.not.be.undefined;
     });
 });

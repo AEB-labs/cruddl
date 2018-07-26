@@ -73,7 +73,7 @@ describe('sidecar-schema validator', () => {
         throw new Error("Not reachable");
     }
 
-    it('reports errors', () => {
+    it('reports errors in json files', () => {
         const messages = getValidatorMessages(new ProjectSource('test.json', invalidValue));
         expect(messages.length).to.equal(2);
         expect(messages[0].message).to.equal("should be equal to one of the allowed values");
@@ -85,7 +85,7 @@ describe('sidecar-schema validator', () => {
         });
     });
 
-    it('accepts valid files', () => {
+    it('accepts valid json files', () => {
         const messages = getValidatorMessages(new ProjectSource('file.json', validValue));
         expect(messages).to.deep.equal([]);
     });
@@ -99,6 +99,31 @@ describe('sidecar-schema validator', () => {
             "_end": 419,
             "_start": 407,
             "sourceName": "test.json"
+        });
+    });
+
+    it('accepts valid yaml files', () => {
+        const messages = getValidatorMessages(new ProjectSource('file.yaml', `
+i18n:
+  de:
+    types:
+      Temp:
+        singular: Test`));
+        expect(messages).to.deep.equal([]);
+    });
+
+    it('reports errors in yaml files', () => {
+        const messages = getValidatorMessages(new ProjectSource('file.yaml', `
+i18n:
+  de:
+    typess:
+      Temp:
+        singular: Test`));
+        expect(messages.length).to.equal(1);
+        expect(JSON.parse(JSON.stringify(messages[0].location))).to.deep.equal({
+            "_end": 59,
+            "_start": 9,
+            "sourceName": "file.yaml"
         });
     });
 

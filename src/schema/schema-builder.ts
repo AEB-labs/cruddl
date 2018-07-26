@@ -246,7 +246,7 @@ function extractMessageLocationsFromYAML(root: YAMLNode, source:ProjectSource): 
 
     const result = extractAllPaths(root, [] as ReadonlyArray<(string | number)>);
     let messageLocations: { [path: string]: MessageLocation } = {};
-    result.forEach(val => messageLocations[val.path.join('/')] = new MessageLocation(source, val.node.startPosition, val.node.endPosition));
+    result.forEach(val => messageLocations['/'+val.path.join('/')] = new MessageLocation(source, val.node.startPosition, val.node.endPosition));
 
     return messageLocations;
 }
