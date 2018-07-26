@@ -23,7 +23,7 @@ export function expectSingleWarningToInclude(component: ModelComponent, errorPar
 
 export function expectSingleMessageToInclude(component: ModelComponent, errorPart: string, severity: Severity) {
     const result = validate(component);
-    expect(result.messages.length, result.toString()).to.equal(1);
+    expect(result.messages.length, result.toString()).to.equal(2);
     const message = result.messages[0];
     expect(message.severity).to.equal(severity);
     expect(message.message).to.include(errorPart);

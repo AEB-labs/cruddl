@@ -39,7 +39,7 @@ export class RootEntityType extends ObjectTypeBase {
 
     private aggregateIndices(input: RootEntityTypeConfig) {
         const indices = (input.indices || []).map(index => new Index(index, this));
-        if (this.keyField) {
+        if (this.keyField && !this.keyField.isList) {
             const currentKeyIndices = indices.filter(f => f.unique && f.fields.length == 1 && f.fields[0].field === this.keyField);
             if (currentKeyIndices.length == 0) {
                 indices.push(new Index({ unique: true, fields: [this.keyField.name] }, this));

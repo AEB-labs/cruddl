@@ -256,7 +256,7 @@
             },
             {
               "name": "destinationCountry",
-              "description": null
+              "description": "This field references a `Country` by its `isoCode` field"
             },
             {
               "name": "shippedAt",
@@ -330,7 +330,7 @@
             },
             {
               "name": "country",
-              "description": null
+              "description": "This field references a `Country` by its `isoCode` field"
             },
             {
               "name": "_cursor",
