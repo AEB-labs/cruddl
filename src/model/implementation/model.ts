@@ -75,7 +75,7 @@ export class Model implements ModelComponent {
                 type.fields.filter(field => field.isReference).forEach(field => {
                     const type = field.type;
                     if (type && type.kind == TypeKind.ROOT_ENTITY) {
-                        field.description = (field.description ? field.description + '\n\n' : '') + 'This field references a ' + type.name + ' by its ' + (type.keyField ? type.keyField.name : 'key') + ' field';
+                        field.description = (field.description ? field.description + '\n\n' : '') + 'This field references a `' + type.name + '` by its `' + (type.keyField ? type.keyField.name : 'key') + '` field';
                     }
                 });
             }

@@ -65,9 +65,9 @@ export class CreateInputTypeGenerator {
             const inputType = field.type.isEnumType ? this.enumTypeGenerator.generate(field.type) : field.type.graphQLScalarType;
             if (field.isList) {
                 // don't allow null values in lists
-                return [new BasicListCreateInputField(field, new GraphQLList(new GraphQLNonNull(inputType)))];
+                return [new BasicListCreateInputField(field, undefined, new GraphQLList(new GraphQLNonNull(inputType)))];
             } else {
-                return [new BasicCreateInputField(field, inputType)];
+                return [new BasicCreateInputField(field, undefined, inputType)];
             }
         }
 
@@ -83,7 +83,8 @@ export class CreateInputTypeGenerator {
                 // reference
                 // we intentionally do not check if the referenced object exists (loose coupling), so this behaves just
                 // like a regular field
-                return [new BasicCreateInputField(field, field.type.getKeyFieldTypeOrThrow().graphQLScalarType)];
+
+                return [new BasicCreateInputField(field, (field.description ? field.description + '\n\n' : '')+((field.type as RootEntityType).keyField)?"Specify the `"+(field.type as RootEntityType).keyField!.name+"` of the `"+field.type.name+"` to be referenced": undefined, field.type.getKeyFieldTypeOrThrow().graphQLScalarType)];
             }
         }
 

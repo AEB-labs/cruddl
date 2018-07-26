@@ -120,7 +120,7 @@ export class UpdateInputTypeGenerator {
         if (field.isReference) {
             // we intentionally do not check if the referenced object exists (loose coupling), so this behaves just
             // like a regular field
-            return [new BasicUpdateInputField(field, field.type.getKeyFieldTypeOrThrow().graphQLScalarType)];
+            return [new BasicUpdateInputField(field, field.type.getKeyFieldTypeOrThrow().graphQLScalarType, field.name, (field.description ? field.description + '\n\n' : '')+((field.type as RootEntityType).keyField)?"Specify the `"+(field.type as RootEntityType).keyField!.name+"` of the `"+field.type.name+"` to be referenced": undefined)];
         }
 
         if (field.isRelation) {

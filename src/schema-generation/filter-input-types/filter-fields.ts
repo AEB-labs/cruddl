@@ -1,6 +1,6 @@
-import { GraphQLEnumType, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
+import { GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
 import { isArray } from 'util';
-import { Field } from '../../model';
+import { Field, TypeKind } from '../../model';
 import {
     BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, CountQueryNode, LiteralQueryNode, QueryNode,
     TransformListQueryNode, VariableQueryNode
@@ -13,7 +13,7 @@ import { createFieldNode } from '../field-nodes';
 import { TypedInputFieldBase } from '../typed-input-object-type';
 import { OPERATORS_WITH_LIST_OPERAND } from './constants';
 import { FilterObjectType } from './generator';
-
+import * as pluralize from 'pluralize';
 
 export interface FilterField extends TypedInputFieldBase<FilterField> {
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode
@@ -108,6 +108,9 @@ export class NestedObjectFilterField implements FilterField {
     ) {
         this.name = this.field.name;
         this.description = `Checks if \`${this.field.name}\` is not null, and allows to filter based on its fields.`;
+        if(this.field.isReference && this.field.type.kind == TypeKind.ROOT_ENTITY && this.field.type.keyField){
+            this.description = `Filters the through \`${this.field.type.keyField.name}\` referenced ${pluralize(this.field.type.name)} that fulfils the given requirements.\n\n ` + this.description;
+        }
     }
 
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
