@@ -42,6 +42,8 @@ export class Model implements ModelComponent {
     validate(context = new ValidationContext()): ValidationResult {
         this.validateDuplicateTypes(context);
 
+        this.i18n.validate(context);
+
         for (const type of this.types) {
             type.validate(context);
         }
