@@ -47,7 +47,7 @@ function validateAndPrepareSchema(project: Project): { validationResult: Validat
 
     const parsedProject = parseProject(new Project({ ...project, sources }), validationContext);
 
-    parsedProject.sources.forEach(parsedSource => validateParsedProjectSource(parsedSource));
+    parsedProject.sources.forEach(parsedSource => validationContext.addMessage(...validateParsedProjectSource(parsedSource).messages));
 
     const preparedProject = executePreMergeTransformationPipeline(parsedProject);
 
