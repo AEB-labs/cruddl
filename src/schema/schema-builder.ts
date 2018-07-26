@@ -304,7 +304,11 @@ export function extractJSONFromYAML(root: YAMLNode): PlainObject {
     }
 }
 
-function recursiveObjectExtraction(node: YAMLNode, object: PlainObject): any {
+function recursiveObjectExtraction(node: YAMLNode|undefined, object: PlainObject): any {
+    // ATTENTION: Typings of the yaml ast parser are wrong
+    if(!node){
+        return object;
+    }
     switch (node.kind) {
         case Kind.MAP:
             const mapNode = node as YamlMap;

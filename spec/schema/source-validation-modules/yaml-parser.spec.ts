@@ -80,4 +80,14 @@ describe('YAML parser and validator', () => {
         expect(validationContext.asResult().hasErrors(),validationContext.asResult().toString()).to.be.false;
         expect(result).to.be.undefined;
     });
+
+    it('does not break when node is undefined', () => {
+        const source = new ProjectSource('test.yaml', `
+i18n:
+  de: `);
+        const validationContext = new ValidationContext();
+        const result = parseProjectSource(source, validationContext);
+
+        expect(result).to.not.be.undefined;
+    });
 });
