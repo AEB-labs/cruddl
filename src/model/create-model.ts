@@ -26,8 +26,9 @@ import {
     PermissionsConfig,
     RolesSpecifierConfig, TypeConfig, TypeKind
 } from './config';
-import { LocalizationConfig, parseI18nConfigs } from './config/i18n';
+import { LocalizationConfig} from './config/i18n';
 import { Model } from './implementation';
+import { parseI18nConfigs } from './parse-i18n';
 import { ValidationContext, ValidationMessage } from './validation';
 
 export function createModel(parsedProject: ParsedProject): Model {
