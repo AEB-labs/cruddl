@@ -2,10 +2,10 @@ import * as pluralize from 'pluralize';
 import { globalContext } from '../../config/global';
 import { I18N_GENERIC, I18N_WARNING } from '../../meta-schema/constants';
 import { NAMESPACE_SEPARATOR } from '../../schema/constants';
+import { arrayStartsWith, capitalize, compact, decapitalize, groupArray, mapFirstDefined } from '../../utils/utils';
 import {
-    arrayStartsWith, capitalize, compact, decapitalize, groupArray, mapFirstDefined
-} from '../../utils/utils';
-import { LocalizationBaseConfig, LocalizationConfig, NamespaceLocalizationConfig, TypeLocalizationConfig } from '../config/i18n';
+    LocalizationBaseConfig, LocalizationConfig, NamespaceLocalizationConfig, TypeLocalizationConfig
+} from '../config';
 import { MessageLocation, ValidationMessage } from '../validation';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
 import { Field } from './field';
@@ -98,7 +98,7 @@ export class NamespaceLocalization {
         return null;
     }
 
-    public getTypeLocalizationForLocalisationBase(name: string, type: string): FieldI18n | undefined {
+    public getTypeLocalizationForLocalisationBase(name: string, type: string): FieldLocalization | undefined {
         if (this.namespaceLocalizationConfig.types && this.namespaceLocalizationConfig.types[type]) {
             const typeConf = this.namespaceLocalizationConfig.types[type];
             let localisationBases: { [name: string]: LocalizationBaseConfig } | undefined;
@@ -113,8 +113,6 @@ export class NamespaceLocalization {
                 const field = localisationBases[name];
                 if (field) {
                     return {
-                        name: name,
-                        type: type,
                         hint: field.hint,
                         label: field.label,
                         loc: field.loc
@@ -125,11 +123,10 @@ export class NamespaceLocalization {
         return;
     }
 
-    public getNamespaceLocalizationForField(name: string): FieldI18n | undefined {
+    public getNamespaceLocalizationForField(name: string): FieldLocalization | undefined {
         if (this.namespaceLocalizationConfig.fields && this.namespaceLocalizationConfig.fields[name]) {
             const field = this.namespaceLocalizationConfig.fields[name];
             return {
-                name: name,
                 hint: field.hint,
                 label: field.label,
                 loc: field.loc
@@ -163,15 +160,6 @@ export interface FieldLocalization {
     readonly label?: string,
     readonly hint?: string,
     readonly loc?: MessageLocation
-}
-
-export interface TypeI18n extends TypeLocalization {
-    readonly name: string,
-}
-
-export interface FieldI18n extends FieldLocalization {
-    readonly name: string,
-    readonly type?: string
 }
 
 interface LocalizationProvider {

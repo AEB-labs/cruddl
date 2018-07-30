@@ -12,3 +12,4 @@ export { Index, IndexField } from './indices';
 export { RolesSpecifier } from './roles-specifier';
 export { PermissionProfile, Permission, PermissionProfileMap, RoleSpecifier } from './permission-profile';
 export { Relation, RelationSide, Multiplicity } from './relation';
+export { ModelI18n, NamespaceLocalization, TypeLocalization, FieldLocalization }from './i18n';
