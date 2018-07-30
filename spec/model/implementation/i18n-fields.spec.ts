@@ -60,11 +60,21 @@ const i18n: LocalizationConfig[] = [
         namespacePath: [],
         fields: {
             c1: {hint: 'C1_NON_NAMESPACED_HINT'}
+        },
+        types: {
+            C: {
+                fields: {
+                    c2: {label: 'C2_NON_NAMESPACED_LABEL_DIRECT'}
+                }
+            }
         }
     },
     {
         language: NAMESPACED,
         namespacePath: ['namespace'],
+        fields: {
+            c2: {label: 'C2_NAMESPACED_LABEL'}
+        },
         types: {
             C: {
                 fields: {
@@ -94,7 +104,7 @@ const model = new Model({
             kind: TypeKind.ROOT_ENTITY,
             name: 'C',
             namespacePath: ['namespace'],
-            fields: [{name: 'c1', typeName: 'String'}]
+            fields: [{name: 'c1', typeName: 'String'}, {name: 'c2', typeName: 'String'}]
         }
     ],
     i18n
@@ -160,5 +170,9 @@ describe('I18n field localization', () => {
         expect(localization.label).to.equal('C1_NAMESPACED_LABEL_DIRECT');
         expect(localization.hint).to.equal('C1_NON_NAMESPACED_HINT');
     });
-    // TODO more tests for common vs. super namespaces
+
+    it('prefers a type-field of a super namespace over a common field in the direct namespace', () => {
+        const localization = model.getRootEntityTypeOrThrow('C').getFieldOrThrow('c2').getLocalization([NAMESPACED]);
+        expect(localization.label).to.equal('C2_NON_NAMESPACED_LABEL_DIRECT');
+    });
 });

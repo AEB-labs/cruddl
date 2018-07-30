@@ -195,6 +195,7 @@ class ModelLocalizationProvider implements LocalizationProvider {
         let label: string | undefined;
         let hint: string | undefined;
 
+        // first, try to find a localization declared on the type
         for (const namespace of matchingNamespaces) {
             const typeField = namespace.getTypeLocalizationForLocalisationBase(field.name, field.declaringType.name);
             if (typeField) {
@@ -206,6 +207,7 @@ class ModelLocalizationProvider implements LocalizationProvider {
                 }
             }
         }
+        // fall back to global field localization
         for (const namespace of matchingNamespaces) {
             const typeField = namespace.getNamespaceLocalizationForField(field.name);
             if (typeField) {
