@@ -12,7 +12,7 @@ import { MessageLocation, ValidationMessage } from '../validation';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
 import { Field } from './field';
 import { Model } from './model';
-import { ObjectTypeBase } from './object-type-base';
+import { Type } from './type';
 import { TypeBase } from './type-base';
 
 export class ModelI18n implements ModelComponent {
@@ -32,7 +32,7 @@ export class ModelI18n implements ModelComponent {
         }
     }
 
-    public getTypeLocalization(type: ObjectTypeBase, resolutionOrder: ReadonlyArray<string>): TypeLocalization {
+    public getTypeLocalization(type: TypeBase, resolutionOrder: ReadonlyArray<string>): TypeLocalization {
         const resolutionProviders = this.getResolutionProviders(resolutionOrder);
         // try to build one complete type localization out of the available possibly partial localizations
         return {
@@ -155,7 +155,7 @@ export interface FieldLocalization {
 }
 
 interface LocalizationProvider {
-    localizeType(type: ObjectTypeBase): TypeLocalization;
+    localizeType(type: TypeBase): TypeLocalization;
 
     localizeField(field: Field): FieldLocalization;
 }
@@ -179,7 +179,7 @@ class ModelLocalizationProvider implements LocalizationProvider {
         }
     }
 
-    localizeType(type: ObjectTypeBase): TypeLocalization {
+    localizeType(type: TypeBase): TypeLocalization {
         const matchingNamespaces = this.getMatchingNamespaces(type.namespacePath);
         const matchingTypeLocalization = compact(matchingNamespaces.map(ns => ns.getAllLocalizationsForType(type.name)));
         return {
@@ -325,7 +325,7 @@ class GenericLocalizationProvider implements LocalizationProvider {
         };
     }
 
-    localizeType(type: ObjectTypeBase): TypeLocalization {
+    localizeType(type: Type): TypeLocalization {
         return {
             singular: generateGenericName(type.name),
             plural: GenericLocalizationProvider.generatePluralName(type.name)
@@ -365,7 +365,7 @@ class WarningLocalizationProvider implements LocalizationProvider {
         return {};
     }
 
-    localizeType(type: ObjectTypeBase): TypeLocalization {
+    localizeType(type: Type): TypeLocalization {
         this.logger.warn(`Missing i18n for type ${type.namespacePath.join(NAMESPACE_SEPARATOR)}.${type.name} in language: ${this.resolutionOrderWithoutResult.join(', ')}`);
         return {};
     }

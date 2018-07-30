@@ -5,7 +5,7 @@ import { flatMap, objectValues } from '../../utils/utils';
 import { ModelConfig, TypeKind } from '../config';
 import { ValidationMessage, ValidationResult } from '../validation';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
-import { builtInTypeNames, builtInTypes } from './built-in-types';
+import { builtInTypeNames, createBuiltInTypes } from './built-in-types';
 import { ChildEntityType } from './child-entity-type';
 import { EntityExtensionType } from './entity-extension-type';
 import { EnumType } from './enum-type';
@@ -20,6 +20,7 @@ import { ValueObjectType } from './value-object-type';
 
 export class Model implements ModelComponent {
     private readonly typeMap: ReadonlyMap<string, Type>;
+    private readonly builtInTypes: ReadonlyArray<Type>;
 
     readonly rootNamespace: Namespace;
     readonly namespaces: ReadonlyArray<Namespace>;
@@ -29,8 +30,9 @@ export class Model implements ModelComponent {
 
     constructor(private input: ModelConfig) {
         this.permissionProfiles = createPermissionMap(input.permissionProfiles);
+        this.builtInTypes = createBuiltInTypes(this);
         this.types = [
-            ...builtInTypes,
+            ...this.builtInTypes,
             ...input.types.map(typeInput => createType(typeInput, this))
         ];
         this.rootNamespace = new Namespace(undefined, [], this.rootEntityTypes);
@@ -58,7 +60,7 @@ export class Model implements ModelComponent {
         const duplicateTypes = objectValues(groupBy(this.types, type => type.name)).filter(types => types.length > 1);
         for (const types of duplicateTypes) {
             for (const type of types) {
-                if (builtInTypes.includes(type)) {
+                if (this.builtInTypes.includes(type)) {
                     // don't report errors for built-in types
                     continue;
                 }
@@ -78,7 +80,7 @@ export class Model implements ModelComponent {
     }
 
     getTypeOrFallback(name: string): Type {
-        return this.typeMap.get(name) || new InvalidType(name);
+        return this.typeMap.get(name) || new InvalidType(name, this);
     }
 
     getTypeOrThrow(name: string): Type {

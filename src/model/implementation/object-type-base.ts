@@ -3,18 +3,16 @@ import { objectValues } from '../../utils/utils';
 import { FieldConfig, ObjectTypeConfig } from '../config';
 import { ValidationContext, ValidationMessage } from '../validation';
 import { Field } from './field';
-import { TypeLocalization } from './i18n';
 import { Model } from './model';
 import { ObjectType } from './type';
 import { TypeBase } from './type-base';
 
 export abstract class ObjectTypeBase extends TypeBase {
     readonly fields: ReadonlyArray<Field>;
-    readonly namespacePath: ReadonlyArray<string>;
     private readonly fieldMap: ReadonlyMap<string, Field>;
 
-    protected constructor(input: ObjectTypeConfig, public readonly model: Model, systemFieldInputs: ReadonlyArray<FieldConfig> = []) {
-        super(input);
+    protected constructor(input: ObjectTypeConfig, model: Model, systemFieldInputs: ReadonlyArray<FieldConfig> = []) {
+        super(input, model);
         const thisAsObjectType: ObjectType = this as any;
         const customFields = (input.fields || []).map(field => new Field(field, thisAsObjectType));
         const systemFields = (systemFieldInputs || []).map(input => new Field({...input, isSystemField: true}, thisAsObjectType));
@@ -23,7 +21,6 @@ export abstract class ObjectTypeBase extends TypeBase {
             ...customFields
         ];
         this.fieldMap = new Map(this.fields.map((field): [string, Field] => [ field.name, field ]));
-        this.namespacePath = input.namespacePath || [];
     }
 
     validate(context: ValidationContext) {
@@ -70,10 +67,6 @@ export abstract class ObjectTypeBase extends TypeBase {
             throw new Error(`Field "${this.name}.${name}" is not declared`);
         }
         return field;
-    }
-
-    public getLocalization(resolutionOrder: ReadonlyArray<string>): TypeLocalization {
-        return this.model.i18n.getTypeLocalization(this, resolutionOrder)
     }
 
     readonly isObjectType: true = true;

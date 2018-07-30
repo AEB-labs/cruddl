@@ -1,10 +1,11 @@
 import { EnumValueDefinitionNode } from 'graphql';
 import { EnumTypeConfig, EnumValueConfig, TypeKind } from '../config';
+import { Model } from './model';
 import { TypeBase } from './type-base';
 
 export class EnumType extends TypeBase {
-    constructor(input: EnumTypeConfig) {
-        super(input);
+    constructor(input: EnumTypeConfig, model: Model) {
+        super(input, model);
         this.values = input.values.map(v => new EnumValue(v));
     }
 
