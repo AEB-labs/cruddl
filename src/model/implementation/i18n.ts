@@ -1,5 +1,4 @@
 import * as pluralize from 'pluralize';
-import memorize from 'memorize-decorator';
 import { globalContext } from '../../config/global';
 import { I18N_GENERIC, I18N_WARNING } from '../../meta-schema/constants';
 import { NAMESPACE_SEPARATOR } from '../../schema/constants';
@@ -38,7 +37,6 @@ export class ModelI18n implements ModelComponent {
         }
     }
 
-    @memorize()
     public getTypeLocalization(type: ObjectTypeBase, resolutionOrder: ReadonlyArray<string>): TypeLocalization {
         const resolutionProviders = this.getResolutionProviders(resolutionOrder);
         // try to build one complete type localization out of the available possibly partial localizations
@@ -49,7 +47,6 @@ export class ModelI18n implements ModelComponent {
         };
     }
 
-    @memorize()
     public getFieldLocalization(field: Field, resolutionOrder: ReadonlyArray<string>): FieldLocalization {
         const resolutionProviders = this.getResolutionProviders(resolutionOrder);
         // try to build one complete field localization out of the available possibly partial localizations
