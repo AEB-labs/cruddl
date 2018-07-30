@@ -1,7 +1,8 @@
 import { GraphQLSchema } from 'graphql';
 import gql from 'graphql-tag';
 import { IResolvers, makeExecutableSchema } from 'graphql-tools';
-import { Field, Model, ObjectType, RootEntityType, Type, TypeKind } from '../model';
+import { Field, Model, RootEntityType, Type, TypeKind } from '../model';
+import { EnumValue } from '../model/implementation/enum-type';
 import { compact } from '../utils/utils';
 import { I18N_GENERIC, I18N_LOCALE_LANGUAGE, I18N_WARNING } from './constants';
 
@@ -13,33 +14,33 @@ const typeDefs = gql`
     type Field {
         name: String!
         description: String
-        
+
         "Indicates if this field is a list."
         isList: Boolean!
-        
+
         "Indicates if this field references a root entity by its key field."
         isReference: Boolean!
-        
+
         "Indicates if this field defines a relation."
         isRelation: Boolean!
-        
+
         "If \`false\`, this field can not be set in *create* or *update* mutations."
         isReadOnly: Boolean!
 
         "If \`true\`, this field is defined by the system, otherwise, by the schema."
         isSystemField: Boolean!
-        
+
         "The type for the field's value"
         type: Type!
-        
+
         "Relation information, if \`isRelation\` is \`true\`, \`null\` otherwise"
         relation: Relation
         localization(
-            " Order of localization resolution. Can contain languages from yaml/json or special features like '_LOCALE_LANG', see documentation. " 
+            " Order of localization resolution. Can contain languages from yaml/json or special features like '_LOCALE_LANG', see documentation. "
             resolutionOrder: [String]
         ): FieldLocalization
     }
-    
+
     type Index {
         id: String
         unique: Boolean!
@@ -79,21 +80,21 @@ const typeDefs = gql`
         name: String!
         kind: TypeKind!
         description: String
-        
+
         "The namespace this type is declared in"
         namespace: Namespace!
-        
+
         "The field by which objects of this type can be referenced (optional)"
         keyField: Field
-        
+
         "A list of database indices"
         indices: [Index!]!
-        
+
         fields: [Field!]!
-        
+
         """
         All relations between this type and other types
-        
+
         This also contains relations that are not declared by a field on this type, but by a field on the target type.
         """
         relations: [Relation!]!
@@ -148,25 +149,29 @@ const typeDefs = gql`
         description: String
         values: [EnumValue!]!
     }
-    
+
     type EnumValue {
         value: String!
         description: String
+        localization(
+            " Order of localization resolution. Can contain languages from yaml/json or special features like '_LOCALE_LANG', see documentation. "
+            resolutionOrder: [String]
+        ): EnumValueLocalization
     }
 
     type Namespace {
         "The name of this namespace, i.e., the last path segment"
         name: String
-        
+
         "The namespace path segments"
         path: [String!]!
-        
+
         "All root entity types declared directly in this namespace"
         rootEntityTypes: [RootEntityType!]!
-        
+
         "All direct child namespaces"
         childNamespaces: [Namespace!]!
-        
+
         "\`true\` if this is the root namespace"
         isRoot: Boolean!
     }
@@ -182,9 +187,14 @@ const typeDefs = gql`
         hint: String
     }
 
+    type EnumValueLocalization {
+        label: String
+        hint: String
+    }
+
     """
     Provides meta information about types and fields
-    
+
     This differs from the GraphQL introspection types like \`__Schema\` in that it excludes auto-generated types and
     fields like input types or the \`count\` field for lists, and it provides additional type information like type
     kinds and relations.
@@ -192,30 +202,30 @@ const typeDefs = gql`
     type Query {
         "A list of all user-defined and system-provided types"
         types: [Type!]!
-        
+
         "Finds a type by its name"
         type(name: String!): Type
-        
+
         "A list of all root entity types in all namespaces"
         rootEntityTypes: [RootEntityType!]!
-        
+
         """
         Finds a root entity type by its name.
-        
+
         Returns \`null\` if the type does not exist or is not a root entity type.
         """
         rootEntityType(name: String!): RootEntityType
-        
+
         "A list of all child entity types"
         childEntityTypes: [ChildEntityType!]!
-        
+
         """
         Finds a child entity type by its name.
-        
+
         Returns \`null\` if the type does not exist or is not a child entity type.
         """
         childEntityType(name: String!): ChildEntityType
-        
+
         "A list of all entity extension types"
         entityExtensionTypes: [EntityExtensionType!]!
 
@@ -225,7 +235,7 @@ const typeDefs = gql`
         Returns \`null\` if the type does not exist or is not an entity extension type.
         """
         entityExtensionType(name: String!): EntityExtensionType
-        
+
         "A list of all value object types"
         valueObjectTypes: [ValueObjectType!]!
 
@@ -235,37 +245,41 @@ const typeDefs = gql`
         Returns \`null\` if the type does not exist or is not a value object type.
         """
         valueObjectType(name: String!): ValueObjectType
-        
+
         "A list of all scalar types, including predefined ones."
         scalarTypes: [ScalarType!]!
-        
+
         """
         Finds a scalar type by its name.
 
         Returns \`null\` if the type does not exist or is not a scalar type.
         """
         scalarType(name: String!): ScalarType
-        
+
         "A list of all enum types"
         enumTypes: [EnumType!]!
-        
+
         """
         Finds an enum type by its name.
 
         Returns \`null\` if the type does not exist or is not an enum type.
         """
         enumType(name: String!): EnumType
-        
+
         "A list of all namespaces (including nested ones)"
         namespaces: [Namespace!]!
-        
+
         """Finds a namespace by its path segments"""
         namespace("The path segments, e.g. \`[\\"logistics\\", \\"packaging\\"]\`" path: [String!]!): Namespace
-        
+
         "The root namespace"
         rootNamespace: Namespace!
     }
 `;
+
+export interface I18nSchemaContextPart {
+    locale_language: string
+}
 
 /**
  * Returns an executable GraphQLSchema which allows to query the meta schema of the given model.
@@ -315,27 +329,31 @@ export function getMetaSchema(model: Model): GraphQLSchema {
         },
         Field: {
             localization: localizeField
+        },
+        EnumValue: {
+            localization: localizeEnumValue
         }
     };
 
-    function localizeType(type: {}, {resolutionOrder}: {resolutionOrder?: ReadonlyArray<string>}, context: {locale_language: string}) {
+    function getResolutionOrder(resolutionOrder: ReadonlyArray<string> | undefined, context: I18nSchemaContextPart) {
         // default resolutionOrder
         if (!resolutionOrder) {
             resolutionOrder = [I18N_LOCALE_LANGUAGE, I18N_WARNING, I18N_GENERIC];
         }
         // replace locale_language
-        const localizedResolutionOrder = compact(resolutionOrder.map(l => l === I18N_LOCALE_LANGUAGE ? context.locale_language : l));
-        return model.i18n.getTypeLocalization(type as ObjectType, localizedResolutionOrder)
+        return compact(resolutionOrder.map(l => l === I18N_LOCALE_LANGUAGE ? context.locale_language : l));
     }
 
-    function localizeField(field: {}, {resolutionOrder}: {resolutionOrder?: ReadonlyArray<string>}, context: {locale_language: string}) {
-        // default resolutionOrder
-        if (!resolutionOrder) {
-            resolutionOrder = [I18N_LOCALE_LANGUAGE, I18N_WARNING, I18N_GENERIC];
-        }
-        // replace locale_language
-        const localizedResolutionOrder = compact(resolutionOrder.map(l => l === I18N_LOCALE_LANGUAGE ? context.locale_language : l));
-        return model.i18n.getFieldLocalization(field as Field, localizedResolutionOrder)
+    function localizeType(type: {}, {resolutionOrder}: { resolutionOrder?: ReadonlyArray<string> }, context: I18nSchemaContextPart) {
+        return model.i18n.getTypeLocalization(type as Type, getResolutionOrder(resolutionOrder, context));
+    }
+
+    function localizeField(field: {}, {resolutionOrder}: { resolutionOrder?: ReadonlyArray<string> }, context: I18nSchemaContextPart) {
+        return model.i18n.getFieldLocalization(field as Field, getResolutionOrder(resolutionOrder, context));
+    }
+
+    function localizeEnumValue(enumValue: {}, {resolutionOrder}: { resolutionOrder?: ReadonlyArray<string> }, context: I18nSchemaContextPart) {
+        return model.i18n.getEnumValueLocalization(enumValue as EnumValue, getResolutionOrder(resolutionOrder, context));
     }
 
     return makeExecutableSchema({

@@ -60,7 +60,7 @@ const schemaJSON = JSON.parse(`{
       "additionalProperties": false,
       "patternProperties": {
         "^[a-zA-Z0-9_-]+$": {
-          "$ref": "#/definitions/NamespaceI18nConfig"
+          "$ref": "#/definitions/NamespaceLocalization"
         }
       }
     }
@@ -115,14 +115,14 @@ const schemaJSON = JSON.parse(`{
         }
       }
     },
-    "NamespaceI18nConfig": {
+    "NamespaceLocalization": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
         "types": {
           "patternProperties": {
             "^[a-zA-Z0-9_]+$": {
-              "$ref": "#/definitions/TypeI18nConfig"
+              "$ref": "#/definitions/TypeLocalization"
             }
           }
         },
@@ -130,23 +130,15 @@ const schemaJSON = JSON.parse(`{
           "patternProperties": {
             "^[a-zA-Z0-9_]+$": {
               "anyOf": [
-                { "$ref": "#/definitions/FieldI18nConfig" },
+                { "$ref": "#/definitions/FieldLocalization" },
                 { "type": "string" }
               ]
             }
           }
-        },
-        "namespaces": {
-          "^[a-zA-Z0-9_]+$": {
-            "anyOf": [
-              { "$ref": "#/definitions/FieldI18nConfig" },
-              { "type": "string" }
-            ]
-          }
         }
       }
     },
-    "TypeI18nConfig": {
+    "TypeLocalization": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -155,7 +147,21 @@ const schemaJSON = JSON.parse(`{
             "^[a-zA-Z0-9_$]+$": {
               "anyOf": [
                 {
-                  "$ref": "#/definitions/FieldI18nConfig"
+                  "$ref": "#/definitions/FieldLocalization"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        "values": {
+          "patternProperties": {
+            "^[a-zA-Z0-9_$]+$": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/EnumValueLocalization"
                 },
                 {
                   "type": "string"
@@ -175,7 +181,17 @@ const schemaJSON = JSON.parse(`{
         }
       }
     },
-    "FieldI18nConfig": {
+    "FieldLocalization": {
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "hint": {
+          "type": "string"
+        }
+      }
+    },
+    "EnumValueLocalization": {
       "properties": {
         "label": {
           "type": "string"

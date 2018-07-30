@@ -10,6 +10,7 @@ import {
 } from '../config';
 import { MessageLocation, ValidationMessage } from '../validation';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
+import { EnumValue } from './enum-type';
 import { Field } from './field';
 import { Model } from './model';
 import { Type } from './type';
@@ -52,6 +53,14 @@ export class ModelI18n implements ModelComponent {
         };
     }
 
+    public getEnumValueLocalization(enumValue: EnumValue, resolutionOrder: ReadonlyArray<string>): EnumValueLocalization {
+        const resolutionProviders = this.getResolutionProviders(resolutionOrder);
+        return {
+            label: mapFirstDefined(resolutionProviders, rp => rp.localizeEnumValue(enumValue).label),
+            hint: mapFirstDefined(resolutionProviders, rp => rp.localizeEnumValue(enumValue).hint)
+        };
+    }
+
     private getResolutionProviders(resolutionOrder: ReadonlyArray<string>): ReadonlyArray<LocalizationProvider> {
         return compact(resolutionOrder.map(providerName => {
             switch (providerName) {
@@ -89,6 +98,10 @@ export class NamespaceLocalization {
 
     public getFieldLocalization({typeName, fieldName}: { typeName: string, fieldName: string }): FieldLocalization | undefined {
         return this.getElementLocalization({typeName, elementName: fieldName, property: 'fields'});
+    }
+
+    public getEnumValueLocalization({typeName, enumValue}: { typeName: string, enumValue: string }): EnumValueLocalization | undefined {
+        return this.getElementLocalization({typeName, elementName: enumValue, property: 'fields'});
     }
 
     private getElementLocalization({typeName, elementName, property}: { typeName: string, elementName: string, property: 'fields' | 'values' }): FieldLocalization | undefined {
@@ -148,16 +161,16 @@ export interface TypeLocalization {
     readonly loc?: MessageLocation
 }
 
-export interface FieldLocalization {
-    readonly label?: string,
-    readonly hint?: string,
-    readonly loc?: MessageLocation
+export interface FieldLocalization extends LocalizationBaseConfig {
+}
+
+export interface EnumValueLocalization extends LocalizationBaseConfig {
 }
 
 interface LocalizationProvider {
     localizeType(type: TypeBase): TypeLocalization;
-
     localizeField(field: Field): FieldLocalization;
+    localizeEnumValue(enumValue: EnumValue): EnumValueLocalization;
 }
 
 class ModelLocalizationProvider implements LocalizationProvider {
@@ -218,6 +231,28 @@ class ModelLocalizationProvider implements LocalizationProvider {
             }
             if (label && hint) {
                 break;
+            }
+        }
+        return {label: label, hint: hint};
+    }
+
+    localizeEnumValue(enumValue: EnumValue): EnumValueLocalization {
+        const matchingNamespaces = this.getMatchingNamespaces(enumValue.declaringType.namespacePath);
+
+        let label: string | undefined;
+        let hint: string | undefined;
+
+        for (const namespace of matchingNamespaces) {
+            const localization = namespace.getEnumValueLocalization({
+                typeName: enumValue.declaringType.name, enumValue: enumValue.value
+            });
+            if (localization) {
+                label = label ? label : localization.label;
+                hint = hint ? hint : localization.hint;
+
+                if (label && hint) {
+                    break;
+                }
             }
         }
         return {label: label, hint: hint};
@@ -336,6 +371,12 @@ class GenericLocalizationProvider implements LocalizationProvider {
         };
     }
 
+    localizeEnumValue(enumValue: EnumValue): FieldLocalization {
+        return {
+            label: generateGenericName(enumValue.value)
+        };
+    }
+
     static generatePluralName(name: string | undefined): string | undefined {
         name = generateGenericName(name);
         if (name == undefined || name === '') {
@@ -371,6 +412,11 @@ class WarningLocalizationProvider implements LocalizationProvider {
 
     localizeType(type: Type): TypeLocalization {
         this.logger.warn(`Missing i18n for type ${type.namespacePath.join(NAMESPACE_SEPARATOR)}.${type.name} in language: ${this.resolutionOrderWithoutResult.join(', ')}`);
+        return {};
+    }
+
+    localizeEnumValue(enumValue: EnumValue): EnumValueLocalization {
+        this.logger.warn(`Missing i18n for enum value ${enumValue.declaringType.namespacePath.join(NAMESPACE_SEPARATOR)}.${enumValue.declaringType.name}.${enumValue.value} in language: ${this.resolutionOrderWithoutResult.join(', ')}`);
         return {};
     }
 }
