@@ -44,7 +44,7 @@ export function parseI18nConfigs(source: ParsedObjectProjectSource): ReadonlyArr
     }
 
     const i18n = source.object.i18n as { [language: string]: NamespaceLocalizationConfig };
-    return compact(Object.keys(source.object.i18n).map((key: string) => {
+    return compact(Object.keys(source.object.i18n).map((key: string): LocalizationConfig|undefined => {
         const namespace = i18n[key];
         if (typeof namespace !== 'object') {
             return undefined;
@@ -53,17 +53,13 @@ export function parseI18nConfigs(source: ParsedObjectProjectSource): ReadonlyArr
         const curYamlPath = '/i18n/' + key;
         const normalizedFields = normalizeLocalizationBaseConfig(namespace.fields, curYamlPath + '/fields', source);
         const normalizedTypes = normalizeTypeConfig(namespace.types, curYamlPath, source);
-        const namespaceConfig: NamespaceLocalizationConfig = {
+
+        return {
+            language: key,
             namespacePath: source.namespacePath,
             fields: normalizedFields,
             types: normalizedTypes,
             loc: source.pathLocationMap[curYamlPath]
-        };
-
-        return {
-            namespaceContent: namespaceConfig,
-            language: key,
-            namespacePath: source.namespacePath
         };
     }));
 }

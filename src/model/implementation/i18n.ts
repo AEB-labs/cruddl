@@ -2,7 +2,9 @@ import * as pluralize from 'pluralize';
 import { globalContext } from '../../config/global';
 import { I18N_GENERIC, I18N_WARNING } from '../../meta-schema/constants';
 import { NAMESPACE_SEPARATOR } from '../../schema/constants';
-import { arrayStartsWith, capitalize, compact, decapitalize, groupArray, mapFirstDefined } from '../../utils/utils';
+import {
+    arrayStartsWith, capitalize, compact, decapitalize, groupArray, mapFirstDefined, mapValues
+} from '../../utils/utils';
 import {
     LocalizationBaseConfig, LocalizationConfig, NamespaceLocalizationConfig, TypeLocalizationConfig
 } from '../config';
@@ -18,22 +20,15 @@ export class ModelI18n implements ModelComponent {
     private readonly languageLocalizationProvidersByLanguage: ReadonlyMap<string, ModelLocalizationProvider>;
 
     constructor(input: ReadonlyArray<LocalizationConfig>, private readonly model: Model) {
-        // collect configs by language and create one list of namespaces per language
-        // collect all countries for which namespaces must be created
+        // collect configs by language and create one localization provider per language
         const configsByLanguage = groupArray(input, config => config.language);
-
-        const localizationMap = new Map<string, ModelLocalizationProvider>();
-        Array.from(configsByLanguage.keys()).forEach(language =>
-            localizationMap.set(language, new ModelLocalizationProvider(configsByLanguage.get(language)!.map(
-                config => config.namespaceContent)
-                .map(flatNamespace => new NamespaceLocalization(flatNamespace))))
-        );
-        this.languageLocalizationProvidersByLanguage = localizationMap;
+        const localizationsByLanguage = mapValues(configsByLanguage, configs => configs.map(config => new NamespaceLocalization(config)));
+        this.languageLocalizationProvidersByLanguage = mapValues(localizationsByLanguage, localizations => new ModelLocalizationProvider(localizations));
     }
 
     public validate(context: ValidationContext): void {
-        for (const locPro of this.languageLocalizationProvidersByLanguage.values()) {
-            locPro.validate(context, this.model);
+        for (const localizationProvider of this.languageLocalizationProvidersByLanguage.values()) {
+            localizationProvider.validate(context, this.model);
         }
     }
 
@@ -70,21 +65,18 @@ export class ModelI18n implements ModelComponent {
         }));
     }
 
-
 }
 
 export class NamespaceLocalization {
     public readonly namespacePath: ReadonlyArray<string>;
-    private readonly namespaceLocalizationConfig: NamespaceLocalizationConfig;
 
-    constructor(input: NamespaceLocalizationConfig) {
-        this.namespaceLocalizationConfig = input;
-        this.namespacePath = input.namespacePath;
+    constructor(private readonly config: NamespaceLocalizationConfig) {
+        this.namespacePath = config.namespacePath;
     }
 
     public getAllLocalizationsForType(name: string) {
-        if (this.namespaceLocalizationConfig.types) {
-            const type = this.namespaceLocalizationConfig.types[name];
+        if (this.config.types) {
+            const type = this.config.types[name];
             if (type) {
                 return {
                     name: name,
@@ -99,8 +91,8 @@ export class NamespaceLocalization {
     }
 
     public getTypeLocalizationForLocalisationBase(name: string, type: string): FieldLocalization | undefined {
-        if (this.namespaceLocalizationConfig.types && this.namespaceLocalizationConfig.types[type]) {
-            const typeConf = this.namespaceLocalizationConfig.types[type];
+        if (this.config.types && this.config.types[type]) {
+            const typeConf = this.config.types[type];
             let localisationBases: { [name: string]: LocalizationBaseConfig } | undefined;
 
             if (typeConf.fields) {
@@ -124,8 +116,8 @@ export class NamespaceLocalization {
     }
 
     public getNamespaceLocalizationForField(name: string): FieldLocalization | undefined {
-        if (this.namespaceLocalizationConfig.fields && this.namespaceLocalizationConfig.fields[name]) {
-            const field = this.namespaceLocalizationConfig.fields[name];
+        if (this.config.fields && this.config.fields[name]) {
+            const field = this.config.fields[name];
             return {
                 hint: field.hint,
                 label: field.label,
@@ -136,15 +128,15 @@ export class NamespaceLocalization {
     }
 
     get loc() {
-        return this.namespaceLocalizationConfig.loc;
+        return this.config.loc;
     }
 
     get types(): { [name: string]: TypeLocalizationConfig } | undefined {
-        return this.namespaceLocalizationConfig.types;
+        return this.config.types;
     }
 
     get fields() {
-        return this.namespaceLocalizationConfig.fields;
+        return this.config.fields;
     }
 
 }
@@ -180,14 +172,10 @@ class ModelLocalizationProvider implements LocalizationProvider {
     }
 
     validate(validationContext: ValidationContext, model: Model) {
-        const groupedNamespaceLocalizations = groupArray(this.namespaces, ns => ns.namespacePath.join('/'));
-        for (const key of groupedNamespaceLocalizations.keys()) {
-            const namespaces = groupedNamespaceLocalizations.get(key);
-
-            if (namespaces) {
-                checkForDoubleDefinitions(namespaces, validationContext);
-                checkForTypeConstraints(namespaces, model, validationContext);
-            }
+        const groupedNamespaceLocalizations = groupArray(this.namespaces, ns => ns.namespacePath.join('.'));
+        for (const namespaces of groupedNamespaceLocalizations.values()) {
+            checkForDoubleDefinitions(namespaces, validationContext);
+            checkForTypeConstraints(namespaces, model, validationContext);
         }
     }
 
@@ -228,7 +216,7 @@ class ModelLocalizationProvider implements LocalizationProvider {
                 break;
             }
         }
-        return { label: label, hint: hint };
+        return {label: label, hint: hint};
     }
 
 }

@@ -161,10 +161,27 @@ export function objectEntries<T>(obj: { [name: string]: T }): [string, T][] {
     return Object.keys(obj).map((k): [string,T] => [k, obj[k]]);
 }
 
-export function mapValues<TIn, TOut>(obj: { [key: string]: TIn }, fn: (value: TIn, key: string) => TOut): { [key: string]: TOut } {
+export function mapValues<TIn, TOut>(obj: { [key: string]: TIn }, fn: (value: TIn, key: string) => TOut): { [key: string]: TOut };
+export function mapValues<TIn, TOut, TKey>(map: Map<TKey, TIn>, fn: (value: TIn, key: TKey) => TOut): Map<TKey, TOut>;
+export function mapValues<TIn, TOut, TKey>(obj: { [key: string]: TIn }|Map<TKey, TIn>, fn: (value: TIn, key: TKey) => TOut): Map<TKey, TOut>|{ [key: string]: TOut } {
+    if (obj instanceof Map) {
+        return mapValues1(obj, fn);
+    }
+    return mapValues0(obj, fn as any as (value: TIn, key: string) => TOut);
+}
+
+function mapValues0<TIn, TOut>(obj: { [key: string]: TIn }, fn: (value: TIn, key: string) => TOut): { [key: string]: TOut } {
     const result: { [key: string]: TOut } = {};
     for (const key in obj) {
         result[key] = fn(obj[key], key);
+    }
+    return result;
+}
+
+function mapValues1<TIn, TOut, TKey>(map: Map<TKey, TIn>, fn: (value: TIn, key: TKey) => TOut): Map<TKey, TOut> {
+    const result = new Map<TKey, TOut>();
+    for (const [key, value] of map.entries()) {
+        result.set(key, fn(value, key));
     }
     return result;
 }

@@ -1,6 +1,5 @@
-import { expect } from "chai";
-import { Model, TypeKind } from '../../../src/model';
-import { LocalizationConfig } from '../../../src/model/config/i18n';
+import { expect } from 'chai';
+import { LocalizationConfig, Model, TypeKind } from '../../../src/model';
 
 const FULLY = 'fully';
 const PARTIALLY = 'partially';
@@ -9,83 +8,70 @@ const NAMESPACED = 'namespaced';
 const i18n: LocalizationConfig[] = [
     {
         language: FULLY,
-        namespaceContent: {
-            types: {
-                A: {
-                    fields: {
-                        a1: { label: 'A1_FULLY_LABEL', hint: 'A1_FULLY_HINT' },
-                        a2: { label: 'A2_FULLY_LABEL', hint: 'A2_FULLY_HINT' }
-                    },
-                },
-                // C is actually located in 'namespace' but translated in root here
-                B: {
-                    fields: {
-                        b1: { label: 'B1_FULLY_LABEL', hint: 'B1_FULLY_HINT' },
-                        b2: { label: 'B2_FULLY_LABEL', hint: 'B2_FULLY_HINT' }
-                    },
-                },
-                C: {
-                    fields: {
-                        c1: { label: 'C1_FULLY_LABEL', hint: 'C1_FULLY_HINT' },
-                        c2: { label: 'C2_FULLY_LABEL', hint: 'C2_FULLY_HINT' }
-                    },
+        namespacePath: [],
+        types: {
+            A: {
+                fields: {
+                    a1: {label: 'A1_FULLY_LABEL', hint: 'A1_FULLY_HINT'},
+                    a2: {label: 'A2_FULLY_LABEL', hint: 'A2_FULLY_HINT'}
                 }
             },
-            fields: {
-                g1: { label: 'G1_FULLY_LABEL', hint: 'G1_FULLY_HINT'}
+            // C is actually located in 'namespace' but translated in root here
+            B: {
+                fields: {
+                    b1: {label: 'B1_FULLY_LABEL', hint: 'B1_FULLY_HINT'},
+                    b2: {label: 'B2_FULLY_LABEL', hint: 'B2_FULLY_HINT'}
+                }
             },
-            namespacePath: []
+            C: {
+                fields: {
+                    c1: {label: 'C1_FULLY_LABEL', hint: 'C1_FULLY_HINT'},
+                    c2: {label: 'C2_FULLY_LABEL', hint: 'C2_FULLY_HINT'}
+                }
+            }
         },
-        namespacePath: []
+        fields: {
+            g1: {label: 'G1_FULLY_LABEL', hint: 'G1_FULLY_HINT'}
+        }
     },
     {
         language: PARTIALLY,
-        namespaceContent: {
-            types: {
-                A: {
-                    fields: {
-                        a1: {label: 'A1_PARTIALLY_LABEL'},
-                        g2: {label: 'G2_PARTIALLY_LABEL_DIRECT'}
-                    },
-                },
-                B: {
-                    fields: {
-                        b2: { label: 'B2_PARTIALLY_LABEL', hint: 'B2_PARTIALLY_HINT' }
-                    },
-                },
-            },
-            fields: {
-                g1: {hint: 'G1_PARTIALLY_HINT'},
-                g2: {hint: 'G2_PARTIALLY_HINT'}
-            },
-            namespacePath: []
-        },
-        namespacePath: []
-    },
-    {
-        language: NAMESPACED,
-        namespaceContent: {
-            fields: {
-                c1: { hint: 'C1_NON_NAMESPACED_HINT' }
-            },
-            namespacePath: []
-        },
-        namespacePath: []
-    },
-    {
-        language: NAMESPACED,
-        namespaceContent: {
-
-            types: {
-                C: {
-                    fields: {
-                        c1: { label: 'C1_NAMESPACED_LABEL_DIRECT' },
-                    }
+        namespacePath: [],
+        types: {
+            A: {
+                fields: {
+                    a1: {label: 'A1_PARTIALLY_LABEL'},
+                    g2: {label: 'G2_PARTIALLY_LABEL_DIRECT'}
                 }
             },
-            namespacePath: ['namespace']
+            B: {
+                fields: {
+                    b2: {label: 'B2_PARTIALLY_LABEL', hint: 'B2_PARTIALLY_HINT'}
+                }
+            }
         },
-        namespacePath: ['namespace']
+        fields: {
+            g1: {hint: 'G1_PARTIALLY_HINT'},
+            g2: {hint: 'G2_PARTIALLY_HINT'}
+        }
+    },
+    {
+        language: NAMESPACED,
+        namespacePath: [],
+        fields: {
+            c1: {hint: 'C1_NON_NAMESPACED_HINT'}
+        }
+    },
+    {
+        language: NAMESPACED,
+        namespacePath: ['namespace'],
+        types: {
+            C: {
+                fields: {
+                    c1: {label: 'C1_NAMESPACED_LABEL_DIRECT'}
+                }
+            }
+        }
     }
 ];
 
@@ -94,18 +80,21 @@ const model = new Model({
         {
             kind: TypeKind.ROOT_ENTITY,
             name: 'A',
-            fields: [{ name: 'a1', typeName: 'String' }, { name: 'a2', typeName: 'String' }, { name: 'g1', typeName: 'String' }, { name: 'g2', typeName: 'String' }]
+            fields: [
+                {name: 'a1', typeName: 'String'}, {name: 'a2', typeName: 'String'}, {name: 'g1', typeName: 'String'},
+                {name: 'g2', typeName: 'String'}
+            ]
         },
         {
             kind: TypeKind.ROOT_ENTITY,
             name: 'B',
-            fields: [{ name: 'b1', typeName: 'String' }, { name: 'b2', typeName: 'String' }]
+            fields: [{name: 'b1', typeName: 'String'}, {name: 'b2', typeName: 'String'}]
         },
         {
             kind: TypeKind.ROOT_ENTITY,
             name: 'C',
             namespacePath: ['namespace'],
-            fields: [{ name: 'c1', typeName: 'String' }]
+            fields: [{name: 'c1', typeName: 'String'}]
         }
     ],
     i18n
@@ -171,4 +160,5 @@ describe('I18n field localization', () => {
         expect(localization.label).to.equal('C1_NAMESPACED_LABEL_DIRECT');
         expect(localization.hint).to.equal('C1_NON_NAMESPACED_HINT');
     });
+    // TODO more tests for common vs. super namespaces
 });

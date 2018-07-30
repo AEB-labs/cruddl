@@ -1,6 +1,5 @@
 import { expect } from 'chai';
-import { Model, TypeKind } from '../../../src/model';
-import { LocalizationConfig } from '../../../src/model/config/i18n';
+import { LocalizationConfig, Model, TypeKind } from '../../../src/model';
 
 const FULLY = 'fully';
 const PARTIALLY = 'partially';
@@ -9,66 +8,55 @@ const NAMESPACED = 'namespaced';
 const i18n: LocalizationConfig[] = [
     {
         language: FULLY,
-        namespaceContent: {
-            types: {
-                A: {
-                    singular: 'A_FULLY_SINGULAR',
-                    plural: 'A_FULLY_PLURAL',
-                    hint: 'A_FULLY_HINT'
-                },
-                B: {
-                    singular: 'B_FULLY_SINGULAR',
-                    plural: 'B_FULLY_PLURAL',
-                    hint: 'B_FULLY_HINT'
-                },
-                // C is actually located in 'namespace' but translated in root here
-                C: {
-                    singular: 'C_FULLY_SINGULAR',
-                    plural: 'C_FULLY_PLURAL',
-                    hint: 'C_FULLY_HINT'
-                }
+        namespacePath: [],
+        types: {
+            A: {
+                singular: 'A_FULLY_SINGULAR',
+                plural: 'A_FULLY_PLURAL',
+                hint: 'A_FULLY_HINT'
             },
-            namespacePath: []
-        },
-        namespacePath: []
+            B: {
+                singular: 'B_FULLY_SINGULAR',
+                plural: 'B_FULLY_PLURAL',
+                hint: 'B_FULLY_HINT'
+            },
+            // C is actually located in 'namespace' but translated in root here
+            C: {
+                singular: 'C_FULLY_SINGULAR',
+                plural: 'C_FULLY_PLURAL',
+                hint: 'C_FULLY_HINT'
+            }
+        }
     },
     {
         language: PARTIALLY,
-        namespaceContent: {
-            types: {
-                A: {
-                    singular: 'A_PARTIALLY_SINGULAR'
-                },
-                // B missing
-                // C is actually located in 'namespace' but translated in root here
-                C: {
-                    singular: 'C_PARTIALLY_SINGULAR'
-                }
+        namespacePath: [],
+        types: {
+            A: {
+                singular: 'A_PARTIALLY_SINGULAR'
             },
-            namespacePath: []
-        },
-        namespacePath: []
+            // B missing
+            // C is actually located in 'namespace' but translated in root here
+            C: {
+                singular: 'C_PARTIALLY_SINGULAR'
+            }
+        }
     },
     {
         language: NAMESPACED,
         namespacePath: ['namespace'],
-        namespaceContent: {
-
-            types: {
-                // A is not namespaced in model, this localization must never be used
-                A: {
-                    singular: 'A_NAMESPACED_SINGULAR',
-                    plural: 'A_NAMESPACED_PLURAL',
-                    hint: 'A_NAMESPACED_HINT'
-                },
-                C: {
-                    singular: 'C_NAMESPACED_SINGULAR',
-                    plural: 'C_NAMESPACED_PLURAL',
-                    hint: 'C_NAMESPACED_HINT'
-                }
+        types: {
+            // A is not namespaced in model, this localization must never be used
+            A: {
+                singular: 'A_NAMESPACED_SINGULAR',
+                plural: 'A_NAMESPACED_PLURAL',
+                hint: 'A_NAMESPACED_HINT'
             },
-
-            namespacePath: ['namespace']
+            C: {
+                singular: 'C_NAMESPACED_SINGULAR',
+                plural: 'C_NAMESPACED_PLURAL',
+                hint: 'C_NAMESPACED_HINT'
+            }
         }
     }
 ];
@@ -79,16 +67,16 @@ const model = new Model({
             kind: TypeKind.ROOT_ENTITY,
             name: 'A',
             fields: [
-                { name: 'field1', typeName: 'String' }, { name: 'field2', typeName: 'String' },
-                { name: 'field3', typeName: 'String' }
+                {name: 'field1', typeName: 'String'}, {name: 'field2', typeName: 'String'},
+                {name: 'field3', typeName: 'String'}
             ]
         },
         {
             kind: TypeKind.ROOT_ENTITY,
             name: 'B',
             fields: [
-                { name: 'field1', typeName: 'String' }, { name: 'field2', typeName: 'String' },
-                { name: 'field3', typeName: 'String' }
+                {name: 'field1', typeName: 'String'}, {name: 'field2', typeName: 'String'},
+                {name: 'field3', typeName: 'String'}
             ]
         },
         {
@@ -96,8 +84,8 @@ const model = new Model({
             name: 'C',
             namespacePath: ['namespace'],
             fields: [
-                { name: 'field1', typeName: 'String' }, { name: 'field2', typeName: 'String' },
-                { name: 'field3', typeName: 'String' }
+                {name: 'field1', typeName: 'String'}, {name: 'field2', typeName: 'String'},
+                {name: 'field3', typeName: 'String'}
             ]
         }
     ],

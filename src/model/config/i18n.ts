@@ -1,9 +1,7 @@
 import { MessageLocation } from '../validation';
 
-export interface LocalizationConfig {
-    readonly namespacePath: ReadonlyArray<string>
+export interface LocalizationConfig extends NamespaceLocalizationConfig {
     readonly language: string
-    readonly namespaceContent: NamespaceLocalizationConfig
 }
 
 export interface NamespaceLocalizationConfig {
