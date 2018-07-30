@@ -277,7 +277,7 @@ function checkForTypeConstraints(namespaces: ReadonlyArray<NamespaceLocalization
                         const objectType = model.getObjectTypeOrThrow(typeKey);
                         for (const field in type.fields) {
                             if (!objectType.fields.find(f => f.name === field)) {
-                                validationContext.addMessage(ValidationMessage.warn('The type "' + typeKey + '" has no field "' + field + '". This might be a spelling error.', type.loc));
+                                validationContext.addMessage(ValidationMessage.warn('The type "' + typeKey + '" has no field "' + field + '". This might be a spelling error.', type.fields[field].loc));
                             }
                         }
 
@@ -292,7 +292,7 @@ function checkForTypeConstraints(namespaces: ReadonlyArray<NamespaceLocalization
                         if (type.values) {
                             for (const value in type.values) {
                                 if (!enumType.values.find(v => v.value === value)) {
-                                    validationContext.addMessage(ValidationMessage.warn('The enum type "' + typeKey + '" has no value "' + value + '". This might be a spelling error.', type.loc));
+                                    validationContext.addMessage(ValidationMessage.warn('The enum type "' + typeKey + '" has no value "' + value + '". This might be a spelling error.', type.values[value].loc));
                                 }
                             }
                         }
@@ -324,10 +324,10 @@ function checkForDoubleDefinitions(namespaces: ReadonlyArray<NamespaceLocalizati
                     for (const locBase in typeConf.fields) {
                         const fieldConf = typeConf.fields[locBase];
                         if (fieldConf && fieldConf.label && isExistingAndAdd(type + '/' + locBase + '/label', alreadySeen)) {
-                            validationContext.addMessage(ValidationMessage.error('The attribute "label" in field "' + locBase + '" of type "' + type + '" was defined several times in the i18n translation', typeConf.loc));
+                            validationContext.addMessage(ValidationMessage.error('The attribute "label" in field "' + locBase + '" of type "' + type + '" was defined several times in the i18n translation', fieldConf.loc));
                         }
                         if (fieldConf && fieldConf.hint && isExistingAndAdd(type + '/' + locBase + '/hint', alreadySeen)) {
-                            validationContext.addMessage(ValidationMessage.error('The attribute "hint" in field "' + locBase + '" of type "' + type + '" was defined several times in the i18n translation', typeConf.loc));
+                            validationContext.addMessage(ValidationMessage.error('The attribute "hint" in field "' + locBase + '" of type "' + type + '" was defined several times in the i18n translation', fieldConf.loc));
                         }
                     }
                 }
@@ -335,10 +335,10 @@ function checkForDoubleDefinitions(namespaces: ReadonlyArray<NamespaceLocalizati
                     for (const locBase in typeConf.values) {
                         const valueConf = typeConf.values[locBase];
                         if (valueConf && valueConf.label && isExistingAndAdd(type + '/' + locBase + '/label', alreadySeen)) {
-                            validationContext.addMessage(ValidationMessage.error('The attribute "label" in value "' + locBase + '" of type "' + type + '" was defined several times in the i18n translation', typeConf.loc));
+                            validationContext.addMessage(ValidationMessage.error('The attribute "label" in value "' + locBase + '" of type "' + type + '" was defined several times in the i18n translation', valueConf.loc));
                         }
                         if (valueConf && valueConf.hint && isExistingAndAdd(type + '/' + locBase + '/hint', alreadySeen)) {
-                            validationContext.addMessage(ValidationMessage.error('The attribute "hint" in value "' + locBase + '" of type "' + type + '" was defined several times in the i18n translation', typeConf.loc));
+                            validationContext.addMessage(ValidationMessage.error('The attribute "hint" in value "' + locBase + '" of type "' + type + '" was defined several times in the i18n translation', valueConf.loc));
                         }
                     }
                 }
