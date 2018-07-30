@@ -1,11 +1,13 @@
 import { EnumValueDefinitionNode } from 'graphql';
 import { EnumTypeConfig, EnumValueConfig, TypeKind } from '../config';
+import { EnumValueLocalization } from './i18n';
+import { Model } from './model';
 import { TypeBase } from './type-base';
 
 export class EnumType extends TypeBase {
-    constructor(input: EnumTypeConfig) {
-        super(input);
-        this.values = input.values.map(v => new EnumValue(v));
+    constructor(input: EnumTypeConfig, model: Model) {
+        super(input, model);
+        this.values = input.values.map(v => new EnumValue(v, this));
     }
 
     readonly values: ReadonlyArray<EnumValue>;
@@ -25,9 +27,13 @@ export class EnumValue {
     readonly description: string | undefined;
     readonly astNode: EnumValueDefinitionNode | undefined;
 
-    constructor(input: EnumValueConfig) {
+    constructor(input: EnumValueConfig, public readonly declaringType: EnumType) {
         this.value = input.value;
         this.description = input.description;
         this.astNode = input.astNode;
+    }
+
+    public getLocalization(resolutionOrder: ReadonlyArray<string>): EnumValueLocalization {
+        return this.declaringType.model.i18n.getEnumValueLocalization(this, resolutionOrder);
     }
 }

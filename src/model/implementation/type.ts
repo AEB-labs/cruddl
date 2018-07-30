@@ -12,11 +12,11 @@ export type ObjectType = RootEntityType | ChildEntityType | EntityExtensionType 
 export type Type = ObjectType | ScalarType | EnumType;
 
 export class InvalidType extends ScalarType {
-    constructor(name: string) {
+    constructor(name: string, model: Model) {
         super({
             kind: TypeKind.SCALAR,
             name
-        }, GraphQLString)
+        }, model, GraphQLString)
     }
 }
 
@@ -33,7 +33,7 @@ export function createType(typeInput: TypeConfig, model: Model): Type {
         case TypeKind.SCALAR:
             throw new Error(`Custom scalar types are not yet supported`);
         case TypeKind.ENUM:
-            return new EnumType(typeInput);
+            return new EnumType(typeInput, model);
         default:
             throw new Error(`Unknown type kind: ${(typeInput as any).kind}`)
     }

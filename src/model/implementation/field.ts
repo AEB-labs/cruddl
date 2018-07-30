@@ -3,6 +3,7 @@ import { CALC_MUTATIONS_OPERATORS } from '../../schema/constants';
 import { CalcMutationsOperator, FieldConfig, TypeKind } from '../config';
 import { ValidationMessage } from '../validation';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
+import { FieldLocalization } from './i18n';
 import { Model } from './model';
 import { PermissionProfile } from './permission-profile';
 import { Relation, RelationSide } from './relation';
@@ -129,6 +130,10 @@ export class Field implements ModelComponent {
 
     public getRelationOrThrow(): Relation {
         return this.getRelationSideOrThrow().relation;
+    }
+
+    public getLocalization(resolutionOrder: ReadonlyArray<string>): FieldLocalization {
+        return this.model.i18n.getFieldLocalization(this, resolutionOrder)
     }
 
     validate(context: ValidationContext) {

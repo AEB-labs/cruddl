@@ -3,19 +3,23 @@ import * as pluralize from 'pluralize';
 import { TypeConfig, TypeKind } from '../config';
 import { ValidationMessage } from '../validation';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
+import { TypeLocalization } from './i18n';
+import { Model } from './model';
 
 export abstract class TypeBase implements ModelComponent {
     readonly name: string;
+    readonly namespacePath: ReadonlyArray<string>;
     readonly pluralName: string;
     readonly description: string | undefined;
     abstract readonly kind: TypeKind;
     readonly astNode: TypeDefinitionNode | undefined;
     readonly nameASTNode: NameNode | undefined;
 
-    protected constructor(input: TypeConfig) {
+    protected constructor(input: TypeConfig, public readonly model: Model) {
         this.astNode = input.astNode;
         this.nameASTNode = input.astNode ? input.astNode.name : undefined;
         this.name = input.name;
+        this.namespacePath = input.namespacePath || [];
         this.description = input.description;
         this.pluralName = pluralize(this.name);
     }
@@ -46,6 +50,10 @@ export abstract class TypeBase implements ModelComponent {
         if (!this.name.match(/^[A-Z]/)) {
             context.addMessage(ValidationMessage.warn(`Type names should start with an uppercase character.`, this.nameASTNode));
         }
+    }
+
+    public getLocalization(resolutionOrder: ReadonlyArray<string>): TypeLocalization {
+        return this.model.i18n.getTypeLocalization(this, resolutionOrder)
     }
 
     abstract readonly isObjectType: boolean = false;

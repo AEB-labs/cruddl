@@ -7,6 +7,8 @@ import {
     ENUM_TYPE_DEFINITION, INPUT_OBJECT_TYPE_DEFINITION, LIST_TYPE, NAME, NAMED_TYPE, NON_NULL_TYPE,
     OBJECT_TYPE_DEFINITION, SCALAR_TYPE_DEFINITION
 } from '../graphql/kinds';
+import { SourcePosition } from '../model/validation';
+import { ProjectSource } from '../project/source';
 import {
     CHILD_ENTITY_DIRECTIVE, ENTITY_EXTENSION_DIRECTIVE, ROOT_ENTITY_DIRECTIVE, VALUE_OBJECT_DIRECTIVE
 } from './constants';
@@ -177,4 +179,38 @@ export function getNodeByName<T extends {name: NameNode}>(listOfNodes: ReadonlyA
         return undefined;
     }
     return listOfNodes.find(node => node.name.value === name);
+}
+
+export function getLineAndColumnFromPosition(position: number, source: string) {
+    let curIndex = 0;
+    let line = 0;
+    while (curIndex < position){
+        const nextLinebreakIndex = source.indexOf('\n', curIndex);
+        if(nextLinebreakIndex < 0 || nextLinebreakIndex >= position){
+            break;
+        }else{
+            line++;
+            curIndex = nextLinebreakIndex+1;
+        }
+    }
+
+    return {line: line+1, column: position-curIndex+1};
+}
+
+export function getLineEndPosition(targetLine: number, source: ProjectSource): SourcePosition {
+    let curIndex = 0;
+    let line = 0;
+    let column = 0;
+    while (line < targetLine){
+        const nextLinebreakIndex = source.body.indexOf('\n', curIndex);
+        if(nextLinebreakIndex < 0){
+            break;
+        }else{
+            line++;
+            column = nextLinebreakIndex+1-curIndex;
+            curIndex = nextLinebreakIndex+1;
+        }
+    }
+
+    return {line: targetLine, offset: curIndex-1, column: column};
 }

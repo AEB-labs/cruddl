@@ -1,9 +1,9 @@
-import { SourceValidator } from '../ast-validator';
-import { ProjectSource, SourceType } from '../../../project/source';
+import { ParsedProjectSource, ParsedProjectSourceBaseKind } from '../../../config/parsed-project';
+import { ParsedSourceValidator } from '../ast-validator';
 import { ValidationMessage } from '../../../model';
 import {
     buildASTSchema, DocumentNode, GraphQLError, KnownArgumentNamesRule, KnownDirectivesRule, KnownTypeNamesRule,
-    Location, parse, ProvidedNonNullArgumentsRule, Source, UniqueArgumentNamesRule, UniqueDirectivesPerLocationRule,
+    Location, ProvidedNonNullArgumentsRule, UniqueArgumentNamesRule, UniqueDirectivesPerLocationRule,
     UniqueInputFieldNamesRule, validate, ValuesOfCorrectTypeRule, VariablesInAllowedPositionRule
 } from 'graphql';
 import { CORE_SCALARS, DIRECTIVES } from '../../graphql-base';
@@ -25,22 +25,13 @@ const rules = [
     UniqueInputFieldNamesRule
 ];
 
-export class GraphQLRulesValidator implements SourceValidator {
-    validate(source: ProjectSource): ValidationMessage[] {
-        if (source.type != SourceType.GRAPHQLS) {
+export class GraphQLRulesValidator implements ParsedSourceValidator {
+    validate(source: ParsedProjectSource): ValidationMessage[] {
+        if (source.kind != ParsedProjectSourceBaseKind.GRAPHQL) {
             return [];
         }
 
-        let ast: DocumentNode;
-        try {
-            ast = parse(new Source(source.body, source.name));
-        } catch (e) {
-            // don't report any semantic errors if there are syntax errors
-            if (e instanceof GraphQLError) {
-                return [];
-            }
-            throw e;
-        }
+        let ast = source.document;
 
         return validate(coreSchema, ast, rules).map(error => ValidationMessage.error(error.message, getMessageLocation(error)));
     }

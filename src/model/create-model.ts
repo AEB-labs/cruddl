@@ -2,7 +2,9 @@ import {
     ArgumentNode, EnumValueDefinitionNode, FieldDefinitionNode, GraphQLBoolean, GraphQLID, GraphQLInputObjectType,
     GraphQLList, GraphQLNonNull, GraphQLString, ObjectTypeDefinitionNode, ObjectValueNode, StringValueNode, valueFromAST
 } from 'graphql';
-import { SchemaConfig, SchemaPartConfig } from '../config/schema-config';
+import {
+    ParsedGraphQLProjectSource, ParsedObjectProjectSource, ParsedProject, ParsedProjectSourceBaseKind
+} from '../config/parsed-project';
 import {
     ENUM, ENUM_TYPE_DEFINITION, LIST, LIST_TYPE, NON_NULL_TYPE, OBJECT, OBJECT_TYPE_DEFINITION, STRING
 } from '../graphql/kinds';
@@ -20,17 +22,21 @@ import {
 import { compact, flatMap } from '../utils/utils';
 import {
     CalcMutationsOperator, EnumTypeConfig, EnumValueConfig, FieldConfig, IndexDefinitionConfig, ObjectTypeConfig,
-    PermissionsConfig, RolesSpecifierConfig, TypeConfig, TypeKind
+    PermissionProfileConfigMap,
+    PermissionsConfig,
+    RolesSpecifierConfig, TypeConfig, TypeKind
 } from './config';
+import { LocalizationConfig} from './config/i18n';
 import { Model } from './implementation';
-import { ValidationMessage } from './validation';
-import { ValidationContext } from './validation/validation-context';
+import { parseI18nConfigs } from './parse-i18n';
+import { ValidationContext, ValidationMessage } from './validation';
 
-export function createModel(input: SchemaConfig): Model {
+export function createModel(parsedProject: ParsedProject): Model {
     const validationContext = new ValidationContext();
     return new Model({
-        types: createTypeInputs(input, validationContext),
-        permissionProfiles: input.permissionProfiles,
+        types: createTypeInputs(parsedProject, validationContext),
+        permissionProfiles: extractPermissionProfiles(parsedProject, validationContext),
+        i18n: extractI18n(parsedProject, validationContext),
         validationMessages: validationContext.validationMessages
     });
 }
@@ -46,9 +52,11 @@ const VALIDATION_ERROR_DUPLICATE_KEY_FIELD = 'Only one field can be a @key field
 const VALIDATION_ERROR_MULTIPLE_OBJECT_TYPE_DIRECTIVES = `Only one of @${ROOT_ENTITY_DIRECTIVE}, @${CHILD_ENTITY_DIRECTIVE}, @${ENTITY_EXTENSION_DIRECTIVE} or @${VALUE_OBJECT_DIRECTIVE} can be used.`;
 const VALIDATION_ERROR_MISSING_OBJECT_TYPE_DIRECTIVE = `Add one of @${ROOT_ENTITY_DIRECTIVE}, @${CHILD_ENTITY_DIRECTIVE}, @${ENTITY_EXTENSION_DIRECTIVE} or @${VALUE_OBJECT_DIRECTIVE}.`;
 const VALIDATION_ERROR_INVALID_DEFINITION_KIND = 'This kind of definition is not allowed. Only object and enum type definitions are allowed.';
+const VALIDATION_WARNING_DUPLICATE_PERMISSION_PROFILES = 'Duplicate permission profiles (random wins!)';
 
-function createTypeInputs(input: SchemaConfig, context: ValidationContext): ReadonlyArray<TypeConfig> {
-    return flatMap(input.schemaParts, (schemaPart => compact(schemaPart.document.definitions.map(definition => {
+function createTypeInputs(parsedProject: ParsedProject, context: ValidationContext): ReadonlyArray<TypeConfig> {
+    const graphQLSchemaParts = parsedProject.sources.filter(parsedSource => parsedSource.kind === ParsedProjectSourceBaseKind.GRAPHQL) as ReadonlyArray<ParsedGraphQLProjectSource>;
+    return flatMap(graphQLSchemaParts, (schemaPart => compact(schemaPart.document.definitions.map(definition => {
         // Only look at object types and enums (scalars are not supported yet, they need to be implemented somehow, e.g. via regex check)
         if (definition.kind != OBJECT_TYPE_DEFINITION && definition.kind !== ENUM_TYPE_DEFINITION) {
             context.addMessage(ValidationMessage.error(VALIDATION_ERROR_INVALID_DEFINITION_KIND, definition));
@@ -86,14 +94,15 @@ function createEnumValues(valueNodes: ReadonlyArray<EnumValueDefinitionNode>): R
     }));
 }
 
-function createObjectTypeInput(definition: ObjectTypeDefinitionNode, schemaPart: SchemaPartConfig, context: ValidationContext): ObjectTypeConfig {
+function createObjectTypeInput(definition: ObjectTypeDefinitionNode, schemaPart: ParsedGraphQLProjectSource, context: ValidationContext): ObjectTypeConfig {
     const entityType = getKindOfObjectTypeNode(definition, context);
 
     const common = {
         name: definition.name.value,
         description: definition.description ? definition.description.value : undefined,
         astNode: definition,
-        fields: (definition.fields || []).map(field => createFieldInput(field, context))
+        fields: (definition.fields || []).map(field => createFieldInput(field, context)),
+        namespacePath: getNamespacePath(definition, schemaPart.namespacePath),
     };
 
     switch (entityType) {
@@ -121,8 +130,8 @@ function createObjectTypeInput(definition: ObjectTypeDefinitionNode, schemaPart:
                 ...processKeyField(definition, common.fields, context),
                 kind: TypeKind.ROOT_ENTITY,
                 permissions: getPermissions(definition, context),
-                namespacePath: getNamespacePath(definition, schemaPart.localNamespace),
-                indices: createIndexDefinitionInputs(definition, context)
+                namespacePath: getNamespacePath(definition, schemaPart.namespacePath),
+                indices: createIndexDefinitionInputs(definition, context),
             };
     }
 }
@@ -310,10 +319,10 @@ function getKindOfObjectTypeNode(definition: ObjectTypeDefinitionNode, context?:
     return kindDirectives[0].name.value;
 }
 
-function getNamespacePath(definition: ObjectTypeDefinitionNode, localNamespace: string | undefined): ReadonlyArray<string> {
+function getNamespacePath(definition: ObjectTypeDefinitionNode, sourceNamespacePath: ReadonlyArray<string>): ReadonlyArray<string> {
     const directiveNamespace = findDirectiveWithName(definition, NAMESPACE_DIRECTIVE);
     if (!directiveNamespace || !directiveNamespace.arguments) {
-        return localNamespace ? localNamespace.split(NAMESPACE_SEPARATOR) : [];
+        return sourceNamespacePath;
     }
     const directiveNamespaceArg = getNodeByName(directiveNamespace.arguments, NAMESPACE_NAME_ARG);
     return directiveNamespaceArg && directiveNamespaceArg.value.kind === STRING ? directiveNamespaceArg.value.value.split(NAMESPACE_SEPARATOR) : [];
@@ -405,6 +414,34 @@ function getInverseOfASTNode(fieldNode: FieldDefinitionNode, context: Validation
     return inverseOfArg.value;
 }
 
+function extractPermissionProfiles(parsedProject: ParsedProject, validationContext: ValidationContext): PermissionProfileConfigMap {
+    const permissionProfilesList = parsedProject.sources.map(s => {
+        if (s.kind !== ParsedProjectSourceBaseKind.OBJECT) {
+            return undefined;
+        }
+        if (!s.object.permissionProfiles) {
+            return undefined;
+        }
+        return s.object.permissionProfiles as PermissionProfileConfigMap;
+    });
+    // merge list / create map
+    return compact(permissionProfilesList).reduce((prev, current) => {
+        const duplicateKeys = Object.keys(prev).filter(k => Object.keys(current).includes(k));
+        if (duplicateKeys.length > 0) {
+            validationContext.addMessage(
+                // TODO add location
+                ValidationMessage.warn(VALIDATION_WARNING_DUPLICATE_PERMISSION_PROFILES, undefined)
+            );
+        }
+        return Object.assign(prev, current);
+    }, {});
+}
+
+function extractI18n(parsedProject: ParsedProject, validationContext: ValidationContext): ReadonlyArray<LocalizationConfig> {
+    const objectSchemaParts = parsedProject.sources
+        .filter(parsedSource => parsedSource.kind === ParsedProjectSourceBaseKind.OBJECT) as ReadonlyArray<ParsedObjectProjectSource>;
+    return flatMap(objectSchemaParts, source => parseI18nConfigs(source));
+}
 
 // fake input type for index mapping
 const indexDefinitionInputObjectType: GraphQLInputObjectType = new GraphQLInputObjectType({
