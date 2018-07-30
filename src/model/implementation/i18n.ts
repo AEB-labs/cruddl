@@ -74,69 +74,69 @@ export class NamespaceLocalization {
         this.namespacePath = config.namespacePath;
     }
 
-    public getAllLocalizationsForType(name: string) {
-        if (this.config.types) {
-            const type = this.config.types[name];
-            if (type) {
-                return {
-                    name: name,
-                    singular: type.singular,
-                    plural: type.plural,
-                    hint: type.hint,
-                    loc: type.loc
-                };
-            }
+    public getTypeLocalization(name: string): TypeLocalization | undefined {
+        if (!this.config.types || !this.config.types[name]) {
+            return undefined;
         }
-        return null;
+        const type = this.config.types[name];
+        return {
+            singular: type.singular,
+            plural: type.plural,
+            hint: type.hint,
+            loc: type.loc
+        };
     }
 
-    public getTypeLocalizationForLocalisationBase(name: string, type: string): FieldLocalization | undefined {
-        if (this.config.types && this.config.types[type]) {
-            const typeConf = this.config.types[type];
-            let localisationBases: { [name: string]: LocalizationBaseConfig } | undefined;
-
-            if (typeConf.fields) {
-                localisationBases = typeConf.fields;
-            } else {
-                localisationBases = typeConf.values;
-            }
-
-            if (localisationBases) {
-                const field = localisationBases[name];
-                if (field) {
-                    return {
-                        hint: field.hint,
-                        label: field.label,
-                        loc: field.loc
-                    };
-                }
-            }
-        }
-        return;
+    public getFieldLocalization({typeName, fieldName}: { typeName: string, fieldName: string }): FieldLocalization | undefined {
+        return this.getElementLocalization({typeName, elementName: fieldName, property: 'fields'});
     }
 
-    public getNamespaceLocalizationForField(name: string): FieldLocalization | undefined {
-        if (this.config.fields && this.config.fields[name]) {
-            const field = this.config.fields[name];
-            return {
-                hint: field.hint,
-                label: field.label,
-                loc: field.loc
-            };
+    private getElementLocalization({typeName, elementName, property}: { typeName: string, elementName: string, property: 'fields' | 'values' }): FieldLocalization | undefined {
+        if (!this.config.types || !this.config.types[typeName]) {
+            return undefined;
         }
-        return;
+        const typeConfig = this.config.types[typeName];
+
+        let elementLocalizations: { [name: string]: LocalizationBaseConfig } | undefined = typeConfig[property];
+        if (!elementLocalizations) {
+            return undefined;
+        }
+
+        const element = elementLocalizations[elementName];
+        if (!element) {
+            return undefined;
+        }
+
+        return {
+            hint: element.hint,
+            label: element.label,
+            loc: element.loc
+        };
     }
 
-    get loc() {
+    /**
+     * Gets a localization for a field name outside of a type declaration
+     *
+     * This should be used as fallback if no direct type-field localization is present
+     */
+    public getCommonFieldLocalization(name: string): FieldLocalization | undefined {
+        if (!this.config.fields || !this.config.fields[name]) {
+            return undefined;
+        }
+        const field = this.config.fields[name];
+        return {
+            hint: field.hint,
+            label: field.label,
+            loc: field.loc
+        };
+    }
+
+    get loc(): MessageLocation | undefined {
         return this.config.loc;
     }
 
     get types(): { [name: string]: TypeLocalizationConfig } | undefined {
         return this.config.types;
-    }
-
-    get fields() {
-        return this.config.fields;
     }
 
 }
@@ -181,11 +181,11 @@ class ModelLocalizationProvider implements LocalizationProvider {
 
     localizeType(type: TypeBase): TypeLocalization {
         const matchingNamespaces = this.getMatchingNamespaces(type.namespacePath);
-        const matchingTypeLocalization = compact(matchingNamespaces.map(ns => ns.getAllLocalizationsForType(type.name)));
+        const matchingTypeLocalizations = compact(matchingNamespaces.map(ns => ns.getTypeLocalization(type.name)));
         return {
-            singular: mapFirstDefined(matchingTypeLocalization, t => t.singular),
-            plural: mapFirstDefined(matchingTypeLocalization, t => t.plural),
-            hint: mapFirstDefined(matchingTypeLocalization, t => t.hint)
+            singular: mapFirstDefined(matchingTypeLocalizations, t => t.singular),
+            plural: mapFirstDefined(matchingTypeLocalizations, t => t.plural),
+            hint: mapFirstDefined(matchingTypeLocalizations, t => t.hint)
         };
     }
 
@@ -197,7 +197,9 @@ class ModelLocalizationProvider implements LocalizationProvider {
 
         // first, try to find a localization declared on the type
         for (const namespace of matchingNamespaces) {
-            const typeField = namespace.getTypeLocalizationForLocalisationBase(field.name, field.declaringType.name);
+            const typeField = namespace.getFieldLocalization({
+                typeName: field.declaringType.name, fieldName: field.name
+            });
             if (typeField) {
                 label = label ? label : typeField.label;
                 hint = hint ? hint : typeField.hint;
@@ -209,7 +211,7 @@ class ModelLocalizationProvider implements LocalizationProvider {
         }
         // fall back to global field localization
         for (const namespace of matchingNamespaces) {
-            const typeField = namespace.getNamespaceLocalizationForField(field.name);
+            const typeField = namespace.getCommonFieldLocalization(field.name);
             if (typeField) {
                 label = label ? label : typeField.label;
                 hint = hint ? hint : typeField.hint;
@@ -223,7 +225,7 @@ class ModelLocalizationProvider implements LocalizationProvider {
 
 }
 
-function checkForTypeConstraints(namespaces: NamespaceLocalizationConfig[], model: Model, validationContext: ValidationContext) {
+function checkForTypeConstraints(namespaces: ReadonlyArray<NamespaceLocalization>, model: Model, validationContext: ValidationContext) {
     for (const ns of namespaces) {
         if (ns.types) {
             for (const typeKey in ns.types) {
@@ -266,7 +268,7 @@ function checkForTypeConstraints(namespaces: NamespaceLocalizationConfig[], mode
     }
 }
 
-function checkForDoubleDefinitions(namespaces: NamespaceLocalizationConfig[], validationContext: ValidationContext) {
+function checkForDoubleDefinitions(namespaces: ReadonlyArray<NamespaceLocalization>, validationContext: ValidationContext) {
     const alreadySeen: string[] = [];
 
     for (const ns of namespaces) {
