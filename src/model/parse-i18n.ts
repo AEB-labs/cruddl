@@ -28,14 +28,17 @@ function normalizeTypeConfig(typeConfigs: { [name: string]: TypeLocalizationConf
     if (!typeConfigs) {
         return {};
     }
-    return mapValues(typeConfigs, (typeConfig, key) => ({
-        singular: typeConfig.singular,
-        plural: typeConfig.plural,
-        hint: typeConfig.hint,
-        fields: normalizeLocalizationBaseConfig(typeConfig.fields, curYamlPath + '/types/' + key, source),
-        values: normalizeLocalizationBaseConfig(typeConfig.values, curYamlPath + '/types/' + key, source),
-        loc: source.pathLocationMap[curYamlPath + '/types/' + key]
-    }));
+    return mapValues(typeConfigs, (typeConfig, key) => {
+        const typeYamlPath = curYamlPath + key;
+        return ({
+            singular: typeConfig.singular,
+            plural: typeConfig.plural,
+            hint: typeConfig.hint,
+            fields: normalizeLocalizationBaseConfig(typeConfig.fields, typeYamlPath + '/fields', source),
+            values: normalizeLocalizationBaseConfig(typeConfig.values, typeYamlPath + '/values', source),
+            loc: source.pathLocationMap[typeYamlPath]
+        });
+    });
 }
 
 export function parseI18nConfigs(source: ParsedObjectProjectSource): ReadonlyArray<LocalizationConfig> {
@@ -52,7 +55,7 @@ export function parseI18nConfigs(source: ParsedObjectProjectSource): ReadonlyArr
 
         const curYamlPath = '/i18n/' + key;
         const normalizedFields = normalizeLocalizationBaseConfig(namespace.fields, curYamlPath + '/fields', source);
-        const normalizedTypes = normalizeTypeConfig(namespace.types, curYamlPath, source);
+        const normalizedTypes = normalizeTypeConfig(namespace.types, curYamlPath + '/types', source);
 
         return {
             language: key,
