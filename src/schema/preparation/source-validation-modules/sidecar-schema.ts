@@ -144,7 +144,7 @@ const schemaJSON = JSON.parse(`{
       "properties": {
         "fields": {
           "patternProperties": {
-            "^[a-zA-Z0-9_$]+$": {
+            "^[a-zA-Z0-9_]+$": {
               "anyOf": [
                 {
                   "$ref": "#/definitions/FieldLocalization"
@@ -158,7 +158,7 @@ const schemaJSON = JSON.parse(`{
         },
         "values": {
           "patternProperties": {
-            "^[a-zA-Z0-9_$]+$": {
+            "^[a-zA-Z0-9_]+$": {
               "anyOf": [
                 {
                   "$ref": "#/definitions/EnumValueLocalization"
