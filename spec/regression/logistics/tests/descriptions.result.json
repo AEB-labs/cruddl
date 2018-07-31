@@ -90,17 +90,20 @@
               "name": "_allSecretKeysMeta",
               "description": null
             }
-          ]
+          ],
+          "inputFields": null
         },
         {
           "name": "ID",
           "description": "The `ID` scalar type represents a unique identifier, often used to refetch an object or as key for a cache. The ID type appears in a JSON response as a String; however, it is not intended to be human-readable. When expected as an input type, any string (such as `\"4\"`) or integer (such as `4`) input value will be accepted as an ID.",
-          "fields": null
+          "fields": null,
+          "inputFields": null
         },
         {
           "name": "String",
           "description": "The `String` scalar type represents textual data, represented as UTF-8 character sequences. The String type is most often used by GraphQL to represent free-form human-readable text.",
-          "fields": null
+          "fields": null,
+          "inputFields": null
         },
         {
           "name": "Country",
@@ -138,27 +141,153 @@
               "name": "_cursor",
               "description": "Provides a value that can be supplied to the `after` argument for pagination. Depends on the value of the `orderBy` argument."
             }
-          ]
+          ],
+          "inputFields": null
         },
         {
           "name": "DateTime",
           "description": "The `DateTime` scalar type represents a point in time with an optional timezone specifier, in a format specified by ISO 8601.",
-          "fields": null
+          "fields": null,
+          "inputFields": null
         },
         {
           "name": "TranslationFilter",
           "description": "Filter type for `Translation`.\n\nAll fields in this type are *and*-combined; see the `or` field for *or*-combination.",
-          "fields": null
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "languageIsoCode",
+              "description": null
+            },
+            {
+              "name": "languageIsoCode_not",
+              "description": null
+            },
+            {
+              "name": "languageIsoCode_in",
+              "description": null
+            },
+            {
+              "name": "languageIsoCode_not_in",
+              "description": null
+            },
+            {
+              "name": "languageIsoCode_lt",
+              "description": null
+            },
+            {
+              "name": "languageIsoCode_lte",
+              "description": null
+            },
+            {
+              "name": "languageIsoCode_gt",
+              "description": null
+            },
+            {
+              "name": "languageIsoCode_gte",
+              "description": null
+            },
+            {
+              "name": "languageIsoCode_contains",
+              "description": null
+            },
+            {
+              "name": "languageIsoCode_not_contains",
+              "description": null
+            },
+            {
+              "name": "languageIsoCode_starts_with",
+              "description": null
+            },
+            {
+              "name": "languageIsoCode_not_starts_with",
+              "description": null
+            },
+            {
+              "name": "languageIsoCode_ends_with",
+              "description": null
+            },
+            {
+              "name": "languageIsoCode_not_ends_with",
+              "description": null
+            },
+            {
+              "name": "translation",
+              "description": null
+            },
+            {
+              "name": "translation_not",
+              "description": null
+            },
+            {
+              "name": "translation_in",
+              "description": null
+            },
+            {
+              "name": "translation_not_in",
+              "description": null
+            },
+            {
+              "name": "translation_lt",
+              "description": null
+            },
+            {
+              "name": "translation_lte",
+              "description": null
+            },
+            {
+              "name": "translation_gt",
+              "description": null
+            },
+            {
+              "name": "translation_gte",
+              "description": null
+            },
+            {
+              "name": "translation_contains",
+              "description": null
+            },
+            {
+              "name": "translation_not_contains",
+              "description": null
+            },
+            {
+              "name": "translation_starts_with",
+              "description": null
+            },
+            {
+              "name": "translation_not_starts_with",
+              "description": null
+            },
+            {
+              "name": "translation_ends_with",
+              "description": null
+            },
+            {
+              "name": "translation_not_ends_with",
+              "description": null
+            },
+            {
+              "name": "AND",
+              "description": "A field that checks if all filters in the list apply\n\nIf the list is empty, this filter applies to all objects."
+            },
+            {
+              "name": "OR",
+              "description": "A field that checks if any of the filters in the list apply.\n\nIf the list is empty, this filter applies to no objects.\n\nNote that only the items in the list *or*-combined; this complete `OR` field is *and*-combined with outer fields in the parent filter type."
+            }
+          ]
         },
         {
           "name": "TranslationOrderBy",
           "description": null,
-          "fields": null
+          "fields": null,
+          "inputFields": null
         },
         {
           "name": "Int",
           "description": "The `Int` scalar type represents non-fractional signed whole numeric values. Int can represent values between -(2^31) and 2^31 - 1. ",
-          "fields": null
+          "fields": null,
+          "inputFields": null
         },
         {
           "name": "Translation",
@@ -176,7 +305,8 @@
               "name": "_cursor",
               "description": "Provides a value that can be supplied to the `after` argument for pagination. Depends on the value of the `orderBy` argument."
             }
-          ]
+          ],
+          "inputFields": null
         },
         {
           "name": "_QueryMeta",
@@ -186,17 +316,249 @@
               "name": "count",
               "description": "The number of items in the collection or list, after applying the filter if specified."
             }
-          ]
+          ],
+          "inputFields": null
         },
         {
           "name": "CountryFilter",
           "description": "Filter type for `Country`.\n\nAll fields in this type are *and*-combined; see the `or` field for *or*-combination.",
-          "fields": null
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "id",
+              "description": null
+            },
+            {
+              "name": "id_not",
+              "description": null
+            },
+            {
+              "name": "id_in",
+              "description": null
+            },
+            {
+              "name": "id_not_in",
+              "description": null
+            },
+            {
+              "name": "id_lt",
+              "description": null
+            },
+            {
+              "name": "id_lte",
+              "description": null
+            },
+            {
+              "name": "id_gt",
+              "description": null
+            },
+            {
+              "name": "id_gte",
+              "description": null
+            },
+            {
+              "name": "createdAt",
+              "description": null
+            },
+            {
+              "name": "createdAt_not",
+              "description": null
+            },
+            {
+              "name": "createdAt_in",
+              "description": null
+            },
+            {
+              "name": "createdAt_not_in",
+              "description": null
+            },
+            {
+              "name": "createdAt_lt",
+              "description": null
+            },
+            {
+              "name": "createdAt_lte",
+              "description": null
+            },
+            {
+              "name": "createdAt_gt",
+              "description": null
+            },
+            {
+              "name": "createdAt_gte",
+              "description": null
+            },
+            {
+              "name": "updatedAt",
+              "description": null
+            },
+            {
+              "name": "updatedAt_not",
+              "description": null
+            },
+            {
+              "name": "updatedAt_in",
+              "description": null
+            },
+            {
+              "name": "updatedAt_not_in",
+              "description": null
+            },
+            {
+              "name": "updatedAt_lt",
+              "description": null
+            },
+            {
+              "name": "updatedAt_lte",
+              "description": null
+            },
+            {
+              "name": "updatedAt_gt",
+              "description": null
+            },
+            {
+              "name": "updatedAt_gte",
+              "description": null
+            },
+            {
+              "name": "isoCode",
+              "description": null
+            },
+            {
+              "name": "isoCode_not",
+              "description": null
+            },
+            {
+              "name": "isoCode_in",
+              "description": null
+            },
+            {
+              "name": "isoCode_not_in",
+              "description": null
+            },
+            {
+              "name": "isoCode_lt",
+              "description": null
+            },
+            {
+              "name": "isoCode_lte",
+              "description": null
+            },
+            {
+              "name": "isoCode_gt",
+              "description": null
+            },
+            {
+              "name": "isoCode_gte",
+              "description": null
+            },
+            {
+              "name": "isoCode_contains",
+              "description": null
+            },
+            {
+              "name": "isoCode_not_contains",
+              "description": null
+            },
+            {
+              "name": "isoCode_starts_with",
+              "description": null
+            },
+            {
+              "name": "isoCode_not_starts_with",
+              "description": null
+            },
+            {
+              "name": "isoCode_ends_with",
+              "description": null
+            },
+            {
+              "name": "isoCode_not_ends_with",
+              "description": null
+            },
+            {
+              "name": "description_some",
+              "description": null
+            },
+            {
+              "name": "description_every",
+              "description": null
+            },
+            {
+              "name": "description_none",
+              "description": null
+            },
+            {
+              "name": "totalInvestment",
+              "description": null
+            },
+            {
+              "name": "totalInvestment_not",
+              "description": null
+            },
+            {
+              "name": "totalInvestment_in",
+              "description": null
+            },
+            {
+              "name": "totalInvestment_not_in",
+              "description": null
+            },
+            {
+              "name": "totalInvestment_lt",
+              "description": null
+            },
+            {
+              "name": "totalInvestment_lte",
+              "description": null
+            },
+            {
+              "name": "totalInvestment_gt",
+              "description": null
+            },
+            {
+              "name": "totalInvestment_gte",
+              "description": null
+            },
+            {
+              "name": "totalInvestment_contains",
+              "description": null
+            },
+            {
+              "name": "totalInvestment_not_contains",
+              "description": null
+            },
+            {
+              "name": "totalInvestment_starts_with",
+              "description": null
+            },
+            {
+              "name": "totalInvestment_not_starts_with",
+              "description": null
+            },
+            {
+              "name": "totalInvestment_ends_with",
+              "description": null
+            },
+            {
+              "name": "totalInvestment_not_ends_with",
+              "description": null
+            },
+            {
+              "name": "AND",
+              "description": "A field that checks if all filters in the list apply\n\nIf the list is empty, this filter applies to all objects."
+            },
+            {
+              "name": "OR",
+              "description": "A field that checks if any of the filters in the list apply.\n\nIf the list is empty, this filter applies to no objects.\n\nNote that only the items in the list *or*-combined; this complete `OR` field is *and*-combined with outer fields in the parent filter type."
+            }
+          ]
         },
         {
           "name": "CountryOrderBy",
           "description": null,
-          "fields": null
+          "fields": null,
+          "inputFields": null
         },
         {
           "name": "Delivery",
@@ -256,7 +618,7 @@
             },
             {
               "name": "destinationCountry",
-              "description": "This field references a `Country` by its `isoCode` field"
+              "description": "The country to where the delivery should be shipped\n\nThis field references a `Country` by its `isoCode` field"
             },
             {
               "name": "shippedAt",
@@ -310,7 +672,8 @@
               "name": "_cursor",
               "description": "Provides a value that can be supplied to the `after` argument for pagination. Depends on the value of the `orderBy` argument."
             }
-          ]
+          ],
+          "inputFields": null
         },
         {
           "name": "Address",
@@ -336,7 +699,8 @@
               "name": "_cursor",
               "description": "Provides a value that can be supplied to the `after` argument for pagination. Depends on the value of the `orderBy` argument."
             }
-          ]
+          ],
+          "inputFields": null
         },
         {
           "name": "DangerousGoodsInfo",
@@ -354,17 +718,181 @@
               "name": "notices",
               "description": null
             }
-          ]
+          ],
+          "inputFields": null
         },
         {
           "name": "DeliveryItemFilter",
           "description": "Filter type for `DeliveryItem`.\n\nAll fields in this type are *and*-combined; see the `or` field for *or*-combination.",
-          "fields": null
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "id",
+              "description": null
+            },
+            {
+              "name": "id_not",
+              "description": null
+            },
+            {
+              "name": "id_in",
+              "description": null
+            },
+            {
+              "name": "id_not_in",
+              "description": null
+            },
+            {
+              "name": "id_lt",
+              "description": null
+            },
+            {
+              "name": "id_lte",
+              "description": null
+            },
+            {
+              "name": "id_gt",
+              "description": null
+            },
+            {
+              "name": "id_gte",
+              "description": null
+            },
+            {
+              "name": "createdAt",
+              "description": null
+            },
+            {
+              "name": "createdAt_not",
+              "description": null
+            },
+            {
+              "name": "createdAt_in",
+              "description": null
+            },
+            {
+              "name": "createdAt_not_in",
+              "description": null
+            },
+            {
+              "name": "createdAt_lt",
+              "description": null
+            },
+            {
+              "name": "createdAt_lte",
+              "description": null
+            },
+            {
+              "name": "createdAt_gt",
+              "description": null
+            },
+            {
+              "name": "createdAt_gte",
+              "description": null
+            },
+            {
+              "name": "updatedAt",
+              "description": null
+            },
+            {
+              "name": "updatedAt_not",
+              "description": null
+            },
+            {
+              "name": "updatedAt_in",
+              "description": null
+            },
+            {
+              "name": "updatedAt_not_in",
+              "description": null
+            },
+            {
+              "name": "updatedAt_lt",
+              "description": null
+            },
+            {
+              "name": "updatedAt_lte",
+              "description": null
+            },
+            {
+              "name": "updatedAt_gt",
+              "description": null
+            },
+            {
+              "name": "updatedAt_gte",
+              "description": null
+            },
+            {
+              "name": "itemNumber",
+              "description": null
+            },
+            {
+              "name": "itemNumber_not",
+              "description": null
+            },
+            {
+              "name": "itemNumber_in",
+              "description": null
+            },
+            {
+              "name": "itemNumber_not_in",
+              "description": null
+            },
+            {
+              "name": "itemNumber_lt",
+              "description": null
+            },
+            {
+              "name": "itemNumber_lte",
+              "description": null
+            },
+            {
+              "name": "itemNumber_gt",
+              "description": null
+            },
+            {
+              "name": "itemNumber_gte",
+              "description": null
+            },
+            {
+              "name": "itemNumber_contains",
+              "description": null
+            },
+            {
+              "name": "itemNumber_not_contains",
+              "description": null
+            },
+            {
+              "name": "itemNumber_starts_with",
+              "description": null
+            },
+            {
+              "name": "itemNumber_not_starts_with",
+              "description": null
+            },
+            {
+              "name": "itemNumber_ends_with",
+              "description": null
+            },
+            {
+              "name": "itemNumber_not_ends_with",
+              "description": null
+            },
+            {
+              "name": "AND",
+              "description": "A field that checks if all filters in the list apply\n\nIf the list is empty, this filter applies to all objects."
+            },
+            {
+              "name": "OR",
+              "description": "A field that checks if any of the filters in the list apply.\n\nIf the list is empty, this filter applies to no objects.\n\nNote that only the items in the list *or*-combined; this complete `OR` field is *and*-combined with outer fields in the parent filter type."
+            }
+          ]
         },
         {
           "name": "DeliveryItemOrderBy",
           "description": null,
-          "fields": null
+          "fields": null,
+          "inputFields": null
         },
         {
           "name": "DeliveryItem",
@@ -390,57 +918,1310 @@
               "name": "_cursor",
               "description": "Provides a value that can be supplied to the `after` argument for pagination. Depends on the value of the `orderBy` argument."
             }
-          ]
+          ],
+          "inputFields": null
         },
         {
           "name": "HandlingUnitFilter",
           "description": "Filter type for `HandlingUnit`.\n\nAll fields in this type are *and*-combined; see the `or` field for *or*-combination.",
-          "fields": null
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "id",
+              "description": null
+            },
+            {
+              "name": "id_not",
+              "description": null
+            },
+            {
+              "name": "id_in",
+              "description": null
+            },
+            {
+              "name": "id_not_in",
+              "description": null
+            },
+            {
+              "name": "id_lt",
+              "description": null
+            },
+            {
+              "name": "id_lte",
+              "description": null
+            },
+            {
+              "name": "id_gt",
+              "description": null
+            },
+            {
+              "name": "id_gte",
+              "description": null
+            },
+            {
+              "name": "createdAt",
+              "description": null
+            },
+            {
+              "name": "createdAt_not",
+              "description": null
+            },
+            {
+              "name": "createdAt_in",
+              "description": null
+            },
+            {
+              "name": "createdAt_not_in",
+              "description": null
+            },
+            {
+              "name": "createdAt_lt",
+              "description": null
+            },
+            {
+              "name": "createdAt_lte",
+              "description": null
+            },
+            {
+              "name": "createdAt_gt",
+              "description": null
+            },
+            {
+              "name": "createdAt_gte",
+              "description": null
+            },
+            {
+              "name": "updatedAt",
+              "description": null
+            },
+            {
+              "name": "updatedAt_not",
+              "description": null
+            },
+            {
+              "name": "updatedAt_in",
+              "description": null
+            },
+            {
+              "name": "updatedAt_not_in",
+              "description": null
+            },
+            {
+              "name": "updatedAt_lt",
+              "description": null
+            },
+            {
+              "name": "updatedAt_lte",
+              "description": null
+            },
+            {
+              "name": "updatedAt_gt",
+              "description": null
+            },
+            {
+              "name": "updatedAt_gte",
+              "description": null
+            },
+            {
+              "name": "huNumber",
+              "description": null
+            },
+            {
+              "name": "huNumber_not",
+              "description": null
+            },
+            {
+              "name": "huNumber_in",
+              "description": null
+            },
+            {
+              "name": "huNumber_not_in",
+              "description": null
+            },
+            {
+              "name": "huNumber_lt",
+              "description": null
+            },
+            {
+              "name": "huNumber_lte",
+              "description": null
+            },
+            {
+              "name": "huNumber_gt",
+              "description": null
+            },
+            {
+              "name": "huNumber_gte",
+              "description": null
+            },
+            {
+              "name": "huNumber_contains",
+              "description": null
+            },
+            {
+              "name": "huNumber_not_contains",
+              "description": null
+            },
+            {
+              "name": "huNumber_starts_with",
+              "description": null
+            },
+            {
+              "name": "huNumber_not_starts_with",
+              "description": null
+            },
+            {
+              "name": "huNumber_ends_with",
+              "description": null
+            },
+            {
+              "name": "huNumber_not_ends_with",
+              "description": null
+            },
+            {
+              "name": "delivery",
+              "description": "Checks if `delivery` is not null, and allows to filter based on its fields."
+            },
+            {
+              "name": "AND",
+              "description": "A field that checks if all filters in the list apply\n\nIf the list is empty, this filter applies to all objects."
+            },
+            {
+              "name": "OR",
+              "description": "A field that checks if any of the filters in the list apply.\n\nIf the list is empty, this filter applies to no objects.\n\nNote that only the items in the list *or*-combined; this complete `OR` field is *and*-combined with outer fields in the parent filter type."
+            }
+          ]
         },
         {
           "name": "DeliveryFilter",
           "description": "Filter type for `Delivery`.\n\nAll fields in this type are *and*-combined; see the `or` field for *or*-combination.",
-          "fields": null
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "id",
+              "description": null
+            },
+            {
+              "name": "id_not",
+              "description": null
+            },
+            {
+              "name": "id_in",
+              "description": null
+            },
+            {
+              "name": "id_not_in",
+              "description": null
+            },
+            {
+              "name": "id_lt",
+              "description": null
+            },
+            {
+              "name": "id_lte",
+              "description": null
+            },
+            {
+              "name": "id_gt",
+              "description": null
+            },
+            {
+              "name": "id_gte",
+              "description": null
+            },
+            {
+              "name": "createdAt",
+              "description": null
+            },
+            {
+              "name": "createdAt_not",
+              "description": null
+            },
+            {
+              "name": "createdAt_in",
+              "description": null
+            },
+            {
+              "name": "createdAt_not_in",
+              "description": null
+            },
+            {
+              "name": "createdAt_lt",
+              "description": null
+            },
+            {
+              "name": "createdAt_lte",
+              "description": null
+            },
+            {
+              "name": "createdAt_gt",
+              "description": null
+            },
+            {
+              "name": "createdAt_gte",
+              "description": null
+            },
+            {
+              "name": "updatedAt",
+              "description": null
+            },
+            {
+              "name": "updatedAt_not",
+              "description": null
+            },
+            {
+              "name": "updatedAt_in",
+              "description": null
+            },
+            {
+              "name": "updatedAt_not_in",
+              "description": null
+            },
+            {
+              "name": "updatedAt_lt",
+              "description": null
+            },
+            {
+              "name": "updatedAt_lte",
+              "description": null
+            },
+            {
+              "name": "updatedAt_gt",
+              "description": null
+            },
+            {
+              "name": "updatedAt_gte",
+              "description": null
+            },
+            {
+              "name": "deliveryNumber",
+              "description": null
+            },
+            {
+              "name": "deliveryNumber_not",
+              "description": null
+            },
+            {
+              "name": "deliveryNumber_in",
+              "description": null
+            },
+            {
+              "name": "deliveryNumber_not_in",
+              "description": null
+            },
+            {
+              "name": "deliveryNumber_lt",
+              "description": null
+            },
+            {
+              "name": "deliveryNumber_lte",
+              "description": null
+            },
+            {
+              "name": "deliveryNumber_gt",
+              "description": null
+            },
+            {
+              "name": "deliveryNumber_gte",
+              "description": null
+            },
+            {
+              "name": "deliveryNumber_contains",
+              "description": null
+            },
+            {
+              "name": "deliveryNumber_not_contains",
+              "description": null
+            },
+            {
+              "name": "deliveryNumber_starts_with",
+              "description": null
+            },
+            {
+              "name": "deliveryNumber_not_starts_with",
+              "description": null
+            },
+            {
+              "name": "deliveryNumber_ends_with",
+              "description": null
+            },
+            {
+              "name": "deliveryNumber_not_ends_with",
+              "description": null
+            },
+            {
+              "name": "serialNumbers_some",
+              "description": null
+            },
+            {
+              "name": "serialNumbers_every",
+              "description": null
+            },
+            {
+              "name": "serialNumbers_none",
+              "description": null
+            },
+            {
+              "name": "consignee",
+              "description": "Checks if `consignee` is not null, and allows to filter based on its fields."
+            },
+            {
+              "name": "contentInfo_some",
+              "description": null
+            },
+            {
+              "name": "contentInfo_every",
+              "description": null
+            },
+            {
+              "name": "contentInfo_none",
+              "description": null
+            },
+            {
+              "name": "dgInfo",
+              "description": "Allows to filter on the fields of `dgInfo`.\n\nNote that `dgInfo` is an entity extension and thus can never be `null`, so specifying `null` to this filter field has no effect."
+            },
+            {
+              "name": "items_some",
+              "description": null
+            },
+            {
+              "name": "items_every",
+              "description": null
+            },
+            {
+              "name": "items_none",
+              "description": null
+            },
+            {
+              "name": "handlingUnits_some",
+              "description": null
+            },
+            {
+              "name": "handlingUnits_every",
+              "description": null
+            },
+            {
+              "name": "handlingUnits_none",
+              "description": null
+            },
+            {
+              "name": "destinationCountry",
+              "description": "Filters the through `isoCode` referenced Countries that fulfils the given requirements.\n\n Checks if `destinationCountry` is not null, and allows to filter based on its fields."
+            },
+            {
+              "name": "shippedAt",
+              "description": null
+            },
+            {
+              "name": "shippedAt_not",
+              "description": null
+            },
+            {
+              "name": "shippedAt_in",
+              "description": null
+            },
+            {
+              "name": "shippedAt_not_in",
+              "description": null
+            },
+            {
+              "name": "shippedAt_lt",
+              "description": null
+            },
+            {
+              "name": "shippedAt_lte",
+              "description": null
+            },
+            {
+              "name": "shippedAt_gt",
+              "description": null
+            },
+            {
+              "name": "shippedAt_gte",
+              "description": null
+            },
+            {
+              "name": "totalValue",
+              "description": null
+            },
+            {
+              "name": "totalValue_not",
+              "description": null
+            },
+            {
+              "name": "totalValue_in",
+              "description": null
+            },
+            {
+              "name": "totalValue_not_in",
+              "description": null
+            },
+            {
+              "name": "totalValue_lt",
+              "description": null
+            },
+            {
+              "name": "totalValue_lte",
+              "description": null
+            },
+            {
+              "name": "totalValue_gt",
+              "description": null
+            },
+            {
+              "name": "totalValue_gte",
+              "description": null
+            },
+            {
+              "name": "totalValue_contains",
+              "description": null
+            },
+            {
+              "name": "totalValue_not_contains",
+              "description": null
+            },
+            {
+              "name": "totalValue_starts_with",
+              "description": null
+            },
+            {
+              "name": "totalValue_not_starts_with",
+              "description": null
+            },
+            {
+              "name": "totalValue_ends_with",
+              "description": null
+            },
+            {
+              "name": "totalValue_not_ends_with",
+              "description": null
+            },
+            {
+              "name": "forwarder",
+              "description": "Checks if `forwarder` is not null, and allows to filter based on its fields."
+            },
+            {
+              "name": "destination",
+              "description": "Checks if `destination` is not null, and allows to filter based on its fields."
+            },
+            {
+              "name": "defaultValueString",
+              "description": null
+            },
+            {
+              "name": "defaultValueString_not",
+              "description": null
+            },
+            {
+              "name": "defaultValueString_in",
+              "description": null
+            },
+            {
+              "name": "defaultValueString_not_in",
+              "description": null
+            },
+            {
+              "name": "defaultValueString_lt",
+              "description": null
+            },
+            {
+              "name": "defaultValueString_lte",
+              "description": null
+            },
+            {
+              "name": "defaultValueString_gt",
+              "description": null
+            },
+            {
+              "name": "defaultValueString_gte",
+              "description": null
+            },
+            {
+              "name": "defaultValueString_contains",
+              "description": null
+            },
+            {
+              "name": "defaultValueString_not_contains",
+              "description": null
+            },
+            {
+              "name": "defaultValueString_starts_with",
+              "description": null
+            },
+            {
+              "name": "defaultValueString_not_starts_with",
+              "description": null
+            },
+            {
+              "name": "defaultValueString_ends_with",
+              "description": null
+            },
+            {
+              "name": "defaultValueString_not_ends_with",
+              "description": null
+            },
+            {
+              "name": "defaultValueString2",
+              "description": null
+            },
+            {
+              "name": "defaultValueString2_not",
+              "description": null
+            },
+            {
+              "name": "defaultValueString2_in",
+              "description": null
+            },
+            {
+              "name": "defaultValueString2_not_in",
+              "description": null
+            },
+            {
+              "name": "defaultValueString2_lt",
+              "description": null
+            },
+            {
+              "name": "defaultValueString2_lte",
+              "description": null
+            },
+            {
+              "name": "defaultValueString2_gt",
+              "description": null
+            },
+            {
+              "name": "defaultValueString2_gte",
+              "description": null
+            },
+            {
+              "name": "defaultValueString2_contains",
+              "description": null
+            },
+            {
+              "name": "defaultValueString2_not_contains",
+              "description": null
+            },
+            {
+              "name": "defaultValueString2_starts_with",
+              "description": null
+            },
+            {
+              "name": "defaultValueString2_not_starts_with",
+              "description": null
+            },
+            {
+              "name": "defaultValueString2_ends_with",
+              "description": null
+            },
+            {
+              "name": "defaultValueString2_not_ends_with",
+              "description": null
+            },
+            {
+              "name": "defaultValueInt",
+              "description": null
+            },
+            {
+              "name": "defaultValueInt_not",
+              "description": null
+            },
+            {
+              "name": "defaultValueInt_in",
+              "description": null
+            },
+            {
+              "name": "defaultValueInt_not_in",
+              "description": null
+            },
+            {
+              "name": "defaultValueInt_lt",
+              "description": null
+            },
+            {
+              "name": "defaultValueInt_lte",
+              "description": null
+            },
+            {
+              "name": "defaultValueInt_gt",
+              "description": null
+            },
+            {
+              "name": "defaultValueInt_gte",
+              "description": null
+            },
+            {
+              "name": "defaultValueTrue",
+              "description": null
+            },
+            {
+              "name": "defaultValueTrue_not",
+              "description": null
+            },
+            {
+              "name": "defaultValueFalse",
+              "description": null
+            },
+            {
+              "name": "defaultValueFalse_not",
+              "description": null
+            },
+            {
+              "name": "defaultValueFloat",
+              "description": null
+            },
+            {
+              "name": "defaultValueFloat_not",
+              "description": null
+            },
+            {
+              "name": "defaultValueFloat_in",
+              "description": null
+            },
+            {
+              "name": "defaultValueFloat_not_in",
+              "description": null
+            },
+            {
+              "name": "defaultValueFloat_lt",
+              "description": null
+            },
+            {
+              "name": "defaultValueFloat_lte",
+              "description": null
+            },
+            {
+              "name": "defaultValueFloat_gt",
+              "description": null
+            },
+            {
+              "name": "defaultValueFloat_gte",
+              "description": null
+            },
+            {
+              "name": "defaultValueEnum",
+              "description": null
+            },
+            {
+              "name": "defaultValueEnum_not",
+              "description": null
+            },
+            {
+              "name": "defaultValueEnum_in",
+              "description": null
+            },
+            {
+              "name": "defaultValueEnum_not_in",
+              "description": null
+            },
+            {
+              "name": "AND",
+              "description": "A field that checks if all filters in the list apply\n\nIf the list is empty, this filter applies to all objects."
+            },
+            {
+              "name": "OR",
+              "description": "A field that checks if any of the filters in the list apply.\n\nIf the list is empty, this filter applies to no objects.\n\nNote that only the items in the list *or*-combined; this complete `OR` field is *and*-combined with outer fields in the parent filter type."
+            }
+          ]
         },
         {
           "name": "StringFilter",
           "description": "Filter type for `String`.\n\nAll fields in this type are *and*-combined; see the `or` field for *or*-combination.",
-          "fields": null
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "equal",
+              "description": null
+            },
+            {
+              "name": "not",
+              "description": null
+            },
+            {
+              "name": "in",
+              "description": null
+            },
+            {
+              "name": "not_in",
+              "description": null
+            },
+            {
+              "name": "lt",
+              "description": null
+            },
+            {
+              "name": "lte",
+              "description": null
+            },
+            {
+              "name": "gt",
+              "description": null
+            },
+            {
+              "name": "gte",
+              "description": null
+            },
+            {
+              "name": "contains",
+              "description": null
+            },
+            {
+              "name": "not_contains",
+              "description": null
+            },
+            {
+              "name": "starts_with",
+              "description": null
+            },
+            {
+              "name": "not_starts_with",
+              "description": null
+            },
+            {
+              "name": "ends_with",
+              "description": null
+            },
+            {
+              "name": "not_ends_with",
+              "description": null
+            },
+            {
+              "name": "AND",
+              "description": "A field that checks if all filters in the list apply\n\nIf the list is empty, this filter applies to all objects."
+            },
+            {
+              "name": "OR",
+              "description": "A field that checks if any of the filters in the list apply.\n\nIf the list is empty, this filter applies to no objects.\n\nNote that only the items in the list *or*-combined; this complete `OR` field is *and*-combined with outer fields in the parent filter type."
+            }
+          ]
         },
         {
           "name": "AddressFilter",
           "description": "Filter type for `Address`.\n\nAll fields in this type are *and*-combined; see the `or` field for *or*-combination.",
-          "fields": null
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "street",
+              "description": null
+            },
+            {
+              "name": "street_not",
+              "description": null
+            },
+            {
+              "name": "street_in",
+              "description": null
+            },
+            {
+              "name": "street_not_in",
+              "description": null
+            },
+            {
+              "name": "street_lt",
+              "description": null
+            },
+            {
+              "name": "street_lte",
+              "description": null
+            },
+            {
+              "name": "street_gt",
+              "description": null
+            },
+            {
+              "name": "street_gte",
+              "description": null
+            },
+            {
+              "name": "street_contains",
+              "description": null
+            },
+            {
+              "name": "street_not_contains",
+              "description": null
+            },
+            {
+              "name": "street_starts_with",
+              "description": null
+            },
+            {
+              "name": "street_not_starts_with",
+              "description": null
+            },
+            {
+              "name": "street_ends_with",
+              "description": null
+            },
+            {
+              "name": "street_not_ends_with",
+              "description": null
+            },
+            {
+              "name": "city",
+              "description": null
+            },
+            {
+              "name": "city_not",
+              "description": null
+            },
+            {
+              "name": "city_in",
+              "description": null
+            },
+            {
+              "name": "city_not_in",
+              "description": null
+            },
+            {
+              "name": "city_lt",
+              "description": null
+            },
+            {
+              "name": "city_lte",
+              "description": null
+            },
+            {
+              "name": "city_gt",
+              "description": null
+            },
+            {
+              "name": "city_gte",
+              "description": null
+            },
+            {
+              "name": "city_contains",
+              "description": null
+            },
+            {
+              "name": "city_not_contains",
+              "description": null
+            },
+            {
+              "name": "city_starts_with",
+              "description": null
+            },
+            {
+              "name": "city_not_starts_with",
+              "description": null
+            },
+            {
+              "name": "city_ends_with",
+              "description": null
+            },
+            {
+              "name": "city_not_ends_with",
+              "description": null
+            },
+            {
+              "name": "zipCode",
+              "description": null
+            },
+            {
+              "name": "zipCode_not",
+              "description": null
+            },
+            {
+              "name": "zipCode_in",
+              "description": null
+            },
+            {
+              "name": "zipCode_not_in",
+              "description": null
+            },
+            {
+              "name": "zipCode_lt",
+              "description": null
+            },
+            {
+              "name": "zipCode_lte",
+              "description": null
+            },
+            {
+              "name": "zipCode_gt",
+              "description": null
+            },
+            {
+              "name": "zipCode_gte",
+              "description": null
+            },
+            {
+              "name": "zipCode_contains",
+              "description": null
+            },
+            {
+              "name": "zipCode_not_contains",
+              "description": null
+            },
+            {
+              "name": "zipCode_starts_with",
+              "description": null
+            },
+            {
+              "name": "zipCode_not_starts_with",
+              "description": null
+            },
+            {
+              "name": "zipCode_ends_with",
+              "description": null
+            },
+            {
+              "name": "zipCode_not_ends_with",
+              "description": null
+            },
+            {
+              "name": "country",
+              "description": "Filters the through `isoCode` referenced Countries that fulfils the given requirements.\n\n Checks if `country` is not null, and allows to filter based on its fields."
+            },
+            {
+              "name": "AND",
+              "description": "A field that checks if all filters in the list apply\n\nIf the list is empty, this filter applies to all objects."
+            },
+            {
+              "name": "OR",
+              "description": "A field that checks if any of the filters in the list apply.\n\nIf the list is empty, this filter applies to no objects.\n\nNote that only the items in the list *or*-combined; this complete `OR` field is *and*-combined with outer fields in the parent filter type."
+            }
+          ]
         },
         {
           "name": "DangerousGoodsInfoFilter",
           "description": "Filter type for `DangerousGoodsInfo`.\n\nAll fields in this type are *and*-combined; see the `or` field for *or*-combination.",
-          "fields": null
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "unNumber",
+              "description": null
+            },
+            {
+              "name": "unNumber_not",
+              "description": null
+            },
+            {
+              "name": "unNumber_in",
+              "description": null
+            },
+            {
+              "name": "unNumber_not_in",
+              "description": null
+            },
+            {
+              "name": "unNumber_lt",
+              "description": null
+            },
+            {
+              "name": "unNumber_lte",
+              "description": null
+            },
+            {
+              "name": "unNumber_gt",
+              "description": null
+            },
+            {
+              "name": "unNumber_gte",
+              "description": null
+            },
+            {
+              "name": "unNumber_contains",
+              "description": null
+            },
+            {
+              "name": "unNumber_not_contains",
+              "description": null
+            },
+            {
+              "name": "unNumber_starts_with",
+              "description": null
+            },
+            {
+              "name": "unNumber_not_starts_with",
+              "description": null
+            },
+            {
+              "name": "unNumber_ends_with",
+              "description": null
+            },
+            {
+              "name": "unNumber_not_ends_with",
+              "description": null
+            },
+            {
+              "name": "flashpoint",
+              "description": null
+            },
+            {
+              "name": "flashpoint_not",
+              "description": null
+            },
+            {
+              "name": "flashpoint_in",
+              "description": null
+            },
+            {
+              "name": "flashpoint_not_in",
+              "description": null
+            },
+            {
+              "name": "flashpoint_lt",
+              "description": null
+            },
+            {
+              "name": "flashpoint_lte",
+              "description": null
+            },
+            {
+              "name": "flashpoint_gt",
+              "description": null
+            },
+            {
+              "name": "flashpoint_gte",
+              "description": null
+            },
+            {
+              "name": "flashpoint_contains",
+              "description": null
+            },
+            {
+              "name": "flashpoint_not_contains",
+              "description": null
+            },
+            {
+              "name": "flashpoint_starts_with",
+              "description": null
+            },
+            {
+              "name": "flashpoint_not_starts_with",
+              "description": null
+            },
+            {
+              "name": "flashpoint_ends_with",
+              "description": null
+            },
+            {
+              "name": "flashpoint_not_ends_with",
+              "description": null
+            },
+            {
+              "name": "notices_some",
+              "description": null
+            },
+            {
+              "name": "notices_every",
+              "description": null
+            },
+            {
+              "name": "notices_none",
+              "description": null
+            },
+            {
+              "name": "AND",
+              "description": "A field that checks if all filters in the list apply\n\nIf the list is empty, this filter applies to all objects."
+            },
+            {
+              "name": "OR",
+              "description": "A field that checks if any of the filters in the list apply.\n\nIf the list is empty, this filter applies to no objects.\n\nNote that only the items in the list *or*-combined; this complete `OR` field is *and*-combined with outer fields in the parent filter type."
+            }
+          ]
         },
         {
           "name": "ForwarderFilter",
           "description": "Filter type for `Forwarder`.\n\nAll fields in this type are *and*-combined; see the `or` field for *or*-combination.",
-          "fields": null
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "id",
+              "description": null
+            },
+            {
+              "name": "id_not",
+              "description": null
+            },
+            {
+              "name": "id_in",
+              "description": null
+            },
+            {
+              "name": "id_not_in",
+              "description": null
+            },
+            {
+              "name": "id_lt",
+              "description": null
+            },
+            {
+              "name": "id_lte",
+              "description": null
+            },
+            {
+              "name": "id_gt",
+              "description": null
+            },
+            {
+              "name": "id_gte",
+              "description": null
+            },
+            {
+              "name": "createdAt",
+              "description": null
+            },
+            {
+              "name": "createdAt_not",
+              "description": null
+            },
+            {
+              "name": "createdAt_in",
+              "description": null
+            },
+            {
+              "name": "createdAt_not_in",
+              "description": null
+            },
+            {
+              "name": "createdAt_lt",
+              "description": null
+            },
+            {
+              "name": "createdAt_lte",
+              "description": null
+            },
+            {
+              "name": "createdAt_gt",
+              "description": null
+            },
+            {
+              "name": "createdAt_gte",
+              "description": null
+            },
+            {
+              "name": "updatedAt",
+              "description": null
+            },
+            {
+              "name": "updatedAt_not",
+              "description": null
+            },
+            {
+              "name": "updatedAt_in",
+              "description": null
+            },
+            {
+              "name": "updatedAt_not_in",
+              "description": null
+            },
+            {
+              "name": "updatedAt_lt",
+              "description": null
+            },
+            {
+              "name": "updatedAt_lte",
+              "description": null
+            },
+            {
+              "name": "updatedAt_gt",
+              "description": null
+            },
+            {
+              "name": "updatedAt_gte",
+              "description": null
+            },
+            {
+              "name": "name",
+              "description": null
+            },
+            {
+              "name": "name_not",
+              "description": null
+            },
+            {
+              "name": "name_in",
+              "description": null
+            },
+            {
+              "name": "name_not_in",
+              "description": null
+            },
+            {
+              "name": "name_lt",
+              "description": null
+            },
+            {
+              "name": "name_lte",
+              "description": null
+            },
+            {
+              "name": "name_gt",
+              "description": null
+            },
+            {
+              "name": "name_gte",
+              "description": null
+            },
+            {
+              "name": "name_contains",
+              "description": null
+            },
+            {
+              "name": "name_not_contains",
+              "description": null
+            },
+            {
+              "name": "name_starts_with",
+              "description": null
+            },
+            {
+              "name": "name_not_starts_with",
+              "description": null
+            },
+            {
+              "name": "name_ends_with",
+              "description": null
+            },
+            {
+              "name": "name_not_ends_with",
+              "description": null
+            },
+            {
+              "name": "deliveries_some",
+              "description": null
+            },
+            {
+              "name": "deliveries_every",
+              "description": null
+            },
+            {
+              "name": "deliveries_none",
+              "description": null
+            },
+            {
+              "name": "AND",
+              "description": "A field that checks if all filters in the list apply\n\nIf the list is empty, this filter applies to all objects."
+            },
+            {
+              "name": "OR",
+              "description": "A field that checks if any of the filters in the list apply.\n\nIf the list is empty, this filter applies to no objects.\n\nNote that only the items in the list *or*-combined; this complete `OR` field is *and*-combined with outer fields in the parent filter type."
+            }
+          ]
         },
         {
           "name": "Boolean",
           "description": "The `Boolean` scalar type represents `true` or `false`.",
-          "fields": null
+          "fields": null,
+          "inputFields": null
         },
         {
           "name": "Float",
           "description": "The `Float` scalar type represents signed double-precision fractional values as specified by [IEEE 754](http://en.wikipedia.org/wiki/IEEE_floating_point). ",
-          "fields": null
+          "fields": null,
+          "inputFields": null
         },
         {
           "name": "Foobarit",
           "description": null,
-          "fields": null
+          "fields": null,
+          "inputFields": null
         },
         {
           "name": "HandlingUnitOrderBy",
           "description": null,
-          "fields": null
+          "fields": null,
+          "inputFields": null
         },
         {
           "name": "HandlingUnit",
@@ -470,7 +2251,8 @@
               "name": "_cursor",
               "description": "Provides a value that can be supplied to the `after` argument for pagination. Depends on the value of the `orderBy` argument."
             }
-          ]
+          ],
+          "inputFields": null
         },
         {
           "name": "Forwarder",
@@ -504,22 +2286,26 @@
               "name": "_cursor",
               "description": "Provides a value that can be supplied to the `after` argument for pagination. Depends on the value of the `orderBy` argument."
             }
-          ]
+          ],
+          "inputFields": null
         },
         {
           "name": "DeliveryOrderBy",
           "description": null,
-          "fields": null
+          "fields": null,
+          "inputFields": null
         },
         {
           "name": "JSON",
           "description": "The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).",
-          "fields": null
+          "fields": null,
+          "inputFields": null
         },
         {
           "name": "ForwarderOrderBy",
           "description": null,
-          "fields": null
+          "fields": null,
+          "inputFields": null
         },
         {
           "name": "OnlyRelations",
@@ -549,17 +2335,137 @@
               "name": "_cursor",
               "description": "Provides a value that can be supplied to the `after` argument for pagination. Depends on the value of the `orderBy` argument."
             }
-          ]
+          ],
+          "inputFields": null
         },
         {
           "name": "OnlyRelationsFilter",
           "description": "Filter type for `OnlyRelations`.\n\nAll fields in this type are *and*-combined; see the `or` field for *or*-combination.",
-          "fields": null
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "id",
+              "description": null
+            },
+            {
+              "name": "id_not",
+              "description": null
+            },
+            {
+              "name": "id_in",
+              "description": null
+            },
+            {
+              "name": "id_not_in",
+              "description": null
+            },
+            {
+              "name": "id_lt",
+              "description": null
+            },
+            {
+              "name": "id_lte",
+              "description": null
+            },
+            {
+              "name": "id_gt",
+              "description": null
+            },
+            {
+              "name": "id_gte",
+              "description": null
+            },
+            {
+              "name": "createdAt",
+              "description": null
+            },
+            {
+              "name": "createdAt_not",
+              "description": null
+            },
+            {
+              "name": "createdAt_in",
+              "description": null
+            },
+            {
+              "name": "createdAt_not_in",
+              "description": null
+            },
+            {
+              "name": "createdAt_lt",
+              "description": null
+            },
+            {
+              "name": "createdAt_lte",
+              "description": null
+            },
+            {
+              "name": "createdAt_gt",
+              "description": null
+            },
+            {
+              "name": "createdAt_gte",
+              "description": null
+            },
+            {
+              "name": "updatedAt",
+              "description": null
+            },
+            {
+              "name": "updatedAt_not",
+              "description": null
+            },
+            {
+              "name": "updatedAt_in",
+              "description": null
+            },
+            {
+              "name": "updatedAt_not_in",
+              "description": null
+            },
+            {
+              "name": "updatedAt_lt",
+              "description": null
+            },
+            {
+              "name": "updatedAt_lte",
+              "description": null
+            },
+            {
+              "name": "updatedAt_gt",
+              "description": null
+            },
+            {
+              "name": "updatedAt_gte",
+              "description": null
+            },
+            {
+              "name": "deliveries_some",
+              "description": null
+            },
+            {
+              "name": "deliveries_every",
+              "description": null
+            },
+            {
+              "name": "deliveries_none",
+              "description": null
+            },
+            {
+              "name": "AND",
+              "description": "A field that checks if all filters in the list apply\n\nIf the list is empty, this filter applies to all objects."
+            },
+            {
+              "name": "OR",
+              "description": "A field that checks if any of the filters in the list apply.\n\nIf the list is empty, this filter applies to no objects.\n\nNote that only the items in the list *or*-combined; this complete `OR` field is *and*-combined with outer fields in the parent filter type."
+            }
+          ]
         },
         {
           "name": "OnlyRelationsOrderBy",
           "description": null,
-          "fields": null
+          "fields": null,
+          "inputFields": null
         },
         {
           "name": "NumberRange",
@@ -589,17 +2495,213 @@
               "name": "_cursor",
               "description": "Provides a value that can be supplied to the `after` argument for pagination. Depends on the value of the `orderBy` argument."
             }
-          ]
+          ],
+          "inputFields": null
         },
         {
           "name": "NumberRangeFilter",
           "description": "Filter type for `NumberRange`.\n\nAll fields in this type are *and*-combined; see the `or` field for *or*-combination.",
-          "fields": null
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "id",
+              "description": null
+            },
+            {
+              "name": "id_not",
+              "description": null
+            },
+            {
+              "name": "id_in",
+              "description": null
+            },
+            {
+              "name": "id_not_in",
+              "description": null
+            },
+            {
+              "name": "id_lt",
+              "description": null
+            },
+            {
+              "name": "id_lte",
+              "description": null
+            },
+            {
+              "name": "id_gt",
+              "description": null
+            },
+            {
+              "name": "id_gte",
+              "description": null
+            },
+            {
+              "name": "createdAt",
+              "description": null
+            },
+            {
+              "name": "createdAt_not",
+              "description": null
+            },
+            {
+              "name": "createdAt_in",
+              "description": null
+            },
+            {
+              "name": "createdAt_not_in",
+              "description": null
+            },
+            {
+              "name": "createdAt_lt",
+              "description": null
+            },
+            {
+              "name": "createdAt_lte",
+              "description": null
+            },
+            {
+              "name": "createdAt_gt",
+              "description": null
+            },
+            {
+              "name": "createdAt_gte",
+              "description": null
+            },
+            {
+              "name": "updatedAt",
+              "description": null
+            },
+            {
+              "name": "updatedAt_not",
+              "description": null
+            },
+            {
+              "name": "updatedAt_in",
+              "description": null
+            },
+            {
+              "name": "updatedAt_not_in",
+              "description": null
+            },
+            {
+              "name": "updatedAt_lt",
+              "description": null
+            },
+            {
+              "name": "updatedAt_lte",
+              "description": null
+            },
+            {
+              "name": "updatedAt_gt",
+              "description": null
+            },
+            {
+              "name": "updatedAt_gte",
+              "description": null
+            },
+            {
+              "name": "name",
+              "description": null
+            },
+            {
+              "name": "name_not",
+              "description": null
+            },
+            {
+              "name": "name_in",
+              "description": null
+            },
+            {
+              "name": "name_not_in",
+              "description": null
+            },
+            {
+              "name": "name_lt",
+              "description": null
+            },
+            {
+              "name": "name_lte",
+              "description": null
+            },
+            {
+              "name": "name_gt",
+              "description": null
+            },
+            {
+              "name": "name_gte",
+              "description": null
+            },
+            {
+              "name": "name_contains",
+              "description": null
+            },
+            {
+              "name": "name_not_contains",
+              "description": null
+            },
+            {
+              "name": "name_starts_with",
+              "description": null
+            },
+            {
+              "name": "name_not_starts_with",
+              "description": null
+            },
+            {
+              "name": "name_ends_with",
+              "description": null
+            },
+            {
+              "name": "name_not_ends_with",
+              "description": null
+            },
+            {
+              "name": "number",
+              "description": null
+            },
+            {
+              "name": "number_not",
+              "description": null
+            },
+            {
+              "name": "number_in",
+              "description": null
+            },
+            {
+              "name": "number_not_in",
+              "description": null
+            },
+            {
+              "name": "number_lt",
+              "description": null
+            },
+            {
+              "name": "number_lte",
+              "description": null
+            },
+            {
+              "name": "number_gt",
+              "description": null
+            },
+            {
+              "name": "number_gte",
+              "description": null
+            },
+            {
+              "name": "AND",
+              "description": "A field that checks if all filters in the list apply\n\nIf the list is empty, this filter applies to all objects."
+            },
+            {
+              "name": "OR",
+              "description": "A field that checks if any of the filters in the list apply.\n\nIf the list is empty, this filter applies to no objects.\n\nNote that only the items in the list *or*-combined; this complete `OR` field is *and*-combined with outer fields in the parent filter type."
+            }
+          ]
         },
         {
           "name": "NumberRangeOrderBy",
           "description": null,
-          "fields": null
+          "fields": null,
+          "inputFields": null
         },
         {
           "name": "SecretKey",
@@ -629,17 +2731,237 @@
               "name": "_cursor",
               "description": "Provides a value that can be supplied to the `after` argument for pagination. Depends on the value of the `orderBy` argument."
             }
-          ]
+          ],
+          "inputFields": null
         },
         {
           "name": "SecretKeyFilter",
           "description": "Filter type for `SecretKey`.\n\nAll fields in this type are *and*-combined; see the `or` field for *or*-combination.",
-          "fields": null
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "id",
+              "description": null
+            },
+            {
+              "name": "id_not",
+              "description": null
+            },
+            {
+              "name": "id_in",
+              "description": null
+            },
+            {
+              "name": "id_not_in",
+              "description": null
+            },
+            {
+              "name": "id_lt",
+              "description": null
+            },
+            {
+              "name": "id_lte",
+              "description": null
+            },
+            {
+              "name": "id_gt",
+              "description": null
+            },
+            {
+              "name": "id_gte",
+              "description": null
+            },
+            {
+              "name": "createdAt",
+              "description": null
+            },
+            {
+              "name": "createdAt_not",
+              "description": null
+            },
+            {
+              "name": "createdAt_in",
+              "description": null
+            },
+            {
+              "name": "createdAt_not_in",
+              "description": null
+            },
+            {
+              "name": "createdAt_lt",
+              "description": null
+            },
+            {
+              "name": "createdAt_lte",
+              "description": null
+            },
+            {
+              "name": "createdAt_gt",
+              "description": null
+            },
+            {
+              "name": "createdAt_gte",
+              "description": null
+            },
+            {
+              "name": "updatedAt",
+              "description": null
+            },
+            {
+              "name": "updatedAt_not",
+              "description": null
+            },
+            {
+              "name": "updatedAt_in",
+              "description": null
+            },
+            {
+              "name": "updatedAt_not_in",
+              "description": null
+            },
+            {
+              "name": "updatedAt_lt",
+              "description": null
+            },
+            {
+              "name": "updatedAt_lte",
+              "description": null
+            },
+            {
+              "name": "updatedAt_gt",
+              "description": null
+            },
+            {
+              "name": "updatedAt_gte",
+              "description": null
+            },
+            {
+              "name": "key",
+              "description": null
+            },
+            {
+              "name": "key_not",
+              "description": null
+            },
+            {
+              "name": "key_in",
+              "description": null
+            },
+            {
+              "name": "key_not_in",
+              "description": null
+            },
+            {
+              "name": "key_lt",
+              "description": null
+            },
+            {
+              "name": "key_lte",
+              "description": null
+            },
+            {
+              "name": "key_gt",
+              "description": null
+            },
+            {
+              "name": "key_gte",
+              "description": null
+            },
+            {
+              "name": "key_contains",
+              "description": null
+            },
+            {
+              "name": "key_not_contains",
+              "description": null
+            },
+            {
+              "name": "key_starts_with",
+              "description": null
+            },
+            {
+              "name": "key_not_starts_with",
+              "description": null
+            },
+            {
+              "name": "key_ends_with",
+              "description": null
+            },
+            {
+              "name": "key_not_ends_with",
+              "description": null
+            },
+            {
+              "name": "value",
+              "description": null
+            },
+            {
+              "name": "value_not",
+              "description": null
+            },
+            {
+              "name": "value_in",
+              "description": null
+            },
+            {
+              "name": "value_not_in",
+              "description": null
+            },
+            {
+              "name": "value_lt",
+              "description": null
+            },
+            {
+              "name": "value_lte",
+              "description": null
+            },
+            {
+              "name": "value_gt",
+              "description": null
+            },
+            {
+              "name": "value_gte",
+              "description": null
+            },
+            {
+              "name": "value_contains",
+              "description": null
+            },
+            {
+              "name": "value_not_contains",
+              "description": null
+            },
+            {
+              "name": "value_starts_with",
+              "description": null
+            },
+            {
+              "name": "value_not_starts_with",
+              "description": null
+            },
+            {
+              "name": "value_ends_with",
+              "description": null
+            },
+            {
+              "name": "value_not_ends_with",
+              "description": null
+            },
+            {
+              "name": "AND",
+              "description": "A field that checks if all filters in the list apply\n\nIf the list is empty, this filter applies to all objects."
+            },
+            {
+              "name": "OR",
+              "description": "A field that checks if any of the filters in the list apply.\n\nIf the list is empty, this filter applies to no objects.\n\nNote that only the items in the list *or*-combined; this complete `OR` field is *and*-combined with outer fields in the parent filter type."
+            }
+          ]
         },
         {
           "name": "SecretKeyOrderBy",
           "description": null,
-          "fields": null
+          "fields": null,
+          "inputFields": null
         },
         {
           "name": "Mutation",
@@ -781,137 +3103,726 @@
               "name": "deleteAllSecretKeys",
               "description": "Deletes SecretKeys that match a specified filter"
             }
-          ]
+          ],
+          "inputFields": null
         },
         {
           "name": "CreateCountryInput",
           "description": "The create type for the root entity type `Country`.\n\nThe fields `id`, `createdAt`, and `updatedAt` are set automatically.",
-          "fields": null
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "isoCode",
+              "description": null
+            },
+            {
+              "name": "description",
+              "description": null
+            },
+            {
+              "name": "totalInvestment",
+              "description": null
+            }
+          ]
         },
         {
           "name": "TranslationInput",
           "description": "The create/update type for the value object type `Translation`.\n\nIf this is used in an update mutation, missing fields are set to `null`.",
-          "fields": null
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "languageIsoCode",
+              "description": null
+            },
+            {
+              "name": "translation",
+              "description": null
+            }
+          ]
         },
         {
           "name": "UpdateCountryInput",
           "description": "The update type for the root entity type `Country`.\n\nThe `updatedAt` field is updated automatically unless only relations are updated. If fields are omitted, their value is left unchanged. Explicitly set fields to `null` to clear their value.",
-          "fields": null
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "id",
+              "description": "The `id` of the `Country` to be updated (does not change the `id`)."
+            },
+            {
+              "name": "isoCode",
+              "description": null
+            },
+            {
+              "name": "description",
+              "description": null
+            },
+            {
+              "name": "totalInvestment",
+              "description": null
+            }
+          ]
         },
         {
           "name": "UpdateAllCountriesInput",
           "description": "The update type for the root entity type `Country`.\n\nThe `updatedAt` field is updated automatically unless only relations are updated. If fields are omitted, their value is left unchanged. Explicitly set fields to `null` to clear their value.",
-          "fields": null
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "isoCode",
+              "description": null
+            },
+            {
+              "name": "description",
+              "description": null
+            },
+            {
+              "name": "totalInvestment",
+              "description": null
+            }
+          ]
         },
         {
           "name": "CreateDeliveryInput",
           "description": "The create type for the root entity type `Delivery`.\n\nThe fields `id`, `createdAt`, and `updatedAt` are set automatically.",
-          "fields": null
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "deliveryNumber",
+              "description": null
+            },
+            {
+              "name": "serialNumbers",
+              "description": "The list of serial numbers associated with this delivery"
+            },
+            {
+              "name": "consignee",
+              "description": "The address of the delivery's consignee"
+            },
+            {
+              "name": "contentInfo",
+              "description": null
+            },
+            {
+              "name": "dgInfo",
+              "description": null
+            },
+            {
+              "name": "items",
+              "description": null
+            },
+            {
+              "name": "handlingUnits",
+              "description": "Adds `handlingUnits` relations to existing `HandlingUnits` by their ids.\n\nIf one of the `HandlingUnits` is already related to a different `Delivery`, these relations are removed first.\n\nThe handling units the items of this delivery are packaged in"
+            },
+            {
+              "name": "createHandlingUnits",
+              "description": "Creates new `HandlingUnits` and adds `handlingUnits` relations between them and the new `Delivery`.\n\nThe handling units the items of this delivery are packaged in"
+            },
+            {
+              "name": "destinationCountry",
+              "description": "Specify the `isoCode` of the `Country` to be referenced"
+            },
+            {
+              "name": "shippedAt",
+              "description": null
+            },
+            {
+              "name": "totalValue",
+              "description": null
+            },
+            {
+              "name": "forwarder",
+              "description": "Sets the `forwarder` relation to an existing `Forwarder` by its id."
+            },
+            {
+              "name": "createForwarder",
+              "description": "Creates a new `Forwarder` and adds a `forwarder` relation between it and the new `Delivery`."
+            },
+            {
+              "name": "destination",
+              "description": null
+            },
+            {
+              "name": "defaultValueString",
+              "description": null
+            },
+            {
+              "name": "defaultValueString2",
+              "description": null
+            },
+            {
+              "name": "defaultValueInt",
+              "description": null
+            },
+            {
+              "name": "defaultValueTrue",
+              "description": null
+            },
+            {
+              "name": "defaultValueFalse",
+              "description": null
+            },
+            {
+              "name": "defaultValueFloat",
+              "description": null
+            },
+            {
+              "name": "defaultValueEnum",
+              "description": null
+            },
+            {
+              "name": "dynamicData",
+              "description": null
+            }
+          ]
         },
         {
           "name": "AddressInput",
           "description": "The create/update type for the value object type `Address`.\n\nIf this is used in an update mutation, missing fields are set to `null`.",
-          "fields": null
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "street",
+              "description": null
+            },
+            {
+              "name": "city",
+              "description": null
+            },
+            {
+              "name": "zipCode",
+              "description": null
+            },
+            {
+              "name": "country",
+              "description": "Specify the `isoCode` of the `Country` to be referenced"
+            }
+          ]
         },
         {
           "name": "CreateDangerousGoodsInfoInput",
           "description": "The create type for the entity extension type `DangerousGoodsInfo`.",
-          "fields": null
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "unNumber",
+              "description": null
+            },
+            {
+              "name": "flashpoint",
+              "description": null
+            },
+            {
+              "name": "notices",
+              "description": null
+            }
+          ]
         },
         {
           "name": "CreateDeliveryItemInput",
           "description": "The create type for the child entity type `DeliveryItem`.\n\nThe fields `id`, `createdAt`, and `updatedAt` are set automatically.",
-          "fields": null
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "itemNumber",
+              "description": null
+            }
+          ]
         },
         {
           "name": "CreateHandlingUnitInput",
           "description": "The create type for the root entity type `HandlingUnit`.\n\nThe fields `id`, `createdAt`, and `updatedAt` are set automatically.",
-          "fields": null
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "huNumber",
+              "description": null
+            },
+            {
+              "name": "delivery",
+              "description": "Sets the `delivery` relation to an existing `Delivery` by its id."
+            },
+            {
+              "name": "createDelivery",
+              "description": "Creates a new `Delivery` and adds a `delivery` relation between it and the new `HandlingUnit`."
+            }
+          ]
         },
         {
           "name": "CreateForwarderInput",
           "description": "The create type for the root entity type `Forwarder`.\n\nThe fields `id`, `createdAt`, and `updatedAt` are set automatically.",
-          "fields": null
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "name",
+              "description": null
+            },
+            {
+              "name": "deliveries",
+              "description": "Adds `deliveries` relations to existing `Deliveries` by their ids.\n\nIf one of the `Deliveries` is already related to a different `Forwarder`, these relations are removed first."
+            },
+            {
+              "name": "createDeliveries",
+              "description": "Creates new `Deliveries` and adds `deliveries` relations between them and the new `Forwarder`."
+            }
+          ]
         },
         {
           "name": "UpdateDeliveryInput",
           "description": "The update type for the root entity type `Delivery`.\n\nThe `updatedAt` field is updated automatically unless only relations are updated. If fields are omitted, their value is left unchanged. Explicitly set fields to `null` to clear their value.",
-          "fields": null
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "id",
+              "description": "The `id` of the `Delivery` to be updated (does not change the `id`)."
+            },
+            {
+              "name": "deliveryNumber",
+              "description": null
+            },
+            {
+              "name": "serialNumbers",
+              "description": "The list of serial numbers associated with this delivery"
+            },
+            {
+              "name": "consignee",
+              "description": "The address of the delivery's consignee"
+            },
+            {
+              "name": "contentInfo",
+              "description": null
+            },
+            {
+              "name": "dgInfo",
+              "description": "This field is an entity extension and thus is never 'null' - passing 'null' here does not change the field value."
+            },
+            {
+              "name": "addItems",
+              "description": "Adds new `DeliveryItems` to the list of `items`"
+            },
+            {
+              "name": "updateItems",
+              "description": "Updates `DeliveryItems` in the list of `items`"
+            },
+            {
+              "name": "removeItems",
+              "description": "Deletes `DeliveryItems` by ids in the list of `items`"
+            },
+            {
+              "name": "addHandlingUnits",
+              "description": "Adds `handlingUnits` relations to existing `HandlingUnits` by their ids.\n\nIf one of the `HandlingUnits` is already related to a different `Delivery`, these relations are removed first.\n\nThe handling units the items of this delivery are packaged in"
+            },
+            {
+              "name": "removeHandlingUnits",
+              "description": "Removes `handlingUnits` relations to existing `HandlingUnits` by their ids.\n\nThe handling units the items of this delivery are packaged in"
+            },
+            {
+              "name": "createHandlingUnits",
+              "description": "Creates new `HandlingUnits` and adds `handlingUnits` relations between them and this `Delivery`.\n\nThe handling units the items of this delivery are packaged in"
+            },
+            {
+              "name": "destinationCountry",
+              "description": "Specify the `isoCode` of the `Country` to be referenced"
+            },
+            {
+              "name": "shippedAt",
+              "description": null
+            },
+            {
+              "name": "totalValue",
+              "description": null
+            },
+            {
+              "name": "forwarder",
+              "description": "Sets the `forwarder` relation to an existing `Forwarder` by its id.\n\nIf this `Delivery` already has a `forwarder` relation, this relation is removed first."
+            },
+            {
+              "name": "createForwarder",
+              "description": "Creates a new `Forwarder` and sets the `forwarder` relation to the created object.\n\nIf this `Delivery` already has a `forwarder` relation, this relation is removed first."
+            },
+            {
+              "name": "destination",
+              "description": null
+            },
+            {
+              "name": "defaultValueString",
+              "description": null
+            },
+            {
+              "name": "defaultValueString2",
+              "description": null
+            },
+            {
+              "name": "defaultValueInt",
+              "description": null
+            },
+            {
+              "name": "defaultValueTrue",
+              "description": null
+            },
+            {
+              "name": "defaultValueFalse",
+              "description": null
+            },
+            {
+              "name": "defaultValueFloat",
+              "description": null
+            },
+            {
+              "name": "defaultValueEnum",
+              "description": null
+            },
+            {
+              "name": "dynamicData",
+              "description": null
+            }
+          ]
         },
         {
           "name": "UpdateDangerousGoodsInfoInput",
           "description": "The update type for the entity extension type `DangerousGoodsInfo`.\n\nIf fields are omitted, their value is left unchanged. Explicitly set fields to `null` to clear their value.",
-          "fields": null
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "unNumber",
+              "description": null
+            },
+            {
+              "name": "flashpoint",
+              "description": null
+            },
+            {
+              "name": "notices",
+              "description": null
+            }
+          ]
         },
         {
           "name": "UpdateDeliveryItemInput",
           "description": "The update type for the child entity type `DeliveryItem`.\n\nIf fields are omitted, their value is left unchanged. Explicitly set fields to `null` to clear their value.",
-          "fields": null
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "id",
+              "description": "The `id` of the `DeliveryItem` to be updated (does not change the `id`)."
+            },
+            {
+              "name": "itemNumber",
+              "description": null
+            }
+          ]
         },
         {
           "name": "UpdateAllDeliveriesInput",
           "description": "The update type for the root entity type `Delivery`.\n\nThe `updatedAt` field is updated automatically unless only relations are updated. If fields are omitted, their value is left unchanged. Explicitly set fields to `null` to clear their value.",
-          "fields": null
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "deliveryNumber",
+              "description": null
+            },
+            {
+              "name": "serialNumbers",
+              "description": "The list of serial numbers associated with this delivery"
+            },
+            {
+              "name": "consignee",
+              "description": "The address of the delivery's consignee"
+            },
+            {
+              "name": "contentInfo",
+              "description": null
+            },
+            {
+              "name": "dgInfo",
+              "description": "This field is an entity extension and thus is never 'null' - passing 'null' here does not change the field value."
+            },
+            {
+              "name": "addItems",
+              "description": "Adds new `DeliveryItems` to the list of `items`"
+            },
+            {
+              "name": "updateItems",
+              "description": "Updates `DeliveryItems` in the list of `items`"
+            },
+            {
+              "name": "removeItems",
+              "description": "Deletes `DeliveryItems` by ids in the list of `items`"
+            },
+            {
+              "name": "destinationCountry",
+              "description": "Specify the `isoCode` of the `Country` to be referenced"
+            },
+            {
+              "name": "shippedAt",
+              "description": null
+            },
+            {
+              "name": "totalValue",
+              "description": null
+            },
+            {
+              "name": "destination",
+              "description": null
+            },
+            {
+              "name": "defaultValueString",
+              "description": null
+            },
+            {
+              "name": "defaultValueString2",
+              "description": null
+            },
+            {
+              "name": "defaultValueInt",
+              "description": null
+            },
+            {
+              "name": "defaultValueTrue",
+              "description": null
+            },
+            {
+              "name": "defaultValueFalse",
+              "description": null
+            },
+            {
+              "name": "defaultValueFloat",
+              "description": null
+            },
+            {
+              "name": "defaultValueEnum",
+              "description": null
+            },
+            {
+              "name": "dynamicData",
+              "description": null
+            }
+          ]
         },
         {
           "name": "UpdateForwarderInput",
           "description": "The update type for the root entity type `Forwarder`.\n\nThe `updatedAt` field is updated automatically unless only relations are updated. If fields are omitted, their value is left unchanged. Explicitly set fields to `null` to clear their value.",
-          "fields": null
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "id",
+              "description": "The `id` of the `Forwarder` to be updated (does not change the `id`)."
+            },
+            {
+              "name": "name",
+              "description": null
+            },
+            {
+              "name": "addDeliveries",
+              "description": "Adds `deliveries` relations to existing `Deliveries` by their ids.\n\nIf one of the `Deliveries` is already related to a different `Forwarder`, these relations are removed first."
+            },
+            {
+              "name": "removeDeliveries",
+              "description": "Removes `deliveries` relations to existing `Deliveries` by their ids."
+            },
+            {
+              "name": "createDeliveries",
+              "description": "Creates new `Deliveries` and adds `deliveries` relations between them and this `Forwarder`."
+            }
+          ]
         },
         {
           "name": "UpdateAllForwardersInput",
           "description": "The update type for the root entity type `Forwarder`.\n\nThe `updatedAt` field is updated automatically unless only relations are updated. If fields are omitted, their value is left unchanged. Explicitly set fields to `null` to clear their value.",
-          "fields": null
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "name",
+              "description": null
+            }
+          ]
         },
         {
           "name": "CreateOnlyRelationsInput",
           "description": "The create type for the root entity type `OnlyRelations`.\n\nThe fields `id`, `createdAt`, and `updatedAt` are set automatically.",
-          "fields": null
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "deliveries",
+              "description": "Adds `deliveries` relations to existing `Deliveries` by their ids."
+            },
+            {
+              "name": "createDeliveries",
+              "description": "Creates new `Deliveries` and adds `deliveries` relations between them and the new `OnlyRelations`."
+            }
+          ]
         },
         {
           "name": "UpdateOnlyRelationsInput",
           "description": "The update type for the root entity type `OnlyRelations`.\n\nThe `updatedAt` field is updated automatically unless only relations are updated. If fields are omitted, their value is left unchanged. Explicitly set fields to `null` to clear their value.",
-          "fields": null
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "id",
+              "description": "The `id` of the `OnlyRelations` to be updated (does not change the `id`)."
+            },
+            {
+              "name": "addDeliveries",
+              "description": "Adds `deliveries` relations to existing `Deliveries` by their ids."
+            },
+            {
+              "name": "removeDeliveries",
+              "description": "Removes `deliveries` relations to existing `Deliveries` by their ids."
+            },
+            {
+              "name": "createDeliveries",
+              "description": "Creates new `Deliveries` and adds `deliveries` relations between them and this `OnlyRelations`."
+            }
+          ]
         },
         {
           "name": "UpdateHandlingUnitInput",
           "description": "The update type for the root entity type `HandlingUnit`.\n\nThe `updatedAt` field is updated automatically unless only relations are updated. If fields are omitted, their value is left unchanged. Explicitly set fields to `null` to clear their value.",
-          "fields": null
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "id",
+              "description": "The `id` of the `HandlingUnit` to be updated (does not change the `id`)."
+            },
+            {
+              "name": "huNumber",
+              "description": null
+            },
+            {
+              "name": "delivery",
+              "description": "Sets the `delivery` relation to an existing `Delivery` by its id.\n\nIf this `HandlingUnit` already has a `delivery` relation, this relation is removed first."
+            },
+            {
+              "name": "createDelivery",
+              "description": "Creates a new `Delivery` and sets the `delivery` relation to the created object.\n\nIf this `HandlingUnit` already has a `delivery` relation, this relation is removed first."
+            }
+          ]
         },
         {
           "name": "UpdateAllHandlingUnitsInput",
           "description": "The update type for the root entity type `HandlingUnit`.\n\nThe `updatedAt` field is updated automatically unless only relations are updated. If fields are omitted, their value is left unchanged. Explicitly set fields to `null` to clear their value.",
-          "fields": null
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "huNumber",
+              "description": null
+            }
+          ]
         },
         {
           "name": "CreateNumberRangeInput",
           "description": "The create type for the root entity type `NumberRange`.\n\nThe fields `id`, `createdAt`, and `updatedAt` are set automatically.",
-          "fields": null
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "name",
+              "description": null
+            },
+            {
+              "name": "number",
+              "description": null
+            }
+          ]
         },
         {
           "name": "UpdateNumberRangeInput",
           "description": "The update type for the root entity type `NumberRange`.\n\nThe `updatedAt` field is updated automatically unless only relations are updated. If fields are omitted, their value is left unchanged. Explicitly set fields to `null` to clear their value.",
-          "fields": null
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "id",
+              "description": "The `id` of the `NumberRange` to be updated (does not change the `id`)."
+            },
+            {
+              "name": "name",
+              "description": null
+            },
+            {
+              "name": "number",
+              "description": null
+            },
+            {
+              "name": "addTo_number",
+              "description": null
+            },
+            {
+              "name": "multiplyWith_number",
+              "description": null
+            }
+          ]
         },
         {
           "name": "UpdateAllNumberRangesInput",
           "description": "The update type for the root entity type `NumberRange`.\n\nThe `updatedAt` field is updated automatically unless only relations are updated. If fields are omitted, their value is left unchanged. Explicitly set fields to `null` to clear their value.",
-          "fields": null
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "name",
+              "description": null
+            },
+            {
+              "name": "number",
+              "description": null
+            },
+            {
+              "name": "addTo_number",
+              "description": null
+            },
+            {
+              "name": "multiplyWith_number",
+              "description": null
+            }
+          ]
         },
         {
           "name": "CreateSecretKeyInput",
           "description": "The create type for the root entity type `SecretKey`.\n\nThe fields `id`, `createdAt`, and `updatedAt` are set automatically.",
-          "fields": null
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "key",
+              "description": null
+            },
+            {
+              "name": "value",
+              "description": null
+            }
+          ]
         },
         {
           "name": "UpdateSecretKeyInput",
           "description": "The update type for the root entity type `SecretKey`.\n\nThe `updatedAt` field is updated automatically unless only relations are updated. If fields are omitted, their value is left unchanged. Explicitly set fields to `null` to clear their value.",
-          "fields": null
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "id",
+              "description": "The `id` of the `SecretKey` to be updated (does not change the `id`)."
+            },
+            {
+              "name": "key",
+              "description": null
+            },
+            {
+              "name": "value",
+              "description": null
+            }
+          ]
         },
         {
           "name": "UpdateAllSecretKeysInput",
           "description": "The update type for the root entity type `SecretKey`.\n\nThe `updatedAt` field is updated automatically unless only relations are updated. If fields are omitted, their value is left unchanged. Explicitly set fields to `null` to clear their value.",
-          "fields": null
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "key",
+              "description": null
+            },
+            {
+              "name": "value",
+              "description": null
+            }
+          ]
         },
         {
           "name": "__Schema",
@@ -937,7 +3848,8 @@
               "name": "directives",
               "description": "A list of all directives supported by this server."
             }
-          ]
+          ],
+          "inputFields": null
         },
         {
           "name": "__Type",
@@ -979,12 +3891,14 @@
               "name": "ofType",
               "description": null
             }
-          ]
+          ],
+          "inputFields": null
         },
         {
           "name": "__TypeKind",
           "description": "An enum describing what kind of type a given `__Type` is.",
-          "fields": null
+          "fields": null,
+          "inputFields": null
         },
         {
           "name": "__Field",
@@ -1014,7 +3928,8 @@
               "name": "deprecationReason",
               "description": null
             }
-          ]
+          ],
+          "inputFields": null
         },
         {
           "name": "__InputValue",
@@ -1036,7 +3951,8 @@
               "name": "defaultValue",
               "description": "A GraphQL-formatted string representing the default value for this input value."
             }
-          ]
+          ],
+          "inputFields": null
         },
         {
           "name": "__EnumValue",
@@ -1058,7 +3974,8 @@
               "name": "deprecationReason",
               "description": null
             }
-          ]
+          ],
+          "inputFields": null
         },
         {
           "name": "__Directive",
@@ -1080,12 +3997,14 @@
               "name": "args",
               "description": null
             }
-          ]
+          ],
+          "inputFields": null
         },
         {
           "name": "__DirectiveLocation",
           "description": "A Directive can be adjacent to many parts of the GraphQL language, a __DirectiveLocation describes one such possible adjacencies.",
-          "fields": null
+          "fields": null,
+          "inputFields": null
         }
       ]
     }

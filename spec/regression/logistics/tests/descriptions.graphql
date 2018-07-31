@@ -7,6 +7,10 @@
                 name
                 description
             }
+            inputFields {
+                name
+                description
+            }
         }
     }
 }
