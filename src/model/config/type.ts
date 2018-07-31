@@ -18,6 +18,7 @@ export enum TypeKind {
 export interface TypeConfigBase {
     readonly kind: TypeKind
     readonly name: string
+    readonly namespacePath?: ReadonlyArray<string>
     readonly description?: string
     readonly astNode?: TypeDefinitionNode
 }
@@ -29,7 +30,6 @@ export interface ObjectTypeConfigBase extends TypeConfigBase {
 
 export interface RootEntityTypeConfig extends ObjectTypeConfigBase {
     readonly kind: TypeKind.ROOT_ENTITY
-    readonly namespacePath?: ReadonlyArray<string>
     readonly indices?: ReadonlyArray<IndexDefinitionConfig>
     readonly keyFieldName?: string
     readonly keyFieldASTNode?: ASTNode

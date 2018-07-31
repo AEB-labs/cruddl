@@ -18,7 +18,6 @@ import { ScalarType } from './scalar-type';
 export class RootEntityType extends ObjectTypeBase {
     private readonly permissions: PermissionsConfig & {};
     readonly keyField: Field|undefined;
-    readonly namespacePath: ReadonlyArray<string>;
     readonly indices: ReadonlyArray<Index>;
     readonly roles: RolesSpecifier|undefined;
 
@@ -31,7 +30,6 @@ export class RootEntityType extends ObjectTypeBase {
     constructor(private readonly input: RootEntityTypeConfig, model: Model) {
         super(input, model, systemFieldInputs);
         this.keyField = input.keyFieldName != undefined ? this.getField(input.keyFieldName) : undefined;
-        this.namespacePath = input.namespacePath || [];
         this.indices = this.aggregateIndices(input);
         this.permissions = input.permissions || {};
         this.roles = input.permissions && input.permissions.roles ? new RolesSpecifier(input.permissions.roles) : undefined;

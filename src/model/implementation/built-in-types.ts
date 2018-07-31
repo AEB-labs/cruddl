@@ -1,3 +1,4 @@
+import { Model } from './model';
 import { Type } from './type';
 import { ScalarType } from './scalar-type';
 import { TypeKind } from '../config';
@@ -15,13 +16,15 @@ const graphQLTypes: ReadonlyArray<GraphQLScalarType> = [
     GraphQLDateTime
 ];
 
-export const builtInTypes: ReadonlyArray<Type> = graphQLTypes.map(type => buildScalarType(type));
+export const builtInTypeNames: ReadonlySet<string> = new Set(graphQLTypes.map(t => t.name));
 
-export const builtInTypeNames: ReadonlySet<string> = new Set(builtInTypes.map(t => t.name));
+export function createBuiltInTypes(model: Model): ReadonlyArray<Type> {
+    return graphQLTypes.map(type => buildScalarType(type, model));
+}
 
-function buildScalarType(type: GraphQLScalarType) {
+function buildScalarType(type: GraphQLScalarType, model: Model) {
     return new ScalarType({
         kind: TypeKind.SCALAR,
         name: type.name,
-    }, type);
+    }, model, type);
 }

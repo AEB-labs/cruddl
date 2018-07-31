@@ -3,14 +3,14 @@ import {
     AddEdgesQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode,
     ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeFilter,
     EdgeIdentifier, EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode,
-    ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, ObjectQueryNode, OrderDirection, OrderSpecification,
-    PartialEdgeIdentifier, QueryNode, QueryResultValidator, RemoveEdgesQueryNode, RootEntityIDQueryNode,
-    RUNTIME_ERROR_TOKEN, RuntimeErrorQueryNode, SetEdgeQueryNode, TransformListQueryNode, TypeCheckQueryNode,
-    UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode,
-    WithPreExecutionQueryNode
+    ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, OrderDirection,
+    OrderSpecification, PartialEdgeIdentifier, QueryNode, QueryResultValidator, RemoveEdgesQueryNode,
+    RootEntityIDQueryNode, RUNTIME_ERROR_TOKEN, RuntimeErrorQueryNode, SetEdgeQueryNode, TransformListQueryNode,
+    TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode,
+    VariableQueryNode, WithPreExecutionQueryNode
 } from '../../query-tree';
 import { simplifyBooleans } from '../../query-tree/utils';
-import { decapitalize } from '../../utils/utils';
+import { Constructor, decapitalize } from '../../utils/utils';
 import { aql, AQLCompoundQuery, AQLFragment, AQLQueryResultVariable, AQLVariable } from './aql';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './arango-basics';
 
@@ -29,7 +29,7 @@ class QueryContext {
      * Creates a new QueryContext with an independent variable map except that all query result variables of this
      * context are available.
      */
-    private newPreExecContext(): QueryContext{
+    private newPreExecContext(): QueryContext {
         const newContext = new QueryContext();
         this.variableMap.forEach((aqlVar, varNode) => {
             if (aqlVar instanceof AQLQueryResultVariable) {
@@ -84,10 +84,10 @@ class QueryContext {
      * @param resultValidator an optional validator for the query result
      */
     addPreExecuteQuery(preExecQuery: QueryNode, resultVariable?: VariableQueryNode, resultValidator?: QueryResultValidator): QueryContext {
-        let resultVar: AQLQueryResultVariable|undefined;
+        let resultVar: AQLQueryResultVariable | undefined;
         let newContext: QueryContext;
         if (resultVariable) {
-            resultVar = new AQLQueryResultVariable(resultVariable.label)
+            resultVar = new AQLQueryResultVariable(resultVariable.label);
             newContext = this.newNestedContextWithNewVariable(resultVariable, resultVar);
         } else {
             resultVar = undefined;
@@ -129,18 +129,18 @@ class QueryContext {
         return this.preExecQueries;
     }
 
-    getReadAccessedCollections(): string[]{
+    getReadAccessedCollections(): string[] {
         return Array.from(this.readAccessedCollections);
     }
 
-    getWriteAccessedCollections(): string[]{
+    getWriteAccessedCollections(): string[] {
         return Array.from(this.writeAccessedCollections);
     }
 }
 
 function createAQLCompoundQuery(node: QueryNode,
-                                resultVariable: AQLQueryResultVariable|undefined,
-                                resultValidator: QueryResultValidator|undefined,
+                                resultVariable: AQLQueryResultVariable | undefined,
+                                resultValidator: QueryResultValidator | undefined,
                                 context: QueryContext): AQLCompoundQuery {
     const aqlQuery = aql`RETURN ${processNode(node, context)}`;
     const preExecQueries = context.getPreExecuteQueries();
@@ -174,312 +174,315 @@ namespace aqlExt {
     }
 }
 
-const processors : { [name: string]: NodeProcessor<any> } = {
-    Literal(node: LiteralQueryNode): AQLFragment {
-        return aql.value(node.value);
-    },
+const processors = new Map<Constructor<QueryNode>, NodeProcessor<QueryNode>>();
+function register<T extends QueryNode>(type: Constructor<T>, processor: NodeProcessor<T>) {
+    processors.set(type, processor as NodeProcessor<QueryNode>); // probably some bivariancy issue
+}
 
-    Null(): AQLFragment {
-        return aql`null`;
-    },
+register(LiteralQueryNode, node => {
+    return aql.value(node.value);
+});
 
-    RuntimeError(node: RuntimeErrorQueryNode): AQLFragment {
-        const runtimeErrorToken = aql.code(RUNTIME_ERROR_TOKEN);
-        return aql`{${runtimeErrorToken}: ${node.message}}`;
-    },
+register(NullQueryNode, () => {
+    return aql`null`;
+});
 
-    ConstBool(node: ConstBoolQueryNode): AQLFragment {
-        return node.value ? aql`true` : aql`false`;
-    },
+register(RuntimeErrorQueryNode, node => {
+    const runtimeErrorToken = aql.code(RUNTIME_ERROR_TOKEN);
+    return aql`{${runtimeErrorToken}: ${node.message}}`;
+});
 
-    ConstInt(node: ConstIntQueryNode): AQLFragment {
-        return aql.integer(node.value);
-    },
+register(ConstBoolQueryNode, node => {
+    return node.value ? aql`true` : aql`false`;
+});
 
-    Object(node: ObjectQueryNode, context): AQLFragment {
-        if (!node.properties.length) {
-            return aql`{}`;
-        }
+register(ConstIntQueryNode, node => {
+    return aql.integer(node.value);
+});
 
-        const properties = node.properties.map(p =>
-            aql`${aqlExt.safeJSONKey(p.propertyName)}: ${processNode(p.valueNode, context)}`);
-        return aql.lines(
-            aql`{`,
-            aql.indent(aql.join(properties, aql`,\n`)),
-            aql`}`
-        );
-    },
-
-    List(node: ListQueryNode, context): AQLFragment {
-        if (!node.itemNodes.length) {
-            return aql`[]`;
-        }
-
-        return aql.lines(
-            aql`[`,
-            aql.indent(aql.join(node.itemNodes.map(itemNode => processNode(itemNode, context)), aql`,\n`)),
-            aql`]`
-        );
-    },
-
-    ConcatLists(node: ConcatListsQueryNode, context): AQLFragment {
-        const listNodes = node.listNodes.map(node => processNode(node, context));
-        const listNodeStr = aql.join(listNodes, aql`, `);
-        // note: UNION just appends, there is a special UNION_DISTINCT to filter out duplicates
-        return aql`UNION(${listNodeStr})`;
-    },
-
-    Variable(node: VariableQueryNode, context): AQLFragment {
-        return context.getVariable(node);
-    },
-
-    VariableAssignment(node: VariableAssignmentQueryNode, context): AQLFragment {
-        const newContext = context.introduceVariable(node.variableNode);
-        const tmpVar = newContext.getVariable(node.variableNode);
-
-        // note that we have to know statically if the context var is a list or an object
-        // assuming object here because lists are not needed currently
-        return aqlExt.parenthesizeObject(
-            aql`LET ${tmpVar} = ${processNode(node.variableValueNode, newContext)}`,
-            aql`RETURN ${processNode(node.resultNode, newContext)}`
-        );
-    },
-
-    WithPreExecution(node: WithPreExecutionQueryNode, context): AQLFragment {
-        let currentContext = context;
-        for (const preExecParm of node.preExecQueries) {
-            currentContext = currentContext.addPreExecuteQuery(preExecParm.query, preExecParm.resultVariable, preExecParm.resultValidator);
-        }
-
-        return aql`${processNode(node.resultNode, currentContext)}`;
-    },
-
-    EntityFromId(node:  EntityFromIdQueryNode, context): AQLFragment {
-        const collection = getCollectionForType(node.rootEntityType, AccessType.READ, context);
-        return aql`DOCUMENT(${collection}, ${processNode(node.idNode, context)})`;
-    },
-
-    Field(node: FieldQueryNode, context): AQLFragment {
-        const object = processNode(node.objectNode, context);
-        let identifier = node.field.name;
-        if (aql.isSafeIdentifier(identifier)) {
-            return aql`${object}.${aql.identifier(identifier)}`;
-        }
-        // fall back to bound values. do not attempt aql.string for security reasons - should not be the case normally, anyway.
-        return aql`${object}[${identifier}]`;
-    },
-
-    RootEntityID(node: RootEntityIDQueryNode, context): AQLFragment {
-        return aql`${processNode(node.objectNode, context)}._key`; // ids are stored in _key field
-    },
-
-    TransformList(node: TransformListQueryNode, context): AQLFragment {
-        let itemContext = context.introduceVariable(node.itemVariable);
-        const itemVar = itemContext.getVariable(node.itemVariable);
-
-        let list: AQLFragment;
-        let filterDanglingEdges = aql``;
-        if (node.listNode instanceof FollowEdgeQueryNode) {
-            list = getSimpleFollowEdgeFragment(node.listNode, context);
-            filterDanglingEdges = aql`FILTER ${itemVar} != null`;
-        } else {
-            list = processNode(node.listNode, context);
-        }
-        let filter = simplifyBooleans(node.filterNode);
-
-        let limitClause;
-        if (node.maxCount != undefined) {
-            if (node.skip === 0) {
-                limitClause = aql`LIMIT ${node.maxCount}`;
-            } else {
-                limitClause = aql`LIMIT ${node.skip}, ${node.maxCount}`;
-            }
-        } else if (node.skip > 0) {
-            limitClause = aql`LIMIT ${node.skip}, ${Number.MAX_SAFE_INTEGER}`;
-        } else {
-            limitClause = aql``;
-        }
-
-        return aqlExt.parenthesizeList(
-            aql`FOR ${itemVar}`,
-            aql`IN ${list}`,
-            (filter instanceof ConstBoolQueryNode && filter.value) ? aql`` : aql`FILTER ${processNode(filter, itemContext)}`,
-            filterDanglingEdges,
-            generateSortAQL(node.orderBy, itemContext),
-            limitClause,
-            aql`RETURN ${processNode(node.innerNode, itemContext)}`
-        );
-    },
-
-    Count(node: CountQueryNode, context): AQLFragment {
-        if (node.listNode instanceof FieldQueryNode || node.listNode instanceof EntitiesQueryNode) {
-            // These cases are known to be optimized
-            // TODO this does not catch the safe-list case (list ? list : []), where we could optimize to (list ? LENGTH(list) : 0)
-            // so we probably need to add an optimization to the query tree builder
-            return aql`LENGTH(${processNode(node.listNode, context)})`;
-        }
-
-        // in the general case (mostly a TransformListQueryNode), it is better to use the COLLeCT WITH COUNT syntax
-        // because it avoids building the whole collection temporarily in memory
-        // however, https://docs.arangodb.com/3.2/AQL/Examples/Counting.html does not really mention this case, so we
-        // should evaluate it again
-        const itemVar = aql.variable('item');
-        const countVar = aql.variable('count');
-        return aqlExt.parenthesizeObject(
-            aql`FOR ${itemVar}`,
-            aql`IN ${processNode(node.listNode, context)}`,
-            aql`COLLECT WITH COUNT INTO ${countVar}`,
-            aql`return ${countVar}`
-        );
-    },
-
-    MergeObjects(node: MergeObjectsQueryNode, context): AQLFragment {
-        const objectList = node.objectNodes.map(node => processNode(node, context));
-        const objectsFragment = aql.join(objectList, aql`, `);
-        return aql`MERGE(${objectsFragment})`;
-    },
-
-    FirstOfList(node: FirstOfListQueryNode, context): AQLFragment {
-        return aql`FIRST(${processNode(node.listNode, context)})`;
-    },
-
-    BinaryOperation(node: BinaryOperationQueryNode, context): AQLFragment {
-        const lhs = processNode(node.lhs, context);
-        const rhs = processNode(node.rhs, context);
-        const op = getAQLOperator(node.operator);
-        if (op) {
-            return aql`(${lhs} ${op} ${rhs})`;
-        }
-
-        switch (node.operator) {
-            case BinaryOperator.CONTAINS:
-                return aql`${lhs} LIKE CONCAT("%", ${rhs}, "%")`;
-            case BinaryOperator.STARTS_WITH:
-                return aql`(LEFT(${lhs}, LENGTH(${rhs})) == ${rhs})`;
-            case BinaryOperator.ENDS_WITH:
-                return aql`(RIGHT(${lhs}, LENGTH(${rhs})) == ${rhs})`;
-            case BinaryOperator.APPEND:
-                return aql`CONCAT(${lhs}, ${rhs})`;
-            case BinaryOperator.PREPEND:
-                return aql`CONCAT(${rhs}, ${lhs})`;
-            default:
-                throw new Error(`Unsupported binary operator: ${op}`);
-        }
-    },
-
-    UnaryOperation(node: UnaryOperationQueryNode, context) {
-        switch (node.operator) {
-            case UnaryOperator.NOT:
-                return aql`!(${processNode(node.valueNode, context)})`;
-            case UnaryOperator.JSON_STRINGIFY:
-                return aql`JSON_STRINGIFY(${processNode(node.valueNode, context)})`;
-            default:
-                throw new Error(`Unsupported unary operator: ${node.operator}`);
-        }
-    },
-
-    Conditional(node: ConditionalQueryNode, context) {
-        const cond = processNode(node.condition, context);
-        const expr1 = processNode(node.expr1, context);
-        const expr2 = processNode(node.expr2, context);
-        return aql`(${cond} ? ${expr1} : ${expr2})`;
-    },
-
-    TypeCheck(node: TypeCheckQueryNode, context) {
-        const value = processNode(node.valueNode, context);
-
-        switch (node.type) {
-            case BasicType.SCALAR:
-                return aql`(IS_BOOL(${value}) || IS_NUMBER(${value}) || IS_STRING(${value}))`;
-            case BasicType.LIST:
-                return aql`IS_LIST(${value})`;
-            case BasicType.OBJECT:
-                return aql`IS_OBJECT(${value})`;
-            case BasicType.NULL:
-                return aql`IS_NULL(${value})`;
-        }
-    },
-
-    Entities(node: EntitiesQueryNode, context): AQLFragment {
-        return getCollectionForType(node.rootEntityType, AccessType.READ, context);
-    },
-
-    FollowEdge(node: FollowEdgeQueryNode, context): AQLFragment {
-        const tmpVar = aql.variable('node');
-        // need to wrap this in a subquery because ANY is not possible as first token of an expression node in AQL
-        return aqlExt.parenthesizeList(
-            aql`FOR ${tmpVar}`,
-            aql`IN ${getSimpleFollowEdgeFragment(node, context)}`,
-            aql`FILTER ${tmpVar} != null`,
-            aql`RETURN ${tmpVar}`
-        );
-    },
-
-    CreateEntity(node: CreateEntityQueryNode, context): AQLFragment {
-        return aqlExt.parenthesizeObject(
-            aql`INSERT ${processNode(node.objectNode, context)} IN ${getCollectionForType(node.rootEntityType, AccessType.WRITE, context)}`,
-            aql`RETURN NEW._key`
-        );
-    },
-
-    UpdateEntities(node: UpdateEntitiesQueryNode, context) {
-        const newContext = context.introduceVariable(node.currentEntityVariable);
-        const entityVar = newContext.getVariable(node.currentEntityVariable);
-        return aqlExt.parenthesizeList(
-            aql`FOR ${entityVar}`,
-            aql`IN ${processNode(node.listNode, context)}`,
-            aql`UPDATE ${entityVar}`,
-            aql`WITH ${processNode(new ObjectQueryNode(node.updates), newContext)}`,
-            aql`IN ${getCollectionForType(node.rootEntityType, AccessType.WRITE, context)}`,
-            aql`OPTIONS { mergeObjects: false }`,
-            aql`RETURN NEW._key`
-        );
-    },
-
-    DeleteEntities(node: DeleteEntitiesQueryNode, context) {
-        const entityVar = aql.variable(decapitalize(node.rootEntityType.name));
-        return aqlExt.parenthesizeList(
-            aql`FOR ${entityVar}`,
-            aql`IN ${processNode(node.listNode, context)}`,
-            aql`REMOVE ${entityVar}`,
-            aql`IN ${getCollectionForType(node.rootEntityType, AccessType.WRITE, context)}`,
-            aql`RETURN OLD`
-        );
-    },
-
-    AddEdges(node: AddEdgesQueryNode, context) {
-        const edgeVar = aql.variable('edge');
-        return aqlExt.parenthesizeList(
-            aql`FOR ${edgeVar}`,
-            aql`IN [ ${aql.join(node.edges.map(edge => formatEdge(node.relation, edge, context)), aql`, `)} ]`,
-            aql`UPSERT { _from: ${edgeVar}._from, _to: ${edgeVar}._to }`, // need to unpack avoid dynamic property names in UPSERT example filter
-            aql`INSERT ${edgeVar}`,
-            aql`UPDATE {}`,
-            aql`IN ${getCollectionForRelation(node.relation, AccessType.WRITE, context)}`
-        );
-    },
-
-    RemoveEdges(node: RemoveEdgesQueryNode, context) {
-        const edgeVar = aql.variable('edge');
-        return aqlExt.parenthesizeList(
-            aql`FOR ${edgeVar}`,
-            aql`IN ${getCollectionForRelation(node.relation, AccessType.READ, context)}`,
-            aql`FILTER ${formatEdgeFilter(node.relation, node.edgeFilter, edgeVar, context)}`,
-            aql`REMOVE ${edgeVar}`,
-            aql`IN ${getCollectionForRelation(node.relation, AccessType.WRITE, context)}`
-        );
-    },
-
-    SetEdge(node: SetEdgeQueryNode, context) {
-        const edgeVar = aql.variable('edge');
-        return aqlExt.parenthesizeList(
-            aql`UPSERT ${formatEdge(node.relation, node.existingEdge, context)}`,
-            aql`INSERT ${formatEdge(node.relation, node.newEdge, context)}`,
-            aql`UPDATE ${formatEdge(node.relation, node.newEdge, context)}`,
-            aql`IN ${getCollectionForRelation(node.relation, AccessType.WRITE, context)}`
-        );
+register(ObjectQueryNode, (node, context) => {
+    if (!node.properties.length) {
+        return aql`{}`;
     }
-};
+
+    const properties = node.properties.map(p =>
+        aql`${aqlExt.safeJSONKey(p.propertyName)}: ${processNode(p.valueNode, context)}`);
+    return aql.lines(
+        aql`{`,
+        aql.indent(aql.join(properties, aql`,\n`)),
+        aql`}`
+    );
+});
+
+register(ListQueryNode, (node, context) => {
+    if (!node.itemNodes.length) {
+        return aql`[]`;
+    }
+
+    return aql.lines(
+        aql`[`,
+        aql.indent(aql.join(node.itemNodes.map(itemNode => processNode(itemNode, context)), aql`,\n`)),
+        aql`]`
+    );
+});
+
+register(ConcatListsQueryNode, (node, context) => {
+    const listNodes = node.listNodes.map(node => processNode(node, context));
+    const listNodeStr = aql.join(listNodes, aql`, `);
+    // note: UNION just appends, there is a special UNION_DISTINCT to filter out duplicates
+    return aql`UNION(${listNodeStr})`;
+});
+
+register(VariableQueryNode, (node, context) => {
+    return context.getVariable(node);
+});
+
+register(VariableAssignmentQueryNode, (node, context) => {
+    const newContext = context.introduceVariable(node.variableNode);
+    const tmpVar = newContext.getVariable(node.variableNode);
+
+    // note that we have to know statically if the context var is a list or an object
+    // assuming object here because lists are not needed currently
+    return aqlExt.parenthesizeObject(
+        aql`LET ${tmpVar} = ${processNode(node.variableValueNode, newContext)}`,
+        aql`RETURN ${processNode(node.resultNode, newContext)}`
+    );
+});
+
+register(WithPreExecutionQueryNode, (node, context) => {
+    let currentContext = context;
+    for (const preExecParm of node.preExecQueries) {
+        currentContext = currentContext.addPreExecuteQuery(preExecParm.query, preExecParm.resultVariable, preExecParm.resultValidator);
+    }
+
+    return aql`${processNode(node.resultNode, currentContext)}`;
+});
+
+register(EntityFromIdQueryNode, (node, context) => {
+    const collection = getCollectionForType(node.rootEntityType, AccessType.READ, context);
+    return aql`DOCUMENT(${collection}, ${processNode(node.idNode, context)})`;
+});
+
+register(FieldQueryNode, (node, context) => {
+    const object = processNode(node.objectNode, context);
+    let identifier = node.field.name;
+    if (aql.isSafeIdentifier(identifier)) {
+        return aql`${object}.${aql.identifier(identifier)}`;
+    }
+    // fall back to bound values. do not attempt aql.string for security reasons - should not be the case normally, anyway.
+    return aql`${object}[${identifier}]`;
+});
+
+register(RootEntityIDQueryNode, (node, context) => {
+    return aql`${processNode(node.objectNode, context)}._key`; // ids are stored in _key field
+});
+
+register(TransformListQueryNode, (node, context) => {
+    let itemContext = context.introduceVariable(node.itemVariable);
+    const itemVar = itemContext.getVariable(node.itemVariable);
+
+    let list: AQLFragment;
+    let filterDanglingEdges = aql``;
+    if (node.listNode instanceof FollowEdgeQueryNode) {
+        list = getSimpleFollowEdgeFragment(node.listNode, context);
+        filterDanglingEdges = aql`FILTER ${itemVar} != null`;
+    } else {
+        list = processNode(node.listNode, context);
+    }
+    let filter = simplifyBooleans(node.filterNode);
+
+    let limitClause;
+    if (node.maxCount != undefined) {
+        if (node.skip === 0) {
+            limitClause = aql`LIMIT ${node.maxCount}`;
+        } else {
+            limitClause = aql`LIMIT ${node.skip}, ${node.maxCount}`;
+        }
+    } else if (node.skip > 0) {
+        limitClause = aql`LIMIT ${node.skip}, ${Number.MAX_SAFE_INTEGER}`;
+    } else {
+        limitClause = aql``;
+    }
+
+    return aqlExt.parenthesizeList(
+        aql`FOR ${itemVar}`,
+        aql`IN ${list}`,
+        (filter instanceof ConstBoolQueryNode && filter.value) ? aql`` : aql`FILTER ${processNode(filter, itemContext)}`,
+        filterDanglingEdges,
+        generateSortAQL(node.orderBy, itemContext),
+        limitClause,
+        aql`RETURN ${processNode(node.innerNode, itemContext)}`
+    );
+});
+
+register(CountQueryNode, (node, context) => {
+    if (node.listNode instanceof FieldQueryNode || node.listNode instanceof EntitiesQueryNode) {
+        // These cases are known to be optimized
+        // TODO this does not catch the safe-list case (list ? list : []), where we could optimize to (list ? LENGTH(list) : 0)
+        // so we probably need to add an optimization to the query tree builder
+        return aql`LENGTH(${processNode(node.listNode, context)})`;
+    }
+
+    // in the general case (mostly a TransformListQueryNode), it is better to use the COLLeCT WITH COUNT syntax
+    // because it avoids building the whole collection temporarily in memory
+    // however, https://docs.arangodb.com/3.2/AQL/Examples/Counting.html does not really mention this case, so we
+    // should evaluate it again
+    const itemVar = aql.variable('item');
+    const countVar = aql.variable('count');
+    return aqlExt.parenthesizeObject(
+        aql`FOR ${itemVar}`,
+        aql`IN ${processNode(node.listNode, context)}`,
+        aql`COLLECT WITH COUNT INTO ${countVar}`,
+        aql`return ${countVar}`
+    );
+});
+
+register(MergeObjectsQueryNode, (node, context) => {
+    const objectList = node.objectNodes.map(node => processNode(node, context));
+    const objectsFragment = aql.join(objectList, aql`, `);
+    return aql`MERGE(${objectsFragment})`;
+});
+
+register(FirstOfListQueryNode, (node, context) => {
+    return aql`FIRST(${processNode(node.listNode, context)})`;
+});
+
+register(BinaryOperationQueryNode, (node, context) => {
+    const lhs = processNode(node.lhs, context);
+    const rhs = processNode(node.rhs, context);
+    const op = getAQLOperator(node.operator);
+    if (op) {
+        return aql`(${lhs} ${op} ${rhs})`;
+    }
+
+    switch (node.operator) {
+        case BinaryOperator.CONTAINS:
+            return aql`${lhs} LIKE CONCAT("%", ${rhs}, "%")`;
+        case BinaryOperator.STARTS_WITH:
+            return aql`(LEFT(${lhs}, LENGTH(${rhs})) == ${rhs})`;
+        case BinaryOperator.ENDS_WITH:
+            return aql`(RIGHT(${lhs}, LENGTH(${rhs})) == ${rhs})`;
+        case BinaryOperator.APPEND:
+            return aql`CONCAT(${lhs}, ${rhs})`;
+        case BinaryOperator.PREPEND:
+            return aql`CONCAT(${rhs}, ${lhs})`;
+        default:
+            throw new Error(`Unsupported binary operator: ${op}`);
+    }
+});
+
+register(UnaryOperationQueryNode, (node, context) => {
+    switch (node.operator) {
+        case UnaryOperator.NOT:
+            return aql`!(${processNode(node.valueNode, context)})`;
+        case UnaryOperator.JSON_STRINGIFY:
+            return aql`JSON_STRINGIFY(${processNode(node.valueNode, context)})`;
+        default:
+            throw new Error(`Unsupported unary operator: ${node.operator}`);
+    }
+});
+
+register(ConditionalQueryNode, (node, context) => {
+    const cond = processNode(node.condition, context);
+    const expr1 = processNode(node.expr1, context);
+    const expr2 = processNode(node.expr2, context);
+    return aql`(${cond} ? ${expr1} : ${expr2})`;
+});
+
+register(TypeCheckQueryNode, (node, context) => {
+    const value = processNode(node.valueNode, context);
+
+    switch (node.type) {
+        case BasicType.SCALAR:
+            return aql`(IS_BOOL(${value}) || IS_NUMBER(${value}) || IS_STRING(${value}))`;
+        case BasicType.LIST:
+            return aql`IS_LIST(${value})`;
+        case BasicType.OBJECT:
+            return aql`IS_OBJECT(${value})`;
+        case BasicType.NULL:
+            return aql`IS_NULL(${value})`;
+    }
+});
+
+register(EntitiesQueryNode, (node, context) => {
+    return getCollectionForType(node.rootEntityType, AccessType.READ, context);
+});
+
+register(FollowEdgeQueryNode, (node, context) => {
+    const tmpVar = aql.variable('node');
+    // need to wrap this in a subquery because ANY is not possible as first token of an expression node in AQL
+    return aqlExt.parenthesizeList(
+        aql`FOR ${tmpVar}`,
+        aql`IN ${getSimpleFollowEdgeFragment(node, context)}`,
+        aql`FILTER ${tmpVar} != null`,
+        aql`RETURN ${tmpVar}`
+    );
+});
+
+register(CreateEntityQueryNode, (node, context) => {
+    return aqlExt.parenthesizeObject(
+        aql`INSERT ${processNode(node.objectNode, context)} IN ${getCollectionForType(node.rootEntityType, AccessType.WRITE, context)}`,
+        aql`RETURN NEW._key`
+    );
+});
+
+register(UpdateEntitiesQueryNode, (node, context) => {
+    const newContext = context.introduceVariable(node.currentEntityVariable);
+    const entityVar = newContext.getVariable(node.currentEntityVariable);
+    return aqlExt.parenthesizeList(
+        aql`FOR ${entityVar}`,
+        aql`IN ${processNode(node.listNode, context)}`,
+        aql`UPDATE ${entityVar}`,
+        aql`WITH ${processNode(new ObjectQueryNode(node.updates), newContext)}`,
+        aql`IN ${getCollectionForType(node.rootEntityType, AccessType.WRITE, context)}`,
+        aql`OPTIONS { mergeObjects: false }`,
+        aql`RETURN NEW._key`
+    );
+});
+
+register(DeleteEntitiesQueryNode, (node, context) => {
+    const entityVar = aql.variable(decapitalize(node.rootEntityType.name));
+    return aqlExt.parenthesizeList(
+        aql`FOR ${entityVar}`,
+        aql`IN ${processNode(node.listNode, context)}`,
+        aql`REMOVE ${entityVar}`,
+        aql`IN ${getCollectionForType(node.rootEntityType, AccessType.WRITE, context)}`,
+        aql`RETURN OLD`
+    );
+});
+
+register(AddEdgesQueryNode, (node, context) => {
+    const edgeVar = aql.variable('edge');
+    return aqlExt.parenthesizeList(
+        aql`FOR ${edgeVar}`,
+        aql`IN [ ${aql.join(node.edges.map(edge => formatEdge(node.relation, edge, context)), aql`, `)} ]`,
+        aql`UPSERT { _from: ${edgeVar}._from, _to: ${edgeVar}._to }`, // need to unpack avoid dynamic property names in UPSERT example filter
+        aql`INSERT ${edgeVar}`,
+        aql`UPDATE {}`,
+        aql`IN ${getCollectionForRelation(node.relation, AccessType.WRITE, context)}`
+    );
+});
+
+register(RemoveEdgesQueryNode, (node, context) => {
+    const edgeVar = aql.variable('edge');
+    return aqlExt.parenthesizeList(
+        aql`FOR ${edgeVar}`,
+        aql`IN ${getCollectionForRelation(node.relation, AccessType.READ, context)}`,
+        aql`FILTER ${formatEdgeFilter(node.relation, node.edgeFilter, edgeVar, context)}`,
+        aql`REMOVE ${edgeVar}`,
+        aql`IN ${getCollectionForRelation(node.relation, AccessType.WRITE, context)}`
+    );
+});
+
+register(SetEdgeQueryNode, (node, context) => {
+    const edgeVar = aql.variable('edge');
+    return aqlExt.parenthesizeList(
+        aql`UPSERT ${formatEdge(node.relation, node.existingEdge, context)}`,
+        aql`INSERT ${formatEdge(node.relation, node.newEdge, context)}`,
+        aql`UPDATE ${formatEdge(node.relation, node.newEdge, context)}`,
+        aql`IN ${getCollectionForRelation(node.relation, AccessType.WRITE, context)}`
+    );
+});
 
 /**
  * Gets an aql fragment that evaluates to a string of the format "collectionName/objectKey", given a query node that
@@ -515,7 +518,7 @@ function getFullIDFromKeyFragment(keyFragment: AQLFragment, rootEntityType: Root
     return aql`CONCAT(${getCollectionNameForRootEntity(rootEntityType) + '/'}, ${keyFragment})`;
 }
 
-function formatEdge(relation: Relation, edge: PartialEdgeIdentifier|EdgeIdentifier, context: QueryContext): AQLFragment {
+function formatEdge(relation: Relation, edge: PartialEdgeIdentifier | EdgeIdentifier, context: QueryContext): AQLFragment {
     const conditions = [];
     if (edge.fromIDNode) {
         conditions.push(aql`_from: ${getFullIDFromKeyNode(edge.fromIDNode, relation.fromType, context)}`);
@@ -539,7 +542,7 @@ function formatEdgeFilter(relation: Relation, edge: EdgeFilter, edgeFragment: AQ
     return aql.join(conditions, aql` && `);
 }
 
-function getAQLOperator(op: BinaryOperator): AQLFragment|undefined {
+function getAQLOperator(op: BinaryOperator): AQLFragment | undefined {
     switch (op) {
         case BinaryOperator.AND:
             return aql`&&`;
@@ -591,17 +594,12 @@ function generateSortAQL(orderBy: OrderSpecification, context: QueryContext): AQ
     return aql`SORT ${aql.join(clauses, aql`, `)}`;
 }
 
-const processorMap: {[name: string]: NodeProcessor<any>} = {};
-for (const processorName in processors) {
-    processorMap[processorName + 'QueryNode'] = processors[processorName];
-}
-
 function processNode(node: QueryNode, context: QueryContext): AQLFragment {
-    const type = node.constructor.name;
-    if (!(type in processorMap)) {
-        throw new Error(`Unsupported query type: ${type}`);
+    const processor = processors.get(node.constructor as Constructor<QueryNode>);
+    if (!processor) {
+        throw new Error(`Unsupported query type: ${node.constructor}`);
     }
-    return processorMap[type](node, context);
+    return processor(node, context);
 }
 
 // TODO I think AQLCompoundQuery (AQL transaction node) should not be the exported type

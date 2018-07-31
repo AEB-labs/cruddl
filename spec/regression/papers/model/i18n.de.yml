@@ -1,0 +1,28 @@
+i18n:
+  en:
+    types:
+      Paper:
+        singular: Paper
+        plural: Papers
+        hint: A scientific paper written by a scientist
+        fields:
+          title:
+            label: Title
+            hint: The big headline of the paper
+    fields:
+      createdAt:
+        label: Created at
+        hint: When the paper was inserted into this system
+      updatedAt: Updated at
+      id: ID
+  de:
+    types:
+      Paper:
+        singular: Paper
+        hint: Ein wissenschaftliches Paper
+        fields:
+          title: Title
+    fields:
+      createdAt: Angelegt am
+      updatedAt: Upgedatet am
+      id: ID

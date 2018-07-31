@@ -1,19 +1,18 @@
-import { FieldConfig, ObjectTypeConfig } from '../config';
-import { TypeBase } from './type-base';
-import { Field } from './field';
-import { ObjectType } from './type';
-import { Model } from './model';
-import { ValidationContext } from '../validation/validation-context';
-import { ValidationMessage } from '../validation';
-import { objectValues } from '../../utils/utils';
 import { groupBy } from 'lodash';
+import { objectValues } from '../../utils/utils';
+import { FieldConfig, ObjectTypeConfig } from '../config';
+import { ValidationContext, ValidationMessage } from '../validation';
+import { Field } from './field';
+import { Model } from './model';
+import { ObjectType } from './type';
+import { TypeBase } from './type-base';
 
 export abstract class ObjectTypeBase extends TypeBase {
     readonly fields: ReadonlyArray<Field>;
     private readonly fieldMap: ReadonlyMap<string, Field>;
 
-    protected constructor(input: ObjectTypeConfig, public readonly model: Model, systemFieldInputs: ReadonlyArray<FieldConfig> = []) {
-        super(input);
+    protected constructor(input: ObjectTypeConfig, model: Model, systemFieldInputs: ReadonlyArray<FieldConfig> = []) {
+        super(input, model);
         const thisAsObjectType: ObjectType = this as any;
         const customFields = (input.fields || []).map(field => new Field(field, thisAsObjectType));
         const systemFields = (systemFieldInputs || []).map(input => new Field({...input, isSystemField: true}, thisAsObjectType));

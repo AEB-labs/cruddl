@@ -1,15 +1,17 @@
 import { GraphQLString } from 'graphql';
-import { ScalarType, TypeKind } from '../../../src/model';
+import { Model, ScalarType, TypeKind } from '../../../src/model';
 import { expectSingleErrorToInclude, expectSingleWarningToInclude, expectToBeValid } from './validation-utils';
 
 // This test uses a ScalarType because that is a concrete class without much addition to TypeBase
 describe('Type', () => {
     describe('with name', () => {
+        const model = new Model({types:[]});
+
         it('accepts simple type', () => {
             const type = new ScalarType({
                 kind: TypeKind.SCALAR,
                 name: 'Delivery'
-            }, GraphQLString);
+            }, model, GraphQLString);
 
             expectToBeValid(type);
         });
@@ -18,7 +20,7 @@ describe('Type', () => {
             const type = new ScalarType({
                 kind: TypeKind.SCALAR,
                 name: ''
-            }, GraphQLString);
+            }, model, GraphQLString);
 
             expectSingleErrorToInclude(type, `Type name is empty.`);
         });
@@ -27,7 +29,7 @@ describe('Type', () => {
             const type = new ScalarType({
                 kind: TypeKind.SCALAR,
                 name: 'This_Is_Ugly'
-            }, GraphQLString);
+            }, model, GraphQLString);
 
             expectSingleWarningToInclude(type, `Type names should not include underscores.`);
         });
@@ -36,7 +38,7 @@ describe('Type', () => {
             const type = new ScalarType({
                 kind: TypeKind.SCALAR,
                 name: '_Internal'
-            }, GraphQLString);
+            }, model, GraphQLString);
             expectSingleErrorToInclude(type, `Type names cannot start with an underscore.`);
         });
 
@@ -44,7 +46,7 @@ describe('Type', () => {
             const type = new ScalarType({
                 kind: TypeKind.SCALAR,
                 name: 'thisIsNotATypeName'
-            }, GraphQLString);
+            }, model, GraphQLString);
 
             expectSingleWarningToInclude(type, `Type names should start with an uppercase character.`);
         });

@@ -1,10 +1,11 @@
 import { GraphQLScalarType } from 'graphql';
+import { Model } from './model';
 import { TypeBase } from './type-base';
 import { ScalarTypeConfig, TypeKind } from '../config';
 
 export class ScalarType extends TypeBase {
-    constructor(input: ScalarTypeConfig, public readonly graphQLScalarType: GraphQLScalarType) {
-        super(input);
+    constructor(input: ScalarTypeConfig, model: Model, public readonly graphQLScalarType: GraphQLScalarType) {
+        super(input, model);
     }
 
     readonly isObjectType: false = false;

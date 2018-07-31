@@ -5,10 +5,11 @@ import { flatMap, objectValues } from '../../utils/utils';
 import { ModelConfig, TypeKind } from '../config';
 import { ValidationMessage, ValidationResult } from '../validation';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
-import { builtInTypeNames, builtInTypes } from './built-in-types';
+import { builtInTypeNames, createBuiltInTypes } from './built-in-types';
 import { ChildEntityType } from './child-entity-type';
 import { EntityExtensionType } from './entity-extension-type';
 import { EnumType } from './enum-type';
+import { ModelI18n } from './i18n';
 import { Namespace } from './namespace';
 import { createPermissionMap, PermissionProfile, PermissionProfileMap } from './permission-profile';
 import { Relation } from './relation';
@@ -19,26 +20,32 @@ import { ValueObjectType } from './value-object-type';
 
 export class Model implements ModelComponent {
     private readonly typeMap: ReadonlyMap<string, Type>;
+    private readonly builtInTypes: ReadonlyArray<Type>;
 
     readonly rootNamespace: Namespace;
     readonly namespaces: ReadonlyArray<Namespace>;
     readonly types: ReadonlyArray<Type>;
     readonly permissionProfiles: PermissionProfileMap;
+    readonly i18n: ModelI18n;
 
     constructor(private input: ModelConfig) {
         this.permissionProfiles = createPermissionMap(input.permissionProfiles);
+        this.builtInTypes = createBuiltInTypes(this);
         this.types = [
-            ...builtInTypes,
+            ...this.builtInTypes,
             ...input.types.map(typeInput => createType(typeInput, this))
         ];
         this.rootNamespace = new Namespace(undefined, [], this.rootEntityTypes);
         this.namespaces = [this.rootNamespace, ...this.rootNamespace.descendantNamespaces];
         this.typeMap = new Map(this.types.map((type): [string, Type] => ([type.name, type])));
         this.autoExtendDescriptions();
+        this.i18n = new ModelI18n(input.i18n || [], this);
     }
 
     validate(context = new ValidationContext()): ValidationResult {
         this.validateDuplicateTypes(context);
+
+        this.i18n.validate(context);
 
         for (const type of this.types) {
             type.validate(context);
@@ -54,7 +61,7 @@ export class Model implements ModelComponent {
         const duplicateTypes = objectValues(groupBy(this.types, type => type.name)).filter(types => types.length > 1);
         for (const types of duplicateTypes) {
             for (const type of types) {
-                if (builtInTypes.includes(type)) {
+                if (this.builtInTypes.includes(type)) {
                     // don't report errors for built-in types
                     continue;
                 }
@@ -87,7 +94,7 @@ export class Model implements ModelComponent {
     }
 
     getTypeOrFallback(name: string): Type {
-        return this.typeMap.get(name) || new InvalidType(name);
+        return this.typeMap.get(name) || new InvalidType(name, this);
     }
 
     getTypeOrThrow(name: string): Type {
