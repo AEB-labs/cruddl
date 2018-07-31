@@ -47,14 +47,13 @@ export class UpdateFilterInputField implements UpdateInputField {
 }
 
 export class BasicUpdateInputField implements UpdateInputField {
-    readonly description: string|undefined;
 
     constructor(
         public readonly field: Field,
         public readonly inputType: GraphQLInputType | UpdateObjectInputType,
-        public readonly name = field.name
+        public readonly name = field.name,
+        public readonly description = field.description
     ) {
-        this.description = this.field.description;
     }
 
     getProperties(value: AnyValue, currentEntityNode: QueryNode): ReadonlyArray<SetFieldQueryNode> {

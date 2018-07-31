@@ -52,7 +52,7 @@ mutation createWithNull {
 }
 
 mutation createWithValue {
-    createDelivery(input: { dgInfo: { unNumber: "1234" } }) {
+    createDelivery(input: {deliveryNumber: "Test", dgInfo: { unNumber: "1234" } }) {
         dgInfo {
             unNumber
             notices

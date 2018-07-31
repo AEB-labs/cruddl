@@ -15,8 +15,12 @@ export interface CreateInputField extends TypedInputFieldBase<CreateInputField> 
 export class BasicCreateInputField implements CreateInputField {
     constructor(
         public readonly field: Field,
+        public _description: string | undefined,
         public readonly inputType: GraphQLInputType | CreateObjectInputType
     ) {
+        if (!_description) {
+            this._description = this.field.description;
+        }
     }
 
     get name() {
@@ -24,7 +28,7 @@ export class BasicCreateInputField implements CreateInputField {
     }
 
     get description() {
-        return this.field.description;
+        return this._description;
     }
 
     getProperties(value: AnyValue) {
@@ -76,7 +80,7 @@ export class CreateObjectInputField extends BasicCreateInputField {
         public readonly objectInputType: CreateObjectInputType,
         inputType?: GraphQLInputType
     ) {
-        super(field, inputType || objectInputType.getInputType());
+        super(field, undefined, inputType || objectInputType.getInputType());
     }
 
     protected coerceValue(value: AnyValue): AnyValue {
@@ -102,7 +106,7 @@ export class ObjectListCreateInputField extends BasicCreateInputField {
         field: Field,
         public readonly objectInputType: CreateObjectInputType
     ) {
-        super(field, new GraphQLList(new GraphQLNonNull(objectInputType.getInputType())));
+        super(field, undefined, new GraphQLList(new GraphQLNonNull(objectInputType.getInputType())));
     }
 
     protected coerceValue(value: AnyValue): AnyValue {

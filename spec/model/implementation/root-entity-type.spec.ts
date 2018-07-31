@@ -1,5 +1,5 @@
 import { Model, RootEntityType, Severity, TypeKind } from '../../../src/model';
-import { expectSingleErrorToInclude, expectToBeValid, validate } from './validation-utils';
+import { expectMultipleMessagesToInclude, expectSingleErrorToInclude, expectToBeValid, validate } from './validation-utils';
 import { expect } from 'chai';
 
 describe('RootEntityType', () => {
@@ -119,7 +119,7 @@ describe('RootEntityType', () => {
                 keyFieldName: 'address'
             }, model);
 
-            expectSingleErrorToInclude(type, `Only fields of type "String", "Int", and "ID" can be used as key field.`);
+            expectMultipleMessagesToInclude(type, `Only fields of type "String", "Int", and "ID" can be used as key field.`, Severity.Error, 2);
         });
     });
 

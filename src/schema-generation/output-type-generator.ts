@@ -3,7 +3,7 @@ import { sortBy } from 'lodash';
 import memorize from 'memorize-decorator';
 import { FieldRequest } from '../graphql/query-distiller';
 import { isListType } from '../graphql/schema-utils';
-import { Field, ObjectType, Type } from '../model';
+import { Field, ObjectType, Type, TypeKind } from '../model';
 import {
     NullQueryNode, ObjectQueryNode, PropertySpecification, QueryNode, UnaryOperationQueryNode, UnaryOperator
 } from '../query-tree';
@@ -55,7 +55,22 @@ export class OutputTypeGenerator {
     }
 
     private getFields(objectType: ObjectType): ReadonlyArray<QueryNodeField> {
-        const fields = flatMap(objectType.fields, field => this.createFields(field));
+        const origFields = [...objectType.fields];
+        origFields.filter(field => field.isReference);
+
+        const fields = flatMap(objectType.fields, field => {
+            const nodeFields = this.createFields(field);
+            if (field.isReference) {
+                const type = field.type;
+                if (type.kind === TypeKind.ROOT_ENTITY) {
+                    nodeFields.forEach(nf => {
+                        nf.description = (field.description ? field.description + '\n\n' : '') + 'This field references a `' + type.name + '` by its `' + (type.keyField ? type.keyField.name : 'key') + '` field';
+                    });
+                }
+            }
+            return nodeFields;
+        });
+
 
         // include cursor fields in all types that could occur in lists
         const specialFields = objectType.isEntityExtensionType ? [] : [
@@ -85,7 +100,7 @@ export class OutputTypeGenerator {
 
         // force the absolute-order-behavior we normally only have if the 'first' argument is present
         // so one can use a _cursor value from a query without orderBy as 'after' argument without orderBy.
-        const clauses = getOrderByValues(listFieldRequest.args, orderByType, {forceAbsoluteOrder: true});
+        const clauses = getOrderByValues(listFieldRequest.args, orderByType, { forceAbsoluteOrder: true });
         const sortedClauses = sortBy(clauses, clause => clause.name);
         const objectNode = new ObjectQueryNode(sortedClauses.map(clause =>
             new PropertySpecification(clause.underscoreSeparatedPath, clause.getValueNode(itemNode))));

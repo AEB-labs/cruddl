@@ -30,9 +30,20 @@ export class RootEntityType extends ObjectTypeBase {
     constructor(private readonly input: RootEntityTypeConfig, model: Model) {
         super(input, model, systemFieldInputs);
         this.keyField = input.keyFieldName != undefined ? this.getField(input.keyFieldName) : undefined;
-        this.indices = (input.indices || []).map(index => new Index(index, this));
+        this.indices = this.aggregateIndices(input);
         this.permissions = input.permissions || {};
         this.roles = input.permissions && input.permissions.roles ? new RolesSpecifier(input.permissions.roles) : undefined;
+    }
+
+    private aggregateIndices(input: RootEntityTypeConfig) {
+        const indices = (input.indices || []).map(index => new Index(index, this));
+        if (this.keyField && !this.keyField.isList) {
+            const currentKeyIndices = indices.filter(f => f.unique && f.fields.length == 1 && f.fields[0].field === this.keyField);
+            if (currentKeyIndices.length == 0) {
+                indices.push(new Index({ unique: true, fields: [this.keyField.name] }, this));
+            }
+        }
+        return indices;
     }
 
     getKeyFieldOrThrow(): Field {

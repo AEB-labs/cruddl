@@ -10,6 +10,7 @@ type Delivery @rootEntity @roles(readWrite: ["allusers"]) {
     items: [DeliveryItem]
     "The handling units the items of this delivery are packaged in"
     handlingUnits: [HandlingUnit] @relation
+    "The country to where the delivery should be shipped"
     destinationCountry: Country @reference
     shippedAt: DateTime
 
