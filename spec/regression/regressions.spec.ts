@@ -29,6 +29,7 @@ describe('regression tests', async () => {
                 const suite = new RegressionSuite(suitePath, options);
                 describe(suiteName, () => {
                     for (const testName of suite.getTestNames()) {
+
                         it(testName, async () => {
                             const {expectedResult, actualResult} = await suite.runTest(testName);
                             expect(actualResult).to.deep.equal(expectedResult);

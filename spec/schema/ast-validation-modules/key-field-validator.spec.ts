@@ -51,13 +51,16 @@ describe('key field validator', () => {
     });
 
     it('disallows keys on fields which are not String or Int', () => {
-        assertValidatorRejects(`
+        const validationResult = validate(`
             type Stuff @rootEntity {
                 foo: String
                 bar: JSON @key
             }
-        `,
-            'Only fields of type "String", "Int", and "ID" can be used as key field.');
+        `);
+        expect(validationResult.hasErrors()).to.be.true;
+        expect(validationResult.getErrors().length, validationResult.toString()).to.equal(2);
+        const message = validationResult.getErrors().find(m => m.message.indexOf('Only fields of type "String", "Int", and "ID" can be used as key field.')>=0);
+        expect(message).to.not.be.undefined;
     });
 
     it('accepts correct key usage', () => {
