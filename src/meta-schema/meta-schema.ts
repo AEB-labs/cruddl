@@ -6,6 +6,8 @@ import { EnumValue } from '../model/implementation/enum-type';
 import { compact } from '../utils/utils';
 import { I18N_GENERIC, I18N_LOCALE_LANGUAGE, I18N_WARNING } from './constants';
 
+const resolutionOrderDescription = JSON.stringify('The order in which languages and other localization providers are queried for a localization. You can specify languages as defined in the schema as well as the following special identifiers:\n\n- `LOCALE_LANGUAGE`: The language defined by the GraphQL request\n- `WARNING`: writes a warning to the logger if no localization could be retrieved from previous resolution order\n- `GENERIC`: is auto-generated localization from field and type names (e. G. `orderDate` => `Order date`)\n\nThe default `resolutionOrder` is `["_LOCALE_LANG", "_WARNING", "_GENERIC"]` (if not specified).');
+
 const typeDefs = gql`
     enum TypeKind {
         ROOT_ENTITY, CHILD_ENTITY, ENTITY_EXTENSION, VALUE_OBJECT, ENUM, SCALAR
@@ -35,9 +37,9 @@ const typeDefs = gql`
 
         "Relation information, if \`isRelation\` is \`true\`, \`null\` otherwise"
         relation: Relation
+        
         localization(
-            " Order of localization resolution. Can contain languages from yaml/json or special features like '_LOCALE_LANG', see documentation. "
-            resolutionOrder: [String]
+            ${resolutionOrderDescription} resolutionOrder: [String]
         ): FieldLocalization
     }
 
@@ -64,8 +66,7 @@ const typeDefs = gql`
         kind: TypeKind!
         description: String
         localization(
-            " Order of localization resolution. Can contain languages from yaml/json or special features like '_LOCALE_LANG', see documentation. "
-            resolutionOrder: [String]
+            ${resolutionOrderDescription} resolutionOrder: [String]
         ): TypeLocalization
     }
 
@@ -75,8 +76,7 @@ const typeDefs = gql`
         description: String
         fields: [Field!]!
         localization(
-            " Order of localization resolution. Can contain languages from yaml/json or special features like '_LOCALE_LANG', see documentation. "
-            resolutionOrder: [String]
+            ${resolutionOrderDescription} resolutionOrder: [String]
         ): TypeLocalization
     }
 
@@ -103,8 +103,7 @@ const typeDefs = gql`
         """
         relations: [Relation!]!
         localization(
-            " Order of localization resolution. Can contain languages from yaml/json or special features like '_LOCALE_LANG', see documentation. "
-            resolutionOrder: [String]
+            ${resolutionOrderDescription} resolutionOrder: [String]
         ): TypeLocalization
     }
 
@@ -114,8 +113,7 @@ const typeDefs = gql`
         description: String
         fields: [Field!]!
         localization(
-            " Order of localization resolution. Can contain languages from yaml/json or special features like '_LOCALE_LANG', see documentation. "
-            resolutionOrder: [String]
+            ${resolutionOrderDescription} resolutionOrder: [String]
         ): TypeLocalization
     }
 
@@ -125,8 +123,7 @@ const typeDefs = gql`
         description: String
         fields: [Field!]!
         localization(
-            " Order of localization resolution. Can contain languages from yaml/json or special features like '_LOCALE_LANG', see documentation. "
-            resolutionOrder: [String]
+            ${resolutionOrderDescription} resolutionOrder: [String]
         ): TypeLocalization
     }
 
@@ -136,8 +133,7 @@ const typeDefs = gql`
         description: String
         fields: [Field!]!
         localization(
-            " Order of localization resolution. Can contain languages from yaml/json or special features like '_LOCALE_LANG', see documentation. "
-            resolutionOrder: [String]
+            ${resolutionOrderDescription} resolutionOrder: [String]
         ): TypeLocalization
     }
 
@@ -146,8 +142,7 @@ const typeDefs = gql`
         kind: TypeKind!
         description: String
         localization(
-            " Order of localization resolution. Can contain languages from yaml/json or special features like '_LOCALE_LANG', see documentation. "
-            resolutionOrder: [String]
+            ${resolutionOrderDescription} resolutionOrder: [String]
         ): TypeLocalization
     }
 
@@ -157,8 +152,7 @@ const typeDefs = gql`
         description: String
         values: [EnumValue!]!
         localization(
-            " Order of localization resolution. Can contain languages from yaml/json or special features like '_LOCALE_LANG', see documentation. "
-            resolutionOrder: [String]
+            ${resolutionOrderDescription} resolutionOrder: [String]
         ): TypeLocalization
     }
 
@@ -166,8 +160,7 @@ const typeDefs = gql`
         value: String!
         description: String
         localization(
-            " Order of localization resolution. Can contain languages from yaml/json or special features like '_LOCALE_LANG', see documentation. "
-            resolutionOrder: [String]
+            ${resolutionOrderDescription} resolutionOrder: [String]
         ): EnumValueLocalization
     }
 

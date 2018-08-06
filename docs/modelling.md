@@ -1,6 +1,6 @@
 # Modelling guide
 
-A cruddl project consists of one or multiple [GraphQL schema](http://graphql.org/learn/schema/) files and, optionally, metadata files in JSON format. A simple example can look like this:
+A cruddl project consists of one or multiple [GraphQL schema](http://graphql.org/learn/schema/) files and, optionally, metadata files in JSON or YAML format. A simple example can look like this:
 
 ```typescript
 import { Project } from 'cruddl';
