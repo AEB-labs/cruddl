@@ -10,6 +10,8 @@ i18n:
             label: Name
             hint: The name of the hero
           age: age
+      DateTime:
+        singular: Date and time
     fields:
       createdAt:
         label: Created at

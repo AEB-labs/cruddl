@@ -63,6 +63,10 @@ const typeDefs = gql`
         name: String!
         kind: TypeKind!
         description: String
+        localization(
+            " Order of localization resolution. Can contain languages from yaml/json or special features like '_LOCALE_LANG', see documentation. "
+            resolutionOrder: [String]
+        ): TypeLocalization
     }
 
     interface ObjectType {
@@ -141,6 +145,10 @@ const typeDefs = gql`
         name: String!
         kind: TypeKind!
         description: String
+        localization(
+            " Order of localization resolution. Can contain languages from yaml/json or special features like '_LOCALE_LANG', see documentation. "
+            resolutionOrder: [String]
+        ): TypeLocalization
     }
 
     type EnumType implements Type {
@@ -148,6 +156,10 @@ const typeDefs = gql`
         kind: TypeKind!
         description: String
         values: [EnumValue!]!
+        localization(
+            " Order of localization resolution. Can contain languages from yaml/json or special features like '_LOCALE_LANG', see documentation. "
+            resolutionOrder: [String]
+        ): TypeLocalization
     }
 
     type EnumValue {
@@ -312,8 +324,7 @@ export function getMetaSchema(model: Model): GraphQLSchema {
             __resolveType: type => resolveType(type as Type)
         },
         ObjectType: {
-            __resolveType: type => resolveType(type as Type),
-            localization: localizeType
+            __resolveType: type => resolveType(type as Type)
         },
         RootEntityType: {
             localization: localizeType
@@ -325,6 +336,12 @@ export function getMetaSchema(model: Model): GraphQLSchema {
             localization: localizeType
         },
         ValueObjectType: {
+            localization: localizeType
+        },
+        ScalarType: {
+            localization: localizeType
+        },
+        EnumType: {
             localization: localizeType
         },
         Field: {
