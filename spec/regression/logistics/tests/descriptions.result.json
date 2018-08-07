@@ -1307,7 +1307,7 @@
             },
             {
               "name": "destinationCountry",
-              "description": "Filters the through `isoCode` referenced Countries that fulfisls the given requirements.\n\n Checks if `destinationCountry` is not null, and allows to filter based on its fields."
+              "description": "Filters the through `isoCode` referenced Countries that fulfills the given requirements.\n\n Checks if `destinationCountry` is not null, and allows to filter based on its fields."
             },
             {
               "name": "shippedAt",
