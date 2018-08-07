@@ -4,9 +4,9 @@ import { IResolvers, makeExecutableSchema } from 'graphql-tools';
 import { Field, Model, RootEntityType, Type, TypeKind } from '../model';
 import { EnumValue } from '../model/implementation/enum-type';
 import { compact } from '../utils/utils';
-import { I18N_GENERIC, I18N_LOCALE_LANGUAGE, I18N_WARNING } from './constants';
+import { I18N_GENERIC, I18N_LOCALE, I18N_WARNING } from './constants';
 
-const resolutionOrderDescription = JSON.stringify('The order in which languages and other localization providers are queried for a localization. You can specify languages as defined in the schema as well as the following special identifiers:\n\n- `LOCALE_LANGUAGE`: The language defined by the GraphQL request\n- `WARNING`: writes a warning to the logger if no localization could be retrieved from previous resolution order\n- `GENERIC`: is auto-generated localization from field and type names (e. G. `orderDate` => `Order date`)\n\nThe default `resolutionOrder` is `["_LOCALE_LANG", "_WARNING", "_GENERIC"]` (if not specified).');
+const resolutionOrderDescription = JSON.stringify('The order in which languages and other localization providers are queried for a localization. You can specify languages as defined in the schema as well as the following special identifiers:\n\n- `_LOCALE`: The language defined by the GraphQL request\n- `_WARNING`: writes a warning to the logger if no localization could be retrieved from previous resolution order\n- `_GENERIC`: is auto-generated localization from field and type names (e. G. `orderDate` => `Order date`)\n\nThe default `resolutionOrder` is `["_LOCALE", "_WARNING", "_GENERIC"]` (if not specified).');
 
 const typeDefs = gql`
     enum TypeKind {
@@ -283,7 +283,7 @@ const typeDefs = gql`
 `;
 
 export interface I18nSchemaContextPart {
-    locale_language: string
+    locale: string
 }
 
 /**
@@ -293,7 +293,7 @@ export interface I18nSchemaContextPart {
  * @returns {GraphQLSchema} an executable GraphQLSchema which allows to query the meat schema.
  */
 export function getMetaSchema(model: Model): GraphQLSchema {
-    const resolvers: IResolvers<{}, { locale_language: string }> = {
+    const resolvers: IResolvers<{}, { locale: string }> = {
         Query: {
             types: () => model.types,
             type: (_, {name}) => model.getType(name),
@@ -348,10 +348,10 @@ export function getMetaSchema(model: Model): GraphQLSchema {
     function getResolutionOrder(resolutionOrder: ReadonlyArray<string> | undefined, context: I18nSchemaContextPart) {
         // default resolutionOrder
         if (!resolutionOrder) {
-            resolutionOrder = [I18N_LOCALE_LANGUAGE, I18N_WARNING, I18N_GENERIC];
+            resolutionOrder = [I18N_LOCALE, I18N_WARNING, I18N_GENERIC];
         }
-        // replace locale_language
-        return compact(resolutionOrder.map(l => l === I18N_LOCALE_LANGUAGE ? context.locale_language : l));
+        // replace _LOCALE
+        return compact(resolutionOrder.map(l => l === I18N_LOCALE ? context.locale : l));
     }
 
     function localizeType(type: {}, {resolutionOrder}: { resolutionOrder?: ReadonlyArray<string> }, context: I18nSchemaContextPart) {

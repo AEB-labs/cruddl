@@ -55,7 +55,7 @@ export async function startMetaServer(model: Model) {
     const metaSchemaPort = port+1;
     const metaSchemaServer = new GraphQLServer({
         schema: getMetaSchema(model),
-        context: { locale_language: 'en' }
+        context: { locale: 'en' }
     });
     expressServerReference = await metaSchemaServer.start({port: metaSchemaPort});
     logger.info(`Meta-Schema-Server started on http://localhost:${metaSchemaPort}`);
