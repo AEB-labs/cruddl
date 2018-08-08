@@ -1,16 +1,15 @@
-import { ArangoDBConfig } from '../../src/database/arangodb/arangodb-adapter';
 import { Database } from 'arangojs';
-import {ExecutionResult, graphql, GraphQLSchema} from 'graphql';
 import * as fs from 'fs';
+import { ExecutionResult, graphql, GraphQLSchema } from 'graphql';
+import { ArangoDBConfig } from '../../src/database/arangodb/arangodb-adapter';
 import stripJsonComments = require('strip-json-comments');
-import {NAMESPACE_SEPARATOR} from "../../src/schema/constants";
 
 const DATABASE_NAME = 'cruddl-test-temp';
 const DATABASE_URL = 'http://root:@localhost:8529';
 
 export async function createTempDatabase(): Promise<ArangoDBConfig> {
     const db = new Database({
-        url: DATABASE_URL,
+        url: DATABASE_URL
     });
     const dbs = await db.listDatabases();
     if (dbs.indexOf(DATABASE_NAME) >= 0) {
@@ -23,17 +22,25 @@ export async function createTempDatabase(): Promise<ArangoDBConfig> {
     return {
         url: DATABASE_URL,
         databaseName: DATABASE_NAME
-    }
+    };
 }
 
 export async function dropTempDatabase(): Promise<void> {
     const db = new Database({
-        url: DATABASE_URL,
+        url: DATABASE_URL
     });
     const dbs = await db.listDatabases();
     if (dbs.indexOf(DATABASE_NAME) >= 0) {
-        await db.dropDatabase(DATABASE_NAME)
+        await db.dropDatabase(DATABASE_NAME);
     }
+}
+
+export function getTempDatabase(): Database {
+    const db = new Database({
+        url: DATABASE_URL
+    });
+    db.useDatabase(DATABASE_NAME);
+    return db;
 }
 
 export interface TestDataEnvironment {
@@ -45,8 +52,8 @@ export async function initTestData(path: string, schema: GraphQLSchema): Promise
     const ids = new Map<string, string>();
 
     function fillTemplateStrings(data: any): any {
-        if (typeof data == "string") {
-            const exprs = [ /@\{ids\/([\w\.]+)\/(\w*)}/g, /@ids\/([\w\.]+)\/(\w*)/g ];
+        if (typeof data == 'string') {
+            const exprs = [/@\{ids\/([\w\.]+)\/(\w*)}/g, /@ids\/([\w\.]+)\/(\w*)/g];
             let result = data;
             for (const expr of exprs) {
                 result = result.replace(expr, (_, collection, localID) => {
@@ -107,11 +114,13 @@ export async function initTestData(path: string, schema: GraphQLSchema): Promise
      }
      }*/
 
-    return { fillTemplateStrings };
+    return {fillTemplateStrings};
 }
 
 function wrapNamespaceForQuery(stuff: string, namespace: string[]) {
-    if (!namespace) { return stuff }
+    if (!namespace) {
+        return stuff;
+    }
     let result = stuff;
     for (const namespacePart of [...namespace].reverse()) {
         result = `${namespacePart} { ${ result } }`;
