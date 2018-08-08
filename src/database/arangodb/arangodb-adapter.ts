@@ -16,15 +16,24 @@ export interface ArangoDBConfig {
     readonly user?: string;
     readonly password?: string;
     readonly databaseName: string;
+
+    /**
+     * Specifies if indices defined in the model should be created in updateSchema(). Defaults to true.
+     */
     readonly autocreateIndices?: boolean;
+
+    /**
+     * Specifies if indices that are not defined in the model (but are on collections of root entities defined in the
+     * model) should be removed in updateSchema(). Defaults to true.
+     */
     readonly autoremoveIndices?: boolean;
 }
 
 export class ArangoDBAdapter implements DatabaseAdapter {
-    private db: Database;
-    private logger: Logger;
-    readonly autocreateIndices?: boolean;
-    readonly autoremoveIndices?: boolean;
+    private readonly db: Database;
+    private readonly logger: Logger;
+    private readonly autocreateIndices: boolean;
+    private readonly autoremoveIndices: boolean;
     private readonly arangoExecutionFunction: string;
 
     constructor(config: ArangoDBConfig, private schemaContext?: SchemaContext) {
@@ -45,8 +54,8 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         }
 
         this.arangoExecutionFunction = this.buildUpArangoExecutionFunction();
-        this.autocreateIndices = config.autocreateIndices;
-        this.autoremoveIndices = config.autoremoveIndices;
+        this.autocreateIndices = config.autocreateIndices !== false; // defaults to true
+        this.autoremoveIndices = config.autoremoveIndices !== false; // defaults to true
     }
 
     /**
@@ -171,7 +180,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
 
         const createIndicesPromises = indicesToCreate.map(indexToCreate => {
             const collection = getCollectionNameForRootEntity(indexToCreate.rootEntity);
-            if (this.autocreateIndices !== false) {
+            if (this.autocreateIndices) {
                 this.logger.info(`Creating ${ indexToCreate.unique ? 'unique ' : ''}index on collection ${collection} on ${indexToCreate.fields.length > 1 ? 'fields' : 'field'} '${indexToCreate.fields.join(',')}'`);
                 return this.db.collection(collection).createIndex({
                     fields: indexToCreate.fields,

@@ -6,94 +6,117 @@ import { createTempDatabase, getTempDatabase } from '../../regression/initializa
 
 describe('ArangoDBAdapter', () => {
     describe('updateSchema', () => {
-        describe('indices', () => {
-            it('creates new indices', async function () { // can't use arrow function because we need the "this"
-                if (isArangoDBDisabled()) {
-                    (this as any).skip();
-                    return;
+        it('it creates and removes indices', async function () { // can't use arrow function because we need the "this"
+            if (isArangoDBDisabled()) {
+                (this as any).skip();
+                return;
+            }
+
+            const model = createSimpleModel(gql`
+                type Delivery @rootEntity {
+                    deliveryNumber: String @key
+                    isShipped: Boolean @index
+                    itemCount: Int @index
                 }
+            `);
 
-                const model = createSimpleModel(gql`
-                    type Delivery @rootEntity {
-                        deliveryNumber: String @key
-                        isShipped: Boolean @index
-                        itemCount: Int @index
-                    }
-                `);
+            const adapter = new ArangoDBAdapter(await createTempDatabase());
+            const db = getTempDatabase();
 
-                const adapter = new ArangoDBAdapter(await createTempDatabase());
-                const db = getTempDatabase();
+            await db.collection('deliveries').create({});
 
-                await db.collection('deliveries').create({});
-
-                // add an index that completely fits
-                await db.collection('deliveries').createIndex({
-                    fields: ['itemCount'],
-                    sparse: false,
-                    unique: false,
-                    type: 'persistent'
-                });
-
-                // add an index that *almost* fits
-                await db.collection('deliveries').createIndex({
-                    fields: ['deliveryNumber'],
-                    sparse: false,
-                    unique: true,
-                    type: 'persistent'
-                });
-
-                await adapter.updateSchema(model);
-
-                const indices = await db.collection('deliveries').indexes();
-                expect(indices.map(index => ({
-                    fields: index.fields,
-                    sparse: index.sparse,
-                    type: index.type,
-                    unique: index.unique
-                }))).to.deep.equal([
-                    {
-                        fields: [
-                            '_key'
-                        ],
-                        sparse: false,
-                        type: 'primary',
-                        unique: true
-                    },
-                    {
-                        fields: [
-                            'itemCount'
-                        ],
-                        sparse: false,
-                        type: 'persistent',
-                        unique: false
-                    },
-                    // this one already existed before and is kept
-                    {
-                        fields: [
-                            'deliveryNumber'
-                        ],
-                        sparse: false,
-                        type: 'persistent',
-                        unique: true
-                    },
-                    {
-                        fields: [
-                            'isShipped'
-                        ],
-                        sparse: false,
-                        type: 'persistent',
-                        unique: false
-                    },
-                    {
-                        fields: [
-                            'deliveryNumber'
-                        ],
-                        sparse: true,
-                        type: 'persistent',
-                        unique: true
-                    }
-                ]);
+            // add an index that completely fits
+            await db.collection('deliveries').createIndex({
+                fields: ['itemCount'],
+                sparse: false,
+                unique: false,
+                type: 'persistent'
             });
+
+            // add an index that *almost* fits. Will be removed
+            await db.collection('deliveries').createIndex({
+                fields: ['deliveryNumber'],
+                sparse: false,
+                unique: true,
+                type: 'persistent'
+            });
+
+            // add an index on a different collection. Will be kept.
+            await db.collection('second').create({});
+            await db.collection('second').createIndex({
+                fields: ['test'],
+                sparse: false,
+                unique: true,
+                type: 'persistent'
+            });
+
+            await adapter.updateSchema(model);
+
+            const indices = await db.collection('deliveries').indexes();
+            expect(indices.map(index => ({
+                fields: index.fields,
+                sparse: index.sparse,
+                type: index.type,
+                unique: index.unique
+            }))).to.deep.equal([
+                {
+                    fields: [
+                        '_key'
+                    ],
+                    sparse: false,
+                    type: 'primary',
+                    unique: true
+                },
+                {
+                    fields: [
+                        'itemCount'
+                    ],
+                    sparse: false,
+                    type: 'persistent',
+                    unique: false
+                },
+                {
+                    fields: [
+                        'isShipped'
+                    ],
+                    sparse: false,
+                    type: 'persistent',
+                    unique: false
+                },
+                {
+                    fields: [
+                        'deliveryNumber'
+                    ],
+                    sparse: true,
+                    type: 'persistent',
+                    unique: true
+                }
+            ]);
+
+            const indicesOnOtherCollection = await db.collection('second').indexes();
+            expect(indicesOnOtherCollection.map(index => ({
+                fields: index.fields,
+                sparse: index.sparse,
+                type: index.type,
+                unique: index.unique
+            }))).to.deep.equal([
+                {
+                    fields: [
+                        '_key'
+                    ],
+                    sparse: false,
+                    type: 'primary',
+                    unique: true
+                },
+                {
+                    fields: [
+                        'test'
+                    ],
+                    sparse: false,
+                    type: 'persistent',
+                    unique: true
+                }
+            ]);
         });
     });
 });
