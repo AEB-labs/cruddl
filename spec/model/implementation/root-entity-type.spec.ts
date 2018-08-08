@@ -1,40 +1,54 @@
-import { Model, RootEntityType, Severity, TypeKind } from '../../../src/model';
-import { expectMultipleMessagesToInclude, expectSingleErrorToInclude, expectToBeValid, validate } from './validation-utils';
 import { expect } from 'chai';
+import { Model, RootEntityType, Severity, TypeKind } from '../../../src/model';
+import {
+    expectMultipleMessagesToInclude, expectSingleErrorToInclude, expectToBeValid, validate
+} from './validation-utils';
 
 describe('RootEntityType', () => {
     const modelWithoutDefaultProfile = new Model({
-        types: [{
-            name: 'Address',
-            kind: TypeKind.VALUE_OBJECT,
-            fields: [{
-                name: 'name',
-                typeName: 'String'
-            }]
-        }]
+        types: [
+            {
+                name: 'Address',
+                kind: TypeKind.VALUE_OBJECT,
+                fields: [
+                    {
+                        name: 'name',
+                        typeName: 'String'
+                    }
+                ]
+            }
+        ]
     });
 
     const model = new Model({
-        types: [{
-            name: 'Address',
-            kind: TypeKind.VALUE_OBJECT,
-            fields: [{
-                name: 'name',
-                typeName: 'String'
-            }]
-        }],
+        types: [
+            {
+                name: 'Address',
+                kind: TypeKind.VALUE_OBJECT,
+                fields: [
+                    {
+                        name: 'name',
+                        typeName: 'String'
+                    }
+                ]
+            }
+        ],
         permissionProfiles: {
             default: {
-                permissions: [{
-                    roles: ['everyone'],
-                    access: 'read'
-                }]
+                permissions: [
+                    {
+                        roles: ['everyone'],
+                        access: 'read'
+                    }
+                ]
             },
             accounting: {
-                permissions: [{
-                    roles: ['accounting'],
-                    access: 'read'
-                }]
+                permissions: [
+                    {
+                        roles: ['accounting'],
+                        access: 'read'
+                    }
+                ]
             }
         }
     });
@@ -113,13 +127,91 @@ describe('RootEntityType', () => {
                 fields: [
                     {
                         name: 'address',
-                        typeName: 'Address',
+                        typeName: 'Address'
                     }
                 ],
                 keyFieldName: 'address'
             }, model);
 
             expectMultipleMessagesToInclude(type, `Only fields of type "String", "Int", and "ID" can be used as key field.`, Severity.Error, 2);
+        });
+
+        it('creates a unique index for it', () => {
+            const type = new RootEntityType({
+                kind: TypeKind.ROOT_ENTITY,
+                name: 'Delivery',
+                fields: [
+                    {
+                        name: 'deliveryNumber',
+                        typeName: 'String'
+                    },
+                    {
+                        name: 'isShipped',
+                        typeName: 'Boolean'
+                    }
+                ],
+                keyFieldName: 'deliveryNumber',
+                indices: [
+                    {
+                        fields: ['isShipped']
+                    }
+                ]
+            }, model);
+
+            expect(type.indices).to.have.lengthOf(2);
+            expect(type.indices[0].fields.map(f => f.dotSeparatedPath)).to.deep.equal(['isShipped']);
+            expect(type.indices[0].unique).to.equal(false);
+            expect(type.indices[1].fields.map(f => f.dotSeparatedPath)).to.deep.equal(['deliveryNumber']);
+            expect(type.indices[1].unique).to.equal(true);
+        });
+
+        it('does not add a unique index if it already exists', () => {
+            const type = new RootEntityType({
+                kind: TypeKind.ROOT_ENTITY,
+                name: 'Delivery',
+                fields: [
+                    {
+                        name: 'deliveryNumber',
+                        typeName: 'String'
+                    }
+                ],
+                keyFieldName: 'deliveryNumber',
+                indices: [
+                    {
+                        fields: ['deliveryNumber'],
+                        unique: true
+                    }
+                ]
+            }, model);
+
+            expect(type.indices).to.have.lengthOf(1);
+            expect(type.indices[0].fields.map(f => f.dotSeparatedPath)).to.deep.equal(['deliveryNumber']);
+            expect(type.indices[0].unique).to.equal(true);
+        });
+
+        it('adds an index if the existing one is not unique', () => {
+            const type = new RootEntityType({
+                kind: TypeKind.ROOT_ENTITY,
+                name: 'Delivery',
+                fields: [
+                    {
+                        name: 'deliveryNumber',
+                        typeName: 'String'
+                    }
+                ],
+                keyFieldName: 'deliveryNumber',
+                indices: [
+                    {
+                        fields: ['deliveryNumber']
+                    }
+                ]
+            }, model);
+
+            expect(type.indices).to.have.lengthOf(2);
+            expect(type.indices[0].fields.map(f => f.dotSeparatedPath)).to.deep.equal(['deliveryNumber']);
+            expect(type.indices[0].unique).to.equal(false);
+            expect(type.indices[1].fields.map(f => f.dotSeparatedPath)).to.deep.equal(['deliveryNumber']);
+            expect(type.indices[1].unique).to.equal(true);
         });
     });
 
@@ -128,10 +220,12 @@ describe('RootEntityType', () => {
             const type = new RootEntityType({
                 kind: TypeKind.ROOT_ENTITY,
                 name: 'Delivery',
-                fields: [{
-                    name: 'deliveryNumber',
-                    typeName: 'String'
-                }],
+                fields: [
+                    {
+                        name: 'deliveryNumber',
+                        typeName: 'String'
+                    }
+                ],
                 permissions: {
                     permissionProfileName: 'accounting'
                 }
@@ -150,13 +244,15 @@ describe('RootEntityType', () => {
             const type = new RootEntityType({
                 kind: TypeKind.ROOT_ENTITY,
                 name: 'Delivery',
-                fields: [{
-                    name: 'deliveryNumber',
-                    typeName: 'String'
-                }],
+                fields: [
+                    {
+                        name: 'deliveryNumber',
+                        typeName: 'String'
+                    }
+                ],
                 permissions: {
                     roles: {
-                        read: [ 'accounting' ]
+                        read: ['accounting']
                     }
                 }
             }, model);
@@ -168,13 +264,15 @@ describe('RootEntityType', () => {
             const type = new RootEntityType({
                 kind: TypeKind.ROOT_ENTITY,
                 name: 'Delivery',
-                fields: [{
-                    name: 'deliveryNumber',
-                    typeName: 'String'
-                }],
+                fields: [
+                    {
+                        name: 'deliveryNumber',
+                        typeName: 'String'
+                    }
+                ],
                 permissions: {
                     roles: {
-                        read: [ 'accounting' ]
+                        read: ['accounting']
                     },
                     permissionProfileName: 'accounting'
                 }
@@ -192,10 +290,12 @@ describe('RootEntityType', () => {
             const type = new RootEntityType({
                 kind: TypeKind.ROOT_ENTITY,
                 name: 'Delivery',
-                fields: [{
-                    name: 'deliveryNumber',
-                    typeName: 'String'
-                }],
+                fields: [
+                    {
+                        name: 'deliveryNumber',
+                        typeName: 'String'
+                    }
+                ],
                 permissions: {
                     permissionProfileName: 'undefined'
                 }
@@ -208,10 +308,12 @@ describe('RootEntityType', () => {
             const type = new RootEntityType({
                 kind: TypeKind.ROOT_ENTITY,
                 name: 'Delivery',
-                fields: [{
-                    name: 'deliveryNumber',
-                    typeName: 'String'
-                }]
+                fields: [
+                    {
+                        name: 'deliveryNumber',
+                        typeName: 'String'
+                    }
+                ]
             }, modelWithoutDefaultProfile);
 
             expectSingleErrorToInclude(type, `No permissions specified for root entity "Delivery". Specify "permissionProfile" in @rootEntity, use the @roles directive, or add a permission profile with the name "default".`);
@@ -221,10 +323,12 @@ describe('RootEntityType', () => {
             const type = new RootEntityType({
                 kind: TypeKind.ROOT_ENTITY,
                 name: 'Delivery',
-                fields: [{
-                    name: 'deliveryNumber',
-                    typeName: 'String'
-                }]
+                fields: [
+                    {
+                        name: 'deliveryNumber',
+                        typeName: 'String'
+                    }
+                ]
             }, model);
 
             expectToBeValid(type);
@@ -234,10 +338,12 @@ describe('RootEntityType', () => {
             const type = new RootEntityType({
                 kind: TypeKind.ROOT_ENTITY,
                 name: 'Delivery',
-                fields: [{
-                    name: 'deliveryNumber',
-                    typeName: 'String'
-                }]
+                fields: [
+                    {
+                        name: 'deliveryNumber',
+                        typeName: 'String'
+                    }
+                ]
             }, model);
 
             expect(type.permissionProfile).to.equal(model.getPermissionProfileOrThrow('default'));
@@ -247,14 +353,14 @@ describe('RootEntityType', () => {
             const type = new RootEntityType({
                 kind: TypeKind.ROOT_ENTITY,
                 name: 'Delivery',
-                fields: [{
-                    name: 'deliveryNumber',
-                    typeName: 'String'
-                }],
-                permissions: {
-                    roles: {
-
+                fields: [
+                    {
+                        name: 'deliveryNumber',
+                        typeName: 'String'
                     }
+                ],
+                permissions: {
+                    roles: {}
                 }
             }, model);
 
