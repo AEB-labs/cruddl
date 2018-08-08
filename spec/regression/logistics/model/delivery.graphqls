@@ -1,6 +1,6 @@
 "A delivery"
 type Delivery @rootEntity @roles(readWrite: ["allusers"]) {
-    deliveryNumber: String @key
+    deliveryNumber: String @key @unique # leave this here to catch this case, too (has caused a bug)
     "The list of serial numbers associated with this delivery"
     serialNumbers: [String]
     "The address of the delivery's consignee"
