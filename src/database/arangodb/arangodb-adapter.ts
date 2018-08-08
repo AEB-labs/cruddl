@@ -176,6 +176,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                 return this.db.collection(collection).createIndex({
                     fields: indexToCreate.fields,
                     unique: indexToCreate.unique,
+                    sparse: indexToCreate.sparse,
                     type: DEFAULT_INDEX_TYPE
                 });
             } else {
