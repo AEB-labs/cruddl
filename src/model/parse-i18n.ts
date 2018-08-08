@@ -29,7 +29,7 @@ function normalizeTypeConfig(typeConfigs: { [name: string]: TypeLocalizationConf
         return {};
     }
     return mapValues(typeConfigs, (typeConfig, key) => {
-        const typeYamlPath = curYamlPath + key;
+        const typeYamlPath = curYamlPath + '/' + key;
         return ({
             singular: typeConfig.singular,
             plural: typeConfig.plural,
