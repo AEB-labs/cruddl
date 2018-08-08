@@ -1,9 +1,14 @@
 import { DocumentNode, getLocation, GraphQLError, GraphQLSchema, parse } from 'graphql';
+import { parse as JSONparse } from 'json-source-map';
 import { compact } from 'lodash';
+import {
+    Kind, load, YAMLAnchorReference, YamlMap, YAMLMapping, YAMLNode, YAMLScalar, YAMLSequence
+} from 'yaml-ast-parser';
 import { globalContext } from '../config/global';
 import { ParsedProject, ParsedProjectSource, ParsedProjectSourceBaseKind } from '../config/parsed-project';
 import { DatabaseAdapter } from '../database/database-adapter';
 import { createModel, Model, Severity, SourcePosition, ValidationMessage, ValidationResult } from '../model';
+import { MessageLocation } from '../model/';
 import { ValidationContext } from '../model/validation';
 import { Project } from '../project/project';
 import { ProjectSource, SourceType } from '../project/source';
@@ -13,18 +18,15 @@ import { validateParsedProjectSource, validatePostMerge, validateSource } from '
 import {
     executePreMergeTransformationPipeline, executeSchemaTransformationPipeline, SchemaTransformationContext
 } from './preparation/transformation-pipeline';
-import { parse as JSONparse } from 'json-source-map';
-import stripJsonComments = require('strip-json-comments');
-import { Kind, load, YAMLAnchorReference, YamlMap, YAMLMapping, YAMLNode, YAMLScalar, YAMLSequence } from 'yaml-ast-parser';
-import { MessageLocation } from '../model/';
 import { getLineEndPosition } from './schema-utils';
 import jsonLint = require('json-lint');
+import stripJsonComments = require('strip-json-comments');
 
 /**
  * Validates a project and thus determines whether createSchema() would succeed
  */
 export function validateSchema(project: Project): ValidationResult {
-    globalContext.registerContext({ loggerProvider: project.loggerProvider });
+    globalContext.registerContext({loggerProvider: project.loggerProvider});
     try {
         return validateAndPrepareSchema(project).validationResult;
     } finally {
@@ -45,7 +47,7 @@ function validateAndPrepareSchema(project: Project): { validationResult: Validat
         return [source];
     });
 
-    const parsedProject = parseProject(new Project({ ...project, sources }), validationContext);
+    const parsedProject = parseProject(new Project({...project, sources}), validationContext);
 
     parsedProject.sources.forEach(parsedSource => validationContext.addMessage(...validateParsedProjectSource(parsedSource).messages));
 
@@ -59,7 +61,7 @@ function validateAndPrepareSchema(project: Project): { validationResult: Validat
     validationContext.addMessage(...result.messages);
     validationContext.addMessage(...model.validate().messages);
 
-    return { validationResult: validationContext.asResult(), model };
+    return {validationResult: validationContext.asResult(), model};
 }
 
 /**
@@ -69,11 +71,11 @@ function validateAndPrepareSchema(project: Project): { validationResult: Validat
  Use the optional context to inject your logging framework.
  */
 export function createSchema(project: Project, databaseAdapter: DatabaseAdapter): GraphQLSchema {
-    globalContext.registerContext({ loggerProvider: project.loggerProvider });
+    globalContext.registerContext({loggerProvider: project.loggerProvider});
     try {
         const logger = globalContext.loggerProvider.getLogger('schema-builder');
 
-        const { validationResult, model } = validateAndPrepareSchema(project);
+        const {validationResult, model} = validateAndPrepareSchema(project);
         if (validationResult.hasErrors()) {
             throw new Error('Project has errors:\n' + validationResult.toString());
         }
@@ -95,9 +97,9 @@ export function createSchema(project: Project, databaseAdapter: DatabaseAdapter)
 
 
 export function getModel(project: Project): Model {
-    globalContext.registerContext({ loggerProvider: project.loggerProvider });
+    globalContext.registerContext({loggerProvider: project.loggerProvider});
     try {
-        const { model } = validateAndPrepareSchema(project);
+        const {model} = validateAndPrepareSchema(project);
         return model;
     } finally {
         globalContext.unregisterContext();
@@ -105,7 +107,7 @@ export function getModel(project: Project): Model {
 }
 
 function mergeSchemaDefinition(parsedProject: ParsedProject): DocumentNode {
-    const emptyDocument: DocumentNode = { kind: 'Document', definitions: [] };
+    const emptyDocument: DocumentNode = {kind: 'Document', definitions: []};
     const graphqlDocuments = parsedProject.sources.map(s => {
         if (s.kind === ParsedProjectSourceBaseKind.GRAPHQL) {
             return s.document;
@@ -150,16 +152,20 @@ export function parseProjectSource(projectSource: ProjectSource, validationConte
 
             root.errors.forEach(error => {
                 const severity = error.isWarning ? Severity.Warning : Severity.Error;
-                const endPos = getLineEndPosition(error.mark.line+1, projectSource);
+                const endPos = getLineEndPosition(error.mark.line + 1, projectSource);
                 validationContext.addMessage(new ValidationMessage(severity, error.reason, new MessageLocation(projectSource, new SourcePosition(error.mark.position, error.mark.line + 1, error.mark.column + 1), endPos)));
             });
 
-            if(root.errors.some(error => !error.isWarning)){
+            if (root.errors.some(error => !error.isWarning)) {
                 // returning undefined will lead to ignoring this source file in future steps
                 return undefined;
             }
 
-            const yamlData = extractJSONFromYAML(root);
+            const yamlData = extractJSONFromYAML(root, validationContext, projectSource);
+
+            if (yamlData === undefined) {
+                return undefined;
+            }
 
             const pathLocationMap = extractMessageLocationsFromYAML(root, projectSource);
 
@@ -172,33 +178,40 @@ export function parseProjectSource(projectSource: ProjectSource, validationConte
         case SourceType.JSON:
             let data = {} as PlainObject;
 
+            if (projectSource.body === '') {
+                return undefined;
+            }
+
             // perform general JSON syntax check
-            const result = jsonLint(projectSource.body, { comments: true });
-            if (result.error) {
-                let loc: MessageLocation|undefined;
-                if (typeof result.line == 'number' && typeof result.i == 'number' && typeof result.character == 'number') {
-                    loc = new MessageLocation(projectSource, result.i, projectSource.body.length);
+            const lintResult = jsonLint(projectSource.body, {comments: true});
+            if (lintResult.error) {
+                let loc: MessageLocation | undefined;
+                if (typeof lintResult.line == 'number' && typeof lintResult.i == 'number' && typeof lintResult.character == 'number') {
+                    loc = new MessageLocation(projectSource, lintResult.i, projectSource.body.length);
                 }
-                validationContext.addMessage(ValidationMessage.error(result.error, loc));
+                validationContext.addMessage(ValidationMessage.error(lintResult.error, loc));
+                // returning undefined will lead to ignoring this source file in future steps
+                return undefined;
             }
 
             // parse JSON
             const jsonPathLocationMap: { [path: string]: MessageLocation } = {};
 
-            try {
-                // whitespace: true replaces non-whitespace in comments with spaces so that the sourcemap still matches
-                const bodyWithoutComments = stripJsonComments(projectSource.body, { whitespace: true });
-                const result = JSONparse(bodyWithoutComments);
-                const pointers = result.pointers;
+            // whitespace: true replaces non-whitespace in comments with spaces so that the sourcemap still matches
+            const bodyWithoutComments = stripJsonComments(projectSource.body, {whitespace: true});
+            const parseResult = JSONparse(bodyWithoutComments);
+            const pointers = parseResult.pointers;
 
-                for (const key in pointers) {
-                    const pointer = pointers[key];
-                    jsonPathLocationMap[key] = new MessageLocation(projectSource, pointer.value.pos, pointer.valueEnd.pos);
-                }
+            for (const key in pointers) {
+                const pointer = pointers[key];
+                jsonPathLocationMap[key] = new MessageLocation(projectSource, pointer.value.pos, pointer.valueEnd.pos);
+            }
 
-                data = result.data;
-            } catch (e) {
-                // returning undefined will lead to ignoring this source file in future steps
+            data = parseResult.data;
+
+            // arrays are not forbidden by json-lint
+            if (Array.isArray(data)) {
+                validationContext.addMessage(ValidationMessage.error(`JSON file should define an object (is array)`, new MessageLocation(projectSource, 0, projectSource.body.length)));
                 return undefined;
             }
 
@@ -210,8 +223,8 @@ export function parseProjectSource(projectSource: ProjectSource, validationConte
             };
         case SourceType.GRAPHQLS:
             let document: DocumentNode;
-            try{
-                document = parse(projectSource.toGraphQLSource())
+            try {
+                document = parse(projectSource.toGraphQLSource());
             } catch (e) {
                 if (e instanceof GraphQLError) {
                     const message = getMessageFromGraphQLSyntaxError(e);
@@ -242,11 +255,11 @@ function getNamespaceFromSourceName(name: string): ReadonlyArray<string> {
  * @param {ProjectSource} source containing valid YAML (returns error if source is not valid)
  * @returns {{[p: string]: MessageLocation}} a map of paths to message locations
  */
-function extractMessageLocationsFromYAML(root: YAMLNode, source:ProjectSource): { [path: string]: MessageLocation } {
+function extractMessageLocationsFromYAML(root: YAMLNode, source: ProjectSource): { [path: string]: MessageLocation } {
 
     const result = extractAllPaths(root, [] as ReadonlyArray<(string | number)>);
     let messageLocations: { [path: string]: MessageLocation } = {};
-    result.forEach(val => messageLocations['/'+val.path.join('/')] = new MessageLocation(source, val.node.startPosition, val.node.endPosition));
+    result.forEach(val => messageLocations['/' + val.path.join('/')] = new MessageLocation(source, val.node.startPosition, val.node.endPosition));
 
     return messageLocations;
 }
@@ -268,7 +281,7 @@ function extractAllPaths(node: YAMLNode, curPath: ReadonlyArray<(string | number
             const mappingNode = node as YAMLMapping;
             if (mappingNode.value) {
                 return [
-                    { path: [...curPath, mappingNode.key.value], node: mappingNode },
+                    {path: [...curPath, mappingNode.key.value], node: mappingNode},
                     ...extractAllPaths(mappingNode.value, [...curPath, mappingNode.key.value])
                 ];
             }
@@ -276,9 +289,9 @@ function extractAllPaths(node: YAMLNode, curPath: ReadonlyArray<(string | number
         case Kind.SCALAR:
             const scalarNode = node as YAMLScalar;
             if (scalarNode.parent && scalarNode.parent.kind == Kind.SEQ) {
-                return [{ path: curPath, node: scalarNode }];
+                return [{path: curPath, node: scalarNode}];
             } else {
-                return [{ path: curPath, node: scalarNode.parent }];
+                return [{path: curPath, node: scalarNode.parent}];
             }
         case Kind.SEQ:
             const seqNode = node as YAMLSequence;
@@ -290,29 +303,35 @@ function extractAllPaths(node: YAMLNode, curPath: ReadonlyArray<(string | number
             const refNode = node as YAMLAnchorReference;
             return extractAllPaths(refNode.value, [...curPath]);
     }
-    return [{ path: curPath, node: node }];
+    return [{path: curPath, node: node}];
 }
 
-export function extractJSONFromYAML(root: YAMLNode): PlainObject {
+export function extractJSONFromYAML(root: YAMLNode, validationContext: ValidationContext, source: ProjectSource): PlainObject | undefined {
 
-    const result = recursiveObjectExtraction(root, {});
-    if (typeof result === 'object') {
-        return result as PlainObject;
-    } else {
-        throw new Error('Provided YAML does not have an object type on root level.');
+    const result = recursiveObjectExtraction(root, {}, validationContext, source);
+    if (typeof result !== 'object') {
+        validationContext.addMessage(ValidationMessage.error(`YAML file should define an object (is ${typeof result})`, new MessageLocation(source, 0, source.body.length)));
+        return undefined;
     }
+
+    if (Array.isArray(result)) {
+        validationContext.addMessage(ValidationMessage.error(`YAML file should define an object (is array)`, new MessageLocation(source, 0, source.body.length)));
+        return undefined;
+    }
+
+    return result as PlainObject;
 }
 
-function recursiveObjectExtraction(node: YAMLNode|undefined, object: PlainObject): any {
+function recursiveObjectExtraction(node: YAMLNode | undefined, object: PlainObject, validationContext: ValidationContext, source: ProjectSource): any {
     // ATTENTION: Typings of the yaml ast parser are wrong
-    if(!node){
+    if (!node) {
         return object;
     }
     switch (node.kind) {
         case Kind.MAP:
             const mapNode = node as YamlMap;
             mapNode.mappings.forEach(val => {
-                object[val.key.value] = recursiveObjectExtraction(val.value, {});
+                object[val.key.value] = recursiveObjectExtraction(val.value, {}, validationContext, source);
             });
             return object;
         case Kind.MAPPING:
@@ -327,10 +346,13 @@ function recursiveObjectExtraction(node: YAMLNode|undefined, object: PlainObject
             }
         case Kind.SEQ:
             const seqNode = node as YAMLSequence;
-            return seqNode.items.map(val => recursiveObjectExtraction(val, {}));
+            return seqNode.items.map(val => recursiveObjectExtraction(val, {}, validationContext, source));
         case Kind.INCLUDE_REF:
+            validationContext.addMessage(ValidationMessage.error(`Include references are not supported`, new MessageLocation(source, node.startPosition, node.endPosition)));
+            return undefined;
         case Kind.ANCHOR_REF:
-            throw new Error('No support for parsing include references and anchor references.');
+            validationContext.addMessage(ValidationMessage.error(`Anchor references are not supported`, new MessageLocation(source, node.startPosition, node.endPosition)));
+            return undefined;
     }
     throw new Error('An error occured while parsing the YAML file');
 }
@@ -343,7 +365,7 @@ function getMessageFromGraphQLSyntaxError(error: GraphQLError): string {
     return error.message;
 }
 
-function getGraphQLMessageLocation(error: GraphQLError): MessageLocation|undefined {
+function getGraphQLMessageLocation(error: GraphQLError): MessageLocation | undefined {
     if (!error.source || !error.locations || !error.locations.length || !error.positions || !error.positions.length) {
         return undefined;
     }
