@@ -170,10 +170,10 @@ const schemaJSON = JSON.parse(`{
             }
           }
         },
-        "singular": {
+        "label": {
           "type": "string"
         },
-        "plural": {
+        "labelPlural": {
           "type": "string"
         },
         "hint": {

@@ -12,8 +12,8 @@ export interface NamespaceLocalizationConfig {
 }
 
 export interface TypeLocalizationConfig {
-    readonly singular?: string
-    readonly plural?: string
+    readonly label?: string
+    readonly labelPlural?: string
     readonly hint?: string
     readonly loc?: MessageLocation
     readonly fields?: { [name: string]: LocalizationBaseConfig }

@@ -41,8 +41,8 @@ i18n:
   en:
     types:
       Skill:
-        singular: Skill
-        plural: Skills
+        label: Skill
+        labelPlural: Skills
         hint: Something you are good at.
         fields:
           description:
@@ -172,7 +172,7 @@ i18n:
   en:
     types:
       Foo:
-        singular: Test
+        label: Test
         `;
 
         const validationContext = new ValidationContext();

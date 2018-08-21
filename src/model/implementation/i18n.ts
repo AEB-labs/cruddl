@@ -35,8 +35,8 @@ export class ModelI18n implements ModelComponent {
         const resolutionProviders = this.getResolutionProviders(resolutionOrder);
         // try to build one complete type localization out of the available possibly partial localizations
         return {
-            singular: mapFirstDefined(resolutionProviders, rp => rp.localizeType(type).singular),
-            plural: mapFirstDefined(resolutionProviders, rp => rp.localizeType(type).plural),
+            label: mapFirstDefined(resolutionProviders, rp => rp.localizeType(type).label),
+            labelPlural: mapFirstDefined(resolutionProviders, rp => rp.localizeType(type).labelPlural),
             hint: mapFirstDefined(resolutionProviders, rp => rp.localizeType(type).hint)
         };
     }
@@ -85,8 +85,8 @@ export class NamespaceLocalization {
         }
         const type = this.config.types[name];
         return {
-            singular: type.singular,
-            plural: type.plural,
+            label: type.label,
+            labelPlural: type.labelPlural,
             hint: type.hint,
             loc: type.loc
         };
@@ -151,8 +151,8 @@ export class NamespaceLocalization {
 }
 
 export interface TypeLocalization {
-    readonly singular?: string,
-    readonly plural?: string,
+    readonly label?: string,
+    readonly labelPlural?: string,
     readonly hint?: string,
     readonly loc?: MessageLocation
 }
@@ -192,8 +192,8 @@ class ModelLocalizationProvider implements LocalizationProvider {
         const matchingNamespaces = this.getMatchingNamespaces(type.namespacePath);
         const matchingTypeLocalizations = compact(matchingNamespaces.map(ns => ns.getTypeLocalization(type.name)));
         return {
-            singular: mapFirstDefined(matchingTypeLocalizations, t => t.singular),
-            plural: mapFirstDefined(matchingTypeLocalizations, t => t.plural),
+            label: mapFirstDefined(matchingTypeLocalizations, t => t.label),
+            labelPlural: mapFirstDefined(matchingTypeLocalizations, t => t.labelPlural),
             hint: mapFirstDefined(matchingTypeLocalizations, t => t.hint)
         };
     }
@@ -309,11 +309,11 @@ function checkForDoubleDefinitions(namespaces: ReadonlyArray<NamespaceLocalizati
                 if (typeConf.hint && isExistingAndAdd(type + '/hint', alreadySeen)) {
                     validationContext.addMessage(ValidationMessage.error('The attribute "hint" in type "' + type + '" was defined several times in the i18n translation', typeConf.loc));
                 }
-                if (typeConf.singular && isExistingAndAdd(type + '/singular', alreadySeen)) {
-                    validationContext.addMessage(ValidationMessage.error('The attribute "singular" in type "' + type + '" was defined several times in the i18n translation', typeConf.loc));
+                if (typeConf.label && isExistingAndAdd(type + '/label', alreadySeen)) {
+                    validationContext.addMessage(ValidationMessage.error('The attribute "label" in type "' + type + '" was defined several times in the i18n translation', typeConf.loc));
                 }
-                if (typeConf.plural && isExistingAndAdd(type + '/plural', alreadySeen)) {
-                    validationContext.addMessage(ValidationMessage.error('The attribute "plural" in type "' + type + '" was defined several times in the i18n translation', typeConf.loc));
+                if (typeConf.labelPlural && isExistingAndAdd(type + '/labelPlural', alreadySeen)) {
+                    validationContext.addMessage(ValidationMessage.error('The attribute "labelPlural" in type "' + type + '" was defined several times in the i18n translation', typeConf.loc));
                 }
 
                 if (typeConf && typeConf.fields) {
@@ -362,8 +362,8 @@ class GenericLocalizationProvider implements LocalizationProvider {
 
     localizeType(type: Type): TypeLocalization {
         return {
-            singular: generateGenericName(type.name),
-            plural: GenericLocalizationProvider.generatePluralName(type.name)
+            label: generateGenericName(type.name),
+            labelPlural: GenericLocalizationProvider.generatePluralName(type.name)
         };
     }
 

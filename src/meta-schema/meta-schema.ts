@@ -182,8 +182,8 @@ const typeDefs = gql`
     }
 
     type TypeLocalization {
-        singular: String
-        plural: String
+        label: String
+        labelPlural: String
         hint: String
     }
 

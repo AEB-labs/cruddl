@@ -2,8 +2,8 @@ i18n:
   en:
     types:
       Hero:
-        singular: Hero
-        plural: Heroes
+        label: Hero
+        labelPlural: Heroes
         hint: A brave person with cool features
         fields:
           name:
@@ -11,7 +11,7 @@ i18n:
             hint: The name of the hero
           age: age
       DateTime:
-        singular: Date and time
+        label: Date and time
     fields:
       createdAt:
         label: Created at
@@ -23,8 +23,8 @@ i18n:
   de:
     types:
       Hero:
-        singular: Held
-        plural: Helden
+        label: Held
+        labelPlural: Helden
         hint: Eine mutige Person mit coolen Features
         fields:
           name:

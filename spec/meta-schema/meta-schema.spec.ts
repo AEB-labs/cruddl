@@ -68,7 +68,7 @@ describe('Meta schema API', () => {
 
     const localizationQuery = gql`
         {
-            valueObjectType(name: "Address") {localization{singular plural hint} fields { name localization { label hint } }}
+            valueObjectType(name: "Address") {localization{label labelPlural hint} fields { name localization { label hint } }}
         }
     `;
 
@@ -179,8 +179,8 @@ describe('Meta schema API', () => {
                 namespacePath: [],
                 types: {
                     Address: {
-                        singular: 'Adresse',
-                        plural: 'Adressen',
+                        label: 'Adresse',
+                        labelPlural: 'Adressen',
                         hint: 'Eine Adresse',
                         fields: {
                             street: {
@@ -448,8 +448,8 @@ describe('Meta schema API', () => {
         const result = await execute(localizationQuery);
         const addressType = result!.valueObjectType;
         expect(addressType.localization).to.deep.equal({
-            singular: 'Address',
-            plural: 'Addresses',
+            label: 'Address',
+            labelPlural: 'Addresses',
             hint: null
         });
         const streetField = addressType.fields.find((f: any) => f.name === 'street');
@@ -463,8 +463,8 @@ describe('Meta schema API', () => {
         const result = await execute(localizationQuery, {locale: ['de', 'en']});
         const addressType = result!.valueObjectType;
         expect(addressType.localization).to.deep.equal({
-            singular: 'Adresse',
-            plural: 'Adressen',
+            label: 'Adresse',
+            labelPlural: 'Adressen',
             hint: 'Eine Adresse'
         });
         const streetField = addressType.fields.find((f: any) => f.name === 'street');
