@@ -1,7 +1,5 @@
 import * as pluralize from 'pluralize';
-import { globalContext } from '../../config/global';
-import { I18N_GENERIC, I18N_WARNING } from '../../meta-schema/constants';
-import { NAMESPACE_SEPARATOR } from '../../schema/constants';
+import { I18N_GENERIC } from '../../meta-schema/constants';
 import {
     arrayStartsWith, capitalize, compact, decapitalize, groupArray, mapFirstDefined, mapValues
 } from '../../utils/utils';
@@ -66,8 +64,6 @@ export class ModelI18n implements ModelComponent {
             switch (providerName) {
                 case I18N_GENERIC:
                     return new GenericLocalizationProvider();
-                case I18N_WARNING:
-                    return new WarningLocalizationProvider(resolutionOrder);
                 default:
                     return this.languageLocalizationProvidersByLanguage.get(providerName);
             }
@@ -392,31 +388,4 @@ function generateGenericName(name: string | undefined): string | undefined {
         return undefined;
     }
     return capitalize(name.replace(/([a-z])([A-Z])/g, (str, arg1, arg2) => `${arg1} ${decapitalize(arg2)}`));
-}
-
-class WarningLocalizationProvider implements LocalizationProvider {
-
-    private resolutionOrderWithoutResult: ReadonlyArray<string>;
-
-    constructor(resolutionOrder: ReadonlyArray<string>) {
-        // create a list of all tried languages.
-        this.resolutionOrderWithoutResult = resolutionOrder.slice(0, resolutionOrder.indexOf(I18N_WARNING));
-    }
-
-    logger = globalContext.loggerProvider.getLogger('i18n');
-
-    localizeField(field: Field): FieldLocalization {
-        this.logger.warn(`Missing i18n for field ${field.declaringType.namespacePath.join(NAMESPACE_SEPARATOR)}.${field.declaringType.name}.${field.name} in language: ${this.resolutionOrderWithoutResult.join(', ')}`);
-        return {};
-    }
-
-    localizeType(type: Type): TypeLocalization {
-        this.logger.warn(`Missing i18n for type ${type.namespacePath.join(NAMESPACE_SEPARATOR)}.${type.name} in language: ${this.resolutionOrderWithoutResult.join(', ')}`);
-        return {};
-    }
-
-    localizeEnumValue(enumValue: EnumValue): EnumValueLocalization {
-        this.logger.warn(`Missing i18n for enum value ${enumValue.declaringType.namespacePath.join(NAMESPACE_SEPARATOR)}.${enumValue.declaringType.name}.${enumValue.value} in language: ${this.resolutionOrderWithoutResult.join(', ')}`);
-        return {};
-    }
 }
