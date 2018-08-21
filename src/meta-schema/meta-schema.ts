@@ -3,10 +3,10 @@ import gql from 'graphql-tag';
 import { IResolvers, makeExecutableSchema } from 'graphql-tools';
 import { Field, Model, RootEntityType, Type, TypeKind } from '../model';
 import { EnumValue } from '../model/implementation/enum-type';
-import { compact } from '../utils/utils';
+import { compact, flatMap } from '../utils/utils';
 import { I18N_GENERIC, I18N_LOCALE } from './constants';
 
-const resolutionOrderDescription = JSON.stringify('The order in which languages and other localization providers are queried for a localization. You can specify languages as defined in the schema as well as the following special identifiers:\n\n- `_LOCALE`: The language defined by the GraphQL request\n- `_GENERIC`: is auto-generated localization from field and type names (e. G. `orderDate` => `Order date`)\n\nThe default `resolutionOrder` is `["_LOCALE", "_GENERIC"]` (if not specified).');
+const resolutionOrderDescription = JSON.stringify('The order in which languages and other localization providers are queried for a localization. You can specify languages as defined in the schema as well as the following special identifiers:\n\n- `_LOCALE`: The language defined by the GraphQL request (might be a list of languages, e.g. ["de_DE", "de", "en"])\n- `_GENERIC`: is auto-generated localization from field and type names (e. G. `orderDate` => `Order date`)\n\nThe default `resolutionOrder` is `["_LOCALE", "_GENERIC"]` (if not specified).');
 
 const typeDefs = gql`
     enum TypeKind {
@@ -283,7 +283,7 @@ const typeDefs = gql`
 `;
 
 export interface I18nSchemaContextPart {
-    locale: string
+    locale: string | ReadonlyArray<string>
 }
 
 /**
@@ -351,7 +351,7 @@ export function getMetaSchema(model: Model): GraphQLSchema {
             resolutionOrder = [I18N_LOCALE, I18N_GENERIC];
         }
         // replace _LOCALE
-        return compact(resolutionOrder.map(l => l === I18N_LOCALE ? context.locale : l));
+        return compact(flatMap(resolutionOrder, l => l === I18N_LOCALE ? getLocaleFromContext(context) : [l]));
     }
 
     function localizeType(type: {}, {resolutionOrder}: { resolutionOrder?: ReadonlyArray<string> }, context: I18nSchemaContextPart) {
@@ -370,6 +370,22 @@ export function getMetaSchema(model: Model): GraphQLSchema {
         typeDefs,
         resolvers
     });
+}
+
+function getLocaleFromContext(context: I18nSchemaContextPart): ReadonlyArray<string> {
+    if (!context) {
+        return [];
+    }
+    if (!context.locale) {
+        return [];
+    }
+    if (typeof context.locale === 'string') {
+        return [context.locale];
+    }
+    if (Array.isArray(context.locale)) {
+        return context.locale;
+    }
+    throw new Error(`Unexpected value provided as "locale" property on context: is ${typeof context.locale}`);
 }
 
 function resolveType(type: Type): string {
