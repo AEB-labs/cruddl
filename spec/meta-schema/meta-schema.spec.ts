@@ -190,6 +190,8 @@ describe('Meta schema API', () => {
                 {'name': 'Float', 'kind': 'SCALAR'},
                 {'name': 'JSON', 'kind': 'SCALAR'},
                 {'name': 'DateTime', 'kind': 'SCALAR'},
+                {'name': 'LocalDate', 'kind': 'SCALAR'},
+                {'name': 'LocalTime', 'kind': 'SCALAR'},
                 {
                     'name': 'Address', 'kind': 'VALUE_OBJECT',  'fields': [
                         {
@@ -331,7 +333,7 @@ describe('Meta schema API', () => {
             'valueObjectTypes': [{'name': 'Address'}],
             'scalarTypes': [
                 {'name': 'ID'}, {'name': 'String'}, {'name': 'Boolean'}, {'name': 'Int'}, {'name': 'Float'},
-                {'name': 'JSON'}, {'name': 'DateTime'}
+                {'name': 'JSON'}, {'name': 'DateTime'}, {'name': 'LocalDate'}, {'name': 'LocalTime'}
             ],
             'enumTypes': [
                 {'name': 'TransportKind'}

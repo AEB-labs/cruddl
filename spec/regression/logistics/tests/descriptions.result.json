@@ -146,7 +146,7 @@
         },
         {
           "name": "DateTime",
-          "description": "The `DateTime` scalar type represents a point in time with an optional timezone specifier, in a format specified by ISO 8601.",
+          "description": "The `DateTime` scalar type represents a point in time with an optional timezone specifier, in a format specified by ISO 8601.\n\nNote that values of this type are always sorted by *local time*, even if a timezone specifier is present.\n\nThe time part can currently be omitted, but this may change in the future. Use `LocalDate` to store dates without time.\n\nLeap seconds are currently not supported.",
           "fields": null,
           "inputFields": null
         },
