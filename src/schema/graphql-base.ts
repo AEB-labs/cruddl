@@ -73,5 +73,7 @@ export const DIRECTIVES: DocumentNode = gql`
 
 export const CORE_SCALARS: DocumentNode = gql`
     scalar DateTime
+    scalar LocalDate
+    scalar LocalTime
     scalar JSON
 `;

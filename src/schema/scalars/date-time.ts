@@ -15,7 +15,7 @@ function coerceDateTime(value: any): string {
 export const GraphQLDateTime = new GraphQLScalarType({
     name: 'DateTime',
     description:
-    'The `DateTime` scalar type represents a point in time with an optional timezone specifier, in a format specified by ISO 8601.\n\nThe time part can currently be omitted, but this may change in tue future.',
+    'The `DateTime` scalar type represents a point in time with an optional timezone specifier, in a format specified by ISO 8601.\n\nNote that values of this type are always sorted by *local time*, even if a timezone specifier is present.\n\nThe time part can currently be omitted, but this may change in the future. Use `LocalDate` to store dates without time.\n\nLeap seconds are currently not supported.',
     serialize: coerceDateTime,
     parseValue: coerceDateTime,
     parseLiteral(ast) {

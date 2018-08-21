@@ -6,7 +6,7 @@ describe('GraphQLDateTime', () => {
         '2018-08-21T14:50:00Z',
         '2018-08-21T14:50:00',
         '2018-08-21T14:50:00+04:00',
-        '2018-08-21',
+        '2018-08-21'
     ];
 
     const invalidStrings = [
@@ -15,7 +15,8 @@ describe('GraphQLDateTime', () => {
         '2018-08-21T14:50:00[Europe/Berlin]',
         '2018-08-21+04:00',
         '2018-08-21T+04:00',
-        '14:50:00'
+        '14:50:00',
+        '1981-06-30T23:59:60Z' // leap seconds are currently not supported (may change in the future)
     ];
 
     for (const str of validStrings) {
