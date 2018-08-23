@@ -39,9 +39,6 @@ export const ACCESS_GROUP_FIELD = 'accessGroup';
 export const ENTITY_CREATED_AT = 'createdAt';
 export const ENTITY_UPDATED_AT = 'updatedAt';
 
-export const SCALAR_DATETIME = 'DateTime';
-export const SCALAR_DATE = 'Date';
-export const SCALAR_TIME = 'Time';
 export const SCALAR_JSON = 'JSON';
 export const SCALAR_INT = 'Int';
 export const SCALAR_STRING = 'String';

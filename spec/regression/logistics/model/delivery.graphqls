@@ -26,6 +26,10 @@ type Delivery @rootEntity @roles(readWrite: ["allusers"]) {
     defaultValueFloat: Float @defaultValue(value: 3.14)
     defaultValueEnum: Foobarit @defaultValue(value: Bar)
 
+    pickupDate: LocalDate
+    pickupTimeStart: LocalTime
+    pickupTimeEnd: LocalTime
+
     dynamicData: JSON
 }
 

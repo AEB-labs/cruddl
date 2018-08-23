@@ -7,8 +7,10 @@ import {
     INPUT_FIELD_CONTAINS, INPUT_FIELD_ENDS_WITH, INPUT_FIELD_EQUAL, INPUT_FIELD_EVERY, INPUT_FIELD_GT, INPUT_FIELD_GTE,
     INPUT_FIELD_IN, INPUT_FIELD_LT, INPUT_FIELD_LTE, INPUT_FIELD_NONE, INPUT_FIELD_NOT, INPUT_FIELD_NOT_CONTAINS,
     INPUT_FIELD_NOT_ENDS_WITH, INPUT_FIELD_NOT_IN, INPUT_FIELD_NOT_STARTS_WITH, INPUT_FIELD_SOME,
-    INPUT_FIELD_STARTS_WITH, SCALAR_DATE, SCALAR_TIME
+    INPUT_FIELD_STARTS_WITH
 } from '../../schema/constants';
+import { GraphQLLocalDate } from '../../schema/scalars/local-date';
+import { GraphQLLocalTime } from '../../schema/scalars/local-time';
 
 export const FILTER_OPERATORS: { [suffix: string]: (fieldNode: QueryNode, valueNode: QueryNode) => QueryNode } = {
     [INPUT_FIELD_EQUAL]: binaryOp(BinaryOperator.EQUAL),
@@ -49,8 +51,8 @@ export const FILTER_FIELDS_BY_TYPE: {[name: string]: string[]} = {
     [GraphQLInt.name]: NUMERIC_FILTER_FIELDS,
     [GraphQLFloat.name]: NUMERIC_FILTER_FIELDS,
     [GraphQLDateTime.name]: NUMERIC_FILTER_FIELDS,
-    [SCALAR_DATE]: NUMERIC_FILTER_FIELDS,
-    [SCALAR_TIME]: NUMERIC_FILTER_FIELDS,
+    [GraphQLLocalDate.name]: NUMERIC_FILTER_FIELDS,
+    [GraphQLLocalTime.name]: NUMERIC_FILTER_FIELDS,
     [GraphQLBoolean.name]: [ INPUT_FIELD_EQUAL, INPUT_FIELD_NOT],
 };
 

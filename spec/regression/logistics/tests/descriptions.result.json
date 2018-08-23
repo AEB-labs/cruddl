@@ -146,7 +146,7 @@
         },
         {
           "name": "DateTime",
-          "description": "The `DateTime` scalar type represents a point in time with an optional timezone specifier, in a format specified by ISO 8601.",
+          "description": "The `DateTime` scalar type represents a point in time in UTC, in a format specified by ISO 8601, such as `2007-12-03T10:15:30Z` or `2007-12-03T10:15:30.123Z`.\n\nThis scalar type rejects values without timezone specifier or with a timezone other than UTC. See also `LocalDate` and `LocalTime` for values without timezone specifier. To store Date/time values with timezones other than UTC, define a value object type with the fields you need.\n\nThe second part is added if not specified, e.g. `2007-12-03T12:34Z` is converted to `2007-12-03T12:34:00Z`. Second fraction digits are cut off at the nearest three-digit group, e.g. `2007-12-03T00:00:00.1234Z` is converted to `2007-12-03T00:00:00.123400Z`.\n\nValues with leap seconds are shifted back by one second, but this behavior should not be relied upon.",
           "fields": null,
           "inputFields": null
         },
@@ -662,6 +662,18 @@
             },
             {
               "name": "defaultValueEnum",
+              "description": null
+            },
+            {
+              "name": "pickupDate",
+              "description": null
+            },
+            {
+              "name": "pickupTimeStart",
+              "description": null
+            },
+            {
+              "name": "pickupTimeEnd",
               "description": null
             },
             {
@@ -1614,6 +1626,102 @@
               "description": null
             },
             {
+              "name": "pickupDate",
+              "description": null
+            },
+            {
+              "name": "pickupDate_not",
+              "description": null
+            },
+            {
+              "name": "pickupDate_in",
+              "description": null
+            },
+            {
+              "name": "pickupDate_not_in",
+              "description": null
+            },
+            {
+              "name": "pickupDate_lt",
+              "description": null
+            },
+            {
+              "name": "pickupDate_lte",
+              "description": null
+            },
+            {
+              "name": "pickupDate_gt",
+              "description": null
+            },
+            {
+              "name": "pickupDate_gte",
+              "description": null
+            },
+            {
+              "name": "pickupTimeStart",
+              "description": null
+            },
+            {
+              "name": "pickupTimeStart_not",
+              "description": null
+            },
+            {
+              "name": "pickupTimeStart_in",
+              "description": null
+            },
+            {
+              "name": "pickupTimeStart_not_in",
+              "description": null
+            },
+            {
+              "name": "pickupTimeStart_lt",
+              "description": null
+            },
+            {
+              "name": "pickupTimeStart_lte",
+              "description": null
+            },
+            {
+              "name": "pickupTimeStart_gt",
+              "description": null
+            },
+            {
+              "name": "pickupTimeStart_gte",
+              "description": null
+            },
+            {
+              "name": "pickupTimeEnd",
+              "description": null
+            },
+            {
+              "name": "pickupTimeEnd_not",
+              "description": null
+            },
+            {
+              "name": "pickupTimeEnd_in",
+              "description": null
+            },
+            {
+              "name": "pickupTimeEnd_not_in",
+              "description": null
+            },
+            {
+              "name": "pickupTimeEnd_lt",
+              "description": null
+            },
+            {
+              "name": "pickupTimeEnd_lte",
+              "description": null
+            },
+            {
+              "name": "pickupTimeEnd_gt",
+              "description": null
+            },
+            {
+              "name": "pickupTimeEnd_gte",
+              "description": null
+            },
+            {
               "name": "AND",
               "description": "A field that checks if all filters in the list apply\n\nIf the list is empty, this filter applies to all objects."
             },
@@ -2214,6 +2322,18 @@
         {
           "name": "Foobarit",
           "description": null,
+          "fields": null,
+          "inputFields": null
+        },
+        {
+          "name": "LocalDate",
+          "description": "The `LocalDate` scalar type represents a date without time zone in a format specified by ISO 8601, such as 2007-12-03.",
+          "fields": null,
+          "inputFields": null
+        },
+        {
+          "name": "LocalTime",
+          "description": "The `LocalTime` scalar type represents a time without time zone in a format specified by ISO 8601, such as 10:15:30 or 17:05:03.521.\n\nThe valid range is between 00:00:00 and 23:59:59.999999999. 24:00 is not allowed to avoid bugs in clients that treat 24:00 as 0:00.\n\nThe seconds part is cut off if it is zero, e.g. 12:34:00 is converted to 12:34. Second fraction digits are cut off at the nearest three-digit group, e.g. 00:00:00.1234 is converted to 00:00:00.123400.\n\nLeap seconds can not be specified.",
           "fields": null,
           "inputFields": null
         },
@@ -3272,6 +3392,18 @@
               "description": null
             },
             {
+              "name": "pickupDate",
+              "description": null
+            },
+            {
+              "name": "pickupTimeStart",
+              "description": null
+            },
+            {
+              "name": "pickupTimeEnd",
+              "description": null
+            },
+            {
               "name": "dynamicData",
               "description": null
             }
@@ -3474,6 +3606,18 @@
               "description": null
             },
             {
+              "name": "pickupDate",
+              "description": null
+            },
+            {
+              "name": "pickupTimeStart",
+              "description": null
+            },
+            {
+              "name": "pickupTimeEnd",
+              "description": null
+            },
+            {
               "name": "dynamicData",
               "description": null
             }
@@ -3592,6 +3736,18 @@
             },
             {
               "name": "defaultValueEnum",
+              "description": null
+            },
+            {
+              "name": "pickupDate",
+              "description": null
+            },
+            {
+              "name": "pickupTimeStart",
+              "description": null
+            },
+            {
+              "name": "pickupTimeEnd",
               "description": null
             },
             {
