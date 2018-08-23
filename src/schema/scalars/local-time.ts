@@ -1,30 +1,33 @@
 import { GraphQLScalarType } from 'graphql';
-import moment = require('moment');
+import { LocalTime } from 'js-joda';
 
-function isValidLocalTime(value: any) {
-    return moment(value, 'HH:mm:ss', true).isValid();
+function parseLocalTime(value: any): LocalTime {
+    if (typeof value !== 'string') {
+        throw new Error(`should be a string`);
+    }
+    try {
+        return LocalTime.parse(value);
+    } catch (e) {
+        if (e.name === 'DateTimeParseException') {
+            throw new Error(`Invalid ISO 8601 LocalTime: ${value}`)
+        }
+        throw e;
+    }
 }
 
-function coerceLocalTime(value: any): string {
-    if (!isValidLocalTime(value)) {
-        throw new TypeError(`Invalid ISO 8601 LocalTime: ${value}`);
-    }
-    return value;
+function coerceLocalTime(value: string): string {
+    return parseLocalTime(value).toString();
 }
 
 export const GraphQLLocalTime = new GraphQLScalarType({
     name: 'LocalTime',
-    description: 'The `LocalTime` scalar type represents a time without time zone in a format specified by ISO 8601, such as 10:15:30.\n\nLeap seconds are currently not supported.',
+    description: 'The `LocalTime` scalar type represents a time without time zone in a format specified by ISO 8601, such as 10:15:30 or 17:05:03.521.\n\nThe valid range is between 00:00:00 and 23:59:59.999999999. 24:00 is not allowed to avoid bugs in clients that treat 24:00 as 0:00.\n\nThe seconds part is cut off if it is zero, e.g. 12:34:00 is converted to 12:34. Second fraction digits are cut off at the nearest three-digit group, e.g. 00:00:00.1234 is converted to 00:00:00.123400.\n\nLeap seconds can not be specified.',
     serialize: coerceLocalTime,
     parseValue: coerceLocalTime,
     parseLiteral(ast) {
-        if (ast.kind === 'StringValue') {
-            const value = ast.value;
-            if (isValidLocalTime(value)) {
-                return value;
-            }
-            throw new TypeError(`Invalid ISO 8601 LocalTime: ${value}`);
+        if (ast.kind !== 'StringValue') {
+            throw new Error('LocalTime must be specified as String value');
         }
-        throw new TypeError('LocalTime must be specified as String value');
+        return coerceLocalTime(ast.value);
     }
 });

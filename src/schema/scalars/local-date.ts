@@ -1,15 +1,22 @@
 import { GraphQLScalarType } from 'graphql';
-import moment = require('moment');
+import { LocalDate } from 'js-joda';
 
-function isValidLocalDate(value: any) {
-    return moment(value, 'YYYY-MM-DD', true).isValid();
+function parseLocalDate(value: any): LocalDate {
+    if (typeof value !== 'string') {
+        throw new Error(`should be a string`);
+    }
+    try {
+        return LocalDate.parse(value);
+    } catch (e) {
+        if (e.name === 'DateTimeParseException') {
+            throw new Error(`Invalid ISO 8601 LocalDate: ${value}`)
+        }
+        throw e;
+    }
 }
 
-function coerceLocalDate(value: any): string {
-    if (!isValidLocalDate(value)) {
-        throw new TypeError(`Invalid ISO 8601 LocalDate: ${value}`);
-    }
-    return value;
+function coerceLocalDate(value: string): string {
+    return parseLocalDate(value).toString();
 }
 
 export const GraphQLLocalDate = new GraphQLScalarType({
@@ -18,13 +25,9 @@ export const GraphQLLocalDate = new GraphQLScalarType({
     serialize: coerceLocalDate,
     parseValue: coerceLocalDate,
     parseLiteral(ast) {
-        if (ast.kind === 'StringValue') {
-            const value = ast.value;
-            if (isValidLocalDate(value)) {
-                return value;
-            }
-            throw new TypeError(`Invalid ISO 8601 LocalDate: ${value}`);
+        if (ast.kind !== 'StringValue') {
+            throw new Error('LocalDate must be specified as String value');
         }
-        throw new TypeError('LocalDate must be specified as String value');
+        return coerceLocalDate(ast.value);
     }
 });
