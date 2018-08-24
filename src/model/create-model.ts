@@ -1,6 +1,7 @@
 import {
     ArgumentNode, EnumValueDefinitionNode, FieldDefinitionNode, GraphQLBoolean, GraphQLID, GraphQLInputObjectType,
-    GraphQLList, GraphQLNonNull, GraphQLString, ObjectTypeDefinitionNode, ObjectValueNode, StringValueNode, valueFromAST
+    GraphQLList, GraphQLNonNull, GraphQLString, ObjectTypeDefinitionNode, ObjectValueNode, StringValueNode,
+    TypeDefinitionNode, valueFromAST
 } from 'graphql';
 import {
     ParsedGraphQLProjectSource, ParsedObjectProjectSource, ParsedProject, ParsedProjectSourceBaseKind
@@ -70,6 +71,7 @@ function createTypeInputs(parsedProject: ParsedProject, context: ValidationConte
             case ENUM_TYPE_DEFINITION:
                 const enumTypeInput: EnumTypeConfig = {
                     ...common,
+                    namespacePath: getNamespacePath(definition, schemaPart.namespacePath),
                     astNode: definition,
                     kind: TypeKind.ENUM,
                     values: createEnumValues(definition.values || [])
@@ -128,7 +130,6 @@ function createObjectTypeInput(definition: ObjectTypeDefinitionNode, schemaPart:
                 ...processKeyField(definition, common.fields, context),
                 kind: TypeKind.ROOT_ENTITY,
                 permissions: getPermissions(definition, context),
-                namespacePath: getNamespacePath(definition, schemaPart.namespacePath),
                 indices: createIndexDefinitionInputs(definition, context)
             };
     }
@@ -317,7 +318,7 @@ function getKindOfObjectTypeNode(definition: ObjectTypeDefinitionNode, context?:
     return kindDirectives[0].name.value;
 }
 
-function getNamespacePath(definition: ObjectTypeDefinitionNode, sourceNamespacePath: ReadonlyArray<string>): ReadonlyArray<string> {
+function getNamespacePath(definition: TypeDefinitionNode, sourceNamespacePath: ReadonlyArray<string>): ReadonlyArray<string> {
     const directiveNamespace = findDirectiveWithName(definition, NAMESPACE_DIRECTIVE);
     if (!directiveNamespace || !directiveNamespace.arguments) {
         return sourceNamespacePath;

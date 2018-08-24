@@ -97,7 +97,7 @@ export class NamespaceLocalization {
     }
 
     public getEnumValueLocalization({typeName, enumValue}: { typeName: string, enumValue: string }): EnumValueLocalization | undefined {
-        return this.getElementLocalization({typeName, elementName: enumValue, property: 'fields'});
+        return this.getElementLocalization({typeName, elementName: enumValue, property: 'values'});
     }
 
     private getElementLocalization({typeName, elementName, property}: { typeName: string, elementName: string, property: 'fields' | 'values' }): FieldLocalization | undefined {
