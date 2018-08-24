@@ -1,7 +1,7 @@
 import {
     DirectiveNode, DocumentNode, EnumTypeDefinitionNode, EnumValueDefinitionNode, FieldDefinitionNode,
     InputObjectTypeDefinitionNode, InputValueDefinitionNode, NamedTypeNode, NameNode, ObjectTypeDefinitionNode,
-    ScalarTypeDefinitionNode, TypeNode
+    ScalarTypeDefinitionNode, TypeDefinitionNode, TypeNode
 } from 'graphql';
 import {
     ENUM_TYPE_DEFINITION, INPUT_OBJECT_TYPE_DEFINITION, LIST_TYPE, NAME, NAMED_TYPE, NON_NULL_TYPE,
@@ -159,7 +159,7 @@ export function buildNameNode(name: string): NameNode {
     return { kind: NAME, value: name };
 }
 
-export function findDirectiveWithName(typeOrField: ObjectTypeDefinitionNode|FieldDefinitionNode|InputValueDefinitionNode|EnumValueDefinitionNode|InputObjectTypeDefinitionNode, directiveName: string): DirectiveNode|undefined {
+export function findDirectiveWithName(typeOrField: TypeDefinitionNode|FieldDefinitionNode|InputValueDefinitionNode|EnumValueDefinitionNode|InputObjectTypeDefinitionNode, directiveName: string): DirectiveNode|undefined {
     // remove leading @
     if (directiveName[0] === '@') {
         directiveName = directiveName.substr(1, directiveName.length - 1);
