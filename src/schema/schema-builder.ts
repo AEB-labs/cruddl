@@ -5,11 +5,15 @@ import {
     Kind, load, YAMLAnchorReference, YamlMap, YAMLMapping, YAMLNode, YAMLScalar, YAMLSequence
 } from 'yaml-ast-parser';
 import { globalContext } from '../config/global';
-import { ParsedProject, ParsedProjectSource, ParsedProjectSourceBaseKind } from '../config/parsed-project';
+import {
+    ParsedGraphQLProjectSource, ParsedObjectProjectSource, ParsedProject, ParsedProjectSource,
+    ParsedProjectSourceBaseKind
+} from '../config/parsed-project';
 import { DatabaseAdapter } from '../database/database-adapter';
-import { createModel, Model, Severity, SourcePosition, ValidationMessage, ValidationResult } from '../model';
+import {
+    createModel, Model, Severity, SourcePosition, ValidationContext, ValidationMessage, ValidationResult
+} from '../model';
 import { MessageLocation } from '../model/';
-import { ValidationContext } from '../model/validation';
 import { Project } from '../project/project';
 import { ProjectSource, SourceType } from '../project/source';
 import { SchemaGenerator } from '../schema-generation';
@@ -140,110 +144,121 @@ export function parseProject(project: Project, validationContext: ValidationCont
     };
 }
 
+function parseYAMLSource(projectSource: ProjectSource, validationContext: ValidationContext): ParsedObjectProjectSource | undefined {
+    const root: YAMLNode | undefined = load(projectSource.body);
+
+    if (!root) {
+        return undefined;
+    }
+
+    root.errors.forEach(error => {
+        const severity = error.isWarning ? Severity.Warning : Severity.Error;
+        const endPos = getLineEndPosition(error.mark.line + 1, projectSource);
+        validationContext.addMessage(new ValidationMessage(severity, error.reason, new MessageLocation(projectSource, new SourcePosition(error.mark.position, error.mark.line + 1, error.mark.column + 1), endPos)));
+    });
+
+    if (root.errors.some(error => !error.isWarning)) {
+        // returning undefined will lead to ignoring this source file in future steps
+        return undefined;
+    }
+
+    const yamlData = extractJSONFromYAML(root, validationContext, projectSource);
+
+    if (yamlData === undefined) {
+        return undefined;
+    }
+
+    const pathLocationMap = extractMessageLocationsFromYAML(root, projectSource);
+
+    return {
+        kind: ParsedProjectSourceBaseKind.OBJECT,
+        namespacePath: getNamespaceFromSourceName(projectSource.name),
+        object: yamlData as PlainObject || {},
+        pathLocationMap: pathLocationMap
+    };
+}
+
+function parseJSONSource(projectSource: ProjectSource, validationContext: ValidationContext): ParsedObjectProjectSource | undefined {
+    if (projectSource.body.trim() === '') {
+        return undefined;
+    }
+
+    // perform general JSON syntax check
+    const lintResult = jsonLint(projectSource.body, {comments: true});
+    if (lintResult.error) {
+        let loc: MessageLocation | undefined;
+        if (typeof lintResult.line == 'number' && typeof lintResult.i == 'number' && typeof lintResult.character == 'number') {
+            loc = new MessageLocation(projectSource, lintResult.i, projectSource.body.length);
+        }
+        validationContext.addMessage(ValidationMessage.error(lintResult.error, loc));
+        // returning undefined will lead to ignoring this source file in future steps
+        return undefined;
+    }
+
+    // parse JSON
+    const jsonPathLocationMap: { [path: string]: MessageLocation } = {};
+
+    // whitespace: true replaces non-whitespace in comments with spaces so that the sourcemap still matches
+    const bodyWithoutComments = stripJsonComments(projectSource.body, {whitespace: true});
+    const parseResult = JSONparse(bodyWithoutComments);
+    const pointers = parseResult.pointers;
+
+    for (const key in pointers) {
+        const pointer = pointers[key];
+        jsonPathLocationMap[key] = new MessageLocation(projectSource, pointer.value.pos, pointer.valueEnd.pos);
+    }
+
+    const data: PlainObject = parseResult.data;
+
+    // arrays are not forbidden by json-lint
+    if (Array.isArray(data)) {
+        validationContext.addMessage(ValidationMessage.error(`JSON file should define an object (is array)`, new MessageLocation(projectSource, 0, projectSource.body.length)));
+        return undefined;
+    }
+
+    return {
+        kind: ParsedProjectSourceBaseKind.OBJECT,
+        namespacePath: getNamespaceFromSourceName(projectSource.name),
+        object: data as PlainObject || {},
+        pathLocationMap: jsonPathLocationMap
+    };
+}
+
+function parseGraphQLsSource(projectSource: ProjectSource, validationContext: ValidationContext): ParsedGraphQLProjectSource | undefined {
+    if (projectSource.body.trim() === '') {
+        return undefined;
+    }
+
+    let document: DocumentNode;
+    try {
+        document = parse(projectSource.toGraphQLSource());
+    } catch (e) {
+        if (e instanceof GraphQLError) {
+            const message = getMessageFromGraphQLSyntaxError(e);
+            const location = getGraphQLMessageLocation(e);
+            validationContext.addMessage(ValidationMessage.error(message, location));
+            return undefined;
+        }
+        throw e;
+    }
+
+    return {
+        kind: ParsedProjectSourceBaseKind.GRAPHQL,
+        namespacePath: getNamespaceFromSourceName(projectSource.name),
+        document: document
+    };
+}
+
 export function parseProjectSource(projectSource: ProjectSource, validationContext: ValidationContext): ParsedProjectSource | undefined {
     switch (projectSource.type) {
         case SourceType.YAML:
-            const root: YAMLNode | undefined = load(projectSource.body);
-
-            if (!root) {
-                return undefined;
-            }
-
-            root.errors.forEach(error => {
-                const severity = error.isWarning ? Severity.Warning : Severity.Error;
-                const endPos = getLineEndPosition(error.mark.line + 1, projectSource);
-                validationContext.addMessage(new ValidationMessage(severity, error.reason, new MessageLocation(projectSource, new SourcePosition(error.mark.position, error.mark.line + 1, error.mark.column + 1), endPos)));
-            });
-
-            if (root.errors.some(error => !error.isWarning)) {
-                // returning undefined will lead to ignoring this source file in future steps
-                return undefined;
-            }
-
-            const yamlData = extractJSONFromYAML(root, validationContext, projectSource);
-
-            if (yamlData === undefined) {
-                return undefined;
-            }
-
-            const pathLocationMap = extractMessageLocationsFromYAML(root, projectSource);
-
-            return {
-                kind: ParsedProjectSourceBaseKind.OBJECT,
-                namespacePath: getNamespaceFromSourceName(projectSource.name),
-                object: yamlData as PlainObject || {},
-                pathLocationMap: pathLocationMap
-            };
-
+            return parseYAMLSource(projectSource, validationContext);
         case SourceType.JSON:
-            let data = {} as PlainObject;
-
-            if (projectSource.body === '') {
-                return undefined;
-            }
-
-            // perform general JSON syntax check
-            const lintResult = jsonLint(projectSource.body, {comments: true});
-            if (lintResult.error) {
-                let loc: MessageLocation | undefined;
-                if (typeof lintResult.line == 'number' && typeof lintResult.i == 'number' && typeof lintResult.character == 'number') {
-                    loc = new MessageLocation(projectSource, lintResult.i, projectSource.body.length);
-                }
-                validationContext.addMessage(ValidationMessage.error(lintResult.error, loc));
-                // returning undefined will lead to ignoring this source file in future steps
-                return undefined;
-            }
-
-            // parse JSON
-            const jsonPathLocationMap: { [path: string]: MessageLocation } = {};
-
-            // whitespace: true replaces non-whitespace in comments with spaces so that the sourcemap still matches
-            const bodyWithoutComments = stripJsonComments(projectSource.body, {whitespace: true});
-            const parseResult = JSONparse(bodyWithoutComments);
-            const pointers = parseResult.pointers;
-
-            for (const key in pointers) {
-                const pointer = pointers[key];
-                jsonPathLocationMap[key] = new MessageLocation(projectSource, pointer.value.pos, pointer.valueEnd.pos);
-            }
-
-            data = parseResult.data;
-
-            // arrays are not forbidden by json-lint
-            if (Array.isArray(data)) {
-                validationContext.addMessage(ValidationMessage.error(`JSON file should define an object (is array)`, new MessageLocation(projectSource, 0, projectSource.body.length)));
-                return undefined;
-            }
-
-            return {
-                kind: ParsedProjectSourceBaseKind.OBJECT,
-                namespacePath: getNamespaceFromSourceName(projectSource.name),
-                object: data as PlainObject || {},
-                pathLocationMap: jsonPathLocationMap
-            };
+            return parseJSONSource(projectSource, validationContext);
         case SourceType.GRAPHQLS:
-            if (projectSource.body.trim() === '') {
-                return undefined;
-            }
-
-            let document: DocumentNode;
-            try {
-                document = parse(projectSource.toGraphQLSource());
-            } catch (e) {
-                if (e instanceof GraphQLError) {
-                    const message = getMessageFromGraphQLSyntaxError(e);
-                    const location = getGraphQLMessageLocation(e);
-                    validationContext.addMessage(ValidationMessage.error(message, location));
-                    return undefined;
-                }
-                throw e;
-            }
-
-            return {
-                kind: ParsedProjectSourceBaseKind.GRAPHQL,
-                namespacePath: getNamespaceFromSourceName(projectSource.name),
-                document: document
-            };
+            return parseGraphQLsSource(projectSource, validationContext);
+        default:
+            throw new Error(`Unexpected project source type: ${projectSource.type}`);
     }
 }
 
