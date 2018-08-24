@@ -80,5 +80,12 @@ describe('schema-builder', () => {
             expect(context.validationMessages[0].message).to.equal(`JSON file should define an object (is array)`);
             expect(parsed).to.be.undefined;
         });
+
+        it('Returns undefined for empty GraphQL files', () => {
+            const context = new ValidationContext();
+            const parsed = parseProjectSource(new ProjectSource('empty.graphqls', ''), context);
+            expect(context.asResult().messages).to.deep.equal([]);
+            expect(parsed).to.be.undefined;
+        });
     });
 });

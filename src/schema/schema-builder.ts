@@ -143,7 +143,6 @@ export function parseProject(project: Project, validationContext: ValidationCont
 export function parseProjectSource(projectSource: ProjectSource, validationContext: ValidationContext): ParsedProjectSource | undefined {
     switch (projectSource.type) {
         case SourceType.YAML:
-
             const root: YAMLNode | undefined = load(projectSource.body);
 
             if (!root) {
@@ -175,6 +174,7 @@ export function parseProjectSource(projectSource: ProjectSource, validationConte
                 object: yamlData as PlainObject || {},
                 pathLocationMap: pathLocationMap
             };
+
         case SourceType.JSON:
             let data = {} as PlainObject;
 
@@ -222,6 +222,10 @@ export function parseProjectSource(projectSource: ProjectSource, validationConte
                 pathLocationMap: jsonPathLocationMap
             };
         case SourceType.GRAPHQLS:
+            if (projectSource.body.trim() === '') {
+                return undefined;
+            }
+
             let document: DocumentNode;
             try {
                 document = parse(projectSource.toGraphQLSource());
