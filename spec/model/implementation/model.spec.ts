@@ -1,19 +1,22 @@
-import { Model, PermissionProfileConfigMap, TypeKind } from '../../../src/model';
-import { expectSingleErrorToInclude, expectToBeValid, validate } from './validation-utils';
 import { expect } from 'chai';
-import { Severity } from '../../../src/model';
+import { Model, NamespacedPermissionProfileConfigMap, Severity, TypeKind } from '../../../src/model';
+import { expectSingleErrorToInclude, expectToBeValid, validate } from './validation-utils';
 
 describe('Model', () => {
-    const permissionProfiles: PermissionProfileConfigMap = {
-        default: {
-            permissions: [
-                {
-                    access: 'read',
-                    roles: ['admin']
+    const permissionProfiles: ReadonlyArray<NamespacedPermissionProfileConfigMap> = [
+        {
+            profiles: {
+                default: {
+                    permissions: [
+                        {
+                            access: 'read',
+                            roles: ['admin']
+                        }
+                    ]
                 }
-            ]
+            }
         }
-    };
+    ];
 
     it('accepts simple model', () => {
         const model = new Model({

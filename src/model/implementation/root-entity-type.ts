@@ -66,9 +66,9 @@ export class RootEntityType extends ObjectTypeBase {
                 // if @roles is specified, this root entity explicitly does not have a permission profile
                 return undefined;
             }
-            return this.model.defaultPermissionProfile;
+            return this.namespace.defaultPermissionProfile;
         }
-        return this.model.getPermissionProfile(this.permissions.permissionProfileName);
+        return this.namespace.getPermissionProfile(this.permissions.permissionProfileName);
     }
 
     /**
@@ -97,10 +97,6 @@ export class RootEntityType extends ObjectTypeBase {
             ...this.model.relations.filter(rel => rel.fromType === this).map(rel => rel.fromSide),
             ...this.model.relations.filter(rel => rel.toType === this).map(rel => rel.toSide)
         ];
-    }
-
-    get namespace(): Namespace | undefined {
-        return this.model.getNamespaceByPath(this.namespacePath);
     }
 
     validate(context: ValidationContext) {
@@ -145,11 +141,11 @@ export class RootEntityType extends ObjectTypeBase {
             context.addMessage(ValidationMessage.error(message, permissions.roles.astNode || this.nameASTNode));
         }
 
-        if (permissions.permissionProfileName != undefined && !this.model.getPermissionProfile(permissions.permissionProfileName)) {
+        if (permissions.permissionProfileName != undefined && !this.namespace.getPermissionProfile(permissions.permissionProfileName)) {
             context.addMessage(ValidationMessage.error(`Permission profile "${permissions.permissionProfileName}" not found.`, permissions.permissionProfileNameAstNode || this.nameASTNode));
         }
 
-        if (permissions.permissionProfileName == undefined && permissions.roles == undefined && this.model.defaultPermissionProfile == undefined) {
+        if (permissions.permissionProfileName == undefined && permissions.roles == undefined && this.namespace.defaultPermissionProfile == undefined) {
             context.addMessage(ValidationMessage.error(`No permissions specified for root entity "${this.name}". Specify "permissionProfile" in @rootEntity, use the @roles directive, or add a permission profile with the name "${DEFAULT_PERMISSION_PROFILE}".`, permissions.permissionProfileNameAstNode || this.nameASTNode));
         }
 

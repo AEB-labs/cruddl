@@ -1,19 +1,15 @@
-import { WILDCARD_CHARACTER } from '../../schema/constants';
-import { escapeRegExp, mapValues } from '../../utils/utils';
 import { AccessOperation, AuthContext } from '../../authorization/auth-basics';
-import { PermissionAccessKind, PermissionConfig, PermissionProfileConfig, PermissionProfileConfigMap } from '../index';
-
-export function createPermissionMap(map: PermissionProfileConfigMap = {}) {
-    return mapValues(map, (profile, name) => new PermissionProfile(name, profile));
-}
-
-export type PermissionProfileMap = { [name: string]: PermissionProfile }
+import { WILDCARD_CHARACTER } from '../../schema/constants';
+import { escapeRegExp } from '../../utils/utils';
+import { MessageLocation, PermissionAccessKind, PermissionConfig, PermissionProfileConfig } from '../index';
 
 export class PermissionProfile {
-    public readonly permissions: Permission[];
+    readonly permissions: ReadonlyArray<Permission>;
+    readonly loc: MessageLocation | undefined;
 
-    constructor(public readonly name: string, config: PermissionProfileConfig) {
+    constructor(public readonly name: string, public readonly namespacePath: ReadonlyArray<string>, config: PermissionProfileConfig) {
         this.permissions = config.permissions.map(permissionConfig => new Permission(permissionConfig));
+        this.loc = config.loc;
     }
 }
 
@@ -22,7 +18,7 @@ export class Permission {
 
     public readonly access: PermissionAccessKind;
 
-    public readonly restrictToAccessGroups?: string[];
+    public readonly restrictToAccessGroups?: ReadonlyArray<string>;
 
     constructor(config: PermissionConfig) {
         this.roles = new RoleSpecifier(config.roles);
@@ -37,9 +33,9 @@ export class Permission {
     allowsOperation(operation: AccessOperation) {
         switch (operation) {
             case AccessOperation.READ:
-                return this.access == "read" || this.access == "readWrite";
+                return this.access == 'read' || this.access == 'readWrite';
             case AccessOperation.WRITE:
-                return this.access == "readWrite";
+                return this.access == 'readWrite';
             default:
                 return false;
         }
@@ -47,10 +43,10 @@ export class Permission {
 }
 
 export class RoleSpecifier {
-    private literalRoles = new Set<string>();
-    private regexp: RegExp|undefined;
+    private readonly literalRoles = new Set<string>();
+    private readonly regexp: RegExp | undefined;
 
-    constructor(roles: string[]) {
+    constructor(roles: ReadonlyArray<string>) {
         const regexps = [];
         for (const role of roles) {
             if (role.includes(WILDCARD_CHARACTER)) {

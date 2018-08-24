@@ -33,24 +33,70 @@ describe('RootEntityType', () => {
                 ]
             }
         ],
-        permissionProfiles: {
-            default: {
-                permissions: [
-                    {
-                        roles: ['everyone'],
-                        access: 'read'
+        permissionProfiles: [
+            {
+                profiles: {
+                    default: {
+                        permissions: [
+                            {
+                                roles: ['everyone'],
+                                access: 'read'
+                            }
+                        ]
+                    },
+                    accounting: {
+                        permissions: [
+                            {
+                                roles: ['accounting'],
+                                access: 'read'
+                            }
+                        ]
+                    },
+                    test: {
+                        permissions: [
+                            {
+                                roles: ['test'],
+                                access: 'read'
+                            }
+                        ]
                     }
-                ]
+                }
             },
-            accounting: {
-                permissions: [
-                    {
-                        roles: ['accounting'],
-                        access: 'read'
+            {
+                namespacePath: ['a'],
+                profiles: {
+                    accounting: {
+                        permissions: [
+                            {
+                                roles: ['everyone'],
+                                access: 'readWrite'
+                            }
+                        ]
                     }
-                ]
+                }
+            },
+            {
+                namespacePath: ['b'],
+                profiles: {
+                    accounting: {
+                        permissions: [
+                            {
+                                roles: ['everyone'],
+                                access: 'read'
+                            }
+                        ]
+                    },
+                    default: {
+                        permissions: [
+                            {
+                                roles: ['everyone'],
+                                access: 'read'
+                            }
+                        ]
+                    },
+                }
             }
-        }
+        ]
     });
 
     describe('with key field', () => {
@@ -216,7 +262,7 @@ describe('RootEntityType', () => {
     });
 
     describe('with permissions field', () => {
-        describe('with permission profile', () => {
+        it('resolves profile in root namespace', () => {
             const type = new RootEntityType({
                 kind: TypeKind.ROOT_ENTITY,
                 name: 'Delivery',
@@ -231,13 +277,48 @@ describe('RootEntityType', () => {
                 }
             }, model);
 
-            it('accepts', () => {
-                expectToBeValid(type);
-            });
+            expectToBeValid(type);
+            expect(type.permissionProfile).to.equal(model.rootNamespace.getPermissionProfileOrThrow('accounting'));
+        });
 
-            it('resolves permission profile', () => {
-                expect(type.permissionProfile).to.equal(model.getPermissionProfileOrThrow('accounting'));
-            });
+        it('resolves profile in its own namespace', () => {
+            const type = new RootEntityType({
+                kind: TypeKind.ROOT_ENTITY,
+                namespacePath: ['b'],
+                name: 'Delivery',
+                fields: [
+                    {
+                        name: 'deliveryNumber',
+                        typeName: 'String'
+                    }
+                ],
+                permissions: {
+                    permissionProfileName: 'accounting'
+                }
+            }, model);
+
+            expectToBeValid(type);
+            expect(type.permissionProfile).to.equal(model.getNamespaceByPathOrThrow(['b']).getPermissionProfileOrThrow('accounting'));
+        });
+
+        it('resolves profile in super namespace', () => {
+            const type = new RootEntityType({
+                kind: TypeKind.ROOT_ENTITY,
+                namespacePath: ['b'],
+                name: 'Delivery',
+                fields: [
+                    {
+                        name: 'deliveryNumber',
+                        typeName: 'String'
+                    }
+                ],
+                permissions: {
+                    permissionProfileName: 'test'
+                }
+            }, model);
+
+            expectToBeValid(type);
+            expect(type.permissionProfile).to.equal(model.rootNamespace.getPermissionProfileOrThrow('test'));
         });
 
         it('accepts direct role specifier', () => {
@@ -346,7 +427,23 @@ describe('RootEntityType', () => {
                 ]
             }, model);
 
-            expect(type.permissionProfile).to.equal(model.getPermissionProfileOrThrow('default'));
+            expect(type.permissionProfile).to.equal(model.rootNamespace.getPermissionProfileOrThrow('default'));
+        });
+
+        it('uses default profile of its own namespace', () => {
+            const type = new RootEntityType({
+                kind: TypeKind.ROOT_ENTITY,
+                namespacePath: ['b'],
+                name: 'Delivery',
+                fields: [
+                    {
+                        name: 'deliveryNumber',
+                        typeName: 'String'
+                    }
+                ]
+            }, model);
+
+            expect(type.permissionProfile).to.equal(model.getNamespaceByPathOrThrow(['b']).getPermissionProfileOrThrow('default'));
         });
 
         it('provides no profile if roles are specified', () => {

@@ -191,6 +191,8 @@ type Order @rootEntity(permissionProfile: "restricted") {
 }
 ```
 
+Permission profiles are looked up in all json/yaml files within the type's namespace. If not found there, the namespace tree is navigated upwards. Permission profiles can be shadowed (i.e. a profile can be defined in a parent and in a child namespace, and the child namespace wins), but this generates a warning. The permission profile `default` can be shadowed without warning, so you can have namespace-dependent default permission profiles.
+
 ### Field permissions
 
 To set permissions on individual fields, you need to use the `@roles` directive. This will be changed in the future to also work with permission profiles.
