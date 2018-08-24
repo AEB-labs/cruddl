@@ -31,8 +31,8 @@ function normalizeTypeConfig(typeConfigs: { [name: string]: TypeLocalizationConf
     return mapValues(typeConfigs, (typeConfig, key) => {
         const typeYamlPath = curYamlPath + '/' + key;
         return ({
-            singular: typeConfig.singular,
-            plural: typeConfig.plural,
+            label: typeConfig.label,
+            labelPlural: typeConfig.labelPlural,
             hint: typeConfig.hint,
             fields: normalizeLocalizationBaseConfig(typeConfig.fields, typeYamlPath + '/fields', source),
             values: normalizeLocalizationBaseConfig(typeConfig.values, typeYamlPath + '/values', source),

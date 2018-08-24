@@ -108,7 +108,7 @@ i18n:
   de:
     types:
       Temp:
-        singular: Test`));
+        label: Test`));
         expect(messages).to.deep.equal([]);
     });
 
@@ -118,10 +118,10 @@ i18n:
   de:
     typess:
       Temp:
-        singular: Test`));
+        label: Test`));
         expect(messages.length).to.equal(1);
         expect(JSON.parse(JSON.stringify(messages[0].location))).to.deep.equal({
-            "_end": 59,
+            "_end": 56,
             "_start": 9,
             "sourceName": "file.yaml"
         });

@@ -2,8 +2,8 @@ i18n:
   en:
     types:
       Paper:
-        singular: Paper
-        plural: Papers
+        label: Paper
+        labelPlural: Papers
         hint: A scientific paper written by a scientist
         fields:
           title:
@@ -18,7 +18,7 @@ i18n:
   de:
     types:
       Paper:
-        singular: Paper
+        label: Paper
         hint: Ein wissenschaftliches Paper
         fields:
           title: Title
