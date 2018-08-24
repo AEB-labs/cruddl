@@ -1,10 +1,12 @@
 import { NameNode, TypeDefinitionNode } from 'graphql';
+import memorize from 'memorize-decorator';
 import * as pluralize from 'pluralize';
 import { TypeConfig, TypeKind } from '../config';
 import { ValidationMessage } from '../validation';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
 import { TypeLocalization } from './i18n';
 import { Model } from './model';
+import { Namespace } from './namespace';
 
 export abstract class TypeBase implements ModelComponent {
     readonly name: string;
@@ -53,7 +55,12 @@ export abstract class TypeBase implements ModelComponent {
     }
 
     public getLocalization(resolutionOrder: ReadonlyArray<string>): TypeLocalization {
-        return this.model.i18n.getTypeLocalization(this, resolutionOrder)
+        return this.model.i18n.getTypeLocalization(this, resolutionOrder);
+    }
+
+    @memorize()
+    get namespace(): Namespace {
+        return this.model.getNamespaceByPathOrThrow(this.namespacePath);
     }
 
     abstract readonly isObjectType: boolean = false;

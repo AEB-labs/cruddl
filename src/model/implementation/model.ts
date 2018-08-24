@@ -1,8 +1,8 @@
 import { groupBy, uniqBy } from 'lodash';
 import memorize from 'memorize-decorator';
-import { DEFAULT_PERMISSION_PROFILE } from '../../schema/constants';
-import { flatMap, objectValues } from '../../utils/utils';
+import { flatMap, objectEntries, objectValues } from '../../utils/utils';
 import { ModelConfig, TypeKind } from '../config';
+import { NamespacedPermissionProfileConfigMap } from '../index';
 import { ValidationMessage, ValidationResult } from '../validation';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
 import { builtInTypeNames, createBuiltInTypes } from './built-in-types';
@@ -11,7 +11,7 @@ import { EntityExtensionType } from './entity-extension-type';
 import { EnumType } from './enum-type';
 import { ModelI18n } from './i18n';
 import { Namespace } from './namespace';
-import { createPermissionMap, PermissionProfile, PermissionProfileMap } from './permission-profile';
+import { PermissionProfile } from './permission-profile';
 import { Relation } from './relation';
 import { RootEntityType } from './root-entity-type';
 import { ScalarType } from './scalar-type';
@@ -21,21 +21,26 @@ import { ValueObjectType } from './value-object-type';
 export class Model implements ModelComponent {
     private readonly typeMap: ReadonlyMap<string, Type>;
     private readonly builtInTypes: ReadonlyArray<Type>;
+    private readonly permissionProfiles: ReadonlyArray<PermissionProfile>;
 
     readonly rootNamespace: Namespace;
     readonly namespaces: ReadonlyArray<Namespace>;
     readonly types: ReadonlyArray<Type>;
-    readonly permissionProfiles: PermissionProfileMap;
     readonly i18n: ModelI18n;
 
     constructor(private input: ModelConfig) {
-        this.permissionProfiles = createPermissionMap(input.permissionProfiles);
         this.builtInTypes = createBuiltInTypes(this);
         this.types = [
             ...this.builtInTypes,
             ...input.types.map(typeInput => createType(typeInput, this))
         ];
-        this.rootNamespace = new Namespace(undefined, [], this.rootEntityTypes);
+        this.permissionProfiles = flatMap(input.permissionProfiles || [], createPermissionProfiles);
+        this.rootNamespace = new Namespace({
+            parent: undefined,
+            path: [],
+            allTypes: this.types,
+            allPermissionProfiles: this.permissionProfiles
+        });
         this.namespaces = [this.rootNamespace, ...this.rootNamespace.descendantNamespaces];
         this.typeMap = new Map(this.types.map((type): [string, Type] => ([type.name, type])));
         this.i18n = new ModelI18n(input.i18n || [], this);
@@ -89,22 +94,6 @@ export class Model implements ModelComponent {
             throw new Error(`Reference to undefined type "${name}"`);
         }
         return type;
-    }
-
-    getPermissionProfile(name: string): PermissionProfile | undefined {
-        return this.permissionProfiles[name];
-    }
-
-    getPermissionProfileOrThrow(name: string): PermissionProfile {
-        const profile = this.getPermissionProfile(name);
-        if (profile == undefined) {
-            throw new Error(`Permission profile "${name}" does not exist`);
-        }
-        return profile;
-    }
-
-    get defaultPermissionProfile(): PermissionProfile | undefined {
-        return this.getPermissionProfile(DEFAULT_PERMISSION_PROFILE);
     }
 
     get rootEntityTypes(): ReadonlyArray<RootEntityType> {
@@ -230,4 +219,8 @@ export class Model implements ModelComponent {
         const withDuplicates = flatMap(this.rootEntityTypes, entity => entity.explicitRelations);
         return uniqBy(withDuplicates, rel => rel.identifier);
     }
+}
+
+function createPermissionProfiles(map: NamespacedPermissionProfileConfigMap): ReadonlyArray<PermissionProfile> {
+    return objectEntries(map.profiles).map(([name, profile]) => new PermissionProfile(name, map.namespacePath || [], profile));
 }

@@ -65,7 +65,7 @@ export class Field implements ModelComponent {
         if (!this.input.permissions || this.input.permissions.permissionProfileName == undefined) {
             return undefined;
         }
-        return this.model.getPermissionProfile(this.input.permissions.permissionProfileName);
+        return this.declaringType.namespace.getPermissionProfile(this.input.permissions.permissionProfileName);
     }
 
     public get inverseOf(): Field | undefined {
@@ -314,7 +314,7 @@ export class Field implements ModelComponent {
             context.addMessage(ValidationMessage.error(message, permissions.roles.astNode || this.input.astNode));
         }
 
-        if (permissions.permissionProfileName != undefined && !this.model.getPermissionProfile(permissions.permissionProfileName)) {
+        if (permissions.permissionProfileName != undefined && !this.declaringType.namespace.getPermissionProfile(permissions.permissionProfileName)) {
             context.addMessage(ValidationMessage.error(`Permission profile "${permissions.permissionProfileName}" not found.`, permissions.permissionProfileNameAstNode || this.input.astNode));
         }
 

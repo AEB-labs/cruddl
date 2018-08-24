@@ -19,14 +19,12 @@ import {
 import {
     findDirectiveWithName, getNamedTypeNodeIgnoringNonNullAndList, getNodeByName, getTypeNameIgnoringNonNullAndList
 } from '../schema/schema-utils';
-import { compact, flatMap } from '../utils/utils';
+import { compact, flatMap, mapValues } from '../utils/utils';
 import {
-    CalcMutationsOperator, EnumTypeConfig, EnumValueConfig, FieldConfig, IndexDefinitionConfig, ObjectTypeConfig,
-    PermissionProfileConfigMap,
-    PermissionsConfig,
-    RolesSpecifierConfig, TypeConfig, TypeKind
+    CalcMutationsOperator, EnumTypeConfig, EnumValueConfig, FieldConfig, IndexDefinitionConfig, LocalizationConfig,
+    NamespacedPermissionProfileConfigMap,
+    ObjectTypeConfig, PermissionProfileConfigMap, PermissionsConfig, RolesSpecifierConfig, TypeConfig, TypeKind
 } from './config';
-import { LocalizationConfig} from './config/i18n';
 import { Model } from './implementation';
 import { parseI18nConfigs } from './parse-i18n';
 import { ValidationContext, ValidationMessage } from './validation';
@@ -102,7 +100,7 @@ function createObjectTypeInput(definition: ObjectTypeDefinitionNode, schemaPart:
         description: definition.description ? definition.description.value : undefined,
         astNode: definition,
         fields: (definition.fields || []).map(field => createFieldInput(field, context)),
-        namespacePath: getNamespacePath(definition, schemaPart.namespacePath),
+        namespacePath: getNamespacePath(definition, schemaPart.namespacePath)
     };
 
     switch (entityType) {
@@ -131,7 +129,7 @@ function createObjectTypeInput(definition: ObjectTypeDefinitionNode, schemaPart:
                 kind: TypeKind.ROOT_ENTITY,
                 permissions: getPermissions(definition, context),
                 namespacePath: getNamespacePath(definition, schemaPart.namespacePath),
-                indices: createIndexDefinitionInputs(definition, context),
+                indices: createIndexDefinitionInputs(definition, context)
             };
     }
 }
@@ -414,27 +412,24 @@ function getInverseOfASTNode(fieldNode: FieldDefinitionNode, context: Validation
     return inverseOfArg.value;
 }
 
-function extractPermissionProfiles(parsedProject: ParsedProject, validationContext: ValidationContext): PermissionProfileConfigMap {
-    const permissionProfilesList = parsedProject.sources.map(s => {
-        if (s.kind !== ParsedProjectSourceBaseKind.OBJECT) {
+function extractPermissionProfiles(parsedProject: ParsedProject, validationContext: ValidationContext): ReadonlyArray<NamespacedPermissionProfileConfigMap> {
+    return compact(parsedProject.sources.map((source): NamespacedPermissionProfileConfigMap|undefined => {
+        if (source.kind !== ParsedProjectSourceBaseKind.OBJECT) {
             return undefined;
         }
-        if (!s.object.permissionProfiles) {
+        if (!source.object.permissionProfiles) {
             return undefined;
         }
-        return s.object.permissionProfiles as PermissionProfileConfigMap;
-    });
-    // merge list / create map
-    return compact(permissionProfilesList).reduce((prev, current) => {
-        const duplicateKeys = Object.keys(prev).filter(k => Object.keys(current).includes(k));
-        if (duplicateKeys.length > 0) {
-            validationContext.addMessage(
-                // TODO add location
-                ValidationMessage.warn(VALIDATION_WARNING_DUPLICATE_PERMISSION_PROFILES, undefined)
-            );
-        }
-        return Object.assign(prev, current);
-    }, {});
+        const profilesWithoutLocs = source.object.permissionProfiles as PermissionProfileConfigMap;
+        const profiles: PermissionProfileConfigMap = mapValues(profilesWithoutLocs, (profile, name) => ({
+            ...profile,
+            loc: source.pathLocationMap['permissionProfiles.' + name]
+        }));
+        return {
+            namespacePath: source.namespacePath,
+            profiles: source.object.permissionProfiles as PermissionProfileConfigMap
+        };
+    }));
 }
 
 function extractI18n(parsedProject: ParsedProject, validationContext: ValidationContext): ReadonlyArray<LocalizationConfig> {

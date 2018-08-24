@@ -78,24 +78,27 @@ describe('Field', () => {
                 fields: []
             }
         ],
-        permissionProfiles: {
-            default: {
-                permissions: [
-                    {
-                        roles: ['accounting'],
-                        access: 'readWrite'
-                    }
-                ]
-            },
-            accounting: {
-                permissions: [
-                    {
-                        roles: ['accounting'],
-                        access: 'readWrite'
-                    }
-                ]
+        permissionProfiles: [
+            {
+                profiles: {
+                default: {
+                    permissions: [
+                        {
+                            roles: ['accounting'],
+                            access: 'readWrite'
+                        }
+                    ]
+                },
+                accounting: {
+                    permissions: [
+                        {
+                            roles: ['accounting'],
+                            access: 'readWrite'
+                        }
+                    ]
+                }
             }
-        }
+        }]
     });
     const shipmentType = model.getRootEntityTypeOrThrow('Shipment');
     const deliveryType = model.getRootEntityTypeOrThrow('Delivery');
@@ -574,7 +577,7 @@ describe('Field', () => {
             });
 
             it('resolves permission profile', () => {
-                expect(field.permissionProfile).to.equal(model.getPermissionProfileOrThrow('accounting'));
+                expect(field.permissionProfile).to.equal(model.rootNamespace.getPermissionProfileOrThrow('accounting'));
             });
         });
 

@@ -10,6 +10,6 @@ export { Field } from './field';
 export { Namespace } from './namespace';
 export { Index, IndexField } from './indices';
 export { RolesSpecifier } from './roles-specifier';
-export { PermissionProfile, Permission, PermissionProfileMap, RoleSpecifier } from './permission-profile';
+export { PermissionProfile, Permission, RoleSpecifier } from './permission-profile';
 export { Relation, RelationSide, Multiplicity } from './relation';
 export { ModelI18n, NamespaceLocalization, TypeLocalization, FieldLocalization }from './i18n';

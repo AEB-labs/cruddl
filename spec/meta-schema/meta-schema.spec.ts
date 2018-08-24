@@ -155,24 +155,28 @@ describe('Meta schema API', () => {
                 values: [{value: 'AIR'}, {value: 'ROAD'}, {value: 'SEA'}]
             }
         ],
-        permissionProfiles: {
-            default: {
-                permissions: [
-                    {
-                        roles: ['accounting'],
-                        access: 'readWrite'
+        permissionProfiles: [
+            {
+                profiles: {
+                    default: {
+                        permissions: [
+                            {
+                                roles: ['accounting'],
+                                access: 'readWrite'
+                            }
+                        ]
+                    },
+                    accounting: {
+                        permissions: [
+                            {
+                                roles: ['accounting'],
+                                access: 'readWrite'
+                            }
+                        ]
                     }
-                ]
-            },
-            accounting: {
-                permissions: [
-                    {
-                        roles: ['accounting'],
-                        access: 'readWrite'
-                    }
-                ]
+                }
             }
-        },
+        ],
         i18n: [
             {
                 language: 'de',
