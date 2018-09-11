@@ -43,12 +43,12 @@ function createTo1ReferenceNode(field: Field, sourceNode: QueryNode): QueryNode 
     const referencedEntityType = field.type as RootEntityType;
     const keyFieldInReferencedEntity = referencedEntityType.getKeyFieldOrThrow();
 
-    const keyNode = new FieldQueryNode(sourceNode, field);
+    const referenceKeyNode = new FieldQueryNode(sourceNode, field);
     const listItemVar = new VariableQueryNode(field.name);
     const filterNode = new BinaryOperationQueryNode(
-        new FieldQueryNode(listItemVar, keyFieldInReferencedEntity),
+        createFieldNode(keyFieldInReferencedEntity, listItemVar),
         BinaryOperator.EQUAL,
-        keyNode
+        referenceKeyNode
     );
 
     const listNode = new EntitiesQueryNode(referencedEntityType);
@@ -59,7 +59,7 @@ function createTo1ReferenceNode(field: Field, sourceNode: QueryNode): QueryNode 
         itemVariable: listItemVar
     });
     const rawNode = new FirstOfListQueryNode(filteredListNode);
-    return new ConditionalQueryNode(new TypeCheckQueryNode(keyNode, BasicType.NULL), NullQueryNode.NULL, rawNode);
+    return new ConditionalQueryNode(new TypeCheckQueryNode(referenceKeyNode, BasicType.NULL), NullQueryNode.NULL, rawNode);
 }
 
 function createTo1RelationNode(field: Field, sourceNode: QueryNode): QueryNode {

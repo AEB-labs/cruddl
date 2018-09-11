@@ -891,6 +891,10 @@
               "description": null
             },
             {
+              "name": "handlingUnit",
+              "description": "Filters the through `id` referenced HandlingUnits that fulfills the given requirements.\n\n Checks if `handlingUnit` is not null, and allows to filter based on its fields."
+            },
+            {
               "name": "AND",
               "description": "A field that checks if all filters in the list apply\n\nIf the list is empty, this filter applies to all objects."
             },
@@ -899,39 +903,6 @@
               "description": "A field that checks if any of the filters in the list apply.\n\nIf the list is empty, this filter applies to no objects.\n\nNote that only the items in the list *or*-combined; this complete `OR` field is *and*-combined with outer fields in the parent filter type."
             }
           ]
-        },
-        {
-          "name": "DeliveryItemOrderBy",
-          "description": null,
-          "fields": null,
-          "inputFields": null
-        },
-        {
-          "name": "DeliveryItem",
-          "description": null,
-          "fields": [
-            {
-              "name": "id",
-              "description": "An auto-generated string that identifies this child entity uniquely within this collection of child entities"
-            },
-            {
-              "name": "createdAt",
-              "description": "The instant this object has been created"
-            },
-            {
-              "name": "updatedAt",
-              "description": "The instant this object has been updated the last time"
-            },
-            {
-              "name": "itemNumber",
-              "description": null
-            },
-            {
-              "name": "_cursor",
-              "description": "Provides a value that can be supplied to the `after` argument for pagination. Depends on the value of the `orderBy` argument."
-            }
-          ],
-          "inputFields": null
         },
         {
           "name": "HandlingUnitFilter",
@@ -2338,9 +2309,40 @@
           "inputFields": null
         },
         {
-          "name": "HandlingUnitOrderBy",
+          "name": "DeliveryItemOrderBy",
           "description": null,
           "fields": null,
+          "inputFields": null
+        },
+        {
+          "name": "DeliveryItem",
+          "description": null,
+          "fields": [
+            {
+              "name": "id",
+              "description": "An auto-generated string that identifies this child entity uniquely within this collection of child entities"
+            },
+            {
+              "name": "createdAt",
+              "description": "The instant this object has been created"
+            },
+            {
+              "name": "updatedAt",
+              "description": "The instant this object has been updated the last time"
+            },
+            {
+              "name": "itemNumber",
+              "description": null
+            },
+            {
+              "name": "handlingUnit",
+              "description": "This field references a `HandlingUnit` by its `id` field"
+            },
+            {
+              "name": "_cursor",
+              "description": "Provides a value that can be supplied to the `after` argument for pagination. Depends on the value of the `orderBy` argument."
+            }
+          ],
           "inputFields": null
         },
         {
@@ -2372,6 +2374,12 @@
               "description": "Provides a value that can be supplied to the `after` argument for pagination. Depends on the value of the `orderBy` argument."
             }
           ],
+          "inputFields": null
+        },
+        {
+          "name": "HandlingUnitOrderBy",
+          "description": null,
+          "fields": null,
           "inputFields": null
         },
         {
@@ -3177,7 +3185,7 @@
             },
             {
               "name": "deleteHandlingUnit",
-              "description": "Deletes a HandlingUnit by id"
+              "description": "Deletes a HandlingUnit by id or id"
             },
             {
               "name": "deleteAllHandlingUnits",
@@ -3459,6 +3467,10 @@
             {
               "name": "itemNumber",
               "description": null
+            },
+            {
+              "name": "handlingUnit",
+              "description": "Specify the `id` of the `HandlingUnit` to be referenced"
             }
           ]
         },
@@ -3654,6 +3666,10 @@
             {
               "name": "itemNumber",
               "description": null
+            },
+            {
+              "name": "handlingUnit",
+              "description": "Specify the `id` of the `HandlingUnit` to be referenced"
             }
           ]
         },
