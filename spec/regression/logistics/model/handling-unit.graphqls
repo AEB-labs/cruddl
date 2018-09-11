@@ -1,4 +1,5 @@
 type HandlingUnit @rootEntity @roles(readWrite: ["allusers"]) {
+    id: ID @key
     huNumber: String
     delivery: Delivery @relation(inverseOf:"handlingUnits")
 }
