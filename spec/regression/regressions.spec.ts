@@ -23,7 +23,7 @@ describe('regression tests', async () => {
                 // (first npm test run still marked as failure, subsequent runs will pass)
                 const options: RegressionSuiteOptions = {
                     saveActualAsExpected: process.argv.includes('--save-actual-as-expected'),
-                    trace: process.argv.includes('--trace'),
+                    trace: process.argv.includes('--log-trace'),
                     database
                 };
                 const suite = new RegressionSuite(suitePath, options);
