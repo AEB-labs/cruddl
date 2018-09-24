@@ -77,19 +77,19 @@ describe("query-distiller", () => {
     it('assumes correctly that GraphQLResolveInfo.variableValues is already coeerced', async () =>{
         // this is important because the query distiller does not do coercion
         let info: GraphQLResolveInfo|undefined = undefined;
-        const schema = buildASTSchema(gql(`type Query { field(str: String, int: Int): Int } `));
+        const schema = buildASTSchema(gql(`type Query { field(str: String, arr: [Int]): Int } `));
         const result = await graphql({
             schema,
-            source: 'query q($str: String, $int: Int) { field(str: $str, int: $int) }',
+            source: 'query q($str: String, $arr: [Int]) { field(str: $str, arr: $arr) }',
             fieldResolver: (a, b, c, i) => { info = i; return 42; },
-            variableValues: { str: 123, int: '123' } // the wrong way around intentionally to test coercion
+            variableValues: { str: '123', arr: 123 } // specified as int without array literal to test coercion
         });
         expect(result.errors).to.be.undefined;
         expect(result.data!.field).to.equal(42);
         expect(info!.variableValues.str).to.equal('123');
-        expect(info!.variableValues.int).to.equal(123);
+        expect(info!.variableValues.arr).to.deep.equal([123]);
         expect(typeof info!.variableValues.str).to.equal('string');
-        expect(typeof info!.variableValues.int).to.equal('number');
+        expect(typeof info!.variableValues.arr).to.equal('object');
     });
 
     it("builds tree for simple query", async() => {

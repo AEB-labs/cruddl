@@ -33,7 +33,7 @@ export async function start() {
     logger.info('Schema is up to date');
 
     const server = new GraphQLServer({
-        schema,
+        schema: schema as any, // yoga declares a direct dependency to @types/graphql and it's 0.13
         context: () => ({ authRoles: ["allusers", "logistics-reader" ]})
     });
     await server.start({port});
@@ -54,7 +54,7 @@ export async function startMetaServer(model: Model) {
 
     const metaSchemaPort = port+1;
     const metaSchemaServer = new GraphQLServer({
-        schema: getMetaSchema(model),
+        schema: getMetaSchema(model) as any, // yoga declares a direct dependency to @types/graphql and it's 0.13
         context: { locale: 'en' }
     });
     expressServerReference = await metaSchemaServer.start({port: metaSchemaPort});

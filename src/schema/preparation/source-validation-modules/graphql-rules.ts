@@ -3,7 +3,7 @@ import { ParsedSourceValidator } from '../ast-validator';
 import { ValidationMessage } from '../../../model';
 import {
     buildASTSchema, DocumentNode, GraphQLError, KnownArgumentNamesRule, KnownDirectivesRule, KnownTypeNamesRule,
-    Location, ProvidedNonNullArgumentsRule, UniqueArgumentNamesRule, UniqueDirectivesPerLocationRule,
+    Location, ProvidedRequiredArgumentsRule, UniqueArgumentNamesRule, UniqueDirectivesPerLocationRule,
     UniqueInputFieldNamesRule, validate, ValuesOfCorrectTypeRule, VariablesInAllowedPositionRule
 } from 'graphql';
 import { CORE_SCALARS, DIRECTIVES } from '../../graphql-base';
@@ -19,8 +19,7 @@ const rules = [
     KnownArgumentNamesRule,
     UniqueArgumentNamesRule,
     ValuesOfCorrectTypeRule,
-    // note for the future (graphql 0.14): this will be replaced, see https://github.com/graphql/graphql-js/commit/4d2438a26c1027825b201d0f68bd4854c88ece0d
-    ProvidedNonNullArgumentsRule,
+    ProvidedRequiredArgumentsRule,
     VariablesInAllowedPositionRule,
     UniqueInputFieldNamesRule
 ];
