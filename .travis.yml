@@ -1,13 +1,22 @@
 language: node_js
 node_js:
-  - "8"
+  - '8'
 install:
-  - npm i -g npm@5.7.1 # this should be deleted once 5.7.X is out of "pre-release"
   - npm ci
 script:
-  - mkdir -p arangodb && cd arangodb && curl -L https://download.arangodb.com/travisCI/setup_arangodb_3.2.4.sh | bash
+  - mkdir -p arangodb-bin && cd arangodb-bin && curl -L https://download.arangodb.com/travisCI/setup_arangodb_3.2.4.sh
+      | bash > /dev/null
   - npm run test:coverage
   - npm run test:dropdb
+  - cd ..
+deploy:
+  - provider: npm
+    email: "Nils.Wenzler@aeb.com"
+    skip_cleanup: true
+    api_key:
+      secure: Wwraiy5R5IXxUC4YjqgEQnfVQsVZxIyLFecRP4fhds+i8gYK3dmMDpd7IBkNrrqCNa0s0ZN+rzPNxW7QoTNv3bgdCHWdNL5SHNtRh46QS2xVmZ6W2VqsaO9myPeQpbv3hiV2BQ2nzAEa4zL4v3Cz8gQqbDeQS5vIkQqhrQLigANBhMDYP+u7MFYrhpKF8vYobMmdUkjnCmNZS/iP/tnFjz51U/OFW56N9cWGBMRMVOz7mB450UCBTGRotDXo7nyWMVK5O9QpnEbxR6NaeVG7NMV+YToJz+JJ6UZOoCL71UW0W/Fxns1IOKSHFQaQVrG93VibE2nzZnFRLR9iG0rwNMxXDdZPRlQ/eFfqP1NN2fPgREDJgmqxDW6Wvwd0O8G/k3rVoEzAgE6QUnX4lnpE0wgJWvzDRv67xjiHOo0FHwLNHdSO1u5iIao4+NFM/uZpD75Bg/tiIXK2ck95Aw1NEGp5s6sO9feQ+suRNG2/dbWaBxlHs65NKf5vWE+BxCZ2OwMoVHx2lxISY96fuFfwmYBeANj2sYe6OY87cKkHk/hRubFKJ2r+6LG5eeySRl6IXxA4RE7uILErHmEUeTVMRhSNfEk+bXBbxPkepr4GkLkQ8gYKxRnRGQFK+HgGXhmwsEkphSmSmebr2Bkay/uox4ux22w3GBcMKhcaGCug7hI=
+    on:
+      tags: true
 # keep the npm cache around to speed up installs
 cache:
   directories:

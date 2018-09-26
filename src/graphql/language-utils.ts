@@ -26,7 +26,7 @@ import {compact, flatMap} from "../utils/utils";
  * @param selections an array of selection nodes, or undefined to not specify a SelectionSet node
  * @returns the field node
  */
-export function createFieldNode(name: string, alias?: string, selections?: SelectionNode[]): FieldNode {
+export function createFieldNode(name: string, alias?: string, selections?: ReadonlyArray<SelectionNode>): FieldNode {
     return {
         kind: 'Field',
         name: {
@@ -56,7 +56,7 @@ export function createFieldNode(name: string, alias?: string, selections?: Selec
  * @param innermostSelectionSet
  * @returns {SelectionSetNode}
  */
-export function createSelectionChain(fieldNames: string[], innermostSelectionSet: SelectionSetNode): SelectionSetNode {
+export function createSelectionChain(fieldNames: ReadonlyArray<string>, innermostSelectionSet: SelectionSetNode): SelectionSetNode {
     return cloneSelectionChain(fieldNames.map(name => createFieldNode(name)), innermostSelectionSet);
 }
 
@@ -70,7 +70,7 @@ export function createSelectionChain(fieldNames: string[], innermostSelectionSet
  * @param innermostSelectionSet
  * @returns {SelectionSetNode}
  */
-export function cloneSelectionChain(fieldNodes: FieldNode[], innermostSelectionSet?: SelectionSetNode): SelectionSetNode {
+export function cloneSelectionChain(fieldNodes: ReadonlyArray<FieldNode>, innermostSelectionSet?: SelectionSetNode): SelectionSetNode {
     if (!fieldNodes.length && !innermostSelectionSet) {
         throw new Error(`Either provide innermostSelectionSet or a non-empty fieldNodes array`);
     }
@@ -264,7 +264,7 @@ export function aliasExistsInSelection(selectionSet: SelectionSetNode, alias: st
  * @param fragments an array of fragment definitions for lookup of fragment spreads
  * @return the field nodes
  */
-export function expandSelections(selections: SelectionNode[], fragments: { [fragmentName: string]: FragmentDefinitionNode } = {}): FieldNode[] {
+export function expandSelections(selections: ReadonlyArray<SelectionNode>, fragments: { [fragmentName: string]: FragmentDefinitionNode } = {}): ReadonlyArray<FieldNode> {
     function findFragment(name: string): FragmentDefinitionNode {
         if (!(name in fragments)) {
             throw new Error(`Fragment ${name} is referenced but not defined`);
@@ -272,7 +272,7 @@ export function expandSelections(selections: SelectionNode[], fragments: { [frag
         return fragments[name];
     }
 
-    function expandSelection(node: SelectionNode): FieldNode[] {
+    function expandSelection(node: SelectionNode): ReadonlyArray<FieldNode> {
         switch (node.kind) {
             case 'Field':
                 return [node];
@@ -294,12 +294,15 @@ export function expandSelections(selections: SelectionNode[], fragments: { [frag
  * Inline fragments and fragment spread operators are crawled recursively. The type of fragments is not considered.
  * Multiple matching nodes are collected recusivily, according to GraphQL's field node merging logic
  */
-export function findNodesByAliasInSelections(selections: SelectionNode[], alias: string, fragments: { [fragmentName: string]: FragmentDefinitionNode } = {}): FieldNode[] {
+export function findNodesByAliasInSelections(selections: ReadonlyArray<SelectionNode>, alias: string, fragments: { [fragmentName: string]: FragmentDefinitionNode } = {}): ReadonlyArray<FieldNode> {
     return expandSelections(selections, fragments).filter(node => getAliasOrName(node) == alias);
 }
 
 
-export function addVariableDefinitionSafely(variableDefinitions: VariableDefinitionNode[], name: string, type: GraphQLType): { name: string, variableDefinitions: VariableDefinitionNode[] } {
+export function addVariableDefinitionSafely(variableDefinitions: ReadonlyArray<VariableDefinitionNode>, name: string, type: GraphQLType): {
+    name: string,
+    variableDefinitions: ReadonlyArray<VariableDefinitionNode>
+} {
     const names = new Set(variableDefinitions.map(def => def.variable.name.value));
     let varName = name;
     if (names.has(name)) {
@@ -339,7 +342,7 @@ export function renameTypes<T extends ASTNode>(root: T, typeNameTransformer: (na
     });
 }
 
-export function collectFieldNodesInPath(selectionSet: SelectionSetNode, aliases: string[], fragments: { [fragmentName: string]: FragmentDefinitionNode } = {}): FieldNode[] {
+export function collectFieldNodesInPath(selectionSet: SelectionSetNode, aliases: ReadonlyArray<string>, fragments: { [fragmentName: string]: FragmentDefinitionNode } = {}): ReadonlyArray<FieldNode> {
     if (!aliases.length) {
         throw new Error(`Aliases must not be empty`);
     }
@@ -373,6 +376,3 @@ export function getAliasOrName(fieldNode: FieldNode) {
     }
     return fieldNode.name.value;
 }
-
-export const introspectionTypes = ['_ExtendedIntrospection', '_ExtendedType', '_ExtendedField', '_FieldMetadata', '_FieldLink', '_FieldJoin'];
-

@@ -1,0 +1,49 @@
+{
+  "createWithNestedToOne": {
+    "data": {
+      "createDelivery": {
+        "forwarder": {
+          "name": "A"
+        }
+      }
+    }
+  },
+  "updateWithNestedToOne": {
+    "data": {
+      "updateDelivery": {
+        "forwarder": {
+          "name": "old"
+        }
+      }
+    }
+  },
+  "updateWithNewNestedToOne": {
+    "data": {
+      "updateDelivery": {
+        "forwarder": {
+          "name": "new"
+        }
+      }
+    }
+  },
+  "checkOldGotRemoved": {
+    "data": {
+      "old": [
+        {
+          "name": "old",
+          "deliveries": []
+        }
+      ],
+      "new": [
+        {
+          "name": "new",
+          "deliveries": [
+            {
+              "deliveryNumber": "1000173"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

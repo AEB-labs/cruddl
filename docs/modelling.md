@@ -1,6 +1,6 @@
 # Modelling guide
 
-A cruddl project consists of one or multiple [GraphQL schema](http://graphql.org/learn/schema/) files and, optionally, metadata files in JSON format. A simple example can look like this:
+A cruddl project consists of one or multiple [GraphQL schema](http://graphql.org/learn/schema/) files and, optionally, metadata files in JSON or YAML format. A simple example can look like this:
 
 ```typescript
 import { Project } from 'cruddl';
@@ -81,7 +81,7 @@ type Order @rootEntity {
 }
 ```
 
-Entity extension can be used within root entities, child entities and other entity extensions. If you omit fields when updating an entity extension, those are kept as-is.
+Entity extension can be used within root entities, child entities and other entity extensions. If you omit fields when updating an entity extension, those are kept as-is. Entity extensions are never `null` - if you omit it entirely, or an object was created before it was added, the field evaluates to an empty object.
 
 ### Value objects
 
@@ -190,6 +190,8 @@ type Order @rootEntity(permissionProfile: "restricted") {
   # ...
 }
 ```
+
+Permission profiles are looked up in all json/yaml files within the type's namespace. If not found there, the namespace tree is navigated upwards. Permission profiles can be shadowed (i.e. a profile can be defined in a parent and in a child namespace, and the child namespace wins), but this generates a warning. The permission profile `default` can be shadowed without warning, so you can have namespace-dependent default permission profiles.
 
 ### Field permissions
 

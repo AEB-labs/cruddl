@@ -1,18 +1,19 @@
-import { getPermissionDescriptor } from '../permission-descriptors-in-schema';
-import { AccessOperation, AuthContext, AUTHORIZATION_ERROR_NAME } from '../auth-basics';
 import {
-    FieldQueryNode, FollowEdgeQueryNode, QueryNode, RuntimeErrorQueryNode, TransformListQueryNode, VariableQueryNode
-} from '../../query/definition';
+    FollowEdgeQueryNode, QueryNode, RuntimeErrorQueryNode, TransformListQueryNode, VariableQueryNode
+} from '../../query-tree';
+import { AccessOperation, AuthContext, AUTHORIZATION_ERROR_NAME } from '../auth-basics';
 import { PermissionResult } from '../permission-descriptors';
-import { invertRelationFieldEdgeSide } from '../../schema/edges';
+import {
+    getPermissionDescriptorOfField, getPermissionDescriptorOfRootEntityType
+} from '../permission-descriptors-in-model';
 
 export function transformFollowEdgeQueryNode(node: FollowEdgeQueryNode, authContext: AuthContext): QueryNode {
-    const sourceType = node.edgeType.getTypeOfSide(node.sourceFieldSide);
-    const sourceField = node.edgeType.getFieldOfSide(node.sourceFieldSide);
+    const sourceType = node.relationSide.sourceType;
+    const sourceField = node.relationSide.sourceField;
     if (!sourceField) {
         throw new Error(`Encountered FollowEdgeQueryNode which traverses via non-existing inverse field (on ${sourceType.name})`);
     }
-    const fieldPermissionDescriptor = getPermissionDescriptor(sourceType, sourceField);
+    const fieldPermissionDescriptor = getPermissionDescriptorOfField(sourceField);
     const access = fieldPermissionDescriptor.canAccess(authContext, AccessOperation.READ);
     switch (access) {
         case PermissionResult.DENIED:
@@ -21,8 +22,8 @@ export function transformFollowEdgeQueryNode(node: FollowEdgeQueryNode, authCont
             throw new Error(`Conditional permission profiles are currently not supported on fields, but used in ${sourceType.name}.${sourceField.name}`);
     }
 
-    const targetType = node.edgeType.getTypeOfSide(invertRelationFieldEdgeSide(node.sourceFieldSide));
-    const entityPermissionDescriptor = getPermissionDescriptor(targetType);
+    const targetType = node.relationSide.targetType;
+    const entityPermissionDescriptor = getPermissionDescriptorOfRootEntityType(targetType);
     const entityAccess = entityPermissionDescriptor.canAccess(authContext, AccessOperation.READ);
     switch (entityAccess) {
         case PermissionResult.GRANTED:

@@ -90,9 +90,10 @@ mutation update {
         deliveryNumber
     }
 
-    updateForwarder(input: { id: "@{ids/Forwarder/1}", name: "DPD"}) {
+    updateForwarder(input: { id: "@{ids/Forwarder/1}", name: "DPD2"}) {
         name
     }
+
     update2: updateDelivery(input: { id: "@{ids/Delivery/1}", deliveryNumber: "2" }) {
         deliveryNumber
     }

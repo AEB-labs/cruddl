@@ -1,0 +1,62 @@
+{
+  "invalidJSON": {
+    "data": {
+      "allPapers": null
+    },
+    "errors": [
+      {
+        "locations": [
+          {
+            "column": 5,
+            "line": 12
+          }
+        ],
+        "message": "Invalid cursor \"this-is-not-json\" supplied to \"after\": Unexpected token h in JSON at position 1",
+        "path": [
+          "allPapers"
+        ]
+      }
+    ]
+  },
+  "missingProperty": {
+    "data": {
+      "Paper": {
+        "title": "Object-oriented modeling and design"
+      },
+      "allPapers": null
+    },
+    "errors": [
+      {
+        "locations": [
+          {
+            "column": 5,
+            "line": 6
+          }
+        ],
+        "message": "Invalid cursor supplied to \"after\": Property \"title\" missing. Make sure this cursor has been obtained with the same orderBy clause.",
+        "path": [
+          "allPapers"
+        ]
+      }
+    ]
+  },
+  "nonObjectJSON": {
+    "data": {
+      "allPapers": null
+    },
+    "errors": [
+      {
+        "locations": [
+          {
+            "column": 5,
+            "line": 18
+          }
+        ],
+        "message": "The JSON value provided as \"after\" argument is not an object",
+        "path": [
+          "allPapers"
+        ]
+      }
+    ]
+  }
+}

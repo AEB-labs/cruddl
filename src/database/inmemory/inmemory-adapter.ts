@@ -1,15 +1,11 @@
-import { DatabaseAdapter } from '../database-adapter';
-import { QueryNode } from '../../query/definition';
 import { globalContext, SchemaContext } from '../../config/global';
 import { Logger } from '../../config/logging';
-import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS } from '../../query/query-result-validators';
+import { Model } from '../../model';
+import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS, QueryNode } from '../../query-tree';
+import { DatabaseAdapter } from '../database-adapter';
+import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './inmemory-basics';
 import { JSCompoundQuery, JSExecutableQuery } from './js';
 import { getJSQuery } from './js-generator';
-import { GraphQLObjectType, GraphQLSchema } from 'graphql';
-import { isRelationField, isRootEntityType } from '../../schema/schema-utils';
-import { flatMap, objectValues } from '../../utils/utils';
-import { getCollectionNameForEdge, getCollectionNameForRootEntity } from './inmemory-basics';
-import { getEdgeType } from '../../schema/edges';
 import uuid = require('uuid');
 
 export class InMemoryDB {
@@ -185,14 +181,9 @@ export class InMemoryAdapter implements DatabaseAdapter {
         return this.executeQueries(executableQueries);
     }
 
-    async updateSchema(schema: GraphQLSchema) {
-        const rootEntities = objectValues(schema.getTypeMap()).filter(type => isRootEntityType(type)) as GraphQLObjectType[];
-
-        const edgeTypes = flatMap(rootEntities, entity =>
-            objectValues(entity.getFields())
-                .filter(field => isRelationField(field))
-                .map(field => getEdgeType(entity, field)));
-        const requiredEdgeCollections = Array.from(new Set(edgeTypes.map(edge => getCollectionNameForEdge(edge))));
+    async updateSchema(model: Model) {
+        const rootEntities = model.rootEntityTypes;
+        const requiredEdgeCollections = Array.from(new Set(model.relations.map(getCollectionNameForRelation)));
 
         const requiredCollections = rootEntities.map(entity => getCollectionNameForRootEntity(entity));
         for (const coll of [...requiredCollections, ...requiredEdgeCollections]) {

@@ -1,12 +1,18 @@
+"A delivery"
 type Delivery @rootEntity @roles(readWrite: ["allusers"]) {
-    deliveryNumber: String @key
+    deliveryNumber: String @key @unique # leave this here to catch this case, too (has caused a bug)
+    "The list of serial numbers associated with this delivery"
     serialNumbers: [String]
+    "The address of the delivery's consignee"
     consignee: Address
     contentInfo: [Translation]
     dgInfo: DangerousGoodsInfo
     items: [DeliveryItem]
+    "The handling units the items of this delivery are packaged in"
     handlingUnits: [HandlingUnit] @relation
+    "The country to where the delivery should be shipped"
     destinationCountry: Country @reference
+    shippedAt: DateTime
 
     totalValue: String @roles(readWrite: ["accounting"])
     forwarder: Forwarder @relation
@@ -19,15 +25,27 @@ type Delivery @rootEntity @roles(readWrite: ["allusers"]) {
     defaultValueFalse: Boolean @defaultValue(value: false)
     defaultValueFloat: Float @defaultValue(value: 3.14)
     defaultValueEnum: Foobarit @defaultValue(value: Bar)
+
+    pickupDate: LocalDate
+    pickupTimeStart: LocalTime
+    pickupTimeEnd: LocalTime
+
+    dynamicData: JSON
 }
 
 type DeliveryItem @childEntity {
     itemNumber: String
+    handlingUnit: HandlingUnit @reference
 }
 
 type Forwarder @rootEntity @roles(readWrite: ["logistics"]) {
     name: String @key
     deliveries: [Delivery] @relation(inverseOf:"forwarder")
+}
+
+# this can cause problems in schema generation because some input types might be empty
+type OnlyRelations @rootEntity  @roles(readWrite: ["allusers"]) {
+    deliveries: [Delivery] @relation
 }
 
 enum Foobarit {

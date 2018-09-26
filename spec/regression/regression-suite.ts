@@ -1,5 +1,5 @@
-import { ArangoDBAdapter, ArangoDBConfig } from '../../src/database/arangodb';
-import { graphql, GraphQLSchema, OperationDefinitionNode, parse, Source } from 'graphql';
+import { ArangoDBAdapter } from '../../src/database/arangodb';
+import { graphql, GraphQLSchema, OperationDefinitionNode, parse } from 'graphql';
 import * as path from 'path';
 import * as fs from 'fs';
 import { createTempDatabase, initTestData, TestDataEnvironment } from './initialization';
@@ -9,7 +9,8 @@ import { loadProjectFromDir } from '../../src/project/project-from-fs';
 import { ProjectOptions } from '../../src/project/project';
 import { DatabaseAdapter } from '../../src/database/database-adapter';
 import { SchemaContext } from '../../src/config/global';
-import { InMemoryAdapter, InMemoryDB } from '../../src/database/inmemory/inmemory-adapter';
+import { InMemoryAdapter, InMemoryDB } from '../../src/database/inmemory';
+import deepEqual = require('deep-equal');
 
 interface TestResult {
     actualResult: any
@@ -18,13 +19,17 @@ interface TestResult {
 
 export interface RegressionSuiteOptions {
     saveActualAsExpected?: boolean
+    trace?: boolean
     database?: 'arangodb'|'in-memory';
 }
 
 export class RegressionSuite {
-    private schema: GraphQLSchema;
-    private testDataEnvironment: TestDataEnvironment;
+    private schema: GraphQLSchema|undefined;
+    private testDataEnvironment: TestDataEnvironment|undefined;
     private _isSetUpClean = false;
+    // TODO: this is ugly but provides a quick fix for things broken with the silentAdapter
+    // TODO: implement better regression test architecture for different db types
+    private inMemoryDB: InMemoryDB = new InMemoryDB();
 
     constructor(private readonly path: string, private options: RegressionSuiteOptions = {}) {
 
@@ -35,36 +40,32 @@ export class RegressionSuite {
     }
 
     private async setUp() {
+        this.inMemoryDB = new InMemoryDB();
         const warnLevelOptions = { loggerProvider: new Log4jsLoggerProvider('warn') };
-        const debugLevelOptions = { loggerProvider: new Log4jsLoggerProvider('debug', { 'schema-builder': 'warn'}) };
+        const debugLevelOptions = { loggerProvider: new Log4jsLoggerProvider(this.options.trace ? 'trace' : 'warn', { 'schema-builder': 'warn'}) };
 
-        const factory = await this.createAdapterFactory();
-        this.schema = await this.createSchema(factory, debugLevelOptions);
+        const project = await loadProjectFromDir(path.resolve(this.path, 'model'), debugLevelOptions);
+        const adapter = await this.createAdapter(debugLevelOptions);
+        this.schema = project.createSchema(adapter);
 
-        // use a schema that logs less for initTestData
-        const initDataSchema = await this.createSchema(factory, warnLevelOptions);
-        const initDataAdapter = factory(warnLevelOptions);
-        await initDataAdapter.updateSchema(initDataSchema);
-        this.testDataEnvironment = await initTestData(path.resolve(this.path, 'test-data.json'), initDataSchema);
+        // use a schema that logs less for initTestData and for schema migrations
+        const silentProject = await loadProjectFromDir(path.resolve(this.path, 'model'), debugLevelOptions);
+        const silentAdapter = await this.createAdapter(warnLevelOptions);
+        const silentSchema = silentProject.createSchema(silentAdapter);
+        await silentAdapter.updateSchema(silentProject.getModel());
+        this.testDataEnvironment = await initTestData(path.resolve(this.path, 'test-data.json'), silentSchema);
 
         this._isSetUpClean = true;
     }
 
-    private async createAdapterFactory(): Promise<(context: SchemaContext) => DatabaseAdapter> {
+    private async createAdapter(context: SchemaContext): Promise<DatabaseAdapter> {
         // TODO this is ugly
         if (this.options.database == 'in-memory') {
-            const db = new InMemoryDB();
-            return (context: SchemaContext) => new InMemoryAdapter({ db }, context);
+            return new InMemoryAdapter({ db: this.inMemoryDB }, context);
         } else {
             const dbConfig = await createTempDatabase();
-            return (context: SchemaContext) => new ArangoDBAdapter(dbConfig, context);
+            return new ArangoDBAdapter(dbConfig, context);
         }
-    }
-
-    private async createSchema(factory: (context: SchemaContext) => DatabaseAdapter, options: ProjectOptions) {
-        const dbAdapter = factory(options);
-        const project = await loadProjectFromDir(path.resolve(this.path, 'model'), options);
-        return project.createSchema(dbAdapter);
     }
 
     getTestNames() {
@@ -76,6 +77,10 @@ export class RegressionSuite {
     async runTest(name: string) {
         if (!this._isSetUpClean) {
             await this.setUp();
+        }
+
+        if (!this.testDataEnvironment || !this.schema) {
+            throw new Error(`Regression suite not set up correctly`);
         }
 
         const gqlPath = path.resolve(this.testsPath, name + '.graphql');
@@ -114,7 +119,7 @@ export class RegressionSuite {
             actualResult = JSON.parse(JSON.stringify(actualResult)); // serialize e.g. errors as they would be in a GraphQL server
         }
 
-        if (this.options.saveActualAsExpected && !(jasmine as any).matchersUtil.equals(actualResult, expectedResult)) {
+        if (this.options.saveActualAsExpected && !deepEqual(actualResult, expectedResult)) {
             fs.writeFileSync(resultPath, JSON.stringify(actualResult, undefined, '  '), 'utf-8');
         }
 

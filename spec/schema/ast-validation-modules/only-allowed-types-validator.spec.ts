@@ -1,18 +1,14 @@
-import {ValidationResult} from "../../../src/schema/preparation/ast-validator";
-import {parse} from "graphql";
-import {
-    OnlyAllowedTypesValidator,
-    VALIDATION_ERROR_INVALID_TYPE_KIND
-} from "../../../src/schema/preparation/ast-validation-modules/only-allowed-types-validator";
+import { expect } from 'chai';
+import { validate } from './helpers';
 
 const modelWithoutForbiddenTypes = `
-            type Stuff {
+            type Stuff @rootEntity {
                 foo: String
             }
         `;
 
 const modelWithForbiddenTypes = `
-            type Stuff {
+            type Stuff @rootEntity {
                 foo: String
             }
             input ForbiddenStuff {
@@ -21,18 +17,17 @@ const modelWithForbiddenTypes = `
         `;
 
 describe('only allowed type definition validator', () => {
+
     it('finds invalid type kinds', () => {
-        const ast = parse(modelWithForbiddenTypes);
-        const validationResult = new ValidationResult(new OnlyAllowedTypesValidator().validate(ast));
-        expect(validationResult.hasErrors()).toBeTruthy();
-        expect(validationResult.messages.length).toBe(1);
-        expect(validationResult.messages[0].message).toBe(VALIDATION_ERROR_INVALID_TYPE_KIND);
+        const validationResult = validate(modelWithForbiddenTypes);
+        expect(validationResult.hasErrors()).to.be.true;
+        expect(validationResult.messages.length).to.equal(1);
+        expect(validationResult.messages[0].message).to.equal('This kind of definition is not allowed. Only object and enum type definitions are allowed.');
     });
 
     it('accepts correct type kinds', () => {
-        const ast = parse(modelWithoutForbiddenTypes);
-        const validationResult = new ValidationResult(new OnlyAllowedTypesValidator().validate(ast));
-        expect(validationResult.hasErrors()).toBeFalsy();
+        const validationResult = validate(modelWithoutForbiddenTypes);
+        expect(validationResult.hasErrors()).to.be.false;
     })
 
 });

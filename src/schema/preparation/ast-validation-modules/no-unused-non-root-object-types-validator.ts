@@ -1,14 +1,9 @@
-import {ASTValidator} from "../ast-validator";
-import {DirectiveDefinitionNode, DirectiveNode, DocumentNode, ObjectTypeDefinitionNode} from "graphql";
-import {ValidationMessage} from "../validation-message";
+import { DocumentNode, ObjectTypeDefinitionNode } from 'graphql';
+import { ValidationMessage } from '../../../model';
 import {
-    getNamedTypeDefinitionAST,
-    getObjectTypes, getRootEntityTypes, getTypeNameIgnoringNonNullAndList,
-    hasDirectiveWithName
-} from "../../schema-utils";
-import {ENTITY_EXTENSION_DIRECTIVE, OBJECT_TYPE_ENTITY_DIRECTIVES, ROOT_ENTITY_DIRECTIVE} from "../../schema-defaults";
-
-export const VALIDATION_WARNING_UNUSED_OBJECT_TYPE = "Unused object type.";
+    getNamedTypeDefinitionAST, getObjectTypes, getRootEntityTypes, getTypeNameIgnoringNonNullAndList
+} from '../../schema-utils';
+import { ASTValidator } from '../ast-validator';
 
 export class NoUnusedNonRootObjectTypesValidator implements ASTValidator {
     validate(ast: DocumentNode): ValidationMessage[] {
@@ -19,16 +14,10 @@ export class NoUnusedNonRootObjectTypesValidator implements ASTValidator {
             objectTypeNames.delete(rootType);
         });
         // remove all object types from the set which are referenced by some fields
-        getObjectTypes(ast).forEach(objectType => objectType.fields.forEach(field => objectTypeNames.delete(getNamedTypeDefinitionAST(ast, getTypeNameIgnoringNonNullAndList(field.type)) as ObjectTypeDefinitionNode)));
+        getObjectTypes(ast).forEach(objectType => (objectType.fields || []).forEach(field => objectTypeNames.delete(getNamedTypeDefinitionAST(ast, getTypeNameIgnoringNonNullAndList(field.type)) as ObjectTypeDefinitionNode)));
         // remaining object types in set are unused, create warnings for them
         return Array.from(objectTypeNames).map(
-            unusedType => ValidationMessage.warn(
-                    VALIDATION_WARNING_UNUSED_OBJECT_TYPE,
-                    {
-                        entityKind: unusedType.directives!.find(
-                            directive => OBJECT_TYPE_ENTITY_DIRECTIVES.includes(directive.name.value))!.name.value
-                    },
-                    unusedType.loc)
+            unusedType => ValidationMessage.warn(`Type "${unusedType.name.value}" is not used.`, unusedType.name)
         );
     }
 

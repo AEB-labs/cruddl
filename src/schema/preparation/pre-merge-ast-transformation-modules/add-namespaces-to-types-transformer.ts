@@ -1,41 +1,46 @@
+import { ASTNode, DocumentNode, ObjectTypeDefinitionNode } from 'graphql';
+import { ARGUMENT, DIRECTIVE, STRING } from '../../../graphql/kinds';
+import { NAMESPACE_DIRECTIVE, NAMESPACE_NAME_ARG, NAMESPACE_SEPARATOR, ROOT_ENTITY_DIRECTIVE } from '../../constants';
+import { buildNameNode, hasDirectiveWithName } from '../../schema-utils';
 import { ASTTransformationContext, ASTTransformer } from '../transformation-pipeline';
-import {DocumentNode} from "graphql";
-import {buildNameNode, getRootEntityTypes, hasDirectiveWithName} from "../../schema-utils";
-import {ARGUMENT, DIRECTIVE, STRING} from "../../../graphql/kinds";
-import {NAMESPACE_DIRECTIVE, NAMESPACE_NAME_ARG} from "../../schema-defaults";
 
 export class AddNamespacesToTypesTransformer implements ASTTransformer {
+    transform(ast: DocumentNode, context: ASTTransformationContext): DocumentNode {
+        if (!context || !context.namespacePath || context.namespacePath.length === 0) {
+            return ast;
+        }
+        return {
+            ...ast,
+            definitions: ast.definitions.map(def => {
+                if (!isObjectTypeDefinitionNode(def) || !hasDirectiveWithName(def, ROOT_ENTITY_DIRECTIVE) || hasDirectiveWithName(def, NAMESPACE_DIRECTIVE)) {
+                    return def;
+                }
 
-    transform(ast: DocumentNode, context: ASTTransformationContext): void {
-        if (!context) {
-            return;
-        }
-        const namespace = context.localNamespace || context.defaultNamespace;
-        if (!namespace) {
-            return;
-        }
-        getRootEntityTypes(ast).forEach(rootEntityType => {
-            if (!hasDirectiveWithName(rootEntityType, NAMESPACE_DIRECTIVE)) {
-                rootEntityType.directives = [
-                    ...rootEntityType.directives || [],
-                    ({
-                        kind: DIRECTIVE,
-                        name: buildNameNode(NAMESPACE_DIRECTIVE),
-                        arguments: [
-                            {
-                                kind: ARGUMENT,
-                                name: buildNameNode(NAMESPACE_NAME_ARG),
-                                value: {
-                                    kind: STRING,
-                                    value: namespace
+                return {
+                    ...def,
+                    directives: [
+                        ...def.directives,
+                        ({
+                            kind: DIRECTIVE,
+                            name: buildNameNode(NAMESPACE_DIRECTIVE),
+                            arguments: [
+                                {
+                                    kind: ARGUMENT,
+                                    name: buildNameNode(NAMESPACE_NAME_ARG),
+                                    value: {
+                                        kind: STRING,
+                                        value: context.namespacePath.join(NAMESPACE_SEPARATOR)
+                                    }
                                 }
-                            }
-                        ]
-                    })
-                ]
-            }
-        })
-
+                            ]
+                        })
+                    ]
+                };
+            })
+        };
     }
+}
 
+function isObjectTypeDefinitionNode(node: ASTNode): node is ObjectTypeDefinitionNode {
+    return node.kind == 'ObjectTypeDefinition';
 }

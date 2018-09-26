@@ -6,18 +6,27 @@ enum Category {
     Programming
 }
 
+"A scientific paper"
 type Paper @rootEntity @roles(readWrite: ["admin"]) {
     key: String @key # need a key field for the reference
     title: String
-    publishDate: DateTime
+    "The date this paper has been published in a scientific journal or conference"
+    publishDate: LocalDate
     isPublished: Boolean
     literatureReferences: [LiteratureReference]
     tags: [String]
     #author: User @relation
+    "The users that have read this paper"
     readers: [User] @relation(inverseOf: "papers")
+    "Categories of this paper"
     categories: [Category!]
 }
 
+"""
+A reference to a different scientific paper
+
+This is an entry of the paper's bibliography section
+"""
 type LiteratureReference @valueObject {
     paper: Paper @reference
     title: String

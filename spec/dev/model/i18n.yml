@@ -1,0 +1,39 @@
+i18n:
+  en:
+    types:
+      Hero:
+        label: Hero
+        labelPlural: Heroes
+        hint: A brave person with cool features
+        fields:
+          name:
+            label: Name
+            hint: The name of the hero
+          age: age
+      DateTime:
+        label: Date and time
+    fields:
+      createdAt:
+        label: Created at
+        hint: When this hero's record was created
+      updatedAt:
+        label: Updated at
+        hint: Last change date
+      id: ID
+  de:
+    types:
+      Hero:
+        label: Held
+        labelPlural: Helden
+        hint: Eine mutige Person mit coolen Features
+        fields:
+          name:
+            label: Name
+            hint: Der Name des Helden
+          age: Alter
+    fields:
+      createdAt:
+        label: Erfasst am
+        hint: Wann der Held in diesem System angelegt wurde
+      updatedAt: Geändert am
+      id: ID

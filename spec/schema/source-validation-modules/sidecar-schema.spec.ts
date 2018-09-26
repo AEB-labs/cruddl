@@ -1,5 +1,8 @@
+import { ValidationContext, ValidationMessage } from '../../../src/model/validation';
 import { ProjectSource } from '../../../src/project/source';
 import { SidecarSchemaValidator } from '../../../src/schema/preparation/source-validation-modules/sidecar-schema';
+import { expect } from 'chai';
+import { parseProjectSource } from '../../../src/schema/schema-builder';
 
 const validValue = `{
     "permissionProfiles": {
@@ -60,32 +63,67 @@ const invalidValueWithComments = `{
 describe('sidecar-schema validator', () => {
     const validator = new SidecarSchemaValidator();
 
-    it('reports errors', () => {
-        const messages = validator.validate(new ProjectSource('test.json', invalidValue));
-        expect(messages.length).toBe(2);
-        expect(messages[0].message).toBe("should be equal to one of the allowed values")
-        expect(messages[1].message).toBe("should be array");;
-        expect(JSON.parse(JSON.stringify(messages[1].location))).toEqual({
-            sourceName: 'test.json',
-            start: { offset: 352, line: 12, column: 47 },
-            end: { offset: 364, line: 12, column: 59 }
+    function getValidatorMessages(ps: ProjectSource): ValidationMessage[] {
+        const parsedSource = parseProjectSource(ps, new ValidationContext());
+        if(parsedSource){
+            return validator.validate(parsedSource);
+        }
+
+        expect(parsedSource).to.not.be.undefined;
+        throw new Error("Not reachable");
+    }
+
+    it('reports errors in json files', () => {
+        const messages = getValidatorMessages(new ProjectSource('test.json', invalidValue));
+        expect(messages.length).to.equal(2);
+        expect(messages[0].message).to.equal("should be equal to one of the allowed values");
+        expect(messages[1].message).to.equal("should be array");
+        expect(JSON.parse(JSON.stringify(messages[1].location))).to.deep.equal({
+            "_end": 364,
+            "_start": 352,
+            "sourceName": "test.json"
         });
     });
 
-    it('accepts valid files', () => {
-        const messages = validator.validate(new ProjectSource('file.json', validValue));
-        expect(messages).toEqual([]);
+    it('accepts valid json files', () => {
+        const messages = getValidatorMessages(new ProjectSource('file.json', validValue));
+        expect(messages).to.deep.equal([]);
     });
 
     it('reports errors in files with comments', () => {
-        const messages = validator.validate(new ProjectSource('test.json', invalidValueWithComments));
-        expect(messages.length).toBe(2);
-        expect(messages[0].message).toBe("should be equal to one of the allowed values")
-        expect(messages[1].message).toBe("should be array");
-        expect(JSON.parse(JSON.stringify(messages[1].location))).toEqual({
-            sourceName: 'test.json',
-            start: { offset: 407, line: 14, column: 47 },
-            end: { offset: 419, line: 14, column: 59 }
+        const messages = getValidatorMessages(new ProjectSource('test.json', invalidValueWithComments));
+        expect(messages.length).to.equal(2);
+        expect(messages[0].message).to.equal("should be equal to one of the allowed values");
+        expect(messages[1].message).to.equal("should be array");
+        expect(JSON.parse(JSON.stringify(messages[1].location))).to.deep.equal({
+            "_end": 419,
+            "_start": 407,
+            "sourceName": "test.json"
+        });
+    });
+
+    it('accepts valid yaml files', () => {
+        const messages = getValidatorMessages(new ProjectSource('file.yaml', `
+i18n:
+  de:
+    types:
+      Temp:
+        label: Test`));
+        expect(messages).to.deep.equal([]);
+    });
+
+    it('reports errors in yaml files', () => {
+        const messages = getValidatorMessages(new ProjectSource('file.yaml', `
+i18n:
+  de:
+    typess:
+      Temp:
+        label: Test`));
+        expect(messages.length).to.equal(1);
+        expect(JSON.parse(JSON.stringify(messages[0].location))).to.deep.equal({
+            "_end": 56,
+            "_start": 9,
+            "sourceName": "file.yaml"
         });
     });
 

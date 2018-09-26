@@ -1,61 +1,39 @@
-import {ValidationResult} from "../../../src/schema/preparation/ast-validator";
-import {parse} from "graphql";
-import {
-    RolesOnNonRootEntityTypesValidator,
-    VALIDATION_ERROR_ROLES_ON_NON_ROOT_ENTITY_TYPE
-} from "../../../src/schema/preparation/ast-validation-modules/roles-on-non-root-entity-types";
+import { assertValidatorAccepts, assertValidatorRejects } from './helpers';
 
-const modelWithValueObjectWithRoles = `
+describe('roles-on-non-root-entity-types validator', () => {
+
+    it('rejects value objects with @roles', () => {
+        assertValidatorRejects(`
             type ValueObject @valueObject @roles {
                 foo: String
             }
-        `;
+        `,
+            '@roles is only allowed on fields and on root entity types.');
+    });
 
-const modelWithEntityExtensionWithRoles = `
+    it('rejects entity extensions with @roles', () => {
+        assertValidatorRejects(`
             type ValueObject @entityExtension @roles {
                 foo: String
             }
-        `;
-
-const modelWithRootEntityWithRoles = `
-            type ValueObject @rootEntity @roles {
-                foo: String
-            }
-        `;
-
-const modelWithoutValueObjectWithRoles = `
-            type ValueObject @valueObject {
-                foo: String
-            }
-        `;
-
-describe('roles-on-non-root-entity-types validator', () => {
-    it('rejects value objects with @roles', () => {
-        const ast = parse(modelWithValueObjectWithRoles);
-        const validationResult = new ValidationResult(new RolesOnNonRootEntityTypesValidator().validate(ast));
-        expect(validationResult.hasErrors()).toBeTruthy();
-        expect(validationResult.messages.length).toBe(1);
-        expect(validationResult.messages[0].message).toBe(VALIDATION_ERROR_ROLES_ON_NON_ROOT_ENTITY_TYPE);
-    });
-
-    it('rejects value objects with fields with @roles', () => {
-        const ast = parse(modelWithEntityExtensionWithRoles);
-        const validationResult = new ValidationResult(new RolesOnNonRootEntityTypesValidator().validate(ast));
-        expect(validationResult.hasErrors()).toBeTruthy();
-        expect(validationResult.messages.length).toBe(1);
-        expect(validationResult.messages[0].message).toBe(VALIDATION_ERROR_ROLES_ON_NON_ROOT_ENTITY_TYPE);
+        `,
+            '@roles is only allowed on fields and on root entity types.');
     });
 
     it('accepts value objects without roles', () => {
-        const ast = parse(modelWithoutValueObjectWithRoles);
-        const validationResult = new ValidationResult(new RolesOnNonRootEntityTypesValidator().validate(ast));
-        expect(validationResult.hasErrors()).toBeFalsy();
-    })
+        assertValidatorAccepts(`
+            type ValueObject @valueObject {
+                foo: String
+            }
+        `);
+    });
 
     it('accepts root entities with roles', () => {
-        const ast = parse(modelWithRootEntityWithRoles);
-        const validationResult = new ValidationResult(new RolesOnNonRootEntityTypesValidator().validate(ast));
-        expect(validationResult.hasErrors()).toBeFalsy();
+        assertValidatorAccepts(`
+            type ValueObject @rootEntity @roles {
+                foo: String
+            }
+        `);
     })
 
 });

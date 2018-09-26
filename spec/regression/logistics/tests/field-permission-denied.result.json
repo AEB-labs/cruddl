@@ -118,13 +118,12 @@
         "message": "AuthorizationError: Not authorized to read Forwarder objects",
         "locations": [
           {
-            "line": 42,
-            "column": 9
+            "line": 41,
+            "column": 5
           }
         ],
         "path": [
-          "_allForwardersMeta",
-          "count"
+          "_allForwardersMeta"
         ]
       }
     ],
@@ -298,7 +297,7 @@
   "delete": {
     "errors": [
       {
-        "message": "AuthorizationError: Not authorized to delete Forwarder objects",
+        "message": "AuthorizationError: Not authorized to read Forwarder objects, AuthorizationError: Not authorized to delete Forwarder objects",
         "locations": [
           {
             "line": 103,

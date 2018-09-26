@@ -1,5 +1,6 @@
 import { AnyValue } from '../../src/utils/utils';
 import { visitObject, VisitResult } from '../../src/utils/visitor';
+import { expect } from 'chai';
 
 describe('visitObject', () => {
     const a = {inA: true};
@@ -17,8 +18,8 @@ describe('visitObject', () => {
                     return { newValue: obj };
                 }
             });
-            expect(visitedObjects).toEqual([composite, a, b, {deepB: true}]);
-            expect(visitedKeys).toEqual([undefined, 'a', 'b', 'inB']);
+            expect(visitedObjects).to.deep.equal([composite, a, b, {deepB: true}]);
+            expect(visitedKeys).to.deep.equal([undefined, 'a', 'b', 'inB']);
         });
 
         it('replaces objects with result', () => {
@@ -30,7 +31,7 @@ describe('visitObject', () => {
                     return { newValue: obj };
                 }
             });
-            expect(result).toEqual({a: {inA: false}, b: {inB: {deepB: true}}});
+            expect(result).to.deep.equal({a: {inA: false}, b: {inB: {deepB: true}}});
         });
 
         it('does not visit replacement objects if recurse is false', () => {
@@ -44,7 +45,7 @@ describe('visitObject', () => {
                     return { newValue: obj };
                 }
             });
-            expect(visitedObjects).toEqual([composite, a, b, {deepB: true}]);
+            expect(visitedObjects).to.deep.equal([composite, a, b, {deepB: true}]);
         });
 
         it('visit replacement objects if recurse is true', () => {
@@ -58,7 +59,7 @@ describe('visitObject', () => {
                     return { newValue: obj };
                 }
             });
-            expect(visitedObjects).toEqual([composite, a, { deepA: true }, b, {deepB: true}]);
+            expect(visitedObjects).to.deep.equal([composite, a, { deepA: true }, b, {deepB: true}]);
         });
 
         it('skips when SKIP_NODE is returned', () => {
@@ -72,7 +73,7 @@ describe('visitObject', () => {
                     return { newValue: obj };
                 }
             });
-            expect(visitedObjects).toEqual([composite, a, b]);
+            expect(visitedObjects).to.deep.equal([composite, a, b]);
         });
 
         it('is called for each array item', () => {
@@ -85,7 +86,7 @@ describe('visitObject', () => {
                     return { newValue: obj };
                 }
             });
-            expect(visitedObjects).toEqual([listObj, a, b, {deepB: true}]);
+            expect(visitedObjects).to.deep.equal([listObj, a, b, {deepB: true}]);
         });
     });
 
@@ -100,8 +101,8 @@ describe('visitObject', () => {
                     return obj;
                 }
             });
-            expect(visitedObjects).toEqual([a, {deepB: true}, b, composite]);
-            expect(visitedKeys).toEqual(['a', 'inB', 'b', undefined]);
+            expect(visitedObjects).to.deep.equal([a, {deepB: true}, b, composite]);
+            expect(visitedKeys).to.deep.equal(['a', 'inB', 'b', undefined]);
         });
 
         it('replaces objects with result', () => {
@@ -113,7 +114,7 @@ describe('visitObject', () => {
                     return obj;
                 }
             });
-            expect(result).toEqual({a: {inA: false}, b: {inB: {deepB: true}}});
+            expect(result).to.deep.equal({a: {inA: false}, b: {inB: {deepB: true}}});
         });
     });
 });

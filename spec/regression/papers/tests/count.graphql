@@ -1,0 +1,10 @@
+{
+    _allPapersMeta {
+        count
+    }
+    Paper(id: "@{ids/Paper/4}") {
+        _literatureReferencesMeta {
+            count
+        }
+    }
+}

@@ -1,53 +1,33 @@
-import {ValidationResult} from "../../../src/schema/preparation/ast-validator";
-import {parse} from "graphql";
-import {
-    RootEntitiesWithoutReadRolesValidator,
-    VALIDATION_WARNING_MISSING_ROLE_ON_ROOT_ENTITY
-} from "../../../src/schema/preparation/ast-validation-modules/root-entities-without-read-roles";
-import {
-    NoPermissionProfileValidator, VALIDATION_ERROR_NO_PERMISSION_PROFILE
-} from '../../../src/schema/preparation/ast-validation-modules/no-permission-profile';
-import { DEFAULT_PERMISSION_PROFILE } from '../../../src/schema/schema-defaults';
-import {
-    RolesAndPermissionProfileCombinedValidator, VALIDATION_ERROR_ROLES_AND_PERMISSION_PROFILE_COMBINED
-} from '../../../src/schema/preparation/ast-validation-modules/roles-and-permission-profile-combined';
+import {expect} from 'chai';
+import { assertValidatorAccepts, assertValidatorRejects, validate } from './helpers';
 
-const modelWithRootEntityWithPermissionProfile = `
-            type Stuff @rootEntity(permissionProfile: "test") {
-                foo: [String]
-            }
-        `;
-
-const modelWithRootEntityWithRolesAndPermissionProfile = `
-            type Stuff @rootEntity(permissionProfile: "test") @roles {
-                foo: [String]
-            }
-        `;
-
-const modelWithRootEntityWithRole = `
-            type Stuff @rootEntity @roles {
-                foo: [String]
-            }
-        `;
 describe('no-permission-profile validator', () => {
+
     it('rejects @roles and permissionProfile', () => {
-        const ast = parse(modelWithRootEntityWithRolesAndPermissionProfile);
-        const validationResult = new ValidationResult(new RolesAndPermissionProfileCombinedValidator().validate(ast));
-        expect(validationResult.hasErrors()).toBeTruthy();
-        expect(validationResult.messages.length).toBe(1);
-        expect(validationResult.messages[0].message).toBe(VALIDATION_ERROR_ROLES_AND_PERMISSION_PROFILE_COMBINED);
+        const validationResult = validate(`
+            type Stuff @rootEntity(permissionProfile: "default") @roles {
+                foo: [String]
+            }
+        `);
+        expect(validationResult.getErrors()).to.have.lengthOf(2);
+        expect(validationResult.getErrors()[0].message).to.equal('Permission profile and explicit role specifiers cannot be combined.');
+        expect(validationResult.getErrors()[1].message).to.equal('Permission profile and explicit role specifiers cannot be combined.');
     });
 
     it('accepts @roles', () => {
-        const ast = parse(modelWithRootEntityWithRole);
-        const validationResult = new ValidationResult(new RolesAndPermissionProfileCombinedValidator().validate(ast));
-        expect(validationResult.hasErrors()).toBeFalsy();
+        assertValidatorAccepts(`
+            type Stuff @rootEntity @roles {
+                foo: [String]
+            }
+        `);
     });
 
     it('accepts permissionProfile', () => {
-        const ast = parse(modelWithRootEntityWithPermissionProfile);
-        const validationResult = new ValidationResult(new RolesAndPermissionProfileCombinedValidator().validate(ast));
-        expect(validationResult.hasErrors()).toBeFalsy();
+        assertValidatorAccepts(`
+            type Stuff @rootEntity(permissionProfile: "default") {
+                foo: [String]
+            }
+        `);
     });
 
 });

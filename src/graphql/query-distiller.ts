@@ -1,16 +1,15 @@
+import { blue, cyan, green } from '../utils/colors';
 import {
     DocumentNode, FieldNode, FragmentDefinitionNode, getNamedType, GraphQLCompositeType, GraphQLField,
     GraphQLObjectType, GraphQLOutputType, GraphQLSchema, isCompositeType, OperationDefinitionNode, OperationTypeNode,
     SelectionNode
 } from 'graphql';
-
-import { resolveSelections } from './field-collection';
 import { arrayToObject, flatMap, groupArray, indent, INDENTATION } from '../utils/utils';
+import { getArgumentValues } from './argument-values';
+import { resolveSelections } from './field-collection';
+import { getAliasOrName } from './language-utils';
 import { extractOperation } from './operations';
 import { getOperationRootType } from './schema-utils';
-import { getAliasOrName } from './language-utils';
-import { getArgumentValues } from './argument-values';
-import { blue, cyan, green } from 'colors/safe';
 
 /**
  * A request for the value of one field with a specific argument set and selection set
@@ -19,7 +18,7 @@ export class FieldRequest {
     constructor(public readonly field: GraphQLField<any, any>,
                 public readonly parentType: GraphQLCompositeType,
                 public readonly schema: GraphQLSchema,
-                public readonly selectionSet: FieldSelection[] = [],
+                public readonly selectionSet: ReadonlyArray<FieldSelection> = [],
                 public readonly args: { [argumentName: string ]: any } = {}) {
     }
 
@@ -57,7 +56,7 @@ export class FieldSelection {
  * A simple description of a GraphQL operation
  */
 export class DistilledOperation {
-    constructor(public readonly operation: OperationTypeNode, public readonly selectionSet: FieldSelection[]) {}
+    constructor(public readonly operation: OperationTypeNode, public readonly selectionSet: ReadonlyArray<FieldSelection>) {}
 
     public describe(): string {
         const selectionItemsDesc = this.selectionSet
@@ -86,7 +85,7 @@ export function createFieldRequest(config: FieldRequestConfig) {
     return new FieldRequest(config.field, config.parentType, config.schema, createSelectionSet(config.selectionSet || {}), config.args || {});
 }
 
-function createSelectionSet(config: SelectionSetConfig): FieldSelection[] {
+function createSelectionSet(config: SelectionSetConfig): ReadonlyArray<FieldSelection> {
     const selections = [];
     for (const key in config) {
         selections.push(new FieldSelection(key, createFieldRequest(config[key])));
@@ -122,13 +121,6 @@ export function distillOperation(params: OperationDistillationParams): Distilled
     return new DistilledOperation(params.operation.operation, selections)
 }
 
-export interface QueryDistillationParams {
-    schema: GraphQLSchema
-    document: DocumentNode
-    variableValues: { [name: string]: any }
-    operationName?: string
-}
-
 /**
  * Creates a simplified description of an operation in a query
  */
@@ -136,7 +128,7 @@ export function distillQuery(document: DocumentNode, schema: GraphQLSchema, vari
     return distillOperation({
         schema,
         operation: extractOperation(document, operationName),
-        fragments: arrayToObject(document.definitions.filter(def => def.kind == 'FragmentDefinition') as FragmentDefinitionNode[], def => def.name.value),
+        fragments: arrayToObject(document.definitions.filter(def => def.kind == 'FragmentDefinition') as ReadonlyArray<FragmentDefinitionNode>, def => def.name.value),
         variableValues
     });
 }
@@ -150,8 +142,8 @@ interface Context {
 /**
  * Creates simplified FieldSelection objects for a set of SelectionNodes
  */
-function distillSelections(selections: SelectionNode[], parentType: GraphQLCompositeType, context: Context): FieldSelection[] {
-    const allFieldNodes: FieldNode[] = resolveSelections(selections, context);
+function distillSelections(selections: ReadonlyArray<SelectionNode>, parentType: GraphQLCompositeType, context: Context): ReadonlyArray<FieldSelection> {
+    const allFieldNodes: ReadonlyArray<FieldNode> = resolveSelections(selections, context);
     const allButSystemFieldNodes = allFieldNodes.filter(node => !node.name.value.startsWith('__'));
     const fieldNodesByPropertyName = groupArray(allButSystemFieldNodes, selection => getAliasOrName(selection));
     return Array.from(fieldNodesByPropertyName).map(([propertyName, fieldNodes]) =>
@@ -180,7 +172,7 @@ function buildFieldRequest(fieldNodes: Array<FieldNode>, parentType: GraphQLComp
         throw new Error(`Field ${fieldName} is not defined in parent type ${parentType}`);
     }
 
-    let selections: FieldSelection[] = [];
+    let selections: ReadonlyArray<FieldSelection> = [];
     const compositeFieldType = unwrapToCompositeType(fieldDef.type);
     if (compositeFieldType) {
         const childFieldNodes = flatMap(fieldNodes, node => node.selectionSet ? node.selectionSet.selections : []);

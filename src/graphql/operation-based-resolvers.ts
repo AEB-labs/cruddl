@@ -44,6 +44,9 @@ export function addOperationBasedResolvers(schema: GraphQLSchema, operationResol
                 args: arrayToObject(field.args, arg => arg.name),
                 resolve: async (oldSource, args, context, info) => {
                     const newSource = await resolveOp(oldSource,args,context,info);
+                    if (newSource == undefined) {
+                        return newSource;
+                    }
                     return oldResolver(newSource, args, context, info);
                 },
                 astNode: field.astNode
@@ -56,13 +59,14 @@ export function addOperationBasedResolvers(schema: GraphQLSchema, operationResol
         });
     }
 
+    const query = schema.getQueryType();
     const mut = schema.getMutationType();
     const sub = schema.getSubscriptionType();
     return new GraphQLSchema({
-        query: convertType(schema.getQueryType()),
+        query: query ? convertType(query) : undefined,
         mutation: mut ? convertType(mut) : undefined,
         subscription: sub ? convertType(sub) : undefined,
-        directives: schema.getDirectives(),
+        directives: Array.from(schema.getDirectives()),
         types: objectValues(schema.getTypeMap()).filter(t => t != mut && t != sub && t != schema.getQueryType())
     });
 }

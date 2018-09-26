@@ -87,10 +87,10 @@
   "update": {
     "data": {
       "updateDelivery": {
-        "deliveryNumber": "2"
+        "deliveryNumber": "1000173"
       },
       "updateForwarder": {
-        "name": "DPD"
+        "name": "DPD2"
       },
       "update2": {
         "deliveryNumber": "2"
@@ -100,7 +100,7 @@
   "delete": {
     "data": {
       "deleteForwarder": {
-        "name": "DPD"
+        "name": "DPD2"
       }
     }
   }

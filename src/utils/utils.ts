@@ -2,13 +2,32 @@ export type PlainObject = {[key: string]: AnyValue};
 export type AnyValue = {}|undefined|null;
 export type Constructor<T> = { new(...args: any[]): T };
 
-export function flatMap<TOut, TIn>(arr: TIn[], f: (t: TIn) => TOut[]): TOut[] {
+export function flatMap<TOut, TIn>(arr: ReadonlyArray<TIn>, f: (t: TIn) => ReadonlyArray<TOut>): TOut[] {
     return arr.reduce((ys: any, x: any) => {
         return ys.concat(f.call(null, x))
     }, []);
 }
 
-export function flatten<T>(arr: T[][]): T[] {
+/**
+ * Maps an array and returns the first defined result. Undefined elements in array will be ignored.
+ * @param {ReadonlyArray<TIn>} array.
+ * @param {(t: TIn) => TOut} fn
+ * @returns TOut|undefined
+ */
+export function mapFirstDefined<TIn, TOut>(array: ReadonlyArray<TIn|undefined>, fn: (t: TIn) => TOut) {
+    for (const i of array) {
+        if (i == undefined) {
+            continue;
+        }
+        const out = fn(i);
+        if (out != undefined) {
+            return out
+        }
+    }
+    return undefined
+}
+
+export function flatten<T>(arr: ReadonlyArray<ReadonlyArray<T>>): T[] {
     return arr.reduce((ys: any, x: any) => {
         return ys.concat(x)
     }, []);
@@ -16,6 +35,23 @@ export function flatten<T>(arr: T[][]): T[] {
 
 export function endsWith(str: string, suffix: string) {
     return str.substr(-suffix.length) == suffix;
+}
+
+/**
+ * Check if {array} starts with {start}
+ * @param {ReadonlyArray<T>} array
+ * @param {ReadonlyArray<T>} start
+ * @returns {boolean}
+ */
+export function arrayStartsWith<T>(array: ReadonlyArray<T>, start: ReadonlyArray<T>): boolean {
+    let i = 0;
+    while(i < start.length) {
+        if (array[i] !== start[i]) {
+            return false;
+        }
+        i++;
+    }
+    return true
 }
 
 export function capitalize(string: string) {
@@ -32,7 +68,7 @@ export function decapitalize(string: string) {
  * @param keyFn a function that computes the key value of an item
  * @returns {Map<TKey, TItem[]>} a map from key values to the list of items that have that key
  */
-export function groupArray<TItem, TKey>(items: TItem[], keyFn: (item: TItem) => TKey): Map<TKey, TItem[]> {
+export function groupArray<TItem, TKey>(items: ReadonlyArray<TItem>, keyFn: (item: TItem) => TKey): Map<TKey, TItem[]> {
     const map = new Map<TKey, TItem[]>();
     for (const item of items) {
         const key = keyFn(item);
@@ -89,36 +125,11 @@ export async function doXTimesInParallel<T>(fn: () => Promise<T>, count: number)
  * @param arr the source population
  * @returns the sampled item, or undefined if the input array is empty
  */
-export function takeRandomSample<T>(arr: T[]): T|undefined {
+export function takeRandomSample<T>(arr: ReadonlyArray<T>): T|undefined {
     return arr[Math.floor(Math.random() * arr.length)];
 }
 
-/**
- * Takes {@code count} samples randomly of the given array. The same sample may occur mulitple times
- * @param arr the source population
- * @param count the number of samples
- * @returns the samples, or undefined if the input array is empty
- */
-export function takeRandomSamples<T>(arr: T[], count: number): T[]|undefined {
-    if (arr.length == 0) {
-        return undefined;
-    }
-    return range(count).map(() => takeRandomSample(arr)!);
-}
-
-export function removeDuplicates<T, U>(list: T[], keyFn: (item: T) => U): T[] {
-    const existingKeys = new Set<U>();
-    return list.filter(item => {
-        const key = keyFn(item);
-        if (existingKeys.has(key)) {
-            return false;
-        }
-        existingKeys.add(key);
-        return true;
-    });
-}
-
-export function arrayToObject<TValue>(array: TValue[], keyFn: (item: TValue, index: number) => string): { [name: string]: TValue } {
+export function arrayToObject<TValue>(array: ReadonlyArray<TValue>, keyFn: (item: TValue, index: number) => string): { [name: string]: TValue } {
     const result: { [name: string]: TValue } = {};
     for (let i = 0; i < array.length; i++) {
         result[keyFn(array[i], i)] = array[i];
@@ -126,7 +137,7 @@ export function arrayToObject<TValue>(array: TValue[], keyFn: (item: TValue, ind
     return result;
 }
 
-export function arrayToObjectExt<TItem, TValue>(array: TItem[], keyFn: (obj: TItem, index: number) => string, valueFn: (obj: TItem, index: number) => TValue): { [name: string]: TValue } {
+export function arrayToObjectExt<TItem, TValue>(array: ReadonlyArray<TItem>, keyFn: (obj: TItem, index: number) => string, valueFn: (obj: TItem, index: number) => TValue): { [name: string]: TValue } {
     const result: { [name: string]: TValue } = {};
     for (let i = 0; i < array.length; i++) {
         result[keyFn(array[i], i)] = valueFn(array[i], i);
@@ -134,7 +145,7 @@ export function arrayToObjectExt<TItem, TValue>(array: TItem[], keyFn: (obj: TIt
     return result;
 }
 
-export function compact<T>(arr: (T | undefined | null)[]): T[] {
+export function compact<T>(arr: ReadonlyArray<(T | undefined | null)>): T[] {
     return arr.filter(a => a != undefined) as T[];
 }
 
@@ -142,7 +153,7 @@ export function objectValues<T>(obj: { [name: string]: T }): T[] {
     return Object.keys(obj).map(i => obj[i]);
 }
 
-export function filterType<T>(arr: AnyValue[], type: Constructor<T>): T[] {
+export function filterType<T>(arr: ReadonlyArray<AnyValue>, type: Constructor<T>): T[] {
     return arr.filter(obj => obj instanceof type) as T[];
 }
 
@@ -150,10 +161,27 @@ export function objectEntries<T>(obj: { [name: string]: T }): [string, T][] {
     return Object.keys(obj).map((k): [string,T] => [k, obj[k]]);
 }
 
-export function mapValues<TIn, TOut>(obj: { [key: string]: TIn }, fn: (value: TIn, key: string) => TOut): { [key: string]: TOut } {
+export function mapValues<TIn, TOut>(obj: { [key: string]: TIn }, fn: (value: TIn, key: string) => TOut): { [key: string]: TOut };
+export function mapValues<TIn, TOut, TKey>(map: Map<TKey, TIn>, fn: (value: TIn, key: TKey) => TOut): Map<TKey, TOut>;
+export function mapValues<TIn, TOut, TKey>(obj: { [key: string]: TIn }|Map<TKey, TIn>, fn: (value: TIn, key: TKey) => TOut): Map<TKey, TOut>|{ [key: string]: TOut } {
+    if (obj instanceof Map) {
+        return mapValues1(obj, fn);
+    }
+    return mapValues0(obj, fn as any as (value: TIn, key: string) => TOut);
+}
+
+function mapValues0<TIn, TOut>(obj: { [key: string]: TIn }, fn: (value: TIn, key: string) => TOut): { [key: string]: TOut } {
     const result: { [key: string]: TOut } = {};
     for (const key in obj) {
         result[key] = fn(obj[key], key);
+    }
+    return result;
+}
+
+function mapValues1<TIn, TOut, TKey>(map: Map<TKey, TIn>, fn: (value: TIn, key: TKey) => TOut): Map<TKey, TOut> {
+    const result = new Map<TKey, TOut>();
+    for (const [key, value] of map.entries()) {
+        result.set(key, fn(value, key));
     }
     return result;
 }
@@ -244,4 +272,13 @@ export let escapeRegExp: (input: string) => string;
 
 export function isPromise<T>(value: any): value is Promise<T> {
     return typeof value === 'object' && value !== null && typeof value.then === 'function';
+}
+
+export function joinWithAnd(items: ReadonlyArray<string>): string {
+    if (items.length <= 2) {
+        return items.join(' and ');
+    }
+    const upToSecondLast = items.slice();
+    const last = upToSecondLast.pop();
+    return upToSecondLast.join(', ') + ', and ' + last;
 }

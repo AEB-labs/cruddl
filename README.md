@@ -78,12 +78,16 @@ Then, create the GraphQL schema and serve it:
 ```typescript
 import { GraphQLServer } from 'graphql-yoga';
 const schema = project.createSchema(db);
-db.updateSchema(schema); // create missing collections
+db.updateSchema(project.getModel()); // create missing collections
 const server = new GraphQLServer({ schema, context: () => ({ authRoles: [ 'users' ]}) });
 server.start(() => console.log('Server is running on http://localhost:4000/'));
 ```
 
 See the [modelling guide](docs/modelling.md) and the [api documentation](docs/api.md) for details or clone [this repository](https://github.com/AEB-labs/cruddl-demo) for a full featured example.
+
+### Usage in a browser environment
+
+The core of cruddl perfectly works in a browser (e.g., using webpack), and this can be useful to generate a mock GraphQL schema on the fly or to validate a cruddl project. However, the ArangoDB adapter only works with node imports like `path`. Unless you configure webpack to provide mock modules for them, you will get an error when you import `cruddl` in a webpack environment. To solve this, you can import the core symbols from `cruddl/core` and the `InMemoryAdapter` from `cruddl/inmemory`.
 
 ## Status
 
@@ -93,3 +97,4 @@ Although the feature set is already quite extensive, this project is still in ac
 
 * [Modelling guide](docs/modelling.md)
 * [GraphQL API](docs/api.md)
+* [I18n](docs/i18n.md)

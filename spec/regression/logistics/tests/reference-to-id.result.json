@@ -1,0 +1,42 @@
+{
+  "referenceToExistingID": {
+    "data": {
+      "Delivery": {
+        "deliveryNumber": "1000173",
+        "items": [
+          {
+            "itemNumber": "1001",
+            "handlingUnit": {
+              "id": "@{ids/HandlingUnit/1}",
+              "huNumber": "1000007"
+            }
+          },
+          {
+            "itemNumber": "1002",
+            "handlingUnit": {
+              "id": "@{ids/HandlingUnit/2}",
+              "huNumber": "1000014"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "referenceToWrongID": {
+    "data": {
+      "Delivery": {
+        "deliveryNumber": "1000521",
+        "items": [
+          {
+            "itemNumber": "2001",
+            "handlingUnit": null
+          },
+          {
+            "itemNumber": "2002",
+            "handlingUnit": null
+          }
+        ]
+      }
+    }
+  }
+}

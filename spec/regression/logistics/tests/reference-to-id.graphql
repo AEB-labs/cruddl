@@ -1,0 +1,25 @@
+query referenceToExistingID {
+    Delivery(id: "@{ids/Delivery/1}") {
+        deliveryNumber
+        items {
+            itemNumber
+            handlingUnit {
+                id
+                huNumber
+            }
+        }
+    }
+}
+
+query referenceToWrongID {
+    Delivery(id: "@{ids/Delivery/2}") {
+        deliveryNumber
+        items {
+            itemNumber
+            handlingUnit {
+                id
+                huNumber
+            }
+        }
+    }
+}

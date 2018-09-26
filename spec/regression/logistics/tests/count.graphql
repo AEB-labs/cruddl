@@ -1,0 +1,11 @@
+query {
+    _allDeliveriesMeta {
+        count
+    }
+
+    Delivery(id: "@{ids/Delivery/1}") {
+        _itemsMeta {
+            count
+        }
+    }
+}

@@ -29,6 +29,11 @@
         "empty": []
       }
     ],
-    "noPagesLeft": []
+    "noPagesLeft": [],
+    "noPaginationButCursor": [
+      {
+        "_cursor": "{\"id\":\"@{ids/Paper/1}\"}"
+      }
+    ]
   }
 }

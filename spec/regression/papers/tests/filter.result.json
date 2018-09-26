@@ -84,6 +84,23 @@
         "key": "Scal"
       }
     ],
+    "contains_empty_string": [
+      {
+        "key": "NoSQL"
+      },
+      {
+      "key": "OOM"
+      },
+      {
+      "key": "Part"
+      },
+      {
+      "key": "Scal"
+      },
+      {
+      "key": "UML"
+      }
+    ],
     "not_contains": [
       {
         "key": "NoSQL"
@@ -94,6 +111,8 @@
       {
         "key": "UML"
       }
+    ],
+    "not_contains_empty_string": [
     ],
     "starts_with": [
       {

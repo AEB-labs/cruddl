@@ -1,8 +1,6 @@
+import { cyan, magenta } from '../../utils/colors';
+import { QueryResultValidator } from '../../query-tree';
 import { arrayToObject, flatMap } from '../../utils/utils';
-import { QueryResultValidator } from '../../query/query-result-validators';
-import { cyan, magenta } from 'colors/safe';
-
-require('colors');
 
 function stringify(val: any) {
     if (val === undefined) {
@@ -238,7 +236,7 @@ export class JSIndentationFragment extends JSFragment {
     }
 }
 
-export function js(strings: ReadonlyArray<string>, ...values: any[]): JSFragment {
+export function js(strings: ReadonlyArray<string>, ...values: (JSFragment|string|number|boolean)[]): JSFragment {
     let snippets = [...strings];
     let fragments: JSFragment[] = [];
     while (snippets.length || values.length) {
@@ -251,8 +249,10 @@ export function js(strings: ReadonlyArray<string>, ...values: any[]): JSFragment
                 fragments.push(...value.fragments);
             } else if (value instanceof JSFragment) {
                 fragments.push(value);
-            } else {
+            } else if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
                 fragments.push(new JSBoundValue(value));
+            } else {
+                throw new Error(`js: Received a value that is neither a JSFragment, nor a primitive`)
             }
         }
     }
@@ -293,6 +293,10 @@ export namespace js {
         return new JSVariable(label);
     }
 
+    export function value(value: any): JSBoundValue {
+        return new JSBoundValue(value);
+    }
+
     export function queryResultVariable(label?: string): JSQueryResultVariable {
         return new JSQueryResultVariable(label);
     }
@@ -311,7 +315,7 @@ export namespace js {
     /**
      * Should be used when fairly certain that string can't be malicious
      *
-     * As the string is json-encoded, it *should* be fine in any case, but still, user-supplied strings in queries is scary
+     * As the string is json-encoded, it *should* be fine in any case, but still, user-supplied strings in queries are scary
      */
     export function string(str: string): JSFragment {
         return code(JSON.stringify(str));
@@ -384,9 +388,10 @@ export class JSCompoundQuery extends JSFragment {
         }
 
         const executableQuery = new JSExecutableQuery(code, boundValues, usedResultNames, queryResultName, queryResultValidator);
-        executableQueries.push(executableQuery);
-
-        return executableQueries;
+        return [
+            ...executableQueries,
+            executableQuery
+        ];
     }
 
     //TODO Refactor the following three methods. JSCompoundQuery isn't a real JSFragment.

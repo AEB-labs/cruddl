@@ -15,3 +15,23 @@ mutation secondIncrement {
         number
     }
 }
+
+mutation twoOperatorsCombinedError {
+    updateNumberRange(input: {
+        id: "@{ids/NumberRange/1}",
+        addTo_number: 2,
+        multiplyWith_number: 5
+    }) {
+        number
+    }
+}
+
+mutation operatorCombinedWithPlainUpdateError {
+    updateNumberRange(input: {
+        id: "@{ids/NumberRange/1}",
+        number: 2,
+        multiplyWith_number: 5
+    }) {
+        number
+    }
+}

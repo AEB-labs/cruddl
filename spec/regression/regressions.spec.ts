@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { RegressionSuite, RegressionSuiteOptions } from './regression-suite';
-import { TO_EQUAL_JSON_MATCHERS } from '../helpers/equal-json';
+import { expect } from 'chai';
 
 const regressionRootDir = __dirname;
 
@@ -23,18 +23,17 @@ describe('regression tests', async () => {
                 // (first npm test run still marked as failure, subsequent runs will pass)
                 const options: RegressionSuiteOptions = {
                     saveActualAsExpected: process.argv.includes('--save-actual-as-expected'),
+                    trace: process.argv.includes('--log-trace'),
                     database
                 };
                 const suite = new RegressionSuite(suitePath, options);
                 describe(suiteName, () => {
-                    beforeAll(async () => {
-                        jasmine.addMatchers(TO_EQUAL_JSON_MATCHERS);
-                    });
                     for (const testName of suite.getTestNames()) {
+
                         it(testName, async () => {
                             const {expectedResult, actualResult} = await suite.runTest(testName);
-                            (<any>expect(actualResult)).toEqualJSON(expectedResult);
-                        });
+                            expect(actualResult).to.deep.equal(expectedResult);
+                        }).timeout(10000); // travis is sometimes on the slower side
                     }
                 });
             }

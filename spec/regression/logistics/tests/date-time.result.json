@@ -1,0 +1,16 @@
+{
+  "update": {
+    "data": {
+      "updateDelivery": {
+        "shippedAt": "2018-06-06T10:37:00Z"
+      }
+    }
+  },
+  "query": {
+    "data": {
+      "Delivery": {
+        "shippedAt": "2018-06-06T10:37:00Z"
+      }
+    }
+  }
+}

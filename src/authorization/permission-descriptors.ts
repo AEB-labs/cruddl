@@ -1,13 +1,12 @@
 import {
     BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, FieldQueryNode, LiteralQueryNode, QueryNode,
     UnknownValueQueryNode
-} from '../query/definition';
-import { simplifyBooleans } from '../query/query-tree-utils';
-import { Permission, PermissionProfile } from './permission-profile';
+} from '../query-tree';
+import { simplifyBooleans } from '../query-tree/utils';
+import { Field, Permission, PermissionProfile, RootEntityType } from '../model';
 import { flatMap } from 'lodash';
 import { AccessOperation, AuthContext } from './auth-basics';
-import { GraphQLField, GraphQLObjectType } from 'graphql';
-import { ACCESS_GROUP_FIELD } from '../schema/schema-defaults';
+import { ACCESS_GROUP_FIELD } from '../schema/constants';
 
 export enum ConditionExplanationContext {
     BEFORE_WRITE,
@@ -72,7 +71,7 @@ export class AlwaysGrantPermissionDescriptor extends PermissionDescriptor {
         return PermissionResult.GRANTED;
     }
 
-    static INSTANCE = new AlwaysGrantPermissionDescriptor();
+    static readonly INSTANCE = new AlwaysGrantPermissionDescriptor();
 }
 
 export class ConjunctivePermissionDescriptor extends PermissionDescriptor {
@@ -91,15 +90,15 @@ export class ConjunctivePermissionDescriptor extends PermissionDescriptor {
 }
 
 export class StaticPermissionDescriptor extends PermissionDescriptor {
-    private allReadRoles: string[];
+    private readonly allReadRoles: ReadonlyArray<string>;
 
-    constructor(public readonly readRoles: string[], public readonly readWriteRoles: string[]) {
+    constructor(public readonly readRoles: ReadonlyArray<string>, public readonly readWriteRoles: ReadonlyArray<string>) {
         super();
         this.allReadRoles = [...readRoles, ...readWriteRoles];
     }
 
     getAccessCondition(authContext: AuthContext, operation: AccessOperation): QueryNode {
-        let roles: string[] = [];
+        let roles: ReadonlyArray<string> = [];
         switch (operation) {
             case AccessOperation.READ:
                 roles = this.allReadRoles;
@@ -113,11 +112,11 @@ export class StaticPermissionDescriptor extends PermissionDescriptor {
 }
 
 export class ProfileBasedPermissionDescriptor extends PermissionDescriptor {
-    private accessGroupField: GraphQLField<any, any>|undefined;
+    private readonly accessGroupField: Field|undefined;
 
-    constructor(private profile: PermissionProfile, private readonly objectType: GraphQLObjectType) {
+    constructor(private readonly profile: PermissionProfile, private readonly rootEntityType?: RootEntityType) {
         super();
-        this.accessGroupField = objectType.getFields()[ACCESS_GROUP_FIELD];
+        this.accessGroupField = rootEntityType && rootEntityType.getField(ACCESS_GROUP_FIELD);
     }
 
     getAccessCondition(authContext: AuthContext, operation: AccessOperation, instanceNode: QueryNode): QueryNode {
@@ -133,17 +132,21 @@ export class ProfileBasedPermissionDescriptor extends PermissionDescriptor {
 
         const allowedAccessGroups = this.getAllowedAccessGroups(applicablePermissions);
         if (!this.accessGroupField) {
-            throw new Error(`Using accessGroup-restricted permission profile on type ${this.objectType.name} which does not have an accessGroup field`);
+            if (this.rootEntityType) {
+                throw new Error(`Using accessGroup-restricted permission profile on type ${this.rootEntityType.name} which does not have an accessGroup field`);
+            } else {
+                throw new Error(`accessGroup-restricted permission profiles can only be used on root entities`);
+            }
         }
-        const accessGroupNode = new FieldQueryNode(instanceNode, this.accessGroupField, this.objectType);
+        const accessGroupNode = new FieldQueryNode(instanceNode, this.accessGroupField);
         return new BinaryOperationQueryNode(accessGroupNode, BinaryOperator.IN, new LiteralQueryNode(allowedAccessGroups));
     }
 
-    private getApplicablePermissions(authContext: AuthContext, operation: AccessOperation): Permission[] {
+    private getApplicablePermissions(authContext: AuthContext, operation: AccessOperation): ReadonlyArray<Permission> {
         return this.profile.permissions.filter(permission => permission.allowsOperation(operation) && permission.appliesToAuthContext(authContext));
     }
 
-    private getAllowedAccessGroups(applicablePermissions: Permission[]) {
+    private getAllowedAccessGroups(applicablePermissions: ReadonlyArray<Permission>) {
         return flatMap(applicablePermissions, permission => permission.restrictToAccessGroups!);
     }
 
@@ -162,11 +165,12 @@ export class ProfileBasedPermissionDescriptor extends PermissionDescriptor {
 
     getExplanationPrefix(context: ConditionExplanationContext): string {
         const accessGroupFieldName = this.accessGroupField ? this.accessGroupField.name : this.accessGroupField;
+        const typeName = this.rootEntityType && this.rootEntityType.name || '';
         switch (context) {
             case ConditionExplanationContext.BEFORE_WRITE:
-                return `${this.objectType.name} objects with this access group (allowed access groups: `;
+                return `${typeName} objects with this access group (allowed access groups: `;
             case ConditionExplanationContext.SET:
-                return `set ${this.objectType}.${accessGroupFieldName} to this value (allowed values: `;
+                return `set ${typeName}.${accessGroupFieldName} to this value (allowed values: `;
         }
     }
 }

@@ -1,17 +1,19 @@
 import { Logger, LoggerProvider } from '../../src/config/logging';
 import { createSchema } from '../../src/schema/schema-builder';
-import { graphql, GraphQLSchema } from 'graphql';
-import { QueryNode } from '../../src/query/definition';
+import { graphql } from 'graphql';
+import { QueryNode } from '../../src/query-tree';
 import { DatabaseAdapter } from '../../src/database/database-adapter';
 import { Project } from '../../src/project/project';
 import { ProjectSource } from '../../src/project/source';
+import { expect } from 'chai';
+import { Model } from '../../src/model';
 
 class FakeDBAdatper implements DatabaseAdapter {
     async execute(queryTree: QueryNode): Promise<any> {
         return { allTests: [{ name: "Test" }] };
     }
 
-    async updateSchema(schema: GraphQLSchema): Promise<void> {
+    async updateSchema(model: Model): Promise<void> {
 
     }
 }
@@ -50,7 +52,7 @@ describe('project', () => {
 
             logs = [];
             const result = await graphql(execSchema, `{ allTests { name } }`, undefined, {authRoles: ['admin']});
-            expect(logs.length).toBeGreaterThan(0);
+            expect(logs.length).to.be.greaterThan(0);
         });
     });
 });

@@ -115,14 +115,14 @@
       "logistics": {
         "delivery": {
           "updateDelivery": {
-            "deliveryNumber": "2"
+            "deliveryNumber": "1000173"
           },
           "update2": {
             "deliveryNumber": "2"
           }
         },
         "updateForwarder": {
-          "name": "DPD"
+          "name": "DPD2"
         }
       }
     }
@@ -131,7 +131,7 @@
     "data": {
       "logistics": {
         "deleteForwarder": {
-          "name": "DPD"
+          "name": "DPD2"
         }
       }
     }

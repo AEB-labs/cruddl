@@ -1,12 +1,11 @@
-import { SourceValidator } from '../ast-validator';
-import { ProjectSource, SourceType } from '../../../project/source';
-import { ValidationMessage } from '../validation-message';
-import { buildASTSchema, DocumentNode, GraphQLError, Location, parse, Source, specifiedRules, validate, KnownDirectivesRule, KnownTypeNamesRule, UniqueDirectivesPerLocationRule,
-    KnownArgumentNamesRule,
-    VariablesInAllowedPositionRule,
-    UniqueInputFieldNamesRule,
-    UniqueArgumentNamesRule,
-    ProvidedNonNullArgumentsRule } from 'graphql';
+import { ParsedProjectSource, ParsedProjectSourceBaseKind } from '../../../config/parsed-project';
+import { ParsedSourceValidator } from '../ast-validator';
+import { ValidationMessage } from '../../../model';
+import {
+    buildASTSchema, DocumentNode, GraphQLError, KnownArgumentNamesRule, KnownDirectivesRule, KnownTypeNamesRule,
+    Location, ProvidedRequiredArgumentsRule, UniqueArgumentNamesRule, UniqueDirectivesPerLocationRule,
+    UniqueInputFieldNamesRule, validate, ValuesOfCorrectTypeRule, VariablesInAllowedPositionRule
+} from 'graphql';
 import { CORE_SCALARS, DIRECTIVES } from '../../graphql-base';
 import gql from 'graphql-tag';
 
@@ -19,35 +18,21 @@ const rules = [
     UniqueDirectivesPerLocationRule,
     KnownArgumentNamesRule,
     UniqueArgumentNamesRule,
-    //ValuesOfCorrectTypeRule, // this and VariablesDefaultValueAllowedRule is not in the types of graphql 0.12 (and the types of 0.13 are incompatible due to readonly stuff)
-    ProvidedNonNullArgumentsRule,
-    //VariablesDefaultValueAllowedRule,
+    ValuesOfCorrectTypeRule,
+    ProvidedRequiredArgumentsRule,
     VariablesInAllowedPositionRule,
     UniqueInputFieldNamesRule
 ];
 
-export class GraphQLRulesValidator implements SourceValidator {
-    validate(source: ProjectSource): ValidationMessage[] {
-        if (source.type != SourceType.GRAPHQLS) {
+export class GraphQLRulesValidator implements ParsedSourceValidator {
+    validate(source: ParsedProjectSource): ValidationMessage[] {
+        if (source.kind != ParsedProjectSourceBaseKind.GRAPHQL) {
             return [];
         }
 
-        let ast: DocumentNode;
-        try {
-            ast = parse(new Source(source.body, source.name));
-        } catch (e) {
-            // don't report any semantic errors if there are syntax errors
-            if (e instanceof GraphQLError) {
-                return [];
-            }
-            throw e;
-        }
+        let ast = source.document;
 
-        return validate(coreSchema, ast, rules).map(error => ValidationMessage.error(
-            error.message,
-            {},
-            getMessageLocation(error)
-        ));
+        return validate(coreSchema, ast, rules).map(error => ValidationMessage.error(error.message, getMessageLocation(error)));
     }
 }
 
