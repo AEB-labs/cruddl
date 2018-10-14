@@ -48,8 +48,8 @@ async function runAsync(factories: BenchmarkFactories): Promise<BenchmarkSuiteRe
     const elapsedMinutes = Math.floor(elapsed / 60);
     const elapsedSeconds = Math.floor(elapsed % 60);
     console.log('');
-    console.log(`Done.`.bold);
-    console.log(`Executed ${factories.length} benchmarks in ${elapsedMinutes} minutes, ${elapsedSeconds} seconds`.bold);
+    console.log(bold(`Done.`));
+    console.log(bold(`Executed ${factories.length} benchmarks in ${elapsedMinutes} minutes, ${elapsedSeconds} seconds`));
     if (erroredCount) {
         console.log(red(bold(`${erroredCount} benchmarks reported an error.`)));
     }
