@@ -98,6 +98,10 @@ export async function addManyUsersWithAQL(environment: TestEnvironment, count: n
     await environment.getDB().query(aql`FOR i IN 1..${count} INSERT ${userData} IN users`);
 }
 
+export async function addNumberedPapersWithAQL(environment: TestEnvironment, count: number) {
+    await environment.getDB().query(aql`FOR i IN 1..${count} INSERT {title: CONCAT("Paper ", i)} IN papers`);
+}
+
 export async function getRandomPaperIDsWithAQL(environment: TestEnvironment, count: number): Promise<string[]> {
     const cursor = await environment.getDB().query(aql`FOR node IN papers SORT RAND() LIMIT ${count} RETURN { id: node._key }`);
     const docs = await cursor.all();
