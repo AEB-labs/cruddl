@@ -3,6 +3,7 @@ import { Logger } from '../../config/logging';
 import { Model } from '../../model';
 import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS, QueryNode } from '../../query-tree';
 import { DatabaseAdapter } from '../database-adapter';
+import { likePatternToRegExp } from '../like-helpers';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './inmemory-basics';
 import { JSCompoundQuery, JSExecutableQuery } from './js';
 import { getJSQuery } from './js-generator';
@@ -116,7 +117,9 @@ export class InMemoryAdapter implements DatabaseAdapter {
                     }
                     return 0;
                 };
-            }
+            },
+
+            likePatternToRegExp
         };
 
         let resultHolder: {[p: string]: any} = {};

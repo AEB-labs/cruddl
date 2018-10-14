@@ -111,6 +111,12 @@ export enum BinaryOperator {
     CONTAINS,
     STARTS_WITH,
     ENDS_WITH,
+
+    /**
+     * Comparison for string using placeholders (% for arbitrary char sequences, _ for a single character).
+     * Case-insensitive. Use backslashes to escape %, _ and \
+     */
+    LIKE,
     ADD,
     SUBTRACT,
     MULTIPLY,

@@ -89,16 +89,16 @@
         "key": "NoSQL"
       },
       {
-      "key": "OOM"
+        "key": "OOM"
       },
       {
-      "key": "Part"
+        "key": "Part"
       },
       {
-      "key": "Scal"
+        "key": "Scal"
       },
       {
-      "key": "UML"
+        "key": "UML"
       }
     ],
     "not_contains": [
@@ -112,8 +112,7 @@
         "key": "UML"
       }
     ],
-    "not_contains_empty_string": [
-    ],
+    "not_contains_empty_string": [],
     "starts_with": [
       {
         "key": "OOM"
@@ -152,6 +151,31 @@
         "key": "UML"
       }
     ],
+    "like1": [
+      {
+        "key": "OOM"
+      }
+    ],
+    "like2": [
+      {
+        "key": "OOM"
+      }
+    ],
+    "like3": [],
+    "not_like": [
+      {
+        "key": "NoSQL"
+      },
+      {
+        "key": "Part"
+      },
+      {
+        "key": "Scal"
+      },
+      {
+        "key": "UML"
+      }
+    ],
     "or": [
       {
         "title": "Scalable SQL and NoSQL data stores"
@@ -160,7 +184,7 @@
         "title": "Unified modeling language reference manual, the"
       }
     ],
-    "enum_in":[
+    "enum_in": [
       {
         "lastName": "Doe"
       },
@@ -168,7 +192,7 @@
         "lastName": "Lynch"
       }
     ],
-    "enum_not_in":[
+    "enum_not_in": [
       {
         "lastName": "Gilbert"
       },
@@ -176,13 +200,13 @@
         "lastName": "Mustermann"
       }
     ],
-    "enum_equal":[
+    "enum_equal": [
       {
         "lastName": "Lynch",
         "category": "Telecommunications"
       }
     ],
-    "enum_not_equal":[
+    "enum_not_equal": [
       {
         "lastName": "Doe",
         "category": "Programming"
@@ -196,7 +220,5 @@
         "category": null
       }
     ]
-
-
   }
 }

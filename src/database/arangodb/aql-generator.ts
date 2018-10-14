@@ -1,16 +1,8 @@
 import { Relation, RootEntityType } from '../../model';
-import {
-    AddEdgesQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode,
-    ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeFilter,
-    EdgeIdentifier, EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode,
-    ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, OrderDirection,
-    OrderSpecification, PartialEdgeIdentifier, QueryNode, QueryResultValidator, RemoveEdgesQueryNode,
-    RootEntityIDQueryNode, RUNTIME_ERROR_TOKEN, RuntimeErrorQueryNode, SetEdgeQueryNode, TransformListQueryNode,
-    TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode,
-    VariableQueryNode, WithPreExecutionQueryNode
-} from '../../query-tree';
+import { AddEdgesQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode, ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeFilter, EdgeIdentifier, EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, OrderDirection, OrderSpecification, PartialEdgeIdentifier, QueryNode, QueryResultValidator, RemoveEdgesQueryNode, RootEntityIDQueryNode, RUNTIME_ERROR_TOKEN, RuntimeErrorQueryNode, SetEdgeQueryNode, TransformListQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../../query-tree';
 import { simplifyBooleans } from '../../query-tree/utils';
 import { Constructor, decapitalize } from '../../utils/utils';
+import { analyzeLikePatternPrefix } from '../like-helpers';
 import { aql, AQLCompoundQuery, AQLFragment, AQLQueryResultVariable, AQLVariable } from './aql';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './arango-basics';
 
@@ -175,6 +167,7 @@ namespace aqlExt {
 }
 
 const processors = new Map<Constructor<QueryNode>, NodeProcessor<QueryNode>>();
+
 function register<T extends QueryNode>(type: Constructor<T>, processor: NodeProcessor<T>) {
     processors.set(type, processor as NodeProcessor<QueryNode>); // probably some bivariancy issue
 }
@@ -358,11 +351,35 @@ register(BinaryOperationQueryNode, (node, context) => {
 
     switch (node.operator) {
         case BinaryOperator.CONTAINS:
-            return aql`${lhs} LIKE CONCAT("%", ${rhs}, "%")`;
+            return aql`(${lhs} LIKE CONCAT("%", ${rhs}, "%"))`;
         case BinaryOperator.STARTS_WITH:
-            return aql`(LEFT(${lhs}, LENGTH(${rhs})) == ${rhs})`;
+            const slowFrag = aql`(LEFT(${lhs}, LENGTH(${rhs})) == ${rhs})`;
+            if (node.rhs instanceof LiteralQueryNode && typeof node.rhs.value === 'string') {
+                const fastFrag = getFastStartsWithQuery(lhs, node.rhs.value);
+                // still ned to use the slow frag to get case sensitiveness
+                // this is really bad for performance, see explanation in LIKE branch below
+                return aql`${fastFrag} && ${slowFrag}`;
+            }
+            return slowFrag;
         case BinaryOperator.ENDS_WITH:
             return aql`(RIGHT(${lhs}, LENGTH(${rhs})) == ${rhs})`;
+        case BinaryOperator.LIKE:
+            const slowLikeFrag = aql`(${lhs} LIKE ${rhs})`;
+            if (node.rhs instanceof LiteralQueryNode && typeof node.rhs.value === 'string') {
+                const {literalPrefix, isSimplePrefixPattern} = analyzeLikePatternPrefix(node.rhs.value);
+                const fastFrag = getFastStartsWithQuery(lhs, literalPrefix);
+                if (isSimplePrefixPattern) {
+                    // we can optimize the whole LIKE away and use a skiplist-index-optimizable range select
+                    return fastFrag;
+                }
+                // we can at least use the prefix search to narrow down the results
+                // however, this is way worse because we lose the ability to sort-and-then-limit using the same index
+                // -> queries with a "first" argument suddenly have the time complexity of the pre-limited
+                // (or even pre-filtered if the database decides to use the index for sorting) result size instead of
+                // being in O(first).
+                return aql`(${fastFrag} && ${slowLikeFrag})`;
+            }
+            return slowLikeFrag;
         case BinaryOperator.APPEND:
             return aql`CONCAT(${lhs}, ${rhs})`;
         case BinaryOperator.PREPEND:
@@ -370,7 +387,32 @@ register(BinaryOperationQueryNode, (node, context) => {
         default:
             throw new Error(`Unsupported binary operator: ${op}`);
     }
+
 });
+
+function getFastStartsWithQuery(lhs: AQLFragment, rhsValue: string): AQLFragment {
+    if (!rhsValue.length) {
+        return aql`IS_STRING(${lhs})`;
+    }
+
+    // this works as long as the highest possible code point is also the last one in the collation
+    const maxChar = String.fromCodePoint(0x10FFFF);
+    const maxStr = rhsValue + maxChar;
+    return aql`(${lhs} >= ${rhsValue} && ${lhs} < ${maxStr})`;
+
+    // the following does not work because string sorting depends on the DB's collator
+    // which does not necessarily sort the characters by code points
+    // charCodeAt / fromCharCode works on code units, and so does the string indexer / substr / length
+    /*const lastCharCode = rhsValue.charCodeAt(rhsValue.length - 1);
+    const nextCharCode = lastCharCode + 1;
+    if (nextCharCode >= 0xD800) {
+        // don't mess with surrogate pairs
+        return undefined;
+    }
+
+    const nextValue = rhsValue.substring(0, rhsValue.length - 1) + String.fromCharCode(nextCharCode);
+    return aql`(${lhs} >= ${rhsValue} && ${lhs} < ${nextValue})`;*/
+}
 
 register(UnaryOperationQueryNode, (node, context) => {
     switch (node.operator) {

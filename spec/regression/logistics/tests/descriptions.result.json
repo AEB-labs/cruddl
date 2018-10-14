@@ -212,6 +212,14 @@
               "description": null
             },
             {
+              "name": "languageIsoCode_like",
+              "description": null
+            },
+            {
+              "name": "languageIsoCode_not_like",
+              "description": null
+            },
+            {
               "name": "translation",
               "description": null
             },
@@ -265,6 +273,14 @@
             },
             {
               "name": "translation_not_ends_with",
+              "description": null
+            },
+            {
+              "name": "translation_like",
+              "description": null
+            },
+            {
+              "name": "translation_not_like",
               "description": null
             },
             {
@@ -477,6 +493,14 @@
               "description": null
             },
             {
+              "name": "isoCode_like",
+              "description": null
+            },
+            {
+              "name": "isoCode_not_like",
+              "description": null
+            },
+            {
               "name": "description_some",
               "description": null
             },
@@ -542,6 +566,14 @@
             },
             {
               "name": "totalInvestment_not_ends_with",
+              "description": null
+            },
+            {
+              "name": "totalInvestment_like",
+              "description": null
+            },
+            {
+              "name": "totalInvestment_not_like",
               "description": null
             },
             {
@@ -891,6 +923,14 @@
               "description": null
             },
             {
+              "name": "itemNumber_like",
+              "description": null
+            },
+            {
+              "name": "itemNumber_not_like",
+              "description": null
+            },
+            {
               "name": "handlingUnit",
               "description": "Filters the through `id` referenced HandlingUnits that fulfills the given requirements.\n\n Checks if `handlingUnit` is not null, and allows to filter based on its fields."
             },
@@ -1059,6 +1099,14 @@
             },
             {
               "name": "huNumber_not_ends_with",
+              "description": null
+            },
+            {
+              "name": "huNumber_like",
+              "description": null
+            },
+            {
+              "name": "huNumber_not_like",
               "description": null
             },
             {
@@ -1233,6 +1281,14 @@
               "description": null
             },
             {
+              "name": "deliveryNumber_like",
+              "description": null
+            },
+            {
+              "name": "deliveryNumber_not_like",
+              "description": null
+            },
+            {
               "name": "serialNumbers_some",
               "description": null
             },
@@ -1381,6 +1437,14 @@
               "description": null
             },
             {
+              "name": "totalValue_like",
+              "description": null
+            },
+            {
+              "name": "totalValue_not_like",
+              "description": null
+            },
+            {
               "name": "forwarder",
               "description": "Checks if `forwarder` is not null, and allows to filter based on its fields."
             },
@@ -1445,6 +1509,14 @@
               "description": null
             },
             {
+              "name": "defaultValueString_like",
+              "description": null
+            },
+            {
+              "name": "defaultValueString_not_like",
+              "description": null
+            },
+            {
               "name": "defaultValueString2",
               "description": null
             },
@@ -1498,6 +1570,14 @@
             },
             {
               "name": "defaultValueString2_not_ends_with",
+              "description": null
+            },
+            {
+              "name": "defaultValueString2_like",
+              "description": null
+            },
+            {
+              "name": "defaultValueString2_not_like",
               "description": null
             },
             {
@@ -1764,6 +1844,14 @@
               "description": null
             },
             {
+              "name": "like",
+              "description": null
+            },
+            {
+              "name": "not_like",
+              "description": null
+            },
+            {
               "name": "AND",
               "description": "A field that checks if all filters in the list apply\n\nIf the list is empty, this filter applies to all objects."
             },
@@ -1835,6 +1923,14 @@
               "description": null
             },
             {
+              "name": "street_like",
+              "description": null
+            },
+            {
+              "name": "street_not_like",
+              "description": null
+            },
+            {
               "name": "city",
               "description": null
             },
@@ -1891,6 +1987,14 @@
               "description": null
             },
             {
+              "name": "city_like",
+              "description": null
+            },
+            {
+              "name": "city_not_like",
+              "description": null
+            },
+            {
               "name": "zipCode",
               "description": null
             },
@@ -1944,6 +2048,14 @@
             },
             {
               "name": "zipCode_not_ends_with",
+              "description": null
+            },
+            {
+              "name": "zipCode_like",
+              "description": null
+            },
+            {
+              "name": "zipCode_not_like",
               "description": null
             },
             {
@@ -2022,6 +2134,14 @@
               "description": null
             },
             {
+              "name": "unNumber_like",
+              "description": null
+            },
+            {
+              "name": "unNumber_not_like",
+              "description": null
+            },
+            {
               "name": "flashpoint",
               "description": null
             },
@@ -2075,6 +2195,14 @@
             },
             {
               "name": "flashpoint_not_ends_with",
+              "description": null
+            },
+            {
+              "name": "flashpoint_like",
+              "description": null
+            },
+            {
+              "name": "flashpoint_not_like",
               "description": null
             },
             {
@@ -2254,6 +2382,14 @@
             },
             {
               "name": "name_not_ends_with",
+              "description": null
+            },
+            {
+              "name": "name_like",
+              "description": null
+            },
+            {
+              "name": "name_not_like",
               "description": null
             },
             {
@@ -2784,6 +2920,14 @@
               "description": null
             },
             {
+              "name": "name_like",
+              "description": null
+            },
+            {
+              "name": "name_not_like",
+              "description": null
+            },
+            {
               "name": "number",
               "description": null
             },
@@ -3020,6 +3164,14 @@
               "description": null
             },
             {
+              "name": "key_like",
+              "description": null
+            },
+            {
+              "name": "key_not_like",
+              "description": null
+            },
+            {
               "name": "value",
               "description": null
             },
@@ -3073,6 +3225,14 @@
             },
             {
               "name": "value_not_ends_with",
+              "description": null
+            },
+            {
+              "name": "value_like",
+              "description": null
+            },
+            {
+              "name": "value_not_like",
               "description": null
             },
             {
