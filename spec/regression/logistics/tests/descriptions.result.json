@@ -212,6 +212,14 @@
               "description": null
             },
             {
+              "name": "languageIsoCode_like",
+              "description": null
+            },
+            {
+              "name": "languageIsoCode_not_like",
+              "description": null
+            },
+            {
               "name": "translation",
               "description": null
             },
@@ -265,6 +273,14 @@
             },
             {
               "name": "translation_not_ends_with",
+              "description": null
+            },
+            {
+              "name": "translation_like",
+              "description": null
+            },
+            {
+              "name": "translation_not_like",
               "description": null
             },
             {
@@ -477,6 +493,14 @@
               "description": null
             },
             {
+              "name": "isoCode_like",
+              "description": null
+            },
+            {
+              "name": "isoCode_not_like",
+              "description": null
+            },
+            {
               "name": "description_some",
               "description": "Makes sure at least one of the items in \"description\" matches a certain filter.\n\nNote that you can specify the empty object for this filter to make sure \"description\" has at least one item."
             },
@@ -542,6 +566,14 @@
             },
             {
               "name": "totalInvestment_not_ends_with",
+              "description": null
+            },
+            {
+              "name": "totalInvestment_like",
+              "description": null
+            },
+            {
+              "name": "totalInvestment_not_like",
               "description": null
             },
             {
@@ -891,6 +923,14 @@
               "description": null
             },
             {
+              "name": "itemNumber_like",
+              "description": null
+            },
+            {
+              "name": "itemNumber_not_like",
+              "description": null
+            },
+            {
               "name": "quantity",
               "description": null
             },
@@ -1094,6 +1134,14 @@
               "description": null
             },
             {
+              "name": "huNumber_like",
+              "description": null
+            },
+            {
+              "name": "huNumber_not_like",
+              "description": null
+            },
+            {
               "name": "delivery",
               "description": "Checks if `delivery` is not null, and allows to filter based on its fields."
             },
@@ -1265,6 +1313,14 @@
               "description": null
             },
             {
+              "name": "deliveryNumber_like",
+              "description": null
+            },
+            {
+              "name": "deliveryNumber_not_like",
+              "description": null
+            },
+            {
               "name": "serialNumbers_some",
               "description": "Makes sure at least one of the items in \"serialNumbers\" matches a certain filter.\n\nNote that you can specify the empty object for this filter to make sure \"serialNumbers\" has at least one item."
             },
@@ -1413,6 +1469,14 @@
               "description": null
             },
             {
+              "name": "totalValue_like",
+              "description": null
+            },
+            {
+              "name": "totalValue_not_like",
+              "description": null
+            },
+            {
               "name": "forwarder",
               "description": "Checks if `forwarder` is not null, and allows to filter based on its fields."
             },
@@ -1477,6 +1541,14 @@
               "description": null
             },
             {
+              "name": "defaultValueString_like",
+              "description": null
+            },
+            {
+              "name": "defaultValueString_not_like",
+              "description": null
+            },
+            {
               "name": "defaultValueString2",
               "description": null
             },
@@ -1530,6 +1602,14 @@
             },
             {
               "name": "defaultValueString2_not_ends_with",
+              "description": null
+            },
+            {
+              "name": "defaultValueString2_like",
+              "description": null
+            },
+            {
+              "name": "defaultValueString2_not_like",
               "description": null
             },
             {
@@ -1796,6 +1876,14 @@
               "description": null
             },
             {
+              "name": "like",
+              "description": null
+            },
+            {
+              "name": "not_like",
+              "description": null
+            },
+            {
               "name": "AND",
               "description": "A field that checks if all filters in the list apply\n\nIf the list is empty, this filter applies to all objects."
             },
@@ -1867,6 +1955,14 @@
               "description": null
             },
             {
+              "name": "street_like",
+              "description": null
+            },
+            {
+              "name": "street_not_like",
+              "description": null
+            },
+            {
               "name": "city",
               "description": null
             },
@@ -1923,6 +2019,14 @@
               "description": null
             },
             {
+              "name": "city_like",
+              "description": null
+            },
+            {
+              "name": "city_not_like",
+              "description": null
+            },
+            {
               "name": "zipCode",
               "description": null
             },
@@ -1976,6 +2080,14 @@
             },
             {
               "name": "zipCode_not_ends_with",
+              "description": null
+            },
+            {
+              "name": "zipCode_like",
+              "description": null
+            },
+            {
+              "name": "zipCode_not_like",
               "description": null
             },
             {
@@ -2054,6 +2166,14 @@
               "description": null
             },
             {
+              "name": "unNumber_like",
+              "description": null
+            },
+            {
+              "name": "unNumber_not_like",
+              "description": null
+            },
+            {
               "name": "flashpoint",
               "description": null
             },
@@ -2107,6 +2227,14 @@
             },
             {
               "name": "flashpoint_not_ends_with",
+              "description": null
+            },
+            {
+              "name": "flashpoint_like",
+              "description": null
+            },
+            {
+              "name": "flashpoint_not_like",
               "description": null
             },
             {
@@ -2286,6 +2414,14 @@
             },
             {
               "name": "name_not_ends_with",
+              "description": null
+            },
+            {
+              "name": "name_like",
+              "description": null
+            },
+            {
+              "name": "name_not_like",
               "description": null
             },
             {
@@ -2820,6 +2956,14 @@
               "description": null
             },
             {
+              "name": "name_like",
+              "description": null
+            },
+            {
+              "name": "name_not_like",
+              "description": null
+            },
+            {
               "name": "number",
               "description": null
             },
@@ -3056,6 +3200,14 @@
               "description": null
             },
             {
+              "name": "key_like",
+              "description": null
+            },
+            {
+              "name": "key_not_like",
+              "description": null
+            },
+            {
               "name": "value",
               "description": null
             },
@@ -3109,6 +3261,14 @@
             },
             {
               "name": "value_not_ends_with",
+              "description": null
+            },
+            {
+              "name": "value_like",
+              "description": null
+            },
+            {
+              "name": "value_not_like",
               "description": null
             },
             {

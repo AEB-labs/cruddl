@@ -14,6 +14,7 @@ import { QuantifierFilterNode } from '../../query-tree/quantifiers';
 import { simplifyBooleans } from '../../query-tree/utils';
 import { not } from '../../schema-generation/filter-input-types/constants';
 import { Constructor, decapitalize } from '../../utils/utils';
+import { likePatternToRegExp } from '../like-helpers';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './inmemory-basics';
 import { js, JSCompoundQuery, JSFragment, JSQueryResultVariable, JSVariable } from './js';
 
@@ -341,6 +342,12 @@ register(BinaryOperationQueryNode, (node, context) => {
             return js`String(${lhs}).startsWith(${rhs})`;
         case BinaryOperator.ENDS_WITH:
             return js`String(${lhs}).endsWith(${rhs})`;
+        case BinaryOperator.LIKE:
+            if (node.rhs instanceof LiteralQueryNode && typeof node.rhs.value === 'string') {
+                const regexp = likePatternToRegExp(node.rhs.value);
+                return js`!!String(${lhs}).match(${js.value(regexp)})`;
+            }
+            return js`!!String(${lhs}).match(support.likePatternToRegExp(${rhs})`;
         case BinaryOperator.APPEND: // TODO would not work for lists, is this neccessary?
             return js`String(${lhs}) + String(${rhs})`;
         case BinaryOperator.PREPEND:
