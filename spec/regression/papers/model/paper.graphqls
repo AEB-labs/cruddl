@@ -9,7 +9,7 @@ enum Category {
 "A scientific paper"
 type Paper @rootEntity @roles(readWrite: ["admin"]) {
     key: String @key # need a key field for the reference
-    title: String
+    title: String @index
     "The date this paper has been published in a scientific journal or conference"
     publishDate: LocalDate
     isPublished: Boolean
