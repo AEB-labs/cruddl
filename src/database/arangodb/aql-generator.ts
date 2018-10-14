@@ -4,6 +4,7 @@ import { Quantifier, QuantifierFilterNode } from '../../query-tree/quantifiers';
 import { simplifyBooleans } from '../../query-tree/utils';
 import { not } from '../../schema-generation/filter-input-types/constants';
 import { Constructor, decapitalize } from '../../utils/utils';
+import { analyzeLikePatternPrefix } from '../like-helpers';
 import { aql, AQLCompoundQuery, AQLFragment, AQLQueryResultVariable, AQLVariable } from './aql';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './arango-basics';
 
@@ -356,11 +357,40 @@ register(BinaryOperationQueryNode, (node, context) => {
 
     switch (node.operator) {
         case BinaryOperator.CONTAINS:
-            return aql`${lhs} LIKE CONCAT("%", ${rhs}, "%")`;
+            return aql`(${lhs} LIKE CONCAT("%", ${rhs}, "%"))`;
         case BinaryOperator.STARTS_WITH:
-            return aql`(LEFT(${lhs}, LENGTH(${rhs})) == ${rhs})`;
+            const slowFrag = aql`(LEFT(${lhs}, LENGTH(${rhs})) == ${rhs})`;
+            if (node.rhs instanceof LiteralQueryNode && typeof node.rhs.value === 'string') {
+                const fastFrag = getFastStartsWithQuery(lhs, node.rhs.value);
+                // still ned to use the slow frag to get case sensitiveness
+                // this is really bad for performance, see explanation in LIKE branch below
+                return aql`${fastFrag} && ${slowFrag}`;
+            }
+            return slowFrag;
         case BinaryOperator.ENDS_WITH:
             return aql`(RIGHT(${lhs}, LENGTH(${rhs})) == ${rhs})`;
+        case BinaryOperator.LIKE:
+            const slowLikeFrag = aql`LIKE(${lhs}, ${rhs}, true)`; // true: caseInsensitive
+            if (node.rhs instanceof LiteralQueryNode && typeof node.rhs.value === 'string') {
+                const { literalPrefix, isSimplePrefixPattern, isLiteralPattern } = analyzeLikePatternPrefix(node.rhs.value);
+
+                if (isLiteralPattern) {
+                    return getEqualsIgnoreCaseQuery(lhs, literalPrefix);
+                }
+
+                const fastFrag = getFastStartsWithQuery(lhs, literalPrefix);
+                if (isSimplePrefixPattern) {
+                    // we can optimize the whole LIKE away and use a skiplist-index-optimizable range select
+                    return fastFrag;
+                }
+                // we can at least use the prefix search to narrow down the results
+                // however, this is way worse because we lose the ability to sort-and-then-limit using the same index
+                // -> queries with a "first" argument suddenly have the time complexity of the pre-limited
+                // (or even pre-filtered if the database decides to use the index for sorting) result size instead of
+                // being in O(first).
+                return aql`(${fastFrag} && ${slowLikeFrag})`;
+            }
+            return slowLikeFrag;
         case BinaryOperator.APPEND:
             return aql`CONCAT(${lhs}, ${rhs})`;
         case BinaryOperator.PREPEND:
@@ -368,7 +398,63 @@ register(BinaryOperationQueryNode, (node, context) => {
         default:
             throw new Error(`Unsupported binary operator: ${op}`);
     }
+
 });
+
+function getFastStartsWithQuery(lhs: AQLFragment, rhsValue: string): AQLFragment {
+    if (!rhsValue.length) {
+        return aql`IS_STRING(${lhs})`;
+    }
+
+    // this works as long as the highest possible code point is also the last one in the collation
+    const maxChar = String.fromCodePoint(0x10FFFF);
+    const maxStr = rhsValue + maxChar;
+
+    // UPPER is used to get the "smallest" representation of the value case-sensitive, LOWER for the "largest".
+    // the ordering looks like this:
+    // [
+    //   "A",
+    //   "a",
+    //   "AA",
+    //   "Aa",
+    //   "aA",
+    //   "aa",
+    //   "AB",
+    //   "Ab",
+    //   "aB",
+    //   "ab",
+    //   "B",
+    //   "b"
+    // ]
+    // This means that if the actual value is longer than the given prefix (i.e. it's a real prefix and not the whole
+    // string), the match will be case-insensitive. However, if the remaining suffix if empty, the search would
+    // sometimes be case-sensitive: If you search for the prefix a, A will not be found (because A < a), but a will
+    // match the prefix filter A. In order to avoid this, one needs to convert the given string to the lowest value
+    // within its case-sensitivity category. For ASCII characters, that's simply UPPER(), but that will not always be
+    // the case. The same thing applies to the upper bound.
+    return aql`(${lhs} >= UPPER(${rhsValue}) && ${lhs} < LOWER(${maxStr}))`;
+
+    // the following does not work because string sorting depends on the DB's collator
+    // which does not necessarily sort the characters by code points
+    // charCodeAt / fromCharCode works on code units, and so does the string indexer / substr / length
+    /*const lastCharCode = rhsValue.charCodeAt(rhsValue.length - 1);
+    const nextCharCode = lastCharCode + 1;
+    if (nextCharCode >= 0xD800) {
+        // don't mess with surrogate pairs
+        return undefined;
+    }
+
+    const nextValue = rhsValue.substring(0, rhsValue.length - 1) + String.fromCharCode(nextCharCode);
+    return aql`(${lhs} >= ${rhsValue} && ${lhs} < ${nextValue})`;*/
+}
+
+function getEqualsIgnoreCaseQuery(lhs: AQLFragment, rhsValue: string): AQLFragment {
+    const rhsValueFrag = aql.value(rhsValue);
+    // w.r.t. UPPER/LOWER, see the comment in getFastStartsWithQuery
+    const lowerBoundFrag = aql`UPPER(${rhsValue})`;
+    const upperBoundFrag = aql`LOWER(${rhsValue})`;
+    return aql`(${lhs} >= ${lowerBoundFrag} && ${lhs} <= ${upperBoundFrag})`;
+}
 
 register(UnaryOperationQueryNode, (node, context) => {
     switch (node.operator) {
