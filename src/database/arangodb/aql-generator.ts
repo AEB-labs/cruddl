@@ -1,14 +1,5 @@
 import { Relation, RootEntityType } from '../../model';
-import {
-    AddEdgesQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode,
-    ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeFilter,
-    EdgeIdentifier, EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode,
-    ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, OrderDirection,
-    OrderSpecification, PartialEdgeIdentifier, QueryNode, QueryResultValidator, RemoveEdgesQueryNode,
-    RootEntityIDQueryNode, RUNTIME_ERROR_TOKEN, RuntimeErrorQueryNode, SetEdgeQueryNode, TransformListQueryNode,
-    TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode,
-    VariableQueryNode, WithPreExecutionQueryNode
-} from '../../query-tree';
+import { AddEdgesQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode, ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeFilter, EdgeIdentifier, EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, OrderDirection, OrderSpecification, PartialEdgeIdentifier, QueryNode, QueryResultValidator, RemoveEdgesQueryNode, RootEntityIDQueryNode, RUNTIME_ERROR_TOKEN, RuntimeErrorQueryNode, SetEdgeQueryNode, TransformListQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../../query-tree';
 import { simplifyBooleans } from '../../query-tree/utils';
 import { Constructor, decapitalize } from '../../utils/utils';
 import { aql, AQLCompoundQuery, AQLFragment, AQLQueryResultVariable, AQLVariable } from './aql';
@@ -175,6 +166,7 @@ namespace aqlExt {
 }
 
 const processors = new Map<Constructor<QueryNode>, NodeProcessor<QueryNode>>();
+
 function register<T extends QueryNode>(type: Constructor<T>, processor: NodeProcessor<T>) {
     processors.set(type, processor as NodeProcessor<QueryNode>); // probably some bivariancy issue
 }
@@ -359,6 +351,12 @@ register(BinaryOperationQueryNode, (node, context) => {
         case BinaryOperator.CONTAINS:
             return aql`${lhs} LIKE CONCAT("%", ${rhs}, "%")`;
         case BinaryOperator.STARTS_WITH:
+            if (node.rhs instanceof LiteralQueryNode && typeof node.rhs.value === 'string') {
+                const frag = getFastStartsWithQuery(lhs, node.rhs.value);
+                if (frag) {
+                    return frag;
+                }
+            }
             return aql`(LEFT(${lhs}, LENGTH(${rhs})) == ${rhs})`;
         case BinaryOperator.ENDS_WITH:
             return aql`(RIGHT(${lhs}, LENGTH(${rhs})) == ${rhs})`;
@@ -370,6 +368,30 @@ register(BinaryOperationQueryNode, (node, context) => {
             throw new Error(`Unsupported binary operator: ${op}`);
     }
 });
+
+function getFastStartsWithQuery(lhs: AQLFragment, rhsValue: string): AQLFragment | undefined {
+    if (!rhsValue.length) {
+        return  aql`IS_STRING(${lhs})`;
+    }
+
+    // this works as long as the highest possible code point is also the last one in the collation
+    const maxChar = String.fromCodePoint(0x10FFFF);
+    const maxStr = rhsValue + maxChar;
+    return aql`(${lhs} >= ${rhsValue} && ${lhs} < ${maxStr})`;
+
+    // the following does not work because string sorting depends on the DB's collator
+    // which does not necessarily sort the characters by code points
+    // charCodeAt / fromCharCode works on code units, and so does the string indexer / substr / length
+    /*const lastCharCode = rhsValue.charCodeAt(rhsValue.length - 1);
+    const nextCharCode = lastCharCode + 1;
+    if (nextCharCode >= 0xD800) {
+        // don't mess with surrogate pairs
+        return undefined;
+    }
+
+    const nextValue = rhsValue.substring(0, rhsValue.length - 1) + String.fromCharCode(nextCharCode);
+    return aql`(${lhs} >= ${rhsValue} && ${lhs} < ${nextValue})`;*/
+}
 
 register(UnaryOperationQueryNode, (node, context) => {
     switch (node.operator) {
