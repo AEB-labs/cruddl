@@ -20,12 +20,12 @@ describe('Meta schema API', () => {
     const typeQuery = gql`
         {
             types {
-                ... on ScalarType {name kind}
-                ... on RootEntityType {name kind keyField { name } fields { name isList isReference isRelation type { __typename }}}
-                ... on ValueObjectType {name kind fields { name isList isReference isRelation type { __typename }}}
-                ... on ChildEntityType {name kind fields { name isList isReference isRelation type { __typename }}}
-                ... on EntityExtensionType {name kind fields { name isList isReference isRelation type { __typename }}}
-                ... on EnumType { name values { value } }
+                name kind
+                ... on RootEntityType { pluralName keyField { name } fields { name isList isReference isRelation type { __typename }}}
+                ... on ValueObjectType {fields { name isList isReference isRelation type { __typename }}}
+                ... on ChildEntityType {fields { name isList isReference isRelation type { __typename }}}
+                ... on EntityExtensionType {fields { name isList isReference isRelation type { __typename }}}
+                ... on EnumType { values { value } }
             }
         }
     `;
@@ -242,7 +242,7 @@ describe('Meta schema API', () => {
                     ]
                 },
                 {
-                    'name': 'Country', 'kind': 'ROOT_ENTITY', 'keyField': {'name': 'isoCode'}, 'fields': [
+                    'name': 'Country', 'pluralName': 'Countries', 'kind': 'ROOT_ENTITY', 'keyField': {'name': 'isoCode'}, 'fields': [
                         {
                             'name': 'id', 'isList': false, 'isReference': false,
                             'isRelation': false, 'type': {'__typename': 'ScalarType'}
@@ -261,7 +261,7 @@ describe('Meta schema API', () => {
                         }
                     ]
                 }, {
-                    'name': 'Shipment', 'kind': 'ROOT_ENTITY', 'keyField': null, 'fields': [
+                    'name': 'Shipment', 'pluralName': 'Shipments', 'kind': 'ROOT_ENTITY', 'keyField': null, 'fields': [
                         {
                             'name': 'id', 'isList': false, 'isReference': false,
                             'isRelation': false, 'type': {'__typename': 'ScalarType'}
@@ -300,7 +300,7 @@ describe('Meta schema API', () => {
                         }
                     ]
                 }, {
-                    'name': 'Delivery', 'kind': 'ROOT_ENTITY', 'keyField': null, 'fields': [
+                    'name': 'Delivery', 'pluralName': 'Deliveries', 'kind': 'ROOT_ENTITY', 'keyField': null, 'fields': [
                         {
                             'name': 'id', 'isList': false, 'isReference': false,
                             'isRelation': false, 'type': {'__typename': 'ScalarType'}
@@ -319,7 +319,7 @@ describe('Meta schema API', () => {
                         }
                     ]
                 }, {
-                    'name': 'HandlingUnit', 'kind': 'ROOT_ENTITY', 'keyField': null, 'fields': [
+                    'name': 'HandlingUnit', 'pluralName': 'HandlingUnits', 'kind': 'ROOT_ENTITY', 'keyField': null, 'fields': [
                         {
                             'name': 'id', 'isList': false, 'isReference': false,
                             'isRelation': false, 'type': {'__typename': 'ScalarType'}
@@ -352,7 +352,7 @@ describe('Meta schema API', () => {
                 {'name': 'DangerousGoodsInfo', 'kind': 'ENTITY_EXTENSION', 'fields': []},
                 {
                     'name': 'TransportKind',
-
+                    'kind': 'ENUM',
                     'values': [
                         {'value': 'AIR'},
                         {'value': 'ROAD'},
