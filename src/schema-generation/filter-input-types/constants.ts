@@ -11,6 +11,7 @@ import {
 } from '../../schema/constants';
 import { GraphQLLocalDate } from '../../schema/scalars/local-date';
 import { GraphQLLocalTime } from '../../schema/scalars/local-time';
+import { QuantifierKind } from './filter-fields';
 
 export const FILTER_OPERATORS: { [suffix: string]: (fieldNode: QueryNode, valueNode: QueryNode) => QueryNode } = {
     [INPUT_FIELD_EQUAL]: binaryOp(BinaryOperator.EQUAL),
@@ -56,7 +57,7 @@ export const FILTER_FIELDS_BY_TYPE: {[name: string]: string[]} = {
     [GraphQLBoolean.name]: [ INPUT_FIELD_EQUAL, INPUT_FIELD_NOT],
 };
 
-export const QUANTIFIERS = [INPUT_FIELD_SOME, INPUT_FIELD_EVERY, INPUT_FIELD_NONE];
+export const QUANTIFIERS: ReadonlyArray<QuantifierKind> = [INPUT_FIELD_SOME, INPUT_FIELD_EVERY, INPUT_FIELD_NONE];
 
 export function not(value: QueryNode): QueryNode {
     return new UnaryOperationQueryNode(value, UnaryOperator.NOT);

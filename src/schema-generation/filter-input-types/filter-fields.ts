@@ -7,7 +7,7 @@ import { AND_FILTER_FIELD, FILTER_FIELD_PREFIX_SEPARATOR, INPUT_FIELD_EVERY, INP
 import { AnyValue, decapitalize, PlainObject } from '../../utils/utils';
 import { createFieldNode } from '../field-nodes';
 import { TypedInputFieldBase } from '../typed-input-object-type';
-import { OPERATORS_WITH_LIST_OPERAND } from './constants';
+import { not, OPERATORS_WITH_LIST_OPERAND } from './constants';
 import { FilterObjectType } from './generator';
 
 export interface FilterField extends TypedInputFieldBase<FilterField> {
@@ -93,10 +93,11 @@ export class QuantifierFilterField implements FilterField {
 
         // every(P(x)) === none(!P(x))
         const quantifierForResult = this.quantifierName === INPUT_FIELD_EVERY ? INPUT_FIELD_NONE : this.quantifierName;
-        const filterValueForResult = this.quantifierName === INPUT_FIELD_EVERY ? { not: filterValue } : filterValue;
+        const invertFilterNode = this.quantifierName === INPUT_FIELD_EVERY;
 
         const itemVariable = new VariableQueryNode(decapitalize(this.field.name));
-        const filterNode = this.inputType.getFilterNode(itemVariable, filterValueForResult);
+        const rawFilterNode = this.inputType.getFilterNode(itemVariable, filterValue);
+        const filterNode = invertFilterNode ? not(rawFilterNode) : rawFilterNode;
         const filteredListNode = new TransformListQueryNode({
             listNode,
             filterNode,
