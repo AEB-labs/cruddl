@@ -1,0 +1,17 @@
+query some {
+    allDeliveries(filter:{items_some: { quantity_gt: 10 }}, orderBy: deliveryNumber_ASC) {
+        deliveryNumber
+    }
+}
+
+query every {
+    allDeliveries(filter:{items_every: { quantity_gt: 10 }}, orderBy: deliveryNumber_ASC) {
+        deliveryNumber
+    }
+}
+
+query none {
+    allDeliveries(filter:{items_none: { quantity_gt: 10 }}, orderBy: deliveryNumber_ASC) {
+        deliveryNumber
+    }
+}

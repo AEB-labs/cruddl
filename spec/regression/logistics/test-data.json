@@ -85,10 +85,12 @@
         "items": [
           {
             "itemNumber": "1001",
+            "quantity": 3,
             "handlingUnit": "@{ids/HandlingUnit/1}"
           },
           {
             "itemNumber": "1002",
+            "quantity": 8,
             "handlingUnit": "@{ids/HandlingUnit/2}"
           }
         ],
@@ -110,10 +112,12 @@
         "items": [
           {
             "itemNumber": "2001",
+            "quantity": 13,
             "handlingUnit": "@{ids/Country/1}" //wrong ID (Country instead of HandlingUnit) should not be resolved as reference
           },
           {
-            "itemNumber": "2002"
+            "itemNumber": "2002",
+            "quantity": 18
           }
         ]
       },
@@ -126,10 +130,12 @@
         }],
         "items": [
           {
-            "itemNumber": "3001"
+            "itemNumber": "3001",
+            "quantity": 3
           },
           {
-            "itemNumber": "3002"
+            "itemNumber": "3002",
+            "quantity": 18
           }
         ],
         "destinationCountry": "US"
