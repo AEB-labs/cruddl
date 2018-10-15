@@ -1,0 +1,32 @@
+{
+  "some": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000521"
+        },
+        {
+          "deliveryNumber": "1000522"
+        }
+      ]
+    }
+  },
+  "every": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000521"
+        }
+      ]
+    }
+  },
+  "none": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        }
+      ]
+    }
+  }
+}
