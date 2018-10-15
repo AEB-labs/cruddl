@@ -82,6 +82,8 @@ const typeDefs = gql`
 
     type RootEntityType implements ObjectType & Type {
         name: String!
+        "The plural name, as it is used in all* queries and in collection names"
+        pluralName: String!
         kind: TypeKind!
         description: String
 
