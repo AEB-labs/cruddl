@@ -891,6 +891,38 @@
               "description": null
             },
             {
+              "name": "quantity",
+              "description": null
+            },
+            {
+              "name": "quantity_not",
+              "description": null
+            },
+            {
+              "name": "quantity_in",
+              "description": null
+            },
+            {
+              "name": "quantity_not_in",
+              "description": null
+            },
+            {
+              "name": "quantity_lt",
+              "description": null
+            },
+            {
+              "name": "quantity_lte",
+              "description": null
+            },
+            {
+              "name": "quantity_gt",
+              "description": null
+            },
+            {
+              "name": "quantity_gte",
+              "description": null
+            },
+            {
               "name": "handlingUnit",
               "description": "Filters the through `id` referenced HandlingUnits that fulfills the given requirements.\n\n Checks if `handlingUnit` is not null, and allows to filter based on its fields."
             },
@@ -2335,6 +2367,10 @@
               "description": null
             },
             {
+              "name": "quantity",
+              "description": null
+            },
+            {
               "name": "handlingUnit",
               "description": "This field references a `HandlingUnit` by its `id` field"
             },
@@ -3469,6 +3505,10 @@
               "description": null
             },
             {
+              "name": "quantity",
+              "description": null
+            },
+            {
               "name": "handlingUnit",
               "description": "Specify the `id` of the `HandlingUnit` to be referenced"
             }
@@ -3665,6 +3705,10 @@
             },
             {
               "name": "itemNumber",
+              "description": null
+            },
+            {
+              "name": "quantity",
               "description": null
             },
             {
