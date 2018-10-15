@@ -1,19 +1,14 @@
 import { GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
+import * as pluralize from 'pluralize';
 import { isArray } from 'util';
 import { Field, TypeKind } from '../../model';
-import {
-    BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, CountQueryNode, LiteralQueryNode, QueryNode,
-    TransformListQueryNode, VariableQueryNode
-} from '../../query-tree';
-import {
-    AND_FILTER_FIELD, INPUT_FIELD_EVERY, INPUT_FIELD_NONE, FILTER_FIELD_PREFIX_SEPARATOR, OR_FILTER_FIELD
-} from '../../schema/constants';
+import { BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, CountQueryNode, LiteralQueryNode, QueryNode, TransformListQueryNode, VariableQueryNode } from '../../query-tree';
+import { AND_FILTER_FIELD, FILTER_FIELD_PREFIX_SEPARATOR, INPUT_FIELD_EVERY, INPUT_FIELD_NONE, OR_FILTER_FIELD } from '../../schema/constants';
 import { AnyValue, decapitalize, PlainObject } from '../../utils/utils';
 import { createFieldNode } from '../field-nodes';
 import { TypedInputFieldBase } from '../typed-input-object-type';
 import { OPERATORS_WITH_LIST_OPERAND } from './constants';
 import { FilterObjectType } from './generator';
-import * as pluralize from 'pluralize';
 
 export interface FilterField extends TypedInputFieldBase<FilterField> {
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode
@@ -66,15 +61,31 @@ export class ScalarOrEnumFilterField implements FilterField {
     }
 }
 
+export type QuantifierKind = 'every' | 'none' | 'some';
+
 export class QuantifierFilterField implements FilterField {
     readonly name: string;
 
     constructor(
         public readonly field: Field,
-        public readonly quantifierName: string,
+        public readonly quantifierName: QuantifierKind,
         public readonly inputType: FilterObjectType
     ) {
         this.name = `${this.field.name}_${this.quantifierName}`;
+    }
+
+    get description(): string | undefined {
+        switch (this.quantifierName) {
+            case 'every':
+                return `Makes sure all items in "${this.field.name}" match a certain filter.`;
+            case 'none':
+                return `Makes sure none of the items in "${this.field.name}" match a certain filter.\n\n` +
+                    `Note that you can specify the empty object for this filter to make sure "${this.field.name}" has no items.`;
+            case 'some':
+                return `Makes sure at least one of the items in "${this.field.name}" matches a certain filter.\n\n` +
+                    `Note that you can specify the empty object for this filter to make sure "${this.field.name}" has at least one item.`;
+        }
+        return undefined;
     }
 
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
@@ -82,7 +93,7 @@ export class QuantifierFilterField implements FilterField {
 
         // every(P(x)) === none(!P(x))
         const quantifierForResult = this.quantifierName === INPUT_FIELD_EVERY ? INPUT_FIELD_NONE : this.quantifierName;
-        const filterValueForResult = this.quantifierName === INPUT_FIELD_EVERY ? {not: filterValue} : filterValue;
+        const filterValueForResult = this.quantifierName === INPUT_FIELD_EVERY ? { not: filterValue } : filterValue;
 
         const itemVariable = new VariableQueryNode(decapitalize(this.field.name));
         const filterNode = this.inputType.getFilterNode(itemVariable, filterValueForResult);
@@ -108,7 +119,7 @@ export class NestedObjectFilterField implements FilterField {
     ) {
         this.name = this.field.name;
         this.description = `Checks if \`${this.field.name}\` is not null, and allows to filter based on its fields.`;
-        if(this.field.isReference && this.field.type.kind == TypeKind.ROOT_ENTITY && this.field.type.keyField){
+        if (this.field.isReference && this.field.type.kind == TypeKind.ROOT_ENTITY && this.field.type.keyField) {
             this.description = `Filters the through \`${this.field.type.keyField.name}\` referenced ${pluralize(this.field.type.name)} that fulfills the given requirements.\n\n ` + this.description;
         }
     }
