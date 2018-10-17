@@ -327,6 +327,7 @@ register(CountQueryNode, (node, context) => {
     // because it avoids building the whole collection temporarily in memory
     // however, https://docs.arangodb.com/3.2/AQL/Examples/Counting.html does not really mention this case, so we
     // should evaluate it again
+    // note that ArangoDB's inline-subqueries rule optimizes for the case where listNode is a TransformList again.
     const itemVar = aql.variable('item');
     const countVar = aql.variable('count');
     return aqlExt.parenthesizeObject(
