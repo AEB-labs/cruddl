@@ -1,9 +1,5 @@
 import { FieldRequest, FieldSelection } from '../../graphql/query-distiller';
-import {
-    BasicType, ConditionalQueryNode, NullQueryNode, ObjectQueryNode, PreExecQueryParms, PropertySpecification,
-    QueryNode, TransformListQueryNode, TypeCheckQueryNode, VariableAssignmentQueryNode, VariableQueryNode,
-    WithPreExecutionQueryNode
-} from '../../query-tree';
+import { BasicType, ConditionalQueryNode, NullQueryNode, ObjectQueryNode, PreExecQueryParms, PropertySpecification, QueryNode, TransformListQueryNode, TypeCheckQueryNode, VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../../query-tree';
 import { decapitalize } from '../../utils/utils';
 import { QueryNodeField, QueryNodeObjectType } from './definition';
 import { extractQueryTreeObjectType, isListType, resolveThunk } from './utils';
@@ -81,11 +77,14 @@ function buildFieldQueryNode0(sourceNode: QueryNode, field: QueryNodeField, fiel
         // This is no longer necessary because createFieldNode() already does this where necessary (only for simple field lookups)
         // All other code should return lists where lists are expected
         return buildTransformListQueryNode(fieldQueryNode, queryTreeObjectType, fieldRequest.selectionSet, newFieldRequestStack);
+    }
+
+    // object
+    if (field.skipNullCheck) {
+        return buildObjectQueryNode(fieldQueryNode, queryTreeObjectType, fieldRequest.selectionSet, newFieldRequestStack);
     } else {
         // This is necessary because we want to return `null` if a field is null, and not pass `null` through as
         // `source`, just as the graphql engine would do, too.
-        // It currently also treats non-objects as `null` (just because it's free), but we may move this to
-        // createFieldNode() later.
         return buildConditionalObjectQueryNode(fieldQueryNode, queryTreeObjectType, fieldRequest.selectionSet, newFieldRequestStack);
     }
 }

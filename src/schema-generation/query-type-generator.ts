@@ -86,6 +86,10 @@ export class QueryTypeGenerator {
             name: getMetaFieldName(getAllEntitiesFieldName(rootEntityType.name)),
             type: new QueryNodeNonNullType(metaType),
             description: rootEntityType.description,
+            // meta fields should never be null. Also, this is crucial for performance. Without it, we would introduce
+            // an unnecessary variable with the collection contents (which is slow) and we would to an equality check of
+            // a collection against NULL which is deadly (v8 evaluation)
+            skipNullCheck: true,
             resolve: () => this.getAllRootEntitiesNode(rootEntityType)
         });
         return this.filterAugmentation.augment(fieldConfig, rootEntityType);

@@ -20,6 +20,14 @@ export interface QueryNodeField {
      * Indicates whether this field should be resolved in the user-specified sequence among other serial fields
      */
     isSerial?: boolean
+
+    /**
+     * If set to `true`, the resolved value is not checked against NULL
+     *
+     * Normally, fields whose type is an object type evaluate to NULL if the source value is NULL. If this flag is set,
+     * NULL is passed to the field resolvers within.
+     */
+    skipNullCheck?: boolean
 }
 
 export interface QueryNodeObjectType {

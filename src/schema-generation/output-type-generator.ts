@@ -135,6 +135,7 @@ export class OutputTypeGenerator {
         const plainField: QueryNodeField = {
             name: getMetaFieldName(field.name),
             type: new QueryNodeNonNullType(metaType),
+            skipNullCheck: true, // meta fields should never be null
             description: field.description,
             resolve: (sourceNode) => createFieldNode(field, sourceNode)
         };
