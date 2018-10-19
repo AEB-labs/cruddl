@@ -90,6 +90,15 @@ describe('ArangoDBAdapter', () => {
                     sparse: true,
                     type: 'persistent',
                     unique: true
+                },
+                // this one is for @reference lookup which needs a non-sparse (see shouldUseWorkaroundForSparseIndices)
+                {
+                    fields: [
+                        'deliveryNumber'
+                    ],
+                    sparse: false,
+                    type: 'persistent',
+                    unique: false
                 }
             ]);
 

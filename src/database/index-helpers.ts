@@ -1,5 +1,5 @@
-import { compact, flatMap } from '../utils/utils';
 import { IndexField, Model, RootEntityType } from '../model';
+import { compact, flatMap } from '../utils/utils';
 
 export interface IndexDefinition {
     id?: string,
@@ -13,22 +13,38 @@ function indexDefinitionsEqual(a: IndexDefinition, b: IndexDefinition) {
     return a.rootEntity === b.rootEntity && a.fields.join('|') === b.fields.join('|') && a.unique === b.unique && a.sparse === b.sparse;
 }
 
-export function getRequiredIndicesFromModel(model: Model): ReadonlyArray<IndexDefinition> {
-    return flatMap(model.rootEntityTypes, rootEntity => {
-        return rootEntity.indices.map(index => ({
-            rootEntity,
-            id: index.id,
-            fields: index.fields.map(getArangoFieldPath),
-            unique: index.unique,
-
-            // sic! unique indices should always be sparse so that more than one NULL value is allowed
-            // non-unique indices should not be sparse so that filter: { something: null } can use the index
-            sparse: index.unique
-        }));
-    });
+export function getRequiredIndicesFromModel(model: Model, { shouldUseWorkaroundForSparseIndices = false }: { shouldUseWorkaroundForSparseIndices?: boolean } = {}): ReadonlyArray<IndexDefinition> {
+    return flatMap(model.rootEntityTypes, rootEntity => getIndicesForRootEntity(rootEntity, { shouldUseWorkaroundForSparseIndices }));
 }
 
-export function calculateRequiredIndexOperations(existingIndices: ReadonlyArray<IndexDefinition>, requiredIndices: ReadonlyArray<IndexDefinition>):{
+function getIndicesForRootEntity(rootEntity: RootEntityType, options: { shouldUseWorkaroundForSparseIndices: boolean }): ReadonlyArray<IndexDefinition> {
+    const indices: IndexDefinition[] = rootEntity.indices.map(index => ({
+        rootEntity,
+        id: index.id,
+        fields: index.fields.map(getArangoFieldPath),
+        unique: index.unique,
+
+        // sic! unique indices should always be sparse so that more than one NULL value is allowed
+        // non-unique indices should not be sparse so that filter: { something: null } can use the index
+        sparse: index.unique
+    }));
+
+    if (options.shouldUseWorkaroundForSparseIndices && rootEntity.keyField) {
+        // add a non-sparse index to be used for @reference lookups if arangodb does not support dynamic usage of sparse
+        // indices yet
+        indices.push({
+            rootEntity,
+            fields: [rootEntity.keyField.name],
+
+            sparse: false,
+            unique: false
+        });
+    }
+
+    return indices;
+}
+
+export function calculateRequiredIndexOperations(existingIndices: ReadonlyArray<IndexDefinition>, requiredIndices: ReadonlyArray<IndexDefinition>): {
     indicesToDelete: ReadonlyArray<IndexDefinition>,
     indicesToCreate: ReadonlyArray<IndexDefinition>
 } {
@@ -41,7 +57,7 @@ export function calculateRequiredIndexOperations(existingIndices: ReadonlyArray<
         }
         return requiredIndex;
     }));
-    return {indicesToDelete, indicesToCreate};
+    return { indicesToDelete, indicesToCreate };
 }
 
 /**
