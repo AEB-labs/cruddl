@@ -36,7 +36,7 @@ async function setUpPapersAndReaders(environment: TestEnvironment, config: { pap
 
 function testFetchWithAssociations(config: { paperCount: number, userCount: number, associationCount: number }): BenchmarkConfig {
     let env: TestEnvironment;
-    let sampledIDs: number[] = [];
+    let sampledIDs: string[] = [];
     return {
         name: `Fetch one of one root entity with one level deep associations (${config.paperCount} papers, ${config.userCount} users, ${config.associationCount} associations`,
         async beforeAll() {

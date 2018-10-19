@@ -1,4 +1,4 @@
-import { Database } from 'arangojs';
+import { Database, DocumentCollection, EdgeCollection } from 'arangojs';
 import * as fs from 'fs';
 import { ExecutionResult, graphql, GraphQLSchema } from 'graphql';
 import { ArangoDBConfig } from '../../src/database/arangodb/arangodb-adapter';
@@ -14,7 +14,7 @@ export async function createTempDatabase(): Promise<ArangoDBConfig> {
     const dbs = await db.listDatabases();
     if (dbs.indexOf(DATABASE_NAME) >= 0) {
         db.useDatabase(DATABASE_NAME);
-        const colls = await db.collections(true);
+        const colls = (await db.collections(true)) as (DocumentCollection | EdgeCollection)[];
         await Promise.all(colls.map(coll => coll.drop()));
     } else {
         await db.createDatabase(DATABASE_NAME);

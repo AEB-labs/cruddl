@@ -53,7 +53,7 @@ describe('ArangoDBAdapter', () => {
             await adapter.updateSchema(model);
 
             const indices = await db.collection('deliveries').indexes();
-            expect(indices.map(index => ({
+            expect(indices.map((index: any) => ({
                 fields: index.fields,
                 sparse: index.sparse,
                 type: index.type,
@@ -94,7 +94,7 @@ describe('ArangoDBAdapter', () => {
             ]);
 
             const indicesOnOtherCollection = await db.collection('second').indexes();
-            expect(indicesOnOtherCollection.map(index => ({
+            expect(indicesOnOtherCollection.map((index: any) => ({
                 fields: index.fields,
                 sparse: index.sparse,
                 type: index.type,
