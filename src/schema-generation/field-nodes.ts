@@ -1,12 +1,8 @@
 import { RootEntityType } from '../model';
 import { Field } from '../model/implementation';
-import {
-    BasicType, BinaryOperationQueryNode, BinaryOperator, ConditionalQueryNode, EntitiesQueryNode, FieldQueryNode,
-    FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, NullQueryNode, ObjectQueryNode, QueryNode,
-    RootEntityIDQueryNode,
-    TransformListQueryNode, TypeCheckQueryNode, VariableQueryNode
-} from '../query-tree';
+import { BasicType, BinaryOperationQueryNode, BinaryOperator, ConditionalQueryNode, EntitiesQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, NullQueryNode, ObjectQueryNode, QueryNode, RootEntityIDQueryNode, TransformListQueryNode, TypeCheckQueryNode, VariableQueryNode } from '../query-tree';
 import { ID_FIELD } from '../schema/constants';
+import { and } from './filter-input-types/constants';
 
 export function createFieldNode(field: Field, sourceNode: QueryNode): QueryNode {
     if (field.isList) {
@@ -45,11 +41,21 @@ function createTo1ReferenceNode(field: Field, sourceNode: QueryNode): QueryNode 
 
     const referenceKeyNode = new FieldQueryNode(sourceNode, field);
     const listItemVar = new VariableQueryNode(field.name);
-    const filterNode = new BinaryOperationQueryNode(
-        createFieldNode(keyFieldInReferencedEntity, listItemVar),
+    const itemKeyNode = createFieldNode(keyFieldInReferencedEntity, listItemVar);
+    const equalFilterNode = new BinaryOperationQueryNode(
+        itemKeyNode,
         BinaryOperator.EQUAL,
         referenceKeyNode
     );
+    // this is a hint for the database that we're not interested in items where the key is null so it can use sparse
+    // indices. this is used by arangodb >= 3.4. It would be preferable to implement this in the ArangoDBAdapter, but
+    // then we would need a way to convey non-nullness somehow.
+    const nonNullFilterNode = new BinaryOperationQueryNode(
+        itemKeyNode,
+        BinaryOperator.UNEQUAL,
+        NullQueryNode.NULL
+    );
+    const filterNode = and(nonNullFilterNode, equalFilterNode);
 
     const listNode = new EntitiesQueryNode(referencedEntityType);
     const filteredListNode = new TransformListQueryNode({
