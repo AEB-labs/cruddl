@@ -155,8 +155,10 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         await Promise.all(createTasks);
         this.logger.info(`Done`);
 
+        const shouldUseWorkaroundForSparseIndices = await this.shouldUseWorkaroundForSparseIndices();
+
         // update indices
-        const requiredIndices = getRequiredIndicesFromModel(model);
+        const requiredIndices = getRequiredIndicesFromModel(model, { shouldUseWorkaroundForSparseIndices });
         const existingIndicesPromises = model.rootEntityTypes.map(rootEntityType => this.getCollectionIndices(rootEntityType));
         let existingIndices: IndexDefinition[] = [];
         await Promise.all(existingIndicesPromises).then(promiseResults => promiseResults.forEach(indices => indices.forEach(index => existingIndices.push(index))));
@@ -168,10 +170,10 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                 return;
             }
             if (this.autoremoveIndices) {
-                this.logger.info(`Dropping index ${indexToDelete.id} on ${indexToDelete.fields.length > 1 ? 'fields' : 'field'} '${indexToDelete.fields.join(',')}'`);
+                this.logger.info(`Dropping ${describeIndex(indexToDelete)}`);
                 return this.db.collection(collection).dropIndex(indexToDelete.id!);
             } else {
-                this.logger.info(`Skipping removal of index ${indexToDelete.id} on ${indexToDelete.fields.length > 1 ? 'fields' : 'field'} '${indexToDelete.fields.join(',')}'`);
+                this.logger.info(`Skipping removal of ${describeIndex(indexToDelete)}`);
                 return undefined;
             }
         });
@@ -180,7 +182,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         const createIndicesPromises = indicesToCreate.map(indexToCreate => {
             const collection = getCollectionNameForRootEntity(indexToCreate.rootEntity);
             if (this.autocreateIndices) {
-                this.logger.info(`Creating ${ indexToCreate.unique ? 'unique ' : ''}index on collection ${collection} on ${indexToCreate.fields.length > 1 ? 'fields' : 'field'} '${indexToCreate.fields.join(',')}'`);
+                this.logger.info(`Creating ${describeIndex(indexToCreate)}`);
                 return this.db.collection(collection).createIndex({
                     fields: indexToCreate.fields,
                     unique: indexToCreate.unique,
@@ -188,7 +190,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                     type: DEFAULT_INDEX_TYPE
                 });
             } else {
-                this.logger.info(`Skipping creation of ${ indexToCreate.unique ? 'unique ' : ''}index on collection ${collection} on ${indexToCreate.fields.length > 1 ? 'fields' : 'field'} '${indexToCreate.fields.join(',')}'`);
+                this.logger.info(`Skipping creation of ${describeIndex(indexToCreate)}`);
                 return undefined;
             }
         });
@@ -211,4 +213,57 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             return { ...index, rootEntity: rootEntityType };
         });
     }
+
+    private async getArangoDBVersion(): Promise<string | undefined> {
+        const result = await this.db.route('_api').get('version');
+        if (!result || !result.body || !result.body.version) {
+            return undefined;
+        }
+        return result.body.version;
+    }
+
+    private parseVersion(version: string): { major: number, minor: number, patch: number } | undefined {
+        const parts = version.split('.');
+        if (parts.length < 3) {
+            return undefined;
+        }
+        const numParts = parts.slice(0, 3).map(p => parseInt(p, 10));
+        if (numParts.some(p => !isFinite(p))) {
+            return undefined;
+        }
+        const [major, minor, patch] = numParts;
+        return { major, minor, patch };
+    }
+
+    private async shouldUseWorkaroundForSparseIndices(): Promise<boolean> {
+        // arangodb <= 3.2 does not support dynamic usage of sparse indices
+        // We use unique indices for @key, and we enable sparse for all unique indices to support multiple NULL values
+        // however, this means we can't use the unique index for @reference lookups. To ensure this is still fast
+        // (as one would expect for a @reference), we create a non-sparse, non-unique index in addition to the regular
+        // unique sparse index.
+        let version;
+        try {
+            version = await this.getArangoDBVersion();
+        } catch (e) {
+            this.logger.warn(`Error fetching ArangoDB version. Workaround for sparse indices will not be enabled. ` + e.stack);
+            return false;
+        }
+        const parsed = version && this.parseVersion(version);
+        if (!parsed) {
+            this.logger.warn(`ArangoDB version not recognized ("${version}"). Workaround for sparse indices will not be enabled.`);
+            return false;
+        }
+
+        const { major, minor } = parsed;
+        if ((major > 3) || (major === 3 && minor >= 4)) {
+            this.logger.info(`ArangoDB version: ${version}. Workaround for sparse indices will not be enabled.`);
+            return false;
+        }
+        this.logger.info(`ArangoDB version: ${version}. Workaround for sparse indices will be enabled.`);
+        return true;
+    }
+}
+
+function describeIndex(index: IndexDefinition) {
+    return `${ index.unique ? 'unique ' : ''}${ index.sparse ? 'sparse ' : ''}index ${index.id} on collection ${getCollectionNameForRootEntity(index.rootEntity)} on ${index.fields.length > 1 ? 'fields' : 'field'} '${index.fields.join(',')}'`;
 }
