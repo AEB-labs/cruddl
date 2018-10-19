@@ -32,7 +32,7 @@ function getSelectionSet(config: { onlyFewFields?: boolean }) {
 
 function getOneOfXRootEntities(config: { rootEntitiesInDB: number, documentLength: number, onlyFewFields?: boolean }): BenchmarkConfig {
     let env: TestEnvironment;
-    let sampledIDs: number[] = [];
+    let sampledIDs: string[] = [];
     const sizeFactor = getSizeFactorForJSONLength(config.documentLength);
     return {
         name: `Get ${config.onlyFewFields ? 'two fields of ' : ''} one of ${config.rootEntitiesInDB} root entities of size ${formatBytes(config.documentLength)}`,

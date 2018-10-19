@@ -38,7 +38,7 @@ export async function initEnvironment(): Promise<TestEnvironment> {
 
     return {
         getDB() {
-            return new Database(dbConfig)
+            return new Database(dbConfig).useDatabase(dbConfig.databaseName)
         },
         async exec(gql, variables) {
             const res = await graphql(schema, gql, {} /* root */, {authRoles: ['admin']}, variables);
@@ -98,10 +98,10 @@ export async function addManyUsersWithAQL(environment: TestEnvironment, count: n
     await environment.getDB().query(aql`FOR i IN 1..${count} INSERT ${userData} IN users`);
 }
 
-export async function getRandomPaperIDsWithAQL(environment: TestEnvironment, count: number): Promise<number[]> {
+export async function getRandomPaperIDsWithAQL(environment: TestEnvironment, count: number): Promise<string[]> {
     const cursor = await environment.getDB().query(aql`FOR node IN papers SORT RAND() LIMIT ${count} RETURN { id: node._key }`);
     const docs = await cursor.all();
-    return docs.map(doc => doc.id);
+    return docs.map((doc: any) => doc.id);
 }
 
 export function formatBytes(bytes: number): string {

@@ -44,9 +44,8 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             globalContext.unregisterContext();
         }
         this.db = new Database({
-            url: config.url,
-            databaseName: config.databaseName
-        });
+            url: config.url
+        }).useDatabase(config.databaseName);
         if (config.user) {
             // Unfortunately the typings of arangojs do not include the method "useBasicAuth" although it is present in the implementation of arangojs.
             // Therefore we cast to any
@@ -152,7 +151,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         const existingCollections = collections.map(coll => (<any>coll).name); // typing for name missing
         const collectionsToCreate = requiredCollections.filter(c => existingCollections.indexOf(c) < 0);
         this.logger.info(`Creating collections ${collectionsToCreate.join(', ')}...`);
-        const createTasks = collectionsToCreate.map(col => this.db.collection(col.toString()).create({waitForSync: false}));
+        const createTasks = collectionsToCreate.map(col => this.db.collection(col.toString()).create({ waitForSync: false }));
         await Promise.all(createTasks);
         this.logger.info(`Done`);
 
@@ -161,7 +160,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         const existingIndicesPromises = model.rootEntityTypes.map(rootEntityType => this.getCollectionIndices(rootEntityType));
         let existingIndices: IndexDefinition[] = [];
         await Promise.all(existingIndicesPromises).then(promiseResults => promiseResults.forEach(indices => indices.forEach(index => existingIndices.push(index))));
-        const {indicesToDelete, indicesToCreate} = calculateRequiredIndexOperations(existingIndices, requiredIndices);
+        const { indicesToDelete, indicesToCreate } = calculateRequiredIndexOperations(existingIndices, requiredIndices);
         const deleteIndicesPromises = indicesToDelete.map(indexToDelete => {
             const collection = getCollectionNameForRootEntity(indexToDelete.rootEntity);
             if (indexToDelete.id!.endsWith('/0')) {
@@ -200,7 +199,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         const existingEdgeCollections = collections.map(coll => (<any>coll).name); // typing for name missing
         const edgeCollectionsToCreate = requiredEdgeCollections.filter(c => existingEdgeCollections.indexOf(c) < 0);
         this.logger.info(`Creating edge collections ${edgeCollectionsToCreate.join(', ')}...`);
-        const createEdgeTasks = edgeCollectionsToCreate.map(col => this.db.edgeCollection(col.toString()).create({waitForSync: false}));
+        const createEdgeTasks = edgeCollectionsToCreate.map(col => this.db.edgeCollection(col.toString()).create({ waitForSync: false }));
         await Promise.all(createEdgeTasks);
         this.logger.info(`Done`);
     }
@@ -208,8 +207,8 @@ export class ArangoDBAdapter implements DatabaseAdapter {
     async getCollectionIndices(rootEntityType: RootEntityType): Promise<ReadonlyArray<IndexDefinition>> {
         const collectionName = getCollectionNameForRootEntity(rootEntityType);
         const result = await this.db.collection(collectionName).indexes();
-        return result.map(index => {
-            return {...index, rootEntity: rootEntityType};
+        return result.map((index: any) => {
+            return { ...index, rootEntity: rootEntityType };
         });
     }
 }
