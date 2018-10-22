@@ -44,6 +44,7 @@
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
     "deep-equal": "^1.0.1",
+    "deep-equal-in-any-order": "^1.0.10",
     "dependency-check": "^2.9.1",
     "graphql": "^14.0.2",
     "graphql-request": "^1.8.2",

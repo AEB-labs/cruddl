@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import { expectSingleErrorToInclude } from '../../model/implementation/validation-utils';
 import {
     assertValidatorAccepts, assertValidatorAcceptsAndDoesNotWarn, assertValidatorRejects, assertValidatorWarns, validate
 } from './helpers';
@@ -18,7 +19,7 @@ describe('key field validator', () => {
     });
 
     it('finds bad type usage', () => {
-        const validationResult = validate(`
+        assertValidatorRejects(`
             type Stuff @rootEntity {
                 foo: String
                 bar: Bar @key
@@ -26,9 +27,7 @@ describe('key field validator', () => {
             type Bar @valueObject {
                 count: Int
             }
-        `);
-        expect(validationResult.hasErrors()).to.be.true;
-        expect(validationResult.getErrors().length, validationResult.toString()).to.equal(2);
+        `, `Only fields of type "String", "Int", and "ID" can be used as key field.`);
     });
 
     it('finds bad list type usage', () => {
@@ -51,16 +50,12 @@ describe('key field validator', () => {
     });
 
     it('disallows keys on fields which are not String or Int', () => {
-        const validationResult = validate(`
+        assertValidatorRejects(`
             type Stuff @rootEntity {
                 foo: String
                 bar: JSON @key
             }
-        `);
-        expect(validationResult.hasErrors()).to.be.true;
-        expect(validationResult.getErrors().length, validationResult.toString()).to.equal(2);
-        const message = validationResult.getErrors().find(m => m.message.indexOf('Only fields of type "String", "Int", and "ID" can be used as key field.')>=0);
-        expect(message).to.not.be.undefined;
+        `, 'Only fields of type "String", "Int", and "ID" can be used as key field.');
     });
 
     it('accepts correct key usage', () => {

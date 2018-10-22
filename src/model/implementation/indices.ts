@@ -100,6 +100,18 @@ export class Index implements ModelComponent {
         this.astNode = input.astNode;
     }
 
+    equals(other: Index) {
+        if (this.id !== other.id || this.unique !== other.unique || this.fields.length !== other.fields.length) {
+            return false;
+        }
+        for (let i = 0; i < this.fields.length; i++) {
+            if (this.fields[i].dotSeparatedPath !== other.fields[i].dotSeparatedPath) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     validate(context: ValidationContext) {
         if (!this.fields.length) {
             context.addMessage(ValidationMessage.error(`An index must specify at least one field.`, this.astNode))
