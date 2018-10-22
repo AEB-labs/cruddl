@@ -1,19 +1,19 @@
 fragment PapersPage on Paper {
-    #count
-            title
+    title
+    _cursor
 }
 
 query {
     page1: allPapers(orderBy: title_ASC, first: 2) {
         ...PapersPage
     }
-    page2: allPapers(orderBy: title_ASC, first: 2, after: "{\"id\":\"xxx\",\"title\":\"Object-oriented modeling and design\"}") {
+    page2: allPapers(orderBy: title_ASC, first: 2, after: "{\"id\":\"@{ids/Paper/1}\",\"title\":\"Object-oriented modeling and design\"}") {
         ...PapersPage
     }
     page1Desc: allPapers(orderBy: title_DESC, first: 2) {
         ...PapersPage
     }
-    page2Desc: allPapers(orderBy: title_DESC, first: 2, after: "{\"id\":\"xxx\",\"title\":\"Unified modeling language reference manual, the\"}") {
+    page2Desc: allPapers(orderBy: title_DESC, first: 2, after: "{\"id\":\"@{ids/Paper/2}\",\"title\":\"Unified modeling language reference manual, the\"}") {
         ...PapersPage
     }
     emptyPage: allPapers(orderBy: title_ASC, first: 0) {

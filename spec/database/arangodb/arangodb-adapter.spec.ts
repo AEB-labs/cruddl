@@ -58,7 +58,7 @@ describe('ArangoDBAdapter', () => {
                 sparse: index.sparse,
                 type: index.type,
                 unique: index.unique
-            }))).to.deep.equal([
+            }))).to.deep.equalInAnyOrder([
                 {
                     fields: [
                         '_key'
@@ -69,7 +69,8 @@ describe('ArangoDBAdapter', () => {
                 },
                 {
                     fields: [
-                        'itemCount'
+                        'isShipped',
+                        '_key' // for absolute ordering
                     ],
                     sparse: false,
                     type: 'persistent',
@@ -77,7 +78,8 @@ describe('ArangoDBAdapter', () => {
                 },
                 {
                     fields: [
-                        'isShipped'
+                        'itemCount',
+                        '_key' // for absolute ordering
                     ],
                     sparse: false,
                     type: 'persistent',
@@ -86,7 +88,17 @@ describe('ArangoDBAdapter', () => {
                 // this one is for @reference lookup which needs a non-sparse (see shouldUseWorkaroundForSparseIndices)
                 {
                     fields: [
-                        'deliveryNumber'
+                        'deliveryNumber',
+                        '_key' // for absolute ordering
+                    ],
+                    sparse: false,
+                    type: 'persistent',
+                    unique: false
+                },
+                // for automatic absolute ordering
+                {
+                    fields: [
+                        '_key'
                     ],
                     sparse: false,
                     type: 'persistent',
@@ -99,7 +111,7 @@ describe('ArangoDBAdapter', () => {
                     sparse: true,
                     type: 'persistent',
                     unique: true
-                }
+                },
             ]);
 
             const indicesOnOtherCollection = await db.collection('second').indexes();

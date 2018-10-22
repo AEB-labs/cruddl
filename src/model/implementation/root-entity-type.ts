@@ -1,14 +1,13 @@
 import { GraphQLID, GraphQLString } from 'graphql';
 import memorize from 'memorize-decorator';
-import { ACCESS_GROUP_FIELD, DEFAULT_PERMISSION_PROFILE, SCALAR_INT, SCALAR_STRING } from '../../schema/constants';
-import { compact } from '../../utils/utils';
-import { FieldConfig, PermissionsConfig, RootEntityTypeConfig, TypeKind } from '../config';
+import { ACCESS_GROUP_FIELD, DEFAULT_PERMISSION_PROFILE, ID_FIELD, SCALAR_INT, SCALAR_STRING } from '../../schema/constants';
+import { compact, flatMap } from '../../utils/utils';
+import { FieldConfig, IndexDefinitionConfig, PermissionsConfig, RootEntityTypeConfig, TypeKind } from '../config';
 import { ValidationMessage } from '../validation';
 import { ValidationContext } from '../validation/validation-context';
 import { Field } from './field';
 import { Index } from './indices';
 import { Model } from './model';
-import { Namespace } from './namespace';
 import { ObjectTypeBase } from './object-type-base';
 import { PermissionProfile } from './permission-profile';
 import { Relation, RelationSide } from './relation';
@@ -17,8 +16,7 @@ import { ScalarType } from './scalar-type';
 
 export class RootEntityType extends ObjectTypeBase {
     private readonly permissions: PermissionsConfig & {};
-    readonly keyField: Field|undefined;
-    readonly roles: RolesSpecifier|undefined;
+    readonly roles: RolesSpecifier | undefined;
 
     readonly kind: TypeKind.ROOT_ENTITY = TypeKind.ROOT_ENTITY;
     readonly isChildEntityType: false = false;
@@ -28,21 +26,54 @@ export class RootEntityType extends ObjectTypeBase {
 
     constructor(private readonly input: RootEntityTypeConfig, model: Model) {
         super(input, model, systemFieldInputs);
-        this.keyField = input.keyFieldName != undefined ? this.getField(input.keyFieldName) : undefined;
         this.permissions = input.permissions || {};
         this.roles = input.permissions && input.permissions.roles ? new RolesSpecifier(input.permissions.roles) : undefined;
     }
 
     @memorize()
     get indices(): ReadonlyArray<Index> {
-        const indices = (this.input.indices || []).map(index => new Index(index, this));
-        if (this.keyField && !this.keyField.isList) {
-            const currentKeyIndices = indices.filter(f => f.unique && f.fields.length == 1 && f.fields[0].field === this.keyField);
-            if (currentKeyIndices.length == 0) {
-                indices.push(new Index({ unique: true, fields: [this.keyField.name] }, this));
+        const identifyingSuffixField = this.discriminatorField;
+        const indexConfigs = this.input.indices ? [...this.input.indices] : [];
+
+        // @key implies a unique index
+        // (do this to the inputs so that addIdentifyingSuffixIfNeeded is called on these, too)
+        if (this.keyField) {
+            const keyField = this.keyField;
+            if (!indexConfigs.some(f => f.unique === true && f.fields.length == 1 && f.fields[0] === keyField.name)) {
+                indexConfigs.push({unique: true, fields: [keyField.name] });
             }
         }
-        return indices;
+
+        const indices = flatMap(indexConfigs,
+                index => addIdentifyingSuffixIfNeeded(index, identifyingSuffixField)
+                    .map(config => new Index(config, this)));
+
+        if (this.discriminatorField !== this.keyField) {
+            if (!indices.some(index => index.fields.length === 1 && index.fields[0].field === this.discriminatorField)) {
+                // make sure there is an index on the discriminator field that can be used for sorting
+                // arangodb already has an index on 'id', but it's a hash index which is unusable for sorting
+                // if the discriminator field is the key field, we already added an index above.
+                // don't use unique to avoid running into performance workarounds for unique indices (sparseness)
+                indices.push(new Index({
+                    fields: [this.discriminatorField.name]
+                }, this));
+            }
+        }
+
+        // deduplicate indices
+        return indices.filter((index, i1) => !indices.some((other, i2) => i1 < i2 && other.equals(index)));
+    }
+
+    @memorize()
+    get keyField(): Field | undefined {
+        if (!this.input.keyFieldName) {
+            return undefined;
+        }
+        const field = this.getField(this.input.keyFieldName);
+        if (!field || field.isList) {
+            return undefined;
+        }
+        return field;
     }
 
     getKeyFieldOrThrow(): Field {
@@ -60,7 +91,16 @@ export class RootEntityType extends ObjectTypeBase {
         return field.type;
     }
 
-    get permissionProfile(): PermissionProfile|undefined {
+    /**
+     * Gets a field that is guaranteed to be unique, to be used for absolute order
+     */
+    @memorize()
+    get discriminatorField(): Field {
+        // later, we can return @key here when it exists and is required
+        return this.getFieldOrThrow(ID_FIELD);
+    }
+
+    get permissionProfile(): PermissionProfile | undefined {
         if (this.permissions.permissionProfileName == undefined) {
             if (this.permissions.roles != undefined) {
                 // if @roles is specified, this root entity explicitly does not have a permission profile
@@ -104,10 +144,7 @@ export class RootEntityType extends ObjectTypeBase {
 
         this.validateKeyField(context);
         this.validatePermissions(context);
-
-        for (const index of this.indices) {
-            index.validate(context);
-        }
+        this.validateIndices(context);
     }
 
     private validateKeyField(context: ValidationContext) {
@@ -163,6 +200,14 @@ export class RootEntityType extends ObjectTypeBase {
             }
         }
     }
+
+    private validateIndices(context: ValidationContext) {
+        // validate the "raw" indices without our magic additions like adding the id field
+        for (const indexInput of this.input.indices || []) {
+            const index = new Index(indexInput, this);
+            index.validate(context);
+        }
+    }
 }
 
 const systemFieldInputs: ReadonlyArray<FieldConfig> = [
@@ -180,3 +225,39 @@ const systemFieldInputs: ReadonlyArray<FieldConfig> = [
         description: 'The instant this object has been updated the last time (not including relation updates)'
     }
 ];
+
+/**
+ * Adds the given field to the index field if it's safe to do so and not already present
+ *
+ * This promotes the index to be used for an orderBy that has been enriched with this field for absolute order
+ */
+function addIdentifyingSuffixIfNeeded(index: IndexDefinitionConfig, identifyingSuffixField: Field): ReadonlyArray<IndexDefinitionConfig> {
+    if (index.fields.some(f => f === identifyingSuffixField.name)) {
+        // already includes the field
+        return [index];
+    }
+    if (index.unique) {
+        // we are not allowed to add something here
+        // if the field would be required, we would not need the identifying suffix here, but for now, all fields are
+        // optional. In this case, we still need to suffix the identifying field because we could have NULL cases where
+        // the order would be non-absolute otherwise.
+        return [
+            index, {
+                unique: false,
+                fields: [
+                    ...index.fields,
+                    identifyingSuffixField.name
+                ]
+            }
+        ];
+    }
+    return [
+        {
+            ...index,
+            fields: [
+                ...index.fields,
+                identifyingSuffixField.name
+            ]
+        }
+    ];
+}

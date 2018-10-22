@@ -2,33 +2,41 @@
   "data": {
     "page1": [
       {
+        "_cursor": "{\"id\":\"@{ids/Paper/4}\",\"title\":\"Brewer's conjecture and the feasibility of consistent, available, partition-tolerant web services\"}",
         "title": "Brewer's conjecture and the feasibility of consistent, available, partition-tolerant web services"
       },
       {
+        "_cursor": "{\"id\":\"@{ids/Paper/1}\",\"title\":\"Object-oriented modeling and design\"}",
         "title": "Object-oriented modeling and design"
       }
     ],
     "page2": [
       {
+        "_cursor": "{\"id\":\"@{ids/Paper/5}\",\"title\":\"Scalable SQL and NoSQL data stores\"}",
         "title": "Scalable SQL and NoSQL data stores"
       },
       {
+        "_cursor": "{\"id\":\"@{ids/Paper/2}\",\"title\":\"Unified modeling language reference manual, the\"}",
         "title": "Unified modeling language reference manual, the"
       }
     ],
     "page1Desc": [
       {
+        "_cursor": "{\"id\":\"@{ids/Paper/3}\",\"title\":\"Will NoSQL databases live up to their promise?\"}",
         "title": "Will NoSQL databases live up to their promise?"
       },
       {
+        "_cursor": "{\"id\":\"@{ids/Paper/2}\",\"title\":\"Unified modeling language reference manual, the\"}",
         "title": "Unified modeling language reference manual, the"
       }
     ],
     "page2Desc": [
       {
+        "_cursor": "{\"id\":\"@{ids/Paper/5}\",\"title\":\"Scalable SQL and NoSQL data stores\"}",
         "title": "Scalable SQL and NoSQL data stores"
       },
       {
+        "_cursor": "{\"id\":\"@{ids/Paper/1}\",\"title\":\"Object-oriented modeling and design\"}",
         "title": "Object-oriented modeling and design"
       }
     ],

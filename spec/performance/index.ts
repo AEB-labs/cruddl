@@ -7,10 +7,10 @@ import {default as QUERY_PIPELINE} from "./query-pipeline.perf";
 import {default as REFERENCES} from "./references.perf";
 
 runBenchmarks([
-    ...CRUD,
+    //...CRUD,
     ...PAGINATION,
-    ...COUNT,
-    ...REFERENCES,
-    ...ASSOCIATIONS,
-    ...QUERY_PIPELINE
+    //...COUNT,
+    //...REFERENCES,
+    //...ASSOCIATIONS,
+    //...QUERY_PIPELINE
 ]);

@@ -1,3 +1,5 @@
+import { ID_FIELD } from '../../schema/constants';
+import { Field } from './field';
 import { ObjectTypeBase } from './object-type-base';
 import { ChildEntityTypeConfig, FieldConfig, TypeKind } from '../config';
 import { Model } from './model';
@@ -5,6 +7,13 @@ import { Model } from './model';
 export class ChildEntityType extends ObjectTypeBase {
     constructor(input: ChildEntityTypeConfig, model: Model) {
         super(input, model, systemFieldInputs);
+    }
+
+    /**
+     * Gets a field that is guaranteed to be unique, to be used for absolute order
+     */
+    get discriminatorField(): Field {
+        return this.getFieldOrThrow(ID_FIELD);
     }
 
     readonly kind: TypeKind.CHILD_ENTITY = TypeKind.CHILD_ENTITY;

@@ -24,7 +24,7 @@ export async function start() {
         });
     }
 
-    const project = await loadProjectFromDir(path.resolve(__dirname, './model'));
+    const project = await loadProjectFromDir(path.resolve(__dirname, './endress-hauser'));
     const schema = project.createSchema(db);
 
     const logger = globalContext.loggerProvider.getLogger('server');
@@ -34,7 +34,7 @@ export async function start() {
 
     const server = new GraphQLServer({
         schema: schema as any, // yoga declares a direct dependency to @types/graphql and it's 0.13
-        context: () => ({ authRoles: ["allusers", "logistics-reader" ]})
+        context: () => ({ authRoles: ["allusers", "logistics-reader", "system" ]})
     });
     await server.start({port});
     logger.info(`Server started on http://localhost:${port}`);
