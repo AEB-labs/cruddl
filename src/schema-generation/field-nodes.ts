@@ -5,6 +5,17 @@ import { ID_FIELD } from '../schema/constants';
 import { and } from './filter-input-types/constants';
 
 export function createFieldNode(field: Field, sourceNode: QueryNode): QueryNode {
+    // make use of the fact that field access on non-objects is NULL, so that type checks for OBJECT are redundant
+    // this e.g. reverses the effect of the isEntityExtensionType check below
+    // this is important for filter/orderBy which do not work if there is a conditional
+    if (sourceNode instanceof ConditionalQueryNode &&
+        sourceNode.condition instanceof TypeCheckQueryNode &&
+        sourceNode.condition.type === BasicType.OBJECT &&
+        sourceNode.expr1 === sourceNode.condition.valueNode
+    ) {
+        sourceNode = sourceNode.expr1;
+    }
+
     if (field.isList) {
         if (field.isRelation) {
             return createToNRelationNode(field, sourceNode);
