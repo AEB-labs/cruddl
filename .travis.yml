@@ -4,8 +4,7 @@ node_js:
 install:
   - npm ci
 script:
-  - mkdir -p arangodb-bin && cd arangodb-bin && curl -L https://download.arangodb.com/travisCI/setup_arangodb_3.2.4.sh
-      | bash > /dev/null
+  - mkdir -p arangodb-bin && cd arangodb-bin && ../tools/setup-arangodb.sh > /dev/null
   - npm run test:coverage
   - npm run test:dropdb
   - cd ..
