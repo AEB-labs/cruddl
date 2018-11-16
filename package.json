@@ -60,7 +60,7 @@
   "dependencies": {
     "ajv": "^6.0.1",
     "ansi-styles": "^3.2.1",
-    "arangojs": "^6.6.0",
+    "arangojs": "^6.9.0",
     "graphql-tag": "^2.9.2",
     "graphql-tools": "^4.0.0",
     "graphql-transformer": "^0.2.0",
