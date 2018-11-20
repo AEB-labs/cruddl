@@ -3,7 +3,8 @@ import { globalContext, SchemaContext } from '../../config/global';
 import { Logger } from '../../config/logging';
 import { Model } from '../../model';
 import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS, QueryNode } from '../../query-tree';
-import { DatabaseAdapter } from '../database-adapter';
+import { getPreciseTime } from '../../utils/watch';
+import { DatabaseAdapter, ExecutionOptions, ExecutionResult } from '../database-adapter';
 import { AQLCompoundQuery, AQLExecutableQuery } from './aql';
 import { getAQLQuery } from './aql-generator';
 import { getArangoDBLogger, initDatabase } from './config';
@@ -29,6 +30,11 @@ export interface ArangoDBConfig {
      * model) should be removed in updateSchema(). Defaults to true.
      */
     readonly autoremoveIndices?: boolean;
+}
+
+interface ArangoExecutionOptions {
+    readonly queries: ReadonlyArray<AQLExecutableQuery>
+    readonly enableProfiling: boolean
 }
 
 export class ArangoDBAdapter implements DatabaseAdapter {
@@ -61,30 +67,49 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         // (https://github.com/istanbuljs/nyc) not to instrument the code with coverage instructions.
 
         /* istanbul ignore next */
-        const arangoExecutionFunction = function (queries: AQLExecutableQuery[]) {
+        const arangoExecutionFunction = function ({queries, enableProfiling}: ArangoExecutionOptions) {
             const db = require('@arangodb').db;
 
             let validators: { [name: string]: (validationData: any, result: any) => void } = {};
             //inject_validators_here
 
+            let timings: {[key: string]: number}|undefined = enableProfiling ? {} : undefined;
+
             let resultHolder: { [p: string]: any } = {};
             queries.forEach(query => {
-                const boundValues = query.boundValues;
+                const bindVars = query.boundValues;
                 for (const key in query.usedPreExecResultNames) {
-                    boundValues[query.usedPreExecResultNames[key]] = resultHolder[key];
+                    bindVars[query.usedPreExecResultNames[key]] = resultHolder[key];
                 }
 
                 // Execute the AQL query
-                const result = db._query(query.code, boundValues).next();
+                const executionResult = db._query({
+                    query: query.code,
+                    bindVars,
+                    options: {
+                        profile: enableProfiling
+                    }
+                });
+
+                const resultData = executionResult.next();
+
+                if (timings) {
+                    let profile = executionResult.getExtra().profile;
+                    for (let key in profile) {
+                        if (profile.hasOwnProperty(key)) {
+                            timings[key] = (timings[key] || 0) + profile[key];
+                        }
+                    }
+                }
 
                 if (query.resultName) {
-                    resultHolder[query.resultName] = result;
+                    resultHolder[query.resultName] = resultData;
                 }
 
                 if (query.resultValidator) {
                     for (const key in query.resultValidator) {
                         if (key in validators) {
-                            validators[key](query.resultValidator[key], result);
+                            validators[key](query.resultValidator[key], resultData);
                         }
                     }
                 }
@@ -92,13 +117,17 @@ export class ArangoDBAdapter implements DatabaseAdapter {
 
             // the last query is always the main query, use its result as result of the transaction
             const lastQueryResultName = queries[queries.length - 1].resultName;
+            let data;
             if (lastQueryResultName) {
-                return resultHolder[lastQueryResultName];
+                data = resultHolder[lastQueryResultName];
             } else {
-                return undefined;
+                data = undefined;
             }
+            return {
+                data,
+                timings
+            };
         };
-
 
         const validatorProviders = ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS.map(provider =>
             `[${JSON.stringify(provider.getValidatorName())}]: ${String(provider.getValidatorFunction())}`);
@@ -109,8 +138,13 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             .replace('//inject_validators_here', allValidatorFunctionsObjectString);
     }
 
-
     async execute(queryTree: QueryNode) {
+        const result = await this.executeExt({queryTree});
+        return result.data;
+    }
+
+    async executeExt({queryTree, recordTimings = false}: ExecutionOptions): Promise<ExecutionResult> {
+        const prepStartTime = getPreciseTime();
         globalContext.registerContext(this.schemaContext);
         let executableQueries: AQLExecutableQuery[];
         let aqlQuery: AQLCompoundQuery;
@@ -124,15 +158,41 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         if (this.logger.isTraceEnabled()) {
             this.logger.trace(`Executing AQL: ${aqlQuery.toColoredString()}`);
         }
+        const aqlPreparationTime = getPreciseTime() - prepStartTime;
+        const dbStartTime = getPreciseTime();
 
-        return await this.db.transaction(
+        const options: ArangoExecutionOptions = {
+            queries: executableQueries,
+            enableProfiling: recordTimings
+        };
+
+        const { timings: databaseTimings, data } = await this.db.transaction(
             {
                 read: aqlQuery.readAccessedCollections,
                 write: aqlQuery.writeAccessedCollections
             },
             this.arangoExecutionFunction,
-            executableQueries
+            options
         );
+
+        let timings;
+        if (recordTimings) {
+            const dbTotal = getPreciseTime() - dbStartTime;
+            timings = {
+                database: {
+                    ...databaseTimings,
+                    total: dbTotal
+                },
+                preparation: {
+                    total: aqlPreparationTime,
+                    aql: aqlPreparationTime
+                }
+            };
+        }
+        return {
+            data,
+            timings
+        };
     }
 
     /**

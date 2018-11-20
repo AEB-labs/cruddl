@@ -7,9 +7,8 @@ import { Model } from '../model';
 import { ObjectQueryNode, QueryNode } from '../query-tree';
 import { evaluateQueryStatically } from '../query-tree/utils';
 import { SchemaTransformationContext } from '../schema/preparation/transformation-pipeline';
-import {
-    buildConditionalObjectQueryNode, QueryNodeObjectType, QueryNodeObjectTypeConverter
-} from './query-node-object-type';
+import { getPreciseTime, Watch } from '../utils/watch';
+import { buildConditionalObjectQueryNode, QueryNodeObjectType, QueryNodeObjectTypeConverter } from './query-node-object-type';
 import { RootTypesGenerator } from './root-types-generator';
 
 export class SchemaGenerator {
@@ -37,7 +36,11 @@ export class SchemaGenerator {
 
     private async resolveOperation(operationInfo: OperationParams, rootType: QueryNodeObjectType) {
         globalContext.registerContext(this.context);
+        let profileConsumer = this.context.profileConsumer;
         const logger = globalContext.loggerProvider.getLogger('query-resolvers');
+        const watch = new Watch();
+        const topLevelWatch = new Watch();
+        const start = getPreciseTime();
         try {
             let queryTree: QueryNode;
             try {
@@ -49,6 +52,7 @@ export class SchemaGenerator {
                 if (logger.isTraceEnabled()) {
                     logger.trace(`DistilledOperation: ${operation.describe()}`);
                 }
+                watch.stop('distillation');
 
                 const requestRoles = this.getRequestRoles(operationInfo.context);
                 logger.debug(`Request roles: ${requestRoles.join(', ')}`);
@@ -57,24 +61,54 @@ export class SchemaGenerator {
                 if (logger.isTraceEnabled()) {
                     logger.trace('Before authorization: ' + queryTree.describe());
                 }
-                queryTree = applyAuthorizationToQueryTree(queryTree, {authRoles: requestRoles});
+                watch.stop('queryTree');
+                queryTree = applyAuthorizationToQueryTree(queryTree, { authRoles: requestRoles });
                 if (logger.isTraceEnabled()) {
                     logger.trace('After authorization: ' + queryTree.describe());
                 }
+                watch.stop('authorization');
             } finally {
                 globalContext.unregisterContext();
             }
-            let {canEvaluateStatically, result} = evaluateQueryStatically(queryTree);
+            let dbAdapterTimings;
+            let { canEvaluateStatically, result: data } = evaluateQueryStatically(queryTree);
+            watch.stop('staticEvaluation');
+            topLevelWatch.stop('preparation');
             if (!canEvaluateStatically) {
-                result = await this.context.databaseAdapter.execute(queryTree);
+                const res = this.context.databaseAdapter.executeExt ?(await this.context.databaseAdapter.executeExt({
+                    queryTree,
+                    recordTimings: !!profileConsumer
+                })) : {
+                    data: this.context.databaseAdapter.execute(queryTree)
+                };
+                topLevelWatch.stop('database');
+                dbAdapterTimings = res.timings;
+                data = res.data;
                 logger.debug(`Execution successful`);
             } else {
                 logger.debug(`Execution successful (evaluated statically without database adapter))`);
             }
             if (logger.isTraceEnabled()) {
-                logger.trace('Result: ' + JSON.stringify(result, undefined, '  '));
+                logger.trace('Result: ' + JSON.stringify(data, undefined, '  '));
             }
-            return result;
+            if (profileConsumer) {
+                const preparation = {
+                    ...(dbAdapterTimings ? dbAdapterTimings.preparation : {}),
+                    ...watch.timings,
+                    total: topLevelWatch.timings.preparation
+                };
+                const timings = {
+                    database: dbAdapterTimings ? dbAdapterTimings.database : { total: watch.timings.database },
+                    preparation,
+                    total: getPreciseTime() - start
+                };
+                profileConsumer({
+                    timings,
+                    context: operationInfo.context,
+                    operation: operationInfo.operation
+                });
+            }
+            return data;
         } catch (e) {
             logger.error('Error evaluating GraphQL query: ' + e.stack);
             throw e;

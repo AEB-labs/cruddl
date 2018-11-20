@@ -1,18 +1,26 @@
-import { GraphQLSchema } from 'graphql';
+import { GraphQLSchema, OperationDefinitionNode } from 'graphql';
 import memorize from 'memorize-decorator';
 import { isArray } from 'util';
 import { DEFAULT_LOGGER_PROVIDER, LoggerProvider } from '../config/logging';
-import { DatabaseAdapter } from '../database/database-adapter';
+import { DatabaseAdapter, DatabaseAdapterTimings } from '../database/database-adapter';
 import { getMetaSchema } from '../meta-schema/meta-schema';
 import { Model, ValidationResult } from '../model';
 import { createSchema, getModel, validateSchema } from '../schema/schema-builder';
 import { ProjectSource, SourceLike, SourceType } from './source';
+
+export interface RequestProfile {
+    readonly timings: DatabaseAdapterTimings;
+    readonly operation: OperationDefinitionNode;
+    readonly context: any;
+}
 
 export interface ProjectOptions {
     /**
      * This namespace applies to all type operations for which no namespace is defined.
      */
     readonly loggerProvider?: LoggerProvider;
+
+    readonly profileConsumer?: (profile: RequestProfile) => void;
 }
 
 export interface ProjectConfig extends ProjectOptions {
@@ -34,12 +42,18 @@ export class Project {
 
     readonly loggerProvider: LoggerProvider;
 
-    constructor(config: ProjectConfig|SourceLike[]) {
+    readonly options: ProjectOptions
+
+    constructor(config: ProjectConfig | SourceLike[]) {
         if (isArray(config)) {
             config = { sources: config };
         }
         this.sources = config.sources.map(config => ProjectSource.fromConfig(config));
         this.loggerProvider = config.loggerProvider || DEFAULT_LOGGER_PROVIDER;
+        this.options = {
+            loggerProvider: config.loggerProvider,
+            profileConsumer: config.profileConsumer
+        };
     }
 
     getSourcesOfType(type: SourceType): ProjectSource[] {

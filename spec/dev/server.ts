@@ -24,7 +24,9 @@ export async function start() {
         });
     }
 
-    const project = await loadProjectFromDir(path.resolve(__dirname, './model'));
+    const project = await loadProjectFromDir(path.resolve(__dirname, './model'), {
+        profileConsumer: profile => console.log(`${profile.operation.operation} ${profile.operation.name ? profile.operation.name.value : '<anonymous>'}: ${JSON.stringify(profile.timings)}`)
+    });
     const schema = project.createSchema(db);
 
     const logger = globalContext.loggerProvider.getLogger('server');
