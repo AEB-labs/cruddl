@@ -51,7 +51,7 @@ function validateAndPrepareSchema(project: Project): { validationResult: Validat
         return [source];
     });
 
-    const parsedProject = parseProject(new Project({...project, sources}), validationContext);
+    const parsedProject = parseProject(new Project({...project.options, sources}), validationContext);
 
     parsedProject.sources.forEach(parsedSource => validationContext.addMessage(...validateParsedProjectSource(parsedSource).messages));
 
@@ -85,7 +85,7 @@ export function createSchema(project: Project, databaseAdapter: DatabaseAdapter)
         }
 
         const schemaContext: SchemaTransformationContext = {
-            loggerProvider: project.loggerProvider,
+            ...project.options,
             databaseAdapter
         };
 
