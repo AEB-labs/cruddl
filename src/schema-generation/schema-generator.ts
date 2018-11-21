@@ -12,12 +12,6 @@ import {
 } from './query-node-object-type';
 import { RootTypesGenerator } from './root-types-generator';
 
-
-export function time() {
-    const hrTime = process.hrtime();
-    return hrTime[0] + hrTime[1] / 1000000000;
-}
-
 export class SchemaGenerator {
     private readonly rootTypesGenerator = new RootTypesGenerator();
     private readonly queryNodeObjectTypeConverter = new QueryNodeObjectTypeConverter();
@@ -45,7 +39,6 @@ export class SchemaGenerator {
         globalContext.registerContext(this.context);
         const logger = globalContext.loggerProvider.getLogger('query-resolvers');
         try {
-            const start = time();
             let queryTree: QueryNode;
             try {
                 logger.debug(`Executing ${operationInfo.operation.operation} ${operationInfo.operation.name ? operationInfo.operation.name.value : ''}`);
@@ -72,14 +65,12 @@ export class SchemaGenerator {
                 globalContext.unregisterContext();
             }
             let {canEvaluateStatically, result} = evaluateQueryStatically(queryTree);
-            const end = time();
             if (!canEvaluateStatically) {
                 result = await this.context.databaseAdapter.execute(queryTree);
                 logger.debug(`Execution successful`);
             } else {
                 logger.debug(`Execution successful (evaluated statically without database adapter))`);
             }
-            logger.info(`duration: ${end - start} s`);
             if (logger.isTraceEnabled()) {
                 logger.trace('Result: ' + JSON.stringify(result, undefined, '  '));
             }
