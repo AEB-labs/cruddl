@@ -1,17 +1,37 @@
-import { IndexField, Model, RootEntityType } from '../model';
-import { ID_FIELD } from '../schema/constants';
-import { compact, flatMap } from '../utils/utils';
+import { IndexField, Model, RootEntityType } from '../../../model';
+import { ID_FIELD } from '../../../schema/constants';
+import { compact, flatMap } from '../../../utils/utils';
+import { getCollectionNameForRootEntity } from '../arango-basics';
+
+const DEFAULT_INDEX_TYPE = 'persistent'; // persistent is a skiplist index
 
 export interface IndexDefinition {
-    id?: string,
-    rootEntity: RootEntityType,
-    fields: ReadonlyArray<string>,
-    unique: boolean
-    sparse: boolean
+    readonly id?: string;
+    readonly rootEntity: RootEntityType;
+    readonly fields: ReadonlyArray<string>;
+    readonly collectionName: string;
+    readonly unique: boolean;
+    readonly sparse: boolean;
+    readonly type: string;
+}
+
+export function describeIndex(index: IndexDefinition) {
+    return `${ index.unique ? 'unique ' : ''}${ index.sparse ? 'sparse ' : ''}${index.type} index${index.id ? ' ' + index.id : ''} on collection ${index.collectionName} on ${index.fields.length > 1 ? 'fields' : 'field'} '${index.fields.join(',')}'`;
+}
+
+export function getIndexDescriptor(index: IndexDefinition) {
+    return compact([
+        index.id, // contains collection and id separated by slash (may be missing)
+        `type:${index.type}`,
+        index.unique ? 'unique' : undefined,
+        index.sparse ? 'sparse' : undefined,
+        `collection:${index.collectionName}`,
+        `fields:${index.fields.join(',')}`
+    ]).join('/');
 }
 
 function indexDefinitionsEqual(a: IndexDefinition, b: IndexDefinition) {
-    return a.rootEntity === b.rootEntity && a.fields.join('|') === b.fields.join('|') && a.unique === b.unique && a.sparse === b.sparse;
+    return a.rootEntity === b.rootEntity && a.fields.join('|') === b.fields.join('|') && a.unique === b.unique && a.sparse === b.sparse && a.type === b.type;
 }
 
 export function getRequiredIndicesFromModel(model: Model, { shouldUseWorkaroundForSparseIndices = false }: { shouldUseWorkaroundForSparseIndices?: boolean } = {}): ReadonlyArray<IndexDefinition> {
@@ -21,9 +41,11 @@ export function getRequiredIndicesFromModel(model: Model, { shouldUseWorkaroundF
 function getIndicesForRootEntity(rootEntity: RootEntityType, options: { shouldUseWorkaroundForSparseIndices: boolean }): ReadonlyArray<IndexDefinition> {
     const indices: IndexDefinition[] = rootEntity.indices.map(index => ({
         rootEntity,
+        collectionName: getCollectionNameForRootEntity(rootEntity),
         id: index.id,
         fields: index.fields.map(getArangoFieldPath),
         unique: index.unique,
+        type: DEFAULT_INDEX_TYPE,
 
         // sic! unique indices should always be sparse so that more than one NULL value is allowed
         // non-unique indices should not be sparse so that filter: { something: null } can use the index
@@ -35,10 +57,11 @@ function getIndicesForRootEntity(rootEntity: RootEntityType, options: { shouldUs
         // indices yet
         const newIndex: IndexDefinition = {
             rootEntity,
+            collectionName: getCollectionNameForRootEntity(rootEntity),
             fields: [rootEntity.keyField.name],
-
             sparse: false,
-            unique: false
+            unique: false,
+            type: DEFAULT_INDEX_TYPE
         };
 
         if (!indices.some(index => indexStartsWith(index, newIndex))) {
@@ -50,7 +73,7 @@ function getIndicesForRootEntity(rootEntity: RootEntityType, options: { shouldUs
 }
 
 function indexStartsWith(index: IndexDefinition, prefix: IndexDefinition) {
-    if (index.sparse !== prefix.sparse || index.unique !== prefix.unique || index.rootEntity !== prefix.rootEntity) {
+    if (index.sparse !== prefix.sparse || index.unique !== prefix.unique || index.rootEntity !== prefix.rootEntity || index.type !== prefix.type) {
         return false;
     }
     if (index.fields.length < prefix.fields.length) {
@@ -77,6 +100,7 @@ export function calculateRequiredIndexOperations(existingIndices: ReadonlyArray<
         }
         return requiredIndex;
     }));
+    indicesToDelete = indicesToDelete.filter(index => index.type === DEFAULT_INDEX_TYPE); // only remove indexes of types that we also add
     return { indicesToDelete, indicesToCreate };
 }
 
