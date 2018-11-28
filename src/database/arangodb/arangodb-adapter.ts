@@ -1,15 +1,17 @@
 import { Database } from 'arangojs';
 import { globalContext, SchemaContext } from '../../config/global';
 import { Logger } from '../../config/logging';
-import { Model, RootEntityType } from '../../model';
+import { Model } from '../../model';
 import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS, QueryNode } from '../../query-tree';
 import { DatabaseAdapter } from '../database-adapter';
-import { calculateRequiredIndexOperations, getRequiredIndicesFromModel, IndexDefinition } from '../index-helpers';
 import { AQLCompoundQuery, AQLExecutableQuery } from './aql';
 import { getAQLQuery } from './aql-generator';
-import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './arango-basics';
+import { getArangoDBLogger, initDatabase } from './config';
+import { SchemaAnalyzer } from './schema-migration/anaylzer';
+import { SchemaMigration } from './schema-migration/migrations';
+import { MigrationPerformer } from './schema-migration/performer';
 
-const DEFAULT_INDEX_TYPE = 'persistent'; // persistent is a skiplist index
+export const DEFAULT_INDEX_TYPE = 'persistent'; // persistent is a skiplist index
 
 export interface ArangoDBConfig {
     readonly url: string;
@@ -32,26 +34,17 @@ export interface ArangoDBConfig {
 export class ArangoDBAdapter implements DatabaseAdapter {
     private readonly db: Database;
     private readonly logger: Logger;
+    private readonly analyzer: SchemaAnalyzer;
+    private readonly migrationPerformer: MigrationPerformer;
     private readonly autocreateIndices: boolean;
     private readonly autoremoveIndices: boolean;
     private readonly arangoExecutionFunction: string;
 
     constructor(config: ArangoDBConfig, private schemaContext?: SchemaContext) {
-        globalContext.registerContext(schemaContext);
-        try {
-            this.logger = globalContext.loggerProvider.getLogger('ArangoDBAdapter');
-        } finally {
-            globalContext.unregisterContext();
-        }
-        this.db = new Database({
-            url: config.url
-        }).useDatabase(config.databaseName);
-        if (config.user) {
-            // Unfortunately the typings of arangojs do not include the method "useBasicAuth" although it is present in the implementation of arangojs.
-            // Therefore we cast to any
-            (this.db as any).useBasicAuth(config.user, config.password);
-        }
-
+        this.logger = getArangoDBLogger(schemaContext);
+        this.db = initDatabase(config);
+        this.analyzer = new SchemaAnalyzer(config, schemaContext);
+        this.migrationPerformer = new MigrationPerformer(config);
         this.arangoExecutionFunction = this.buildUpArangoExecutionFunction();
         this.autocreateIndices = config.autocreateIndices !== false; // defaults to true
         this.autoremoveIndices = config.autoremoveIndices !== false; // defaults to true
@@ -142,128 +135,38 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         );
     }
 
-    async updateSchema(model: Model): Promise<void> {
-        // Get existing collections in ArangoDB
-        const collections = await this.db.collections();
-
-        // Creating missing document collections in ArangoDB
-        const requiredCollections = model.rootEntityTypes.map(entity => getCollectionNameForRootEntity(entity));
-        const existingCollections = collections.map(coll => (<any>coll).name); // typing for name missing
-        const collectionsToCreate = requiredCollections.filter(c => existingCollections.indexOf(c) < 0);
-        this.logger.info(`Creating collections ${collectionsToCreate.join(', ')}...`);
-        const createTasks = collectionsToCreate.map(col => this.db.collection(col.toString()).create({ waitForSync: false }));
-        await Promise.all(createTasks);
-        this.logger.info(`Done`);
-
-        const shouldUseWorkaroundForSparseIndices = await this.shouldUseWorkaroundForSparseIndices();
-
-        // update indices
-        const requiredIndices = getRequiredIndicesFromModel(model, { shouldUseWorkaroundForSparseIndices });
-        const existingIndicesPromises = model.rootEntityTypes.map(rootEntityType => this.getCollectionIndices(rootEntityType));
-        let existingIndices: IndexDefinition[] = [];
-        await Promise.all(existingIndicesPromises).then(promiseResults => promiseResults.forEach(indices => indices.forEach(index => existingIndices.push(index))));
-        const { indicesToDelete, indicesToCreate } = calculateRequiredIndexOperations(existingIndices, requiredIndices);
-        const deleteIndicesPromises = indicesToDelete.map(indexToDelete => {
-            const collection = getCollectionNameForRootEntity(indexToDelete.rootEntity);
-            if (indexToDelete.id!.endsWith('/0')) {
-                // Don't delete primary indices
-                return;
-            }
-            if (this.autoremoveIndices) {
-                this.logger.info(`Dropping ${describeIndex(indexToDelete)}`);
-                return this.db.collection(collection).dropIndex(indexToDelete.id!);
-            } else {
-                this.logger.info(`Skipping removal of ${describeIndex(indexToDelete)}`);
-                return undefined;
-            }
-        });
-        await Promise.all(deleteIndicesPromises);
-
-        const createIndicesPromises = indicesToCreate.map(indexToCreate => {
-            const collection = getCollectionNameForRootEntity(indexToCreate.rootEntity);
-            if (this.autocreateIndices) {
-                this.logger.info(`Creating ${describeIndex(indexToCreate)}`);
-                return this.db.collection(collection).createIndex({
-                    fields: indexToCreate.fields,
-                    unique: indexToCreate.unique,
-                    sparse: indexToCreate.sparse,
-                    type: DEFAULT_INDEX_TYPE
-                });
-            } else {
-                this.logger.info(`Skipping creation of ${describeIndex(indexToCreate)}`);
-                return undefined;
-            }
-        });
-        await Promise.all(createIndicesPromises);
-
-        // Creating missing edge collections in ArangoDB
-        const requiredEdgeCollections = Array.from(new Set(model.relations.map(getCollectionNameForRelation)));
-        const existingEdgeCollections = collections.map(coll => (<any>coll).name); // typing for name missing
-        const edgeCollectionsToCreate = requiredEdgeCollections.filter(c => existingEdgeCollections.indexOf(c) < 0);
-        this.logger.info(`Creating edge collections ${edgeCollectionsToCreate.join(', ')}...`);
-        const createEdgeTasks = edgeCollectionsToCreate.map(col => this.db.edgeCollection(col.toString()).create({ waitForSync: false }));
-        await Promise.all(createEdgeTasks);
-        this.logger.info(`Done`);
+    /**
+     * Compares the model with the database and determines migrations to do
+     */
+    async getOutstandingMigrations(model: Model): Promise<ReadonlyArray<SchemaMigration>> {
+        return this.analyzer.getOutstandingMigrations(model);
     }
 
-    async getCollectionIndices(rootEntityType: RootEntityType): Promise<ReadonlyArray<IndexDefinition>> {
-        const collectionName = getCollectionNameForRootEntity(rootEntityType);
-        const result = await this.db.collection(collectionName).indexes();
-        return result.map((index: any) => {
-            return { ...index, rootEntity: rootEntityType };
-        });
-    }
-
-    private async getArangoDBVersion(): Promise<string | undefined> {
-        const result = await this.db.route('_api').get('version');
-        if (!result || !result.body || !result.body.version) {
-            return undefined;
-        }
-        return result.body.version;
-    }
-
-    private parseVersion(version: string): { major: number, minor: number, patch: number } | undefined {
-        const parts = version.split('.');
-        if (parts.length < 3) {
-            return undefined;
-        }
-        const numParts = parts.slice(0, 3).map(p => parseInt(p, 10));
-        if (numParts.some(p => !isFinite(p))) {
-            return undefined;
-        }
-        const [major, minor, patch] = numParts;
-        return { major, minor, patch };
-    }
-
-    private async shouldUseWorkaroundForSparseIndices(): Promise<boolean> {
-        // arangodb <= 3.2 does not support dynamic usage of sparse indices
-        // We use unique indices for @key, and we enable sparse for all unique indices to support multiple NULL values
-        // however, this means we can't use the unique index for @reference lookups. To ensure this is still fast
-        // (as one would expect for a @reference), we create a non-sparse, non-unique index in addition to the regular
-        // unique sparse index.
-        let version;
+    /**
+     * Performs a single mutation
+     */
+    async performMigration(migration: SchemaMigration): Promise<void> {
+        this.logger.info(`Performing migration "${migration.description}"`);
         try {
-            version = await this.getArangoDBVersion();
-        } catch (e) {
-            this.logger.warn(`Error fetching ArangoDB version. Workaround for sparse indices will not be enabled. ` + e.stack);
-            return false;
+            await this.migrationPerformer.performMigration(migration);
+            this.logger.info(`Successfully performed migration "${migration.description}"`);
+        } catch(e) {
+            this.logger.error(`Error performing migration "${migration.description}": ${e.stack}`);
+            throw e;
         }
-        const parsed = version && this.parseVersion(version);
-        if (!parsed) {
-            this.logger.warn(`ArangoDB version not recognized ("${version}"). Workaround for sparse indices will not be enabled.`);
-            return false;
-        }
-
-        const { major, minor } = parsed;
-        if ((major > 3) || (major === 3 && minor >= 4)) {
-            this.logger.info(`ArangoDB version: ${version}. Workaround for sparse indices will not be enabled.`);
-            return false;
-        }
-        this.logger.info(`ArangoDB version: ${version}. Workaround for sparse indices will be enabled.`);
-        return true;
     }
-}
 
-function describeIndex(index: IndexDefinition) {
-    return `${ index.unique ? 'unique ' : ''}${ index.sparse ? 'sparse ' : ''}index ${index.id} on collection ${getCollectionNameForRootEntity(index.rootEntity)} on ${index.fields.length > 1 ? 'fields' : 'field'} '${index.fields.join(',')}'`;
+    /**
+     * Performs schema migration as configured with autocreateIndices/autoremoveIndices
+     */
+    async updateSchema(model: Model): Promise<void> {
+        const migrations = await this.getOutstandingMigrations(model);
+        for (const migration of migrations) {
+            if (migration.type === 'createIndex' && !this.autocreateIndices || migration.type === 'dropIndex' && !this.autoremoveIndices) {
+                this.logger.info(`Skipping migration "${migration.description}" because of configuration`);
+                continue;
+            }
+            await this.performMigration(migration);
+        }
+    }
 }
