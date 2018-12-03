@@ -24,7 +24,7 @@ export async function start() {
         });
     }
 
-    const project = await loadProjectFromDir(path.resolve(__dirname, './endress-hauser'));
+    const project = await loadProjectFromDir(path.resolve(__dirname, './model'));
     const schema = project.createSchema(db);
 
     const logger = globalContext.loggerProvider.getLogger('server');
