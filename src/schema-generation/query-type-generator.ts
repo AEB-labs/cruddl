@@ -5,6 +5,7 @@ import { QUERY_TYPE } from '../schema/constants';
 import { getAllEntitiesFieldName, getMetaFieldName } from '../schema/names';
 import { flatMap } from '../utils/utils';
 import { FilterAugmentation } from './filter-augmentation';
+import { MetaFirstAugmentation } from './limit-augmentation';
 import { ListAugmentation } from './list-augmentation';
 import { MetaTypeGenerator } from './meta-type-generator';
 import { OutputTypeGenerator } from './output-type-generator';
@@ -16,6 +17,7 @@ export class QueryTypeGenerator {
         private readonly outputTypeGenerator: OutputTypeGenerator,
         private readonly listAugmentation: ListAugmentation,
         private readonly filterAugmentation: FilterAugmentation,
+        private readonly metaFirstAugmentation: MetaFirstAugmentation,
         private readonly metaTypeGenerator: MetaTypeGenerator
     ) {
 
@@ -92,6 +94,6 @@ export class QueryTypeGenerator {
             skipNullCheck: true,
             resolve: () => this.getAllRootEntitiesNode(rootEntityType)
         });
-        return this.filterAugmentation.augment(fieldConfig, rootEntityType);
+        return this.metaFirstAugmentation.augment(this.filterAugmentation.augment(fieldConfig, rootEntityType));
     }
 }

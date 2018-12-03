@@ -1,0 +1,5 @@
+{
+    _allPapersMeta(first: 2) {
+        count
+    }
+}
