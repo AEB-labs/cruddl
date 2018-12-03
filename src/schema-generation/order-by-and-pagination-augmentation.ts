@@ -1,13 +1,14 @@
 import { GraphQLInt, GraphQLList, GraphQLNonNull, GraphQLString } from 'graphql';
 import { Type } from '../model';
 import {
-    BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, LiteralQueryNode, OrderDirection, OrderSpecification,
+    BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConstBoolQueryNode, LiteralQueryNode, OrderDirection, OrderSpecification,
     QueryNode, RuntimeErrorQueryNode, TransformListQueryNode, VariableQueryNode
 } from '../query-tree';
 import {
     AFTER_ARG, CURSOR_FIELD, FIRST_ARG, ID_FIELD, ORDER_BY_ARG, ORDER_BY_ASC_SUFFIX, SKIP_ARG
 } from '../schema/constants';
 import { decapitalize } from '../utils/utils';
+import { and } from './filter-input-types/constants';
 import { OrderByEnumGenerator, OrderByEnumType, OrderByEnumValue } from './order-by-enum-generator';
 import { QueryNodeField } from './query-node-object-type';
 import { getOrderByValues } from './utils/pagination';
@@ -60,12 +61,22 @@ export class OrderByAndPaginationAugmentation {
                 const itemVariable = new VariableQueryNode(decapitalize(type.name));
 
                 const orderBy = this.getOrderSpecification(args, orderByType, itemVariable);
-                const maxCount = args[FIRST_ARG];
+                const maxCount: number|undefined = args[FIRST_ARG];
                 const skip = args[SKIP_ARG];
                 const paginationFilter = this.createPaginationFilterNode(args, itemVariable, orderByType);
+                const afterArg = args[AFTER_ARG];
 
                 if (orderBy.isUnordered() && maxCount == undefined && paginationFilter === ConstBoolQueryNode.TRUE) {
                     return listNode;
+                }
+
+                if (!skip && maxCount != undefined && orderBy.clauses.length > 1 && afterArg && type.isRootEntityType) {
+                    // optimization that makes use of an index that spans multiple order fields
+                    // see https://github.com/arangodb/arangodb/issues/2357
+                    // TODO only really do this here if there is an index covering this
+                    // (however, it's not that easy - it needs to include the filter stuff that is already baked into
+                    // listNode)
+                    return this.getPaginatedNodeUsingMultiIndexOptimization({orderBy, itemVariable, orderByType, listNode, args, maxCount});
                 }
 
                 return new TransformListQueryNode({
@@ -79,6 +90,53 @@ export class OrderByAndPaginationAugmentation {
             }
         };
     };
+
+    private getPaginatedNodeUsingMultiIndexOptimization({args, orderByType, itemVariable, listNode, orderBy, maxCount}:{args: { [name: string]: any }, orderByType: OrderByEnumType, itemVariable: VariableQueryNode, listNode: QueryNode, orderBy: OrderSpecification, maxCount: number|undefined}) {
+        const afterArg = args[AFTER_ARG];
+        let cursorObj: any;
+        try {
+            cursorObj = JSON.parse(afterArg);
+            if (typeof cursorObj != 'object' || cursorObj === null) {
+                return new RuntimeErrorQueryNode('The JSON value provided as "after" argument is not an object');
+            }
+        } catch (e) {
+            return new RuntimeErrorQueryNode(`Invalid cursor ${JSON.stringify(afterArg)} supplied to "after": ${e.message}`);
+        }
+
+        let currentEqualityChain: QueryNode|undefined;
+        const orderByValues = getOrderByValues(args, orderByType);
+        const partLists: TransformListQueryNode[] = [];
+        for (const clause of orderByValues) {
+            const cursorProperty = clause.underscoreSeparatedPath;
+            if (!(cursorProperty in cursorObj)) {
+                return new RuntimeErrorQueryNode(`Invalid cursor supplied to "after": Property "${cursorProperty}" missing. Make sure this cursor has been obtained with the same orderBy clause.`);
+            }
+            const cursorValue = cursorObj[cursorProperty];
+            const valueNode = clause.getValueNode(itemVariable);
+
+            const operator = clause.direction == OrderDirection.ASCENDING ? BinaryOperator.GREATER_THAN : BinaryOperator.LESS_THAN;
+            const unequalityNode = new BinaryOperationQueryNode(valueNode, operator, new LiteralQueryNode(cursorValue));
+            const filterNode = currentEqualityChain ? and(currentEqualityChain, unequalityNode) : unequalityNode;
+            const nextEqualityNode = new BinaryOperationQueryNode(valueNode, BinaryOperator.EQUAL, new LiteralQueryNode(cursorValue));
+            currentEqualityChain = currentEqualityChain ? and(currentEqualityChain, nextEqualityNode) : nextEqualityNode;
+
+            const partListNode = new TransformListQueryNode({
+                listNode,
+                itemVariable,
+                orderBy,
+                maxCount,
+                filterNode
+            });
+            partLists.push(partListNode);
+        }
+
+        return new TransformListQueryNode({
+            listNode: new ConcatListsQueryNode(partLists),
+            itemVariable,
+            orderBy,
+            maxCount
+        });
+    }
 
     private getOrderSpecification(args: any, orderByType: OrderByEnumType, itemNode: QueryNode) {
         const mappedValues = getOrderByValues(args, orderByType);
