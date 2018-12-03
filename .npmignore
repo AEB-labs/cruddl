@@ -64,5 +64,5 @@ coverage/
 /src/
 /*.ts
 
-# arangodb-bin directory contains ArangoDB in travis build
-/arangodb-bin/
+# tools directory contains ArangoDB in travis build
+/tools/
