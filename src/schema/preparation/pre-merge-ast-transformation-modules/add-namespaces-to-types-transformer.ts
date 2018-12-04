@@ -19,7 +19,7 @@ export class AddNamespacesToTypesTransformer implements ASTTransformer {
                 return {
                     ...def,
                     directives: [
-                        ...def.directives,
+                        ...def.directives ? def.directives: [],
                         ({
                             kind: DIRECTIVE,
                             name: buildNameNode(NAMESPACE_DIRECTIVE),
