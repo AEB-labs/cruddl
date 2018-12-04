@@ -1,8 +1,13 @@
 import { Database } from 'arangojs';
 import { globalContext, SchemaContext } from '../../config/global';
 import { Logger } from '../../config/logging';
+import { Config } from 'arangojs/lib/cjs/connection';
 
 export interface ArangoDBConfig {
+    /**
+     * Additional configuration options that will be passed to the ArangoJS Database constructor
+     */
+    readonly arangoDBConfig?: Config & object
     readonly url: string;
     readonly user?: string;
     readonly password?: string;
@@ -18,10 +23,21 @@ export interface ArangoDBConfig {
      * model) should be removed in updateSchema(). Defaults to true.
      */
     readonly autoremoveIndices?: boolean;
+
+    /**
+     * An optional callback to create the ArangoJS Database object. If this is set, options like the url or the user
+     * will be ignored.
+     */
+    createDatabase?: () => Database
 }
 
 export function initDatabase(config: ArangoDBConfig): Database {
+    if (config.createDatabase) {
+        return config.createDatabase();
+    }
+
     const db = new Database({
+        ...(config.arangoDBConfig ? config.arangoDBConfig : {}),
         url: config.url
     }).useDatabase(config.databaseName);
     if (config.user) {
