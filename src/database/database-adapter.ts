@@ -14,6 +14,18 @@ export interface DatabaseAdapterTimings {
         readonly [key:string]: number;
     };
 
+    readonly dbConnection: {
+        /**
+         * Complete time time spent on the database connection (from queuing to having received the response). Subsumes the database section.
+         */
+        readonly total: number;
+
+        /**
+         * Additional, database-adapter-specific profiling times
+         */
+        readonly [key: string]: number;
+    }
+
     readonly database: {
         /**
          * Complete time spent waiting for the database

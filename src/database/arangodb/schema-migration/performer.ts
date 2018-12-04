@@ -1,6 +1,5 @@
 import { Database } from 'arangojs';
-import { ArangoDBConfig } from '../arangodb-adapter';
-import { initDatabase } from '../config';
+import { ArangoDBConfig, initDatabase } from '../config';
 import { CreateDocumentCollectionMigration, CreateEdgeCollectionMigration, CreateIndexMigration, DropIndexMigration, SchemaMigration } from './migrations';
 
 export class MigrationPerformer {

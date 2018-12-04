@@ -1,13 +1,30 @@
 import { Database } from 'arangojs';
+import { LoadBalancingStrategy } from 'arangojs/lib/cjs/connection';
 import { globalContext, SchemaContext } from '../../config/global';
 import { Logger } from '../../config/logging';
-import { Config } from 'arangojs/lib/cjs/connection';
+import { CustomDatabase } from './arangojs-instrumentation/custom-database';
+
+export interface ArangoJSConfig {
+    url?: string | string[];
+    isAbsolute?: boolean;
+    arangoVersion?: number;
+    loadBalancingStrategy?: LoadBalancingStrategy;
+    maxRetries?: false | number;
+    agent?: any;
+    agentOptions?: {
+        [key: string]: any;
+    };
+    headers?: {
+        [key: string]: string;
+    };
+}
 
 export interface ArangoDBConfig {
     /**
      * Additional configuration options that will be passed to the ArangoJS Database constructor
      */
-    readonly arangoDBConfig?: Config & object
+    readonly arangoJSConfig?: ArangoJSConfig
+
     readonly url: string;
     readonly user?: string;
     readonly password?: string;
@@ -25,19 +42,16 @@ export interface ArangoDBConfig {
     readonly autoremoveIndices?: boolean;
 
     /**
-     * An optional callback to create the ArangoJS Database object. If this is set, options like the url or the user
-     * will be ignored.
+     * If set to true, the ArangoJS Connection class will be instrumented so that profiling information include timings
+     * for queue wait time, response download etc.
      */
-    createDatabase?: () => Database
+    readonly enableExperimentalArangoJSInstrumentation?: boolean
 }
 
 export function initDatabase(config: ArangoDBConfig): Database {
-    if (config.createDatabase) {
-        return config.createDatabase();
-    }
-
-    const db = new Database({
-        ...(config.arangoDBConfig ? config.arangoDBConfig : {}),
+    const clazz = config.enableExperimentalArangoJSInstrumentation ? CustomDatabase : Database;
+    const db = new clazz({
+        ...(config.arangoJSConfig ? config.arangoJSConfig : {}),
         url: config.url
     }).useDatabase(config.databaseName);
     if (config.user) {
