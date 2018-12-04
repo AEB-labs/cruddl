@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "rimraf dist && tsc --skipLibCheck && dependency-check ./package.json --ignore-module @arangodb",
+    "build": "rimraf dist && tsc --skipLibCheck && dependency-check ./package.json --ignore-module @arangodb --ignore-module internal",
     "prepublishOnly": "npm run build",
     "typecheck": "tsc --noEmit --skipLibCheck",
     "test": "tsc --noEmit --skipLibCheck && mocha --opts ./spec/mocha.opts",

@@ -1,11 +1,11 @@
-import {  ArangoDBAdapter } from '../..';
-import { globalContext } from '../../src/config/global';
-import * as path from 'path';
-import { loadProjectFromDir } from '../../src/project/project-from-fs';
-import { InMemoryAdapter } from '../../src/database/inmemory';
 import { GraphQLServer } from 'graphql-yoga';
+import * as path from 'path';
+import { ArangoDBAdapter } from '../..';
+import { globalContext } from '../../src/config/global';
+import { InMemoryAdapter } from '../../src/database/inmemory';
 import { getMetaSchema } from '../../src/meta-schema/meta-schema';
 import { Model } from '../../src/model';
+import { loadProjectFromDir } from '../../src/project/project-from-fs';
 
 const port = 3000;
 const databaseName = 'cruddl';
@@ -20,12 +20,13 @@ export async function start() {
             databaseName,
             url: databaseURL,
             autocreateIndices: true,
-            autoremoveIndices: true
+            autoremoveIndices: true,
+            enableExperimentalArangoJSInstrumentation: true
         });
     }
 
     const project = await loadProjectFromDir(path.resolve(__dirname, './model'), {
-        profileConsumer: profile => console.log(`${profile.operation.operation} ${profile.operation.name ? profile.operation.name.value : '<anonymous>'}: ${JSON.stringify(profile.timings)}`)
+        profileConsumer: profile => console.log(`${profile.operation.operation} ${profile.operation.name ? profile.operation.name.value : '<anonymous>'}: ${JSON.stringify(profile.timings, undefined, '  ')}`)
     });
     const schema = project.createSchema(db);
 
@@ -36,9 +37,9 @@ export async function start() {
 
     const server = new GraphQLServer({
         schema: schema as any, // yoga declares a direct dependency to @types/graphql and it's 0.13
-        context: () => ({ authRoles: ["allusers", "logistics-reader", "system" ]})
+        context: () => ({ authRoles: ['allusers', 'logistics-reader', 'system'] })
     });
-    await server.start({port});
+    await server.start({ port });
     logger.info(`Server started on http://localhost:${port}`);
 
     await startMetaServer(project.getModel());
@@ -54,12 +55,12 @@ let expressServerReference: any;
 export async function startMetaServer(model: Model) {
     const logger = globalContext.loggerProvider.getLogger('server');
 
-    const metaSchemaPort = port+1;
+    const metaSchemaPort = port + 1;
     const metaSchemaServer = new GraphQLServer({
         schema: getMetaSchema(model) as any, // yoga declares a direct dependency to @types/graphql and it's 0.13
         context: { locale: 'en' }
     });
-    expressServerReference = await metaSchemaServer.start({port: metaSchemaPort});
+    expressServerReference = await metaSchemaServer.start({ port: metaSchemaPort });
     logger.info(`Meta-Schema-Server started on http://localhost:${metaSchemaPort}`);
 }
 
@@ -69,7 +70,7 @@ export async function startMetaServer(model: Model) {
  */
 export async function stopMetaServer() {
     const logger = globalContext.loggerProvider.getLogger('server');
-    if(expressServerReference && expressServerReference.close){
+    if (expressServerReference && expressServerReference.close) {
         expressServerReference.close();
     }
     logger.info(`Meta-Schema-Server stopped`);

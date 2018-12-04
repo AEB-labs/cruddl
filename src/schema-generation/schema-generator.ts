@@ -75,7 +75,7 @@ export class SchemaGenerator {
             watch.stop('staticEvaluation');
             topLevelWatch.stop('preparation');
             if (!canEvaluateStatically) {
-                const res = this.context.databaseAdapter.executeExt ?(await this.context.databaseAdapter.executeExt({
+                const res = this.context.databaseAdapter.executeExt ? (await this.context.databaseAdapter.executeExt({
                     queryTree,
                     recordTimings: !!profileConsumer
                 })) : {
@@ -99,6 +99,7 @@ export class SchemaGenerator {
                 };
                 const timings = {
                     database: dbAdapterTimings ? dbAdapterTimings.database : { total: watch.timings.database },
+                    dbConnection: dbAdapterTimings ? dbAdapterTimings.dbConnection : { total: 0 },
                     preparation,
                     total: getPreciseTime() - start
                 };
