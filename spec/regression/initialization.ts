@@ -1,7 +1,7 @@
 import { Database, DocumentCollection, EdgeCollection } from 'arangojs';
 import * as fs from 'fs';
 import { ExecutionResult, graphql, GraphQLSchema } from 'graphql';
-import { ArangoDBConfig } from '../../src/database/arangodb/arangodb-adapter';
+import { ArangoDBConfig } from '../../src/database/arangodb';
 import stripJsonComments = require('strip-json-comments');
 
 const DATABASE_NAME = 'cruddl-test-temp';
@@ -89,8 +89,8 @@ export async function initTestData(path: string, schema: GraphQLSchema): Promise
             dataSet = fillTemplateStrings(dataSet);
             const dataID = dataSet['@id'];
             delete dataSet['@id'];
-            const query = `mutation($input: Create${rootEntityLocalName}Input!) { ${ wrapNamespaceForQuery(`res: create${rootEntityLocalName}(input: $input) { id }`, namespace) } }`;
-            const variables = {input: dataSet};
+            const query = `mutation($input: Create${rootEntityLocalName}Input!) { ${wrapNamespaceForQuery(`res: create${rootEntityLocalName}(input: $input) { id }`, namespace)} }`;
+            const variables = { input: dataSet };
             const result = await graphql(schema, query, {}, context, variables);
             if (result.errors) {
                 throw new Error(`GraphQL error while inserting ${rootEntityName}: ${JSON.stringify(result.errors)}`);
@@ -114,7 +114,7 @@ export async function initTestData(path: string, schema: GraphQLSchema): Promise
      }
      }*/
 
-    return {fillTemplateStrings};
+    return { fillTemplateStrings };
 }
 
 function wrapNamespaceForQuery(stuff: string, namespace: string[]) {
@@ -123,7 +123,7 @@ function wrapNamespaceForQuery(stuff: string, namespace: string[]) {
     }
     let result = stuff;
     for (const namespacePart of [...namespace].reverse()) {
-        result = `${namespacePart} { ${ result } }`;
+        result = `${namespacePart} { ${result} }`;
     }
     return result;
 }

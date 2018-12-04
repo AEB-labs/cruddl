@@ -3,8 +3,7 @@ import { SchemaContext } from '../../../config/global';
 import { Logger } from '../../../config/logging';
 import { Model, RootEntityType } from '../../../model/implementation';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from '../arango-basics';
-import { ArangoDBConfig } from '../arangodb-adapter';
-import { getArangoDBLogger, initDatabase } from '../config';
+import { ArangoDBConfig, getArangoDBLogger, initDatabase } from '../config';
 import { calculateRequiredIndexOperations, getRequiredIndicesFromModel, IndexDefinition } from './index-helpers';
 import { CreateDocumentCollectionMigration, CreateEdgeCollectionMigration, CreateIndexMigration, DropIndexMigration, SchemaMigration } from './migrations';
 

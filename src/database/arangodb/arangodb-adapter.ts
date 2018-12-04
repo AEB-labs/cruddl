@@ -1,36 +1,23 @@
 import { Database } from 'arangojs';
+import { start } from '../../../spec/dev/server';
 import { globalContext, SchemaContext } from '../../config/global';
 import { Logger } from '../../config/logging';
 import { Model } from '../../model';
 import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS, QueryNode } from '../../query-tree';
-import { getPreciseTime } from '../../utils/watch';
+import { objectValues } from '../../utils/utils';
+import { getPreciseTime, Watch } from '../../utils/watch';
 import { DatabaseAdapter, ExecutionOptions, ExecutionResult } from '../database-adapter';
 import { AQLCompoundQuery, AQLExecutableQuery } from './aql';
 import { getAQLQuery } from './aql-generator';
-import { getArangoDBLogger, initDatabase } from './config';
+import { RequestInstrumentation, RequestInstrumentationPhase } from './arangojs-instrumentation/config';
+import { ArangoDBConfig, getArangoDBLogger, initDatabase } from './config';
 import { SchemaAnalyzer } from './schema-migration/anaylzer';
 import { SchemaMigration } from './schema-migration/migrations';
 import { MigrationPerformer } from './schema-migration/performer';
 
 export const DEFAULT_INDEX_TYPE = 'persistent'; // persistent is a skiplist index
 
-export interface ArangoDBConfig {
-    readonly url: string;
-    readonly user?: string;
-    readonly password?: string;
-    readonly databaseName: string;
-
-    /**
-     * Specifies if indices defined in the model should be created in updateSchema(). Defaults to true.
-     */
-    readonly autocreateIndices?: boolean;
-
-    /**
-     * Specifies if indices that are not defined in the model (but are on collections of root entities defined in the
-     * model) should be removed in updateSchema(). Defaults to true.
-     */
-    readonly autoremoveIndices?: boolean;
-}
+const requestInstrumentationBodyKey = 'cruddlRequestInstrumentation';
 
 interface ArangoExecutionOptions {
     readonly queries: ReadonlyArray<AQLExecutableQuery>
@@ -46,7 +33,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
     private readonly autoremoveIndices: boolean;
     private readonly arangoExecutionFunction: string;
 
-    constructor(config: ArangoDBConfig, private schemaContext?: SchemaContext) {
+    constructor(private readonly config: ArangoDBConfig, private schemaContext?: SchemaContext) {
         this.logger = getArangoDBLogger(schemaContext);
         this.db = initDatabase(config);
         this.analyzer = new SchemaAnalyzer(config, schemaContext);
@@ -67,13 +54,20 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         // (https://github.com/istanbuljs/nyc) not to instrument the code with coverage instructions.
 
         /* istanbul ignore next */
-        const arangoExecutionFunction = function ({queries, enableProfiling}: ArangoExecutionOptions) {
+        const arangoExecutionFunction = function ({ queries, enableProfiling }: ArangoExecutionOptions) {
             const db = require('@arangodb').db;
+            const internal = enableProfiling ? require('internal') : undefined;
+
+            function getPreciseTime() {
+                return internal.time();
+            }
+            const startTime = enableProfiling ? getPreciseTime() : 0;
 
             let validators: { [name: string]: (validationData: any, result: any) => void } = {};
             //inject_validators_here
 
-            let timings: {[key: string]: number}|undefined = enableProfiling ? {} : undefined;
+            let timings: { [key: string]: number } | undefined = enableProfiling ? {} : undefined;
+            let timingsTotal = 0;
 
             let resultHolder: { [p: string]: any } = {};
             queries.forEach(query => {
@@ -98,6 +92,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                     for (let key in profile) {
                         if (profile.hasOwnProperty(key)) {
                             timings[key] = (timings[key] || 0) + profile[key];
+                            timingsTotal += profile[key];
                         }
                     }
                 }
@@ -123,6 +118,11 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             } else {
                 data = undefined;
             }
+
+            if (enableProfiling && timings) {
+                timings.js = (getPreciseTime() - startTime) - timingsTotal;
+            }
+
             return {
                 data,
                 timings
@@ -139,11 +139,11 @@ export class ArangoDBAdapter implements DatabaseAdapter {
     }
 
     async execute(queryTree: QueryNode) {
-        const result = await this.executeExt({queryTree});
+        const result = await this.executeExt({ queryTree });
         return result.data;
     }
 
-    async executeExt({queryTree, recordTimings = false}: ExecutionOptions): Promise<ExecutionResult> {
+    async executeExt({ queryTree, recordTimings = false }: ExecutionOptions): Promise<ExecutionResult> {
         const prepStartTime = getPreciseTime();
         globalContext.registerContext(this.schemaContext);
         let executableQueries: AQLExecutableQuery[];
@@ -166,6 +166,15 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             enableProfiling: recordTimings
         };
 
+        const watch = new Watch();
+        if (this.config.enableExperimentalArangoJSInstrumentation) {
+            (options as any)[requestInstrumentationBodyKey] = {
+                onPhaseEnded: (phase: RequestInstrumentationPhase) => {
+                    watch.stop(phase);
+                }
+            } as RequestInstrumentation;
+        }
+
         const { timings: databaseTimings, data } = await this.db.transaction(
             {
                 read: aqlQuery.readAccessedCollections,
@@ -177,11 +186,29 @@ export class ArangoDBAdapter implements DatabaseAdapter {
 
         let timings;
         if (recordTimings) {
-            const dbTotal = getPreciseTime() - dbStartTime;
+            const dbConnectionTotal = getPreciseTime() - dbStartTime;
+            const dbInternalTotal = objectValues<number>(databaseTimings).reduce((a, b) => a + b, 0);
+            const queuing = watch.timings.queuing;
+            const socketInit = watch.timings.socketInit || 0;
+            const lookup = watch.timings.lookup || 0;
+            const connecting = watch.timings.connecting || 0;
+            const receiving = watch.timings.receiving;
+            const waiting = watch.timings.waiting;
+            const other = dbConnectionTotal - queuing - socketInit - lookup - connecting - receiving - waiting;
             timings = {
                 database: {
                     ...databaseTimings,
-                    total: dbTotal
+                    total: dbInternalTotal,
+                },
+                dbConnection: {
+                    queuing,
+                    socketInit,
+                    lookup,
+                    connecting,
+                    waiting,
+                    receiving,
+                    other,
+                    total: dbConnectionTotal
                 },
                 preparation: {
                     total: aqlPreparationTime,
@@ -210,7 +237,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         try {
             await this.migrationPerformer.performMigration(migration);
             this.logger.info(`Successfully performed migration "${migration.description}"`);
-        } catch(e) {
+        } catch (e) {
             this.logger.error(`Error performing migration "${migration.description}": ${e.stack}`);
             throw e;
         }
