@@ -8,7 +8,7 @@ import { Model } from './model';
 import { PermissionProfile } from './permission-profile';
 import { Relation, RelationSide } from './relation';
 import { RolesSpecifier } from './roles-specifier';
-import { ObjectType, Type } from './type';
+import { InvalidType, ObjectType, Type } from './type';
 
 export class Field implements ModelComponent {
     readonly model: Model;
@@ -21,6 +21,7 @@ export class Field implements ModelComponent {
     readonly defaultValue?: any;
     readonly calcMutationOperators: ReadonlySet<CalcMutationsOperator>;
     readonly roles: RolesSpecifier | undefined;
+    private _type: Type | undefined;
 
     /**
      * Indicates if this is an inherent field of the declaring type that will be maintained by the system and thus can
@@ -50,7 +51,16 @@ export class Field implements ModelComponent {
     }
 
     public get type(): Type {
-        return this.model.getTypeOrFallback(this.input.typeName);
+        // cache this because getType is a lookup by string
+        if (this._type) {
+            return this._type;
+        }
+        const type = this.model.getType(this.input.typeName);
+        if (type) {
+            this._type = type;
+            return type;
+        }
+        return new InvalidType(this.input.typeName, this.model);
     }
 
     public get hasValidType(): boolean {
@@ -133,7 +143,7 @@ export class Field implements ModelComponent {
     }
 
     public getLocalization(resolutionOrder: ReadonlyArray<string>): FieldLocalization {
-        return this.model.i18n.getFieldLocalization(this, resolutionOrder)
+        return this.model.i18n.getFieldLocalization(this, resolutionOrder);
     }
 
     validate(context: ValidationContext) {

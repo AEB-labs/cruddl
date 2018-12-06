@@ -27,10 +27,22 @@ export function buildConditionalObjectQueryNode(sourceNode: QueryNode, type: Que
     });
 }
 
+const typeFieldMaps = new WeakMap<QueryNodeObjectType, Map<string, QueryNodeField>>();
+
+function getFieldMap(type: QueryNodeObjectType) {
+    let fieldMap = typeFieldMaps.get(type);
+    if (fieldMap) {
+        return fieldMap;
+    }
+    fieldMap = new Map(resolveThunk(type.fields).map((f): [string, QueryNodeField] => [f.name, f]));
+    typeFieldMaps.set(type, fieldMap);
+    return fieldMap;
+}
+
 function buildObjectQueryNode(sourceNode: QueryNode, type: QueryNodeObjectType, selectionSet: ReadonlyArray<FieldSelection>, fieldRequestStack: ReadonlyArray<FieldRequest>) {
-    // TODO build a map of the fields by name somewhere
+    const fieldMap = getFieldMap(type);
     return new ObjectQueryNode(selectionSet.map(sel => {
-        const field = resolveThunk(type.fields).find(f => f.name == sel.fieldRequest.fieldName);
+        const field = fieldMap.get(sel.fieldRequest.fieldName);
         if (!field) {
             throw new Error(`Missing field ${sel.fieldRequest.fieldName}`);
         }
