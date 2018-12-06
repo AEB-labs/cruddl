@@ -1,5 +1,5 @@
-import { aql, AQLVariable } from '../../../src/database/arangodb/aql';
 import { expect } from 'chai';
+import { aql, aqlConfig, AQLVariable } from '../../../src/database/arangodb/aql';
 
 describe('aql', () => {
     it('works with plain code', () => {
@@ -48,7 +48,10 @@ describe('aql', () => {
             aql`[`,
             aql.indent(aql.join(items, aql`,\n`)),
             aql`]`);
+        const oldValue = aqlConfig.enableIndentationForCode;
+        aqlConfig.enableIndentationForCode = true;
         expect(fragment.getCode().code).to.equal('[\n  2 * @var1,\n  2 * @var2,\n  2 * @var3\n]');
+        aqlConfig.enableIndentationForCode = oldValue;
         console.log(fragment.toColoredString());
     });
 
@@ -84,7 +87,7 @@ describe('aql', () => {
         });
 
         it('rejects strange collection names', () => {
-            expect(() =>aql.collection('deliveries + / BAD')).to.throw();
-        })
-    })
+            expect(() => aql.collection('deliveries + / BAD')).to.throw();
+        });
+    });
 });
