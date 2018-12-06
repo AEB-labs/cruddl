@@ -15,6 +15,6 @@ describe('getAQLForQuery', () => {
             new PropertySpecification('propB', new LiteralQueryNode('b')),
         ]);
         const aql = getAQLQuery(query);
-        expect(aql.getExecutableQueries()[0].code).to.equal(`RETURN {\n  "propA": @var1,\n  "propB": @var2\n}`);
+        expect(aql.getExecutableQueries()[0].code).to.equal(`RETURN {\n"propA": @var1,\n"propB": @var2\n}`);
     });
 });

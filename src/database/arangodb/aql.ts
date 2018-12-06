@@ -9,6 +9,10 @@ function stringify(val: any) {
     return JSON.stringify(val);
 }
 
+export namespace aqlConfig {
+    export let enableIndentationForCode = false;
+}
+
 const INDENTATION = '  ';
 /**
  * Like indent(), but does not indent the first line
@@ -127,11 +131,15 @@ export class AQLCodeFragment extends AQLFragment {
     }
 
     toColoredStringWithContext(context: AQLCodeBuildingContext): string {
-        return this.toStringWithContext(context);
+        return indentLineBreaks(this.aql, context.indentationLevel);
     }
 
     getCodeWithContext(context: AQLCodeBuildingContext): string {
-        return indentLineBreaks(this.aql, context.indentationLevel);
+        if (aqlConfig.enableIndentationForCode) {
+            return indentLineBreaks(this.aql, context.indentationLevel);
+        } else {
+            return this.aql;
+        }
     }
 }
 
@@ -229,6 +237,10 @@ export class AQLIndentationFragment extends AQLFragment {
     }
 
     getCodeWithContext(context: AQLCodeBuildingContext): string {
+        if (!aqlConfig.enableIndentationForCode) {
+            return this.fragment.getCodeWithContext(context);
+        }
+
         context.indentationLevel++;
         const code = INDENTATION + this.fragment.getCodeWithContext(context);
         context.indentationLevel--;
