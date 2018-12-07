@@ -2,27 +2,17 @@ import { GraphQLNonNull } from 'graphql';
 import { flatMap } from 'lodash';
 import memorize from 'memorize-decorator';
 import { Namespace, RootEntityType } from '../model';
-import {
-    AffectedFieldInfoQueryNode, BinaryOperationQueryNode, BinaryOperator, DeleteEntitiesQueryNode, EntitiesQueryNode,
-    EntityFromIdQueryNode, ErrorIfEmptyResultValidator, FirstOfListQueryNode, LiteralQueryNode, ObjectQueryNode,
-    PreExecQueryParms, QueryNode, RootEntityIDQueryNode, TransformListQueryNode, UnknownValueQueryNode,
-    UpdateEntitiesQueryNode, VariableQueryNode, WithPreExecutionQueryNode
-} from '../query-tree';
+import { AffectedFieldInfoQueryNode, BinaryOperationQueryNode, BinaryOperator, DeleteEntitiesQueryNode, EntitiesQueryNode, EntityFromIdQueryNode, ErrorIfEmptyResultValidator, FirstOfListQueryNode, LiteralQueryNode, ObjectQueryNode, PreExecQueryParms, QueryNode, RootEntityIDQueryNode, TransformListQueryNode, UnknownValueQueryNode, UpdateEntitiesQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../query-tree';
 import { ID_FIELD, MUTATION_INPUT_ARG, MUTATION_TYPE } from '../schema/constants';
-import {
-    getCreateEntityFieldName, getDeleteAllEntitiesFieldName, getDeleteEntityFieldName, getUpdateAllEntitiesFieldName,
-    getUpdateEntityFieldName
-} from '../schema/names';
+import { getCreateEntityFieldName, getDeleteAllEntitiesFieldName, getDeleteEntityFieldName, getUpdateAllEntitiesFieldName, getUpdateEntityFieldName } from '../schema/names';
 import { compact, decapitalize, PlainObject } from '../utils/utils';
 import { CreateInputTypeGenerator, CreateRootEntityInputType } from './create-input-types';
 import { ListAugmentation } from './list-augmentation';
 import { OutputTypeGenerator } from './output-type-generator';
-import {
-    makeNonNullableList, QueryNodeField, QueryNodeNonNullType, QueryNodeObjectType
-} from './query-node-object-type';
+import { makeNonNullableList, QueryNodeField, QueryNodeNonNullType, QueryNodeObjectType } from './query-node-object-type';
 import { UpdateInputTypeGenerator, UpdateRootEntityInputType } from './update-input-types';
 import { getArgumentsForUniqueFields, getEntitiesByUniqueFieldQuery } from './utils/entities-by-uinque-field';
-import { getMapNode } from './utils/map';
+import { mapTOIDNodes } from './utils/map';
 import { getRemoveAllEntityEdgesStatements } from './utils/relations';
 
 export class MutationTypeGenerator {
@@ -247,7 +237,7 @@ export class MutationTypeGenerator {
             listNode
         });
 
-        const idsNode = getMapNode(listNode, itemNode => new RootEntityIDQueryNode(itemNode));
+        const idsNode = mapTOIDNodes(listNode);
         const removeEdgesStatements = getRemoveAllEntityEdgesStatements(rootEntityType, idsNode);
 
         // no preexec for the actual deletion here because we need to evaluate the result while the entity still exists
@@ -284,7 +274,7 @@ export class MutationTypeGenerator {
             listNode
         });
 
-        const idsNode = getMapNode(listNode, itemNode => new RootEntityIDQueryNode(itemNode));
+        const idsNode = mapTOIDNodes(listNode);
         const removeEdgesStatements = getRemoveAllEntityEdgesStatements(rootEntityType, idsNode);
 
         return new WithPreExecutionQueryNode({
