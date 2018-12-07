@@ -379,7 +379,8 @@ class GenericLocalizationProvider implements LocalizationProvider {
             return undefined;
         }
         let splitName = name.split(' ');
-        return [...splitName, pluralize(splitName.pop()!)].join(' ');
+        const tail = splitName.pop()!;
+        return [...splitName, pluralize(tail)].join(' ');
     }
 }
 
