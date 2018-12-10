@@ -1,3 +1,5 @@
+import { Quantifier } from '../schema-generation/filter-input-types/constants';
+
 export const WILDCARD_CHARACTER = '*';
 
 export const ROOT_ENTITY_DIRECTIVE = 'rootEntity';
@@ -71,9 +73,9 @@ export const INPUT_FIELD_STARTS_WITH = 'starts_with';
 export const INPUT_FIELD_NOT_STARTS_WITH = 'not_starts_with';
 export const INPUT_FIELD_ENDS_WITH = 'ends_with';
 export const INPUT_FIELD_NOT_ENDS_WITH = 'not_ends_with';
-export const INPUT_FIELD_SOME = 'some';
-export const INPUT_FIELD_EVERY = 'every';
-export const INPUT_FIELD_NONE = 'none';
+export const INPUT_FIELD_SOME: 'some' = 'some';
+export const INPUT_FIELD_EVERY: 'every' = 'every';
+export const INPUT_FIELD_NONE: 'none' = 'none';
 export const AND_FILTER_FIELD = 'AND';
 export const OR_FILTER_FIELD = 'OR';
 

@@ -1,6 +1,6 @@
 import { RootEntityType } from '../model';
 import { Field } from '../model/implementation';
-import { BasicType, BinaryOperationQueryNode, BinaryOperator, ConditionalQueryNode, EntitiesQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, NullQueryNode, ObjectQueryNode, QueryNode, RootEntityIDQueryNode, TransformListQueryNode, TypeCheckQueryNode, VariableQueryNode } from '../query-tree';
+import { BasicType, BinaryOperationQueryNode, BinaryOperator, ConditionalQueryNode, EntitiesQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, NullQueryNode, ObjectQueryNode, QueryNode, RootEntityIDQueryNode, SafeListQueryNode, TransformListQueryNode, TypeCheckQueryNode, VariableQueryNode } from '../query-tree';
 import { ID_FIELD } from '../schema/constants';
 import { and } from './filter-input-types/constants';
 
@@ -91,10 +91,5 @@ function createToNRelationNode(field: Field, sourceNode: QueryNode): QueryNode {
 }
 
 function createSafeListQueryNode(listNode: QueryNode) {
-    // to avoid errors because of eagerly evaluated list expression, we just convert non-lists to an empty list
-    return new ConditionalQueryNode(
-        new TypeCheckQueryNode(listNode, BasicType.LIST),
-        listNode,
-        new ListQueryNode([])
-    );
+    return new SafeListQueryNode(listNode);
 }
