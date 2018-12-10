@@ -11,6 +11,8 @@ export class ListQueryNode extends QueryNode {
         super();
     }
 
+    static readonly EMPTY = new ListQueryNode([]);
+
     describe(): string {
         if (!this.itemNodes.length) {
             return `[]`;
