@@ -36,3 +36,18 @@ export enum BasicType {
      */
     NULL
 }
+
+/**
+ * A query node that evaluates to node if it's a list, or to an empty list if it's not
+ *
+ * This could be reduced to a conditional node and a TypeCheck node, but it eases database-specific optimizations
+ */
+export class SafeListQueryNode extends QueryNode {
+    constructor(public readonly sourceNode: QueryNode) {
+        super();
+    }
+
+    describe(): string {
+        return `(${this.sourceNode.describe()} or [] if not a list)`
+    }
+}

@@ -1,6 +1,8 @@
-import { Relation, RootEntityType } from '../../model';
-import { AddEdgesQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode, ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeIdentifier, EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, OrderDirection, OrderSpecification, PartialEdgeIdentifier, QueryNode, QueryResultValidator, RemoveEdgesQueryNode, RootEntityIDQueryNode, RUNTIME_ERROR_TOKEN, RuntimeErrorQueryNode, SetEdgeQueryNode, TransformListQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../../query-tree';
+import { Field, Relation, RootEntityType } from '../../model';
+import { AddEdgesQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode, ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeIdentifier, EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, OrderDirection, OrderSpecification, PartialEdgeIdentifier, QueryNode, QueryResultValidator, RemoveEdgesQueryNode, RootEntityIDQueryNode, RUNTIME_ERROR_TOKEN, RuntimeErrorQueryNode, SafeListQueryNode, SetEdgeQueryNode, TransformListQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../../query-tree';
+import { Quantifier, QuantifierFilterNode } from '../../query-tree/quantifiers';
 import { simplifyBooleans } from '../../query-tree/utils';
+import { not } from '../../schema-generation/filter-input-types/constants';
 import { Constructor, decapitalize } from '../../utils/utils';
 import { aql, AQLCompoundQuery, AQLFragment, AQLQueryResultVariable, AQLVariable } from './aql';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './arango-basics';
@@ -166,6 +168,7 @@ namespace aqlExt {
 }
 
 const processors = new Map<Constructor<QueryNode>, NodeProcessor<QueryNode>>();
+
 function register<T extends QueryNode>(type: Constructor<T>, processor: NodeProcessor<T>) {
     processors.set(type, processor as NodeProcessor<QueryNode>); // probably some bivariancy issue
 }
@@ -256,13 +259,17 @@ register(EntityFromIdQueryNode, (node, context) => {
 
 register(FieldQueryNode, (node, context) => {
     const object = processNode(node.objectNode, context);
-    let identifier = node.field.name;
+    return aql`${object}${getFieldAccessFragment(node.field)}`;
+});
+
+function getFieldAccessFragment(field: Field) {
+    let identifier = field.name;
     if (aql.isSafeIdentifier(identifier)) {
-        return aql`${object}.${aql.identifier(identifier)}`;
+        return aql`.${aql.identifier(identifier)}`;
     }
     // fall back to bound values. do not attempt aql.string for security reasons - should not be the case normally, anyway.
-    return aql`${object}[${identifier}]`;
-});
+    return aql`[${identifier}]`;
+}
 
 register(RootEntityIDQueryNode, (node, context) => {
     return aql`${processNode(node.objectNode, context)}._key`; // ids are stored in _key field
@@ -395,6 +402,79 @@ register(TypeCheckQueryNode, (node, context) => {
             return aql`IS_NULL(${value})`;
     }
 });
+
+register(SafeListQueryNode, (node, context) => {
+    const reducedNode = new ConditionalQueryNode(new TypeCheckQueryNode(node.sourceNode, BasicType.LIST), node.sourceNode, ListQueryNode.EMPTY);
+    return processNode(reducedNode, context);
+});
+
+register(QuantifierFilterNode, (node, context) => {
+    let { quantifier, conditionNode, listNode, itemVariable } = node;
+    conditionNode = simplifyBooleans(conditionNode);
+
+    const fastFragment = getQuantifierFilterUsingArrayExpansion({ quantifier, conditionNode, listNode, itemVariable }, context);
+    if (fastFragment) {
+        return fastFragment;
+    }
+
+    // reduce 'every' to 'none' so that count-based evaluation is possible
+    if (quantifier === 'every') {
+        quantifier = 'none';
+        conditionNode = not(conditionNode);
+    }
+
+    const filteredListNode = new TransformListQueryNode({
+        listNode,
+        filterNode: conditionNode,
+        itemVariable
+    });
+
+    const finalNode = new BinaryOperationQueryNode(new CountQueryNode(filteredListNode),
+        quantifier === 'none' ? BinaryOperator.EQUAL : BinaryOperator.GREATER_THAN, new LiteralQueryNode(0));
+    return processNode(finalNode, context);
+});
+
+// uses the array expansion operator (https://docs.arangodb.com/3.0/AQL/Advanced/ArrayOperators.html#array-expansion)
+// that can utilize an index like "items[*].itemNumber" if possible
+// (specifically for something like items_some: {itemNumber: "abc"})
+function getQuantifierFilterUsingArrayExpansion(
+    { quantifier, conditionNode, listNode, itemVariable }: {
+        quantifier: Quantifier, conditionNode: QueryNode, listNode: QueryNode, itemVariable: VariableQueryNode
+    },
+    context: QueryContext
+): AQLFragment | undefined {
+    if (quantifier !== 'some') {
+        return undefined;
+    }
+
+    // only possible on lists that are field accesses,
+    // but "safe lists" are ok because the IN operator implicitly ignores NULL values
+    if (listNode instanceof SafeListQueryNode) {
+        listNode = listNode.sourceNode;
+    }
+    if (!(listNode instanceof FieldQueryNode)) {
+        return undefined;
+    }
+
+    // only possible for equality
+    if (!(conditionNode instanceof BinaryOperationQueryNode && conditionNode.operator === BinaryOperator.EQUAL)) {
+        return undefined;
+    }
+
+    let fields: Field[] = [];
+    let currentFieldNode = conditionNode.lhs;
+    do {
+        if (!(currentFieldNode instanceof FieldQueryNode)) {
+            return undefined;
+        }
+        fields.unshift(currentFieldNode.field); // we're traversing from back to front
+        currentFieldNode = currentFieldNode.objectNode;
+    } while (currentFieldNode !== itemVariable);
+
+    const valueFrag = processNode(conditionNode.rhs, context);
+    const fieldAccessFrag = aql.concat(fields.map(f => getFieldAccessFragment(f)));
+    return aql`${valueFrag} IN ${processNode(listNode, context)}[*]${fieldAccessFrag}`;
+}
 
 register(EntitiesQueryNode, (node, context) => {
     return getCollectionForType(node.rootEntityType, AccessType.READ, context);

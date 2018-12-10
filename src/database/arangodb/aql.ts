@@ -187,7 +187,7 @@ export class AQLBoundValue extends AQLFragment {
 }
 
 export class AQLCompoundFragment extends AQLFragment {
-    constructor(public readonly fragments: AQLFragment[]) {
+    constructor(public readonly fragments: ReadonlyArray<AQLFragment>) {
         super();
     }
 
@@ -273,6 +273,10 @@ export function aql(strings: ReadonlyArray<string>, ...values: (AQLFragment|stri
 }
 
 export namespace aql {
+    export function concat(fragments: ReadonlyArray<AQLFragment>) {
+        return new AQLCompoundFragment(fragments);
+    }
+
     export function join(fragments: AQLFragment[], separator: AQLFragment): AQLFragment {
         const newFragments: AQLFragment[] = [];
         let isFirst = true;

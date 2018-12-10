@@ -6,10 +6,13 @@ import {
     EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode,
     LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, OrderClause, OrderDirection,
     OrderSpecification, QueryNode, QueryResultValidator, RemoveEdgesQueryNode, RootEntityIDQueryNode,
-    RUNTIME_ERROR_TOKEN, RuntimeErrorQueryNode, SetEdgeQueryNode, TransformListQueryNode, TypeCheckQueryNode,
+    RUNTIME_ERROR_TOKEN, RuntimeErrorQueryNode, SafeListQueryNode, SetEdgeQueryNode, TransformListQueryNode, TypeCheckQueryNode,
     UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode,
     WithPreExecutionQueryNode
 } from '../../query-tree';
+import { QuantifierFilterNode } from '../../query-tree/quantifiers';
+import { simplifyBooleans } from '../../query-tree/utils';
+import { not } from '../../schema-generation/filter-input-types/constants';
 import { Constructor, decapitalize } from '../../utils/utils';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './inmemory-basics';
 import { js, JSCompoundQuery, JSFragment, JSQueryResultVariable, JSVariable } from './js';
@@ -379,6 +382,31 @@ register(TypeCheckQueryNode, (node, context) => {
         case BasicType.NULL:
             return js`${value} == null`;
     }
+});
+
+register(SafeListQueryNode, (node, context) => {
+    const reducedNode = new ConditionalQueryNode(new TypeCheckQueryNode(node.sourceNode, BasicType.LIST), node.sourceNode, ListQueryNode.EMPTY);
+    return processNode(reducedNode, context);
+});
+
+register(QuantifierFilterNode, (node, context) => {
+    let { quantifier, conditionNode, listNode, itemVariable } = node;
+
+    // reduce 'every' to 'none' so that count-based evaluation is possible
+    if (quantifier === 'every') {
+        quantifier = 'none';
+        conditionNode = not(conditionNode);
+    }
+
+    const filteredListNode = new TransformListQueryNode({
+        listNode,
+        filterNode: conditionNode,
+        itemVariable
+    });
+
+    const finalNode = new BinaryOperationQueryNode(new CountQueryNode(filteredListNode),
+        quantifier === 'none' ? BinaryOperator.EQUAL : BinaryOperator.GREATER_THAN, new LiteralQueryNode(0));
+    return processNode(finalNode, context);
 });
 
 register(EntitiesQueryNode, (node, context) => {

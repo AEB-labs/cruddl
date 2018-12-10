@@ -1,16 +1,9 @@
 import { Thunk } from 'graphql';
 import { groupBy } from 'lodash';
-import { ChildEntityType, EntityExtensionType, Field, ObjectType, RootEntityType, ValueObjectType } from '../../model';
-import {
-    BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode, FieldQueryNode,
-    ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, ObjectQueryNode, PreExecQueryParms, QueryNode,
-    RuntimeErrorQueryNode, SetFieldQueryNode, TransformListQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode,
-    UnaryOperator, VariableQueryNode
-} from '../../query-tree';
+import { ChildEntityType, EntityExtensionType, Field, ObjectType, RootEntityType } from '../../model';
+import { BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode, FieldQueryNode, LiteralQueryNode, MergeObjectsQueryNode, ObjectQueryNode, PreExecQueryParms, QueryNode, RuntimeErrorQueryNode, SafeListQueryNode, SetFieldQueryNode, TransformListQueryNode, UnaryOperationQueryNode, UnaryOperator, VariableQueryNode } from '../../query-tree';
 import { ENTITY_UPDATED_AT, ID_FIELD } from '../../schema/constants';
-import {
-    getAddChildEntitiesFieldName, getRemoveChildEntitiesFieldName, getUpdateChildEntitiesFieldName
-} from '../../schema/names';
+import { getAddChildEntitiesFieldName, getRemoveChildEntitiesFieldName, getUpdateChildEntitiesFieldName } from '../../schema/names';
 import { AnyValue, decapitalize, flatMap, joinWithAnd, objectEntries, PlainObject } from '../../utils/utils';
 import { TypedInputObjectType } from '../typed-input-object-type';
 import { AddChildEntitiesInputField, UpdateChildEntitiesInputField, UpdateInputField } from './input-fields';
@@ -85,8 +78,8 @@ export class UpdateObjectInputType extends TypedInputObjectType<UpdateInputField
         // generates a query like this:
         // FOR obj IN [...existing, ...newValues] FILTER !(obj.id IN removedIDs) RETURN obj.id == updateID ? update(obj) : obj
         const rawExistingNode = new FieldQueryNode(currentEntityNode, field);
-        let currentNode: QueryNode = new ConditionalQueryNode( // fall back to empty list if property is not a list
-            new TypeCheckQueryNode(rawExistingNode, BasicType.LIST), rawExistingNode, new ListQueryNode([]));
+        // fall back to empty list if property is not a list
+        let currentNode: QueryNode = new SafeListQueryNode(rawExistingNode);
 
         if (newValues.length) {
             // wrap the whole thing into a LiteralQueryNode instead of them individually so that only one bound variable is used
