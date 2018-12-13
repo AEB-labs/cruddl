@@ -2,9 +2,9 @@ import { GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
 import * as pluralize from 'pluralize';
 import { isArray } from 'util';
 import { Field, TypeKind } from '../../model';
-import { BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, CountQueryNode, LiteralQueryNode, QueryNode, TransformListQueryNode, VariableQueryNode } from '../../query-tree';
+import { BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, LiteralQueryNode, QueryNode, VariableQueryNode } from '../../query-tree';
 import { QuantifierFilterNode } from '../../query-tree/quantifiers';
-import { AND_FILTER_FIELD, FILTER_FIELD_PREFIX_SEPARATOR, INPUT_FIELD_EVERY, INPUT_FIELD_NONE, OR_FILTER_FIELD } from '../../schema/constants';
+import { AND_FILTER_FIELD, FILTER_FIELD_PREFIX_SEPARATOR, OR_FILTER_FIELD } from '../../schema/constants';
 import { AnyValue, decapitalize, PlainObject } from '../../utils/utils';
 import { createFieldNode } from '../field-nodes';
 import { TypedInputFieldBase } from '../typed-input-object-type';
@@ -71,6 +71,20 @@ export class QuantifierFilterField implements FilterField {
         public readonly inputType: FilterObjectType
     ) {
         this.name = `${this.field.name}_${this.quantifierName}`;
+    }
+
+    get description(): string | undefined {
+        switch (this.quantifierName) {
+            case 'every':
+                return `Makes sure all items in "${this.field.name}" match a certain filter.`;
+            case 'none':
+                return `Makes sure none of the items in "${this.field.name}" match a certain filter.\n\n` +
+                    `Note that you can specify the empty object for this filter to make sure "${this.field.name}" has no items.`;
+            case 'some':
+                return `Makes sure at least one of the items in "${this.field.name}" matches a certain filter.\n\n` +
+                    `Note that you can specify the empty object for this filter to make sure "${this.field.name}" has at least one item.`;
+        }
+        return undefined;
     }
 
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {

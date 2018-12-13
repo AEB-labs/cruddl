@@ -478,15 +478,15 @@
             },
             {
               "name": "description_some",
-              "description": null
+              "description": "Makes sure at least one of the items in \"description\" matches a certain filter.\n\nNote that you can specify the empty object for this filter to make sure \"description\" has at least one item."
             },
             {
               "name": "description_every",
-              "description": null
+              "description": "Makes sure all items in \"description\" match a certain filter."
             },
             {
               "name": "description_none",
-              "description": null
+              "description": "Makes sure none of the items in \"description\" match a certain filter.\n\nNote that you can specify the empty object for this filter to make sure \"description\" has no items."
             },
             {
               "name": "totalInvestment",
@@ -1266,15 +1266,15 @@
             },
             {
               "name": "serialNumbers_some",
-              "description": null
+              "description": "Makes sure at least one of the items in \"serialNumbers\" matches a certain filter.\n\nNote that you can specify the empty object for this filter to make sure \"serialNumbers\" has at least one item."
             },
             {
               "name": "serialNumbers_every",
-              "description": null
+              "description": "Makes sure all items in \"serialNumbers\" match a certain filter."
             },
             {
               "name": "serialNumbers_none",
-              "description": null
+              "description": "Makes sure none of the items in \"serialNumbers\" match a certain filter.\n\nNote that you can specify the empty object for this filter to make sure \"serialNumbers\" has no items."
             },
             {
               "name": "consignee",
@@ -1282,15 +1282,15 @@
             },
             {
               "name": "contentInfo_some",
-              "description": null
+              "description": "Makes sure at least one of the items in \"contentInfo\" matches a certain filter.\n\nNote that you can specify the empty object for this filter to make sure \"contentInfo\" has at least one item."
             },
             {
               "name": "contentInfo_every",
-              "description": null
+              "description": "Makes sure all items in \"contentInfo\" match a certain filter."
             },
             {
               "name": "contentInfo_none",
-              "description": null
+              "description": "Makes sure none of the items in \"contentInfo\" match a certain filter.\n\nNote that you can specify the empty object for this filter to make sure \"contentInfo\" has no items."
             },
             {
               "name": "dgInfo",
@@ -1298,27 +1298,27 @@
             },
             {
               "name": "items_some",
-              "description": null
+              "description": "Makes sure at least one of the items in \"items\" matches a certain filter.\n\nNote that you can specify the empty object for this filter to make sure \"items\" has at least one item."
             },
             {
               "name": "items_every",
-              "description": null
+              "description": "Makes sure all items in \"items\" match a certain filter."
             },
             {
               "name": "items_none",
-              "description": null
+              "description": "Makes sure none of the items in \"items\" match a certain filter.\n\nNote that you can specify the empty object for this filter to make sure \"items\" has no items."
             },
             {
               "name": "handlingUnits_some",
-              "description": null
+              "description": "Makes sure at least one of the items in \"handlingUnits\" matches a certain filter.\n\nNote that you can specify the empty object for this filter to make sure \"handlingUnits\" has at least one item."
             },
             {
               "name": "handlingUnits_every",
-              "description": null
+              "description": "Makes sure all items in \"handlingUnits\" match a certain filter."
             },
             {
               "name": "handlingUnits_none",
-              "description": null
+              "description": "Makes sure none of the items in \"handlingUnits\" match a certain filter.\n\nNote that you can specify the empty object for this filter to make sure \"handlingUnits\" has no items."
             },
             {
               "name": "destinationCountry",
@@ -2111,15 +2111,15 @@
             },
             {
               "name": "notices_some",
-              "description": null
+              "description": "Makes sure at least one of the items in \"notices\" matches a certain filter.\n\nNote that you can specify the empty object for this filter to make sure \"notices\" has at least one item."
             },
             {
               "name": "notices_every",
-              "description": null
+              "description": "Makes sure all items in \"notices\" match a certain filter."
             },
             {
               "name": "notices_none",
-              "description": null
+              "description": "Makes sure none of the items in \"notices\" match a certain filter.\n\nNote that you can specify the empty object for this filter to make sure \"notices\" has no items."
             },
             {
               "name": "AND",
@@ -2290,15 +2290,15 @@
             },
             {
               "name": "deliveries_some",
-              "description": null
+              "description": "Makes sure at least one of the items in \"deliveries\" matches a certain filter.\n\nNote that you can specify the empty object for this filter to make sure \"deliveries\" has at least one item."
             },
             {
               "name": "deliveries_every",
-              "description": null
+              "description": "Makes sure all items in \"deliveries\" match a certain filter."
             },
             {
               "name": "deliveries_none",
-              "description": null
+              "description": "Makes sure none of the items in \"deliveries\" match a certain filter.\n\nNote that you can specify the empty object for this filter to make sure \"deliveries\" has no items."
             },
             {
               "name": "AND",
@@ -2605,15 +2605,15 @@
             },
             {
               "name": "deliveries_some",
-              "description": null
+              "description": "Makes sure at least one of the items in \"deliveries\" matches a certain filter.\n\nNote that you can specify the empty object for this filter to make sure \"deliveries\" has at least one item."
             },
             {
               "name": "deliveries_every",
-              "description": null
+              "description": "Makes sure all items in \"deliveries\" match a certain filter."
             },
             {
               "name": "deliveries_none",
-              "description": null
+              "description": "Makes sure none of the items in \"deliveries\" match a certain filter.\n\nNote that you can specify the empty object for this filter to make sure \"deliveries\" has no items."
             },
             {
               "name": "AND",
