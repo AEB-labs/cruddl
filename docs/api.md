@@ -71,6 +71,8 @@ An entity can be filtered by all own fields and fields of nested/related entites
 
 Sibling filter fields are always combined using *AND*. Use the special fields `AND` and `OR` for complex filters.
 
+If you specify an empty object (`{}`) as a filter value, it matches all documents. You can combine this with the quantifier fields to e.g. find out whether a list is empty (`items_none: {}`) or is not empty (`items_some: {}`).
+
 ## Sorting
 
 Results can be sorted by all fields of the rootEntity including fields from nested/related objects with a cardinality of one.
