@@ -46,6 +46,11 @@ export interface ArangoDBConfig {
      * for queue wait time, response download etc.
      */
     readonly enableExperimentalArangoJSInstrumentation?: boolean
+
+    /**
+     * The memory limit in bytes to impose on ArangoDB queries (does not apply to the whole ArangoDB transaction)
+     */
+    queryMemoryLimit?: number
 }
 
 export function initDatabase(config: ArangoDBConfig): Database {
