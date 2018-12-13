@@ -22,6 +22,7 @@ const requestInstrumentationBodyKey = 'cruddlRequestInstrumentation';
 interface ArangoExecutionOptions {
     readonly queries: ReadonlyArray<AQLExecutableQuery>
     readonly enableProfiling: boolean
+    readonly queryMemoryLimit: number | undefined
 }
 
 export class ArangoDBAdapter implements DatabaseAdapter {
@@ -54,7 +55,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         // (https://github.com/istanbuljs/nyc) not to instrument the code with coverage instructions.
 
         /* istanbul ignore next */
-        const arangoExecutionFunction = function ({ queries, enableProfiling }: ArangoExecutionOptions) {
+        const arangoExecutionFunction = function ({ queries, enableProfiling, queryMemoryLimit }: ArangoExecutionOptions) {
             const db = require('@arangodb').db;
             const internal = enableProfiling ? require('internal') : undefined;
 
@@ -81,7 +82,8 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                     query: query.code,
                     bindVars,
                     options: {
-                        profile: enableProfiling
+                        profile: enableProfiling,
+                        memoryLimit: queryMemoryLimit
                     }
                 });
 
@@ -163,7 +165,8 @@ export class ArangoDBAdapter implements DatabaseAdapter {
 
         const options: ArangoExecutionOptions = {
             queries: executableQueries,
-            enableProfiling: recordTimings
+            enableProfiling: recordTimings,
+            queryMemoryLimit: this.config.queryMemoryLimit
         };
 
         const watch = new Watch();
