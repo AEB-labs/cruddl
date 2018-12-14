@@ -1,9 +1,15 @@
 language: node_js
 node_js:
   - '8'
+env:
+  matrix:
+    - ARANGO_VERSION=3.2
+    - ARANGO_VERSION=3.3
+    - ARANGO_VERSION=3.4
 before_install:
-  - docker pull arangodb/arangodb:3.2.11
-  - docker run -d -e ARANGO_NO_AUTH=1 -p 8529:8529 arangodb/arangodb:3.2.11
+  - docker run --name arangodb -p 127.0.0.1:8529:8529 -d -e ARANGO_NO_AUTH=1 arangodb:$ARANGO_VERSION
+  - timeout 10 docker logs --follow arangodb || true # wait until arangodb is started
+  - curl -L http://localhost:8529/_api/version
 install:
   - npm ci
 script:
