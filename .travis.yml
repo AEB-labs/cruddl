@@ -1,13 +1,19 @@
 language: node_js
 node_js:
   - '8'
+services:
+  - docker
+env:
+  matrix:
+    - ARANGO_VERSION=3.2
+    - ARANGO_VERSION=3.3
+    - ARANGO_VERSION=3.4
+before_install:
+  - docker run --name arangodb -p 127.0.0.1:8529:8529 -d -e ARANGO_NO_AUTH=1 arangodb:$ARANGO_VERSION
+  - timeout 10 docker logs --follow arangodb || true # wait until arangodb is started
+  - curl -L http://localhost:8529/_api/version
 install:
   - npm ci
-script:
-  - cd ./tools && ./setup-arangodb.sh > /dev/null
-  - npm run test:coverage
-  - npm run test:dropdb
-  - cd ..
 deploy:
   - provider: npm
     email: "Nils.Wenzler@aeb.com"
