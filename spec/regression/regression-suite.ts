@@ -1,15 +1,15 @@
-import { ArangoDBAdapter } from '../../src/database/arangodb';
+import * as fs from 'fs';
 import { graphql, GraphQLSchema, OperationDefinitionNode, parse } from 'graphql';
 import * as path from 'path';
-import * as fs from 'fs';
-import { createTempDatabase, initTestData, TestDataEnvironment } from './initialization';
 import * as stripJsonComments from 'strip-json-comments';
-import { Log4jsLoggerProvider } from '../helpers/log4js-logger-provider';
-import { loadProjectFromDir } from '../../src/project/project-from-fs';
-import { ProjectOptions } from '../../src/project/project';
-import { DatabaseAdapter } from '../../src/database/database-adapter';
 import { SchemaContext } from '../../src/config/global';
+import { ArangoDBAdapter } from '../../src/database/arangodb';
+import { DatabaseAdapter } from '../../src/database/database-adapter';
 import { InMemoryAdapter, InMemoryDB } from '../../src/database/inmemory';
+import { ProjectOptions } from '../../src/project/project';
+import { loadProjectFromDir } from '../../src/project/project-from-fs';
+import { Log4jsLoggerProvider } from '../helpers/log4js-logger-provider';
+import { createTempDatabase, initTestData, TestDataEnvironment } from './initialization';
 import deepEqual = require('deep-equal');
 
 interface TestResult {
@@ -20,12 +20,12 @@ interface TestResult {
 export interface RegressionSuiteOptions {
     saveActualAsExpected?: boolean
     trace?: boolean
-    database?: 'arangodb'|'in-memory';
+    database?: 'arangodb' | 'in-memory';
 }
 
 export class RegressionSuite {
-    private schema: GraphQLSchema|undefined;
-    private testDataEnvironment: TestDataEnvironment|undefined;
+    private schema: GraphQLSchema | undefined;
+    private testDataEnvironment: TestDataEnvironment | undefined;
     private _isSetUpClean = false;
     // TODO: this is ugly but provides a quick fix for things broken with the silentAdapter
     // TODO: implement better regression test architecture for different db types
@@ -41,8 +41,11 @@ export class RegressionSuite {
 
     private async setUp() {
         this.inMemoryDB = new InMemoryDB();
-        const warnLevelOptions = { loggerProvider: new Log4jsLoggerProvider('warn') };
-        const debugLevelOptions = { loggerProvider: new Log4jsLoggerProvider(this.options.trace ? 'trace' : 'warn', { 'schema-builder': 'warn'}) };
+        const generalOptions: ProjectOptions = {
+            getExecutionOptions: ({ context }) => ({ authRoles: context.authRoles })
+        };
+        const warnLevelOptions = { ...generalOptions, loggerProvider: new Log4jsLoggerProvider('warn') };
+        const debugLevelOptions = { ...generalOptions, loggerProvider: new Log4jsLoggerProvider(this.options.trace ? 'trace' : 'warn', { 'schema-builder': 'warn' }) };
 
         const project = await loadProjectFromDir(path.resolve(this.path, 'model'), debugLevelOptions);
         const adapter = await this.createAdapter(debugLevelOptions);

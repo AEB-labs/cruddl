@@ -1,27 +1,18 @@
 import { DocumentNode, getLocation, GraphQLError, GraphQLSchema, parse } from 'graphql';
 import { parse as JSONparse } from 'json-source-map';
 import { compact } from 'lodash';
-import {
-    Kind, load, YAMLAnchorReference, YamlMap, YAMLMapping, YAMLNode, YAMLScalar, YAMLSequence
-} from 'yaml-ast-parser';
+import { Kind, load, YAMLAnchorReference, YamlMap, YAMLMapping, YAMLNode, YAMLScalar, YAMLSequence } from 'yaml-ast-parser';
 import { globalContext } from '../config/global';
-import {
-    ParsedGraphQLProjectSource, ParsedObjectProjectSource, ParsedProject, ParsedProjectSource,
-    ParsedProjectSourceBaseKind
-} from '../config/parsed-project';
+import { ParsedGraphQLProjectSource, ParsedObjectProjectSource, ParsedProject, ParsedProjectSource, ParsedProjectSourceBaseKind } from '../config/parsed-project';
 import { DatabaseAdapter } from '../database/database-adapter';
-import {
-    createModel, Model, Severity, SourcePosition, ValidationContext, ValidationMessage, ValidationResult
-} from '../model';
+import { createModel, Model, Severity, SourcePosition, ValidationContext, ValidationMessage, ValidationResult } from '../model';
 import { MessageLocation } from '../model/';
 import { Project } from '../project/project';
 import { ProjectSource, SourceType } from '../project/source';
 import { SchemaGenerator } from '../schema-generation';
 import { flatMap, PlainObject } from '../utils/utils';
 import { validateParsedProjectSource, validatePostMerge, validateSource } from './preparation/ast-validator';
-import {
-    executePreMergeTransformationPipeline, executeSchemaTransformationPipeline, SchemaTransformationContext
-} from './preparation/transformation-pipeline';
+import { executePreMergeTransformationPipeline, executeSchemaTransformationPipeline, SchemaTransformationContext } from './preparation/transformation-pipeline';
 import { getLineEndPosition } from './schema-utils';
 import jsonLint = require('json-lint');
 import stripJsonComments = require('strip-json-comments');
@@ -30,7 +21,7 @@ import stripJsonComments = require('strip-json-comments');
  * Validates a project and thus determines whether createSchema() would succeed
  */
 export function validateSchema(project: Project): ValidationResult {
-    globalContext.registerContext({loggerProvider: project.loggerProvider});
+    globalContext.registerContext({ loggerProvider: project.loggerProvider });
     try {
         return validateAndPrepareSchema(project).validationResult;
     } finally {
@@ -39,7 +30,7 @@ export function validateSchema(project: Project): ValidationResult {
 }
 
 
-function validateAndPrepareSchema(project: Project): { validationResult: ValidationResult, model: Model } {
+export function validateAndPrepareSchema(project: Project): { validationResult: ValidationResult, model: Model } {
     const validationContext: ValidationContext = new ValidationContext();
 
     const sources = flatMap(project.sources, source => {
@@ -51,7 +42,7 @@ function validateAndPrepareSchema(project: Project): { validationResult: Validat
         return [source];
     });
 
-    const parsedProject = parseProject(new Project({...project.options, sources}), validationContext);
+    const parsedProject = parseProject(new Project({ ...project.options, sources }), validationContext);
 
     parsedProject.sources.forEach(parsedSource => validationContext.addMessage(...validateParsedProjectSource(parsedSource).messages));
 
@@ -65,7 +56,7 @@ function validateAndPrepareSchema(project: Project): { validationResult: Validat
     validationContext.addMessage(...result.messages);
     validationContext.addMessage(...model.validate().messages);
 
-    return {validationResult: validationContext.asResult(), model};
+    return { validationResult: validationContext.asResult(), model };
 }
 
 /**
@@ -75,11 +66,11 @@ function validateAndPrepareSchema(project: Project): { validationResult: Validat
  Use the optional context to inject your logging framework.
  */
 export function createSchema(project: Project, databaseAdapter: DatabaseAdapter): GraphQLSchema {
-    globalContext.registerContext({loggerProvider: project.loggerProvider});
+    globalContext.registerContext({ loggerProvider: project.loggerProvider });
     try {
         const logger = globalContext.loggerProvider.getLogger('schema-builder');
 
-        const {validationResult, model} = validateAndPrepareSchema(project);
+        const { validationResult, model } = validateAndPrepareSchema(project);
         if (validationResult.hasErrors()) {
             throw new Error('Project has errors:\n' + validationResult.toString());
         }
@@ -99,11 +90,10 @@ export function createSchema(project: Project, databaseAdapter: DatabaseAdapter)
     }
 }
 
-
 export function getModel(project: Project): Model {
-    globalContext.registerContext({loggerProvider: project.loggerProvider});
+    globalContext.registerContext({ loggerProvider: project.loggerProvider });
     try {
-        const {model} = validateAndPrepareSchema(project);
+        const { model } = validateAndPrepareSchema(project);
         return model;
     } finally {
         globalContext.unregisterContext();
@@ -111,7 +101,7 @@ export function getModel(project: Project): Model {
 }
 
 function mergeSchemaDefinition(parsedProject: ParsedProject): DocumentNode {
-    const emptyDocument: DocumentNode = {kind: 'Document', definitions: []};
+    const emptyDocument: DocumentNode = { kind: 'Document', definitions: [] };
     const graphqlDocuments = parsedProject.sources.map(s => {
         if (s.kind === ParsedProjectSourceBaseKind.GRAPHQL) {
             return s.document;
@@ -184,7 +174,7 @@ function parseJSONSource(projectSource: ProjectSource, validationContext: Valida
     }
 
     // perform general JSON syntax check
-    const lintResult = jsonLint(projectSource.body, {comments: true});
+    const lintResult = jsonLint(projectSource.body, { comments: true });
     if (lintResult.error) {
         let loc: MessageLocation | undefined;
         if (typeof lintResult.line == 'number' && typeof lintResult.i == 'number' && typeof lintResult.character == 'number') {
@@ -199,7 +189,7 @@ function parseJSONSource(projectSource: ProjectSource, validationContext: Valida
     const jsonPathLocationMap: { [path: string]: MessageLocation } = {};
 
     // whitespace: true replaces non-whitespace in comments with spaces so that the sourcemap still matches
-    const bodyWithoutComments = stripJsonComments(projectSource.body, {whitespace: true});
+    const bodyWithoutComments = stripJsonComments(projectSource.body, { whitespace: true });
     const parseResult = JSONparse(bodyWithoutComments);
     const pointers = parseResult.pointers;
 
@@ -300,7 +290,7 @@ function extractAllPaths(node: YAMLNode, curPath: ReadonlyArray<(string | number
             const mappingNode = node as YAMLMapping;
             if (mappingNode.value) {
                 return [
-                    {path: [...curPath, mappingNode.key.value], node: mappingNode},
+                    { path: [...curPath, mappingNode.key.value], node: mappingNode },
                     ...extractAllPaths(mappingNode.value, [...curPath, mappingNode.key.value])
                 ];
             }
@@ -308,9 +298,9 @@ function extractAllPaths(node: YAMLNode, curPath: ReadonlyArray<(string | number
         case Kind.SCALAR:
             const scalarNode = node as YAMLScalar;
             if (scalarNode.parent && scalarNode.parent.kind == Kind.SEQ) {
-                return [{path: curPath, node: scalarNode}];
+                return [{ path: curPath, node: scalarNode }];
             } else {
-                return [{path: curPath, node: scalarNode.parent}];
+                return [{ path: curPath, node: scalarNode.parent }];
             }
         case Kind.SEQ:
             const seqNode = node as YAMLSequence;
@@ -322,7 +312,7 @@ function extractAllPaths(node: YAMLNode, curPath: ReadonlyArray<(string | number
             const refNode = node as YAMLAnchorReference;
             return extractAllPaths(refNode.value, [...curPath]);
     }
-    return [{path: curPath, node: node}];
+    return [{ path: curPath, node: node }];
 }
 
 export function extractJSONFromYAML(root: YAMLNode, validationContext: ValidationContext, source: ProjectSource): PlainObject | undefined {

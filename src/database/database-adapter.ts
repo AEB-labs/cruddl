@@ -1,5 +1,6 @@
-import { QueryNode } from '../query-tree';
+import { ExecutionOptions } from '../execution/execution-options';
 import { Model } from '../model';
+import { QueryNode } from '../query-tree';
 
 /**
  * Times (in seconds) spent on specific parts of execution
@@ -11,7 +12,7 @@ export interface DatabaseAdapterTimings {
          */
         total: number;
 
-        readonly [key:string]: number;
+        readonly [key: string]: number;
     };
 
     readonly dbConnection: {
@@ -49,18 +50,73 @@ export interface ExecutionResult {
      * Times (in seconds) spent on specific parts of execution. Only included if recordTimings is set to true.
      */
     readonly timings?: DatabaseAdapterTimings
+
+    readonly plan?: ExecutionPlan
 }
 
-export interface ExecutionOptions {
+export interface ExecutionPlan {
+    readonly queryTree: QueryNode
+
+    readonly transactionSteps: ReadonlyArray<ExecutionPlanTransactionStep>
+}
+
+export interface ExecutionPlanTransactionStep {
+    readonly query: string
+    readonly boundValues: { [p: string]: any }
+
+    readonly plan: {
+        nodes: ReadonlyArray<{
+            type: string,
+            dependencies: ReadonlyArray<number>
+            id: number,
+            estimatedCost: number,
+            estimatedNrItems: number,
+            [key: string]: any
+        }>
+        rules: ReadonlyArray<any>,
+        collections: ReadonlyArray<{
+            name: string,
+            type: string
+        }>,
+        variables: ReadonlyArray<{
+            id: number,
+            name: string
+        }>,
+        estimatedCost: number,
+        estimatedNrItems: number,
+        initialize: boolean,
+        isModificationQuery: boolean
+    }
+
+    readonly stats: {
+        readonly nodes: ReadonlyArray<{
+            id: number,
+            calls: number,
+            items: number,
+            runtime: number
+        }>,
+        writesExecuted: number,
+        writesIgnored: number,
+        scannedFul: number,
+        scannedIndex: number,
+        filtered: number,
+        httpRequests: 0,
+        executionTime: number
+    }
+
+    readonly warnings: ReadonlyArray<{
+        code: string,
+        message: string
+    }>
+
+    readonly profile: { [key: string]: number }
+}
+
+export interface ExecutionArgs extends ExecutionOptions {
     /**
      * The query to execute
      */
     readonly queryTree: QueryNode;
-
-    /**
-     * If set to true, timings will be included in the result
-     */
-    readonly recordTimings?: boolean;
 }
 
 export interface DatabaseAdapter {
@@ -71,9 +127,9 @@ export interface DatabaseAdapter {
 
     /**
      * Executes a query (with more options)
-     * @param options
+     * @param args
      */
-    executeExt?(options: ExecutionOptions): Promise<ExecutionResult>;
+    executeExt?(args: ExecutionArgs): Promise<ExecutionResult>;
 
     /**
      * Performs schema migrations if necessary
