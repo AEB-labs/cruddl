@@ -1,12 +1,12 @@
 import { Database } from 'arangojs';
-import { start } from '../../../spec/dev/server';
 import { globalContext, SchemaContext } from '../../config/global';
 import { Logger } from '../../config/logging';
+import { ExecutionOptions } from '../../execution/execution-options';
 import { Model } from '../../model';
 import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS, QueryNode } from '../../query-tree';
 import { objectValues } from '../../utils/utils';
 import { getPreciseTime, Watch } from '../../utils/watch';
-import { DatabaseAdapter, ExecutionOptions, ExecutionResult } from '../database-adapter';
+import { DatabaseAdapter, ExecutionArgs, ExecutionPlan, ExecutionResult } from '../database-adapter';
 import { AQLCompoundQuery, AQLExecutableQuery } from './aql';
 import { getAQLQuery } from './aql-generator';
 import { RequestInstrumentation, RequestInstrumentationPhase } from './arangojs-instrumentation/config';
@@ -21,8 +21,7 @@ const requestInstrumentationBodyKey = 'cruddlRequestInstrumentation';
 
 interface ArangoExecutionOptions {
     readonly queries: ReadonlyArray<AQLExecutableQuery>
-    readonly enableProfiling: boolean
-    readonly queryMemoryLimit: number | undefined
+    readonly options: ExecutionOptions
 }
 
 export class ArangoDBAdapter implements DatabaseAdapter {
@@ -55,13 +54,15 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         // (https://github.com/istanbuljs/nyc) not to instrument the code with coverage instructions.
 
         /* istanbul ignore next */
-        const arangoExecutionFunction = function ({ queries, enableProfiling, queryMemoryLimit }: ArangoExecutionOptions) {
+        const arangoExecutionFunction = function ({ queries, options }: ArangoExecutionOptions) {
             const db = require('@arangodb').db;
+            const enableProfiling = options.recordTimings;
             const internal = enableProfiling ? require('internal') : undefined;
 
             function getPreciseTime() {
                 return internal.time();
             }
+
             const startTime = enableProfiling ? getPreciseTime() : 0;
 
             let validators: { [name: string]: (validationData: any, result: any) => void } = {};
@@ -69,6 +70,8 @@ export class ArangoDBAdapter implements DatabaseAdapter {
 
             let timings: { [key: string]: number } | undefined = enableProfiling ? {} : undefined;
             let timingsTotal = 0;
+
+            let plans: any[] = [];
 
             let resultHolder: { [p: string]: any } = {};
             queries.forEach(query => {
@@ -82,8 +85,8 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                     query: query.code,
                     bindVars,
                     options: {
-                        profile: enableProfiling,
-                        memoryLimit: queryMemoryLimit
+                        profile: options.recordPlan ? 2 : options.recordTimings ? 1 : 0,
+                        memoryLimit: options.queryMemoryLimit
                     }
                 });
 
@@ -97,6 +100,16 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                             timingsTotal += profile[key];
                         }
                     }
+                }
+
+                if (options.recordPlan) {
+                    const extra = executionResult.getExtra();
+                    plans.push({
+                        plan: extra.plan,
+                        stats: extra.stats,
+                        warnings: extra.warnings,
+                        profile: extra.profile
+                    });
                 }
 
                 if (query.resultName) {
@@ -125,10 +138,19 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                 timings.js = (getPreciseTime() - startTime) - timingsTotal;
             }
 
-            return {
+            const transactionResult = {
                 data,
-                timings
+                timings,
+                plans
             };
+
+            if (options.mutationMode === 'rollback') {
+                const error = new Error(`${JSON.stringify(transactionResult)}`);
+                error.name = 'RolledBackTransactionError';
+                throw error;
+            }
+
+            return transactionResult;
         };
 
         const validatorProviders = ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS.map(provider =>
@@ -145,7 +167,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         return result.data;
     }
 
-    async executeExt({ queryTree, recordTimings = false }: ExecutionOptions): Promise<ExecutionResult> {
+    async executeExt({ queryTree, ...options }: ExecutionArgs): Promise<ExecutionResult> {
         const prepStartTime = getPreciseTime();
         globalContext.registerContext(this.schemaContext);
         let executableQueries: AQLExecutableQuery[];
@@ -163,10 +185,12 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         const aqlPreparationTime = getPreciseTime() - prepStartTime;
         const dbStartTime = getPreciseTime();
 
-        const options: ArangoExecutionOptions = {
+        const args: ArangoExecutionOptions = {
             queries: executableQueries,
-            enableProfiling: recordTimings,
-            queryMemoryLimit: this.config.queryMemoryLimit
+            options: {
+                ...options,
+                queryMemoryLimit: options.queryMemoryLimit || this.config.queryMemoryLimit
+            }
         };
 
         const watch = new Watch();
@@ -178,17 +202,33 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             } as RequestInstrumentation;
         }
 
-        const { timings: databaseTimings, data } = await this.db.transaction(
-            {
-                read: aqlQuery.readAccessedCollections,
-                write: aqlQuery.writeAccessedCollections
-            },
-            this.arangoExecutionFunction,
-            options
-        );
+        let transactionResult;
+        try {
+            transactionResult = await this.db.transaction(
+                {
+                    read: aqlQuery.readAccessedCollections,
+                    write: aqlQuery.writeAccessedCollections
+                },
+                this.arangoExecutionFunction,
+                args
+            );
+        } catch (e) {
+            if (options.mutationMode === 'rollback' && e.message.startsWith('RolledBackTransactionError: ')) {
+                const valStr = e.message.substr('RolledBackTransactionError: '.length);
+                try {
+                    transactionResult = JSON.parse(valStr);
+                } catch (eParse) {
+                    throw new Error(`Error parsing result of rolled back transaction`);
+                }
+            } else {
+                throw e;
+            }
+        }
+
+        const { timings: databaseTimings, data, plans } = transactionResult;
 
         let timings;
-        if (recordTimings) {
+        if (options.recordTimings) {
             const dbConnectionTotal = getPreciseTime() - dbStartTime;
             const dbInternalTotal = objectValues<number>(databaseTimings).reduce((a, b) => a + b, 0);
             const queuing = watch.timings.queuing;
@@ -201,7 +241,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             timings = {
                 database: {
                     ...databaseTimings,
-                    total: dbInternalTotal,
+                    total: dbInternalTotal
                 },
                 dbConnection: {
                     queuing,
@@ -219,9 +259,26 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                 }
             };
         }
+
+        let plan: ExecutionPlan | undefined;
+        if (options.recordPlan && plans) {
+            plan = {
+                queryTree,
+                transactionSteps: executableQueries.map((q, index) => ({
+                    query: q.code,
+                    boundValues: q.boundValues,
+                    plan: plans[index].plan,
+                    stats: plans[index].stats,
+                    warnings: plans[index].warnings,
+                    profile: plans[index].profile
+                }))
+            }
+        }
+
         return {
             data,
-            timings
+            timings,
+            plan
         };
     }
 
