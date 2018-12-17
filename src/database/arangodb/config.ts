@@ -48,7 +48,9 @@ export interface ArangoDBConfig {
     readonly enableExperimentalArangoJSInstrumentation?: boolean
 
     /**
-     * The memory limit in bytes to impose on ArangoDB queries (does not apply to the whole ArangoDB transaction)
+     * The memory limit in bytes to impose on ArangoDB queries (does not apply to the whole ArangoDB transaction).
+     *
+     * Can be overridden with the queryMemoryLimit option in ExecutionOptions
      */
     queryMemoryLimit?: number
 }

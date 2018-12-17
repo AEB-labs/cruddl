@@ -1,3 +1,6 @@
+import * as bodyParser from 'body-parser';
+import * as cors from 'cors';
+import * as express from 'express';
 import { GraphQLServer } from 'graphql-yoga';
 import * as path from 'path';
 import { ArangoDBAdapter } from '../..';
@@ -6,15 +9,19 @@ import { InMemoryAdapter } from '../../src/database/inmemory';
 import { getMetaSchema } from '../../src/meta-schema/meta-schema';
 import { Model } from '../../src/model';
 import { loadProjectFromDir } from '../../src/project/project-from-fs';
+import { Log4jsLoggerProvider } from '../helpers/log4js-logger-provider';
+import { createFastApp } from './fast-server';
 
 const port = 3000;
 const databaseName = 'cruddl';
 const databaseURL = 'http://root:@localhost:8529';
 
 export async function start() {
+    const loggerProvider = new Log4jsLoggerProvider('trace');
+
     let db;
     if (process.argv.includes('--db=in-memory')) {
-        db = new InMemoryAdapter();
+        db = new InMemoryAdapter(undefined, { loggerProvider });
     } else {
         db = new ArangoDBAdapter({
             databaseName,
@@ -22,11 +29,20 @@ export async function start() {
             autocreateIndices: true,
             autoremoveIndices: true,
             enableExperimentalArangoJSInstrumentation: true
-        });
+        }, { loggerProvider });
     }
 
-    const project = await loadProjectFromDir(path.resolve(__dirname, './model'), {
-        profileConsumer: profile => console.log(`${profile.operation.operation} ${profile.operation.name ? profile.operation.name.value : '<anonymous>'}: ${JSON.stringify(profile.timings, undefined, '  ')}`)
+    const project = await loadProjectFromDir(path.resolve(__dirname, './endress-hauser'), {
+        profileConsumer: profile => {
+            console.log(`${profile.operation.operation} ${profile.operation.name ? profile.operation.name.value : '<anonymous>'}: ${JSON.stringify(profile.timings, undefined, '  ')}`);
+        },
+        getExecutionOptions: () => ({
+            authRoles: ['allusers', 'logistics-reader', 'system'],
+            recordTimings: true,
+            recordPlan: true,
+            mutationMode: 'rollback'
+        }),
+        loggerProvider
     });
     const schema = project.createSchema(db);
 
@@ -36,9 +52,15 @@ export async function start() {
     logger.info('Schema is up to date');
 
     const server = new GraphQLServer({
-        schema: schema as any, // yoga declares a direct dependency to @types/graphql and it's 0.13
-        context: () => ({ authRoles: ['allusers', 'logistics-reader', 'system'] })
+        schema: schema as any // yoga declares a direct dependency to @types/graphql and it's 0.13
     });
+
+    const fastServer = express();
+    fastServer.use(cors());
+    fastServer.use(bodyParser.json());
+    fastServer.post('/', createFastApp(project, db));
+    fastServer.listen(3002);
+
     await server.start({ port });
     logger.info(`Server started on http://localhost:${port}`);
 

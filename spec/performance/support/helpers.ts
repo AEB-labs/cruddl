@@ -1,13 +1,13 @@
-import { createTempDatabase } from '../../regression/initialization';
 import { Database } from 'arangojs';
-import { range } from '../../../src/utils/utils';
-import { ArangoDBAdapter } from '../../../src/database/arangodb';
 import { graphql, GraphQLSchema } from 'graphql';
 import * as path from 'path';
 import { SchemaContext } from '../../../src/config/global';
-import { Log4jsLoggerProvider } from '../../helpers/log4js-logger-provider';
-import { loadProjectFromDir } from '../../../src/project/project-from-fs';
+import { ArangoDBAdapter } from '../../../src/database/arangodb';
 import { Project } from '../../../src/project/project';
+import { loadProjectFromDir } from '../../../src/project/project-from-fs';
+import { range } from '../../../src/utils/utils';
+import { Log4jsLoggerProvider } from '../../helpers/log4js-logger-provider';
+import { createTempDatabase } from '../../regression/initialization';
 
 // arangojs typings for this are completely broken
 export const aql: (template: TemplateStringsArray, ...args: any[]) => any = require('arangojs').aql;
@@ -16,12 +16,13 @@ const MODEL_PATH = path.resolve(__dirname, '../../regression/papers/model');
 
 export interface TestEnvironment {
     getDB(): Database;
-    exec(graphql: string, variables?: {[name: string]: any}): any
+
+    exec(graphql: string, variables?: { [name: string]: any }): any
 }
 
-const schemaContext: SchemaContext = { loggerProvider: new Log4jsLoggerProvider('warn') };
+const schemaContext: SchemaContext = { loggerProvider: new Log4jsLoggerProvider('warn'), getExecutionOptions: ({ context }) => ({ authRoles: context.authRoles }) };
 
-export async function createTestProject(modelPath: string = MODEL_PATH): Promise<{project: Project, schema: GraphQLSchema}> {
+export async function createTestProject(modelPath: string = MODEL_PATH): Promise<{ project: Project, schema: GraphQLSchema }> {
     const project = await loadProjectFromDir(modelPath, schemaContext);
     const dbConfig = await createTempDatabase();
     const dbAdapter = new ArangoDBAdapter(dbConfig, schemaContext);
@@ -38,10 +39,10 @@ export async function initEnvironment(): Promise<TestEnvironment> {
 
     return {
         getDB() {
-            return new Database(dbConfig).useDatabase(dbConfig.databaseName)
+            return new Database(dbConfig).useDatabase(dbConfig.databaseName);
         },
         async exec(gql, variables) {
-            const res = await graphql(schema, gql, {} /* root */, {authRoles: ['admin']}, variables);
+            const res = await graphql(schema, gql, {} /* root */, { authRoles: ['admin'] }, variables);
             if (res.errors) {
                 throw new Error(JSON.stringify(res.errors));
             }
@@ -67,7 +68,7 @@ export function createLargePaper(sizeFactor: number): any {
         title: 'A paper',
         literatureReferences: range(sizeSqrt).map(() => createLiteratureReference(sizeSqrt)),
         tags: range(sizeFactor).map(index => `Tag ${index}`)
-    }
+    };
 }
 
 export function createUser() {

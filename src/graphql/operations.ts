@@ -1,6 +1,6 @@
 import { DocumentNode, OperationDefinitionNode } from 'graphql';
 
-export function extractOperation(document: DocumentNode, operationName: string|undefined) {
+export function extractOperation(document: DocumentNode, operationName: string|undefined|null) {
     let ops = document.definitions.filter(doc => doc.kind == 'OperationDefinition') as OperationDefinitionNode[];
     if (!ops.length) {
         throw new Error(`The document does not define any operations`);

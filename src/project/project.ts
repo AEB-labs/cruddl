@@ -2,25 +2,27 @@ import { GraphQLSchema, OperationDefinitionNode } from 'graphql';
 import memorize from 'memorize-decorator';
 import { isArray } from 'util';
 import { DEFAULT_LOGGER_PROVIDER, LoggerProvider } from '../config/logging';
-import { DatabaseAdapter, DatabaseAdapterTimings } from '../database/database-adapter';
+import { DatabaseAdapter, DatabaseAdapterTimings, ExecutionPlan } from '../database/database-adapter';
+import { ExecutionOptions, ExecutionOptionsCallbackArgs } from '../execution/execution-options';
+import { SchemaExecutor } from '../execution/schema-executor';
 import { getMetaSchema } from '../meta-schema/meta-schema';
 import { Model, ValidationResult } from '../model';
 import { createSchema, getModel, validateSchema } from '../schema/schema-builder';
 import { ProjectSource, SourceLike, SourceType } from './source';
 
 export interface RequestProfile {
-    readonly timings: DatabaseAdapterTimings;
+    readonly timings?: DatabaseAdapterTimings;
+    readonly plan?: ExecutionPlan;
     readonly operation: OperationDefinitionNode;
     readonly context: any;
 }
 
 export interface ProjectOptions {
-    /**
-     * This namespace applies to all type operations for which no namespace is defined.
-     */
     readonly loggerProvider?: LoggerProvider;
 
     readonly profileConsumer?: (profile: RequestProfile) => void;
+
+    readonly getExecutionOptions?: (args: ExecutionOptionsCallbackArgs) => ExecutionOptions;
 }
 
 export interface ProjectConfig extends ProjectOptions {
@@ -42,7 +44,7 @@ export class Project {
 
     readonly loggerProvider: LoggerProvider;
 
-    readonly options: ProjectOptions
+    readonly options: ProjectOptions;
 
     constructor(config: ProjectConfig | SourceLike[]) {
         if (isArray(config)) {
@@ -52,7 +54,8 @@ export class Project {
         this.loggerProvider = config.loggerProvider || DEFAULT_LOGGER_PROVIDER;
         this.options = {
             loggerProvider: config.loggerProvider,
-            profileConsumer: config.profileConsumer
+            profileConsumer: config.profileConsumer,
+            getExecutionOptions: config.getExecutionOptions
         };
     }
 
@@ -78,6 +81,13 @@ export class Project {
      */
     createSchema(databaseAdapter: DatabaseAdapter): GraphQLSchema {
         return createSchema(this, databaseAdapter);
+    }
+
+    /**
+     * Experimental API, lacks of significant features like validation or introspection
+     */
+    createSchemaExecutor(databaseAdapter: DatabaseAdapter): SchemaExecutor {
+        return new SchemaExecutor(this, databaseAdapter);
     }
 
     /**

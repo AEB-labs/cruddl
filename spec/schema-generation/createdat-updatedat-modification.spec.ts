@@ -1,9 +1,9 @@
+import { expect } from 'chai';
 import { execute, graphql, parse } from 'graphql';
-import { sleep } from '../../src/utils/utils';
+import { InMemoryAdapter } from '../../src/database/inmemory';
 import { Project } from '../../src/project/project';
 import { ProjectSource } from '../../src/project/source';
-import { expect } from 'chai';
-import { InMemoryAdapter } from '../../src/database/inmemory';
+import { sleep } from '../../src/utils/utils';
 
 describe('mutation', () => {
 
@@ -76,16 +76,16 @@ describe('mutation', () => {
     `;
 
     const context = {
-        "authRoles": [ "allusers" ]
+        'authRoles': ['allusers']
     };
 
     function expectNoErrors(result: any) {
         expect(result.errors, result.errors).to.be.undefined;
     }
 
-    it('sets createdAt and updatedAt correctly', async() => {
+    it('sets createdAt and updatedAt correctly', async () => {
         // on a freshly created delivery
-        const project = new Project([ new ProjectSource('schema.graphql', astSchema) ]);
+        const project = new Project({ sources: [new ProjectSource('schema.graphql', astSchema)], getExecutionOptions: ({ context }) => ({ authRoles: context.authRoles })});
         const db = new InMemoryAdapter();
         const schema = project.createSchema(db);
         await db.updateSchema(project.getModel());
@@ -153,5 +153,6 @@ describe('mutation', () => {
         expect(selectCreatedAt).to.equal(createCreatedAt);
         // former result is persisted
         expect(selectUpdatedAt).to.equal(updateUpdatedAt);
+    })
+        ;
     });
-});
