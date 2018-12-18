@@ -204,15 +204,13 @@ describe('RootEntityType', () => {
                 ]
             }, model);
 
-            expect(type.indices).to.have.lengthOf(4);
-            expect(type.indices[0].fields.map(f => f.dotSeparatedPath)).to.deep.equal(['isShipped', 'id']);
+            expect(type.indices).to.have.lengthOf(3);
+            expect(type.indices[0].fields.map(f => f.dotSeparatedPath)).to.deep.equal(['isShipped']);
             expect(type.indices[0].unique).to.equal(false);
             expect(type.indices[1].fields.map(f => f.dotSeparatedPath)).to.deep.equal(['deliveryNumber']);
             expect(type.indices[1].unique).to.equal(true);
-            expect(type.indices[2].fields.map(f => f.dotSeparatedPath)).to.deep.equal(['deliveryNumber', 'id']);
+            expect(type.indices[2].fields.map(f => f.dotSeparatedPath)).to.deep.equal(['id']);
             expect(type.indices[2].unique).to.equal(false);
-            expect(type.indices[3].fields.map(f => f.dotSeparatedPath)).to.deep.equal(['id']);
-            expect(type.indices[3].unique).to.equal(false);
         });
 
         it('does not add a unique index if it already exists', () => {
@@ -234,13 +232,11 @@ describe('RootEntityType', () => {
                 ]
             }, model);
 
-            expect(type.indices).to.have.lengthOf(3);
+            expect(type.indices).to.have.lengthOf(2);
             expect(type.indices[0].fields.map(f => f.dotSeparatedPath)).to.deep.equal(['deliveryNumber']);
             expect(type.indices[0].unique).to.equal(true);
-            expect(type.indices[1].fields.map(f => f.dotSeparatedPath)).to.deep.equal(['deliveryNumber', 'id']);
+            expect(type.indices[1].fields.map(f => f.dotSeparatedPath)).to.deep.equal(['id']);
             expect(type.indices[1].unique).to.equal(false);
-            expect(type.indices[2].fields.map(f => f.dotSeparatedPath)).to.deep.equal(['id']);
-            expect(type.indices[2].unique).to.equal(false);
         });
 
         it('adds an index if the existing one is not unique', () => {
@@ -263,9 +259,9 @@ describe('RootEntityType', () => {
 
             expect(type.indices).to.have.lengthOf(3);
             expect(type.indices[0].fields.map(f => f.dotSeparatedPath)).to.deep.equal(['deliveryNumber']);
-            expect(type.indices[0].unique).to.equal(true);
-            expect(type.indices[1].fields.map(f => f.dotSeparatedPath)).to.deep.equal(['deliveryNumber', 'id']);
-            expect(type.indices[1].unique).to.equal(false);
+            expect(type.indices[0].unique).to.equal(false);
+            expect(type.indices[1].fields.map(f => f.dotSeparatedPath)).to.deep.equal(['deliveryNumber']);
+            expect(type.indices[1].unique).to.equal(true);
             expect(type.indices[2].fields.map(f => f.dotSeparatedPath)).to.deep.equal(['id']);
             expect(type.indices[2].unique).to.equal(false);
         });
