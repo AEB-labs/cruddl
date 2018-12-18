@@ -38,9 +38,7 @@ export async function start() {
         },
         getExecutionOptions: () => ({
             authRoles: ['allusers', 'logistics-reader', 'system'],
-            recordTimings: true,
-            recordPlan: true,
-            mutationMode: 'rollback'
+            recordTimings: true
         }),
         loggerProvider
     });
