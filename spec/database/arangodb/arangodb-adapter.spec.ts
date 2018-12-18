@@ -22,6 +22,8 @@ describe('ArangoDBAdapter', () => {
 
             const adapter = new ArangoDBAdapter(await createTempDatabase());
             const db = getTempDatabase();
+            const dbVersion = await db.version();
+            const isArangoDB34 = dbVersion.version.startsWith('3.4.');
 
             await db.collection('deliveries').create({});
 
@@ -53,12 +55,7 @@ describe('ArangoDBAdapter', () => {
             await adapter.updateSchema(model);
 
             const indices = await db.collection('deliveries').indexes();
-            expect(indices.map((index: any) => ({
-                fields: index.fields,
-                sparse: index.sparse,
-                type: index.type,
-                unique: index.unique
-            }))).to.deep.equalInAnyOrder([
+            const expectedIndices = [
                 {
                     fields: [
                         '_key'
@@ -69,8 +66,7 @@ describe('ArangoDBAdapter', () => {
                 },
                 {
                     fields: [
-                        'isShipped',
-                        '_key' // for absolute ordering
+                        'isShipped'
                     ],
                     sparse: false,
                     type: 'persistent',
@@ -78,18 +74,7 @@ describe('ArangoDBAdapter', () => {
                 },
                 {
                     fields: [
-                        'itemCount',
-                        '_key' // for absolute ordering
-                    ],
-                    sparse: false,
-                    type: 'persistent',
-                    unique: false
-                },
-                // this one is for @reference lookup which needs a non-sparse (see shouldUseWorkaroundForSparseIndices)
-                {
-                    fields: [
-                        'deliveryNumber',
-                        '_key' // for absolute ordering
+                        'itemCount'
                     ],
                     sparse: false,
                     type: 'persistent',
@@ -111,8 +96,26 @@ describe('ArangoDBAdapter', () => {
                     sparse: true,
                     type: 'persistent',
                     unique: true
-                },
-            ]);
+                }
+            ];
+            if (!isArangoDB34) {
+                expectedIndices.push(
+                    // this one is for @reference lookup which needs a non-sparse (see shouldUseWorkaroundForSparseIndices)
+                    {
+                        fields: [
+                            'deliveryNumber'
+                        ],
+                        sparse: false,
+                        type: 'persistent',
+                        unique: false
+                    });
+            }
+            expect(expectedIndices.map((index: any) => ({
+                fields: index.fields,
+                sparse: index.sparse,
+                type: index.type,
+                unique: index.unique
+            }))).to.deep.equalInAnyOrder(expectedIndices);
 
             const indicesOnOtherCollection = await db.collection('second').indexes();
             expect(indicesOnOtherCollection.map((index: any) => ({

@@ -32,7 +32,6 @@ export class RootEntityType extends ObjectTypeBase {
 
     @memorize()
     get indices(): ReadonlyArray<Index> {
-        const identifyingSuffixField = this.discriminatorField;
         const indexConfigs = this.input.indices ? [...this.input.indices] : [];
 
         // @key implies a unique index
@@ -44,9 +43,7 @@ export class RootEntityType extends ObjectTypeBase {
             }
         }
 
-        const indices = flatMap(indexConfigs,
-                index => addIdentifyingSuffixIfNeeded(index, identifyingSuffixField)
-                    .map(config => new Index(config, this)));
+        const indices = indexConfigs.map(config => new Index(config, this));
 
         if (this.discriminatorField !== this.keyField) {
             if (!indices.some(index => index.fields.length === 1 && index.fields[0].field === this.discriminatorField)) {
@@ -225,39 +222,3 @@ const systemFieldInputs: ReadonlyArray<FieldConfig> = [
         description: 'The instant this object has been updated the last time (not including relation updates)'
     }
 ];
-
-/**
- * Adds the given field to the index field if it's safe to do so and not already present
- *
- * This promotes the index to be used for an orderBy that has been enriched with this field for absolute order
- */
-function addIdentifyingSuffixIfNeeded(index: IndexDefinitionConfig, identifyingSuffixField: Field): ReadonlyArray<IndexDefinitionConfig> {
-    if (index.fields.some(f => f === identifyingSuffixField.name)) {
-        // already includes the field
-        return [index];
-    }
-    if (index.unique) {
-        // we are not allowed to add something here
-        // if the field would be required, we would not need the identifying suffix here, but for now, all fields are
-        // optional. In this case, we still need to suffix the identifying field because we could have NULL cases where
-        // the order would be non-absolute otherwise.
-        return [
-            index, {
-                unique: false,
-                fields: [
-                    ...index.fields,
-                    identifyingSuffixField.name
-                ]
-            }
-        ];
-    }
-    return [
-        {
-            ...index,
-            fields: [
-                ...index.fields,
-                identifyingSuffixField.name
-            ]
-        }
-    ];
-}
