@@ -157,11 +157,11 @@
           "inputFields": [
             {
               "name": "languageIsoCode",
-              "description": null
+              "description": "Checks if `languageIsoCode` equals a specified string, case-sensitively.\n\nIf an index exists on `languageIsoCode`, it can be used.\n\nSee also `like` for a case-insensitive filter."
             },
             {
               "name": "languageIsoCode_not",
-              "description": null
+              "description": "Checks if `languageIsoCode` does not equal a specified string, case-sensitively."
             },
             {
               "name": "languageIsoCode_in",
@@ -189,7 +189,7 @@
             },
             {
               "name": "languageIsoCode_contains",
-              "description": null
+              "description": "Checks if `languageIsoCode` contains a specified string, case-sensitively."
             },
             {
               "name": "languageIsoCode_not_contains",
@@ -197,7 +197,7 @@
             },
             {
               "name": "languageIsoCode_starts_with",
-              "description": null
+              "description": "Checks if `languageIsoCode` starts with a specified string, case-sensitively.\n\nNever uses an index. Consider using `like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
             },
             {
               "name": "languageIsoCode_not_starts_with",
@@ -205,7 +205,7 @@
             },
             {
               "name": "languageIsoCode_ends_with",
-              "description": null
+              "description": "Checks if `languageIsoCode` ends with a specified string, case-sensitively."
             },
             {
               "name": "languageIsoCode_not_ends_with",
@@ -213,19 +213,19 @@
             },
             {
               "name": "languageIsoCode_like",
-              "description": null
+              "description": "Matches `languageIsoCode` against a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)\n\nIf an index exists on `languageIsoCode`, it can be used for the literal prefix (the part until the first placeholder)."
             },
             {
               "name": "languageIsoCode_not_like",
-              "description": null
+              "description": "Checks if `languageIsoCode` does *not* match a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)"
             },
             {
               "name": "translation",
-              "description": null
+              "description": "Checks if `translation` equals a specified string, case-sensitively.\n\nIf an index exists on `translation`, it can be used.\n\nSee also `like` for a case-insensitive filter."
             },
             {
               "name": "translation_not",
-              "description": null
+              "description": "Checks if `translation` does not equal a specified string, case-sensitively."
             },
             {
               "name": "translation_in",
@@ -253,7 +253,7 @@
             },
             {
               "name": "translation_contains",
-              "description": null
+              "description": "Checks if `translation` contains a specified string, case-sensitively."
             },
             {
               "name": "translation_not_contains",
@@ -261,7 +261,7 @@
             },
             {
               "name": "translation_starts_with",
-              "description": null
+              "description": "Checks if `translation` starts with a specified string, case-sensitively.\n\nNever uses an index. Consider using `like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
             },
             {
               "name": "translation_not_starts_with",
@@ -269,7 +269,7 @@
             },
             {
               "name": "translation_ends_with",
-              "description": null
+              "description": "Checks if `translation` ends with a specified string, case-sensitively."
             },
             {
               "name": "translation_not_ends_with",
@@ -277,11 +277,11 @@
             },
             {
               "name": "translation_like",
-              "description": null
+              "description": "Matches `translation` against a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)\n\nIf an index exists on `translation`, it can be used for the literal prefix (the part until the first placeholder)."
             },
             {
               "name": "translation_not_like",
-              "description": null
+              "description": "Checks if `translation` does *not* match a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)"
             },
             {
               "name": "AND",
@@ -342,107 +342,107 @@
           "inputFields": [
             {
               "name": "id",
-              "description": null
+              "description": "Checks if `id` equals a specified value.\n\nIf an index exists on `id`, it can be used.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_not",
-              "description": null
+              "description": "Checks if `id` does not equal a specified value\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_in",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_not_in",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_lt",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_lte",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_gt",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_gte",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "createdAt",
-              "description": null
+              "description": "Checks if `createdAt` equals a specified value.\n\nIf an index exists on `createdAt`, it can be used.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_not",
-              "description": null
+              "description": "Checks if `createdAt` does not equal a specified value\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_in",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "createdAt_not_in",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "createdAt_lt",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "createdAt_lte",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "createdAt_gt",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "createdAt_gte",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "updatedAt",
-              "description": null
+              "description": "Checks if `updatedAt` equals a specified value.\n\nIf an index exists on `updatedAt`, it can be used.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_not",
-              "description": null
+              "description": "Checks if `updatedAt` does not equal a specified value\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_in",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_not_in",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_lt",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_lte",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_gt",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_gte",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "isoCode",
-              "description": null
+              "description": "Checks if `isoCode` equals a specified string, case-sensitively.\n\nIf an index exists on `isoCode`, it can be used.\n\nSee also `like` for a case-insensitive filter."
             },
             {
               "name": "isoCode_not",
-              "description": null
+              "description": "Checks if `isoCode` does not equal a specified string, case-sensitively."
             },
             {
               "name": "isoCode_in",
@@ -470,7 +470,7 @@
             },
             {
               "name": "isoCode_contains",
-              "description": null
+              "description": "Checks if `isoCode` contains a specified string, case-sensitively."
             },
             {
               "name": "isoCode_not_contains",
@@ -478,7 +478,7 @@
             },
             {
               "name": "isoCode_starts_with",
-              "description": null
+              "description": "Checks if `isoCode` starts with a specified string, case-sensitively.\n\nNever uses an index. Consider using `like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
             },
             {
               "name": "isoCode_not_starts_with",
@@ -486,7 +486,7 @@
             },
             {
               "name": "isoCode_ends_with",
-              "description": null
+              "description": "Checks if `isoCode` ends with a specified string, case-sensitively."
             },
             {
               "name": "isoCode_not_ends_with",
@@ -494,31 +494,31 @@
             },
             {
               "name": "isoCode_like",
-              "description": null
+              "description": "Matches `isoCode` against a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)\n\nIf an index exists on `isoCode`, it can be used for the literal prefix (the part until the first placeholder)."
             },
             {
               "name": "isoCode_not_like",
-              "description": null
+              "description": "Checks if `isoCode` does *not* match a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)"
             },
             {
               "name": "description_some",
-              "description": "Makes sure at least one of the items in \"description\" matches a certain filter.\n\nNote that you can specify the empty object for this filter to make sure \"description\" has at least one item."
+              "description": "Makes sure at least one of the items in \"description\" matches a certain filter.\n\nNote that you can specify the empty object for this filter to make sure `description` has at least one item."
             },
             {
               "name": "description_every",
-              "description": "Makes sure all items in \"description\" match a certain filter."
+              "description": "Makes sure all items in `description` match a certain filter."
             },
             {
               "name": "description_none",
-              "description": "Makes sure none of the items in \"description\" match a certain filter.\n\nNote that you can specify the empty object for this filter to make sure \"description\" has no items."
+              "description": "Makes sure none of the items in `description` match a certain filter.\n\nNote that you can specify the empty object for this filter to make sure `description` has no items."
             },
             {
               "name": "totalInvestment",
-              "description": null
+              "description": "Checks if `totalInvestment` equals a specified string, case-sensitively.\n\nIf an index exists on `totalInvestment`, it can be used.\n\nSee also `like` for a case-insensitive filter."
             },
             {
               "name": "totalInvestment_not",
-              "description": null
+              "description": "Checks if `totalInvestment` does not equal a specified string, case-sensitively."
             },
             {
               "name": "totalInvestment_in",
@@ -546,7 +546,7 @@
             },
             {
               "name": "totalInvestment_contains",
-              "description": null
+              "description": "Checks if `totalInvestment` contains a specified string, case-sensitively."
             },
             {
               "name": "totalInvestment_not_contains",
@@ -554,7 +554,7 @@
             },
             {
               "name": "totalInvestment_starts_with",
-              "description": null
+              "description": "Checks if `totalInvestment` starts with a specified string, case-sensitively.\n\nNever uses an index. Consider using `like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
             },
             {
               "name": "totalInvestment_not_starts_with",
@@ -562,7 +562,7 @@
             },
             {
               "name": "totalInvestment_ends_with",
-              "description": null
+              "description": "Checks if `totalInvestment` ends with a specified string, case-sensitively."
             },
             {
               "name": "totalInvestment_not_ends_with",
@@ -570,11 +570,11 @@
             },
             {
               "name": "totalInvestment_like",
-              "description": null
+              "description": "Matches `totalInvestment` against a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)\n\nIf an index exists on `totalInvestment`, it can be used for the literal prefix (the part until the first placeholder)."
             },
             {
               "name": "totalInvestment_not_like",
-              "description": null
+              "description": "Checks if `totalInvestment` does *not* match a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)"
             },
             {
               "name": "AND",
@@ -772,107 +772,107 @@
           "inputFields": [
             {
               "name": "id",
-              "description": null
+              "description": "Checks if `id` equals a specified value.\n\nIf an index exists on `id`, it can be used.\n\nAn auto-generated string that identifies this child entity uniquely within this collection of child entities"
             },
             {
               "name": "id_not",
-              "description": null
+              "description": "Checks if `id` does not equal a specified value\n\nAn auto-generated string that identifies this child entity uniquely within this collection of child entities"
             },
             {
               "name": "id_in",
-              "description": null
+              "description": "An auto-generated string that identifies this child entity uniquely within this collection of child entities"
             },
             {
               "name": "id_not_in",
-              "description": null
+              "description": "An auto-generated string that identifies this child entity uniquely within this collection of child entities"
             },
             {
               "name": "id_lt",
-              "description": null
+              "description": "An auto-generated string that identifies this child entity uniquely within this collection of child entities"
             },
             {
               "name": "id_lte",
-              "description": null
+              "description": "An auto-generated string that identifies this child entity uniquely within this collection of child entities"
             },
             {
               "name": "id_gt",
-              "description": null
+              "description": "An auto-generated string that identifies this child entity uniquely within this collection of child entities"
             },
             {
               "name": "id_gte",
-              "description": null
+              "description": "An auto-generated string that identifies this child entity uniquely within this collection of child entities"
             },
             {
               "name": "createdAt",
-              "description": null
+              "description": "Checks if `createdAt` equals a specified value.\n\nIf an index exists on `createdAt`, it can be used.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_not",
-              "description": null
+              "description": "Checks if `createdAt` does not equal a specified value\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_in",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "createdAt_not_in",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "createdAt_lt",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "createdAt_lte",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "createdAt_gt",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "createdAt_gte",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "updatedAt",
-              "description": null
+              "description": "Checks if `updatedAt` equals a specified value.\n\nIf an index exists on `updatedAt`, it can be used.\n\nThe instant this object has been updated the last time"
             },
             {
               "name": "updatedAt_not",
-              "description": null
+              "description": "Checks if `updatedAt` does not equal a specified value\n\nThe instant this object has been updated the last time"
             },
             {
               "name": "updatedAt_in",
-              "description": null
+              "description": "The instant this object has been updated the last time"
             },
             {
               "name": "updatedAt_not_in",
-              "description": null
+              "description": "The instant this object has been updated the last time"
             },
             {
               "name": "updatedAt_lt",
-              "description": null
+              "description": "The instant this object has been updated the last time"
             },
             {
               "name": "updatedAt_lte",
-              "description": null
+              "description": "The instant this object has been updated the last time"
             },
             {
               "name": "updatedAt_gt",
-              "description": null
+              "description": "The instant this object has been updated the last time"
             },
             {
               "name": "updatedAt_gte",
-              "description": null
+              "description": "The instant this object has been updated the last time"
             },
             {
               "name": "itemNumber",
-              "description": null
+              "description": "Checks if `itemNumber` equals a specified string, case-sensitively.\n\nIf an index exists on `itemNumber`, it can be used.\n\nSee also `like` for a case-insensitive filter."
             },
             {
               "name": "itemNumber_not",
-              "description": null
+              "description": "Checks if `itemNumber` does not equal a specified string, case-sensitively."
             },
             {
               "name": "itemNumber_in",
@@ -900,7 +900,7 @@
             },
             {
               "name": "itemNumber_contains",
-              "description": null
+              "description": "Checks if `itemNumber` contains a specified string, case-sensitively."
             },
             {
               "name": "itemNumber_not_contains",
@@ -908,7 +908,7 @@
             },
             {
               "name": "itemNumber_starts_with",
-              "description": null
+              "description": "Checks if `itemNumber` starts with a specified string, case-sensitively.\n\nNever uses an index. Consider using `like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
             },
             {
               "name": "itemNumber_not_starts_with",
@@ -916,7 +916,7 @@
             },
             {
               "name": "itemNumber_ends_with",
-              "description": null
+              "description": "Checks if `itemNumber` ends with a specified string, case-sensitively."
             },
             {
               "name": "itemNumber_not_ends_with",
@@ -924,19 +924,19 @@
             },
             {
               "name": "itemNumber_like",
-              "description": null
+              "description": "Matches `itemNumber` against a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)\n\nIf an index exists on `itemNumber`, it can be used for the literal prefix (the part until the first placeholder)."
             },
             {
               "name": "itemNumber_not_like",
-              "description": null
+              "description": "Checks if `itemNumber` does *not* match a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)"
             },
             {
               "name": "quantity",
-              "description": null
+              "description": "Checks if `quantity` equals a specified value.\n\nIf an index exists on `quantity`, it can be used."
             },
             {
               "name": "quantity_not",
-              "description": null
+              "description": "Checks if `quantity` does not equal a specified value"
             },
             {
               "name": "quantity_in",
@@ -983,107 +983,107 @@
           "inputFields": [
             {
               "name": "id",
-              "description": null
+              "description": "Checks if `id` equals a specified value.\n\nIf an index exists on `id`, it can be used.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_not",
-              "description": null
+              "description": "Checks if `id` does not equal a specified value\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_in",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_not_in",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_lt",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_lte",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_gt",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_gte",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "createdAt",
-              "description": null
+              "description": "Checks if `createdAt` equals a specified value.\n\nIf an index exists on `createdAt`, it can be used.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_not",
-              "description": null
+              "description": "Checks if `createdAt` does not equal a specified value\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_in",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "createdAt_not_in",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "createdAt_lt",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "createdAt_lte",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "createdAt_gt",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "createdAt_gte",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "updatedAt",
-              "description": null
+              "description": "Checks if `updatedAt` equals a specified value.\n\nIf an index exists on `updatedAt`, it can be used.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_not",
-              "description": null
+              "description": "Checks if `updatedAt` does not equal a specified value\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_in",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_not_in",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_lt",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_lte",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_gt",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_gte",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "huNumber",
-              "description": null
+              "description": "Checks if `huNumber` equals a specified string, case-sensitively.\n\nIf an index exists on `huNumber`, it can be used.\n\nSee also `like` for a case-insensitive filter."
             },
             {
               "name": "huNumber_not",
-              "description": null
+              "description": "Checks if `huNumber` does not equal a specified string, case-sensitively."
             },
             {
               "name": "huNumber_in",
@@ -1111,7 +1111,7 @@
             },
             {
               "name": "huNumber_contains",
-              "description": null
+              "description": "Checks if `huNumber` contains a specified string, case-sensitively."
             },
             {
               "name": "huNumber_not_contains",
@@ -1119,7 +1119,7 @@
             },
             {
               "name": "huNumber_starts_with",
-              "description": null
+              "description": "Checks if `huNumber` starts with a specified string, case-sensitively.\n\nNever uses an index. Consider using `like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
             },
             {
               "name": "huNumber_not_starts_with",
@@ -1127,7 +1127,7 @@
             },
             {
               "name": "huNumber_ends_with",
-              "description": null
+              "description": "Checks if `huNumber` ends with a specified string, case-sensitively."
             },
             {
               "name": "huNumber_not_ends_with",
@@ -1135,11 +1135,11 @@
             },
             {
               "name": "huNumber_like",
-              "description": null
+              "description": "Matches `huNumber` against a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)\n\nIf an index exists on `huNumber`, it can be used for the literal prefix (the part until the first placeholder)."
             },
             {
               "name": "huNumber_not_like",
-              "description": null
+              "description": "Checks if `huNumber` does *not* match a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)"
             },
             {
               "name": "delivery",
@@ -1162,107 +1162,107 @@
           "inputFields": [
             {
               "name": "id",
-              "description": null
+              "description": "Checks if `id` equals a specified value.\n\nIf an index exists on `id`, it can be used.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_not",
-              "description": null
+              "description": "Checks if `id` does not equal a specified value\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_in",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_not_in",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_lt",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_lte",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_gt",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_gte",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "createdAt",
-              "description": null
+              "description": "Checks if `createdAt` equals a specified value.\n\nIf an index exists on `createdAt`, it can be used.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_not",
-              "description": null
+              "description": "Checks if `createdAt` does not equal a specified value\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_in",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "createdAt_not_in",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "createdAt_lt",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "createdAt_lte",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "createdAt_gt",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "createdAt_gte",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "updatedAt",
-              "description": null
+              "description": "Checks if `updatedAt` equals a specified value.\n\nIf an index exists on `updatedAt`, it can be used.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_not",
-              "description": null
+              "description": "Checks if `updatedAt` does not equal a specified value\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_in",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_not_in",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_lt",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_lte",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_gt",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_gte",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "deliveryNumber",
-              "description": null
+              "description": "Checks if `deliveryNumber` equals a specified string, case-sensitively.\n\nIf an index exists on `deliveryNumber`, it can be used.\n\nSee also `like` for a case-insensitive filter."
             },
             {
               "name": "deliveryNumber_not",
-              "description": null
+              "description": "Checks if `deliveryNumber` does not equal a specified string, case-sensitively."
             },
             {
               "name": "deliveryNumber_in",
@@ -1290,7 +1290,7 @@
             },
             {
               "name": "deliveryNumber_contains",
-              "description": null
+              "description": "Checks if `deliveryNumber` contains a specified string, case-sensitively."
             },
             {
               "name": "deliveryNumber_not_contains",
@@ -1298,7 +1298,7 @@
             },
             {
               "name": "deliveryNumber_starts_with",
-              "description": null
+              "description": "Checks if `deliveryNumber` starts with a specified string, case-sensitively.\n\nNever uses an index. Consider using `like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
             },
             {
               "name": "deliveryNumber_not_starts_with",
@@ -1306,7 +1306,7 @@
             },
             {
               "name": "deliveryNumber_ends_with",
-              "description": null
+              "description": "Checks if `deliveryNumber` ends with a specified string, case-sensitively."
             },
             {
               "name": "deliveryNumber_not_ends_with",
@@ -1314,23 +1314,23 @@
             },
             {
               "name": "deliveryNumber_like",
-              "description": null
+              "description": "Matches `deliveryNumber` against a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)\n\nIf an index exists on `deliveryNumber`, it can be used for the literal prefix (the part until the first placeholder)."
             },
             {
               "name": "deliveryNumber_not_like",
-              "description": null
+              "description": "Checks if `deliveryNumber` does *not* match a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)"
             },
             {
               "name": "serialNumbers_some",
-              "description": "Makes sure at least one of the items in \"serialNumbers\" matches a certain filter.\n\nNote that you can specify the empty object for this filter to make sure \"serialNumbers\" has at least one item."
+              "description": "Makes sure at least one of the items in \"serialNumbers\" matches a certain filter.\n\nNote that you can specify the empty object for this filter to make sure `serialNumbers` has at least one item."
             },
             {
               "name": "serialNumbers_every",
-              "description": "Makes sure all items in \"serialNumbers\" match a certain filter."
+              "description": "Makes sure all items in `serialNumbers` match a certain filter."
             },
             {
               "name": "serialNumbers_none",
-              "description": "Makes sure none of the items in \"serialNumbers\" match a certain filter.\n\nNote that you can specify the empty object for this filter to make sure \"serialNumbers\" has no items."
+              "description": "Makes sure none of the items in `serialNumbers` match a certain filter.\n\nNote that you can specify the empty object for this filter to make sure `serialNumbers` has no items."
             },
             {
               "name": "consignee",
@@ -1338,15 +1338,15 @@
             },
             {
               "name": "contentInfo_some",
-              "description": "Makes sure at least one of the items in \"contentInfo\" matches a certain filter.\n\nNote that you can specify the empty object for this filter to make sure \"contentInfo\" has at least one item."
+              "description": "Makes sure at least one of the items in \"contentInfo\" matches a certain filter.\n\nNote that you can specify the empty object for this filter to make sure `contentInfo` has at least one item."
             },
             {
               "name": "contentInfo_every",
-              "description": "Makes sure all items in \"contentInfo\" match a certain filter."
+              "description": "Makes sure all items in `contentInfo` match a certain filter."
             },
             {
               "name": "contentInfo_none",
-              "description": "Makes sure none of the items in \"contentInfo\" match a certain filter.\n\nNote that you can specify the empty object for this filter to make sure \"contentInfo\" has no items."
+              "description": "Makes sure none of the items in `contentInfo` match a certain filter.\n\nNote that you can specify the empty object for this filter to make sure `contentInfo` has no items."
             },
             {
               "name": "dgInfo",
@@ -1354,27 +1354,27 @@
             },
             {
               "name": "items_some",
-              "description": "Makes sure at least one of the items in \"items\" matches a certain filter.\n\nNote that you can specify the empty object for this filter to make sure \"items\" has at least one item."
+              "description": "Makes sure at least one of the items in \"items\" matches a certain filter.\n\nNote that you can specify the empty object for this filter to make sure `items` has at least one item."
             },
             {
               "name": "items_every",
-              "description": "Makes sure all items in \"items\" match a certain filter."
+              "description": "Makes sure all items in `items` match a certain filter."
             },
             {
               "name": "items_none",
-              "description": "Makes sure none of the items in \"items\" match a certain filter.\n\nNote that you can specify the empty object for this filter to make sure \"items\" has no items."
+              "description": "Makes sure none of the items in `items` match a certain filter.\n\nNote that you can specify the empty object for this filter to make sure `items` has no items."
             },
             {
               "name": "handlingUnits_some",
-              "description": "Makes sure at least one of the items in \"handlingUnits\" matches a certain filter.\n\nNote that you can specify the empty object for this filter to make sure \"handlingUnits\" has at least one item."
+              "description": "Makes sure at least one of the items in \"handlingUnits\" matches a certain filter.\n\nNote that you can specify the empty object for this filter to make sure `handlingUnits` has at least one item."
             },
             {
               "name": "handlingUnits_every",
-              "description": "Makes sure all items in \"handlingUnits\" match a certain filter."
+              "description": "Makes sure all items in `handlingUnits` match a certain filter."
             },
             {
               "name": "handlingUnits_none",
-              "description": "Makes sure none of the items in \"handlingUnits\" match a certain filter.\n\nNote that you can specify the empty object for this filter to make sure \"handlingUnits\" has no items."
+              "description": "Makes sure none of the items in `handlingUnits` match a certain filter.\n\nNote that you can specify the empty object for this filter to make sure `handlingUnits` has no items."
             },
             {
               "name": "destinationCountry",
@@ -1382,11 +1382,11 @@
             },
             {
               "name": "shippedAt",
-              "description": null
+              "description": "Checks if `shippedAt` equals a specified value.\n\nIf an index exists on `shippedAt`, it can be used."
             },
             {
               "name": "shippedAt_not",
-              "description": null
+              "description": "Checks if `shippedAt` does not equal a specified value"
             },
             {
               "name": "shippedAt_in",
@@ -1414,11 +1414,11 @@
             },
             {
               "name": "totalValue",
-              "description": null
+              "description": "Checks if `totalValue` equals a specified string, case-sensitively.\n\nIf an index exists on `totalValue`, it can be used.\n\nSee also `like` for a case-insensitive filter."
             },
             {
               "name": "totalValue_not",
-              "description": null
+              "description": "Checks if `totalValue` does not equal a specified string, case-sensitively."
             },
             {
               "name": "totalValue_in",
@@ -1446,7 +1446,7 @@
             },
             {
               "name": "totalValue_contains",
-              "description": null
+              "description": "Checks if `totalValue` contains a specified string, case-sensitively."
             },
             {
               "name": "totalValue_not_contains",
@@ -1454,7 +1454,7 @@
             },
             {
               "name": "totalValue_starts_with",
-              "description": null
+              "description": "Checks if `totalValue` starts with a specified string, case-sensitively.\n\nNever uses an index. Consider using `like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
             },
             {
               "name": "totalValue_not_starts_with",
@@ -1462,7 +1462,7 @@
             },
             {
               "name": "totalValue_ends_with",
-              "description": null
+              "description": "Checks if `totalValue` ends with a specified string, case-sensitively."
             },
             {
               "name": "totalValue_not_ends_with",
@@ -1470,11 +1470,11 @@
             },
             {
               "name": "totalValue_like",
-              "description": null
+              "description": "Matches `totalValue` against a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)\n\nIf an index exists on `totalValue`, it can be used for the literal prefix (the part until the first placeholder)."
             },
             {
               "name": "totalValue_not_like",
-              "description": null
+              "description": "Checks if `totalValue` does *not* match a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)"
             },
             {
               "name": "forwarder",
@@ -1486,11 +1486,11 @@
             },
             {
               "name": "defaultValueString",
-              "description": null
+              "description": "Checks if `defaultValueString` equals a specified string, case-sensitively.\n\nIf an index exists on `defaultValueString`, it can be used.\n\nSee also `like` for a case-insensitive filter."
             },
             {
               "name": "defaultValueString_not",
-              "description": null
+              "description": "Checks if `defaultValueString` does not equal a specified string, case-sensitively."
             },
             {
               "name": "defaultValueString_in",
@@ -1518,7 +1518,7 @@
             },
             {
               "name": "defaultValueString_contains",
-              "description": null
+              "description": "Checks if `defaultValueString` contains a specified string, case-sensitively."
             },
             {
               "name": "defaultValueString_not_contains",
@@ -1526,7 +1526,7 @@
             },
             {
               "name": "defaultValueString_starts_with",
-              "description": null
+              "description": "Checks if `defaultValueString` starts with a specified string, case-sensitively.\n\nNever uses an index. Consider using `like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
             },
             {
               "name": "defaultValueString_not_starts_with",
@@ -1534,7 +1534,7 @@
             },
             {
               "name": "defaultValueString_ends_with",
-              "description": null
+              "description": "Checks if `defaultValueString` ends with a specified string, case-sensitively."
             },
             {
               "name": "defaultValueString_not_ends_with",
@@ -1542,19 +1542,19 @@
             },
             {
               "name": "defaultValueString_like",
-              "description": null
+              "description": "Matches `defaultValueString` against a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)\n\nIf an index exists on `defaultValueString`, it can be used for the literal prefix (the part until the first placeholder)."
             },
             {
               "name": "defaultValueString_not_like",
-              "description": null
+              "description": "Checks if `defaultValueString` does *not* match a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)"
             },
             {
               "name": "defaultValueString2",
-              "description": null
+              "description": "Checks if `defaultValueString2` equals a specified string, case-sensitively.\n\nIf an index exists on `defaultValueString2`, it can be used.\n\nSee also `like` for a case-insensitive filter."
             },
             {
               "name": "defaultValueString2_not",
-              "description": null
+              "description": "Checks if `defaultValueString2` does not equal a specified string, case-sensitively."
             },
             {
               "name": "defaultValueString2_in",
@@ -1582,7 +1582,7 @@
             },
             {
               "name": "defaultValueString2_contains",
-              "description": null
+              "description": "Checks if `defaultValueString2` contains a specified string, case-sensitively."
             },
             {
               "name": "defaultValueString2_not_contains",
@@ -1590,7 +1590,7 @@
             },
             {
               "name": "defaultValueString2_starts_with",
-              "description": null
+              "description": "Checks if `defaultValueString2` starts with a specified string, case-sensitively.\n\nNever uses an index. Consider using `like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
             },
             {
               "name": "defaultValueString2_not_starts_with",
@@ -1598,7 +1598,7 @@
             },
             {
               "name": "defaultValueString2_ends_with",
-              "description": null
+              "description": "Checks if `defaultValueString2` ends with a specified string, case-sensitively."
             },
             {
               "name": "defaultValueString2_not_ends_with",
@@ -1606,19 +1606,19 @@
             },
             {
               "name": "defaultValueString2_like",
-              "description": null
+              "description": "Matches `defaultValueString2` against a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)\n\nIf an index exists on `defaultValueString2`, it can be used for the literal prefix (the part until the first placeholder)."
             },
             {
               "name": "defaultValueString2_not_like",
-              "description": null
+              "description": "Checks if `defaultValueString2` does *not* match a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)"
             },
             {
               "name": "defaultValueInt",
-              "description": null
+              "description": "Checks if `defaultValueInt` equals a specified value.\n\nIf an index exists on `defaultValueInt`, it can be used."
             },
             {
               "name": "defaultValueInt_not",
-              "description": null
+              "description": "Checks if `defaultValueInt` does not equal a specified value"
             },
             {
               "name": "defaultValueInt_in",
@@ -1646,27 +1646,27 @@
             },
             {
               "name": "defaultValueTrue",
-              "description": null
+              "description": "Checks if `defaultValueTrue` equals a specified value.\n\nIf an index exists on `defaultValueTrue`, it can be used."
             },
             {
               "name": "defaultValueTrue_not",
-              "description": null
+              "description": "Checks if `defaultValueTrue` does not equal a specified value"
             },
             {
               "name": "defaultValueFalse",
-              "description": null
+              "description": "Checks if `defaultValueFalse` equals a specified value.\n\nIf an index exists on `defaultValueFalse`, it can be used."
             },
             {
               "name": "defaultValueFalse_not",
-              "description": null
+              "description": "Checks if `defaultValueFalse` does not equal a specified value"
             },
             {
               "name": "defaultValueFloat",
-              "description": null
+              "description": "Checks if `defaultValueFloat` equals a specified value.\n\nIf an index exists on `defaultValueFloat`, it can be used."
             },
             {
               "name": "defaultValueFloat_not",
-              "description": null
+              "description": "Checks if `defaultValueFloat` does not equal a specified value"
             },
             {
               "name": "defaultValueFloat_in",
@@ -1694,11 +1694,11 @@
             },
             {
               "name": "defaultValueEnum",
-              "description": null
+              "description": "Checks if `defaultValueEnum` equals a specified value.\n\nIf an index exists on `defaultValueEnum`, it can be used."
             },
             {
               "name": "defaultValueEnum_not",
-              "description": null
+              "description": "Checks if `defaultValueEnum` does not equal a specified value"
             },
             {
               "name": "defaultValueEnum_in",
@@ -1710,11 +1710,11 @@
             },
             {
               "name": "pickupDate",
-              "description": null
+              "description": "Checks if `pickupDate` equals a specified value.\n\nIf an index exists on `pickupDate`, it can be used."
             },
             {
               "name": "pickupDate_not",
-              "description": null
+              "description": "Checks if `pickupDate` does not equal a specified value"
             },
             {
               "name": "pickupDate_in",
@@ -1742,11 +1742,11 @@
             },
             {
               "name": "pickupTimeStart",
-              "description": null
+              "description": "Checks if `pickupTimeStart` equals a specified value.\n\nIf an index exists on `pickupTimeStart`, it can be used."
             },
             {
               "name": "pickupTimeStart_not",
-              "description": null
+              "description": "Checks if `pickupTimeStart` does not equal a specified value"
             },
             {
               "name": "pickupTimeStart_in",
@@ -1774,11 +1774,11 @@
             },
             {
               "name": "pickupTimeEnd",
-              "description": null
+              "description": "Checks if `pickupTimeEnd` equals a specified value.\n\nIf an index exists on `pickupTimeEnd`, it can be used."
             },
             {
               "name": "pickupTimeEnd_not",
-              "description": null
+              "description": "Checks if `pickupTimeEnd` does not equal a specified value"
             },
             {
               "name": "pickupTimeEnd_in",
@@ -1821,11 +1821,11 @@
           "inputFields": [
             {
               "name": "equal",
-              "description": null
+              "description": "Checks if the value equals a specified string, case-sensitively.\n\nIf an index exists on the value, it can be used.\n\nSee also `like` for a case-insensitive filter."
             },
             {
               "name": "not",
-              "description": null
+              "description": "Checks if the value does not equal a specified string, case-sensitively."
             },
             {
               "name": "in",
@@ -1853,7 +1853,7 @@
             },
             {
               "name": "contains",
-              "description": null
+              "description": "Checks if the value contains a specified string, case-sensitively."
             },
             {
               "name": "not_contains",
@@ -1861,7 +1861,7 @@
             },
             {
               "name": "starts_with",
-              "description": null
+              "description": "Checks if the value starts with a specified string, case-sensitively.\n\nNever uses an index. Consider using `like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
             },
             {
               "name": "not_starts_with",
@@ -1869,7 +1869,7 @@
             },
             {
               "name": "ends_with",
-              "description": null
+              "description": "Checks if the value ends with a specified string, case-sensitively."
             },
             {
               "name": "not_ends_with",
@@ -1877,11 +1877,11 @@
             },
             {
               "name": "like",
-              "description": null
+              "description": "Matches the value against a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)\n\nIf an index exists on the value, it can be used for the literal prefix (the part until the first placeholder)."
             },
             {
               "name": "not_like",
-              "description": null
+              "description": "Checks if the value does *not* match a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)"
             },
             {
               "name": "AND",
@@ -1900,11 +1900,11 @@
           "inputFields": [
             {
               "name": "street",
-              "description": null
+              "description": "Checks if `street` equals a specified string, case-sensitively.\n\nIf an index exists on `street`, it can be used.\n\nSee also `like` for a case-insensitive filter."
             },
             {
               "name": "street_not",
-              "description": null
+              "description": "Checks if `street` does not equal a specified string, case-sensitively."
             },
             {
               "name": "street_in",
@@ -1932,7 +1932,7 @@
             },
             {
               "name": "street_contains",
-              "description": null
+              "description": "Checks if `street` contains a specified string, case-sensitively."
             },
             {
               "name": "street_not_contains",
@@ -1940,7 +1940,7 @@
             },
             {
               "name": "street_starts_with",
-              "description": null
+              "description": "Checks if `street` starts with a specified string, case-sensitively.\n\nNever uses an index. Consider using `like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
             },
             {
               "name": "street_not_starts_with",
@@ -1948,7 +1948,7 @@
             },
             {
               "name": "street_ends_with",
-              "description": null
+              "description": "Checks if `street` ends with a specified string, case-sensitively."
             },
             {
               "name": "street_not_ends_with",
@@ -1956,19 +1956,19 @@
             },
             {
               "name": "street_like",
-              "description": null
+              "description": "Matches `street` against a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)\n\nIf an index exists on `street`, it can be used for the literal prefix (the part until the first placeholder)."
             },
             {
               "name": "street_not_like",
-              "description": null
+              "description": "Checks if `street` does *not* match a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)"
             },
             {
               "name": "city",
-              "description": null
+              "description": "Checks if `city` equals a specified string, case-sensitively.\n\nIf an index exists on `city`, it can be used.\n\nSee also `like` for a case-insensitive filter."
             },
             {
               "name": "city_not",
-              "description": null
+              "description": "Checks if `city` does not equal a specified string, case-sensitively."
             },
             {
               "name": "city_in",
@@ -1996,7 +1996,7 @@
             },
             {
               "name": "city_contains",
-              "description": null
+              "description": "Checks if `city` contains a specified string, case-sensitively."
             },
             {
               "name": "city_not_contains",
@@ -2004,7 +2004,7 @@
             },
             {
               "name": "city_starts_with",
-              "description": null
+              "description": "Checks if `city` starts with a specified string, case-sensitively.\n\nNever uses an index. Consider using `like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
             },
             {
               "name": "city_not_starts_with",
@@ -2012,7 +2012,7 @@
             },
             {
               "name": "city_ends_with",
-              "description": null
+              "description": "Checks if `city` ends with a specified string, case-sensitively."
             },
             {
               "name": "city_not_ends_with",
@@ -2020,19 +2020,19 @@
             },
             {
               "name": "city_like",
-              "description": null
+              "description": "Matches `city` against a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)\n\nIf an index exists on `city`, it can be used for the literal prefix (the part until the first placeholder)."
             },
             {
               "name": "city_not_like",
-              "description": null
+              "description": "Checks if `city` does *not* match a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)"
             },
             {
               "name": "zipCode",
-              "description": null
+              "description": "Checks if `zipCode` equals a specified string, case-sensitively.\n\nIf an index exists on `zipCode`, it can be used.\n\nSee also `like` for a case-insensitive filter."
             },
             {
               "name": "zipCode_not",
-              "description": null
+              "description": "Checks if `zipCode` does not equal a specified string, case-sensitively."
             },
             {
               "name": "zipCode_in",
@@ -2060,7 +2060,7 @@
             },
             {
               "name": "zipCode_contains",
-              "description": null
+              "description": "Checks if `zipCode` contains a specified string, case-sensitively."
             },
             {
               "name": "zipCode_not_contains",
@@ -2068,7 +2068,7 @@
             },
             {
               "name": "zipCode_starts_with",
-              "description": null
+              "description": "Checks if `zipCode` starts with a specified string, case-sensitively.\n\nNever uses an index. Consider using `like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
             },
             {
               "name": "zipCode_not_starts_with",
@@ -2076,7 +2076,7 @@
             },
             {
               "name": "zipCode_ends_with",
-              "description": null
+              "description": "Checks if `zipCode` ends with a specified string, case-sensitively."
             },
             {
               "name": "zipCode_not_ends_with",
@@ -2084,11 +2084,11 @@
             },
             {
               "name": "zipCode_like",
-              "description": null
+              "description": "Matches `zipCode` against a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)\n\nIf an index exists on `zipCode`, it can be used for the literal prefix (the part until the first placeholder)."
             },
             {
               "name": "zipCode_not_like",
-              "description": null
+              "description": "Checks if `zipCode` does *not* match a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)"
             },
             {
               "name": "country",
@@ -2111,11 +2111,11 @@
           "inputFields": [
             {
               "name": "unNumber",
-              "description": null
+              "description": "Checks if `unNumber` equals a specified string, case-sensitively.\n\nIf an index exists on `unNumber`, it can be used.\n\nSee also `like` for a case-insensitive filter."
             },
             {
               "name": "unNumber_not",
-              "description": null
+              "description": "Checks if `unNumber` does not equal a specified string, case-sensitively."
             },
             {
               "name": "unNumber_in",
@@ -2143,7 +2143,7 @@
             },
             {
               "name": "unNumber_contains",
-              "description": null
+              "description": "Checks if `unNumber` contains a specified string, case-sensitively."
             },
             {
               "name": "unNumber_not_contains",
@@ -2151,7 +2151,7 @@
             },
             {
               "name": "unNumber_starts_with",
-              "description": null
+              "description": "Checks if `unNumber` starts with a specified string, case-sensitively.\n\nNever uses an index. Consider using `like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
             },
             {
               "name": "unNumber_not_starts_with",
@@ -2159,7 +2159,7 @@
             },
             {
               "name": "unNumber_ends_with",
-              "description": null
+              "description": "Checks if `unNumber` ends with a specified string, case-sensitively."
             },
             {
               "name": "unNumber_not_ends_with",
@@ -2167,19 +2167,19 @@
             },
             {
               "name": "unNumber_like",
-              "description": null
+              "description": "Matches `unNumber` against a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)\n\nIf an index exists on `unNumber`, it can be used for the literal prefix (the part until the first placeholder)."
             },
             {
               "name": "unNumber_not_like",
-              "description": null
+              "description": "Checks if `unNumber` does *not* match a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)"
             },
             {
               "name": "flashpoint",
-              "description": null
+              "description": "Checks if `flashpoint` equals a specified string, case-sensitively.\n\nIf an index exists on `flashpoint`, it can be used.\n\nSee also `like` for a case-insensitive filter."
             },
             {
               "name": "flashpoint_not",
-              "description": null
+              "description": "Checks if `flashpoint` does not equal a specified string, case-sensitively."
             },
             {
               "name": "flashpoint_in",
@@ -2207,7 +2207,7 @@
             },
             {
               "name": "flashpoint_contains",
-              "description": null
+              "description": "Checks if `flashpoint` contains a specified string, case-sensitively."
             },
             {
               "name": "flashpoint_not_contains",
@@ -2215,7 +2215,7 @@
             },
             {
               "name": "flashpoint_starts_with",
-              "description": null
+              "description": "Checks if `flashpoint` starts with a specified string, case-sensitively.\n\nNever uses an index. Consider using `like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
             },
             {
               "name": "flashpoint_not_starts_with",
@@ -2223,7 +2223,7 @@
             },
             {
               "name": "flashpoint_ends_with",
-              "description": null
+              "description": "Checks if `flashpoint` ends with a specified string, case-sensitively."
             },
             {
               "name": "flashpoint_not_ends_with",
@@ -2231,23 +2231,23 @@
             },
             {
               "name": "flashpoint_like",
-              "description": null
+              "description": "Matches `flashpoint` against a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)\n\nIf an index exists on `flashpoint`, it can be used for the literal prefix (the part until the first placeholder)."
             },
             {
               "name": "flashpoint_not_like",
-              "description": null
+              "description": "Checks if `flashpoint` does *not* match a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)"
             },
             {
               "name": "notices_some",
-              "description": "Makes sure at least one of the items in \"notices\" matches a certain filter.\n\nNote that you can specify the empty object for this filter to make sure \"notices\" has at least one item."
+              "description": "Makes sure at least one of the items in \"notices\" matches a certain filter.\n\nNote that you can specify the empty object for this filter to make sure `notices` has at least one item."
             },
             {
               "name": "notices_every",
-              "description": "Makes sure all items in \"notices\" match a certain filter."
+              "description": "Makes sure all items in `notices` match a certain filter."
             },
             {
               "name": "notices_none",
-              "description": "Makes sure none of the items in \"notices\" match a certain filter.\n\nNote that you can specify the empty object for this filter to make sure \"notices\" has no items."
+              "description": "Makes sure none of the items in `notices` match a certain filter.\n\nNote that you can specify the empty object for this filter to make sure `notices` has no items."
             },
             {
               "name": "AND",
@@ -2266,107 +2266,107 @@
           "inputFields": [
             {
               "name": "id",
-              "description": null
+              "description": "Checks if `id` equals a specified value.\n\nIf an index exists on `id`, it can be used.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_not",
-              "description": null
+              "description": "Checks if `id` does not equal a specified value\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_in",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_not_in",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_lt",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_lte",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_gt",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_gte",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "createdAt",
-              "description": null
+              "description": "Checks if `createdAt` equals a specified value.\n\nIf an index exists on `createdAt`, it can be used.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_not",
-              "description": null
+              "description": "Checks if `createdAt` does not equal a specified value\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_in",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "createdAt_not_in",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "createdAt_lt",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "createdAt_lte",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "createdAt_gt",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "createdAt_gte",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "updatedAt",
-              "description": null
+              "description": "Checks if `updatedAt` equals a specified value.\n\nIf an index exists on `updatedAt`, it can be used.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_not",
-              "description": null
+              "description": "Checks if `updatedAt` does not equal a specified value\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_in",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_not_in",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_lt",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_lte",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_gt",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_gte",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "name",
-              "description": null
+              "description": "Checks if `name` equals a specified string, case-sensitively.\n\nIf an index exists on `name`, it can be used.\n\nSee also `like` for a case-insensitive filter."
             },
             {
               "name": "name_not",
-              "description": null
+              "description": "Checks if `name` does not equal a specified string, case-sensitively."
             },
             {
               "name": "name_in",
@@ -2394,7 +2394,7 @@
             },
             {
               "name": "name_contains",
-              "description": null
+              "description": "Checks if `name` contains a specified string, case-sensitively."
             },
             {
               "name": "name_not_contains",
@@ -2402,7 +2402,7 @@
             },
             {
               "name": "name_starts_with",
-              "description": null
+              "description": "Checks if `name` starts with a specified string, case-sensitively.\n\nNever uses an index. Consider using `like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
             },
             {
               "name": "name_not_starts_with",
@@ -2410,7 +2410,7 @@
             },
             {
               "name": "name_ends_with",
-              "description": null
+              "description": "Checks if `name` ends with a specified string, case-sensitively."
             },
             {
               "name": "name_not_ends_with",
@@ -2418,23 +2418,23 @@
             },
             {
               "name": "name_like",
-              "description": null
+              "description": "Matches `name` against a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)\n\nIf an index exists on `name`, it can be used for the literal prefix (the part until the first placeholder)."
             },
             {
               "name": "name_not_like",
-              "description": null
+              "description": "Checks if `name` does *not* match a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)"
             },
             {
               "name": "deliveries_some",
-              "description": "Makes sure at least one of the items in \"deliveries\" matches a certain filter.\n\nNote that you can specify the empty object for this filter to make sure \"deliveries\" has at least one item."
+              "description": "Makes sure at least one of the items in \"deliveries\" matches a certain filter.\n\nNote that you can specify the empty object for this filter to make sure `deliveries` has at least one item."
             },
             {
               "name": "deliveries_every",
-              "description": "Makes sure all items in \"deliveries\" match a certain filter."
+              "description": "Makes sure all items in `deliveries` match a certain filter."
             },
             {
               "name": "deliveries_none",
-              "description": "Makes sure none of the items in \"deliveries\" match a certain filter.\n\nNote that you can specify the empty object for this filter to make sure \"deliveries\" has no items."
+              "description": "Makes sure none of the items in `deliveries` match a certain filter.\n\nNote that you can specify the empty object for this filter to make sure `deliveries` has no items."
             },
             {
               "name": "AND",
@@ -2645,111 +2645,111 @@
           "inputFields": [
             {
               "name": "id",
-              "description": null
+              "description": "Checks if `id` equals a specified value.\n\nIf an index exists on `id`, it can be used.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_not",
-              "description": null
+              "description": "Checks if `id` does not equal a specified value\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_in",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_not_in",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_lt",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_lte",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_gt",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_gte",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "createdAt",
-              "description": null
+              "description": "Checks if `createdAt` equals a specified value.\n\nIf an index exists on `createdAt`, it can be used.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_not",
-              "description": null
+              "description": "Checks if `createdAt` does not equal a specified value\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_in",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "createdAt_not_in",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "createdAt_lt",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "createdAt_lte",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "createdAt_gt",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "createdAt_gte",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "updatedAt",
-              "description": null
+              "description": "Checks if `updatedAt` equals a specified value.\n\nIf an index exists on `updatedAt`, it can be used.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_not",
-              "description": null
+              "description": "Checks if `updatedAt` does not equal a specified value\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_in",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_not_in",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_lt",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_lte",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_gt",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_gte",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "deliveries_some",
-              "description": "Makes sure at least one of the items in \"deliveries\" matches a certain filter.\n\nNote that you can specify the empty object for this filter to make sure \"deliveries\" has at least one item."
+              "description": "Makes sure at least one of the items in \"deliveries\" matches a certain filter.\n\nNote that you can specify the empty object for this filter to make sure `deliveries` has at least one item."
             },
             {
               "name": "deliveries_every",
-              "description": "Makes sure all items in \"deliveries\" match a certain filter."
+              "description": "Makes sure all items in `deliveries` match a certain filter."
             },
             {
               "name": "deliveries_none",
-              "description": "Makes sure none of the items in \"deliveries\" match a certain filter.\n\nNote that you can specify the empty object for this filter to make sure \"deliveries\" has no items."
+              "description": "Makes sure none of the items in `deliveries` match a certain filter.\n\nNote that you can specify the empty object for this filter to make sure `deliveries` has no items."
             },
             {
               "name": "AND",
@@ -2805,107 +2805,107 @@
           "inputFields": [
             {
               "name": "id",
-              "description": null
+              "description": "Checks if `id` equals a specified value.\n\nIf an index exists on `id`, it can be used.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_not",
-              "description": null
+              "description": "Checks if `id` does not equal a specified value\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_in",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_not_in",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_lt",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_lte",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_gt",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_gte",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "createdAt",
-              "description": null
+              "description": "Checks if `createdAt` equals a specified value.\n\nIf an index exists on `createdAt`, it can be used.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_not",
-              "description": null
+              "description": "Checks if `createdAt` does not equal a specified value\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_in",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "createdAt_not_in",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "createdAt_lt",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "createdAt_lte",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "createdAt_gt",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "createdAt_gte",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "updatedAt",
-              "description": null
+              "description": "Checks if `updatedAt` equals a specified value.\n\nIf an index exists on `updatedAt`, it can be used.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_not",
-              "description": null
+              "description": "Checks if `updatedAt` does not equal a specified value\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_in",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_not_in",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_lt",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_lte",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_gt",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_gte",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "name",
-              "description": null
+              "description": "Checks if `name` equals a specified string, case-sensitively.\n\nIf an index exists on `name`, it can be used.\n\nSee also `like` for a case-insensitive filter."
             },
             {
               "name": "name_not",
-              "description": null
+              "description": "Checks if `name` does not equal a specified string, case-sensitively."
             },
             {
               "name": "name_in",
@@ -2933,7 +2933,7 @@
             },
             {
               "name": "name_contains",
-              "description": null
+              "description": "Checks if `name` contains a specified string, case-sensitively."
             },
             {
               "name": "name_not_contains",
@@ -2941,7 +2941,7 @@
             },
             {
               "name": "name_starts_with",
-              "description": null
+              "description": "Checks if `name` starts with a specified string, case-sensitively.\n\nNever uses an index. Consider using `like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
             },
             {
               "name": "name_not_starts_with",
@@ -2949,7 +2949,7 @@
             },
             {
               "name": "name_ends_with",
-              "description": null
+              "description": "Checks if `name` ends with a specified string, case-sensitively."
             },
             {
               "name": "name_not_ends_with",
@@ -2957,19 +2957,19 @@
             },
             {
               "name": "name_like",
-              "description": null
+              "description": "Matches `name` against a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)\n\nIf an index exists on `name`, it can be used for the literal prefix (the part until the first placeholder)."
             },
             {
               "name": "name_not_like",
-              "description": null
+              "description": "Checks if `name` does *not* match a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)"
             },
             {
               "name": "number",
-              "description": null
+              "description": "Checks if `number` equals a specified value.\n\nIf an index exists on `number`, it can be used."
             },
             {
               "name": "number_not",
-              "description": null
+              "description": "Checks if `number` does not equal a specified value"
             },
             {
               "name": "number_in",
@@ -3049,107 +3049,107 @@
           "inputFields": [
             {
               "name": "id",
-              "description": null
+              "description": "Checks if `id` equals a specified value.\n\nIf an index exists on `id`, it can be used.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_not",
-              "description": null
+              "description": "Checks if `id` does not equal a specified value\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_in",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_not_in",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_lt",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_lte",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_gt",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_gte",
-              "description": null
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "createdAt",
-              "description": null
+              "description": "Checks if `createdAt` equals a specified value.\n\nIf an index exists on `createdAt`, it can be used.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_not",
-              "description": null
+              "description": "Checks if `createdAt` does not equal a specified value\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_in",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "createdAt_not_in",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "createdAt_lt",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "createdAt_lte",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "createdAt_gt",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "createdAt_gte",
-              "description": null
+              "description": "The instant this object has been created"
             },
             {
               "name": "updatedAt",
-              "description": null
+              "description": "Checks if `updatedAt` equals a specified value.\n\nIf an index exists on `updatedAt`, it can be used.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_not",
-              "description": null
+              "description": "Checks if `updatedAt` does not equal a specified value\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_in",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_not_in",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_lt",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_lte",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_gt",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_gte",
-              "description": null
+              "description": "The instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "key",
-              "description": null
+              "description": "Checks if `key` equals a specified string, case-sensitively.\n\nIf an index exists on `key`, it can be used.\n\nSee also `like` for a case-insensitive filter."
             },
             {
               "name": "key_not",
-              "description": null
+              "description": "Checks if `key` does not equal a specified string, case-sensitively."
             },
             {
               "name": "key_in",
@@ -3177,7 +3177,7 @@
             },
             {
               "name": "key_contains",
-              "description": null
+              "description": "Checks if `key` contains a specified string, case-sensitively."
             },
             {
               "name": "key_not_contains",
@@ -3185,7 +3185,7 @@
             },
             {
               "name": "key_starts_with",
-              "description": null
+              "description": "Checks if `key` starts with a specified string, case-sensitively.\n\nNever uses an index. Consider using `like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
             },
             {
               "name": "key_not_starts_with",
@@ -3193,7 +3193,7 @@
             },
             {
               "name": "key_ends_with",
-              "description": null
+              "description": "Checks if `key` ends with a specified string, case-sensitively."
             },
             {
               "name": "key_not_ends_with",
@@ -3201,19 +3201,19 @@
             },
             {
               "name": "key_like",
-              "description": null
+              "description": "Matches `key` against a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)\n\nIf an index exists on `key`, it can be used for the literal prefix (the part until the first placeholder)."
             },
             {
               "name": "key_not_like",
-              "description": null
+              "description": "Checks if `key` does *not* match a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)"
             },
             {
               "name": "value",
-              "description": null
+              "description": "Checks if `value` equals a specified string, case-sensitively.\n\nIf an index exists on `value`, it can be used.\n\nSee also `like` for a case-insensitive filter."
             },
             {
               "name": "value_not",
-              "description": null
+              "description": "Checks if `value` does not equal a specified string, case-sensitively."
             },
             {
               "name": "value_in",
@@ -3241,7 +3241,7 @@
             },
             {
               "name": "value_contains",
-              "description": null
+              "description": "Checks if `value` contains a specified string, case-sensitively."
             },
             {
               "name": "value_not_contains",
@@ -3249,7 +3249,7 @@
             },
             {
               "name": "value_starts_with",
-              "description": null
+              "description": "Checks if `value` starts with a specified string, case-sensitively.\n\nNever uses an index. Consider using `like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
             },
             {
               "name": "value_not_starts_with",
@@ -3257,7 +3257,7 @@
             },
             {
               "name": "value_ends_with",
-              "description": null
+              "description": "Checks if `value` ends with a specified string, case-sensitively."
             },
             {
               "name": "value_not_ends_with",
@@ -3265,11 +3265,11 @@
             },
             {
               "name": "value_like",
-              "description": null
+              "description": "Matches `value` against a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)\n\nIf an index exists on `value`, it can be used for the literal prefix (the part until the first placeholder)."
             },
             {
               "name": "value_not_like",
-              "description": null
+              "description": "Checks if `value` does *not* match a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)"
             },
             {
               "name": "AND",

@@ -1,22 +1,31 @@
-import { GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
+import { getNamedType, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
 import * as pluralize from 'pluralize';
 import { isArray } from 'util';
 import { Field, TypeKind } from '../../model';
 import { BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, LiteralQueryNode, QueryNode, VariableQueryNode } from '../../query-tree';
 import { QuantifierFilterNode } from '../../query-tree/quantifiers';
-import { AND_FILTER_FIELD, FILTER_FIELD_PREFIX_SEPARATOR, OR_FILTER_FIELD } from '../../schema/constants';
+import { AND_FILTER_FIELD, FILTER_FIELD_PREFIX_SEPARATOR, INPUT_FIELD_EQUAL, OR_FILTER_FIELD } from '../../schema/constants';
 import { AnyValue, decapitalize, PlainObject } from '../../utils/utils';
 import { createFieldNode } from '../field-nodes';
 import { TypedInputFieldBase } from '../typed-input-object-type';
-import { OPERATORS_WITH_LIST_OPERAND, Quantifier } from './constants';
+import { FILTER_DESCRIPTIONS, OPERATORS_WITH_LIST_OPERAND, Quantifier } from './constants';
 import { FilterObjectType } from './generator';
 
 export interface FilterField extends TypedInputFieldBase<FilterField> {
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode
 }
 
+function getDescription({ operator, typeName, fieldName }: { operator: string | undefined, typeName: string, fieldName?: string }) {
+    let descriptionTemplate = FILTER_DESCRIPTIONS[operator || INPUT_FIELD_EQUAL];
+    if (typeof descriptionTemplate === 'object') {
+        descriptionTemplate = descriptionTemplate[typeName] || descriptionTemplate[''];
+    }
+    return descriptionTemplate ? descriptionTemplate.replace(/\$field/g, fieldName ? '`' + fieldName + '`' : 'the value') : undefined;
+}
+
 export class ScalarOrEnumFieldFilterField implements FilterField {
     public readonly inputType: GraphQLInputType;
+    public readonly description: string | undefined;
 
     constructor(
         public readonly field: Field,
@@ -25,6 +34,10 @@ export class ScalarOrEnumFieldFilterField implements FilterField {
         baseInputType: GraphQLInputType
     ) {
         this.inputType = OPERATORS_WITH_LIST_OPERAND.includes(operatorPrefix || '') ? new GraphQLList(new GraphQLNonNull(baseInputType)) : baseInputType;
+        this.description = getDescription({ operator: operatorPrefix, fieldName: field.name, typeName: field.type.name });
+        if (this.field.description) {
+            this.description = (this.description ? this.description + '\n\n' : '') + this.field.description;
+        }
     }
 
     get name() {
@@ -43,6 +56,7 @@ export class ScalarOrEnumFieldFilterField implements FilterField {
 
 export class ScalarOrEnumFilterField implements FilterField {
     public readonly inputType: GraphQLInputType;
+    public readonly description: string | undefined;
 
     constructor(
         public readonly resolveOperator: (fieldNode: QueryNode, valueNode: QueryNode) => QueryNode,
@@ -50,6 +64,7 @@ export class ScalarOrEnumFilterField implements FilterField {
         baseInputType: GraphQLInputType
     ) {
         this.inputType = OPERATORS_WITH_LIST_OPERAND.includes(operatorName) ? new GraphQLList(new GraphQLNonNull(baseInputType)) : baseInputType;
+        this.description = getDescription({ operator: operatorName, typeName: getNamedType(baseInputType).name });
     }
 
     get name() {
@@ -76,13 +91,13 @@ export class QuantifierFilterField implements FilterField {
     get description(): string | undefined {
         switch (this.quantifierName) {
             case 'every':
-                return `Makes sure all items in "${this.field.name}" match a certain filter.`;
+                return `Makes sure all items in \`${this.field.name}\` match a certain filter.`;
             case 'none':
-                return `Makes sure none of the items in "${this.field.name}" match a certain filter.\n\n` +
-                    `Note that you can specify the empty object for this filter to make sure "${this.field.name}" has no items.`;
+                return `Makes sure none of the items in \`${this.field.name}\` match a certain filter.\n\n` +
+                    `Note that you can specify the empty object for this filter to make sure \`${this.field.name}\` has no items.`;
             case 'some':
                 return `Makes sure at least one of the items in "${this.field.name}" matches a certain filter.\n\n` +
-                    `Note that you can specify the empty object for this filter to make sure "${this.field.name}" has at least one item.`;
+                    `Note that you can specify the empty object for this filter to make sure \`${this.field.name}\` has at least one item.`;
         }
         return undefined;
     }
