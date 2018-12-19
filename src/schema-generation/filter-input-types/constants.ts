@@ -40,6 +40,41 @@ export const ENUM_FILTER_FIELDS = [
     INPUT_FIELD_EQUAL, INPUT_FIELD_NOT, INPUT_FIELD_IN, INPUT_FIELD_NOT_IN
 ];
 
+export const FILTER_DESCRIPTIONS: { [name: string]: string | { [typeName: string]: string } } = {
+    [INPUT_FIELD_EQUAL]: {
+        [GraphQLString.name]: 'Checks if $field equals a specified string, case-sensitively.\n\n' +
+        'If an index exists on $field, it can be used.\n\n' +
+        'See also `like` for a case-insensitive filter.',
+
+        ['']: 'Checks if $field equals a specified value.\n\n' +
+        'If an index exists on $field, it can be used.'
+    },
+
+    [INPUT_FIELD_NOT]: {
+        [GraphQLString.name]: 'Checks if $field does not equal a specified string, case-sensitively.',
+
+        ['']: 'Checks if $field does not equal a specified value'
+    },
+
+    [INPUT_FIELD_STARTS_WITH]: 'Checks if $field starts with a specified string, case-sensitively.\n\n' +
+    'Never uses an index. Consider using `like` (with the `%` placeholder) for a case-insensitive filter that can use an index.',
+
+    [INPUT_FIELD_ENDS_WITH]: 'Checks if $field ends with a specified string, case-sensitively.',
+
+    [INPUT_FIELD_CONTAINS]: 'Checks if $field contains a specified string, case-sensitively.',
+
+    [INPUT_FIELD_LIKE]: 'Matches $field against a pattern case-insensitively with the following placeholders:\n\n' +
+    '- `%` matches any sequence of characters, including the empty string\n' +
+    '- `_` matches exactly one character\n' +
+    '- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)\n\n' +
+    'If an index exists on $field, it can be used for the literal prefix (the part until the first placeholder).',
+
+    [INPUT_FIELD_NOT_LIKE]: 'Checks if $field does *not* match a pattern case-insensitively with the following placeholders:\n\n' +
+    '- `%` matches any sequence of characters, including the empty string\n' +
+    '- `_` matches exactly one character\n' +
+    '- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)'
+};
+
 export const OPERATORS_WITH_LIST_OPERAND = [INPUT_FIELD_IN, INPUT_FIELD_NOT_IN];
 
 export const FILTER_FIELDS_BY_TYPE: { [name: string]: string[] } = {
