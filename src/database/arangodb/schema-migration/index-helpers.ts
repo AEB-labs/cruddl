@@ -46,10 +46,7 @@ function getIndicesForRootEntity(rootEntity: RootEntityType, options: { shouldUs
         fields: index.fields.map(getArangoFieldPath),
         unique: index.unique,
         type: DEFAULT_INDEX_TYPE,
-
-        // sic! unique indices should always be sparse so that more than one NULL value is allowed
-        // non-unique indices should not be sparse so that filter: { something: null } can use the index
-        sparse: index.unique
+        sparse: index.sparse
     }));
 
     if (options.shouldUseWorkaroundForSparseIndices && rootEntity.keyField) {

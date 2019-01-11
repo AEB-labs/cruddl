@@ -16,6 +16,7 @@ describe('ArangoDBAdapter', () => {
                 type Delivery @rootEntity {
                     deliveryNumber: String @key
                     isShipped: Boolean @index
+                    shippedAt: DateTime @index(sparse: true)
                     itemCount: Int @index
                 }
             `);
@@ -96,6 +97,14 @@ describe('ArangoDBAdapter', () => {
                     sparse: true,
                     type: 'persistent',
                     unique: true
+                },
+                {
+                    fields: [
+                        'shippedAt'
+                    ],
+                    sparse: true,
+                    unique: false,
+                    type: 'persistent'
                 }
             ];
             if (!isArangoDB34) {
@@ -110,7 +119,7 @@ describe('ArangoDBAdapter', () => {
                         unique: false
                     });
             }
-            expect(expectedIndices.map((index: any) => ({
+            expect(indices.map((index: any) => ({
                 fields: index.fields,
                 sparse: index.sparse,
                 type: index.type,
