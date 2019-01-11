@@ -100,7 +100,7 @@ export class OutputTypeGenerator {
 
         // force the absolute-order-behavior we normally only have if the 'first' argument is present
         // so one can use a _cursor value from a query without orderBy as 'after' argument without orderBy.
-        const clauses = getOrderByValues(listFieldRequest.args, orderByType, { forceAbsoluteOrder: true });
+        const clauses = getOrderByValues(listFieldRequest.args, orderByType, { isAbsoluteOrderRequired: true });
         const sortedClauses = sortBy(clauses, clause => clause.name);
         const objectNode = new ObjectQueryNode(sortedClauses.map(clause =>
             new PropertySpecification(clause.underscoreSeparatedPath, clause.getValueNode(itemNode))));
