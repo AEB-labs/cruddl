@@ -90,12 +90,14 @@ export class IndexField implements ModelComponent {
 export class Index implements ModelComponent {
     readonly id?: string;
     readonly unique: boolean;
+    readonly sparse: boolean;
     readonly fields: ReadonlyArray<IndexField>;
     readonly astNode?: DirectiveNode | ObjectValueNode;
 
     constructor(private input: IndexDefinitionConfig, public readonly declaringType: RootEntityType) {
         this.id = input.id;
         this.unique = input.unique || false;
+        this.sparse = input.sparse != undefined ? input.sparse : this.unique;
         this.fields = (input.fields || []).map((fieldPath, index) => new IndexField(fieldPath, declaringType, (input.fieldASTNodes || [])[index] || input.astNode));
         this.astNode = input.astNode;
     }
