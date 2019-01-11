@@ -1,12 +1,7 @@
 import { GraphQLInt, GraphQLList, GraphQLNonNull, GraphQLString } from 'graphql';
 import { Type } from '../model';
-import {
-    BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConstBoolQueryNode, LiteralQueryNode, OrderDirection, OrderSpecification,
-    QueryNode, RuntimeErrorQueryNode, TransformListQueryNode, VariableQueryNode
-} from '../query-tree';
-import {
-    AFTER_ARG, CURSOR_FIELD, FIRST_ARG, ID_FIELD, ORDER_BY_ARG, ORDER_BY_ASC_SUFFIX, SKIP_ARG
-} from '../schema/constants';
+import { BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConstBoolQueryNode, LiteralQueryNode, OrderDirection, OrderSpecification, QueryNode, RuntimeErrorQueryNode, TransformListQueryNode, VariableQueryNode } from '../query-tree';
+import { AFTER_ARG, CURSOR_FIELD, FIRST_ARG, ID_FIELD, ORDER_BY_ARG, ORDER_BY_ASC_SUFFIX, SKIP_ARG } from '../schema/constants';
 import { decapitalize } from '../utils/utils';
 import { and } from './filter-input-types/constants';
 import { OrderByEnumGenerator, OrderByEnumType, OrderByEnumValue } from './order-by-enum-generator';
@@ -39,7 +34,7 @@ export class OrderByAndPaginationAugmentation {
                         type.isRootEntityType ? `the result order is not specified. ` : `the order of the list in the object is preserved. `
                     ) + (
                         type.isRootEntityType || type.isChildEntityType ?
-                            `If pagination is used (i.e., the \`${FIRST_ARG}\` is specified), \`${ID_FIELD}${ORDER_BY_ASC_SUFFIX}\` will be implicitly added as last sort criterion so that the sort order is deterministic.` :
+                            `If cursor-based pagination is used (i.e., the \`${AFTER_ARG}\` is specified or the \`${CURSOR_FIELD}\` is requested), \`${ID_FIELD}${ORDER_BY_ASC_SUFFIX}\` will be implicitly added as last sort criterion so that the sort order is deterministic.` :
                             `When using cursor-based pagination, ensure that you specify a field with unique values so that the order is deterministic.`
                     )
                 },
@@ -60,11 +55,14 @@ export class OrderByAndPaginationAugmentation {
                 const listNode = schemaField.resolve(sourceNode, args, info);
                 const itemVariable = new VariableQueryNode(decapitalize(type.name));
 
-                const orderBy = this.getOrderSpecification(args, orderByType, itemVariable);
-                const maxCount: number|undefined = args[FIRST_ARG];
+                const maxCount: number | undefined = args[FIRST_ARG];
                 const skip = args[SKIP_ARG];
                 const paginationFilter = this.createPaginationFilterNode(args, itemVariable, orderByType);
                 const afterArg = args[AFTER_ARG];
+                const isCursorRequested = info.fieldRequestStack[info.fieldRequestStack.length - 1].selectionSet.some(sel => sel.fieldRequest.field.name === CURSOR_FIELD);
+                // we only requre the absolute ordering for cursor-based pagination, which is detected via a cursor field or the "after" argument.
+                const isAbsoluteOrderRequired = isCursorRequested || !!afterArg;
+                const orderBy = this.getOrderSpecification(args, orderByType, itemVariable, { isAbsoluteOrderRequired });
 
                 if (orderBy.isUnordered() && maxCount == undefined && paginationFilter === ConstBoolQueryNode.TRUE) {
                     return listNode;
@@ -76,7 +74,7 @@ export class OrderByAndPaginationAugmentation {
                     // TODO only really do this here if there is an index covering this
                     // (however, it's not that easy - it needs to include the filter stuff that is already baked into
                     // listNode)
-                    return this.getPaginatedNodeUsingMultiIndexOptimization({orderBy, itemVariable, orderByType, listNode, args, maxCount});
+                    return this.getPaginatedNodeUsingMultiIndexOptimization({ orderBy, itemVariable, orderByType, listNode, args, maxCount });
                 }
 
                 return new TransformListQueryNode({
@@ -91,7 +89,7 @@ export class OrderByAndPaginationAugmentation {
         };
     };
 
-    private getPaginatedNodeUsingMultiIndexOptimization({args, orderByType, itemVariable, listNode, orderBy, maxCount}:{args: { [name: string]: any }, orderByType: OrderByEnumType, itemVariable: VariableQueryNode, listNode: QueryNode, orderBy: OrderSpecification, maxCount: number|undefined}) {
+    private getPaginatedNodeUsingMultiIndexOptimization({ args, orderByType, itemVariable, listNode, orderBy, maxCount }: { args: { [name: string]: any }, orderByType: OrderByEnumType, itemVariable: VariableQueryNode, listNode: QueryNode, orderBy: OrderSpecification, maxCount: number | undefined }) {
         const afterArg = args[AFTER_ARG];
         let cursorObj: any;
         try {
@@ -103,8 +101,8 @@ export class OrderByAndPaginationAugmentation {
             return new RuntimeErrorQueryNode(`Invalid cursor ${JSON.stringify(afterArg)} supplied to "after": ${e.message}`);
         }
 
-        let currentEqualityChain: QueryNode|undefined;
-        const orderByValues = getOrderByValues(args, orderByType);
+        let currentEqualityChain: QueryNode | undefined;
+        const orderByValues = getOrderByValues(args, orderByType, { isAbsoluteOrderRequired: true });
         const partLists: TransformListQueryNode[] = [];
         for (const clause of orderByValues) {
             const cursorProperty = clause.underscoreSeparatedPath;
@@ -138,8 +136,8 @@ export class OrderByAndPaginationAugmentation {
         });
     }
 
-    private getOrderSpecification(args: any, orderByType: OrderByEnumType, itemNode: QueryNode) {
-        const mappedValues = getOrderByValues(args, orderByType);
+    private getOrderSpecification(args: any, orderByType: OrderByEnumType, itemNode: QueryNode, options: { readonly isAbsoluteOrderRequired: boolean }) {
+        const mappedValues = getOrderByValues(args, orderByType, options);
         const clauses = mappedValues.map(value => value.getClause(itemNode));
         return new OrderSpecification(clauses);
     }
@@ -194,6 +192,6 @@ export class OrderByAndPaginationAugmentation {
             );
         }
 
-        return filterForClause(getOrderByValues(args, orderByType));
+        return filterForClause(getOrderByValues(args, orderByType, { isAbsoluteOrderRequired: true }));
     }
 }
