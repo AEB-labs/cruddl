@@ -1,31 +1,11 @@
-import {
-    ArgumentNode, EnumValueDefinitionNode, FieldDefinitionNode, GraphQLBoolean, GraphQLID, GraphQLInputObjectType,
-    GraphQLList, GraphQLNonNull, GraphQLString, ObjectTypeDefinitionNode, ObjectValueNode, StringValueNode,
-    TypeDefinitionNode, valueFromAST
-} from 'graphql';
-import {
-    ParsedGraphQLProjectSource, ParsedObjectProjectSource, ParsedProject, ParsedProjectSourceBaseKind
-} from '../config/parsed-project';
-import {
-    ENUM, ENUM_TYPE_DEFINITION, LIST, LIST_TYPE, NON_NULL_TYPE, OBJECT, OBJECT_TYPE_DEFINITION, STRING
-} from '../graphql/kinds';
+import { ArgumentNode, EnumValueDefinitionNode, FieldDefinitionNode, GraphQLBoolean, GraphQLID, GraphQLInputObjectType, GraphQLList, GraphQLNonNull, GraphQLString, ObjectTypeDefinitionNode, ObjectValueNode, StringValueNode, TypeDefinitionNode, valueFromAST } from 'graphql';
+import { ParsedGraphQLProjectSource, ParsedObjectProjectSource, ParsedProject, ParsedProjectSourceBaseKind } from '../config/parsed-project';
+import { ENUM, ENUM_TYPE_DEFINITION, LIST, LIST_TYPE, NON_NULL_TYPE, OBJECT, OBJECT_TYPE_DEFINITION, STRING } from '../graphql/kinds';
 import { getValueFromAST } from '../graphql/value-from-ast';
-import {
-    CALC_MUTATIONS_DIRECTIVE, CALC_MUTATIONS_OPERATORS_ARG, CHILD_ENTITY_DIRECTIVE, DEFAULT_VALUE_DIRECTIVE,
-    ENTITY_EXTENSION_DIRECTIVE, ID_FIELD, INDEX_DEFINITION_INPUT_TYPE, INDEX_DIRECTIVE, INDICES_ARG, INVERSE_OF_ARG,
-    KEY_FIELD_DIRECTIVE, NAMESPACE_DIRECTIVE, NAMESPACE_NAME_ARG, NAMESPACE_SEPARATOR, OBJECT_TYPE_KIND_DIRECTIVES,
-    PERMISSION_PROFILE_ARG, REFERENCE_DIRECTIVE, RELATION_DIRECTIVE, ROLES_DIRECTIVE, ROLES_READ_ARG,
-    ROLES_READ_WRITE_ARG, ROOT_ENTITY_DIRECTIVE, UNIQUE_DIRECTIVE, VALUE_ARG, VALUE_OBJECT_DIRECTIVE
-} from '../schema/constants';
-import {
-    findDirectiveWithName, getNamedTypeNodeIgnoringNonNullAndList, getNodeByName, getTypeNameIgnoringNonNullAndList
-} from '../schema/schema-utils';
+import { CALC_MUTATIONS_DIRECTIVE, CALC_MUTATIONS_OPERATORS_ARG, CHILD_ENTITY_DIRECTIVE, DEFAULT_VALUE_DIRECTIVE, ENTITY_EXTENSION_DIRECTIVE, ID_FIELD, INDEX_DEFINITION_INPUT_TYPE, INDEX_DIRECTIVE, INDICES_ARG, INVERSE_OF_ARG, KEY_FIELD_DIRECTIVE, NAMESPACE_DIRECTIVE, NAMESPACE_NAME_ARG, NAMESPACE_SEPARATOR, OBJECT_TYPE_KIND_DIRECTIVES, PERMISSION_PROFILE_ARG, REFERENCE_DIRECTIVE, RELATION_DIRECTIVE, ROLES_DIRECTIVE, ROLES_READ_ARG, ROLES_READ_WRITE_ARG, ROOT_ENTITY_DIRECTIVE, UNIQUE_DIRECTIVE, VALUE_ARG, VALUE_OBJECT_DIRECTIVE } from '../schema/constants';
+import { findDirectiveWithName, getNamedTypeNodeIgnoringNonNullAndList, getNodeByName, getTypeNameIgnoringNonNullAndList } from '../schema/schema-utils';
 import { compact, flatMap, mapValues } from '../utils/utils';
-import {
-    CalcMutationsOperator, EnumTypeConfig, EnumValueConfig, FieldConfig, IndexDefinitionConfig, LocalizationConfig,
-    NamespacedPermissionProfileConfigMap,
-    ObjectTypeConfig, PermissionProfileConfigMap, PermissionsConfig, RolesSpecifierConfig, TypeConfig, TypeKind
-} from './config';
+import { CalcMutationsOperator, EnumTypeConfig, EnumValueConfig, FieldConfig, IndexDefinitionConfig, LocalizationConfig, NamespacedPermissionProfileConfigMap, ObjectTypeConfig, PermissionProfileConfigMap, PermissionsConfig, RolesSpecifierConfig, TypeConfig, TypeKind } from './config';
 import { Model } from './implementation';
 import { parseI18nConfigs } from './parse-i18n';
 import { ValidationContext, ValidationMessage } from './validation';
@@ -168,7 +148,7 @@ function processKeyField(definition: ObjectTypeDefinitionNode, fields: ReadonlyA
             context.addMessage(ValidationMessage.error(`The field "id" must be of type "ID".`, idField.astNode));
         }
     }
-    return {fields, keyFieldASTNode, keyFieldName};
+    return { fields, keyFieldASTNode, keyFieldName };
 }
 
 function getDefaultValue(fieldNode: FieldDefinitionNode, context: ValidationContext): any {
@@ -234,7 +214,7 @@ function getCalcMutationOperators(fieldNode: FieldDefinitionNode, context: Valid
 function createIndexDefinitionInputs(definition: ObjectTypeDefinitionNode, context: ValidationContext): ReadonlyArray<IndexDefinitionConfig> {
     return [
         ...createRootEntityBasedIndices(definition, context),
-        ...createFieldBasedIndices(definition)
+        ...createFieldBasedIndices(definition, context)
     ];
 }
 
@@ -263,7 +243,7 @@ function createRootEntityBasedIndices(definition: ObjectTypeDefinitionNode, cont
     }
 }
 
-function createFieldBasedIndices(definition: ObjectTypeDefinitionNode): ReadonlyArray<IndexDefinitionConfig> {
+function createFieldBasedIndices(definition: ObjectTypeDefinitionNode, context: ValidationContext): ReadonlyArray<IndexDefinitionConfig> {
     return compact((definition.fields || []).map((field): IndexDefinitionConfig | undefined => {
         let unique = false;
         let indexDirective = findDirectiveWithName(field, INDEX_DIRECTIVE);
@@ -274,10 +254,25 @@ function createFieldBasedIndices(definition: ObjectTypeDefinitionNode): Readonly
         if (!indexDirective) {
             return undefined;
         }
+        let sparseArg = indexDirective.arguments && indexDirective.arguments.find(arg => arg.name.value === 'sparse');
+        let sparse: boolean | undefined;
+        if (sparseArg) {
+            switch (sparseArg.value.kind) {
+                case 'BooleanValue':
+                    sparse = sparseArg.value.value;
+                    break;
+                case 'NullValue':
+                    // leave at undefined
+                    break;
+                default:
+                    context.addMessage(ValidationMessage.error(`The value for the "sparse" argument should be either "true" or "false"`, sparseArg.value));
+            }
+        }
         return {
             astNode: indexDirective,
             fields: [field.name.value],
-            unique: unique,
+            unique,
+            sparse,
             fieldASTNodes: [indexDirective]
         };
     }));
@@ -375,8 +370,7 @@ function getRolesOfArg(rolesArg: ArgumentNode | undefined, context: ValidationCo
                     return val.value;
                 }
             }));
-        }
-        else if (rolesArg.value.kind === STRING) {
+        } else if (rolesArg.value.kind === STRING) {
             roles = [rolesArg.value.value];
         } else {
             context.addMessage(ValidationMessage.error(VALIDATION_ERROR_EXPECTED_STRING_OR_LIST_OF_STRINGS, rolesArg.value.loc));
@@ -414,7 +408,7 @@ function getInverseOfASTNode(fieldNode: FieldDefinitionNode, context: Validation
 }
 
 function extractPermissionProfiles(parsedProject: ParsedProject, validationContext: ValidationContext): ReadonlyArray<NamespacedPermissionProfileConfigMap> {
-    return compact(parsedProject.sources.map((source): NamespacedPermissionProfileConfigMap|undefined => {
+    return compact(parsedProject.sources.map((source): NamespacedPermissionProfileConfigMap | undefined => {
         if (source.kind !== ParsedProjectSourceBaseKind.OBJECT) {
             return undefined;
         }
@@ -442,9 +436,10 @@ function extractI18n(parsedProject: ParsedProject, validationContext: Validation
 // fake input type for index mapping
 const indexDefinitionInputObjectType: GraphQLInputObjectType = new GraphQLInputObjectType({
     fields: {
-        id: {type: GraphQLString},
-        fields: {type: new GraphQLNonNull(new GraphQLList(GraphQLString))},
-        unique: {type: GraphQLBoolean, defaultValue: false}
+        id: { type: GraphQLString },
+        fields: { type: new GraphQLNonNull(new GraphQLList(GraphQLString)) },
+        unique: { type: GraphQLBoolean, defaultValue: false },
+        sparse: { type: GraphQLBoolean }
     },
     name: INDEX_DEFINITION_INPUT_TYPE
 });

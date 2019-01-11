@@ -24,10 +24,10 @@ export const DIRECTIVES: DocumentNode = gql`
     directive @key on FIELD_DEFINITION
 
     "Declares a field to be indexed"
-    directive @index on FIELD_DEFINITION
+    directive @index(sparse: Boolean = false) on FIELD_DEFINITION
 
     "Declares a field to be unique-indexed"
-    directive @unique on FIELD_DEFINITION
+    directive @unique(sparse: Boolean = true) on FIELD_DEFINITION
 
     "Specifies the namespace of a type"
     directive @namespace(name: String!) on OBJECT
@@ -68,6 +68,13 @@ export const DIRECTIVES: DocumentNode = gql`
         id: String,
         fields: [String!]!
         unique: Boolean = false
+        
+        """
+        If set to true, the index will not contain any values where one of the fields is null.
+        
+        If unspecified, the value depends on unique: unique indices default to sparse, non-unique indices default to non-sparse.
+        """
+        sparse: Boolean
     }
 `;
 
