@@ -53,6 +53,20 @@ export interface ArangoDBConfig {
      * Can be overridden with the queryMemoryLimit option in ExecutionOptions
      */
     queryMemoryLimit?: number
+
+    /**
+     * If enabled, collection traversals add an indirection between the filter/order part and the projection part
+     * so that ArangoDB will do the filtering/sorting on a leaner versions of the documents, then load the full
+     * documents for the projection part.
+     *
+     * See https://github.com/arangodb/arangodb/issues/7821
+     */
+    readonly enableExperimentalProjectionIndirection?: boolean
+
+    /**
+     * If set, enableExperimentalProjectionIndirection will only apply to root entity types specified in this list.
+     */
+    readonly experimentalProjectionIndirectionTypeNames?: ReadonlyArray<string>
 }
 
 export function initDatabase(config: ArangoDBConfig): Database {
