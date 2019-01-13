@@ -9,8 +9,14 @@ function stringify(val: any) {
     return JSON.stringify(val);
 }
 
+export interface OptimizationConfig {
+    enableExperimentalProjectionIndirection?: boolean
+    experimentalProjectionIndirectionTypeNames?: ReadonlyArray<string>
+}
+
 export namespace aqlConfig {
     export let enableIndentationForCode = false;
+    export let optimizationConfig: OptimizationConfig = {}
 }
 
 const INDENTATION = '  ';

@@ -102,6 +102,20 @@ function buildFieldQueryNode0(sourceNode: QueryNode, field: QueryNodeField, fiel
 }
 
 function buildTransformListQueryNode(listNode: QueryNode, itemType: QueryNodeObjectType, selectionSet: ReadonlyArray<FieldSelection>, fieldRequestStack: ReadonlyArray<FieldRequest>): QueryNode {
+    // if we can, just extend a given TransformListNode so that other cruddl optimizations can operate
+    // (e.g. projection indirection)
+    if (listNode instanceof TransformListQueryNode && listNode.innerNode === listNode.itemVariable) {
+        return new TransformListQueryNode({
+            listNode: listNode.listNode,
+            itemVariable: listNode.itemVariable,
+            filterNode: listNode.filterNode,
+            innerNode: buildObjectQueryNode(listNode.itemVariable, itemType, selectionSet, fieldRequestStack),
+            maxCount: listNode.maxCount,
+            orderBy: listNode.orderBy,
+            skip: listNode.skip
+        });
+    }
+
     const itemVariable = new VariableQueryNode(itemType.name);
     const innerNode = buildObjectQueryNode(itemVariable, itemType, selectionSet, fieldRequestStack);
     return new TransformListQueryNode({
