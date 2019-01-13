@@ -1,4 +1,5 @@
 import { Database } from 'arangojs';
+import { GraphQLError } from 'graphql';
 import { globalContext, SchemaContext } from '../../config/global';
 import { Logger } from '../../config/logging';
 import { ExecutionOptions } from '../../execution/execution-options';
@@ -7,7 +8,7 @@ import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS, QueryNode } from '../../
 import { objectValues } from '../../utils/utils';
 import { getPreciseTime, Watch } from '../../utils/watch';
 import { DatabaseAdapter, ExecutionArgs, ExecutionPlan, ExecutionResult } from '../database-adapter';
-import { AQLCompoundQuery, AQLExecutableQuery } from './aql';
+import { AQLCompoundQuery, aqlConfig, AQLExecutableQuery } from './aql';
 import { getAQLQuery } from './aql-generator';
 import { RequestInstrumentation, RequestInstrumentationPhase } from './arangojs-instrumentation/config';
 import { ArangoDBConfig, getArangoDBLogger, initDatabase } from './config';
@@ -74,21 +75,65 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             let plans: any[] = [];
 
             let resultHolder: { [p: string]: any } = {};
-            queries.forEach(query => {
+            for (const query of queries) {
                 const bindVars = query.boundValues;
                 for (const key in query.usedPreExecResultNames) {
                     bindVars[query.usedPreExecResultNames[key]] = resultHolder[key];
                 }
 
+                let explainResult;
+                if (options.recordPlan) {
+                    const stmt = db._createStatement({
+                        query: query.code,
+                        bindVars
+                    });
+                    explainResult = stmt.explain({ allPlans: true });
+                }
+
                 // Execute the AQL query
-                const executionResult = db._query({
-                    query: query.code,
-                    bindVars,
-                    options: {
-                        profile: options.recordPlan ? 2 : options.recordTimings ? 1 : 0,
-                        memoryLimit: options.queryMemoryLimit
+                let executionResult;
+                try {
+                    executionResult = db._query({
+                        query: query.code,
+                        bindVars,
+                        options: {
+                            profile: options.recordPlan ? 2 : options.recordTimings ? 1 : 0,
+                            memoryLimit: options.queryMemoryLimit
+                        }
+                    });
+                } catch (error) {
+                    if (!options.recordPlan) {
+                        throw error;
                     }
-                });
+
+                    // we're analyzing, so we should still report as much as possible
+
+                    if (explainResult) {
+                        plans.push({
+                            plan: explainResult.plans[0],
+                            discardedPlans: explainResult.plans.slice(1),
+                            warnings: explainResult.warnings
+                        });
+                    }
+
+                    if (enableProfiling && timings) {
+                        timings.js = (getPreciseTime() - startTime) - timingsTotal;
+                    }
+
+                    const transactionResult = {
+                        error,
+                        timings,
+                        plans
+                    };
+
+                    if (options.mutationMode === 'rollback') {
+                        const error = new Error(`${JSON.stringify(transactionResult)}`);
+                        error.name = 'RolledBackTransactionError';
+                        throw error;
+                    }
+
+                    return transactionResult;
+                }
 
                 const resultData = executionResult.next();
 
@@ -106,6 +151,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                     const extra = executionResult.getExtra();
                     plans.push({
                         plan: extra.plan,
+                        discardedPlans: explainResult ? explainResult.plans.slice(1) : [],
                         stats: extra.stats,
                         warnings: extra.warnings,
                         profile: extra.profile
@@ -123,7 +169,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                         }
                     }
                 }
-            });
+            }
 
             // the last query is always the main query, use its result as result of the transaction
             const lastQueryResultName = queries[queries.length - 1].resultName;
@@ -164,6 +210,9 @@ export class ArangoDBAdapter implements DatabaseAdapter {
 
     async execute(queryTree: QueryNode) {
         const result = await this.executeExt({ queryTree });
+        if (result.errors && result.errors.length) {
+            throw result.errors[0];
+        }
         return result.data;
     }
 
@@ -172,12 +221,15 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         globalContext.registerContext(this.schemaContext);
         let executableQueries: AQLExecutableQuery[];
         let aqlQuery: AQLCompoundQuery;
+        const oldEnableIndentationForCode = aqlConfig.enableIndentationForCode;
+        aqlConfig.enableIndentationForCode = !!options.recordPlan;
         try {
             //TODO Execute single statement AQL queries directly without "db.transaction"?
             aqlQuery = getAQLQuery(queryTree);
             executableQueries = aqlQuery.getExecutableQueries();
         } finally {
             globalContext.unregisterContext();
+            aqlConfig.enableIndentationForCode = oldEnableIndentationForCode;
         }
         if (this.logger.isTraceEnabled()) {
             this.logger.trace(`Executing AQL: ${aqlQuery.toColoredString()}`);
@@ -225,7 +277,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             }
         }
 
-        const { timings: databaseTimings, data, plans } = transactionResult;
+        const { timings: databaseTimings, data, plans, error: databaseError } = transactionResult;
 
         let timings;
         if (options.recordTimings) {
@@ -267,15 +319,24 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                 transactionSteps: executableQueries.map((q, index) => ({
                     query: q.code,
                     boundValues: q.boundValues,
-                    plan: plans[index].plan,
-                    stats: plans[index].stats,
-                    warnings: plans[index].warnings,
-                    profile: plans[index].profile
+                    plan: plans[index] && plans[index].plan,
+                    discardedPlans: plans[index] && plans[index].discardedPlans,
+                    stats: plans[index] && plans[index].stats,
+                    warnings: plans[index] && plans[index].warnings,
+                    profile: plans[index] && plans[index].profile
                 }))
-            }
+            };
+        }
+
+        let errors: ReadonlyArray<GraphQLError> | undefined;
+        if (databaseError) {
+            errors = [
+                new GraphQLError(databaseError.errorMessage)
+            ];
         }
 
         return {
+            errors,
             data,
             timings,
             plan

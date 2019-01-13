@@ -33,12 +33,14 @@ export function createFastApp(project: Project, databaseAdapter: DatabaseAdapter
                 document
             });
             res.end(JSON.stringify({ data, errors }));
+            return;
         }
 
         try {
-            const data = await fastPromise;
+            const result = await fastPromise;
             res.end(JSON.stringify({
-                data
+                data: result.data,
+                errors: result.errors ? result.errors.map(e => formatError(e)) : undefined
             }));
         } catch (e) {
             res.end(JSON.stringify({
