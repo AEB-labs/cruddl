@@ -1,6 +1,7 @@
 import { Config, Connection } from 'arangojs/lib/async/connection';
 import { ArangoError, HttpError } from 'arangojs/lib/async/error';
 import { ArangojsResponse } from 'arangojs/lib/async/util/request.node';
+import { sanitizeUrl } from 'arangojs/lib/async/util/sanitizeUrl';
 import { RequestInstrumentation, requestInstrumentationBodyKey } from './config';
 import { createRequest } from './custom-request';
 
@@ -125,9 +126,7 @@ export class CustomConnection extends Connection {
     }
 
     addToHostList(urls: string | string[]): number[] {
-        const cleanUrls = (Array.isArray(urls) ? urls : [urls]).map(url =>
-            (this as any)._sanitizeEndpointUrl(url)
-        );
+        const cleanUrls = (Array.isArray(urls) ? urls : [urls]).map(url => sanitizeUrl(url));
         const newUrls = cleanUrls.filter(url => (this as any)._urls.indexOf(url) === -1);
         (this as any)._urls.push(...newUrls);
         (this as any)._hosts.push(
