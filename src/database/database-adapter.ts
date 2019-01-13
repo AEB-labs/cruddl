@@ -1,3 +1,4 @@
+import { GraphQLError } from 'graphql';
 import { ExecutionOptions } from '../execution/execution-options';
 import { Model } from '../model';
 import { QueryNode } from '../query-tree';
@@ -44,7 +45,15 @@ export interface ExecutionResult {
     /**
      * The data result of executing the query
      */
-    readonly data: any;
+    readonly data?: any;
+
+    /**
+     * If this is set, errors occurred, and data may be undefined.
+     *
+     * Errors are thrown normally, but if recordPlans is enabled, errors still generate a proper result with
+     * all previously gathered plan data.
+     */
+    readonly errors?: ReadonlyArray<GraphQLError>;
 
     /**
      * Times (in seconds) spent on specific parts of execution. Only included if recordTimings is set to true.
@@ -60,35 +69,38 @@ export interface ExecutionPlan {
     readonly transactionSteps: ReadonlyArray<ExecutionPlanTransactionStep>
 }
 
+interface Plan {
+    nodes: ReadonlyArray<{
+        type: string,
+        dependencies: ReadonlyArray<number>
+        id: number,
+        estimatedCost: number,
+        estimatedNrItems: number,
+        [key: string]: any
+    }>
+    rules: ReadonlyArray<any>,
+    collections: ReadonlyArray<{
+        name: string,
+        type: string
+    }>,
+    variables: ReadonlyArray<{
+        id: number,
+        name: string
+    }>,
+    estimatedCost: number,
+    estimatedNrItems: number,
+    initialize: boolean,
+    isModificationQuery: boolean
+}
+
 export interface ExecutionPlanTransactionStep {
     readonly query: string
     readonly boundValues: { [p: string]: any }
 
-    readonly plan: {
-        nodes: ReadonlyArray<{
-            type: string,
-            dependencies: ReadonlyArray<number>
-            id: number,
-            estimatedCost: number,
-            estimatedNrItems: number,
-            [key: string]: any
-        }>
-        rules: ReadonlyArray<any>,
-        collections: ReadonlyArray<{
-            name: string,
-            type: string
-        }>,
-        variables: ReadonlyArray<{
-            id: number,
-            name: string
-        }>,
-        estimatedCost: number,
-        estimatedNrItems: number,
-        initialize: boolean,
-        isModificationQuery: boolean
-    }
+    readonly plan?: Plan;
+    readonly discardedPlans?: ReadonlyArray<Plan>;
 
-    readonly stats: {
+    readonly stats?: {
         readonly nodes: ReadonlyArray<{
             id: number,
             calls: number,
@@ -104,12 +116,12 @@ export interface ExecutionPlanTransactionStep {
         executionTime: number
     }
 
-    readonly warnings: ReadonlyArray<{
+    readonly warnings?: ReadonlyArray<{
         code: string,
         message: string
     }>
 
-    readonly profile: { [key: string]: number }
+    readonly profile?: { [key: string]: number }
 }
 
 export interface ExecutionArgs extends ExecutionOptions {

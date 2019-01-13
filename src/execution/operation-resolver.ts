@@ -1,4 +1,4 @@
-import { print } from 'graphql';
+import { GraphQLError, print } from 'graphql';
 import { applyAuthorizationToQueryTree } from '../authorization/execution';
 import { globalContext } from '../config/global';
 import { ExecutionPlan } from '../database/database-adapter';
@@ -68,6 +68,7 @@ export class OperationResolver {
             }
             let dbAdapterTimings;
             let plan: ExecutionPlan | undefined;
+            let errors: ReadonlyArray<GraphQLError> | undefined;
             let { canEvaluateStatically, result: data } = evaluateQueryStatically(queryTree);
             watch.stop('staticEvaluation');
             topLevelWatch.stop('preparation');
@@ -80,6 +81,7 @@ export class OperationResolver {
                 };
                 topLevelWatch.stop('database');
                 dbAdapterTimings = res.timings;
+                errors = res.errors;
                 data = res.data;
                 plan = res.plan;
                 logger.debug(`Execution successful`);
@@ -89,7 +91,7 @@ export class OperationResolver {
             if (logger.isTraceEnabled()) {
                 logger.trace('Result: ' + JSON.stringify(data, undefined, '  '));
             }
-            let profile: RequestProfile | undefined ;
+            let profile: RequestProfile | undefined;
             if (profileConsumer || options.recordPlan || options.recordTimings) {
                 const preparation = {
                     ...(dbAdapterTimings ? dbAdapterTimings.preparation : {}),
@@ -111,6 +113,7 @@ export class OperationResolver {
             }
             return {
                 data,
+                errors,
                 profile
             };
         } catch (e) {
