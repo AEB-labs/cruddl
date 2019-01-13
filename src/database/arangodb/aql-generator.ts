@@ -5,7 +5,7 @@ import { simplifyBooleans } from '../../query-tree/utils';
 import { not } from '../../schema-generation/filter-input-types/constants';
 import { Constructor, decapitalize } from '../../utils/utils';
 import { analyzeLikePatternPrefix } from '../like-helpers';
-import { aql, AQLCompoundQuery, AQLFragment, AQLQueryResultVariable, AQLVariable } from './aql';
+import { aql, AQLCompoundQuery, aqlConfig, AQLFragment, AQLQueryResultVariable, AQLVariable } from './aql';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './arango-basics';
 
 enum AccessType {
@@ -280,6 +280,21 @@ register(TransformListQueryNode, (node, context) => {
     let itemContext = context.introduceVariable(node.itemVariable);
     const itemVar = itemContext.getVariable(node.itemVariable);
 
+    // in certain conditions, it greatly reduces memory consumption if the projection part is
+    // indirected via a DOCUMENT() call, see https://github.com/arangodb/arangodb/issues/7821
+    const useIndirectedProjection = aqlConfig.optimizationConfig.enableExperimentalProjectionIndirection
+        && node.listNode instanceof EntitiesQueryNode
+        && (!aqlConfig.optimizationConfig.experimentalProjectionIndirectionTypeNames
+            || aqlConfig.optimizationConfig.experimentalProjectionIndirectionTypeNames.includes(node.listNode.rootEntityType.name))
+        && node.innerNode !== node.itemVariable
+        && node.maxCount !== undefined;
+    let itemProjectionContext = itemContext;
+    let itemProjectionVar = itemVar;
+    if (useIndirectedProjection) {
+        itemProjectionContext = context.introduceVariable(node.itemVariable);
+        itemProjectionVar = itemProjectionContext.getVariable(node.itemVariable);
+    }
+
     let list: AQLFragment;
     let filterDanglingEdges = aql``;
     if (node.listNode instanceof FollowEdgeQueryNode) {
@@ -310,7 +325,8 @@ register(TransformListQueryNode, (node, context) => {
         filterDanglingEdges,
         generateSortAQL(node.orderBy, itemContext),
         limitClause,
-        aql`RETURN ${processNode(node.innerNode, itemContext)}`
+        useIndirectedProjection ? aql`LET ${itemProjectionVar} = DOCUMENT(${itemVar}._id)` : aql``,
+        aql`RETURN ${processNode(node.innerNode, itemProjectionContext)}`
     );
 });
 

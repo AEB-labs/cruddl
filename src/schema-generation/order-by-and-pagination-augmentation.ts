@@ -52,20 +52,34 @@ export class OrderByAndPaginationAugmentation {
                 }
             },
             resolve: (sourceNode, args, info) => {
-                const listNode = schemaField.resolve(sourceNode, args, info);
-                const itemVariable = new VariableQueryNode(decapitalize(type.name));
+                let listNode = schemaField.resolve(sourceNode, args, info);
+                let itemVariable = new VariableQueryNode(decapitalize(type.name));
+
+                // if we can, just extend a given TransformListNode so that other cruddl optimizations can operate
+                // (e.g. projection indirection)
+                let filterNode: QueryNode | undefined;
+                const originalListNode = listNode;
+                if (listNode instanceof TransformListQueryNode
+                    && listNode.skip === 0
+                    && listNode.orderBy.isUnordered()
+                    && listNode.maxCount == undefined
+                    && listNode.innerNode === listNode.itemVariable) {
+                    filterNode = listNode.filterNode.equals(ConstBoolQueryNode.TRUE) ? undefined : listNode.filterNode;
+                    itemVariable = listNode.itemVariable;
+                    listNode = listNode.listNode;
+                }
 
                 const maxCount: number | undefined = args[FIRST_ARG];
                 const skip = args[SKIP_ARG];
                 const paginationFilter = this.createPaginationFilterNode(args, itemVariable, orderByType);
                 const afterArg = args[AFTER_ARG];
                 const isCursorRequested = info.fieldRequestStack[info.fieldRequestStack.length - 1].selectionSet.some(sel => sel.fieldRequest.field.name === CURSOR_FIELD);
-                // we only requre the absolute ordering for cursor-based pagination, which is detected via a cursor field or the "after" argument.
+                // we only require the absolute ordering for cursor-based pagination, which is detected via a cursor field or the "after" argument.
                 const isAbsoluteOrderRequired = isCursorRequested || !!afterArg;
                 const orderBy = this.getOrderSpecification(args, orderByType, itemVariable, { isAbsoluteOrderRequired });
 
                 if (orderBy.isUnordered() && maxCount == undefined && paginationFilter === ConstBoolQueryNode.TRUE) {
-                    return listNode;
+                    return originalListNode;
                 }
 
                 if (!skip && maxCount != undefined && orderBy.clauses.length > 1 && afterArg && type.isRootEntityType) {
@@ -74,7 +88,7 @@ export class OrderByAndPaginationAugmentation {
                     // TODO only really do this here if there is an index covering this
                     // (however, it's not that easy - it needs to include the filter stuff that is already baked into
                     // listNode)
-                    return this.getPaginatedNodeUsingMultiIndexOptimization({ orderBy, itemVariable, orderByType, listNode, args, maxCount });
+                    return this.getPaginatedNodeUsingMultiIndexOptimization({ orderBy, itemVariable, orderByType, listNode, args, maxCount, filterNode });
                 }
 
                 return new TransformListQueryNode({
@@ -83,13 +97,13 @@ export class OrderByAndPaginationAugmentation {
                     orderBy,
                     skip,
                     maxCount,
-                    filterNode: paginationFilter
+                    filterNode: filterNode && paginationFilter ? and(filterNode, paginationFilter) : (filterNode || paginationFilter)
                 });
             }
         };
     };
 
-    private getPaginatedNodeUsingMultiIndexOptimization({ args, orderByType, itemVariable, listNode, orderBy, maxCount }: { args: { [name: string]: any }, orderByType: OrderByEnumType, itemVariable: VariableQueryNode, listNode: QueryNode, orderBy: OrderSpecification, maxCount: number | undefined }) {
+    private getPaginatedNodeUsingMultiIndexOptimization({ args, orderByType, itemVariable, listNode, orderBy, maxCount, filterNode }: { args: { [name: string]: any }, orderByType: OrderByEnumType, itemVariable: VariableQueryNode, listNode: QueryNode, orderBy: OrderSpecification, maxCount: number | undefined, filterNode: QueryNode | undefined }) {
         const afterArg = args[AFTER_ARG];
         let cursorObj: any;
         try {
@@ -101,7 +115,7 @@ export class OrderByAndPaginationAugmentation {
             return new RuntimeErrorQueryNode(`Invalid cursor ${JSON.stringify(afterArg)} supplied to "after": ${e.message}`);
         }
 
-        let currentEqualityChain: QueryNode | undefined;
+        let currentEqualityChain: QueryNode | undefined = filterNode;
         const orderByValues = getOrderByValues(args, orderByType, { isAbsoluteOrderRequired: true });
         const partLists: TransformListQueryNode[] = [];
         for (const clause of orderByValues) {
@@ -142,10 +156,10 @@ export class OrderByAndPaginationAugmentation {
         return new OrderSpecification(clauses);
     }
 
-    private createPaginationFilterNode(args: any, itemNode: QueryNode, orderByType: OrderByEnumType) {
+    private createPaginationFilterNode(args: any, itemNode: QueryNode, orderByType: OrderByEnumType): QueryNode | undefined {
         const afterArg = args[AFTER_ARG];
         if (!afterArg) {
-            return ConstBoolQueryNode.TRUE;
+            return undefined;
         }
 
         let cursorObj: any;
