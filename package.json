@@ -1,6 +1,6 @@
 {
   "name": "cruddl",
-  "version": "0.8.0-alpha.22",
+  "version": "0.8.0-alpha.23",
   "description": "",
   "main": "dist/index.js",
   "types": "./dist/index.d.ts",
