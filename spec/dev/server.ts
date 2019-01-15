@@ -28,7 +28,9 @@ export async function start() {
             url: databaseURL,
             autocreateIndices: true,
             autoremoveIndices: true,
-            enableExperimentalArangoJSInstrumentation: true
+            enableExperimentalArangoJSInstrumentation: true,
+            enableExperimentalProjectionIndirection: true,
+            experimentalProjectionIndirectionTypeNames: ['BusinessMessage']
         }, { loggerProvider });
     }
 
@@ -38,7 +40,10 @@ export async function start() {
         },
         getExecutionOptions: () => ({
             authRoles: ['allusers', 'logistics-reader', 'system'],
-            recordTimings: true
+            recordTimings: true,
+            recordPlan: true,
+            mutationMode: 'rollback',
+            queryMemoryLimit: 1000000
         }),
         loggerProvider
     });

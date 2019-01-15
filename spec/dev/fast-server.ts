@@ -22,7 +22,14 @@ export function createFastApp(project: Project, databaseAdapter: DatabaseAdapter
             document,
             variableValues,
             contextValue,
-            operationName
+            operationName,
+            options: {
+                recordPlan: true,
+                recordTimings: true,
+                mutationMode: 'rollback',
+                queryMemoryLimit: 5000000,
+                authRoles: contextValue.authRoles
+            }
         });
         if (!fastPromise) {
             const { data, errors } = await execute({
