@@ -22,6 +22,12 @@ export class SchemaGenerator {
         return addOperationBasedResolvers(dumbSchema, async op => {
             const rootType = op.operation.operation === 'mutation' ? mutationType : queryType;
             const res = await this.operationResolver.resolveOperation(op, rootType);
+            if (res.errors) {
+                throw res.errors[0];
+            }
+            if (this.context.profileConsumer && res.profile) {
+                this.context.profileConsumer(res.profile);
+            }
             return res.data;
         });
     }
