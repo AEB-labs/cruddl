@@ -1,7 +1,7 @@
 import { Field, Relation, RootEntityType } from '../../model';
-import { AddEdgesQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode, ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeIdentifier, EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, OrderDirection, OrderSpecification, PartialEdgeIdentifier, QueryNode, QueryResultValidator, RemoveEdgesQueryNode, RootEntityIDQueryNode, RUNTIME_ERROR_TOKEN, RuntimeErrorQueryNode, SafeListQueryNode, SetEdgeQueryNode, TransformListQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../../query-tree';
+import { AddEdgesQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode, ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeIdentifier, EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, OrderDirection, OrderSpecification, PartialEdgeIdentifier, PropertySpecification, QueryNode, QueryResultValidator, RemoveEdgesQueryNode, RootEntityIDQueryNode, RUNTIME_ERROR_TOKEN, RuntimeErrorQueryNode, SafeListQueryNode, SetEdgeQueryNode, TransformListQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../../query-tree';
 import { Quantifier, QuantifierFilterNode } from '../../query-tree/quantifiers';
-import { simplifyBooleans } from '../../query-tree/utils';
+import { extractVariableAssignments, simplifyBooleans } from '../../query-tree/utils';
 import { not } from '../../schema-generation/filter-input-types/constants';
 import { Constructor, decapitalize } from '../../utils/utils';
 import { analyzeLikePatternPrefix } from '../like-helpers';
@@ -136,7 +136,22 @@ function createAQLCompoundQuery(node: QueryNode,
                                 resultVariable: AQLQueryResultVariable | undefined,
                                 resultValidator: QueryResultValidator | undefined,
                                 context: QueryContext): AQLCompoundQuery {
-    const aqlQuery = aql`RETURN ${processNode(node, context)}`;
+    // move LET statements up
+    // they often occur for value objects / entity extensions
+    // this avoids the FIRST() and the subquery which reduces load on the AQL query optimizer
+    let variableAssignments: AQLFragment[] = [];
+    const variableAssignmentNodes: VariableAssignmentQueryNode[] = [];
+    node = extractVariableAssignments(node, variableAssignmentNodes);
+    for (const assignmentNode of variableAssignmentNodes) {
+        context = context.introduceVariable(assignmentNode.variableNode);
+        const tmpVar = context.getVariable(assignmentNode.variableNode);
+        variableAssignments.push(aql`LET ${tmpVar} = ${processNode(assignmentNode.variableValueNode, context)}`);
+    }
+
+    const aqlQuery = aql.lines(
+        ...variableAssignments,
+        aql`RETURN ${processNode(node, context)}`
+    );
     const preExecQueries = context.getPreExecuteQueries();
     const readAccessedCollections = context.getReadAccessedCollections();
     const writeAccessedCollections = context.getWriteAccessedCollections();
@@ -318,6 +333,19 @@ register(TransformListQueryNode, (node, context) => {
         limitClause = aql``;
     }
 
+    // move LET statements up
+    // they often occur for value objects / entity extensions
+    // this avoids the FIRST() and the subquery which reduces load on the AQL query optimizer
+    let variableAssignments: AQLFragment[] = [];
+    let innerNode = node.innerNode;
+    const variableAssignmentNodes: VariableAssignmentQueryNode[] = [];
+    innerNode = extractVariableAssignments(innerNode, variableAssignmentNodes);
+    for (const assignmentNode of variableAssignmentNodes) {
+        itemProjectionContext = itemProjectionContext.introduceVariable(assignmentNode.variableNode);
+        const tmpVar = itemProjectionContext.getVariable(assignmentNode.variableNode);
+        variableAssignments.push(aql`LET ${tmpVar} = ${processNode(assignmentNode.variableValueNode, itemProjectionContext)}`);
+    }
+
     return aqlExt.parenthesizeList(
         aql`FOR ${itemVar}`,
         aql`IN ${list}`,
@@ -326,7 +354,8 @@ register(TransformListQueryNode, (node, context) => {
         generateSortAQL(node.orderBy, itemContext),
         limitClause,
         useIndirectedProjection ? aql`LET ${itemProjectionVar} = DOCUMENT(${itemVar}._id)` : aql``,
-        aql`RETURN ${processNode(node.innerNode, itemProjectionContext)}`
+        ...variableAssignments,
+        aql`RETURN ${processNode(innerNode, itemProjectionContext)}`
     );
 });
 
