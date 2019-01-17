@@ -1,5 +1,5 @@
 import {
-    BinaryOperationQueryNode, FieldQueryNode, FirstOfListQueryNode, ObjectQueryNode, OrderClause, OrderSpecification,
+    BinaryOperationQueryNode, ConditionalQueryNode, FieldQueryNode, FirstOfListQueryNode, ObjectQueryNode, OrderClause, OrderSpecification,
     PropertySpecification, QueryNode, RootEntityIDQueryNode, UnaryOperationQueryNode, VariableAssignmentQueryNode
 } from '..';
 
@@ -19,9 +19,16 @@ export function extractVariableAssignments(node: QueryNode, variableAssignmentsL
             node.operator,
             extractVariableAssignments(node.rhs, variableAssignmentsList));
     }
+    if (node instanceof ConditionalQueryNode) {
+        return new ConditionalQueryNode(
+            extractVariableAssignments(node.condition, variableAssignmentsList),
+            extractVariableAssignments(node.expr1, variableAssignmentsList),
+            extractVariableAssignments(node.expr2, variableAssignmentsList)
+        );
+    }
     if (node instanceof VariableAssignmentQueryNode) {
         variableAssignmentsList.push(node);
-        return node.resultNode;
+        return extractVariableAssignments(node.resultNode, variableAssignmentsList);
     }
     if (node instanceof FirstOfListQueryNode) {
         return new FirstOfListQueryNode(extractVariableAssignments(node.listNode, variableAssignmentsList));
