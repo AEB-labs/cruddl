@@ -4,10 +4,8 @@ import memorize from 'memorize-decorator';
 import { FieldRequest } from '../graphql/query-distiller';
 import { isListType } from '../graphql/schema-utils';
 import { Field, ObjectType, Type, TypeKind } from '../model';
-import {
-    NullQueryNode, ObjectQueryNode, PropertySpecification, QueryNode, UnaryOperationQueryNode, UnaryOperator
-} from '../query-tree';
-import { CURSOR_FIELD, ID_FIELD, ORDER_BY_ASC_SUFFIX } from '../schema/constants';
+import { NullQueryNode, ObjectQueryNode, PropertySpecification, QueryNode, UnaryOperationQueryNode, UnaryOperator } from '../query-tree';
+import { CURSOR_FIELD } from '../schema/constants';
 import { getMetaFieldName } from '../schema/names';
 import { flatMap } from '../utils/utils';
 import { EnumTypeGenerator } from './enum-type-generator';
@@ -16,9 +14,7 @@ import { FilterAugmentation } from './filter-augmentation';
 import { ListAugmentation } from './list-augmentation';
 import { MetaTypeGenerator } from './meta-type-generator';
 import { OrderByEnumGenerator, OrderByEnumType } from './order-by-enum-generator';
-import {
-    makeNonNullableList, QueryNodeField, QueryNodeNonNullType, QueryNodeOutputType
-} from './query-node-object-type';
+import { makeNonNullableList, QueryNodeField, QueryNodeNonNullType, QueryNodeOutputType } from './query-node-object-type';
 import { getOrderByValues } from './utils/pagination';
 
 export class OutputTypeGenerator {
@@ -113,7 +109,13 @@ export class OutputTypeGenerator {
             name: field.name,
             type: field.isList ? makeNonNullableList(type) : type,
             description: field.description,
-            resolve: (sourceNode) => createFieldNode(field, sourceNode)
+
+            // normally, entity extensions are converted to an empty object if null, and normally query field nodes have
+            // a check that they return null if the source node is null.
+            // if we skip both, entity extensions will be passed as null, but they will only ever be used to look up
+            // fields in them, and a FieldQueryNode returns null if the source is null.
+            skipNullCheck: field.type.isEntityExtensionType,
+            resolve: (sourceNode) => createFieldNode(field, sourceNode, { skipNullFallbackForEntityExtensions: true })
         };
 
         if (field.isList && field.type.isObjectType) {

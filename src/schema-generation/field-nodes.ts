@@ -1,10 +1,10 @@
 import { RootEntityType } from '../model';
 import { Field } from '../model/implementation';
-import { BasicType, BinaryOperationQueryNode, BinaryOperator, ConditionalQueryNode, EntitiesQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, NullQueryNode, ObjectQueryNode, QueryNode, RootEntityIDQueryNode, SafeListQueryNode, TransformListQueryNode, TypeCheckQueryNode, VariableQueryNode } from '../query-tree';
+import { BasicType, BinaryOperationQueryNode, BinaryOperator, ConditionalQueryNode, EntitiesQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, NullQueryNode, ObjectQueryNode, QueryNode, RootEntityIDQueryNode, SafeListQueryNode, TransformListQueryNode, TypeCheckQueryNode, VariableQueryNode } from '../query-tree';
 import { ID_FIELD } from '../schema/constants';
 import { and } from './filter-input-types/constants';
 
-export function createFieldNode(field: Field, sourceNode: QueryNode): QueryNode {
+export function createFieldNode(field: Field, sourceNode: QueryNode, options: { skipNullFallbackForEntityExtensions?: boolean } = {}): QueryNode {
     // make use of the fact that field access on non-objects is NULL, so that type checks for OBJECT are redundant
     // this e.g. reverses the effect of the isEntityExtensionType check below
     // this is important for filter/orderBy which do not work if there is a conditional
@@ -39,7 +39,7 @@ export function createFieldNode(field: Field, sourceNode: QueryNode): QueryNode 
     }
 
     const fieldNode = new FieldQueryNode(sourceNode, field);
-    if (field.type.isEntityExtensionType) {
+    if (field.type.isEntityExtensionType && !options.skipNullFallbackForEntityExtensions) {
         return new ConditionalQueryNode(new TypeCheckQueryNode(fieldNode, BasicType.OBJECT), fieldNode, ObjectQueryNode.EMPTY);
     }
 

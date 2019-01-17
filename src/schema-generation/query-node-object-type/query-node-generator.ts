@@ -1,5 +1,5 @@
 import { FieldRequest, FieldSelection } from '../../graphql/query-distiller';
-import { BasicType, ConditionalQueryNode, NullQueryNode, ObjectQueryNode, PreExecQueryParms, PropertySpecification, QueryNode, TransformListQueryNode, TypeCheckQueryNode, VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../../query-tree';
+import { BasicType, ConditionalQueryNode, FieldQueryNode, NullQueryNode, ObjectQueryNode, PreExecQueryParms, PropertySpecification, QueryNode, TransformListQueryNode, TypeCheckQueryNode, VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../../query-tree';
 import { decapitalize } from '../../utils/utils';
 import { QueryNodeField, QueryNodeObjectType } from './definition';
 import { extractQueryTreeObjectType, isListType, resolveThunk } from './utils';
@@ -12,6 +12,14 @@ export function buildConditionalObjectQueryNode(sourceNode: QueryNode, type: Que
 
     if (sourceNode instanceof NullQueryNode) {
         return NullQueryNode.NULL;
+    }
+
+    // if the source node is simple enough, don't store it in a variable
+    if (isSimpleFieldAccessOnVariable(sourceNode)) {
+        return new ConditionalQueryNode(
+            new TypeCheckQueryNode(sourceNode, BasicType.NULL),
+            new NullQueryNode(),
+            buildObjectQueryNode(sourceNode, type, selectionSet, fieldRequestStack));
     }
 
     // we don't check for type=object because the source might be something else, like a list or whatever, just null should be treated specially
@@ -123,4 +131,9 @@ function buildTransformListQueryNode(listNode: QueryNode, itemType: QueryNodeObj
         innerNode,
         itemVariable
     });
+}
+
+function isSimpleFieldAccessOnVariable(node: QueryNode): boolean {
+    return node instanceof VariableQueryNode
+        || (node instanceof FieldQueryNode && isSimpleFieldAccessOnVariable(node.objectNode));
 }
