@@ -253,7 +253,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
 
         const watch = new Watch();
         if (this.config.enableExperimentalArangoJSInstrumentation) {
-            (options as any)[requestInstrumentationBodyKey] = {
+            (args as any)[requestInstrumentationBodyKey] = {
                 onPhaseEnded: (phase: RequestInstrumentationPhase) => {
                     watch.stop(phase);
                 }
