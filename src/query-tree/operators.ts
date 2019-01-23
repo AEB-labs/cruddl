@@ -66,6 +66,8 @@ export class BinaryOperationQueryNode extends QueryNode {
                 return 'STARTS WITH';
             case BinaryOperator.ENDS_WITH:
                 return 'ENDS WITH';
+            case BinaryOperator.LIKE:
+                return 'LIKE';
             case BinaryOperator.ADD:
                 return '+';
             case BinaryOperator.SUBTRACT:
