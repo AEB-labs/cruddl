@@ -30,6 +30,6 @@ export class QuantifierFilterNode extends QueryNode {
     }
 
     describe(): string {
-        return `${this.quantifier} of ${this.listNode} matches (${this.itemVariable} => ${this.conditionNode})`;
+        return `${this.quantifier} of ${this.listNode.describe()} matches (${this.itemVariable.describe()} => ${this.conditionNode.describe()})`;
     }
 }
