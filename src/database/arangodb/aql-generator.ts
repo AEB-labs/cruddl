@@ -1,5 +1,5 @@
 import { Field, Relation, RootEntityType } from '../../model';
-import { AddEdgesQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode, ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeIdentifier, EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, OrderDirection, OrderSpecification, PartialEdgeIdentifier, PropertySpecification, QueryNode, QueryResultValidator, RemoveEdgesQueryNode, RootEntityIDQueryNode, RUNTIME_ERROR_TOKEN, RuntimeErrorQueryNode, SafeListQueryNode, SetEdgeQueryNode, TransformListQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../../query-tree';
+import { AddEdgesQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode, ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeIdentifier, EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, OrderDirection, OrderSpecification, PartialEdgeIdentifier, QueryNode, QueryResultValidator, RemoveEdgesQueryNode, RootEntityIDQueryNode, RUNTIME_ERROR_TOKEN, RuntimeErrorQueryNode, SafeListQueryNode, SetEdgeQueryNode, TransformListQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../../query-tree';
 import { Quantifier, QuantifierFilterNode } from '../../query-tree/quantifiers';
 import { extractVariableAssignments, simplifyBooleans } from '../../query-tree/utils';
 import { not } from '../../schema-generation/filter-input-types/constants';
@@ -494,7 +494,11 @@ function getFastStartsWithQuery(lhs: AQLFragment, rhsValue: string): AQLFragment
 }
 
 function getEqualsIgnoreCaseQuery(lhs: AQLFragment, rhsValue: string): AQLFragment {
-    const rhsValueFrag = aql.value(rhsValue);
+    // if the string e.g. only consists of digits, no need for special case sensitivity checking
+    if (isStringCaseInsensitive(rhsValue)) {
+        return aql`(${lhs} == ${aql.value(rhsValue)})`;
+    }
+
     // w.r.t. UPPER/LOWER, see the comment in getFastStartsWithQuery
     const lowerBoundFrag = aql`UPPER(${rhsValue})`;
     const upperBoundFrag = aql`LOWER(${rhsValue})`;
@@ -587,9 +591,28 @@ function getQuantifierFilterUsingArrayExpansion(
         return undefined;
     }
 
-    // only possible for equality
-    if (!(conditionNode instanceof BinaryOperationQueryNode && conditionNode.operator === BinaryOperator.EQUAL)) {
+    if (!(conditionNode instanceof BinaryOperationQueryNode)) {
         return undefined;
+    }
+
+    switch (conditionNode.operator) {
+        case BinaryOperator.EQUAL:
+            // works
+            break;
+        case BinaryOperator.LIKE:
+            // see if this really is a equals search so we can optimize it (only possible as long as it does not contain any case-specific characters)
+            if (!(conditionNode.rhs instanceof LiteralQueryNode) || (typeof conditionNode.rhs.value !== 'string')) {
+                return undefined;
+            }
+            const likePattern: string = conditionNode.rhs.value;
+            const { isLiteralPattern } = analyzeLikePatternPrefix(likePattern);
+            if (!isLiteralPattern || !isStringCaseInsensitive(likePattern)) {
+                return undefined;
+            }
+            // works
+            break;
+        default:
+            return undefined;
     }
 
     let fields: Field[] = [];
@@ -835,4 +858,8 @@ function getCollectionForRelation(relation: Relation, accessType: AccessType, co
 function getSimpleFollowEdgeFragment(node: FollowEdgeQueryNode, context: QueryContext): AQLFragment {
     const dir = node.relationSide.isFromSide ? aql`OUTBOUND` : aql`INBOUND`;
     return aql`${dir}  ${processNode(node.sourceEntityNode, context)} ${getCollectionForRelation(node.relationSide.relation, AccessType.READ, context)}`;
+}
+
+function isStringCaseInsensitive(str: string) {
+    return str.toLowerCase() === str.toUpperCase();
 }
