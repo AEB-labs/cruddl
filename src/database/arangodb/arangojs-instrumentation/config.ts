@@ -4,4 +4,6 @@ export type RequestInstrumentationPhase = 'queuing' | 'socketInit' | 'lookup' | 
 
 export interface RequestInstrumentation {
     onPhaseEnded(phase: RequestInstrumentationPhase): void
+
+    cancellationToken: Promise<void>
 }
