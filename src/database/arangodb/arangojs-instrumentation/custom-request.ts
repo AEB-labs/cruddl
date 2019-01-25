@@ -9,9 +9,9 @@ import { joinPath } from 'arangojs/lib/async/util/joinPath';
 import { Errback } from 'arangojs/lib/async/util/types';
 import { Agent as HttpAgent, ClientRequest, ClientRequestArgs, IncomingMessage, request as httpRequest } from 'http';
 import { Agent as HttpsAgent, request as httpsRequest } from 'https';
+import { Socket } from 'net';
 import { parse as parseUrl, Url } from 'url';
 import { RequestInstrumentation, RequestInstrumentationPhase } from './config';
-import { Socket } from 'net';
 
 export type ArangojsResponse = IncomingMessage & {
     request: ClientRequest;
@@ -87,6 +87,13 @@ export function createRequest(
             { method, url, headers, body, requestInstrumentation }: RequestOptions,
             callback: Errback<ArangojsResponse>
         ) {
+            let isCancelled = false;
+            if (requestInstrumentation && requestInstrumentation.cancellationToken) {
+                requestInstrumentation.cancellationToken.then(() => isCancelled = true);
+            }
+            if (isCancelled) {
+                callback(new Error(`Request has been cancelled by caller before it was sent`));
+            }
             notifyAboutPhaseEnd(requestInstrumentation, 'queuing');
             let path = baseUrlParts.pathname
                 ? url.pathname
@@ -147,6 +154,16 @@ export function createRequest(
                         socket.on('lookup', () => notifyAboutPhaseEnd(requestInstrumentation, 'lookup'));
                         socket.on('connect', () => notifyAboutPhaseEnd(requestInstrumentation, 'connecting'));
                     });
+
+                    if (requestInstrumentation.cancellationToken) {
+                        requestInstrumentation.cancellationToken.then(() => {
+                            if (!called) {
+                                req.abort();
+                                called = true;
+                                callback(new Error(`Request has been cancelled by caller`));
+                            }
+                        });
+                    }
                 }
                 req.on('error', err => {
                     const error = err as ArangojsError;
@@ -177,7 +194,7 @@ export function createRequest(
     );
 }
 
-function notifyAboutPhaseEnd(requestInstrumentation: RequestInstrumentation|undefined, phase: RequestInstrumentationPhase) {
+function notifyAboutPhaseEnd(requestInstrumentation: RequestInstrumentation | undefined, phase: RequestInstrumentationPhase) {
     if (!requestInstrumentation) {
         return;
     }
