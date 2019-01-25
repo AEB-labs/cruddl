@@ -256,7 +256,8 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             (args as any)[requestInstrumentationBodyKey] = {
                 onPhaseEnded: (phase: RequestInstrumentationPhase) => {
                     watch.stop(phase);
-                }
+                },
+                cancellationToken: options.cancellationToken
             } as RequestInstrumentation;
         }
 

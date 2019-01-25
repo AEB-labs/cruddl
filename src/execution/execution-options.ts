@@ -1,3 +1,4 @@
+import { EventEmitter } from 'events';
 import { OperationDefinitionNode } from 'graphql';
 
 export type MutationMode = 'normal' | 'disallowed' | 'rollback';
@@ -36,6 +37,14 @@ export interface ExecutionOptions {
      * The memory limit in bytes to impose on individual ArangoDB queries (does not apply to the whole ArangoDB transaction)
      */
     readonly queryMemoryLimit?: number
+
+    /**
+     * A promise that, when resolved, cancels the running operation. If the promise is resolved after the operation is
+     * completed, or the promise is rejected, nothing happens.
+     *
+     * For ArangoDB, this only works if enableExperimentalArangoJSInstrumentation in the ArangoDBConfig is set to true.
+     */
+    readonly cancellationToken?: Promise<void>
 }
 
 export interface ExecutionOptionsCallbackArgs {

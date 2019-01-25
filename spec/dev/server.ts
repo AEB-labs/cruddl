@@ -2,6 +2,7 @@ import * as bodyParser from 'body-parser';
 import * as cors from 'cors';
 import * as express from 'express';
 import { GraphQLServer } from 'graphql-yoga';
+import { ContextParameters } from 'graphql-yoga/dist/types';
 import * as path from 'path';
 import { ArangoDBAdapter } from '../..';
 import { globalContext } from '../../src/config/global';
@@ -38,13 +39,16 @@ export async function start() {
         profileConsumer: profile => {
             console.log(`${profile.operation.operation} ${profile.operation.name ? profile.operation.name.value : '<anonymous>'}: ${JSON.stringify(profile.timings, undefined, '  ')}`);
         },
-        getExecutionOptions: () => ({
-            authRoles: ['allusers', 'logistics-reader', 'system'],
-            recordTimings: true,
-            recordPlan: true,
-            mutationMode: 'rollback',
-            queryMemoryLimit: 1000000
-        }),
+        getExecutionOptions: ({ context }: { context: ContextParameters }) => {
+            return ({
+                authRoles: ['allusers', 'logistics-reader', 'system'],
+                recordTimings: true,
+                recordPlan: true,
+                mutationMode: 'rollback',
+                //queryMemoryLimit: 1000000,
+                cancellationToken: new Promise(resolve => context.request.on('aborted', resolve))
+            });
+        },
         loggerProvider
     });
     const schema = project.createSchema(db);
@@ -55,7 +59,8 @@ export async function start() {
     logger.info('Schema is up to date');
 
     const server = new GraphQLServer({
-        schema: schema as any // yoga declares a direct dependency to @types/graphql and it's 0.13
+        schema: schema as any, // yoga declares a direct dependency to @types/graphql and it's 0.13
+        context: props => props
     });
 
     const fastServer = express();
