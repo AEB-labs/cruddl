@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "rimraf dist && tsc --skipLibCheck && dependency-check ./package.json --ignore-module @arangodb --ignore-module internal",
+    "build": "rimraf dist && tsc --skipLibCheck && cp-cli src/schema/preparation/source-validation-modules/schema dist/src/schema/preparation/source-validation-modules/schema && dependency-check ./package.json --ignore-module @arangodb --ignore-module internal",
     "prepublishOnly": "npm run build",
     "typecheck": "tsc --noEmit --skipLibCheck",
     "test": "tsc --noEmit --skipLibCheck && mocha --opts ./spec/mocha.opts",
@@ -13,7 +13,8 @@
     "test:perf": "node cruddl-bench",
     "test:coverage": "nyc --reporter=text-summary npm test",
     "test:coverage:full": "nyc --reporter=html npm test",
-    "start": "node cruddl"
+    "start": "node cruddl",
+    "compile-json-schema": "ajv --all-errors true compile -s src/schema/preparation/source-validation-modules/schema/schema.json -o src/schema/preparation/source-validation-modules/schema/validate-schema.js"
   },
   "repository": {
     "type": "git",
@@ -41,8 +42,10 @@
     "@types/pluralize": "0.0.27",
     "@types/strip-json-comments": "0.0.30",
     "@types/uuid": "^3.4.2",
+    "ajv-cli": "^3.0.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
+    "cp-cli": "^1.1.2",
     "deep-equal": "^1.0.1",
     "deep-equal-in-any-order": "^1.0.10",
     "dependency-check": "^2.9.1",
