@@ -19,6 +19,8 @@ export interface ArangoJSConfig {
     };
 }
 
+export const DEFAULT_RETRY_DELAY_BASE_MS = 100;
+
 export interface ArangoDBConfig {
     /**
      * Additional configuration options that will be passed to the ArangoJS Database constructor
@@ -67,6 +69,18 @@ export interface ArangoDBConfig {
      * If set, enableExperimentalProjectionIndirection will only apply to root entity types specified in this list.
      */
     readonly experimentalProjectionIndirectionTypeNames?: ReadonlyArray<string>
+
+    /**
+     * The number of times a transaction that generated an optimistic locking error (ERROR_ARANGO_CONFLICT) will be
+     * retried automatically. Defaults to zero.
+     */
+    readonly retriesOnConflict?: number;
+
+    /**
+     * The delay between the first and second retry attempt on conflict (see maxRetriesOnConflict). Will be doubled on
+     * each retry. The delay between the first *try* and the first retry is always zero. Defaults to 100ms.
+     */
+    readonly retryDelayBaseMs?: number;
 }
 
 export function initDatabase(config: ArangoDBConfig): Database {

@@ -3,6 +3,7 @@ import gql from 'graphql-tag';
 import { ArangoDBAdapter } from '../../../src/database/arangodb';
 import { createSimpleModel } from '../../model/model-spec.helper';
 import { createTempDatabase, getTempDatabase } from '../../regression/initialization';
+import { isArangoDBDisabled } from './arangodb-test-utils';
 
 describe('ArangoDBAdapter', () => {
     describe('updateSchema', () => {
@@ -153,7 +154,3 @@ describe('ArangoDBAdapter', () => {
         });
     });
 });
-
-function isArangoDBDisabled() {
-    return process.argv.includes('--db=in-memory');
-}

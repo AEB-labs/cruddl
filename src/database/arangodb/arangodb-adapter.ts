@@ -5,24 +5,42 @@ import { Logger } from '../../config/logging';
 import { ExecutionOptions } from '../../execution/execution-options';
 import { Model } from '../../model';
 import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS, QueryNode } from '../../query-tree';
-import { objectValues } from '../../utils/utils';
+import { objectValues, sleepInterruptible } from '../../utils/utils';
 import { getPreciseTime, Watch } from '../../utils/watch';
-import { DatabaseAdapter, ExecutionArgs, ExecutionPlan, ExecutionResult } from '../database-adapter';
+import { DatabaseAdapter, DatabaseAdapterTimings, ExecutionArgs, ExecutionPlan, ExecutionResult } from '../database-adapter';
 import { AQLCompoundQuery, aqlConfig, AQLExecutableQuery } from './aql';
 import { getAQLQuery } from './aql-generator';
 import { RequestInstrumentation, RequestInstrumentationPhase } from './arangojs-instrumentation/config';
-import { ArangoDBConfig, getArangoDBLogger, initDatabase } from './config';
+import { ArangoDBConfig, DEFAULT_RETRY_DELAY_BASE_MS, getArangoDBLogger, initDatabase } from './config';
+import { ERROR_ARANGO_CONFLICT } from './error-codes';
 import { SchemaAnalyzer } from './schema-migration/anaylzer';
 import { SchemaMigration } from './schema-migration/migrations';
 import { MigrationPerformer } from './schema-migration/performer';
-
-export const DEFAULT_INDEX_TYPE = 'persistent'; // persistent is a skiplist index
 
 const requestInstrumentationBodyKey = 'cruddlRequestInstrumentation';
 
 interface ArangoExecutionOptions {
     readonly queries: ReadonlyArray<AQLExecutableQuery>
     readonly options: ExecutionOptions
+}
+
+interface ArangoError extends Error {
+    readonly errorNum?: number
+    readonly errorMessage?: string
+}
+
+interface ArangoTransactionResult {
+    readonly data?: any
+    readonly error?: ArangoError;
+    readonly timings?: { readonly [key: string]: number };
+    readonly plans?: ReadonlyArray<any>
+}
+
+interface TransactionResult {
+    readonly data?: any
+    readonly timings?: Pick<DatabaseAdapterTimings, 'database' | 'dbConnection'>
+    readonly plans?: ReadonlyArray<any>
+    readonly databaseError?: ArangoError;
 }
 
 export class ArangoDBAdapter implements DatabaseAdapter {
@@ -102,12 +120,6 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                         }
                     });
                 } catch (error) {
-                    if (!options.recordPlan) {
-                        throw error;
-                    }
-
-                    // we're analyzing, so we should still report as much as possible
-
                     if (explainResult) {
                         plans.push({
                             plan: explainResult.plans[0],
@@ -120,19 +132,11 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                         timings.js = (getPreciseTime() - startTime) - timingsTotal;
                     }
 
-                    const transactionResult = {
+                    return {
                         error,
                         timings,
                         plans
                     };
-
-                    if (options.mutationMode === 'rollback') {
-                        const error = new Error(`${JSON.stringify(transactionResult)}`);
-                        error.name = 'RolledBackTransactionError';
-                        throw error;
-                    }
-
-                    return transactionResult;
                 }
 
                 const resultData = executionResult.next();
@@ -226,7 +230,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         aqlConfig.enableIndentationForCode = !!options.recordPlan;
         aqlConfig.optimizationConfig = {
             enableExperimentalProjectionIndirection: this.config.enableExperimentalProjectionIndirection,
-            experimentalProjectionIndirectionTypeNames: this.config.experimentalProjectionIndirectionTypeNames,
+            experimentalProjectionIndirectionTypeNames: this.config.experimentalProjectionIndirectionTypeNames
         };
         try {
             //TODO Execute single statement AQL queries directly without "db.transaction"?
@@ -241,77 +245,12 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             this.logger.trace(`Executing AQL: ${aqlQuery.toColoredString()}`);
         }
         const aqlPreparationTime = getPreciseTime() - prepStartTime;
-        const dbStartTime = getPreciseTime();
-
-        const args: ArangoExecutionOptions = {
-            queries: executableQueries,
-            options: {
-                ...options,
-                queryMemoryLimit: options.queryMemoryLimit || this.config.queryMemoryLimit
-            }
-        };
-
-        const watch = new Watch();
-        if (this.config.enableExperimentalArangoJSInstrumentation) {
-            (args as any)[requestInstrumentationBodyKey] = {
-                onPhaseEnded: (phase: RequestInstrumentationPhase) => {
-                    watch.stop(phase);
-                },
-                cancellationToken: options.cancellationToken
-            } as RequestInstrumentation;
-        }
-
-        let transactionResult;
-        try {
-            transactionResult = await this.db.transaction(
-                {
-                    read: aqlQuery.readAccessedCollections,
-                    write: aqlQuery.writeAccessedCollections
-                },
-                this.arangoExecutionFunction,
-                args
-            );
-        } catch (e) {
-            if (options.mutationMode === 'rollback' && e.message.startsWith('RolledBackTransactionError: ')) {
-                const valStr = e.message.substr('RolledBackTransactionError: '.length);
-                try {
-                    transactionResult = JSON.parse(valStr);
-                } catch (eParse) {
-                    throw new Error(`Error parsing result of rolled back transaction`);
-                }
-            } else {
-                throw e;
-            }
-        }
-
-        const { timings: databaseTimings, data, plans, error: databaseError } = transactionResult;
+        const { databaseError, timings: transactionTimings, data, plans } = await this.executeTransactionWithRetries(executableQueries, options, aqlQuery);
 
         let timings;
-        if (options.recordTimings) {
-            const dbConnectionTotal = getPreciseTime() - dbStartTime;
-            const dbInternalTotal = objectValues<number>(databaseTimings).reduce((a, b) => a + b, 0);
-            const queuing = watch.timings.queuing;
-            const socketInit = watch.timings.socketInit || 0;
-            const lookup = watch.timings.lookup || 0;
-            const connecting = watch.timings.connecting || 0;
-            const receiving = watch.timings.receiving;
-            const waiting = watch.timings.waiting;
-            const other = dbConnectionTotal - queuing - socketInit - lookup - connecting - receiving - waiting;
+        if (options.recordTimings && transactionTimings) {
             timings = {
-                database: {
-                    ...databaseTimings,
-                    total: dbInternalTotal
-                },
-                dbConnection: {
-                    queuing,
-                    socketInit,
-                    lookup,
-                    connecting,
-                    waiting,
-                    receiving,
-                    other,
-                    total: dbConnectionTotal
-                },
+                ...transactionTimings,
                 preparation: {
                     total: aqlPreparationTime,
                     aql: aqlPreparationTime
@@ -337,8 +276,13 @@ export class ArangoDBAdapter implements DatabaseAdapter {
 
         let errors: ReadonlyArray<GraphQLError> | undefined;
         if (databaseError) {
+            const arangoDBCode: number | undefined = databaseError.errorNum;
+            const extensions: { [key: string]: any } = {
+                arangoDBCode
+            };
+            const message = databaseError.errorMessage || databaseError.message;
             errors = [
-                new GraphQLError(databaseError.errorMessage)
+                new GraphQLError(message, undefined, undefined, undefined, undefined, undefined, extensions)
             ];
         }
 
@@ -348,6 +292,132 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             timings,
             plan
         };
+    }
+
+    private async executeTransactionWithRetries(executableQueries: ReadonlyArray<AQLExecutableQuery>, options: ExecutionOptions, aqlQuery: AQLCompoundQuery): Promise<TransactionResult> {
+        const maxRetries = this.config.retriesOnConflict || 0;
+        let nextRetryDelay = 0;
+        let tries = 0;
+        let result;
+        // timings need to be added up
+        let timings: TransactionResult['timings'] | undefined;
+
+        while (true) {
+            result = await this.executeTransactionOnce(executableQueries, options, aqlQuery);
+
+            if (options.recordTimings && result.timings) {
+                timings = {
+                    database: sumUpValues([timings ? timings.database : {}, result.timings.database]),
+                    dbConnection: sumUpValues([timings ? timings.dbConnection : {}, result.timings.dbConnection])
+                } as TransactionResult['timings'];
+            }
+
+            if (tries >= maxRetries || !result.databaseError || !this.isRetryableError(result.databaseError)) {
+                return { ...result, timings };
+            }
+
+            const sleepStart = getPreciseTime();
+            const shouldContinue = await sleepInterruptible(nextRetryDelay, options.cancellationToken);
+            if (options.recordTimings && timings) {
+                const sleepLength = getPreciseTime() - sleepStart;
+                timings = {
+                    ...timings,
+                    dbConnection: sumUpValues([timings.dbConnection, { retryDelay: sleepLength, total: sleepLength }])
+                } as TransactionResult['timings'];
+            }
+            if (!shouldContinue) {
+                // cancellation token fired before the sleep time was over
+                // we already have a result with an error, so it's probably better to return that instead of a generic "cancelled"
+                // probably doesn't matter anyway because the caller probably is no longer interested in the result
+                return { ...result, timings };
+            }
+
+            if (nextRetryDelay) {
+                nextRetryDelay *= 2;
+            } else {
+                nextRetryDelay = this.config.retryDelayBaseMs || DEFAULT_RETRY_DELAY_BASE_MS;
+            }
+            tries++;
+        }
+    }
+
+    private isRetryableError(error: ArangoError): boolean {
+        return error.errorNum === ERROR_ARANGO_CONFLICT;
+    }
+
+    private async executeTransactionOnce(executableQueries: ReadonlyArray<AQLExecutableQuery>, options: ExecutionOptions, aqlQuery: AQLCompoundQuery): Promise<TransactionResult> {
+        const args: ArangoExecutionOptions = {
+            queries: executableQueries,
+            options: {
+                ...options,
+                queryMemoryLimit: options.queryMemoryLimit || this.config.queryMemoryLimit
+            }
+        };
+        const watch = new Watch();
+        if (this.config.enableExperimentalArangoJSInstrumentation) {
+            (args as any)[requestInstrumentationBodyKey] = {
+                onPhaseEnded: (phase: RequestInstrumentationPhase) => {
+                    watch.stop(phase);
+                },
+                cancellationToken: options.cancellationToken
+            } as RequestInstrumentation;
+        }
+
+        const dbStartTime = getPreciseTime();
+        let transactionResult: ArangoTransactionResult;
+        try {
+            transactionResult = await this.db.transaction(
+                {
+                    read: aqlQuery.readAccessedCollections,
+                    write: aqlQuery.writeAccessedCollections
+                },
+                this.arangoExecutionFunction,
+                args
+            );
+        } catch (e) {
+            if (options.mutationMode === 'rollback' && e.message.startsWith('RolledBackTransactionError: ')) {
+                const valStr = e.message.substr('RolledBackTransactionError: '.length);
+                try {
+                    transactionResult = JSON.parse(valStr);
+                } catch (eParse) {
+                    throw new Error(`Error parsing result of rolled back transaction`);
+                }
+            } else {
+                throw e;
+            }
+        }
+        const { timings: databaseReportedTimings, data, plans, error: databaseError } = transactionResult;
+
+        let timings;
+        if (options.recordTimings && databaseReportedTimings) {
+            const dbConnectionTotal = getPreciseTime() - dbStartTime;
+            const queuing = watch.timings.queuing;
+            const socketInit = watch.timings.socketInit || 0;
+            const lookup = watch.timings.lookup || 0;
+            const connecting = watch.timings.connecting || 0;
+            const receiving = watch.timings.receiving;
+            const waiting = watch.timings.waiting;
+            const other = watch.timings.total - queuing - socketInit - lookup - connecting - receiving - waiting;
+            const dbInternalTotal = objectValues<number>(databaseReportedTimings).reduce((a, b) => a + b, 0);
+            timings = {
+                dbConnection: {
+                    queuing,
+                    socketInit,
+                    lookup,
+                    connecting,
+                    waiting,
+                    receiving,
+                    other,
+                    total: dbConnectionTotal
+                },
+                database: {
+                    ...databaseReportedTimings,
+                    total: dbInternalTotal
+                }
+            };
+        }
+
+        return { timings, data, plans, databaseError };
     }
 
     /**
@@ -384,4 +454,20 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             await this.performMigration(migration);
         }
     }
+}
+
+function sumUpValues(objects: ReadonlyArray<{ readonly [key: string]: number }>): { readonly [key: string]: number } {
+    const result: { [key: string]: number } = {};
+    for (const obj of objects) {
+        for (const key of Object.keys(obj)) {
+            if (Number.isFinite(obj[key])) {
+                if (key in result && Number.isFinite(result[key])) {
+                    result[key] += obj[key];
+                } else {
+                    result[key] = obj[key];
+                }
+            }
+        }
+    }
+    return result;
 }
