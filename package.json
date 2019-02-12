@@ -33,7 +33,7 @@
     "@types/chai-as-promised": "^7.1.0",
     "@types/cors": "^2.8.1",
     "@types/deep-equal": "^1.0.1",
-    "@types/graphql": "^14.0.0",
+    "@types/graphql": "~14.0.0",
     "@types/graphql-type-json": "^0.1.2",
     "@types/js-yaml": "^3.10.1",
     "@types/lodash": "^4.14.77",
@@ -49,9 +49,9 @@
     "deep-equal": "^1.0.1",
     "deep-equal-in-any-order": "^1.0.10",
     "dependency-check": "^2.9.1",
-    "graphql": "^14.0.2",
+    "graphql": "~14.0.2",
     "graphql-request": "^1.8.2",
-    "graphql-yoga": "^1.16.2",
+    "graphql-yoga": "^1.17.4",
     "log4js": "^3.0.5",
     "mocha": "^5.0.1",
     "nyc": "^11.2.1",
@@ -64,7 +64,7 @@
     "ajv": "^6.0.1",
     "ansi-styles": "^3.2.1",
     "arangojs": "^6.10.0",
-    "graphql-tag": "^2.9.2",
+    "graphql-tag": "^2.10.1",
     "graphql-tools": "^4.0.0",
     "graphql-transformer": "^0.2.0",
     "graphql-type-json": "^0.2.1",
@@ -81,8 +81,8 @@
     "yaml-ast-parser": "0.0.40"
   },
   "peerDependencies": {
-    "@types/graphql": "^14.0.0",
-    "graphql": "^14.0.0"
+    "@types/graphql": "~14.0.0",
+    "graphql": "~14.0.0"
   },
   "nyc": {
     "include": [

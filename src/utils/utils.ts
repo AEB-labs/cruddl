@@ -1,10 +1,10 @@
-export type PlainObject = {[key: string]: AnyValue};
-export type AnyValue = {}|undefined|null;
+export type PlainObject = { [key: string]: AnyValue };
+export type AnyValue = {} | undefined | null;
 export type Constructor<T> = { new(...args: any[]): T };
 
 export function flatMap<TOut, TIn>(arr: ReadonlyArray<TIn>, f: (t: TIn) => ReadonlyArray<TOut>): TOut[] {
     return arr.reduce((ys: any, x: any) => {
-        return ys.concat(f.call(null, x))
+        return ys.concat(f.call(null, x));
     }, []);
 }
 
@@ -14,22 +14,22 @@ export function flatMap<TOut, TIn>(arr: ReadonlyArray<TIn>, f: (t: TIn) => Reado
  * @param {(t: TIn) => TOut} fn
  * @returns TOut|undefined
  */
-export function mapFirstDefined<TIn, TOut>(array: ReadonlyArray<TIn|undefined>, fn: (t: TIn) => TOut) {
+export function mapFirstDefined<TIn, TOut>(array: ReadonlyArray<TIn | undefined>, fn: (t: TIn) => TOut) {
     for (const i of array) {
         if (i == undefined) {
             continue;
         }
         const out = fn(i);
         if (out != undefined) {
-            return out
+            return out;
         }
     }
-    return undefined
+    return undefined;
 }
 
 export function flatten<T>(arr: ReadonlyArray<ReadonlyArray<T>>): T[] {
     return arr.reduce((ys: any, x: any) => {
-        return ys.concat(x)
+        return ys.concat(x);
     }, []);
 }
 
@@ -45,13 +45,13 @@ export function endsWith(str: string, suffix: string) {
  */
 export function arrayStartsWith<T>(array: ReadonlyArray<T>, start: ReadonlyArray<T>): boolean {
     let i = 0;
-    while(i < start.length) {
+    while (i < start.length) {
         if (array[i] !== start[i]) {
             return false;
         }
         i++;
     }
-    return true
+    return true;
 }
 
 export function capitalize(string: string) {
@@ -90,7 +90,7 @@ export const INDENTATION = '  ';
  * @param indentation the prefix to put in front of each line
  * @returns the indented string
  */
-export function indent(input: string, indentation: string|number = INDENTATION) {
+export function indent(input: string, indentation: string | number = INDENTATION) {
     if (indentation === 0 || indentation === '') {
         return input;
     }
@@ -125,7 +125,7 @@ export async function doXTimesInParallel<T>(fn: () => Promise<T>, count: number)
  * @param arr the source population
  * @returns the sampled item, or undefined if the input array is empty
  */
-export function takeRandomSample<T>(arr: ReadonlyArray<T>): T|undefined {
+export function takeRandomSample<T>(arr: ReadonlyArray<T>): T | undefined {
     return arr[Math.floor(Math.random() * arr.length)];
 }
 
@@ -158,12 +158,12 @@ export function filterType<T>(arr: ReadonlyArray<AnyValue>, type: Constructor<T>
 }
 
 export function objectEntries<T>(obj: { [name: string]: T }): [string, T][] {
-    return Object.keys(obj).map((k): [string,T] => [k, obj[k]]);
+    return Object.keys(obj).map((k): [string, T] => [k, obj[k]]);
 }
 
 export function mapValues<TIn, TOut>(obj: { [key: string]: TIn }, fn: (value: TIn, key: string) => TOut): { [key: string]: TOut };
 export function mapValues<TIn, TOut, TKey>(map: Map<TKey, TIn>, fn: (value: TIn, key: TKey) => TOut): Map<TKey, TOut>;
-export function mapValues<TIn, TOut, TKey>(obj: { [key: string]: TIn }|Map<TKey, TIn>, fn: (value: TIn, key: TKey) => TOut): Map<TKey, TOut>|{ [key: string]: TOut } {
+export function mapValues<TIn, TOut, TKey>(obj: { [key: string]: TIn } | Map<TKey, TIn>, fn: (value: TIn, key: TKey) => TOut): Map<TKey, TOut> | { [key: string]: TOut } {
     if (obj instanceof Map) {
         return mapValues1(obj, fn);
     }
@@ -197,7 +197,7 @@ export function filterProperties<TValue>(obj: { [key: string]: TValue }, predica
     return result;
 }
 
-export function mapNullable<TIn, TOut>(value: TIn|undefined, fn: (vlaue: TIn) => TOut): TOut|undefined {
+export function mapNullable<TIn, TOut>(value: TIn | undefined, fn: (vlaue: TIn) => TOut): TOut | undefined {
     if (value == undefined) {
         return value;
     }
@@ -208,7 +208,35 @@ export function sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-export function pair<S, T>(a: S, b: T): [ S, T ] {
+/**
+ * Gets a promise that resolves with `true` after a specified time, except when a cancellation promise fires first, then
+ * it resolves with `false`.
+ *
+ * If the cancellation token is rejected, the sleep continues as normal.
+ *
+ * @param ms the sleep time in milliseconds
+ * @param cancellationToken a promise that should be resolved to cancel the timeout
+ */
+export function sleepInterruptible(ms: number, cancellationToken: Promise<void> | undefined): Promise<boolean> {
+    let resolvePromise: (result: boolean) => void;
+    let isCancelled = false;
+    const promise = new Promise<boolean>(r => resolvePromise = r);
+    const timeout = setTimeout(() => {
+        if (!isCancelled) {
+            resolvePromise(true);
+        }
+    }, ms);
+    if (cancellationToken) {
+        cancellationToken.then(() => {
+            isCancelled = true;
+            resolvePromise(false);
+            clearTimeout(timeout);
+        });
+    }
+    return promise;
+}
+
+export function pair<S, T>(a: S, b: T): [S, T] {
     return [a, b];
 }
 
@@ -239,23 +267,23 @@ export let escapeRegExp: (input: string) => string;
 
     const specials = [
             // order matters for these
-            "-"
-            , "["
-            , "]"
+            '-'
+            , '['
+            , ']'
             // order doesn't matter for any of these
-            , "/"
-            , "{"
-            , "}"
-            , "("
-            , ")"
-            , "*"
-            , "+"
-            , "?"
-            , "."
-            , "\\"
-            , "^"
-            , "$"
-            , "|"
+            , '/'
+            , '{'
+            , '}'
+            , '('
+            , ')'
+            , '*'
+            , '+'
+            , '?'
+            , '.'
+            , '\\'
+            , '^'
+            , '$'
+            , '|'
         ]
 
         // I choose to escape every character with '\'
@@ -264,7 +292,7 @@ export let escapeRegExp: (input: string) => string;
     ;
 
     escapeRegExp = function (str) {
-        return str.replace(regex, "\\$&");
+        return str.replace(regex, '\\$&');
     };
 
     // test escapeRegExp("/path/to/res?search=this.that")
