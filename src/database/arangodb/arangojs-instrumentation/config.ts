@@ -5,5 +5,9 @@ export type RequestInstrumentationPhase = 'queuing' | 'socketInit' | 'lookup' | 
 export interface RequestInstrumentation {
     onPhaseEnded(phase: RequestInstrumentationPhase): void
 
-    cancellationToken: Promise<void>
+    readonly cancellationToken: Promise<void>
+    /**
+     * is set to true by custom-connection on cancellationToken.then() to allow synchronous access to the cancellation state
+     */
+    isCancelled?: boolean
 }

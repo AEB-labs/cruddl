@@ -5,23 +5,29 @@ import { Logger } from '../../config/logging';
 import { ExecutionOptions } from '../../execution/execution-options';
 import { Model } from '../../model';
 import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS, QueryNode } from '../../query-tree';
-import { objectValues, sleepInterruptible } from '../../utils/utils';
+import { objectValues, sleep, sleepInterruptible } from '../../utils/utils';
 import { getPreciseTime, Watch } from '../../utils/watch';
 import { DatabaseAdapter, DatabaseAdapterTimings, ExecutionArgs, ExecutionPlan, ExecutionResult } from '../database-adapter';
 import { AQLCompoundQuery, aqlConfig, AQLExecutableQuery } from './aql';
 import { getAQLQuery } from './aql-generator';
 import { RequestInstrumentation, RequestInstrumentationPhase } from './arangojs-instrumentation/config';
+import { CancellationManager } from './cancellation-manager';
 import { ArangoDBConfig, DEFAULT_RETRY_DELAY_BASE_MS, getArangoDBLogger, initDatabase } from './config';
 import { ERROR_ARANGO_CONFLICT } from './error-codes';
 import { SchemaAnalyzer } from './schema-migration/anaylzer';
 import { SchemaMigration } from './schema-migration/migrations';
 import { MigrationPerformer } from './schema-migration/performer';
+import uuid = require('uuid');
 
 const requestInstrumentationBodyKey = 'cruddlRequestInstrumentation';
 
 interface ArangoExecutionOptions {
     readonly queries: ReadonlyArray<AQLExecutableQuery>
     readonly options: ExecutionOptions
+    /**
+     * An ID that will be prepended to all queries in this transaction so they can be aborted on cancellation
+     */
+    readonly transactionID: string
 }
 
 interface ArangoError extends Error {
@@ -48,6 +54,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
     private readonly logger: Logger;
     private readonly analyzer: SchemaAnalyzer;
     private readonly migrationPerformer: MigrationPerformer;
+    private readonly cancellationManager: CancellationManager;
     private readonly autocreateIndices: boolean;
     private readonly autoremoveIndices: boolean;
     private readonly arangoExecutionFunction: string;
@@ -58,6 +65,8 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         this.analyzer = new SchemaAnalyzer(config, schemaContext);
         this.migrationPerformer = new MigrationPerformer(config);
         this.arangoExecutionFunction = this.buildUpArangoExecutionFunction();
+        // the cancellation manager gets its own database instance so its cancellation requests are not queued
+        this.cancellationManager = new CancellationManager({ database: initDatabase(config) });
         this.autocreateIndices = config.autocreateIndices !== false; // defaults to true
         this.autoremoveIndices = config.autoremoveIndices !== false; // defaults to true
     }
@@ -73,7 +82,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         // (https://github.com/istanbuljs/nyc) not to instrument the code with coverage instructions.
 
         /* istanbul ignore next */
-        const arangoExecutionFunction = function ({ queries, options }: ArangoExecutionOptions) {
+        const arangoExecutionFunction = function ({ queries, options, transactionID }: ArangoExecutionOptions) {
             const db = require('@arangodb').db;
             const enableProfiling = options.recordTimings;
             const internal = enableProfiling ? require('internal') : undefined;
@@ -112,7 +121,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                 let executionResult;
                 try {
                     executionResult = db._query({
-                        query: query.code,
+                        query: `/*id:${transactionID}*/\n${query.code}`,
                         bindVars,
                         options: {
                             profile: options.recordPlan ? 2 : options.recordTimings ? 1 : 0,
@@ -346,18 +355,47 @@ export class ArangoDBAdapter implements DatabaseAdapter {
     }
 
     private async executeTransactionOnce(executableQueries: ReadonlyArray<AQLExecutableQuery>, options: ExecutionOptions, aqlQuery: AQLCompoundQuery): Promise<TransactionResult> {
+        const transactionID = uuid();
         const args: ArangoExecutionOptions = {
             queries: executableQueries,
             options: {
                 ...options,
                 queryMemoryLimit: options.queryMemoryLimit || this.config.queryMemoryLimit
-            }
+            },
+            transactionID
         };
+        let isTransactionFinished = false;
         const watch = new Watch();
+        // we pass the cancellationToken to the call to Database.transaction(). This will remove the request from the
+        // http agent's queue. However, it won't cancel the request if already sent because ArangoDB does NOT abort a
+        // query in this case, so this would not help. In the contrary, it would free up the connection in the arangojs
+        // http agent so that more queries can be run in parallel than configured (via maxSockets). This would be
+        // dangerous because it might exhaust ArangoDB threads so that ArangoDB no longer responds, and it might even
+        // cause too much memory to be allocated. For this reason, we only kill the query (see below) and let that
+        // killed query also abort the transaction.
         if (this.config.enableExperimentalArangoJSInstrumentation) {
             (args as any)[requestInstrumentationBodyKey] = {
                 onPhaseEnded: (phase: RequestInstrumentationPhase) => {
                     watch.stop(phase);
+
+                    if (phase === 'socketInit') {
+                        if (options.cancellationToken) {
+                            // delay cancellation a bit for two reasons
+                            // - don't take the effort of finding and killing a query if it's fast anyway
+                            // - the cancellation might occur before the transaction script starts the query
+                            // we only really need this to cancel long-running queries
+                            options.cancellationToken.then(() => sleep(30)) .then(() => {
+                                // don't try to kill the query if the transaction() call finished already - this would mean that it
+                                // either was faster than the delay above, or the request was removed from the request queue
+                                if (!isTransactionFinished) {
+                                    this.logger.debug(`Cancelling query ${transactionID}`);
+                                    this.cancellationManager.cancelQuery(transactionID).catch(e => {
+                                        this.logger.warn(`Error cancelling query ${transactionID}: ${e.stack}`);
+                                    });
+                                }
+                            });
+                        }
+                    }
                 },
                 cancellationToken: options.cancellationToken
             } as RequestInstrumentation;
@@ -375,6 +413,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                 args
             );
         } catch (e) {
+            isTransactionFinished = true;
             if (options.mutationMode === 'rollback' && e.message.startsWith('RolledBackTransactionError: ')) {
                 const valStr = e.message.substr('RolledBackTransactionError: '.length);
                 try {
@@ -387,6 +426,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             }
         }
         const { timings: databaseReportedTimings, data, plans, error: databaseError } = transactionResult;
+        isTransactionFinished = true;
 
         let timings;
         if (options.recordTimings && databaseReportedTimings) {

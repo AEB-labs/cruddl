@@ -46,6 +46,11 @@ export class CustomConnection extends Connection {
             delete body.params[requestInstrumentationBodyKey];
         }
 
+        if (requestInstrumentation && requestInstrumentation.cancellationToken) {
+            let ri = requestInstrumentation;
+            requestInstrumentation.cancellationToken.then(() => ri.isCancelled = true);
+        }
+
         return new Promise((resolve, reject) => {
             let contentType = 'text/plain';
             if (isBinary) {
