@@ -26,7 +26,10 @@
           "unNumber": "1234",
           "notices": [
             "No special treatment necessary."
-          ]
+          ],
+          "details": {
+            "expiryDate": "2020-02-14"
+          }
         }
       }
     }
@@ -47,6 +50,19 @@
     "data": {
       "updateDelivery": {
         "dgInfo": {
+          "unNumber": "1234"
+        }
+      }
+    }
+  },
+  "updateNested": {
+    "data": {
+      "updateDelivery": {
+        "dgInfo": {
+          "details": {
+            "comment": "some comment",
+            "expiryDate": "2020-02-14"
+          },
           "unNumber": "1234"
         }
       }
