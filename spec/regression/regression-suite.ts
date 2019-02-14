@@ -47,14 +47,15 @@ export class RegressionSuite {
         const warnLevelOptions = { ...generalOptions, loggerProvider: new Log4jsLoggerProvider('warn') };
         const debugLevelOptions = { ...generalOptions, loggerProvider: new Log4jsLoggerProvider(this.options.trace ? 'trace' : 'warn', { 'schema-builder': 'warn' }) };
 
+        // use a schema that logs less for initTestData and for schema migrations
+        const silentProject = await loadProjectFromDir(path.resolve(this.path, 'model'), warnLevelOptions);
+        const silentAdapter = await this.createAdapter(warnLevelOptions);
+        const silentSchema = silentProject.createSchema(silentAdapter);
+
         const project = await loadProjectFromDir(path.resolve(this.path, 'model'), debugLevelOptions);
         const adapter = await this.createAdapter(debugLevelOptions);
         this.schema = project.createSchema(adapter);
 
-        // use a schema that logs less for initTestData and for schema migrations
-        const silentProject = await loadProjectFromDir(path.resolve(this.path, 'model'), debugLevelOptions);
-        const silentAdapter = await this.createAdapter(warnLevelOptions);
-        const silentSchema = silentProject.createSchema(silentAdapter);
         await silentAdapter.updateSchema(silentProject.getModel());
         this.testDataEnvironment = await initTestData(path.resolve(this.path, 'test-data.json'), silentSchema);
 
