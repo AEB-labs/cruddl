@@ -18,13 +18,22 @@
       }
     }
   },
+  "updateAllToAccessGroupWithPermissions": {
+    "data": {
+      "updateAllFiles": [
+        {
+          "name": "public"
+        }
+      ]
+    }
+  },
   "createWithAccessGroupWithoutPermissions": {
     "errors": [
       {
         "message": "AuthorizationError: Not authorized to set File.accessGroup to this value (allowed values: logistics, public)",
         "locations": [
           {
-            "line": 16,
+            "line": 23,
             "column": 5
           }
         ],
