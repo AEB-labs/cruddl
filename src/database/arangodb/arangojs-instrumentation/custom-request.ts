@@ -87,13 +87,15 @@ export function createRequest(
             { method, url, headers, body, requestInstrumentation }: RequestOptions,
             callback: Errback<ArangojsResponse>
         ) {
-            let isCancelled = false;
-            if (requestInstrumentation && requestInstrumentation.cancellationToken) {
-                requestInstrumentation.cancellationToken.then(() => isCancelled = true);
+            // this is the last change we cancel a request
+            // we don't cancel running requests because arangodb does not kill queries when the request ist terminated
+            // thus, we keep the request open
+            // - to get notified if the request completes pretty quickly anyway so we don't need to kill the query
+            // - to take up a socket so that no new query is sent on it while the query is not yet killed
+            if (requestInstrumentation && requestInstrumentation.isCancelled) {
+                return callback(new Error(`Request has been cancelled by caller before it was sent`));
             }
-            if (isCancelled) {
-                callback(new Error(`Request has been cancelled by caller before it was sent`));
-            }
+
             notifyAboutPhaseEnd(requestInstrumentation, 'queuing');
             let path = baseUrlParts.pathname
                 ? url.pathname
@@ -154,16 +156,6 @@ export function createRequest(
                         socket.on('lookup', () => notifyAboutPhaseEnd(requestInstrumentation, 'lookup'));
                         socket.on('connect', () => notifyAboutPhaseEnd(requestInstrumentation, 'connecting'));
                     });
-
-                    if (requestInstrumentation.cancellationToken) {
-                        requestInstrumentation.cancellationToken.then(() => {
-                            if (!called) {
-                                req.abort();
-                                called = true;
-                                callback(new Error(`Request has been cancelled by caller`));
-                            }
-                        });
-                    }
                 }
                 req.on('error', err => {
                     const error = err as ArangojsError;
