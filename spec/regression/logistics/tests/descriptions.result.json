@@ -2139,11 +2139,11 @@
           "inputFields": [
             {
               "name": "expiryDate",
-              "description": "Checks if `expiryDate` equals a specified value.\n\nIf an index exists on `expiryDate`, it can be used."
+              "description": null
             },
             {
               "name": "expiryDate_not",
-              "description": "Checks if `expiryDate` does not equal a specified value"
+              "description": null
             },
             {
               "name": "expiryDate_in",
@@ -2171,11 +2171,11 @@
             },
             {
               "name": "comment",
-              "description": "Checks if `comment` equals a specified string, case-sensitively.\n\nIf an index exists on `comment`, it can be used.\n\nSee also `like` for a case-insensitive filter."
+              "description": null
             },
             {
               "name": "comment_not",
-              "description": "Checks if `comment` does not equal a specified string, case-sensitively."
+              "description": null
             },
             {
               "name": "comment_in",
@@ -2203,7 +2203,7 @@
             },
             {
               "name": "comment_contains",
-              "description": "Checks if `comment` contains a specified string, case-sensitively."
+              "description": null
             },
             {
               "name": "comment_not_contains",
@@ -2211,7 +2211,7 @@
             },
             {
               "name": "comment_starts_with",
-              "description": "Checks if `comment` starts with a specified string, case-sensitively.\n\nNever uses an index. Consider using `like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
+              "description": null
             },
             {
               "name": "comment_not_starts_with",
@@ -2219,19 +2219,11 @@
             },
             {
               "name": "comment_ends_with",
-              "description": "Checks if `comment` ends with a specified string, case-sensitively."
+              "description": null
             },
             {
               "name": "comment_not_ends_with",
               "description": null
-            },
-            {
-              "name": "comment_like",
-              "description": "Matches `comment` against a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)\n\nIf an index exists on `comment`, it can be used for the literal prefix (the part until the first placeholder)."
-            },
-            {
-              "name": "comment_not_like",
-              "description": "Checks if `comment` does *not* match a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)"
             },
             {
               "name": "AND",

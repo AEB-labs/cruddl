@@ -1,0 +1,63 @@
+mutation updatePublic {
+    updateAllFiles(filter: { id: "@{ids/File/3}" } input: { name: "public2" }) {
+        name
+    }
+}
+
+# should fail
+mutation updateToAccessGroupWithoutReadPermissions {
+    updateAllFiles(filter: { id: "@{ids/File/3}" } input: { accessGroup: "accounting" }) {
+        name
+    }
+}
+
+# should fail
+mutation updateToAccessGroupWithoutWritePermissions {
+    updateAllFiles(filter: { id: "@{ids/File/3}" } input: { accessGroup: "logistics" }) {
+        name
+    }
+}
+
+mutation updateWriteRestricted {
+    updateAllFiles(filter: { id: "@{ids/File/2}" } input: { name: "logistics2" }) {
+        name
+    }
+}
+
+# should fail with first error (write restriction vs. setting the value)
+mutation updateWriteRestrictedToAccessGroupWithoutWritePermissions {
+    updateAllFiles(filter: { id: "@{ids/File/2}" } input: { accessGroup: "logistics" }) {
+        name
+    }
+}
+
+mutation updateReadRestricted {
+    updateAllFiles(filter: { id: "@{ids/File/1}" } input: { name: "accounting" }) {
+        name
+    }
+}
+
+# should not find this and not report that the accessGroup can not be set
+mutation updateReadRestrictedToAccessGroupWithoutWritePermissions {
+    updateAllFiles(filter: { id: "@{ids/File/1}" } input: { accessGroup: "logistics" }) {
+        name
+    }
+}
+
+mutation deletePublic {
+    deleteAllFiles(filter: { id: "@{ids/File/3}" }) {
+        name
+    }
+}
+
+mutation deleteWriteRestricted {
+    deleteAllFiles(filter: { id: "@{ids/File/2}" }) {
+        name
+    }
+}
+
+mutation deleteReadRestricted {
+    deleteAllFiles(filter: { id: "@{ids/File/1}" }) {
+        name
+    }
+}
