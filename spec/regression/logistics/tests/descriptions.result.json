@@ -761,8 +761,33 @@
             {
               "name": "notices",
               "description": null
+            },
+            {
+              "name": "details",
+              "description": null
             }
           ],
+          "inputFields": null
+        },
+        {
+          "name": "DangerousGoodsDetails",
+          "description": null,
+          "fields": [
+            {
+              "name": "expiryDate",
+              "description": null
+            },
+            {
+              "name": "comment",
+              "description": null
+            }
+          ],
+          "inputFields": null
+        },
+        {
+          "name": "LocalDate",
+          "description": "The `LocalDate` scalar type represents a date without time zone in a format specified by ISO 8601, such as 2007-12-03.",
+          "fields": null,
           "inputFields": null
         },
         {
@@ -965,6 +990,10 @@
             {
               "name": "handlingUnit",
               "description": "Filters the through `id` referenced HandlingUnits that fulfills the given requirements.\n\n Checks if `handlingUnit` is not null, and allows to filter based on its fields."
+            },
+            {
+              "name": "dgInfo",
+              "description": "Allows to filter on the fields of `dgInfo`.\n\nNote that `dgInfo` is an entity extension and thus can never be `null`, so specifying `null` to this filter field has no effect."
             },
             {
               "name": "AND",
@@ -2250,6 +2279,121 @@
               "description": "Makes sure none of the items in `notices` match a certain filter.\n\nNote that you can specify the empty object for this filter to make sure `notices` has no items."
             },
             {
+              "name": "details",
+              "description": "Allows to filter on the fields of `details`.\n\nNote that `details` is an entity extension and thus can never be `null`, so specifying `null` to this filter field has no effect."
+            },
+            {
+              "name": "AND",
+              "description": "A field that checks if all filters in the list apply\n\nIf the list is empty, this filter applies to all objects."
+            },
+            {
+              "name": "OR",
+              "description": "A field that checks if any of the filters in the list apply.\n\nIf the list is empty, this filter applies to no objects.\n\nNote that only the items in the list *or*-combined; this complete `OR` field is *and*-combined with outer fields in the parent filter type."
+            }
+          ]
+        },
+        {
+          "name": "DangerousGoodsDetailsFilter",
+          "description": "Filter type for `DangerousGoodsDetails`.\n\nAll fields in this type are *and*-combined; see the `or` field for *or*-combination.",
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "expiryDate",
+              "description": "Checks if `expiryDate` equals a specified value.\n\nIf an index exists on `expiryDate`, it can be used."
+            },
+            {
+              "name": "expiryDate_not",
+              "description": "Checks if `expiryDate` does not equal a specified value"
+            },
+            {
+              "name": "expiryDate_in",
+              "description": null
+            },
+            {
+              "name": "expiryDate_not_in",
+              "description": null
+            },
+            {
+              "name": "expiryDate_lt",
+              "description": null
+            },
+            {
+              "name": "expiryDate_lte",
+              "description": null
+            },
+            {
+              "name": "expiryDate_gt",
+              "description": null
+            },
+            {
+              "name": "expiryDate_gte",
+              "description": null
+            },
+            {
+              "name": "comment",
+              "description": "Checks if `comment` equals a specified string, case-sensitively.\n\nIf an index exists on `comment`, it can be used.\n\nSee also `like` for a case-insensitive filter."
+            },
+            {
+              "name": "comment_not",
+              "description": "Checks if `comment` does not equal a specified string, case-sensitively."
+            },
+            {
+              "name": "comment_in",
+              "description": null
+            },
+            {
+              "name": "comment_not_in",
+              "description": null
+            },
+            {
+              "name": "comment_lt",
+              "description": null
+            },
+            {
+              "name": "comment_lte",
+              "description": null
+            },
+            {
+              "name": "comment_gt",
+              "description": null
+            },
+            {
+              "name": "comment_gte",
+              "description": null
+            },
+            {
+              "name": "comment_contains",
+              "description": "Checks if `comment` contains a specified string, case-sensitively."
+            },
+            {
+              "name": "comment_not_contains",
+              "description": null
+            },
+            {
+              "name": "comment_starts_with",
+              "description": "Checks if `comment` starts with a specified string, case-sensitively.\n\nNever uses an index. Consider using `like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
+            },
+            {
+              "name": "comment_not_starts_with",
+              "description": null
+            },
+            {
+              "name": "comment_ends_with",
+              "description": "Checks if `comment` ends with a specified string, case-sensitively."
+            },
+            {
+              "name": "comment_not_ends_with",
+              "description": null
+            },
+            {
+              "name": "comment_like",
+              "description": "Matches `comment` against a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)\n\nIf an index exists on `comment`, it can be used for the literal prefix (the part until the first placeholder)."
+            },
+            {
+              "name": "comment_not_like",
+              "description": "Checks if `comment` does *not* match a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)"
+            },
+            {
               "name": "AND",
               "description": "A field that checks if all filters in the list apply\n\nIf the list is empty, this filter applies to all objects."
             },
@@ -2465,12 +2609,6 @@
           "inputFields": null
         },
         {
-          "name": "LocalDate",
-          "description": "The `LocalDate` scalar type represents a date without time zone in a format specified by ISO 8601, such as 2007-12-03.",
-          "fields": null,
-          "inputFields": null
-        },
-        {
           "name": "LocalTime",
           "description": "The `LocalTime` scalar type represents a time without time zone in a format specified by ISO 8601, such as 10:15:30 or 17:05:03.521.\n\nThe valid range is between 00:00:00 and 23:59:59.999999999. 24:00 is not allowed to avoid bugs in clients that treat 24:00 as 0:00.\n\nThe seconds part is cut off if it is zero, e.g. 12:34:00 is converted to 12:34. Second fraction digits are cut off at the nearest three-digit group, e.g. 00:00:00.1234 is converted to 00:00:00.123400.\n\nLeap seconds can not be specified.",
           "fields": null,
@@ -2509,6 +2647,10 @@
             {
               "name": "handlingUnit",
               "description": "This field references a `HandlingUnit` by its `id` field"
+            },
+            {
+              "name": "dgInfo",
+              "description": null
             },
             {
               "name": "_cursor",
@@ -3652,6 +3794,25 @@
             {
               "name": "notices",
               "description": null
+            },
+            {
+              "name": "details",
+              "description": null
+            }
+          ]
+        },
+        {
+          "name": "CreateDangerousGoodsDetailsInput",
+          "description": "The create type for the entity extension type `DangerousGoodsDetails`.",
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "expiryDate",
+              "description": null
+            },
+            {
+              "name": "comment",
+              "description": null
             }
           ]
         },
@@ -3671,6 +3832,10 @@
             {
               "name": "handlingUnit",
               "description": "Specify the `id` of the `HandlingUnit` to be referenced"
+            },
+            {
+              "name": "dgInfo",
+              "description": null
             }
           ]
         },
@@ -3851,6 +4016,25 @@
             {
               "name": "notices",
               "description": null
+            },
+            {
+              "name": "details",
+              "description": "This field is an entity extension and thus is never 'null' - passing 'null' here does not change the field value."
+            }
+          ]
+        },
+        {
+          "name": "UpdateDangerousGoodsDetailsInput",
+          "description": "The update type for the entity extension type `DangerousGoodsDetails`.\n\nIf fields are omitted, their value is left unchanged. Explicitly set fields to `null` to clear their value.",
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "expiryDate",
+              "description": null
+            },
+            {
+              "name": "comment",
+              "description": null
             }
           ]
         },
@@ -3874,6 +4058,10 @@
             {
               "name": "handlingUnit",
               "description": "Specify the `id` of the `HandlingUnit` to be referenced"
+            },
+            {
+              "name": "dgInfo",
+              "description": "This field is an entity extension and thus is never 'null' - passing 'null' here does not change the field value."
             }
           ]
         },

@@ -2,4 +2,10 @@ type DangerousGoodsInfo @entityExtension {
     unNumber: String
     flashpoint: String
     notices: [ String ] @defaultValue(value: ["No special treatment necessary."])
+    details: DangerousGoodsDetails
+}
+
+type DangerousGoodsDetails @entityExtension {
+    expiryDate: LocalDate
+    comment: String
 }
