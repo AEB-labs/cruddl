@@ -22,11 +22,16 @@ export class SchemaGenerator {
         return addOperationBasedResolvers(dumbSchema, async op => {
             const rootType = op.operation.operation === 'mutation' ? mutationType : queryType;
             const res = await this.operationResolver.resolveOperation(op, rootType);
-            if (res.errors) {
-                throw res.errors[0];
-            }
+            // report the profile before throwing
             if (this.context.profileConsumer && res.profile) {
                 this.context.profileConsumer(res.profile);
+            }
+            if (res.errors && res.errors.length) {
+                if (res.errors.length == 1) {
+                    throw res.errors[0];
+                }
+                // should not occur yet, we don't throw multiple errors
+                throw new Error(res.errors.map(e => e.message).join('\n'));
             }
             return res.data;
         });

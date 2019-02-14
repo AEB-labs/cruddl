@@ -175,12 +175,28 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                     resultHolder[query.resultName] = resultData;
                 }
 
-                if (query.resultValidator) {
-                    for (const key in query.resultValidator) {
-                        if (key in validators) {
-                            validators[key](query.resultValidator[key], resultData);
+                try {
+                    if (query.resultValidator) {
+                        for (const key in query.resultValidator) {
+                            if (key in validators) {
+                                validators[key](query.resultValidator[key], resultData);
+                            }
                         }
                     }
+                } catch (error) {
+                    if (enableProfiling && timings) {
+                        timings.js = (getPreciseTime() - startTime) - timingsTotal;
+                    }
+
+                    // report timings and plans even in case of a validation error
+                    return {
+                        error: {
+                            // imitate arangodb's error reporting for now, could change that to a better interface later
+                            message: error.name + ': ' + error.message
+                        },
+                        timings,
+                        plans
+                    };
                 }
             }
 
@@ -286,9 +302,12 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         let errors: ReadonlyArray<GraphQLError> | undefined;
         if (databaseError) {
             const arangoDBCode: number | undefined = databaseError.errorNum;
-            const extensions: { [key: string]: any } = {
-                arangoDBCode
-            };
+            let extensions: { [key: string]: any } | undefined;
+            if (arangoDBCode) {
+                extensions = {
+                    arangoDBCode
+                };
+            }
             const message = databaseError.errorMessage || databaseError.message;
             errors = [
                 new GraphQLError(message, undefined, undefined, undefined, undefined, undefined, extensions)
@@ -384,7 +403,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                             // - don't take the effort of finding and killing a query if it's fast anyway
                             // - the cancellation might occur before the transaction script starts the query
                             // we only really need this to cancel long-running queries
-                            options.cancellationToken.then(() => sleep(30)) .then(() => {
+                            options.cancellationToken.then(() => sleep(30)).then(() => {
                                 // don't try to kill the query if the transaction() call finished already - this would mean that it
                                 // either was faster than the delay above, or the request was removed from the request queue
                                 if (!isTransactionFinished) {

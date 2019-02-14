@@ -32,6 +32,7 @@ export class OperationResolver {
         const watch = new Watch();
         const topLevelWatch = new Watch();
 
+        const operationDesc = `${operationInfo.operation.operation} ${operationInfo.operation.name ? operationInfo.operation.name.value : ''}`;
         try {
             const start = getPreciseTime();
             if (operationInfo.operation.operation === 'mutation' && options.mutationMode === 'disallowed') {
@@ -40,7 +41,8 @@ export class OperationResolver {
 
             let queryTree: QueryNode;
             try {
-                logger.debug(`Executing ${operationInfo.operation.operation} ${operationInfo.operation.name ? operationInfo.operation.name.value : ''}`);
+                const requestRoles = options.authRoles || [];
+                logger.debug(`Executing ${operationDesc} with roles ${requestRoles.join(', ')}`);
                 if (logger.isTraceEnabled()) {
                     logger.trace(`Operation: ${print(operationInfo.operation)}`);
                 }
@@ -50,8 +52,6 @@ export class OperationResolver {
                 }
                 watch.stop('distillation');
 
-                const requestRoles = options.authRoles || [];
-                logger.debug(`Request roles: ${requestRoles.join(', ')}`);
                 const rootQueryNode = ObjectQueryNode.EMPTY; // can't use NULL because then the whole operation would yield null
                 queryTree = buildConditionalObjectQueryNode(rootQueryNode, rootType, operation.selectionSet);
                 if (logger.isTraceEnabled()) {
@@ -84,9 +84,13 @@ export class OperationResolver {
                 errors = res.errors;
                 data = res.data;
                 plan = res.plan;
-                logger.debug(`Execution successful`);
+                if (errors && errors.length) {
+                    logger.warn(`Executed ${operationDesc} with errors: ${errors.map(e => e.message).join('\n')}`);
+                } else {
+                    logger.debug(`Executed ${operationDesc} successfully`);
+                }
             } else {
-                logger.debug(`Execution successful (evaluated statically without database adapter))`);
+                logger.debug(`Executed ${operationDesc} (evaluated statically without database adapter))`);
             }
             if (logger.isTraceEnabled()) {
                 logger.trace('Result: ' + JSON.stringify(data, undefined, '  '));
@@ -117,7 +121,7 @@ export class OperationResolver {
                 profile
             };
         } catch (e) {
-            logger.error('Error evaluating GraphQL query: ' + e.stack);
+            logger.error(`Error evaluating ${operationDesc}: ${e.stack}`);
             throw e;
         }
     }
