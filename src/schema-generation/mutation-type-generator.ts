@@ -12,7 +12,7 @@ import { OutputTypeGenerator } from './output-type-generator';
 import { makeNonNullableList, QueryNodeField, QueryNodeNonNullType, QueryNodeObjectType } from './query-node-object-type';
 import { UpdateInputTypeGenerator, UpdateRootEntityInputType } from './update-input-types';
 import { getArgumentsForUniqueFields, getEntitiesByUniqueFieldQuery } from './utils/entities-by-uinque-field';
-import { mapTOIDNodes } from './utils/map';
+import { mapIDsToRootEntities, mapTOIDNodesUnoptimized, mapTOIDNodesWithOptimizations } from './utils/map';
 import { getRemoveAllEntityEdgesStatements } from './utils/relations';
 
 export class MutationTypeGenerator {
@@ -231,19 +231,31 @@ export class MutationTypeGenerator {
     }
 
     private generateDeleteQueryNode(rootEntityType: RootEntityType, args: { [name: string]: any }): QueryNode {
+        // collect the ids before the actual delete statements so the lists won't change by the statements
         const listNode = getEntitiesByUniqueFieldQuery(rootEntityType, args);
+        const idsVariable = new VariableQueryNode('ids');
+        const idsStatement = new PreExecQueryParms({
+            // don't use optimizations here so we actually "see" the entities and don't just return the ids
+            // this is relevant if there are accessGroup filters
+            query: mapTOIDNodesUnoptimized(listNode),
+            resultVariable: idsVariable
+        });
+        const entitiesNode = mapIDsToRootEntities(idsVariable, rootEntityType);
+
         const deleteEntitiesNode = new DeleteEntitiesQueryNode({
             rootEntityType,
-            listNode
+            listNode: entitiesNode
         });
 
-        const idsNode = mapTOIDNodes(listNode);
-        const removeEdgesStatements = getRemoveAllEntityEdgesStatements(rootEntityType, idsNode);
+        const removeEdgesStatements = getRemoveAllEntityEdgesStatements(rootEntityType, entitiesNode);
 
         // no preexec for the actual deletion here because we need to evaluate the result while the entity still exists
         // and it won't exist if already deleted in the pre-exec
         return new WithPreExecutionQueryNode({
-            preExecQueries: removeEdgesStatements,
+            preExecQueries: [
+                idsStatement,
+                ...removeEdgesStatements
+            ],
             resultNode: new FirstOfListQueryNode(deleteEntitiesNode)
         });
     }
@@ -267,18 +279,33 @@ export class MutationTypeGenerator {
     }
 
     private generateDeleteAllQueryNode(rootEntityType: RootEntityType, listNode: QueryNode): QueryNode {
+        // collect the ids before the actual delete statements so the lists won't change by the statements
+        // (could occur if the filter contains a relation that is deleted by the removesEdgesStatements)
+        // note that updateAll does not have this problem because it does not allow to change relations
+        // and update does not have the problem because it does not allow to *filter* by relation
+        const idsVariable = new VariableQueryNode('ids');
+        const idsStatement = new PreExecQueryParms({
+            // don't use optimizations here so we actually "see" the entities and don't just return the ids
+            // this is relevant if there are accessGroup filters
+            query: mapTOIDNodesUnoptimized(listNode),
+            resultVariable: idsVariable
+        });
+        const entitiesNode = mapIDsToRootEntities(idsVariable, rootEntityType);
+
         // no preexec for the actual deletion here because we need to evaluate the result while the entity still exists
         // and it won't exist if already deleted in the pre-exec
         const deleteEntitiesNode = new DeleteEntitiesQueryNode({
             rootEntityType,
-            listNode
+            listNode: entitiesNode
         });
 
-        const idsNode = mapTOIDNodes(listNode);
-        const removeEdgesStatements = getRemoveAllEntityEdgesStatements(rootEntityType, idsNode);
+        const removeEdgesStatements = getRemoveAllEntityEdgesStatements(rootEntityType, entitiesNode);
 
         return new WithPreExecutionQueryNode({
-            preExecQueries: removeEdgesStatements,
+            preExecQueries: [
+                idsStatement,
+                ...removeEdgesStatements
+            ],
             resultNode: deleteEntitiesNode
         });
     }

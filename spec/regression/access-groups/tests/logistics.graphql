@@ -11,6 +11,13 @@ mutation updateToAccessGroupWithPermissions {
     }
 }
 
+# should pass
+mutation updateToAccessGroupWithPermissions {
+    updateAllFiles(filter: { id: "@{ids/File/3}" } input: { accessGroup: "logistics" }) {
+        name
+    }
+}
+
 # should fail
 mutation createWithAccessGroupWithoutPermissions {
     createFile(input: { name: "test", accessGroup: "accounting" }) {
