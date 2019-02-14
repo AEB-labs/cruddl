@@ -36,6 +36,7 @@ type Delivery @rootEntity @roles(readWrite: ["allusers"]) {
 type DeliveryItem @childEntity {
     itemNumber: String
     handlingUnit: HandlingUnit @reference
+    dgInfo: DangerousGoodsInfo
 }
 
 type Forwarder @rootEntity @roles(readWrite: ["logistics"]) {

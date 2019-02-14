@@ -198,9 +198,13 @@ export class UpdateEntityExtensionInputField implements UpdateInputField {
     }
 
     private getValueNode(value: PlainObject, currentEntityNode: QueryNode) {
+        // this function wraps the field in a conditional node to fall back to {} on null values
+        // it also unwraps the given node if it is a conditional node because (null).field == null
+        const currentValueNode = createFieldNode(this.field, currentEntityNode);
+
         return new MergeObjectsQueryNode([
-            createFieldNode(this.field, currentEntityNode), // this function wraps the field in a conditional node to fall back to {} on null values
-            new ObjectQueryNode(this.objectInputType.getProperties(value, currentEntityNode))
+            currentValueNode,
+            new ObjectQueryNode(this.objectInputType.getProperties(value, currentValueNode))
         ]);
     }
 
