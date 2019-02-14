@@ -1,0 +1,39 @@
+{
+  "addRelations": {
+    "data": {
+      "hu1": {
+        "huNumber": "1000007"
+      },
+      "hu2": {
+        "huNumber": "1000014"
+      },
+      "hu3": {
+        "huNumber": "1000021"
+      }
+    }
+  },
+  "deleteByDelivery": {
+    "data": {
+      "deleteAllHandlingUnits": [
+        {
+          "huNumber": "1000007"
+        },
+        {
+          "huNumber": "1000014"
+        }
+      ]
+    }
+  },
+  "deliveries": {
+    "data": {
+      "allHandlingUnits": [
+        {
+          "delivery": {
+            "deliveryNumber": "1000521"
+          },
+          "huNumber": "1000021"
+        }
+      ]
+    }
+  }
+}

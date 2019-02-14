@@ -1,4 +1,5 @@
-import { BinaryOperationQueryNode, BinaryOperator, ListQueryNode, LiteralQueryNode, QueryNode, RootEntityIDQueryNode, TransformListQueryNode, VariableQueryNode } from '../../query-tree';
+import { RootEntityType } from '../../model/implementation';
+import { BinaryOperationQueryNode, BinaryOperator, EntityFromIdQueryNode, ListQueryNode, LiteralQueryNode, QueryNode, RootEntityIDQueryNode, TransformListQueryNode, VariableQueryNode } from '../../query-tree';
 
 export function getMapNode(listNode: QueryNode, projection: (itemNode: QueryNode) => QueryNode) {
     if (listNode instanceof ListQueryNode) {
@@ -28,7 +29,7 @@ export function getMapNode(listNode: QueryNode, projection: (itemNode: QueryNode
     });
 }
 
-export function mapTOIDNodes(listNode: QueryNode): QueryNode {
+export function mapTOIDNodesWithOptimizations(listNode: QueryNode): QueryNode {
     // if the listNode is just an EQUALS/IN filter on root entity id, we can statically determine the ids
     if (listNode instanceof TransformListQueryNode) {
         if (listNode.innerNode === listNode.itemVariable
@@ -51,5 +52,18 @@ export function mapTOIDNodes(listNode: QueryNode): QueryNode {
         }
     }
 
+    return mapTOIDNodesUnoptimized(listNode);
+}
+
+export function mapTOIDNodesUnoptimized(listNode: QueryNode): QueryNode {
     return getMapNode(listNode, itemNode => new RootEntityIDQueryNode(itemNode));
+}
+
+export function mapIDsToRootEntities(idsNode: QueryNode, rootEntityType: RootEntityType): QueryNode {
+    const idVar = new VariableQueryNode('id');
+    return new TransformListQueryNode({
+        listNode: idsNode,
+        itemVariable: idVar,
+        innerNode: new EntityFromIdQueryNode(rootEntityType, idVar)
+    });
 }

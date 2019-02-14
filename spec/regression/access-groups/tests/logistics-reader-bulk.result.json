@@ -1,0 +1,120 @@
+{
+  "updatePublic": {
+    "data": {
+      "updateAllFiles": [
+        {
+          "name": "public2"
+        }
+      ]
+    }
+  },
+  "updateToAccessGroupWithoutReadPermissions": {
+    "errors": [
+      {
+        "message": "AuthorizationError: Not authorized to set File.accessGroup to this value (allowed values: public)",
+        "locations": [
+          {
+            "line": 9,
+            "column": 5
+          }
+        ],
+        "path": [
+          "updateAllFiles"
+        ]
+      }
+    ],
+    "data": null
+  },
+  "updateToAccessGroupWithoutWritePermissions": {
+    "errors": [
+      {
+        "message": "AuthorizationError: Not authorized to set File.accessGroup to this value (allowed values: public)",
+        "locations": [
+          {
+            "line": 16,
+            "column": 5
+          }
+        ],
+        "path": [
+          "updateAllFiles"
+        ]
+      }
+    ],
+    "data": null
+  },
+  "updateWriteRestricted": {
+    "errors": [
+      {
+        "message": "AuthorizationError: Not authorized to update File objects with this access group (allowed access groups: public)",
+        "locations": [
+          {
+            "line": 22,
+            "column": 5
+          }
+        ],
+        "path": [
+          "updateAllFiles"
+        ]
+      }
+    ],
+    "data": null
+  },
+  "updateWriteRestrictedToAccessGroupWithoutWritePermissions": {
+    "errors": [
+      {
+        "message": "AuthorizationError: Not authorized to update File objects with this access group (allowed access groups: public)",
+        "locations": [
+          {
+            "line": 29,
+            "column": 5
+          }
+        ],
+        "path": [
+          "updateAllFiles"
+        ]
+      }
+    ],
+    "data": null
+  },
+  "updateReadRestricted": {
+    "data": {
+      "updateAllFiles": []
+    }
+  },
+  "updateReadRestrictedToAccessGroupWithoutWritePermissions": {
+    "data": {
+      "updateAllFiles": []
+    }
+  },
+  "deletePublic": {
+    "data": {
+      "deleteAllFiles": [
+        {
+          "name": "public2"
+        }
+      ]
+    }
+  },
+  "deleteWriteRestricted": {
+    "errors": [
+      {
+        "message": "AuthorizationError: Not authorized to delete File objects with this access group (allowed access groups: public)",
+        "locations": [
+          {
+            "line": 54,
+            "column": 5
+          }
+        ],
+        "path": [
+          "deleteAllFiles"
+        ]
+      }
+    ],
+    "data": null
+  },
+  "deleteReadRestricted": {
+    "data": {
+      "deleteAllFiles": []
+    }
+  }
+}

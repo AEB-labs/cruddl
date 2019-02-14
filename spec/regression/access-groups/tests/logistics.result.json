@@ -1,45 +1,70 @@
 {
   "q": {
-    "data": {
-      "allFiles": [
-        {
-          "name": "logistics"
-        },
-        {
-          "name": "public"
-        }
-      ]
-    }
+    "errors": [
+      {
+        "message": "There can be only one operation named \"updateToAccessGroupWithPermissions\".",
+        "locations": [
+          {
+            "line": 8,
+            "column": 10
+          },
+          {
+            "line": 15,
+            "column": 10
+          }
+        ]
+      }
+    ]
   },
   "updateToAccessGroupWithPermissions": {
-    "data": {
-      "updateFile": {
-        "name": "public"
+    "errors": [
+      {
+        "message": "There can be only one operation named \"updateToAccessGroupWithPermissions\".",
+        "locations": [
+          {
+            "line": 8,
+            "column": 10
+          },
+          {
+            "line": 15,
+            "column": 10
+          }
+        ]
       }
-    }
+    ]
   },
   "createWithAccessGroupWithoutPermissions": {
     "errors": [
       {
-        "message": "AuthorizationError: Not authorized to set File.accessGroup to this value (allowed values: logistics, public)",
+        "message": "There can be only one operation named \"updateToAccessGroupWithPermissions\".",
         "locations": [
           {
-            "line": 16,
-            "column": 5
+            "line": 8,
+            "column": 10
+          },
+          {
+            "line": 15,
+            "column": 10
           }
-        ],
-        "path": [
-          "createFile"
         ]
       }
-    ],
-    "data": null
+    ]
   },
   "createWithAccessGroupWithPermissions": {
-    "data": {
-      "createFile": {
-        "name": "test"
+    "errors": [
+      {
+        "message": "There can be only one operation named \"updateToAccessGroupWithPermissions\".",
+        "locations": [
+          {
+            "line": 8,
+            "column": 10
+          },
+          {
+            "line": 15,
+            "column": 10
+          }
+        ]
       }
-    }
+    ]
   }
 }
