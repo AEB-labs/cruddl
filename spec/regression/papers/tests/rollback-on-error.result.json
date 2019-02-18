@@ -1,0 +1,43 @@
+{
+  "createOne": {
+    "data": {
+      "paper1": {
+        "key": "one"
+      }
+    }
+  },
+  "queryOne": {
+    "data": {
+      "allPapers": [
+        {
+          "key": "one"
+        }
+      ]
+    }
+  },
+  "createTwo": {
+    "data": null,
+    "errors": [
+      {
+        "extensions": {
+          "arangoDBCode": 1210
+        },
+        "locations": [
+          {
+            "column": 5,
+            "line": 14
+          }
+        ],
+        "message": "AQL: unique constraint violated (while executing)",
+        "path": [
+          "paper1"
+        ]
+      }
+    ]
+  },
+  "queryTwo": {
+    "data": {
+      "allPapers": []
+    }
+  }
+}

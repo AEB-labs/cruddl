@@ -101,6 +101,15 @@ export class ArangoDBAdapter implements DatabaseAdapter {
 
             let plans: any[] = [];
 
+            /**
+             * Throws an error so that the transaction is rolled back and returns the given value as transaction result
+             */
+            function rollbackWithResult(transactionResult: any) {
+                const error = new Error(`${JSON.stringify(transactionResult)}`);
+                error.name = 'RolledBackTransactionError';
+                throw error;
+            }
+
             let resultHolder: { [p: string]: any } = {};
             for (const query of queries) {
                 const bindVars = query.boundValues;
@@ -141,11 +150,11 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                         timings.js = (getPreciseTime() - startTime) - timingsTotal;
                     }
 
-                    return {
+                    rollbackWithResult({
                         error,
                         timings,
                         plans
-                    };
+                    });
                 }
 
                 const resultData = executionResult.next();
@@ -189,14 +198,14 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                     }
 
                     // report timings and plans even in case of a validation error
-                    return {
+                    rollbackWithResult({
                         error: {
                             // imitate arangodb's error reporting for now, could change that to a better interface later
                             message: error.name + ': ' + error.message
                         },
                         timings,
                         plans
-                    };
+                    });
                 }
             }
 
@@ -220,9 +229,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             };
 
             if (options.mutationMode === 'rollback') {
-                const error = new Error(`${JSON.stringify(transactionResult)}`);
-                error.name = 'RolledBackTransactionError';
-                throw error;
+                rollbackWithResult(transactionID);
             }
 
             return transactionResult;
@@ -433,7 +440,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             );
         } catch (e) {
             isTransactionFinished = true;
-            if (options.mutationMode === 'rollback' && e.message.startsWith('RolledBackTransactionError: ')) {
+            if (e.message.startsWith('RolledBackTransactionError: ')) {
                 const valStr = e.message.substr('RolledBackTransactionError: '.length);
                 try {
                     transactionResult = JSON.parse(valStr);
