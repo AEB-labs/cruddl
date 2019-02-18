@@ -17,10 +17,20 @@ interface TestResult {
     expectedResult: any
 }
 
+type DatabaseSpecifier = 'arangodb' | 'in-memory';
+
 export interface RegressionSuiteOptions {
     saveActualAsExpected?: boolean
     trace?: boolean
-    database?: 'arangodb' | 'in-memory';
+    database?: DatabaseSpecifier;
+}
+
+interface MetaOptions {
+    databases?: {
+        [database: string]: {
+            ignore?: boolean
+        }
+    }
 }
 
 export class RegressionSuite {
@@ -30,9 +40,10 @@ export class RegressionSuite {
     // TODO: this is ugly but provides a quick fix for things broken with the silentAdapter
     // TODO: implement better regression test architecture for different db types
     private inMemoryDB: InMemoryDB = new InMemoryDB();
+    private databaseSpecifier: DatabaseSpecifier;
 
     constructor(private readonly path: string, private options: RegressionSuiteOptions = {}) {
-
+        this.databaseSpecifier = options.database || 'arangodb';
     }
 
     private get testsPath() {
@@ -63,12 +74,14 @@ export class RegressionSuite {
     }
 
     private async createAdapter(context: SchemaContext): Promise<DatabaseAdapter> {
-        // TODO this is ugly
-        if (this.options.database == 'in-memory') {
-            return new InMemoryAdapter({ db: this.inMemoryDB }, context);
-        } else {
-            const dbConfig = await createTempDatabase();
-            return new ArangoDBAdapter(dbConfig, context);
+        switch (this.databaseSpecifier) {
+            case 'in-memory':
+                return new InMemoryAdapter({ db: this.inMemoryDB }, context);
+            case 'arangodb':
+                const dbConfig = await createTempDatabase();
+                return new ArangoDBAdapter(dbConfig, context);
+            default:
+                throw new Error(`Unknown database specifier: ${this.databaseSpecifier}`);
         }
     }
 
@@ -76,6 +89,15 @@ export class RegressionSuite {
         return fs.readdirSync(path.resolve(this.path, 'tests'))
             .filter(name => name.endsWith('.graphql'))
             .map(name => name.substr(0, name.length - '.graphql'.length));
+    }
+
+    shouldIgnoreTest(name: string) {
+        const metaPath = path.resolve(this.testsPath, name + '.meta.json');
+        const meta: MetaOptions | undefined = fs.existsSync(metaPath) ? JSON.parse(stripJsonComments(fs.readFileSync(metaPath, 'utf-8'))) : undefined;
+        if (meta && meta.databases && meta.databases[this.databaseSpecifier] && meta.databases[this.databaseSpecifier].ignore) {
+            return true;
+        }
+        return false;
     }
 
     async runTest(name: string) {
@@ -94,7 +116,6 @@ export class RegressionSuite {
         if (!fs.existsSync(contextPath)) {
             contextPath = path.resolve(this.path, 'default-context.json');
         }
-
 
         const gqlTemplate = fs.readFileSync(gqlPath, 'utf-8');
         const gqlSource = this.testDataEnvironment.fillTemplateStrings(gqlTemplate);

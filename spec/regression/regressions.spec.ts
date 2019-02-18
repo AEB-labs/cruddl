@@ -29,11 +29,14 @@ describe('regression tests', async () => {
                 const suite = new RegressionSuite(suitePath, options);
                 describe(suiteName, () => {
                     for (const testName of suite.getTestNames()) {
-
-                        it(testName, async () => {
-                            const {expectedResult, actualResult} = await suite.runTest(testName);
-                            expect(actualResult).to.deep.equal(expectedResult);
-                        }).timeout(10000); // travis is sometimes on the slower side
+                        if (suite.shouldIgnoreTest(testName)) {
+                            xit(testName, () => {});
+                        } else {
+                            it(testName, async () => {
+                                const { expectedResult, actualResult } = await suite.runTest(testName);
+                                expect(actualResult).to.deep.equal(expectedResult);
+                            }).timeout(10000); // travis is sometimes on the slower side
+                        }
                     }
                 });
             }

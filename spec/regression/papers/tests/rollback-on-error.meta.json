@@ -1,0 +1,7 @@
+{
+  "databases": {
+    "in-memory": {
+      "ignore": true
+    }
+  }
+}
