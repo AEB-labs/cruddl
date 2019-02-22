@@ -1,7 +1,7 @@
 import { GraphQLError, print } from 'graphql';
 import { applyAuthorizationToQueryTree } from '../authorization/execution';
 import { globalContext } from '../config/global';
-import { ExecutionPlan } from '../database/database-adapter';
+import { ExecutionPlan, TransactionStats } from '../database/database-adapter';
 import { OperationParams } from '../graphql/operation-based-resolvers';
 import { distillOperation } from '../graphql/query-distiller';
 import { RequestProfile } from '../project/project';
@@ -67,6 +67,7 @@ export class OperationResolver {
                 globalContext.unregisterContext();
             }
             let dbAdapterTimings;
+            let stats: TransactionStats = {};
             let plan: ExecutionPlan | undefined;
             let errors: ReadonlyArray<GraphQLError> | undefined;
             let { canEvaluateStatically, result: data } = evaluateQueryStatically(queryTree);
@@ -84,6 +85,9 @@ export class OperationResolver {
                 errors = res.errors;
                 data = res.data;
                 plan = res.plan;
+                if (res.stats) {
+                    stats = res.stats;
+                }
                 if (errors && errors.length) {
                     logger.warn(`Executed ${operationDesc} with errors: ${errors.map(e => e.message).join('\n')}`);
                 } else {
@@ -111,6 +115,7 @@ export class OperationResolver {
                 profile = {
                     timings,
                     plan,
+                    stats,
                     context: operationInfo.context,
                     operation: operationInfo.operation
                 };

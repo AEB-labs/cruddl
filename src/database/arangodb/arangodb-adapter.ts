@@ -5,9 +5,10 @@ import { Logger } from '../../config/logging';
 import { ExecutionOptions } from '../../execution/execution-options';
 import { Model } from '../../model';
 import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS, QueryNode } from '../../query-tree';
+import { Mutable } from '../../utils/util-types';
 import { objectValues, sleep, sleepInterruptible } from '../../utils/utils';
 import { getPreciseTime, Watch } from '../../utils/watch';
-import { DatabaseAdapter, DatabaseAdapterTimings, ExecutionArgs, ExecutionPlan, ExecutionResult } from '../database-adapter';
+import { DatabaseAdapter, DatabaseAdapterTimings, ExecutionArgs, ExecutionPlan, ExecutionResult, TransactionStats } from '../database-adapter';
 import { AQLCompoundQuery, aqlConfig, AQLExecutableQuery } from './aql';
 import { getAQLQuery } from './aql-generator';
 import { RequestInstrumentation, RequestInstrumentationPhase } from './arangojs-instrumentation/config';
@@ -36,10 +37,11 @@ interface ArangoError extends Error {
 }
 
 interface ArangoTransactionResult {
-    readonly data?: any
+    readonly data?: any;
     readonly error?: ArangoError;
     readonly timings?: { readonly [key: string]: number };
-    readonly plans?: ReadonlyArray<any>
+    readonly plans?: ReadonlyArray<any>;
+    readonly stats: TransactionStats;
 }
 
 interface TransactionResult {
@@ -47,6 +49,7 @@ interface TransactionResult {
     readonly timings?: Pick<DatabaseAdapterTimings, 'database' | 'dbConnection'>
     readonly plans?: ReadonlyArray<any>
     readonly databaseError?: ArangoError;
+    readonly stats: TransactionStats;
 }
 
 export class ArangoDBAdapter implements DatabaseAdapter {
@@ -101,13 +104,29 @@ export class ArangoDBAdapter implements DatabaseAdapter {
 
             let plans: any[] = [];
 
+            let transactionStats: Mutable<TransactionStats> = {};
+
             /**
              * Throws an error so that the transaction is rolled back and returns the given value as transaction result
              */
-            function rollbackWithResult(transactionResult: any) {
+            function rollbackWithResult(transactionResult: any): never {
                 const error = new Error(`${JSON.stringify(transactionResult)}`);
                 error.name = 'RolledBackTransactionError';
                 throw error;
+            }
+
+            function rollbackWithError(error: any): never {
+                if (enableProfiling && timings) {
+                    timings.js = (getPreciseTime() - startTime) - timingsTotal;
+                }
+
+                // the return is here to please typescript, it actually returns *never* (it throws)
+                return rollbackWithResult({
+                    error,
+                    timings,
+                    plans,
+                    stats: transactionStats
+                });
             }
 
             let resultHolder: { [p: string]: any } = {};
@@ -146,15 +165,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                         });
                     }
 
-                    if (enableProfiling && timings) {
-                        timings.js = (getPreciseTime() - startTime) - timingsTotal;
-                    }
-
-                    rollbackWithResult({
-                        error,
-                        timings,
-                        plans
-                    });
+                    rollbackWithError(error);
                 }
 
                 const resultData = executionResult.next();
@@ -180,6 +191,13 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                     });
                 }
 
+                if (executionResult.getExtra().stats && executionResult.getExtra().stats.peakMemoryUsage) {
+                    const usage = executionResult.getExtra().stats.peakMemoryUsage;
+                    if (!transactionStats.peakQueryMemoryUsage || transactionStats.peakQueryMemoryUsage < usage) {
+                        transactionStats.peakQueryMemoryUsage = usage;
+                    }
+                }
+
                 if (query.resultName) {
                     resultHolder[query.resultName] = resultData;
                 }
@@ -193,19 +211,12 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                         }
                     }
                 } catch (error) {
-                    if (enableProfiling && timings) {
-                        timings.js = (getPreciseTime() - startTime) - timingsTotal;
-                    }
-
                     // report timings and plans even in case of a validation error
-                    rollbackWithResult({
-                        error: {
-                            // imitate arangodb's error reporting for now, could change that to a better interface later
-                            message: error.name + ': ' + error.message
-                        },
-                        timings,
-                        plans
-                    });
+                    const errorInResult = {
+                        // imitate arangodb's error reporting for now, could change that to a better interface later
+                        message: error.name + ': ' + error.message
+                    };
+                    rollbackWithError(errorInResult);
                 }
             }
 
@@ -225,11 +236,12 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             const transactionResult = {
                 data,
                 timings,
-                plans
+                plans,
+                stats: transactionStats
             };
 
             if (options.mutationMode === 'rollback') {
-                rollbackWithResult(transactionID);
+                rollbackWithResult(transactionResult);
             }
 
             return transactionResult;
@@ -277,7 +289,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             this.logger.trace(`Executing AQL: ${aqlQuery.toColoredString()}`);
         }
         const aqlPreparationTime = getPreciseTime() - prepStartTime;
-        const { databaseError, timings: transactionTimings, data, plans } = await this.executeTransactionWithRetries(executableQueries, options, aqlQuery);
+        const { databaseError, timings: transactionTimings, data, plans, stats } = await this.executeTransactionWithRetries(executableQueries, options, aqlQuery);
 
         let timings;
         if (options.recordTimings && transactionTimings) {
@@ -325,7 +337,8 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             errors,
             data,
             timings,
-            plan
+            plan,
+            stats
         };
     }
 
@@ -348,7 +361,14 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             }
 
             if (tries >= maxRetries || !result.databaseError || !this.isRetryableError(result.databaseError)) {
-                return { ...result, timings };
+                return {
+                    ...result,
+                    timings,
+                    stats: {
+                        ...result.stats,
+                        retries: tries
+                    }
+                };
             }
 
             const sleepStart = getPreciseTime();
@@ -364,7 +384,14 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                 // cancellation token fired before the sleep time was over
                 // we already have a result with an error, so it's probably better to return that instead of a generic "cancelled"
                 // probably doesn't matter anyway because the caller probably is no longer interested in the result
-                return { ...result, timings };
+                return {
+                    ...result,
+                    timings,
+                    stats: {
+                        ...result.stats,
+                        retries: tries
+                    }
+                };
             }
 
             if (nextRetryDelay) {
@@ -483,7 +510,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             };
         }
 
-        return { timings, data, plans, databaseError };
+        return { timings, data, plans, databaseError, stats: transactionResult.stats };
     }
 
     /**
