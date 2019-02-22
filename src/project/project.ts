@@ -2,7 +2,7 @@ import { GraphQLSchema, OperationDefinitionNode } from 'graphql';
 import memorize from 'memorize-decorator';
 import { isArray } from 'util';
 import { DEFAULT_LOGGER_PROVIDER, LoggerProvider } from '../config/logging';
-import { DatabaseAdapter, DatabaseAdapterTimings, ExecutionPlan } from '../database/database-adapter';
+import { DatabaseAdapter, DatabaseAdapterTimings, ExecutionPlan, TransactionStats } from '../database/database-adapter';
 import { ExecutionOptions, ExecutionOptionsCallbackArgs } from '../execution/execution-options';
 import { SchemaExecutor } from '../execution/schema-executor';
 import { getMetaSchema } from '../meta-schema/meta-schema';
@@ -12,6 +12,7 @@ import { ProjectSource, SourceLike, SourceType } from './source';
 
 export interface RequestProfile {
     readonly timings?: DatabaseAdapterTimings;
+    readonly stats: TransactionStats
     readonly plan?: ExecutionPlan;
     readonly operation: OperationDefinitionNode;
     readonly context: any;

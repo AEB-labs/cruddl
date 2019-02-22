@@ -61,6 +61,8 @@ export interface ExecutionResult {
     readonly timings?: DatabaseAdapterTimings
 
     readonly plan?: ExecutionPlan
+
+    readonly stats?: TransactionStats
 }
 
 export interface ExecutionPlan {
@@ -93,6 +95,11 @@ interface Plan {
     isModificationQuery: boolean
 }
 
+export interface TransactionStats {
+    readonly peakQueryMemoryUsage?: number;
+    readonly retries?: number;
+}
+
 export interface ExecutionPlanTransactionStep {
     readonly query: string
     readonly boundValues: { [p: string]: any }
@@ -101,7 +108,7 @@ export interface ExecutionPlanTransactionStep {
     readonly discardedPlans?: ReadonlyArray<Plan>;
 
     readonly stats?: {
-        readonly nodes: ReadonlyArray<{
+        readonly nodes?: ReadonlyArray<{
             id: number,
             calls: number,
             items: number,
@@ -114,6 +121,7 @@ export interface ExecutionPlanTransactionStep {
         filtered: number,
         httpRequests: 0,
         executionTime: number
+        peakMemoryUsage?: number
     }
 
     readonly warnings?: ReadonlyArray<{
@@ -122,6 +130,8 @@ export interface ExecutionPlanTransactionStep {
     }>
 
     readonly profile?: { [key: string]: number }
+
+    readonly peakMemoryUsage?: number
 }
 
 export interface ExecutionArgs extends ExecutionOptions {
