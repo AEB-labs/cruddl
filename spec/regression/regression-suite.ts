@@ -13,22 +13,27 @@ import { createTempDatabase, initTestData, TestDataEnvironment } from './initial
 import deepEqual = require('deep-equal');
 
 interface TestResult {
-    actualResult: any
-    expectedResult: any
+    readonly actualResult: any
+    readonly expectedResult: any
 }
 
 type DatabaseSpecifier = 'arangodb' | 'in-memory';
 
 export interface RegressionSuiteOptions {
-    saveActualAsExpected?: boolean
-    trace?: boolean
-    database?: DatabaseSpecifier;
+    readonly saveActualAsExpected?: boolean
+    readonly trace?: boolean
+    readonly database?: DatabaseSpecifier;
 }
 
 interface MetaOptions {
-    databases?: {
-        [database: string]: {
-            ignore?: boolean
+    readonly databases?: {
+        readonly [database: string]: {
+            readonly ignore?: boolean,
+            readonly versions: {
+                readonly [version: string]: {
+                    readonly ignore?: boolean
+                }
+            }
         }
     }
 }
@@ -41,6 +46,7 @@ export class RegressionSuite {
     // TODO: implement better regression test architecture for different db types
     private inMemoryDB: InMemoryDB = new InMemoryDB();
     private databaseSpecifier: DatabaseSpecifier;
+    private databaseVersion: string | undefined;
 
     constructor(private readonly path: string, private options: RegressionSuiteOptions = {}) {
         this.databaseSpecifier = options.database || 'arangodb';
@@ -70,6 +76,13 @@ export class RegressionSuite {
         await silentAdapter.updateSchema(silentProject.getModel());
         this.testDataEnvironment = await initTestData(path.resolve(this.path, 'test-data.json'), silentSchema);
 
+        if (this.databaseSpecifier === 'arangodb') {
+            const version = await (adapter as ArangoDBAdapter).getArangoDBVersion();
+            if (version) {
+                this.databaseVersion = `${version.major}.${version.minor}`;
+            }
+        }
+
         this._isSetUpClean = true;
     }
 
@@ -91,11 +104,19 @@ export class RegressionSuite {
             .map(name => name.substr(0, name.length - '.graphql'.length));
     }
 
-    shouldIgnoreTest(name: string) {
+    async shouldIgnoreTest(name: string) {
+        if (!this._isSetUpClean) {
+            await this.setUp();
+        }
         const metaPath = path.resolve(this.testsPath, name + '.meta.json');
         const meta: MetaOptions | undefined = fs.existsSync(metaPath) ? JSON.parse(stripJsonComments(fs.readFileSync(metaPath, 'utf-8'))) : undefined;
-        if (meta && meta.databases && meta.databases[this.databaseSpecifier] && meta.databases[this.databaseSpecifier].ignore) {
-            return true;
+        if (meta && meta.databases && meta.databases[this.databaseSpecifier]) {
+            if (meta.databases[this.databaseSpecifier].ignore) {
+                return true;
+            }
+            if (this.databaseVersion && meta.databases[this.databaseSpecifier].versions && meta.databases[this.databaseSpecifier].versions[this.databaseVersion] && meta.databases[this.databaseSpecifier].versions[this.databaseVersion].ignore) {
+                return true;
+            }
         }
         return false;
     }
