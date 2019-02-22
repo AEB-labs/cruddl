@@ -4,15 +4,18 @@ import { Logger } from '../../../config/logging';
 import { Model, RootEntityType } from '../../../model/implementation';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from '../arango-basics';
 import { ArangoDBConfig, getArangoDBLogger, initDatabase } from '../config';
+import { ArangoDBVersionHelper } from '../version-helper';
 import { calculateRequiredIndexOperations, getRequiredIndicesFromModel, IndexDefinition } from './index-helpers';
 import { CreateDocumentCollectionMigration, CreateEdgeCollectionMigration, CreateIndexMigration, DropIndexMigration, SchemaMigration } from './migrations';
 
 export class SchemaAnalyzer {
     private readonly db: Database;
     private readonly logger: Logger;
+    private readonly versionHelper: ArangoDBVersionHelper;
 
     constructor(config: ArangoDBConfig, schemaContext?: SchemaContext) {
         this.db = initDatabase(config);
+        this.versionHelper = new ArangoDBVersionHelper(this.db);
         this.logger = getArangoDBLogger(schemaContext);
     }
 
@@ -20,13 +23,14 @@ export class SchemaAnalyzer {
         return [
             ...await this.getDocumentCollectionMigrations(model),
             ...await this.getEdgeCollectionMigrations(model),
-            ...await this.getIndexMigrations(model),
+            ...await this.getIndexMigrations(model)
         ];
     }
 
     async getDocumentCollectionMigrations(model: Model): Promise<ReadonlyArray<CreateDocumentCollectionMigration>> {
         // Get existing collections in ArangoDB
-        const existingCollections = (await this.db.collections()).filter(coll => (coll as any).type === 2 /* document */);;
+        const existingCollections = (await this.db.collections()).filter(coll => (coll as any).type === 2 /* document */);
+        ;
         const existingCollectionNames = new Set(existingCollections.map(coll => (<any>coll).name)); // typing for name missing
 
         const migrations: CreateDocumentCollectionMigration[] = [];
@@ -89,27 +93,6 @@ export class SchemaAnalyzer {
         });
     }
 
-    private async getArangoDBVersion(): Promise<string | undefined> {
-        const result = await this.db.route('_api').get('version');
-        if (!result || !result.body || !result.body.version) {
-            return undefined;
-        }
-        return result.body.version;
-    }
-
-    private parseVersion(version: string): { major: number, minor: number, patch: number } | undefined {
-        const parts = version.split('.');
-        if (parts.length < 3) {
-            return undefined;
-        }
-        const numParts = parts.slice(0, 3).map(p => parseInt(p, 10));
-        if (numParts.some(p => !isFinite(p))) {
-            return undefined;
-        }
-        const [major, minor, patch] = numParts;
-        return { major, minor, patch };
-    }
-
     private async shouldUseWorkaroundForSparseIndices(): Promise<boolean> {
         // arangodb <= 3.2 does not support dynamic usage of sparse indices
         // We use unique indices for @key, and we enable sparse for all unique indices to support multiple NULL values
@@ -118,12 +101,12 @@ export class SchemaAnalyzer {
         // unique sparse index.
         let version;
         try {
-            version = await this.getArangoDBVersion();
+            version = await this.versionHelper.getArangoDBVersionAsString();
         } catch (e) {
             this.logger.warn(`Error fetching ArangoDB version. Workaround for sparse indices will not be enabled. ` + e.stack);
             return false;
         }
-        const parsed = version && this.parseVersion(version);
+        const parsed = version && this.versionHelper.parseVersion(version);
         if (!parsed) {
             this.logger.warn(`ArangoDB version not recognized ("${version}"). Workaround for sparse indices will not be enabled.`);
             return false;

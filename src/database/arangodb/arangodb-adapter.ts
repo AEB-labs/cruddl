@@ -18,6 +18,7 @@ import { ERROR_ARANGO_CONFLICT } from './error-codes';
 import { SchemaAnalyzer } from './schema-migration/anaylzer';
 import { SchemaMigration } from './schema-migration/migrations';
 import { MigrationPerformer } from './schema-migration/performer';
+import { ArangoDBVersion, ArangoDBVersionHelper } from './version-helper';
 import uuid = require('uuid');
 
 const requestInstrumentationBodyKey = 'cruddlRequestInstrumentation';
@@ -58,6 +59,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
     private readonly analyzer: SchemaAnalyzer;
     private readonly migrationPerformer: MigrationPerformer;
     private readonly cancellationManager: CancellationManager;
+    private readonly versionHelper: ArangoDBVersionHelper;
     private readonly autocreateIndices: boolean;
     private readonly autoremoveIndices: boolean;
     private readonly arangoExecutionFunction: string;
@@ -67,6 +69,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         this.db = initDatabase(config);
         this.analyzer = new SchemaAnalyzer(config, schemaContext);
         this.migrationPerformer = new MigrationPerformer(config);
+        this.versionHelper = new ArangoDBVersionHelper(this.db);
         this.arangoExecutionFunction = this.buildUpArangoExecutionFunction();
         // the cancellation manager gets its own database instance so its cancellation requests are not queued
         this.cancellationManager = new CancellationManager({ database: initDatabase(config) });
@@ -546,6 +549,10 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             }
             await this.performMigration(migration);
         }
+    }
+
+    async getArangoDBVersion(): Promise<ArangoDBVersion | undefined> {
+        return this.versionHelper.getArangoDBVersion();
     }
 }
 
