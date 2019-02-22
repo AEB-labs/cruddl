@@ -32,7 +32,7 @@ export interface ProjectConfig extends ProjectOptions {
      *
      * The name of each source identifies its type, so files ending with .yaml are interpreted as YAML files
      */
-    sources: SourceLike[]
+    readonly sources: ReadonlyArray<SourceLike>
 }
 
 export class Project {
