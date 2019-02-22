@@ -27,16 +27,16 @@ describe('regression tests', async () => {
                     database
                 };
                 const suite = new RegressionSuite(suitePath, options);
-                describe(suiteName, () => {
+                describe(suiteName, async () => {
                     for (const testName of suite.getTestNames()) {
-                        if (suite.shouldIgnoreTest(testName)) {
-                            xit(testName, () => {});
-                        } else {
-                            it(testName, async () => {
-                                const { expectedResult, actualResult } = await suite.runTest(testName);
-                                expect(actualResult).to.deep.equal(expectedResult);
-                            }).timeout(10000); // travis is sometimes on the slower side
-                        }
+                        it(testName, async function() {
+                            if (await suite.shouldIgnoreTest(testName)) {
+                                this.skip();
+                            }
+
+                            const { expectedResult, actualResult } = await suite.runTest(testName);
+                            expect(actualResult).to.deep.equal(expectedResult);
+                        }).timeout(10000); // travis is sometimes on the slower side
                     }
                 });
             }
