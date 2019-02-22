@@ -70,7 +70,9 @@ const project = new Project([{
       }
     }
   })
-}]);
+}], {
+    getExecutionOptions: ({context}) => ({ authRoles: ['users'] })
+});
 ```
 
 Then, create the GraphQL schema and serve it:
@@ -79,7 +81,7 @@ Then, create the GraphQL schema and serve it:
 import { GraphQLServer } from 'graphql-yoga';
 const schema = project.createSchema(db);
 db.updateSchema(project.getModel()); // create missing collections
-const server = new GraphQLServer({ schema, context: () => ({ authRoles: [ 'users' ]}) });
+const server = new GraphQLServer({ schema });
 server.start(() => console.log('Server is running on http://localhost:4000/'));
 ```
 
