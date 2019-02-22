@@ -31,7 +31,7 @@ export class ProjectSource {
      */
     public readonly type: SourceType;
 
-    constructor(public readonly name: string, public readonly body: string, public readonly filePath: string|undefined = undefined) {
+    constructor(public readonly name: string, public readonly body: string, public readonly filePath: string | undefined = undefined) {
         if (typeof name != 'string' || !name) {
             throw new Error(`name must be a non-empty string, but is ${String(name)}`);
         }
@@ -41,7 +41,7 @@ export class ProjectSource {
         this.type = getTypeFromName(name);
     }
 
-    static fromConfig(config: SourceConfig|ProjectSource) {
+    static fromConfig(config: SourceConfig | ProjectSource) {
         if (config instanceof ProjectSource) {
             return config;
         }
@@ -54,7 +54,7 @@ export class ProjectSource {
         return source;
     }
 
-    static fromGraphQLSource(source: Source): ProjectSource|undefined {
+    static fromGraphQLSource(source: Source): ProjectSource | undefined {
         if (projectSourceLinkSymbol in source) {
             return (source as any)[projectSourceLinkSymbol];
         }
@@ -63,11 +63,11 @@ export class ProjectSource {
 }
 
 export interface SourceConfig {
-    name: string
-    body: string
+    readonly name: string
+    readonly body: string
 }
 
-export type SourceLike = SourceConfig|ProjectSource;
+export type SourceLike = SourceConfig | ProjectSource;
 
 function getTypeFromName(name: string) {
     if (name.endsWith('.yaml') || name.endsWith('.yml')) {
