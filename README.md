@@ -1,6 +1,6 @@
 # cruddl
 
-[![npm version](https://badge.fury.io/js/cruddl.svg)](https://npmjs.org/cruddl) [![Build Status](https://travis-ci.org/AEB-labs/cruddl.svg?branch=master)](https://travis-ci.org/AEB-labs/cruddl)
+[![npm version](https://badge.fury.io/js/cruddl.svg)](https://npmjs.org/cruddl) [![Build Status](https://travis-ci.org/AEB-labs/cruddl.svg?branch=master)](https://travis-ci.org/AEB-labs/cruddl) [![Package Quality](https://npm.packagequality.com/badge/cruddl.png)](https://packagequality.com/#?package=cruddl)
 
 **cruddl** - create a cuddly GraphQL API for your database, using the GraphQL SDL to model your schema.
 
