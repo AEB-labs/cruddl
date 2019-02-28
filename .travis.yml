@@ -1,10 +1,12 @@
 language: node_js
 node_js:
   - '8'
+before_install:
+  - docker pull arangodb/arangodb:3.2.11
+  - docker run -e ARANGO_NO_AUTH=1 -p 8529:8529 arangodb/arangodb:3.2.11
 install:
   - npm ci
 script:
-  - cd ./tools && ./setup-arangodb.sh > /dev/null
   - npm run test:coverage
   - npm run test:dropdb
   - cd ..
@@ -20,3 +22,5 @@ deploy:
 cache:
   directories:
   - "$HOME/.npm"
+services:
+  - docker
