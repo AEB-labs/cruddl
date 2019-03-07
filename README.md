@@ -20,7 +20,7 @@ This TypeScript library creates an executable GraphQL schema from a model defini
 ## Usage
 
 ```
-npm install --save cruddl
+npm install --save cruddl@0.7.x
 ```
 
 Install [ArangoDB](https://www.arangodb.com/) and create a new database.
@@ -83,7 +83,7 @@ const server = new GraphQLServer({ schema, context: () => ({ authRoles: [ 'users
 server.start(() => console.log('Server is running on http://localhost:4000/'));
 ```
 
-See the [modelling guide](docs/modelling.md) and the [api documentation](docs/api.md) for details or clone [this repository](https://github.com/AEB-labs/cruddl-demo) for a full featured example.
+See the [modelling guide](docs/modelling.md) and the [api documentation](docs/api.md) for details.
 
 ### Usage in a browser environment
 
