@@ -4,10 +4,19 @@ import { describeIndex, getIndexDescriptor, IndexDefinition } from './index-help
 export type SchemaMigration = CreateIndexMigration | DropIndexMigration | CreateDocumentCollectionMigration
     | CreateEdgeCollectionMigration;
 
+interface CreateIndexMigrationConfig {
+    readonly index: IndexDefinition
+    readonly collectionSize?: number
+}
+
 export class CreateIndexMigration {
     readonly type: 'createIndex' = 'createIndex';
+    readonly index: IndexDefinition;
+    readonly collectionSize: number | undefined;
 
-    constructor(public readonly index: IndexDefinition) {
+    constructor(config: CreateIndexMigrationConfig) {
+        this.index = config.index;
+        this.collectionSize = config.collectionSize;
     }
 
     get description() {
@@ -15,7 +24,7 @@ export class CreateIndexMigration {
     }
 
     get id() {
-        return `createIndex/${getIndexDescriptor(this.index)}`
+        return `createIndex/${getIndexDescriptor(this.index)}`;
     }
 
     get isMandatory() {
@@ -23,11 +32,20 @@ export class CreateIndexMigration {
     }
 }
 
+interface DropIndexMigrationConfig {
+    readonly index: IndexDefinition
+    readonly collectionSize?: number
+}
+
 export class DropIndexMigration {
     readonly type: 'dropIndex' = 'dropIndex';
+    readonly index: IndexDefinition;
+    readonly collectionSize: number | undefined;
 
-    constructor(public readonly index: IndexDefinition) {
-    };
+    constructor(config: DropIndexMigrationConfig) {
+        this.index = config.index;
+        this.collectionSize = config.collectionSize;
+    }
 
     get description() {
         return `drop ${describeIndex(this.index)}`;

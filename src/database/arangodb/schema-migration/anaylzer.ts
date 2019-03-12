@@ -74,9 +74,25 @@ export class SchemaAnalyzer {
         await Promise.all(existingIndicesPromises).then(promiseResults => promiseResults.forEach(indices => indices.forEach(index => existingIndices.push(index))));
         const { indicesToDelete, indicesToCreate } = calculateRequiredIndexOperations(existingIndices, requiredIndices);
 
+        // this is useful to show a warning on large collections which would take a while to create an index
+        // (or even automatically defer large indices)
+        let collectionSizes = new Map<string, number>();
+        for (let index of [...indicesToCreate, ...indicesToDelete]) {
+            if (!collectionSizes.has(index.collectionName)) {
+                let collectionSize;
+                try {
+                    let countResult = await this.db.collection(index.collectionName).count();
+                    collectionSize = countResult.count;
+                } catch (e) {
+                    // ignore
+                }
+                collectionSizes.set(index.collectionName, collectionSize);
+            }
+        }
+
         return [
-            ...indicesToCreate.map(index => new CreateIndexMigration(index)),
-            ...indicesToDelete.map(index => new DropIndexMigration(index))
+            ...indicesToCreate.map(index => new CreateIndexMigration({ index, collectionSize: collectionSizes.get(index.collectionName) })),
+            ...indicesToDelete.map(index => new DropIndexMigration({ index, collectionSize: collectionSizes.get(index.collectionName) }))
         ];
     }
 
@@ -114,10 +130,10 @@ export class SchemaAnalyzer {
 
         const { major, minor } = parsed;
         if ((major > 3) || (major === 3 && minor >= 4)) {
-            this.logger.info(`ArangoDB version: ${version}. Workaround for sparse indices will not be enabled.`);
+            this.logger.debug(`ArangoDB version: ${version}. Workaround for sparse indices will not be enabled.`);
             return false;
         }
-        this.logger.info(`ArangoDB version: ${version}. Workaround for sparse indices will be enabled.`);
+        this.logger.debug(`ArangoDB version: ${version}. Workaround for sparse indices will be enabled.`);
         return true;
     }
 }
