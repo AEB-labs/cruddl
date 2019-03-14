@@ -22,7 +22,7 @@ export class LiteralQueryNode extends QueryNode {
 }
 
 /**
- * A node that evaluates either to null
+ * A node that evaluates to null
  */
 export class NullQueryNode extends QueryNode {
     public describe() {
