@@ -50,7 +50,7 @@ export class ConsoleLogger implements Logger {
     }
 
     private _log(message: string, ...args: any[]): void {
-        console.log((this.prefix || '') + message, args);
+        console.log((this.prefix || '') + message, ...args);
     }
 
     trace = this._log;
