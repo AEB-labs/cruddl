@@ -14,7 +14,7 @@ import { getAQLQuery } from './aql-generator';
 import { RequestInstrumentation, RequestInstrumentationPhase } from './arangojs-instrumentation/config';
 import { CancellationManager } from './cancellation-manager';
 import { ArangoDBConfig, DEFAULT_RETRY_DELAY_BASE_MS, getArangoDBLogger, initDatabase } from './config';
-import { ERROR_ARANGO_CONFLICT } from './error-codes';
+import { ERROR_ARANGO_CONFLICT, ERROR_QUERY_KILLED } from './error-codes';
 import { SchemaAnalyzer } from './schema-migration/anaylzer';
 import { SchemaMigration } from './schema-migration/migrations';
 import { MigrationPerformer } from './schema-migration/performer';
@@ -51,6 +51,18 @@ interface TransactionResult {
     readonly plans?: ReadonlyArray<any>
     readonly databaseError?: ArangoError;
     readonly stats: TransactionStats;
+
+    /**
+     * True if the transactionTimeoutMs has taken effect. Does not necessarily mean that the query has been killed,
+     * you should check databaseError for his.
+     */
+    readonly hasTimedOut: boolean
+
+    /**
+     * True if the cancellationToken has taken effect. Does not necessarily mean that the query has been killed,
+     * you should check databaseError for his.
+     */
+    readonly wasCancelled: boolean
 }
 
 export class ArangoDBAdapter implements DatabaseAdapter {
@@ -292,7 +304,15 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             this.logger.trace(`Executing AQL: ${aqlQuery.toColoredString()}`);
         }
         const aqlPreparationTime = getPreciseTime() - prepStartTime;
-        const { databaseError, timings: transactionTimings, data, plans, stats } = await this.executeTransactionWithRetries(executableQueries, options, aqlQuery);
+        const {
+            databaseError,
+            timings: transactionTimings,
+            data,
+            plans,
+            stats,
+            hasTimedOut,
+            wasCancelled
+        } = await this.executeTransactionWithRetries(executableQueries, options, aqlQuery);
 
         let timings;
         if (options.recordTimings && transactionTimings) {
@@ -325,12 +345,25 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         if (databaseError) {
             const arangoDBCode: number | undefined = databaseError.errorNum;
             let extensions: { [key: string]: any } | undefined;
+            let message = databaseError.errorMessage || databaseError.message;
             if (arangoDBCode) {
                 extensions = {
                     arangoDBCode
                 };
+
+                switch (arangoDBCode) {
+                    case ERROR_QUERY_KILLED:
+                        if (hasTimedOut) {
+                            message = `Transaction exceeded timeout of ${options.transactionTimeoutMs} ms and was rolled back`;
+                            extensions.code = 'TIMEOUT';
+                        } else if (wasCancelled){
+                            message = `Transaction was cancelled and has been rolled back`;
+                        }
+                        break;
+                }
+
             }
-            const message = databaseError.errorMessage || databaseError.message;
+
             errors = [
                 new GraphQLError(message, undefined, undefined, undefined, undefined, undefined, extensions)
             ];
@@ -422,6 +455,40 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         };
         let isTransactionFinished = false;
         const watch = new Watch();
+
+        let hasTimedOut = false;
+        let wasCancelled = false;
+
+        let cancellationToken = options.cancellationToken;
+        if (cancellationToken) {
+            cancellationToken.then(() => {
+                wasCancelled = true;
+            });
+        }
+        let requestSentCallback: (() => void) | undefined;
+        let requestSentPromise = new Promise(resolve => requestSentCallback = resolve);
+        let timeout: any | undefined;
+        if (options.transactionTimeoutMs != undefined) {
+            const ms = options.transactionTimeoutMs;
+            // transactionTimeout is a timeout that should only be started when the request is actually sent to ArangoDB
+            const timeoutPromise = requestSentPromise.then(() => new Promise<void>((resolve) => {
+                timeout = setTimeout(resolve, ms);
+            })).then(() => {
+                hasTimedOut = true;
+            });
+            if (cancellationToken) {
+                cancellationToken.then(() => {
+                    if (timeout) {
+                        clearTimeout(timeout);
+                        timeout = undefined;
+                    }
+                });
+                cancellationToken = Promise.race([cancellationToken, timeoutPromise]);
+            } else {
+                cancellationToken = timeoutPromise;
+            }
+        }
+
         // we pass the cancellationToken to the call to Database.transaction(). This will remove the request from the
         // http agent's queue. However, it won't cancel the request if already sent because ArangoDB does NOT abort a
         // query in this case, so this would not help. In the contrary, it would free up the connection in the arangojs
@@ -435,12 +502,17 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                     watch.stop(phase);
 
                     if (phase === 'socketInit') {
-                        if (options.cancellationToken) {
+                        // start the timeout promise if needed
+                        if (requestSentCallback) {
+                            requestSentCallback();
+                        }
+
+                        if (cancellationToken) {
                             // delay cancellation a bit for two reasons
                             // - don't take the effort of finding and killing a query if it's fast anyway
                             // - the cancellation might occur before the transaction script starts the query
                             // we only really need this to cancel long-running queries
-                            options.cancellationToken.then(() => sleep(30)).then(() => {
+                            cancellationToken.then(() => sleep(30)).then(() => {
                                 // don't try to kill the query if the transaction() call finished already - this would mean that it
                                 // either was faster than the delay above, or the request was removed from the request queue
                                 if (!isTransactionFinished) {
@@ -453,7 +525,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                         }
                     }
                 },
-                cancellationToken: options.cancellationToken
+                cancellationToken
             } as RequestInstrumentation;
         }
 
@@ -479,6 +551,11 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                 }
             } else {
                 throw e;
+            }
+        } finally {
+            if (timeout) {
+                clearTimeout(timeout);
+                timeout = undefined;
             }
         }
         const { timings: databaseReportedTimings, data, plans, error: databaseError } = transactionResult;
@@ -513,7 +590,15 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             };
         }
 
-        return { timings, data, plans, databaseError, stats: transactionResult.stats };
+        return {
+            timings,
+            data,
+            plans,
+            databaseError,
+            stats: transactionResult.stats,
+            hasTimedOut,
+            wasCancelled
+        };
     }
 
     /**

@@ -45,6 +45,14 @@ export interface ExecutionOptions {
      * For ArangoDB, this only works if enableExperimentalArangoJSInstrumentation in the ArangoDBConfig is set to true.
      */
     readonly cancellationToken?: Promise<void>
+
+    /**
+     * The time in milliseconds after which a running transaction will be cancelled.
+     *
+     * This timeout only starts when the request is actually sent to ArangoDB, and not while it is in the request queue.
+     * Use cancellationToken with setTimeout() to set a overall timeout.
+     */
+    readonly transactionTimeoutMs?: number
 }
 
 export interface ExecutionOptionsCallbackArgs {
