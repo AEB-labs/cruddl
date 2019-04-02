@@ -1,0 +1,8 @@
+# This type is in a child namespace to thest the case of namespaces without root entities
+# (they need to be omitted from the generated schema, otherwise GraphQLSchema will complain.)
+type Address @valueObject {
+    street: String
+    city: String
+    zipCode: String
+    country: Country @reference
+}
