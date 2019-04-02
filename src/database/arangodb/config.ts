@@ -5,17 +5,17 @@ import { Logger } from '../../config/logging';
 import { CustomDatabase } from './arangojs-instrumentation/custom-database';
 
 export interface ArangoJSConfig {
-    url?: string | string[];
-    isAbsolute?: boolean;
-    arangoVersion?: number;
-    loadBalancingStrategy?: LoadBalancingStrategy;
-    maxRetries?: false | number;
-    agent?: any;
-    agentOptions?: {
-        [key: string]: any;
+    readonly url?: string | ReadonlyArray<string>;
+    readonly isAbsolute?: boolean;
+    readonly arangoVersion?: number;
+    readonly loadBalancingStrategy?: LoadBalancingStrategy;
+    readonly maxRetries?: false | number;
+    readonly agent?: any;
+    readonly agentOptions?: {
+        readonly [key: string]: any;
     };
-    headers?: {
-        [key: string]: string;
+    readonly headers?: {
+        readonly [key: string]: string;
     };
 }
 
@@ -54,12 +54,15 @@ export interface ArangoDBConfig {
      *
      * Can be overridden with the queryMemoryLimit option in ExecutionOptions
      */
-    queryMemoryLimit?: number
+    readonly queryMemoryLimit?: number
 
     /**
      * If enabled, collection traversals add an indirection between the filter/order part and the projection part
      * so that ArangoDB will do the filtering/sorting on a leaner versions of the documents, then load the full
      * documents for the projection part.
+     *
+     * This is mainly an issue when sorting large documents and should become less of an issue with ArangoDB 3.5 where
+     * sort memory usage will be optimized drastically.
      *
      * See https://github.com/arangodb/arangodb/issues/7821
      */

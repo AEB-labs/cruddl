@@ -44,7 +44,7 @@ export async function start() {
                 authRoles: ['allusers', 'logistics-reader', 'system'],
                 recordTimings: true,
                 recordPlan: true,
-                mutationMode: 'rollback',
+                mutationMode: 'normal',
                 //queryMemoryLimit: 1000000,
                 cancellationToken: new Promise(resolve => context.request.on('aborted', resolve))
             });

@@ -49,13 +49,20 @@ export interface ExecutionOptions {
     /**
      * The time in milliseconds after which a running transaction will be cancelled.
      *
-     * This timeout only starts when the request is actually sent to ArangoDB, and not while it is in the request queue.
-     * Use cancellationToken with setTimeout() to set a overall timeout.
+     * When using the ArangoDBDatabase, this timeout only starts when the request is actually sent to ArangoDB, and not
+     * while it is in the request queue. Use cancellationToken with setTimeout() to set a overall timeout.
      */
     readonly transactionTimeoutMs?: number
 }
 
 export interface ExecutionOptionsCallbackArgs {
+    /**
+     * The GraphQL context value
+     */
     readonly context: any;
+
+    /**
+     * The AST node of the operation being executed
+     */
     readonly operationDefinition: OperationDefinitionNode
 }
