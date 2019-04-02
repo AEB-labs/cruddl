@@ -44,12 +44,6 @@ export interface ArangoDBConfig {
     readonly autoremoveIndices?: boolean;
 
     /**
-     * If set to true, the ArangoJS Connection class will be instrumented so that profiling information include timings
-     * for queue wait time, response download etc.
-     */
-    readonly enableExperimentalArangoJSInstrumentation?: boolean
-
-    /**
      * The memory limit in bytes to impose on ArangoDB queries (does not apply to the whole ArangoDB transaction).
      *
      * Can be overridden with the queryMemoryLimit option in ExecutionOptions
@@ -87,8 +81,7 @@ export interface ArangoDBConfig {
 }
 
 export function initDatabase(config: ArangoDBConfig): Database {
-    const clazz = config.enableExperimentalArangoJSInstrumentation ? CustomDatabase : Database;
-    const db = new clazz({
+    const db = new CustomDatabase({
         ...(config.arangoJSConfig ? config.arangoJSConfig : {}),
         url: config.url
     }).useDatabase(config.databaseName);

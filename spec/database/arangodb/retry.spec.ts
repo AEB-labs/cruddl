@@ -40,7 +40,6 @@ async function prepareAdapter(maxRetries: number): Promise<{ adapter: ArangoDBAd
                 maxSockets: PARALLELISM
             }
         },
-        enableExperimentalArangoJSInstrumentation: true,
         retriesOnConflict: maxRetries
     });
 

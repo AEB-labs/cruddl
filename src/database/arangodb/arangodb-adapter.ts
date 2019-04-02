@@ -496,38 +496,37 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         // dangerous because it might exhaust ArangoDB threads so that ArangoDB no longer responds, and it might even
         // cause too much memory to be allocated. For this reason, we only kill the query (see below) and let that
         // killed query also abort the transaction.
-        if (this.config.enableExperimentalArangoJSInstrumentation) {
-            (args as any)[requestInstrumentationBodyKey] = {
-                onPhaseEnded: (phase: RequestInstrumentationPhase) => {
-                    watch.stop(phase);
+        // Note: this only works because we use our own version of the arangojs database (CustomDatbase)
+        (args as any)[requestInstrumentationBodyKey] = {
+            onPhaseEnded: (phase: RequestInstrumentationPhase) => {
+                watch.stop(phase);
 
-                    if (phase === 'socketInit') {
-                        // start the timeout promise if needed
-                        if (requestSentCallback) {
-                            requestSentCallback();
-                        }
-
-                        if (cancellationToken) {
-                            // delay cancellation a bit for two reasons
-                            // - don't take the effort of finding and killing a query if it's fast anyway
-                            // - the cancellation might occur before the transaction script starts the query
-                            // we only really need this to cancel long-running queries
-                            cancellationToken.then(() => sleep(30)).then(() => {
-                                // don't try to kill the query if the transaction() call finished already - this would mean that it
-                                // either was faster than the delay above, or the request was removed from the request queue
-                                if (!isTransactionFinished) {
-                                    this.logger.debug(`Cancelling query ${transactionID}`);
-                                    this.cancellationManager.cancelQuery(transactionID).catch(e => {
-                                        this.logger.warn(`Error cancelling query ${transactionID}: ${e.stack}`);
-                                    });
-                                }
-                            });
-                        }
+                if (phase === 'socketInit') {
+                    // start the timeout promise if needed
+                    if (requestSentCallback) {
+                        requestSentCallback();
                     }
-                },
-                cancellationToken
-            } as RequestInstrumentation;
-        }
+
+                    if (cancellationToken) {
+                        // delay cancellation a bit for two reasons
+                        // - don't take the effort of finding and killing a query if it's fast anyway
+                        // - the cancellation might occur before the transaction script starts the query
+                        // we only really need this to cancel long-running queries
+                        cancellationToken.then(() => sleep(30)).then(() => {
+                            // don't try to kill the query if the transaction() call finished already - this would mean that it
+                            // either was faster than the delay above, or the request was removed from the request queue
+                            if (!isTransactionFinished) {
+                                this.logger.debug(`Cancelling query ${transactionID}`);
+                                this.cancellationManager.cancelQuery(transactionID).catch(e => {
+                                    this.logger.warn(`Error cancelling query ${transactionID}: ${e.stack}`);
+                                });
+                            }
+                        });
+                    }
+                }
+            },
+            cancellationToken
+        } as RequestInstrumentation;
 
         const dbStartTime = getPreciseTime();
         let transactionResult: ArangoTransactionResult;

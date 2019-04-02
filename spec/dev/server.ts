@@ -29,7 +29,6 @@ export async function start() {
             url: databaseURL,
             autocreateIndices: true,
             autoremoveIndices: true,
-            enableExperimentalArangoJSInstrumentation: true,
             enableExperimentalProjectionIndirection: true,
             experimentalProjectionIndirectionTypeNames: ['BusinessMessage']
         }, { loggerProvider });

@@ -41,8 +41,6 @@ export interface ExecutionOptions {
     /**
      * A promise that, when resolved, cancels the running operation. If the promise is resolved after the operation is
      * completed, or the promise is rejected, nothing happens.
-     *
-     * For ArangoDB, this only works if enableExperimentalArangoJSInstrumentation in the ArangoDBConfig is set to true.
      */
     readonly cancellationToken?: Promise<void>
 
