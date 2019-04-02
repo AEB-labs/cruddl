@@ -12,7 +12,7 @@ import { OutputTypeGenerator } from './output-type-generator';
 import { makeNonNullableList, QueryNodeField, QueryNodeNonNullType, QueryNodeObjectType } from './query-node-object-type';
 import { UpdateInputTypeGenerator, UpdateRootEntityInputType } from './update-input-types';
 import { getArgumentsForUniqueFields, getEntitiesByUniqueFieldQuery } from './utils/entities-by-uinque-field';
-import { mapIDsToRootEntities, mapTOIDNodesUnoptimized, mapTOIDNodesWithOptimizations } from './utils/map';
+import { mapIDsToRootEntities, mapTOIDNodesUnoptimized } from './utils/map';
 import { getRemoveAllEntityEdgesStatements } from './utils/relations';
 
 export class MutationTypeGenerator {
@@ -27,11 +27,13 @@ export class MutationTypeGenerator {
 
     @memorize()
     generate(namespace: Namespace): QueryNodeObjectType {
-        const namespaceFields = namespace.childNamespaces.map((n): QueryNodeField => ({
-            name: n.name || '',
-            type: this.generate(n),
-            resolve: () => new ObjectQueryNode([])
-        }));
+        const namespaceFields = namespace.childNamespaces
+            .filter(namespace => namespace.allRootEntityTypes.length > 0)
+            .map((n): QueryNodeField => ({
+                name: n.name || '',
+                type: this.generate(n),
+                resolve: () => new ObjectQueryNode([])
+            }));
 
         const rootEntityFields = flatMap(namespace.rootEntityTypes, type => this.generateFields(type));
         const namespaceDesc = namespace.isRoot ? `the root namespace` : `the namespace \`${namespace.dotSeparatedPath}\``;

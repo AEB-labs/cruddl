@@ -27,11 +27,15 @@ export class QueryTypeGenerator {
     generate(namespace: Namespace): QueryNodeObjectType {
         const namespaceDesc = namespace.isRoot ? `the root namespace` : `the namespace \`${namespace.dotSeparatedPath}\``;
 
+        const namespaceFields = namespace.childNamespaces
+            .filter(namespace => namespace.allRootEntityTypes.length > 0)
+            .map(namespace => this.getNamespaceField(namespace));
+
         return {
             name: namespace.pascalCasePath + QUERY_TYPE,
             description: `The Query type for ${namespaceDesc}`,
             fields: [
-                ...namespace.childNamespaces.map(namespace => this.getNamespaceField(namespace)),
+                ...namespaceFields,
                 ...flatMap(namespace.rootEntityTypes, type => this.getFields(type)),
             ]
         };
