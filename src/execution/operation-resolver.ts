@@ -117,7 +117,9 @@ export class OperationResolver {
                     plan,
                     stats,
                     context: operationInfo.context,
-                    operation: operationInfo.operation
+                    operation: operationInfo.operation,
+                    variableValues: operationInfo.variableValues,
+                    fragments: operationInfo.fragments
                 };
             }
             return {
