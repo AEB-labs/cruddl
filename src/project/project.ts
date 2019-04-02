@@ -1,4 +1,4 @@
-import { GraphQLSchema, OperationDefinitionNode } from 'graphql';
+import { FragmentDefinitionNode, GraphQLSchema, OperationDefinitionNode } from 'graphql';
 import memorize from 'memorize-decorator';
 import { isArray } from 'util';
 import { DEFAULT_LOGGER_PROVIDER, LoggerProvider } from '../config/logging';
@@ -15,7 +15,9 @@ export interface RequestProfile {
     readonly stats: TransactionStats
     readonly plan?: ExecutionPlan;
     readonly operation: OperationDefinitionNode;
-    readonly context: any;
+    readonly variableValues: { readonly [name: string]: unknown }
+    readonly fragments: { readonly [fragmentName: string]: FragmentDefinitionNode }
+    readonly context: unknown;
 }
 
 export interface ProjectOptions {
