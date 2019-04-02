@@ -15,7 +15,6 @@ install:
 script:
   - npm run test:coverage
   - npm run test:dropdb
-  - cd ..
 deploy:
   - provider: npm
     email: "Nils.Wenzler@aeb.com"
