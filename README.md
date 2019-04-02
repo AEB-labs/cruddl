@@ -46,31 +46,32 @@ Define your data model and create a project:
 
 ```typescript
 import { Project } from 'cruddl';
-const project = new Project([{
-  name: 'schema.graphqls',
-  body: `
-    type Movie @rootEntity {
-      title: String
-      actors: Actor @relation
-    }
-    
-    type Actor @rootEntity {
-      name: String
-      movies: Movie @relation(inverseOf: "actors")
-    }`
-}, {
-  name: 'permission-profiles.json',
-  body: JSON.stringify({
-    permissionProfiles: {
-      default: {
-        permissions: [{
-          roles: ['users'],
-          access: 'readWrite'
-        }]
-      }
-    }
-  })
-}], {
+const project = new Project({
+    sources: [ {
+        name: 'schema.graphqls',
+        body: `
+            type Movie @rootEntity {
+              title: String
+              actors: Actor @relation
+            }
+            
+            type Actor @rootEntity {
+              name: String
+              movies: Movie @relation(inverseOf: "actors")
+            }`
+    }, {
+        name: 'permission-profiles.json',
+        body: JSON.stringify({
+            permissionProfiles: {
+                default: {
+                    permissions: [{
+                      roles: ['users'],
+                      access: 'readWrite'
+                    }]
+                }
+            }
+        })
+    } ],
     getExecutionOptions: ({context}) => ({ authRoles: ['users'] })
 });
 ```
