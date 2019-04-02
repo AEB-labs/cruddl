@@ -20,7 +20,7 @@ This TypeScript library creates an executable GraphQL schema from a model defini
 ## Usage
 
 ```
-npm install --save cruddl@0.7.x
+npm install --save cruddl
 ```
 
 Install [ArangoDB](https://www.arangodb.com/) and create a new database.
