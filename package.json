@@ -2,6 +2,7 @@
   "name": "cruddl",
   "version": "0.7.4",
   "description": "",
+  "license": "MIT",
   "main": "dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
