@@ -1,0 +1,52 @@
+query byID {
+    Delivery(id: "@{ids/Delivery/3}") {
+        deliveryNumber
+    }
+}
+
+query byKey {
+    Delivery (deliveryNumber: "1000521") {
+        deliveryNumber
+    }
+}
+
+query notFound {
+    Delivery (deliveryNumber: "does-not-exist") {
+        deliveryNumber
+    }
+}
+
+# throws
+query noArgs {
+    Delivery {
+        deliveryNumber
+    }
+}
+
+# throws
+query tooManyArgs {
+    Delivery(id: "@{ids/Delivery/3}", deliveryNumber: "1000521") {
+        deliveryNumber
+    }
+}
+
+# currently returns null, but should probably be an error
+query nullArg {
+    Delivery(id: null) {
+        deliveryNumber
+    }
+}
+
+# throws
+query twoNullArgs {
+    Delivery(id: null, deliveryNumber: null) {
+        deliveryNumber
+    }
+}
+
+# currently throws, but should probably be ok
+query nullAndNonNullArg {
+    Delivery(id: null, deliveryNumber: "1000521") {
+        deliveryNumber
+    }
+}
