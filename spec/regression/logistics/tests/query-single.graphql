@@ -30,21 +30,20 @@ query tooManyArgs {
     }
 }
 
-# currently returns null, but should probably be an error
+# null counts as not specified
+
 query nullArg {
     Delivery(id: null) {
         deliveryNumber
     }
 }
 
-# throws
 query twoNullArgs {
     Delivery(id: null, deliveryNumber: null) {
         deliveryNumber
     }
 }
 
-# currently throws, but should probably be ok
 query nullAndNonNullArg {
     Delivery(id: null, deliveryNumber: "1000521") {
         deliveryNumber

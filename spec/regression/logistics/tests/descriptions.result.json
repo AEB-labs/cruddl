@@ -8,7 +8,7 @@
           "fields": [
             {
               "name": "Country",
-              "description": null
+              "description": "Finds a Country by id or isoCode.\n\nYou should pass a non-null value to exactly one of the arguments."
             },
             {
               "name": "allCountries",
@@ -20,7 +20,7 @@
             },
             {
               "name": "Delivery",
-              "description": "A delivery"
+              "description": "Finds a Delivery by id or deliveryNumber.\n\nYou should pass a non-null value to exactly one of the arguments.\n\nA delivery"
             },
             {
               "name": "allDeliveries",
@@ -32,7 +32,7 @@
             },
             {
               "name": "Forwarder",
-              "description": null
+              "description": "Finds a Forwarder by id or name.\n\nYou should pass a non-null value to exactly one of the arguments."
             },
             {
               "name": "allForwarders",
@@ -44,7 +44,7 @@
             },
             {
               "name": "OnlyRelations",
-              "description": null
+              "description": "Finds a OnlyRelations by id"
             },
             {
               "name": "allOnlyRelations",
@@ -56,7 +56,7 @@
             },
             {
               "name": "HandlingUnit",
-              "description": null
+              "description": "Finds a HandlingUnit by id or id.\n\nYou should pass a non-null value to exactly one of the arguments."
             },
             {
               "name": "allHandlingUnits",
@@ -68,7 +68,7 @@
             },
             {
               "name": "NumberRange",
-              "description": null
+              "description": "Finds a NumberRange by id"
             },
             {
               "name": "allNumberRanges",
@@ -80,7 +80,7 @@
             },
             {
               "name": "SecretKey",
-              "description": null
+              "description": "Finds a SecretKey by id or key.\n\nYou should pass a non-null value to exactly one of the arguments."
             },
             {
               "name": "allSecretKeys",
@@ -3447,7 +3447,7 @@
             },
             {
               "name": "deleteCountry",
-              "description": "Deletes a Country by id or isoCode"
+              "description": "Deletes a Country by id or isoCode.\n\nYou should pass a non-null value to exactly one of the arguments."
             },
             {
               "name": "deleteAllCountries",
@@ -3467,7 +3467,7 @@
             },
             {
               "name": "deleteDelivery",
-              "description": "Deletes a Delivery by id or deliveryNumber"
+              "description": "Deletes a Delivery by id or deliveryNumber.\n\nYou should pass a non-null value to exactly one of the arguments."
             },
             {
               "name": "deleteAllDeliveries",
@@ -3487,7 +3487,7 @@
             },
             {
               "name": "deleteForwarder",
-              "description": "Deletes a Forwarder by id or name"
+              "description": "Deletes a Forwarder by id or name.\n\nYou should pass a non-null value to exactly one of the arguments."
             },
             {
               "name": "deleteAllForwarders",
@@ -3523,7 +3523,7 @@
             },
             {
               "name": "deleteHandlingUnit",
-              "description": "Deletes a HandlingUnit by id or id"
+              "description": "Deletes a HandlingUnit by id or id.\n\nYou should pass a non-null value to exactly one of the arguments."
             },
             {
               "name": "deleteAllHandlingUnits",
@@ -3563,7 +3563,7 @@
             },
             {
               "name": "deleteSecretKey",
-              "description": "Deletes a SecretKey by id or key"
+              "description": "Deletes a SecretKey by id or key.\n\nYou should pass a non-null value to exactly one of the arguments."
             },
             {
               "name": "deleteAllSecretKeys",

@@ -3,14 +3,14 @@ import { Namespace, RootEntityType } from '../model';
 import { EntitiesQueryNode, FirstOfListQueryNode, ObjectQueryNode, QueryNode } from '../query-tree';
 import { QUERY_TYPE } from '../schema/constants';
 import { getAllEntitiesFieldName, getMetaFieldName } from '../schema/names';
-import { flatMap } from '../utils/utils';
+import { decapitalize, flatMap } from '../utils/utils';
 import { FilterAugmentation } from './filter-augmentation';
 import { MetaFirstAugmentation } from './limit-augmentation';
 import { ListAugmentation } from './list-augmentation';
 import { MetaTypeGenerator } from './meta-type-generator';
 import { OutputTypeGenerator } from './output-type-generator';
 import { QueryNodeField, QueryNodeListType, QueryNodeNonNullType, QueryNodeObjectType } from './query-node-object-type';
-import { getArgumentsForUniqueFields, getEntitiesByUniqueFieldQuery } from './utils/entities-by-uinque-field';
+import { getArgumentsForUniqueFields, getEntitiesByUniqueFieldQuery } from './utils/entities-by-unique-field';
 
 export class QueryTypeGenerator {
     constructor(
@@ -59,11 +59,21 @@ export class QueryTypeGenerator {
     }
 
     private getSingleRootEntityField(rootEntityType: RootEntityType): QueryNodeField {
+        let description;
+        if (rootEntityType.keyField) {
+            description = `Finds a ${rootEntityType.name} by id or ${rootEntityType.keyField.name}.\n\nYou should pass a non-null value to exactly one of the arguments.`;
+        } else {
+            description = `Finds a ${rootEntityType.name} by id`;
+        }
+        if (rootEntityType.description) {
+            description += `\n\n${rootEntityType.description}`;
+        }
+
         return {
             name: rootEntityType.name,
             type: this.outputTypeGenerator.generate(rootEntityType),
             args: getArgumentsForUniqueFields(rootEntityType),
-            description: rootEntityType.description,
+            description,
             resolve: (_, args) => this.getSingleRootEntityNode(rootEntityType, args)
         };
     }
