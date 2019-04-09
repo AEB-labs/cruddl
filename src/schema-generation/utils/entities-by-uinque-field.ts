@@ -13,7 +13,7 @@ export function getEntitiesByUniqueFieldQuery(rootEntityType: RootEntityType, ar
     const filterClauses = objectEntries(args).map(([fieldName, value]) =>
         new BinaryOperationQueryNode(createFieldNode(rootEntityType.getFieldOrThrow(fieldName), entityVarNode), BinaryOperator.EQUAL, new LiteralQueryNode(value)));
     if (filterClauses.length != 1) {
-        throw new Error(`Must specify exactly one argument to ${rootEntityType.toString()}`); // TODO throw this at the correct GraphQL query location
+        throw new Error(`Must specify exactly one argument to field "${rootEntityType.name}"`); // TODO throw this at the correct GraphQL query location
     }
     const filterNode = filterClauses[0];
     const listNode = new EntitiesQueryNode(rootEntityType);
