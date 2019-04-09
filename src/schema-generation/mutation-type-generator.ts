@@ -11,7 +11,7 @@ import { ListAugmentation } from './list-augmentation';
 import { OutputTypeGenerator } from './output-type-generator';
 import { makeNonNullableList, QueryNodeField, QueryNodeNonNullType, QueryNodeObjectType } from './query-node-object-type';
 import { UpdateInputTypeGenerator, UpdateRootEntityInputType } from './update-input-types';
-import { getArgumentsForUniqueFields, getEntitiesByUniqueFieldQuery } from './utils/entities-by-uinque-field';
+import { getArgumentsForUniqueFields, getEntitiesByUniqueFieldQuery } from './utils/entities-by-unique-field';
 import { mapIDsToRootEntities, mapTOIDNodesUnoptimized } from './utils/map';
 import { getRemoveAllEntityEdgesStatements } from './utils/relations';
 
@@ -222,12 +222,19 @@ export class MutationTypeGenerator {
     }
 
     private generateDeleteField(rootEntityType: RootEntityType): QueryNodeField {
+        let description;
+        if (rootEntityType.keyField) {
+            description = `Deletes a ${rootEntityType.name} by id or ${rootEntityType.keyField.name}.\n\nYou should pass a non-null value to exactly one of the arguments.`;
+        } else {
+            description = `Deletes a ${rootEntityType.name} by id`;
+        }
+
         return {
             name: getDeleteEntityFieldName(rootEntityType.name),
             type: this.outputTypeGenerator.generate(rootEntityType),
             args: getArgumentsForUniqueFields(rootEntityType),
             isSerial: true,
-            description: `Deletes a ${rootEntityType.name} by id${rootEntityType.keyField ? ` or ${rootEntityType.keyField.name}` : ''}`,
+            description,
             resolve: (source, args) => this.generateDeleteQueryNode(rootEntityType, args)
         };
     }

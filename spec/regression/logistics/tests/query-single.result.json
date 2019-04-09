@@ -21,7 +21,7 @@
   "noArgs": {
     "errors": [
       {
-        "message": "Must specify exactly one argument to field \"Delivery\"",
+        "message": "Must specify exactly one non-null argument to field \"Delivery\"",
         "locations": [
           {
             "line": 21,
@@ -40,7 +40,7 @@
   "tooManyArgs": {
     "errors": [
       {
-        "message": "Must specify exactly one argument to field \"Delivery\"",
+        "message": "Must specify exactly one non-null argument to field \"Delivery\"",
         "locations": [
           {
             "line": 28,
@@ -57,6 +57,20 @@
     }
   },
   "nullArg": {
+    "errors": [
+      {
+        "message": "Must specify exactly one non-null argument to field \"Delivery\"",
+        "locations": [
+          {
+            "line": 36,
+            "column": 5
+          }
+        ],
+        "path": [
+          "Delivery"
+        ]
+      }
+    ],
     "data": {
       "Delivery": null
     }
@@ -64,7 +78,7 @@
   "twoNullArgs": {
     "errors": [
       {
-        "message": "Must specify exactly one argument to field \"Delivery\"",
+        "message": "Must specify exactly one non-null argument to field \"Delivery\"",
         "locations": [
           {
             "line": 42,
@@ -81,22 +95,10 @@
     }
   },
   "nullAndNonNullArg": {
-    "errors": [
-      {
-        "message": "Must specify exactly one argument to field \"Delivery\"",
-        "locations": [
-          {
-            "line": 49,
-            "column": 5
-          }
-        ],
-        "path": [
-          "Delivery"
-        ]
-      }
-    ],
     "data": {
-      "Delivery": null
+      "Delivery": {
+        "deliveryNumber": "1000521"
+      }
     }
   }
 }
