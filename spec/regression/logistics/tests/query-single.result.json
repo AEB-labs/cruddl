@@ -1,0 +1,102 @@
+{
+  "byID": {
+    "data": {
+      "Delivery": {
+        "deliveryNumber": "1000522"
+      }
+    }
+  },
+  "byKey": {
+    "data": {
+      "Delivery": {
+        "deliveryNumber": "1000521"
+      }
+    }
+  },
+  "notFound": {
+    "data": {
+      "Delivery": null
+    }
+  },
+  "noArgs": {
+    "errors": [
+      {
+        "message": "Must specify exactly one argument to field \"Delivery\"",
+        "locations": [
+          {
+            "line": 21,
+            "column": 5
+          }
+        ],
+        "path": [
+          "Delivery"
+        ]
+      }
+    ],
+    "data": {
+      "Delivery": null
+    }
+  },
+  "tooManyArgs": {
+    "errors": [
+      {
+        "message": "Must specify exactly one argument to field \"Delivery\"",
+        "locations": [
+          {
+            "line": 28,
+            "column": 5
+          }
+        ],
+        "path": [
+          "Delivery"
+        ]
+      }
+    ],
+    "data": {
+      "Delivery": null
+    }
+  },
+  "nullArg": {
+    "data": {
+      "Delivery": null
+    }
+  },
+  "twoNullArgs": {
+    "errors": [
+      {
+        "message": "Must specify exactly one argument to field \"Delivery\"",
+        "locations": [
+          {
+            "line": 42,
+            "column": 5
+          }
+        ],
+        "path": [
+          "Delivery"
+        ]
+      }
+    ],
+    "data": {
+      "Delivery": null
+    }
+  },
+  "nullAndNonNullArg": {
+    "errors": [
+      {
+        "message": "Must specify exactly one argument to field \"Delivery\"",
+        "locations": [
+          {
+            "line": 49,
+            "column": 5
+          }
+        ],
+        "path": [
+          "Delivery"
+        ]
+      }
+    ],
+    "data": {
+      "Delivery": null
+    }
+  }
+}
