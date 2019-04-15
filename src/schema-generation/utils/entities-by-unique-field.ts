@@ -29,23 +29,21 @@ export function getEntitiesByUniqueFieldQuery(rootEntityType: RootEntityType, ar
 }
 
 export function getArgumentsForUniqueFields(rootEntityType: RootEntityType): GraphQLFieldConfigArgumentMap {
-    function maybeDecorateType(type: GraphQLInputType): GraphQLInputType {
-        // if there is only one field, we can show the non-nullability in the schema
-        if (!rootEntityType.keyField) {
-            return new GraphQLNonNull(type);
-        }
-        return type;
-    }
+    // theoretically, we could make the id field non-null if there is no key field. However, this would be a breaking
+    // change for everyone that specifies the id field as (non-null) variable - which are probably quite a lot of
+    // consumers. It wouldn't be consistent anyway (would not work if a key field exists)
+    // Throwing if `null` is actually passed to `id` is breaking as well, but only if there is an error anyway, so
+    // that's probably a lot less critical.
 
     return {
         [ID_FIELD]: {
-            type: maybeDecorateType(GraphQLID),
+            type: GraphQLID,
             description: rootEntityType.getFieldOrThrow('id').description
         },
         ...(
             rootEntityType.keyField ? {
                 [rootEntityType.keyField.name]: {
-                    type: maybeDecorateType(getAsScalarTypeOrThrow(rootEntityType.keyField.type).graphQLScalarType),
+                    type: getAsScalarTypeOrThrow(rootEntityType.keyField.type).graphQLScalarType,
                     description: rootEntityType.keyField.description
                 }
             } : {}
