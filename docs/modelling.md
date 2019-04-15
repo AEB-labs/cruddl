@@ -128,7 +128,7 @@ In ArangoDB, relations are stored in an edge collection with the name ```orders_
 
 References allow to link to a root entity from any field, not only from another root entity. In contrast to relations, it is however not possible to navigate from the referenced object to the referencing object.
 
-In order to define a reference, the referenced type first needs to declare a key field. The value of this key field is stored in the reference field. Within queries, this key value is used to look up the referenced object.
+References are built from regular scalar fields that hold key, e.g. `countryISOCode` of type `String`. To upgrade this to a reference, you need to define a referenced root entity with a dedicated key field (e.g. `Country.isoCode`), and then use `@reference` to link them:
 
 ```graphql
 type Country @rootEntity {
@@ -138,11 +138,30 @@ type Country @rootEntity {
 
 type Address @valueObject {
   # ...
-  country: Country @reference
+  countryISOCode: String
+  country: Country @reference(keyField: "countryISOCode")
 }
 ```
 
-References can not be used on list types. Use an intermediate value object instead.
+In the data base, only `countryISOCode` will be stored, and you can use the field in normal way (setting, updating, filtering, sorting querying), In addition, you will be able to query the field `country`:
+
+```graphql
+{
+    Company(name: "AEB") {
+        address {
+            countryISOCode
+            country {
+                isoCode
+                name
+            }
+        }
+    }
+}
+```
+
+The referenced country will be looked on demand. If the referenced object does not exist, it will be `null` (though `countryISOCode` will still result in its value). You can think of references as more of an API feature than a modelling feature.
+
+You can omit the argument `keyField` on the `@reference` directive (and this argument has only been introduced in cruddl 0.9). In that case, you won't have access to the raw key field value via the API. In the data base, it will be stored with the name of the reference field.
 
 ## Permissions
 

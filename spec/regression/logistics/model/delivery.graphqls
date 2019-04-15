@@ -11,7 +11,11 @@ type Delivery @rootEntity @roles(readWrite: ["allusers"]) {
     "The handling units the items of this delivery are packaged in"
     handlingUnits: [HandlingUnit] @relation
     "The country to where the delivery should be shipped"
-    destinationCountry: Country @reference
+    destinationCountry: Country @reference(keyField: "destinationCountryISOCode")
+    destinationCountryISOCode: String
+
+    originCountry: Country @reference # no key field specified ("legacy" mode)
+
     shippedAt: DateTime
 
     totalValue: String @roles(readWrite: ["accounting"])

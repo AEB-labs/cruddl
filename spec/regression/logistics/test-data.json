@@ -119,7 +119,8 @@
             "itemNumber": "2002",
             "quantity": 18
           }
-        ]
+        ],
+        "destinationCountryISOCode": "XX"
       },
       {
         "@id": "3",
@@ -138,7 +139,7 @@
             "quantity": 18
           }
         ],
-        "destinationCountry": "US"
+        "destinationCountryISOCode": "US"
       }
     ],
 

@@ -432,7 +432,8 @@ describe('CreateInputTypeGenerator', () => {
             fields: [
                 {
                     name: 'country',
-                    typeName: 'Country'
+                    typeName: 'Country',
+                    isReference: true
                 }
             ]
         }, model);
