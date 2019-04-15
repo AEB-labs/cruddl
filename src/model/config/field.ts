@@ -12,7 +12,11 @@ export interface FieldConfig {
     readonly defaultValue?: any
     readonly defaultValueASTNode?: DirectiveNode;
     readonly calcMutationOperators?: ReadonlyArray<CalcMutationsOperator>
+
     readonly isReference?: boolean
+    readonly referenceKeyField?: string
+    readonly referenceKeyFieldASTNode?: ValueNode
+
     readonly isRelation?: boolean
     readonly inverseOfFieldName?: string
     readonly inverseOfASTNode?: ValueNode

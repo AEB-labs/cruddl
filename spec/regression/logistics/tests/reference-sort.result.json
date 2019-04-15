@@ -1,0 +1,48 @@
+{
+  "orderByKeyField": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173",
+          "destinationCountryISOCode": null,
+          "destinationCountry": null
+        },
+        {
+          "deliveryNumber": "1000522",
+          "destinationCountryISOCode": "US",
+          "destinationCountry": {
+            "isoCode": "US"
+          }
+        },
+        {
+          "deliveryNumber": "1000521",
+          "destinationCountryISOCode": "XX",
+          "destinationCountry": null
+        }
+      ]
+    }
+  },
+  "orderByReferenceField": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173",
+          "destinationCountryISOCode": null,
+          "destinationCountry": null
+        },
+        {
+          "deliveryNumber": "1000521",
+          "destinationCountryISOCode": "XX",
+          "destinationCountry": null
+        },
+        {
+          "deliveryNumber": "1000522",
+          "destinationCountryISOCode": "US",
+          "destinationCountry": {
+            "isoCode": "US"
+          }
+        }
+      ]
+    }
+  }
+}

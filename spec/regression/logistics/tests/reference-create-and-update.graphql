@@ -1,0 +1,55 @@
+mutation createWithKeyField {
+    createDelivery(input: { destinationCountryISOCode: "DE" }) {
+        destinationCountryISOCode
+    }
+}
+
+mutation createWithReferenceField {
+    createDelivery(input: { destinationCountry: "DE" }) {
+        destinationCountryISOCode
+    }
+}
+
+mutation createWithBoth {
+    # fails
+    createDelivery(input: { destinationCountry: "DE", destinationCountryISOCode: "DE" }) {
+        destinationCountryISOCode
+    }
+}
+
+mutation createWithSingleField {
+    # has no dedicated key field, so this field doubles as both
+    createDelivery(input: { originCountry: "DE" }) {
+        originCountry {
+            isoCode
+        }
+    }
+}
+
+mutation updateWithKeyField {
+    updateDelivery(input: { id: "@{ids/Delivery/1}", destinationCountryISOCode: "DE" }) {
+        destinationCountryISOCode
+    }
+}
+
+mutation updateWithReferenceField {
+    updateDelivery(input: { id: "@{ids/Delivery/1}", destinationCountry: "DE" }) {
+        destinationCountryISOCode
+    }
+}
+
+mutation updateWithBoth {
+    # fails
+    updateDelivery(input: { id: "@{ids/Delivery/1}", destinationCountry: "DE", destinationCountryISOCode: "DE" }) {
+        destinationCountryISOCode
+    }
+}
+
+mutation updateWithSingleField {
+    # has no dedicated key field, so this field doubles as both
+    updateDelivery(input: { id: "@{ids/Delivery/1}", originCountry: "DE" }) {
+        originCountry {
+            isoCode
+        }
+    }
+}

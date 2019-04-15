@@ -28,6 +28,10 @@ export class CreateObjectInputType extends TypedInputObjectType<CreateInputField
 
     prepareValue(value: PlainObject): PlainObject {
         const applicableFields = this.getApplicableInputFields(value);
+        for (const field of applicableFields) {
+            field.validateInContext(value[field.name], value);
+        }
+
         const properties = [
             ...flatMap(applicableFields, field => toPairs(field.getProperties(value[field.name]))),
             ...toPairs(this.getAdditionalProperties(value))

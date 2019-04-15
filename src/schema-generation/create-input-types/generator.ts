@@ -3,16 +3,9 @@ import { flatMap } from 'lodash';
 import memorize from 'memorize-decorator';
 import { ChildEntityType, EntityExtensionType, Field, ObjectType, RootEntityType, ValueObjectType } from '../../model';
 import { EnumTypeGenerator } from '../enum-type-generator';
-import {
-    BasicCreateInputField, BasicListCreateInputField, CreateEntityExtensionInputField, CreateInputField,
-    CreateObjectInputField,
-    ObjectListCreateInputField
-} from './input-fields';
-import {
-    CreateChildEntityInputType, CreateEntityExtensionInputType, CreateObjectInputType, CreateRootEntityInputType,
-    ValueObjectInputType
-} from './input-types';
-import { AddEdgesCreateInputField, CreateAndAddEdgesCreateInputField, SetEdgeCreateInputField, CreateAndSetEdgeCreateInputField } from './relation-fields';
+import { BasicCreateInputField, BasicListCreateInputField, CreateEntityExtensionInputField, CreateInputField, CreateObjectInputField, CreateReferenceInputField, ObjectListCreateInputField } from './input-fields';
+import { CreateChildEntityInputType, CreateEntityExtensionInputType, CreateObjectInputType, CreateRootEntityInputType, ValueObjectInputType } from './input-types';
+import { AddEdgesCreateInputField, CreateAndAddEdgesCreateInputField, CreateAndSetEdgeCreateInputField, SetEdgeCreateInputField } from './relation-fields';
 
 export class CreateInputTypeGenerator {
     constructor(
@@ -66,6 +59,9 @@ export class CreateInputTypeGenerator {
             if (field.isList) {
                 // don't allow null values in lists
                 return [new BasicListCreateInputField(field, undefined, new GraphQLList(new GraphQLNonNull(inputType)))];
+            } else if (field.referenceField) {
+                // this is the key field to a reference field - add some comments
+                return [new BasicCreateInputField(field, (field.description ? field.description + '\n\n' : '') + ((field.referenceField.type as RootEntityType).keyField) ? 'Specify the `' + (field.referenceField.type as RootEntityType).keyField!.name + '` of the `' + field.referenceField.type.name + '` to be referenced' : undefined, inputType)];
             } else {
                 return [new BasicCreateInputField(field, undefined, inputType)];
             }
@@ -75,16 +71,25 @@ export class CreateInputTypeGenerator {
             if (field.isRelation) {
                 const inputType = this.generateForRootEntityType(field.type);
                 if (field.isList) {
-                    return [new AddEdgesCreateInputField(field), new CreateAndAddEdgesCreateInputField(field, inputType)];
+                    return [
+                        new AddEdgesCreateInputField(field), new CreateAndAddEdgesCreateInputField(field, inputType)
+                    ];
                 } else {
                     return [new SetEdgeCreateInputField(field), new CreateAndSetEdgeCreateInputField(field, inputType)];
                 }
             } else {
                 // reference
-                // we intentionally do not check if the referenced object exists (loose coupling), so this behaves just
-                // like a regular field
+                const referenceKeyField = field.getReferenceKeyFieldOrThrow();
+                const scalarType = field.type.getKeyFieldTypeOrThrow().graphQLScalarType;
+                const description = (referenceKeyField.description ? referenceKeyField.description + '\n\n' : '') + ((field.type as RootEntityType).keyField) ? 'Specify the `' + (field.type as RootEntityType).keyField!.name + '` of the `' + field.type.name + '` to be referenced' : undefined;
 
-                return [new BasicCreateInputField(field, (field.description ? field.description + '\n\n' : '')+((field.type as RootEntityType).keyField)?"Specify the `"+(field.type as RootEntityType).keyField!.name+"` of the `"+field.type.name+"` to be referenced": undefined, field.type.getKeyFieldTypeOrThrow().graphQLScalarType)];
+                if (referenceKeyField === field) {
+                    // if the key field *is* the reference field, this means that there is no explicit key field
+                    return [new CreateReferenceInputField(referenceKeyField, field.name, description, scalarType)];
+                } else {
+                    // there is a separate key field. We still generate this field (for backwards-compatibility), but users should use the key field instead
+                    return [new CreateReferenceInputField(referenceKeyField, field.name, description, scalarType, `Use "${referenceKeyField.name}" instead.`)];
+                }
             }
         }
 

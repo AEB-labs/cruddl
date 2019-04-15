@@ -52,7 +52,8 @@ export class BasicUpdateInputField implements UpdateInputField {
         public readonly field: Field,
         public readonly inputType: GraphQLInputType | UpdateObjectInputType,
         public readonly name = field.name,
-        public readonly description = field.description
+        public readonly description = field.description,
+        public readonly deprecationReason?: string
     ) {
     }
 

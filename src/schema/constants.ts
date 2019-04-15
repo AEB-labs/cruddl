@@ -15,6 +15,7 @@ export const REFERENCE_DIRECTIVE = 'reference';
 export const DEFAULT_VALUE_DIRECTIVE = 'defaultValue';
 
 export const INVERSE_OF_ARG = 'inverseOf';
+export const KEY_FIELD_ARG = 'keyField';
 
 export const QUERY_TYPE = 'Query';
 export const MUTATION_TYPE = 'Mutation';

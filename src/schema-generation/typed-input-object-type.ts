@@ -7,6 +7,7 @@ import { resolveThunk } from './query-node-object-type';
 export interface TypedInputFieldBase<TField extends TypedInputFieldBase<TField>> {
     readonly name: string
     readonly description?: string
+    readonly deprecationReason?: string
     readonly inputType: GraphQLInputType | TypedInputObjectType<TField>
 }
 
@@ -14,15 +15,22 @@ export class TypedInputObjectType<TField extends TypedInputFieldBase<TField>> {
     constructor(
         public readonly name: string,
         private readonly _fields: Thunk<ReadonlyArray<TField>>,
-        public readonly description?: string
+        public readonly description?: string,
+        public readonly deprecationReason?: string
     ) {
     }
 
     @memorize()
     getInputType(): GraphQLInputObjectType {
+        let description = this.description;
+        if (this.deprecationReason) {
+            // Input fields can not yet be deprecated (see https://github.com/graphql/graphql-spec/pull/525)
+            description = description ? `${description}\n\n${this.deprecationReason}` : this.deprecationReason;
+        }
+
         return new GraphQLInputObjectType({
             name: this.name,
-            description: this.description,
+            description,
             fields: () => chain(this.fields)
                 .keyBy(field => field.name)
                 .mapValues((field): GraphQLInputFieldConfig => ({

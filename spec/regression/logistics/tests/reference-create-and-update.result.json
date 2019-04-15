@@ -1,0 +1,84 @@
+{
+  "createWithKeyField": {
+    "data": {
+      "createDelivery": {
+        "destinationCountryISOCode": "DE"
+      }
+    }
+  },
+  "createWithReferenceField": {
+    "data": {
+      "createDelivery": {
+        "destinationCountryISOCode": "DE"
+      }
+    }
+  },
+  "createWithBoth": {
+    "errors": [
+      {
+        "message": "Cannot set both \"destinationCountryISOCode\" and \"destinationCountry\" because they refer to the same reference",
+        "locations": [
+          {
+            "line": 15,
+            "column": 5
+          }
+        ],
+        "path": [
+          "createDelivery"
+        ]
+      }
+    ],
+    "data": null
+  },
+  "createWithSingleField": {
+    "data": {
+      "createDelivery": {
+        "originCountry": {
+          "isoCode": "DE"
+        }
+      }
+    }
+  },
+  "updateWithKeyField": {
+    "data": {
+      "updateDelivery": {
+        "destinationCountryISOCode": "DE"
+      }
+    }
+  },
+  "updateWithReferenceField": {
+    "data": {
+      "updateDelivery": {
+        "destinationCountryISOCode": "DE"
+      }
+    }
+  },
+  "updateWithBoth": {
+    "errors": [
+      {
+        "message": "Can't combine \"destinationCountry\" and \"destinationCountryISOCode\" in \"UpdateDeliveryInput\"",
+        "locations": [
+          {
+            "line": 43,
+            "column": 5
+          }
+        ],
+        "path": [
+          "updateDelivery"
+        ]
+      }
+    ],
+    "data": {
+      "updateDelivery": null
+    }
+  },
+  "updateWithSingleField": {
+    "data": {
+      "updateDelivery": {
+        "originCountry": {
+          "isoCode": "DE"
+        }
+      }
+    }
+  }
+}

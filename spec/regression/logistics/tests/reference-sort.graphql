@@ -1,0 +1,20 @@
+query orderByKeyField {
+    allDeliveries(orderBy: [ destinationCountryISOCode_ASC, deliveryNumber_ASC ]) {
+        deliveryNumber
+        destinationCountryISOCode
+        destinationCountry {
+            isoCode
+        }
+    }
+}
+
+# should treat XX the same as empty (because it does not exist)
+query orderByReferenceField {
+    allDeliveries(orderBy: [ destinationCountry_isoCode_ASC, deliveryNumber_ASC ]) {
+        deliveryNumber
+        destinationCountryISOCode
+        destinationCountry {
+            isoCode
+        }
+    }
+}

@@ -3,9 +3,7 @@ import { Field, Multiplicity } from '../../model';
 import { PreExecQueryParms, QueryNode } from '../../query-tree';
 import { getCreateRelatedEntityFieldName } from '../../schema/names';
 import { AnyValue, PlainObject } from '../../utils/utils';
-import {
-    getAddEdgesStatements, getCreateAndAddEdgesStatements, getCreateAndSetEdgeStatements, getSetEdgeStatements
-} from '../utils/relations';
+import { getAddEdgesStatements, getCreateAndAddEdgesStatements, getCreateAndSetEdgeStatements, getSetEdgeStatements } from '../utils/relations';
 import { CreateInputField } from './input-fields';
 import { CreateRootEntityInputType } from './input-types';
 
@@ -32,6 +30,9 @@ export abstract class AbstractRelationCreateInputField implements CreateInputFie
 
     getProperties(value: AnyValue): PlainObject {
         return {};
+    }
+
+    validateInContext(value: AnyValue, objectValue: PlainObject): void {
     }
 
     abstract getStatements(value: AnyValue, idNode: QueryNode): ReadonlyArray<PreExecQueryParms>

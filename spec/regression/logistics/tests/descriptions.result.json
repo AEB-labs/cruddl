@@ -653,6 +653,14 @@
               "description": "The country to where the delivery should be shipped\n\nThis field references a `Country` by its `isoCode` field"
             },
             {
+              "name": "destinationCountryISOCode",
+              "description": null
+            },
+            {
+              "name": "originCountry",
+              "description": "This field references a `Country` by its `isoCode` field"
+            },
+            {
               "name": "shippedAt",
               "description": null
             },
@@ -1408,6 +1416,74 @@
             {
               "name": "destinationCountry",
               "description": "Filters the through `isoCode` referenced Countries that fulfills the given requirements.\n\n Checks if `destinationCountry` is not null, and allows to filter based on its fields."
+            },
+            {
+              "name": "destinationCountryISOCode",
+              "description": "Checks if `destinationCountryISOCode` equals a specified string, case-sensitively.\n\nIf an index exists on `destinationCountryISOCode`, it can be used.\n\nSee also `like` for a case-insensitive filter."
+            },
+            {
+              "name": "destinationCountryISOCode_not",
+              "description": "Checks if `destinationCountryISOCode` does not equal a specified string, case-sensitively."
+            },
+            {
+              "name": "destinationCountryISOCode_in",
+              "description": null
+            },
+            {
+              "name": "destinationCountryISOCode_not_in",
+              "description": null
+            },
+            {
+              "name": "destinationCountryISOCode_lt",
+              "description": null
+            },
+            {
+              "name": "destinationCountryISOCode_lte",
+              "description": null
+            },
+            {
+              "name": "destinationCountryISOCode_gt",
+              "description": null
+            },
+            {
+              "name": "destinationCountryISOCode_gte",
+              "description": null
+            },
+            {
+              "name": "destinationCountryISOCode_contains",
+              "description": "Checks if `destinationCountryISOCode` contains a specified string, case-sensitively."
+            },
+            {
+              "name": "destinationCountryISOCode_not_contains",
+              "description": null
+            },
+            {
+              "name": "destinationCountryISOCode_starts_with",
+              "description": "Checks if `destinationCountryISOCode` starts with a specified string, case-sensitively.\n\nNever uses an index. Consider using `like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
+            },
+            {
+              "name": "destinationCountryISOCode_not_starts_with",
+              "description": null
+            },
+            {
+              "name": "destinationCountryISOCode_ends_with",
+              "description": "Checks if `destinationCountryISOCode` ends with a specified string, case-sensitively."
+            },
+            {
+              "name": "destinationCountryISOCode_not_ends_with",
+              "description": null
+            },
+            {
+              "name": "destinationCountryISOCode_like",
+              "description": "Matches `destinationCountryISOCode` against a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)\n\nIf an index exists on `destinationCountryISOCode`, it can be used for the literal prefix (the part until the first placeholder)."
+            },
+            {
+              "name": "destinationCountryISOCode_not_like",
+              "description": "Checks if `destinationCountryISOCode` does *not* match a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)"
+            },
+            {
+              "name": "originCountry",
+              "description": "Filters the through `isoCode` referenced Countries that fulfills the given requirements.\n\n Checks if `originCountry` is not null, and allows to filter based on its fields."
             },
             {
               "name": "shippedAt",
@@ -3690,6 +3766,14 @@
               "description": "Specify the `isoCode` of the `Country` to be referenced"
             },
             {
+              "name": "destinationCountryISOCode",
+              "description": "Specify the `isoCode` of the `Country` to be referenced"
+            },
+            {
+              "name": "originCountry",
+              "description": "Specify the `isoCode` of the `Country` to be referenced"
+            },
+            {
               "name": "shippedAt",
               "description": null
             },
@@ -3935,6 +4019,14 @@
               "description": "Specify the `isoCode` of the `Country` to be referenced"
             },
             {
+              "name": "destinationCountryISOCode",
+              "description": "Specify the `isoCode` of the `Country` to be referenced"
+            },
+            {
+              "name": "originCountry",
+              "description": "Specify the `isoCode` of the `Country` to be referenced"
+            },
+            {
               "name": "shippedAt",
               "description": null
             },
@@ -4104,6 +4196,14 @@
             },
             {
               "name": "destinationCountry",
+              "description": "Specify the `isoCode` of the `Country` to be referenced"
+            },
+            {
+              "name": "destinationCountryISOCode",
+              "description": "Specify the `isoCode` of the `Country` to be referenced"
+            },
+            {
+              "name": "originCountry",
               "description": "Specify the `isoCode` of the `Country` to be referenced"
             },
             {

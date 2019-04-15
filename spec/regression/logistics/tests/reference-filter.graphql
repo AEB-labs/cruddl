@@ -1,0 +1,41 @@
+query filterKeyField {
+    allDeliveries(filter: { destinationCountryISOCode: "US" }) {
+        deliveryNumber
+        destinationCountryISOCode
+        destinationCountry {
+            isoCode
+        }
+    }
+}
+
+# should still find it, but not the refernece
+query filterKeyFieldMissingReference {
+    allDeliveries(filter: { destinationCountryISOCode: "XX" }) {
+        deliveryNumber
+        destinationCountryISOCode
+        destinationCountry {
+            isoCode
+        }
+    }
+}
+
+query filterReference {
+    allDeliveries(filter: { destinationCountry: { isoCode: "US" } }) {
+        deliveryNumber
+        destinationCountryISOCode
+        destinationCountry {
+            isoCode
+        }
+    }
+}
+
+# should not find it
+query filterMissingReference {
+    allDeliveries(filter: { destinationCountry: { isoCode: "XX" } }) {
+        deliveryNumber
+        destinationCountryISOCode
+        destinationCountry {
+            isoCode
+        }
+    }
+}
