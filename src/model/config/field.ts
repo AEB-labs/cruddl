@@ -18,6 +18,11 @@ export interface FieldConfig {
     readonly inverseOfASTNode?: ValueNode
 
     readonly astNode?: FieldDefinitionNode
+
+    readonly isQuickSearchIndexed?: boolean
+    readonly isQuickSearchIndexedASTNode?: DirectiveNode
+    readonly isSearchable?: boolean
+    readonly languages?: ReadonlyArray<QuickSearchLanguage>
 }
 
 export enum CalcMutationsOperator {
@@ -28,4 +33,8 @@ export enum CalcMutationsOperator {
     MODULO = 'MODULO',
     APPEND = 'APPEND',
     PREPEND = 'PREPEND'
+}
+
+export enum QuickSearchLanguage {
+    EN = "en", DE = "de", ES = "es", FI = "fi", FR = "fr", IT = "it", NL = "nl", NO = "no", PT = "pt", RU = "ru", SV = "sv", ZH = "zh"
 }

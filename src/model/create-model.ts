@@ -1,11 +1,80 @@
-import { ArgumentNode, EnumValueDefinitionNode, FieldDefinitionNode, GraphQLBoolean, GraphQLID, GraphQLInputObjectType, GraphQLList, GraphQLNonNull, GraphQLString, ObjectTypeDefinitionNode, ObjectValueNode, StringValueNode, TypeDefinitionNode, valueFromAST } from 'graphql';
+import {
+    ArgumentNode,
+    DirectiveNode,
+    EnumValueDefinitionNode,
+    FieldDefinitionNode, getDirectiveValues,
+    GraphQLBoolean,
+    GraphQLID,
+    GraphQLInputObjectType,
+    GraphQLList,
+    GraphQLNonNull,
+    GraphQLString,
+    ObjectTypeDefinitionNode,
+    ObjectValueNode,
+    StringValueNode,
+    TypeDefinitionNode,
+    valueFromAST, ValueNode
+} from 'graphql';
 import { ParsedGraphQLProjectSource, ParsedObjectProjectSource, ParsedProject, ParsedProjectSourceBaseKind } from '../config/parsed-project';
 import { ENUM, ENUM_TYPE_DEFINITION, LIST, LIST_TYPE, NON_NULL_TYPE, OBJECT, OBJECT_TYPE_DEFINITION, STRING } from '../graphql/kinds';
 import { getValueFromAST } from '../graphql/value-from-ast';
-import { CALC_MUTATIONS_DIRECTIVE, CALC_MUTATIONS_OPERATORS_ARG, CHILD_ENTITY_DIRECTIVE, DEFAULT_VALUE_DIRECTIVE, ENTITY_EXTENSION_DIRECTIVE, ID_FIELD, INDEX_DEFINITION_INPUT_TYPE, INDEX_DIRECTIVE, INDICES_ARG, INVERSE_OF_ARG, KEY_FIELD_DIRECTIVE, NAMESPACE_DIRECTIVE, NAMESPACE_NAME_ARG, NAMESPACE_SEPARATOR, OBJECT_TYPE_KIND_DIRECTIVES, PERMISSION_PROFILE_ARG, REFERENCE_DIRECTIVE, RELATION_DIRECTIVE, ROLES_DIRECTIVE, ROLES_READ_ARG, ROLES_READ_WRITE_ARG, ROOT_ENTITY_DIRECTIVE, UNIQUE_DIRECTIVE, VALUE_ARG, VALUE_OBJECT_DIRECTIVE } from '../schema/constants';
-import { findDirectiveWithName, getNamedTypeNodeIgnoringNonNullAndList, getNodeByName, getTypeNameIgnoringNonNullAndList } from '../schema/schema-utils';
+import {
+    CALC_MUTATIONS_DIRECTIVE,
+    CALC_MUTATIONS_OPERATORS_ARG,
+    CHILD_ENTITY_DIRECTIVE,
+    DEFAULT_VALUE_DIRECTIVE,
+    ENTITY_EXTENSION_DIRECTIVE,
+    ID_FIELD,
+    INDEX_DEFINITION_INPUT_TYPE,
+    INDEX_DIRECTIVE,
+    INDICES_ARG,
+    INVERSE_OF_ARG,
+    KEY_FIELD_DIRECTIVE,
+    NAMESPACE_DIRECTIVE,
+    NAMESPACE_NAME_ARG,
+    NAMESPACE_SEPARATOR,
+    OBJECT_TYPE_KIND_DIRECTIVES,
+    PERMISSION_PROFILE_ARG,
+    QUICK_SEARCH_INDEXED_ARGUMENT,
+    REFERENCE_DIRECTIVE,
+    RELATION_DIRECTIVE,
+    ROLES_DIRECTIVE,
+    ROLES_READ_ARG,
+    ROLES_READ_WRITE_ARG,
+    ROOT_ENTITY_DIRECTIVE,
+    UNIQUE_DIRECTIVE,
+    VALUE_ARG,
+    VALUE_OBJECT_DIRECTIVE,
+    QUICK_SEARCH_INDEXED_SEARCHABLE_ARG,
+    QUICK_SEARCH_INDEXED_GLOBAL_ARGUMENT,
+    QUICK_SEARCH_INDEXED_LANGUAGES_ARG,
+    QUICK_SEARCH_INDEXED_DIRECTIVE
+} from '../schema/constants';
+import {
+    findDirectiveWithName,
+    getNamedTypeNodeIgnoringNonNullAndList,
+    getNodeByName,
+    getTypeNameIgnoringNonNullAndList,
+    hasDirectiveWithName
+} from '../schema/schema-utils';
 import { compact, flatMap, mapValues } from '../utils/utils';
-import { CalcMutationsOperator, EnumTypeConfig, EnumValueConfig, FieldConfig, IndexDefinitionConfig, LocalizationConfig, NamespacedPermissionProfileConfigMap, ObjectTypeConfig, PermissionProfileConfigMap, PermissionsConfig, RolesSpecifierConfig, TypeConfig, TypeKind } from './config';
+import {
+    ArangoSearchIndexConfig,
+    CalcMutationsOperator,
+    EnumTypeConfig,
+    EnumValueConfig,
+    FieldConfig,
+    IndexDefinitionConfig,
+    LocalizationConfig,
+    NamespacedPermissionProfileConfigMap,
+    ObjectTypeConfig,
+    PermissionProfileConfigMap,
+    PermissionsConfig,
+    QuickSearchLanguage,
+    RolesSpecifierConfig,
+    TypeConfig,
+    TypeKind
+} from './config';
 import { Model } from './implementation';
 import { parseI18nConfigs } from './parse-i18n';
 import { ValidationContext, ValidationMessage } from './validation';
@@ -22,6 +91,7 @@ export function createModel(parsedProject: ParsedProject): Model {
 
 const VALIDATION_ERROR_INVALID_PERMISSION_PROFILE = `Invalid argument value, expected string`;
 const VALIDATION_ERROR_EXPECTED_STRING_OR_LIST_OF_STRINGS = 'Expected string or list of strings';
+const VALIDATION_ERROR_EXPECTED_BOOLEAN = 'Expected boolean'
 const VALIDATION_ERROR_EXPECTED_ENUM_OR_LIST_OF_ENUMS = 'Expected enum or list of enums';
 const VALIDATION_ERROR_INVERSE_OF_ARG_MUST_BE_STRING = 'inverseOf must be specified as String';
 const VALIDATION_ERROR_MISSING_ARGUMENT_OPERATORS = 'Missing argument \'operators\'';
@@ -110,7 +180,8 @@ function createObjectTypeInput(definition: ObjectTypeDefinitionNode, schemaPart:
                 ...processKeyField(definition, common.fields, context),
                 kind: TypeKind.ROOT_ENTITY,
                 permissions: getPermissions(definition, context),
-                indices: createIndexDefinitionInputs(definition, context)
+                indices: createIndexDefinitionInputs(definition, context),
+                arangoSearchIndex: createArangoSearchDefinitionInputs(definition, context)
             };
     }
 }
@@ -164,6 +235,89 @@ function getDefaultValue(fieldNode: FieldDefinitionNode, context: ValidationCont
     return getValueFromAST(defaultValueArg.value);
 }
 
+function createArangoSearchDefinitionInputs(objectNode: ObjectTypeDefinitionNode, context: ValidationContext): ArangoSearchIndexConfig {
+    let directive = findDirectiveWithName(objectNode, ROOT_ENTITY_DIRECTIVE)
+    let config = {
+        isGlobalIndexed: false,
+        isIndexed: false,
+        directiveASTNode: directive
+    }
+    if(directive){
+        const argumentIndexed: ArgumentNode | undefined = getNodeByName(directive.arguments, QUICK_SEARCH_INDEXED_ARGUMENT)
+        if(argumentIndexed){
+            if(argumentIndexed.value.kind === "BooleanValue"){
+                config.isIndexed = argumentIndexed.value.value
+            }else{
+                context.addMessage(ValidationMessage.error(VALIDATION_ERROR_EXPECTED_BOOLEAN, argumentIndexed.value.loc));
+            }
+        }
+        const argumentGlobal: ArgumentNode | undefined = getNodeByName(directive.arguments, QUICK_SEARCH_INDEXED_GLOBAL_ARGUMENT)
+        if(argumentGlobal){
+            if(argumentGlobal.value.kind === "BooleanValue"){
+                config.isGlobalIndexed = argumentGlobal.value.value
+            }else{
+                context.addMessage(ValidationMessage.error(VALIDATION_ERROR_EXPECTED_BOOLEAN, argumentGlobal.value.loc));
+            }
+        }
+    }
+    return config;
+
+
+}
+
+function getIsSearchable(fieldNode: FieldDefinitionNode, context: ValidationContext):boolean {
+    let directive: DirectiveNode | undefined = findDirectiveWithName(fieldNode, QUICK_SEARCH_INDEXED_ARGUMENT);
+    if(directive){
+        const argument: ArgumentNode | undefined = getNodeByName(directive.arguments, QUICK_SEARCH_INDEXED_SEARCHABLE_ARG)
+
+        if(argument) {
+            if(argument.value.kind === "BooleanValue"){
+                return argument.value.value
+            }else{
+                context.addMessage(ValidationMessage.error(VALIDATION_ERROR_EXPECTED_BOOLEAN, argument.value.loc));
+                return false
+            }
+        }else{
+            return false
+        }
+    }else{
+        return false;
+    }
+
+}
+
+function getLanguages(fieldNode: FieldDefinitionNode, context: ValidationContext):ReadonlyArray<QuickSearchLanguage> {
+    let directive: DirectiveNode | undefined = findDirectiveWithName(fieldNode, QUICK_SEARCH_INDEXED_ARGUMENT);
+    if(directive){
+        const argument: ArgumentNode | undefined = getNodeByName(directive.arguments, QUICK_SEARCH_INDEXED_LANGUAGES_ARG)
+
+        if(argument) {
+            if(argument.value.kind === "ListValue"){
+                const languages: QuickSearchLanguage[] = []
+                for(const value of argument.value.values){
+                    if(value.kind === "EnumValue"){
+                        languages.push(value.value as QuickSearchLanguage);
+                    }else{
+                        context.addMessage(ValidationMessage.error(VALIDATION_ERROR_EXPECTED_ENUM_OR_LIST_OF_ENUMS, value.loc));
+                        return []
+                    }
+                }
+                return languages;
+            }else if(argument.value.kind === "EnumValue"){
+                return [argument.value.value as QuickSearchLanguage]
+            }else{
+                context.addMessage(ValidationMessage.error(VALIDATION_ERROR_EXPECTED_ENUM_OR_LIST_OF_ENUMS, argument.value.loc));
+                return []
+            }
+        }else{
+            return []
+        }
+    }else{
+        return [];
+    }
+
+}
+
 function createFieldInput(fieldNode: FieldDefinitionNode, context: ValidationContext): FieldConfig {
     const inverseOfASTNode = getInverseOfASTNode(fieldNode, context);
     return {
@@ -180,7 +334,11 @@ function createFieldInput(fieldNode: FieldDefinitionNode, context: ValidationCon
         isRelation: !!findDirectiveWithName(fieldNode, RELATION_DIRECTIVE),
         permissions: getPermissions(fieldNode, context),
         typeName: getTypeNameIgnoringNonNullAndList(fieldNode.type),
-        typeNameAST: getNamedTypeNodeIgnoringNonNullAndList(fieldNode.type).name
+        typeNameAST: getNamedTypeNodeIgnoringNonNullAndList(fieldNode.type).name,
+        isQuickSearchIndexed: hasDirectiveWithName(fieldNode, QUICK_SEARCH_INDEXED_DIRECTIVE),
+        isQuickSearchIndexedASTNode: findDirectiveWithName(fieldNode, QUICK_SEARCH_INDEXED_DIRECTIVE),
+        isSearchable: getIsSearchable(fieldNode, context),
+        languages: getLanguages(fieldNode, context)
     };
 }
 

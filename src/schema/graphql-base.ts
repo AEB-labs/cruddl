@@ -3,7 +3,7 @@ import { DocumentNode } from 'graphql';
 
 export const DIRECTIVES: DocumentNode = gql`
     "Declares a type for root-level objects with ids that are stored directly in the data base"
-    directive @rootEntity(indices: [IndexDefinition!], permissionProfile: String) on OBJECT
+    directive @rootEntity(indices: [IndexDefinition!], permissionProfile: String, quickSearchIndex: Boolean = false, globalQuickSearch: Boolean = true) on OBJECT
     
     "Declares a type for objects with ids that can be embedded as a list within another entity"
     directive @childEntity on OBJECT
@@ -25,6 +25,14 @@ export const DIRECTIVES: DocumentNode = gql`
 
     "Declares a field to be indexed"
     directive @index(sparse: Boolean = false) on FIELD_DEFINITION
+    
+    "Declares a field to be indexed with ArangoSearch"
+    directive @quickSearchIndex(languages: [QuickSearchLanguage!] = [], searchable: Boolean = false) on FIELD_DEFINITION
+
+    "The available languages for ArangoSearch Analyzers"
+    enum QuickSearchLanguage {
+        EN, DE, ES, FI, FR, IT, NL, NO, PT, RU, SV, ZH
+    }
 
     "Declares a field to be unique-indexed"
     directive @unique(sparse: Boolean = true) on FIELD_DEFINITION

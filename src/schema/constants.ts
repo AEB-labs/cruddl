@@ -13,6 +13,12 @@ export const VALUE_OBJECT_DIRECTIVE = 'valueObject';
 export const RELATION_DIRECTIVE = 'relation';
 export const REFERENCE_DIRECTIVE = 'reference';
 export const DEFAULT_VALUE_DIRECTIVE = 'defaultValue';
+export const QUICK_SEARCH_INDEXED_DIRECTIVE = "quickSearchIndex";
+
+export const QUICK_SEARCH_INDEXED_GLOBAL_ARGUMENT = 'globalQuickSearch';
+export const QUICK_SEARCH_INDEXED_ARGUMENT = 'quickSearchIndex';
+export const QUICK_SEARCH_INDEXED_SEARCHABLE_ARG = "searchable"
+export const QUICK_SEARCH_INDEXED_LANGUAGES_ARG = "languages"
 
 export const INVERSE_OF_ARG = 'inverseOf';
 
@@ -78,6 +84,8 @@ export const INPUT_FIELD_EVERY: 'every' = 'every';
 export const INPUT_FIELD_NONE: 'none' = 'none';
 export const AND_FILTER_FIELD = 'AND';
 export const OR_FILTER_FIELD = 'OR';
+
+
 
 export const CALC_MUTATIONS_DIRECTIVE = 'calcMutations';
 export const CALC_MUTATIONS_OPERATORS_ARG = 'operators';

@@ -3,7 +3,7 @@ import {
     TypeDefinitionNode
 } from 'graphql';
 import { FieldConfig } from './field';
-import { IndexDefinitionConfig } from './indices';
+import {ArangoSearchIndexConfig, IndexDefinitionConfig} from './indices';
 import { PermissionsConfig } from './permissions';
 
 export enum TypeKind {
@@ -34,6 +34,7 @@ export interface RootEntityTypeConfig extends ObjectTypeConfigBase {
     readonly keyFieldName?: string
     readonly keyFieldASTNode?: ASTNode
     readonly permissions?: PermissionsConfig
+    readonly arangoSearchIndex: ArangoSearchIndexConfig
 }
 
 export interface ValueObjectTypeConfig extends ObjectTypeConfigBase {
