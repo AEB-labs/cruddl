@@ -1,8 +1,11 @@
 import { Relation, RootEntityType } from '../../../model/implementation';
 import { describeIndex, getIndexDescriptor, IndexDefinition } from './index-helpers';
+import {ArangoSearchDefinition} from "./arango-search-helpers";
+import {FieldConfig} from "../../../model/config";
+import {ArangoSearchViewPropertiesOptions} from "arangojs/lib/cjs/view";
 
 export type SchemaMigration = CreateIndexMigration | DropIndexMigration | CreateDocumentCollectionMigration
-    | CreateEdgeCollectionMigration;
+    | CreateEdgeCollectionMigration | CreateArangoSearchViewMigration | DropArangoSearchViewMigration | UpdateArangoSearchViewMigration;
 
 interface CreateIndexMigrationConfig {
     readonly index: IndexDefinition
@@ -91,6 +94,91 @@ export class CreateEdgeCollectionMigration {
 
     get id() {
         return `createEdgeCollection/collection:${this.collectionName}`;
+    }
+
+    get isMandatory() {
+        return true;
+    }
+}
+
+interface CreateArangoSearchViewMigrationConfig{
+    readonly arangoSearchDefinition: ArangoSearchDefinition
+    readonly properties: ArangoSearchViewPropertiesOptions
+    readonly collectionSize?: number
+}
+
+interface UpdateArangoSearchViewMigrationConfig extends CreateArangoSearchViewMigrationConfig{
+
+}
+
+interface DropArangoSearchViewMigrationConfig{
+    readonly viewName: string
+}
+
+export class DropArangoSearchViewMigration{
+    readonly type: 'dropArangoSearchView' = 'dropArangoSearchView';
+    readonly config: DropArangoSearchViewMigrationConfig;
+
+    constructor(config: DropArangoSearchViewMigrationConfig) {
+        this.config = config;
+    }
+
+    get description() {
+        return `drop ArangoSearchView ${this.viewName}`;
+    }
+
+    get id() {
+        return `dropArangoSearch/${this.viewName}`;
+    }
+
+    get viewName(){
+        return this.config.viewName;
+    }
+
+    get isMandatory() {
+        return false;
+    }
+}
+
+export class UpdateArangoSearchViewMigration{
+    readonly type: 'updateArangoSearchView' = 'updateArangoSearchView';
+    readonly config: UpdateArangoSearchViewMigrationConfig;
+
+    constructor(config: UpdateArangoSearchViewMigrationConfig) {
+        this.config = config;
+    }
+
+    get description() {
+        return `update ArangoSearchView ${this.viewName}`;
+    }
+
+    get id() {
+        return `update ArangoSearch/${this.viewName}`;
+    }
+
+    get viewName(){
+        return this.config.arangoSearchDefinition.viewName;
+    }
+
+    get isMandatory() {
+        return true;
+    }
+}
+
+export class CreateArangoSearchViewMigration{
+    readonly type: 'createArangoSearchView' = 'createArangoSearchView';
+    private config: CreateArangoSearchViewMigrationConfig;
+
+    constructor(config: CreateArangoSearchViewMigrationConfig) {
+        this.config = config;
+    }
+
+    get description() {
+        return `create ArangoSearchView ${this.config.arangoSearchDefinition.viewName}`;
+    }
+
+    get id() {
+        return `createArangoSearch/${this.config.arangoSearchDefinition.viewName}`;
     }
 
     get isMandatory() {

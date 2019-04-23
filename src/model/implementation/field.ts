@@ -1,6 +1,6 @@
-import { FieldDefinitionNode } from 'graphql';
+import {DirectiveNode, FieldDefinitionNode} from 'graphql';
 import { CALC_MUTATIONS_OPERATORS } from '../../schema/constants';
-import { CalcMutationsOperator, FieldConfig, TypeKind } from '../config';
+import {CalcMutationsOperator, FieldConfig, QuickSearchLanguage, TypeKind} from '../config';
 import { ValidationMessage } from '../validation';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
 import { FieldLocalization } from './i18n';
@@ -374,5 +374,18 @@ export class Field implements ModelComponent {
                 context.addMessage(ValidationMessage.error(`Calc mutation operator "${operator}" is not supported on type "${this.type.name}" (supported operators: ${supportedOperatorsDesc}).`, this.astNode));
             }
         }
+    }
+
+    get isQuickSearchIndexed(): boolean{
+        return !!this.input.isQuickSearchIndexed
+    }
+    get isQuickSearchIndexedASTNode(): DirectiveNode | undefined{
+        return this.input.isQuickSearchIndexedASTNode
+    }
+    get isSearchable(): boolean{
+        return !!this.input.isSearchable
+    }
+    get languages(): ReadonlyArray<QuickSearchLanguage>{
+        return this.input.languages || []
     }
 }

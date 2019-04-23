@@ -2,7 +2,14 @@ import { GraphQLID, GraphQLString } from 'graphql';
 import memorize from 'memorize-decorator';
 import { ACCESS_GROUP_FIELD, DEFAULT_PERMISSION_PROFILE, ID_FIELD, SCALAR_INT, SCALAR_STRING } from '../../schema/constants';
 import { compact, flatMap } from '../../utils/utils';
-import { FieldConfig, IndexDefinitionConfig, PermissionsConfig, RootEntityTypeConfig, TypeKind } from '../config';
+import {
+    ArangoSearchIndexConfig,
+    FieldConfig,
+    IndexDefinitionConfig,
+    PermissionsConfig,
+    RootEntityTypeConfig,
+    TypeKind
+} from '../config';
 import { ValidationMessage } from '../validation';
 import { ValidationContext } from '../validation/validation-context';
 import { Field } from './field';
@@ -59,6 +66,11 @@ export class RootEntityType extends ObjectTypeBase {
 
         // deduplicate indices
         return indices.filter((index, i1) => !indices.some((other, i2) => i1 < i2 && other.equals(index)));
+    }
+
+    @memorize()
+    get arangoSearchConfig():ArangoSearchIndexConfig{
+        return this.input.arangoSearchIndex
     }
 
     @memorize()

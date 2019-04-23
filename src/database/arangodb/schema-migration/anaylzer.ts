@@ -6,7 +6,22 @@ import { getCollectionNameForRelation, getCollectionNameForRootEntity } from '..
 import { ArangoDBConfig, getArangoDBLogger, initDatabase } from '../config';
 import { ArangoDBVersionHelper } from '../version-helper';
 import { calculateRequiredIndexOperations, getRequiredIndicesFromModel, IndexDefinition } from './index-helpers';
-import { CreateDocumentCollectionMigration, CreateEdgeCollectionMigration, CreateIndexMigration, DropIndexMigration, SchemaMigration } from './migrations';
+import {
+    CreateArangoSearchViewMigration,
+    CreateDocumentCollectionMigration,
+    CreateEdgeCollectionMigration,
+    CreateIndexMigration, DropArangoSearchViewMigration,
+    DropIndexMigration,
+    SchemaMigration, UpdateArangoSearchViewMigration
+} from './migrations';
+import {
+    calculateRequiredArangoSearchViewCreateOperations,
+    calculateRequiredArangoSearchViewDropOperations,
+    calculateRequiredArangoSearchViewUpdateOperations,
+    calculateRequiredGlobalViewOperation,
+    getRequiredViewsFromModel
+} from "./arango-search-helpers";
+import {QUICK_SEARCH_GLOBAL_VIEW_NAME} from "../../../schema/constants";
 
 export class SchemaAnalyzer {
     private readonly db: Database;
@@ -23,7 +38,8 @@ export class SchemaAnalyzer {
         return [
             ...await this.getDocumentCollectionMigrations(model),
             ...await this.getEdgeCollectionMigrations(model),
-            ...await this.getIndexMigrations(model)
+            ...await this.getIndexMigrations(model),
+            ...await this.getArangoSearchMigrations(model)
         ];
     }
 
@@ -135,5 +151,26 @@ export class SchemaAnalyzer {
         }
         this.logger.debug(`ArangoDB version: ${version}. Workaround for sparse indices will be enabled.`);
         return true;
+    }
+
+    async getArangoSearchMigrations(model: Model): Promise<ReadonlyArray<CreateArangoSearchViewMigration | DropArangoSearchViewMigration | UpdateArangoSearchViewMigration>> {
+        const requiredViews = getRequiredViewsFromModel(model);
+        const views = (await this.db.listViews()).map(value => this.db.arangoSearchView(value.name));
+        const viewsToCreate = calculateRequiredArangoSearchViewCreateOperations(views, requiredViews);
+        const viewsToDrop = calculateRequiredArangoSearchViewDropOperations(views, requiredViews);
+        const viewsToUpdate = await calculateRequiredArangoSearchViewUpdateOperations(views, requiredViews);
+        let operations: Array<CreateArangoSearchViewMigration | DropArangoSearchViewMigration | UpdateArangoSearchViewMigration> = [];
+        operations = operations.concat(viewsToCreate);
+        operations = operations.concat(viewsToDrop)
+        operations = operations.concat(viewsToUpdate)
+
+        const globalViewChange = await calculateRequiredGlobalViewOperation(model.rootEntityTypes,this.db.arangoSearchView(QUICK_SEARCH_GLOBAL_VIEW_NAME));
+        if(globalViewChange){
+            operations.push(globalViewChange);
+        }
+
+
+        return operations;
+
     }
 }

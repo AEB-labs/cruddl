@@ -14,7 +14,8 @@
     "experimentalDecorators": true,
     "lib": [
       "es2016",
-      "esnext.asynciterable"
+      "esnext.asynciterable",
+      "esnext.array"
     ],
     "types": [
       "mocha"
