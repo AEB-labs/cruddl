@@ -327,12 +327,12 @@ export class Field implements ModelComponent {
 
         const keyField = this.declaringType.getField(this.input.referenceKeyField);
         if (!keyField) {
-            context.addMessage(ValidationMessage.error(`"${this.input.referenceKeyField}" is not a field of  "${this.name}".`, this.input.referenceKeyFieldASTNode));
+            context.addMessage(ValidationMessage.error(`Field "${this.declaringType.name}.${this.input.referenceKeyField}" not found.`, this.input.referenceKeyFieldASTNode));
             return;
         }
 
         if (keyField.isSystemField) {
-            context.addMessage(ValidationMessage.error(`"${this.input.referenceKeyField}" is a system field and cannot be used as keyField of a @reference.`, this.input.referenceKeyFieldASTNode));
+            context.addMessage(ValidationMessage.error(`"${this.declaringType.name}.${this.input.referenceKeyField}" is a system field and cannot be used as keyField of a @reference.`, this.input.referenceKeyFieldASTNode));
             return;
         }
 
@@ -344,7 +344,7 @@ export class Field implements ModelComponent {
         const targetKeyField = this.type.keyField;
 
         if (targetKeyField.type !== keyField.type) {
-            context.addMessage(ValidationMessage.error(`The type of the key field "${this.input.referenceKeyField}" ("${keyField.type.name}") must be the same as the type of the @key-annotated field "${this.type.name}.${targetKeyField.name}" ("${targetKeyField.type.name}")`, this.input.referenceKeyFieldASTNode));
+            context.addMessage(ValidationMessage.error(`The type of the keyField "${this.declaringType.name}.${this.input.referenceKeyField}" ("${keyField.type.name}") must be the same as the type of the @key-annotated field "${this.type.name}.${targetKeyField.name}" ("${targetKeyField.type.name}")`, this.input.referenceKeyFieldASTNode));
             return;
         }
 
@@ -353,7 +353,7 @@ export class Field implements ModelComponent {
         // there can only be one reference for each key field
         // each reference just reports an error on itself so that all fields are highlighted
         if (this.declaringType.fields.some(f => f !== this && f.referenceKeyField === keyField)) {
-            context.addMessage(ValidationMessage.error(`There are multiple references declared on the key field "${this.input.referenceKeyField}".`, this.input.referenceKeyFieldASTNode));
+            context.addMessage(ValidationMessage.error(`There are multiple references declared for keyField "${this.input.referenceKeyField}".`, this.input.referenceKeyFieldASTNode));
         }
     }
 

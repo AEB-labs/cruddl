@@ -22,7 +22,7 @@ describe('references with key field', () => {
             type RefStuff @rootEntity {
                 stuff: Stuff @reference(keyField: "stuffKey")
             }
-        `, `"stuffKey" is not a field of  "stuff".`);
+        `, `Field "RefStuff.stuffKey" not found.`);
     });
 
     it('rejects system key field', () => {
@@ -33,7 +33,7 @@ describe('references with key field', () => {
             type RefStuff @rootEntity {
                 stuff: Stuff @reference(keyField: "id")
             }
-        `, `"id" is a system field and cannot be used as keyField of a @reference.`);
+        `, `"RefStuff.id" is a system field and cannot be used as keyField of a @reference.`);
     });
 
     it('rejects ill-typed key field', () => {
@@ -45,7 +45,7 @@ describe('references with key field', () => {
                 stuffKey: Int
                 stuff: Stuff @reference(keyField: "stuffKey")
             }
-        `, `The type of the key field "stuffKey" ("Int") must be the same as the type of the @key-annotated field "Stuff.key" ("String")`);
+        `, `The type of the keyField "RefStuff.stuffKey" ("Int") must be the same as the type of the @key-annotated field "Stuff.key" ("String")`);
     });
 
     it('rejects doubly-used key field field', () => {
@@ -60,8 +60,8 @@ describe('references with key field', () => {
             }
         `);
         expect(result.messages, result.messages.join('\n')).have.lengthOf(2);
-        expect(result.messages[0].message).to.equal(`There are multiple references declared on the key field "stuffKey".`);
-        expect(result.messages[1].message).to.equal(`There are multiple references declared on the key field "stuffKey".`);
+        expect(result.messages[0].message).to.equal(`There are multiple references declared for keyField "stuffKey".`);
+        expect(result.messages[1].message).to.equal(`There are multiple references declared for keyField "stuffKey".`);
     });
 
 });
