@@ -102,7 +102,8 @@ export class CreateEdgeCollectionMigration {
 }
 
 interface CreateArangoSearchViewMigrationConfig{
-    readonly arangoSearchDefinition: ArangoSearchDefinition
+
+    readonly viewName: string
     readonly properties: ArangoSearchViewPropertiesOptions
     readonly collectionSize?: number
 }
@@ -157,7 +158,7 @@ export class UpdateArangoSearchViewMigration{
     }
 
     get viewName(){
-        return this.config.arangoSearchDefinition.viewName;
+        return this.config.viewName;
     }
 
     get isMandatory() {
@@ -174,11 +175,11 @@ export class CreateArangoSearchViewMigration{
     }
 
     get description() {
-        return `create ArangoSearchView ${this.config.arangoSearchDefinition.viewName}`;
+        return `create ArangoSearchView ${this.config.viewName}`;
     }
 
     get id() {
-        return `createArangoSearch/${this.config.arangoSearchDefinition.viewName}`;
+        return `createArangoSearch/${this.config.viewName}`;
     }
 
     get isMandatory() {
