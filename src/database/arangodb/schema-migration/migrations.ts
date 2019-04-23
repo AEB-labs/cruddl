@@ -167,7 +167,7 @@ export class UpdateArangoSearchViewMigration{
 
 export class CreateArangoSearchViewMigration{
     readonly type: 'createArangoSearchView' = 'createArangoSearchView';
-    private config: CreateArangoSearchViewMigrationConfig;
+    readonly config: CreateArangoSearchViewMigrationConfig;
 
     constructor(config: CreateArangoSearchViewMigrationConfig) {
         this.config = config;

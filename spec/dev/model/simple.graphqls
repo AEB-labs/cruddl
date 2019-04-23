@@ -29,7 +29,7 @@ type Skill @valueObject {
 
 "A superhero movie"
 type Movie @rootEntity(quickSearchIndex:true, globalQuickSearch: true) {
-    name: String @quickSearchIndex(searchable: true, languages:[DE])
+    name: String @quickSearchIndex(searchable: true, languages:[EN])
     "All the heroes starring in this movie"
     heroes: [Hero] @relation
     "The real superhero"

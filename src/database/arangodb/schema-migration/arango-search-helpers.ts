@@ -70,7 +70,8 @@ export function calculateRequiredArangoSearchViewDropOperations(views: ArangoSea
 
 
 function getAnalyzerFromQuickSearchLanguage(language: QuickSearchLanguage):string {
-    return "text_" + language
+    // @MSF TODO: fix enum usage
+    return "text_" + language.toLowerCase()
 }
 
 function getPropertiesFromDefinition(definition: ArangoSearchDefinition): ArangoSearchViewPropertiesOptions {
@@ -88,9 +89,8 @@ function getPropertiesFromDefinition(definition: ArangoSearchDefinition): Arango
 
     properties.links![definition.collectionName] = link;
 
-    for(const fieldName in definition.fields){
-        const field = definition.fields[fieldName];
-        link.fields![fieldName] = {
+    for(const field of definition.fields){
+        link.fields![field.name] = {
             analyzers: field.languages.map(getAnalyzerFromQuickSearchLanguage).concat(["identity"])
         }
     }
