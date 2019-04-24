@@ -156,15 +156,15 @@ export class SchemaAnalyzer {
     async getArangoSearchMigrations(model: Model): Promise<ReadonlyArray<CreateArangoSearchViewMigration | DropArangoSearchViewMigration | UpdateArangoSearchViewMigration>> {
         const requiredViews = getRequiredViewsFromModel(model);
         const views = (await this.db.listViews()).map(value => this.db.arangoSearchView(value.name));
-        const viewsToCreate = calculateRequiredArangoSearchViewCreateOperations(views, requiredViews);
+        const viewsToCreate = await calculateRequiredArangoSearchViewCreateOperations(views, requiredViews,this.db);
         const viewsToDrop = calculateRequiredArangoSearchViewDropOperations(views, requiredViews);
-        const viewsToUpdate = await calculateRequiredArangoSearchViewUpdateOperations(views, requiredViews);
+        const viewsToUpdate = await calculateRequiredArangoSearchViewUpdateOperations(views, requiredViews,this.db);
         let operations: Array<CreateArangoSearchViewMigration | DropArangoSearchViewMigration | UpdateArangoSearchViewMigration> = [];
         operations = operations.concat(viewsToCreate);
         operations = operations.concat(viewsToDrop)
         operations = operations.concat(viewsToUpdate)
 
-        const globalViewChange = await calculateRequiredGlobalViewOperation(model.rootEntityTypes,this.db.arangoSearchView(QUICK_SEARCH_GLOBAL_VIEW_NAME));
+        const globalViewChange = await calculateRequiredGlobalViewOperation(model.rootEntityTypes,this.db.arangoSearchView(QUICK_SEARCH_GLOBAL_VIEW_NAME),this.db);
         if(globalViewChange){
             operations.push(globalViewChange);
         }

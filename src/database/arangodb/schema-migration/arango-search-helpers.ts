@@ -17,6 +17,7 @@ import {
 import {QUICK_SEARCH_GLOBAL_VIEW_NAME} from "../../../schema/constants";
 import {FieldConfig, QuickSearchLanguage} from "../../../model/config";
 import * as _ from "lodash";
+import {Database} from "arangojs";
 
 const IDENTITY_ANALYZER = "identity";
 
@@ -25,7 +26,8 @@ export interface ArangoSearchDefinition {
     readonly collectionName: string;
     readonly fields: Field[]
 }
-
+// @MSF TODO: check for/handle arangodb version < 3.4
+// @MSF TODO: find better way to use the interface (was copied from original source)
 interface ArangoSearchViewCollectionLink {
     analyzers?: string[];
     fields?: {
@@ -57,10 +59,13 @@ function getViewsForRootEntity(rootEntity: RootEntityType): ReadonlyArray<Arango
 }
 
 
-export function calculateRequiredArangoSearchViewCreateOperations(views: ArangoSearchView[], definitions: ReadonlyArray<ArangoSearchDefinition>): ReadonlyArray<CreateArangoSearchViewMigration> {
+export async function calculateRequiredArangoSearchViewCreateOperations(views: ArangoSearchView[], definitions: ReadonlyArray<ArangoSearchDefinition>, db: Database): Promise<ReadonlyArray<CreateArangoSearchViewMigration>> {
     let viewsToCreate = definitions.filter(value => !views.some(value1 => value1.name === value.viewName));
-    // @MSF TODO: include collection size
-    return viewsToCreate.map(value => new CreateArangoSearchViewMigration({collectionSize: 0, viewName: value.viewName, properties: getPropertiesFromDefinition(value)}))
+    async function mapToMigration(value: ArangoSearchDefinition): Promise<CreateArangoSearchViewMigration>{
+        const count:number = (await db.collection(value.collectionName).count()).count;
+        return new CreateArangoSearchViewMigration({collectionSize: count, viewName: value.viewName, properties: getPropertiesFromDefinition(value)})
+    }
+    return await Promise.all(viewsToCreate.map(mapToMigration))
 }
 
 export function calculateRequiredArangoSearchViewDropOperations(views: ArangoSearchView[], definitions: ReadonlyArray<ArangoSearchDefinition>): ReadonlyArray<DropArangoSearchViewMigration> {
@@ -96,10 +101,16 @@ function getGlobalSearchViewProperties(globalIndexedEntityTypes: RootEntityType[
 
         for(const field of fields){
             if(link.fields![field.name]){
+                // @MSF TODO: warning if field exists in multiple collections, but there are differences in die indexation
                 link.fields![field.name]!.analyzers = [...new Set(link.fields![field.name]!.analyzers!.concat(field.languages.map(getAnalyzerFromQuickSearchLanguage)))]
             }else{
-                link.fields![field.name] = {
-                    analyzers: field.languages.map(getAnalyzerFromQuickSearchLanguage).concat(["identity"])
+                const analyzers = field.languages.map(getAnalyzerFromQuickSearchLanguage).concat([IDENTITY_ANALYZER]);
+                if(_.isEqual(analyzers,[IDENTITY_ANALYZER])){
+                    link.fields![field.name] = {}
+                }else{
+                    link.fields![field.name] = {
+                        analyzers
+                    }
                 }
             }
 
@@ -125,9 +136,15 @@ function getPropertiesFromDefinition(definition: ArangoSearchDefinition): Arango
     };
 
     for(const field of definition.fields){
-        link.fields![field.name] = {
-            analyzers: field.languages.map(getAnalyzerFromQuickSearchLanguage).concat(["identity"])
+        const analyzers = field.languages.map(getAnalyzerFromQuickSearchLanguage).concat([IDENTITY_ANALYZER]);
+        if(_.isEqual(analyzers,[IDENTITY_ANALYZER])){
+            link.fields![field.name] = {}
+        }else{
+            link.fields![field.name] = {
+                analyzers
+            }
         }
+
     }
 
     properties.links![definition.collectionName] = link;
@@ -143,27 +160,28 @@ function isEqualProperties(defProperties: ArangoSearchViewPropertiesOptions, pro
     return true;
 }
 
-export async function calculateRequiredArangoSearchViewUpdateOperations(views: ArangoSearchView[], definitions: ReadonlyArray<ArangoSearchDefinition>): Promise<ReadonlyArray<UpdateArangoSearchViewMigration>>{
+export async function calculateRequiredArangoSearchViewUpdateOperations(views: ArangoSearchView[], definitions: ReadonlyArray<ArangoSearchDefinition>, db: Database): Promise<ReadonlyArray<UpdateArangoSearchViewMigration>>{
     const viewsWithPossibleUpdate =  views.filter(value => definitions.some(value1 => value1.viewName === value.name));
-    const viewsWithUpdateRequired:[ArangoSearchView, ArangoSearchDefinition, ArangoSearchViewPropertiesOptions][] = [];
+    const viewsWithUpdateRequired:[ArangoSearchView, ArangoSearchDefinition, ArangoSearchViewPropertiesOptions, number][] = [];
     for(let view of viewsWithPossibleUpdate){
         const definiton = definitions.find(value => value.viewName === view.name)!
         const viewProperties = await view.properties();
         let viewFields = viewProperties.links[definiton.collectionName]!.fields!
         const definitionProperties = getPropertiesFromDefinition(definiton);
         if(!isEqualProperties(definitionProperties, viewProperties)){
-            viewsWithUpdateRequired.push([view,definiton,definitionProperties])
+            const count:number = (await db.collection(definiton.collectionName).count()).count;
+            viewsWithUpdateRequired.push([view,definiton,definitionProperties, count])
         }
     }
 
-    // @MSF TODO: include collection size
-     return viewsWithUpdateRequired.map(value => new UpdateArangoSearchViewMigration(
-         {viewName:value[1].viewName,collectionSize:0,properties: value[2]}))
+     return viewsWithUpdateRequired.map(value => {
+         return new UpdateArangoSearchViewMigration({viewName:value[1].viewName,collectionSize:value[3],properties: value[2]})
+     })
 }
 
 
 
-export async function calculateRequiredGlobalViewOperation(entityTypes: ReadonlyArray<RootEntityType>, arangoSearchView: ArangoSearchView):
+export async function calculateRequiredGlobalViewOperation(entityTypes: ReadonlyArray<RootEntityType>, arangoSearchView: ArangoSearchView, db: Database):
         Promise<CreateArangoSearchViewMigration | DropArangoSearchViewMigration | UpdateArangoSearchViewMigration | undefined> {
     const globalIndexedEntityTypes = entityTypes.filter(value => value.arangoSearchConfig.isGlobalIndexed);
     const isArangoViewExists = await arangoSearchView.exists();
@@ -171,6 +189,12 @@ export async function calculateRequiredGlobalViewOperation(entityTypes: Readonly
         return new DropArangoSearchViewMigration({viewName: QUICK_SEARCH_GLOBAL_VIEW_NAME})
     }
     const definitionProperties: ArangoSearchViewPropertiesOptions = getGlobalSearchViewProperties(globalIndexedEntityTypes);
+
+    async function mapToCollectionSize(entityType: RootEntityType): Promise<number>{
+        return (await db.collection(getCollectionNameForRootEntity(entityType)).count()).count
+    }
+
+    const count = (await Promise.all(globalIndexedEntityTypes.map(mapToCollectionSize))).reduce((previousValue, currentValue) => currentValue + previousValue);
 
     if(isArangoViewExists){
         const viewProperties = await arangoSearchView.properties();
@@ -181,7 +205,7 @@ export async function calculateRequiredGlobalViewOperation(entityTypes: Readonly
             return new UpdateArangoSearchViewMigration({
                 properties: definitionProperties,
                 viewName: QUICK_SEARCH_GLOBAL_VIEW_NAME,
-                collectionSize: 0 // @MSF TODO: include collection size
+                collectionSize: count
             })
         }
 
@@ -189,7 +213,7 @@ export async function calculateRequiredGlobalViewOperation(entityTypes: Readonly
         return new CreateArangoSearchViewMigration({
             properties: definitionProperties,
             viewName: QUICK_SEARCH_GLOBAL_VIEW_NAME,
-            collectionSize: 0 // @MSF TODO: include collection size
+            collectionSize: count
         })
     }
 }
