@@ -72,8 +72,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
     private readonly migrationPerformer: MigrationPerformer;
     private readonly cancellationManager: CancellationManager;
     private readonly versionHelper: ArangoDBVersionHelper;
-    private readonly autocreateIndices: boolean;
-    private readonly autoremoveIndices: boolean;
+    private readonly doNonMandatoryMigrations: boolean;
     private readonly arangoExecutionFunction: string;
 
     constructor(private readonly config: ArangoDBConfig, private schemaContext?: SchemaContext) {
@@ -85,8 +84,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         this.arangoExecutionFunction = this.buildUpArangoExecutionFunction();
         // the cancellation manager gets its own database instance so its cancellation requests are not queued
         this.cancellationManager = new CancellationManager({ database: initDatabase(config) });
-        this.autocreateIndices = config.autocreateIndices !== false; // defaults to true
-        this.autoremoveIndices = config.autoremoveIndices !== false; // defaults to true
+        this.doNonMandatoryMigrations = config.doNonMandatoryMigrations !== false; // defaults to true
     }
 
     /**
@@ -627,7 +625,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
     async updateSchema(model: Model): Promise<void> {
         const migrations = await this.getOutstandingMigrations(model);
         for (const migration of migrations) {
-            if (migration.type === 'createIndex' && !this.autocreateIndices || migration.type === 'dropIndex' && !this.autoremoveIndices) {
+            if (!migration.isMandatory ) {
                 this.logger.info(`Skipping migration "${migration.description}" because of configuration`);
                 continue;
             }

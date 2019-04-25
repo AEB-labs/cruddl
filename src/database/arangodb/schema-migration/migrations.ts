@@ -162,7 +162,7 @@ export class UpdateArangoSearchViewMigration{
     }
 
     get isMandatory() {
-        return true;
+        return false;
     }
 }
 
@@ -183,6 +183,6 @@ export class CreateArangoSearchViewMigration{
     }
 
     get isMandatory() {
-        return true;
+        return false;
     }
 }

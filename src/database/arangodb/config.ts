@@ -33,15 +33,9 @@ export interface ArangoDBConfig {
     readonly databaseName: string;
 
     /**
-     * Specifies if indices defined in the model should be created in updateSchema(). Defaults to true.
+     * Specifies if non mandatory migrations should be executed automatically. Defaults to true.
      */
-    readonly autocreateIndices?: boolean;
-
-    /**
-     * Specifies if indices that are not defined in the model (but are on collections of root entities defined in the
-     * model) should be removed in updateSchema(). Defaults to true.
-     */
-    readonly autoremoveIndices?: boolean;
+    readonly doNonMandatoryMigrations?: boolean;
 
     /**
      * The memory limit in bytes to impose on ArangoDB queries (does not apply to the whole ArangoDB transaction).

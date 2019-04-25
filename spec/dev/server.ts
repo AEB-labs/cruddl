@@ -29,8 +29,7 @@ export async function start() {
             url: databaseURL,
             password: 'hallo',
             user: 'root',
-            autocreateIndices: true,
-            autoremoveIndices: true,
+            doNonMandatoryMigrations: true,
             enableExperimentalProjectionIndirection: true,
             experimentalProjectionIndirectionTypeNames: ['BusinessMessage']
         }, { loggerProvider });

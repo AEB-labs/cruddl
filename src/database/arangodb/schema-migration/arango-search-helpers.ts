@@ -75,7 +75,6 @@ export function calculateRequiredArangoSearchViewDropOperations(views: ArangoSea
 
 
 function getAnalyzerFromQuickSearchLanguage(language: QuickSearchLanguage):string {
-    // @MSF TODO: fix enum usage
     return "text_" + language.toLowerCase()
 }
 
@@ -101,7 +100,6 @@ function getGlobalSearchViewProperties(globalIndexedEntityTypes: RootEntityType[
 
         for(const field of fields){
             if(link.fields![field.name]){
-                // @MSF TODO: warning if field exists in multiple collections, but there are differences in die indexation
                 link.fields![field.name]!.analyzers = [...new Set(link.fields![field.name]!.analyzers!.concat(field.languages.map(getAnalyzerFromQuickSearchLanguage)))]
             }else{
                 const analyzers = field.languages.map(getAnalyzerFromQuickSearchLanguage).concat([IDENTITY_ANALYZER]);
@@ -156,7 +154,6 @@ function isEqualProperties(defProperties: ArangoSearchViewPropertiesOptions, pro
     if(!_.isEqual(defProperties.links, properties.links)){
         return false
     }
-    // @MSF TODO: check other properties
     return true;
 }
 

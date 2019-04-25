@@ -60,12 +60,12 @@ export class MigrationPerformer {
 
     private async createArangoSearchView(migration: CreateArangoSearchViewMigration) {
         await this.db.arangoSearchView(migration.config.viewName).create()
-        // @MSF TODO: set properties during creation (somehow didnt work right away)
-        await this.db.arangoSearchView(migration.config.viewName).replaceProperties(migration.config.properties)
+        // Setting the properties during creation does not work for some reason
+        await this.db.arangoSearchView(migration.config.viewName).setProperties(migration.config.properties)
     }
 
     private async updateArangoSearchView(migration: UpdateArangoSearchViewMigration) {
-        await this.db.arangoSearchView(migration.config.viewName).replaceProperties(migration.config.properties)
+        await this.db.arangoSearchView(migration.config.viewName).setProperties(migration.config.properties)
     }
 
     private async dropArangoSearchView(migration: DropArangoSearchViewMigration) {
