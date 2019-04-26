@@ -2,7 +2,7 @@ import memorize from 'memorize-decorator';
 import { Namespace, RootEntityType } from '../model';
 import { EntitiesQueryNode, FirstOfListQueryNode, ObjectQueryNode, QueryNode } from '../query-tree';
 import { QUERY_TYPE } from '../schema/constants';
-import { getAllEntitiesFieldName, getMetaFieldName } from '../schema/names';
+import {getAllEntitiesFieldName, getMetaFieldName, getQuickSearchEntitiesFieldName} from '../schema/names';
 import { decapitalize, flatMap } from '../utils/utils';
 import { FilterAugmentation } from './filter-augmentation';
 import { MetaFirstAugmentation } from './limit-augmentation';
@@ -11,6 +11,9 @@ import { MetaTypeGenerator } from './meta-type-generator';
 import { OutputTypeGenerator } from './output-type-generator';
 import { QueryNodeField, QueryNodeListType, QueryNodeNonNullType, QueryNodeObjectType } from './query-node-object-type';
 import { getArgumentsForUniqueFields, getEntitiesByUniqueFieldQuery } from './utils/entities-by-unique-field';
+import {QuickSearchAugmentation} from "./quick-search-augmentation";
+
+
 
 export class QueryTypeGenerator {
     constructor(
@@ -18,7 +21,8 @@ export class QueryTypeGenerator {
         private readonly listAugmentation: ListAugmentation,
         private readonly filterAugmentation: FilterAugmentation,
         private readonly metaFirstAugmentation: MetaFirstAugmentation,
-        private readonly metaTypeGenerator: MetaTypeGenerator
+        private readonly metaTypeGenerator: MetaTypeGenerator,
+        private readonly quickSearchAugmentation: QuickSearchAugmentation
     ) {
 
     }
@@ -31,13 +35,19 @@ export class QueryTypeGenerator {
             .filter(namespace => namespace.allRootEntityTypes.length > 0)
             .map(namespace => this.getNamespaceField(namespace));
 
+        const fields = [
+            ...namespaceFields,
+            ...flatMap(namespace.rootEntityTypes, type => this.getFields(type))
+        ];
+
+        if(namespace.rootEntityTypes.some(value => value.arangoSearchConfig.isGlobalIndexed)){
+            fields.push(this.getQuickSearchGlobalField(namespace.rootEntityTypes))
+        }
+
         return {
             name: namespace.pascalCasePath + QUERY_TYPE,
             description: `The Query type for ${namespaceDesc}`,
-            fields: [
-                ...namespaceFields,
-                ...flatMap(namespace.rootEntityTypes, type => this.getFields(type)),
-            ]
+            fields: fields
         };
     }
 
@@ -51,11 +61,15 @@ export class QueryTypeGenerator {
     }
 
     private getFields(rootEntityType: RootEntityType): ReadonlyArray<QueryNodeField> {
-        return [
+        const queryNodeFields = [
             this.getSingleRootEntityField(rootEntityType),
             this.getAllRootEntitiesField(rootEntityType),
             this.getAllRootEntitiesMetaField(rootEntityType)
         ];
+        if(rootEntityType.arangoSearchConfig.isIndexed){
+            queryNodeFields.push(this.getQuickSearchEntitiesField(rootEntityType))
+        }
+        return queryNodeFields;
     }
 
     private getSingleRootEntityField(rootEntityType: RootEntityType): QueryNodeField {
@@ -76,6 +90,21 @@ export class QueryTypeGenerator {
             description,
             resolve: (_, args) => this.getSingleRootEntityNode(rootEntityType, args)
         };
+    }
+
+    private getGlobalQuickSearchFieldName(): string {
+        return "quickSearchGlobal" // @MSF TODO: constant
+    }
+
+    private getQuickSearchGlobalField(rootEntityTypes: ReadonlyArray<RootEntityType>): QueryNodeField {
+        const fieldConfig = ({
+            name: this.getGlobalQuickSearchFieldName(),
+            type: new QueryNodeListType(new QueryNodeNonNullType(this.outputTypeGenerator.generate(rootEntityTypes[0]))),
+            description: "global search description", // @MSF TODO: global quickSearch description
+            resolve: () => this.getAllRootEntitiesNode(rootEntityTypes[0]) // @MSF TODO: resolver
+        })
+
+        return fieldConfig;
     }
 
     private getSingleRootEntityNode(rootEntityType: RootEntityType, args: { [name: string]: any }): QueryNode {
@@ -109,5 +138,16 @@ export class QueryTypeGenerator {
             resolve: () => this.getAllRootEntitiesNode(rootEntityType)
         });
         return this.metaFirstAugmentation.augment(this.filterAugmentation.augment(fieldConfig, rootEntityType));
+    }
+
+    private getQuickSearchEntitiesField(rootEntityType: RootEntityType): QueryNodeField {
+        const fieldConfig = ({
+            name: getQuickSearchEntitiesFieldName(rootEntityType.name),
+            type: new QueryNodeListType(new QueryNodeNonNullType(this.outputTypeGenerator.generate(rootEntityType))),
+            description: `Searches for ${rootEntityType.pluralName} using QuickSearch.`,
+            resolve: () => this.getAllRootEntitiesNode(rootEntityType) // @MSF TODO: resolver
+        })
+
+        return this.listAugmentation.augment(this.quickSearchAugmentation.augment(fieldConfig, rootEntityType), rootEntityType);
     }
 }

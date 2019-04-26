@@ -35,6 +35,7 @@ export const CREATE_ENTITY_FIELD_PREFIX = 'create';
 export const CREATE_ENTITY_TYPE_SUFFIX = 'Input';
 export const UPDATE_ENTITY_FIELD_PREFIX = 'update';
 export const UPDATE_ALL_ENTITIES_FIELD_PREFIX = 'updateAll';
+export const QUICK_SEARCH_ENTITIES_FIELD_PREFIX = "quickSearch"
 export const DELETE_ENTITY_FIELD_PREFIX = 'delete';
 export const DELETE_ALL_ENTITIES_FIELD_PREFIX = 'deleteAll';
 export const ADD_CHILD_ENTITIES_FIELD_PREFIX = 'add';
@@ -58,6 +59,8 @@ export const ORDER_BY_DESC_SUFFIX = '_DESC';
 
 export const FILTER_ARG = 'filter';
 export const ORDER_BY_ARG = 'orderBy';
+
+export const QUICK_SEARCH_FILTER_ARG = "quickSearchFilter"
 
 export const CURSOR_FIELD = '_cursor';
 export const SKIP_ARG = 'skip';

@@ -10,6 +10,7 @@ import { createFieldNode } from '../field-nodes';
 import { TypedInputFieldBase } from '../typed-input-object-type';
 import { FILTER_DESCRIPTIONS, OPERATORS_WITH_LIST_OPERAND, Quantifier } from './constants';
 import { FilterObjectType } from './generator';
+import {QuickSearchFilterObjectType} from "../quick-search-filter-input-types/generator";
 
 export interface FilterField extends TypedInputFieldBase<FilterField> {
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode
@@ -122,7 +123,7 @@ export class NestedObjectFilterField implements FilterField {
 
     constructor(
         public readonly field: Field,
-        public readonly inputType: FilterObjectType
+        public readonly inputType: FilterObjectType | QuickSearchFilterObjectType
     ) {
         this.name = this.field.name;
         this.description = `Checks if \`${this.field.name}\` is not null, and allows to filter based on its fields.`;
@@ -142,7 +143,7 @@ export class EntityExtensionFilterField implements FilterField {
 
     constructor(
         public readonly field: Field,
-        public readonly inputType: FilterObjectType
+        public readonly inputType: FilterObjectType | QuickSearchFilterObjectType
     ) {
         this.name = this.field.name;
         this.description = `Allows to filter on the fields of \`${this.field.name}\`.\n\nNote that \`${this.field.name}\` is an entity extension and thus can never be \`null\`, so specifying \`null\` to this filter field has no effect.`;
@@ -168,7 +169,7 @@ export class AndFilterField implements FilterField {
     readonly inputType: GraphQLInputType;
 
     constructor(
-        public readonly filterType: FilterObjectType) {
+        public readonly filterType: FilterObjectType | QuickSearchFilterObjectType) {
         this.name = AND_FILTER_FIELD;
         this.description = `A field that checks if all filters in the list apply\n\nIf the list is empty, this filter applies to all objects.`;
         this.inputType = new GraphQLList(new GraphQLNonNull(filterType.getInputType()));
@@ -190,7 +191,7 @@ export class OrFilterField implements FilterField {
     public readonly inputType: GraphQLInputType;
 
     constructor(
-        public readonly filterType: FilterObjectType) {
+        public readonly filterType: FilterObjectType | QuickSearchFilterObjectType) {
         this.name = OR_FILTER_FIELD;
         this.description = `A field that checks if any of the filters in the list apply.\n\nIf the list is empty, this filter applies to no objects.\n\nNote that only the items in the list *or*-combined; this complete \`OR\` field is *and*-combined with outer fields in the parent filter type.`;
         this.inputType = new GraphQLList(new GraphQLNonNull(filterType.getInputType()));

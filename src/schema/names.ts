@@ -1,14 +1,27 @@
 import * as pluralize from 'pluralize';
 import { capitalize } from '../utils/utils';
 import {
-    ADD_CHILD_ENTITIES_FIELD_PREFIX, ADD_EDGES_FIELD_PREFIX, ALL_ENTITIES_FIELD_PREFIX, CREATE_ENTITY_FIELD_PREFIX,
-    CREATE_RELATED_ENTITY_FIELD_PREFIX, DELETE_ALL_ENTITIES_FIELD_PREFIX, DELETE_ENTITY_FIELD_PREFIX,
-    REMOVE_CHILD_ENTITIES_FIELD_PREFIX, REMOVE_EDGES_FIELD_PREFIX, UPDATE_ALL_ENTITIES_FIELD_PREFIX,
-    UPDATE_CHILD_ENTITIES_FIELD_PREFIX, UPDATE_ENTITY_FIELD_PREFIX
+    ADD_CHILD_ENTITIES_FIELD_PREFIX,
+    ADD_EDGES_FIELD_PREFIX,
+    ALL_ENTITIES_FIELD_PREFIX,
+    CREATE_ENTITY_FIELD_PREFIX,
+    CREATE_RELATED_ENTITY_FIELD_PREFIX,
+    DELETE_ALL_ENTITIES_FIELD_PREFIX,
+    DELETE_ENTITY_FIELD_PREFIX,
+    QUICK_SEARCH_ENTITIES_FIELD_PREFIX,
+    REMOVE_CHILD_ENTITIES_FIELD_PREFIX,
+    REMOVE_EDGES_FIELD_PREFIX,
+    UPDATE_ALL_ENTITIES_FIELD_PREFIX,
+    UPDATE_CHILD_ENTITIES_FIELD_PREFIX,
+    UPDATE_ENTITY_FIELD_PREFIX
 } from './constants';
 
 export function getAllEntitiesFieldName(entityName: string) {
     return ALL_ENTITIES_FIELD_PREFIX + pluralize(entityName);
+}
+
+export function getQuickSearchEntitiesFieldName(entityName: string) {
+    return QUICK_SEARCH_ENTITIES_FIELD_PREFIX + pluralize(entityName);
 }
 
 export function getCreateEntityFieldName(entityName: string) {
@@ -61,6 +74,10 @@ export function getCreateRelatedEntityFieldName(fieldName: string) {
 
 export function getFilterTypeName(typeName: string) {
     return `${typeName}Filter`;
+}
+
+export function getQuickSearchFilterTypeName(typeName: string) {
+    return `${typeName}QuickSearchFilter`;
 }
 
 export function getOrderByTypeName(typeName: string) {

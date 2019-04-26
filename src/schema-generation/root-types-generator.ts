@@ -14,22 +14,27 @@ import { OutputTypeGenerator } from './output-type-generator';
 import { QueryNodeObjectType, QueryNodeObjectTypeConverter } from './query-node-object-type';
 import { QueryTypeGenerator } from './query-type-generator';
 import { UpdateInputTypeGenerator } from './update-input-types';
+import {QuickSearchAugmentation} from "./quick-search-augmentation";
+import {QuickSearchFilterTypeGenerator} from "./quick-search-filter-input-types/generator";
 
 export class RootTypesGenerator {
     private readonly enumTypeGenerator = new EnumTypeGenerator();
     private readonly filterTypeGenerator = new FilterTypeGenerator(this.enumTypeGenerator);
+    private readonly quickSearchFilterTypeGenerator =  new QuickSearchFilterTypeGenerator(this.enumTypeGenerator);
     private readonly orderByEnumGenerator = new OrderByEnumGenerator();
     private readonly orderByAugmentation = new OrderByAndPaginationAugmentation(this.orderByEnumGenerator);
     private readonly filterAugmentation = new FilterAugmentation(this.filterTypeGenerator);
     private readonly listAugmentation = new ListAugmentation(this.filterAugmentation, this.orderByAugmentation);
     private readonly metaFirstAugmentation = new MetaFirstAugmentation();
+    private readonly quickSearchAugmentation = new QuickSearchAugmentation(this.quickSearchFilterTypeGenerator);
     private readonly metaTypeGenerator = new MetaTypeGenerator();
     private readonly outputTypeGenerator = new OutputTypeGenerator(this.listAugmentation, this.filterAugmentation,
         this.enumTypeGenerator, this.orderByEnumGenerator, this.metaTypeGenerator);
     private readonly createTypeGenerator = new CreateInputTypeGenerator(this.enumTypeGenerator);
     private readonly updateTypeGenerator = new UpdateInputTypeGenerator(this.enumTypeGenerator, this.createTypeGenerator);
     private readonly queryTypeGenerator = new QueryTypeGenerator(this.outputTypeGenerator, this.listAugmentation,
-        this.filterAugmentation, this.metaFirstAugmentation, this.metaTypeGenerator);
+        this.filterAugmentation, this.metaFirstAugmentation, this.metaTypeGenerator, this.quickSearchAugmentation);
+
     private readonly mutationTypeGenerator = new MutationTypeGenerator(this.outputTypeGenerator, this.createTypeGenerator,
         this.updateTypeGenerator, this.listAugmentation);
 
