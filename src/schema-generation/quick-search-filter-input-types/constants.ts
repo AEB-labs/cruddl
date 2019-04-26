@@ -7,6 +7,7 @@ import {
     STRING_FILTER_FIELDS
 } from "../filter-input-types/constants";
 import {
+    INPUT_FIELD_CONTAINS_ANY_WORD,
     INPUT_FIELD_CONTAINS,
     INPUT_FIELD_ENDS_WITH,
     INPUT_FIELD_EQUAL, INPUT_FIELD_EVERY,
@@ -20,7 +21,7 @@ import {
     INPUT_FIELD_NOT_ENDS_WITH,
     INPUT_FIELD_NOT_IN, INPUT_FIELD_NOT_LIKE,
     INPUT_FIELD_NOT_STARTS_WITH, INPUT_FIELD_SOME,
-    INPUT_FIELD_STARTS_WITH
+    INPUT_FIELD_STARTS_WITH, INPUT_FIELD_NOT_CONTAINS_ANY_WORD
 } from "../../schema/constants";
 import {GraphQLBoolean, GraphQLFloat, GraphQLID, GraphQLInt, GraphQLString} from "graphql";
 import {GraphQLDateTime} from "../../schema/scalars/date-time";
@@ -42,12 +43,18 @@ export const QUICK_SEARCH_FILTER_OPERATORS: { [suffix: string]: (fieldNode: Quer
     [INPUT_FIELD_NOT_STARTS_WITH]: binaryNotOp(BinaryOperator.STARTS_WITH),
     [INPUT_FIELD_ENDS_WITH]: binaryOp(BinaryOperator.ENDS_WITH),
     [INPUT_FIELD_NOT_ENDS_WITH]: binaryNotOp(BinaryOperator.ENDS_WITH),
+    [INPUT_FIELD_CONTAINS_ANY_WORD]: binaryOp(BinaryOperator.CONTAINS_ANY_WORD),
+    [INPUT_FIELD_NOT_CONTAINS_ANY_WORD]: binaryNotOp(BinaryOperator.CONTAINS_ANY_WORD),
 };
 
 export const STRING_QUICK_SEARCH_FILTER_FIELDS = [
     INPUT_FIELD_EQUAL, INPUT_FIELD_NOT, INPUT_FIELD_IN, INPUT_FIELD_NOT_IN,
     INPUT_FIELD_STARTS_WITH, INPUT_FIELD_NOT_STARTS_WITH
 ];
+
+export const STRING_TEXT_ANALYZER_FILTER_FIELDS = [
+    INPUT_FIELD_CONTAINS_ANY_WORD, INPUT_FIELD_NOT_CONTAINS_ANY_WORD
+]
 // @MSF TODO: Text analyzer fields
 
 

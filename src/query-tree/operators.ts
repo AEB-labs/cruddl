@@ -113,6 +113,7 @@ export enum BinaryOperator {
     CONTAINS,
     STARTS_WITH,
     ENDS_WITH,
+    CONTAINS_ANY_WORD,
 
     /**
      * Comparison for string using placeholders (% for arbitrary char sequences, _ for a single character).

@@ -5,7 +5,7 @@ type Hero @rootEntity(quickSearchIndex:true, globalQuickSearch: true) {
     age: Int @defaultValue(value: 42)
     nickNames: [String] @quickSearchIndex(searchable: true)
     movies: [Movie] @relation(inverseOf: "heroes")
-    skills: [Skill]
+    skills: [Skill] @quickSearchIndex
     suit: Suit
     morality: Morality
     country: Country @reference
@@ -21,7 +21,7 @@ type Mission @childEntity {
 
 "A special skill of a superhero"
 type Skill @valueObject {
-    description: String
+    description: String @quickSearchIndex
     "A value between 0 and 11"
     strength: Float
     skills: [Skill]
