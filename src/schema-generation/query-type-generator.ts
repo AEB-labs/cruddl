@@ -43,6 +43,7 @@ export class QueryTypeGenerator {
 
         if(namespace.rootEntityTypes.some(value => value.arangoSearchConfig.isGlobalIndexed)){
             fields.push(this.getQuickSearchGlobalField(namespace.rootEntityTypes))
+            fields.push(this.getQuickSearchGlobalFieldMeta(namespace.rootEntityTypes))
         }
 
         return {
@@ -69,6 +70,7 @@ export class QueryTypeGenerator {
         ];
         if(rootEntityType.arangoSearchConfig.isIndexed){
             queryNodeFields.push(this.getQuickSearchEntitiesField(rootEntityType))
+            queryNodeFields.push(this.getQuickSearchEntitiesFieldMeta(rootEntityType))
         }
         return queryNodeFields;
     }
@@ -98,15 +100,29 @@ export class QueryTypeGenerator {
     }
 
     private getQuickSearchGlobalField(rootEntityTypes: ReadonlyArray<RootEntityType>): QueryNodeField {
-        // @MSF TODO: integrate qsGlobalField in Schema
         const fieldConfig = ({
             name: this.getGlobalQuickSearchFieldName(),
             type: new QueryNodeListType(new QueryNodeNonNullType(this.outputTypeGenerator.generateQuickSearchGlobalType(rootEntityTypes))),
-            description: "global search description", // @MSF TODO: global quickSearch description
+            description: "global search description", // @MSF TODO: description
             resolve: () => this.getAllRootEntitiesNode(rootEntityTypes[0]) // @MSF TODO: resolver
         })
 
         return (this.quickSearchAugmentation.augmentGlobal(fieldConfig, rootEntityTypes));
+    }
+
+    private getQuickSearchGlobalFieldMeta(rootEntityTypes: ReadonlyArray<RootEntityType>): QueryNodeField {
+        const metaType = this.metaTypeGenerator.generate();
+        const fieldConfig = ({
+            name: getMetaFieldName(this.getGlobalQuickSearchFieldName()),
+            type: new QueryNodeNonNullType(metaType),
+            description: `description`, // @MSF TODO: description
+            // meta fields should never be null. Also, this is crucial for performance. Without it, we would introduce
+            // an unnecessary variable with the collection contents (which is slow) and we would to an equality check of
+            // a collection against NULL which is deadly (v8 evaluation)
+            skipNullCheck: true,
+            resolve: () => this.getAllRootEntitiesNode(rootEntityTypes[0]) // @MSF TODO: resolver
+        });
+        return this.metaFirstAugmentation.augment(this.quickSearchAugmentation.augmentGlobal(fieldConfig, rootEntityTypes));
     }
 
     private getSingleRootEntityNode(rootEntityType: RootEntityType, args: { [name: string]: any }): QueryNode {
@@ -151,5 +167,20 @@ export class QueryTypeGenerator {
         })
 
         return this.listAugmentation.augment(this.quickSearchAugmentation.augment(fieldConfig, rootEntityType), rootEntityType);
+    }
+
+    private getQuickSearchEntitiesFieldMeta(rootEntityType: RootEntityType): QueryNodeField {
+        const metaType = this.metaTypeGenerator.generate();
+        const fieldConfig = ({
+            name: getMetaFieldName(getQuickSearchEntitiesFieldName(rootEntityType.name)),
+            type: new QueryNodeNonNullType(metaType),
+            description: rootEntityType.description, // @MSF TODO: description
+            // meta fields should never be null. Also, this is crucial for performance. Without it, we would introduce
+            // an unnecessary variable with the collection contents (which is slow) and we would to an equality check of
+            // a collection against NULL which is deadly (v8 evaluation)
+            skipNullCheck: true,
+            resolve: () => this.getAllRootEntitiesNode(rootEntityType) // @MSF TODO: resolver
+        });
+        return this.metaFirstAugmentation.augment(this.filterAugmentation.augment(this.quickSearchAugmentation.augment(fieldConfig, rootEntityType),rootEntityType));
     }
 }

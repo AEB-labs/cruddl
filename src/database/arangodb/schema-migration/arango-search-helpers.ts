@@ -27,6 +27,7 @@ export interface ArangoSearchDefinition {
     readonly fields: Field[]
 }
 // @MSF TODO: check for/handle arangodb version < 3.4
+// @MSF TODO: error if migration was not completed yet
 // @MSF TODO: find better way to use the interface (was copied from original source)
 interface ArangoSearchViewCollectionLink {
     analyzers?: string[];

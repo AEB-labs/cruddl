@@ -34,7 +34,7 @@ export class QuickSearchAugmentation {
         }
         const quickSearchFilterable = this.augmentQuickSearchFilter(schemaField, itemType)
         if(itemType.fields.some(value => value.isSearchable)){
-            const quickSearchSearchable = this.augmentQuickSearchSearch(schemaField)
+            const quickSearchSearchable = this.augmentQuickSearchSearch(quickSearchFilterable)
             return quickSearchSearchable;
         }else{
             return quickSearchFilterable;
@@ -46,7 +46,6 @@ export class QuickSearchAugmentation {
 
     augmentQuickSearchFilter(schemaField: QueryNodeField, itemType: RootEntityType): QueryNodeField {
         const quickSearchType = this.quickSearchTypeGenerator.generate(itemType);
-        // @MSF TODO Add Search Field
         return {
             ...schemaField,
             args: {
