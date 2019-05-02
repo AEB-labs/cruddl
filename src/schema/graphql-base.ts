@@ -18,7 +18,14 @@ export const DIRECTIVES: DocumentNode = gql`
     directive @relation(inverseOf: String) on FIELD_DEFINITION
     
     "Declares a field to reference another root entity via its @key"
-    directive @reference on FIELD_DEFINITION
+    directive @reference(
+        """
+        The field (within the same type declaration) that contains the reference key
+        
+        If this argument is not specified, the key will not be accessible via the GraphQL API, and an implicit key field called like this reference field will be used to hold the key in the database.
+        """
+        keyField: String
+    ) on FIELD_DEFINITION
     
     "Declares a field as business key which is used in @reference fields"
     directive @key on FIELD_DEFINITION

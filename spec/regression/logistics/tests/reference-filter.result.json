@@ -1,0 +1,44 @@
+{
+  "filterKeyField": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000522",
+          "destinationCountryISOCode": "US",
+          "destinationCountry": {
+            "isoCode": "US"
+          }
+        }
+      ]
+    }
+  },
+  "filterKeyFieldMissingReference": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000521",
+          "destinationCountryISOCode": "XX",
+          "destinationCountry": null
+        }
+      ]
+    }
+  },
+  "filterReference": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000522",
+          "destinationCountryISOCode": "US",
+          "destinationCountry": {
+            "isoCode": "US"
+          }
+        }
+      ]
+    }
+  },
+  "filterMissingReference": {
+    "data": {
+      "allDeliveries": []
+    }
+  }
+}

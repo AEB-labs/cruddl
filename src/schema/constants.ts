@@ -25,6 +25,7 @@ export const QUICK_SEARCH_FORBIDDEN_VIEW_NAMES = [QUICK_SEARCH_GLOBAL_VIEW_NAME]
 
 
 export const INVERSE_OF_ARG = 'inverseOf';
+export const KEY_FIELD_ARG = 'keyField';
 
 export const QUERY_TYPE = 'Query';
 export const MUTATION_TYPE = 'Mutation';

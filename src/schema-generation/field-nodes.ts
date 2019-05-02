@@ -50,7 +50,7 @@ function createTo1ReferenceNode(field: Field, sourceNode: QueryNode): QueryNode 
     const referencedEntityType = field.type as RootEntityType;
     const keyFieldInReferencedEntity = referencedEntityType.getKeyFieldOrThrow();
 
-    const referenceKeyNode = new FieldQueryNode(sourceNode, field);
+    const referenceKeyNode = new FieldQueryNode(sourceNode, field.getReferenceKeyFieldOrThrow());
     const listItemVar = new VariableQueryNode(field.name);
     const itemKeyNode = createFieldNode(keyFieldInReferencedEntity, listItemVar);
     const equalFilterNode = new BinaryOperationQueryNode(

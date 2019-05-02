@@ -29,7 +29,7 @@ import {
     INDEX_DIRECTIVE,
     INDICES_ARG,
     INVERSE_OF_ARG,
-    KEY_FIELD_DIRECTIVE,
+   KEY_FIELD_ARG, KEY_FIELD_DIRECTIVE,
     NAMESPACE_DIRECTIVE,
     NAMESPACE_NAME_ARG,
     NAMESPACE_SEPARATOR,
@@ -320,6 +320,8 @@ function getLanguages(fieldNode: FieldDefinitionNode, context: ValidationContext
 
 function createFieldInput(fieldNode: FieldDefinitionNode, context: ValidationContext): FieldConfig {
     const inverseOfASTNode = getInverseOfASTNode(fieldNode, context);
+    const referenceDirectiveASTNode = findDirectiveWithName(fieldNode, REFERENCE_DIRECTIVE);
+    const referenceKeyFieldASTNode = getReferenceKeyFieldASTNode(fieldNode, context);
     return {
         name: fieldNode.name.value,
         description: fieldNode.description ? fieldNode.description.value : undefined,
@@ -330,7 +332,9 @@ function createFieldInput(fieldNode: FieldDefinitionNode, context: ValidationCon
         inverseOfASTNode,
         inverseOfFieldName: inverseOfASTNode ? inverseOfASTNode.value : undefined,
         isList: fieldNode.type.kind === LIST_TYPE || (fieldNode.type.kind === NON_NULL_TYPE && fieldNode.type.type.kind === LIST_TYPE),
-        isReference: !!findDirectiveWithName(fieldNode, REFERENCE_DIRECTIVE),
+        isReference: !!referenceDirectiveASTNode,
+        referenceKeyField: referenceKeyFieldASTNode ? referenceKeyFieldASTNode.value : undefined,
+        referenceKeyFieldASTNode,
         isRelation: !!findDirectiveWithName(fieldNode, RELATION_DIRECTIVE),
         permissions: getPermissions(fieldNode, context),
         typeName: getTypeNameIgnoringNonNullAndList(fieldNode.type),
@@ -563,6 +567,23 @@ function getInverseOfASTNode(fieldNode: FieldDefinitionNode, context: Validation
         return undefined;
     }
     return inverseOfArg.value;
+}
+
+function getReferenceKeyFieldASTNode(fieldNode: FieldDefinitionNode, context: ValidationContext): StringValueNode | undefined {
+    const relationDirective = findDirectiveWithName(fieldNode, REFERENCE_DIRECTIVE);
+    if (!relationDirective) {
+        return undefined;
+    }
+    const keyFieldArg = getNodeByName(relationDirective.arguments, KEY_FIELD_ARG);
+    if (!keyFieldArg) {
+        return undefined;
+    }
+    if (keyFieldArg.value.kind !== STRING) {
+        // should be caught by the graphql validator anyway...
+        context.addMessage(ValidationMessage.error(`The argument "${KEY_FIELD_ARG}" must be of type String`, keyFieldArg.value.loc));
+        return undefined;
+    }
+    return keyFieldArg.value;
 }
 
 function extractPermissionProfiles(parsedProject: ParsedProject, validationContext: ValidationContext): ReadonlyArray<NamespacedPermissionProfileConfigMap> {

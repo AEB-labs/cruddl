@@ -8,7 +8,8 @@ type Hero @rootEntity(quickSearchIndex:true, globalQuickSearch: true) {
     skills: [Skill] @quickSearchIndex
     suit: Suit
     morality: Morality
-    country: Country @reference
+    countryISOCode: String
+    country: Country @reference(keyField: "countryISOCode")
     missions: [Mission]
     info: JSON
 }
@@ -34,6 +35,7 @@ type Movie @rootEntity(quickSearchIndex:true, globalQuickSearch: true) {
     heroes: [Hero] @relation
     "The real superhero"
     director: Director @relation
+    publisher: Publisher @reference
 }
 
 "A movie director"
@@ -50,6 +52,12 @@ type Suit @entityExtension {
 
 type Country @rootEntity {
     isoCode: String @key
+    name: String
+}
+
+type Publisher @rootEntity {
+    identCode: String @key
+    name: String
 }
 
 enum Morality {

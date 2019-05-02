@@ -10,13 +10,16 @@ export interface CreateInputField extends TypedInputFieldBase<CreateInputField> 
     collectAffectedFields(value: AnyValue, fields: Set<Field>): void;
 
     appliesToMissingFields(): boolean;
+
+    validateInContext(value: AnyValue, objectValue: PlainObject): void;
 }
 
 export class BasicCreateInputField implements CreateInputField {
     constructor(
         public readonly field: Field,
         public _description: string | undefined,
-        public readonly inputType: GraphQLInputType | CreateObjectInputType
+        public readonly inputType: GraphQLInputType | CreateObjectInputType,
+        public readonly deprecationReason?: string
     ) {
         if (!_description) {
             this._description = this.field.description;
@@ -60,6 +63,10 @@ export class BasicCreateInputField implements CreateInputField {
     appliesToMissingFields() {
         return this.field.hasDefaultValue;
     }
+
+    validateInContext(value: AnyValue, objectValue: PlainObject) {
+
+    }
 }
 
 export class BasicListCreateInputField extends BasicCreateInputField {
@@ -98,6 +105,29 @@ export class CreateObjectInputField extends BasicCreateInputField {
         }
 
         this.objectInputType.collectAffectedFields(value, fields);
+    }
+}
+export class CreateReferenceInputField extends BasicCreateInputField {
+    constructor(
+        field: Field,
+        private readonly _name: string,
+        description: string | undefined,
+        inputType: GraphQLInputType | CreateObjectInputType,
+        deprecationReason?: string
+    ) {
+        super(field, description, inputType, deprecationReason)
+    }
+
+    get name() {
+        return this._name;
+    }
+
+    validateInContext(value: AnyValue, objectValue: PlainObject) {
+        // if there are two fields to specify the reference key, users must only specify one
+        // if this is the legacy field (named after the reference field), complain if the key field is set, too
+        if (this.field.name !== this.name && this.field.name in objectValue) {
+            throw new Error(`Cannot set both "${this.field.name}" and "${this.name}" because they refer to the same reference`);
+        }
     }
 }
 

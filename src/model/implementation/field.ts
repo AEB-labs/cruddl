@@ -1,4 +1,5 @@
 import {DirectiveNode, FieldDefinitionNode} from 'graphql';
+import memorize from 'memorize-decorator';
 import { CALC_MUTATIONS_OPERATORS } from '../../schema/constants';
 import {CalcMutationsOperator, FieldConfig, QuickSearchLanguage, TypeKind} from '../config';
 import { ValidationMessage } from '../validation';
@@ -142,6 +143,38 @@ export class Field implements ModelComponent {
         return this.getRelationSideOrThrow().relation;
     }
 
+    /**
+     * The field that holds the key if this is a reference
+     *
+     * If this is a reference without an explicit key field, returns this (reference) field
+     */
+    @memorize()
+    get referenceKeyField(): Field | undefined {
+        if (!this.isReference) {
+            return undefined;
+        }
+        if (!this.input.referenceKeyField) {
+            return this;
+        }
+        return this.declaringType.getField(this.input.referenceKeyField);
+    }
+
+    getReferenceKeyFieldOrThrow(): Field {
+        const keyField = this.referenceKeyField;
+        if (!keyField) {
+            throw new Error(`Expected "${this.declaringType.name}.${this.name}" to be a reference but it is not`);
+        }
+        return keyField;
+    }
+
+    /**
+     * A reference field within the same type that uses this field as its key field
+     */
+    @memorize()
+    get referenceField(): Field | undefined {
+        return this.declaringType.fields.filter(f => f.referenceKeyField === this)[0];
+    }
+
     public getLocalization(resolutionOrder: ReadonlyArray<string>): FieldLocalization {
         return this.model.i18n.getFieldLocalization(this, resolutionOrder);
     }
@@ -282,6 +315,45 @@ export class Field implements ModelComponent {
 
         if (!this.type.keyField) {
             context.addMessage(ValidationMessage.error(`"${this.type.name}" cannot be used as @reference type because it does not have a field annotated with @key.`, this.astNode));
+        }
+
+        this.validateReferenceKeyField(context);
+    }
+
+    private validateReferenceKeyField(context: ValidationContext) {
+        if (!this.input.referenceKeyField) {
+            return;
+        }
+
+        const keyField = this.declaringType.getField(this.input.referenceKeyField);
+        if (!keyField) {
+            context.addMessage(ValidationMessage.error(`Field "${this.declaringType.name}.${this.input.referenceKeyField}" not found.`, this.input.referenceKeyFieldASTNode));
+            return;
+        }
+
+        if (keyField.isSystemField) {
+            context.addMessage(ValidationMessage.error(`"${this.declaringType.name}.${this.input.referenceKeyField}" is a system field and cannot be used as keyField of a @reference.`, this.input.referenceKeyFieldASTNode));
+            return;
+        }
+
+        // the following can only be validated if the target type is valid
+        if (!this.type.isRootEntityType || !this.type.keyField) {
+            return;
+        }
+
+        const targetKeyField = this.type.keyField;
+
+        if (targetKeyField.type !== keyField.type) {
+            context.addMessage(ValidationMessage.error(`The type of the keyField "${this.declaringType.name}.${this.input.referenceKeyField}" ("${keyField.type.name}") must be the same as the type of the @key-annotated field "${this.type.name}.${targetKeyField.name}" ("${targetKeyField.type.name}")`, this.input.referenceKeyFieldASTNode));
+            return;
+        }
+
+        // we leave type validation (scalar etc.) to the @key annotation
+
+        // there can only be one reference for each key field
+        // each reference just reports an error on itself so that all fields are highlighted
+        if (this.declaringType.fields.some(f => f !== this && f.referenceKeyField === keyField)) {
+            context.addMessage(ValidationMessage.error(`There are multiple references declared for keyField "${this.input.referenceKeyField}".`, this.input.referenceKeyFieldASTNode));
         }
     }
 

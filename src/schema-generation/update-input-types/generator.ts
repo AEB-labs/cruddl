@@ -6,18 +6,9 @@ import { CALC_MUTATIONS_OPERATORS, CalcMutationOperator, ID_FIELD } from '../../
 import { getUpdateAllInputTypeName, getUpdateInputTypeName } from '../../schema/names';
 import { CreateInputTypeGenerator } from '../create-input-types';
 import { EnumTypeGenerator } from '../enum-type-generator';
-import {
-    AddChildEntitiesInputField, BasicListUpdateInputField, BasicUpdateInputField, CalcMutationInputField,
-    RemoveChildEntitiesInputField, UpdateChildEntitiesInputField, UpdateEntityExtensionInputField,
-    UpdateFilterInputField, UpdateInputField, UpdateValueObjectInputField, UpdateValueObjectListInputField
-} from './input-fields';
-import {
-    UpdateChildEntityInputType, UpdateEntityExtensionInputType, UpdateObjectInputType, UpdateRootEntityInputType
-} from './input-types';
-import {
-    AddEdgesInputField, CreateAndAddEdgesInputField, CreateAndSetEdgeInputField, RemoveEdgesInputField,
-    SetEdgeInputField
-} from './relation-fields';
+import { AddChildEntitiesInputField, BasicListUpdateInputField, BasicUpdateInputField, CalcMutationInputField, RemoveChildEntitiesInputField, UpdateChildEntitiesInputField, UpdateEntityExtensionInputField, UpdateFilterInputField, UpdateInputField, UpdateValueObjectInputField, UpdateValueObjectListInputField } from './input-fields';
+import { UpdateChildEntityInputType, UpdateEntityExtensionInputType, UpdateObjectInputType, UpdateRootEntityInputType } from './input-types';
+import { AddEdgesInputField, CreateAndAddEdgesInputField, CreateAndSetEdgeInputField, RemoveEdgesInputField, SetEdgeInputField } from './relation-fields';
 
 export class UpdateInputTypeGenerator {
     constructor(
@@ -67,7 +58,7 @@ export class UpdateInputTypeGenerator {
             () => flatMap(type.fields, (field: Field) => this.generateFields(field)));
     }
 
-    private generateFields(field: Field, {skipID = false, skipRelations = false}: { skipID?: boolean, skipRelations?: boolean } = {}): UpdateInputField[] {
+    private generateFields(field: Field, { skipID = false, skipRelations = false }: { skipID?: boolean, skipRelations?: boolean } = {}): UpdateInputField[] {
         if (field.isSystemField) {
             if (!skipID && (field.declaringType.isRootEntityType || field.declaringType.isChildEntityType) && field.name == ID_FIELD) {
                 // id is always required because it is the filter
@@ -82,6 +73,9 @@ export class UpdateInputTypeGenerator {
             if (field.isList) {
                 // don't allow null values in lists
                 return [new BasicListUpdateInputField(field, new GraphQLList(new GraphQLNonNull(inputType)))];
+            } else if (field.referenceField) {
+                // this is the key field to a reference field - add some comments
+                return [new BasicUpdateInputField(field, inputType, field.name, (field.description ? field.description + '\n\n' : '') + ((field.referenceField.type as RootEntityType).keyField) ? 'Specify the `' + (field.referenceField.type as RootEntityType).keyField!.name + '` of the `' + field.referenceField.type.name + '` to be referenced' : undefined)];
             } else {
                 const calcMutationOperators = Array.from(field.calcMutationOperators).map(getCalcMutationOperatorOrThrow);
                 const calcMutationFields = calcMutationOperators.map(op => new CalcMutationInputField(field, inputType, op.operator, op.prefix));
@@ -120,7 +114,18 @@ export class UpdateInputTypeGenerator {
         if (field.isReference) {
             // we intentionally do not check if the referenced object exists (loose coupling), so this behaves just
             // like a regular field
-            return [new BasicUpdateInputField(field, field.type.getKeyFieldTypeOrThrow().graphQLScalarType, field.name, (field.description ? field.description + '\n\n' : '')+((field.type as RootEntityType).keyField)?"Specify the `"+(field.type as RootEntityType).keyField!.name+"` of the `"+field.type.name+"` to be referenced": undefined)];
+
+            const referenceKeyField = field.getReferenceKeyFieldOrThrow();
+            const scalarType = field.type.getKeyFieldTypeOrThrow().graphQLScalarType;
+            const description = (referenceKeyField.description ? referenceKeyField.description + '\n\n' : '') + ((field.type as RootEntityType).keyField) ? 'Specify the `' + (field.type as RootEntityType).keyField!.name + '` of the `' + field.type.name + '` to be referenced' : undefined;
+
+            if (referenceKeyField === field) {
+                // if the key field *is* the reference field, this means that there is no explicit key field
+                return [new BasicUpdateInputField(referenceKeyField, scalarType, field.name, description)];
+            } else {
+                // there is a separate key field. We still generate this field (for backwards-compatibility), but users should use the key field instead
+                return [new BasicUpdateInputField(referenceKeyField, scalarType, field.name, description, `Use "${referenceKeyField.name}" instead.`)];
+            }
         }
 
         if (field.isRelation) {
@@ -136,8 +141,10 @@ export class UpdateInputTypeGenerator {
                     new CreateAndAddEdgesInputField(field, inputType)
                 ];
             } else {
-                return [new SetEdgeInputField(field),
-                    new CreateAndSetEdgeInputField(field, inputType)];
+                return [
+                    new SetEdgeInputField(field),
+                    new CreateAndSetEdgeInputField(field, inputType)
+                ];
             }
         }
 
