@@ -1,9 +1,22 @@
-import { GraphQLFieldConfig, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLOutputType, Thunk } from 'graphql';
+import {
+    GraphQLFieldConfig,
+    GraphQLList,
+    GraphQLNonNull,
+    GraphQLObjectType,
+    GraphQLOutputType,
+    GraphQLUnionType,
+    Thunk
+} from 'graphql';
 import { chain, uniqBy } from 'lodash';
 import memorize from 'memorize-decorator';
 import { aliasBasedResolver } from '../../graphql/alias-based-resolvers';
 import {
-    QueryNodeField, QueryNodeListType, QueryNodeNonNullType, QueryNodeObjectType, QueryNodeOutputType
+    QueryNodeField,
+    QueryNodeListType,
+    QueryNodeNonNullType,
+    QueryNodeObjectType,
+    QueryNodeOutputType,
+    QueryNodeUnionType
 } from './definition';
 import { isGraphQLOutputType, resolveThunk } from './utils';
 
@@ -35,6 +48,13 @@ export class QueryNodeObjectTypeConverter {
 
         if (type instanceof QueryNodeListType) {
             return new GraphQLList(this.convertToGraphQLType(type.ofType));
+        }
+
+        if (type instanceof QueryNodeUnionType) {
+            return new GraphQLUnionType({
+                types: type.types.map(value => <GraphQLObjectType>this.convertToGraphQLType(value)),
+                name: type.name
+            });
         }
 
         return this.convertToGraphQLObjectType(type);

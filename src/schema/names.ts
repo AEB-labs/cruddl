@@ -80,6 +80,10 @@ export function getQuickSearchFilterTypeName(typeName: string) {
     return `${typeName}QuickSearchFilter`;
 }
 
+export function getQuickSearchGlobalFilterTypeName(){
+    return `GlobalQuickSearchFilter` // @MSF TODO: check for collisions
+}
+
 export function getOrderByTypeName(typeName: string) {
     return `${typeName}OrderBy`;
 }

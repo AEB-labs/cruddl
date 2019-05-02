@@ -3,7 +3,7 @@ import { sortBy } from 'lodash';
 import memorize from 'memorize-decorator';
 import { FieldRequest } from '../graphql/query-distiller';
 import { isListType } from '../graphql/schema-utils';
-import { Field, ObjectType, Type, TypeKind } from '../model';
+import {Field, ObjectType, RootEntityType, Type, TypeKind} from '../model';
 import { NullQueryNode, ObjectQueryNode, PropertySpecification, QueryNode, UnaryOperationQueryNode, UnaryOperator } from '../query-tree';
 import { CURSOR_FIELD } from '../schema/constants';
 import { getMetaFieldName } from '../schema/names';
@@ -14,7 +14,13 @@ import { FilterAugmentation } from './filter-augmentation';
 import { ListAugmentation } from './list-augmentation';
 import { MetaTypeGenerator } from './meta-type-generator';
 import { OrderByEnumGenerator, OrderByEnumType } from './order-by-enum-generator';
-import { makeNonNullableList, QueryNodeField, QueryNodeNonNullType, QueryNodeOutputType } from './query-node-object-type';
+import {
+    makeNonNullableList,
+    QueryNodeField,
+    QueryNodeNonNullType, QueryNodeObjectType,
+    QueryNodeOutputType,
+    QueryNodeUnionType
+} from './query-node-object-type';
 import { getOrderByValues } from './utils/pagination';
 
 export class OutputTypeGenerator {
@@ -39,6 +45,16 @@ export class OutputTypeGenerator {
             return this.enumTypeGenerator.generate(type);
         }
         throw new Error(`Unsupported type kind: ${(type as Type).kind}`);
+    }
+
+    generateQuickSearchGlobalType(types: ReadonlyArray<RootEntityType>): QueryNodeUnionType {
+        const objectTypes = types.map(value => <QueryNodeObjectType>this.generate(value));
+
+        return new QueryNodeUnionType(
+            `QuickSearchGlobalType`, // @MSF TODO: use constant
+            objectTypes
+    )
+
     }
 
     @memorize()

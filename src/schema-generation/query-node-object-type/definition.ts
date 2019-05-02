@@ -1,5 +1,11 @@
 import {
-    GraphQLEnumType, GraphQLFieldConfigArgumentMap, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLScalarType,
+    GraphQLEnumType,
+    GraphQLFieldConfigArgumentMap,
+    GraphQLList,
+    GraphQLNonNull,
+    GraphQLObjectType,
+    GraphQLScalarType,
+    GraphQLUnionType,
     Thunk
 } from 'graphql';
 import { FieldRequest } from '../../graphql/query-distiller';
@@ -36,6 +42,13 @@ export interface QueryNodeObjectType {
     fields: Thunk<ReadonlyArray<QueryNodeField>>
 }
 
+export class QueryNodeUnionType{
+    constructor(public readonly name: string,
+                public readonly types: ReadonlyArray<QueryNodeObjectType>){
+
+}
+}
+
 export class QueryNodeNonNullType<T extends QueryNodeNullableType> {
     constructor(public readonly ofType: T) {
     }
@@ -46,6 +59,6 @@ export class QueryNodeListType<T extends QueryNodeOutputType> {
     }
 }
 
-export type QueryNodeNamedOutputType = QueryNodeObjectType | GraphQLObjectType | GraphQLEnumType | GraphQLScalarType
+export type QueryNodeNamedOutputType = QueryNodeObjectType | GraphQLObjectType | GraphQLEnumType | GraphQLScalarType | QueryNodeUnionType
 export type QueryNodeNullableType = QueryNodeNamedOutputType | QueryNodeListType<any> | GraphQLList<any>
 export type QueryNodeOutputType = QueryNodeNullableType | QueryNodeNonNullType<any> | GraphQLNonNull<any>

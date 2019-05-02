@@ -5,7 +5,7 @@ import {EnumTypeGenerator} from "../enum-type-generator";
 import {GraphQLEnumType, Thunk} from "graphql";
 import {resolveThunk} from "../query-node-object-type";
 import {TypedInputObjectType} from "../typed-input-object-type";
-import {getQuickSearchFilterTypeName} from "../../schema/names";
+import {getQuickSearchFilterTypeName, getQuickSearchGlobalFilterTypeName} from "../../schema/names";
 import {BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, NullQueryNode, QueryNode} from "../../query-tree";
 import {
     AndFilterField,
@@ -47,6 +47,25 @@ export class QuickSearchFilterObjectType extends TypedInputObjectType<FilterFiel
     }
 }
 
+export class QuickSearchGlobalFilterObjectType extends TypedInputObjectType<FilterField> {
+    constructor(
+        fields: Thunk<ReadonlyArray<FilterField>>,
+    ) {
+        super(getQuickSearchGlobalFilterTypeName(), fields, `QuickSearchFilter type for global-quick-search.\n\nAll fields in this type are *and*-combined; see the \`or\` field for *or*-combination.`);
+        // @MSF TODO: description
+    }
+
+    getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
+        if (typeof filterValue !== 'object' || filterValue === null) {
+            return new BinaryOperationQueryNode(sourceNode, BinaryOperator.EQUAL, NullQueryNode.NULL);
+        }
+        const filterNodes = objectEntries(filterValue)
+            .map(([name, value]) => this.getFieldOrThrow(name).getFilterNode(sourceNode, value));
+        return filterNodes.reduce(and, ConstBoolQueryNode.TRUE);
+    }
+}
+
+
 
 export class QuickSearchFilterTypeGenerator {
 
@@ -64,7 +83,7 @@ export class QuickSearchFilterTypeGenerator {
         return this.generateQuickSearchFilterType(type, () => {
             return flatMap(
                 type.fields.filter(value => value.isQuickSearchIndexed),
-                (field: Field) => this.generateFieldQuickSearchFilterFields(field, field.languages)
+                (field: Field) => this.generateFieldQuickSearchFilterFields(field)
             )
         });
 
@@ -83,12 +102,25 @@ export class QuickSearchFilterTypeGenerator {
         return filterType;
     }
 
-    private generateFieldQuickSearchFilterFields(field: Field, languages: ReadonlyArray<QuickSearchLanguage>): FilterField[] {
+    private generateQuickSearchGlobalFilterType(fields: Thunk<ReadonlyArray<FilterField>>): QuickSearchFilterObjectType {
+        function getFields(): ReadonlyArray<FilterField> {
+            return [
+                ...resolveThunk(fields),
+                new AndFilterField(filterType),
+                new OrFilterField(filterType),
+            ]
+        }
+
+        const filterType = new QuickSearchGlobalFilterObjectType(getFields);
+        return filterType;
+    }
+
+    private generateFieldQuickSearchFilterFields(field: Field): FilterField[] {
         if (field.isList) {
             return this.generateListFieldFilterFields(field,[]);
         }
         if (field.type.isScalarType) {
-            return this.generateFilterFieldsForNonListScalar(field, languages);
+            return this.generateFilterFieldsForNonListScalar(field);
         }
         if (field.type.isObjectType) {
             const inputType = this.generate(field.type);
@@ -105,7 +137,7 @@ export class QuickSearchFilterTypeGenerator {
         return [];
     }
 
-    private generateFilterFieldsForNonListScalar(field: Field, languages: ReadonlyArray<QuickSearchLanguage>): FilterField[] {
+    private generateFilterFieldsForNonListScalar(field: Field): FilterField[] {
         // @MSF TODO: validate languages only for strings
         if (field.isList || !field.type.isScalarType) {
             throw new Error(`Expected "${field.name}" to be a non-list scalar`);
@@ -114,11 +146,10 @@ export class QuickSearchFilterTypeGenerator {
         const inputType = field.type.graphQLScalarType;
         const filterFields = QUICK_SEARCH_FILTER_FIELDS_BY_TYPE[field.type.graphQLScalarType.name] || [];
         let scalarFields = filterFields.map(name => new ScalarOrEnumFieldFilterField(field, QUICK_SEARCH_FILTER_OPERATORS[name], name === INPUT_FIELD_EQUAL ? undefined : name, inputType));
-        languages.forEach(value => {
+        field.languages.forEach(value => {
             scalarFields = scalarFields.concat(
                 STRING_TEXT_ANALYZER_FILTER_FIELDS.map(name => new ScalarOrEnumFieldFilterField(field,QUICK_SEARCH_FILTER_OPERATORS[name], name+"_"+value.toLowerCase(), inputType))
             )
-            // @MSF TODO: generate node for languages instead
         })
 
         return scalarFields;
@@ -160,4 +191,19 @@ export class QuickSearchFilterTypeGenerator {
         return ENUM_FILTER_FIELDS.map(name => new ScalarOrEnumFilterField(QUICK_SEARCH_FILTER_OPERATORS[name],  prefix.concat([name]).join("_"), this.enumTypeGenerator.generate(type)))
     }
 
+
+    @memorize()
+    generateGlobal(types: ReadonlyArray<RootEntityType>): QuickSearchFilterObjectType {
+        return this.generateQuickSearchGlobalFilterType(() => {
+            let fields = flatMap(types, type => type.fields.filter(value => value.isQuickSearchIndexed));
+            fields = fields.filter((value, index, array) => {
+                return !array.find((value1, index1) => value.name === value1.name && index1 < index)
+            });
+            return flatMap(
+                fields,
+                (field: Field) => this.generateFieldQuickSearchFilterFields(field) // @MSF TODO: fix languages and description (only language and description of first found field count right now)
+            )
+        });
+
+    }
 }

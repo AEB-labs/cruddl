@@ -12,6 +12,7 @@ import { OutputTypeGenerator } from './output-type-generator';
 import { QueryNodeField, QueryNodeListType, QueryNodeNonNullType, QueryNodeObjectType } from './query-node-object-type';
 import { getArgumentsForUniqueFields, getEntitiesByUniqueFieldQuery } from './utils/entities-by-unique-field';
 import {QuickSearchAugmentation} from "./quick-search-augmentation";
+import {GraphQLUnionType} from "graphql";
 
 
 
@@ -97,14 +98,15 @@ export class QueryTypeGenerator {
     }
 
     private getQuickSearchGlobalField(rootEntityTypes: ReadonlyArray<RootEntityType>): QueryNodeField {
+        // @MSF TODO: integrate qsGlobalField in Schema
         const fieldConfig = ({
             name: this.getGlobalQuickSearchFieldName(),
-            type: new QueryNodeListType(new QueryNodeNonNullType(this.outputTypeGenerator.generate(rootEntityTypes[0]))),
+            type: new QueryNodeListType(new QueryNodeNonNullType(this.outputTypeGenerator.generateQuickSearchGlobalType(rootEntityTypes))),
             description: "global search description", // @MSF TODO: global quickSearch description
             resolve: () => this.getAllRootEntitiesNode(rootEntityTypes[0]) // @MSF TODO: resolver
         })
 
-        return fieldConfig;
+        return (this.quickSearchAugmentation.augmentGlobal(fieldConfig, rootEntityTypes));
     }
 
     private getSingleRootEntityNode(rootEntityType: RootEntityType, args: { [name: string]: any }): QueryNode {

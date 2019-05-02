@@ -55,7 +55,6 @@ export const STRING_QUICK_SEARCH_FILTER_FIELDS = [
 export const STRING_TEXT_ANALYZER_FILTER_FIELDS = [
     INPUT_FIELD_CONTAINS_ANY_WORD, INPUT_FIELD_NOT_CONTAINS_ANY_WORD
 ]
-// @MSF TODO: Text analyzer fields
 
 
 export const QUICK_SEARCH_FILTER_FIELDS_BY_TYPE: { [name: string]: string[] } = {
