@@ -62,6 +62,7 @@ export const FILTER_ARG = 'filter';
 export const ORDER_BY_ARG = 'orderBy';
 
 export const QUICK_SEARCH_FILTER_ARG = "quickSearchFilter"
+export const QUICK_SEARCH_EXPRESSION_ARG = "quickSearchExpression"
 
 export const CURSOR_FIELD = '_cursor';
 export const SKIP_ARG = 'skip';

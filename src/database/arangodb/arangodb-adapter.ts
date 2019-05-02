@@ -625,7 +625,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
     async updateSchema(model: Model): Promise<void> {
         const migrations = await this.getOutstandingMigrations(model);
         for (const migration of migrations) {
-            if (!migration.isMandatory ) {
+            if (!migration.isMandatory && !this.doNonMandatoryMigrations) {
                 this.logger.info(`Skipping migration "${migration.description}" because of configuration`);
                 continue;
             }

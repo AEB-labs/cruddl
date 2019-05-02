@@ -2,7 +2,13 @@ import {
     GraphQLEnumType, GraphQLInterfaceType, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLOutputType,
     GraphQLScalarType, GraphQLUnionType, Thunk
 } from 'graphql';
-import { QueryNodeListType, QueryNodeNonNullType, QueryNodeObjectType, QueryNodeOutputType } from './definition';
+import {
+    QueryNodeListType,
+    QueryNodeNonNullType,
+    QueryNodeObjectType,
+    QueryNodeOutputType,
+    QueryNodeUnionType
+} from './definition';
 import { QueryNodeNullableType } from './index';
 
 export function isGraphQLOutputType(type: {}): type is GraphQLOutputType {
@@ -21,6 +27,9 @@ export function extractQueryTreeObjectType(type: QueryNodeOutputType): QueryNode
     }
     if (type instanceof QueryNodeNonNullType || type instanceof QueryNodeListType) {
         return extractQueryTreeObjectType(type.ofType);
+    }
+    if(type instanceof QueryNodeUnionType){
+        return undefined; // @MSF TODO: properly handle UnionType
     }
     return type;
 }

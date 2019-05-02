@@ -49,7 +49,7 @@ function getViewNameForRootEntity(rootEntity: RootEntityType) {
 function getViewsForRootEntity(rootEntity: RootEntityType): ReadonlyArray<ArangoSearchDefinition> {
     if(rootEntity.arangoSearchConfig.isIndexed){
         return [{
-            fields: rootEntity.fields.filter(value => value.isQuickSearchIndexed),
+            fields: rootEntity.fields.filter(value => value.isQuickSearchIndexed || value.isSystemField),
             viewName: getViewNameForRootEntity(rootEntity),
             collectionName: getCollectionNameForRootEntity(rootEntity)
         }]

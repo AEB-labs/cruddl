@@ -6,12 +6,22 @@ import {GraphQLEnumType, Thunk} from "graphql";
 import {resolveThunk} from "../query-node-object-type";
 import {TypedInputObjectType} from "../typed-input-object-type";
 import {getQuickSearchFilterTypeName, getQuickSearchGlobalFilterTypeName} from "../../schema/names";
-import {BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, NullQueryNode, QueryNode} from "../../query-tree";
+import {
+    BinaryOperationQueryNode,
+    BinaryOperator,
+    ConstBoolQueryNode,
+    NullQueryNode,
+    OrderDirection,
+    QueryNode
+} from "../../query-tree";
 import {
     AndFilterField,
     EntityExtensionFilterField,
-    FilterField, ListFilterField, NestedObjectFilterField,
-    OrFilterField, QuantifierFilterField, ScalarOrEnumFieldFilterField, ScalarOrEnumFilterField
+    FilterField,
+    NestedObjectFilterField,
+    OrFilterField,
+    ScalarOrEnumFieldFilterField,
+    ScalarOrEnumFilterField
 } from "../filter-input-types/filter-fields";
 import {
     and,
@@ -19,19 +29,15 @@ import {
     QUICK_SEARCH_FILTER_OPERATORS,
     STRING_TEXT_ANALYZER_FILTER_FIELDS
 } from "./constants";
-import {
-    ENUM_FILTER_FIELDS,
-    FILTER_FIELDS_BY_TYPE,
-    FILTER_OPERATORS,
-    QUANTIFIERS
-} from "../filter-input-types/constants";
+import {ENUM_FILTER_FIELDS, FILTER_OPERATORS} from "../filter-input-types/constants";
 import {INPUT_FIELD_EQUAL} from "../../schema/constants";
-import {QuickSearchLanguage} from "../../model/config";
+import {OrderByEnumValue} from "../order-by-enum-generator";
+import {SystemFieldOrderByEnumType} from "../quick-search-augmentation";
 
 export class QuickSearchFilterObjectType extends TypedInputObjectType<FilterField> {
     constructor(
         type: Type,
-        fields: Thunk<ReadonlyArray<FilterField>>,
+        fields: Thunk<ReadonlyArray<FilterField>>
     ) {
         super(getQuickSearchFilterTypeName(type.name), fields, `QuickSearchFilter type for \`${type.name}\`.\n\nAll fields in this type are *and*-combined; see the \`or\` field for *or*-combination.`);
         // @MSF TODO: description
@@ -82,7 +88,7 @@ export class QuickSearchFilterTypeGenerator {
         }
         return this.generateQuickSearchFilterType(type, () => {
             return flatMap(
-                type.fields.filter(value => value.isQuickSearchIndexed),
+                type.fields.filter(value => value.isQuickSearchIndexed || value.isSystemField),
                 (field: Field) => this.generateFieldQuickSearchFilterFields(field)
             )
         });
@@ -171,7 +177,7 @@ export class QuickSearchFilterTypeGenerator {
         }else if(field.type instanceof EnumType){
             return this.buildEnumFilterFields(field.type,prefix.concat([field.name,"some"]));
         }else{
-            return flatMap(field.type.fields.filter(nestedField => nestedField.isQuickSearchIndexed),(nestedField) => {
+            return flatMap(field.type.fields.filter(nestedField => nestedField.isQuickSearchIndexed || nestedField.isSystemField),(nestedField) => {
                 return this.generateListFieldFilterFields(nestedField, prefix.concat([field.name]))
                 // @MSF TODO: prevent endless recursion
             });
@@ -195,7 +201,7 @@ export class QuickSearchFilterTypeGenerator {
     @memorize()
     generateGlobal(types: ReadonlyArray<RootEntityType>): QuickSearchFilterObjectType {
         return this.generateQuickSearchGlobalFilterType(() => {
-            let fields = flatMap(types, type => type.fields.filter(value => value.isQuickSearchIndexed));
+            let fields = flatMap(types, type => type.fields.filter(value => value.isQuickSearchIndexed || value.isSystemField));
             fields = fields.filter((value, index, array) => {
                 return !array.find((value1, index1) => value.name === value1.name && index1 < index)
             });
@@ -205,5 +211,42 @@ export class QuickSearchFilterTypeGenerator {
             )
         });
 
+    }
+
+    @memorize()
+    generateSystemFieldOrderByEnum(type: RootEntityType): SystemFieldOrderByEnumType {
+        // @MSF TODO look for cleaner solution to select system fields instead of using the first type
+        const systemfields = type.fields.filter(value => value.isSystemField);
+        function mapToOrderByEnumValues(value: Field) {
+            return [new OrderByEnumValue([value], OrderDirection.ASCENDING),new OrderByEnumValue([value], OrderDirection.DESCENDING)];
+        }
+        return new SystemFieldOrderByEnumType(flatMap(systemfields, mapToOrderByEnumValues));
+    }
+
+    private getValues(type: ObjectType, path: ReadonlyArray<Field>): ReadonlyArray<OrderByEnumValue> {
+        return flatMap(type.fields, field => this.getValuesForField(field, path));
+    }
+
+    private getValuesForField(field: Field, path: ReadonlyArray<Field>) {
+        // Don't recurse
+        if (path.includes(field)) {
+            return [];
+        }
+
+        // can't sort by list value
+        if (field.isList) {
+            return [];
+        }
+
+        const newPath = [...path, field];
+        if (field.type.isObjectType) {
+            return this.getValues(field.type, newPath);
+        } else {
+            // currently, all scalars and enums are ordered types
+            return [
+                new OrderByEnumValue(newPath, OrderDirection.ASCENDING),
+                new OrderByEnumValue(newPath, OrderDirection.DESCENDING),
+            ]
+        }
     }
 }
