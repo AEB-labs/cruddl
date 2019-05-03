@@ -2,7 +2,7 @@ import {QueryNode} from "./base";
 import {RootEntityType} from "../model/implementation";
 import {ConstBoolQueryNode} from "./literals";
 import {VariableQueryNode} from "./variables";
-import {decapitalize} from "../utils/utils";
+import {decapitalize, indent} from "../utils/utils";
 
 export class QuickSearchQueryNode extends QueryNode{
 
@@ -25,7 +25,10 @@ export class QuickSearchQueryNode extends QueryNode{
     }
 
     describe(): string {
-        return ""; // @MSF TODO: describe QueryTree
+        return this.isGlobal ? `Use GlobalQuickSearch` : `Use QuickSearch for ${this.entity!.name}`
+            +` with ${this.itemVariable.describe()} => \n` + indent(
+            (this.qsFilterNode.equals(ConstBoolQueryNode.TRUE) ? '' : `where ${this.qsFilterNode.describe()}\n`)
+        ); // @MSF TODO: describe QueryTree
     }
 
 }

@@ -1,21 +1,24 @@
 import {QueryNodeField, QueryNodeResolveInfo} from "./query-node-object-type";
-import {ObjectType, RootEntityType, Type} from "../model/implementation";
+import {RootEntityType, Type} from "../model/implementation";
 import {
     AFTER_ARG,
     CURSOR_FIELD,
-    FILTER_ARG, FIRST_ARG,
-    ID_FIELD,
-    ORDER_BY_ARG, ORDER_BY_ASC_SUFFIX, QUICK_SEARCH_EXPRESSION_ARG,
-    QUICK_SEARCH_FILTER_ARG, SKIP_ARG
+    FIRST_ARG,
+    ORDER_BY_ARG,
+    QUICK_SEARCH_EXPRESSION_ARG,
+    QUICK_SEARCH_FILTER_ARG,
+    SKIP_ARG
 } from "../schema/constants";
 import {QuickSearchFilterObjectType, QuickSearchFilterTypeGenerator} from "./quick-search-filter-input-types/generator";
-import {buildFilteredListNode} from "./utils/filtering";
-import {OrderByEnumGenerator, OrderByEnumType, OrderByEnumValue} from "./order-by-enum-generator";
+import {OrderByEnumValue} from "./order-by-enum-generator";
 import {GraphQLEnumType, GraphQLInt, GraphQLList, GraphQLNonNull, GraphQLString} from "graphql";
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
-    ConstBoolQueryNode, LiteralQueryNode, OrderDirection, OrderSpecification,
+    ConstBoolQueryNode,
+    LiteralQueryNode,
+    OrderDirection,
+    OrderSpecification,
     QueryNode,
     RuntimeErrorQueryNode,
     TransformListQueryNode,
@@ -23,13 +26,9 @@ import {
 } from "../query-tree";
 import {decapitalize} from "../utils/utils";
 import {and} from "./filter-input-types/constants";
-import {getOrderByTypeName} from "../schema/names";
-import { chain } from 'lodash';
+import {chain} from 'lodash';
 import memorize from "memorize-decorator";
 import {QuickSearchQueryNode} from "../query-tree/quick-search";
-import {OrderByAndPaginationAugmentation} from "./order-by-and-pagination-augmentation";
-import {getOrderByValues} from "./utils/pagination";
-import {FilterObjectType} from "./filter-input-types";
 import {simplifyBooleans} from "../query-tree/utils";
 
 
@@ -70,11 +69,14 @@ export class QuickSearchAugmentation {
             resolve: (sourceNode, args, info) => {
                 let parentNode = schemaField.resolve(sourceNode, args, info);
                 if(parentNode instanceof QuickSearchQueryNode){
+                    const itemVariable = new VariableQueryNode(decapitalize(itemType.name));
+                    const qsFilterNode = this.buildQuickSearchFilterNode(parentNode,args,quickSearchType,itemType, itemVariable);
                     return new QuickSearchQueryNode({
                         entity: parentNode.entity,
                         isGlobal: parentNode.isGlobal,
-                        qsFilterNode: this.buildQuickSearchFilterNode(parentNode,args,quickSearchType,itemType)
-                    }); // @MSF TODO: resolver - generate Filter
+                        qsFilterNode: qsFilterNode,
+                        itemVariable: itemVariable
+                    });
                 }else{
                     throw new Error("Quicksearch Augment only possible on QuickSearchQueryNodes") // @MSF TODO: proper error
                 }
@@ -95,7 +97,17 @@ export class QuickSearchAugmentation {
             resolve: (sourceNode, args, info) => {
                 let parentNode = schemaField.resolve(sourceNode, args, info);
                 if(parentNode instanceof QuickSearchQueryNode){
-                    return new QuickSearchQueryNode({entity: parentNode.entity, isGlobal: parentNode.isGlobal, qsFilterNode: parentNode.qsFilterNode}); // @MSF TODO: resolver - generate Search-Filter
+
+                    let qsFilterNode = parentNode.qsFilterNode;
+                    const quickSearchType = this.quickSearchTypeGenerator.generate(itemTypes[0]); // @MSG TODO: make it work for global too
+                    new BinaryOperationQueryNode(qsFilterNode,BinaryOperator.OR,this.buildQuickSearchSearchFilterNode(parentNode,args,quickSearchType,itemTypes[0]))
+
+                    return new QuickSearchQueryNode({
+                        entity: parentNode.entity,
+                        isGlobal: parentNode.isGlobal,
+                        qsFilterNode: qsFilterNode,
+                        itemVariable: parentNode.itemVariable
+                    }); // @MSF TODO: resolver - generate Search-Filter
                 }else{
                     throw new Error("Quicksearch Augment only possible on QuickSearchQueryNodes") // @MSF TODO: proper error
                 }
@@ -133,7 +145,11 @@ export class QuickSearchAugmentation {
             resolve: (sourceNode, args, info) => {
                 let parentNode = schemaField.resolve(sourceNode, args, info);
                 if(parentNode instanceof QuickSearchQueryNode){
-                    return new QuickSearchQueryNode({entity: parentNode.entity, isGlobal: parentNode.isGlobal}); // @MSF TODO: resolver - generate Global-Search-Filter
+                    return new QuickSearchQueryNode({
+                        entity: parentNode.entity,
+                        isGlobal: parentNode.isGlobal,
+                        itemVariable: parentNode.itemVariable
+                    }); // @MSF TODO: resolver - generate Global-Search-Filter
                 }else{
                     throw new Error("Quicksearch Augment only possible on QuickSearchQueryNodes") // @MSF TODO: proper error
                 }
@@ -320,11 +336,25 @@ export class QuickSearchAugmentation {
         return new OrderSpecification(clauses);
     }
 
-    private buildQuickSearchFilterNode(listNode: QueryNode, args: { [name: string]: any }, filterType: QuickSearchFilterObjectType, itemType: Type) {
+    private buildQuickSearchFilterNode(listNode: QueryNode, args: { [p: string]: any }, filterType: QuickSearchFilterObjectType, itemType: Type, itemVariable: VariableQueryNode) {
         const filterValue = args[QUICK_SEARCH_FILTER_ARG] || {};
-        const itemVariable = new VariableQueryNode(decapitalize(itemType.name));
+
         // simplification is important for the shortcut with check for TRUE below in the case of e.g. { AND: [] }
         return simplifyBooleans(filterType.getFilterNode(itemVariable, filterValue));
+    }
+
+    private buildQuickSearchSearchFilterNode(listNode: QueryNode, args: { [name: string]: any }, filterType: QuickSearchFilterObjectType, itemType: RootEntityType) {
+        const expression = args[QUICK_SEARCH_EXPRESSION_ARG]
+        if(!expression){
+            throw Error("empty expression") // @MSF TODO: proper Error
+        }
+
+        const filterValue = args[QUICK_SEARCH_FILTER_ARG] || {};
+        const itemVariable = new VariableQueryNode(decapitalize(itemType.name));
+
+        // simplification is important for the shortcut with check for TRUE below in the case of e.g. { AND: [] }
+        return simplifyBooleans(filterType.getFilterNode(itemVariable, filterValue));
+        // @MSF TODO: Build search filter node
     }
 }
 

@@ -82,6 +82,8 @@ export class BinaryOperationQueryNode extends QueryNode {
                 return 'APPEND';
             case BinaryOperator.PREPEND:
                 return 'PREPEND';
+            case BinaryOperator.CONTAINS_ANY_WORD:
+                return 'IN TOKENS';
             default:
                 return '(unknown operator)';
         }
