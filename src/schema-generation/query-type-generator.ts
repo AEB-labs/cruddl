@@ -13,6 +13,7 @@ import { QueryNodeField, QueryNodeListType, QueryNodeNonNullType, QueryNodeObjec
 import { getArgumentsForUniqueFields, getEntitiesByUniqueFieldQuery } from './utils/entities-by-unique-field';
 import {QuickSearchAugmentation} from "./quick-search-augmentation";
 import {GraphQLUnionType} from "graphql";
+import {QuickSearchQueryNode} from "../query-tree/quick-search";
 
 
 
@@ -104,7 +105,7 @@ export class QueryTypeGenerator {
             name: this.getGlobalQuickSearchFieldName(),
             type: new QueryNodeListType(new QueryNodeNonNullType(this.outputTypeGenerator.generateQuickSearchGlobalType(rootEntityTypes))),
             description: "global search description", // @MSF TODO: description
-            resolve: () => this.getAllRootEntitiesNode(rootEntityTypes[0]) // @MSF TODO: resolver
+            resolve: () => new QuickSearchQueryNode({isGlobal: true})
         })
 
         return (this.quickSearchAugmentation.augmentGlobal(fieldConfig, rootEntityTypes));
@@ -163,7 +164,7 @@ export class QueryTypeGenerator {
             name: getQuickSearchEntitiesFieldName(rootEntityType.name),
             type: new QueryNodeListType(new QueryNodeNonNullType(this.outputTypeGenerator.generate(rootEntityType))),
             description: `Searches for ${rootEntityType.pluralName} using QuickSearch.`,
-            resolve: () => this.getAllRootEntitiesNode(rootEntityType) // @MSF TODO: resolver
+            resolve: () => new QuickSearchQueryNode({entity: rootEntityType})
         })
 
         return this.listAugmentation.augment(this.quickSearchAugmentation.augment(fieldConfig, rootEntityType), rootEntityType);

@@ -1,4 +1,4 @@
-import {QueryNodeField} from "./query-node-object-type";
+import {QueryNodeField, QueryNodeResolveInfo} from "./query-node-object-type";
 import {ObjectType, RootEntityType, Type} from "../model/implementation";
 import {
     AFTER_ARG,
@@ -8,16 +8,29 @@ import {
     ORDER_BY_ARG, ORDER_BY_ASC_SUFFIX, QUICK_SEARCH_EXPRESSION_ARG,
     QUICK_SEARCH_FILTER_ARG, SKIP_ARG
 } from "../schema/constants";
-import {QuickSearchFilterTypeGenerator} from "./quick-search-filter-input-types/generator";
+import {QuickSearchFilterObjectType, QuickSearchFilterTypeGenerator} from "./quick-search-filter-input-types/generator";
 import {buildFilteredListNode} from "./utils/filtering";
-import {OrderByEnumGenerator, OrderByEnumValue} from "./order-by-enum-generator";
+import {OrderByEnumGenerator, OrderByEnumType, OrderByEnumValue} from "./order-by-enum-generator";
 import {GraphQLEnumType, GraphQLInt, GraphQLList, GraphQLNonNull, GraphQLString} from "graphql";
-import {ConstBoolQueryNode, QueryNode, TransformListQueryNode, VariableQueryNode} from "../query-tree";
+import {
+    BinaryOperationQueryNode,
+    BinaryOperator,
+    ConstBoolQueryNode, LiteralQueryNode, OrderDirection, OrderSpecification,
+    QueryNode,
+    RuntimeErrorQueryNode,
+    TransformListQueryNode,
+    VariableQueryNode
+} from "../query-tree";
 import {decapitalize} from "../utils/utils";
 import {and} from "./filter-input-types/constants";
 import {getOrderByTypeName} from "../schema/names";
 import { chain } from 'lodash';
 import memorize from "memorize-decorator";
+import {QuickSearchQueryNode} from "../query-tree/quick-search";
+import {OrderByAndPaginationAugmentation} from "./order-by-and-pagination-augmentation";
+import {getOrderByValues} from "./utils/pagination";
+import {FilterObjectType} from "./filter-input-types";
+import {simplifyBooleans} from "../query-tree/utils";
 
 
 /**
@@ -34,7 +47,7 @@ export class QuickSearchAugmentation {
         }
         const quickSearchFilterable = this.augmentQuickSearchFilter(schemaField, itemType)
         if(itemType.fields.some(value => value.isSearchable)){
-            const quickSearchSearchable = this.augmentQuickSearchSearch(quickSearchFilterable)
+            const quickSearchSearchable = this.augmentQuickSearchSearch(quickSearchFilterable,[itemType])
             return quickSearchSearchable;
         }else{
             return quickSearchFilterable;
@@ -55,13 +68,22 @@ export class QuickSearchAugmentation {
                 }
             },
             resolve: (sourceNode, args, info) => {
-                let listNode = schemaField.resolve(sourceNode, args, info);
-                return buildFilteredListNode(listNode, args, quickSearchType, itemType); // @MSF TODO: resolver
+                let parentNode = schemaField.resolve(sourceNode, args, info);
+                if(parentNode instanceof QuickSearchQueryNode){
+                    return new QuickSearchQueryNode({
+                        entity: parentNode.entity,
+                        isGlobal: parentNode.isGlobal,
+                        qsFilterNode: this.buildQuickSearchFilterNode(parentNode,args,quickSearchType,itemType)
+                    }); // @MSF TODO: resolver - generate Filter
+                }else{
+                    throw new Error("Quicksearch Augment only possible on QuickSearchQueryNodes") // @MSF TODO: proper error
+                }
+
             }
         };
     }
 
-    augmentQuickSearchSearch(schemaField: QueryNodeField): QueryNodeField {
+    augmentQuickSearchSearch(schemaField: QueryNodeField, itemTypes: ReadonlyArray<RootEntityType>): QueryNodeField {
         return {
             ...schemaField,
             args: {
@@ -71,7 +93,12 @@ export class QuickSearchAugmentation {
                 }
             },
             resolve: (sourceNode, args, info) => {
-                return sourceNode; // @MSF TODO: resolver
+                let parentNode = schemaField.resolve(sourceNode, args, info);
+                if(parentNode instanceof QuickSearchQueryNode){
+                    return new QuickSearchQueryNode({entity: parentNode.entity, isGlobal: parentNode.isGlobal, qsFilterNode: parentNode.qsFilterNode}); // @MSF TODO: resolver - generate Search-Filter
+                }else{
+                    throw new Error("Quicksearch Augment only possible on QuickSearchQueryNodes") // @MSF TODO: proper error
+                }
             }
         };
     }
@@ -80,7 +107,7 @@ export class QuickSearchAugmentation {
         const quickSearchFilterable = this.augmentGlobalQuickSearch(schemaField,itemTypes);
         const paged = this.augmentGlobalPaged(quickSearchFilterable,itemTypes);
         if(itemTypes.some(value => value.fields.some(value1 => value1.isSearchable))){
-            const quickSearchable = this.augmentQuickSearchSearch(paged);
+            const quickSearchable = this.augmentQuickSearchSearch(paged, itemTypes);
             return quickSearchable;
         }else{
             return paged;
@@ -104,8 +131,12 @@ export class QuickSearchAugmentation {
                 }
             },
             resolve: (sourceNode, args, info) => {
-                let listNode = schemaField.resolve(sourceNode, args, info);
-                return buildFilteredListNode(listNode, args, quickSearchType, itemTypes[0]); // @MSF TODO: resolver
+                let parentNode = schemaField.resolve(sourceNode, args, info);
+                if(parentNode instanceof QuickSearchQueryNode){
+                    return new QuickSearchQueryNode({entity: parentNode.entity, isGlobal: parentNode.isGlobal}); // @MSF TODO: resolver - generate Global-Search-Filter
+                }else{
+                    throw new Error("Quicksearch Augment only possible on QuickSearchQueryNodes") // @MSF TODO: proper error
+                }
             }
         };
     }
@@ -140,9 +171,160 @@ export class QuickSearchAugmentation {
                 }
             },
             resolve: (sourceNode, args, info) => {
-                return sourceNode // @MSF TODO: resolver
+                return this.getOrderByAndPaginationResolver(schemaField,sourceNode,args,info,orderByType)
             }
         };
+    }
+
+    public getOrderByAndPaginationResolver(schemaField: QueryNodeField, sourceNode:QueryNode, args:{[p: string]: any}, info: QueryNodeResolveInfo, orderByType:SystemFieldOrderByEnumType) {
+        let listNode = schemaField.resolve(sourceNode, args, info);
+        let itemVariable = new VariableQueryNode(`qsGlobalResult`); // @MSF TODO: itemVariable Name
+
+
+
+        // if we can, just extend a given TransformListNode so that other cruddl optimizations can operate
+        // (e.g. projection indirection)
+        let filterNode: QueryNode | undefined;
+        const originalListNode = listNode;
+        if (listNode instanceof TransformListQueryNode
+            && listNode.skip === 0
+            && listNode.orderBy.isUnordered()
+            && listNode.maxCount == undefined
+            && listNode.innerNode === listNode.itemVariable) {
+            filterNode = listNode.filterNode.equals(ConstBoolQueryNode.TRUE) ? undefined : listNode.filterNode;
+            itemVariable = listNode.itemVariable;
+            listNode = listNode.listNode;
+        }
+
+        const maxCount: number | undefined = args[FIRST_ARG];
+        const skip = args[SKIP_ARG];
+        const paginationFilter = this.createPaginationFilterNode(args, itemVariable, orderByType);
+        const afterArg = args[AFTER_ARG];
+        const isCursorRequested = info.fieldRequestStack[info.fieldRequestStack.length - 1].selectionSet.some(sel => sel.fieldRequest.field.name === CURSOR_FIELD);
+        // we only require the absolute ordering for cursor-based pagination, which is detected via a cursor field or the "after" argument.
+        const isAbsoluteOrderRequired = isCursorRequested || !!afterArg;
+        const orderBy = this.getOrderSpecification(args, orderByType, itemVariable, {isAbsoluteOrderRequired});
+
+        if (orderBy.isUnordered() && maxCount == undefined && paginationFilter === ConstBoolQueryNode.TRUE) {
+            return originalListNode;
+        }
+
+        // if (!skip && maxCount != undefined && orderBy.clauses.length > 1 && afterArg && type && type.isRootEntityType) {
+        //     // optimization that makes use of an index that spans multiple order fields
+        //     // see https://github.com/arangodb/arangodb/issues/2357
+        //     // TODO only really do this here if there is an index covering this
+        //     // (however, it's not that easy - it needs to include the filter stuff that is already baked into
+        //     // listNode)
+        //     return this.getPaginatedNodeUsingMultiIndexOptimization({
+        //         orderBy,
+        //         itemVariable,
+        //         orderByType,
+        //         listNode,
+        //         args,
+        //         maxCount,
+        //         filterNode
+        //     });
+        // }
+
+        return new TransformListQueryNode({
+            listNode,
+            itemVariable,
+            orderBy,
+            skip,
+            maxCount,
+            filterNode: filterNode && paginationFilter ? and(filterNode, paginationFilter) : (filterNode || paginationFilter)
+        });
+    }
+
+    private createPaginationFilterNode(args: any, itemNode: QueryNode, orderByType: SystemFieldOrderByEnumType): QueryNode | undefined {
+        const afterArg = args[AFTER_ARG];
+        if (!afterArg) {
+            return undefined;
+        }
+
+        let cursorObj: any;
+        try {
+            cursorObj = JSON.parse(afterArg);
+            if (typeof cursorObj != 'object' || cursorObj === null) {
+                return new RuntimeErrorQueryNode('The JSON value provided as "after" argument is not an object');
+            }
+        } catch (e) {
+            return new RuntimeErrorQueryNode(`Invalid cursor ${JSON.stringify(afterArg)} supplied to "after": ${e.message}`);
+        }
+
+        // Make sure we only select items after the cursor
+        // Thus, we need to implement the 'comparator' based on the order-by-specification
+        // Haskell-like pseudo-code because it's easier ;-)
+        // filterForClause :: Clause[] -> FilterNode:
+        // filterForClause([{field, ASC}, ...tail]) =
+        //   (context[clause.field] > cursor[clause.field] || (context[clause.field] == cursor[clause.field] && filterForClause(tail))
+        // filterForClause([{field, DESC}, ...tail]) =
+        //   (context[clause.field] < cursor[clause.field] || (context[clause.field] == cursor[clause.field] && filterForClause(tail))
+        // filterForClause([]) = FALSE # arbitrary; if order is absolute, this case should never occur
+        function filterForClause(clauses: ReadonlyArray<OrderByEnumValue>): QueryNode {
+            if (clauses.length == 0) {
+                return new ConstBoolQueryNode(false);
+            }
+
+            const clause = clauses[0];
+            const cursorProperty = clause.underscoreSeparatedPath;
+            if (!(cursorProperty in cursorObj)) {
+                return new RuntimeErrorQueryNode(`Invalid cursor supplied to "after": Property "${cursorProperty}" missing. Make sure this cursor has been obtained with the same orderBy clause.`);
+            }
+            const cursorValue = cursorObj[cursorProperty];
+            const valueNode = clause.getValueNode(itemNode);
+
+            const operator = clause.direction == OrderDirection.ASCENDING ? BinaryOperator.GREATER_THAN : BinaryOperator.LESS_THAN;
+            return new BinaryOperationQueryNode(
+                new BinaryOperationQueryNode(valueNode, operator, new LiteralQueryNode(cursorValue)),
+                BinaryOperator.OR,
+                new BinaryOperationQueryNode(
+                    new BinaryOperationQueryNode(valueNode, BinaryOperator.EQUAL, new LiteralQueryNode(cursorValue)),
+                    BinaryOperator.AND,
+                    filterForClause(clauses.slice(1))
+                )
+            );
+        }
+
+        return filterForClause(this.getOrderByValues(args, orderByType, { isAbsoluteOrderRequired: true }));
+    }
+
+    private getOrderByValues(args: any, orderByType: SystemFieldOrderByEnumType, { isAbsoluteOrderRequired }: { readonly isAbsoluteOrderRequired: boolean }): ReadonlyArray<OrderByEnumValue> {
+        const valueNames = (args[ORDER_BY_ARG] || []) as ReadonlyArray<string>;
+        const values = valueNames.map(value => orderByType.getValueOrThrow(value));
+
+        // @MSF TODO: is this needed?
+
+        // // if we need to guarantee that the order clause is absolute, we might have to add the 'id' field
+        // if (isAbsoluteOrderRequired && (orderByType.objectType.isChildEntityType || orderByType.objectType.isRootEntityType)) {
+        //     const discriminatorField = orderByType.objectType.discriminatorField;
+        //     // indices only work if all directions are equal. So if all are descending, add the discriminator field
+        //     // descending, too - otherwise, it does not matter, so we default to ascending. If there are no values, default
+        //     // to ascending, too.
+        //     let direction = (values.length > 0 && values.every(value => value.direction === OrderDirection.DESCENDING)) ?
+        //         OrderDirection.DESCENDING : OrderDirection.ASCENDING;
+        //
+        //     if (!values.some(v => v.path.length === 1 && v.path[0] === discriminatorField)) {
+        //         return [
+        //             ...values,
+        //             new OrderByEnumValue([discriminatorField], direction)
+        //         ];
+        //     }
+        // }
+        return values;
+    }
+
+    private getOrderSpecification(args: any, orderByType: SystemFieldOrderByEnumType, itemNode: QueryNode, options: { readonly isAbsoluteOrderRequired: boolean }) {
+        const mappedValues = this.getOrderByValues(args, orderByType, options);
+        const clauses = mappedValues.map(value => value.getClause(itemNode));
+        return new OrderSpecification(clauses);
+    }
+
+    private buildQuickSearchFilterNode(listNode: QueryNode, args: { [name: string]: any }, filterType: QuickSearchFilterObjectType, itemType: Type) {
+        const filterValue = args[QUICK_SEARCH_FILTER_ARG] || {};
+        const itemVariable = new VariableQueryNode(decapitalize(itemType.name));
+        // simplification is important for the shortcut with check for TRUE below in the case of e.g. { AND: [] }
+        return simplifyBooleans(filterType.getFilterNode(itemVariable, filterValue));
     }
 }
 
@@ -157,23 +339,23 @@ export class SystemFieldOrderByEnumType {
         // @MSF TODO: check for collision
     }
 
+
+    @memorize()
+    private get valueMap(): Map<string, OrderByEnumValue> {
+        return new Map(this.values.map((v): [string, OrderByEnumValue] => ([v.name, v])));
+    }
     // @MSF TODO: is this needed?
-    // @memorize()
-    // private get valueMap(): Map<string, OrderByEnumValue> {
-    //     return new Map(this.values.map((v): [string, OrderByEnumValue] => ([v.name, v])));
-    // }
-    //
     // getValue(name: string): OrderByEnumValue|undefined {
     //     return this.valueMap.get(name);
     // }
-    //
-    // getValueOrThrow(name: string): OrderByEnumValue {
-    //     const value = this.valueMap.get(name);
-    //     if (!value) {
-    //         throw new Error(`Expected "${this.name}" to have value "${name}"`);
-    //     }
-    //     return value;
-    // }
+
+    getValueOrThrow(name: string): OrderByEnumValue {
+        const value = this.valueMap.get(name);
+        if (!value) {
+            throw new Error(`Expected "${this.name}" to have value "${name}"`);
+        }
+        return value;
+    }
 
     @memorize()
     getEnumType(): GraphQLEnumType {

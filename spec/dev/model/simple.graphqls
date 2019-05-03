@@ -8,7 +8,7 @@ type Hero @rootEntity(quickSearchIndex:true, globalQuickSearch: true) {
     skills: [Skill] @quickSearchIndex
     suit: Suit
     morality: Morality
-    countryISOCode: String
+    countryISOCode: String @quickSearchIndex
     country: Country @reference(keyField: "countryISOCode")
     missions: [Mission]
     info: JSON
