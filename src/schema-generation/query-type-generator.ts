@@ -97,14 +97,14 @@ export class QueryTypeGenerator {
     }
 
     private getGlobalQuickSearchFieldName(): string {
-        return "quickSearchGlobal" // @MSF TODO: constant
+        return "quickSearchGlobal" // @MSF OPT TODO: constant
     }
 
     private getQuickSearchGlobalField(rootEntityTypes: ReadonlyArray<RootEntityType>): QueryNodeField {
         const fieldConfig = ({
             name: this.getGlobalQuickSearchFieldName(),
             type: new QueryNodeListType(new QueryNodeNonNullType(this.outputTypeGenerator.generateQuickSearchGlobalType(rootEntityTypes))),
-            description: "global search description", // @MSF TODO: description
+            description: "global search description", // @MSF OPT TODO: description
             resolve: () => new QuickSearchQueryNode({isGlobal: true})
         })
 
@@ -116,7 +116,7 @@ export class QueryTypeGenerator {
         const fieldConfig = ({
             name: getMetaFieldName(this.getGlobalQuickSearchFieldName()),
             type: new QueryNodeNonNullType(metaType),
-            description: `description`, // @MSF TODO: description
+            description: `description`, // @MSF OPT TODO: description
             // meta fields should never be null. Also, this is crucial for performance. Without it, we would introduce
             // an unnecessary variable with the collection contents (which is slow) and we would to an equality check of
             // a collection against NULL which is deadly (v8 evaluation)
@@ -175,7 +175,7 @@ export class QueryTypeGenerator {
         const fieldConfig = ({
             name: getMetaFieldName(getQuickSearchEntitiesFieldName(rootEntityType.name)),
             type: new QueryNodeNonNullType(metaType),
-            description: rootEntityType.description, // @MSF TODO: description
+            description: rootEntityType.description, // @MSF OPT TODO: description
             // meta fields should never be null. Also, this is crucial for performance. Without it, we would introduce
             // an unnecessary variable with the collection contents (which is slow) and we would to an equality check of
             // a collection against NULL which is deadly (v8 evaluation)

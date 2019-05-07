@@ -40,7 +40,7 @@ export class QuickSearchFilterObjectType extends TypedInputObjectType<FilterFiel
         fields: Thunk<ReadonlyArray<FilterField>>
     ) {
         super(getQuickSearchFilterTypeName(type.name), fields, `QuickSearchFilter type for \`${type.name}\`.\n\nAll fields in this type are *and*-combined; see the \`or\` field for *or*-combination.`);
-        // @MSF TODO: description
+        // @MSF OPT TODO: description
     }
 
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
@@ -58,7 +58,7 @@ export class QuickSearchGlobalFilterObjectType extends TypedInputObjectType<Filt
         fields: Thunk<ReadonlyArray<FilterField>>,
     ) {
         super(getQuickSearchGlobalFilterTypeName(), fields, `QuickSearchFilter type for global-quick-search.\n\nAll fields in this type are *and*-combined; see the \`or\` field for *or*-combination.`);
-        // @MSF TODO: description
+        // @MSF OPT TODO: description
     }
 
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
@@ -144,7 +144,7 @@ export class QuickSearchFilterTypeGenerator {
     }
 
     private generateFilterFieldsForNonListScalar(field: Field): FilterField[] {
-        // @MSF TODO: validate languages only for strings
+        // @MSF OPT TODO: validate languages only for strings
         if (field.isList || !field.type.isScalarType) {
             throw new Error(`Expected "${field.name}" to be a non-list scalar`);
         }

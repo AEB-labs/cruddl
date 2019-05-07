@@ -81,7 +81,7 @@ export function getQuickSearchFilterTypeName(typeName: string) {
 }
 
 export function getQuickSearchGlobalFilterTypeName(){
-    return `GlobalQuickSearchFilter` // @MSF TODO: check for collisions
+    return `GlobalQuickSearchFilter` // @MSF OPT TODO: check for collisions
 }
 
 export function getOrderByTypeName(typeName: string) {

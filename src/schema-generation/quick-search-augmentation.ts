@@ -78,7 +78,7 @@ export class QuickSearchAugmentation {
                         itemVariable: itemVariable
                     });
                 }else{
-                    throw new Error("Quicksearch Augment only possible on QuickSearchQueryNodes") // @MSF TODO: proper error
+                    throw new Error("Quicksearch Augment only possible on QuickSearchQueryNodes") // @MSF OPT TODO: proper error
                 }
 
             }
@@ -109,7 +109,7 @@ export class QuickSearchAugmentation {
                         itemVariable: parentNode.itemVariable
                     }); // @MSF TODO: resolver - generate Search-Filter
                 }else{
-                    throw new Error("Quicksearch Augment only possible on QuickSearchQueryNodes") // @MSF TODO: proper error
+                    throw new Error("Quicksearch Augment only possible on QuickSearchQueryNodes") // @MSF OPT TODO: proper error
                 }
             }
         };
@@ -151,7 +151,7 @@ export class QuickSearchAugmentation {
                         itemVariable: parentNode.itemVariable
                     }); // @MSF TODO: resolver - generate Global-Search-Filter
                 }else{
-                    throw new Error("Quicksearch Augment only possible on QuickSearchQueryNodes") // @MSF TODO: proper error
+                    throw new Error("Quicksearch Augment only possible on QuickSearchQueryNodes") // @MSF OPT TODO: proper error
                 }
             }
         };
@@ -171,7 +171,7 @@ export class QuickSearchAugmentation {
                 ...schemaField.args,
                 [ORDER_BY_ARG]: {
                     type: new GraphQLList(new GraphQLNonNull(orderByType.getEnumType())),
-                    description: `orderby` // @MSF TODO: description
+                    description: `orderby` // @MSF OPT TODO: description
                 },
                 [SKIP_ARG]: {
                     type: GraphQLInt,
@@ -194,7 +194,7 @@ export class QuickSearchAugmentation {
 
     public getOrderByAndPaginationResolver(schemaField: QueryNodeField, sourceNode:QueryNode, args:{[p: string]: any}, info: QueryNodeResolveInfo, orderByType:SystemFieldOrderByEnumType) {
         let listNode = schemaField.resolve(sourceNode, args, info);
-        let itemVariable = new VariableQueryNode(`qsGlobalResult`); // @MSF TODO: itemVariable Name
+        let itemVariable = new VariableQueryNode(`qsGlobalResult`); // @MSF OPT TODO: constant itemVariable Name
 
 
 
@@ -308,25 +308,6 @@ export class QuickSearchAugmentation {
     private getOrderByValues(args: any, orderByType: SystemFieldOrderByEnumType, { isAbsoluteOrderRequired }: { readonly isAbsoluteOrderRequired: boolean }): ReadonlyArray<OrderByEnumValue> {
         const valueNames = (args[ORDER_BY_ARG] || []) as ReadonlyArray<string>;
         const values = valueNames.map(value => orderByType.getValueOrThrow(value));
-
-        // @MSF TODO: is this needed?
-
-        // // if we need to guarantee that the order clause is absolute, we might have to add the 'id' field
-        // if (isAbsoluteOrderRequired && (orderByType.objectType.isChildEntityType || orderByType.objectType.isRootEntityType)) {
-        //     const discriminatorField = orderByType.objectType.discriminatorField;
-        //     // indices only work if all directions are equal. So if all are descending, add the discriminator field
-        //     // descending, too - otherwise, it does not matter, so we default to ascending. If there are no values, default
-        //     // to ascending, too.
-        //     let direction = (values.length > 0 && values.every(value => value.direction === OrderDirection.DESCENDING)) ?
-        //         OrderDirection.DESCENDING : OrderDirection.ASCENDING;
-        //
-        //     if (!values.some(v => v.path.length === 1 && v.path[0] === discriminatorField)) {
-        //         return [
-        //             ...values,
-        //             new OrderByEnumValue([discriminatorField], direction)
-        //         ];
-        //     }
-        // }
         return values;
     }
 
@@ -365,8 +346,8 @@ export class SystemFieldOrderByEnumType {
 
     get name() {
         return "GlobalOrderBy";
-        // @MSF TODO: constant
-        // @MSF TODO: check for collision
+        // @MSF OPT TODO: constant
+        // @MSF OPT TODO: check for collision
     }
 
 
@@ -374,7 +355,7 @@ export class SystemFieldOrderByEnumType {
     private get valueMap(): Map<string, OrderByEnumValue> {
         return new Map(this.values.map((v): [string, OrderByEnumValue] => ([v.name, v])));
     }
-    // @MSF TODO: is this needed?
+    // @MSF OPT TODO: is this needed?
     // getValue(name: string): OrderByEnumValue|undefined {
     //     return this.valueMap.get(name);
     // }

@@ -19,7 +19,7 @@ export class QuickSearchQueryNode extends QueryNode{
     }) {
         super();
         this.qsFilterNode = params.qsFilterNode || new ConstBoolQueryNode(true);
-        this.itemVariable = params.itemVariable || new VariableQueryNode(params.entity ? decapitalize(params.entity.name) : `quickSearchGlobal`); // @MSF TODO: variable Name
+        this.itemVariable = params.itemVariable || new VariableQueryNode(params.entity ? decapitalize(params.entity.name) : `quickSearchGlobal`); // @MSF OPT TODO: constant variable Name
         this.isGlobal = params.isGlobal || false;
         this.entity = params.entity;
     }
@@ -28,7 +28,7 @@ export class QuickSearchQueryNode extends QueryNode{
         return this.isGlobal ? `Use GlobalQuickSearch` : `Use QuickSearch for ${this.entity!.name}`
             +` with ${this.itemVariable.describe()} => \n` + indent(
             (this.qsFilterNode.equals(ConstBoolQueryNode.TRUE) ? '' : `where ${this.qsFilterNode.describe()}\n`)
-        ); // @MSF TODO: describe QueryTree
+        ); // @MSF OPT TODO: describe QueryTree
     }
 
 }
