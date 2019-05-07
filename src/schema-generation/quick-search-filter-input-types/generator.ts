@@ -25,6 +25,7 @@ import {
 } from "../filter-input-types/filter-fields";
 import {
     and,
+    or,
     QUICK_SEARCH_FILTER_FIELDS_BY_TYPE,
     QUICK_SEARCH_FILTER_OPERATORS,
     STRING_TEXT_ANALYZER_FILTER_FIELDS
@@ -32,8 +33,9 @@ import {
 import {ENUM_FILTER_FIELDS, FILTER_OPERATORS} from "../filter-input-types/constants";
 import {INPUT_FIELD_EQUAL} from "../../schema/constants";
 import {OrderByEnumValue} from "../order-by-enum-generator";
-import {SystemFieldOrderByEnumType} from "../quick-search-augmentation";
+import {SystemFieldOrderByEnumType} from "../quick-search-global-augmentation";
 
+// @MSF TODO: maybe split up in global and non global
 export class QuickSearchFilterObjectType extends TypedInputObjectType<FilterField> {
     constructor(
         type: Type,
@@ -50,6 +52,17 @@ export class QuickSearchFilterObjectType extends TypedInputObjectType<FilterFiel
         const filterNodes = objectEntries(filterValue)
             .map(([name, value]) => this.getFieldOrThrow(name).getFilterNode(sourceNode, value));
         return filterNodes.reduce(and, ConstBoolQueryNode.TRUE);
+
+    }
+
+    getSearchFilterNode(sourceNode: QueryNode, expression: string | undefined): QueryNode {
+        if (!expression) {
+            return new ConstBoolQueryNode(true);
+        }
+        return this.fields.filter(value => value instanceof ScalarOrEnumFieldFilterField && value.field.isSearchable && value.operatorPrefix == undefined)
+            .map(value => value.getQuickSearchFilterNode(sourceNode,expression))
+            .reduce(or,ConstBoolQueryNode.FALSE);
+        // @MSF TODO: searchFilter for languages
     }
 }
 
@@ -108,7 +121,7 @@ export class QuickSearchFilterTypeGenerator {
         return filterType;
     }
 
-    private generateQuickSearchGlobalFilterType(fields: Thunk<ReadonlyArray<FilterField>>): QuickSearchFilterObjectType {
+    private generateQuickSearchGlobalFilterType(fields: Thunk<ReadonlyArray<FilterField>>): QuickSearchGlobalFilterObjectType {
         function getFields(): ReadonlyArray<FilterField> {
             return [
                 ...resolveThunk(fields),
@@ -199,7 +212,7 @@ export class QuickSearchFilterTypeGenerator {
 
 
     @memorize()
-    generateGlobal(types: ReadonlyArray<RootEntityType>): QuickSearchFilterObjectType {
+    generateGlobal(types: ReadonlyArray<RootEntityType>): QuickSearchGlobalFilterObjectType {
         return this.generateQuickSearchGlobalFilterType(() => {
             let fields = flatMap(types, type => type.fields.filter(value => value.isQuickSearchIndexed || value.isSystemField));
             fields = fields.filter((value, index, array) => {

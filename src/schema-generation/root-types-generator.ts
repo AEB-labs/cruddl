@@ -16,6 +16,7 @@ import { QueryTypeGenerator } from './query-type-generator';
 import { UpdateInputTypeGenerator } from './update-input-types';
 import {QuickSearchAugmentation} from "./quick-search-augmentation";
 import {QuickSearchFilterTypeGenerator} from "./quick-search-filter-input-types/generator";
+import {QuickSearchGlobalAugmentation} from "./quick-search-global-augmentation";
 
 export class RootTypesGenerator {
     private readonly enumTypeGenerator = new EnumTypeGenerator();
@@ -27,13 +28,14 @@ export class RootTypesGenerator {
     private readonly listAugmentation = new ListAugmentation(this.filterAugmentation, this.orderByAugmentation);
     private readonly metaFirstAugmentation = new MetaFirstAugmentation();
     private readonly quickSearchAugmentation = new QuickSearchAugmentation(this.quickSearchFilterTypeGenerator);
+    private readonly quickSearchGlobalAugmentation = new QuickSearchGlobalAugmentation(this.quickSearchFilterTypeGenerator);
     private readonly metaTypeGenerator = new MetaTypeGenerator();
     private readonly outputTypeGenerator = new OutputTypeGenerator(this.listAugmentation, this.filterAugmentation,
         this.enumTypeGenerator, this.orderByEnumGenerator, this.metaTypeGenerator);
     private readonly createTypeGenerator = new CreateInputTypeGenerator(this.enumTypeGenerator);
     private readonly updateTypeGenerator = new UpdateInputTypeGenerator(this.enumTypeGenerator, this.createTypeGenerator);
     private readonly queryTypeGenerator = new QueryTypeGenerator(this.outputTypeGenerator, this.listAugmentation,
-        this.filterAugmentation, this.metaFirstAugmentation, this.metaTypeGenerator, this.quickSearchAugmentation);
+        this.filterAugmentation, this.metaFirstAugmentation, this.metaTypeGenerator, this.quickSearchAugmentation, this.quickSearchGlobalAugmentation);
 
     private readonly mutationTypeGenerator = new MutationTypeGenerator(this.outputTypeGenerator, this.createTypeGenerator,
         this.updateTypeGenerator, this.listAugmentation);

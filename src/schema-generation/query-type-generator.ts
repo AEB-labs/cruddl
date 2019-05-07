@@ -14,6 +14,7 @@ import { getArgumentsForUniqueFields, getEntitiesByUniqueFieldQuery } from './ut
 import {QuickSearchAugmentation} from "./quick-search-augmentation";
 import {GraphQLUnionType} from "graphql";
 import {QuickSearchQueryNode} from "../query-tree/quick-search";
+import {QuickSearchGlobalAugmentation} from "./quick-search-global-augmentation";
 
 
 
@@ -24,7 +25,8 @@ export class QueryTypeGenerator {
         private readonly filterAugmentation: FilterAugmentation,
         private readonly metaFirstAugmentation: MetaFirstAugmentation,
         private readonly metaTypeGenerator: MetaTypeGenerator,
-        private readonly quickSearchAugmentation: QuickSearchAugmentation
+        private readonly quickSearchAugmentation: QuickSearchAugmentation,
+        private readonly quickSearchGlobalAugmentation: QuickSearchGlobalAugmentation
     ) {
 
     }
@@ -108,7 +110,7 @@ export class QueryTypeGenerator {
             resolve: () => new QuickSearchQueryNode({isGlobal: true})
         })
 
-        return (this.quickSearchAugmentation.augmentGlobal(fieldConfig, rootEntityTypes));
+        return (this.quickSearchGlobalAugmentation.augment(fieldConfig, rootEntityTypes));
     }
 
     private getQuickSearchGlobalFieldMeta(rootEntityTypes: ReadonlyArray<RootEntityType>): QueryNodeField {
@@ -123,7 +125,7 @@ export class QueryTypeGenerator {
             skipNullCheck: true,
             resolve: () => this.getAllRootEntitiesNode(rootEntityTypes[0]) // @MSF TODO: resolver
         });
-        return this.metaFirstAugmentation.augment(this.quickSearchAugmentation.augmentGlobal(fieldConfig, rootEntityTypes));
+        return this.metaFirstAugmentation.augment(this.quickSearchGlobalAugmentation.augment(fieldConfig, rootEntityTypes));
     }
 
     private getSingleRootEntityNode(rootEntityType: RootEntityType, args: { [name: string]: any }): QueryNode {

@@ -29,6 +29,7 @@ import {GraphQLLocalDate} from "../../schema/scalars/local-date";
 import {GraphQLLocalTime} from "../../schema/scalars/local-time";
 
 export const and = binaryOp(BinaryOperator.AND);
+export const or = binaryOp(BinaryOperator.OR);
 
 export const QUICK_SEARCH_FILTER_OPERATORS: { [suffix: string]: (fieldNode: QueryNode, valueNode: QueryNode) => QueryNode } = {
     [INPUT_FIELD_EQUAL]: binaryOp(BinaryOperator.EQUAL),

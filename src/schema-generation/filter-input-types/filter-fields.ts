@@ -14,6 +14,7 @@ import {QuickSearchFilterObjectType} from "../quick-search-filter-input-types/ge
 
 export interface FilterField extends TypedInputFieldBase<FilterField> {
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode
+    getQuickSearchFilterNode(sourceNode: QueryNode, expression: string): QueryNode
 }
 
 function getDescription({ operator, typeName, fieldName }: { operator: string | undefined, typeName: string, fieldName?: string }) {
@@ -53,6 +54,15 @@ export class ScalarOrEnumFieldFilterField implements FilterField {
         const literalNode = new LiteralQueryNode(filterValue);
         return this.resolveOperator(valueNode, literalNode);
     }
+
+    getQuickSearchFilterNode(sourceNode: QueryNode, expression: string): QueryNode {
+        if(this.field.isSearchable){
+            return this.getFilterNode(sourceNode,expression)
+        }else{
+            return new ConstBoolQueryNode(false)
+        }
+
+    }
 }
 
 export class ScalarOrEnumFilterField implements FilterField {
@@ -75,6 +85,10 @@ export class ScalarOrEnumFilterField implements FilterField {
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
         const literalNode = new LiteralQueryNode(filterValue);
         return this.resolveOperator(sourceNode, literalNode);
+    }
+
+    getQuickSearchFilterNode(sourceNode: QueryNode, expression: string): QueryNode {
+        return this.getFilterNode(sourceNode,expression)
     }
 }
 
@@ -115,6 +129,10 @@ export class QuantifierFilterField implements FilterField {
             conditionNode: filterNode
         });
     }
+
+    getQuickSearchFilterNode(sourceNode: QueryNode, expression: string): QueryNode {
+        return new ConstBoolQueryNode(false) // @MSF TODO: check if quantifiers are required for quickSearch
+    }
 }
 
 export class NestedObjectFilterField implements FilterField {
@@ -134,6 +152,10 @@ export class NestedObjectFilterField implements FilterField {
 
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
         return this.inputType.getFilterNode(createFieldNode(this.field, sourceNode), filterValue);
+    }
+
+    getQuickSearchFilterNode(sourceNode: QueryNode, expression: string): QueryNode {
+        return new ConstBoolQueryNode(false) // @MSF TODO: Nested Objects for search
     }
 }
 
@@ -155,6 +177,10 @@ export class EntityExtensionFilterField implements FilterField {
             return ConstBoolQueryNode.TRUE;
         }
         return this.inputType.getFilterNode(createFieldNode(this.field, sourceNode), filterValue);
+    }
+
+    getQuickSearchFilterNode(sourceNode: QueryNode, expression: string): QueryNode {
+        return new ConstBoolQueryNode(false) // @MSF TODO: entity Extensions for search
     }
 }
 
@@ -183,6 +209,10 @@ export class AndFilterField implements FilterField {
         const nodes = values.map(value => this.filterType.getFilterNode(sourceNode, value));
         return nodes.reduce((prev, node) => new BinaryOperationQueryNode(prev, BinaryOperator.AND, node));
     }
+
+    getQuickSearchFilterNode(sourceNode: QueryNode, expression: string): QueryNode {
+        return new ConstBoolQueryNode(false) // not required for quickSearch
+    }
 }
 
 export class OrFilterField implements FilterField {
@@ -207,5 +237,9 @@ export class OrFilterField implements FilterField {
         }
         const nodes = values.map(value => this.filterType.getFilterNode(sourceNode, value));
         return nodes.reduce((prev, node) => new BinaryOperationQueryNode(prev, BinaryOperator.OR, node));
+    }
+
+    getQuickSearchFilterNode(sourceNode: QueryNode, expression: string): QueryNode {
+        return new ConstBoolQueryNode(false) // not required for quickSearch
     }
 }
