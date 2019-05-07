@@ -1,12 +1,56 @@
-import { Field, Relation, RootEntityType } from '../../model';
-import { AddEdgesQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode, ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeIdentifier, EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, OrderDirection, OrderSpecification, PartialEdgeIdentifier, QueryNode, QueryResultValidator, RemoveEdgesQueryNode, RootEntityIDQueryNode, RUNTIME_ERROR_TOKEN, RuntimeErrorQueryNode, SafeListQueryNode, SetEdgeQueryNode, TransformListQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../../query-tree';
-import { Quantifier, QuantifierFilterNode } from '../../query-tree/quantifiers';
-import { extractVariableAssignments, simplifyBooleans } from '../../query-tree/utils';
-import { not } from '../../schema-generation/filter-input-types/constants';
-import { Constructor, decapitalize } from '../../utils/utils';
-import { analyzeLikePatternPrefix } from '../like-helpers';
-import { aql, AQLCompoundQuery, aqlConfig, AQLFragment, AQLQueryResultVariable, AQLVariable } from './aql';
-import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './arango-basics';
+import {Field, Relation, RootEntityType} from '../../model';
+import {
+    AddEdgesQueryNode,
+    BasicType,
+    BinaryOperationQueryNode,
+    BinaryOperator,
+    ConcatListsQueryNode,
+    ConditionalQueryNode,
+    ConstBoolQueryNode,
+    ConstIntQueryNode,
+    CountQueryNode,
+    CreateEntityQueryNode,
+    DeleteEntitiesQueryNode,
+    EdgeIdentifier,
+    EntitiesQueryNode,
+    EntityFromIdQueryNode,
+    FieldQueryNode,
+    FirstOfListQueryNode,
+    FollowEdgeQueryNode,
+    ListQueryNode,
+    LiteralQueryNode,
+    MergeObjectsQueryNode,
+    NullQueryNode,
+    ObjectQueryNode,
+    OrderDirection,
+    OrderSpecification,
+    PartialEdgeIdentifier,
+    QueryNode,
+    QueryResultValidator,
+    RemoveEdgesQueryNode,
+    RootEntityIDQueryNode,
+    RUNTIME_ERROR_TOKEN,
+    RuntimeErrorQueryNode,
+    SafeListQueryNode,
+    SetEdgeQueryNode,
+    TransformListQueryNode,
+    TypeCheckQueryNode,
+    UnaryOperationQueryNode,
+    UnaryOperator,
+    UpdateEntitiesQueryNode,
+    VariableAssignmentQueryNode,
+    VariableQueryNode,
+    WithPreExecutionQueryNode
+} from '../../query-tree';
+import {Quantifier, QuantifierFilterNode} from '../../query-tree/quantifiers';
+import {extractVariableAssignments, simplifyBooleans} from '../../query-tree/utils';
+import {not} from '../../schema-generation/filter-input-types/constants';
+import {Constructor, decapitalize} from '../../utils/utils';
+import {analyzeLikePatternPrefix} from '../like-helpers';
+import {aql, AQLCompoundQuery, aqlConfig, AQLFragment, AQLQueryResultVariable, AQLVariable} from './aql';
+import {getCollectionNameForRelation, getCollectionNameForRootEntity} from './arango-basics';
+import {QuickSearchQueryNode} from "../../query-tree/quick-search";
+import {getViewNameForRootEntity} from "./schema-migration/arango-search-helpers";
 
 enum AccessType {
     READ,
@@ -236,6 +280,8 @@ register(ListQueryNode, (node, context) => {
     );
 });
 
+
+
 register(ConcatListsQueryNode, (node, context) => {
     const listNodes = node.listNodes.map(node => processNode(node, context));
     const listNodeStr = aql.join(listNodes, aql`, `);
@@ -289,6 +335,12 @@ function getFieldAccessFragment(field: Field) {
 
 register(RootEntityIDQueryNode, (node, context) => {
     return aql`${processNode(node.objectNode, context)}._key`; // ids are stored in _key field
+});
+
+register(QuickSearchQueryNode, (node, context) => {
+    // @MSF TODO: Properly implement AQL generation
+    let itemContext = context.introduceVariable(node.itemVariable)
+    return aql`(FOR ${itemContext.getVariable(node.itemVariable)} IN ${aql.identifier(getViewNameForRootEntity(node.entity!))} SEARCH ${processNode(node.qsFilterNode, itemContext)} RETURN ${itemContext.getVariable(node.itemVariable)})`
 });
 
 register(TransformListQueryNode, (node, context) => {
@@ -440,6 +492,8 @@ register(BinaryOperationQueryNode, (node, context) => {
             return aql`CONCAT(${lhs}, ${rhs})`;
         case BinaryOperator.PREPEND:
             return aql`CONCAT(${rhs}, ${lhs})`;
+        case BinaryOperator.CONTAINS_ANY_WORD:
+            return aql`${rhs} == ${lhs}` // @MSF TODO: implement contains any word
         default:
             throw new Error(`Unsupported binary operator: ${op}`);
     }

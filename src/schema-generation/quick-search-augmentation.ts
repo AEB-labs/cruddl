@@ -346,7 +346,7 @@ export class QuickSearchAugmentation {
     private buildQuickSearchSearchFilterNode(listNode: QueryNode, args: { [name: string]: any }, filterType: QuickSearchFilterObjectType, itemType: RootEntityType) {
         const expression = args[QUICK_SEARCH_EXPRESSION_ARG]
         if(!expression){
-            throw Error("empty expression") // @MSF TODO: proper Error
+            return new ConstBoolQueryNode(true)
         }
 
         const filterValue = args[QUICK_SEARCH_FILTER_ARG] || {};

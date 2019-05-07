@@ -43,7 +43,7 @@ export function getRequiredViewsFromModel(model: Model): ReadonlyArray<ArangoSea
     return flatMap(model.rootEntityTypes, rootEntity => getViewsForRootEntity(rootEntity));
 }
 
-function getViewNameForRootEntity(rootEntity: RootEntityType) {
+export function getViewNameForRootEntity(rootEntity: RootEntityType) {
     return "v_" + getCollectionNameForRootEntity(rootEntity);
 }
 
