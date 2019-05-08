@@ -2,7 +2,15 @@ import { getNamedType, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'gra
 import * as pluralize from 'pluralize';
 import { isArray } from 'util';
 import { Field, TypeKind } from '../../model';
-import { BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, LiteralQueryNode, QueryNode, VariableQueryNode } from '../../query-tree';
+import {
+    BinaryOperationQueryNode,
+    BinaryOperator,
+    ConstBoolQueryNode,
+    FieldQueryNode,
+    LiteralQueryNode,
+    QueryNode,
+    VariableQueryNode
+} from '../../query-tree';
 import { QuantifierFilterNode } from '../../query-tree/quantifiers';
 import { AND_FILTER_FIELD, FILTER_FIELD_PREFIX_SEPARATOR, INPUT_FIELD_EQUAL, OR_FILTER_FIELD } from '../../schema/constants';
 import { AnyValue, decapitalize, PlainObject } from '../../utils/utils';
@@ -15,6 +23,7 @@ import {QuickSearchFilterObjectType} from "../quick-search-filter-input-types/ge
 export interface FilterField extends TypedInputFieldBase<FilterField> {
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode
     getQuickSearchFilterNode(sourceNode: QueryNode, expression: string): QueryNode
+    isValidForQuickSearch():boolean
 }
 
 function getDescription({ operator, typeName, fieldName }: { operator: string | undefined, typeName: string, fieldName?: string }) {
@@ -63,6 +72,8 @@ export class ScalarOrEnumFieldFilterField implements FilterField {
         }
 
     }
+
+    isValidForQuickSearch():boolean { return this.field.isSearchable && this.operatorPrefix == undefined } // @MSF OPT TODO: properly check for operator
 }
 
 export class ScalarOrEnumFilterField implements FilterField {
@@ -72,7 +83,8 @@ export class ScalarOrEnumFilterField implements FilterField {
     constructor(
         public readonly resolveOperator: (fieldNode: QueryNode, valueNode: QueryNode) => QueryNode,
         public readonly operatorName: string,
-        baseInputType: GraphQLInputType
+        baseInputType: GraphQLInputType,
+        private readonly field? :Field // only filled for quickSearch @MSF OPT TODO: is there a better way to get the field name?
     ) {
         this.inputType = OPERATORS_WITH_LIST_OPERAND.includes(operatorName) ? new GraphQLList(new GraphQLNonNull(baseInputType)) : baseInputType;
         this.description = getDescription({ operator: operatorName, typeName: getNamedType(baseInputType).name });
@@ -83,13 +95,22 @@ export class ScalarOrEnumFilterField implements FilterField {
     }
 
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
-        const literalNode = new LiteralQueryNode(filterValue);
-        return this.resolveOperator(sourceNode, literalNode);
+        if(this.field){
+            const valueNode = new FieldQueryNode(sourceNode,this.field);
+            const literalNode = new LiteralQueryNode(filterValue);
+            return this.resolveOperator(valueNode, literalNode);
+        }else{
+            const literalNode = new LiteralQueryNode(filterValue);
+            return this.resolveOperator(sourceNode, literalNode);
+        }
+
     }
 
     getQuickSearchFilterNode(sourceNode: QueryNode, expression: string): QueryNode {
         return this.getFilterNode(sourceNode,expression)
     }
+
+    isValidForQuickSearch():boolean { return !!this.field && this.field.isSearchable && this.operatorName.endsWith("some_equal") } // @MSF OPT TODO: properly check for operator
 }
 
 export class QuantifierFilterField implements FilterField {
@@ -131,8 +152,10 @@ export class QuantifierFilterField implements FilterField {
     }
 
     getQuickSearchFilterNode(sourceNode: QueryNode, expression: string): QueryNode {
-        return new ConstBoolQueryNode(false) // @MSF TODO: check if quantifiers are required for quickSearch
+        return new ConstBoolQueryNode(false) // Not required for QuickSearch
     }
+
+    isValidForQuickSearch():boolean { return false }
 }
 
 export class NestedObjectFilterField implements FilterField {
@@ -155,8 +178,10 @@ export class NestedObjectFilterField implements FilterField {
     }
 
     getQuickSearchFilterNode(sourceNode: QueryNode, expression: string): QueryNode {
-        return new ConstBoolQueryNode(false) // @MSF TODO: Nested Objects for search
+        return this.getFilterNode(sourceNode,expression)
     }
+
+    isValidForQuickSearch():boolean { return false }
 }
 
 export class EntityExtensionFilterField implements FilterField {
@@ -182,6 +207,8 @@ export class EntityExtensionFilterField implements FilterField {
     getQuickSearchFilterNode(sourceNode: QueryNode, expression: string): QueryNode {
         return new ConstBoolQueryNode(false) // @MSF TODO: entity Extensions for search
     }
+
+    isValidForQuickSearch():boolean { return false }
 }
 
 export interface ListFilterField extends FilterField {
@@ -213,6 +240,8 @@ export class AndFilterField implements FilterField {
     getQuickSearchFilterNode(sourceNode: QueryNode, expression: string): QueryNode {
         return new ConstBoolQueryNode(false) // not required for quickSearch
     }
+
+    isValidForQuickSearch():boolean { return false }
 }
 
 export class OrFilterField implements FilterField {
@@ -242,4 +271,6 @@ export class OrFilterField implements FilterField {
     getQuickSearchFilterNode(sourceNode: QueryNode, expression: string): QueryNode {
         return new ConstBoolQueryNode(false) // not required for quickSearch
     }
+
+    isValidForQuickSearch():boolean { return false }
 }

@@ -59,7 +59,7 @@ export class QuickSearchFilterObjectType extends TypedInputObjectType<FilterFiel
         if (!expression) {
             return new ConstBoolQueryNode(true);
         }
-        return this.fields.filter(value => value instanceof ScalarOrEnumFieldFilterField && value.field.isSearchable && value.operatorPrefix == undefined)
+        return this.fields.filter(value => (value.isValidForQuickSearch()))
             .map(value => value.getQuickSearchFilterNode(sourceNode,expression))
             .reduce(or,ConstBoolQueryNode.FALSE);
         // @MSF TODO: searchFilter for languages
@@ -92,13 +92,7 @@ export class QuickSearchFilterTypeGenerator {
     }
 
     @memorize()
-    generate(type: Type): QuickSearchFilterObjectType {
-        if (type instanceof ScalarType) {
-            return this.generateQuickSearchFilterType(type, this.buildScalarFilterFields(type))
-        }
-        if (type instanceof EnumType) {
-            return this.generateQuickSearchFilterType(type, this.buildEnumFilterFields(type))
-        }
+    generate(type: ObjectType): QuickSearchFilterObjectType {
         return this.generateQuickSearchFilterType(type, () => {
             return flatMap(
                 type.fields.filter(value => value.isQuickSearchIndexed || value.isSystemField),
@@ -186,9 +180,9 @@ export class QuickSearchFilterTypeGenerator {
     private generateListFieldFilterFields(field: Field, prefix: string[]): FilterField[] {
 
         if(field.type instanceof ScalarType){
-           return this.buildScalarFilterFields(field.type,prefix.concat([field.name,"some"]));
+           return this.buildScalarFilterFields(field.type,prefix.concat([field.name,"some"]),field);
         }else if(field.type instanceof EnumType){
-            return this.buildEnumFilterFields(field.type,prefix.concat([field.name,"some"]));
+            return this.buildEnumFilterFields(field.type,prefix.concat([field.name,"some"]),field);
         }else{
             return flatMap(field.type.fields.filter(nestedField => nestedField.isQuickSearchIndexed || nestedField.isSystemField),(nestedField) => {
                 return this.generateListFieldFilterFields(nestedField, prefix.concat([field.name]))
@@ -199,15 +193,15 @@ export class QuickSearchFilterTypeGenerator {
 
 
 
-    private buildScalarFilterFields(type: ScalarType, prefix: string[] = []): ScalarOrEnumFilterField[] {
+    private buildScalarFilterFields(type: ScalarType, prefix: string[] = [], field: Field): ScalarOrEnumFilterField[] {
         const filterFields = QUICK_SEARCH_FILTER_FIELDS_BY_TYPE[type.name] || [];
-        let fields = filterFields.map(name => new ScalarOrEnumFilterField(QUICK_SEARCH_FILTER_OPERATORS[name], prefix.concat([name]).join("_"), type.graphQLScalarType));
+        let fields = filterFields.map(name => new ScalarOrEnumFilterField(QUICK_SEARCH_FILTER_OPERATORS[name], prefix.concat([name]).join("_"), type.graphQLScalarType, field));
 
         return fields;
     }
 
-    private buildEnumFilterFields(type: EnumType, prefix: string[] = []) {
-        return ENUM_FILTER_FIELDS.map(name => new ScalarOrEnumFilterField(QUICK_SEARCH_FILTER_OPERATORS[name],  prefix.concat([name]).join("_"), this.enumTypeGenerator.generate(type)))
+    private buildEnumFilterFields(type: EnumType, prefix: string[] = [], field: Field) {
+        return ENUM_FILTER_FIELDS.map(name => new ScalarOrEnumFilterField(QUICK_SEARCH_FILTER_OPERATORS[name],  prefix.concat([name]).join("_"), this.enumTypeGenerator.generate(type),field))
     }
 
 

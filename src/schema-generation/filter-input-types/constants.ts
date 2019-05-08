@@ -96,9 +96,12 @@ export function not(value: QueryNode): QueryNode {
 }
 
 export const and = binaryOp(BinaryOperator.AND);
+export const or = binaryOp(BinaryOperator.OR);
 
 export function binaryOp(op: BinaryOperator) {
-    return (lhs: QueryNode, rhs: QueryNode) => new BinaryOperationQueryNode(lhs, op, rhs);
+    return (lhs: QueryNode, rhs: QueryNode) => {
+        return new BinaryOperationQueryNode(lhs, op, rhs)
+    };
 }
 
 export function binaryNotOp(op: BinaryOperator) {

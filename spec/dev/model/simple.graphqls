@@ -6,8 +6,8 @@ type Hero @rootEntity(quickSearchIndex:true, globalQuickSearch: true) {
     nickNames: [String] @quickSearchIndex(searchable: true)
     movies: [Movie] @relation(inverseOf: "heroes")
     skills: [Skill] @quickSearchIndex
-    suit: Suit
-    morality: Morality
+    suit: Suit @quickSearchIndex(searchable: true)
+    morality: Morality @quickSearchIndex(searchable: true)
     countryISOCode: String @quickSearchIndex
     country: Country @reference(keyField: "countryISOCode")
     missions: [Mission]
@@ -47,7 +47,7 @@ type Director @rootEntity {
 "A description of a hero suit"
 type Suit @entityExtension {
     "The dominant color of the suit"
-    color: String
+    color: String @quickSearchIndex(searchable: true)
 }
 
 type Country @rootEntity {
