@@ -33,6 +33,9 @@ import {
     RuntimeErrorQueryNode,
     SafeListQueryNode,
     SetEdgeQueryNode,
+    TernaryOperationQueryNode,
+    TernaryOperator,
+    TextAnalyzerQueryNode,
     TransformListQueryNode,
     TypeCheckQueryNode,
     UnaryOperationQueryNode,
@@ -492,12 +495,40 @@ register(BinaryOperationQueryNode, (node, context) => {
             return aql`CONCAT(${lhs}, ${rhs})`;
         case BinaryOperator.PREPEND:
             return aql`CONCAT(${rhs}, ${lhs})`;
-        case BinaryOperator.CONTAINS_ANY_WORD:
-            return aql`${rhs} == ${lhs}` // @MSF TODO: implement contains any word
         default:
             throw new Error(`Unsupported binary operator: ${op}`);
     }
 
+});
+
+register(TernaryOperationQueryNode, (node, context) => {
+
+    if(!(node.param instanceof TextAnalyzerQueryNode) && node.operator != TernaryOperator.QUICKSEARCH_STARTS_WITH){
+        throw new Error(`Unsupported ternary operation parameter: ${node.param ? node.param.describe() : node.param}`);
+    }
+
+    const lhs = processNode(node.lhs, context);
+    const rhs = processNode(node.rhs, context);
+    const param = (node.param instanceof TextAnalyzerQueryNode) ? processNode(node.param, context) : undefined;
+
+
+    switch (node.operator) {
+        case TernaryOperator.QUICKSEARCH_STARTS_WITH:
+            if(param){
+                return aql`ANALYZER( STARTS_WITH(${lhs},${rhs}),${param})`
+            }else{
+                return aql`STARTS_WITH(${lhs},${rhs})`
+            }
+        case TernaryOperator.QUICKSEARCH_IN_TOKENS:
+            return aql`ANALYZER( ${lhs} IN TOKENS(${rhs}, ${param!}),${param!})`
+        default:
+            throw new Error(`Unsupported ternary operator: ${node.operator}`);
+    }
+
+});
+
+register(TextAnalyzerQueryNode, (node, context) => {
+   return aql.value(`text_${node.language.toLowerCase()}`)
 });
 
 function getFastStartsWithQuery(lhs: AQLFragment, rhsValue: string): AQLFragment {

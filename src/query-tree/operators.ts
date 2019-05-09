@@ -1,4 +1,5 @@
 import { QueryNode } from './base';
+import {QuickSearchLanguage} from "../model/config";
 
 /**
  * A node that performs an operation with one operand
@@ -82,8 +83,6 @@ export class BinaryOperationQueryNode extends QueryNode {
                 return 'APPEND';
             case BinaryOperator.PREPEND:
                 return 'PREPEND';
-            case BinaryOperator.CONTAINS_ANY_WORD:
-                return 'IN TOKENS';
             default:
                 return '(unknown operator)';
         }
@@ -94,41 +93,92 @@ export class BinaryOperationQueryNode extends QueryNode {
  * The operator of a BinaryOperationQueryNode
  */
 export enum BinaryOperator {
-    AND,
-    OR,
+    AND = "AND",
+    OR = "OR",
 
     /**
      * Strict equality (values of different types are considered unequal)
      */
-    EQUAL,
+    EQUAL = "EQUAL",
 
     /**
      * Strict inequality (values of different types are considered unequal)
      */
-    UNEQUAL,
+    UNEQUAL = "UNEQUAL",
 
-    LESS_THAN,
-    LESS_THAN_OR_EQUAL,
-    GREATER_THAN,
-    GREATER_THAN_OR_EQUAL,
-    IN,
-    CONTAINS,
-    STARTS_WITH,
-    ENDS_WITH,
-    CONTAINS_ANY_WORD,
+    LESS_THAN = "LESS_THAN",
+    LESS_THAN_OR_EQUAL = "LESS_THAN_OR_EQUAL",
+    GREATER_THAN = "GREATER_THAN",
+    GREATER_THAN_OR_EQUAL = "GREATER_THAN_OR_EQUAL",
+    IN = "IN",
+    CONTAINS = "CONTAINS",
+    STARTS_WITH = "STARTS_WITH",
+    ENDS_WITH = "ENDS_WITH",
 
     /**
      * Comparison for string using placeholders (% for arbitrary char sequences, _ for a single character).
      * Case-insensitive. Use backslashes to escape %, _ and \
      */
-    LIKE,
-    ADD,
-    SUBTRACT,
-    MULTIPLY,
-    DIVIDE,
-    MODULO,
-    APPEND,
-    PREPEND,
+    LIKE = "LIKE",
+    ADD = "ADD",
+    SUBTRACT = "SUBTRACT",
+    MULTIPLY = "MULTIPLY",
+    DIVIDE = "DIVIDE",
+    MODULO = "MODULO",
+    APPEND = "APPEND",
+    PREPEND = "PREPEND",
+}
+
+/**
+ * A node that performs an operation with two operands and a parameter
+ */
+export class TernaryOperationQueryNode extends QueryNode {
+    constructor(public readonly lhs: QueryNode, public readonly operator: TernaryOperator, public readonly rhs: QueryNode, public readonly param?: QueryNode) {
+        super();
+    }
+
+    describe() {
+        return `(${this.lhs.describe()} ${this.describeOperator(this.operator)} ${this.rhs.describe()}${this.getParamString()})`;
+    }
+
+    private describeOperator(op: TernaryOperator) {
+        switch (op) {
+            case TernaryOperator.QUICKSEARCH_IN_TOKENS:
+                return 'IN TOKENS'
+            case TernaryOperator.QUICKSEARCH_STARTS_WITH:
+                return 'STARTS_WITH'
+            default:
+                return '(unknown operator)';
+        }
+    }
+
+    private getParamString() {
+        if(this.param){
+            return ` with ${this.param.describe()}`
+        }else{
+            return ``
+        }
+
+    }
+}
+
+/**
+ * The operator of a TernaryOperationQueryNode
+ */
+export enum TernaryOperator {
+    QUICKSEARCH_STARTS_WITH = "QUICKSEARCH_STARTS_WITH",
+    QUICKSEARCH_IN_TOKENS = "QUICKSEARCH_IN_TOKENS"
+}
+
+export class TextAnalyzerQueryNode extends QueryNode{
+    constructor(public readonly language: QuickSearchLanguage) {
+        super();
+    }
+
+
+    describe(): string {
+        return `ANALYZER(${this.language})`;
+    }
 }
 
 export class ConditionalQueryNode extends QueryNode {

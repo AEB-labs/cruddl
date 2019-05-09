@@ -18,7 +18,7 @@ export const QUICK_SEARCH_INDEXED_DIRECTIVE = "quickSearchIndex";
 export const QUICK_SEARCH_INDEXED_GLOBAL_ARGUMENT = 'globalQuickSearch';
 export const QUICK_SEARCH_INDEXED_ARGUMENT = 'quickSearchIndex';
 export const QUICK_SEARCH_INDEXED_SEARCHABLE_ARG = "searchable";
-export const QUICK_SEARCH_INDEXED_LANGUAGES_ARG = "languages";
+export const QUICK_SEARCH_INDEXED_LANGUAGES_ARG = "language";
 // @MSF TODO error on viewname v_global
 export const QUICK_SEARCH_GLOBAL_VIEW_NAME = "v_global";
 export const QUICK_SEARCH_FORBIDDEN_VIEW_NAMES = [QUICK_SEARCH_GLOBAL_VIEW_NAME];

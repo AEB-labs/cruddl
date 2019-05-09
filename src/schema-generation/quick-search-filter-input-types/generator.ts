@@ -12,7 +12,7 @@ import {
     ConstBoolQueryNode,
     NullQueryNode,
     OrderDirection,
-    QueryNode
+    QueryNode, TextAnalyzerQueryNode
 } from "../../query-tree";
 import {
     AndFilterField,
@@ -158,10 +158,15 @@ export class QuickSearchFilterTypeGenerator {
 
         const inputType = field.type.graphQLScalarType;
         const filterFields = QUICK_SEARCH_FILTER_FIELDS_BY_TYPE[field.type.graphQLScalarType.name] || [];
-        let scalarFields = filterFields.map(name => new ScalarOrEnumFieldFilterField(field, QUICK_SEARCH_FILTER_OPERATORS[name], name === INPUT_FIELD_EQUAL ? undefined : name, inputType));
+        let paramNode: QueryNode | undefined = undefined;
+        if(field.language){
+            paramNode = new TextAnalyzerQueryNode(field.language);
+        }
+
+        let scalarFields = filterFields.map(name => new ScalarOrEnumFieldFilterField(field, QUICK_SEARCH_FILTER_OPERATORS[name], name === INPUT_FIELD_EQUAL ? undefined : name, inputType, paramNode));
 
         scalarFields = scalarFields.concat(
-            STRING_TEXT_ANALYZER_FILTER_FIELDS.map(name => new ScalarOrEnumFieldFilterField(field,QUICK_SEARCH_FILTER_OPERATORS[name], name, inputType))
+            STRING_TEXT_ANALYZER_FILTER_FIELDS.map(name => new ScalarOrEnumFieldFilterField(field,QUICK_SEARCH_FILTER_OPERATORS[name], name, inputType, paramNode))
         )
 
 
@@ -172,9 +177,12 @@ export class QuickSearchFilterTypeGenerator {
         if (field.isList || !field.type.isEnumType) {
             throw new Error(`Expected "${field.name}" to be a non-list enum`);
         }
-
+        let paramNode: QueryNode | undefined = undefined;
+        if(field.language){
+            paramNode = new TextAnalyzerQueryNode(field.language);
+        }
         return ENUM_FILTER_FIELDS.map(name =>
-            new ScalarOrEnumFieldFilterField(field, FILTER_OPERATORS[name], name === INPUT_FIELD_EQUAL ? undefined : name, graphQLEnumType));
+            new ScalarOrEnumFieldFilterField(field, FILTER_OPERATORS[name], name === INPUT_FIELD_EQUAL ? undefined : name, graphQLEnumType,paramNode));
     }
 
     private generateListFieldFilterFields(field: Field, prefix: Field[]): FilterField[] {

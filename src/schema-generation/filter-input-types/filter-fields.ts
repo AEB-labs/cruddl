@@ -40,9 +40,10 @@ export class ScalarOrEnumFieldFilterField implements FilterField {
 
     constructor(
         public readonly field: Field,
-        public readonly resolveOperator: (fieldNode: QueryNode, valueNode: QueryNode) => QueryNode,
+        public readonly resolveOperator: (fieldNode: QueryNode, valueNode: QueryNode, paramNode?: QueryNode) => QueryNode,
         public readonly operatorPrefix: string | undefined,
-        baseInputType: GraphQLInputType
+        baseInputType: GraphQLInputType,
+        public readonly paramNode?: QueryNode
     ) {
         this.inputType = OPERATORS_WITH_LIST_OPERAND.includes(operatorPrefix || '') ? new GraphQLList(new GraphQLNonNull(baseInputType)) : baseInputType;
         this.description = getDescription({ operator: operatorPrefix, fieldName: field.name, typeName: field.type.name });
@@ -61,7 +62,7 @@ export class ScalarOrEnumFieldFilterField implements FilterField {
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
         const valueNode = createFieldNode(this.field, sourceNode);
         const literalNode = new LiteralQueryNode(filterValue);
-        return this.resolveOperator(valueNode, literalNode);
+        return this.resolveOperator(valueNode, literalNode, this.paramNode);
     }
 
     getQuickSearchFilterNode(sourceNode: QueryNode, expression: string): QueryNode {
