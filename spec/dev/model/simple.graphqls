@@ -7,7 +7,7 @@ type Hero @rootEntity(quickSearchIndex:true, globalQuickSearch: true) {
     movies: [Movie] @relation(inverseOf: "heroes")
     skills: [Skill] @quickSearchIndex(searchable: true) # @MSF TODO: Value Objects dont work yet
     suit: Suit @quickSearchIndex(searchable: true)
-    morality: Morality @quickSearchIndex(searchable: true) # @MSF TODO: only allow language on Scalars
+    morality: Morality @quickSearchIndex(searchable: true) # @MSF OPT TODO: only allow language on Scalars
     countryISOCode: String @quickSearchIndex
     country: Country @reference(keyField: "countryISOCode")
     missions: [Mission] @quickSearchIndex # @MSF TODO: Child entities dont work yet
@@ -25,7 +25,7 @@ type Skill @valueObject {
     description: String @quickSearchIndex
     "A value between 0 and 11"
     strength: Float
-    skills: [Skill]
+    skills: [Skill] @quickSearchIndex
 }
 
 "A superhero movie"

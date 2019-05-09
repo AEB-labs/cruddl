@@ -99,22 +99,22 @@ function getGlobalSearchViewProperties(globalIndexedEntityTypes: RootEntityType[
             fields: {}
         };
 
-
-        for(const field of fields){
-            if(link.fields![field.name]){
-                link.fields![field.name]!.analyzers = [...new Set(link.fields![field.name]!.analyzers!.concat((field.language ? [field.language] : []).map(getAnalyzerFromQuickSearchLanguage)))]
-            }else{
-                const analyzers = (field.language ? [field.language] : []).map(getAnalyzerFromQuickSearchLanguage).concat([IDENTITY_ANALYZER]);
-                if(_.isEqual(analyzers,[IDENTITY_ANALYZER])){
-                    link.fields![field.name] = {}
-                }else{
-                    link.fields![field.name] = {
-                        analyzers
-                    }
-                }
-            }
-
-        }
+        // @MSF GLOBAL TODO: fix
+        // for(const field of fields){
+        //     if(link.fields![field.name]){
+        //         link.fields![field.name]!.analyzers = [...new Set(link.fields![field.name]!.analyzers!.concat((field.language ? [field.language] : []).map(getAnalyzerFromQuickSearchLanguage)))]
+        //     }else{
+        //         const analyzers = (field.language ? [field.language] : []).map(getAnalyzerFromQuickSearchLanguage).concat([IDENTITY_ANALYZER]);
+        //         if(_.isEqual(analyzers,[IDENTITY_ANALYZER])){
+        //             link.fields![field.name] = {}
+        //         }else{
+        //             link.fields![field.name] = {
+        //                 analyzers
+        //             }
+        //         }
+        //     }
+        //
+        // }
 
         properties.links![getCollectionNameForRootEntity(entity)] = link;
     }

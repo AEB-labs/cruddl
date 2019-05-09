@@ -35,7 +35,7 @@ import {INPUT_FIELD_EQUAL} from "../../schema/constants";
 import {OrderByEnumValue} from "../order-by-enum-generator";
 import {SystemFieldOrderByEnumType} from "../quick-search-global-augmentation";
 
-// @MSF TODO: maybe split up in global and non global
+// @MSF OPT TODO: maybe split up in global and non global
 export class QuickSearchFilterObjectType extends TypedInputObjectType<FilterField> {
     constructor(
         type: Type,
@@ -177,16 +177,17 @@ export class QuickSearchFilterTypeGenerator {
             new ScalarOrEnumFieldFilterField(field, FILTER_OPERATORS[name], name === INPUT_FIELD_EQUAL ? undefined : name, graphQLEnumType));
     }
 
-    private generateListFieldFilterFields(field: Field, prefix: string[]): FilterField[] {
+    private generateListFieldFilterFields(field: Field, prefix: Field[]): FilterField[] {
 
         if(field.type instanceof ScalarType){
-           return this.buildScalarFilterFields(field.type,prefix.concat([field.name,"some"]),field);
+           return this.buildScalarFilterFields(field.type,prefix.map(value => value.name).concat([field.name,"some"]),field); // @MSF OPT TODO: constants
         }else if(field.type instanceof EnumType){
-            return this.buildEnumFilterFields(field.type,prefix.concat([field.name,"some"]),field);
+            return this.buildEnumFilterFields(field.type,prefix.map(value => value.name).concat([field.name,"some"]),field);
         }else{
-            return flatMap(field.type.fields.filter(nestedField => nestedField.isQuickSearchIndexed || nestedField.isSystemField),(nestedField) => {
-                return this.generateListFieldFilterFields(nestedField, prefix.concat([field.name]))
-                // @MSF TODO: prevent endless recursion
+            return flatMap(field.type.fields.filter(nestedField => {
+               return (nestedField.isQuickSearchIndexed || nestedField.isSystemField) && !prefix.includes(nestedField)
+            }),(nestedField) => {
+                return this.generateListFieldFilterFields(nestedField, prefix.concat([field]))
             });
         }
     }
