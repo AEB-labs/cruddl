@@ -205,7 +205,7 @@ export class EntityExtensionFilterField implements FilterField {
     }
 
     getQuickSearchFilterNode(sourceNode: QueryNode, expression: string): QueryNode {
-        return new ConstBoolQueryNode(false) // @MSF TODO: entity Extensions for search
+        return new ConstBoolQueryNode(false) // @MSF TODO: entity Extensions + Child Entities + Value Objects for search
     }
 
     isValidForQuickSearch():boolean { return false }

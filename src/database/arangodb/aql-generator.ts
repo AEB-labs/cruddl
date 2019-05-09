@@ -455,7 +455,7 @@ register(BinaryOperationQueryNode, (node, context) => {
     switch (node.operator) {
         case BinaryOperator.CONTAINS:
             return aql`(${lhs} LIKE CONCAT("%", ${rhs}, "%"))`;
-        case BinaryOperator.STARTS_WITH:
+        case BinaryOperator.STARTS_WITH: // @MSF TODO: STARTS_WITH for quickSearch
             const slowFrag = aql`(LEFT(${lhs}, LENGTH(${rhs})) == ${rhs})`;
             if (node.rhs instanceof LiteralQueryNode && typeof node.rhs.value === 'string') {
                 const fastFrag = getFastStartsWithQuery(lhs, node.rhs.value);

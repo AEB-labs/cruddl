@@ -93,6 +93,7 @@ const VALIDATION_ERROR_INVALID_PERMISSION_PROFILE = `Invalid argument value, exp
 const VALIDATION_ERROR_EXPECTED_STRING_OR_LIST_OF_STRINGS = 'Expected string or list of strings';
 const VALIDATION_ERROR_EXPECTED_BOOLEAN = 'Expected boolean'
 const VALIDATION_ERROR_EXPECTED_ENUM_OR_LIST_OF_ENUMS = 'Expected enum or list of enums';
+const VALIDATION_ERROR_EXPECTED_ENUM = 'Expected enum';
 const VALIDATION_ERROR_INVERSE_OF_ARG_MUST_BE_STRING = 'inverseOf must be specified as String';
 const VALIDATION_ERROR_MISSING_ARGUMENT_OPERATORS = 'Missing argument \'operators\'';
 const VALIDATION_ERROR_MISSING_ARGUMENT_DEFAULT_VALUE = DEFAULT_VALUE_DIRECTIVE + ' needs an argument named ' + VALUE_ARG;
@@ -286,34 +287,23 @@ function getIsSearchable(fieldNode: FieldDefinitionNode, context: ValidationCont
 
 }
 
-function getLanguages(fieldNode: FieldDefinitionNode, context: ValidationContext):ReadonlyArray<QuickSearchLanguage> {
+function getLanguage(fieldNode: FieldDefinitionNode, context: ValidationContext):QuickSearchLanguage | undefined {
     let directive: DirectiveNode | undefined = findDirectiveWithName(fieldNode, QUICK_SEARCH_INDEXED_ARGUMENT);
     if(directive){
         const argument: ArgumentNode | undefined = getNodeByName(directive.arguments, QUICK_SEARCH_INDEXED_LANGUAGES_ARG)
 
         if(argument) {
-            if(argument.value.kind === "ListValue"){
-                const languages: QuickSearchLanguage[] = []
-                for(const value of argument.value.values){
-                    if(value.kind === "EnumValue"){
-                        languages.push(value.value as QuickSearchLanguage);
-                    }else{
-                        context.addMessage(ValidationMessage.error(VALIDATION_ERROR_EXPECTED_ENUM_OR_LIST_OF_ENUMS, value.loc));
-                        return []
-                    }
-                }
-                return languages;
-            }else if(argument.value.kind === "EnumValue"){
-                return [argument.value.value as QuickSearchLanguage]
+            if(argument.value.kind === "EnumValue"){
+                return argument.value.value as QuickSearchLanguage
             }else{
-                context.addMessage(ValidationMessage.error(VALIDATION_ERROR_EXPECTED_ENUM_OR_LIST_OF_ENUMS, argument.value.loc));
-                return []
+                context.addMessage(ValidationMessage.error(VALIDATION_ERROR_EXPECTED_ENUM, argument.value.loc));
+                return undefined
             }
         }else{
-            return []
+            return undefined
         }
     }else{
-        return [];
+        return undefined;
     }
 
 }
@@ -342,7 +332,7 @@ function createFieldInput(fieldNode: FieldDefinitionNode, context: ValidationCon
         isQuickSearchIndexed: hasDirectiveWithName(fieldNode, QUICK_SEARCH_INDEXED_DIRECTIVE),
         isQuickSearchIndexedASTNode: findDirectiveWithName(fieldNode, QUICK_SEARCH_INDEXED_DIRECTIVE),
         isSearchable: getIsSearchable(fieldNode, context),
-        languages: getLanguages(fieldNode, context)
+        language: getLanguage(fieldNode, context)
     };
 }
 

@@ -29,7 +29,7 @@ export function extractQueryTreeObjectType(type: QueryNodeOutputType): QueryNode
         return extractQueryTreeObjectType(type.ofType);
     }
     if(type instanceof QueryNodeUnionType){
-        return undefined; // @MSF TODO: properly handle UnionType
+        return undefined; // @MSF GLOBAL TODO: properly handle UnionType
     }
     return type;
 }

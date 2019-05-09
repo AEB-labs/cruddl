@@ -34,7 +34,7 @@ export const DIRECTIVES: DocumentNode = gql`
     directive @index(sparse: Boolean = false) on FIELD_DEFINITION
     
     "Declares a field to be indexed with ArangoSearch"
-    directive @quickSearchIndex(languages: [QuickSearchLanguage!] = [], searchable: Boolean = false) on FIELD_DEFINITION
+    directive @quickSearchIndex(language: QuickSearchLanguage, searchable: Boolean = false) on FIELD_DEFINITION
 
     "The available languages for ArangoSearch Analyzers"
     enum QuickSearchLanguage {

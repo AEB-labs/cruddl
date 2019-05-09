@@ -1,23 +1,23 @@
 "A supehero"
 type Hero @rootEntity(quickSearchIndex:true, globalQuickSearch: true) {
     "The hero's screen name"
-    name: String @quickSearchIndex(searchable: true, languages:[DE])
+    name: String @quickSearchIndex(searchable: true, language:DE)
     age: Int @defaultValue(value: 42)
     nickNames: [String] @quickSearchIndex(searchable: true)
     movies: [Movie] @relation(inverseOf: "heroes")
-    skills: [Skill] @quickSearchIndex
+    skills: [Skill] @quickSearchIndex(searchable: true) # @MSF TODO: Value Objects dont work yet
     suit: Suit @quickSearchIndex(searchable: true)
-    morality: Morality @quickSearchIndex(searchable: true)
+    morality: Morality @quickSearchIndex(searchable: true) # @MSF TODO: only allow language on Scalars
     countryISOCode: String @quickSearchIndex
     country: Country @reference(keyField: "countryISOCode")
-    missions: [Mission]
+    missions: [Mission] @quickSearchIndex # @MSF TODO: Child entities dont work yet
     info: JSON
 }
 
 "A heroic mission"
 type Mission @childEntity {
     date: DateTime
-    title: String
+    title: String @quickSearchIndex
 }
 
 "A special skill of a superhero"
@@ -30,12 +30,12 @@ type Skill @valueObject {
 
 "A superhero movie"
 type Movie @rootEntity(quickSearchIndex:true, globalQuickSearch: true) {
-    name: String @quickSearchIndex(searchable: true, languages:[EN])
+    name: String @quickSearchIndex(searchable: true, language:EN)
     "All the heroes starring in this movie"
     heroes: [Hero] @relation
     "The real superhero"
     director: Director @relation
-    publisher: Publisher @reference
+    publisher: Publisher @reference # @MSF TODO: references
 }
 
 "A movie director"

@@ -159,11 +159,11 @@ export class QuickSearchFilterTypeGenerator {
         const inputType = field.type.graphQLScalarType;
         const filterFields = QUICK_SEARCH_FILTER_FIELDS_BY_TYPE[field.type.graphQLScalarType.name] || [];
         let scalarFields = filterFields.map(name => new ScalarOrEnumFieldFilterField(field, QUICK_SEARCH_FILTER_OPERATORS[name], name === INPUT_FIELD_EQUAL ? undefined : name, inputType));
-        field.languages.forEach(value => {
-            scalarFields = scalarFields.concat(
-                STRING_TEXT_ANALYZER_FILTER_FIELDS.map(name => new ScalarOrEnumFieldFilterField(field,QUICK_SEARCH_FILTER_OPERATORS[name], name+"_"+value.toLowerCase(), inputType))
-            )
-        })
+
+        scalarFields = scalarFields.concat(
+            STRING_TEXT_ANALYZER_FILTER_FIELDS.map(name => new ScalarOrEnumFieldFilterField(field,QUICK_SEARCH_FILTER_OPERATORS[name], name, inputType))
+        )
+
 
         return scalarFields;
     }
@@ -214,7 +214,7 @@ export class QuickSearchFilterTypeGenerator {
             });
             return flatMap(
                 fields,
-                (field: Field) => this.generateFieldQuickSearchFilterFields(field) // @MSF TODO: fix languages and description (only language and description of first found field count right now)
+                (field: Field) => this.generateFieldQuickSearchFilterFields(field) // @MSF GLOBAL TODO: fix languages and description (only language and description of first found field count right now)
             )
         });
 

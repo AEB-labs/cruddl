@@ -95,6 +95,9 @@ export const AND_FILTER_FIELD = 'AND';
 export const OR_FILTER_FIELD = 'OR';
 export const INPUT_FIELD_CONTAINS_ANY_WORD = 'contains_any_word';
 export const INPUT_FIELD_NOT_CONTAINS_ANY_WORD = 'not_contains_any_word';
+// @MSF TODO: CONTAINS ALL WORDS
+// @MSF TODO: CONTAINS ANY PREFIX
+// @MSF TODO: CONTAINS ALL PREFIX
 
 
 export const CALC_MUTATIONS_DIRECTIVE = 'calcMutations';

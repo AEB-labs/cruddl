@@ -457,7 +457,7 @@ export class Field implements ModelComponent {
     get isSearchable(): boolean{
         return !!this.input.isSearchable
     }
-    get languages(): ReadonlyArray<QuickSearchLanguage>{
-        return this.input.languages || []
+    get language(): QuickSearchLanguage | undefined{
+        return this.input.language
     }
 }

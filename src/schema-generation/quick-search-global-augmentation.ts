@@ -63,7 +63,7 @@ export class QuickSearchGlobalAugmentation{
                         entity: parentNode.entity,
                         isGlobal: parentNode.isGlobal,
                         itemVariable: parentNode.itemVariable
-                    }); // @MSF TODO: resolver - generate Global-Search-Filter
+                    }); // @MSF GLOBAL TODO: resolver - generate Global-Search-Filter
                 }else{
                     throw new Error("Quicksearch Augment only possible on QuickSearchQueryNodes") // @MSF OPT TODO: proper error
                 }
@@ -121,7 +121,7 @@ export class QuickSearchGlobalAugmentation{
                         entity: parentNode.entity,
                         isGlobal: parentNode.isGlobal,
                         itemVariable: parentNode.itemVariable
-                    }); // @MSF TODO: resolver - generate Global-Search-Search-Filter
+                    }); // @MSF GLOBAL TODO: resolver - generate Global-Search-Search-Filter
                 }else{
                     throw new Error("Quicksearch Augment only possible on QuickSearchQueryNodes") // @MSF OPT TODO: proper error
                 }
