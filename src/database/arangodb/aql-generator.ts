@@ -521,8 +521,10 @@ register(TernaryOperationQueryNode, (node, context) => {
             return aql`STARTS_WITH(${lhs},${rhs})`
         case TernaryOperator.QUICKSEARCH_CONTAINS_ANY_WORD:
             return aql`ANALYZER( ${lhs} IN TOKENS(${rhs}, ${param!}),${param!})`
-        case TernaryOperator.QUICK_SEARCH_CONTAINS_PREFIX:
+        case TernaryOperator.QUICKSEARCH_CONTAINS_PREFIX:
             return aql`ANALYZER( STARTS_WITH( ${lhs}, TOKENS(${rhs})[0]), ${param!}))`
+        case TernaryOperator.QUICKSEARCH_CONTAINS_PHRASE:
+            return aql`ANALYZER( PHRASE( ${lhs}, ${rhs}), ${param!})`
         default:
             throw new Error(`Unsupported ternary operator: ${node.operator}`);
     }

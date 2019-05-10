@@ -35,12 +35,12 @@ import {
     INPUT_FIELD_CONTAINS_ALL_PREFIXES,
     INPUT_FIELD_CONTAINS_ALL_WORDS,
     INPUT_FIELD_CONTAINS_ANY_PREFIX,
-    INPUT_FIELD_CONTAINS_ANY_WORD,
+    INPUT_FIELD_CONTAINS_ANY_WORD, INPUT_FIELD_CONTAINS_PHRASE,
     INPUT_FIELD_EQUAL,
     INPUT_FIELD_NOT_CONTAINS_ALL_PREFIXES,
     INPUT_FIELD_NOT_CONTAINS_ALL_WORDS,
     INPUT_FIELD_NOT_CONTAINS_ANY_PREFIX,
-    INPUT_FIELD_NOT_CONTAINS_ANY_WORD
+    INPUT_FIELD_NOT_CONTAINS_ANY_WORD, INPUT_FIELD_NOT_CONTAINS_PHRASE
 } from "../../schema/constants";
 import {OrderByEnumValue} from "../order-by-enum-generator";
 import {SystemFieldOrderByEnumType} from "../quick-search-global-augmentation";
@@ -201,17 +201,20 @@ export class QuickSearchFilterTypeGenerator {
                     not(new QuickSearchComplexFilterQueryNode(TernaryOperator.QUICKSEARCH_CONTAINS_ANY_WORD, BinaryOperator.AND, fieldNode, valueNode, paramNode))
             case INPUT_FIELD_CONTAINS_ANY_PREFIX:
                 return (fieldNode: QueryNode, valueNode: QueryNode, paramNode?: QueryNode) =>
-                    new QuickSearchComplexFilterQueryNode(TernaryOperator.QUICK_SEARCH_CONTAINS_PREFIX, BinaryOperator.OR, fieldNode, valueNode, paramNode)
+                    new QuickSearchComplexFilterQueryNode(TernaryOperator.QUICKSEARCH_CONTAINS_PREFIX, BinaryOperator.OR, fieldNode, valueNode, paramNode)
             case INPUT_FIELD_NOT_CONTAINS_ANY_PREFIX:
                 return (fieldNode: QueryNode, valueNode: QueryNode, paramNode?: QueryNode) =>
-                    not(new QuickSearchComplexFilterQueryNode(TernaryOperator.QUICK_SEARCH_CONTAINS_PREFIX, BinaryOperator.OR, fieldNode, valueNode, paramNode))
+                    not(new QuickSearchComplexFilterQueryNode(TernaryOperator.QUICKSEARCH_CONTAINS_PREFIX, BinaryOperator.OR, fieldNode, valueNode, paramNode))
             case INPUT_FIELD_CONTAINS_ALL_PREFIXES:
                 return (fieldNode: QueryNode, valueNode: QueryNode, paramNode?: QueryNode) =>
-                    new QuickSearchComplexFilterQueryNode(TernaryOperator.QUICK_SEARCH_CONTAINS_PREFIX, BinaryOperator.AND, fieldNode, valueNode, paramNode)
+                    new QuickSearchComplexFilterQueryNode(TernaryOperator.QUICKSEARCH_CONTAINS_PREFIX, BinaryOperator.AND, fieldNode, valueNode, paramNode)
             case INPUT_FIELD_NOT_CONTAINS_ALL_PREFIXES:
                 return (fieldNode: QueryNode, valueNode: QueryNode, paramNode?: QueryNode) =>
-                    not(new QuickSearchComplexFilterQueryNode(TernaryOperator.QUICK_SEARCH_CONTAINS_PREFIX, BinaryOperator.AND, fieldNode, valueNode, paramNode))
-
+                    not(new QuickSearchComplexFilterQueryNode(TernaryOperator.QUICKSEARCH_CONTAINS_PREFIX, BinaryOperator.AND, fieldNode, valueNode, paramNode))
+            case INPUT_FIELD_CONTAINS_PHRASE:
+                return ternaryOp(TernaryOperator.QUICKSEARCH_CONTAINS_PHRASE);
+            case INPUT_FIELD_NOT_CONTAINS_PHRASE:
+                return ternaryNotOp(TernaryOperator.QUICKSEARCH_CONTAINS_PHRASE);
             default:
                 throw new Error(`Complex Filter for '${name}' is not defined.`) // @MSF OPT TODO: better error
         }

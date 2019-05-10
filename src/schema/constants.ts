@@ -101,6 +101,8 @@ export const INPUT_FIELD_CONTAINS_ANY_PREFIX = 'contains_any_prefix';
 export const INPUT_FIELD_NOT_CONTAINS_ANY_PREFIX = 'not_contains_any_prefix';
 export const INPUT_FIELD_CONTAINS_ALL_PREFIXES = 'contains_all_prefixes';
 export const INPUT_FIELD_NOT_CONTAINS_ALL_PREFIXES = 'not_contains_all_prefixes';
+export const INPUT_FIELD_CONTAINS_PHRASE = 'contains_phrase';
+export const INPUT_FIELD_NOT_CONTAINS_PHRASE = 'not_contains_phrase';
 
 export const CALC_MUTATIONS_DIRECTIVE = 'calcMutations';
 export const CALC_MUTATIONS_OPERATORS_ARG = 'operators';
