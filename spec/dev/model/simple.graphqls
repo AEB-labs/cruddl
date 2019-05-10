@@ -1,3 +1,5 @@
+# @MSF TODO: repair Tests
+# @MSF TODO: write own Tests
 "A supehero"
 type Hero @rootEntity(quickSearchIndex:true, globalQuickSearch: true) {
     "The hero's screen name"

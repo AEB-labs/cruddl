@@ -95,10 +95,12 @@ export const AND_FILTER_FIELD = 'AND';
 export const OR_FILTER_FIELD = 'OR';
 export const INPUT_FIELD_CONTAINS_ANY_WORD = 'contains_any_word';
 export const INPUT_FIELD_NOT_CONTAINS_ANY_WORD = 'not_contains_any_word';
-// @MSF TODO: CONTAINS ALL WORDS
-// @MSF TODO: CONTAINS ANY PREFIX
-// @MSF TODO: CONTAINS ALL PREFIX
-
+export const INPUT_FIELD_CONTAINS_ALL_WORDS = 'contains_all_words';
+export const INPUT_FIELD_NOT_CONTAINS_ALL_WORDS = 'not_contains_all_words';
+export const INPUT_FIELD_CONTAINS_ANY_PREFIX = 'contains_any_prefix';
+export const INPUT_FIELD_NOT_CONTAINS_ANY_PREFIX = 'not_contains_any_prefix';
+export const INPUT_FIELD_CONTAINS_ALL_PREFIXES = 'contains_all_prefixes';
+export const INPUT_FIELD_NOT_CONTAINS_ALL_PREFIXES = 'not_contains_all_prefixes';
 
 export const CALC_MUTATIONS_DIRECTIVE = 'calcMutations';
 export const CALC_MUTATIONS_OPERATORS_ARG = 'operators';

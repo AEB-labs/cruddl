@@ -182,7 +182,7 @@ export class QueryTypeGenerator {
             // an unnecessary variable with the collection contents (which is slow) and we would to an equality check of
             // a collection against NULL which is deadly (v8 evaluation)
             skipNullCheck: true,
-            resolve: () => this.getAllRootEntitiesNode(rootEntityType) // @MSF TODO: resolver
+            resolve: () => new QuickSearchQueryNode({entity: rootEntityType})
         });
         return this.metaFirstAugmentation.augment(this.filterAugmentation.augment(this.quickSearchAugmentation.augment(fieldConfig, rootEntityType),rootEntityType));
     }

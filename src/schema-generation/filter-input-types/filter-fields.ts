@@ -12,7 +12,13 @@ import {
     VariableQueryNode
 } from '../../query-tree';
 import { QuantifierFilterNode } from '../../query-tree/quantifiers';
-import { AND_FILTER_FIELD, FILTER_FIELD_PREFIX_SEPARATOR, INPUT_FIELD_EQUAL, OR_FILTER_FIELD } from '../../schema/constants';
+import {
+    AND_FILTER_FIELD,
+    FILTER_FIELD_PREFIX_SEPARATOR,
+    INPUT_FIELD_CONTAINS_ANY_WORD,
+    INPUT_FIELD_EQUAL, INPUT_FIELD_STARTS_WITH,
+    OR_FILTER_FIELD
+} from '../../schema/constants';
 import { AnyValue, decapitalize, PlainObject } from '../../utils/utils';
 import { createFieldNode } from '../field-nodes';
 import { TypedInputFieldBase } from '../typed-input-object-type';
@@ -73,8 +79,8 @@ export class ScalarOrEnumFieldFilterField implements FilterField {
         }
 
     }
-
-    isValidForQuickSearch():boolean { return this.field.isSearchable && this.operatorPrefix == undefined } // @MSF OPT TODO: properly check for operator
+    // @MSF SETUP: Which Fields are used for SEARCH
+    isValidForQuickSearch():boolean { return this.field.isSearchable && this.operatorPrefix == undefined || this.operatorPrefix == INPUT_FIELD_CONTAINS_ANY_WORD} // @MSF OPT TODO: properly check for operator
 }
 
 export class ScalarOrEnumFilterField implements FilterField {

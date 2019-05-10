@@ -1,8 +1,11 @@
 import {QueryNode} from "./base";
 import {RootEntityType} from "../model/implementation";
-import {ConstBoolQueryNode} from "./literals";
+import {ConstBoolQueryNode, LiteralQueryNode} from "./literals";
 import {VariableQueryNode} from "./variables";
 import {decapitalize, indent} from "../utils/utils";
+import {BinaryOperator, TernaryOperationQueryNode, TernaryOperator} from "./operators";
+import {and} from "../schema-generation/quick-search-filter-input-types/constants";
+import {simplifyBooleans} from "./utils";
 
 export class QuickSearchQueryNode extends QueryNode{
 
@@ -31,4 +34,31 @@ export class QuickSearchQueryNode extends QueryNode{
         ); // @MSF OPT TODO: describe QueryTree
     }
 
+}
+
+export class QuickSearchComplexFilterQueryNode extends QueryNode{
+
+    // @MSF OPT TODO: extract this (no special QueryNode is required. just the filterNode needs to be created)
+
+    public filterNode: QueryNode;
+
+    constructor(comparisonOperator: TernaryOperator, logicalOperator: BinaryOperator, fieldNode: QueryNode, valueNode: QueryNode, paramNode?: QueryNode){
+        super()
+        if(!(valueNode instanceof LiteralQueryNode) || (typeof valueNode.value !== "string")){
+            throw new Error("QuickSearchComplexFilterQueryNode requires a LiteralQueryNode with a string-value, as valueNode");
+        }
+        const tokens = this.tokenize(valueNode.value);
+        const neutralOperand = logicalOperator === BinaryOperator.AND ? ConstBoolQueryNode.TRUE : ConstBoolQueryNode.FALSE
+        this.filterNode = simplifyBooleans(tokens
+            .map(value => new TernaryOperationQueryNode(fieldNode,comparisonOperator,new LiteralQueryNode(value),paramNode))
+            .reduce(and,neutralOperand))
+    }
+
+    describe(): string {
+        return "";
+    }
+
+    private tokenize(value: string): string[] {
+        return value.split(" ") //  @MSF TODO: implement tokenization
+    }
 }

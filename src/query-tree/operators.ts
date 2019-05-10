@@ -1,5 +1,11 @@
 import { QueryNode } from './base';
 import {QuickSearchLanguage} from "../model/config";
+import {
+    INPUT_FIELD_CONTAINS_ALL_PREFIXES,
+    INPUT_FIELD_CONTAINS_ALL_WORDS,
+    INPUT_FIELD_CONTAINS_ANY_PREFIX, INPUT_FIELD_NOT_CONTAINS_ALL_PREFIXES,
+    INPUT_FIELD_NOT_CONTAINS_ALL_WORDS, INPUT_FIELD_NOT_CONTAINS_ANY_PREFIX
+} from "../schema/constants";
 
 /**
  * A node that performs an operation with one operand
@@ -143,7 +149,7 @@ export class TernaryOperationQueryNode extends QueryNode {
 
     private describeOperator(op: TernaryOperator) {
         switch (op) {
-            case TernaryOperator.QUICKSEARCH_IN_TOKENS:
+            case TernaryOperator.QUICKSEARCH_CONTAINS_ANY_WORD:
                 return 'IN TOKENS'
             case TernaryOperator.QUICKSEARCH_STARTS_WITH:
                 return 'STARTS_WITH'
@@ -167,7 +173,8 @@ export class TernaryOperationQueryNode extends QueryNode {
  */
 export enum TernaryOperator {
     QUICKSEARCH_STARTS_WITH = "QUICKSEARCH_STARTS_WITH",
-    QUICKSEARCH_IN_TOKENS = "QUICKSEARCH_IN_TOKENS"
+    QUICKSEARCH_CONTAINS_ANY_WORD = "QUICKSEARCH_CONTAINS_ANY_WORD",
+    QUICK_SEARCH_CONTAINS_PREFIX = "QUICK_SEARCH_CONTAINS_PREFIX",
 }
 
 export class TextAnalyzerQueryNode extends QueryNode{
@@ -190,3 +197,5 @@ export class ConditionalQueryNode extends QueryNode {
         return `(if ${this.condition.describe()} then ${this.expr1.describe()} else ${this.expr2.describe()} endif)`;
     }
 }
+
+

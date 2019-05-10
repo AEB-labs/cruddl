@@ -52,7 +52,7 @@ import {Constructor, decapitalize} from '../../utils/utils';
 import {analyzeLikePatternPrefix} from '../like-helpers';
 import {aql, AQLCompoundQuery, aqlConfig, AQLFragment, AQLQueryResultVariable, AQLVariable} from './aql';
 import {getCollectionNameForRelation, getCollectionNameForRootEntity} from './arango-basics';
-import {QuickSearchQueryNode} from "../../query-tree/quick-search";
+import {QuickSearchComplexFilterQueryNode, QuickSearchQueryNode} from "../../query-tree/quick-search";
 import {getViewNameForRootEntity} from "./schema-migration/arango-search-helpers";
 
 enum AccessType {
@@ -346,6 +346,10 @@ register(QuickSearchQueryNode, (node, context) => {
     return aql`(FOR ${itemContext.getVariable(node.itemVariable)} IN ${aql.identifier(getViewNameForRootEntity(node.entity!))} SEARCH ${processNode(node.qsFilterNode, itemContext)} RETURN ${itemContext.getVariable(node.itemVariable)})`
 });
 
+register(QuickSearchComplexFilterQueryNode, (node, context) => {
+    return processNode(node.filterNode, context)
+});
+
 register(TransformListQueryNode, (node, context) => {
     let itemContext = context.introduceVariable(node.itemVariable);
     const itemVar = itemContext.getVariable(node.itemVariable);
@@ -458,7 +462,7 @@ register(BinaryOperationQueryNode, (node, context) => {
     switch (node.operator) {
         case BinaryOperator.CONTAINS:
             return aql`(${lhs} LIKE CONCAT("%", ${rhs}, "%"))`;
-        case BinaryOperator.STARTS_WITH: // @MSF TODO: STARTS_WITH for quickSearch
+        case BinaryOperator.STARTS_WITH:
             const slowFrag = aql`(LEFT(${lhs}, LENGTH(${rhs})) == ${rhs})`;
             if (node.rhs instanceof LiteralQueryNode && typeof node.rhs.value === 'string') {
                 const fastFrag = getFastStartsWithQuery(lhs, node.rhs.value);
@@ -514,13 +518,11 @@ register(TernaryOperationQueryNode, (node, context) => {
 
     switch (node.operator) {
         case TernaryOperator.QUICKSEARCH_STARTS_WITH:
-            if(param){
-                return aql`ANALYZER( STARTS_WITH(${lhs},${rhs}),${param})`
-            }else{
-                return aql`STARTS_WITH(${lhs},${rhs})`
-            }
-        case TernaryOperator.QUICKSEARCH_IN_TOKENS:
+            return aql`STARTS_WITH(${lhs},${rhs})`
+        case TernaryOperator.QUICKSEARCH_CONTAINS_ANY_WORD:
             return aql`ANALYZER( ${lhs} IN TOKENS(${rhs}, ${param!}),${param!})`
+        case TernaryOperator.QUICK_SEARCH_CONTAINS_PREFIX:
+            return aql`ANALYZER( STARTS_WITH( ${lhs}, TOKENS(${rhs})[0]), ${param!}))`
         default:
             throw new Error(`Unsupported ternary operator: ${node.operator}`);
     }

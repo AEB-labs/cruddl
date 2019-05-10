@@ -12,7 +12,7 @@ import {
     ConstBoolQueryNode,
     NullQueryNode,
     OrderDirection,
-    QueryNode, TextAnalyzerQueryNode
+    QueryNode, TernaryOperator, TextAnalyzerQueryNode
 } from "../../query-tree";
 import {
     AndFilterField,
@@ -30,10 +30,21 @@ import {
     QUICK_SEARCH_FILTER_OPERATORS,
     STRING_TEXT_ANALYZER_FILTER_FIELDS
 } from "./constants";
-import {ENUM_FILTER_FIELDS, FILTER_OPERATORS} from "../filter-input-types/constants";
-import {INPUT_FIELD_EQUAL} from "../../schema/constants";
+import {ENUM_FILTER_FIELDS, FILTER_OPERATORS, not, ternaryNotOp, ternaryOp} from "../filter-input-types/constants";
+import {
+    INPUT_FIELD_CONTAINS_ALL_PREFIXES,
+    INPUT_FIELD_CONTAINS_ALL_WORDS,
+    INPUT_FIELD_CONTAINS_ANY_PREFIX,
+    INPUT_FIELD_CONTAINS_ANY_WORD,
+    INPUT_FIELD_EQUAL,
+    INPUT_FIELD_NOT_CONTAINS_ALL_PREFIXES,
+    INPUT_FIELD_NOT_CONTAINS_ALL_WORDS,
+    INPUT_FIELD_NOT_CONTAINS_ANY_PREFIX,
+    INPUT_FIELD_NOT_CONTAINS_ANY_WORD
+} from "../../schema/constants";
 import {OrderByEnumValue} from "../order-by-enum-generator";
 import {SystemFieldOrderByEnumType} from "../quick-search-global-augmentation";
+import {QuickSearchComplexFilterQueryNode} from "../../query-tree/quick-search";
 
 // @MSF OPT TODO: maybe split up in global and non global
 export class QuickSearchFilterObjectType extends TypedInputObjectType<FilterField> {
@@ -62,7 +73,7 @@ export class QuickSearchFilterObjectType extends TypedInputObjectType<FilterFiel
         return this.fields.filter(value => (value.isValidForQuickSearch()))
             .map(value => value.getQuickSearchFilterNode(sourceNode,expression))
             .reduce(or,ConstBoolQueryNode.FALSE);
-        // @MSF TODO: searchFilter for languages
+
     }
 }
 
@@ -165,12 +176,46 @@ export class QuickSearchFilterTypeGenerator {
 
         let scalarFields = filterFields.map(name => new ScalarOrEnumFieldFilterField(field, QUICK_SEARCH_FILTER_OPERATORS[name], name === INPUT_FIELD_EQUAL ? undefined : name, inputType, paramNode));
 
-        scalarFields = scalarFields.concat(
-            STRING_TEXT_ANALYZER_FILTER_FIELDS.map(name => new ScalarOrEnumFieldFilterField(field,QUICK_SEARCH_FILTER_OPERATORS[name], name, inputType, paramNode))
-        )
+        if(field.language){
+            scalarFields = scalarFields.concat(
+                STRING_TEXT_ANALYZER_FILTER_FIELDS.map(name => new ScalarOrEnumFieldFilterField(field,this.generateComplexFilterOperator(name), name, inputType, paramNode))
+            )
+        }
+
 
 
         return scalarFields;
+    }
+
+    private generateComplexFilterOperator(name: string): (fieldNode: QueryNode, valueNode: QueryNode, paramNode?: QueryNode) => QueryNode{
+        switch(name){
+            case INPUT_FIELD_CONTAINS_ANY_WORD:
+                return ternaryOp(TernaryOperator.QUICKSEARCH_CONTAINS_ANY_WORD);
+            case INPUT_FIELD_NOT_CONTAINS_ANY_WORD:
+                return ternaryNotOp(TernaryOperator.QUICKSEARCH_CONTAINS_ANY_WORD);
+            case INPUT_FIELD_CONTAINS_ALL_WORDS:
+                return (fieldNode: QueryNode, valueNode: QueryNode, paramNode?: QueryNode) =>
+                    new QuickSearchComplexFilterQueryNode(TernaryOperator.QUICKSEARCH_CONTAINS_ANY_WORD, BinaryOperator.AND, fieldNode, valueNode, paramNode)
+            case INPUT_FIELD_NOT_CONTAINS_ALL_WORDS:
+                return (fieldNode: QueryNode, valueNode: QueryNode, paramNode?: QueryNode) =>
+                    not(new QuickSearchComplexFilterQueryNode(TernaryOperator.QUICKSEARCH_CONTAINS_ANY_WORD, BinaryOperator.AND, fieldNode, valueNode, paramNode))
+            case INPUT_FIELD_CONTAINS_ANY_PREFIX:
+                return (fieldNode: QueryNode, valueNode: QueryNode, paramNode?: QueryNode) =>
+                    new QuickSearchComplexFilterQueryNode(TernaryOperator.QUICK_SEARCH_CONTAINS_PREFIX, BinaryOperator.OR, fieldNode, valueNode, paramNode)
+            case INPUT_FIELD_NOT_CONTAINS_ANY_PREFIX:
+                return (fieldNode: QueryNode, valueNode: QueryNode, paramNode?: QueryNode) =>
+                    not(new QuickSearchComplexFilterQueryNode(TernaryOperator.QUICK_SEARCH_CONTAINS_PREFIX, BinaryOperator.OR, fieldNode, valueNode, paramNode))
+            case INPUT_FIELD_CONTAINS_ALL_PREFIXES:
+                return (fieldNode: QueryNode, valueNode: QueryNode, paramNode?: QueryNode) =>
+                    new QuickSearchComplexFilterQueryNode(TernaryOperator.QUICK_SEARCH_CONTAINS_PREFIX, BinaryOperator.AND, fieldNode, valueNode, paramNode)
+            case INPUT_FIELD_NOT_CONTAINS_ALL_PREFIXES:
+                return (fieldNode: QueryNode, valueNode: QueryNode, paramNode?: QueryNode) =>
+                    not(new QuickSearchComplexFilterQueryNode(TernaryOperator.QUICK_SEARCH_CONTAINS_PREFIX, BinaryOperator.AND, fieldNode, valueNode, paramNode))
+
+            default:
+                throw new Error(`Complex Filter for '${name}' is not defined.`) // @MSF OPT TODO: better error
+        }
+
     }
 
     private generateFilterFieldsForEnumField(field: Field, graphQLEnumType: GraphQLEnumType): FilterField[] {
