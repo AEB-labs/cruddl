@@ -72,7 +72,7 @@ export class ScalarOrEnumFieldFilterField implements FilterField {
     }
 
     getQuickSearchFilterNode(sourceNode: QueryNode, expression: string): QueryNode {
-        if(this.field.isSearchable){
+        if(this.isValidForQuickSearch()){
             return this.getFilterNode(sourceNode,expression)
         }else{
             return new ConstBoolQueryNode(false)
@@ -80,7 +80,7 @@ export class ScalarOrEnumFieldFilterField implements FilterField {
 
     }
     // @MSF SETUP: Which Fields are used for SEARCH
-    isValidForQuickSearch():boolean { return this.field.isSearchable && this.operatorPrefix == undefined || this.operatorPrefix == INPUT_FIELD_CONTAINS_ANY_WORD} // @MSF OPT TODO: properly check for operator
+    isValidForQuickSearch():boolean { return this.field.isSearchable && (this.operatorPrefix == undefined || this.operatorPrefix == INPUT_FIELD_CONTAINS_ANY_WORD)} // @MSF OPT TODO: properly check for operator
 }
 
 export class ScalarOrEnumFilterField implements FilterField {
@@ -91,7 +91,8 @@ export class ScalarOrEnumFilterField implements FilterField {
         public readonly resolveOperator: (fieldNode: QueryNode, valueNode: QueryNode) => QueryNode,
         public readonly operatorName: string,
         baseInputType: GraphQLInputType,
-        private readonly field? :Field // only filled for quickSearch @MSF OPT TODO: is there a better way to get the field name?
+        private readonly field? :Field, // only filled for quickSearch
+        private readonly path? : Field[] // only filled for quickSearch
     ) {
         this.inputType = OPERATORS_WITH_LIST_OPERAND.includes(operatorName) ? new GraphQLList(new GraphQLNonNull(baseInputType)) : baseInputType;
         this.description = getDescription({ operator: operatorName, typeName: getNamedType(baseInputType).name });
@@ -103,7 +104,7 @@ export class ScalarOrEnumFilterField implements FilterField {
 
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
         if(this.field){
-            const valueNode = new FieldQueryNode(sourceNode,this.field);
+            const valueNode = new FieldQueryNode(sourceNode,this.field,this.path);
             const literalNode = new LiteralQueryNode(filterValue);
             return this.resolveOperator(valueNode, literalNode);
         }else{
@@ -114,7 +115,11 @@ export class ScalarOrEnumFilterField implements FilterField {
     }
 
     getQuickSearchFilterNode(sourceNode: QueryNode, expression: string): QueryNode {
-        return this.getFilterNode(sourceNode,expression)
+        if(this.isValidForQuickSearch()){
+            return this.getFilterNode(sourceNode,expression)
+        }else{
+            return new ConstBoolQueryNode(false)
+        }
     }
 
     isValidForQuickSearch():boolean { return !!this.field && this.field.isSearchable && this.operatorName.endsWith("some_equal") } // @MSF OPT TODO: properly check for operator
@@ -185,10 +190,16 @@ export class NestedObjectFilterField implements FilterField {
     }
 
     getQuickSearchFilterNode(sourceNode: QueryNode, expression: string): QueryNode {
-        return this.getFilterNode(sourceNode,expression)
+        if(this.inputType instanceof QuickSearchFilterObjectType){
+            return this.inputType.getSearchFilterNode(createFieldNode(this.field,sourceNode),expression)
+        }else{
+            return new ConstBoolQueryNode(false);
+        }
     }
 
-    isValidForQuickSearch():boolean { return false }
+    isValidForQuickSearch():boolean {
+        return this.field.isSearchable && this.inputType instanceof QuickSearchFilterObjectType
+    }
 }
 
 export class EntityExtensionFilterField implements FilterField {
@@ -212,10 +223,16 @@ export class EntityExtensionFilterField implements FilterField {
     }
 
     getQuickSearchFilterNode(sourceNode: QueryNode, expression: string): QueryNode {
-        return new ConstBoolQueryNode(false) // @MSF TODO: entity Extensions + Child Entities + Value Objects for search
+        if(this.inputType instanceof QuickSearchFilterObjectType){
+            return this.inputType.getSearchFilterNode(createFieldNode(this.field,sourceNode),expression)
+        }else{
+            return new ConstBoolQueryNode(false);
+        }
     }
 
-    isValidForQuickSearch():boolean { return false }
+    isValidForQuickSearch():boolean {
+        return this.field.isSearchable && this.inputType instanceof QuickSearchFilterObjectType
+    }
 }
 
 export interface ListFilterField extends FilterField {

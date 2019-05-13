@@ -233,15 +233,16 @@ export class QuickSearchFilterTypeGenerator {
             new ScalarOrEnumFieldFilterField(field, FILTER_OPERATORS[name], name === INPUT_FIELD_EQUAL ? undefined : name, graphQLEnumType,paramNode));
     }
 
+    @memorize()
     private generateListFieldFilterFields(field: Field, prefix: Field[]): FilterField[] {
 
         if(field.type instanceof ScalarType){
-           return this.buildScalarFilterFields(field.type,prefix.map(value => value.name).concat([field.name,"some"]),field); // @MSF OPT TODO: constants
+           return this.buildScalarFilterFields(field.type,prefix.map(value => value.name).concat([field.name,"some"]),field,prefix); // @MSF OPT TODO: constants
         }else if(field.type instanceof EnumType){
-            return this.buildEnumFilterFields(field.type,prefix.map(value => value.name).concat([field.name,"some"]),field);
+            return this.buildEnumFilterFields(field.type,prefix.map(value => value.name).concat([field.name,"some"]),field,prefix);
         }else{
             return flatMap(field.type.fields.filter(nestedField => {
-               return (nestedField.isQuickSearchIndexed || nestedField.isSystemField) && !prefix.includes(nestedField)
+               return ((nestedField.isQuickSearchIndexed) || nestedField.isSystemField) && !prefix.includes(field)
             }),(nestedField) => {
                 return this.generateListFieldFilterFields(nestedField, prefix.concat([field]))
             });
@@ -250,15 +251,15 @@ export class QuickSearchFilterTypeGenerator {
 
 
 
-    private buildScalarFilterFields(type: ScalarType, prefix: string[] = [], field: Field): ScalarOrEnumFilterField[] {
+    private buildScalarFilterFields(type: ScalarType, prefix: string[] = [], field: Field, path?: Field[]): ScalarOrEnumFilterField[] {
         const filterFields = QUICK_SEARCH_FILTER_FIELDS_BY_TYPE[type.name] || [];
-        let fields = filterFields.map(name => new ScalarOrEnumFilterField(QUICK_SEARCH_FILTER_OPERATORS[name], prefix.concat([name]).join("_"), type.graphQLScalarType, field));
+        let fields = filterFields.map(name => new ScalarOrEnumFilterField(QUICK_SEARCH_FILTER_OPERATORS[name], prefix.concat([name]).join("_"), type.graphQLScalarType, field,path));
 
         return fields;
     }
 
-    private buildEnumFilterFields(type: EnumType, prefix: string[] = [], field: Field) {
-        return ENUM_FILTER_FIELDS.map(name => new ScalarOrEnumFilterField(QUICK_SEARCH_FILTER_OPERATORS[name],  prefix.concat([name]).join("_"), this.enumTypeGenerator.generate(type),field))
+    private buildEnumFilterFields(type: EnumType, prefix: string[] = [], field: Field, path?: Field[]) {
+        return ENUM_FILTER_FIELDS.map(name => new ScalarOrEnumFilterField(QUICK_SEARCH_FILTER_OPERATORS[name],  prefix.concat([name]).join("_"), this.enumTypeGenerator.generate(type),field,path))
     }
 
 

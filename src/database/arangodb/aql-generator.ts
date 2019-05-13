@@ -322,9 +322,11 @@ register(EntityFromIdQueryNode, (node, context) => {
     return aql`DOCUMENT(${collection}, ${processNode(node.idNode, context)})`;
 });
 
+
+
 register(FieldQueryNode, (node, context) => {
     const object = processNode(node.objectNode, context);
-    return aql`${object}${getFieldAccessFragment(node.field)}`;
+    return aql`${object}${getFieldPathAccessFragment(node.path)}${getFieldAccessFragment(node.field)}`;
 });
 
 function getFieldAccessFragment(field: Field) {
@@ -334,6 +336,15 @@ function getFieldAccessFragment(field: Field) {
     }
     // fall back to bound values. do not attempt aql.string for security reasons - should not be the case normally, anyway.
     return aql`[${identifier}]`;
+}
+
+function getFieldPathAccessFragment(path?: Field[]): AQLFragment {
+    if(path && path.length > 0){
+        return aql`.${aql.identifier(path[0].name)}${getFieldPathAccessFragment(path.slice(1))}`;
+    }else{
+        return aql``
+    }
+
 }
 
 register(RootEntityIDQueryNode, (node, context) => {

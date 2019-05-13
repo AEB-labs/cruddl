@@ -33,7 +33,7 @@ export class EntitiesQueryNode extends QueryNode {
  * Note: this is unrelated to storing the value in a property of a result object, see ObjectQueryNode
  */
 export class FieldQueryNode extends QueryNode {
-    constructor(public readonly objectNode: QueryNode, public readonly field: Field) {
+    constructor(public readonly objectNode: QueryNode, public readonly field: Field, public readonly path?: Field[]) {
         super();
     }
 

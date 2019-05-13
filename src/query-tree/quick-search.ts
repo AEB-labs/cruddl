@@ -2,7 +2,7 @@ import {QueryNode} from "./base";
 import {RootEntityType} from "../model/implementation";
 import {ConstBoolQueryNode, LiteralQueryNode} from "./literals";
 import {VariableQueryNode} from "./variables";
-import {decapitalize, indent} from "../utils/utils";
+import {decapitalize, flatMap, indent} from "../utils/utils";
 import {BinaryOperator, TernaryOperationQueryNode, TernaryOperator} from "./operators";
 import {and} from "../schema-generation/quick-search-filter-input-types/constants";
 import {simplifyBooleans} from "./utils";
@@ -59,6 +59,6 @@ export class QuickSearchComplexFilterQueryNode extends QueryNode{
     }
 
     private tokenize(value: string): string[] {
-        return value.split(" ") //  @MSF TODO: implement tokenization
+        return flatMap(value.split(" "),t => t.split("-")) //  @MSF TODO: implement tokenization
     }
 }

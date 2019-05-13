@@ -1,30 +1,32 @@
 # @MSF TODO: repair Tests
 # @MSF TODO: write own Tests
+# @MSF OPT TODO: check where @memorize is viable
 "A supehero"
 type Hero @rootEntity(quickSearchIndex:true, globalQuickSearch: true) {
     "The hero's screen name"
-    name: String @quickSearchIndex(searchable: true, language:DE)
+    name: String @quickSearchIndex(language:DE)
     age: Int @defaultValue(value: 42)
-    nickNames: [String] @quickSearchIndex(searchable: true)
+    nickNames: [String] @quickSearchIndex
     movies: [Movie] @relation(inverseOf: "heroes")
-    skills: [Skill] @quickSearchIndex(searchable: true) # @MSF TODO: Value Objects dont work yet
+    skills: [Skill]
+    skill: Skill @quickSearchIndex(searchable: true)
     suit: Suit @quickSearchIndex(searchable: true)
-    morality: Morality @quickSearchIndex(searchable: true) # @MSF OPT TODO: only allow language on Scalars
+    morality: Morality @quickSearchIndex(searchable: true) # @MSF OPT TODO: only allow language on Scalars and Enums
     countryISOCode: String @quickSearchIndex
     country: Country @reference(keyField: "countryISOCode")
-    missions: [Mission] @quickSearchIndex # @MSF TODO: Child entities dont work yet
+    missions: [Mission] @quickSearchIndex(searchable: true)
     info: JSON
 }
 
 "A heroic mission"
 type Mission @childEntity {
     date: DateTime
-    title: String @quickSearchIndex
+    title: String @quickSearchIndex(searchable: true)
 }
 
 "A special skill of a superhero"
 type Skill @valueObject {
-    description: String @quickSearchIndex
+    description: String @quickSearchIndex(searchable: true)
     "A value between 0 and 11"
     strength: Float
     skills: [Skill] @quickSearchIndex
