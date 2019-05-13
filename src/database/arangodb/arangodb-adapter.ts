@@ -611,14 +611,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
      * Performs a single mutation
      */
     async performMigration(migration: SchemaMigration): Promise<void> {
-        this.logger.info(`Performing migration "${migration.description}"`);
-        try {
-            await this.migrationPerformer.performMigration(migration);
-            this.logger.info(`Successfully performed migration "${migration.description}"`);
-        } catch (e) {
-            this.logger.error(`Error performing migration "${migration.description}": ${e.stack}`);
-            throw e;
-        }
+        await this.migrationPerformer.performMigration(migration);
     }
 
     /**
@@ -628,10 +621,17 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         const migrations = await this.getOutstandingMigrations(model);
         for (const migration of migrations) {
             if (migration.type === 'createIndex' && !this.autocreateIndices || migration.type === 'dropIndex' && !this.autoremoveIndices) {
-                this.logger.info(`Skipping migration "${migration.description}" because of configuration`);
+                this.logger.debug(`Skipping migration "${migration.description}" because of configuration`);
                 continue;
             }
-            await this.performMigration(migration);
+            try {
+                this.logger.info(`Performing migration "${migration.description}"`);
+                await this.performMigration(migration);
+                this.logger.info(`Successfully performed migration "${migration.description}"`);
+            } catch (e) {
+                this.logger.error(`Error performing migration "${migration.description}": ${e.stack}`);
+                throw e;
+            }
         }
     }
 
