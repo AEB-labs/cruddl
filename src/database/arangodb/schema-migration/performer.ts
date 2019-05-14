@@ -8,12 +8,17 @@ import {
     DropIndexMigration,
     SchemaMigration, UpdateArangoSearchViewMigration
 } from './migrations';
+import {ArangoDBVersionHelper} from "../version-helper";
+
+const ARANGO_SEARCH_VERSION_ERROR = "ArangoSearch requires Arango-Version >= 3.4";
 
 export class MigrationPerformer {
     private readonly db: Database;
+    private versionHelper: ArangoDBVersionHelper;
 
     constructor(config: ArangoDBConfig) {
         this.db = initDatabase(config);
+        this.versionHelper = new ArangoDBVersionHelper(this.db)
     }
 
     async performMigration(migration: SchemaMigration) {
@@ -58,17 +63,37 @@ export class MigrationPerformer {
         await this.db.edgeCollection(migration.collectionName).create();
     }
 
+
     private async createArangoSearchView(migration: CreateArangoSearchViewMigration) {
-        await this.db.arangoSearchView(migration.config.viewName).create()
-        // Setting the properties during creation does not work for some reason
-        await this.db.arangoSearchView(migration.config.viewName).setProperties(migration.config.properties)
+        if (await this.isArangoSearchSupported()) {
+            await this.db.arangoSearchView(migration.config.viewName).create()
+            // Setting the properties during creation does not work for some reason
+            await this.db.arangoSearchView(migration.config.viewName).setProperties(migration.config.properties)
+        } else {
+            throw new Error(ARANGO_SEARCH_VERSION_ERROR)
+            // @MSF FR TODO: Is it okay to just throw an error in the migration?
+        }
+
+    }
+
+    private async isArangoSearchSupported() {
+        const version = await this.versionHelper.getArangoDBVersion();
+        return version && (version.major > 3 || (version.major >= 3 && version.minor >=4))
     }
 
     private async updateArangoSearchView(migration: UpdateArangoSearchViewMigration) {
-        await this.db.arangoSearchView(migration.config.viewName).setProperties(migration.config.properties)
+        if (await this.isArangoSearchSupported()) {
+            await this.db.arangoSearchView(migration.config.viewName).setProperties(migration.config.properties)
+        } else {
+            throw new Error(ARANGO_SEARCH_VERSION_ERROR)
+        }
     }
 
     private async dropArangoSearchView(migration: DropArangoSearchViewMigration) {
-        await this.db.arangoSearchView(migration.config.viewName).drop()
+        if (await this.isArangoSearchSupported()) {
+            await this.db.arangoSearchView(migration.config.viewName).drop()
+        } else {
+            throw new Error(ARANGO_SEARCH_VERSION_ERROR)
+        }
     }
 }

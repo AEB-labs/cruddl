@@ -63,6 +63,11 @@ export class TransformListQueryNode extends QueryNode {
             `as ${this.innerNode.describe()}`
         );
     }
+
+
+    containsQuickSearchNodes(): boolean {
+        return this.listNode.containsQuickSearchNodes();
+    }
 }
 
 export class OrderClause extends QueryNode {

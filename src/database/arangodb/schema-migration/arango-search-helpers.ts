@@ -26,9 +26,9 @@ export interface ArangoSearchDefinition {
     readonly collectionName: string;
     readonly fields: Field[]
 }
-// @MSF OPT TODO: check for/handle arangodb version < 3.4
-// @MSF OPT TODO: error if migration was not completed yet
-// @MSF OPT TODO: find better way to use the interface (was copied from original source)
+// @MSF OPT TODO: InMemoryDatabase
+// @MSF OPT TODO: Error when filtering or sorting large amounts of objects
+// @MSF FR TODO: find better way to use the interface (was copied from original source)
 interface ArangoSearchViewCollectionLink {
     analyzers?: string[];
     fields?: {

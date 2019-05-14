@@ -66,6 +66,7 @@ interface TransactionResult {
 }
 
 export class ArangoDBAdapter implements DatabaseAdapter {
+
     private readonly db: Database;
     private readonly logger: Logger;
     private readonly analyzer: SchemaAnalyzer;
@@ -74,6 +75,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
     private readonly versionHelper: ArangoDBVersionHelper;
     private readonly doNonMandatoryMigrations: boolean;
     private readonly arangoExecutionFunction: string;
+    private outstandingArangoSearchMigrations: SchemaMigration[] = [];
 
     constructor(private readonly config: ArangoDBConfig, private schemaContext?: SchemaContext) {
         this.logger = getArangoDBLogger(schemaContext);
@@ -612,6 +614,12 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         this.logger.info(`Performing migration "${migration.description}"`);
         try {
             await this.migrationPerformer.performMigration(migration);
+
+            // update outstandingArangoSearchMigrations
+            if(this.outstandingArangoSearchMigrations.includes(migration)){
+                this.outstandingArangoSearchMigrations = this.outstandingArangoSearchMigrations.splice(this.outstandingArangoSearchMigrations.indexOf(migration));
+            }
+
             this.logger.info(`Successfully performed migration "${migration.description}"`);
         } catch (e) {
             this.logger.error(`Error performing migration "${migration.description}": ${e.stack}`);
@@ -624,17 +632,24 @@ export class ArangoDBAdapter implements DatabaseAdapter {
      */
     async updateSchema(model: Model): Promise<void> {
         const migrations = await this.getOutstandingMigrations(model);
+        const skippedMigrations: SchemaMigration[] = [];
         for (const migration of migrations) {
             if (!migration.isMandatory && !this.doNonMandatoryMigrations) {
                 this.logger.info(`Skipping migration "${migration.description}" because of configuration`);
+                skippedMigrations.push(migration);
                 continue;
             }
             await this.performMigration(migration);
         }
+        this.outstandingArangoSearchMigrations = skippedMigrations;
     }
 
     async getArangoDBVersion(): Promise<ArangoDBVersion | undefined> {
         return this.versionHelper.getArangoDBVersion();
+    }
+
+    containsOutstandingArangoSearchMigrations() {
+        return this.outstandingArangoSearchMigrations.length > 0;
     }
 }
 

@@ -84,7 +84,7 @@ export class QuickSearchGlobalAugmentation{
                 ...schemaField.args,
                 [ORDER_BY_ARG]: {
                     type: new GraphQLList(new GraphQLNonNull(orderByType.getEnumType())),
-                    description: `orderby` // @MSF OPT TODO: description
+                    description: `orderby` // @MSF GLOBAL TODO: description
                 },
                 [SKIP_ARG]: {
                     type: GraphQLInt,
@@ -131,7 +131,7 @@ export class QuickSearchGlobalAugmentation{
 
     public getOrderByAndPaginationResolver(schemaField: QueryNodeField, sourceNode:QueryNode, args:{[p: string]: any}, info: QueryNodeResolveInfo, orderByType:SystemFieldOrderByEnumType) {
         let listNode = schemaField.resolve(sourceNode, args, info);
-        let itemVariable = new VariableQueryNode(`qsGlobalResult`); // @MSF OPT TODO: constant itemVariable Name
+        let itemVariable = new VariableQueryNode(`qsGlobalResult`); // @MSF GLOBAL TODO: constant itemVariable Name
 
 
 
@@ -265,8 +265,8 @@ export class SystemFieldOrderByEnumType {
 
     get name() {
         return "GlobalOrderBy";
-        // @MSF OPT TODO: constant
-        // @MSF OPT TODO: check for collision
+        // @MSF GLOBAL TODO: constant
+        // @MSF VAL TODO: check for collision
     }
 
 
@@ -274,10 +274,6 @@ export class SystemFieldOrderByEnumType {
     private get valueMap(): Map<string, OrderByEnumValue> {
         return new Map(this.values.map((v): [string, OrderByEnumValue] => ([v.name, v])));
     }
-    // @MSF OPT TODO: is this needed?
-    // getValue(name: string): OrderByEnumValue|undefined {
-    //     return this.valueMap.get(name);
-    // }
 
     getValueOrThrow(name: string): OrderByEnumValue {
         const value = this.valueMap.get(name);

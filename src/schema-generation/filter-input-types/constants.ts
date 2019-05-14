@@ -115,7 +115,6 @@ export function binaryNotOp(op: BinaryOperator) {
     return (lhs: QueryNode, rhs: QueryNode) => not(new BinaryOperationQueryNode(lhs, op, rhs));
 }
 
-// @MSF OPT TODO: Ternary Operator for normal filters?
 export function ternaryOp(op: TernaryOperator) {
     return (lhs: QueryNode, rhs: QueryNode, param?: QueryNode) => {
         return new TernaryOperationQueryNode(lhs, op, rhs, param)

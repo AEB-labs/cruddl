@@ -27,7 +27,7 @@ export async function start() {
         db = new ArangoDBAdapter({
             databaseName,
             url: databaseURL,
-            doNonMandatoryMigrations: true,
+            doNonMandatoryMigrations: false,
             enableExperimentalProjectionIndirection: true,
             experimentalProjectionIndirectionTypeNames: ['BusinessMessage']
         }, { loggerProvider });

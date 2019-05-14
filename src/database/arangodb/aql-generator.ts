@@ -52,7 +52,6 @@ import {Constructor, decapitalize} from '../../utils/utils';
 import {analyzeLikePatternPrefix} from '../like-helpers';
 import {aql, AQLCompoundQuery, aqlConfig, AQLFragment, AQLQueryResultVariable, AQLVariable} from './aql';
 import {getCollectionNameForRelation, getCollectionNameForRootEntity} from './arango-basics';
-import {QuickSearchComplexFilterQueryNode, QuickSearchQueryNode} from "../../query-tree/quick-search";
 import {getViewNameForRootEntity} from "./schema-migration/arango-search-helpers";
 
 enum AccessType {
@@ -352,14 +351,11 @@ register(RootEntityIDQueryNode, (node, context) => {
 });
 
 register(QuickSearchQueryNode, (node, context) => {
-    // @MSF TODO: Properly implement AQL generation
+    // @MSF TODO: Authentification
     let itemContext = context.introduceVariable(node.itemVariable)
     return aql`(FOR ${itemContext.getVariable(node.itemVariable)} IN ${aql.identifier(getViewNameForRootEntity(node.entity!))} SEARCH ${processNode(node.qsFilterNode, itemContext)} RETURN ${itemContext.getVariable(node.itemVariable)})`
 });
 
-register(QuickSearchComplexFilterQueryNode, (node, context) => {
-    return processNode(node.filterNode, context)
-});
 
 register(TransformListQueryNode, (node, context) => {
     let itemContext = context.introduceVariable(node.itemVariable);

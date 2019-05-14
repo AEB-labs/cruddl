@@ -53,4 +53,8 @@ export abstract class QueryNode {
         }
         return lhs === rhs;
     }
+
+    public containsQuickSearchNodes(): boolean{
+        return false
+    }
 }

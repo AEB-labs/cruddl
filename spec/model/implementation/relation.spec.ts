@@ -11,6 +11,10 @@ class FakeDBAdatper implements DatabaseAdapter {
     async updateSchema(schema: Model): Promise<void> {
 
     }
+
+    public containsOutstandingArangoSearchMigrations(): boolean {
+        return false;
+    }
 }
 
 describe('Relation', () => {

@@ -27,6 +27,8 @@ import {GraphQLDateTime} from "../../schema/scalars/date-time";
 import {GraphQLLocalDate} from "../../schema/scalars/local-date";
 import {GraphQLLocalTime} from "../../schema/scalars/local-time";
 
+export const SOME_PREFIX = "some";
+
 export const and = binaryOp(BinaryOperator.AND);
 export const or = binaryOp(BinaryOperator.OR);
 

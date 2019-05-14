@@ -51,7 +51,7 @@ export class OutputTypeGenerator {
         const objectTypes = types.map(value => <QueryNodeObjectType>this.generate(value));
 
         return new QueryNodeUnionType(
-            `QuickSearchGlobalType`, // @MSF OPT TODO: use constant
+            `QuickSearchGlobalType`, // @MSF GLOBAL TODO: use constant
             objectTypes
     )
 

@@ -1,6 +1,7 @@
-# @MSF TODO: repair Tests
-# @MSF TODO: write own Tests
+# @MSF OPT TODO: write Tests
 # @MSF OPT TODO: check where @memorize is viable
+# @MSF OPT TODO: refactor method names
+# @MSF OPT TODO: code comments
 "A supehero"
 type Hero @rootEntity(quickSearchIndex:true, globalQuickSearch: true) {
     "The hero's screen name"
@@ -11,7 +12,7 @@ type Hero @rootEntity(quickSearchIndex:true, globalQuickSearch: true) {
     skills: [Skill]
     skill: Skill @quickSearchIndex(searchable: true)
     suit: Suit @quickSearchIndex(searchable: true)
-    morality: Morality @quickSearchIndex(searchable: true) # @MSF OPT TODO: only allow language on Scalars and Enums
+    morality: Morality @quickSearchIndex(searchable: true) # @MSF VAL TODO: only allow language on Scalars and Enums
     countryISOCode: String @quickSearchIndex
     country: Country @reference(keyField: "countryISOCode")
     missions: [Mission] @quickSearchIndex(searchable: true)
@@ -36,10 +37,10 @@ type Skill @valueObject {
 type Movie @rootEntity(quickSearchIndex:true, globalQuickSearch: true) {
     name: String @quickSearchIndex(searchable: true, language:EN)
     "All the heroes starring in this movie"
-    heroes: [Hero] @relation # @MSF OPT TODO: do not allow quickSearchIndex for relations
+    heroes: [Hero] @relation # @MSF VAL TODO: do not allow quickSearchIndex for relations
     "The real superhero"
     director: Director @relation
-    publisher: Publisher @reference # @MSF OPT TODO: do not allow quickSearchIndex for references
+    publisher: Publisher @reference # @MSF VAL TODO: do not allow quickSearchIndex for references
 }
 
 "A movie director"
