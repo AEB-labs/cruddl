@@ -68,7 +68,7 @@ export class OperationResolver {
         let dbAdapterTimings;
         let stats: TransactionStats = {};
         let plan: ExecutionPlan | undefined;
-        let errors: ReadonlyArray<GraphQLError> | undefined;
+        let error: Error | undefined;
         let { canEvaluateStatically, result: data } = evaluateQueryStatically(queryTree);
         watch.stop('staticEvaluation');
         topLevelWatch.stop('preparation');
@@ -81,14 +81,14 @@ export class OperationResolver {
             };
             topLevelWatch.stop('database');
             dbAdapterTimings = res.timings;
-            errors = res.errors;
+            error = res.error;
             data = res.data;
             plan = res.plan;
             if (res.stats) {
                 stats = res.stats;
             }
-            if (errors && errors.length) {
-                logger.warn(`Executed ${operationDesc} with errors: ${errors.map(e => e.message).join('\n')}`);
+            if (error) {
+                logger.debug(`Executed ${operationDesc} with error: ${error.stack}`);
             } else {
                 logger.debug(`Executed ${operationDesc} successfully`);
             }
@@ -123,7 +123,7 @@ export class OperationResolver {
         }
         return {
             data,
-            errors,
+            error,
             profile
         };
     }

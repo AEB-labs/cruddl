@@ -1,5 +1,5 @@
 import { globalContext } from '../../config/global';
-import { SchemaContext } from '../../config/interfaces';
+import { ProjectOptions } from '../../config/interfaces';
 import { Logger } from '../../config/logging';
 import { Model } from '../../model';
 import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS, QueryNode } from '../../query-tree';
@@ -22,7 +22,7 @@ export class InMemoryAdapter implements DatabaseAdapter {
     private db = new InMemoryDB();
     private logger: Logger;
 
-    constructor(options: { db?: InMemoryDB } = {}, private schemaContext?: SchemaContext) {
+    constructor(options: { db?: InMemoryDB } = {}, private schemaContext?: ProjectOptions) {
         if (options.db) {
             this.db = options.db;
         }
@@ -108,7 +108,7 @@ export class InMemoryAdapter implements DatabaseAdapter {
                         return invert2 ? support.compare(valueFn2(rhs), valueFn2(lhs)) : support.compare(valueFn2(lhs), valueFn2(rhs));
                     };
                 }
-                
+
                 return (lhs: T, rhs: T): number => {
                     for (const [valueFn, invert] of valueFns) {
                         const comparison = invert ? support.compare(valueFn(rhs), valueFn(lhs)) : support.compare(valueFn(lhs), valueFn(rhs));

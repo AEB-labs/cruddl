@@ -1,9 +1,9 @@
 import { Database } from 'arangojs';
-import { GraphQLError } from 'graphql';
 import { globalContext } from '../../config/global';
-import { SchemaContext } from '../../config/interfaces';
+import { ProjectOptions } from '../../config/interfaces';
 import { Logger } from '../../config/logging';
 import { ExecutionOptions } from '../../execution/execution-options';
+import { TransactionCancelledError, TransactionTimeoutError } from '../../execution/runtime-errors';
 import { Model } from '../../model';
 import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS, QueryNode } from '../../query-tree';
 import { Mutable } from '../../utils/util-types';
@@ -19,6 +19,7 @@ import { ERROR_ARANGO_CONFLICT, ERROR_QUERY_KILLED } from './error-codes';
 import { SchemaAnalyzer } from './schema-migration/anaylzer';
 import { SchemaMigration } from './schema-migration/migrations';
 import { MigrationPerformer } from './schema-migration/performer';
+import { TransactionError } from './transaction-error';
 import { ArangoDBVersion, ArangoDBVersionHelper } from './version-helper';
 import uuid = require('uuid');
 
@@ -38,6 +39,10 @@ interface ArangoError extends Error {
     readonly errorMessage?: string
 }
 
+function isArangoError(error: Error): error is ArangoError {
+    return 'errorNum' in error;
+}
+
 interface ArangoTransactionResult {
     readonly data?: any;
     readonly error?: ArangoError;
@@ -50,7 +55,7 @@ interface TransactionResult {
     readonly data?: any
     readonly timings?: Pick<DatabaseAdapterTimings, 'database' | 'dbConnection'>
     readonly plans?: ReadonlyArray<any>
-    readonly databaseError?: ArangoError;
+    readonly databaseError?: Error;
     readonly stats: TransactionStats;
 
     /**
@@ -77,7 +82,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
     private readonly autoremoveIndices: boolean;
     private readonly arangoExecutionFunction: string;
 
-    constructor(private readonly config: ArangoDBConfig, private schemaContext?: SchemaContext) {
+    constructor(private readonly config: ArangoDBConfig, private schemaContext?: ProjectOptions) {
         this.logger = getArangoDBLogger(schemaContext);
         this.db = initDatabase(config);
         this.analyzer = new SchemaAnalyzer(config, schemaContext);
@@ -274,8 +279,8 @@ export class ArangoDBAdapter implements DatabaseAdapter {
 
     async execute(queryTree: QueryNode) {
         const result = await this.executeExt({ queryTree });
-        if (result.errors && result.errors.length) {
-            throw result.errors[0];
+        if (result.error) {
+            throw result.error;
         }
         return result.data;
     }
@@ -342,42 +347,42 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             };
         }
 
-        let errors: ReadonlyArray<GraphQLError> | undefined;
+        let error;
         if (databaseError) {
-            const arangoDBCode: number | undefined = databaseError.errorNum;
-            let extensions: { [key: string]: any } | undefined;
-            let message = databaseError.errorMessage || databaseError.message;
-            if (arangoDBCode) {
-                extensions = {
-                    arangoDBCode
-                };
-
-                switch (arangoDBCode) {
-                    case ERROR_QUERY_KILLED:
-                        if (hasTimedOut) {
-                            message = `Transaction exceeded timeout of ${options.transactionTimeoutMs} ms and was rolled back`;
-                            extensions.code = 'TIMEOUT';
-                        } else if (wasCancelled){
-                            message = `Transaction was cancelled and has been rolled back`;
-                        }
-                        break;
-                }
-
-            }
-
-            errors = [
-                new GraphQLError(message, undefined, undefined, undefined, undefined, undefined, extensions)
-            ];
+            error = this.processDatabaseError(databaseError, { wasCancelled, hasTimedOut, transactionTimeoutMs: options.transactionTimeoutMs });
         }
 
         return {
-            errors,
+            error,
             data,
             timings,
             plan,
             stats
         };
     }
+
+    private processDatabaseError(error: Error, { hasTimedOut, wasCancelled, transactionTimeoutMs }: { hasTimedOut: boolean, wasCancelled: boolean, transactionTimeoutMs: number | undefined }): Error {
+        // might be just something like a TypeError
+        if (!isArangoError(error)) {
+            return new TransactionError(error.message, error);
+        }
+
+        // some errors need to be translated because we only can differentiate with the context here
+        if (error.errorNum === ERROR_QUERY_KILLED) {
+            // only check these flags if a QUERY_KILLED error is thrown because we might have initiated a query
+            // kill due to timeout / cancellation, but it might have completed or errored for some other reason
+            // before the kill is executed
+            if (hasTimedOut) {
+                return new TransactionTimeoutError({ timeoutMs: transactionTimeoutMs });
+            } else if (wasCancelled) {
+                return new TransactionCancelledError();
+            }
+        }
+
+        // the arango errors are weird and have their message in "errorMessage"...
+        return new TransactionError(error.errorMessage || error.message, error);
+    }
+
 
     private async executeTransactionWithRetries(executableQueries: ReadonlyArray<AQLExecutableQuery>, options: ExecutionOptions, aqlQuery: AQLCompoundQuery): Promise<TransactionResult> {
         const maxRetries = this.config.retriesOnConflict || 0;

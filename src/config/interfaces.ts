@@ -16,18 +16,17 @@ export interface RequestProfile extends RequestContext {
     readonly plan?: ExecutionPlan;
 }
 
-export interface ErrorHandlers {
-    /**
-     * Is called when an operation execution throws an unanticipated error
-     *
-     * @return the error that should be passed to the graphql engine
-     */
-    handleUnexpectedError?(error: Error, context: RequestContext): Error;
-}
-
-export interface SchemaContext {
+export interface ProjectOptions {
     readonly loggerProvider?: LoggerProvider;
     readonly profileConsumer?: (profile: RequestProfile) => void;
     readonly getExecutionOptions?: (args: ExecutionOptionsCallbackArgs) => ExecutionOptions;
-    readonly errorHandlers?: ErrorHandlers;
+
+    /**
+     * Is called when an operation execution throws an error
+     *
+     * If error is a GraphQLError, it's a validation error
+     *
+     * @return the error that should be passed to the graphql engine
+     */
+    processError?(error: Error, context: RequestContext): Error;
 }

@@ -19,13 +19,13 @@ xdescribe('ArangoDB retryOnConflict', async function () { // can't use arrow fun
     it('causes conflicts when retry is disabled', async () => {
         const { adapter, updateQuery } = await prepareAdapter(0);
         const result = await Promise.all(range(PARALLELISM).map(() => adapter.executeExt({ queryTree: updateQuery })));
-        expect(result.filter(r => r.errors && r.errors[0].message.includes('conflict')).length).to.be.greaterThan(0);
+        expect(result.filter(r => r.error && r.error.message.includes('conflict')).length).to.be.greaterThan(0);
     });
 
     it('causes no conflicts when retry is enabled', async () => {
         const { adapter, updateQuery } = await prepareAdapter(10);
         const result = await Promise.all(range(PARALLELISM).map(() => adapter.executeExt({ queryTree: updateQuery, recordTimings: true })));
-        expect(result.filter(r => r.errors && r.errors[0].message.includes('conflict')).length).to.equal(0);
+        expect(result.filter(r => r.error && r.error.message.includes('conflict')).length).to.equal(0);
         expect(result.map(r => r.timings!.dbConnection.retryDelay).filter(time => time > 0).length).to.be.greaterThan(0);
     });
 });

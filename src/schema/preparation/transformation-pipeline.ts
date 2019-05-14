@@ -1,5 +1,5 @@
 import { DocumentNode, GraphQLSchema } from 'graphql';
-import { SchemaContext } from '../../config/interfaces';
+import { ProjectOptions } from '../../config/interfaces';
 import { ParsedProject, ParsedProjectSourceBaseKind } from '../../config/parsed-project';
 import { DatabaseAdapter } from '../../database/database-adapter';
 import { Model } from '../../model';
@@ -41,7 +41,7 @@ export interface ASTTransformationContext {
     namespacePath: ReadonlyArray<string>
 }
 
-export interface SchemaTransformationContext extends SchemaContext {
+export interface SchemaTransformationContext extends ProjectOptions {
     databaseAdapter: DatabaseAdapter
 
 }

@@ -1,5 +1,5 @@
 import { Database } from 'arangojs';
-import { SchemaContext } from '../../../config/interfaces';
+import { ProjectOptions } from '../../../config/interfaces';
 import { Logger } from '../../../config/logging';
 import { Model, RootEntityType } from '../../../model/implementation';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from '../arango-basics';
@@ -13,7 +13,7 @@ export class SchemaAnalyzer {
     private readonly logger: Logger;
     private readonly versionHelper: ArangoDBVersionHelper;
 
-    constructor(config: ArangoDBConfig, schemaContext?: SchemaContext) {
+    constructor(config: ArangoDBConfig, schemaContext?: ProjectOptions) {
         this.db = initDatabase(config);
         this.versionHelper = new ArangoDBVersionHelper(this.db);
         this.logger = getArangoDBLogger(schemaContext);

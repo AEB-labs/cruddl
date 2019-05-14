@@ -21,32 +21,26 @@ export class SchemaGenerator {
         const { queryType, mutationType, dumbSchema } = this.generateTypesAndDumbSchema(model);
         return addOperationBasedResolvers(dumbSchema, async op => {
             const rootType = op.operation.operation === 'mutation' ? mutationType : queryType;
-            let res;
+            let error: Error;
             try {
-                res = await this.operationResolver.resolveOperation(op, rootType);
+                const res = await this.operationResolver.resolveOperation(op, rootType);
                 // report the profile before throwing
                 if (this.context.profileConsumer && res.profile) {
                     this.context.profileConsumer(res.profile);
                 }
+                if (res.error) {
+                    error = res.error;
+                } else {
+                    return res.data;
+                }
             } catch (e) {
-                if (e instanceof GraphQLError) {
-                    // GraphQLErrors are expected errors (validation of arguments)
-                    throw e;
-                }
-                if (this.context.errorHandlers && this.context.errorHandlers.handleUnexpectedError) {
-                    throw this.context.errorHandlers.handleUnexpectedError(e, op);
-                }
-                throw e;
+                error = e;
             }
 
-            if (res.errors && res.errors.length) {
-                if (res.errors.length == 1) {
-                    throw res.errors[0];
-                }
-                // should not occur yet, we don't throw multiple errors
-                throw new Error(res.errors.map(e => e.message).join('\n'));
+            if (this.context.processError) {
+                throw this.context.processError(error, op);
             }
-            return res.data;
+            throw error;
         });
     }
 

@@ -48,11 +48,9 @@ export async function start() {
                 cancellationToken: new Promise(resolve => context.request.on('aborted', resolve))
             });
         },
-        errorHandlers: {
-            handleUnexpectedError(error, context) {
-                console.error(`Internal error: ${error.stack}`);
-                return new Error(`Internal error`);
-            }
+        processError(error: Error) {
+            console.error(`Internal error: ${error.stack}`);
+            return new Error(`Internal error`);
         },
         loggerProvider
     });
