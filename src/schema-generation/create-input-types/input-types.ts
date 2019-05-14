@@ -1,12 +1,11 @@
 import { Thunk } from 'graphql';
 import { fromPairs, toPairs } from 'lodash';
 import { ChildEntityType, EntityExtensionType, Field, ObjectType, RootEntityType, ValueObjectType } from '../../model';
-import {
-    AffectedFieldInfoQueryNode, CreateEntityQueryNode, LiteralQueryNode, PreExecQueryParms, QueryNode, VariableQueryNode
-} from '../../query-tree';
+import { AffectedFieldInfoQueryNode, CreateEntityQueryNode, LiteralQueryNode, PreExecQueryParms, QueryNode, VariableQueryNode } from '../../query-tree';
 import { ENTITY_CREATED_AT, ENTITY_UPDATED_AT, ID_FIELD } from '../../schema/constants';
 import { getCreateInputTypeName, getValueObjectInputTypeName } from '../../schema/names';
 import { flatMap, PlainObject } from '../../utils/utils';
+import { FieldContext } from '../query-node-object-type';
 import { TypedInputObjectType } from '../typed-input-object-type';
 import { CreateInputField } from './input-fields';
 import { isRelationCreateField } from './relation-fields';
@@ -26,14 +25,14 @@ export class CreateObjectInputType extends TypedInputObjectType<CreateInputField
         super(name, fields, description);
     }
 
-    prepareValue(value: PlainObject): PlainObject {
+    prepareValue(value: PlainObject, context: FieldContext): PlainObject {
         const applicableFields = this.getApplicableInputFields(value);
         for (const field of applicableFields) {
-            field.validateInContext(value[field.name], value);
+            field.validateInContext(value[field.name], { ...context, objectValue: value });
         }
 
         const properties = [
-            ...flatMap(applicableFields, field => toPairs(field.getProperties(value[field.name]))),
+            ...flatMap(applicableFields, field => toPairs(field.getProperties(value[field.name], context))),
             ...toPairs(this.getAdditionalProperties(value))
         ];
         return fromPairs(properties);
@@ -43,13 +42,13 @@ export class CreateObjectInputType extends TypedInputObjectType<CreateInputField
         return {};
     }
 
-    collectAffectedFields(value: PlainObject, fields: Set<Field>) {
-        this.getApplicableInputFields(value).forEach(field => field.collectAffectedFields(value[field.name], fields));
+    collectAffectedFields(value: PlainObject, fields: Set<Field>, context: FieldContext) {
+        this.getApplicableInputFields(value).forEach(field => field.collectAffectedFields(value[field.name], fields, context));
     }
 
-    getAffectedFields(value: PlainObject): ReadonlyArray<Field> {
+    getAffectedFields(value: PlainObject, context: FieldContext): ReadonlyArray<Field> {
         const fields = new Set<Field>();
-        this.collectAffectedFields(value, fields);
+        this.collectAffectedFields(value, fields, context);
         return Array.from(fields);
     }
 
@@ -67,15 +66,15 @@ export class CreateRootEntityInputType extends CreateObjectInputType {
             `The create type for the root entity type \`${rootEntityType.name}\`.\n\nThe fields \`id\`, \`createdAt\`, and \`updatedAt\` are set automatically.`);
     }
 
-    getCreateStatements(input: PlainObject, newEntityIdVarNode: VariableQueryNode) {
+    getCreateStatements(input: PlainObject, newEntityIdVarNode: VariableQueryNode, context: FieldContext) {
         // Create new entity
-        const objectNode = new LiteralQueryNode(this.prepareValue(input));
-        const affectedFields = this.getAffectedFields(input).map(field => new AffectedFieldInfoQueryNode(field));
+        const objectNode = new LiteralQueryNode(this.prepareValue(input, context));
+        const affectedFields = this.getAffectedFields(input, context).map(field => new AffectedFieldInfoQueryNode(field));
         const createEntityNode = new CreateEntityQueryNode(this.rootEntityType, objectNode, affectedFields);
-        const newEntityPreExec = new PreExecQueryParms({query: createEntityNode, resultVariable: newEntityIdVarNode});
+        const newEntityPreExec = new PreExecQueryParms({ query: createEntityNode, resultVariable: newEntityIdVarNode });
 
         // Add relations if needed
-        const relationStatements = this.getRelationStatements(input, newEntityIdVarNode);
+        const relationStatements = this.getRelationStatements(input, newEntityIdVarNode, context);
         // Note: these statements contain validators which should arguably be moved to the front
         // works with transactional DB adapters, but e.g. not with JavaScript
 
@@ -90,11 +89,11 @@ export class CreateRootEntityInputType extends CreateObjectInputType {
         };
     }
 
-    private getRelationStatements(input: PlainObject, idNode: QueryNode): ReadonlyArray<PreExecQueryParms> {
+    private getRelationStatements(input: PlainObject, idNode: QueryNode, context: FieldContext): ReadonlyArray<PreExecQueryParms> {
         const relationFields = this.fields
             .filter(isRelationCreateField)
             .filter(field => field.appliesToMissingFields() || field.name in input);
-        return flatMap(relationFields, field => field.getStatements(input[field.name], idNode));
+        return flatMap(relationFields, field => field.getStatements(input[field.name], idNode, context));
     }
 }
 

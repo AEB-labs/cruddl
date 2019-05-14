@@ -1,4 +1,6 @@
-export { Project, ProjectOptions, ProjectConfig, RequestProfile } from './src/project/project';
+export { RequestProfile, ProjectOptions, RequestContext } from './src/config/interfaces';
+export { Project, ProjectConfig } from './src/project/project';
+export { InvalidProjectError } from './src/project/invalid-project-error';
 export { ProjectSource, SourceConfig, SourceType, SourceLike } from './src/project/source';
 export { SchemaExecutor, SchemaExecutionArgs } from './src/execution/schema-executor';
 export { ExecutionOptions, MutationMode, ExecutionOptionsCallbackArgs }from './src/execution/execution-options';
@@ -7,3 +9,4 @@ export { ValidationMessage, Severity, MessageLocation, SourcePosition, Validatio
 export { DatabaseAdapter } from './src/database/database-adapter';
 export { DIRECTIVES, CORE_SCALARS } from './src/schema/graphql-base';
 export { Logger, LoggerProvider } from './src/config/logging';
+export { TransactionCancelledError, TransactionTimeoutError } from './src/execution/runtime-errors';

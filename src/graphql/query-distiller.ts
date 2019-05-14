@@ -1,9 +1,5 @@
+import { DocumentNode, FieldNode, FragmentDefinitionNode, getNamedType, GraphQLCompositeType, GraphQLField, GraphQLObjectType, GraphQLOutputType, GraphQLSchema, isCompositeType, OperationDefinitionNode, OperationTypeNode, SelectionNode } from 'graphql';
 import { blue, cyan, green } from '../utils/colors';
-import {
-    DocumentNode, FieldNode, FragmentDefinitionNode, getNamedType, GraphQLCompositeType, GraphQLField,
-    GraphQLObjectType, GraphQLOutputType, GraphQLSchema, isCompositeType, OperationDefinitionNode, OperationTypeNode,
-    SelectionNode
-} from 'graphql';
 import { arrayToObject, flatMap, groupArray, indent, INDENTATION } from '../utils/utils';
 import { getArgumentValues } from './argument-values';
 import { resolveSelections } from './field-collection';
@@ -11,15 +7,33 @@ import { getAliasOrName } from './language-utils';
 import { extractOperation } from './operations';
 import { getOperationRootType } from './schema-utils';
 
+interface FieldRequestParams {
+    readonly field: GraphQLField<unknown, unknown>
+    readonly parentType: GraphQLCompositeType
+    readonly schema: GraphQLSchema
+    readonly selectionSet?: ReadonlyArray<FieldSelection>
+    readonly args?: { [argumentName: string]: unknown }
+    readonly fieldNodes?: ReadonlyArray<FieldNode>
+}
+
 /**
  * A request for the value of one field with a specific argument set and selection set
  */
 export class FieldRequest {
-    constructor(public readonly field: GraphQLField<any, any>,
-                public readonly parentType: GraphQLCompositeType,
-                public readonly schema: GraphQLSchema,
-                public readonly selectionSet: ReadonlyArray<FieldSelection> = [],
-                public readonly args: { [argumentName: string ]: any } = {}) {
+    readonly field: GraphQLField<unknown, unknown>;
+    readonly parentType: GraphQLCompositeType;
+    readonly schema: GraphQLSchema;
+    readonly selectionSet: ReadonlyArray<FieldSelection>;
+    readonly args: { [argumentName: string]: any };
+    readonly fieldNodes: ReadonlyArray<FieldNode>;
+
+    constructor(config: FieldRequestParams) {
+        this.field = config.field;
+        this.parentType = config.parentType;
+        this.schema = config.schema;
+        this.selectionSet = config.selectionSet || [];
+        this.args = config.args || {};
+        this.fieldNodes = config.fieldNodes || [];
     }
 
     public get fieldName() {
@@ -56,7 +70,8 @@ export class FieldSelection {
  * A simple description of a GraphQL operation
  */
 export class DistilledOperation {
-    constructor(public readonly operation: OperationTypeNode, public readonly selectionSet: ReadonlyArray<FieldSelection>) {}
+    constructor(public readonly operation: OperationTypeNode, public readonly selectionSet: ReadonlyArray<FieldSelection>) {
+    }
 
     public describe(): string {
         const selectionItemsDesc = this.selectionSet
@@ -64,33 +79,6 @@ export class DistilledOperation {
             .join(',\n');
         return `${this.operation} with selections {\n${indent(selectionItemsDesc)}\n}`;
     }
-}
-
-export interface FieldRequestConfig {
-    field: GraphQLField<any, any>;
-    parentType: GraphQLCompositeType;
-    schema: GraphQLSchema,
-    selectionSet?: SelectionSetConfig
-    args?: { [argumentName: string ]: any };
-}
-
-export type SelectionSetConfig = { [ propertyName: string]: FieldRequestConfig };
-
-/**
- * Creates a {@link FieldRequest} from a simple JSON-like object
- * @param config the config
- * @returns {FieldRequest} the created field request
- */
-export function createFieldRequest(config: FieldRequestConfig) {
-    return new FieldRequest(config.field, config.parentType, config.schema, createSelectionSet(config.selectionSet || {}), config.args || {});
-}
-
-function createSelectionSet(config: SelectionSetConfig): ReadonlyArray<FieldSelection> {
-    const selections = [];
-    for (const key in config) {
-        selections.push(new FieldSelection(key, createFieldRequest(config[key])));
-    }
-    return selections;
 }
 
 export interface OperationDistillationParams {
@@ -118,13 +106,13 @@ export function distillOperation(params: OperationDistillationParams): Distilled
         throw new Error(`Schema does not have a ${params.operation.operation} root type`);
     }
     const selections = distillSelections(params.operation.selectionSet.selections, parentType, context);
-    return new DistilledOperation(params.operation.operation, selections)
+    return new DistilledOperation(params.operation.operation, selections);
 }
 
 /**
  * Creates a simplified description of an operation in a query
  */
-export function distillQuery(document: DocumentNode, schema: GraphQLSchema, variableValues: { [ name: string]: any} = {}, operationName?: string): DistilledOperation {
+export function distillQuery(document: DocumentNode, schema: GraphQLSchema, variableValues: { [name: string]: any } = {}, operationName?: string): DistilledOperation {
     return distillOperation({
         schema,
         operation: extractOperation(document, operationName),
@@ -181,7 +169,14 @@ function buildFieldRequest(fieldNodes: Array<FieldNode>, parentType: GraphQLComp
 
     // GraphQL disallows multiple requests of the same field with different arguments and same alias, so we can just pick one
     const args = getArgumentValues(fieldDef, fieldNodes[0], context.variableValues);
-    return new FieldRequest(fieldDef, parentType, context.schema, selections, args);
+    return new FieldRequest({
+        field: fieldDef,
+        parentType,
+        schema: context.schema,
+        selectionSet: selections,
+        args,
+        fieldNodes
+    });
 }
 
 export function unwrapToCompositeType(type: GraphQLOutputType): GraphQLCompositeType | undefined {

@@ -1,12 +1,8 @@
-import {
-    GraphQLEnumType, GraphQLFieldConfigArgumentMap, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLScalarType,
-    Thunk
-} from 'graphql';
-import { FieldRequest } from '../../graphql/query-distiller';
+import { GraphQLEnumType, GraphQLFieldConfigArgumentMap, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLScalarType, Thunk } from 'graphql';
 import { QueryNode } from '../../query-tree';
+import { FieldContext } from './context';
 
-export interface QueryNodeResolveInfo {
-    fieldRequestStack: ReadonlyArray<FieldRequest>
+export interface QueryNodeResolveInfo extends FieldContext {
 }
 
 export interface QueryNodeField {

@@ -19,9 +19,6 @@
     "data": null,
     "errors": [
       {
-        "extensions": {
-          "arangoDBCode": 1210
-        },
         "locations": [
           {
             "column": 5,

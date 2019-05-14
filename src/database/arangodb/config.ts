@@ -1,6 +1,7 @@
 import { Database } from 'arangojs';
 import { LoadBalancingStrategy } from 'arangojs/lib/cjs/connection';
-import { globalContext, SchemaContext } from '../../config/global';
+import { globalContext } from '../../config/global';
+import { ProjectOptions } from '../../config/interfaces';
 import { Logger } from '../../config/logging';
 import { CustomDatabase } from './arangojs-instrumentation/custom-database';
 
@@ -93,7 +94,7 @@ export function initDatabase(config: ArangoDBConfig): Database {
     return db;
 }
 
-export function getArangoDBLogger(schemaContext: SchemaContext | undefined): Logger {
+export function getArangoDBLogger(schemaContext: ProjectOptions | undefined): Logger {
     globalContext.registerContext(schemaContext);
     try {
         return globalContext.loggerProvider.getLogger('ArangoDBAdapter');

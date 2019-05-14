@@ -9,8 +9,8 @@ import { compact, decapitalize, PlainObject } from '../utils/utils';
 import { CreateInputTypeGenerator, CreateRootEntityInputType } from './create-input-types';
 import { ListAugmentation } from './list-augmentation';
 import { OutputTypeGenerator } from './output-type-generator';
-import { makeNonNullableList, QueryNodeField, QueryNodeNonNullType, QueryNodeObjectType } from './query-node-object-type';
-import { UpdateInputTypeGenerator, UpdateRootEntityInputType } from './update-input-types';
+import { FieldContext, makeNonNullableList, QueryNodeField, QueryNodeNonNullType, QueryNodeObjectType } from './query-node-object-type';
+import { UpdateInputFieldContext, UpdateInputTypeGenerator, UpdateRootEntityInputType } from './update-input-types';
 import { getArgumentsForUniqueFields, getEntitiesByUniqueFieldQuery } from './utils/entities-by-unique-field';
 import { mapIDsToRootEntities, mapTOIDNodesUnoptimized } from './utils/map';
 import { getRemoveAllEntityEdgesStatements } from './utils/relations';
@@ -71,13 +71,13 @@ export class MutationTypeGenerator {
             },
             isSerial: true,
             description: `Creates a new ${rootEntityType.name}`,
-            resolve: (_, args) => this.generateCreateQueryNode(rootEntityType, args[MUTATION_INPUT_ARG], inputType)
+            resolve: (_, args, info) => this.generateCreateQueryNode(rootEntityType, args[MUTATION_INPUT_ARG], inputType, info)
         };
     }
 
-    private generateCreateQueryNode(rootEntityType: RootEntityType, input: PlainObject, inputType: CreateRootEntityInputType): QueryNode {
+    private generateCreateQueryNode(rootEntityType: RootEntityType, input: PlainObject, inputType: CreateRootEntityInputType, context: FieldContext): QueryNode {
         const newEntityIdVarNode = new VariableQueryNode('newEntityId');
-        const createStatements = inputType.getCreateStatements(input, newEntityIdVarNode);
+        const createStatements = inputType.getCreateStatements(input, newEntityIdVarNode, context);
 
         // PreExecute creation and relation queries and return result
         return new WithPreExecutionQueryNode({
@@ -99,19 +99,20 @@ export class MutationTypeGenerator {
             },
             isSerial: true,
             description: `Updates an existing ${rootEntityType.name}`,
-            resolve: (_, args) => this.generateUpdateQueryNode(rootEntityType, args[MUTATION_INPUT_ARG], inputType)
+            resolve: (_, args, info) => this.generateUpdateQueryNode(rootEntityType, args[MUTATION_INPUT_ARG], inputType, info)
         };
     }
 
-    private generateUpdateQueryNode(rootEntityType: RootEntityType, input: PlainObject, inputType: UpdateRootEntityInputType): QueryNode {
-        const checkResult = inputType.check(input);
+    private generateUpdateQueryNode(rootEntityType: RootEntityType, input: PlainObject, inputType: UpdateRootEntityInputType, fieldContext: FieldContext): QueryNode {
+        const checkResult = inputType.check(input, fieldContext);
         if (checkResult) {
             return checkResult;
         }
 
         const currentEntityVariable = new VariableQueryNode('currentEntity');
-        const updates = inputType.getProperties(input, currentEntityVariable);
-        const affectedFields = inputType.getAffectedFields(input).map(field => new AffectedFieldInfoQueryNode(field));
+        const context: UpdateInputFieldContext = { ...fieldContext, currentEntityNode: currentEntityVariable };
+        const updates = inputType.getProperties(input, context);
+        const affectedFields = inputType.getAffectedFields(input, context).map(field => new AffectedFieldInfoQueryNode(field));
 
         const listItemVar = new VariableQueryNode(decapitalize(rootEntityType.name));
         const filterNode = new BinaryOperationQueryNode(new RootEntityIDQueryNode(listItemVar),
@@ -138,7 +139,7 @@ export class MutationTypeGenerator {
             resultValidator: new ErrorIfEmptyResultValidator(`${rootEntityType.name} with id '${input[ID_FIELD]}' could not be found.`, 'NotFoundError')
         });
 
-        const relationStatements = inputType.getRelationStatements(input, new FirstOfListQueryNode(updatedIdsVarNode));
+        const relationStatements = inputType.getRelationStatements(input, new FirstOfListQueryNode(updatedIdsVarNode), context);
 
         // PreExecute creation and relation queries and return result
         return new WithPreExecutionQueryNode({
@@ -175,20 +176,21 @@ export class MutationTypeGenerator {
             },
             isSerial: true,
             description: `Updates ${rootEntityType.pluralName} that match a specified filter`,
-            resolve: (_, args, info) => this.generateUpdateAllQueryNode(rootEntityType, fieldWithListArgs.resolve(_, args, info), inputType, args[MUTATION_INPUT_ARG])
+            resolve: (_, args, info) => this.generateUpdateAllQueryNode(rootEntityType, fieldWithListArgs.resolve(_, args, info), inputType, args[MUTATION_INPUT_ARG], info)
         };
     }
 
     private generateUpdateAllQueryNode(rootEntityType: RootEntityType, listNode: QueryNode,
-                                       inputType: UpdateRootEntityInputType, input: PlainObject): QueryNode {
-        const checkResult = inputType.check(input);
+                                       inputType: UpdateRootEntityInputType, input: PlainObject, fieldContext: FieldContext): QueryNode {
+        const checkResult = inputType.check(input, fieldContext);
         if (checkResult) {
             return checkResult;
         }
 
         const currentEntityVariable = new VariableQueryNode('currentEntity');
-        const updates = inputType.getProperties(input, currentEntityVariable);
-        const affectedFields = inputType.getAffectedFields(input).map(field => new AffectedFieldInfoQueryNode(field));
+        const context: UpdateInputFieldContext = { ...fieldContext, currentEntityNode: currentEntityVariable };
+        const updates = inputType.getProperties(input, context);
+        const affectedFields = inputType.getAffectedFields(input, context).map(field => new AffectedFieldInfoQueryNode(field));
 
         const updateEntityNode = new UpdateEntitiesQueryNode({
             rootEntityType,
@@ -203,7 +205,7 @@ export class MutationTypeGenerator {
             resultVariable: updatedIdsVarNode
         });
 
-        if (inputType.getRelationStatements(input, new UnknownValueQueryNode()).length) {
+        if (inputType.getRelationStatements(input, new UnknownValueQueryNode(), context).length) {
             // should not occur because the input type generator skips these fields, but just to be sure
             throw new Error(`updateAll currently does not support relation statements`);
         }
@@ -235,13 +237,13 @@ export class MutationTypeGenerator {
             args: getArgumentsForUniqueFields(rootEntityType),
             isSerial: true,
             description,
-            resolve: (source, args) => this.generateDeleteQueryNode(rootEntityType, args)
+            resolve: (source, args, info) => this.generateDeleteQueryNode(rootEntityType, args, info)
         };
     }
 
-    private generateDeleteQueryNode(rootEntityType: RootEntityType, args: { [name: string]: any }): QueryNode {
+    private generateDeleteQueryNode(rootEntityType: RootEntityType, args: { [name: string]: any }, context: FieldContext): QueryNode {
         // collect the ids before the actual delete statements so the lists won't change by the statements
-        const listNode = getEntitiesByUniqueFieldQuery(rootEntityType, args);
+        const listNode = getEntitiesByUniqueFieldQuery(rootEntityType, args, context);
         const idsVariable = new VariableQueryNode('ids');
         const idsStatement = new PreExecQueryParms({
             // don't use optimizations here so we actually "see" the entities and don't just return the ids

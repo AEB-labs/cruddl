@@ -47,7 +47,7 @@ export function createFastApp(project: Project, databaseAdapter: DatabaseAdapter
             const result = await fastPromise;
             res.end(JSON.stringify({
                 data: result.data,
-                errors: result.errors ? result.errors.map(e => formatError(e)) : undefined
+                errors: result.error ? [formatError(new GraphQLError(result.error.message, undefined, undefined, undefined, undefined, result.error))] : undefined
             }));
         } catch (e) {
             res.end(JSON.stringify({

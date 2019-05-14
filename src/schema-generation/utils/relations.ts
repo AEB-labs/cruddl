@@ -1,12 +1,8 @@
 import { Field, Multiplicity, RelationSide, RootEntityType } from '../../model';
-import {
-    AddEdgesQueryNode, EdgeFilter, EdgeIdentifier, EntityFromIdQueryNode, ErrorIfNotTruthyResultValidator,
-    ListQueryNode,
-    LiteralQueryNode, PartialEdgeIdentifier, PreExecQueryParms, QueryNode, RemoveEdgesQueryNode, SetEdgeQueryNode,
-    VariableQueryNode
-} from '../../query-tree';
+import { AddEdgesQueryNode, EdgeFilter, EdgeIdentifier, EntityFromIdQueryNode, ErrorIfNotTruthyResultValidator, ListQueryNode, LiteralQueryNode, PartialEdgeIdentifier, PreExecQueryParms, QueryNode, RemoveEdgesQueryNode, SetEdgeQueryNode, VariableQueryNode } from '../../query-tree';
 import { PlainObject } from '../../utils/utils';
 import { CreateRootEntityInputType } from '../create-input-types';
+import { FieldContext } from '../query-node-object-type';
 
 /**
  * Gets a statement that moves deletes existing outgoing edges and creates a new one, but does not check existing
@@ -124,7 +120,7 @@ export function getAddEdgesStatements(sourceField: Field, sourceIDNode: QueryNod
     }
 }
 
-export function getCreateAndAddEdgesStatements(sourceField: Field, sourceIDNode: QueryNode, createRootEntityInputType: CreateRootEntityInputType, createInputs: ReadonlyArray<PlainObject>) {
+export function getCreateAndAddEdgesStatements(sourceField: Field, sourceIDNode: QueryNode, createRootEntityInputType: CreateRootEntityInputType, createInputs: ReadonlyArray<PlainObject>, context: FieldContext) {
     const relationSide = sourceField.getRelationSideOrThrow();
 
     const variableQueryNodes: VariableQueryNode[] = [];
@@ -132,7 +128,7 @@ export function getCreateAndAddEdgesStatements(sourceField: Field, sourceIDNode:
 
     createInputs.forEach(createInput => {
         const newEntityIdVarNode = new VariableQueryNode('newEntityId');
-        const createStatements = createRootEntityInputType.getCreateStatements(createInput, newEntityIdVarNode);
+        const createStatements = createRootEntityInputType.getCreateStatements(createInput, newEntityIdVarNode, context);
         variableQueryNodes.push(newEntityIdVarNode);
         statements = [...statements, ...createStatements];
     });
@@ -150,9 +146,9 @@ export function getCreateAndAddEdgesStatements(sourceField: Field, sourceIDNode:
     return [...statements, addEdgesStatement];
 }
 
-export function getCreateAndSetEdgeStatements(sourceField: Field, sourceIDNode: QueryNode, createRootEntityInputType: CreateRootEntityInputType, createInput: PlainObject): ReadonlyArray<PreExecQueryParms> {
+export function getCreateAndSetEdgeStatements(sourceField: Field, sourceIDNode: QueryNode, createRootEntityInputType: CreateRootEntityInputType, createInput: PlainObject, context: FieldContext): ReadonlyArray<PreExecQueryParms> {
     const newEntityIdVarNode = new VariableQueryNode('newEntityId');
-    const createStatements = createRootEntityInputType.getCreateStatements(createInput, newEntityIdVarNode);
+    const createStatements = createRootEntityInputType.getCreateStatements(createInput, newEntityIdVarNode, context);
     const setEdgeStatement = getNonCheckingSetEdgeStatement(sourceField, sourceIDNode, newEntityIdVarNode);
     return [...createStatements, setEdgeStatement];
 }

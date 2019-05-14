@@ -3,13 +3,13 @@ import { Namespace, RootEntityType } from '../model';
 import { EntitiesQueryNode, FirstOfListQueryNode, ObjectQueryNode, QueryNode } from '../query-tree';
 import { QUERY_TYPE } from '../schema/constants';
 import { getAllEntitiesFieldName, getMetaFieldName } from '../schema/names';
-import { decapitalize, flatMap } from '../utils/utils';
+import { flatMap } from '../utils/utils';
 import { FilterAugmentation } from './filter-augmentation';
 import { MetaFirstAugmentation } from './limit-augmentation';
 import { ListAugmentation } from './list-augmentation';
 import { MetaTypeGenerator } from './meta-type-generator';
 import { OutputTypeGenerator } from './output-type-generator';
-import { QueryNodeField, QueryNodeListType, QueryNodeNonNullType, QueryNodeObjectType } from './query-node-object-type';
+import { FieldContext, QueryNodeField, QueryNodeListType, QueryNodeNonNullType, QueryNodeObjectType } from './query-node-object-type';
 import { getArgumentsForUniqueFields, getEntitiesByUniqueFieldQuery } from './utils/entities-by-unique-field';
 
 export class QueryTypeGenerator {
@@ -74,12 +74,12 @@ export class QueryTypeGenerator {
             type: this.outputTypeGenerator.generate(rootEntityType),
             args: getArgumentsForUniqueFields(rootEntityType),
             description,
-            resolve: (_, args) => this.getSingleRootEntityNode(rootEntityType, args)
+            resolve: (_, args, info) => this.getSingleRootEntityNode(rootEntityType, args, info)
         };
     }
 
-    private getSingleRootEntityNode(rootEntityType: RootEntityType, args: { [name: string]: any }): QueryNode {
-        return new FirstOfListQueryNode(getEntitiesByUniqueFieldQuery(rootEntityType, args));
+    private getSingleRootEntityNode(rootEntityType: RootEntityType, args: { [name: string]: any }, context: FieldContext): QueryNode {
+        return new FirstOfListQueryNode(getEntitiesByUniqueFieldQuery(rootEntityType, args, context));
     }
 
     private getAllRootEntitiesField(rootEntityType: RootEntityType): QueryNodeField {

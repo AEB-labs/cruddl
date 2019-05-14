@@ -1,4 +1,4 @@
-import { GraphQLSchema } from 'graphql';
+import { GraphQLError, GraphQLSchema } from 'graphql';
 import { OperationResolver } from '../execution/operation-resolver';
 import { addOperationBasedResolvers } from '../graphql/operation-based-resolvers';
 import { Model } from '../model';
@@ -21,19 +21,26 @@ export class SchemaGenerator {
         const { queryType, mutationType, dumbSchema } = this.generateTypesAndDumbSchema(model);
         return addOperationBasedResolvers(dumbSchema, async op => {
             const rootType = op.operation.operation === 'mutation' ? mutationType : queryType;
-            const res = await this.operationResolver.resolveOperation(op, rootType);
-            // report the profile before throwing
-            if (this.context.profileConsumer && res.profile) {
-                this.context.profileConsumer(res.profile);
-            }
-            if (res.errors && res.errors.length) {
-                if (res.errors.length == 1) {
-                    throw res.errors[0];
+            let error: Error;
+            try {
+                const res = await this.operationResolver.resolveOperation(op, rootType);
+                // report the profile before throwing
+                if (this.context.profileConsumer && res.profile) {
+                    this.context.profileConsumer(res.profile);
                 }
-                // should not occur yet, we don't throw multiple errors
-                throw new Error(res.errors.map(e => e.message).join('\n'));
+                if (res.error) {
+                    error = res.error;
+                } else {
+                    return res.data;
+                }
+            } catch (e) {
+                error = e;
             }
-            return res.data;
+
+            if (this.context.processError) {
+                throw this.context.processError(error, op);
+            }
+            throw error;
         });
     }
 
