@@ -1,4 +1,4 @@
-import { GraphQLSchema } from 'graphql';
+import { GraphQLError, GraphQLSchema } from 'graphql';
 import { OperationResolver } from '../execution/operation-resolver';
 import { addOperationBasedResolvers } from '../graphql/operation-based-resolvers';
 import { Model } from '../model';
@@ -21,11 +21,24 @@ export class SchemaGenerator {
         const { queryType, mutationType, dumbSchema } = this.generateTypesAndDumbSchema(model);
         return addOperationBasedResolvers(dumbSchema, async op => {
             const rootType = op.operation.operation === 'mutation' ? mutationType : queryType;
-            const res = await this.operationResolver.resolveOperation(op, rootType);
-            // report the profile before throwing
-            if (this.context.profileConsumer && res.profile) {
-                this.context.profileConsumer(res.profile);
+            let res;
+            try {
+                res = await this.operationResolver.resolveOperation(op, rootType);
+                // report the profile before throwing
+                if (this.context.profileConsumer && res.profile) {
+                    this.context.profileConsumer(res.profile);
+                }
+            } catch (e) {
+                if (e instanceof GraphQLError) {
+                    // GraphQLErrors are expected errors (validation of arguments)
+                    throw e;
+                }
+                if (this.context.errorHandlers && this.context.errorHandlers.handleUnexpectedError) {
+                    throw this.context.errorHandlers.handleUnexpectedError(e, op);
+                }
+                throw e;
             }
+
             if (res.errors && res.errors.length) {
                 if (res.errors.length == 1) {
                     throw res.errors[0];

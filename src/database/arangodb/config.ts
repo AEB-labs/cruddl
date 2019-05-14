@@ -1,6 +1,7 @@
 import { Database } from 'arangojs';
 import { LoadBalancingStrategy } from 'arangojs/lib/cjs/connection';
-import { globalContext, SchemaContext } from '../../config/global';
+import { globalContext } from '../../config/global';
+import { SchemaContext } from '../../config/interfaces';
 import { Logger } from '../../config/logging';
 import { CustomDatabase } from './arangojs-instrumentation/custom-database';
 

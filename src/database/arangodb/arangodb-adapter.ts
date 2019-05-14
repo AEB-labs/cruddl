@@ -1,6 +1,7 @@
 import { Database } from 'arangojs';
 import { GraphQLError } from 'graphql';
-import { globalContext, SchemaContext } from '../../config/global';
+import { globalContext } from '../../config/global';
+import { SchemaContext } from '../../config/interfaces';
 import { Logger } from '../../config/logging';
 import { ExecutionOptions } from '../../execution/execution-options';
 import { Model } from '../../model';

@@ -5,12 +5,18 @@ import { BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, Conditi
 import { ENTITY_UPDATED_AT, ID_FIELD } from '../../schema/constants';
 import { getAddChildEntitiesFieldName, getRemoveChildEntitiesFieldName, getUpdateChildEntitiesFieldName } from '../../schema/names';
 import { AnyValue, decapitalize, flatMap, joinWithAnd, objectEntries, PlainObject } from '../../utils/utils';
+import { createGraphQLError } from '../graphql-errors';
+import { FieldContext } from '../query-node-object-type';
 import { TypedInputObjectType } from '../typed-input-object-type';
-import { AddChildEntitiesInputField, UpdateChildEntitiesInputField, UpdateInputField } from './input-fields';
+import { AddChildEntitiesInputField, UpdateChildEntitiesInputField, UpdateInputField, UpdateInputFieldContext } from './input-fields';
 import { isRelationUpdateField } from './relation-fields';
 
 function getCurrentISODate() {
     return new Date().toISOString();
+}
+
+export interface AdditionalPropertiesContext extends UpdateInputFieldContext {
+    regularProperties: ReadonlyArray<SetFieldQueryNode>
 }
 
 export class UpdateObjectInputType extends TypedInputObjectType<UpdateInputField> {
@@ -25,19 +31,19 @@ export class UpdateObjectInputType extends TypedInputObjectType<UpdateInputField
         this.childEntityFields = this.objectType.fields.filter(f => f.type.isChildEntityType);
     }
 
-    getProperties(value: PlainObject, currentEntityNode: QueryNode): ReadonlyArray<SetFieldQueryNode> {
+    getProperties(value: PlainObject, context: UpdateInputFieldContext): ReadonlyArray<SetFieldQueryNode> {
         const applicableFields = this.getApplicableInputFields(value);
         const regularProperties = [
-            ...flatMap(applicableFields, field => field.getProperties(value[field.name], currentEntityNode)),
-            ...flatMap(this.childEntityFields, field => this.getChildEntityProperties(value, currentEntityNode, field))
+            ...flatMap(applicableFields, field => field.getProperties(value[field.name], context)),
+            ...flatMap(this.childEntityFields, field => this.getChildEntityProperties(value, field, context))
         ];
         return [
             ...regularProperties,
-            ...this.getAdditionalProperties(value, currentEntityNode, regularProperties)
+            ...this.getAdditionalProperties(value, { ...context, regularProperties })
         ];
     }
 
-    check(value: PlainObject): RuntimeErrorQueryNode | undefined {
+    check(value: PlainObject, context: FieldContext): RuntimeErrorQueryNode | undefined {
         const applicableFields = this.getApplicableInputFields(value);
         const fields = applicableFields
             .filter(f => f.field.type.isScalarType);
@@ -48,10 +54,10 @@ export class UpdateObjectInputType extends TypedInputObjectType<UpdateInputField
             return undefined;
         }
         const fieldNames = firstDuplicateGroup[1].map(inputField => `"${inputField.name}"`);
-        return new RuntimeErrorQueryNode(`Can't combine ${joinWithAnd(fieldNames)} in "${this.name}"`);
+        throw createGraphQLError(`Can't combine ${joinWithAnd(fieldNames)} in "${this.name}"`, context);
     }
 
-    private getChildEntityProperties(objectValue: PlainObject, currentEntityNode: QueryNode, field: Field): ReadonlyArray<SetFieldQueryNode> {
+    private getChildEntityProperties(objectValue: PlainObject, field: Field, context: UpdateInputFieldContext): ReadonlyArray<SetFieldQueryNode> {
         if (!field.type.isChildEntityType) {
             throw new Error(`Expected "${field.type.name}" to be a child entity type`);
         }
@@ -77,13 +83,13 @@ export class UpdateObjectInputType extends TypedInputObjectType<UpdateInputField
         // -> update operates on reduced list (delete ones do not generate overhead)
         // generates a query like this:
         // FOR obj IN [...existing, ...newValues] FILTER !(obj.id IN removedIDs) RETURN obj.id == updateID ? update(obj) : obj
-        const rawExistingNode = new FieldQueryNode(currentEntityNode, field);
+        const rawExistingNode = new FieldQueryNode(context.currentEntityNode, field);
         // fall back to empty list if property is not a list
         let currentNode: QueryNode = new SafeListQueryNode(rawExistingNode);
 
         if (newValues.length) {
             // wrap the whole thing into a LiteralQueryNode instead of them individually so that only one bound variable is used
-            const newNode = new LiteralQueryNode(newValues.map(val => addField.createInputType.prepareValue(val as PlainObject)));
+            const newNode = new LiteralQueryNode(newValues.map(val => addField.createInputType.prepareValue(val as PlainObject, context)));
             currentNode = new ConcatListsQueryNode([currentNode, newNode]);
         }
 
@@ -115,7 +121,7 @@ export class UpdateObjectInputType extends TypedInputObjectType<UpdateInputField
 
             for (const value of updatedValues) {
                 const filterNode = new BinaryOperationQueryNode(childIDQueryNode, BinaryOperator.EQUAL, new LiteralQueryNode((value as any)[ID_FIELD]));
-                const updates = updateField.updateInputType.getProperties(value as PlainObject, childEntityVarNode);
+                const updates = updateField.updateInputType.getProperties(value as PlainObject, { ...context, currentEntityNode: childEntityVarNode });
                 const updateNode = new MergeObjectsQueryNode([
                     childEntityVarNode,
                     new ObjectQueryNode(updates)
@@ -136,17 +142,17 @@ export class UpdateObjectInputType extends TypedInputObjectType<UpdateInputField
         return [new SetFieldQueryNode(field, currentNode)];
     }
 
-    protected getAdditionalProperties(value: PlainObject, currentEntityNode: QueryNode, properties: ReadonlyArray<SetFieldQueryNode>): ReadonlyArray<SetFieldQueryNode> {
+    protected getAdditionalProperties(value: PlainObject, context: AdditionalPropertiesContext): ReadonlyArray<SetFieldQueryNode> {
         return [];
     }
 
-    collectAffectedFields(value: PlainObject, fields: Set<Field>) {
-        this.getApplicableInputFields(value).forEach(field => field.collectAffectedFields(value[field.name], fields));
+    collectAffectedFields(value: PlainObject, fields: Set<Field>, context: FieldContext) {
+        this.getApplicableInputFields(value).forEach(field => field.collectAffectedFields(value[field.name], fields, context));
     }
 
-    getAffectedFields(value: PlainObject): ReadonlyArray<Field> {
+    getAffectedFields(value: PlainObject, context: FieldContext): ReadonlyArray<Field> {
         const fields = new Set<Field>();
-        this.collectAffectedFields(value, fields);
+        this.collectAffectedFields(value, fields, context);
         return Array.from(fields);
     }
 
@@ -166,8 +172,8 @@ export class UpdateRootEntityInputType extends UpdateObjectInputType {
         this.updatedAtField = this.rootEntityType.getFieldOrThrow(ENTITY_UPDATED_AT);
     }
 
-    getAdditionalProperties(value: PlainObject, currentEntityNode: QueryNode, properties: ReadonlyArray<SetFieldQueryNode>) {
-        if (!properties.length) {
+    getAdditionalProperties(value: PlainObject, { regularProperties }: AdditionalPropertiesContext) {
+        if (!regularProperties.length) {
             // don't change updatedAt if only relations change
             return [];
         }
@@ -177,11 +183,11 @@ export class UpdateRootEntityInputType extends UpdateObjectInputType {
         ];
     }
 
-    getRelationStatements(input: PlainObject, idNode: QueryNode): ReadonlyArray<PreExecQueryParms> {
+    getRelationStatements(input: PlainObject, idNode: QueryNode, context: FieldContext): ReadonlyArray<PreExecQueryParms> {
         const relationFields = this.fields
             .filter(isRelationUpdateField)
             .filter(field => field.appliesToMissingFields() || field.name in input);
-        return flatMap(relationFields, field => field.getStatements(input[field.name], idNode));
+        return flatMap(relationFields, field => field.getStatements(input[field.name], idNode, context));
     }
 }
 

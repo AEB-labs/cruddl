@@ -1,7 +1,7 @@
 import { Database } from 'arangojs';
 import { graphql, GraphQLSchema } from 'graphql';
 import * as path from 'path';
-import { SchemaContext } from '../../../src/config/global';
+import { SchemaContext } from '../../../src/config/interfaces';
 import { ArangoDBAdapter } from '../../../src/database/arangodb';
 import { Project } from '../../../src/project/project';
 import { loadProjectFromDir } from '../../../src/project/project-from-fs';

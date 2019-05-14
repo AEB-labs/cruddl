@@ -1,5 +1,5 @@
 import { Database } from 'arangojs';
-import { SchemaContext } from '../../../config/global';
+import { SchemaContext } from '../../../config/interfaces';
 import { Logger } from '../../../config/logging';
 import { Model, RootEntityType } from '../../../model/implementation';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from '../arango-basics';

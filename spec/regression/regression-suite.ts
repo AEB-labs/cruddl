@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import { graphql, GraphQLSchema, OperationDefinitionNode, parse } from 'graphql';
 import * as path from 'path';
 import * as stripJsonComments from 'strip-json-comments';
-import { SchemaContext } from '../../src/config/global';
+import { SchemaContext } from '../../src/config/interfaces';
 import { ArangoDBAdapter } from '../../src/database/arangodb';
 import { DatabaseAdapter } from '../../src/database/database-adapter';
 import { InMemoryAdapter, InMemoryDB } from '../../src/database/inmemory';

@@ -1,7 +1,7 @@
 "A supehero"
 type Hero @rootEntity {
     "The hero's screen name"
-    name: String
+    name: String @unique
     age: Int @defaultValue(value: 42)
     nickNames: [String]
     movies: [Movie] @relation(inverseOf: "heroes")

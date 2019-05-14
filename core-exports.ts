@@ -1,4 +1,5 @@
-export { Project, ProjectOptions, ProjectConfig, RequestProfile } from './src/project/project';
+export { RequestProfile, ErrorHandlers } from './src/config/interfaces';
+export { Project, ProjectOptions, ProjectConfig } from './src/project/project';
 export { ProjectSource, SourceConfig, SourceType, SourceLike } from './src/project/source';
 export { SchemaExecutor, SchemaExecutionArgs } from './src/execution/schema-executor';
 export { ExecutionOptions, MutationMode, ExecutionOptionsCallbackArgs }from './src/execution/execution-options';

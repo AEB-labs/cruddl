@@ -27,8 +27,8 @@ export async function start() {
         db = new ArangoDBAdapter({
             databaseName,
             url: databaseURL,
-            autocreateIndices: true,
-            autoremoveIndices: true,
+            autocreateIndices: false,
+            autoremoveIndices: false,
             enableExperimentalProjectionIndirection: true,
             experimentalProjectionIndirectionTypeNames: ['BusinessMessage']
         }, { loggerProvider });
@@ -47,6 +47,12 @@ export async function start() {
                 //queryMemoryLimit: 1000000,
                 cancellationToken: new Promise(resolve => context.request.on('aborted', resolve))
             });
+        },
+        errorHandlers: {
+            handleUnexpectedError(error, context) {
+                console.error(`Internal error: ${error.stack}`);
+                return new Error(`Internal error`);
+            }
         },
         loggerProvider
     });

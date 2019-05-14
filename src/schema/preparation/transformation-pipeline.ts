@@ -1,5 +1,5 @@
 import { DocumentNode, GraphQLSchema } from 'graphql';
-import { SchemaContext } from '../../config/global';
+import { SchemaContext } from '../../config/interfaces';
 import { ParsedProject, ParsedProjectSourceBaseKind } from '../../config/parsed-project';
 import { DatabaseAdapter } from '../../database/database-adapter';
 import { Model } from '../../model';

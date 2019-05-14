@@ -1,4 +1,5 @@
-import { globalContext, SchemaContext } from '../../config/global';
+import { globalContext } from '../../config/global';
+import { SchemaContext } from '../../config/interfaces';
 import { Logger } from '../../config/logging';
 import { Model } from '../../model';
 import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS, QueryNode } from '../../query-tree';

@@ -1,15 +1,11 @@
 import { GraphQLID, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
 import { Field, Multiplicity } from '../../model';
 import { PreExecQueryParms, QueryNode, SetFieldQueryNode } from '../../query-tree';
-import {
-    getAddRelationFieldName, getCreateRelatedEntityFieldName, getRemoveRelationFieldName
-} from '../../schema/names';
+import { getAddRelationFieldName, getCreateRelatedEntityFieldName, getRemoveRelationFieldName } from '../../schema/names';
 import { AnyValue, PlainObject } from '../../utils/utils';
 import { CreateRootEntityInputType } from '../create-input-types';
-import {
-    getAddEdgesStatements, getCreateAndAddEdgesStatements, getCreateAndSetEdgeStatements, getRemoveEdgesStatements,
-    getSetEdgeStatements
-} from '../utils/relations';
+import { FieldContext } from '../query-node-object-type';
+import { getAddEdgesStatements, getCreateAndAddEdgesStatements, getCreateAndSetEdgeStatements, getRemoveEdgesStatements, getSetEdgeStatements } from '../utils/relations';
 import { UpdateInputField } from './input-fields';
 
 export abstract class AbstractRelationUpdateInputField implements UpdateInputField {
@@ -29,15 +25,15 @@ export abstract class AbstractRelationUpdateInputField implements UpdateInputFie
         return false;
     }
 
-    collectAffectedFields(value: AnyValue, fields: Set<Field>): void {
+    collectAffectedFields(value: AnyValue, fields: Set<Field>, context: FieldContext): void {
         fields.add(this.field);
     }
 
-    getProperties(value: AnyValue): ReadonlyArray<SetFieldQueryNode> {
+    getProperties(value: AnyValue, context: FieldContext): ReadonlyArray<SetFieldQueryNode> {
         return [];
     }
 
-    abstract getStatements(value: AnyValue, idNode: QueryNode): ReadonlyArray<PreExecQueryParms>
+    abstract getStatements(value: AnyValue, idNode: QueryNode, context: FieldContext): ReadonlyArray<PreExecQueryParms>
 }
 
 export class SetEdgeInputField extends AbstractRelationUpdateInputField {
@@ -113,7 +109,7 @@ export class CreateAndAddEdgesInputField extends AbstractRelationUpdateInputFiel
         this.inputType = new GraphQLList(new GraphQLNonNull(objectInputType.getInputType()));
     }
 
-    getStatements(value: AnyValue, sourceIDNode: QueryNode): ReadonlyArray<PreExecQueryParms> {
+    getStatements(value: AnyValue, sourceIDNode: QueryNode, context: FieldContext): ReadonlyArray<PreExecQueryParms> {
         if (value == undefined) {
             return [];
         }
@@ -121,7 +117,7 @@ export class CreateAndAddEdgesInputField extends AbstractRelationUpdateInputFiel
             throw new Error(`Expected value of "${this.name}" to be an array, but is ${typeof value}`);
         }
 
-        return getCreateAndAddEdgesStatements(this.field, sourceIDNode, this.objectInputType, value as ReadonlyArray<PlainObject>);
+        return getCreateAndAddEdgesStatements(this.field, sourceIDNode, this.objectInputType, value as ReadonlyArray<PlainObject>, context);
     }
 }
 
@@ -138,7 +134,7 @@ export class CreateAndSetEdgeInputField extends AbstractRelationUpdateInputField
         this.inputType = objectInputType.getInputType();
     }
 
-    getStatements(value: AnyValue, sourceIDNode: QueryNode): ReadonlyArray<PreExecQueryParms> {
+    getStatements(value: AnyValue, sourceIDNode: QueryNode, context: FieldContext): ReadonlyArray<PreExecQueryParms> {
         if (value == undefined) {
             return [];
         }
@@ -146,7 +142,7 @@ export class CreateAndSetEdgeInputField extends AbstractRelationUpdateInputField
             throw new Error(`Expected value of "${this.name}" to be an object, but is ${typeof value}`);
         }
 
-        return getCreateAndSetEdgeStatements(this.field, sourceIDNode, this.objectInputType, value as PlainObject);
+        return getCreateAndSetEdgeStatements(this.field, sourceIDNode, this.objectInputType, value as PlainObject, context);
     }
 }
 

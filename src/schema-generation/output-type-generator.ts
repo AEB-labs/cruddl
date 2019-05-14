@@ -85,7 +85,7 @@ export class OutputTypeGenerator {
             name: CURSOR_FIELD,
             type: GraphQLString,
             description: `Provides a value that can be supplied to the \`after\` argument for pagination. Depends on the value of the \`orderBy\` argument.`,
-            resolve: (source, args, info) => this.getCursorNode(source, info.fieldRequestStack[info.fieldRequestStack.length - 2], orderByType)
+            resolve: (source, args, info) => this.getCursorNode(source, info.selectionStack[info.selectionStack.length - 2].fieldRequest, orderByType)
         };
     }
 

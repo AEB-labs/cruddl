@@ -1,12 +1,5 @@
-import { ExecutionOptions, ExecutionOptionsCallbackArgs } from '../execution/execution-options';
-import { RequestProfile } from '../project/project';
+import { SchemaContext } from './interfaces';
 import { DEFAULT_LOGGER_PROVIDER, LoggerProvider } from './logging';
-
-export interface SchemaContext {
-    readonly loggerProvider?: LoggerProvider;
-    readonly profileConsumer?: (profile: RequestProfile) => void;
-    readonly getExecutionOptions?: (args: ExecutionOptionsCallbackArgs) => ExecutionOptions;
-}
 
 export namespace globalContext {
     export let loggerProvider: LoggerProvider;

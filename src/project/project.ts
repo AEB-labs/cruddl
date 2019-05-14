@@ -1,8 +1,9 @@
-import { FragmentDefinitionNode, GraphQLSchema, OperationDefinitionNode } from 'graphql';
+import { GraphQLSchema } from 'graphql';
 import memorize from 'memorize-decorator';
 import { isArray } from 'util';
+import { ErrorHandlers, RequestProfile } from '../config/interfaces';
 import { DEFAULT_LOGGER_PROVIDER, LoggerProvider } from '../config/logging';
-import { DatabaseAdapter, DatabaseAdapterTimings, ExecutionPlan, TransactionStats } from '../database/database-adapter';
+import { DatabaseAdapter } from '../database/database-adapter';
 import { ExecutionOptions, ExecutionOptionsCallbackArgs } from '../execution/execution-options';
 import { SchemaExecutor } from '../execution/schema-executor';
 import { getMetaSchema } from '../meta-schema/meta-schema';
@@ -10,21 +11,11 @@ import { Model, ValidationResult } from '../model';
 import { createSchema, getModel, validateSchema } from '../schema/schema-builder';
 import { ProjectSource, SourceLike, SourceType } from './source';
 
-export interface RequestProfile {
-    readonly timings?: DatabaseAdapterTimings;
-    readonly stats: TransactionStats
-    readonly plan?: ExecutionPlan;
-    readonly operation: OperationDefinitionNode;
-    readonly variableValues: { readonly [name: string]: unknown }
-    readonly fragments: { readonly [fragmentName: string]: FragmentDefinitionNode }
-    readonly context: unknown;
-}
 
 export interface ProjectOptions {
     readonly loggerProvider?: LoggerProvider;
-
+    readonly errorHandlers?: ErrorHandlers;
     readonly profileConsumer?: (profile: RequestProfile) => void;
-
     readonly getExecutionOptions?: (args: ExecutionOptionsCallbackArgs) => ExecutionOptions;
 }
 
@@ -58,7 +49,8 @@ export class Project {
         this.options = {
             loggerProvider: config.loggerProvider,
             profileConsumer: config.profileConsumer,
-            getExecutionOptions: config.getExecutionOptions
+            getExecutionOptions: config.getExecutionOptions,
+            errorHandlers: config.errorHandlers
         };
     }
 

@@ -68,8 +68,6 @@ export function validateAndPrepareSchema(project: Project): { validationResult: 
 export function createSchema(project: Project, databaseAdapter: DatabaseAdapter): GraphQLSchema {
     globalContext.registerContext({ loggerProvider: project.loggerProvider });
     try {
-        const logger = globalContext.loggerProvider.getLogger('schema-builder');
-
         const { validationResult, model } = validateAndPrepareSchema(project);
         if (validationResult.hasErrors()) {
             throw new Error('Project has errors:\n' + validationResult.toString());
@@ -82,9 +80,7 @@ export function createSchema(project: Project, databaseAdapter: DatabaseAdapter)
 
         const generator = new SchemaGenerator(schemaContext);
         const graphQLSchema = generator.generate(model);
-        const finalSchema = executeSchemaTransformationPipeline(graphQLSchema, schemaContext, model);
-        logger.info('Schema created successfully.');
-        return finalSchema;
+        return executeSchemaTransformationPipeline(graphQLSchema, schemaContext, model);
     } finally {
         globalContext.unregisterContext();
     }

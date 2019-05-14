@@ -1,17 +1,23 @@
 import { GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
 import { Field } from '../../model';
 import { AnyValue, PlainObject } from '../../utils/utils';
+import { createGraphQLError } from '../graphql-errors';
+import { FieldContext } from '../query-node-object-type/context';
 import { TypedInputFieldBase } from '../typed-input-object-type';
 import { CreateObjectInputType } from './input-types';
 
-export interface CreateInputField extends TypedInputFieldBase<CreateInputField> {
-    getProperties(value: AnyValue): PlainObject;
+export interface FieldValidationContext extends FieldContext {
+    readonly objectValue: PlainObject;
+}
 
-    collectAffectedFields(value: AnyValue, fields: Set<Field>): void;
+export interface CreateInputField extends TypedInputFieldBase<CreateInputField> {
+    getProperties(value: AnyValue, context: FieldContext): PlainObject;
+
+    collectAffectedFields(value: AnyValue, fields: Set<Field>, context: FieldContext): void;
 
     appliesToMissingFields(): boolean;
 
-    validateInContext(value: AnyValue, objectValue: PlainObject): void;
+    validateInContext(value: AnyValue, context: FieldValidationContext): void;
 }
 
 export class BasicCreateInputField implements CreateInputField {
@@ -34,23 +40,23 @@ export class BasicCreateInputField implements CreateInputField {
         return this._description;
     }
 
-    getProperties(value: AnyValue) {
+    getProperties(value: AnyValue, context: FieldContext) {
         if (value === undefined && this.field.hasDefaultValue) {
             value = this.field.defaultValue;
         }
 
-        value = this.coerceValue(value);
+        value = this.coerceValue(value, context);
 
         return {
             [this.field.name]: value
         };
     }
 
-    protected coerceValue(value: AnyValue): AnyValue {
+    protected coerceValue(value: AnyValue, context: FieldContext): AnyValue {
         return value;
     }
 
-    collectAffectedFields(value: AnyValue, fields: Set<Field>) {
+    collectAffectedFields(value: AnyValue, fields: Set<Field>, context: FieldContext) {
         if (value === undefined) {
             // don't consider this field if it is just set to its default value
             // this enables permission-restricted fields with a non-critical default value
@@ -64,14 +70,14 @@ export class BasicCreateInputField implements CreateInputField {
         return this.field.hasDefaultValue;
     }
 
-    validateInContext(value: AnyValue, objectValue: PlainObject) {
+    validateInContext(value: AnyValue, context: FieldValidationContext) {
 
     }
 }
 
 export class BasicListCreateInputField extends BasicCreateInputField {
-    protected coerceValue(value: AnyValue): AnyValue {
-        value = super.coerceValue(value);
+    protected coerceValue(value: AnyValue, context: FieldContext): AnyValue {
+        value = super.coerceValue(value, context);
         if (value === null) {
             // null is not a valid list value - if the user specified it, coerce it to [] to not have a mix of [] and
             // null in the database
@@ -90,23 +96,24 @@ export class CreateObjectInputField extends BasicCreateInputField {
         super(field, undefined, inputType || objectInputType.getInputType());
     }
 
-    protected coerceValue(value: AnyValue): AnyValue {
-        value = super.coerceValue(value);
+    protected coerceValue(value: AnyValue, context: FieldContext): AnyValue {
+        value = super.coerceValue(value, context);
         if (value == undefined) {
             return value;
         }
-        return this.objectInputType.prepareValue(value);
+        return this.objectInputType.prepareValue(value, context);
     }
 
-    collectAffectedFields(value: AnyValue, fields: Set<Field>) {
-        super.collectAffectedFields(value, fields);
+    collectAffectedFields(value: AnyValue, fields: Set<Field>, context: FieldContext) {
+        super.collectAffectedFields(value, fields, context);
         if (value == undefined) {
             return;
         }
 
-        this.objectInputType.collectAffectedFields(value, fields);
+        this.objectInputType.collectAffectedFields(value, fields, context);
     }
 }
+
 export class CreateReferenceInputField extends BasicCreateInputField {
     constructor(
         field: Field,
@@ -115,18 +122,18 @@ export class CreateReferenceInputField extends BasicCreateInputField {
         inputType: GraphQLInputType | CreateObjectInputType,
         deprecationReason?: string
     ) {
-        super(field, description, inputType, deprecationReason)
+        super(field, description, inputType, deprecationReason);
     }
 
     get name() {
         return this._name;
     }
 
-    validateInContext(value: AnyValue, objectValue: PlainObject) {
+    validateInContext(value: AnyValue, context: FieldValidationContext) {
         // if there are two fields to specify the reference key, users must only specify one
         // if this is the legacy field (named after the reference field), complain if the key field is set, too
-        if (this.field.name !== this.name && this.field.name in objectValue) {
-            throw new Error(`Cannot set both "${this.field.name}" and "${this.name}" because they refer to the same reference`);
+        if (this.field.name !== this.name && this.field.name in context.objectValue) {
+            throw createGraphQLError(`Cannot set both "${this.field.name}" and "${this.name}" because they refer to the same reference`, context);
         }
     }
 }
@@ -139,8 +146,8 @@ export class ObjectListCreateInputField extends BasicCreateInputField {
         super(field, undefined, new GraphQLList(new GraphQLNonNull(objectInputType.getInputType())));
     }
 
-    protected coerceValue(value: AnyValue): AnyValue {
-        value = super.coerceValue(value);
+    protected coerceValue(value: AnyValue, context: FieldContext): AnyValue {
+        value = super.coerceValue(value, context);
         if (value === null) {
             // null is not a valid list value - if the user specified it, coerce it to [] to not have a mix of [] and
             // null in the database
@@ -152,11 +159,11 @@ export class ObjectListCreateInputField extends BasicCreateInputField {
         if (!Array.isArray(value)) {
             throw new Error(`Expected value for "${this.name}" to be an array, but is "${typeof value}"`);
         }
-        return value.map(value => this.objectInputType.prepareValue(value));
+        return value.map(value => this.objectInputType.prepareValue(value, context));
     }
 
-    collectAffectedFields(value: AnyValue, fields: Set<Field>) {
-        super.collectAffectedFields(value, fields);
+    collectAffectedFields(value: AnyValue, fields: Set<Field>, context: FieldContext) {
+        super.collectAffectedFields(value, fields, context);
         if (value == undefined) {
             return;
         }
@@ -164,14 +171,14 @@ export class ObjectListCreateInputField extends BasicCreateInputField {
             throw new Error(`Expected value for "${this.name}" to be an array, but is "${typeof value}"`);
         }
 
-        value.forEach(value => this.objectInputType.collectAffectedFields(value, fields));
+        value.forEach(value => this.objectInputType.collectAffectedFields(value, fields, context));
     }
 }
 
 export class CreateEntityExtensionInputField extends CreateObjectInputField {
-    protected coerceValue(value: AnyValue): AnyValue {
+    protected coerceValue(value: AnyValue, context: FieldContext): AnyValue {
         // this should always be an object so the default values of entity extensions apply
-        return super.coerceValue(value == undefined ? {} : value);
+        return super.coerceValue(value == undefined ? {} : value, context);
     }
 
     appliesToMissingFields() {

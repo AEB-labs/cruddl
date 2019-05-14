@@ -3,8 +3,9 @@ import { Field, Multiplicity } from '../../model';
 import { PreExecQueryParms, QueryNode } from '../../query-tree';
 import { getCreateRelatedEntityFieldName } from '../../schema/names';
 import { AnyValue, PlainObject } from '../../utils/utils';
+import { FieldContext } from '../query-node-object-type';
 import { getAddEdgesStatements, getCreateAndAddEdgesStatements, getCreateAndSetEdgeStatements, getSetEdgeStatements } from '../utils/relations';
-import { CreateInputField } from './input-fields';
+import { CreateInputField, FieldValidationContext } from './input-fields';
 import { CreateRootEntityInputType } from './input-types';
 
 export abstract class AbstractRelationCreateInputField implements CreateInputField {
@@ -32,10 +33,10 @@ export abstract class AbstractRelationCreateInputField implements CreateInputFie
         return {};
     }
 
-    validateInContext(value: AnyValue, objectValue: PlainObject): void {
+    validateInContext(value: AnyValue, context: FieldValidationContext): void {
     }
 
-    abstract getStatements(value: AnyValue, idNode: QueryNode): ReadonlyArray<PreExecQueryParms>
+    abstract getStatements(value: AnyValue, idNode: QueryNode, context: FieldContext): ReadonlyArray<PreExecQueryParms>
 }
 
 export class SetEdgeCreateInputField extends AbstractRelationCreateInputField {
@@ -96,7 +97,7 @@ export class CreateAndAddEdgesCreateInputField extends AbstractRelationCreateInp
         this.inputType = new GraphQLList(new GraphQLNonNull(objectInputType.getInputType()));
     }
 
-    getStatements(value: AnyValue, sourceIDNode: QueryNode): ReadonlyArray<PreExecQueryParms> {
+    getStatements(value: AnyValue, sourceIDNode: QueryNode, context: FieldContext): ReadonlyArray<PreExecQueryParms> {
         if (value == undefined) {
             return [];
         }
@@ -104,7 +105,7 @@ export class CreateAndAddEdgesCreateInputField extends AbstractRelationCreateInp
             throw new Error(`Expected value of "${this.name}" to be an array, but is ${typeof value}`);
         }
 
-        return getCreateAndAddEdgesStatements(this.field, sourceIDNode, this.objectInputType, value as ReadonlyArray<PlainObject>);
+        return getCreateAndAddEdgesStatements(this.field, sourceIDNode, this.objectInputType, value as ReadonlyArray<PlainObject>, context);
     }
 }
 
@@ -121,7 +122,7 @@ export class CreateAndSetEdgeCreateInputField extends AbstractRelationCreateInpu
         this.inputType = objectInputType.getInputType();
     }
 
-    getStatements(value: AnyValue, sourceIDNode: QueryNode): ReadonlyArray<PreExecQueryParms> {
+    getStatements(value: AnyValue, sourceIDNode: QueryNode, context: FieldContext): ReadonlyArray<PreExecQueryParms> {
         if (value == undefined) {
             return [];
         }
@@ -129,7 +130,7 @@ export class CreateAndSetEdgeCreateInputField extends AbstractRelationCreateInpu
             throw new Error(`Expected value of "${this.name}" to be an object, but is ${typeof value}`);
         }
 
-        return getCreateAndSetEdgeStatements(this.field, sourceIDNode, this.objectInputType, value as PlainObject);
+        return getCreateAndSetEdgeStatements(this.field, sourceIDNode, this.objectInputType, value as PlainObject, context);
     }
 }
 
