@@ -60,12 +60,19 @@ export class Project {
 
     /**
      * Validates this project ot identify if createSchema() would succeed
+     *
+     * @return the result with all validation messages encountered
      */
     @memorize()
     validate(): ValidationResult {
         return validateSchema(this);
     }
 
+    /**
+     * Gets a structured representation of the elements of this project
+     *
+     * @throws InvalidProjectError if this project is invalid
+     */
     @memorize()
     getModel(): Model {
         return getModel(this);
@@ -73,6 +80,8 @@ export class Project {
 
     /**
      * Creates an executable GraphQLSchema that uses the given DatabaseAdapter to execute queries
+     *
+     * @throws InvalidProjectError if this project is invalid
      */
     createSchema(databaseAdapter: DatabaseAdapter): GraphQLSchema {
         return createSchema(this, databaseAdapter);
@@ -80,6 +89,8 @@ export class Project {
 
     /**
      * Experimental API, lacks of significant features like validation or introspection
+     *
+     * @throws InvalidProjectError if this project is invalid
      */
     createSchemaExecutor(databaseAdapter: DatabaseAdapter): SchemaExecutor {
         return new SchemaExecutor(this, databaseAdapter);
@@ -87,6 +98,8 @@ export class Project {
 
     /**
      * Creates an executable GraphQLSchema that allows to inspect the active model with its types and fields
+     *
+     * @throws InvalidProjectError if this project is invalid
      */
     @memorize()
     createMetaSchema(): GraphQLSchema {

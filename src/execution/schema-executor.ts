@@ -5,6 +5,7 @@ import { globalContext } from '../config/global';
 import { DatabaseAdapter } from '../database/database-adapter';
 import { extractOperation } from '../graphql/operations';
 import { Project } from '../project/project';
+import { InvalidProjectError } from '../project/invalid-project-error';
 import { QueryNodeObjectType, SchemaGenerator } from '../schema-generation';
 import { SchemaTransformationContext } from '../schema/preparation/transformation-pipeline';
 import { validateAndPrepareSchema } from '../schema/schema-builder';
@@ -58,7 +59,7 @@ export class SchemaExecutor {
 
             const { validationResult, model } = validateAndPrepareSchema(project);
             if (validationResult.hasErrors()) {
-                throw new Error('Project has errors:\n' + validationResult.toString());
+                throw new InvalidProjectError(validationResult);
             }
 
             const schemaContext: SchemaTransformationContext = {
