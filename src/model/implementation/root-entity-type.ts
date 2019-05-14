@@ -70,7 +70,10 @@ export class RootEntityType extends ObjectTypeBase {
 
     @memorize()
     get arangoSearchConfig():ArangoSearchIndexConfig{
-        return this.input.arangoSearchIndex
+        return this.input.arangoSearchIndex || {
+            isGlobalIndexed: false,
+            isIndexed: false,
+        }
     }
 
     @memorize()

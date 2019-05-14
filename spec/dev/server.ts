@@ -27,8 +27,6 @@ export async function start() {
         db = new ArangoDBAdapter({
             databaseName,
             url: databaseURL,
-            password: 'hallo',
-            user: 'root',
             doNonMandatoryMigrations: true,
             enableExperimentalProjectionIndirection: true,
             experimentalProjectionIndirectionTypeNames: ['BusinessMessage']

@@ -84,10 +84,7 @@ function getGlobalSearchViewProperties(globalIndexedEntityTypes: RootEntityType[
         links: {},
     }
 
-    const fields = globalIndexedEntityTypes
-        .map(value => value.fields
-        .filter(value1 => value1.isSearchable))
-        .reduce((previousValue, currentValue) => previousValue.concat(currentValue));
+    const fields = flatMap(globalIndexedEntityTypes, value => value.fields.filter(value1 => value1.isSearchable))
 
     for(const entity of globalIndexedEntityTypes){
 
@@ -193,7 +190,7 @@ export async function calculateRequiredGlobalViewOperation(entityTypes: Readonly
         return (await db.collection(getCollectionNameForRootEntity(entityType)).count()).count
     }
 
-    const count = (await Promise.all(globalIndexedEntityTypes.map(mapToCollectionSize))).reduce((previousValue, currentValue) => currentValue + previousValue);
+    const count = (await Promise.all(globalIndexedEntityTypes.map(mapToCollectionSize))).reduce((previousValue, currentValue) => currentValue + previousValue,0);
 
     if(isArangoViewExists){
         const viewProperties = await arangoSearchView.properties();

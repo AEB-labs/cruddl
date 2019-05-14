@@ -36,10 +36,10 @@ type Skill @valueObject {
 type Movie @rootEntity(quickSearchIndex:true, globalQuickSearch: true) {
     name: String @quickSearchIndex(searchable: true, language:EN)
     "All the heroes starring in this movie"
-    heroes: [Hero] @relation
+    heroes: [Hero] @relation # @MSF OPT TODO: do not allow quickSearchIndex for relations
     "The real superhero"
     director: Director @relation
-    publisher: Publisher @reference # @MSF TODO: references
+    publisher: Publisher @reference # @MSF OPT TODO: do not allow quickSearchIndex for references
 }
 
 "A movie director"
