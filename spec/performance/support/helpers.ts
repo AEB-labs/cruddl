@@ -1,7 +1,7 @@
 import { Database } from 'arangojs';
 import { graphql, GraphQLSchema } from 'graphql';
 import * as path from 'path';
-import { SchemaContext } from '../../../src/config/global';
+import { ProjectOptions } from '../../../src/config/interfaces';
 import { ArangoDBAdapter } from '../../../src/database/arangodb';
 import { Project } from '../../../src/project/project';
 import { loadProjectFromDir } from '../../../src/project/project-from-fs';
@@ -20,7 +20,7 @@ export interface TestEnvironment {
     exec(graphql: string, variables?: { [name: string]: any }): any
 }
 
-const schemaContext: SchemaContext = { loggerProvider: new Log4jsLoggerProvider('warn'), getExecutionOptions: ({ context }) => ({ authRoles: context.authRoles }) };
+const schemaContext: ProjectOptions = { loggerProvider: new Log4jsLoggerProvider('warn'), getExecutionOptions: ({ context }) => ({ authRoles: context.authRoles }) };
 
 export async function createTestProject(modelPath: string = MODEL_PATH): Promise<{ project: Project, schema: GraphQLSchema }> {
     const project = await loadProjectFromDir(modelPath, schemaContext);

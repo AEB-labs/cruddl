@@ -1,0 +1,6 @@
+type Test @rootEntity {
+    key: String @key
+    countryLegacy: Country @reference
+    countryISOCode: String
+    country: Country @reference(keyField: "countryISOCode")
+}

@@ -73,7 +73,7 @@ export class OrderByAndPaginationAugmentation {
                 const skip = args[SKIP_ARG];
                 const paginationFilter = this.createPaginationFilterNode(args, itemVariable, orderByType);
                 const afterArg = args[AFTER_ARG];
-                const isCursorRequested = info.fieldRequestStack[info.fieldRequestStack.length - 1].selectionSet.some(sel => sel.fieldRequest.field.name === CURSOR_FIELD);
+                const isCursorRequested = info.selectionStack[info.selectionStack.length - 1].fieldRequest.selectionSet.some(sel => sel.fieldRequest.field.name === CURSOR_FIELD);
                 // we only require the absolute ordering for cursor-based pagination, which is detected via a cursor field or the "after" argument.
                 const isAbsoluteOrderRequired = isCursorRequested || !!afterArg;
                 const orderBy = this.getOrderSpecification(args, orderByType, itemVariable, { isAbsoluteOrderRequired });

@@ -47,6 +47,10 @@ export async function start() {
                 cancellationToken: new Promise(resolve => context.request.on('aborted', resolve))
             });
         },
+        processError(error: Error) {
+            console.error(`Internal error: ${error.stack}`);
+            return new Error(`Internal error`);
+        },
         loggerProvider
     });
     const schema = project.createSchema(db);

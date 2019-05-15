@@ -5,7 +5,7 @@
 "A supehero"
 type Hero @rootEntity(quickSearchIndex:true, globalQuickSearch: true) {
     "The hero's screen name"
-    name: String @quickSearchIndex(language:DE)
+    name: String @unique @quickSearchIndex(language:DE)
     age: Int @defaultValue(value: 42)
     nickNames: [String] @quickSearchIndex
     movies: [Movie] @relation(inverseOf: "heroes")

@@ -3,11 +3,14 @@ import { GraphQLEnumType, GraphQLInputObjectType, GraphQLList, GraphQLNonNull, G
 import { ChildEntityType, Model, RootEntityType, TypeKind } from '../../src/model';
 import { CreateInputTypeGenerator, CreateObjectInputField } from '../../src/schema-generation/create-input-types';
 import { EnumTypeGenerator } from '../../src/schema-generation/enum-type-generator';
+import { FieldContext } from '../../src/schema-generation/query-node-object-type';
 
 describe('CreateInputTypeGenerator', () => {
-    const model = new Model({types: []});
+    const model = new Model({ types: [] });
 
     const generator = new CreateInputTypeGenerator(new EnumTypeGenerator);
+
+    const context: FieldContext = { selectionStack: [] };
 
     describe('with simple scalar fields', () => {
         const type = new RootEntityType({
@@ -28,40 +31,40 @@ describe('CreateInputTypeGenerator', () => {
 
         describe('prepare()', () => {
             it('includes it if specified', () => {
-                const prepared = inputType.prepareValue({name: 'Batman'});
+                const prepared = inputType.prepareValue({ name: 'Batman' }, context);
                 expect(prepared.name).to.equal('Batman');
             });
 
             it('includes it if set to null', () => {
                 // mimic the update case where setting to null does not remove the property but sets it to null
-                const prepared = inputType.prepareValue({name: null});
+                const prepared = inputType.prepareValue({ name: null }, context);
                 expect(prepared.name).to.be.null;
             });
 
             it('does not include it it if not specified', () => {
-                const prepared = inputType.prepareValue({});
+                const prepared = inputType.prepareValue({}, context);
                 expect(prepared.name).to.be.undefined;
             });
 
             it('does not include non-existing fields', () => {
-                const prepared = inputType.prepareValue({somethingElse: 'yt'});
+                const prepared = inputType.prepareValue({ somethingElse: 'yt' }, context);
                 expect(prepared.somethingElse).to.be.undefined;
             });
         });
 
         describe('getAffectedFields()', () => {
             it('includes it if specified', () => {
-                const fields = inputType.getAffectedFields({name: 'Batman'});
+                const fields = inputType.getAffectedFields({ name: 'Batman' }, context);
                 expect(fields).to.deep.equal([type.getFieldOrThrow('name')]);
             });
 
             it('includes it if specified as null', () => {
-                const fields = inputType.getAffectedFields({name: null});
+                const fields = inputType.getAffectedFields({ name: null }, context);
                 expect(fields).to.deep.equal([type.getFieldOrThrow('name')]);
             });
 
             it('does not include it if not specified', () => {
-                const fields = inputType.getAffectedFields({});
+                const fields = inputType.getAffectedFields({}, context);
                 expect(fields).be.empty;
             });
         });
@@ -73,7 +76,7 @@ describe('CreateInputTypeGenerator', () => {
                 {
                     kind: TypeKind.ENUM,
                     name: 'Morality',
-                    values: [{value: 'GOOD'}, {value: 'EVIL'}]
+                    values: [{ value: 'GOOD' }, { value: 'EVIL' }]
                 }
             ]
         });
@@ -96,35 +99,35 @@ describe('CreateInputTypeGenerator', () => {
 
         describe('prepare()', () => {
             it('includes it if specified', () => {
-                const prepared = inputType.prepareValue({morality: 'EVIL'});
+                const prepared = inputType.prepareValue({ morality: 'EVIL' }, context);
                 expect(prepared.morality).to.equal('EVIL');
             });
 
             it('includes it if set to null', () => {
                 // mimic the update case where setting to null does not remove the property but sets it to null
-                const prepared = inputType.prepareValue({morality: null});
+                const prepared = inputType.prepareValue({ morality: null }, context);
                 expect(prepared.morality).to.be.null;
             });
 
             it('does not include it it if not specified', () => {
-                const prepared = inputType.prepareValue({});
+                const prepared = inputType.prepareValue({}, context);
                 expect(prepared.morality).to.be.undefined;
             });
         });
 
         describe('getAffectedFields()', () => {
             it('includes it if specified', () => {
-                const fields = inputType.getAffectedFields({morality: 'EVIL'});
+                const fields = inputType.getAffectedFields({ morality: 'EVIL' }, context);
                 expect(fields).to.deep.equal([type.getFieldOrThrow('morality')]);
             });
 
             it('includes it if specified as null', () => {
-                const fields = inputType.getAffectedFields({morality: null});
+                const fields = inputType.getAffectedFields({ morality: null }, context);
                 expect(fields).to.deep.equal([type.getFieldOrThrow('morality')]);
             });
 
             it('does not include it if not specified', () => {
-                const fields = inputType.getAffectedFields({});
+                const fields = inputType.getAffectedFields({}, context);
                 expect(fields).be.empty;
             });
         });
@@ -146,29 +149,29 @@ describe('CreateInputTypeGenerator', () => {
 
         describe('prepare()', () => {
             it('includes it if specified', () => {
-                const prepared = inputType.prepareValue({name: 'Hero'});
+                const prepared = inputType.prepareValue({ name: 'Hero' }, context);
                 expect(prepared.name).to.equal('Hero');
             });
 
             it('includes default value if not specified', () => {
-                const prepared = inputType.prepareValue({});
+                const prepared = inputType.prepareValue({}, context);
                 expect(prepared.name).to.equal('Batman');
             });
 
             it('keeps null values', () => {
-                const prepared = inputType.prepareValue({name: null});
+                const prepared = inputType.prepareValue({ name: null }, context);
                 expect(prepared.name).to.be.null;
             });
         });
 
         describe('getAffectedFields()', () => {
             it('includes it if specified', () => {
-                const fields = inputType.getAffectedFields({name: 'Hero'});
+                const fields = inputType.getAffectedFields({ name: 'Hero' }, context);
                 expect(fields).to.deep.equal([type.getFieldOrThrow('name')]);
             });
 
             it('does not include it if not specified', () => {
-                const fields = inputType.getAffectedFields({});
+                const fields = inputType.getAffectedFields({}, context);
                 expect(fields).to.deep.equal([]);
             });
         });
@@ -202,36 +205,36 @@ describe('CreateInputTypeGenerator', () => {
 
         describe('prepare()', () => {
             it('includes it if specified', () => {
-                const prepared = inputType.prepareValue({nickNames: ['Dark Knight', 'Batsy']});
+                const prepared = inputType.prepareValue({ nickNames: ['Dark Knight', 'Batsy'] }, context);
                 expect(prepared.nickNames).to.deep.equal(['Dark Knight', 'Batsy']);
             });
 
             it('coerces to empty list if specified as null', () => {
                 // when querying/filtering, null is interpreted as [] anyway, so avoid having a mix of both in the db
-                const prepared = inputType.prepareValue({nickNames: null});
+                const prepared = inputType.prepareValue({ nickNames: null }, context);
                 expect(prepared.nickNames).to.deep.equal([]);
             });
 
             it('does not include it if not specified', () => {
                 // when querying/filtering, null is interpreted as [] anyway, so avoid having a mix of both in the db
-                const prepared = inputType.prepareValue({});
+                const prepared = inputType.prepareValue({}, context);
                 expect(prepared.nickNames).to.be.undefined;
             });
         });
 
         describe('getAffectedFields()', () => {
             it('includes it if specified', () => {
-                const fields = inputType.getAffectedFields({nickNames: ['Dark Knight', 'Batsy']});
+                const fields = inputType.getAffectedFields({ nickNames: ['Dark Knight', 'Batsy'] }, context);
                 expect(fields).to.deep.equal([type.getFieldOrThrow('nickNames')]);
             });
 
             it('includes it if specified null', () => {
-                const fields = inputType.getAffectedFields({nickNames: null});
+                const fields = inputType.getAffectedFields({ nickNames: null }, context);
                 expect(fields).to.deep.equal([type.getFieldOrThrow('nickNames')]);
             });
 
             it('does not include it if not specified', () => {
-                const fields = inputType.getAffectedFields({});
+                const fields = inputType.getAffectedFields({}, context);
                 expect(fields).be.empty;
             });
         });
@@ -267,9 +270,9 @@ describe('CreateInputTypeGenerator', () => {
         const inputType = generator.generate(type);
 
         const movies = [
-            {name: 'Batman Begins'},
-            {name: 'The dark Knight Rises'},
-            {name: 'The Dark Knight Rises'}
+            { name: 'Batman Begins' },
+            { name: 'The dark Knight Rises' },
+            { name: 'The Dark Knight Rises' }
         ];
 
         describe('input field', () => {
@@ -291,43 +294,43 @@ describe('CreateInputTypeGenerator', () => {
 
         describe('prepare()', () => {
             it('includes it if specified', () => {
-                const prepared = inputType.prepareValue({movies}) as any;
+                const prepared = inputType.prepareValue({ movies }, context) as any;
                 expect(prepared.movies).to.be.an('array');
                 expect(prepared.movies).to.have.lengthOf(3);
                 expect(prepared.movies[0].name).to.equal('Batman Begins');
             });
 
             it('adds child-entity specific fields', () => {
-                const prepared = inputType.prepareValue({movies}) as any;
+                const prepared = inputType.prepareValue({ movies }, context) as any;
                 expect(prepared.movies[0].id).to.be.a('string');
             });
 
             it('coerces to empty list if specified as null', () => {
                 // when querying/filtering, null is interpreted as [] anyway, so avoid having a mix of both in the db
-                const prepared = inputType.prepareValue({movies: null});
+                const prepared = inputType.prepareValue({ movies: null }, context);
                 expect(prepared.movies).to.deep.equal([]);
             });
 
             it('does not include it if not specified', () => {
                 // when querying/filtering, null is interpreted as [] anyway, so avoid having a mix of both in the db
-                const prepared = inputType.prepareValue({});
+                const prepared = inputType.prepareValue({}, context);
                 expect(prepared.movies).to.be.undefined;
             });
         });
 
         describe('getAffectedFields()', () => {
             it('includes it and its inner fields if specified', () => {
-                const fields = inputType.getAffectedFields({movies});
+                const fields = inputType.getAffectedFields({ movies }, context);
                 expect(fields).to.deep.equal([type.getFieldOrThrow('movies'), movieType.getFieldOrThrow('name')]);
             });
 
             it('includes it if specified null', () => {
-                const fields = inputType.getAffectedFields({movies: null});
+                const fields = inputType.getAffectedFields({ movies: null }, context);
                 expect(fields).to.deep.equal([type.getFieldOrThrow('movies')]);
             });
 
             it('does not include it if not specified', () => {
-                const fields = inputType.getAffectedFields({});
+                const fields = inputType.getAffectedFields({}, context);
                 expect(fields).be.empty;
             });
         });
@@ -376,34 +379,34 @@ describe('CreateInputTypeGenerator', () => {
 
         describe('prepare()', () => {
             it('includes it if specified', () => {
-                const prepared = inputType.prepareValue({suit: {color: 'black'}}) as any;
-                expect(prepared.suit).to.deep.equal({color: 'black'});
+                const prepared = inputType.prepareValue({ suit: { color: 'black' } }, context) as any;
+                expect(prepared.suit).to.deep.equal({ color: 'black' });
             });
 
             it('defaults to {} on null value', () => {
-                const prepared = inputType.prepareValue({suit: null}) as any;
+                const prepared = inputType.prepareValue({ suit: null }, context) as any;
                 expect(prepared.suit).to.deep.equal({});
             });
 
             it('defaults to {} if not specified', () => {
-                const prepared = inputType.prepareValue({});
+                const prepared = inputType.prepareValue({}, context);
                 expect(prepared.suit).to.deep.equal({});
             });
         });
 
         describe('getAffectedFields()', () => {
             it('includes it and its inner fields if specified', () => {
-                const fields = inputType.getAffectedFields({suit: {color: 'black'}});
+                const fields = inputType.getAffectedFields({ suit: { color: 'black' } }, context);
                 expect(fields).to.deep.equal([type.getFieldOrThrow('suit'), suitType.getFieldOrThrow('color')]);
             });
 
             it('includes it if specified null', () => {
-                const fields = inputType.getAffectedFields({suit: null});
+                const fields = inputType.getAffectedFields({ suit: null }, context);
                 expect(fields).to.deep.equal([type.getFieldOrThrow('suit')]);
             });
 
             it('does not include it if not specified', () => {
-                const fields = inputType.getAffectedFields({});
+                const fields = inputType.getAffectedFields({}, context);
                 expect(fields).be.empty;
             });
         });
@@ -445,35 +448,35 @@ describe('CreateInputTypeGenerator', () => {
 
         describe('prepare()', () => {
             it('includes it if specified', () => {
-                const prepared = inputType.prepareValue({country: 'US'});
+                const prepared = inputType.prepareValue({ country: 'US' }, context);
                 expect(prepared.country).to.equal('US');
             });
 
             it('includes it if set to null', () => {
                 // mimic the update case where setting to null does not remove the property but sets it to null
-                const prepared = inputType.prepareValue({country: null});
+                const prepared = inputType.prepareValue({ country: null }, context);
                 expect(prepared.country).to.be.null;
             });
 
             it('does not include it it if not specified', () => {
-                const prepared = inputType.prepareValue({});
+                const prepared = inputType.prepareValue({}, context);
                 expect(prepared.country).to.be.undefined;
             });
         });
 
         describe('getAffectedFields()', () => {
             it('includes it if specified', () => {
-                const fields = inputType.getAffectedFields({country: 'US'});
+                const fields = inputType.getAffectedFields({ country: 'US' }, context);
                 expect(fields).to.deep.equal([type.getFieldOrThrow('country')]);
             });
 
             it('includes it if specified as null', () => {
-                const fields = inputType.getAffectedFields({country: null});
+                const fields = inputType.getAffectedFields({ country: null }, context);
                 expect(fields).to.deep.equal([type.getFieldOrThrow('country')]);
             });
 
             it('does not include it if not specified', () => {
-                const fields = inputType.getAffectedFields({});
+                const fields = inputType.getAffectedFields({}, context);
                 expect(fields).be.empty;
             });
         });
@@ -502,14 +505,14 @@ describe('CreateInputTypeGenerator', () => {
 
         describe('prepare()', () => {
             it('includes createdAt and updatedAt', () => {
-                const prepared = inputType.prepareValue({});
+                const prepared = inputType.prepareValue({}, context);
                 expect(prepared.updatedAt).to.be.a('string');
                 expect(prepared.createdAt).to.be.a('string');
             });
 
             it('does not include id', () => {
                 // id is generated by database adapter
-                const prepared = inputType.prepareValue({});
+                const prepared = inputType.prepareValue({}, context);
                 expect(prepared.id).to.be.undefined;
             });
         });
@@ -531,7 +534,7 @@ describe('CreateInputTypeGenerator', () => {
 
         describe('prepare()', () => {
             it('includes createdAt, updatedAt and id', () => {
-                const prepared = inputType.prepareValue({});
+                const prepared = inputType.prepareValue({}, context);
                 expect(prepared.updatedAt).to.be.a('string');
                 expect(prepared.createdAt).to.be.a('string');
                 expect(prepared.id).to.be.a('string');

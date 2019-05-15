@@ -48,12 +48,12 @@ export interface ExecutionResult {
     readonly data?: any;
 
     /**
-     * If this is set, errors occurred, and data may be undefined.
+     * If this is set, an error occurred, and data may be undefined.
      *
      * Errors are thrown normally, but if recordPlans is enabled, errors still generate a proper result with
      * all previously gathered plan data.
      */
-    readonly errors?: ReadonlyArray<GraphQLError>;
+    readonly error?: Error;
 
     /**
      * Times (in seconds) spent on specific parts of execution. Only included if recordTimings is set to true.

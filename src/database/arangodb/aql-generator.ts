@@ -53,6 +53,7 @@ import {analyzeLikePatternPrefix} from '../like-helpers';
 import {aql, AQLCompoundQuery, aqlConfig, AQLFragment, AQLQueryResultVariable, AQLVariable} from './aql';
 import {getCollectionNameForRelation, getCollectionNameForRootEntity} from './arango-basics';
 import {getViewNameForRootEntity} from "./schema-migration/arango-search-helpers";
+import {QuickSearchQueryNode} from "../../query-tree/quick-search";
 
 enum AccessType {
     READ,

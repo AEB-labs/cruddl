@@ -1,24 +1,24 @@
 import { GraphQLID, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
-import {
-    getAddChildEntitiesFieldName, getRemoveChildEntitiesFieldName, getUpdateChildEntitiesFieldName
-} from '../../schema/names';
 import { CalcMutationsOperator, Field } from '../../model';
-import {
-    BinaryOperationQueryNode, BinaryOperator, FieldQueryNode, LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode,
-    ObjectQueryNode, QueryNode, SetFieldQueryNode
-} from '../../query-tree';
+import { BinaryOperationQueryNode, BinaryOperator, LiteralQueryNode, MergeObjectsQueryNode, ObjectQueryNode, QueryNode, SetFieldQueryNode } from '../../query-tree';
+import { getAddChildEntitiesFieldName, getRemoveChildEntitiesFieldName, getUpdateChildEntitiesFieldName } from '../../schema/names';
 import { AnyValue, PlainObject } from '../../utils/utils';
 import { CreateChildEntityInputType, CreateObjectInputType } from '../create-input-types';
 import { createFieldNode } from '../field-nodes';
+import { FieldContext } from '../query-node-object-type';
 import { TypedInputFieldBase } from '../typed-input-object-type';
 import { UpdateChildEntityInputType, UpdateEntityExtensionInputType, UpdateObjectInputType } from './input-types';
+
+export interface UpdateInputFieldContext extends FieldContext {
+    currentEntityNode: QueryNode
+}
 
 export interface UpdateInputField extends TypedInputFieldBase<UpdateInputField> {
     readonly field: Field
 
-    getProperties(value: AnyValue, currentEntityNode: QueryNode): ReadonlyArray<SetFieldQueryNode>;
+    getProperties(value: AnyValue, context: UpdateInputFieldContext): ReadonlyArray<SetFieldQueryNode>;
 
-    collectAffectedFields(value: AnyValue, fields: Set<Field>): void;
+    collectAffectedFields(value: AnyValue, fields: Set<Field>, context: FieldContext): void;
 
     appliesToMissingFields(): boolean;
 }
@@ -36,7 +36,7 @@ export class UpdateFilterInputField implements UpdateInputField {
         return false;
     }
 
-    getProperties() {
+    getProperties(context: FieldContext) {
         return [];
     }
 
@@ -57,19 +57,19 @@ export class BasicUpdateInputField implements UpdateInputField {
     ) {
     }
 
-    getProperties(value: AnyValue, currentEntityNode: QueryNode): ReadonlyArray<SetFieldQueryNode> {
-        value = this.coerceValue(value);
+    getProperties(value: AnyValue, context: FieldContext): ReadonlyArray<SetFieldQueryNode> {
+        value = this.coerceValue(value, context);
 
         return [
             new SetFieldQueryNode(this.field, new LiteralQueryNode(value))
         ];
     }
 
-    protected coerceValue(value: AnyValue): AnyValue {
+    protected coerceValue(value: AnyValue, context: FieldContext): AnyValue {
         return value;
     }
 
-    collectAffectedFields(value: AnyValue, fields: Set<Field>) {
+    collectAffectedFields(value: AnyValue, fields: Set<Field>, context: FieldContext) {
         fields.add(this.field);
     }
 
@@ -79,8 +79,8 @@ export class BasicUpdateInputField implements UpdateInputField {
 }
 
 export class BasicListUpdateInputField extends BasicUpdateInputField {
-    protected coerceValue(value: AnyValue): AnyValue {
-        value = super.coerceValue(value);
+    protected coerceValue(value: AnyValue, context: FieldContext): AnyValue {
+        value = super.coerceValue(value, context);
         if (value === null) {
             // null is not a valid list value - if the user specified it, coerce it to [] to not have a mix of [] and
             // null in the database
@@ -95,9 +95,9 @@ export class CalcMutationInputField extends BasicUpdateInputField {
         super(field, inputType, prefix + field.name);
     }
 
-    getProperties(value: AnyValue, currentEntityNode: QueryNode): ReadonlyArray<SetFieldQueryNode> {
-        const currentValueNode = createFieldNode(this.field, currentEntityNode);
-        value = this.coerceValue(value);
+    getProperties(value: AnyValue, context: UpdateInputFieldContext): ReadonlyArray<SetFieldQueryNode> {
+        const currentValueNode = createFieldNode(this.field, context.currentEntityNode);
+        value = this.coerceValue(value, context);
 
         return [
             new SetFieldQueryNode(this.field, this.getValueNode(currentValueNode, new LiteralQueryNode(value)))
@@ -117,21 +117,21 @@ export class UpdateValueObjectInputField extends BasicUpdateInputField {
         super(field, objectInputType.getInputType());
     }
 
-    protected coerceValue(value: AnyValue): AnyValue {
-        value = super.coerceValue(value);
+    protected coerceValue(value: AnyValue, context: FieldContext): AnyValue {
+        value = super.coerceValue(value, context);
         if (value == undefined) {
             return value;
         }
-        return this.objectInputType.prepareValue(value);
+        return this.objectInputType.prepareValue(value, context);
     }
 
-    collectAffectedFields(value: AnyValue, fields: Set<Field>) {
-        super.collectAffectedFields(value, fields);
+    collectAffectedFields(value: AnyValue, fields: Set<Field>, context: FieldContext) {
+        super.collectAffectedFields(value, fields, context);
         if (value == undefined) {
             return;
         }
 
-        this.objectInputType.collectAffectedFields(value, fields);
+        this.objectInputType.collectAffectedFields(value, fields, context);
     }
 }
 
@@ -143,8 +143,8 @@ export class UpdateValueObjectListInputField extends BasicUpdateInputField {
         super(field, new GraphQLList(new GraphQLNonNull(objectInputType.getInputType())));
     }
 
-    protected coerceValue(value: AnyValue): AnyValue {
-        value = super.coerceValue(value);
+    protected coerceValue(value: AnyValue, context: FieldContext): AnyValue {
+        value = super.coerceValue(value, context);
         if (value === null) {
             // null is not a valid list value - if the user specified it, coerce it to [] to not have a mix of [] and
             // null in the database
@@ -156,11 +156,11 @@ export class UpdateValueObjectListInputField extends BasicUpdateInputField {
         if (!Array.isArray(value)) {
             throw new Error(`Expected value for "${this.name}" to be an array, but is "${typeof value}"`);
         }
-        return value.map(value => this.objectInputType.prepareValue(value));
+        return value.map(value => this.objectInputType.prepareValue(value, context));
     }
 
-    collectAffectedFields(value: AnyValue, fields: Set<Field>) {
-        super.collectAffectedFields(value, fields);
+    collectAffectedFields(value: AnyValue, fields: Set<Field>, context: FieldContext) {
+        super.collectAffectedFields(value, fields, context);
         if (value == undefined) {
             return;
         }
@@ -168,13 +168,13 @@ export class UpdateValueObjectListInputField extends BasicUpdateInputField {
             throw new Error(`Expected value for "${this.name}" to be an array, but is "${typeof value}"`);
         }
 
-        value.forEach(value => this.objectInputType.collectAffectedFields(value, fields));
+        value.forEach(value => this.objectInputType.collectAffectedFields(value, fields, context));
     }
 }
 
 export class UpdateEntityExtensionInputField implements UpdateInputField {
     readonly name: string;
-    readonly description: string|undefined;
+    readonly description: string | undefined;
     readonly inputType: GraphQLInputType;
 
     constructor(
@@ -187,25 +187,25 @@ export class UpdateEntityExtensionInputField implements UpdateInputField {
         this.inputType = objectInputType.getInputType();
     }
 
-    getProperties(value: AnyValue, currentEntityNode: QueryNode) {
+    getProperties(value: AnyValue, context: UpdateInputFieldContext) {
         // setting to null is the same as setting to {} - does not change anything (entity extensions can't be null)
         if (value == null || Object.keys(value).length === 0) {
             return [];
         }
 
         return [
-            new SetFieldQueryNode(this.field, this.getValueNode(value, currentEntityNode))
+            new SetFieldQueryNode(this.field, this.getValueNode(value, context))
         ];
     }
 
-    private getValueNode(value: PlainObject, currentEntityNode: QueryNode) {
+    private getValueNode(value: PlainObject, context: UpdateInputFieldContext) {
         // this function wraps the field in a conditional node to fall back to {} on null values
         // it also unwraps the given node if it is a conditional node because (null).field == null
-        const currentValueNode = createFieldNode(this.field, currentEntityNode);
+        const currentValueNode = createFieldNode(this.field, context.currentEntityNode);
 
         return new MergeObjectsQueryNode([
             currentValueNode,
-            new ObjectQueryNode(this.objectInputType.getProperties(value, currentValueNode))
+            new ObjectQueryNode(this.objectInputType.getProperties(value, { ...context, currentEntityNode: currentValueNode }))
         ]);
     }
 
@@ -213,10 +213,10 @@ export class UpdateEntityExtensionInputField implements UpdateInputField {
         return false;
     }
 
-    collectAffectedFields(value: AnyValue, fields: Set<Field>) {
+    collectAffectedFields(value: AnyValue, fields: Set<Field>, context: UpdateInputFieldContext) {
         fields.add(this.field);
         if (value != undefined) {
-            this.objectInputType.collectAffectedFields(value, fields);
+            this.objectInputType.collectAffectedFields(value, fields, context);
         }
     }
 }
@@ -238,13 +238,13 @@ export abstract class AbstractChildEntityInputField implements UpdateInputField 
         return false;
     }
 
-    getProperties() {
+    getProperties(context: FieldContext) {
         // the fields can't be set like this because multiple input fields affect the same child entity list
         // instead, this property is computed in UpdateObjectInputType.getChildEntityProperties().
         return [];
     }
 
-    collectAffectedFields(value: AnyValue, fields: Set<Field>) {
+    collectAffectedFields(value: AnyValue, fields: Set<Field>, context: FieldContext) {
         fields.add(this.field);
     }
 }
@@ -261,10 +261,10 @@ export class AddChildEntitiesInputField extends AbstractChildEntityInputField {
         this.inputType = new GraphQLList(new GraphQLNonNull(createInputType.getInputType()));
     }
 
-    collectAffectedFields(value: AnyValue, fields: Set<Field>) {
-        super.collectAffectedFields(value, fields);
+    collectAffectedFields(value: AnyValue, fields: Set<Field>, context: FieldContext) {
+        super.collectAffectedFields(value, fields, context);
         if (value != undefined) {
-            this.createInputType.collectAffectedFields(value, fields);
+            this.createInputType.collectAffectedFields(value, fields, context);
         }
     }
 }
@@ -281,10 +281,10 @@ export class UpdateChildEntitiesInputField extends AbstractChildEntityInputField
         this.inputType = new GraphQLList(new GraphQLNonNull(updateInputType.getInputType()));
     }
 
-    collectAffectedFields(value: AnyValue, fields: Set<Field>) {
-        super.collectAffectedFields(value, fields);
+    collectAffectedFields(value: AnyValue, fields: Set<Field>, context: FieldContext) {
+        super.collectAffectedFields(value, fields, context);
         if (value != undefined) {
-            this.updateInputType.collectAffectedFields(value, fields);
+            this.updateInputType.collectAffectedFields(value, fields, context);
         }
     }
 }
