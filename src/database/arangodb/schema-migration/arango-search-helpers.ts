@@ -26,9 +26,9 @@ export interface ArangoSearchDefinition {
     readonly collectionName: string;
     readonly fields: Field[]
 }
-// @MSF OPT TODO: InMemoryDatabase
-// @MSF OPT TODO: Error when filtering or sorting large amounts of objects
-// @MSF FR TODO: find better way to use the interface (was copied from original source)
+// @MSF TODO: InMemoryDatabase
+// @MSF TODO: Error when filtering or sorting large amounts of objects
+
 interface ArangoSearchViewCollectionLink {
     analyzers?: string[];
     fields?: {

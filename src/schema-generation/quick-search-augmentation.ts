@@ -15,6 +15,8 @@ import {QuickSearchQueryNode} from "../query-tree/quick-search";
 import {simplifyBooleans} from "../query-tree/utils";
 
 
+export const QS_QUERYNODE_ONLY_ERROR_MESSAGE = "The Quicksearch Augmentation is only supported for QuickSearchQueryNodes";
+
 /**
  * Augments list fields with filter and pagination features
  */
@@ -51,7 +53,7 @@ export class QuickSearchAugmentation {
                         itemVariable: itemVariable
                     });
                 }else{
-                    throw new Error("Quicksearch Augment only possible on QuickSearchQueryNodes") // @MSF OPT TODO: proper error
+                    throw new Error(QS_QUERYNODE_ONLY_ERROR_MESSAGE)
                 }
 
             }

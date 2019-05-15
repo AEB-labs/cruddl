@@ -2,10 +2,11 @@
 # @MSF OPT TODO: check where @memorize is viable
 # @MSF OPT TODO: refactor method names
 # @MSF OPT TODO: code comments
-"A supehero"
+# @MSF TODO: Remove CONTAINS_ANY_PREFIX
+"A superhero"
 type Hero @rootEntity(quickSearchIndex:true, globalQuickSearch: true) {
     "The hero's screen name"
-    name: String @unique @quickSearchIndex(language:DE)
+    name: String @unique @quickSearchIndex(language:DE searchable: true)
     age: Int @defaultValue(value: 42)
     nickNames: [String] @quickSearchIndex
     movies: [Movie] @relation(inverseOf: "heroes")

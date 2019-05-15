@@ -23,6 +23,7 @@ import {and} from "./filter-input-types/constants";
 import {OrderByEnumValue} from "./order-by-enum-generator";
 import {chain} from "lodash";
 import memorize from "memorize-decorator";
+import {QS_QUERYNODE_ONLY_ERROR_MESSAGE} from "./quick-search-augmentation";
 
 export class QuickSearchGlobalAugmentation{
     constructor(private readonly quickSearchTypeGenerator: QuickSearchFilterTypeGenerator) {
@@ -65,7 +66,7 @@ export class QuickSearchGlobalAugmentation{
                         itemVariable: parentNode.itemVariable
                     }); // @MSF GLOBAL TODO: resolver - generate Global-Search-Filter
                 }else{
-                    throw new Error("Quicksearch Augment only possible on QuickSearchQueryNodes") // @MSF OPT TODO: proper error
+                    throw new Error(QS_QUERYNODE_ONLY_ERROR_MESSAGE)
                 }
             }
         };
@@ -123,7 +124,7 @@ export class QuickSearchGlobalAugmentation{
                         itemVariable: parentNode.itemVariable
                     }); // @MSF GLOBAL TODO: resolver - generate Global-Search-Search-Filter
                 }else{
-                    throw new Error("Quicksearch Augment only possible on QuickSearchQueryNodes") // @MSF OPT TODO: proper error
+                    throw new Error(QS_QUERYNODE_ONLY_ERROR_MESSAGE) // @MSF OPT TODO: proper error
                 }
             }
         };
@@ -153,7 +154,9 @@ export class QuickSearchGlobalAugmentation{
         const skip = args[SKIP_ARG];
         const paginationFilter = this.createPaginationFilterNode(args, itemVariable, orderByType);
         const afterArg = args[AFTER_ARG];
-        const isCursorRequested = info.fieldRequestStack[info.fieldRequestStack.length - 1].selectionSet.some(sel => sel.fieldRequest.field.name === CURSOR_FIELD);
+        //const isCursorRequested = info.fieldRequestStack[info.fieldRequestStack.length - 1].selectionSet.some(sel => sel.fieldRequest.field.name === CURSOR_FIELD);
+        const isCursorRequested = false;
+
         // we only require the absolute ordering for cursor-based pagination, which is detected via a cursor field or the "after" argument.
         const isAbsoluteOrderRequired = isCursorRequested || !!afterArg;
         const orderBy = this.getOrderSpecification(args, orderByType, itemVariable, {isAbsoluteOrderRequired});

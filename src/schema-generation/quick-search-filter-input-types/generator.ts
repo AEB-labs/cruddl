@@ -232,7 +232,8 @@ export class QuickSearchFilterTypeGenerator {
 
     @memorize()
     private tokenize(value: string): string[] {
-        return flatMap(value.split(" "),t => t.split("-")) //  @MSF TODO: implement tokenization
+        return flatMap(value.split(" "),t => t.split("-"))
+        //  @MSF TODO: implement tokenization
     }
 
     private generateFilterFieldsForEnumField(field: Field, graphQLEnumType: GraphQLEnumType): FilterField[] {

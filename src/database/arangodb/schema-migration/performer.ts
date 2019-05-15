@@ -70,8 +70,7 @@ export class MigrationPerformer {
             // Setting the properties during creation does not work for some reason
             await this.db.arangoSearchView(migration.config.viewName).setProperties(migration.config.properties)
         } else {
-            throw new Error(ARANGO_SEARCH_VERSION_ERROR)
-            // @MSF FR TODO: Is it okay to just throw an error in the migration?
+            throw new Error(ARANGO_SEARCH_VERSION_ERROR) // @MSF OPT TODO: Eigene Error-Klasse (siehe TransactionTimeoutError)
         }
 
     }
