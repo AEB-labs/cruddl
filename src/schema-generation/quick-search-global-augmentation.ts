@@ -61,7 +61,7 @@ export class QuickSearchGlobalAugmentation {
                 let parentNode = schemaField.resolve(sourceNode, args, info);
                 if (parentNode instanceof QuickSearchQueryNode) {
                     return new QuickSearchQueryNode({
-                        entity: parentNode.entity,
+                        rootEntityType: parentNode.rootEntityType,
                         isGlobal: parentNode.isGlobal,
                         itemVariable: parentNode.itemVariable
                     }); // @MSF GLOBAL TODO: resolver - generate Global-Search-Filter
@@ -119,12 +119,12 @@ export class QuickSearchGlobalAugmentation {
                 let parentNode = schemaField.resolve(sourceNode, args, info);
                 if (parentNode instanceof QuickSearchQueryNode) {
                     return new QuickSearchQueryNode({
-                        entity: parentNode.entity,
+                        rootEntityType: parentNode.rootEntityType,
                         isGlobal: parentNode.isGlobal,
                         itemVariable: parentNode.itemVariable
                     }); // @MSF GLOBAL TODO: resolver - generate Global-Search-Search-Filter
                 } else {
-                    throw new Error(QS_QUERYNODE_ONLY_ERROR_MESSAGE); // @MSF OPT TODO: proper error
+                    throw new Error(QS_QUERYNODE_ONLY_ERROR_MESSAGE);
                 }
             }
         };

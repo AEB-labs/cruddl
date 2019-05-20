@@ -49,7 +49,7 @@ export class QuickSearchAugmentation {
                     const itemVariable = new VariableQueryNode(decapitalize(itemType.name));
                     const qsFilterNode = this.buildQuickSearchFilterNode(parentNode, args, quickSearchType, itemType, itemVariable);
                     return new QuickSearchQueryNode({
-                        entity: parentNode.entity,
+                        rootEntityType: parentNode.rootEntityType,
                         isGlobal: parentNode.isGlobal,
                         qsFilterNode: qsFilterNode,
                         itemVariable: itemVariable

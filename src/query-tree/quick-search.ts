@@ -11,24 +11,24 @@ export class QuickSearchQueryNode extends QueryNode {
 
     public readonly qsFilterNode: QueryNode;
     public readonly isGlobal: boolean;
-    public readonly entity?: RootEntityType; // @MSF TODO: not optional (is only optional because of global search) and rename to rootEntityType
+    public readonly rootEntityType: RootEntityType;
     public readonly itemVariable: VariableQueryNode;
 
     constructor(params: {
-        entity?: RootEntityType,
+        rootEntityType: RootEntityType,
         isGlobal?: boolean,
         qsFilterNode?: QueryNode,
         itemVariable?: VariableQueryNode
     }) {
         super();
         this.qsFilterNode = params.qsFilterNode || new ConstBoolQueryNode(true);
-        this.itemVariable = params.itemVariable || new VariableQueryNode(params.entity ? decapitalize(params.entity.name) : `quickSearchGlobal`); // @MSF GLOBAL TODO: constant variable Name
+        this.itemVariable = params.itemVariable || new VariableQueryNode(params.rootEntityType ? decapitalize(params.rootEntityType.name) : `quickSearchGlobal`); // @MSF GLOBAL TODO: constant variable Name
         this.isGlobal = params.isGlobal || false;
-        this.entity = params.entity;
+        this.rootEntityType = params.rootEntityType;
     }
 
     describe(): string {
-        return this.isGlobal ? `Use GlobalQuickSearch` : `Use QuickSearch for ${this.entity!.name}`
+        return this.isGlobal ? `Use GlobalQuickSearch` : `Use QuickSearch for ${this.rootEntityType!.name}`
             + ` with ${this.itemVariable.describe()} => \n` + indent(
                 (this.qsFilterNode.equals(ConstBoolQueryNode.TRUE) ? '' : `where ${this.qsFilterNode.describe()}\n`)
             );

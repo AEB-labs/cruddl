@@ -45,10 +45,9 @@ import {
     UNIQUE_DIRECTIVE,
     VALUE_ARG,
     VALUE_OBJECT_DIRECTIVE,
-    QUICK_SEARCH_INDEXED_SEARCHABLE_ARG,
     QUICK_SEARCH_INDEXED_GLOBAL_ARGUMENT,
-    QUICK_SEARCH_INDEXED_LANGUAGES_ARG,
-    QUICK_SEARCH_INDEXED_DIRECTIVE
+    QUICK_SEARCH_INDEXED_LANGUAGE_ARG,
+    QUICK_SEARCH_INDEXED_DIRECTIVE, QUICK_SEARCH_FULLTEXT_INDEXED_DIRECTIVE, QUICK_SEARCH_SEARCHABLE_DIRECTIVE, QUICK_SEARCH_DEFAULT_LANGUAGE_ARG
 } from '../schema/constants';
 import {
     findDirectiveWithName,
@@ -152,7 +151,7 @@ function createObjectTypeInput(definition: ObjectTypeDefinitionNode, schemaPart:
         name: definition.name.value,
         description: definition.description ? definition.description.value : undefined,
         astNode: definition,
-        fields: (definition.fields || []).map(field => createFieldInput(field, context)),
+        fields: (definition.fields || []).map(field => createFieldInput(field, context, definition)),
         namespacePath: getNamespacePath(definition, schemaPart.namespacePath)
     };
 
@@ -267,43 +266,53 @@ function createArangoSearchDefinitionInputs(objectNode: ObjectTypeDefinitionNode
 }
 
 function getIsSearchable(fieldNode: FieldDefinitionNode, context: ValidationContext): boolean {
-    let directive: DirectiveNode | undefined = findDirectiveWithName(fieldNode, QUICK_SEARCH_INDEXED_ARGUMENT);
-    if (!directive) {
-        return false;
-    }
-    const argument: ArgumentNode | undefined = getNodeByName(directive.arguments, QUICK_SEARCH_INDEXED_SEARCHABLE_ARG);
-    if (!argument) {
-        return false;
-    }
-    if (argument.value.kind !== 'BooleanValue') {
-        context.addMessage(ValidationMessage.error(VALIDATION_ERROR_EXPECTED_BOOLEAN, argument.value.loc));
-        return false;
-    }
-    return argument.value.value;
+    let directive: DirectiveNode | undefined = findDirectiveWithName(fieldNode, QUICK_SEARCH_SEARCHABLE_DIRECTIVE);
+    return !!directive;
 }
 
-function getLanguage(fieldNode: FieldDefinitionNode, context: ValidationContext): QuickSearchLanguage | undefined {
-    let directive: DirectiveNode | undefined = findDirectiveWithName(fieldNode, QUICK_SEARCH_INDEXED_ARGUMENT);
-    if (directive) {
-        const argument: ArgumentNode | undefined = getNodeByName(directive.arguments, QUICK_SEARCH_INDEXED_LANGUAGES_ARG);
-
-        if (argument) {
-            if (argument.value.kind === 'EnumValue') {
-                return argument.value.value as QuickSearchLanguage;
-            } else {
-                context.addMessage(ValidationMessage.error(VALIDATION_ERROR_EXPECTED_ENUM, argument.value.loc));
-                return undefined;
-            }
-        } else {
-            return undefined;
-        }
-    } else {
+function getDefaultLanguage(parentNode: ObjectTypeDefinitionNode, context: ValidationContext): QuickSearchLanguage | undefined {
+    let directive: DirectiveNode | undefined =
+        findDirectiveWithName(parentNode, ROOT_ENTITY_DIRECTIVE)
+        || findDirectiveWithName(parentNode, CHILD_ENTITY_DIRECTIVE)
+        || findDirectiveWithName(parentNode, VALUE_OBJECT_DIRECTIVE)
+        || findDirectiveWithName(parentNode, ENTITY_EXTENSION_DIRECTIVE);
+    if (!directive) {
         return undefined;
     }
-    // @MSF TODO: umformen: siehe getIsSearchable
+    const argument: ArgumentNode | undefined = getNodeByName(directive.arguments, QUICK_SEARCH_DEFAULT_LANGUAGE_ARG);
+    if (!argument) {
+        return undefined;
+    }
+
+    if (argument.value.kind === 'EnumValue') {
+        return argument.value.value as QuickSearchLanguage;
+    } else {
+        context.addMessage(ValidationMessage.error(VALIDATION_ERROR_EXPECTED_ENUM, argument.value.loc));
+        return undefined;
+    }
 }
 
-function createFieldInput(fieldNode: FieldDefinitionNode, context: ValidationContext): FieldConfig {
+function getLanguage(fieldNode: FieldDefinitionNode, context: ValidationContext, parentNode: ObjectTypeDefinitionNode): QuickSearchLanguage | undefined {
+    const defaultLanguage = getDefaultLanguage(parentNode, context);
+
+    let directive: DirectiveNode | undefined = findDirectiveWithName(fieldNode, QUICK_SEARCH_FULLTEXT_INDEXED_DIRECTIVE);
+    if (!directive) {
+        return undefined;
+    }
+    const argument: ArgumentNode | undefined = getNodeByName(directive.arguments, QUICK_SEARCH_INDEXED_LANGUAGE_ARG);
+    if (!argument) {
+        return defaultLanguage;
+    }
+
+    if (argument.value.kind === 'EnumValue') {
+        return argument.value.value as QuickSearchLanguage;
+    } else {
+        context.addMessage(ValidationMessage.error(VALIDATION_ERROR_EXPECTED_ENUM, argument.value.loc));
+        return undefined;
+    }
+}
+
+function createFieldInput(fieldNode: FieldDefinitionNode, context: ValidationContext, parentNode: ObjectTypeDefinitionNode): FieldConfig {
     const inverseOfASTNode = getInverseOfASTNode(fieldNode, context);
     const referenceDirectiveASTNode = findDirectiveWithName(fieldNode, REFERENCE_DIRECTIVE);
     const referenceKeyFieldASTNode = getReferenceKeyFieldASTNode(fieldNode, context);
@@ -326,8 +335,10 @@ function createFieldInput(fieldNode: FieldDefinitionNode, context: ValidationCon
         typeNameAST: getNamedTypeNodeIgnoringNonNullAndList(fieldNode.type).name,
         isQuickSearchIndexed: hasDirectiveWithName(fieldNode, QUICK_SEARCH_INDEXED_DIRECTIVE),
         isQuickSearchIndexedASTNode: findDirectiveWithName(fieldNode, QUICK_SEARCH_INDEXED_DIRECTIVE),
+        isQuickSearchFulltextIndexed: hasDirectiveWithName(fieldNode, QUICK_SEARCH_FULLTEXT_INDEXED_DIRECTIVE),
+        isQuickSearchFulltextIndexedASTNode: findDirectiveWithName(fieldNode, QUICK_SEARCH_FULLTEXT_INDEXED_DIRECTIVE),
         isSearchable: getIsSearchable(fieldNode, context),
-        quickSearchLanguage: getLanguage(fieldNode, context)
+        quickSearchLanguage: getLanguage(fieldNode, context, parentNode)
     };
 }
 

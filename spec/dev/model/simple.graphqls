@@ -2,41 +2,56 @@
 # @MSF OPT TODO: check where @memorize is viable
 # @MSF OPT TODO: refactor method names
 # @MSF OPT TODO: code comments
-# @MSF TODO: Remove CONTAINS_ANY_PREFIX
+# @MSF TODO: Rework definition:
+#- Nicht an Angabe der Sprache festmachen ob es Volltext-indiziert ist
+#- Default Sprache
+#- "Getrennte Schalter" um zu entscheiden mit welchem analyzer Felder indiziert werden. Auch Text-Analyzer ohne Identity-Analyzer soll möglich sein
+# @MSF TODO: find better name than quickSearch for GQL API
+# @MSF TODO: ADB Support Ticket for AND/OR stuff
+# @MSF TODO: check out store values
+# @MSF TODO: new system for lists (skills:{some_description:})
 "A superhero"
-type Hero @rootEntity(quickSearchIndex:true, globalQuickSearch: true) {
+type Hero @rootEntity(quickSearchIndex:true, quickSearchLanguage: DE) {
     "The hero's screen name"
-    name: String @unique @quickSearchIndex(language:DE searchable: true)
+    name: String
+    identity: String @quickSearchIndex @searchable
+    fullText: String @quickSearchFulltextIndex @searchable
+    fullTextEn: String @quickSearchFulltextIndex(language: EN) @searchable
+    both: String @quickSearchIndex @quickSearchFulltextIndex @searchable
     age: Int @defaultValue(value: 42)
-    nickNames: [String] @quickSearchIndex
+    nickNames: [String]
     movies: [Movie] @relation(inverseOf: "heroes")
-    skills: [Skill] @quickSearchIndex(searchable: true)
-    skill: Skill @quickSearchIndex(searchable: true)
-    suit: Suit @quickSearchIndex(searchable: true)
-    morality: Morality @quickSearchIndex(searchable: true) # @MSF VAL TODO: only allow language on Scalars and Enums
-    countryISOCode: String @quickSearchIndex
+    skills: [Skill]
+    skill: Skill
+    suit: Suit
+    morality: Morality  # @MSF VAL TODO: only allow language on Scalars and Enums
+    countryISOCode: String
     country: Country @reference(keyField: "countryISOCode")
-    missions: [Mission] @quickSearchIndex(searchable: true)
+    missions: [Mission] @quickSearchIndex
     info: JSON
 }
 
 "A heroic mission"
-type Mission @childEntity {
+type Mission @childEntity(quickSearchLanguage: DE) {
     date: DateTime
-    title: String @quickSearchIndex(searchable: true)
+    title: String
+    identity: String @quickSearchIndex @searchable
+    fullText: String @quickSearchFulltextIndex @searchable
+    fullTextEn: String @quickSearchFulltextIndex(language: EN) @searchable
+    both: String @quickSearchIndex @quickSearchFulltextIndex @searchable
 }
 
 "A special skill of a superhero"
 type Skill @valueObject {
-    description: String @quickSearchIndex(searchable: true)
+    description: String
     "A value between 0 and 11"
     strength: Float
-    skills: [Skill] @quickSearchIndex
+    skills: [Skill]
 }
 
 "A superhero movie"
-type Movie @rootEntity(quickSearchIndex:true, globalQuickSearch: true) {
-    name: String @quickSearchIndex(searchable: true, language:EN)
+type Movie @rootEntity {
+    name: String
     "All the heroes starring in this movie"
     heroes: [Hero] @relation # @MSF VAL TODO: do not allow quickSearchIndex for relations
     "The real superhero"
@@ -53,7 +68,7 @@ type Director @rootEntity {
 "A description of a hero suit"
 type Suit @entityExtension {
     "The dominant color of the suit"
-    color: String @quickSearchIndex(searchable: true)
+    color: String
 }
 
 type Country @rootEntity {

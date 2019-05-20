@@ -52,7 +52,7 @@ function getViewsForRootEntity(rootEntity: RootEntityType): ReadonlyArray<Arango
     if (rootEntity.arangoSearchConfig.isIndexed) {
         return [
             {
-                fields: rootEntity.fields.filter(value => value.isQuickSearchIndexed || value.isSystemField), // @MSF TODO: put "isSystemField means it's indexed" into field definition
+                fields: rootEntity.fields.filter(value => value.isQuickSearchIndexed || value.isQuickSearchFulltextIndexed),
                 viewName: getViewNameForRootEntity(rootEntity),
                 collectionName: getCollectionNameForRootEntity(rootEntity)
             }
@@ -144,7 +144,13 @@ function getPropertiesFromDefinition(definition: ArangoSearchDefinition): Arango
     };
 
     for (const field of definition.fields) {
-        const analyzers = (field.language ? [field.language] : []).map(getAnalyzerFromQuickSearchLanguage).concat([IDENTITY_ANALYZER]);
+        const analyzers: string[] = [];
+        if(field.isQuickSearchFulltextIndexed && field.language){
+            analyzers.push(getAnalyzerFromQuickSearchLanguage(field.language))
+        }
+        if(field.isQuickSearchIndexed){
+            analyzers.push(IDENTITY_ANALYZER);
+        }
         if (_.isEqual(analyzers, [IDENTITY_ANALYZER])) {
             link.fields![field.name] = {};
         } else {

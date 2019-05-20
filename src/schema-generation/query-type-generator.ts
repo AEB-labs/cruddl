@@ -106,7 +106,7 @@ export class QueryTypeGenerator {
             name: this.getGlobalQuickSearchFieldName(),
             type: new QueryNodeListType(new QueryNodeNonNullType(this.outputTypeGenerator.generateQuickSearchGlobalType(rootEntityTypes))),
             description: 'global search description', // @MSF GLOBAL TODO: description
-            resolve: () => new QuickSearchQueryNode({ isGlobal: true })
+            resolve: () => new QuickSearchQueryNode({ isGlobal: true, rootEntityType: rootEntityTypes[0] })
         });
 
         return (this.quickSearchGlobalAugmentation.augment(fieldConfig, rootEntityTypes));
@@ -166,7 +166,7 @@ export class QueryTypeGenerator {
             name: getQuickSearchEntitiesFieldName(rootEntityType.name),
             type: new QueryNodeListType(new QueryNodeNonNullType(this.outputTypeGenerator.generate(rootEntityType))),
             description: `Searches for ${rootEntityType.pluralName} using QuickSearch.`,
-            resolve: () => new QuickSearchQueryNode({ entity: rootEntityType })
+            resolve: () => new QuickSearchQueryNode({ rootEntityType: rootEntityType })
         });
 
         return this.listAugmentation.augment(this.quickSearchAugmentation.augment(fieldConfig, rootEntityType), rootEntityType);
@@ -182,7 +182,7 @@ export class QueryTypeGenerator {
             // an unnecessary variable with the collection contents (which is slow) and we would to an equality check of
             // a collection against NULL which is deadly (v8 evaluation)
             skipNullCheck: true,
-            resolve: () => new QuickSearchQueryNode({ entity: rootEntityType })
+            resolve: () => new QuickSearchQueryNode({ rootEntityType: rootEntityType })
         });
         return this.filterAugmentation.augment(this.quickSearchAugmentation.augment(fieldConfig, rootEntityType), rootEntityType);
     }

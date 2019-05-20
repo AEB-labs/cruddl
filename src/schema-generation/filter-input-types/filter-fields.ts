@@ -82,10 +82,10 @@ export class ScalarOrEnumFieldFilterField implements FilterField {
 
     }
 
-    // @MSF SETUP: Which Fields are used for SEARCH
+
     isValidForQuickSearch(): boolean {
         return this.field.isSearchable && (this.operatorPrefix == undefined || this.operatorPrefix == INPUT_FIELD_CONTAINS_ALL_PREFIXES);
-    } // @MSF OPT TODO: properly check for operator
+    }
 }
 
 export class ScalarOrEnumFilterField implements FilterField {
@@ -93,11 +93,12 @@ export class ScalarOrEnumFilterField implements FilterField {
     public readonly description: string | undefined;
 
     constructor(
-        public readonly resolveOperator: (fieldNode: QueryNode, valueNode: QueryNode) => QueryNode,
+        public readonly resolveOperator: (fieldNode: QueryNode, valueNode: QueryNode, paramNode?: QueryNode) => QueryNode,
         public readonly operatorName: string,
         baseInputType: GraphQLInputType,
         private readonly field?: Field, // only filled for quickSearch
-        private readonly path?: Field[] // only filled for quickSearch
+        private readonly path?: Field[], // only filled for quickSearch
+        public readonly paramNode?: QueryNode
     ) {
         this.inputType = OPERATORS_WITH_LIST_OPERAND.includes(operatorName) ? new GraphQLList(new GraphQLNonNull(baseInputType)) : baseInputType;
         this.description = getDescription({ operator: operatorName, typeName: getNamedType(baseInputType).name });
@@ -111,10 +112,10 @@ export class ScalarOrEnumFilterField implements FilterField {
         if (this.field) {
             const valueNode = new FieldQueryNode(sourceNode, this.field, this.path);
             const literalNode = new LiteralQueryNode(filterValue);
-            return this.resolveOperator(valueNode, literalNode);
+            return this.resolveOperator(valueNode, literalNode,this.paramNode);
         } else {
             const literalNode = new LiteralQueryNode(filterValue);
-            return this.resolveOperator(sourceNode, literalNode);
+            return this.resolveOperator(sourceNode, literalNode, this.paramNode);
         }
 
     }

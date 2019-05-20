@@ -3,16 +3,16 @@ import { DocumentNode } from 'graphql';
 
 export const DIRECTIVES: DocumentNode = gql`
     "Declares a type for root-level objects with ids that are stored directly in the data base"
-    directive @rootEntity(indices: [IndexDefinition!], permissionProfile: String, quickSearchIndex: Boolean = false, globalQuickSearch: Boolean = true) on OBJECT
+    directive @rootEntity(indices: [IndexDefinition!], permissionProfile: String, quickSearchIndex: Boolean = false, globalQuickSearch: Boolean = true, quickSearchLanguage: QuickSearchLanguage = EN) on OBJECT
 
     "Declares a type for objects with ids that can be embedded as a list within another entity"
-    directive @childEntity on OBJECT
+    directive @childEntity(quickSearchLanguage: QuickSearchLanguage = EN) on OBJECT
 
     "Declares a type for objects without id that can be embedded everywhere and can only be replaced as a whole"
-    directive @valueObject on OBJECT
+    directive @valueObject(quickSearchLanguage: QuickSearchLanguage = EN) on OBJECT
 
     "Declares a type for objects which can be embedded within entities or entity extensions"
-    directive @entityExtension on OBJECT
+    directive @entityExtension(quickSearchLanguage: QuickSearchLanguage = EN) on OBJECT
 
     "Declares a field as a to-1 or to-n relation to another root entity"
     directive @relation(inverseOf: String) on FIELD_DEFINITION
@@ -34,7 +34,13 @@ export const DIRECTIVES: DocumentNode = gql`
     directive @index(sparse: Boolean = false) on FIELD_DEFINITION
 
     "Declares a field to be indexed with ArangoSearch"
-    directive @quickSearchIndex(language: QuickSearchLanguage, searchable: Boolean = false) on FIELD_DEFINITION
+    directive @quickSearchIndex on FIELD_DEFINITION
+    
+    "Declares a field to be indexed with ArangoSearch with a Text Analyzer"
+    directive @quickSearchFulltextIndex(language: QuickSearchLanguage) on FIELD_DEFINITION
+    
+    "Declares a field to be used for quick-search searching."
+    directive @searchable on FIELD_DEFINITION
 
     "The available languages for ArangoSearch Analyzers"
     enum QuickSearchLanguage {

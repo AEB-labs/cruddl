@@ -23,10 +23,13 @@ export interface FieldConfig {
 
     readonly astNode?: FieldDefinitionNode
 
-    readonly isQuickSearchIndexed?: boolean
+    readonly isQuickSearchIndexed: boolean
     readonly isQuickSearchIndexedASTNode?: DirectiveNode
-    readonly isSearchable?: boolean
+    readonly isQuickSearchFulltextIndexed: boolean
+    readonly isQuickSearchFulltextIndexedASTNode?: DirectiveNode
     readonly quickSearchLanguage?: QuickSearchLanguage
+    readonly isSearchable: boolean
+
 }
 
 export enum CalcMutationsOperator {

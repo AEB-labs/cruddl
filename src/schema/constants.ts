@@ -14,11 +14,13 @@ export const RELATION_DIRECTIVE = 'relation';
 export const REFERENCE_DIRECTIVE = 'reference';
 export const DEFAULT_VALUE_DIRECTIVE = 'defaultValue';
 export const QUICK_SEARCH_INDEXED_DIRECTIVE = 'quickSearchIndex';
+export const QUICK_SEARCH_FULLTEXT_INDEXED_DIRECTIVE = 'quickSearchFulltextIndex';
+export const QUICK_SEARCH_SEARCHABLE_DIRECTIVE = 'searchable';
 
 export const QUICK_SEARCH_INDEXED_GLOBAL_ARGUMENT = 'globalQuickSearch';
 export const QUICK_SEARCH_INDEXED_ARGUMENT = 'quickSearchIndex';
-export const QUICK_SEARCH_INDEXED_SEARCHABLE_ARG = 'searchable';
-export const QUICK_SEARCH_INDEXED_LANGUAGES_ARG = 'language';
+export const QUICK_SEARCH_INDEXED_LANGUAGE_ARG = 'language';
+export const QUICK_SEARCH_DEFAULT_LANGUAGE_ARG = 'quickSearchLanguage';
 // @MSF TODO error on viewname v_global
 export const QUICK_SEARCH_GLOBAL_VIEW_NAME = 'v_global';
 export const QUICK_SEARCH_FORBIDDEN_VIEW_NAMES = [QUICK_SEARCH_GLOBAL_VIEW_NAME];

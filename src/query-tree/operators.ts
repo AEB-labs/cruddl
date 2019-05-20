@@ -155,9 +155,12 @@ export class TernaryOperationQueryNode extends QueryNode {
                 return 'IN TOKENS';
             case TernaryOperator.QUICKSEARCH_STARTS_WITH:
                 return 'STARTS_WITH';
+            case TernaryOperator.QUICKSEARCH_CONTAINS_PHRASE:
+                return 'CONTAINS_PHRASE';
+            case TernaryOperator.QUICKSEARCH_CONTAINS_PREFIX:
+                return 'CONTAINS_PREFIX';
             default:
                 return '(unknown operator)';
-            // @MSF TODO:
         }
     }
 

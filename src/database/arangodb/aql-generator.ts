@@ -354,7 +354,7 @@ register(QuickSearchQueryNode, (node, context) => {
     // @MSF TODO: Authentification
     //
     let itemContext = context.introduceVariable(node.itemVariable);
-    return aql`(FOR ${itemContext.getVariable(node.itemVariable)} IN ${aql.identifier(getViewNameForRootEntity(node.entity!))} SEARCH ${processNode(node.qsFilterNode, itemContext)} RETURN ${itemContext.getVariable(node.itemVariable)})`;
+    return aql`(FOR ${itemContext.getVariable(node.itemVariable)} IN ${aql.identifier(getViewNameForRootEntity(node.rootEntityType!))} SEARCH ${processNode(node.qsFilterNode, itemContext)} RETURN ${itemContext.getVariable(node.itemVariable)})`;
 });
 
 // @MSF TODO: create AQL like this:

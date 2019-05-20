@@ -1,5 +1,6 @@
 import { Database } from 'arangojs';
 import { ArangoDBConfig, initDatabase } from '../config';
+import { ArangoSearchNotSupportedError } from './ArangoSearchNotSupportedError';
 import {
     CreateArangoSearchViewMigration,
     CreateDocumentCollectionMigration,
@@ -9,8 +10,6 @@ import {
     SchemaMigration, UpdateArangoSearchViewMigration
 } from './migrations';
 import { ArangoDBVersionHelper } from '../version-helper';
-
-const ARANGO_SEARCH_VERSION_ERROR = 'ArangoSearch requires Arango-Version >= 3.4';
 
 export class MigrationPerformer {
     private readonly db: Database;
@@ -70,7 +69,7 @@ export class MigrationPerformer {
             // Setting the properties during creation does not work for some reason
             await this.db.arangoSearchView(migration.config.viewName).setProperties(migration.config.properties);
         } else {
-            throw new Error(ARANGO_SEARCH_VERSION_ERROR); // @MSF OPT TODO: Eigene Error-Klasse (siehe TransactionTimeoutError)
+            throw new ArangoSearchNotSupportedError();
         }
 
     }
@@ -84,7 +83,7 @@ export class MigrationPerformer {
         if (await this.isArangoSearchSupported()) {
             await this.db.arangoSearchView(migration.config.viewName).setProperties(migration.config.properties);
         } else {
-            throw new Error(ARANGO_SEARCH_VERSION_ERROR);
+            throw new ArangoSearchNotSupportedError();
         }
     }
 
@@ -92,7 +91,7 @@ export class MigrationPerformer {
         if (await this.isArangoSearchSupported()) {
             await this.db.arangoSearchView(migration.config.viewName).drop();
         } else {
-            throw new Error(ARANGO_SEARCH_VERSION_ERROR);
+            throw new ArangoSearchNotSupportedError();
         }
     }
 }
