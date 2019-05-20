@@ -34,8 +34,4 @@ export class QuickSearchQueryNode extends QueryNode{
         );
     }
 
-    containsQuickSearchNodes(): boolean {
-        return true;
-    }
-
 }

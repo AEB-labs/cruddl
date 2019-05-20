@@ -23,9 +23,6 @@ export class ObjectQueryNode extends QueryNode {
         return `{\n` + indent(this.properties.map(p => p.describe()).join('\n')) + `\n}`;
     }
 
-    containsQuickSearchNodes(): boolean {
-        return this.properties.some((value)=>value.containsQuickSearchNodes());
-    }
 }
 
 /**
@@ -41,9 +38,6 @@ export class PropertySpecification extends QueryNode {
         return `${green(JSON.stringify(this.propertyName))}: ${this.valueNode.describe()}`;
     }
 
-    containsQuickSearchNodes(): boolean {
-        return this.valueNode.containsQuickSearchNodes();
-    }
 }
 
 /**

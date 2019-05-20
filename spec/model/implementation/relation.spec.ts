@@ -12,9 +12,6 @@ class FakeDBAdatper implements DatabaseAdapter {
 
     }
 
-    public containsOutstandingArangoSearchMigrations(): boolean {
-        return false;
-    }
 }
 
 describe('Relation', () => {

@@ -61,10 +61,6 @@ export class OperationResolver {
             if (logger.isTraceEnabled()) {
                 logger.trace('After authorization: ' + queryTree.describe());
             }
-            // @MSF TODO: only show error if migration matches the queryNode
-            if(queryTree.containsQuickSearchNodes() && this.context.databaseAdapter.containsOutstandingArangoSearchMigrations()){
-                throw Error("ArangoSearch migrations must be performed, before using QuickSearch requests")
-            }
             watch.stop('authorization');
         } finally {
             globalContext.unregisterContext();

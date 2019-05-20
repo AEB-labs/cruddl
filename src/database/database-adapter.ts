@@ -158,5 +158,4 @@ export interface DatabaseAdapter {
      */
     updateSchema(schema: Model): Promise<void>;
 
-    containsOutstandingArangoSearchMigrations(): boolean;
 }

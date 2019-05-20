@@ -197,7 +197,4 @@ export class InMemoryAdapter implements DatabaseAdapter {
         }
     }
 
-    public containsOutstandingArangoSearchMigrations(): boolean {
-        return false;
-    }
 }

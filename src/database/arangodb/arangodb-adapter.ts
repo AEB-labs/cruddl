@@ -81,7 +81,6 @@ export class ArangoDBAdapter implements DatabaseAdapter {
     private readonly versionHelper: ArangoDBVersionHelper;
     private readonly doNonMandatoryMigrations: boolean;
     private readonly arangoExecutionFunction: string;
-    private outstandingArangoSearchMigrations: SchemaMigration[] = [];
 
     constructor(private readonly config: ArangoDBConfig, private schemaContext?: ProjectOptions) {
         this.logger = getArangoDBLogger(schemaContext);
@@ -631,12 +630,6 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                 this.logger.debug(`Skipping migration "${migration.description}" because of configuration`);
                 skippedMigrations.push(migration);
                 continue;
-
-                // update outstandingArangoSearchMigrations
-                if(this.outstandingArangoSearchMigrations.includes(migration)){
-                    this.outstandingArangoSearchMigrations = this.outstandingArangoSearchMigrations.splice(this.outstandingArangoSearchMigrations.indexOf(migration));
-                }
-
             }
             try {
                 this.logger.info(`Performing migration "${migration.description}"`);
@@ -647,16 +640,12 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                 throw e;
             }
         }
-        this.outstandingArangoSearchMigrations = skippedMigrations;
     }
 
     async getArangoDBVersion(): Promise<ArangoDBVersion | undefined> {
         return this.versionHelper.getArangoDBVersion();
     }
 
-    containsOutstandingArangoSearchMigrations() {
-        return this.outstandingArangoSearchMigrations.length > 0;
-    }
 }
 
 function sumUpValues(objects: ReadonlyArray<{ readonly [key: string]: number }>): { readonly [key: string]: number } {
