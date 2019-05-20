@@ -21,6 +21,8 @@ export const QS_QUERYNODE_ONLY_ERROR_MESSAGE = "The Quicksearch Augmentation is 
  * Augments list fields with filter and pagination features
  */
 export class QuickSearchAugmentation {
+    // @MSF TODO: rename to generator instead of augmentation
+
     constructor(private readonly quickSearchTypeGenerator: QuickSearchFilterTypeGenerator) {
 
     }
@@ -64,7 +66,7 @@ export class QuickSearchAugmentation {
 
     private buildQuickSearchFilterNode(listNode: QueryNode, args: { [p: string]: any }, filterType: QuickSearchFilterObjectType, itemType: Type, itemVariable: VariableQueryNode) {
         const filterValue = args[QUICK_SEARCH_FILTER_ARG] || {};
-        const expression = <string>args[QUICK_SEARCH_EXPRESSION_ARG];
+        const expression = args[QUICK_SEARCH_EXPRESSION_ARG] as string;
         const filterNode = simplifyBooleans(filterType.getFilterNode(itemVariable, filterValue));
         const searchFilterNode = simplifyBooleans(filterType.getSearchFilterNode(itemVariable,expression))
         if(searchFilterNode === ConstBoolQueryNode.FALSE){

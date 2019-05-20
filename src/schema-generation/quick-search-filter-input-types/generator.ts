@@ -47,6 +47,7 @@ import {SystemFieldOrderByEnumType} from "../quick-search-global-augmentation";
 import {simplifyBooleans} from "../../query-tree/utils";
 
 // @MSF OPT TODO: maybe split up in global and non global
+// @MSF TODO: extend Normal FilterObjectType
 export class QuickSearchFilterObjectType extends TypedInputObjectType<FilterField> {
     constructor(
         type: Type,

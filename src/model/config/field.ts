@@ -26,7 +26,7 @@ export interface FieldConfig {
     readonly isQuickSearchIndexed?: boolean
     readonly isQuickSearchIndexedASTNode?: DirectiveNode
     readonly isSearchable?: boolean
-    readonly language?: QuickSearchLanguage
+    readonly quickSearchLanguage?: QuickSearchLanguage
 }
 
 export enum CalcMutationsOperator {

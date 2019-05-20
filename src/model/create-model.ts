@@ -268,23 +268,18 @@ function createArangoSearchDefinitionInputs(objectNode: ObjectTypeDefinitionNode
 
 function getIsSearchable(fieldNode: FieldDefinitionNode, context: ValidationContext):boolean {
     let directive: DirectiveNode | undefined = findDirectiveWithName(fieldNode, QUICK_SEARCH_INDEXED_ARGUMENT);
-    if(directive){
-        const argument: ArgumentNode | undefined = getNodeByName(directive.arguments, QUICK_SEARCH_INDEXED_SEARCHABLE_ARG)
-
-        if(argument) {
-            if(argument.value.kind === "BooleanValue"){
-                return argument.value.value
-            }else{
-                context.addMessage(ValidationMessage.error(VALIDATION_ERROR_EXPECTED_BOOLEAN, argument.value.loc));
-                return false
-            }
-        }else{
-            return false
-        }
-    }else{
+    if(!directive){
         return false;
     }
-
+    const argument: ArgumentNode | undefined = getNodeByName(directive.arguments, QUICK_SEARCH_INDEXED_SEARCHABLE_ARG)
+    if(!argument){
+        return false;
+    }
+    if(argument.value.kind !== "BooleanValue"){
+        context.addMessage(ValidationMessage.error(VALIDATION_ERROR_EXPECTED_BOOLEAN, argument.value.loc));
+        return false
+    }
+    return argument.value.value
 }
 
 function getLanguage(fieldNode: FieldDefinitionNode, context: ValidationContext):QuickSearchLanguage | undefined {
@@ -305,7 +300,7 @@ function getLanguage(fieldNode: FieldDefinitionNode, context: ValidationContext)
     }else{
         return undefined;
     }
-
+    // @MSF TODO: umformen: siehe getIsSearchable
 }
 
 function createFieldInput(fieldNode: FieldDefinitionNode, context: ValidationContext): FieldConfig {
@@ -332,7 +327,7 @@ function createFieldInput(fieldNode: FieldDefinitionNode, context: ValidationCon
         isQuickSearchIndexed: hasDirectiveWithName(fieldNode, QUICK_SEARCH_INDEXED_DIRECTIVE),
         isQuickSearchIndexedASTNode: findDirectiveWithName(fieldNode, QUICK_SEARCH_INDEXED_DIRECTIVE),
         isSearchable: getIsSearchable(fieldNode, context),
-        language: getLanguage(fieldNode, context)
+        quickSearchLanguage: getLanguage(fieldNode, context)
     };
 }
 

@@ -327,6 +327,7 @@ register(EntityFromIdQueryNode, (node, context) => {
 register(FieldQueryNode, (node, context) => {
     const object = processNode(node.objectNode, context);
     return aql`${object}${getFieldPathAccessFragment(node.path)}${getFieldAccessFragment(node.field)}`;
+    // @MSF TODO: create new Node FieldPathQueryNode instead of FieldQueryNode
 });
 
 function getFieldAccessFragment(field: Field) {
@@ -353,9 +354,23 @@ register(RootEntityIDQueryNode, (node, context) => {
 
 register(QuickSearchQueryNode, (node, context) => {
     // @MSF TODO: Authentification
+    //
     let itemContext = context.introduceVariable(node.itemVariable)
     return aql`(FOR ${itemContext.getVariable(node.itemVariable)} IN ${aql.identifier(getViewNameForRootEntity(node.entity!))} SEARCH ${processNode(node.qsFilterNode, itemContext)} RETURN ${itemContext.getVariable(node.itemVariable)})`
 });
+
+// @MSF TODO: create AQL like this:
+// return aqlExt.parenthesizeList(
+//     aql`FOR ${itemVar}`,
+//     aql`IN ${list}`,
+//     (filter instanceof ConstBoolQueryNode && filter.value) ? aql`` : aql`FILTER ${processNode(filter, itemContext)}`,
+//     filterDanglingEdges,
+//     generateSortAQL(node.orderBy, itemContext),
+//     limitClause,
+//     useIndirectedProjection ? aql`LET ${itemProjectionVar} = DOCUMENT(${itemVar}._id)` : aql``,
+//     ...variableAssignments,
+//     aql`RETURN ${processNode(innerNode, itemProjectionContext)}`
+// );
 
 
 register(TransformListQueryNode, (node, context) => {

@@ -50,8 +50,6 @@ describe('query-tree-utils', () => {
         describe('does not change value of', () => {
 
 
-
-
             const testCases: Array<(var1: QueryNode) => QueryNode> = [
                 () => TRUE,
                 () => FALSE,
@@ -99,11 +97,12 @@ describe('query-tree-utils', () => {
             }
 
         });
-        it("Double-nested expression", () => {
+
+        it("does simplify double-nested expression", () => {
             const literalQueryNode = new LiteralQueryNode("");
-            const node = or(or(or(FALSE,FALSE),literalQueryNode),literalQueryNode)
+            const node = or(or(or(FALSE, FALSE), literalQueryNode), literalQueryNode);
             const simplified = simplifyBooleans(node);
-            const expected = new BinaryOperationQueryNode(literalQueryNode,BinaryOperator.OR,literalQueryNode);
+            const expected = new BinaryOperationQueryNode(literalQueryNode, BinaryOperator.OR, literalQueryNode);
             expect(simplified.equals(expected)).to.be.true
         });
     });

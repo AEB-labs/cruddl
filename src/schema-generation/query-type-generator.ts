@@ -162,6 +162,7 @@ export class QueryTypeGenerator {
     }
 
     private getQuickSearchEntitiesField(rootEntityType: RootEntityType): QueryNodeField {
+        //@MSF TODO: put this in the generator instead
         const fieldConfig = ({
             name: getQuickSearchEntitiesFieldName(rootEntityType.name),
             type: new QueryNodeListType(new QueryNodeNonNullType(this.outputTypeGenerator.generate(rootEntityType))),
@@ -184,6 +185,6 @@ export class QueryTypeGenerator {
             skipNullCheck: true,
             resolve: () => new QuickSearchQueryNode({entity: rootEntityType})
         });
-        return this.metaFirstAugmentation.augment(this.filterAugmentation.augment(this.quickSearchAugmentation.augment(fieldConfig, rootEntityType),rootEntityType));
+        return this.filterAugmentation.augment(this.quickSearchAugmentation.augment(fieldConfig, rootEntityType),rootEntityType);
     }
 }

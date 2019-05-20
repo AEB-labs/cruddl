@@ -11,7 +11,7 @@ export class QuickSearchQueryNode extends QueryNode{
 
     public readonly qsFilterNode: QueryNode;
     public readonly isGlobal: boolean;
-    public readonly entity?: RootEntityType;
+    public readonly entity?: RootEntityType; // @MSF TODO: not optional (is only optional because of global search) and rename to rootEntityType
     public readonly itemVariable: VariableQueryNode;
 
     constructor(params: {

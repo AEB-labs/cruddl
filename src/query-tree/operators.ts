@@ -35,6 +35,7 @@ export enum UnaryOperator {
     JSON_STRINGIFY
 }
 
+// @TODO: create own QuickSearchBinaryOperationQueryNode with all QS Operations
 /**
  * A node that performs an operation with two operands
  */
@@ -135,6 +136,7 @@ export enum BinaryOperator {
     PREPEND = "PREPEND",
 }
 
+// @MSF TODO: name OperatorWithLanguage instead
 /**
  * A node that performs an operation with two operands and a parameter
  */
@@ -155,6 +157,7 @@ export class TernaryOperationQueryNode extends QueryNode {
                 return 'STARTS_WITH'
             default:
                 return '(unknown operator)';
+                // @MSF TODO:
         }
     }
 

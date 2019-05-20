@@ -10,7 +10,7 @@ type Hero @rootEntity(quickSearchIndex:true, globalQuickSearch: true) {
     age: Int @defaultValue(value: 42)
     nickNames: [String] @quickSearchIndex
     movies: [Movie] @relation(inverseOf: "heroes")
-    skills: [Skill]
+    skills: [Skill] @quickSearchIndex(searchable: true)
     skill: Skill @quickSearchIndex(searchable: true)
     suit: Suit @quickSearchIndex(searchable: true)
     morality: Morality @quickSearchIndex(searchable: true) # @MSF VAL TODO: only allow language on Scalars and Enums

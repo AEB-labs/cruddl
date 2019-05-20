@@ -451,13 +451,12 @@ export class Field implements ModelComponent {
     get isQuickSearchIndexed(): boolean{
         return !!this.input.isQuickSearchIndexed
     }
-    get isQuickSearchIndexedASTNode(): DirectiveNode | undefined{
-        return this.input.isQuickSearchIndexedASTNode
-    }
+
     get isSearchable(): boolean{
         return !!this.input.isSearchable
     }
+
     get language(): QuickSearchLanguage | undefined{
-        return this.input.language
+        return this.input.quickSearchLanguage
     }
 }
