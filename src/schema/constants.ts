@@ -13,14 +13,14 @@ export const VALUE_OBJECT_DIRECTIVE = 'valueObject';
 export const RELATION_DIRECTIVE = 'relation';
 export const REFERENCE_DIRECTIVE = 'reference';
 export const DEFAULT_VALUE_DIRECTIVE = 'defaultValue';
-export const QUICK_SEARCH_INDEXED_DIRECTIVE = "quickSearchIndex";
+export const QUICK_SEARCH_INDEXED_DIRECTIVE = 'quickSearchIndex';
 
 export const QUICK_SEARCH_INDEXED_GLOBAL_ARGUMENT = 'globalQuickSearch';
 export const QUICK_SEARCH_INDEXED_ARGUMENT = 'quickSearchIndex';
-export const QUICK_SEARCH_INDEXED_SEARCHABLE_ARG = "searchable";
-export const QUICK_SEARCH_INDEXED_LANGUAGES_ARG = "language";
+export const QUICK_SEARCH_INDEXED_SEARCHABLE_ARG = 'searchable';
+export const QUICK_SEARCH_INDEXED_LANGUAGES_ARG = 'language';
 // @MSF TODO error on viewname v_global
-export const QUICK_SEARCH_GLOBAL_VIEW_NAME = "v_global";
+export const QUICK_SEARCH_GLOBAL_VIEW_NAME = 'v_global';
 export const QUICK_SEARCH_FORBIDDEN_VIEW_NAMES = [QUICK_SEARCH_GLOBAL_VIEW_NAME];
 
 
@@ -36,7 +36,7 @@ export const CREATE_ENTITY_FIELD_PREFIX = 'create';
 export const CREATE_ENTITY_TYPE_SUFFIX = 'Input';
 export const UPDATE_ENTITY_FIELD_PREFIX = 'update';
 export const UPDATE_ALL_ENTITIES_FIELD_PREFIX = 'updateAll';
-export const QUICK_SEARCH_ENTITIES_FIELD_PREFIX = "quickSearch"
+export const QUICK_SEARCH_ENTITIES_FIELD_PREFIX = 'quickSearch';
 export const DELETE_ENTITY_FIELD_PREFIX = 'delete';
 export const DELETE_ALL_ENTITIES_FIELD_PREFIX = 'deleteAll';
 export const ADD_CHILD_ENTITIES_FIELD_PREFIX = 'add';
@@ -61,8 +61,8 @@ export const ORDER_BY_DESC_SUFFIX = '_DESC';
 export const FILTER_ARG = 'filter';
 export const ORDER_BY_ARG = 'orderBy';
 
-export const QUICK_SEARCH_FILTER_ARG = "quickSearchFilter"
-export const QUICK_SEARCH_EXPRESSION_ARG = "quickSearchExpression"
+export const QUICK_SEARCH_FILTER_ARG = 'quickSearchFilter';
+export const QUICK_SEARCH_EXPRESSION_ARG = 'quickSearchExpression';
 
 export const CURSOR_FIELD = '_cursor';
 export const SKIP_ARG = 'skip';
@@ -106,15 +106,15 @@ export const INPUT_FIELD_NOT_CONTAINS_PHRASE = 'not_contains_phrase';
 
 export const CALC_MUTATIONS_DIRECTIVE = 'calcMutations';
 export const CALC_MUTATIONS_OPERATORS_ARG = 'operators';
-export type CalcMutationOperator = {name: 'MULTIPLY' | 'DIVIDE' | 'ADD' | 'SUBTRACT' | 'MODULO' | 'APPEND' | 'PREPEND', prefix: string, supportedTypes: string[]};
+export type CalcMutationOperator = { name: 'MULTIPLY' | 'DIVIDE' | 'ADD' | 'SUBTRACT' | 'MODULO' | 'APPEND' | 'PREPEND', prefix: string, supportedTypes: string[] };
 export const CALC_MUTATIONS_OPERATORS: CalcMutationOperator[] = [
-    {name: 'MULTIPLY', prefix: 'multiplyWith_', supportedTypes: ['Int', 'Float']},
-    {name: 'DIVIDE', prefix: 'divideBy_', supportedTypes: ['Int', 'Float']},
-    {name: 'ADD', prefix: 'addTo_', supportedTypes: ['Int', 'Float']},
-    {name: 'SUBTRACT', prefix: 'subtractFrom_', supportedTypes: ['Int', 'Float']},
-    {name: 'MODULO', prefix: 'moduloOf_', supportedTypes: ['Int', 'Float']},
-    {name: 'APPEND', prefix: 'appendTo_', supportedTypes: ['String']},
-    {name: 'PREPEND', prefix: 'prependTo_', supportedTypes: ['String']},
+    { name: 'MULTIPLY', prefix: 'multiplyWith_', supportedTypes: ['Int', 'Float'] },
+    { name: 'DIVIDE', prefix: 'divideBy_', supportedTypes: ['Int', 'Float'] },
+    { name: 'ADD', prefix: 'addTo_', supportedTypes: ['Int', 'Float'] },
+    { name: 'SUBTRACT', prefix: 'subtractFrom_', supportedTypes: ['Int', 'Float'] },
+    { name: 'MODULO', prefix: 'moduloOf_', supportedTypes: ['Int', 'Float'] },
+    { name: 'APPEND', prefix: 'appendTo_', supportedTypes: ['String'] },
+    { name: 'PREPEND', prefix: 'prependTo_', supportedTypes: ['String'] }
 ];
 
 export const COUNT_META_FIELD = 'count';
@@ -128,7 +128,9 @@ export const PERMISSION_PROFILE_ARG = 'permissionProfile';
 
 export const DEFAULT_PERMISSION_PROFILE = 'default';
 
-export const OBJECT_TYPE_KIND_DIRECTIVES = [ROOT_ENTITY_DIRECTIVE, CHILD_ENTITY_DIRECTIVE, ENTITY_EXTENSION_DIRECTIVE, VALUE_OBJECT_DIRECTIVE];
+export const OBJECT_TYPE_KIND_DIRECTIVES = [
+    ROOT_ENTITY_DIRECTIVE, CHILD_ENTITY_DIRECTIVE, ENTITY_EXTENSION_DIRECTIVE, VALUE_OBJECT_DIRECTIVE
+];
 
 export const NAMESPACE_DIRECTIVE = 'namespace';
 export const NAMESPACE_NAME_ARG = 'name';
@@ -140,7 +142,10 @@ export const UNIQUE_DIRECTIVE = 'unique'; // for fields
 export const INDICES_ARG = INDICES_DIRECTIVE;
 export const INDEX_DEFINITION_INPUT_TYPE = 'IndexDefinition';
 
-export const ALL_FIELD_DIRECTIVES = [KEY_FIELD_DIRECTIVE, RELATION_DIRECTIVE, REFERENCE_DIRECTIVE, ROLES_DIRECTIVE, CALC_MUTATIONS_DIRECTIVE, DEFAULT_VALUE_DIRECTIVE, INDEX_DIRECTIVE, UNIQUE_DIRECTIVE];
+export const ALL_FIELD_DIRECTIVES = [
+    KEY_FIELD_DIRECTIVE, RELATION_DIRECTIVE, REFERENCE_DIRECTIVE, ROLES_DIRECTIVE, CALC_MUTATIONS_DIRECTIVE,
+    DEFAULT_VALUE_DIRECTIVE, INDEX_DIRECTIVE, UNIQUE_DIRECTIVE
+];
 export const ALL_OBJECT_TYPE_DIRECTIVES = [
     ROOT_ENTITY_DIRECTIVE,
     CHILD_ENTITY_DIRECTIVE,

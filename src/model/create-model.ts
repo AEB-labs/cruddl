@@ -29,7 +29,7 @@ import {
     INDEX_DIRECTIVE,
     INDICES_ARG,
     INVERSE_OF_ARG,
-   KEY_FIELD_ARG, KEY_FIELD_DIRECTIVE,
+    KEY_FIELD_ARG, KEY_FIELD_DIRECTIVE,
     NAMESPACE_DIRECTIVE,
     NAMESPACE_NAME_ARG,
     NAMESPACE_SEPARATOR,
@@ -91,7 +91,7 @@ export function createModel(parsedProject: ParsedProject): Model {
 
 const VALIDATION_ERROR_INVALID_PERMISSION_PROFILE = `Invalid argument value, expected string`;
 const VALIDATION_ERROR_EXPECTED_STRING_OR_LIST_OF_STRINGS = 'Expected string or list of strings';
-const VALIDATION_ERROR_EXPECTED_BOOLEAN = 'Expected boolean'
+const VALIDATION_ERROR_EXPECTED_BOOLEAN = 'Expected boolean';
 const VALIDATION_ERROR_EXPECTED_ENUM_OR_LIST_OF_ENUMS = 'Expected enum or list of enums';
 const VALIDATION_ERROR_EXPECTED_ENUM = 'Expected enum';
 const VALIDATION_ERROR_INVERSE_OF_ARG_MUST_BE_STRING = 'inverseOf must be specified as String';
@@ -237,26 +237,26 @@ function getDefaultValue(fieldNode: FieldDefinitionNode, context: ValidationCont
 }
 
 function createArangoSearchDefinitionInputs(objectNode: ObjectTypeDefinitionNode, context: ValidationContext): ArangoSearchIndexConfig {
-    let directive = findDirectiveWithName(objectNode, ROOT_ENTITY_DIRECTIVE)
+    let directive = findDirectiveWithName(objectNode, ROOT_ENTITY_DIRECTIVE);
     let config = {
         isGlobalIndexed: false,
         isIndexed: false,
         directiveASTNode: directive
-    }
-    if(directive){
-        const argumentIndexed: ArgumentNode | undefined = getNodeByName(directive.arguments, QUICK_SEARCH_INDEXED_ARGUMENT)
-        if(argumentIndexed){
-            if(argumentIndexed.value.kind === "BooleanValue"){
-                config.isIndexed = argumentIndexed.value.value
-            }else{
+    };
+    if (directive) {
+        const argumentIndexed: ArgumentNode | undefined = getNodeByName(directive.arguments, QUICK_SEARCH_INDEXED_ARGUMENT);
+        if (argumentIndexed) {
+            if (argumentIndexed.value.kind === 'BooleanValue') {
+                config.isIndexed = argumentIndexed.value.value;
+            } else {
                 context.addMessage(ValidationMessage.error(VALIDATION_ERROR_EXPECTED_BOOLEAN, argumentIndexed.value.loc));
             }
         }
-        const argumentGlobal: ArgumentNode | undefined = getNodeByName(directive.arguments, QUICK_SEARCH_INDEXED_GLOBAL_ARGUMENT)
-        if(argumentGlobal){
-            if(argumentGlobal.value.kind === "BooleanValue"){
-                config.isGlobalIndexed = argumentGlobal.value.value
-            }else{
+        const argumentGlobal: ArgumentNode | undefined = getNodeByName(directive.arguments, QUICK_SEARCH_INDEXED_GLOBAL_ARGUMENT);
+        if (argumentGlobal) {
+            if (argumentGlobal.value.kind === 'BooleanValue') {
+                config.isGlobalIndexed = argumentGlobal.value.value;
+            } else {
                 context.addMessage(ValidationMessage.error(VALIDATION_ERROR_EXPECTED_BOOLEAN, argumentGlobal.value.loc));
             }
         }
@@ -266,38 +266,38 @@ function createArangoSearchDefinitionInputs(objectNode: ObjectTypeDefinitionNode
 
 }
 
-function getIsSearchable(fieldNode: FieldDefinitionNode, context: ValidationContext):boolean {
+function getIsSearchable(fieldNode: FieldDefinitionNode, context: ValidationContext): boolean {
     let directive: DirectiveNode | undefined = findDirectiveWithName(fieldNode, QUICK_SEARCH_INDEXED_ARGUMENT);
-    if(!directive){
+    if (!directive) {
         return false;
     }
-    const argument: ArgumentNode | undefined = getNodeByName(directive.arguments, QUICK_SEARCH_INDEXED_SEARCHABLE_ARG)
-    if(!argument){
+    const argument: ArgumentNode | undefined = getNodeByName(directive.arguments, QUICK_SEARCH_INDEXED_SEARCHABLE_ARG);
+    if (!argument) {
         return false;
     }
-    if(argument.value.kind !== "BooleanValue"){
+    if (argument.value.kind !== 'BooleanValue') {
         context.addMessage(ValidationMessage.error(VALIDATION_ERROR_EXPECTED_BOOLEAN, argument.value.loc));
-        return false
+        return false;
     }
-    return argument.value.value
+    return argument.value.value;
 }
 
-function getLanguage(fieldNode: FieldDefinitionNode, context: ValidationContext):QuickSearchLanguage | undefined {
+function getLanguage(fieldNode: FieldDefinitionNode, context: ValidationContext): QuickSearchLanguage | undefined {
     let directive: DirectiveNode | undefined = findDirectiveWithName(fieldNode, QUICK_SEARCH_INDEXED_ARGUMENT);
-    if(directive){
-        const argument: ArgumentNode | undefined = getNodeByName(directive.arguments, QUICK_SEARCH_INDEXED_LANGUAGES_ARG)
+    if (directive) {
+        const argument: ArgumentNode | undefined = getNodeByName(directive.arguments, QUICK_SEARCH_INDEXED_LANGUAGES_ARG);
 
-        if(argument) {
-            if(argument.value.kind === "EnumValue"){
-                return argument.value.value as QuickSearchLanguage
-            }else{
+        if (argument) {
+            if (argument.value.kind === 'EnumValue') {
+                return argument.value.value as QuickSearchLanguage;
+            } else {
                 context.addMessage(ValidationMessage.error(VALIDATION_ERROR_EXPECTED_ENUM, argument.value.loc));
-                return undefined
+                return undefined;
             }
-        }else{
-            return undefined
+        } else {
+            return undefined;
         }
-    }else{
+    } else {
         return undefined;
     }
     // @MSF TODO: umformen: siehe getIsSearchable

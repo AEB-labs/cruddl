@@ -1,4 +1,4 @@
-import {Field, Relation, RootEntityType} from '../../model';
+import { Field, Relation, RootEntityType } from '../../model';
 import {
     AddEdgesQueryNode,
     BasicType,
@@ -45,15 +45,15 @@ import {
     VariableQueryNode,
     WithPreExecutionQueryNode
 } from '../../query-tree';
-import {Quantifier, QuantifierFilterNode} from '../../query-tree/quantifiers';
-import {extractVariableAssignments, simplifyBooleans} from '../../query-tree/utils';
-import {not} from '../../schema-generation/filter-input-types/constants';
-import {Constructor, decapitalize} from '../../utils/utils';
-import {analyzeLikePatternPrefix} from '../like-helpers';
-import {aql, AQLCompoundQuery, aqlConfig, AQLFragment, AQLQueryResultVariable, AQLVariable} from './aql';
-import {getCollectionNameForRelation, getCollectionNameForRootEntity} from './arango-basics';
-import {getViewNameForRootEntity} from "./schema-migration/arango-search-helpers";
-import {QuickSearchQueryNode} from "../../query-tree/quick-search";
+import { Quantifier, QuantifierFilterNode } from '../../query-tree/quantifiers';
+import { extractVariableAssignments, simplifyBooleans } from '../../query-tree/utils';
+import { not } from '../../schema-generation/filter-input-types/constants';
+import { Constructor, decapitalize } from '../../utils/utils';
+import { analyzeLikePatternPrefix } from '../like-helpers';
+import { aql, AQLCompoundQuery, aqlConfig, AQLFragment, AQLQueryResultVariable, AQLVariable } from './aql';
+import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './arango-basics';
+import { getViewNameForRootEntity } from './schema-migration/arango-search-helpers';
+import { QuickSearchQueryNode } from '../../query-tree/quick-search';
 
 enum AccessType {
     READ,
@@ -284,7 +284,6 @@ register(ListQueryNode, (node, context) => {
 });
 
 
-
 register(ConcatListsQueryNode, (node, context) => {
     const listNodes = node.listNodes.map(node => processNode(node, context));
     const listNodeStr = aql.join(listNodes, aql`, `);
@@ -323,7 +322,6 @@ register(EntityFromIdQueryNode, (node, context) => {
 });
 
 
-
 register(FieldQueryNode, (node, context) => {
     const object = processNode(node.objectNode, context);
     return aql`${object}${getFieldPathAccessFragment(node.path)}${getFieldAccessFragment(node.field)}`;
@@ -340,10 +338,10 @@ function getFieldAccessFragment(field: Field) {
 }
 
 function getFieldPathAccessFragment(path?: Field[]): AQLFragment {
-    if(path && path.length > 0){
+    if (path && path.length > 0) {
         return aql`.${aql.identifier(path[0].name)}${getFieldPathAccessFragment(path.slice(1))}`;
-    }else{
-        return aql``
+    } else {
+        return aql``;
     }
 
 }
@@ -355,8 +353,8 @@ register(RootEntityIDQueryNode, (node, context) => {
 register(QuickSearchQueryNode, (node, context) => {
     // @MSF TODO: Authentification
     //
-    let itemContext = context.introduceVariable(node.itemVariable)
-    return aql`(FOR ${itemContext.getVariable(node.itemVariable)} IN ${aql.identifier(getViewNameForRootEntity(node.entity!))} SEARCH ${processNode(node.qsFilterNode, itemContext)} RETURN ${itemContext.getVariable(node.itemVariable)})`
+    let itemContext = context.introduceVariable(node.itemVariable);
+    return aql`(FOR ${itemContext.getVariable(node.itemVariable)} IN ${aql.identifier(getViewNameForRootEntity(node.entity!))} SEARCH ${processNode(node.qsFilterNode, itemContext)} RETURN ${itemContext.getVariable(node.itemVariable)})`;
 });
 
 // @MSF TODO: create AQL like this:
@@ -530,7 +528,7 @@ register(BinaryOperationQueryNode, (node, context) => {
 
 register(TernaryOperationQueryNode, (node, context) => {
 
-    if(!(node.param instanceof TextAnalyzerQueryNode) && node.operator != TernaryOperator.QUICKSEARCH_STARTS_WITH){
+    if (!(node.param instanceof TextAnalyzerQueryNode) && node.operator != TernaryOperator.QUICKSEARCH_STARTS_WITH) {
         throw new Error(`Unsupported ternary operation parameter: ${node.param ? node.param.describe() : node.param}`);
     }
 
@@ -541,13 +539,13 @@ register(TernaryOperationQueryNode, (node, context) => {
 
     switch (node.operator) {
         case TernaryOperator.QUICKSEARCH_STARTS_WITH:
-            return aql`STARTS_WITH(${lhs},${rhs})`
+            return aql`STARTS_WITH(${lhs},${rhs})`;
         case TernaryOperator.QUICKSEARCH_CONTAINS_ANY_WORD:
-            return aql`ANALYZER( ${lhs} IN TOKENS(${rhs}, ${param!}),${param!})`
+            return aql`ANALYZER( ${lhs} IN TOKENS(${rhs}, ${param!}),${param!})`;
         case TernaryOperator.QUICKSEARCH_CONTAINS_PREFIX:
-            return aql`ANALYZER( STARTS_WITH( ${lhs}, TOKENS(${rhs})[0]), ${param!}))`
+            return aql`ANALYZER( STARTS_WITH( ${lhs}, TOKENS(${rhs})[0]), ${param!}))`;
         case TernaryOperator.QUICKSEARCH_CONTAINS_PHRASE:
-            return aql`ANALYZER( PHRASE( ${lhs}, ${rhs}), ${param!})`
+            return aql`ANALYZER( PHRASE( ${lhs}, ${rhs}), ${param!})`;
         default:
             throw new Error(`Unsupported ternary operator: ${node.operator}`);
     }
@@ -555,7 +553,7 @@ register(TernaryOperationQueryNode, (node, context) => {
 });
 
 register(TextAnalyzerQueryNode, (node, context) => {
-   return aql.value(`text_${node.language.toLowerCase()}`)
+    return aql.value(`text_${node.language.toLowerCase()}`);
 });
 
 function getFastStartsWithQuery(lhs: AQLFragment, rhsValue: string): AQLFragment {

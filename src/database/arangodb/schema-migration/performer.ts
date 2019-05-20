@@ -1,5 +1,5 @@
-import {Database} from 'arangojs';
-import {ArangoDBConfig, initDatabase} from '../config';
+import { Database } from 'arangojs';
+import { ArangoDBConfig, initDatabase } from '../config';
 import {
     CreateArangoSearchViewMigration,
     CreateDocumentCollectionMigration,
@@ -8,9 +8,9 @@ import {
     DropIndexMigration,
     SchemaMigration, UpdateArangoSearchViewMigration
 } from './migrations';
-import {ArangoDBVersionHelper} from "../version-helper";
+import { ArangoDBVersionHelper } from '../version-helper';
 
-const ARANGO_SEARCH_VERSION_ERROR = "ArangoSearch requires Arango-Version >= 3.4";
+const ARANGO_SEARCH_VERSION_ERROR = 'ArangoSearch requires Arango-Version >= 3.4';
 
 export class MigrationPerformer {
     private readonly db: Database;
@@ -18,7 +18,7 @@ export class MigrationPerformer {
 
     constructor(config: ArangoDBConfig) {
         this.db = initDatabase(config);
-        this.versionHelper = new ArangoDBVersionHelper(this.db)
+        this.versionHelper = new ArangoDBVersionHelper(this.db);
     }
 
     async performMigration(migration: SchemaMigration) {
@@ -31,11 +31,11 @@ export class MigrationPerformer {
                 return this.createDocumentCollection(migration);
             case 'createEdgeCollection':
                 return this.createEdgeCollection(migration);
-            case "createArangoSearchView":
+            case 'createArangoSearchView':
                 return this.createArangoSearchView(migration);
             case 'updateArangoSearchView':
                 return this.updateArangoSearchView(migration);
-            case "dropArangoSearchView":
+            case 'dropArangoSearchView':
                 return this.dropArangoSearchView(migration);
             default:
                 throw new Error(`Unknown migration type: ${(migration as any).type}`);
@@ -66,33 +66,33 @@ export class MigrationPerformer {
 
     private async createArangoSearchView(migration: CreateArangoSearchViewMigration) {
         if (await this.isArangoSearchSupported()) {
-            await this.db.arangoSearchView(migration.config.viewName).create()
+            await this.db.arangoSearchView(migration.config.viewName).create();
             // Setting the properties during creation does not work for some reason
-            await this.db.arangoSearchView(migration.config.viewName).setProperties(migration.config.properties)
+            await this.db.arangoSearchView(migration.config.viewName).setProperties(migration.config.properties);
         } else {
-            throw new Error(ARANGO_SEARCH_VERSION_ERROR) // @MSF OPT TODO: Eigene Error-Klasse (siehe TransactionTimeoutError)
+            throw new Error(ARANGO_SEARCH_VERSION_ERROR); // @MSF OPT TODO: Eigene Error-Klasse (siehe TransactionTimeoutError)
         }
 
     }
 
     private async isArangoSearchSupported() {
         const version = await this.versionHelper.getArangoDBVersion();
-        return version && (version.major > 3 || (version.major >= 3 && version.minor >=4))
+        return version && (version.major > 3 || (version.major >= 3 && version.minor >= 4));
     }
 
     private async updateArangoSearchView(migration: UpdateArangoSearchViewMigration) {
         if (await this.isArangoSearchSupported()) {
-            await this.db.arangoSearchView(migration.config.viewName).setProperties(migration.config.properties)
+            await this.db.arangoSearchView(migration.config.viewName).setProperties(migration.config.properties);
         } else {
-            throw new Error(ARANGO_SEARCH_VERSION_ERROR)
+            throw new Error(ARANGO_SEARCH_VERSION_ERROR);
         }
     }
 
     private async dropArangoSearchView(migration: DropArangoSearchViewMigration) {
         if (await this.isArangoSearchSupported()) {
-            await this.db.arangoSearchView(migration.config.viewName).drop()
+            await this.db.arangoSearchView(migration.config.viewName).drop();
         } else {
-            throw new Error(ARANGO_SEARCH_VERSION_ERROR)
+            throw new Error(ARANGO_SEARCH_VERSION_ERROR);
         }
     }
 }

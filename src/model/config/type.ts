@@ -3,7 +3,7 @@ import {
     TypeDefinitionNode
 } from 'graphql';
 import { FieldConfig } from './field';
-import {ArangoSearchIndexConfig, IndexDefinitionConfig} from './indices';
+import { ArangoSearchIndexConfig, IndexDefinitionConfig } from './indices';
 import { PermissionsConfig } from './permissions';
 
 export enum TypeKind {

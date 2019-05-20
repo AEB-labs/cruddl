@@ -1,11 +1,11 @@
 import { QueryNode } from './base';
-import {QuickSearchLanguage} from "../model/config";
+import { QuickSearchLanguage } from '../model/config';
 import {
     INPUT_FIELD_CONTAINS_ALL_PREFIXES,
     INPUT_FIELD_CONTAINS_ALL_WORDS,
     INPUT_FIELD_CONTAINS_ANY_PREFIX, INPUT_FIELD_NOT_CONTAINS_ALL_PREFIXES,
     INPUT_FIELD_NOT_CONTAINS_ALL_WORDS, INPUT_FIELD_NOT_CONTAINS_ANY_PREFIX
-} from "../schema/constants";
+} from '../schema/constants';
 
 /**
  * A node that performs an operation with one operand
@@ -100,40 +100,40 @@ export class BinaryOperationQueryNode extends QueryNode {
  * The operator of a BinaryOperationQueryNode
  */
 export enum BinaryOperator {
-    AND = "AND",
-    OR = "OR",
+    AND = 'AND',
+    OR = 'OR',
 
     /**
      * Strict equality (values of different types are considered unequal)
      */
-    EQUAL = "EQUAL",
+    EQUAL = 'EQUAL',
 
     /**
      * Strict inequality (values of different types are considered unequal)
      */
-    UNEQUAL = "UNEQUAL",
+    UNEQUAL = 'UNEQUAL',
 
-    LESS_THAN = "LESS_THAN",
-    LESS_THAN_OR_EQUAL = "LESS_THAN_OR_EQUAL",
-    GREATER_THAN = "GREATER_THAN",
-    GREATER_THAN_OR_EQUAL = "GREATER_THAN_OR_EQUAL",
-    IN = "IN",
-    CONTAINS = "CONTAINS",
-    STARTS_WITH = "STARTS_WITH",
-    ENDS_WITH = "ENDS_WITH",
+    LESS_THAN = 'LESS_THAN',
+    LESS_THAN_OR_EQUAL = 'LESS_THAN_OR_EQUAL',
+    GREATER_THAN = 'GREATER_THAN',
+    GREATER_THAN_OR_EQUAL = 'GREATER_THAN_OR_EQUAL',
+    IN = 'IN',
+    CONTAINS = 'CONTAINS',
+    STARTS_WITH = 'STARTS_WITH',
+    ENDS_WITH = 'ENDS_WITH',
 
     /**
      * Comparison for string using placeholders (% for arbitrary char sequences, _ for a single character).
      * Case-insensitive. Use backslashes to escape %, _ and \
      */
-    LIKE = "LIKE",
-    ADD = "ADD",
-    SUBTRACT = "SUBTRACT",
-    MULTIPLY = "MULTIPLY",
-    DIVIDE = "DIVIDE",
-    MODULO = "MODULO",
-    APPEND = "APPEND",
-    PREPEND = "PREPEND",
+    LIKE = 'LIKE',
+    ADD = 'ADD',
+    SUBTRACT = 'SUBTRACT',
+    MULTIPLY = 'MULTIPLY',
+    DIVIDE = 'DIVIDE',
+    MODULO = 'MODULO',
+    APPEND = 'APPEND',
+    PREPEND = 'PREPEND',
 }
 
 // @MSF TODO: name OperatorWithLanguage instead
@@ -152,20 +152,20 @@ export class TernaryOperationQueryNode extends QueryNode {
     private describeOperator(op: TernaryOperator) {
         switch (op) {
             case TernaryOperator.QUICKSEARCH_CONTAINS_ANY_WORD:
-                return 'IN TOKENS'
+                return 'IN TOKENS';
             case TernaryOperator.QUICKSEARCH_STARTS_WITH:
-                return 'STARTS_WITH'
+                return 'STARTS_WITH';
             default:
                 return '(unknown operator)';
-                // @MSF TODO:
+            // @MSF TODO:
         }
     }
 
     private getParamString() {
-        if(this.param){
-            return ` with ${this.param.describe()}`
-        }else{
-            return ``
+        if (this.param) {
+            return ` with ${this.param.describe()}`;
+        } else {
+            return ``;
         }
 
     }
@@ -175,13 +175,13 @@ export class TernaryOperationQueryNode extends QueryNode {
  * The operator of a TernaryOperationQueryNode
  */
 export enum TernaryOperator {
-    QUICKSEARCH_STARTS_WITH = "QUICKSEARCH_STARTS_WITH",
-    QUICKSEARCH_CONTAINS_ANY_WORD = "QUICKSEARCH_CONTAINS_ANY_WORD",
-    QUICKSEARCH_CONTAINS_PREFIX = "QUICKSEARCH_CONTAINS_PREFIX",
-    QUICKSEARCH_CONTAINS_PHRASE = "QUICKSEARCH_CONTAINS_PHRASE",
+    QUICKSEARCH_STARTS_WITH = 'QUICKSEARCH_STARTS_WITH',
+    QUICKSEARCH_CONTAINS_ANY_WORD = 'QUICKSEARCH_CONTAINS_ANY_WORD',
+    QUICKSEARCH_CONTAINS_PREFIX = 'QUICKSEARCH_CONTAINS_PREFIX',
+    QUICKSEARCH_CONTAINS_PHRASE = 'QUICKSEARCH_CONTAINS_PHRASE',
 }
 
-export class TextAnalyzerQueryNode extends QueryNode{
+export class TextAnalyzerQueryNode extends QueryNode {
     constructor(public readonly language: QuickSearchLanguage) {
         super();
     }

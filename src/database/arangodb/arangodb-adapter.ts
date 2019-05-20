@@ -16,7 +16,7 @@ import { RequestInstrumentation, RequestInstrumentationPhase } from './arangojs-
 import { CancellationManager } from './cancellation-manager';
 import { ArangoDBConfig, DEFAULT_RETRY_DELAY_BASE_MS, getArangoDBLogger, initDatabase } from './config';
 import { ERROR_ARANGO_CONFLICT, ERROR_QUERY_KILLED } from './error-codes';
-import { SchemaAnalyzer } from './schema-migration/anaylzer';
+import { SchemaAnalyzer } from './schema-migration/analyzer';
 import { SchemaMigration } from './schema-migration/migrations';
 import { MigrationPerformer } from './schema-migration/performer';
 import { TransactionError } from './transaction-error';

@@ -7,7 +7,7 @@ import {
     GraphQLScalarType,
     GraphQLUnionType,
     Thunk
- } from 'graphql';
+} from 'graphql';
 import { QueryNode } from '../../query-tree';
 import { FieldContext } from './context';
 
@@ -41,11 +41,11 @@ export interface QueryNodeObjectType {
     fields: Thunk<ReadonlyArray<QueryNodeField>>
 }
 
-export class QueryNodeUnionType{
+export class QueryNodeUnionType {
     constructor(public readonly name: string,
-                public readonly types: ReadonlyArray<QueryNodeObjectType>){
+                public readonly types: ReadonlyArray<QueryNodeObjectType>) {
 
-}
+    }
 }
 
 export class QueryNodeNonNullType<T extends QueryNodeNullableType> {
@@ -58,6 +58,7 @@ export class QueryNodeListType<T extends QueryNodeOutputType> {
     }
 }
 
-export type QueryNodeNamedOutputType = QueryNodeObjectType | GraphQLObjectType | GraphQLEnumType | GraphQLScalarType | QueryNodeUnionType
+export type QueryNodeNamedOutputType = QueryNodeObjectType | GraphQLObjectType | GraphQLEnumType | GraphQLScalarType
+    | QueryNodeUnionType
 export type QueryNodeNullableType = QueryNodeNamedOutputType | QueryNodeListType<any> | GraphQLList<any>
 export type QueryNodeOutputType = QueryNodeNullableType | QueryNodeNonNullType<any> | GraphQLNonNull<any>

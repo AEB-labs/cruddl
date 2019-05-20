@@ -21,14 +21,14 @@ export function isGraphQLOutputType(type: {}): type is GraphQLOutputType {
         type instanceof GraphQLList;
 }
 
-export function extractQueryTreeObjectType(type: QueryNodeOutputType): QueryNodeObjectType|undefined {
+export function extractQueryTreeObjectType(type: QueryNodeOutputType): QueryNodeObjectType | undefined {
     if (isGraphQLOutputType(type)) {
         return undefined;
     }
     if (type instanceof QueryNodeNonNullType || type instanceof QueryNodeListType) {
         return extractQueryTreeObjectType(type.ofType);
     }
-    if(type instanceof QueryNodeUnionType){
+    if (type instanceof QueryNodeUnionType) {
         return undefined; // @MSF GLOBAL TODO: properly handle UnionType
     }
     return type;

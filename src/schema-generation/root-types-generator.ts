@@ -14,14 +14,14 @@ import { OutputTypeGenerator } from './output-type-generator';
 import { QueryNodeObjectType, QueryNodeObjectTypeConverter } from './query-node-object-type';
 import { QueryTypeGenerator } from './query-type-generator';
 import { UpdateInputTypeGenerator } from './update-input-types';
-import {QuickSearchAugmentation} from "./quick-search-augmentation";
-import {QuickSearchFilterTypeGenerator} from "./quick-search-filter-input-types/generator";
-import {QuickSearchGlobalAugmentation} from "./quick-search-global-augmentation";
+import { QuickSearchAugmentation } from './quick-search-augmentation';
+import { QuickSearchFilterTypeGenerator } from './quick-search-filter-input-types/generator';
+import { QuickSearchGlobalAugmentation } from './quick-search-global-augmentation';
 
 export class RootTypesGenerator {
     private readonly enumTypeGenerator = new EnumTypeGenerator();
     private readonly filterTypeGenerator = new FilterTypeGenerator(this.enumTypeGenerator);
-    private readonly quickSearchFilterTypeGenerator =  new QuickSearchFilterTypeGenerator(this.enumTypeGenerator);
+    private readonly quickSearchFilterTypeGenerator = new QuickSearchFilterTypeGenerator(this.enumTypeGenerator);
     private readonly orderByEnumGenerator = new OrderByEnumGenerator();
     private readonly orderByAugmentation = new OrderByAndPaginationAugmentation(this.orderByEnumGenerator);
     private readonly filterAugmentation = new FilterAugmentation(this.filterTypeGenerator);

@@ -1,5 +1,5 @@
-import {BinaryOperator, QueryNode, TernaryOperator} from "../../query-tree";
-import {binaryNotOp, binaryOp, NUMERIC_FILTER_FIELDS, ternaryNotOp, ternaryOp} from "../filter-input-types/constants";
+import { BinaryOperator, QueryNode, TernaryOperator } from '../../query-tree';
+import { binaryNotOp, binaryOp, NUMERIC_FILTER_FIELDS, ternaryNotOp, ternaryOp } from '../filter-input-types/constants';
 import {
     INPUT_FIELD_CONTAINS_ALL_PREFIXES,
     INPUT_FIELD_CONTAINS_ALL_WORDS,
@@ -21,13 +21,13 @@ import {
     INPUT_FIELD_NOT_IN,
     INPUT_FIELD_NOT_STARTS_WITH,
     INPUT_FIELD_STARTS_WITH
-} from "../../schema/constants";
-import {GraphQLBoolean, GraphQLFloat, GraphQLID, GraphQLInt, GraphQLString} from "graphql";
-import {GraphQLDateTime} from "../../schema/scalars/date-time";
-import {GraphQLLocalDate} from "../../schema/scalars/local-date";
-import {GraphQLLocalTime} from "../../schema/scalars/local-time";
+} from '../../schema/constants';
+import { GraphQLBoolean, GraphQLFloat, GraphQLID, GraphQLInt, GraphQLString } from 'graphql';
+import { GraphQLDateTime } from '../../schema/scalars/date-time';
+import { GraphQLLocalDate } from '../../schema/scalars/local-date';
+import { GraphQLLocalTime } from '../../schema/scalars/local-time';
 
-export const SOME_PREFIX = "some";
+export const SOME_PREFIX = 'some';
 
 export const and = binaryOp(BinaryOperator.AND);
 export const or = binaryOp(BinaryOperator.OR);
@@ -44,7 +44,7 @@ export const QUICK_SEARCH_FILTER_OPERATORS: { [suffix: string]: (fieldNode: Quer
     [INPUT_FIELD_STARTS_WITH]: ternaryOp(TernaryOperator.QUICKSEARCH_STARTS_WITH),
     [INPUT_FIELD_NOT_STARTS_WITH]: ternaryNotOp(TernaryOperator.QUICKSEARCH_STARTS_WITH),
     [INPUT_FIELD_ENDS_WITH]: binaryOp(BinaryOperator.ENDS_WITH),
-    [INPUT_FIELD_NOT_ENDS_WITH]: binaryNotOp(BinaryOperator.ENDS_WITH),
+    [INPUT_FIELD_NOT_ENDS_WITH]: binaryNotOp(BinaryOperator.ENDS_WITH)
 
 };
 
@@ -67,13 +67,15 @@ export const STRING_TEXT_ANALYZER_FILTER_FIELDS = [
     INPUT_FIELD_CONTAINS_ALL_PREFIXES,
     INPUT_FIELD_NOT_CONTAINS_ALL_PREFIXES,
     INPUT_FIELD_CONTAINS_PHRASE,
-    INPUT_FIELD_NOT_CONTAINS_PHRASE,
-]
+    INPUT_FIELD_NOT_CONTAINS_PHRASE
+];
 
-const ID_QUICK_SEARCH_FILTER_FIELDS = [INPUT_FIELD_EQUAL,
+const ID_QUICK_SEARCH_FILTER_FIELDS = [
+    INPUT_FIELD_EQUAL,
     INPUT_FIELD_NOT,
     INPUT_FIELD_IN,
-    INPUT_FIELD_NOT_IN];
+    INPUT_FIELD_NOT_IN
+];
 
 export const QUICK_SEARCH_FILTER_FIELDS_BY_TYPE: { [name: string]: string[] } = {
     [GraphQLString.name]: STRING_QUICK_SEARCH_FILTER_FIELDS,

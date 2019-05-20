@@ -1,25 +1,25 @@
-import {Field, Model, RootEntityType} from "../../../model/implementation";
-import {flatMap} from "../../../utils/utils";
-import {getCollectionNameForRootEntity} from "../arango-basics";
-import {ViewDescription} from "arangojs/lib/async/database";
+import { Field, Model, RootEntityType } from '../../../model/implementation';
+import { flatMap } from '../../../utils/utils';
+import { getCollectionNameForRootEntity } from '../arango-basics';
+import { ViewDescription } from 'arangojs/lib/async/database';
 import {
     CreateArangoSearchViewMigration,
     DropArangoSearchViewMigration,
     UpdateArangoSearchViewMigration
-} from "./migrations";
-import {ViewType} from "arangojs/lib/async/view";
+} from './migrations';
+import { ViewType } from 'arangojs/lib/async/view';
 import {
     ArangoSearchView,
     ArangoSearchViewProperties,
     ArangoSearchViewPropertiesOptions,
     ArangoSearchViewPropertiesResponse
-} from "arangojs/lib/cjs/view";
-import {QUICK_SEARCH_GLOBAL_VIEW_NAME} from "../../../schema/constants";
-import {FieldConfig, QuickSearchLanguage} from "../../../model/config";
-import * as _ from "lodash";
-import {Database} from "arangojs";
+} from 'arangojs/lib/cjs/view';
+import { QUICK_SEARCH_GLOBAL_VIEW_NAME } from '../../../schema/constants';
+import { FieldConfig, QuickSearchLanguage } from '../../../model/config';
+import * as _ from 'lodash';
+import { Database } from 'arangojs';
 
-const IDENTITY_ANALYZER = "identity";
+const IDENTITY_ANALYZER = 'identity';
 
 export interface ArangoSearchDefinition {
     readonly viewName: string;
@@ -37,7 +37,7 @@ interface ArangoSearchViewCollectionLink {
     };
     includeAllFields?: boolean;
     trackListPositions?: boolean;
-    storeValues?: "none" | "id";
+    storeValues?: 'none' | 'id';
 }
 
 export function getRequiredViewsFromModel(model: Model): ReadonlyArray<ArangoSearchDefinition> {
@@ -45,18 +45,20 @@ export function getRequiredViewsFromModel(model: Model): ReadonlyArray<ArangoSea
 }
 
 export function getViewNameForRootEntity(rootEntity: RootEntityType) {
-    return "qsView_" + getCollectionNameForRootEntity(rootEntity);
+    return 'qsView_' + getCollectionNameForRootEntity(rootEntity);
 }
 
 function getViewsForRootEntity(rootEntity: RootEntityType): ReadonlyArray<ArangoSearchDefinition> {
     if (rootEntity.arangoSearchConfig.isIndexed) {
-        return [{
-            fields: rootEntity.fields.filter(value => value.isQuickSearchIndexed || value.isSystemField), // @MSF TODO: put "isSystemField means it's indexed" into field definition
-            viewName: getViewNameForRootEntity(rootEntity),
-            collectionName: getCollectionNameForRootEntity(rootEntity)
-        }]
+        return [
+            {
+                fields: rootEntity.fields.filter(value => value.isQuickSearchIndexed || value.isSystemField), // @MSF TODO: put "isSystemField means it's indexed" into field definition
+                viewName: getViewNameForRootEntity(rootEntity),
+                collectionName: getCollectionNameForRootEntity(rootEntity)
+            }
+        ];
     } else {
-        return []
+        return [];
     }
 }
 
@@ -70,37 +72,37 @@ export async function calculateRequiredArangoSearchViewCreateOperations(existing
             collectionSize: count,
             viewName: value.viewName,
             properties: getPropertiesFromDefinition(value)
-        })
+        });
     }
 
-    return await Promise.all(viewsToCreate.map(mapToMigration))
+    return await Promise.all(viewsToCreate.map(mapToMigration));
 }
 
 export function calculateRequiredArangoSearchViewDropOperations(views: ArangoSearchView[], definitions: ReadonlyArray<ArangoSearchDefinition>): ReadonlyArray<DropArangoSearchViewMigration> {
     const viewsToDrop = views
-        .filter(value => !definitions.some(value1 => value1.viewName === value.name) && value.name != QUICK_SEARCH_GLOBAL_VIEW_NAME)
-    return viewsToDrop.map(value => new DropArangoSearchViewMigration({viewName: value.name}))
+        .filter(value => !definitions.some(value1 => value1.viewName === value.name) && value.name != QUICK_SEARCH_GLOBAL_VIEW_NAME);
+    return viewsToDrop.map(value => new DropArangoSearchViewMigration({ viewName: value.name }));
     // @MSF TODO: only drop views with the QS prefix
 }
 
 
 function getAnalyzerFromQuickSearchLanguage(language: QuickSearchLanguage): string {
-    return "text_" + language.toLowerCase()
+    return 'text_' + language.toLowerCase();
 }
 
 function getGlobalSearchViewProperties(globalIndexedEntityTypes: RootEntityType[]): ArangoSearchViewPropertiesOptions {
     const properties: ArangoSearchViewPropertiesOptions = {
-        links: {},
-    }
+        links: {}
+    };
 
-    const fields = flatMap(globalIndexedEntityTypes, value => value.fields.filter(value1 => value1.isSearchable))
+    const fields = flatMap(globalIndexedEntityTypes, value => value.fields.filter(value1 => value1.isSearchable));
 
     for (const entity of globalIndexedEntityTypes) {
 
         const link: ArangoSearchViewCollectionLink = {
             analyzers: [IDENTITY_ANALYZER],
             includeAllFields: false,
-            storeValues: "id",
+            storeValues: 'id',
             trackListPositions: false,
             fields: {}
         };
@@ -130,13 +132,13 @@ function getGlobalSearchViewProperties(globalIndexedEntityTypes: RootEntityType[
 
 function getPropertiesFromDefinition(definition: ArangoSearchDefinition): ArangoSearchViewPropertiesOptions {
     const properties: ArangoSearchViewPropertiesOptions = {
-        links: {},
-    }
+        links: {}
+    };
 
     const link: ArangoSearchViewCollectionLink = {
         analyzers: [IDENTITY_ANALYZER],
         includeAllFields: false,
-        storeValues: "id",
+        storeValues: 'id',
         trackListPositions: false,
         fields: {}
     };
@@ -144,11 +146,11 @@ function getPropertiesFromDefinition(definition: ArangoSearchDefinition): Arango
     for (const field of definition.fields) {
         const analyzers = (field.language ? [field.language] : []).map(getAnalyzerFromQuickSearchLanguage).concat([IDENTITY_ANALYZER]);
         if (_.isEqual(analyzers, [IDENTITY_ANALYZER])) {
-            link.fields![field.name] = {}
+            link.fields![field.name] = {};
         } else {
             link.fields![field.name] = {
                 analyzers
-            }
+            };
         }
 
     }
@@ -159,15 +161,15 @@ function getPropertiesFromDefinition(definition: ArangoSearchDefinition): Arango
 }
 
 function isEqualProperties(defProperties: ArangoSearchViewPropertiesOptions, properties: ArangoSearchViewProperties): boolean {
-    return _.isEqual(defProperties.links, properties.links)
+    return _.isEqual(defProperties.links, properties.links);
 
 }
 
 export async function calculateRequiredArangoSearchViewUpdateOperations(views: ArangoSearchView[], definitions: ReadonlyArray<ArangoSearchDefinition>, db: Database): Promise<ReadonlyArray<UpdateArangoSearchViewMigration>> {
     const viewsWithUpdateRequired: UpdateArangoSearchViewMigration[] = [];
     for (const view of views) {
-        const definition = definitions.find(value => value.viewName === view.name)
-        if(!definition){
+        const definition = definitions.find(value => value.viewName === view.name);
+        if (!definition) {
             continue;
         }
         const viewProperties = await view.properties();
@@ -185,7 +187,7 @@ export async function calculateRequiredArangoSearchViewUpdateOperations(views: A
 
     }
 
-    return viewsWithUpdateRequired
+    return viewsWithUpdateRequired;
 }
 
 
@@ -194,12 +196,12 @@ export async function calculateRequiredGlobalViewOperation(entityTypes: Readonly
     const globalIndexedEntityTypes = entityTypes.filter(value => value.arangoSearchConfig.isGlobalIndexed);
     const isArangoViewExists = await arangoSearchView.exists();
     if (isArangoViewExists && globalIndexedEntityTypes.length == 0) {
-        return new DropArangoSearchViewMigration({viewName: QUICK_SEARCH_GLOBAL_VIEW_NAME})
+        return new DropArangoSearchViewMigration({ viewName: QUICK_SEARCH_GLOBAL_VIEW_NAME });
     }
     const definitionProperties: ArangoSearchViewPropertiesOptions = getGlobalSearchViewProperties(globalIndexedEntityTypes);
 
     async function mapToCollectionSize(entityType: RootEntityType): Promise<number> {
-        return (await db.collection(getCollectionNameForRootEntity(entityType)).count()).count
+        return (await db.collection(getCollectionNameForRootEntity(entityType)).count()).count;
     }
 
     const count = (await Promise.all(globalIndexedEntityTypes.map(mapToCollectionSize))).reduce((previousValue, currentValue) => currentValue + previousValue, 0);
@@ -208,13 +210,13 @@ export async function calculateRequiredGlobalViewOperation(entityTypes: Readonly
         const viewProperties = await arangoSearchView.properties();
 
         if (isEqualProperties(definitionProperties, viewProperties)) {
-            return undefined // no migration required
+            return undefined; // no migration required
         } else {
             return new UpdateArangoSearchViewMigration({
                 properties: definitionProperties,
                 viewName: QUICK_SEARCH_GLOBAL_VIEW_NAME,
                 collectionSize: count
-            })
+            });
         }
 
     } else {
@@ -222,6 +224,6 @@ export async function calculateRequiredGlobalViewOperation(entityTypes: Readonly
             properties: definitionProperties,
             viewName: QUICK_SEARCH_GLOBAL_VIEW_NAME,
             collectionSize: count
-        })
+        });
     }
 }

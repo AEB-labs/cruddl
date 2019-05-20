@@ -40,5 +40,5 @@ export enum CalcMutationsOperator {
 }
 
 export enum QuickSearchLanguage {
-    EN = "en", DE = "de", ES = "es", FI = "fi", FR = "fr", IT = "it", NL = "nl", NO = "no", PT = "pt", RU = "ru", SV = "sv", ZH = "zh"
+    EN = 'en', DE = 'de', ES = 'es', FI = 'fi', FR = 'fr', IT = 'it', NL = 'nl', NO = 'no', PT = 'pt', RU = 'ru', SV = 'sv', ZH = 'zh'
 }

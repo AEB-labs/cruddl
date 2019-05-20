@@ -70,7 +70,7 @@ export function simplifyBooleans(node: QueryNode): QueryNode {
                 }
             }
         }
-        return new BinaryOperationQueryNode(lhs,node.operator,rhs)
+        return new BinaryOperationQueryNode(lhs, node.operator, rhs);
     }
     return node;
 }

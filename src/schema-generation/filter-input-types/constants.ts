@@ -107,7 +107,7 @@ export const or = binaryOp(BinaryOperator.OR);
 
 export function binaryOp(op: BinaryOperator) {
     return (lhs: QueryNode, rhs: QueryNode) => {
-        return new BinaryOperationQueryNode(lhs, op, rhs)
+        return new BinaryOperationQueryNode(lhs, op, rhs);
     };
 }
 
@@ -117,7 +117,7 @@ export function binaryNotOp(op: BinaryOperator) {
 
 export function ternaryOp(op: TernaryOperator) {
     return (lhs: QueryNode, rhs: QueryNode, param?: QueryNode) => {
-        return new TernaryOperationQueryNode(lhs, op, rhs, param)
+        return new TernaryOperationQueryNode(lhs, op, rhs, param);
     };
 }
 

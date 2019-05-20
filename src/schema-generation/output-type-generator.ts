@@ -3,7 +3,7 @@ import { sortBy } from 'lodash';
 import memorize from 'memorize-decorator';
 import { FieldRequest } from '../graphql/query-distiller';
 import { isListType } from '../graphql/schema-utils';
-import {Field, ObjectType, RootEntityType, Type, TypeKind} from '../model';
+import { Field, ObjectType, RootEntityType, Type, TypeKind } from '../model';
 import { NullQueryNode, ObjectQueryNode, PropertySpecification, QueryNode, UnaryOperationQueryNode, UnaryOperator } from '../query-tree';
 import { CURSOR_FIELD } from '../schema/constants';
 import { getMetaFieldName } from '../schema/names';
@@ -53,7 +53,7 @@ export class OutputTypeGenerator {
         return new QueryNodeUnionType(
             `QuickSearchGlobalType`, // @MSF GLOBAL TODO: use constant
             objectTypes
-    )
+        );
 
     }
 

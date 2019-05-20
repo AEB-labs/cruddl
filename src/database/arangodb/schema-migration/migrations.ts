@@ -1,11 +1,12 @@
 import { Relation, RootEntityType } from '../../../model/implementation';
 import { describeIndex, getIndexDescriptor, IndexDefinition } from './index-helpers';
-import {ArangoSearchDefinition} from "./arango-search-helpers";
-import {FieldConfig} from "../../../model/config";
-import {ArangoSearchViewPropertiesOptions} from "arangojs/lib/cjs/view";
+import { ArangoSearchDefinition } from './arango-search-helpers';
+import { FieldConfig } from '../../../model/config';
+import { ArangoSearchViewPropertiesOptions } from 'arangojs/lib/cjs/view';
 
 export type SchemaMigration = CreateIndexMigration | DropIndexMigration | CreateDocumentCollectionMigration
-    | CreateEdgeCollectionMigration | CreateArangoSearchViewMigration | DropArangoSearchViewMigration | UpdateArangoSearchViewMigration;
+    | CreateEdgeCollectionMigration | CreateArangoSearchViewMigration | DropArangoSearchViewMigration
+    | UpdateArangoSearchViewMigration;
 
 interface CreateIndexMigrationConfig {
     readonly index: IndexDefinition
@@ -101,22 +102,22 @@ export class CreateEdgeCollectionMigration {
     }
 }
 
-interface CreateArangoSearchViewMigrationConfig{
+interface CreateArangoSearchViewMigrationConfig {
 
     readonly viewName: string
     readonly properties: ArangoSearchViewPropertiesOptions
     readonly collectionSize?: number
 }
 
-interface UpdateArangoSearchViewMigrationConfig extends CreateArangoSearchViewMigrationConfig{
+interface UpdateArangoSearchViewMigrationConfig extends CreateArangoSearchViewMigrationConfig {
 
 }
 
-interface DropArangoSearchViewMigrationConfig{
+interface DropArangoSearchViewMigrationConfig {
     readonly viewName: string
 }
 
-export class DropArangoSearchViewMigration{
+export class DropArangoSearchViewMigration {
     readonly type: 'dropArangoSearchView' = 'dropArangoSearchView';
     readonly config: DropArangoSearchViewMigrationConfig;
 
@@ -132,7 +133,7 @@ export class DropArangoSearchViewMigration{
         return `dropArangoSearch/${this.viewName}`;
     }
 
-    get viewName(){
+    get viewName() {
         return this.config.viewName;
     }
 
@@ -141,7 +142,7 @@ export class DropArangoSearchViewMigration{
     }
 }
 
-export class UpdateArangoSearchViewMigration{
+export class UpdateArangoSearchViewMigration {
     readonly type: 'updateArangoSearchView' = 'updateArangoSearchView';
     readonly config: UpdateArangoSearchViewMigrationConfig;
 
@@ -157,7 +158,7 @@ export class UpdateArangoSearchViewMigration{
         return `update ArangoSearch/${this.viewName}`;
     }
 
-    get viewName(){
+    get viewName() {
         return this.config.viewName;
     }
 
@@ -166,7 +167,7 @@ export class UpdateArangoSearchViewMigration{
     }
 }
 
-export class CreateArangoSearchViewMigration{
+export class CreateArangoSearchViewMigration {
     readonly type: 'createArangoSearchView' = 'createArangoSearchView';
     readonly config: CreateArangoSearchViewMigrationConfig;
 

@@ -1,4 +1,4 @@
-import {expect} from 'chai';
+import { expect } from 'chai';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
@@ -8,7 +8,7 @@ import {
     UnaryOperationQueryNode,
     UnaryOperator
 } from '../../../src/query-tree';
-import {simplifyBooleans} from '../../../src/query-tree/utils';
+import { simplifyBooleans } from '../../../src/query-tree/utils';
 
 describe('query-tree-utils', () => {
     describe('simplifyBooleans', () => {
@@ -80,7 +80,7 @@ describe('query-tree-utils', () => {
                 var1 => or(not(TRUE), not(var1)),
                 var1 => or(not(FALSE), not(var1)),
                 var1 => or(not(var1), not(TRUE)),
-                var1 => or(not(var1), not(FALSE)),
+                var1 => or(not(var1), not(FALSE))
             ];
 
             for (const testCase of testCases) {
@@ -98,12 +98,12 @@ describe('query-tree-utils', () => {
 
         });
 
-        it("does simplify double-nested expression", () => {
-            const literalQueryNode = new LiteralQueryNode("");
+        it('does simplify double-nested expression', () => {
+            const literalQueryNode = new LiteralQueryNode('');
             const node = or(or(or(FALSE, FALSE), literalQueryNode), literalQueryNode);
             const simplified = simplifyBooleans(node);
             const expected = new BinaryOperationQueryNode(literalQueryNode, BinaryOperator.OR, literalQueryNode);
-            expect(simplified.equals(expected)).to.be.true
+            expect(simplified.equals(expected)).to.be.true;
         });
     });
 });

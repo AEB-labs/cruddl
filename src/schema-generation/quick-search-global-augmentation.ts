@@ -1,6 +1,6 @@
-import {QuickSearchFilterTypeGenerator} from "./quick-search-filter-input-types/generator";
-import {QueryNodeField, QueryNodeResolveInfo} from "./query-node-object-type";
-import {RootEntityType} from "../model/implementation";
+import { QuickSearchFilterTypeGenerator } from './quick-search-filter-input-types/generator';
+import { QueryNodeField, QueryNodeResolveInfo } from './query-node-object-type';
+import { RootEntityType } from '../model/implementation';
 import {
     AFTER_ARG,
     CURSOR_FIELD,
@@ -9,34 +9,34 @@ import {
     QUICK_SEARCH_EXPRESSION_ARG,
     QUICK_SEARCH_FILTER_ARG,
     SKIP_ARG
-} from "../schema/constants";
-import {QuickSearchQueryNode} from "../query-tree/quick-search";
-import {GraphQLEnumType, GraphQLInt, GraphQLList, GraphQLNonNull, GraphQLString} from "graphql";
+} from '../schema/constants';
+import { QuickSearchQueryNode } from '../query-tree/quick-search';
+import { GraphQLEnumType, GraphQLInt, GraphQLList, GraphQLNonNull, GraphQLString } from 'graphql';
 import {
     BinaryOperationQueryNode,
     BinaryOperator, ConstBoolQueryNode, LiteralQueryNode, OrderDirection, OrderSpecification,
     QueryNode, RuntimeErrorQueryNode,
     TransformListQueryNode,
     VariableQueryNode
-} from "../query-tree";
-import {and} from "./filter-input-types/constants";
-import {OrderByEnumValue} from "./order-by-enum-generator";
-import {chain} from "lodash";
-import memorize from "memorize-decorator";
-import {QS_QUERYNODE_ONLY_ERROR_MESSAGE} from "./quick-search-augmentation";
+} from '../query-tree';
+import { and } from './filter-input-types/constants';
+import { OrderByEnumValue } from './order-by-enum-generator';
+import { chain } from 'lodash';
+import memorize from 'memorize-decorator';
+import { QS_QUERYNODE_ONLY_ERROR_MESSAGE } from './quick-search-augmentation';
 
-export class QuickSearchGlobalAugmentation{
+export class QuickSearchGlobalAugmentation {
     constructor(private readonly quickSearchTypeGenerator: QuickSearchFilterTypeGenerator) {
 
     }
 
     augment(schemaField: QueryNodeField, itemTypes: ReadonlyArray<RootEntityType>): QueryNodeField {
-        const quickSearchFilterable = this.augmentGlobalQuickSearch(schemaField,itemTypes);
-        const paged = this.augmentGlobalPaged(quickSearchFilterable,itemTypes);
-        if(itemTypes.some(value => value.fields.some(value1 => value1.isSearchable))){
+        const quickSearchFilterable = this.augmentGlobalQuickSearch(schemaField, itemTypes);
+        const paged = this.augmentGlobalPaged(quickSearchFilterable, itemTypes);
+        if (itemTypes.some(value => value.fields.some(value1 => value1.isSearchable))) {
             const quickSearchable = this.augmentQuickSearchSearch(paged, itemTypes);
             return quickSearchable;
-        }else{
+        } else {
             return paged;
         }
 
@@ -59,20 +59,20 @@ export class QuickSearchGlobalAugmentation{
             },
             resolve: (sourceNode, args, info) => {
                 let parentNode = schemaField.resolve(sourceNode, args, info);
-                if(parentNode instanceof QuickSearchQueryNode){
+                if (parentNode instanceof QuickSearchQueryNode) {
                     return new QuickSearchQueryNode({
                         entity: parentNode.entity,
                         isGlobal: parentNode.isGlobal,
                         itemVariable: parentNode.itemVariable
                     }); // @MSF GLOBAL TODO: resolver - generate Global-Search-Filter
-                }else{
-                    throw new Error(QS_QUERYNODE_ONLY_ERROR_MESSAGE)
+                } else {
+                    throw new Error(QS_QUERYNODE_ONLY_ERROR_MESSAGE);
                 }
             }
         };
     }
 
-    private augmentGlobalPaged(schemaField: QueryNodeField, itemTypes: ReadonlyArray<RootEntityType>): QueryNodeField{
+    private augmentGlobalPaged(schemaField: QueryNodeField, itemTypes: ReadonlyArray<RootEntityType>): QueryNodeField {
         if (!itemTypes.every(value => value.isObjectType)) {
             return schemaField;
         }
@@ -101,7 +101,7 @@ export class QuickSearchGlobalAugmentation{
                 }
             },
             resolve: (sourceNode, args, info) => {
-                return this.getOrderByAndPaginationResolver(schemaField,sourceNode,args,info,orderByType)
+                return this.getOrderByAndPaginationResolver(schemaField, sourceNode, args, info, orderByType);
             }
         };
     }
@@ -117,23 +117,22 @@ export class QuickSearchGlobalAugmentation{
             },
             resolve: (sourceNode, args, info) => {
                 let parentNode = schemaField.resolve(sourceNode, args, info);
-                if(parentNode instanceof QuickSearchQueryNode){
+                if (parentNode instanceof QuickSearchQueryNode) {
                     return new QuickSearchQueryNode({
                         entity: parentNode.entity,
                         isGlobal: parentNode.isGlobal,
                         itemVariable: parentNode.itemVariable
                     }); // @MSF GLOBAL TODO: resolver - generate Global-Search-Search-Filter
-                }else{
-                    throw new Error(QS_QUERYNODE_ONLY_ERROR_MESSAGE) // @MSF OPT TODO: proper error
+                } else {
+                    throw new Error(QS_QUERYNODE_ONLY_ERROR_MESSAGE); // @MSF OPT TODO: proper error
                 }
             }
         };
     }
 
-    public getOrderByAndPaginationResolver(schemaField: QueryNodeField, sourceNode:QueryNode, args:{[p: string]: any}, info: QueryNodeResolveInfo, orderByType:SystemFieldOrderByEnumType) {
+    public getOrderByAndPaginationResolver(schemaField: QueryNodeField, sourceNode: QueryNode, args: { [p: string]: any }, info: QueryNodeResolveInfo, orderByType: SystemFieldOrderByEnumType) {
         let listNode = schemaField.resolve(sourceNode, args, info);
         let itemVariable = new VariableQueryNode(`qsGlobalResult`); // @MSF GLOBAL TODO: constant itemVariable Name
-
 
 
         // if we can, just extend a given TransformListNode so that other cruddl optimizations can operate
@@ -159,7 +158,7 @@ export class QuickSearchGlobalAugmentation{
 
         // we only require the absolute ordering for cursor-based pagination, which is detected via a cursor field or the "after" argument.
         const isAbsoluteOrderRequired = isCursorRequested || !!afterArg;
-        const orderBy = this.getOrderSpecification(args, orderByType, itemVariable, {isAbsoluteOrderRequired});
+        const orderBy = this.getOrderSpecification(args, orderByType, itemVariable, { isAbsoluteOrderRequired });
 
         if (orderBy.isUnordered() && maxCount == undefined && paginationFilter === ConstBoolQueryNode.TRUE) {
             return originalListNode;
@@ -258,7 +257,6 @@ export class QuickSearchGlobalAugmentation{
     }
 
 
-
 }
 
 export class SystemFieldOrderByEnumType {
@@ -267,7 +265,7 @@ export class SystemFieldOrderByEnumType {
     }
 
     get name() {
-        return "GlobalOrderBy";
+        return 'GlobalOrderBy';
         // @MSF GLOBAL TODO: constant
         // @MSF VAL TODO: check for collision
     }
@@ -292,7 +290,7 @@ export class SystemFieldOrderByEnumType {
             name: this.name,
             values: chain(this.values)
                 .keyBy(value => value.name)
-                .mapValues(value => ({value: value.name}))
+                .mapValues(value => ({ value: value.name }))
                 .value()
         });
     }

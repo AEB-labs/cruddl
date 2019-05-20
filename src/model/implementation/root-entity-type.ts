@@ -46,7 +46,7 @@ export class RootEntityType extends ObjectTypeBase {
         if (this.keyField) {
             const keyField = this.keyField;
             if (!indexConfigs.some(f => f.unique === true && f.fields.length == 1 && f.fields[0] === keyField.name)) {
-                indexConfigs.push({unique: true, fields: [keyField.name] });
+                indexConfigs.push({ unique: true, fields: [keyField.name] });
             }
         }
 
@@ -69,11 +69,11 @@ export class RootEntityType extends ObjectTypeBase {
     }
 
     @memorize()
-    get arangoSearchConfig():ArangoSearchIndexConfig{
+    get arangoSearchConfig(): ArangoSearchIndexConfig {
         return this.input.arangoSearchIndex || {
             isGlobalIndexed: false,
-            isIndexed: false,
-        }
+            isIndexed: false
+        };
     }
 
     @memorize()

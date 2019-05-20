@@ -1,13 +1,13 @@
-import {QueryNode} from "./base";
-import {RootEntityType} from "../model/implementation";
-import {ConstBoolQueryNode, LiteralQueryNode} from "./literals";
-import {VariableQueryNode} from "./variables";
-import {decapitalize, flatMap, indent} from "../utils/utils";
-import {BinaryOperator, TernaryOperationQueryNode, TernaryOperator} from "./operators";
-import {and} from "../schema-generation/quick-search-filter-input-types/constants";
-import {simplifyBooleans} from "./utils";
+import { QueryNode } from './base';
+import { RootEntityType } from '../model/implementation';
+import { ConstBoolQueryNode, LiteralQueryNode } from './literals';
+import { VariableQueryNode } from './variables';
+import { decapitalize, flatMap, indent } from '../utils/utils';
+import { BinaryOperator, TernaryOperationQueryNode, TernaryOperator } from './operators';
+import { and } from '../schema-generation/quick-search-filter-input-types/constants';
+import { simplifyBooleans } from './utils';
 
-export class QuickSearchQueryNode extends QueryNode{
+export class QuickSearchQueryNode extends QueryNode {
 
     public readonly qsFilterNode: QueryNode;
     public readonly isGlobal: boolean;
@@ -29,9 +29,9 @@ export class QuickSearchQueryNode extends QueryNode{
 
     describe(): string {
         return this.isGlobal ? `Use GlobalQuickSearch` : `Use QuickSearch for ${this.entity!.name}`
-            +` with ${this.itemVariable.describe()} => \n` + indent(
-            (this.qsFilterNode.equals(ConstBoolQueryNode.TRUE) ? '' : `where ${this.qsFilterNode.describe()}\n`)
-        );
+            + ` with ${this.itemVariable.describe()} => \n` + indent(
+                (this.qsFilterNode.equals(ConstBoolQueryNode.TRUE) ? '' : `where ${this.qsFilterNode.describe()}\n`)
+            );
     }
 
 }

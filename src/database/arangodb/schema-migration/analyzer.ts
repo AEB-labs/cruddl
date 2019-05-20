@@ -20,8 +20,8 @@ import {
     calculateRequiredArangoSearchViewUpdateOperations,
     calculateRequiredGlobalViewOperation,
     getRequiredViewsFromModel
-} from "./arango-search-helpers";
-import {QUICK_SEARCH_GLOBAL_VIEW_NAME} from "../../../schema/constants";
+} from './arango-search-helpers';
+import { QUICK_SEARCH_GLOBAL_VIEW_NAME } from '../../../schema/constants';
 
 export class SchemaAnalyzer {
     private readonly db: Database;
@@ -156,16 +156,16 @@ export class SchemaAnalyzer {
     async getArangoSearchMigrations(model: Model): Promise<ReadonlyArray<CreateArangoSearchViewMigration | DropArangoSearchViewMigration | UpdateArangoSearchViewMigration>> {
         const requiredViews = getRequiredViewsFromModel(model);
         const views = (await this.db.listViews()).map(value => this.db.arangoSearchView(value.name));
-        const viewsToCreate = await calculateRequiredArangoSearchViewCreateOperations(views, requiredViews,this.db);
+        const viewsToCreate = await calculateRequiredArangoSearchViewCreateOperations(views, requiredViews, this.db);
         const viewsToDrop = calculateRequiredArangoSearchViewDropOperations(views, requiredViews);
-        const viewsToUpdate = await calculateRequiredArangoSearchViewUpdateOperations(views, requiredViews,this.db);
+        const viewsToUpdate = await calculateRequiredArangoSearchViewUpdateOperations(views, requiredViews, this.db);
         let operations: Array<CreateArangoSearchViewMigration | DropArangoSearchViewMigration | UpdateArangoSearchViewMigration> = [];
         operations = operations.concat(viewsToCreate);
-        operations = operations.concat(viewsToDrop)
-        operations = operations.concat(viewsToUpdate)
+        operations = operations.concat(viewsToDrop);
+        operations = operations.concat(viewsToUpdate);
 
-        const globalViewChange = await calculateRequiredGlobalViewOperation(model.rootEntityTypes,this.db.arangoSearchView(QUICK_SEARCH_GLOBAL_VIEW_NAME),this.db);
-        if(globalViewChange){
+        const globalViewChange = await calculateRequiredGlobalViewOperation(model.rootEntityTypes, this.db.arangoSearchView(QUICK_SEARCH_GLOBAL_VIEW_NAME), this.db);
+        if (globalViewChange) {
             operations.push(globalViewChange);
         }
 
