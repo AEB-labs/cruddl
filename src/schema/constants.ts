@@ -1,3 +1,5 @@
+import { QUICK_SEARCH_VIEW_PREFIX } from '../database/arangodb/schema-migration/arango-search-helpers';
+
 export const WILDCARD_CHARACTER = '*';
 
 export const ROOT_ENTITY_DIRECTIVE = 'rootEntity';
@@ -19,10 +21,10 @@ export const QUICK_SEARCH_SEARCHABLE_DIRECTIVE = 'searchable';
 
 export const QUICK_SEARCH_INDEXED_GLOBAL_ARGUMENT = 'globalQuickSearch';
 export const QUICK_SEARCH_INDEXED_ARGUMENT = 'quickSearchIndex';
-export const QUICK_SEARCH_INDEXED_LANGUAGE_ARG = 'language';
+export const QUICK_SEARCH_INDEXED_LANGUAGE_ARG = 'quickSearchLanguage';
 export const QUICK_SEARCH_DEFAULT_LANGUAGE_ARG = 'quickSearchLanguage';
 // @MSF TODO error on viewname v_global
-export const QUICK_SEARCH_GLOBAL_VIEW_NAME = 'v_global';
+export const QUICK_SEARCH_GLOBAL_VIEW_NAME = QUICK_SEARCH_VIEW_PREFIX + 'global';
 export const QUICK_SEARCH_FORBIDDEN_VIEW_NAMES = [QUICK_SEARCH_GLOBAL_VIEW_NAME];
 
 

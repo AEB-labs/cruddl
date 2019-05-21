@@ -1,5 +1,6 @@
-import { BinaryOperator, QueryNode, TernaryOperator } from '../../query-tree';
-import { binaryNotOp, binaryOp, NUMERIC_FILTER_FIELDS, ternaryNotOp, ternaryOp } from '../filter-input-types/constants';
+import { QuickSearchLanguage } from '../../model/config';
+import { BinaryOperator, QueryNode, BinaryOperatorWithLanguage } from '../../query-tree';
+import { binaryNotOp, binaryOp, NUMERIC_FILTER_FIELDS, binaryNotOpWithLanguage, binaryOpWithLanguage } from '../filter-input-types/constants';
 import {
     INPUT_FIELD_CONTAINS_ALL_PREFIXES,
     INPUT_FIELD_CONTAINS_ALL_WORDS,
@@ -32,7 +33,7 @@ export const SOME_PREFIX = 'some';
 export const and = binaryOp(BinaryOperator.AND);
 export const or = binaryOp(BinaryOperator.OR);
 
-export const QUICK_SEARCH_FILTER_OPERATORS: { [suffix: string]: (fieldNode: QueryNode, valueNode: QueryNode, paramNode?: QueryNode) => QueryNode } = {
+export const QUICK_SEARCH_FILTER_OPERATORS: { [suffix: string]: (fieldNode: QueryNode, valueNode: QueryNode, quickSearchLanguage?: QuickSearchLanguage) => QueryNode } = {
     [INPUT_FIELD_EQUAL]: binaryOp(BinaryOperator.EQUAL),
     [INPUT_FIELD_NOT]: binaryOp(BinaryOperator.UNEQUAL),
     [INPUT_FIELD_LT]: binaryOp(BinaryOperator.LESS_THAN),
@@ -41,8 +42,8 @@ export const QUICK_SEARCH_FILTER_OPERATORS: { [suffix: string]: (fieldNode: Quer
     [INPUT_FIELD_GTE]: binaryOp(BinaryOperator.GREATER_THAN_OR_EQUAL),
     [INPUT_FIELD_IN]: binaryOp(BinaryOperator.IN),
     [INPUT_FIELD_NOT_IN]: binaryNotOp(BinaryOperator.IN),
-    [INPUT_FIELD_STARTS_WITH]: ternaryOp(TernaryOperator.QUICKSEARCH_STARTS_WITH),
-    [INPUT_FIELD_NOT_STARTS_WITH]: ternaryNotOp(TernaryOperator.QUICKSEARCH_STARTS_WITH),
+    [INPUT_FIELD_STARTS_WITH]: binaryOpWithLanguage(BinaryOperatorWithLanguage.QUICKSEARCH_STARTS_WITH),
+    [INPUT_FIELD_NOT_STARTS_WITH]: binaryNotOpWithLanguage(BinaryOperatorWithLanguage.QUICKSEARCH_STARTS_WITH),
     [INPUT_FIELD_ENDS_WITH]: binaryOp(BinaryOperator.ENDS_WITH),
     [INPUT_FIELD_NOT_ENDS_WITH]: binaryNotOp(BinaryOperator.ENDS_WITH)
 

@@ -1,7 +1,7 @@
 import { getNamedType, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
 import * as pluralize from 'pluralize';
 import { isArray } from 'util';
-import { Field, TypeKind } from '../../model';
+import { Field, QuickSearchLanguage, TypeKind } from '../../model';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
@@ -48,10 +48,10 @@ export class ScalarOrEnumFieldFilterField implements FilterField {
 
     constructor(
         public readonly field: Field,
-        public readonly resolveOperator: (fieldNode: QueryNode, valueNode: QueryNode, paramNode?: QueryNode) => QueryNode,
+        public readonly resolveOperator: (fieldNode: QueryNode, valueNode: QueryNode, quickSearchLanguage?: QuickSearchLanguage) => QueryNode,
         public readonly operatorPrefix: string | undefined,
         baseInputType: GraphQLInputType,
-        public readonly paramNode?: QueryNode
+        public readonly quickSearchLanguage?: QuickSearchLanguage
     ) {
         this.inputType = OPERATORS_WITH_LIST_OPERAND.includes(operatorPrefix || '') ? new GraphQLList(new GraphQLNonNull(baseInputType)) : baseInputType;
         this.description = getDescription({ operator: operatorPrefix, fieldName: field.name, typeName: field.type.name });
@@ -70,7 +70,7 @@ export class ScalarOrEnumFieldFilterField implements FilterField {
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
         const valueNode = createFieldNode(this.field, sourceNode);
         const literalNode = new LiteralQueryNode(filterValue);
-        return this.resolveOperator(valueNode, literalNode, this.paramNode);
+        return this.resolveOperator(valueNode, literalNode, this.quickSearchLanguage);
     }
 
     getQuickSearchFilterNode(sourceNode: QueryNode, expression: string): QueryNode {
@@ -93,12 +93,12 @@ export class ScalarOrEnumFilterField implements FilterField {
     public readonly description: string | undefined;
 
     constructor(
-        public readonly resolveOperator: (fieldNode: QueryNode, valueNode: QueryNode, paramNode?: QueryNode) => QueryNode,
+        public readonly resolveOperator: (fieldNode: QueryNode, valueNode: QueryNode, quickSearchLanguage?: QuickSearchLanguage) => QueryNode,
         public readonly operatorName: string,
         baseInputType: GraphQLInputType,
         private readonly field?: Field, // only filled for quickSearch
         private readonly path?: Field[], // only filled for quickSearch
-        public readonly paramNode?: QueryNode
+        public readonly quickSearchLanguage?: QuickSearchLanguage
     ) {
         this.inputType = OPERATORS_WITH_LIST_OPERAND.includes(operatorName) ? new GraphQLList(new GraphQLNonNull(baseInputType)) : baseInputType;
         this.description = getDescription({ operator: operatorName, typeName: getNamedType(baseInputType).name });
@@ -112,10 +112,10 @@ export class ScalarOrEnumFilterField implements FilterField {
         if (this.field) {
             const valueNode = new FieldQueryNode(sourceNode, this.field, this.path);
             const literalNode = new LiteralQueryNode(filterValue);
-            return this.resolveOperator(valueNode, literalNode,this.paramNode);
+            return this.resolveOperator(valueNode, literalNode,this.quickSearchLanguage);
         } else {
             const literalNode = new LiteralQueryNode(filterValue);
-            return this.resolveOperator(sourceNode, literalNode, this.paramNode);
+            return this.resolveOperator(sourceNode, literalNode, this.quickSearchLanguage);
         }
 
     }

@@ -23,7 +23,7 @@ import { and } from './filter-input-types/constants';
 import { OrderByEnumValue } from './order-by-enum-generator';
 import { chain } from 'lodash';
 import memorize from 'memorize-decorator';
-import { QS_QUERYNODE_ONLY_ERROR_MESSAGE } from './quick-search-augmentation';
+import { QS_QUERYNODE_ONLY_ERROR_MESSAGE } from './quick-search-generator';
 
 export class QuickSearchGlobalAugmentation {
     constructor(private readonly quickSearchTypeGenerator: QuickSearchFilterTypeGenerator) {

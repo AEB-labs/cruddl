@@ -3,7 +3,7 @@ import { RootEntityType } from '../model/implementation';
 import { ConstBoolQueryNode, LiteralQueryNode } from './literals';
 import { VariableQueryNode } from './variables';
 import { decapitalize, flatMap, indent } from '../utils/utils';
-import { BinaryOperator, TernaryOperationQueryNode, TernaryOperator } from './operators';
+import { BinaryOperator, OperatorWithLanguageQueryNode, BinaryOperatorWithLanguage } from './operators';
 import { and } from '../schema-generation/quick-search-filter-input-types/constants';
 import { simplifyBooleans } from './utils';
 

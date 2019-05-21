@@ -1,9 +1,10 @@
 import { GraphQLBoolean, GraphQLFloat, GraphQLID, GraphQLInt, GraphQLString } from 'graphql';
+import { QuickSearchLanguage } from '../../model/config';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
-    QueryNode, TernaryOperationQueryNode,
-    TernaryOperator,
+    QueryNode, OperatorWithLanguageQueryNode,
+    BinaryOperatorWithLanguage,
     UnaryOperationQueryNode,
     UnaryOperator
 } from '../../query-tree';
@@ -115,12 +116,12 @@ export function binaryNotOp(op: BinaryOperator) {
     return (lhs: QueryNode, rhs: QueryNode) => not(new BinaryOperationQueryNode(lhs, op, rhs));
 }
 
-export function ternaryOp(op: TernaryOperator) {
-    return (lhs: QueryNode, rhs: QueryNode, param?: QueryNode) => {
-        return new TernaryOperationQueryNode(lhs, op, rhs, param);
+export function binaryOpWithLanguage(op: BinaryOperatorWithLanguage) {
+    return (lhs: QueryNode, rhs: QueryNode, quickSearchLanguage?: QuickSearchLanguage) => {
+        return new OperatorWithLanguageQueryNode(lhs, op, rhs, quickSearchLanguage);
     };
 }
 
-export function ternaryNotOp(op: TernaryOperator) {
-    return (lhs: QueryNode, rhs: QueryNode, param?: QueryNode) => not(new TernaryOperationQueryNode(lhs, op, rhs, param));
+export function binaryNotOpWithLanguage(op: BinaryOperatorWithLanguage) {
+    return (lhs: QueryNode, rhs: QueryNode, quickSearchLanguage?: QuickSearchLanguage) => not(new OperatorWithLanguageQueryNode(lhs, op, rhs, quickSearchLanguage));
 }

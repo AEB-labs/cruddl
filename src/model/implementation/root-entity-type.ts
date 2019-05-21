@@ -226,14 +226,23 @@ const systemFieldInputs: ReadonlyArray<FieldConfig> = [
     {
         name: 'id',
         typeName: 'ID',
-        description: 'An auto-generated string that identifies this root entity uniquely among others of the same type'
+        description: 'An auto-generated string that identifies this root entity uniquely among others of the same type',
+        isQuickSearchIndexed: true,
+        isQuickSearchFulltextIndexed: false,
+        isSearchable: false
     }, {
         name: 'createdAt',
         typeName: 'DateTime',
-        description: 'The instant this object has been created'
+        description: 'The instant this object has been created',
+        isQuickSearchIndexed: true,
+        isQuickSearchFulltextIndexed: false,
+        isSearchable: false
     }, {
         name: 'updatedAt',
         typeName: 'DateTime',
-        description: 'The instant this object has been updated the last time (not including relation updates)'
+        description: 'The instant this object has been updated the last time (not including relation updates)',
+        isQuickSearchIndexed: true,
+        isQuickSearchFulltextIndexed: false,
+        isSearchable: false
     }
 ];

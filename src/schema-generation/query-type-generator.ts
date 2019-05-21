@@ -11,7 +11,7 @@ import { MetaTypeGenerator } from './meta-type-generator';
 import { OutputTypeGenerator } from './output-type-generator';
 import { FieldContext, QueryNodeField, QueryNodeListType, QueryNodeNonNullType, QueryNodeObjectType } from './query-node-object-type';
 import { getArgumentsForUniqueFields, getEntitiesByUniqueFieldQuery } from './utils/entities-by-unique-field';
-import { QuickSearchAugmentation } from './quick-search-augmentation';
+import { QuickSearchGenerator } from './quick-search-generator';
 import { GraphQLUnionType } from 'graphql';
 import { QuickSearchQueryNode } from '../query-tree/quick-search';
 import { QuickSearchGlobalAugmentation } from './quick-search-global-augmentation';
@@ -24,7 +24,7 @@ export class QueryTypeGenerator {
         private readonly filterAugmentation: FilterAugmentation,
         private readonly metaFirstAugmentation: MetaFirstAugmentation,
         private readonly metaTypeGenerator: MetaTypeGenerator,
-        private readonly quickSearchAugmentation: QuickSearchAugmentation,
+        private readonly quickSearchGenerator: QuickSearchGenerator,
         private readonly quickSearchGlobalAugmentation: QuickSearchGlobalAugmentation
     ) {
 
@@ -161,29 +161,11 @@ export class QueryTypeGenerator {
     }
 
     private getQuickSearchEntitiesField(rootEntityType: RootEntityType): QueryNodeField {
-        //@MSF TODO: put this in the generator instead
-        const fieldConfig = ({
-            name: getQuickSearchEntitiesFieldName(rootEntityType.name),
-            type: new QueryNodeListType(new QueryNodeNonNullType(this.outputTypeGenerator.generate(rootEntityType))),
-            description: `Searches for ${rootEntityType.pluralName} using QuickSearch.`,
-            resolve: () => new QuickSearchQueryNode({ rootEntityType: rootEntityType })
-        });
-
-        return this.listAugmentation.augment(this.quickSearchAugmentation.augment(fieldConfig, rootEntityType), rootEntityType);
+        return this.listAugmentation.augment(this.quickSearchGenerator.generate(rootEntityType), rootEntityType);
     }
 
     private getQuickSearchEntitiesFieldMeta(rootEntityType: RootEntityType): QueryNodeField {
         const metaType = this.metaTypeGenerator.generate();
-        const fieldConfig = ({
-            name: getMetaFieldName(getQuickSearchEntitiesFieldName(rootEntityType.name)),
-            type: new QueryNodeNonNullType(metaType),
-            description: `Searches for ${rootEntityType.pluralName} using QuickSearch.`,
-            // meta fields should never be null. Also, this is crucial for performance. Without it, we would introduce
-            // an unnecessary variable with the collection contents (which is slow) and we would to an equality check of
-            // a collection against NULL which is deadly (v8 evaluation)
-            skipNullCheck: true,
-            resolve: () => new QuickSearchQueryNode({ rootEntityType: rootEntityType })
-        });
-        return this.filterAugmentation.augment(this.quickSearchAugmentation.augment(fieldConfig, rootEntityType), rootEntityType);
+        return this.filterAugmentation.augment(this.quickSearchGenerator.generateMeta(rootEntityType, metaType), rootEntityType);
     }
 }

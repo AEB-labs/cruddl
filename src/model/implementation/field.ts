@@ -449,7 +449,7 @@ export class Field implements ModelComponent {
     }
 
     get isQuickSearchIndexed(): boolean{
-        return !!this.input.isQuickSearchIndexed || this.isSystemField
+        return !!this.input.isQuickSearchIndexed
     }
 
     get isQuickSearchFulltextIndexed(): boolean{

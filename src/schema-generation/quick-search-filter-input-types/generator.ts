@@ -1,3 +1,4 @@
+import { QuickSearchLanguage } from '../../model/config';
 import { EnumType, Field, ObjectType, RootEntityType, ScalarType, Type } from '../../model/implementation';
 import { AnyValue, flatMap, objectEntries } from '../../utils/utils';
 import memorize from 'memorize-decorator';
@@ -12,7 +13,7 @@ import {
     ConstBoolQueryNode, LiteralQueryNode,
     NullQueryNode,
     OrderDirection,
-    QueryNode, TernaryOperationQueryNode, TernaryOperator, TextAnalyzerQueryNode
+    QueryNode, OperatorWithLanguageQueryNode, BinaryOperatorWithLanguage
 } from '../../query-tree';
 import {
     AndFilterField,
@@ -30,7 +31,7 @@ import {
     QUICK_SEARCH_FILTER_OPERATORS, SOME_PREFIX,
     STRING_TEXT_ANALYZER_FILTER_FIELDS
 } from './constants';
-import { ENUM_FILTER_FIELDS, FILTER_OPERATORS, not, ternaryNotOp, ternaryOp } from '../filter-input-types/constants';
+import { ENUM_FILTER_FIELDS, FILTER_OPERATORS, not, binaryNotOpWithLanguage, binaryOpWithLanguage } from '../filter-input-types/constants';
 import {
     INPUT_FIELD_CONTAINS_ALL_PREFIXES,
     INPUT_FIELD_CONTAINS_ALL_WORDS,
@@ -175,55 +176,54 @@ export class QuickSearchFilterTypeGenerator {
         }
 
         if (field.language && field.isQuickSearchFulltextIndexed) {
-            const paramNode = new TextAnalyzerQueryNode(field.language);
             scalarFields = scalarFields.concat(
-                STRING_TEXT_ANALYZER_FILTER_FIELDS.map(name => new ScalarOrEnumFieldFilterField(field, this.getComplexFilterOperatorByName(name), name, inputType, paramNode))
+                STRING_TEXT_ANALYZER_FILTER_FIELDS.map(name => new ScalarOrEnumFieldFilterField(field, this.getComplexFilterOperatorByName(name), name, inputType, field.language))
             );
         }
         return scalarFields;
     }
 
-    private getComplexFilterOperatorByName(name: string): (fieldNode: QueryNode, valueNode: QueryNode, paramNode?: QueryNode) => QueryNode {
+    private getComplexFilterOperatorByName(name: string): (fieldNode: QueryNode, valueNode: QueryNode, quickSearchLanguage?: QuickSearchLanguage) => QueryNode {
         switch (name) {
             case INPUT_FIELD_CONTAINS_ANY_WORD:
-                return ternaryOp(TernaryOperator.QUICKSEARCH_CONTAINS_ANY_WORD);
+                return binaryOpWithLanguage(BinaryOperatorWithLanguage.QUICKSEARCH_CONTAINS_ANY_WORD);
             case INPUT_FIELD_NOT_CONTAINS_ANY_WORD:
-                return ternaryNotOp(TernaryOperator.QUICKSEARCH_CONTAINS_ANY_WORD);
+                return binaryNotOpWithLanguage(BinaryOperatorWithLanguage.QUICKSEARCH_CONTAINS_ANY_WORD);
             case INPUT_FIELD_CONTAINS_ALL_WORDS:
-                return (fieldNode: QueryNode, valueNode: QueryNode, paramNode?: QueryNode) =>
-                    this.generateComplexFilterOperator(TernaryOperator.QUICKSEARCH_CONTAINS_ANY_WORD, BinaryOperator.AND, fieldNode, valueNode, paramNode);
+                return (fieldNode: QueryNode, valueNode: QueryNode, quickSearchLanguage?: QuickSearchLanguage) =>
+                    this.generateComplexFilterOperator(BinaryOperatorWithLanguage.QUICKSEARCH_CONTAINS_ANY_WORD, BinaryOperator.AND, fieldNode, valueNode, quickSearchLanguage);
             case INPUT_FIELD_NOT_CONTAINS_ALL_WORDS:
-                return (fieldNode: QueryNode, valueNode: QueryNode, paramNode?: QueryNode) =>
-                    not(this.generateComplexFilterOperator(TernaryOperator.QUICKSEARCH_CONTAINS_ANY_WORD, BinaryOperator.AND, fieldNode, valueNode, paramNode));
+                return (fieldNode: QueryNode, valueNode: QueryNode, quickSearchLanguage?: QuickSearchLanguage) =>
+                    not(this.generateComplexFilterOperator(BinaryOperatorWithLanguage.QUICKSEARCH_CONTAINS_ANY_WORD, BinaryOperator.AND, fieldNode, valueNode, quickSearchLanguage));
             case INPUT_FIELD_CONTAINS_ANY_PREFIX:
-                return (fieldNode: QueryNode, valueNode: QueryNode, paramNode?: QueryNode) =>
-                    this.generateComplexFilterOperator(TernaryOperator.QUICKSEARCH_CONTAINS_PREFIX, BinaryOperator.OR, fieldNode, valueNode, paramNode);
+                return (fieldNode: QueryNode, valueNode: QueryNode, quickSearchLanguage?: QuickSearchLanguage) =>
+                    this.generateComplexFilterOperator(BinaryOperatorWithLanguage.QUICKSEARCH_CONTAINS_PREFIX, BinaryOperator.OR, fieldNode, valueNode, quickSearchLanguage);
             case INPUT_FIELD_NOT_CONTAINS_ANY_PREFIX:
-                return (fieldNode: QueryNode, valueNode: QueryNode, paramNode?: QueryNode) =>
-                    not(this.generateComplexFilterOperator(TernaryOperator.QUICKSEARCH_CONTAINS_PREFIX, BinaryOperator.OR, fieldNode, valueNode, paramNode));
+                return (fieldNode: QueryNode, valueNode: QueryNode, quickSearchLanguage?: QuickSearchLanguage) =>
+                    not(this.generateComplexFilterOperator(BinaryOperatorWithLanguage.QUICKSEARCH_CONTAINS_PREFIX, BinaryOperator.OR, fieldNode, valueNode, quickSearchLanguage));
             case INPUT_FIELD_CONTAINS_ALL_PREFIXES:
-                return (fieldNode: QueryNode, valueNode: QueryNode, paramNode?: QueryNode) =>
-                    this.generateComplexFilterOperator(TernaryOperator.QUICKSEARCH_CONTAINS_PREFIX, BinaryOperator.AND, fieldNode, valueNode, paramNode);
+                return (fieldNode: QueryNode, valueNode: QueryNode, quickSearchLanguage?: QuickSearchLanguage) =>
+                    this.generateComplexFilterOperator(BinaryOperatorWithLanguage.QUICKSEARCH_CONTAINS_PREFIX, BinaryOperator.AND, fieldNode, valueNode, quickSearchLanguage);
             case INPUT_FIELD_NOT_CONTAINS_ALL_PREFIXES:
-                return (fieldNode: QueryNode, valueNode: QueryNode, paramNode?: QueryNode) =>
-                    not(this.generateComplexFilterOperator(TernaryOperator.QUICKSEARCH_CONTAINS_PREFIX, BinaryOperator.AND, fieldNode, valueNode, paramNode));
+                return (fieldNode: QueryNode, valueNode: QueryNode, quickSearchLanguage?: QuickSearchLanguage) =>
+                    not(this.generateComplexFilterOperator(BinaryOperatorWithLanguage.QUICKSEARCH_CONTAINS_PREFIX, BinaryOperator.AND, fieldNode, valueNode, quickSearchLanguage));
             case INPUT_FIELD_CONTAINS_PHRASE:
-                return ternaryOp(TernaryOperator.QUICKSEARCH_CONTAINS_PHRASE);
+                return binaryOpWithLanguage(BinaryOperatorWithLanguage.QUICKSEARCH_CONTAINS_PHRASE);
             case INPUT_FIELD_NOT_CONTAINS_PHRASE:
-                return ternaryNotOp(TernaryOperator.QUICKSEARCH_CONTAINS_PHRASE);
+                return binaryNotOpWithLanguage(BinaryOperatorWithLanguage.QUICKSEARCH_CONTAINS_PHRASE);
             default:
                 throw new Error(`Complex Filter for '${name}' is not defined.`);
         }
     }
 
-    private generateComplexFilterOperator(comparisonOperator: TernaryOperator, logicalOperator: BinaryOperator, fieldNode: QueryNode, valueNode: QueryNode, paramNode?: QueryNode) {
+    private generateComplexFilterOperator(comparisonOperator: BinaryOperatorWithLanguage, logicalOperator: BinaryOperator, fieldNode: QueryNode, valueNode: QueryNode, quickSearchLanguage?: QuickSearchLanguage) {
         if (!(valueNode instanceof LiteralQueryNode) || (typeof valueNode.value !== 'string')) {
             throw new Error('QuickSearchComplexFilters requires a LiteralQueryNode with a string-value, as valueNode');
         }
         const tokens = this.tokenize(valueNode.value);
         const neutralOperand = logicalOperator === BinaryOperator.AND ? ConstBoolQueryNode.TRUE : ConstBoolQueryNode.FALSE;
         return simplifyBooleans(tokens
-            .map(value => new TernaryOperationQueryNode(fieldNode, comparisonOperator, new LiteralQueryNode(value), paramNode))
+            .map(value => new OperatorWithLanguageQueryNode(fieldNode, comparisonOperator, new LiteralQueryNode(value), quickSearchLanguage))
             .reduce(and, neutralOperand));
     }
 
@@ -237,12 +237,12 @@ export class QuickSearchFilterTypeGenerator {
         if (field.isList || !field.type.isEnumType) {
             throw new Error(`Expected "${field.name}" to be a non-list enum`);
         }
-        let paramNode: QueryNode | undefined = undefined;
-        if (field.language && field.isQuickSearchFulltextIndexed) {
-            paramNode = new TextAnalyzerQueryNode(field.language);
-        }
         return ENUM_FILTER_FIELDS.map(name =>
-            new ScalarOrEnumFieldFilterField(field, FILTER_OPERATORS[name], name === INPUT_FIELD_EQUAL ? undefined : name, graphQLEnumType, paramNode));
+            new ScalarOrEnumFieldFilterField(
+                field,
+                FILTER_OPERATORS[name],
+                name === INPUT_FIELD_EQUAL ? undefined : name, graphQLEnumType,
+                field.isQuickSearchIndexed ? field.language : undefined));
     }
 
     @memorize()
@@ -275,8 +275,14 @@ export class QuickSearchFilterTypeGenerator {
         }
 
         if (field.language && field.isQuickSearchFulltextIndexed) {
-            const paramNode = new TextAnalyzerQueryNode(field.language);
-            scalarFields = scalarFields.concat(STRING_TEXT_ANALYZER_FILTER_FIELDS.map(name => new ScalarOrEnumFilterField(this.getComplexFilterOperatorByName(name), prefix.concat([name]).join('_'), type.graphQLScalarType, field, path, paramNode)));
+            scalarFields = scalarFields.concat(STRING_TEXT_ANALYZER_FILTER_FIELDS.map(name =>
+                new ScalarOrEnumFilterField(
+                    this.getComplexFilterOperatorByName(name),
+                    prefix.concat([name]).join('_'),
+                    type.graphQLScalarType,
+                    field,
+                    path,
+                    field.language)));
         }
 
         return scalarFields;

@@ -2,14 +2,11 @@
 # @MSF OPT TODO: check where @memorize is viable
 # @MSF OPT TODO: refactor method names
 # @MSF OPT TODO: code comments
-# @MSF TODO: Rework definition:
-#- Nicht an Angabe der Sprache festmachen ob es Volltext-indiziert ist
-#- Default Sprache
-#- "Getrennte Schalter" um zu entscheiden mit welchem analyzer Felder indiziert werden. Auch Text-Analyzer ohne Identity-Analyzer soll möglich sein
 # @MSF TODO: find better name than quickSearch for GQL API
 # @MSF TODO: ADB Support Ticket for AND/OR stuff
 # @MSF TODO: check out store values
 # @MSF TODO: new system for lists (skills:{some_description:})
+# @MSF TODO: check out 3.5 alpha
 "A superhero"
 type Hero @rootEntity(quickSearchIndex:true, quickSearchLanguage: DE) {
     "The hero's screen name"

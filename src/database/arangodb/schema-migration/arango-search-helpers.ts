@@ -19,7 +19,8 @@ import { FieldConfig, QuickSearchLanguage } from '../../../model/config';
 import * as _ from 'lodash';
 import { Database } from 'arangojs';
 
-const IDENTITY_ANALYZER = 'identity';
+export const IDENTITY_ANALYZER = 'identity';
+export const QUICK_SEARCH_VIEW_PREFIX = 'qsView_';
 
 export interface ArangoSearchDefinition {
     readonly viewName: string;
@@ -45,7 +46,7 @@ export function getRequiredViewsFromModel(model: Model): ReadonlyArray<ArangoSea
 }
 
 export function getViewNameForRootEntity(rootEntity: RootEntityType) {
-    return 'qsView_' + getCollectionNameForRootEntity(rootEntity);
+    return QUICK_SEARCH_VIEW_PREFIX + getCollectionNameForRootEntity(rootEntity);
 }
 
 function getViewsForRootEntity(rootEntity: RootEntityType): ReadonlyArray<ArangoSearchDefinition> {
@@ -80,14 +81,13 @@ export async function calculateRequiredArangoSearchViewCreateOperations(existing
 
 export function calculateRequiredArangoSearchViewDropOperations(views: ArangoSearchView[], definitions: ReadonlyArray<ArangoSearchDefinition>): ReadonlyArray<DropArangoSearchViewMigration> {
     const viewsToDrop = views
-        .filter(value => !definitions.some(value1 => value1.viewName === value.name) && value.name != QUICK_SEARCH_GLOBAL_VIEW_NAME);
+        .filter(value => !definitions.some(value1 => value1.viewName === value.name) && value.name != QUICK_SEARCH_GLOBAL_VIEW_NAME && value.name.startsWith(QUICK_SEARCH_VIEW_PREFIX));
     return viewsToDrop.map(value => new DropArangoSearchViewMigration({ viewName: value.name }));
-    // @MSF TODO: only drop views with the QS prefix
 }
 
 
-function getAnalyzerFromQuickSearchLanguage(language: QuickSearchLanguage): string {
-    return 'text_' + language.toLowerCase();
+function getAnalyzerFromQuickSearchLanguage(quickSearchLanguage: QuickSearchLanguage): string {
+    return 'text_' + quickSearchLanguage.toLowerCase();
 }
 
 function getGlobalSearchViewProperties(globalIndexedEntityTypes: RootEntityType[]): ArangoSearchViewPropertiesOptions {

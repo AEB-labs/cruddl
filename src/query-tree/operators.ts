@@ -136,12 +136,11 @@ export enum BinaryOperator {
     PREPEND = 'PREPEND',
 }
 
-// @MSF TODO: name OperatorWithLanguage instead
 /**
  * A node that performs an operation with two operands and a parameter
  */
-export class TernaryOperationQueryNode extends QueryNode {
-    constructor(public readonly lhs: QueryNode, public readonly operator: TernaryOperator, public readonly rhs: QueryNode, public readonly param?: QueryNode) {
+export class OperatorWithLanguageQueryNode extends QueryNode {
+    constructor(public readonly lhs: QueryNode, public readonly operator: BinaryOperatorWithLanguage, public readonly rhs: QueryNode, public readonly quickSearchLanguage?: QuickSearchLanguage) {
         super();
     }
 
@@ -149,15 +148,15 @@ export class TernaryOperationQueryNode extends QueryNode {
         return `(${this.lhs.describe()} ${this.describeOperator(this.operator)} ${this.rhs.describe()}${this.getParamString()})`;
     }
 
-    private describeOperator(op: TernaryOperator) {
+    private describeOperator(op: BinaryOperatorWithLanguage) {
         switch (op) {
-            case TernaryOperator.QUICKSEARCH_CONTAINS_ANY_WORD:
+            case BinaryOperatorWithLanguage.QUICKSEARCH_CONTAINS_ANY_WORD:
                 return 'IN TOKENS';
-            case TernaryOperator.QUICKSEARCH_STARTS_WITH:
+            case BinaryOperatorWithLanguage.QUICKSEARCH_STARTS_WITH:
                 return 'STARTS_WITH';
-            case TernaryOperator.QUICKSEARCH_CONTAINS_PHRASE:
+            case BinaryOperatorWithLanguage.QUICKSEARCH_CONTAINS_PHRASE:
                 return 'CONTAINS_PHRASE';
-            case TernaryOperator.QUICKSEARCH_CONTAINS_PREFIX:
+            case BinaryOperatorWithLanguage.QUICKSEARCH_CONTAINS_PREFIX:
                 return 'CONTAINS_PREFIX';
             default:
                 return '(unknown operator)';
@@ -165,8 +164,8 @@ export class TernaryOperationQueryNode extends QueryNode {
     }
 
     private getParamString() {
-        if (this.param) {
-            return ` with ${this.param.describe()}`;
+        if (this.quickSearchLanguage) {
+            return ` with analyzer: "${this.quickSearchLanguage.toString}"`;
         } else {
             return ``;
         }
@@ -175,24 +174,13 @@ export class TernaryOperationQueryNode extends QueryNode {
 }
 
 /**
- * The operator of a TernaryOperationQueryNode
+ * The operator of a OperatorWithLanguageQueryNode
  */
-export enum TernaryOperator {
+export enum BinaryOperatorWithLanguage {
     QUICKSEARCH_STARTS_WITH = 'QUICKSEARCH_STARTS_WITH',
     QUICKSEARCH_CONTAINS_ANY_WORD = 'QUICKSEARCH_CONTAINS_ANY_WORD',
     QUICKSEARCH_CONTAINS_PREFIX = 'QUICKSEARCH_CONTAINS_PREFIX',
     QUICKSEARCH_CONTAINS_PHRASE = 'QUICKSEARCH_CONTAINS_PHRASE',
-}
-
-export class TextAnalyzerQueryNode extends QueryNode {
-    constructor(public readonly language: QuickSearchLanguage) {
-        super();
-    }
-
-
-    describe(): string {
-        return `ANALYZER(${this.language})`;
-    }
 }
 
 export class ConditionalQueryNode extends QueryNode {

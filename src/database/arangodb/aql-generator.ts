@@ -33,9 +33,8 @@ import {
     RuntimeErrorQueryNode,
     SafeListQueryNode,
     SetEdgeQueryNode,
-    TernaryOperationQueryNode,
-    TernaryOperator,
-    TextAnalyzerQueryNode,
+    OperatorWithLanguageQueryNode,
+    BinaryOperatorWithLanguage,
     TransformListQueryNode,
     TypeCheckQueryNode,
     UnaryOperationQueryNode,
@@ -52,7 +51,7 @@ import { Constructor, decapitalize } from '../../utils/utils';
 import { analyzeLikePatternPrefix } from '../like-helpers';
 import { aql, AQLCompoundQuery, aqlConfig, AQLFragment, AQLQueryResultVariable, AQLVariable } from './aql';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './arango-basics';
-import { getViewNameForRootEntity } from './schema-migration/arango-search-helpers';
+import { getViewNameForRootEntity, IDENTITY_ANALYZER } from './schema-migration/arango-search-helpers';
 import { QuickSearchQueryNode } from '../../query-tree/quick-search';
 
 enum AccessType {
@@ -526,35 +525,27 @@ register(BinaryOperationQueryNode, (node, context) => {
 
 });
 
-register(TernaryOperationQueryNode, (node, context) => {
-
-    if (!(node.param instanceof TextAnalyzerQueryNode) && node.operator != TernaryOperator.QUICKSEARCH_STARTS_WITH) {
-        throw new Error(`Unsupported ternary operation parameter: ${node.param ? node.param.describe() : node.param}`);
-    }
+register(OperatorWithLanguageQueryNode, (node, context) => {
 
     const lhs = processNode(node.lhs, context);
     const rhs = processNode(node.rhs, context);
-    const param = (node.param instanceof TextAnalyzerQueryNode) ? processNode(node.param, context) : undefined;
-
+    const analyzer = node.quickSearchLanguage ? `text_${node.quickSearchLanguage.toLowerCase()}` : IDENTITY_ANALYZER
 
     switch (node.operator) {
-        case TernaryOperator.QUICKSEARCH_STARTS_WITH:
+        case BinaryOperatorWithLanguage.QUICKSEARCH_STARTS_WITH:
             return aql`STARTS_WITH(${lhs},${rhs})`;
-        case TernaryOperator.QUICKSEARCH_CONTAINS_ANY_WORD:
-            return aql`ANALYZER( ${lhs} IN TOKENS(${rhs}, ${param!}),${param!})`;
-        case TernaryOperator.QUICKSEARCH_CONTAINS_PREFIX:
-            return aql`ANALYZER( STARTS_WITH( ${lhs}, TOKENS(${rhs})[0]), ${param!}))`;
-        case TernaryOperator.QUICKSEARCH_CONTAINS_PHRASE:
-            return aql`ANALYZER( PHRASE( ${lhs}, ${rhs}), ${param!})`;
+        case BinaryOperatorWithLanguage.QUICKSEARCH_CONTAINS_ANY_WORD:
+            return aql`ANALYZER( ${lhs} IN TOKENS(${rhs}, ${analyzer}),${analyzer})`;
+        case BinaryOperatorWithLanguage.QUICKSEARCH_CONTAINS_PREFIX:
+            return aql`ANALYZER( STARTS_WITH( ${lhs}, TOKENS(${rhs})[0]), ${analyzer}))`;
+        case BinaryOperatorWithLanguage.QUICKSEARCH_CONTAINS_PHRASE:
+            return aql`ANALYZER( PHRASE( ${lhs}, ${rhs}), ${analyzer})`;
         default:
             throw new Error(`Unsupported ternary operator: ${node.operator}`);
     }
 
 });
 
-register(TextAnalyzerQueryNode, (node, context) => {
-    return aql.value(`text_${node.language.toLowerCase()}`);
-});
 
 function getFastStartsWithQuery(lhs: AQLFragment, rhsValue: string): AQLFragment {
     if (!rhsValue.length) {
