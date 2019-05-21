@@ -5,7 +5,7 @@ import { Field, QuickSearchLanguage, TypeKind } from '../../model';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
-    ConstBoolQueryNode,
+    ConstBoolQueryNode, FieldPathQueryNode,
     FieldQueryNode,
     LiteralQueryNode,
     QueryNode,
@@ -110,7 +110,7 @@ export class ScalarOrEnumFilterField implements FilterField {
 
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
         if (this.field) {
-            const valueNode = new FieldQueryNode(sourceNode, this.field, this.path);
+            const valueNode = new FieldPathQueryNode(sourceNode, this.path ?  this.path.concat([this.field]) : [this.field]);
             const literalNode = new LiteralQueryNode(filterValue);
             return this.resolveOperator(valueNode, literalNode,this.quickSearchLanguage);
         } else {

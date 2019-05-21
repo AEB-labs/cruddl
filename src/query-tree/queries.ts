@@ -33,12 +33,28 @@ export class EntitiesQueryNode extends QueryNode {
  * Note: this is unrelated to storing the value in a property of a result object, see ObjectQueryNode
  */
 export class FieldQueryNode extends QueryNode {
-    constructor(public readonly objectNode: QueryNode, public readonly field: Field, public readonly path?: Field[]) {
+    constructor(public readonly objectNode: QueryNode, public readonly field: Field) {
         super();
     }
 
     public describe() {
         return `${this.objectNode.describe()}.${blue(this.field.name)}`;
+    }
+}
+
+/**
+ * A node that evaluates to the value of a field of an object, or NULL if it does not exist or objectNode does not
+ * evaluate to an object
+ *
+ * Note: this is unrelated to storing the value in a property of a result object, see ObjectQueryNode
+ */
+export class FieldPathQueryNode extends QueryNode {
+    constructor(public readonly objectNode: QueryNode, public readonly path: Field[]) {
+        super();
+    }
+
+    public describe() {
+        return `${this.objectNode.describe()}.${blue(this.path.map(value => value.name).join("."))}`;
     }
 }
 
