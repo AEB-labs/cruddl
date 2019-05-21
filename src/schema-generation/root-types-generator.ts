@@ -13,6 +13,7 @@ import { OrderByEnumGenerator } from './order-by-enum-generator';
 import { OutputTypeGenerator } from './output-type-generator';
 import { QueryNodeObjectType, QueryNodeObjectTypeConverter } from './query-node-object-type';
 import { QueryTypeGenerator } from './query-type-generator';
+import { QuickSearchGlobalFilterTypeGenerator } from './quick-search-filter-input-types/generator-global';
 import { UpdateInputTypeGenerator } from './update-input-types';
 import { QuickSearchGenerator } from './quick-search-generator';
 import { QuickSearchFilterTypeGenerator } from './quick-search-filter-input-types/generator';
@@ -22,12 +23,13 @@ export class RootTypesGenerator {
     private readonly enumTypeGenerator = new EnumTypeGenerator();
     private readonly filterTypeGenerator = new FilterTypeGenerator(this.enumTypeGenerator);
     private readonly quickSearchFilterTypeGenerator = new QuickSearchFilterTypeGenerator(this.enumTypeGenerator);
+    private readonly quickSearchGlobalFilterTypeGenerator = new QuickSearchGlobalFilterTypeGenerator(this.quickSearchFilterTypeGenerator, this.enumTypeGenerator);
     private readonly orderByEnumGenerator = new OrderByEnumGenerator();
     private readonly orderByAugmentation = new OrderByAndPaginationAugmentation(this.orderByEnumGenerator);
     private readonly filterAugmentation = new FilterAugmentation(this.filterTypeGenerator);
     private readonly listAugmentation = new ListAugmentation(this.filterAugmentation, this.orderByAugmentation);
     private readonly metaFirstAugmentation = new MetaFirstAugmentation();
-    private readonly quickSearchGlobalAugmentation = new QuickSearchGlobalAugmentation(this.quickSearchFilterTypeGenerator);
+    private readonly quickSearchGlobalAugmentation = new QuickSearchGlobalAugmentation(this.quickSearchFilterTypeGenerator,this.quickSearchGlobalFilterTypeGenerator);
     private readonly metaTypeGenerator = new MetaTypeGenerator();
     private readonly outputTypeGenerator = new OutputTypeGenerator(this.listAugmentation, this.filterAugmentation,
         this.enumTypeGenerator, this.orderByEnumGenerator, this.metaTypeGenerator);

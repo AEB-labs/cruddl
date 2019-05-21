@@ -47,7 +47,6 @@ import { OrderByEnumValue } from '../order-by-enum-generator';
 import { SystemFieldOrderByEnumType } from '../quick-search-global-augmentation';
 import { simplifyBooleans } from '../../query-tree/utils';
 
-// @MSF OPT TODO: maybe split up in global and non global
 // @MSF TODO: extend Normal FilterObjectType
 export class QuickSearchFilterObjectType extends TypedInputObjectType<FilterField> {
     constructor(
@@ -78,25 +77,6 @@ export class QuickSearchFilterObjectType extends TypedInputObjectType<FilterFiel
     }
 }
 
-export class QuickSearchGlobalFilterObjectType extends TypedInputObjectType<FilterField> {
-    constructor(
-        fields: Thunk<ReadonlyArray<FilterField>>
-    ) {
-        super(getQuickSearchGlobalFilterTypeName(), fields, `QuickSearchFilter type for global-quick-search.\n\nAll fields in this type are *and*-combined; see the \`or\` field for *or*-combination.`);
-        // @MSF GLOBAL TODO: description
-    }
-
-    getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
-        if (typeof filterValue !== 'object' || filterValue === null) {
-            return new BinaryOperationQueryNode(sourceNode, BinaryOperator.EQUAL, NullQueryNode.NULL);
-        }
-        const filterNodes = objectEntries(filterValue)
-            .map(([name, value]) => this.getFieldOrThrow(name).getFilterNode(sourceNode, value));
-        return filterNodes.reduce(and, ConstBoolQueryNode.TRUE);
-    }
-}
-
-
 export class QuickSearchFilterTypeGenerator {
 
     constructor(private enumTypeGenerator: EnumTypeGenerator) {
@@ -126,20 +106,7 @@ export class QuickSearchFilterTypeGenerator {
         return filterType;
     }
 
-    private generateQuickSearchGlobalFilterType(fields: Thunk<ReadonlyArray<FilterField>>): QuickSearchGlobalFilterObjectType {
-        function getFields(): ReadonlyArray<FilterField> {
-            return [
-                ...resolveThunk(fields),
-                new AndFilterField(filterType),
-                new OrFilterField(filterType)
-            ];
-        }
-
-        const filterType = new QuickSearchGlobalFilterObjectType(getFields);
-        return filterType;
-    }
-
-    private generateFieldQuickSearchFilterFields(field: Field): ReadonlyArray<FilterField> {
+    public generateFieldQuickSearchFilterFields(field: Field): ReadonlyArray<FilterField> {
         if (field.isList) {
             return this.generateListFieldFilterFields(field, []);
         }
@@ -291,22 +258,6 @@ export class QuickSearchFilterTypeGenerator {
 
     private buildEnumFilterFields(type: EnumType, prefix: string[] = [], field: Field, path?: Field[]) {
         return ENUM_FILTER_FIELDS.map(name => new ScalarOrEnumFilterField(QUICK_SEARCH_FILTER_OPERATORS[name], prefix.concat([name]).join('_'), this.enumTypeGenerator.generate(type), field, path));
-    }
-
-
-    @memorize()
-    generateGlobal(types: ReadonlyArray<RootEntityType>): QuickSearchGlobalFilterObjectType {
-        return this.generateQuickSearchGlobalFilterType(() => {
-            let fields = flatMap(types, type => type.fields.filter(value => value.isQuickSearchIndexed || value.isQuickSearchFulltextIndexed));
-            fields = fields.filter((value, index, array) => {
-                return !array.find((value1, index1) => value.name === value1.name && index1 < index);
-            });
-            return flatMap(
-                fields,
-                (field: Field) => this.generateFieldQuickSearchFilterFields(field) // @MSF GLOBAL TODO: fix languages and description (only language and description of first found field count right now)
-            );
-        });
-
     }
 
     @memorize()

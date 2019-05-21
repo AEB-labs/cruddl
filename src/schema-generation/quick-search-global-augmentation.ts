@@ -23,10 +23,13 @@ import { and } from './filter-input-types/constants';
 import { OrderByEnumValue } from './order-by-enum-generator';
 import { chain } from 'lodash';
 import memorize from 'memorize-decorator';
+import { QuickSearchGlobalFilterTypeGenerator } from './quick-search-filter-input-types/generator-global';
 import { QS_QUERYNODE_ONLY_ERROR_MESSAGE } from './quick-search-generator';
 
 export class QuickSearchGlobalAugmentation {
-    constructor(private readonly quickSearchTypeGenerator: QuickSearchFilterTypeGenerator) {
+    constructor(
+        private readonly quickSearchTypeGenerator: QuickSearchFilterTypeGenerator,
+        private readonly quickSearchGlobalFilterTypeGenerator: QuickSearchGlobalFilterTypeGenerator) {
 
     }
 
@@ -47,7 +50,7 @@ export class QuickSearchGlobalAugmentation {
             return schemaField;
         }
 
-        const quickSearchType = this.quickSearchTypeGenerator.generateGlobal(itemTypes);
+        const quickSearchType = this.quickSearchGlobalFilterTypeGenerator.generateGlobal(itemTypes);
 
         return {
             ...schemaField,
