@@ -532,7 +532,7 @@ register(OperatorWithLanguageQueryNode, (node, context) => {
         case BinaryOperatorWithLanguage.QUICKSEARCH_CONTAINS_ANY_WORD:
             return aql`ANALYZER( ${lhs} IN TOKENS(${rhs}, ${analyzer}),${analyzer})`;
         case BinaryOperatorWithLanguage.QUICKSEARCH_CONTAINS_PREFIX:
-            return aql`ANALYZER( STARTS_WITH( ${lhs}, TOKENS(${rhs})[0]), ${analyzer}))`;
+            return aql`ANALYZER( STARTS_WITH( ${lhs}, TOKENS(${rhs},${analyzer})[0]), ${analyzer})`;
         case BinaryOperatorWithLanguage.QUICKSEARCH_CONTAINS_PHRASE:
             return aql`ANALYZER( PHRASE( ${lhs}, ${rhs}), ${analyzer})`;
         default:

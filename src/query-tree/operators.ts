@@ -165,7 +165,7 @@ export class OperatorWithLanguageQueryNode extends QueryNode {
 
     private getParamString() {
         if (this.quickSearchLanguage) {
-            return ` with analyzer: "${this.quickSearchLanguage.toString}"`;
+            return ` with analyzer: "${this.quickSearchLanguage.toString()}"`;
         } else {
             return ``;
         }

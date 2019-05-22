@@ -25,7 +25,7 @@ import { TypedInputFieldBase } from '../typed-input-object-type';
 import { FILTER_DESCRIPTIONS, OPERATORS_WITH_LIST_OPERAND, Quantifier } from './constants';
 import { FilterObjectType } from './generator';
 import { QuickSearchFilterObjectType } from '../quick-search-filter-input-types/generator';
-
+// @MSF TODO: own FilterFields for QuickSearch
 export interface FilterField extends TypedInputFieldBase<FilterField> {
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode
 

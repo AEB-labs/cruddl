@@ -12,8 +12,8 @@ type Hero @rootEntity(quickSearchIndex:true, quickSearchLanguage: DE) {
     "The hero's screen name"
     name: String
     identity: String @quickSearchIndex @searchable
-    fullText: String @quickSearchFulltextIndex @searchable
-    fullTextEn: String @quickSearchFulltextIndex(language: EN) @searchable
+    fullText: String @quickSearchFulltextIndex
+    fullTextEn: String @quickSearchFulltextIndex(language: EN)
     both: String @quickSearchIndex @quickSearchFulltextIndex @searchable
     age: Int @defaultValue(value: 42)
     nickNames: [String]
