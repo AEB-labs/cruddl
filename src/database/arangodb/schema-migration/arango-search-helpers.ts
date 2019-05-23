@@ -29,7 +29,6 @@ export interface ArangoSearchDefinition {
 }
 
 // @MSF TODO: InMemoryDatabase
-// @MSF TODO: Error when filtering or sorting large amounts of objects
 
 interface ArangoSearchViewCollectionLink {
     analyzers?: string[];

@@ -1,5 +1,5 @@
 import { FieldRequest, FieldSelection } from '../../graphql/query-distiller';
-import { BasicType, ConditionalQueryNode, FieldQueryNode, NullQueryNode, ObjectQueryNode, PreExecQueryParms, PropertySpecification, QueryNode, TransformListQueryNode, TypeCheckQueryNode, VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../../query-tree';
+import { BasicType, ConditionalQueryNode, FieldQueryNode, NullQueryNode, ObjectQueryNode, PreExecQueryParms, PropertySpecification, QueryNode, RuntimeErrorQueryNode, TransformListQueryNode, TypeCheckQueryNode, VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../../query-tree';
 import { decapitalize } from '../../utils/utils';
 import { FieldContext } from './context';
 import { QueryNodeField, QueryNodeObjectType } from './definition';
@@ -76,7 +76,20 @@ function buildFieldQueryNode0(sourceNode: QueryNode, field: QueryNodeField, fiel
         // Note: previously, we had a safeguard here that converted non-lists to empty lists
         // This is no longer necessary because createFieldNode() already does this where necessary (only for simple field lookups)
         // All other code should return lists where lists are expected
-        return buildTransformListQueryNode(fieldQueryNode, queryTreeObjectType, fieldRequest.selectionSet, context);
+        // @MSF TODO: Clean up
+        if(fieldQueryNode instanceof WithPreExecutionQueryNode && fieldQueryNode.resultNode instanceof ConditionalQueryNode && fieldQueryNode.resultNode.expr1 instanceof RuntimeErrorQueryNode){
+            return new WithPreExecutionQueryNode({
+                preExecQueries: fieldQueryNode.preExecQueries,
+                resultNode: new ConditionalQueryNode(
+                    fieldQueryNode.resultNode.condition,
+                    fieldQueryNode.resultNode.expr1,
+                    buildTransformListQueryNode(fieldQueryNode.resultNode.expr2, queryTreeObjectType, fieldRequest.selectionSet, context)
+                )
+            })
+        }else{
+            return buildTransformListQueryNode(fieldQueryNode, queryTreeObjectType, fieldRequest.selectionSet, context);
+        }
+
     }
 
     // object

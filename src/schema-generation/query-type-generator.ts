@@ -161,7 +161,7 @@ export class QueryTypeGenerator {
     }
 
     private getQuickSearchEntitiesField(rootEntityType: RootEntityType): QueryNodeField {
-        return this.listAugmentation.augment(this.quickSearchGenerator.generate(rootEntityType), rootEntityType);
+        return this.quickSearchGenerator.generate(rootEntityType);
     }
 
     private getQuickSearchEntitiesFieldMeta(rootEntityType: RootEntityType): QueryNodeField {
