@@ -11,6 +11,8 @@ import { TypedInputObjectType } from '../typed-input-object-type';
 import { and } from './constants';
 import { QuickSearchFilterTypeGenerator } from './generator';
 
+
+// @MSF GLOBAL TODO: remove
 export class QuickSearchGlobalFilterObjectType extends TypedInputObjectType<FilterField> {
     constructor(
         fields: Thunk<ReadonlyArray<FilterField>>
@@ -29,6 +31,7 @@ export class QuickSearchGlobalFilterObjectType extends TypedInputObjectType<Filt
     }
 }
 
+// @MSF GLOBAL TODO: remove
 export class QuickSearchGlobalFilterTypeGenerator {
 
     constructor(private quickSearchFilterTypeGenerator: QuickSearchFilterTypeGenerator, private enumTypeGenerator: EnumTypeGenerator) {
@@ -37,7 +40,7 @@ export class QuickSearchGlobalFilterTypeGenerator {
     @memorize()
     generateGlobal(types: ReadonlyArray<RootEntityType>): QuickSearchGlobalFilterObjectType {
         return this.generateQuickSearchGlobalFilterType(() => {
-            let fields = flatMap(types, type => type.fields.filter(value => value.isQuickSearchIndexed || value.isQuickSearchFulltextIndexed));
+            let fields = flatMap(types, type => type.fields.filter(value => type.keyField == value));
             fields = fields.filter((value, index, array) => {
                 return !array.find((value1, index1) => value.name === value1.name && index1 < index);
             });

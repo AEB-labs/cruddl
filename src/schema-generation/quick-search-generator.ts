@@ -84,7 +84,6 @@ export class QuickSearchGenerator {
                 const qsFilterNode = this.buildQuickSearchFilterNode(args, quickSearchType, itemVariable);
                 return new QuickSearchQueryNode({
                     rootEntityType: rootEntityType,
-                    isGlobal: false,
                     qsFilterNode: qsFilterNode,
                     itemVariable: itemVariable
                 });
@@ -117,7 +116,6 @@ export class QuickSearchGenerator {
             new CountQueryNode(
                 new QuickSearchQueryNode({
                     rootEntityType: rootEntityType,
-                    isGlobal: false,
                     qsFilterNode: qsFilterNode,
                     itemVariable: itemVariable
                 })),
@@ -131,17 +129,17 @@ export class QuickSearchGenerator {
             ...schemaField,
             resolve: (sourceNode, args, info) => {
                 const parentNode = schemaField.resolve(sourceNode, args, info);
-                if(!(parentNode instanceof TransformListQueryNode)){
+                if (!(parentNode instanceof TransformListQueryNode)) {
                     return parentNode;
                 }
-                if(parentNode.filterNode.equals(ConstBoolQueryNode.TRUE) && parentNode.orderBy.isUnordered()){
+                if (parentNode.filterNode.equals(ConstBoolQueryNode.TRUE) && parentNode.orderBy.isUnordered()) {
                     return parentNode;
                 }
 
                 const assertionVariable = new VariableQueryNode();
                 return new WithPreExecutionQueryNode({
                     preExecQueries: [
-                        new PreExecQueryParms({ resultVariable: assertionVariable, query: this.getPreExecQueryNode(rootEntityType,args) })
+                        new PreExecQueryParms({ resultVariable: assertionVariable, query: this.getPreExecQueryNode(rootEntityType, args) })
                     ],
                     resultNode: new ConditionalQueryNode(
                         assertionVariable,

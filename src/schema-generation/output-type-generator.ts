@@ -23,6 +23,8 @@ import {
 } from './query-node-object-type';
 import { getOrderByValues } from './utils/pagination';
 
+const QUICK_SEARCH_GLOBAL_TYPE_NAME = `QuickSearchGlobalType`;
+
 export class OutputTypeGenerator {
     constructor(
         private readonly listAugmentation: ListAugmentation,
@@ -48,10 +50,9 @@ export class OutputTypeGenerator {
     }
 
     generateQuickSearchGlobalType(types: ReadonlyArray<RootEntityType>): QueryNodeUnionType {
-        const objectTypes = types.map(value => <QueryNodeObjectType>this.generate(value));
-
+        const objectTypes = types.filter(value => value.isRootEntityType && value.arangoSearchConfig.isGlobalIndexed).map(value => <QueryNodeObjectType>this.generate(value));
         return new QueryNodeUnionType(
-            `QuickSearchGlobalType`, // @MSF GLOBAL TODO: use constant
+            QUICK_SEARCH_GLOBAL_TYPE_NAME,
             objectTypes
         );
 

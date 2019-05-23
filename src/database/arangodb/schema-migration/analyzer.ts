@@ -164,11 +164,10 @@ export class SchemaAnalyzer {
         operations = operations.concat(viewsToDrop);
         operations = operations.concat(viewsToUpdate);
 
-        // @MSF GLOBAL TODO: fix migrations
-        // const globalViewChange = await calculateRequiredGlobalViewOperation(model.rootEntityTypes, this.db.arangoSearchView(QUICK_SEARCH_GLOBAL_VIEW_NAME), this.db);
-        // if (globalViewChange) {
-        //     operations.push(globalViewChange);
-        // }
+        const globalViewChange = await calculateRequiredGlobalViewOperation(model.rootEntityTypes, this.db.arangoSearchView(QUICK_SEARCH_GLOBAL_VIEW_NAME), this.db);
+        if (globalViewChange) {
+            operations.push(globalViewChange);
+        }
 
 
         return operations;

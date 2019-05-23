@@ -1,3 +1,4 @@
+import { undefinedVarMessage } from 'graphql/validation/rules/NoUndefinedVariables';
 import { Field, Model, RootEntityType } from '../../../model/implementation';
 import { flatMap } from '../../../utils/utils';
 import { getCollectionNameForRootEntity } from '../arango-basics';
@@ -93,9 +94,6 @@ function getGlobalSearchViewProperties(globalIndexedEntityTypes: RootEntityType[
     const properties: ArangoSearchViewPropertiesOptions = {
         links: {}
     };
-
-    const fields = flatMap(globalIndexedEntityTypes, value => value.fields.filter(value1 => value1.isSearchable));
-
     for (const entity of globalIndexedEntityTypes) {
 
         const link: ArangoSearchViewCollectionLink = {
@@ -106,22 +104,21 @@ function getGlobalSearchViewProperties(globalIndexedEntityTypes: RootEntityType[
             fields: {}
         };
 
-        // @MSF GLOBAL TODO: fix
-        // for(const field of fields){
-        //     if(link.fields![field.name]){
-        //         link.fields![field.name]!.analyzers = [...new Set(link.fields![field.name]!.analyzers!.concat((field.language ? [field.language] : []).map(getAnalyzerFromQuickSearchLanguage)))]
-        //     }else{
-        //         const analyzers = (field.language ? [field.language] : []).map(getAnalyzerFromQuickSearchLanguage).concat([IDENTITY_ANALYZER]);
-        //         if(_.isEqual(analyzers,[IDENTITY_ANALYZER])){
-        //             link.fields![field.name] = {}
-        //         }else{
-        //             link.fields![field.name] = {
-        //                 analyzers
-        //             }
-        //         }
-        //     }
-        //
-        // }
+        for (const field of entity.fields.filter(value => value.isGlobalSearchable || entity.keyField == value)) {
+            if (link.fields![field.name]) {
+                link.fields![field.name]!.analyzers = [...new Set(link.fields![field.name]!.analyzers!.concat((field.language ? [field.language] : []).map(getAnalyzerFromQuickSearchLanguage)))];
+            } else {
+                const analyzers = (field.language ? [field.language] : []).map(getAnalyzerFromQuickSearchLanguage).concat([IDENTITY_ANALYZER]);
+                if (_.isEqual(analyzers, [IDENTITY_ANALYZER])) {
+                    link.fields![field.name] = {};
+                } else {
+                    link.fields![field.name] = {
+                        analyzers
+                    };
+                }
+            }
+
+        }
 
         properties.links![getCollectionNameForRootEntity(entity)] = link;
     }
@@ -144,10 +141,10 @@ function getPropertiesFromDefinition(definition: ArangoSearchDefinition): Arango
 
     for (const field of definition.fields) {
         const analyzers: string[] = [];
-        if(field.isQuickSearchFulltextIndexed && field.language){
-            analyzers.push(getAnalyzerFromQuickSearchLanguage(field.language))
+        if (field.isQuickSearchFulltextIndexed && field.language) {
+            analyzers.push(getAnalyzerFromQuickSearchLanguage(field.language));
         }
-        if(field.isQuickSearchIndexed){
+        if (field.isQuickSearchIndexed) {
             analyzers.push(IDENTITY_ANALYZER);
         }
         if (_.isEqual(analyzers, [IDENTITY_ANALYZER])) {
@@ -224,11 +221,13 @@ export async function calculateRequiredGlobalViewOperation(entityTypes: Readonly
             });
         }
 
-    } else {
+    } else if (globalIndexedEntityTypes.length > 0) {
         return new CreateArangoSearchViewMigration({
             properties: definitionProperties,
             viewName: QUICK_SEARCH_GLOBAL_VIEW_NAME,
             collectionSize: count
         });
+    } else {
+        return undefined;
     }
 }

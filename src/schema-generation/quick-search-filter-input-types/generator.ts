@@ -44,10 +44,9 @@ import {
     INPUT_FIELD_NOT_CONTAINS_ANY_WORD, INPUT_FIELD_NOT_CONTAINS_PHRASE
 } from '../../schema/constants';
 import { OrderByEnumValue } from '../order-by-enum-generator';
-import { SystemFieldOrderByEnumType } from '../quick-search-global-augmentation';
+import { SystemFieldOrderByEnumType } from '../quick-search-global-generator';
 import { simplifyBooleans } from '../../query-tree/utils';
 
-// @MSF TODO: extend Normal FilterObjectType
 export class QuickSearchFilterObjectType extends TypedInputObjectType<FilterField> {
     constructor(
         type: Type,

@@ -14,8 +14,7 @@ import { getArgumentsForUniqueFields, getEntitiesByUniqueFieldQuery } from './ut
 import { QuickSearchGenerator } from './quick-search-generator';
 import { GraphQLUnionType } from 'graphql';
 import { QuickSearchQueryNode } from '../query-tree/quick-search';
-import { QuickSearchGlobalAugmentation } from './quick-search-global-augmentation';
-
+import { QuickSearchGlobalGenerator } from './quick-search-global-generator';
 
 export class QueryTypeGenerator {
     constructor(
@@ -25,7 +24,7 @@ export class QueryTypeGenerator {
         private readonly metaFirstAugmentation: MetaFirstAugmentation,
         private readonly metaTypeGenerator: MetaTypeGenerator,
         private readonly quickSearchGenerator: QuickSearchGenerator,
-        private readonly quickSearchGlobalAugmentation: QuickSearchGlobalAugmentation
+        private readonly quickSearchGlobalGenerator: QuickSearchGlobalGenerator
     ) {
 
     }
@@ -97,34 +96,12 @@ export class QueryTypeGenerator {
         };
     }
 
-    private getGlobalQuickSearchFieldName(): string {
-        return 'quickSearchGlobal'; // @MSF GLOBAL TODO: constant
-    }
-
     private getQuickSearchGlobalField(rootEntityTypes: ReadonlyArray<RootEntityType>): QueryNodeField {
-        const fieldConfig = ({
-            name: this.getGlobalQuickSearchFieldName(),
-            type: new QueryNodeListType(new QueryNodeNonNullType(this.outputTypeGenerator.generateQuickSearchGlobalType(rootEntityTypes))),
-            description: 'global search description', // @MSF GLOBAL TODO: description
-            resolve: () => new QuickSearchQueryNode({ isGlobal: true, rootEntityType: rootEntityTypes[0] })
-        });
-
-        return (this.quickSearchGlobalAugmentation.augment(fieldConfig, rootEntityTypes));
+        return (this.quickSearchGlobalGenerator.generate(rootEntityTypes));
     }
 
     private getQuickSearchGlobalFieldMeta(rootEntityTypes: ReadonlyArray<RootEntityType>): QueryNodeField {
-        const metaType = this.metaTypeGenerator.generate();
-        const fieldConfig = ({
-            name: getMetaFieldName(this.getGlobalQuickSearchFieldName()),
-            type: new QueryNodeNonNullType(metaType),
-            description: `description`, // @MSF GLOBAL TODO: description
-            // meta fields should never be null. Also, this is crucial for performance. Without it, we would introduce
-            // an unnecessary variable with the collection contents (which is slow) and we would to an equality check of
-            // a collection against NULL which is deadly (v8 evaluation)
-            skipNullCheck: true,
-            resolve: () => this.getAllRootEntitiesNode(rootEntityTypes[0]) // @MSF GLOBAL TODO: resolver
-        });
-        return this.metaFirstAugmentation.augment(this.quickSearchGlobalAugmentation.augment(fieldConfig, rootEntityTypes));
+        return this.metaFirstAugmentation.augment(this.quickSearchGlobalGenerator.generateMeta(rootEntityTypes));
     }
 
     private getSingleRootEntityNode(rootEntityType: RootEntityType, args: { [name: string]: any }, context: FieldContext): QueryNode {

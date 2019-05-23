@@ -1,11 +1,13 @@
+import { getMetaFieldName } from '../schema/names';
+import { OutputTypeGenerator } from './output-type-generator';
 import { QuickSearchFilterTypeGenerator } from './quick-search-filter-input-types/generator';
-import { QueryNodeField, QueryNodeResolveInfo } from './query-node-object-type';
+import { QueryNodeField, QueryNodeListType, QueryNodeNonNullType, QueryNodeObjectType, QueryNodeResolveInfo } from './query-node-object-type';
 import { RootEntityType } from '../model/implementation';
 import {
-    AFTER_ARG,
+    AFTER_ARG, COUNT_META_FIELD,
     CURSOR_FIELD,
     FIRST_ARG,
-    ORDER_BY_ARG,
+    ORDER_BY_ARG, QUERY_META_TYPE,
     QUICK_SEARCH_EXPRESSION_ARG,
     QUICK_SEARCH_FILTER_ARG,
     SKIP_ARG
@@ -14,7 +16,7 @@ import { QuickSearchQueryNode } from '../query-tree/quick-search';
 import { GraphQLEnumType, GraphQLInt, GraphQLList, GraphQLNonNull, GraphQLString } from 'graphql';
 import {
     BinaryOperationQueryNode,
-    BinaryOperator, ConstBoolQueryNode, LiteralQueryNode, OrderDirection, OrderSpecification,
+    BinaryOperator, ConstBoolQueryNode, CountQueryNode, LiteralQueryNode, OrderDirection, OrderSpecification,
     QueryNode, RuntimeErrorQueryNode,
     TransformListQueryNode,
     VariableQueryNode
@@ -26,38 +28,56 @@ import memorize from 'memorize-decorator';
 import { QuickSearchGlobalFilterTypeGenerator } from './quick-search-filter-input-types/generator-global';
 import { QS_QUERYNODE_ONLY_ERROR_MESSAGE } from './quick-search-generator';
 
-export class QuickSearchGlobalAugmentation {
+const QUICK_SEARCH_GLOBAL_NODE_NAME = 'quickSearchGlobal';
+
+export class QuickSearchGlobalGenerator {
     constructor(
         private readonly quickSearchTypeGenerator: QuickSearchFilterTypeGenerator,
-        private readonly quickSearchGlobalFilterTypeGenerator: QuickSearchGlobalFilterTypeGenerator) {
+        private readonly quickSearchGlobalFilterTypeGenerator: QuickSearchGlobalFilterTypeGenerator,
+        private readonly outputTypeGenerator: OutputTypeGenerator) {
 
     }
 
-    augment(schemaField: QueryNodeField, itemTypes: ReadonlyArray<RootEntityType>): QueryNodeField {
-        const quickSearchFilterable = this.augmentGlobalQuickSearch(schemaField, itemTypes);
-        const paged = this.augmentGlobalPaged(quickSearchFilterable, itemTypes);
-        if (itemTypes.some(value => value.fields.some(value1 => value1.isSearchable))) {
-            const quickSearchable = this.augmentQuickSearchSearch(paged, itemTypes);
-            return quickSearchable;
-        } else {
-            return paged;
-        }
+    generate(rootEntityTypes: ReadonlyArray<RootEntityType>): QueryNodeField {
+        const fieldConfig = ({
+            name: QUICK_SEARCH_GLOBAL_NODE_NAME,
+            type: new QueryNodeListType(new QueryNodeNonNullType(this.outputTypeGenerator.generateQuickSearchGlobalType(rootEntityTypes))),
+            description: 'global search description', // @MSF GLOBAL TODO: description
+            resolve: () => new QuickSearchQueryNode({ rootEntityType: rootEntityTypes[0] })
+        });
+        const quickSearchFilterable = this.generateFromConfig(fieldConfig, rootEntityTypes);
+        return this.augmentGlobalPaged(quickSearchFilterable, rootEntityTypes);
 
     }
 
-    private augmentGlobalQuickSearch(schemaField: QueryNodeField, itemTypes: ReadonlyArray<RootEntityType>): QueryNodeField {
+    generateMeta(rootEntityTypes: ReadonlyArray<RootEntityType>): QueryNodeField {
+        const metaType = this.generateMetaType(rootEntityTypes);
+        const fieldConfig = ({
+            name: getMetaFieldName(QUICK_SEARCH_GLOBAL_NODE_NAME),
+            type: new QueryNodeNonNullType(metaType),
+            description: `description`, // @MSF GLOBAL TODO: description
+            // meta fields should never be null. Also, this is crucial for performance. Without it, we would introduce
+            // an unnecessary variable with the collection contents (which is slow) and we would to an equality check of
+            // a collection against NULL which is deadly (v8 evaluation)
+            skipNullCheck: true,
+            resolve: () => new QuickSearchQueryNode({ rootEntityType: rootEntityTypes[0] }) // @MSF GLOBAL TODO: resolver
+        });
+
+        return this.augmentGlobalPaged(this.generateFromConfig(fieldConfig, rootEntityTypes), rootEntityTypes);
+
+    }
+
+    private generateFromConfig(schemaField: QueryNodeField, itemTypes: ReadonlyArray<RootEntityType>): QueryNodeField {
         if (!itemTypes.every(value => value.isObjectType)) {
             return schemaField;
         }
-
-        const quickSearchType = this.quickSearchGlobalFilterTypeGenerator.generateGlobal(itemTypes);
 
         return {
             ...schemaField,
             args: {
                 ...schemaField.args,
-                [QUICK_SEARCH_FILTER_ARG]: {
-                    type: quickSearchType.getInputType()
+                [QUICK_SEARCH_EXPRESSION_ARG]: {
+                    type: GraphQLString
                 }
             },
             resolve: (sourceNode, args, info) => {
@@ -65,7 +85,6 @@ export class QuickSearchGlobalAugmentation {
                 if (parentNode instanceof QuickSearchQueryNode) {
                     return new QuickSearchQueryNode({
                         rootEntityType: parentNode.rootEntityType,
-                        isGlobal: parentNode.isGlobal,
                         itemVariable: parentNode.itemVariable
                     }); // @MSF GLOBAL TODO: resolver - generate Global-Search-Filter
                 } else {
@@ -109,33 +128,9 @@ export class QuickSearchGlobalAugmentation {
         };
     }
 
-    augmentQuickSearchSearch(schemaField: QueryNodeField, itemTypes: ReadonlyArray<RootEntityType>): QueryNodeField {
-        return {
-            ...schemaField,
-            args: {
-                ...schemaField.args,
-                [QUICK_SEARCH_EXPRESSION_ARG]: {
-                    type: GraphQLString
-                }
-            },
-            resolve: (sourceNode, args, info) => {
-                let parentNode = schemaField.resolve(sourceNode, args, info);
-                if (parentNode instanceof QuickSearchQueryNode) {
-                    return new QuickSearchQueryNode({
-                        rootEntityType: parentNode.rootEntityType,
-                        isGlobal: parentNode.isGlobal,
-                        itemVariable: parentNode.itemVariable
-                    }); // @MSF GLOBAL TODO: resolver - generate Global-Search-Search-Filter
-                } else {
-                    throw new Error(QS_QUERYNODE_ONLY_ERROR_MESSAGE);
-                }
-            }
-        };
-    }
-
     public getOrderByAndPaginationResolver(schemaField: QueryNodeField, sourceNode: QueryNode, args: { [p: string]: any }, info: QueryNodeResolveInfo, orderByType: SystemFieldOrderByEnumType) {
         let listNode = schemaField.resolve(sourceNode, args, info);
-        let itemVariable = new VariableQueryNode(`qsGlobalResult`); // @MSF GLOBAL TODO: constant itemVariable Name
+        let itemVariable = new VariableQueryNode(`qsGlobalResult`);
 
 
         // if we can, just extend a given TransformListNode so that other cruddl optimizations can operate
@@ -259,8 +254,33 @@ export class QuickSearchGlobalAugmentation {
         return values;
     }
 
+    @memorize()
+    private generateMetaType(rootEntityTypes: ReadonlyArray<RootEntityType>): QueryNodeObjectType {
+        return {
+            name: "GlobalQueryMetaType", // @MSF GLOBAL TODO: constant
+            description: 'Provides aggregated information about a collection or list',
+            fields: [
+                {
+                    name: "count_exact_matches", // @MSF GLOBAL TODO: constant
+                    type: GraphQLInt,
+                    description: 'The number of items in the collection or list, after applying the filter if specified.',
+                    resolve: listNode => new CountQueryNode(listNode)
+                },
+                ...rootEntityTypes.map(rootEntityType => {
+                    return {
+                        name: `count_${rootEntityType.pluralName}`,
+                        type: GraphQLInt,
+                        description: '', // @MSF GLOBAL TODO: description
+                        resolve: (listNode: QueryNode) => new CountQueryNode(listNode)
+                    }
+                })
+            ]
+        };
 
+    }
 }
+
+const QUICK_SEARCH_GLOBAL_ORDER_BY_NAME = 'GlobalOrderBy';
 
 export class SystemFieldOrderByEnumType {
     constructor(public readonly values: ReadonlyArray<OrderByEnumValue>) {
@@ -268,8 +288,8 @@ export class SystemFieldOrderByEnumType {
     }
 
     get name() {
-        return 'GlobalOrderBy';
-        // @MSF GLOBAL TODO: constant
+
+        return QUICK_SEARCH_GLOBAL_ORDER_BY_NAME;
         // @MSF VAL TODO: check for collision
     }
 

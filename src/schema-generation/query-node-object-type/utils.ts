@@ -28,9 +28,6 @@ export function extractQueryTreeObjectType(type: QueryNodeOutputType): QueryNode
     if (type instanceof QueryNodeNonNullType || type instanceof QueryNodeListType) {
         return extractQueryTreeObjectType(type.ofType);
     }
-    if (type instanceof QueryNodeUnionType) {
-        return undefined; // @MSF GLOBAL TODO: properly handle UnionType
-    }
     return type;
 }
 
