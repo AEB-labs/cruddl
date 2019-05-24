@@ -41,21 +41,6 @@ export interface QueryNodeObjectType {
     fields: Thunk<ReadonlyArray<QueryNodeField>>
 }
 
-export class QueryNodeUnionType implements QueryNodeObjectType{
-    constructor(public readonly name: string,
-                public readonly types: ReadonlyArray<QueryNodeObjectType>) {
-
-    }
-
-    // @MSF GLOBAL TODO: description
-    get description():string{
-        return ``
-    }
-    // @MSF GLOBAL TODO: implement
-    get fields():Thunk<ReadonlyArray<QueryNodeField>>{
-        return () => [];
-    }
-}
 
 export class QueryNodeNonNullType<T extends QueryNodeNullableType> {
     constructor(public readonly ofType: T) {
@@ -68,6 +53,5 @@ export class QueryNodeListType<T extends QueryNodeOutputType> {
 }
 
 export type QueryNodeNamedOutputType = QueryNodeObjectType | GraphQLObjectType | GraphQLEnumType | GraphQLScalarType
-    | QueryNodeUnionType
 export type QueryNodeNullableType = QueryNodeNamedOutputType | QueryNodeListType<any> | GraphQLList<any>
 export type QueryNodeOutputType = QueryNodeNullableType | QueryNodeNonNullType<any> | GraphQLNonNull<any>

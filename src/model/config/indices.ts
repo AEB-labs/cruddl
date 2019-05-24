@@ -19,6 +19,5 @@ export interface IndexDefinitionConfig {
 
 export interface ArangoSearchIndexConfig {
     readonly isIndexed: boolean
-    readonly isGlobalIndexed: boolean
     readonly directiveASTNode?: DirectiveNode
 }

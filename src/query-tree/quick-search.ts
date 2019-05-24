@@ -7,8 +7,6 @@ import { BinaryOperator, OperatorWithLanguageQueryNode, BinaryOperatorWithLangua
 import { and } from '../schema-generation/quick-search-filter-input-types/constants';
 import { simplifyBooleans } from './utils';
 
-const QUICK_SEARCH_GLOBAL_VARIABLE_NAME = `quickSearchGlobal`;
-
 export class QuickSearchQueryNode extends QueryNode {
 
     public readonly qsFilterNode: QueryNode;
@@ -22,7 +20,7 @@ export class QuickSearchQueryNode extends QueryNode {
     }) {
         super();
         this.qsFilterNode = params.qsFilterNode || new ConstBoolQueryNode(true);
-        this.itemVariable = params.itemVariable || new VariableQueryNode(params.rootEntityType ? decapitalize(params.rootEntityType.name) : QUICK_SEARCH_GLOBAL_VARIABLE_NAME); // @MSF GLOBAL TODO: constant variable Name
+        this.itemVariable = params.itemVariable || new VariableQueryNode(decapitalize(params.rootEntityType.name) );
         this.rootEntityType = params.rootEntityType;
     }
 

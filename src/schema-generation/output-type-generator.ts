@@ -19,11 +19,8 @@ import {
     QueryNodeField,
     QueryNodeNonNullType, QueryNodeObjectType,
     QueryNodeOutputType,
-    QueryNodeUnionType
 } from './query-node-object-type';
 import { getOrderByValues } from './utils/pagination';
-
-const QUICK_SEARCH_GLOBAL_TYPE_NAME = `QuickSearchGlobalType`;
 
 export class OutputTypeGenerator {
     constructor(
@@ -47,15 +44,6 @@ export class OutputTypeGenerator {
             return this.enumTypeGenerator.generate(type);
         }
         throw new Error(`Unsupported type kind: ${(type as Type).kind}`);
-    }
-
-    generateQuickSearchGlobalType(types: ReadonlyArray<RootEntityType>): QueryNodeUnionType {
-        const objectTypes = types.filter(value => value.isRootEntityType && value.arangoSearchConfig.isGlobalIndexed).map(value => <QueryNodeObjectType>this.generate(value));
-        return new QueryNodeUnionType(
-            QUICK_SEARCH_GLOBAL_TYPE_NAME,
-            objectTypes
-        );
-
     }
 
     @memorize()

@@ -14,7 +14,6 @@ import { getArgumentsForUniqueFields, getEntitiesByUniqueFieldQuery } from './ut
 import { QuickSearchGenerator } from './quick-search-generator';
 import { GraphQLUnionType } from 'graphql';
 import { QuickSearchQueryNode } from '../query-tree/quick-search';
-import { QuickSearchGlobalGenerator } from './quick-search-global-generator';
 
 export class QueryTypeGenerator {
     constructor(
@@ -24,7 +23,6 @@ export class QueryTypeGenerator {
         private readonly metaFirstAugmentation: MetaFirstAugmentation,
         private readonly metaTypeGenerator: MetaTypeGenerator,
         private readonly quickSearchGenerator: QuickSearchGenerator,
-        private readonly quickSearchGlobalGenerator: QuickSearchGlobalGenerator
     ) {
 
     }
@@ -42,10 +40,6 @@ export class QueryTypeGenerator {
             ...flatMap(namespace.rootEntityTypes, type => this.getFields(type))
         ];
 
-        if (namespace.rootEntityTypes.some(value => value.arangoSearchConfig.isGlobalIndexed)) {
-            fields.push(this.getQuickSearchGlobalField(namespace.rootEntityTypes));
-            fields.push(this.getQuickSearchGlobalFieldMeta(namespace.rootEntityTypes));
-        }
 
         return {
             name: namespace.pascalCasePath + QUERY_TYPE,
@@ -94,14 +88,6 @@ export class QueryTypeGenerator {
             description,
             resolve: (_, args, info) => this.getSingleRootEntityNode(rootEntityType, args, info)
         };
-    }
-
-    private getQuickSearchGlobalField(rootEntityTypes: ReadonlyArray<RootEntityType>): QueryNodeField {
-        return (this.quickSearchGlobalGenerator.generate(rootEntityTypes));
-    }
-
-    private getQuickSearchGlobalFieldMeta(rootEntityTypes: ReadonlyArray<RootEntityType>): QueryNodeField {
-        return this.metaFirstAugmentation.augment(this.quickSearchGlobalGenerator.generateMeta(rootEntityTypes));
     }
 
     private getSingleRootEntityNode(rootEntityType: RootEntityType, args: { [name: string]: any }, context: FieldContext): QueryNode {

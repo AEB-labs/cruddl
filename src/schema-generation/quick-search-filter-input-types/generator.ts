@@ -6,7 +6,7 @@ import { EnumTypeGenerator } from '../enum-type-generator';
 import { GraphQLEnumType, Thunk } from 'graphql';
 import { resolveThunk } from '../query-node-object-type';
 import { TypedInputObjectType } from '../typed-input-object-type';
-import { getQuickSearchFilterTypeName, getQuickSearchGlobalFilterTypeName } from '../../schema/names';
+import { getQuickSearchFilterTypeName } from '../../schema/names';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
@@ -35,7 +35,6 @@ import {
     INPUT_FIELD_NOT_CONTAINS_ANY_WORD, INPUT_FIELD_NOT_CONTAINS_PHRASE
 } from '../../schema/constants';
 import { OrderByEnumValue } from '../order-by-enum-generator';
-import { SystemFieldOrderByEnumType } from '../quick-search-global-generator';
 import { simplifyBooleans } from '../../query-tree/utils';
 import { QuickSearchAndFilterField, QuickSearchEntityExtensionFilterField, QuickSearchFilterField, QuickSearchNestedObjectFilterField, QuickSearchOrFilterField, QuickSearchScalarOrEnumFieldFilterField, QuickSearchScalarOrEnumFilterField } from './filter-fields';
 
@@ -254,21 +253,6 @@ export class QuickSearchFilterTypeGenerator {
                 isNested ? 'some_' + name : name,
                 this.enumTypeGenerator.generate(type), field, path);
         });
-    }
-
-    @memorize()
-    generateSystemFieldOrderByEnum(type: RootEntityType): SystemFieldOrderByEnumType {
-        // @MSF TODO look for cleaner solution to select system fields instead of using the first type
-        const systemfields = type.fields.filter(value => value.isSystemField);
-
-        function mapToOrderByEnumValues(value: Field) {
-            return [
-                new OrderByEnumValue([value], OrderDirection.ASCENDING),
-                new OrderByEnumValue([value], OrderDirection.DESCENDING)
-            ];
-        }
-
-        return new SystemFieldOrderByEnumType(flatMap(systemfields, mapToOrderByEnumValues));
     }
 
     private getValues(type: ObjectType, path: ReadonlyArray<Field>): ReadonlyArray<OrderByEnumValue> {

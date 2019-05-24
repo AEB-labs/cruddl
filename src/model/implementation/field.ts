@@ -460,10 +460,6 @@ export class Field implements ModelComponent {
         return !!this.input.isSearchable
     }
 
-    get isGlobalSearchable(): boolean{
-        return this.isSearchable && (this.isQuickSearchIndexed  || this.isQuickSearchFulltextIndexed)
-    }
-
     get language(): QuickSearchLanguage | undefined{
         return this.input.quickSearchLanguage
     }

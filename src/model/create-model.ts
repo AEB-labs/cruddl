@@ -45,7 +45,6 @@ import {
     UNIQUE_DIRECTIVE,
     VALUE_ARG,
     VALUE_OBJECT_DIRECTIVE,
-    QUICK_SEARCH_INDEXED_GLOBAL_ARGUMENT,
     QUICK_SEARCH_INDEXED_LANGUAGE_ARG,
     QUICK_SEARCH_INDEXED_DIRECTIVE, QUICK_SEARCH_FULLTEXT_INDEXED_DIRECTIVE, QUICK_SEARCH_SEARCHABLE_DIRECTIVE, QUICK_SEARCH_DEFAULT_LANGUAGE_ARG
 } from '../schema/constants';
@@ -238,7 +237,6 @@ function getDefaultValue(fieldNode: FieldDefinitionNode, context: ValidationCont
 function createArangoSearchDefinitionInputs(objectNode: ObjectTypeDefinitionNode, context: ValidationContext): ArangoSearchIndexConfig {
     let directive = findDirectiveWithName(objectNode, ROOT_ENTITY_DIRECTIVE);
     let config = {
-        isGlobalIndexed: false,
         isIndexed: false,
         directiveASTNode: directive
     };
@@ -249,14 +247,6 @@ function createArangoSearchDefinitionInputs(objectNode: ObjectTypeDefinitionNode
                 config.isIndexed = argumentIndexed.value.value;
             } else {
                 context.addMessage(ValidationMessage.error(VALIDATION_ERROR_EXPECTED_BOOLEAN, argumentIndexed.value.loc));
-            }
-        }
-        const argumentGlobal: ArgumentNode | undefined = getNodeByName(directive.arguments, QUICK_SEARCH_INDEXED_GLOBAL_ARGUMENT);
-        if (argumentGlobal) {
-            if (argumentGlobal.value.kind === 'BooleanValue') {
-                config.isGlobalIndexed = argumentGlobal.value.value;
-            } else {
-                context.addMessage(ValidationMessage.error(VALIDATION_ERROR_EXPECTED_BOOLEAN, argumentGlobal.value.loc));
             }
         }
     }

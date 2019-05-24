@@ -7,7 +7,6 @@ import {
     QueryNodeNonNullType,
     QueryNodeObjectType,
     QueryNodeOutputType,
-    QueryNodeUnionType
 } from './definition';
 import { QueryNodeNullableType } from './index';
 

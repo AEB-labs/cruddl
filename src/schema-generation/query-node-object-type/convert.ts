@@ -16,7 +16,6 @@ import {
     QueryNodeNonNullType,
     QueryNodeObjectType,
     QueryNodeOutputType,
-    QueryNodeUnionType
 } from './definition';
 import { isGraphQLOutputType, resolveThunk } from './utils';
 
@@ -48,13 +47,6 @@ export class QueryNodeObjectTypeConverter {
 
         if (type instanceof QueryNodeListType) {
             return new GraphQLList(this.convertToGraphQLType(type.ofType));
-        }
-
-        if (type instanceof QueryNodeUnionType) {
-            return new GraphQLUnionType({
-                types: type.types.map(value => <GraphQLObjectType>this.convertToGraphQLType(value)),
-                name: type.name
-            });
         }
 
         return this.convertToGraphQLObjectType(type);

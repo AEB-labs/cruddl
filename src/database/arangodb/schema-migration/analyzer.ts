@@ -18,10 +18,8 @@ import {
     calculateRequiredArangoSearchViewCreateOperations,
     calculateRequiredArangoSearchViewDropOperations,
     calculateRequiredArangoSearchViewUpdateOperations,
-    calculateRequiredGlobalViewOperation,
     getRequiredViewsFromModel
 } from './arango-search-helpers';
-import { QUICK_SEARCH_GLOBAL_VIEW_NAME } from '../../../schema/constants';
 
 export class SchemaAnalyzer {
     private readonly db: Database;
@@ -163,11 +161,6 @@ export class SchemaAnalyzer {
         operations = operations.concat(viewsToCreate);
         operations = operations.concat(viewsToDrop);
         operations = operations.concat(viewsToUpdate);
-
-        const globalViewChange = await calculateRequiredGlobalViewOperation(model.rootEntityTypes, this.db.arangoSearchView(QUICK_SEARCH_GLOBAL_VIEW_NAME), this.db);
-        if (globalViewChange) {
-            operations.push(globalViewChange);
-        }
 
 
         return operations;

@@ -7,7 +7,7 @@
 # @MSF TODO: new system for lists (skills:{some_description:})
 # @MSF TODO: check out 3.5 alpha
 "A superhero"
-type Hero @rootEntity(quickSearchIndex:true, quickSearchLanguage: DE, globalQuickSearch: true) {
+type Hero @rootEntity(quickSearchIndex:true, quickSearchLanguage: DE) {
     "The hero's screen name"
     name: String
     key: String @key
@@ -47,7 +47,7 @@ type Skill @valueObject {
 }
 
 "A superhero movie"
-type Movie @rootEntity(quickSearchIndex:true, quickSearchLanguage: DE, globalQuickSearch: true) {
+type Movie @rootEntity(quickSearchIndex:true, quickSearchLanguage: DE) {
     name: String @quickSearchFulltextIndex @quickSearchIndex @searchable
     "All the heroes starring in this movie"
     heroes: [Hero] @relation # @MSF VAL TODO: do not allow quickSearchIndex for relations
