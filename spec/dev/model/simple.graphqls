@@ -3,7 +3,6 @@
 # @MSF OPT TODO: refactor method names
 # @MSF OPT TODO: code comments
 # @MSF TODO: find better name than quickSearch for GQL API
-# @MSF TODO: ADB Support Ticket for AND/OR stuff
 # @MSF TODO: check out store values
 # @MSF TODO: new system for lists (skills:{some_description:})
 # @MSF TODO: check out 3.5 alpha

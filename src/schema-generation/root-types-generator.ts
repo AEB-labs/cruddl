@@ -13,7 +13,6 @@ import { OrderByEnumGenerator } from './order-by-enum-generator';
 import { OutputTypeGenerator } from './output-type-generator';
 import { QueryNodeObjectType, QueryNodeObjectTypeConverter } from './query-node-object-type';
 import { QueryTypeGenerator } from './query-type-generator';
-import { QuickSearchGlobalFilterTypeGenerator } from './quick-search-filter-input-types/generator-global';
 import { UpdateInputTypeGenerator } from './update-input-types';
 import { QuickSearchGenerator } from './quick-search-generator';
 import { QuickSearchFilterTypeGenerator } from './quick-search-filter-input-types/generator';
@@ -23,7 +22,6 @@ export class RootTypesGenerator {
     private readonly enumTypeGenerator = new EnumTypeGenerator();
     private readonly filterTypeGenerator = new FilterTypeGenerator(this.enumTypeGenerator);
     private readonly quickSearchFilterTypeGenerator = new QuickSearchFilterTypeGenerator(this.enumTypeGenerator);
-    private readonly quickSearchGlobalFilterTypeGenerator = new QuickSearchGlobalFilterTypeGenerator(this.quickSearchFilterTypeGenerator, this.enumTypeGenerator);
     private readonly orderByEnumGenerator = new OrderByEnumGenerator();
     private readonly orderByAugmentation = new OrderByAndPaginationAugmentation(this.orderByEnumGenerator);
     private readonly filterAugmentation = new FilterAugmentation(this.filterTypeGenerator);
@@ -33,7 +31,7 @@ export class RootTypesGenerator {
     private readonly metaTypeGenerator = new MetaTypeGenerator();
     private readonly outputTypeGenerator = new OutputTypeGenerator(this.listAugmentation, this.filterAugmentation,
         this.enumTypeGenerator, this.orderByEnumGenerator, this.metaTypeGenerator);
-    private readonly quickSearchGlobalGenerator = new QuickSearchGlobalGenerator(this.quickSearchFilterTypeGenerator, this.quickSearchGlobalFilterTypeGenerator, this.outputTypeGenerator);
+    private readonly quickSearchGlobalGenerator = new QuickSearchGlobalGenerator(this.quickSearchFilterTypeGenerator, this.outputTypeGenerator);
     private readonly quickSearchGenerator = new QuickSearchGenerator(this.quickSearchFilterTypeGenerator, this.outputTypeGenerator, this.listAugmentation);
     private readonly createTypeGenerator = new CreateInputTypeGenerator(this.enumTypeGenerator);
     private readonly updateTypeGenerator = new UpdateInputTypeGenerator(this.enumTypeGenerator, this.createTypeGenerator);

@@ -24,6 +24,7 @@ import { createFieldNode } from '../field-nodes';
 import { TypedInputFieldBase } from '../typed-input-object-type';
 import { QuickSearchFilterObjectType } from '../quick-search-filter-input-types/generator';
 import { QUICK_SEARCH_FILTER_DESCRIPTIONS, QUICK_SEARCH_OPERATORS_WITH_LIST_OPERAND } from './constants';
+
 // @MSF TODO: own FilterFields for QuickSearch
 export interface QuickSearchFilterField extends TypedInputFieldBase<QuickSearchFilterField> {
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode
@@ -72,6 +73,7 @@ export class QuickSearchScalarOrEnumFieldFilterField implements QuickSearchFilte
         return this.resolveOperator(valueNode, literalNode, this.quickSearchLanguage);
     }
 
+    // @MSF TODO: dont abuse fields for searchFilter generation
     getSearchFilterNode(sourceNode: QueryNode, expression: string): QueryNode {
         if (this.isValidForSearch()) {
             return this.getFilterNode(sourceNode, expression);
@@ -96,7 +98,7 @@ export class QuickSearchScalarOrEnumFilterField implements QuickSearchFilterFiel
         public readonly operatorName: string,
         baseInputType: GraphQLInputType,
         private readonly field?: Field, // only filled for quickSearch
-        private readonly path?: Field[], // only filled for quickSearch
+        private readonly path?: ReadonlyArray<Field>, // only filled for quickSearch
         public readonly quickSearchLanguage?: QuickSearchLanguage
     ) {
         this.inputType = QUICK_SEARCH_OPERATORS_WITH_LIST_OPERAND.includes(operatorName) ? new GraphQLList(new GraphQLNonNull(baseInputType)) : baseInputType;
@@ -109,9 +111,9 @@ export class QuickSearchScalarOrEnumFilterField implements QuickSearchFilterFiel
 
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
         if (this.field) {
-            const valueNode = new FieldPathQueryNode(sourceNode, this.path ?  this.path.concat([this.field]) : [this.field]);
+            const valueNode = new FieldPathQueryNode(sourceNode, this.path ? this.path.concat([this.field]) : [this.field]);
             const literalNode = new LiteralQueryNode(filterValue);
-            return this.resolveOperator(valueNode, literalNode,this.quickSearchLanguage);
+            return this.resolveOperator(valueNode, literalNode, this.quickSearchLanguage);
         } else {
             const literalNode = new LiteralQueryNode(filterValue);
             return this.resolveOperator(sourceNode, literalNode, this.quickSearchLanguage);

@@ -12,7 +12,6 @@ import { OrderByEnumValue } from './order-by-enum-generator';
 import { OutputTypeGenerator } from './output-type-generator';
 import { QueryNodeField, QueryNodeListType, QueryNodeNonNullType, QueryNodeObjectType, QueryNodeResolveInfo } from './query-node-object-type';
 import { QuickSearchFilterTypeGenerator } from './quick-search-filter-input-types/generator';
-import { QuickSearchGlobalFilterTypeGenerator } from './quick-search-filter-input-types/generator-global';
 import { QS_QUERYNODE_ONLY_ERROR_MESSAGE } from './quick-search-generator';
 
 const QUICK_SEARCH_GLOBAL_NODE_NAME = 'quickSearchGlobal';
@@ -20,7 +19,6 @@ const QUICK_SEARCH_GLOBAL_NODE_NAME = 'quickSearchGlobal';
 export class QuickSearchGlobalGenerator {
     constructor(
         private readonly quickSearchTypeGenerator: QuickSearchFilterTypeGenerator,
-        private readonly quickSearchGlobalFilterTypeGenerator: QuickSearchGlobalFilterTypeGenerator,
         private readonly outputTypeGenerator: OutputTypeGenerator) {
 
     }
@@ -50,7 +48,7 @@ export class QuickSearchGlobalGenerator {
             resolve: () => new QuickSearchQueryNode({ rootEntityType: rootEntityTypes[0] }) // @MSF GLOBAL TODO: resolver
         });
 
-        return this.augmentGlobalPaged(this.generateFromConfig(fieldConfig, rootEntityTypes), rootEntityTypes);
+        return this.generateFromConfig(fieldConfig, rootEntityTypes);
 
     }
 
