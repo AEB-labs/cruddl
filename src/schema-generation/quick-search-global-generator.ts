@@ -1,30 +1,17 @@
-import { getMetaFieldName } from '../schema/names';
-import { OutputTypeGenerator } from './output-type-generator';
-import { QuickSearchFilterTypeGenerator } from './quick-search-filter-input-types/generator';
-import { QueryNodeField, QueryNodeListType, QueryNodeNonNullType, QueryNodeObjectType, QueryNodeResolveInfo } from './query-node-object-type';
-import { RootEntityType } from '../model/implementation';
-import {
-    AFTER_ARG, COUNT_META_FIELD,
-    CURSOR_FIELD,
-    FIRST_ARG,
-    ORDER_BY_ARG, QUERY_META_TYPE,
-    QUICK_SEARCH_EXPRESSION_ARG,
-    QUICK_SEARCH_FILTER_ARG,
-    SKIP_ARG
-} from '../schema/constants';
-import { QuickSearchQueryNode } from '../query-tree/quick-search';
 import { GraphQLEnumType, GraphQLInt, GraphQLList, GraphQLNonNull, GraphQLString } from 'graphql';
-import {
-    BinaryOperationQueryNode,
-    BinaryOperator, ConstBoolQueryNode, CountQueryNode, LiteralQueryNode, OrderDirection, OrderSpecification,
-    QueryNode, RuntimeErrorQueryNode,
-    TransformListQueryNode,
-    VariableQueryNode
-} from '../query-tree';
-import { and } from './filter-input-types/constants';
-import { OrderByEnumValue } from './order-by-enum-generator';
 import { chain } from 'lodash';
 import memorize from 'memorize-decorator';
+import { RootEntityType } from '../model/implementation';
+import { BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, CountQueryNode, LiteralQueryNode, OrderDirection, OrderSpecification, QueryNode, RuntimeErrorQueryNode, TransformListQueryNode, VariableQueryNode } from '../query-tree';
+import { QuickSearchQueryNode } from '../query-tree/quick-search';
+import { AFTER_ARG, CURSOR_FIELD, FIRST_ARG, ORDER_BY_ARG, QUICK_SEARCH_EXPRESSION_ARG, SKIP_ARG } from '../schema/constants';
+import { getMetaFieldName } from '../schema/names';
+import { decapitalize } from '../utils/utils';
+import { and } from './filter-input-types/constants';
+import { OrderByEnumValue } from './order-by-enum-generator';
+import { OutputTypeGenerator } from './output-type-generator';
+import { QueryNodeField, QueryNodeListType, QueryNodeNonNullType, QueryNodeObjectType, QueryNodeResolveInfo } from './query-node-object-type';
+import { QuickSearchFilterTypeGenerator } from './quick-search-filter-input-types/generator';
 import { QuickSearchGlobalFilterTypeGenerator } from './quick-search-filter-input-types/generator-global';
 import { QS_QUERYNODE_ONLY_ERROR_MESSAGE } from './quick-search-generator';
 
@@ -51,7 +38,7 @@ export class QuickSearchGlobalGenerator {
     }
 
     generateMeta(rootEntityTypes: ReadonlyArray<RootEntityType>): QueryNodeField {
-        const metaType = this.generateMetaType(rootEntityTypes);
+        const metaType = this.generateMetaType(rootEntityTypes.filter(value => value.arangoSearchConfig.isGlobalIndexed));
         const fieldConfig = ({
             name: getMetaFieldName(QUICK_SEARCH_GLOBAL_NODE_NAME),
             type: new QueryNodeNonNullType(metaType),
@@ -271,12 +258,26 @@ export class QuickSearchGlobalGenerator {
                         name: `count_${rootEntityType.pluralName}`,
                         type: GraphQLInt,
                         description: '', // @MSF GLOBAL TODO: description
-                        resolve: (listNode: QueryNode) => new CountQueryNode(listNode)
+                        resolve: (listNode: QueryNode, args: { [name: string]: any }) => new CountQueryNode(this.getSearchQueryNode(rootEntityType, args[QUICK_SEARCH_EXPRESSION_ARG]))
                     }
                 })
             ]
         };
 
+    }
+
+    private getSearchQueryNode(rootEntityType: RootEntityType, arg: any): QueryNode {
+        const itemVariable = new VariableQueryNode(decapitalize(rootEntityType.name));
+        const filterNode = (arg && arg !== "") ? this.getQuickSearchFilterNode(arg, itemVariable) : new ConstBoolQueryNode(true);
+        return new QuickSearchQueryNode({
+            itemVariable,
+            qsFilterNode: filterNode,
+            rootEntityType: rootEntityType
+        });
+    }
+
+    private getQuickSearchFilterNode(arg: string, itemVariable: VariableQueryNode): QueryNode {
+        return new BinaryOperationQueryNode(itemVariable, BinaryOperator.EQUAL, new LiteralQueryNode(arg))
     }
 }
 

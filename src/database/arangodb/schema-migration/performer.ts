@@ -76,7 +76,7 @@ export class MigrationPerformer {
 
     private async isArangoSearchSupported() {
         const version = await this.versionHelper.getArangoDBVersion();
-        return version && (version.major > 3 || (version.major >= 3 && version.minor >= 4));
+        return version && (version.major === 3 && version.minor == 4);
     }
 
     private async updateArangoSearchView(migration: UpdateArangoSearchViewMigration) {

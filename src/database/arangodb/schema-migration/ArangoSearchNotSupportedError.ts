@@ -4,7 +4,7 @@
  */
 export class ArangoSearchNotSupportedError extends Error {
     constructor() {
-        super(`ArangoSearch-migration was not executed, because it requires an ArangoDB of the version 3.4 or higher.`);
+        super(`ArangoSearch-migration was not executed, because it requires an ArangoDB of the version 3.4. Higher versions are not supported yet.`);
         this.name = this.constructor.name;
     }
 }
