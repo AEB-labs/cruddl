@@ -1,19 +1,22 @@
 import { compact } from 'lodash';
 import { Relation, RootEntityType } from '../../model';
 import {
-    AddEdgesQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode,
+    AddEdgesQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, BinaryOperatorWithLanguage, ConcatListsQueryNode, ConditionalQueryNode,
     ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode,
     EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode,
-    LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, OrderClause, OrderDirection,
+    LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, OperatorWithLanguageQueryNode, OrderClause, OrderDirection,
     OrderSpecification, QueryNode, QueryResultValidator, RemoveEdgesQueryNode, RootEntityIDQueryNode,
     RUNTIME_ERROR_TOKEN, RuntimeErrorQueryNode, SafeListQueryNode, SetEdgeQueryNode, TransformListQueryNode, TypeCheckQueryNode,
     UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode,
     WithPreExecutionQueryNode
 } from '../../query-tree';
 import { QuantifierFilterNode } from '../../query-tree/quantifiers';
+import { QuickSearchQueryNode } from '../../query-tree/quick-search';
 import { simplifyBooleans } from '../../query-tree/utils';
 import { not } from '../../schema-generation/filter-input-types/constants';
 import { Constructor, decapitalize } from '../../utils/utils';
+import { aql } from '../arangodb/aql';
+import { IDENTITY_ANALYZER } from '../arangodb/schema-migration/arango-search-helpers';
 import { likePatternToRegExp } from '../like-helpers';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './inmemory-basics';
 import { js, JSCompoundQuery, JSFragment, JSQueryResultVariable, JSVariable } from './js';
@@ -150,9 +153,11 @@ namespace jsExt {
 }
 
 const processors = new Map<Constructor<QueryNode>, NodeProcessor<QueryNode>>();
+
 function register<T extends QueryNode>(type: Constructor<T>, processor: NodeProcessor<T>) {
     processors.set(type, processor as NodeProcessor<QueryNode>); // probably some bivariancy issue
 }
+
 
 register(LiteralQueryNode, node => {
     return js.value(node.value);
@@ -521,6 +526,15 @@ register(RemoveEdgesQueryNode, (node, context) => {
     return jsExt.executingFunction(
         js`${coll} = ${coll}.filter(${jsExt.lambda(edgeVar, edgeShouldStay)});`
     );
+});
+
+// @MSF TODO: include QuickSearch in In-Memory Database
+register(OperatorWithLanguageQueryNode, (node, context) => {
+    throw new Error(`'The QuickSearch feature is not supported for the in-memory database`);
+});
+
+register(QuickSearchQueryNode, (node, context) => {
+    throw new Error(`The QuickSearch feature is not supported for the in-memory database`);
 });
 
 register(SetEdgeQueryNode, (node, context) => {

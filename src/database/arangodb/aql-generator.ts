@@ -536,7 +536,7 @@ register(OperatorWithLanguageQueryNode, (node, context) => {
         case BinaryOperatorWithLanguage.QUICKSEARCH_CONTAINS_PHRASE:
             return aql`ANALYZER( PHRASE( ${lhs}, ${rhs}), ${analyzer})`;
         default:
-            throw new Error(`Unsupported ternary operator: ${node.operator}`);
+            throw new Error(`Unsupported operator: ${node.operator}`);
     }
 
 });

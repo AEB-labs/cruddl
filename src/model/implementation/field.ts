@@ -1,7 +1,7 @@
-import {DirectiveNode, FieldDefinitionNode} from 'graphql';
+import { DirectiveNode, FieldDefinitionNode } from 'graphql';
 import memorize from 'memorize-decorator';
 import { CALC_MUTATIONS_OPERATORS } from '../../schema/constants';
-import {CalcMutationsOperator, FieldConfig, QuickSearchLanguage, TypeKind} from '../config';
+import { CalcMutationsOperator, FieldConfig, QuickSearchLanguage, TypeKind } from '../config';
 import { ValidationMessage } from '../validation';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
 import { FieldLocalization } from './i18n';
@@ -190,6 +190,7 @@ export class Field implements ModelComponent {
         this.validateReference(context);
         this.validateDefaultValue(context);
         this.validateCalcMutations(context);
+        this.validateQuickSearch(context);
     }
 
     private validateName(context: ValidationContext) {
@@ -448,19 +449,34 @@ export class Field implements ModelComponent {
         }
     }
 
-    get isQuickSearchIndexed(): boolean{
-        return !!this.input.isQuickSearchIndexed
+    private validateQuickSearch(context: ValidationContext) {
+        if (this.isQuickSearchIndexed && !(this.type.isScalarType || this.type.isChildEntityType || this.type.isEntityExtensionType || this.type.isValueObjectType)) {
+            context.addMessage(ValidationMessage.error(`QuickSearchIndex is not supported on type "${this.type.name}".`, this.input.isQuickSearchIndexedASTNode));
+        }
+        if (this.isQuickSearchFulltextIndexed && !(this.type.isScalarType && this.type.name === 'String')) {
+            context.addMessage(ValidationMessage.error(`QuickSearchFulltextIndex is not supported on type "${this.type.name}".`, this.input.isQuickSearchFulltextIndexedASTNode));
+        }
+        if (this.isQuickSearchFulltextIndexed && !this.language) {
+            context.addMessage(ValidationMessage.error(`QuickSearchFulltextIndex requires either a language parameter, or a defaultLanguage must be set in the entity.`, this.input.isQuickSearchFulltextIndexedASTNode));
+        }
+        if (this.input.isSearchable && !this.isQuickSearchIndexed && !this.isQuickSearchFulltextIndexed) {
+            context.addMessage(ValidationMessage.error(`Only fields that are either quickSearchIndexed or quickSearchFulltextIndexed can be 'searchable'.`, this.input.isSearchableASTNode));
+        }
     }
 
-    get isQuickSearchFulltextIndexed(): boolean{
-        return !!this.input.isQuickSearchFulltextIndexed
+    get isQuickSearchIndexed(): boolean {
+        return !!this.input.isQuickSearchIndexed;
     }
 
-    get isSearchable(): boolean{
-        return !!this.input.isSearchable && (this.isQuickSearchFulltextIndexed || this.isQuickSearchIndexed)
+    get isQuickSearchFulltextIndexed(): boolean {
+        return !!this.input.isQuickSearchFulltextIndexed;
     }
 
-    get language(): QuickSearchLanguage | undefined{
-        return this.input.quickSearchLanguage
+    get isSearchable(): boolean {
+        return !!this.input.isSearchable && (this.isQuickSearchFulltextIndexed || this.isQuickSearchIndexed);
+    }
+
+    get language(): QuickSearchLanguage | undefined {
+        return this.input.quickSearchLanguage;
     }
 }

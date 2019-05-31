@@ -4,7 +4,7 @@
 # @MSF OPT TODO: code comments
 
 "A superhero"
-type Hero @rootEntity(quickSearchIndex:true, quickSearchLanguage: DE) {
+type Hero @rootEntity(quickSearchLanguage: DE) {
     "The hero's screen name"
     name: String
     key: String @key
@@ -19,7 +19,7 @@ type Hero @rootEntity(quickSearchIndex:true, quickSearchLanguage: DE) {
     skills: [Skill]
     skill: Skill
     suit: Suit
-    morality: Morality  # @MSF VAL TODO: only allow language on Scalars and Enums
+    morality: Morality
     countryISOCode: String
     country: Country @reference(keyField: "countryISOCode")
     missions: [Mission] @quickSearchIndex
@@ -44,10 +44,10 @@ type Skill @valueObject {
 type Movie @rootEntity(quickSearchIndex:true, quickSearchLanguage: DE) {
     name: String @quickSearchFulltextIndex @quickSearchIndex @searchable
     "All the heroes starring in this movie"
-    heroes: [Hero] @relation # @MSF VAL TODO: do not allow quickSearchIndex for relations
+    heroes: [Hero] @relation
     "The real superhero"
     director: Director @relation
-    publisher: Publisher @reference # @MSF VAL TODO: do not allow quickSearchIndex for references
+    publisher: Publisher @reference
 }
 
 "A movie director"

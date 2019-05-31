@@ -156,6 +156,7 @@ export class RootEntityType extends ObjectTypeBase {
         this.validateKeyField(context);
         this.validatePermissions(context);
         this.validateIndices(context);
+        this.validateQuickSearch(context);
     }
 
     private validateKeyField(context: ValidationContext) {
@@ -217,6 +218,15 @@ export class RootEntityType extends ObjectTypeBase {
         for (const indexInput of this.input.indices || []) {
             const index = new Index(indexInput, this);
             index.validate(context);
+        }
+    }
+
+    private validateQuickSearch(context: ValidationContext) {
+        if (!this.arangoSearchConfig.isIndexed && this.fields.some(value => value.isQuickSearchIndexed && value.isQuickSearchFulltextIndexed)) {
+            context.addMessage(ValidationMessage.warn(
+                `The entity contains fields that are quickSearchIndexed or quickSearchFulltextIndexed, but the entity itself is not marked as quickSearchIndexed.`,
+                this.input.astNode
+            ));
         }
     }
 }

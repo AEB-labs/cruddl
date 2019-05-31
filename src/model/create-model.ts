@@ -328,6 +328,7 @@ function createFieldInput(fieldNode: FieldDefinitionNode, context: ValidationCon
         isQuickSearchFulltextIndexed: hasDirectiveWithName(fieldNode, QUICK_SEARCH_FULLTEXT_INDEXED_DIRECTIVE),
         isQuickSearchFulltextIndexedASTNode: findDirectiveWithName(fieldNode, QUICK_SEARCH_FULLTEXT_INDEXED_DIRECTIVE),
         isSearchable: getIsSearchable(fieldNode, context),
+        isSearchableASTNode: findDirectiveWithName(fieldNode, QUICK_SEARCH_SEARCHABLE_DIRECTIVE),
         quickSearchLanguage: getLanguage(fieldNode, context, parentNode)
     };
 }

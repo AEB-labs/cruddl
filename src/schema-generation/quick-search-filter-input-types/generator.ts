@@ -115,7 +115,6 @@ export class QuickSearchFilterTypeGenerator {
     }
 
     private generateFilterFieldsForNonListScalar(field: Field): ReadonlyArray<QuickSearchFilterField> {
-        // @MSF VAL TODO: validate languages only for strings
         if (field.isList || !field.type.isScalarType) {
             throw new Error(`Expected "${field.name}" to be a non-list scalar`);
         }

@@ -28,8 +28,6 @@ export interface ArangoSearchDefinition {
     readonly fields: Field[]
 }
 
-// @MSF TODO: InMemoryDatabase
-
 interface ArangoSearchViewCollectionLink {
     analyzers?: string[];
     fields?: {
