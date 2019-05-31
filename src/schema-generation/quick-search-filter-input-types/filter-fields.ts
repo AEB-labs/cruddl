@@ -2,36 +2,20 @@ import { getNamedType, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'gra
 import * as pluralize from 'pluralize';
 import { isArray } from 'util';
 import { Field, QuickSearchLanguage, TypeKind } from '../../model';
-import {
-    BinaryOperationQueryNode,
-    BinaryOperator,
-    ConstBoolQueryNode, FieldPathQueryNode,
-    FieldQueryNode,
-    LiteralQueryNode,
-    QueryNode,
-    VariableQueryNode
-} from '../../query-tree';
-import { QuantifierFilterNode } from '../../query-tree/quantifiers';
-import {
-    AND_FILTER_FIELD,
-    FILTER_FIELD_PREFIX_SEPARATOR, INPUT_FIELD_CONTAINS_ALL_PREFIXES, INPUT_FIELD_CONTAINS_ANY_PREFIX,
-    INPUT_FIELD_CONTAINS_ANY_WORD,
-    INPUT_FIELD_EQUAL, INPUT_FIELD_STARTS_WITH,
-    OR_FILTER_FIELD
-} from '../../schema/constants';
-import { AnyValue, decapitalize, PlainObject } from '../../utils/utils';
+import { BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, FieldPathQueryNode, LiteralQueryNode, NullQueryNode, QueryNode } from '../../query-tree';
+import { AND_FILTER_FIELD, FILTER_FIELD_PREFIX_SEPARATOR, INPUT_FIELD_EQUAL, OR_FILTER_FIELD } from '../../schema/constants';
+import { AnyValue, flatMap, objectEntries, PlainObject } from '../../utils/utils';
 import { createFieldNode } from '../field-nodes';
-import { TypedInputFieldBase } from '../typed-input-object-type';
 import { QuickSearchFilterObjectType } from '../quick-search-filter-input-types/generator';
-import { QUICK_SEARCH_FILTER_DESCRIPTIONS, QUICK_SEARCH_OPERATORS_WITH_LIST_OPERAND } from './constants';
+import { TypedInputFieldBase } from '../typed-input-object-type';
+import { and, QUICK_SEARCH_FILTER_DESCRIPTIONS, QUICK_SEARCH_OPERATORS_WITH_LIST_OPERAND } from './constants';
+
+
+const NESTED_FIELD_SUFFIX = 'Aggregation';
 
 // @MSF TODO: own FilterFields for QuickSearch
 export interface QuickSearchFilterField extends TypedInputFieldBase<QuickSearchFilterField> {
-    getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode
-
-    getSearchFilterNode(sourceNode: QueryNode, expression: string): QueryNode
-
-    isValidForSearch(): boolean
+    getFilterNode(sourceNode: QueryNode, filterValue: AnyValue, path: ReadonlyArray<Field>): QueryNode
 }
 
 function getDescription({ operator, typeName, fieldName }: { operator: string | undefined, typeName: string, fieldName?: string }) {
@@ -67,25 +51,10 @@ export class QuickSearchScalarOrEnumFieldFilterField implements QuickSearchFilte
         return this.field.name + FILTER_FIELD_PREFIX_SEPARATOR + this.operatorPrefix;
     }
 
-    getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
-        const valueNode = createFieldNode(this.field, sourceNode);
+    getFilterNode(sourceNode: QueryNode, filterValue: AnyValue, path: ReadonlyArray<Field>): QueryNode {
+        const valueNode = new FieldPathQueryNode(sourceNode, path.concat(this.field));
         const literalNode = new LiteralQueryNode(filterValue);
         return this.resolveOperator(valueNode, literalNode, this.quickSearchLanguage);
-    }
-
-    // @MSF TODO: dont abuse fields for searchFilter generation
-    getSearchFilterNode(sourceNode: QueryNode, expression: string): QueryNode {
-        if (this.isValidForSearch()) {
-            return this.getFilterNode(sourceNode, expression);
-        } else {
-            return new ConstBoolQueryNode(false);
-        }
-
-    }
-
-
-    isValidForSearch(): boolean {
-        return this.field.isSearchable && (this.operatorPrefix == undefined || this.operatorPrefix == INPUT_FIELD_CONTAINS_ALL_PREFIXES);
     }
 }
 
@@ -94,11 +63,10 @@ export class QuickSearchScalarOrEnumFilterField implements QuickSearchFilterFiel
     public readonly description: string | undefined;
 
     constructor(
+        public readonly field: Field,
         public readonly resolveOperator: (fieldNode: QueryNode, valueNode: QueryNode, quickSearchLanguage?: QuickSearchLanguage) => QueryNode,
         public readonly operatorName: string,
         baseInputType: GraphQLInputType,
-        private readonly field?: Field, // only filled for quickSearch
-        private readonly path?: ReadonlyArray<Field>, // only filled for quickSearch
         public readonly quickSearchLanguage?: QuickSearchLanguage
     ) {
         this.inputType = QUICK_SEARCH_OPERATORS_WITH_LIST_OPERAND.includes(operatorName) ? new GraphQLList(new GraphQLNonNull(baseInputType)) : baseInputType;
@@ -109,29 +77,11 @@ export class QuickSearchScalarOrEnumFilterField implements QuickSearchFilterFiel
         return this.operatorName;
     }
 
-    getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
-        if (this.field) {
-            const valueNode = new FieldPathQueryNode(sourceNode, this.path ? this.path.concat([this.field]) : [this.field]);
-            const literalNode = new LiteralQueryNode(filterValue);
-            return this.resolveOperator(valueNode, literalNode, this.quickSearchLanguage);
-        } else {
-            const literalNode = new LiteralQueryNode(filterValue);
-            return this.resolveOperator(sourceNode, literalNode, this.quickSearchLanguage);
-        }
-
+    getFilterNode(sourceNode: QueryNode, filterValue: AnyValue, path: ReadonlyArray<Field>): QueryNode {
+        const valueNode = new FieldPathQueryNode(sourceNode, path.concat(this.field));
+        const literalNode = new LiteralQueryNode(filterValue);
+        return this.resolveOperator(valueNode, literalNode, this.quickSearchLanguage);
     }
-
-    getSearchFilterNode(sourceNode: QueryNode, expression: string): QueryNode {
-        if (this.isValidForSearch()) {
-            return this.getFilterNode(sourceNode, expression);
-        } else {
-            return new ConstBoolQueryNode(false);
-        }
-    }
-
-    isValidForSearch(): boolean {
-        return !!this.field && this.field.isSearchable && this.operatorName.endsWith('some_equal');
-    } // @MSF OPT TODO: properly check for operator
 }
 
 export class QuickSearchNestedObjectFilterField implements QuickSearchFilterField {
@@ -142,28 +92,41 @@ export class QuickSearchNestedObjectFilterField implements QuickSearchFilterFiel
         public readonly field: Field,
         public readonly inputType: QuickSearchFilterObjectType
     ) {
-        this.name = this.field.name;
+        this.name = this.field.name + NESTED_FIELD_SUFFIX;
         this.description = `Checks if \`${this.field.name}\` is not null, and allows to filter based on its fields.`;
         if (this.field.isReference && this.field.type.kind == TypeKind.ROOT_ENTITY && this.field.type.keyField) {
             this.description = `Filters the through \`${this.field.type.keyField.name}\` referenced ${pluralize(this.field.type.name)} that fulfills the given requirements.\n\n ` + this.description;
         }
     }
 
-    getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
-        return this.inputType.getFilterNode(createFieldNode(this.field, sourceNode), filterValue);
+    getFilterNode(sourceNode: QueryNode, filterValue: AnyValue, path: ReadonlyArray<Field>): QueryNode {
+        // return this.getNode(sourceNode,[this.field],filterValue).reduce(and,ConstBoolQueryNode.FALSE);
+        return this.inputType.getFilterNode(sourceNode, filterValue, path.concat(this.field));
     }
 
-    getSearchFilterNode(sourceNode: QueryNode, expression: string): QueryNode {
-        if (this.inputType instanceof QuickSearchFilterObjectType) {
-            return this.inputType.getSearchFilterNode(createFieldNode(this.field, sourceNode), expression);
-        } else {
-            return new ConstBoolQueryNode(false);
-        }
-    }
+    // getNode(sourceNode: QueryNode, path: ReadonlyArray<Field>, filterValue: AnyValue):ReadonlyArray<QueryNode> {
+    //     if (typeof filterValue !== 'object' || filterValue === null) {
+    //         throw new Error("")
+    //     }
+    //
+    //     const fieldFilterValue = filterValue[field.]
+    //
+    //     if (typeof filterValue !== 'object' || filterValue === null) {
+    //         return [new BinaryOperationQueryNode(new FieldPathQueryNode(sourceNode,path), BinaryOperator.EQUAL, NullQueryNode.NULL)];
+    //     }
+    //     const field = path[path.length-1];
+    //     if(field.type.isObjectType){
+    //         return flatMap(field.type.fields, value => this.getNode(sourceNode,path.concat(value),filterValue));
+    //     }
+    //
+    //     objectEntries(filterValue)
+    //     if(field.type.isEnumType){
+    //         return [new BinaryOperationQueryNode(sourceNode,BinaryOperator.EQUAL, new LiteralQueryNode(filterValue))]
+    //     }
+    //     return [new FieldPathQueryNode(sourceNode,path)]
+    //
+    // }
 
-    isValidForSearch(): boolean {
-        return this.field.isSearchable && this.inputType instanceof QuickSearchFilterObjectType;
-    }
 }
 
 export class QuickSearchEntityExtensionFilterField implements QuickSearchFilterField {
@@ -174,29 +137,19 @@ export class QuickSearchEntityExtensionFilterField implements QuickSearchFilterF
         public readonly field: Field,
         public readonly inputType: QuickSearchFilterObjectType
     ) {
-        this.name = this.field.name;
+
+        this.name = this.field.name + NESTED_FIELD_SUFFIX;
         this.description = `Allows to filter on the fields of \`${this.field.name}\`.\n\nNote that \`${this.field.name}\` is an entity extension and thus can never be \`null\`, so specifying \`null\` to this filter field has no effect.`;
     }
 
-    getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
+    getFilterNode(sourceNode: QueryNode, filterValue: AnyValue, path: ReadonlyArray<Field>): QueryNode {
         if (filterValue == undefined) {
             // entity extensions can't ever be null, and null is always coerced to {}, so this filter just shouldn't have any effect
             return ConstBoolQueryNode.TRUE;
         }
-        return this.inputType.getFilterNode(createFieldNode(this.field, sourceNode), filterValue);
+        return this.inputType.getFilterNode(sourceNode, filterValue, path.concat(this.field));
     }
 
-    getSearchFilterNode(sourceNode: QueryNode, expression: string): QueryNode {
-        if (this.inputType instanceof QuickSearchFilterObjectType) {
-            return this.inputType.getSearchFilterNode(createFieldNode(this.field, sourceNode), expression);
-        } else {
-            return new ConstBoolQueryNode(false);
-        }
-    }
-
-    isValidForSearch(): boolean {
-        return this.field.isSearchable && this.inputType instanceof QuickSearchFilterObjectType;
-    }
 }
 
 export class QuickSearchAndFilterField implements QuickSearchFilterField {
@@ -211,22 +164,15 @@ export class QuickSearchAndFilterField implements QuickSearchFilterField {
         this.inputType = new GraphQLList(new GraphQLNonNull(filterType.getInputType()));
     }
 
-    getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
+    getFilterNode(sourceNode: QueryNode, filterValue: AnyValue, path: ReadonlyArray<Field>): QueryNode {
         if (!isArray(filterValue) || !filterValue.length) {
             return new ConstBoolQueryNode(true);
         }
         const values = (filterValue || []) as ReadonlyArray<PlainObject>;
-        const nodes = values.map(value => this.filterType.getFilterNode(sourceNode, value));
+        const nodes = values.map(value => this.filterType.getFilterNode(sourceNode, value, path));
         return nodes.reduce((prev, node) => new BinaryOperationQueryNode(prev, BinaryOperator.AND, node));
     }
 
-    getSearchFilterNode(sourceNode: QueryNode, expression: string): QueryNode {
-        return new ConstBoolQueryNode(false); // not required for quickSearch
-    }
-
-    isValidForSearch(): boolean {
-        return false;
-    }
 }
 
 export class QuickSearchOrFilterField implements QuickSearchFilterField {
@@ -241,7 +187,7 @@ export class QuickSearchOrFilterField implements QuickSearchFilterField {
         this.inputType = new GraphQLList(new GraphQLNonNull(filterType.getInputType()));
     }
 
-    getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
+    getFilterNode(sourceNode: QueryNode, filterValue: AnyValue, path: ReadonlyArray<Field>): QueryNode {
         if (!isArray(filterValue)) {
             return new ConstBoolQueryNode(true); // regard as omitted
         }
@@ -249,15 +195,8 @@ export class QuickSearchOrFilterField implements QuickSearchFilterField {
         if (!values.length) {
             return ConstBoolQueryNode.FALSE; // neutral element of OR
         }
-        const nodes = values.map(value => this.filterType.getFilterNode(sourceNode, value));
+        const nodes = values.map(value => this.filterType.getFilterNode(sourceNode, value, path));
         return nodes.reduce((prev, node) => new BinaryOperationQueryNode(prev, BinaryOperator.OR, node));
     }
 
-    getSearchFilterNode(sourceNode: QueryNode, expression: string): QueryNode {
-        return new ConstBoolQueryNode(false); // not required for quickSearch
-    }
-
-    isValidForSearch(): boolean {
-        return false;
-    }
 }

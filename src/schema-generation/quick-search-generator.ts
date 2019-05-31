@@ -1,21 +1,16 @@
+import { GraphQLString } from 'graphql';
+import { Field, RootEntityType } from '../model/implementation';
+import { BinaryOperationQueryNode, BinaryOperator, BinaryOperatorWithLanguage, ConditionalQueryNode, ConstBoolQueryNode, CountQueryNode, FieldPathQueryNode, LiteralQueryNode, OperatorWithLanguageQueryNode, PreExecQueryParms, QueryNode, RuntimeErrorQueryNode, TransformListQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../query-tree';
+import { QuickSearchQueryNode } from '../query-tree/quick-search';
+import { simplifyBooleans } from '../query-tree/utils';
+import { QUICK_SEARCH_EXPRESSION_ARG, QUICK_SEARCH_FILTER_ARG } from '../schema/constants';
 import { getMetaFieldName, getQuickSearchEntitiesFieldName } from '../schema/names';
+import { decapitalize } from '../utils/utils';
 import { ListAugmentation } from './list-augmentation';
 import { OutputTypeGenerator } from './output-type-generator';
 import { QueryNodeField, QueryNodeListType, QueryNodeNonNullType, QueryNodeObjectType } from './query-node-object-type';
-import { RootEntityType, Type } from '../model/implementation';
-import { QUICK_SEARCH_EXPRESSION_ARG, QUICK_SEARCH_FILTER_ARG } from '../schema/constants';
+import { or } from './quick-search-filter-input-types/constants';
 import { QuickSearchFilterObjectType, QuickSearchFilterTypeGenerator } from './quick-search-filter-input-types/generator';
-import { GraphQLString } from 'graphql';
-import {
-    BinaryOperationQueryNode,
-    BinaryOperator, ConditionalQueryNode,
-    ConstBoolQueryNode, CountQueryNode, LiteralQueryNode, PreExecQueryParms,
-    QueryNode, RuntimeErrorQueryNode, TransformListQueryNode,
-    VariableQueryNode, WithPreExecutionQueryNode
-} from '../query-tree';
-import { decapitalize } from '../utils/utils';
-import { QuickSearchQueryNode } from '../query-tree/quick-search';
-import { simplifyBooleans } from '../query-tree/utils';
 
 
 export const QS_QUERYNODE_ONLY_ERROR_MESSAGE = 'The Quicksearch Augmentation is only supported for QuickSearchQueryNodes';
@@ -81,7 +76,7 @@ export class QuickSearchGenerator {
             },
             resolve: (sourceNode, args, info) => {
                 const itemVariable = new VariableQueryNode(decapitalize(rootEntityType.name));
-                const qsFilterNode = this.buildQuickSearchFilterNode(args, quickSearchType, itemVariable);
+                const qsFilterNode = this.buildQuickSearchFilterNode(args, quickSearchType, itemVariable, rootEntityType);
                 return new QuickSearchQueryNode({
                     rootEntityType: rootEntityType,
                     qsFilterNode: qsFilterNode,
@@ -95,12 +90,12 @@ export class QuickSearchGenerator {
 
     };
 
-    private buildQuickSearchFilterNode(args: { [p: string]: any }, filterType: QuickSearchFilterObjectType, itemVariable: VariableQueryNode) {
+    private buildQuickSearchFilterNode(args: { [p: string]: any }, filterType: QuickSearchFilterObjectType, itemVariable: VariableQueryNode, rootEntityType: RootEntityType) {
         const filterValue = args[QUICK_SEARCH_FILTER_ARG] || {};
         const expression = args[QUICK_SEARCH_EXPRESSION_ARG] as string;
-        const filterNode = simplifyBooleans(filterType.getFilterNode(itemVariable, filterValue));
-        const searchFilterNode = simplifyBooleans(filterType.getSearchFilterNode(itemVariable, expression));
-        if (searchFilterNode === ConstBoolQueryNode.FALSE) {
+        const filterNode = simplifyBooleans(filterType.getFilterNode(itemVariable, filterValue,[]));
+        const searchFilterNode = simplifyBooleans(this.buildQuickSearchSearchFilterNode(rootEntityType, itemVariable, expression));
+        if (searchFilterNode === ConstBoolQueryNode.TRUE) {
             return filterNode;
         } else {
             return simplifyBooleans(new BinaryOperationQueryNode(filterNode, BinaryOperator.AND, searchFilterNode));
@@ -111,7 +106,7 @@ export class QuickSearchGenerator {
     private getPreExecQueryNode(rootEntityType: RootEntityType, args: { [p: string]: any }): QueryNode {
         const itemVariable = new VariableQueryNode(decapitalize(rootEntityType.name));
         const quickSearchType = this.quickSearchTypeGenerator.generate(rootEntityType);
-        const qsFilterNode = this.buildQuickSearchFilterNode(args, quickSearchType, itemVariable);
+        const qsFilterNode = this.buildQuickSearchFilterNode(args, quickSearchType, itemVariable, rootEntityType);
         return new BinaryOperationQueryNode(
             new CountQueryNode(
                 new QuickSearchQueryNode({
@@ -148,6 +143,32 @@ export class QuickSearchGenerator {
                 });
             }
         };
+    }
+
+    private buildQuickSearchSearchFilterNode(rootEntityType: RootEntityType, itemVariable: VariableQueryNode, expression: string): QueryNode {
+        if(!expression || expression == ''){
+            return new ConstBoolQueryNode(true);
+        }
+
+        function getQueryNodeFromField(field: Field, path: Field[] = []): QueryNode {
+            if(field.type.isObjectType){
+                return field.type.fields.map(value => getQueryNodeFromField(value, path.concat(field))).reduce(or, ConstBoolQueryNode.FALSE);
+            }
+
+            function getIdentityNode() {
+                return new BinaryOperationQueryNode(new FieldPathQueryNode(itemVariable, path.concat(field)), BinaryOperator.STARTS_WITH, new LiteralQueryNode(expression));
+            }
+
+            return new BinaryOperationQueryNode(
+                field.isQuickSearchIndexed ? getIdentityNode() : ConstBoolQueryNode.FALSE,
+                BinaryOperator.OR,
+                field.isQuickSearchFulltextIndexed ?
+                    new OperatorWithLanguageQueryNode(new FieldPathQueryNode(itemVariable,path.concat(field)), BinaryOperatorWithLanguage.QUICKSEARCH_CONTAINS_PREFIX, new LiteralQueryNode(expression), field.language)
+                    : ConstBoolQueryNode.FALSE
+            );
+        }
+
+        return rootEntityType.fields.filter(value => value.isSearchable).map(value => getQueryNodeFromField(value)).reduce(or, ConstBoolQueryNode.FALSE);
     }
 }
 

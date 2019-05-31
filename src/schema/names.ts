@@ -76,8 +76,8 @@ export function getFilterTypeName(typeName: string) {
     return `${typeName}Filter`;
 }
 
-export function getQuickSearchFilterTypeName(typeName: string) {
-    return `${typeName}QuickSearchFilter`;
+export function getQuickSearchFilterTypeName(typeName: string, isAggregation: boolean) {
+    return `${typeName}${isAggregation ? 'Aggregation' : ''}QuickSearchFilter`;
 }
 
 

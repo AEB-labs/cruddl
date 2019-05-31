@@ -1,5 +1,7 @@
 import { QuickSearchLanguage } from '../../model/config';
+import { Field } from '../../model/implementation';
 import { BinaryOperator, QueryNode, BinaryOperatorWithLanguage } from '../../query-tree';
+import { AnyValue } from '../../utils/utils';
 import { binaryNotOp, binaryOp, NUMERIC_FILTER_FIELDS, binaryNotOpWithLanguage, binaryOpWithLanguage } from '../filter-input-types/constants';
 import {
     INPUT_FIELD_CONTAINS,

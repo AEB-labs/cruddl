@@ -457,7 +457,7 @@ export class Field implements ModelComponent {
     }
 
     get isSearchable(): boolean{
-        return !!this.input.isSearchable
+        return !!this.input.isSearchable && (this.isQuickSearchFulltextIndexed || this.isQuickSearchIndexed)
     }
 
     get language(): QuickSearchLanguage | undefined{
