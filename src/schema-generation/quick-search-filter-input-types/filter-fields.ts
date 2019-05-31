@@ -13,7 +13,6 @@ import { and, QUICK_SEARCH_FILTER_DESCRIPTIONS, QUICK_SEARCH_OPERATORS_WITH_LIST
 
 const NESTED_FIELD_SUFFIX = 'Aggregation';
 
-// @MSF TODO: own FilterFields for QuickSearch
 export interface QuickSearchFilterField extends TypedInputFieldBase<QuickSearchFilterField> {
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue, path: ReadonlyArray<Field>): QueryNode
 }

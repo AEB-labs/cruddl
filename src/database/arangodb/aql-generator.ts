@@ -340,7 +340,7 @@ function getFieldAccessFragment(field: Field) {
     return aql`[${identifier}]`;
 }
 
-function getFieldPathAccessFragment(path?: Field[]): AQLFragment {
+function getFieldPathAccessFragment(path?: ReadonlyArray<Field>): AQLFragment {
     if (path && path.length > 0) {
         return aql`.${aql.identifier(path[0].name)}${getFieldPathAccessFragment(path.slice(1))}`;
     } else {
@@ -354,7 +354,7 @@ register(RootEntityIDQueryNode, (node, context) => {
 });
 
 register(QuickSearchQueryNode, (node, context) => {
-    // @MSF TODO: Authentification
+    // @MSF TODO: implement Authentication
     //
     let itemContext = context.introduceVariable(node.itemVariable);
     return aqlExt.parenthesizeList(

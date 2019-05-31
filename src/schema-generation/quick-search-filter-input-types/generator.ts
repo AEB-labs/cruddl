@@ -183,7 +183,7 @@ export class QuickSearchFilterTypeGenerator {
     @memorize()
     private tokenize(value: string): string[] {
         return flatMap(value.split(' '), t => t.split('-'));
-        //  @MSF TODO: implement tokenization
+        //  @MSF TODO: implement tokenization via arangodb
     }
 
     private generateFilterFieldsForEnumField(field: Field, graphQLEnumType: GraphQLEnumType): QuickSearchFilterField[] {

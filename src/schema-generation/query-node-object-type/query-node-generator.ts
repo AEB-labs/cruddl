@@ -76,7 +76,7 @@ function buildFieldQueryNode0(sourceNode: QueryNode, field: QueryNodeField, fiel
         // Note: previously, we had a safeguard here that converted non-lists to empty lists
         // This is no longer necessary because createFieldNode() already does this where necessary (only for simple field lookups)
         // All other code should return lists where lists are expected
-        // @MSF TODO: Clean up
+        // @MSF TODO: Find a better way to solve the problem
         if(fieldQueryNode instanceof WithPreExecutionQueryNode && fieldQueryNode.resultNode instanceof ConditionalQueryNode && fieldQueryNode.resultNode.expr1 instanceof RuntimeErrorQueryNode){
             return new WithPreExecutionQueryNode({
                 preExecQueries: fieldQueryNode.preExecQueries,

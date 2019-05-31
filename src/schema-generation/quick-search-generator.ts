@@ -93,7 +93,7 @@ export class QuickSearchGenerator {
     private buildQuickSearchFilterNode(args: { [p: string]: any }, filterType: QuickSearchFilterObjectType, itemVariable: VariableQueryNode, rootEntityType: RootEntityType) {
         const filterValue = args[QUICK_SEARCH_FILTER_ARG] || {};
         const expression = args[QUICK_SEARCH_EXPRESSION_ARG] as string;
-        const filterNode = simplifyBooleans(filterType.getFilterNode(itemVariable, filterValue,[]));
+        const filterNode = simplifyBooleans(filterType.getFilterNode(itemVariable, filterValue, []));
         const searchFilterNode = simplifyBooleans(this.buildQuickSearchSearchFilterNode(rootEntityType, itemVariable, expression));
         if (searchFilterNode === ConstBoolQueryNode.TRUE) {
             return filterNode;
@@ -146,24 +146,29 @@ export class QuickSearchGenerator {
     }
 
     private buildQuickSearchSearchFilterNode(rootEntityType: RootEntityType, itemVariable: VariableQueryNode, expression: string): QueryNode {
-        if(!expression || expression == ''){
+        if (!expression || expression == '') {
             return new ConstBoolQueryNode(true);
         }
 
         function getQueryNodeFromField(field: Field, path: Field[] = []): QueryNode {
-            if(field.type.isObjectType){
+            if (field.type.isObjectType) {
                 return field.type.fields.map(value => getQueryNodeFromField(value, path.concat(field))).reduce(or, ConstBoolQueryNode.FALSE);
             }
 
             function getIdentityNode() {
-                return new BinaryOperationQueryNode(new FieldPathQueryNode(itemVariable, path.concat(field)), BinaryOperator.STARTS_WITH, new LiteralQueryNode(expression));
+                if (field.type.isScalarType && field.type && !isNaN(Number(expression))) {
+                    return new BinaryOperationQueryNode(new FieldPathQueryNode(itemVariable, path.concat(field)), BinaryOperator.EQUAL, new LiteralQueryNode(Number(expression)));
+                } else {
+                    return new OperatorWithLanguageQueryNode(new FieldPathQueryNode(itemVariable, path.concat(field)), BinaryOperatorWithLanguage.QUICKSEARCH_STARTS_WITH, new LiteralQueryNode(expression));
+
+                }
             }
 
             return new BinaryOperationQueryNode(
                 field.isQuickSearchIndexed ? getIdentityNode() : ConstBoolQueryNode.FALSE,
                 BinaryOperator.OR,
                 field.isQuickSearchFulltextIndexed ?
-                    new OperatorWithLanguageQueryNode(new FieldPathQueryNode(itemVariable,path.concat(field)), BinaryOperatorWithLanguage.QUICKSEARCH_CONTAINS_PREFIX, new LiteralQueryNode(expression), field.language)
+                    new OperatorWithLanguageQueryNode(new FieldPathQueryNode(itemVariable, path.concat(field)), BinaryOperatorWithLanguage.QUICKSEARCH_CONTAINS_PREFIX, new LiteralQueryNode(expression), field.language)
                     : ConstBoolQueryNode.FALSE
             );
         }
