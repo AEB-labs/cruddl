@@ -37,12 +37,22 @@ export interface QueryResultValidator extends QueryNode {
     getValidatorData(): any
 }
 
+export interface ValidatorParams {
+    readonly errorMessage: string;
+    readonly errorCode?: string;
+}
+
 /**
  * A validator that verifies that a value is truthy
  */
 export class ErrorIfNotTruthyResultValidator extends QueryNode implements QueryResultValidator {
-    constructor(public readonly errorMessage: string, public readonly errorName: string = 'Error', public readonly errorNumber?: number) {
+    readonly errorMessage: string;
+    readonly errorCode?: string;
+
+    constructor(params: ValidatorParams) {
         super();
+        this.errorMessage = params.errorMessage;
+        this.errorCode = params.errorCode;
     }
 
     // The following function will be translated to a string and executed within the ArangoDB server itself.
@@ -52,14 +62,21 @@ export class ErrorIfNotTruthyResultValidator extends QueryNode implements QueryR
     /* istanbul ignore next */
     static getValidatorFunction() {
         return function (validationData: any, result: any) {
-            if (!result) {
-                let err = new Error(validationData.errorMessage);
-                // the name is included in the error message (and can't bet set to '', neither is toString() called)
-                err.name = validationData.errorName;
-                if (validationData.errorNumber != undefined) {
-                    (err as any).errorNumber = validationData.errorNumber;
+            /**
+             * An error that is thrown if a validator fails
+             */
+            class RuntimeValidationError extends Error {
+                readonly code: string | undefined;
+
+                constructor(message: string, args: { readonly code?: string } = {}) {
+                    super(message);
+                    this.name = this.constructor.name;
+                    this.code = args.code;
                 }
-                throw err;
+            }
+
+            if (!result) {
+                throw new RuntimeValidationError(validationData.errorMessage, { code: validationData.errorCode });
             }
         };
     }
@@ -75,8 +92,7 @@ export class ErrorIfNotTruthyResultValidator extends QueryNode implements QueryR
     getValidatorData() {
         return {
             errorMessage: this.errorMessage,
-            errorNumber: this.errorNumber,
-            errorName: this.errorName
+            errorCode: this.errorCode,
         };
     }
 
@@ -89,8 +105,13 @@ export class ErrorIfNotTruthyResultValidator extends QueryNode implements QueryR
  * A validator that verifies that a value is neither falsy nor empty (works for both strings and lists)
  */
 export class ErrorIfEmptyResultValidator extends QueryNode implements QueryResultValidator {
-    constructor(public readonly errorMessage: string, public readonly errorName: string = 'Error', public readonly errorNumber?: number) {
+    readonly errorMessage: string;
+    readonly errorCode?: string;
+
+    constructor(params: ValidatorParams) {
         super();
+        this.errorMessage = params.errorMessage;
+        this.errorCode = params.errorCode;
     }
 
     // The following function will be translated to a string and executed within the ArangoDB server itself.
@@ -100,14 +121,21 @@ export class ErrorIfEmptyResultValidator extends QueryNode implements QueryResul
     /* istanbul ignore next */
     static getValidatorFunction() {
         return function (validationData: any, result: any) {
-            if (!result || !result.length) {
-                let err = new Error(validationData.errorMessage);
-                // the name is included in the error message (and can't bet set to '', neither is toString() called)
-                err.name = validationData.errorName;
-                if (validationData.errorNumber != undefined) {
-                    (err as any).errorNumber = validationData.errorNumber;
+            /**
+             * An error that is thrown if a validator fails
+             */
+            class RuntimeValidationError extends Error {
+                readonly code: string | undefined;
+
+                constructor(message: string, args: { readonly code?: string } = {}) {
+                    super(message);
+                    this.name = this.constructor.name;
+                    this.code = args.code;
                 }
-                throw err;
+            }
+
+            if (!result || !result.length) {
+                throw new RuntimeValidationError(validationData.errorMessage, { code: validationData.errorCode });
             }
         };
     }
@@ -123,8 +151,7 @@ export class ErrorIfEmptyResultValidator extends QueryNode implements QueryResul
     getValidatorData() {
         return {
             errorMessage: this.errorMessage,
-            errorNumber: this.errorNumber,
-            errorName: this.errorName
+            errorCode: this.errorCode,
         };
     }
 

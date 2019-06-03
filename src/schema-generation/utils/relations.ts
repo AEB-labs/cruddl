@@ -1,5 +1,5 @@
 import { Field, Multiplicity, RelationSide, RootEntityType } from '../../model';
-import { AddEdgesQueryNode, EdgeFilter, EdgeIdentifier, EntityFromIdQueryNode, ErrorIfNotTruthyResultValidator, ListQueryNode, LiteralQueryNode, PartialEdgeIdentifier, PreExecQueryParms, QueryNode, RemoveEdgesQueryNode, SetEdgeQueryNode, VariableQueryNode } from '../../query-tree';
+import { AddEdgesQueryNode, EdgeFilter, EdgeIdentifier, EntityFromIdQueryNode, ErrorIfNotTruthyResultValidator, ListQueryNode, LiteralQueryNode, NOT_FOUND_ERROR, PartialEdgeIdentifier, PreExecQueryParms, QueryNode, RemoveEdgesQueryNode, SetEdgeQueryNode, VariableQueryNode } from '../../query-tree';
 import { PlainObject } from '../../utils/utils';
 import { CreateRootEntityInputType } from '../create-input-types';
 import { FieldContext } from '../query-node-object-type';
@@ -52,7 +52,10 @@ export function getSetEdgeStatements(sourceField: Field, sourceIDNode: QueryNode
     // check that target exists
     const targetExistsCheck = new PreExecQueryParms({
         query: new EntityFromIdQueryNode(targetType, targetIDNode),
-        resultValidator: new ErrorIfNotTruthyResultValidator(`${targetType.name} with id '${targetID}' does not exist`)
+        resultValidator: new ErrorIfNotTruthyResultValidator({
+            errorCode: NOT_FOUND_ERROR,
+            errorMessage: `${targetType.name} with id '${targetID}' does not exist`
+        })
     });
 
     if (relationSide.targetMultiplicity == Multiplicity.ONE) {
@@ -85,7 +88,10 @@ export function getAddEdgesStatements(sourceField: Field, sourceIDNode: QueryNod
     // check that all targets exist
     const targetsExistChecks = targetIDs.map(id => new PreExecQueryParms({
         query: new EntityFromIdQueryNode(relationSide.targetType, new LiteralQueryNode(id)),
-        resultValidator: new ErrorIfNotTruthyResultValidator(`${relationSide.targetType.name} with id '${id}' does not exist`)
+        resultValidator: new ErrorIfNotTruthyResultValidator({
+            errorCode: NOT_FOUND_ERROR,
+            errorMessage: `${relationSide.targetType.name} with id '${id}' does not exist`
+        })
     }));
 
     const edges = targetIDs.map(id => getEdgeIdentifier({

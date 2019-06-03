@@ -150,8 +150,6 @@ export class InMemoryAdapter implements DatabaseAdapter {
                         try {
                             validator(query.resultValidator[key], result);
                         } catch (error) {
-                            // mimic ArangoDB behavior
-                            error.message = error.name + ': ' + error.message;
                             throw error;
                         }
                     }

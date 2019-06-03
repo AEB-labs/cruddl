@@ -231,13 +231,11 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                             }
                         }
                     }
-                } catch (error) {
-                    // report timings and plans even in case of a validation error
-                    const errorInResult = {
-                        // imitate arangodb's error reporting for now, could change that to a better interface later
-                        message: error.name + ': ' + error.message
-                    };
-                    rollbackWithError(errorInResult);
+                } catch (e) {
+                    rollbackWithError({
+                        message: e.message,
+                        code: e.code
+                    });
                 }
             }
 

@@ -1,6 +1,6 @@
 import { GraphQLInt, GraphQLList, GraphQLNonNull, GraphQLString } from 'graphql';
 import { Type } from '../model';
-import { BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConstBoolQueryNode, LiteralQueryNode, OrderDirection, OrderSpecification, QueryNode, RuntimeErrorQueryNode, TransformListQueryNode, VariableQueryNode } from '../query-tree';
+import { BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConstBoolQueryNode, INVALID_CURSOR_ERROR, LiteralQueryNode, OrderDirection, OrderSpecification, QueryNode, RuntimeErrorQueryNode, TransformListQueryNode, VariableQueryNode } from '../query-tree';
 import { AFTER_ARG, CURSOR_FIELD, FIRST_ARG, ID_FIELD, ORDER_BY_ARG, ORDER_BY_ASC_SUFFIX, SKIP_ARG } from '../schema/constants';
 import { decapitalize } from '../utils/utils';
 import { and } from './filter-input-types/constants';
@@ -109,10 +109,10 @@ export class OrderByAndPaginationAugmentation {
         try {
             cursorObj = JSON.parse(afterArg);
             if (typeof cursorObj != 'object' || cursorObj === null) {
-                return new RuntimeErrorQueryNode('The JSON value provided as "after" argument is not an object');
+                return new RuntimeErrorQueryNode('The JSON value provided as "after" argument is not an object', { code: INVALID_CURSOR_ERROR });
             }
         } catch (e) {
-            return new RuntimeErrorQueryNode(`Invalid cursor ${JSON.stringify(afterArg)} supplied to "after": ${e.message}`);
+            return new RuntimeErrorQueryNode(`Invalid cursor ${JSON.stringify(afterArg)} supplied to "after": ${e.message}`, { code: INVALID_CURSOR_ERROR });
         }
 
         let currentEqualityChain: QueryNode | undefined = filterNode;
@@ -121,7 +121,7 @@ export class OrderByAndPaginationAugmentation {
         for (const clause of orderByValues) {
             const cursorProperty = clause.underscoreSeparatedPath;
             if (!(cursorProperty in cursorObj)) {
-                return new RuntimeErrorQueryNode(`Invalid cursor supplied to "after": Property "${cursorProperty}" missing. Make sure this cursor has been obtained with the same orderBy clause.`);
+                return new RuntimeErrorQueryNode(`Invalid cursor supplied to "after": Property "${cursorProperty}" missing. Make sure this cursor has been obtained with the same orderBy clause.`, { code: INVALID_CURSOR_ERROR });
             }
             const cursorValue = cursorObj[cursorProperty];
             const valueNode = clause.getValueNode(itemVariable);
@@ -166,10 +166,10 @@ export class OrderByAndPaginationAugmentation {
         try {
             cursorObj = JSON.parse(afterArg);
             if (typeof cursorObj != 'object' || cursorObj === null) {
-                return new RuntimeErrorQueryNode('The JSON value provided as "after" argument is not an object');
+                return new RuntimeErrorQueryNode('The JSON value provided as "after" argument is not an object', { code: INVALID_CURSOR_ERROR });
             }
         } catch (e) {
-            return new RuntimeErrorQueryNode(`Invalid cursor ${JSON.stringify(afterArg)} supplied to "after": ${e.message}`);
+            return new RuntimeErrorQueryNode(`Invalid cursor ${JSON.stringify(afterArg)} supplied to "after": ${e.message}`, { code: INVALID_CURSOR_ERROR });
         }
 
         // Make sure we only select items after the cursor
@@ -189,7 +189,7 @@ export class OrderByAndPaginationAugmentation {
             const clause = clauses[0];
             const cursorProperty = clause.underscoreSeparatedPath;
             if (!(cursorProperty in cursorObj)) {
-                return new RuntimeErrorQueryNode(`Invalid cursor supplied to "after": Property "${cursorProperty}" missing. Make sure this cursor has been obtained with the same orderBy clause.`);
+                return new RuntimeErrorQueryNode(`Invalid cursor supplied to "after": Property "${cursorProperty}" missing. Make sure this cursor has been obtained with the same orderBy clause.`, { code: INVALID_CURSOR_ERROR });
             }
             const cursorValue = cursorObj[cursorProperty];
             const valueNode = clause.getValueNode(itemNode);
