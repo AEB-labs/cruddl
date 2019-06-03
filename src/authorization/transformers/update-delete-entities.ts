@@ -1,11 +1,6 @@
-import {
-    BinaryOperationQueryNode, BinaryOperator, ConstIntQueryNode, CountQueryNode, DeleteEntitiesQueryNode,
-    ErrorIfNotTruthyResultValidator, MergeObjectsQueryNode, ObjectQueryNode, PreExecQueryParms, QueryNode,
-    RuntimeErrorQueryNode, TransformListQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode,
-    VariableQueryNode, WithPreExecutionQueryNode
-} from '../../query-tree';
+import { BinaryOperationQueryNode, BinaryOperator, ConstIntQueryNode, CountQueryNode, DeleteEntitiesQueryNode, ErrorIfNotTruthyResultValidator, MergeObjectsQueryNode, ObjectQueryNode, PERMISSION_DENIED_ERROR, PreExecQueryParms, QueryNode, RuntimeErrorQueryNode, TransformListQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../../query-tree';
 import { decapitalize } from '../../utils/utils';
-import { AccessOperation, AuthContext, AUTHORIZATION_ERROR_NAME } from '../auth-basics';
+import { AccessOperation, AuthContext } from '../auth-basics';
 import { ConditionExplanationContext, PermissionResult } from '../permission-descriptors';
 import { getPermissionDescriptorOfRootEntityType } from '../permission-descriptors-in-model';
 
@@ -17,13 +12,13 @@ export function transformDeleteEntitiesQueryNode(node: DeleteEntitiesQueryNode, 
     return transformUpdateOrDeleteEntitiesQueryNode(node, authContext, 'delete');
 }
 
-function transformUpdateOrDeleteEntitiesQueryNode(node: UpdateEntitiesQueryNode|DeleteEntitiesQueryNode, authContext: AuthContext, actionDescription: string): QueryNode {
+function transformUpdateOrDeleteEntitiesQueryNode(node: UpdateEntitiesQueryNode | DeleteEntitiesQueryNode, authContext: AuthContext, actionDescription: string): QueryNode {
     const permissionDescriptor = getPermissionDescriptorOfRootEntityType(node.rootEntityType);
     const access = permissionDescriptor.canAccess(authContext, AccessOperation.WRITE);
 
     switch (access) {
         case PermissionResult.DENIED:
-            return new RuntimeErrorQueryNode(`${AUTHORIZATION_ERROR_NAME}: Not authorized to ${actionDescription} ${node.rootEntityType.name} objects`);
+            return new RuntimeErrorQueryNode(`Not authorized to ${actionDescription} ${node.rootEntityType.name} objects`, { code: PERMISSION_DENIED_ERROR });
         case PermissionResult.GRANTED:
             return node;
     }
@@ -42,7 +37,10 @@ function transformUpdateOrDeleteEntitiesQueryNode(node: UpdateEntitiesQueryNode|
     let preExecQueries: PreExecQueryParms[] = [
         new PreExecQueryParms({
             query: canWrite,
-            resultValidator: new ErrorIfNotTruthyResultValidator(`Not authorized to ${actionDescription} ${explanation}`, AUTHORIZATION_ERROR_NAME)
+            resultValidator: new ErrorIfNotTruthyResultValidator({
+                errorCode: PERMISSION_DENIED_ERROR,
+                errorMessage: `Not authorized to ${actionDescription} ${explanation}`
+            })
         })
     ];
 
@@ -50,13 +48,16 @@ function transformUpdateOrDeleteEntitiesQueryNode(node: UpdateEntitiesQueryNode|
         // this is the most general approach, but also inefficient because it constructs the whole "post-update" objects just to check one field which may not even have been modified
         // TODO add a fast-lane way for PermissionDescriptors to statically check updated values? Or at least to specify that they don't need the merge?
         const updateItemVar = node.currentEntityVariable;
-        const postUpdateNode = new MergeObjectsQueryNode([ updateItemVar, new ObjectQueryNode(node.updates) ]); // { ...itemVar, ...{ node.updates... } }
+        const postUpdateNode = new MergeObjectsQueryNode([updateItemVar, new ObjectQueryNode(node.updates)]); // { ...itemVar, ...{ node.updates... } }
         const writeConditionPostUpdate = permissionDescriptor.getAccessCondition(authContext, AccessOperation.WRITE, postUpdateNode);
         const explanation = permissionDescriptor.getExplanationForCondition(authContext, AccessOperation.WRITE, ConditionExplanationContext.SET);
         const canWriteTheseValues = getIsTrueInEachItemQueryNode(node.listNode, updateItemVar, writeConditionPostUpdate);
         preExecQueries.push(new PreExecQueryParms({
             query: canWriteTheseValues,
-            resultValidator: new ErrorIfNotTruthyResultValidator(`Not authorized to ${explanation}`, AUTHORIZATION_ERROR_NAME)
+            resultValidator: new ErrorIfNotTruthyResultValidator({
+                errorCode: PERMISSION_DENIED_ERROR,
+                errorMessage: `Not authorized to ${explanation}`
+            })
         }));
     }
 

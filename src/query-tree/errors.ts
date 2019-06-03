@@ -15,16 +15,25 @@ export class UnknownValueQueryNode extends QueryNode {
  * query tree from being evaluated
  */
 export class RuntimeErrorQueryNode extends QueryNode {
-    constructor(public readonly message: string) {
+    readonly code: string | undefined;
+
+    constructor(public readonly message: string, args: { readonly code?: string } = {}) {
         super();
+        this.code = args.code;
     }
 
     public describe() {
-        return red(`error ${JSON.stringify(this.message)}`);
+        return red(`error${this.code ? ' ' + this.code : ''} ${JSON.stringify(this.message)}`);
     }
 }
 
+export const PERMISSION_DENIED_ERROR = 'PERMISSION_DENIED';
+export const ATOMICITY_SKIP_ERROR = 'ATOMICITY_SKIP';
+export const INVALID_CURSOR_ERROR = 'INVALID_CURSOR';
+export const NOT_FOUND_ERROR = 'NOT_FOUND';
+
 export const RUNTIME_ERROR_TOKEN = '__cruddl_runtime_error';
+export const RUNTIME_ERROR_CODE_PROPERTY = '__cruddl_runtime_error_code';
 
 /**
  * The result value of a RuntimeErrorQueryNode
@@ -33,7 +42,9 @@ export interface RuntimeErrorValue {
     /**
      * The error message
      */
-    __cruddl_runtime_error: string
+    readonly __cruddl_runtime_error: string
+
+    readonly __cruddl_runtime_error_code?: string
 }
 
 /**
@@ -46,9 +57,23 @@ export function isRuntimeErrorValue(value: any): value is RuntimeErrorValue {
 /**
  * Converts a RuntimeErrorValue to a regular error that can be thrown
  */
-export function extractRuntimeError(value: RuntimeErrorValue): Error {
-    return new Error(value.__cruddl_runtime_error);
+export function extractRuntimeError(value: RuntimeErrorValue): RuntimeError {
+    return new RuntimeError(value.__cruddl_runtime_error, { code: value.__cruddl_runtime_error_code });
 }
+
+/**
+ * An error that can be thrown for part of the GraphQL result
+ */
+export class RuntimeError extends Error {
+    readonly code: string | undefined;
+
+    constructor(message: string, args: { readonly code?: string } = {}) {
+        super(message);
+        this.name = this.constructor.name;
+        this.code = args.code;
+    }
+}
+
 
 /**
  * Creates an instance of RuntimeErrorValue

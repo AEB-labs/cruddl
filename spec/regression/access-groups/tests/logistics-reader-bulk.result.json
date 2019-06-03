@@ -11,7 +11,7 @@
   "updateToAccessGroupWithoutReadPermissions": {
     "errors": [
       {
-        "message": "AuthorizationError: Not authorized to set File.accessGroup to this value (allowed values: public)",
+        "message": "Not authorized to set File.accessGroup to this value (allowed values: public)",
         "locations": [
           {
             "line": 9,
@@ -28,7 +28,7 @@
   "updateToAccessGroupWithoutWritePermissions": {
     "errors": [
       {
-        "message": "AuthorizationError: Not authorized to set File.accessGroup to this value (allowed values: public)",
+        "message": "Not authorized to set File.accessGroup to this value (allowed values: public)",
         "locations": [
           {
             "line": 16,
@@ -45,7 +45,7 @@
   "updateWriteRestricted": {
     "errors": [
       {
-        "message": "AuthorizationError: Not authorized to update File objects with this access group (allowed access groups: public)",
+        "message": "Not authorized to update File objects with this access group (allowed access groups: public)",
         "locations": [
           {
             "line": 22,
@@ -62,7 +62,7 @@
   "updateWriteRestrictedToAccessGroupWithoutWritePermissions": {
     "errors": [
       {
-        "message": "AuthorizationError: Not authorized to update File objects with this access group (allowed access groups: public)",
+        "message": "Not authorized to update File objects with this access group (allowed access groups: public)",
         "locations": [
           {
             "line": 29,
@@ -98,7 +98,7 @@
   "deleteWriteRestricted": {
     "errors": [
       {
-        "message": "AuthorizationError: Not authorized to delete File objects with this access group (allowed access groups: public)",
+        "message": "Not authorized to delete File objects with this access group (allowed access groups: public)",
         "locations": [
           {
             "line": 54,
