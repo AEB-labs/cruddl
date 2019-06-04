@@ -32,7 +32,7 @@ describe('graphql-rules validator', () => {
     it('reports missing directive arguments', () => {
         const messages = validator.validate(getParsedProjectSource(new ProjectSource('file.graphql', print(gql`type Test @namespace { field: String }`))));
         expect(messages.length).to.equal(1);
-        expect(messages[0].message).to.equal(`Directive "@namespace" argument "name" of type "String!" is required but not provided.`);
+        expect(messages[0].message).to.equal(`Directive "@namespace" argument "name" of type "String!" is required, but it was not provided.`);
     });
 
     it('reports wrong directive arguments', () => {

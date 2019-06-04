@@ -1,6 +1,6 @@
 import {
     GraphQLEnumType, GraphQLInterfaceType, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLOutputType,
-    GraphQLScalarType, GraphQLUnionType, Thunk
+    GraphQLScalarType, GraphQLUnionType, isListType, isNonNullType, Thunk
 } from 'graphql';
 import { QueryNodeListType, QueryNodeNonNullType, QueryNodeObjectType, QueryNodeOutputType } from './definition';
 import { QueryNodeNullableType } from './index';
@@ -25,11 +25,11 @@ export function extractQueryTreeObjectType(type: QueryNodeOutputType): QueryNode
     return type;
 }
 
-export function isListType(type: QueryNodeOutputType): boolean {
-    if (type instanceof GraphQLNonNull || type instanceof QueryNodeNonNullType) {
-        return isListType(type.ofType);
+export function isListTypeIgnoringNonNull(type: QueryNodeOutputType): boolean {
+    if (isNonNullType(type) || type instanceof QueryNodeNonNullType) {
+        return isListTypeIgnoringNonNull(type.ofType);
     }
-    return type instanceof GraphQLList || type instanceof QueryNodeListType;
+    return isListType(type) || type instanceof QueryNodeListType;
 }
 
 export function makeNonNullableList<T extends QueryNodeNullableType>(type: T): QueryNodeNonNullType<QueryNodeListType<QueryNodeNonNullType<T>>> {

@@ -1,23 +1,5 @@
-import {
-    ArgumentNode,
-    ASTNode,
-    FieldNode,
-    FragmentDefinitionNode,
-    GraphQLList,
-    GraphQLNamedType,
-    GraphQLNonNull,
-    GraphQLType,
-    ListTypeNode,
-    NamedTypeNode,
-    NonNullTypeNode,
-    SelectionNode,
-    SelectionSetNode,
-    TypeNode,
-    ValueNode,
-    VariableDefinitionNode,
-    visit
-} from "graphql";
-import {compact, flatMap} from "../utils/utils";
+import { ArgumentNode, ASTNode, FieldNode, FragmentDefinitionNode, GraphQLList, GraphQLNamedType, GraphQLNonNull, GraphQLType, isListType, isNonNullType, ListTypeNode, NamedTypeNode, NonNullTypeNode, SelectionNode, SelectionSetNode, TypeNode, ValueNode, VariableDefinitionNode, visit } from 'graphql';
+import { compact, flatMap } from '../utils/utils';
 
 /**
  * Creates a field node with a name and an optional alias
@@ -98,13 +80,13 @@ export function createTypeNode(type: GraphQLNonNull<any>): NonNullTypeNode;
 export function createTypeNode(type: GraphQLList<any>): ListTypeNode;
 export function createTypeNode(type: GraphQLType): TypeNode;
 export function createTypeNode(type: GraphQLType): TypeNode {
-    if (type instanceof GraphQLList) {
+    if (isListType(type)) {
         return {
             kind: 'ListType',
             type: createTypeNode(type.ofType)
         };
     }
-    if (type instanceof GraphQLNonNull) {
+    if (isNonNullType(type)) {
         return {
             kind: 'NonNullType',
             type: <NamedTypeNode | ListTypeNode>createTypeNode(type.ofType)

@@ -1,5 +1,5 @@
 import { GraphQLError } from 'graphql';
-import { isListType } from '../graphql/schema-utils';
+import { isListTypeIgnoringNonNull } from '../graphql/schema-utils';
 import { FieldContext } from './query-node-object-type';
 
 export function createGraphQLError(message: string, { selectionStack }: FieldContext) {
@@ -16,7 +16,7 @@ export function createGraphQLError(message: string, { selectionStack }: FieldCon
     const path = selectionStack.reduce<ReadonlyArray<string | number>>((path, sel) => {
         // these are validation errors so we don't have actual list indices; but we shouldn't just ignore it
         // we don't have nested lists
-        if (isListType(sel.fieldRequest.field.type)) {
+        if (isListTypeIgnoringNonNull(sel.fieldRequest.field.type)) {
             return [...path, sel.propertyName, 0];
         }
         return [...path, sel.propertyName];

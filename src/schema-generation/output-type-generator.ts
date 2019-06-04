@@ -2,7 +2,7 @@ import { GraphQLString } from 'graphql';
 import { sortBy } from 'lodash';
 import memorize from 'memorize-decorator';
 import { FieldRequest } from '../graphql/query-distiller';
-import { isListType } from '../graphql/schema-utils';
+import { isListTypeIgnoringNonNull } from '../graphql/schema-utils';
 import { Field, ObjectType, Type, TypeKind } from '../model';
 import { NullQueryNode, ObjectQueryNode, PropertySpecification, QueryNode, UnaryOperationQueryNode, UnaryOperator } from '../query-tree';
 import { CURSOR_FIELD } from '../schema/constants';
@@ -90,7 +90,7 @@ export class OutputTypeGenerator {
     }
 
     private getCursorNode(itemNode: QueryNode, listFieldRequest: FieldRequest | undefined, orderByType: OrderByEnumType): QueryNode {
-        if (!listFieldRequest || !isListType(listFieldRequest.field.type)) {
+        if (!listFieldRequest || !isListTypeIgnoringNonNull(listFieldRequest.field.type)) {
             return NullQueryNode.NULL;
         }
 

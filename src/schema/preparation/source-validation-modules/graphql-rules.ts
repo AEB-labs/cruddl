@@ -13,7 +13,6 @@ import gql from 'graphql-tag';
 // This is not only for efficiency - specifiedRules also includes ExecutableOperationRule which disallows all type
 // definitions, but it is not exported so we can't exclude it.
 const rules = [
-    KnownTypeNamesRule,
     KnownDirectivesRule,
     UniqueDirectivesPerLocationRule,
     KnownArgumentNamesRule,
