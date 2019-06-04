@@ -1,40 +1,71 @@
 {
-  "createOne": {
+  "create": {
     "data": {
-      "paper1": {
+      "createPaper": {
         "key": "one"
       }
     }
   },
   "queryOne": {
     "data": {
-      "allPapers": [
-        {
-          "key": "one"
-        }
-      ]
+      "one": {
+        "key": "one"
+      },
+      "two": null
     }
   },
-  "createTwo": {
-    "data": null,
+  "updateMissingAndCreateAnother": {
     "errors": [
       {
+        "message": "Paper with id 'nonexisting' could not be found.",
         "locations": [
           {
-            "column": 5,
-            "line": 14
+            "line": 18,
+            "column": 5
           }
         ],
-        "message": "AQL: unique constraint violated (while executing)",
         "path": [
-          "paper1"
+          "updatePaper"
+        ]
+      },
+      {
+        "message": "Paper with id 'nonexisting' could not be found.",
+        "locations": [
+          {
+            "line": 21,
+            "column": 5
+          }
+        ],
+        "path": [
+          "createPaper"
         ]
       }
-    ]
+    ],
+    "data": null
+  },
+  "queryStillOne": {
+    "data": {
+      "one": {
+        "key": "one"
+      },
+      "two": null
+    }
+  },
+  "createAnother": {
+    "data": {
+      "createPaper": {
+        "key": "two"
+      }
+    }
   },
   "queryTwo": {
     "data": {
-      "allPapers": []
+      "one": {
+        "key": "one"
+      },
+      "two": {
+        "key": "two"
+      }
     }
   }
 }
