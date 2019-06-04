@@ -355,14 +355,13 @@ register(RootEntityIDQueryNode, (node, context) => {
 
 register(QuickSearchQueryNode, (node, context) => {
     // @MSF TODO: implement Authentication
-    //
     let itemContext = context.introduceVariable(node.itemVariable);
     return aqlExt.parenthesizeList(
         aql`FOR ${itemContext.getVariable(node.itemVariable)}`,
         aql`IN ${aql.identifier(getViewNameForRootEntity(node.rootEntityType!))}`,
         aql`SEARCH ${processNode(node.qsFilterNode, itemContext)}`,
         aql`RETURN ${itemContext.getVariable(node.itemVariable)}`
-    )
+    );
 });
 
 register(TransformListQueryNode, (node, context) => {
@@ -524,7 +523,7 @@ register(OperatorWithLanguageQueryNode, (node, context) => {
 
     const lhs = processNode(node.lhs, context);
     const rhs = processNode(node.rhs, context);
-    const analyzer = node.quickSearchLanguage ? `text_${node.quickSearchLanguage.toLowerCase()}` : IDENTITY_ANALYZER
+    const analyzer = node.quickSearchLanguage ? `text_${node.quickSearchLanguage.toLowerCase()}` : IDENTITY_ANALYZER;
 
     switch (node.operator) {
         case BinaryOperatorWithLanguage.QUICKSEARCH_STARTS_WITH:

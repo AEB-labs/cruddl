@@ -5,11 +5,9 @@ import { Field, QuickSearchLanguage, TypeKind } from '../../model';
 import { BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, FieldPathQueryNode, LiteralQueryNode, NullQueryNode, QueryNode } from '../../query-tree';
 import { AND_FILTER_FIELD, FILTER_FIELD_PREFIX_SEPARATOR, INPUT_FIELD_EQUAL, OR_FILTER_FIELD } from '../../schema/constants';
 import { AnyValue, flatMap, objectEntries, PlainObject } from '../../utils/utils';
-import { createFieldNode } from '../field-nodes';
 import { QuickSearchFilterObjectType } from '../quick-search-filter-input-types/generator';
 import { TypedInputFieldBase } from '../typed-input-object-type';
 import { and, QUICK_SEARCH_FILTER_DESCRIPTIONS, QUICK_SEARCH_OPERATORS_WITH_LIST_OPERAND } from './constants';
-
 
 const NESTED_FIELD_SUFFIX = 'Aggregation';
 

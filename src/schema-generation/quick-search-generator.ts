@@ -15,7 +15,8 @@ import { QuickSearchFilterObjectType, QuickSearchFilterTypeGenerator } from './q
 
 export const QS_QUERYNODE_ONLY_ERROR_MESSAGE = 'The Quicksearch Augmentation is only supported for QuickSearchQueryNodes';
 
-const MAX_AMOUNT_OF_FILTER_AND_SORTABLE_OBJECTS: number = 1000;
+
+const MAX_AMOUNT_OF_FILTER_AND_SORTABLE_OBJECTS: number = 10; // @MSF
 
 /**
  * Augments list fields with filter and pagination features
@@ -122,15 +123,7 @@ export class QuickSearchGenerator {
 
         return {
             ...schemaField,
-            resolve: (sourceNode, args, info) => {
-                const parentNode = schemaField.resolve(sourceNode, args, info);
-                if (!(parentNode instanceof TransformListQueryNode)) {
-                    return parentNode;
-                }
-                if (parentNode.filterNode.equals(ConstBoolQueryNode.TRUE) && parentNode.orderBy.isUnordered()) {
-                    return parentNode;
-                }
-
+            transform: (sourceNode, args) => {
                 const assertionVariable = new VariableQueryNode();
                 return new WithPreExecutionQueryNode({
                     preExecQueries: [
@@ -139,7 +132,7 @@ export class QuickSearchGenerator {
                     resultNode: new ConditionalQueryNode(
                         assertionVariable,
                         new RuntimeErrorQueryNode('Too many objects'),
-                        parentNode)
+                        sourceNode)
                 });
             }
         };

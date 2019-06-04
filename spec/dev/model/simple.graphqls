@@ -1,12 +1,9 @@
 # @MSF OPT TODO: write Tests
-# @MSF OPT TODO: check where @memorize is viable
-# @MSF OPT TODO: refactor method names
-# @MSF OPT TODO: code comments
 
 "A superhero"
-type Hero @rootEntity(quickSearchLanguage: DE) {
+type Hero @rootEntity(quickSearchIndex: true, quickSearchLanguage: DE) {
     "The hero's screen name"
-    name: String
+    name: String @quickSearchIndex
     key: String @key
     identity: String @quickSearchIndex @searchable
     number: Int @quickSearchIndex @searchable

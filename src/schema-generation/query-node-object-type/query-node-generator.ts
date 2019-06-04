@@ -77,17 +77,13 @@ function buildFieldQueryNode0(sourceNode: QueryNode, field: QueryNodeField, fiel
         // This is no longer necessary because createFieldNode() already does this where necessary (only for simple field lookups)
         // All other code should return lists where lists are expected
         // @MSF TODO: Find a better way to solve the problem
-        if(fieldQueryNode instanceof WithPreExecutionQueryNode && fieldQueryNode.resultNode instanceof ConditionalQueryNode && fieldQueryNode.resultNode.expr1 instanceof RuntimeErrorQueryNode){
-            return new WithPreExecutionQueryNode({
-                preExecQueries: fieldQueryNode.preExecQueries,
-                resultNode: new ConditionalQueryNode(
-                    fieldQueryNode.resultNode.condition,
-                    fieldQueryNode.resultNode.expr1,
-                    buildTransformListQueryNode(fieldQueryNode.resultNode.expr2, queryTreeObjectType, fieldRequest.selectionSet, context)
-                )
-            })
-        }else{
-            return buildTransformListQueryNode(fieldQueryNode, queryTreeObjectType, fieldRequest.selectionSet, context);
+
+
+        const transformListQueryNode = buildTransformListQueryNode(fieldQueryNode, queryTreeObjectType, fieldRequest.selectionSet, context);
+        if (field.transform) {
+            return field.transform(transformListQueryNode, fieldRequest.args, context);
+        } else {
+            return transformListQueryNode;
         }
 
     }

@@ -151,19 +151,21 @@ export class SchemaAnalyzer {
         return true;
     }
 
+    /**
+     * Calculates all required migrations to sync the arangodb-views with the model
+     * @param model
+     */
     async getArangoSearchMigrations(model: Model): Promise<ReadonlyArray<CreateArangoSearchViewMigration | DropArangoSearchViewMigration | UpdateArangoSearchViewMigration>> {
+        // the views that match the model
         const requiredViews = getRequiredViewsFromModel(model);
+        // the currently existing views
         const views = (await this.db.listViews()).map(value => this.db.arangoSearchView(value.name));
+
         const viewsToCreate = await calculateRequiredArangoSearchViewCreateOperations(views, requiredViews, this.db);
         const viewsToDrop = calculateRequiredArangoSearchViewDropOperations(views, requiredViews);
         const viewsToUpdate = await calculateRequiredArangoSearchViewUpdateOperations(views, requiredViews, this.db);
-        let operations: Array<CreateArangoSearchViewMigration | DropArangoSearchViewMigration | UpdateArangoSearchViewMigration> = [];
-        operations = operations.concat(viewsToCreate);
-        operations = operations.concat(viewsToDrop);
-        operations = operations.concat(viewsToUpdate);
 
-
-        return operations;
+        return [...viewsToCreate, ...viewsToDrop, ...viewsToUpdate];
     }
 
 

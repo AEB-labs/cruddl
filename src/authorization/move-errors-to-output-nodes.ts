@@ -1,7 +1,7 @@
 import { uniq } from 'lodash';
 import {
-    ConditionalQueryNode, FirstOfListQueryNode, ListQueryNode, ObjectQueryNode, PropertySpecification, QueryNode,
-    RuntimeErrorQueryNode, TransformListQueryNode, VariableAssignmentQueryNode
+    ConditionalQueryNode, FirstOfListQueryNode, ListQueryNode, ObjectQueryNode, PreExecQueryParms, PropertySpecification, QueryNode,
+    RuntimeErrorQueryNode, TransformListQueryNode, VariableAssignmentQueryNode, WithPreExecutionQueryNode
 } from '../query-tree';
 import { visitQueryNode } from '../query-tree/visitor';
 import { VisitResult } from '../utils/visitor';
@@ -119,6 +119,8 @@ namespace outputNodes {
     add(ListQueryNode, 'itemNodes');
     add(ConditionalQueryNode, 'expr1', 'expr2');
     add(TransformListQueryNode, 'innerNode');
+    addExt(WithPreExecutionQueryNode, OutputNodeKind.OUTPUT, 'resultNode', 'preExecQueries');
+    addExt(PreExecQueryParms, OutputNodeKind.OUTPUT_INTERMEDIATE, 'query');
 
     // this one with a grain of salt... errors in any item that is not the first will get ignored
     // but we need this for single-entity queries to work properly

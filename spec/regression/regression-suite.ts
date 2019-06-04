@@ -58,6 +58,8 @@ export class RegressionSuite {
     private async setUp() {
         this.inMemoryDB = new InMemoryDB();
         const generalOptions: ProjectOptions = {
+
+            processError: e => { console.error(e.stack); return e; },
             getExecutionOptions: ({ context }) => ({ authRoles: context.authRoles })
         };
         const warnLevelOptions = { ...generalOptions, loggerProvider: new Log4jsLoggerProvider('warn') };

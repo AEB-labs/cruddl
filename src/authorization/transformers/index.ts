@@ -1,11 +1,12 @@
 import {
-    AffectedFieldInfoQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode,
+    AffectedFieldInfoQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EntitiesQueryNode, EntityFromIdQueryNode, FieldPathQueryNode, FieldQueryNode,
     FollowEdgeQueryNode,
     QueryNode, UpdateEntitiesQueryNode
 } from '../../query-tree';
-import { transformFieldQueryNode } from './field';
+import { QuickSearchQueryNode } from '../../query-tree/quick-search';
+import { transformFieldPathQueryNode, transformFieldQueryNode } from './field';
 import { AuthContext } from '../auth-basics';
-import { transformEntitiesQueryNode, transformEntityFromIdQueryNode } from './entities';
+import { transformEntitiesQueryNode, transformEntityFromIdQueryNode, transformQuickSearchQueryNode } from './entities';
 import { transformDeleteEntitiesQueryNode, transformUpdateEntitiesQueryNode } from './update-delete-entities';
 import { transformFollowEdgeQueryNode } from './follow-edge';
 import { transformAffectedFieldInfoQueryNode } from './affected-field-info';
@@ -27,6 +28,8 @@ addTransformer(CreateEntityQueryNode, transformCreateEntityQueryNode);
 addTransformer(UpdateEntitiesQueryNode, transformUpdateEntitiesQueryNode);
 addTransformer(DeleteEntitiesQueryNode, transformDeleteEntitiesQueryNode);
 addTransformer(AffectedFieldInfoQueryNode, transformAffectedFieldInfoQueryNode);
+addTransformer(QuickSearchQueryNode, transformQuickSearchQueryNode);
+addTransformer(FieldPathQueryNode, transformFieldPathQueryNode);
 
 export function transformNode(node: QueryNode, authContext: AuthContext): QueryNode {
     const transformer = map.get(node.constructor);

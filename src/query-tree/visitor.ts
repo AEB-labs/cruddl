@@ -1,11 +1,10 @@
 import { visitObject, Visitor, VisitResult } from '../utils/visitor';
 import { QueryNode } from './base';
-import { ConditionalQueryNode } from './operators';
 
 export function visitQueryNode(node: QueryNode, visitor: Visitor<QueryNode>): QueryNode {
     return visitObject(node, {
         enter(node, key): VisitResult<QueryNode> {
-            if (!(node instanceof QueryNode) || node instanceof ConditionalQueryNode) {
+            if (!(node instanceof QueryNode)) {
                 return { newValue: node, recurse: false };
             }
             if (!visitor.enter) {

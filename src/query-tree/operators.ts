@@ -191,6 +191,7 @@ export class ConditionalQueryNode extends QueryNode {
     describe() {
         return `(if ${this.condition.describe()} then ${this.expr1.describe()} else ${this.expr2.describe()} endif)`;
     }
+
 }
 
 

@@ -17,6 +17,7 @@ import { not } from '../../schema-generation/filter-input-types/constants';
 import { Constructor, decapitalize } from '../../utils/utils';
 import { aql } from '../arangodb/aql';
 import { IDENTITY_ANALYZER } from '../arangodb/schema-migration/arango-search-helpers';
+import { ArangoSearchNotSupportedError } from '../arangodb/schema-migration/ArangoSearchNotSupportedError';
 import { likePatternToRegExp } from '../like-helpers';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './inmemory-basics';
 import { js, JSCompoundQuery, JSFragment, JSQueryResultVariable, JSVariable } from './js';
@@ -530,11 +531,11 @@ register(RemoveEdgesQueryNode, (node, context) => {
 
 // @MSF TODO: include QuickSearch in In-Memory Database
 register(OperatorWithLanguageQueryNode, (node, context) => {
-    throw new Error(`'The QuickSearch feature is not supported for the in-memory database`);
+    throw new ArangoSearchNotSupportedError();
 });
 
 register(QuickSearchQueryNode, (node, context) => {
-    throw new Error(`The QuickSearch feature is not supported for the in-memory database`);
+    throw new ArangoSearchNotSupportedError(); // TODO: Error message does not fit
 });
 
 register(SetEdgeQueryNode, (node, context) => {

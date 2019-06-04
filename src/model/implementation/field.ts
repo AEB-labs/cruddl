@@ -459,7 +459,7 @@ export class Field implements ModelComponent {
         if (this.isQuickSearchFulltextIndexed && !this.language) {
             context.addMessage(ValidationMessage.error(`QuickSearchFulltextIndex requires either a language parameter, or a defaultLanguage must be set in the entity.`, this.input.isQuickSearchFulltextIndexedASTNode));
         }
-        if (this.input.isSearchable && !this.isQuickSearchIndexed && !this.isQuickSearchFulltextIndexed) {
+        if (!!this.input.isSearchable && !this.isQuickSearchIndexed && !this.isQuickSearchFulltextIndexed) {
             context.addMessage(ValidationMessage.error(`Only fields that are either quickSearchIndexed or quickSearchFulltextIndexed can be 'searchable'.`, this.input.isSearchableASTNode));
         }
     }

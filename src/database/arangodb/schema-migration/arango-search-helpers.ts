@@ -39,25 +39,22 @@ interface ArangoSearchViewCollectionLink {
 }
 
 export function getRequiredViewsFromModel(model: Model): ReadonlyArray<ArangoSearchDefinition> {
-    return flatMap(model.rootEntityTypes, rootEntity => getViewsForRootEntity(rootEntity));
+    return model.rootEntityTypes
+        .filter(value => value.arangoSearchConfig.isIndexed)
+        .map(rootEntity => getViewForRootEntity(rootEntity));
 }
 
 export function getViewNameForRootEntity(rootEntity: RootEntityType) {
     return QUICK_SEARCH_VIEW_PREFIX + getCollectionNameForRootEntity(rootEntity);
 }
 
-function getViewsForRootEntity(rootEntity: RootEntityType): ReadonlyArray<ArangoSearchDefinition> {
-    if (rootEntity.arangoSearchConfig.isIndexed) {
-        return [
-            {
-                fields: rootEntity.fields.filter(value => value.isQuickSearchIndexed || value.isQuickSearchFulltextIndexed),
-                viewName: getViewNameForRootEntity(rootEntity),
-                collectionName: getCollectionNameForRootEntity(rootEntity)
-            }
-        ];
-    } else {
-        return [];
-    }
+function getViewForRootEntity(rootEntity: RootEntityType): ArangoSearchDefinition {
+    return {
+        fields: rootEntity.fields.filter(value => value.isQuickSearchIndexed || value.isQuickSearchFulltextIndexed),
+        viewName: getViewNameForRootEntity(rootEntity),
+        collectionName: getCollectionNameForRootEntity(rootEntity)
+    };
+
 }
 
 
