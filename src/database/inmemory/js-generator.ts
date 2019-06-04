@@ -17,7 +17,7 @@ import { not } from '../../schema-generation/filter-input-types/constants';
 import { Constructor, decapitalize } from '../../utils/utils';
 import { aql } from '../arangodb/aql';
 import { IDENTITY_ANALYZER } from '../arangodb/schema-migration/arango-search-helpers';
-import { ArangoSearchNotSupportedError } from '../arangodb/schema-migration/ArangoSearchNotSupportedError';
+import { ArangoSearchMigrationNotSupportedError } from '../arangodb/schema-migration/ArangoSearchMigrationNotSupportedError';
 import { likePatternToRegExp } from '../like-helpers';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './inmemory-basics';
 import { js, JSCompoundQuery, JSFragment, JSQueryResultVariable, JSVariable } from './js';
@@ -529,7 +529,6 @@ register(RemoveEdgesQueryNode, (node, context) => {
     );
 });
 
-// @MSF TODO: include QuickSearch in In-Memory Database
 register(OperatorWithLanguageQueryNode, (node, context) => {
     throw new ArangoSearchNotSupportedError();
 });
@@ -611,4 +610,15 @@ function getCollectionForType(type: RootEntityType, context: QueryContext) {
 function getCollectionForRelation(relation: Relation, context: QueryContext) {
     const name = getCollectionNameForRelation(relation);
     return js.collection(name);
+}
+
+/**
+ * Is thrown if a ArangoSearchMigration is performed, in a context where it is not supported,
+ * e.g. when the in-memory database is used, or the Arango-Version is not >3.4
+ */
+export class ArangoSearchNotSupportedError extends Error {
+    constructor() {
+        super(`ArangoSearch-query was not executed, because it is not supported for in-memory database.`);
+        this.name = this.constructor.name;
+    }
 }

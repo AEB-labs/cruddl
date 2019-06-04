@@ -1,6 +1,6 @@
 import { Database } from 'arangojs';
 import { ArangoDBConfig, initDatabase } from '../config';
-import { ArangoSearchNotSupportedError } from './ArangoSearchNotSupportedError';
+import { ArangoSearchMigrationNotSupportedError } from './ArangoSearchMigrationNotSupportedError';
 import {
     CreateArangoSearchViewMigration,
     CreateDocumentCollectionMigration,
@@ -69,7 +69,7 @@ export class MigrationPerformer {
             // Setting the properties during creation does not work for some reason
             await this.db.arangoSearchView(migration.config.viewName).setProperties(migration.config.properties);
         } else {
-            throw new ArangoSearchNotSupportedError();
+            throw new ArangoSearchMigrationNotSupportedError();
         }
 
     }
@@ -83,7 +83,7 @@ export class MigrationPerformer {
         if (await this.isArangoSearchSupported()) {
             await this.db.arangoSearchView(migration.config.viewName).setProperties(migration.config.properties);
         } else {
-            throw new ArangoSearchNotSupportedError();
+            throw new ArangoSearchMigrationNotSupportedError();
         }
     }
 
@@ -91,7 +91,7 @@ export class MigrationPerformer {
         if (await this.isArangoSearchSupported()) {
             await this.db.arangoSearchView(migration.config.viewName).drop();
         } else {
-            throw new ArangoSearchNotSupportedError();
+            throw new ArangoSearchMigrationNotSupportedError();
         }
     }
 }

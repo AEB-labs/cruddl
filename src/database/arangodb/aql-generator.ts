@@ -354,7 +354,6 @@ register(RootEntityIDQueryNode, (node, context) => {
 });
 
 register(QuickSearchQueryNode, (node, context) => {
-    // @MSF TODO: implement Authentication
     let itemContext = context.introduceVariable(node.itemVariable);
     return aqlExt.parenthesizeList(
         aql`FOR ${itemContext.getVariable(node.itemVariable)}`,

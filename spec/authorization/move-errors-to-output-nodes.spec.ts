@@ -95,40 +95,4 @@ describe('move-errors-to-output-nodes', () => {
         expect(withPreExecutionQueryNode.resultNode.constructor.name).to.equal(RuntimeErrorQueryNode.name);
     });
 
-    // it('keeps error in nested expression', () => {
-    //     const tree = new ObjectQueryNode([
-    //         new PropertySpecification(
-    //             'prop1',
-    //             new TransformListQueryNode({
-    //                 listNode:
-    //                     new WithPreExecutionQueryNode({
-    //                         resultNode: new ConditionalQueryNode(
-    //                             new ConstBoolQueryNode(true),
-    //                             new RuntimeErrorQueryNode('expression error'),
-    //                             new TransformListQueryNode({ listNode: new ListQueryNode([]) })),
-    //                         preExecQueries: [
-    //                             new PreExecQueryParms({
-    //                                 query: new TransformListQueryNode({ listNode: new ListQueryNode([]) })
-    //                             })
-    //                         ]
-    //                     }),
-    //             })
-    //         )
-    //     ]);
-    //     const newTree = moveErrorsToOutputNodes(tree);
-    //
-    //     const transformListQueryNode = (newTree as ObjectQueryNode).properties[0].valueNode as TransformListQueryNode;
-    //     expect(transformListQueryNode.constructor.name).to.equal(TransformListQueryNode.name);
-    //     expect(transformListQueryNode.listNode.constructor.name).to.equal(WithPreExecutionQueryNode.name);
-    //
-    //     const withPreExecutionQueryNode = transformListQueryNode.listNode as WithPreExecutionQueryNode;
-    //     expect(withPreExecutionQueryNode.constructor.name).to.equal(WithPreExecutionQueryNode.name);
-    //     expect(withPreExecutionQueryNode.resultNode.constructor.name).to.equal(ConditionalQueryNode.name);
-    //
-    //     const conditionalQueryNode = (withPreExecutionQueryNode.resultNode) as ConditionalQueryNode;
-    //     expect(conditionalQueryNode.constructor.name).to.equal(ConditionalQueryNode.name);
-    //     expect(conditionalQueryNode.expr1.constructor.name).to.equal(RuntimeErrorQueryNode.name);
-    // });
-
-    // @MSF TODO: write tests for "ConditionalQN" and "WithPreExecQN"
 });

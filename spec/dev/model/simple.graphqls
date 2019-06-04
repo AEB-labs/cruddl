@@ -1,5 +1,5 @@
-# @MSF OPT TODO: write Tests
-
+# @MSF TODO: write Tests
+# @MSF TODO: support ADB 3.5
 "A superhero"
 type Hero @rootEntity(quickSearchIndex: true, quickSearchLanguage: DE) {
     "The hero's screen name"
@@ -7,7 +7,7 @@ type Hero @rootEntity(quickSearchIndex: true, quickSearchLanguage: DE) {
     key: String @key
     identity: String @quickSearchIndex @searchable
     number: Int @quickSearchIndex @searchable
-    fullText: String @quickSearchFulltextIndex
+    fullText: String @quickSearchFulltextIndex @searchable
     fullTextEn: String @quickSearchFulltextIndex(language: EN)
     both: String @quickSearchIndex @quickSearchFulltextIndex @searchable
     age: Int @defaultValue(value: 42)

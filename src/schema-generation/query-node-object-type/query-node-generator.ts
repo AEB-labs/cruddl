@@ -76,8 +76,6 @@ function buildFieldQueryNode0(sourceNode: QueryNode, field: QueryNodeField, fiel
         // Note: previously, we had a safeguard here that converted non-lists to empty lists
         // This is no longer necessary because createFieldNode() already does this where necessary (only for simple field lookups)
         // All other code should return lists where lists are expected
-        // @MSF TODO: Find a better way to solve the problem
-
 
         const transformListQueryNode = buildTransformListQueryNode(fieldQueryNode, queryTreeObjectType, fieldRequest.selectionSet, context);
         if (field.transform) {

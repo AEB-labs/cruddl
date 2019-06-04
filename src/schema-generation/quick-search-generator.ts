@@ -8,7 +8,7 @@ import { getMetaFieldName, getQuickSearchEntitiesFieldName } from '../schema/nam
 import { decapitalize } from '../utils/utils';
 import { ListAugmentation } from './list-augmentation';
 import { OutputTypeGenerator } from './output-type-generator';
-import { QueryNodeField, QueryNodeListType, QueryNodeNonNullType, QueryNodeObjectType } from './query-node-object-type';
+import { QueryNodeField, QueryNodeListType, QueryNodeNonNullType, QueryNodeObjectType, QueryNodeResolveInfo } from './query-node-object-type';
 import { or } from './quick-search-filter-input-types/constants';
 import { QuickSearchFilterObjectType, QuickSearchFilterTypeGenerator } from './quick-search-filter-input-types/generator';
 
@@ -16,7 +16,7 @@ import { QuickSearchFilterObjectType, QuickSearchFilterTypeGenerator } from './q
 export const QS_QUERYNODE_ONLY_ERROR_MESSAGE = 'The Quicksearch Augmentation is only supported for QuickSearchQueryNodes';
 
 
-const MAX_AMOUNT_OF_FILTER_AND_SORTABLE_OBJECTS: number = 10; // @MSF
+const MAX_AMOUNT_OF_FILTER_AND_SORTABLE_OBJECTS: number = 10; // @MSF TODO: allow overriding this in test
 
 /**
  * Augments list fields with filter and pagination features
@@ -104,7 +104,7 @@ export class QuickSearchGenerator {
 
     }
 
-    private getPreExecQueryNode(rootEntityType: RootEntityType, args: { [p: string]: any }): QueryNode {
+    private getPreExecQueryNode(rootEntityType: RootEntityType, args: { [p: string]: any }, context: QueryNodeResolveInfo): QueryNode {
         const itemVariable = new VariableQueryNode(decapitalize(rootEntityType.name));
         const quickSearchType = this.quickSearchTypeGenerator.generate(rootEntityType);
         const qsFilterNode = this.buildQuickSearchFilterNode(args, quickSearchType, itemVariable, rootEntityType);
@@ -123,11 +123,11 @@ export class QuickSearchGenerator {
 
         return {
             ...schemaField,
-            transform: (sourceNode, args) => {
+            transform: (sourceNode, args, context) => {
                 const assertionVariable = new VariableQueryNode();
                 return new WithPreExecutionQueryNode({
                     preExecQueries: [
-                        new PreExecQueryParms({ resultVariable: assertionVariable, query: this.getPreExecQueryNode(rootEntityType, args) })
+                        new PreExecQueryParms({ resultVariable: assertionVariable, query: this.getPreExecQueryNode(rootEntityType, args, context) })
                     ],
                     resultNode: new ConditionalQueryNode(
                         assertionVariable,
@@ -157,11 +157,15 @@ export class QuickSearchGenerator {
                 }
             }
 
+            function getOperatorWithLanguageQueryNode() {
+                return new OperatorWithLanguageQueryNode(new FieldPathQueryNode(itemVariable, path.concat(field)), BinaryOperatorWithLanguage.QUICKSEARCH_CONTAINS_PREFIX, new LiteralQueryNode(expression), field.language);
+            }
+
             return new BinaryOperationQueryNode(
                 field.isQuickSearchIndexed ? getIdentityNode() : ConstBoolQueryNode.FALSE,
                 BinaryOperator.OR,
                 field.isQuickSearchFulltextIndexed ?
-                    new OperatorWithLanguageQueryNode(new FieldPathQueryNode(itemVariable, path.concat(field)), BinaryOperatorWithLanguage.QUICKSEARCH_CONTAINS_PREFIX, new LiteralQueryNode(expression), field.language)
+                    getOperatorWithLanguageQueryNode()
                     : ConstBoolQueryNode.FALSE
             );
         }
