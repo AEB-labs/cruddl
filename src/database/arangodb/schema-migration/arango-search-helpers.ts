@@ -1,4 +1,5 @@
 import { undefinedVarMessage } from 'graphql/validation/rules/NoUndefinedVariables';
+import memorize from 'memorize-decorator';
 import { Field, Model, RootEntityType } from '../../../model/implementation';
 import { flatMap } from '../../../utils/utils';
 import { getCollectionNameForRootEntity } from '../arango-basics';
@@ -25,7 +26,7 @@ export const QUICK_SEARCH_VIEW_PREFIX = 'qsView_';
 export interface ArangoSearchDefinition {
     readonly viewName: string;
     readonly collectionName: string;
-    readonly fields: Field[]
+    readonly fields: ReadonlyArray<Field>
 }
 
 interface ArangoSearchViewCollectionLink {
@@ -62,7 +63,8 @@ export async function calculateRequiredArangoSearchViewCreateOperations(existing
     let viewsToCreate = requiredViews.filter(value => !existingViews.some(value1 => value1.name === value.viewName));
 
     async function mapToMigration(value: ArangoSearchDefinition): Promise<CreateArangoSearchViewMigration> {
-        const count: number = (await db.collection(value.collectionName).count()).count;
+        const colExists = await db.collection(value.collectionName).exists();
+        const count: number = (colExists) ? (await db.collection(value.collectionName).count()).count : 0;
         return new CreateArangoSearchViewMigration({
             collectionSize: count,
             viewName: value.viewName,
@@ -86,8 +88,9 @@ function getAnalyzerFromQuickSearchLanguage(quickSearchLanguage: QuickSearchLang
 
 
 function getPropertiesFromDefinition(definition: ArangoSearchDefinition): ArangoSearchViewPropertiesOptions {
-    const properties: ArangoSearchViewPropertiesOptions = {
-        links: {}
+    const properties: any /*ArangoSearchViewPropertiesOptions*/ = {
+        links: {},
+        commitIntervalMsec: 100
     };
 
     const link: ArangoSearchViewCollectionLink = {
@@ -98,22 +101,36 @@ function getPropertiesFromDefinition(definition: ArangoSearchDefinition): Arango
         fields: {}
     };
 
-    for (const field of definition.fields) {
-        const analyzers: string[] = [];
-        if (field.isQuickSearchFulltextIndexed && field.language) {
-            analyzers.push(getAnalyzerFromQuickSearchLanguage(field.language));
-        }
-        if (field.isQuickSearchIndexed) {
-            analyzers.push(IDENTITY_ANALYZER);
-        }
-        if (_.isEqual(analyzers, [IDENTITY_ANALYZER])) {
-            link.fields![field.name] = {};
+    function fieldDefinitionFor(field: Field, path: ReadonlyArray<Field> = []): ArangoSearchViewCollectionLink {
+        if (field.type.isObjectType) {
+            const fields:{ [key: string]: ArangoSearchViewCollectionLink | undefined; } = {};
+            field.type.fields
+                .filter(field => (field.isQuickSearchIndexed || field.isQuickSearchFulltextIndexed)
+                                    && !path.some(value => value.name === field.name && field.declaringType.name === value.declaringType.name))
+                .forEach(value => fields[value.name] = fieldDefinitionFor(value, path.concat(field)));
+            return {
+                fields
+            }
         } else {
-            link.fields![field.name] = {
-                analyzers
-            };
+            const analyzers: string[] = [];
+            if (field.isQuickSearchFulltextIndexed && field.language) {
+                analyzers.push(getAnalyzerFromQuickSearchLanguage(field.language));
+            }
+            if (field.isQuickSearchIndexed) {
+                analyzers.push(IDENTITY_ANALYZER);
+            }
+            if (_.isEqual(analyzers, [IDENTITY_ANALYZER])) {
+                return {};
+            } else {
+                return {
+                    analyzers
+                };
+            }
         }
+    }
 
+    for (const field of definition.fields) {
+        link.fields![field.name] = fieldDefinitionFor(field);
     }
 
     properties.links![definition.collectionName] = link;
@@ -137,7 +154,8 @@ export async function calculateRequiredArangoSearchViewUpdateOperations(views: A
 
         const definitionProperties = getPropertiesFromDefinition(definition);
         if (!isEqualProperties(definitionProperties, viewProperties)) {
-            const count: number = (await db.collection(definition.collectionName).count()).count;
+            const colExists = await db.collection(definition.collectionName).exists();
+            const count: number = (colExists) ? (await db.collection(definition.collectionName).count()).count : 0;
             viewsWithUpdateRequired.push(new UpdateArangoSearchViewMigration({
                 viewName: definition.viewName,
                 collectionSize: count,

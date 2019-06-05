@@ -119,8 +119,9 @@ namespace outputNodes {
     add(ListQueryNode, 'itemNodes');
     add(ConditionalQueryNode, 'expr1', 'expr2');
     add(TransformListQueryNode, 'innerNode');
-    addExt(WithPreExecutionQueryNode, OutputNodeKind.OUTPUT, 'resultNode', 'preExecQueries');
+    addExt(WithPreExecutionQueryNode, OutputNodeKind.OUTPUT_INTERMEDIATE, 'resultNode', 'preExecQueries');
     addExt(PreExecQueryParms, OutputNodeKind.OUTPUT_INTERMEDIATE, 'query');
+    // @MSF TODO: fix double error problem with auth
 
     // this one with a grain of salt... errors in any item that is not the first will get ignored
     // but we need this for single-entity queries to work properly

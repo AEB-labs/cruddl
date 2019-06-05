@@ -94,7 +94,9 @@
             "handlingUnit": "@{ids/HandlingUnit/2}"
           }
         ],
-        "totalValue": "EUR 1024.00"
+        "totalValue": "EUR 1024.00",
+        "description": "description with anyword phrase a all",
+        "enumQuickSearch": "Foo"
       },
       {
         "@id": "2",
@@ -120,7 +122,9 @@
             "quantity": 18
           }
         ],
-        "destinationCountryISOCode": "XX"
+        "destinationCountryISOCode": "XX",
+        "description": "description with all words prefixesFooBar phrase",
+        "enumQuickSearch": "Bar"
       },
       {
         "@id": "3",
@@ -139,7 +143,8 @@
             "quantity": 18
           }
         ],
-        "destinationCountryISOCode": "US"
+        "destinationCountryISOCode": "US",
+        "description": "description with a phrase any word"
       }
     ],
 

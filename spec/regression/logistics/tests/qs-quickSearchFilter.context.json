@@ -1,0 +1,4 @@
+{
+  "authRoles": [ "allusers" ],
+  "arangoSearchMaxFilterableAmountOverride": 2
+}

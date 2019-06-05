@@ -52,7 +52,11 @@ export class OperationResolver {
             watch.stop('distillation');
 
             const rootQueryNode = ObjectQueryNode.EMPTY; // can't use NULL because then the whole operation would yield null
-            queryTree = buildConditionalObjectQueryNode(rootQueryNode, rootType, operation.selectionSet);
+            const fieldContext = {
+                selectionStack: [],
+                arangoSearchMaxFilterableAmountOverride: options ? options.arangoSearchMaxFilterableAmountOverride : undefined
+            };
+            queryTree = buildConditionalObjectQueryNode(rootQueryNode, rootType, operation.selectionSet, fieldContext);
             if (logger.isTraceEnabled()) {
                 logger.trace('Before authorization: ' + queryTree.describe());
             }

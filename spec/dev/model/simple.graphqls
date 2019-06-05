@@ -1,4 +1,3 @@
-# @MSF TODO: write Tests
 # @MSF TODO: support ADB 3.5
 "A superhero"
 type Hero @rootEntity(quickSearchIndex: true, quickSearchLanguage: DE) {
@@ -14,7 +13,7 @@ type Hero @rootEntity(quickSearchIndex: true, quickSearchLanguage: DE) {
     nickNames: [String]
     movies: [Movie] @relation(inverseOf: "heroes")
     skills: [Skill]
-    skill: Skill
+    skill: Skill @quickSearchIndex
     suit: Suit
     morality: Morality
     countryISOCode: String
@@ -26,15 +25,15 @@ type Hero @rootEntity(quickSearchIndex: true, quickSearchLanguage: DE) {
 "A heroic mission"
 type Mission @childEntity(quickSearchLanguage: DE) {
     date: DateTime
-    title: String
+    title: String @quickSearchIndex
 }
 
 "A special skill of a superhero"
 type Skill @valueObject {
-    description: String
+    description: String @quickSearchIndex
     "A value between 0 and 11"
     strength: Float
-    skills: [Skill]
+    skills: [Skill] @quickSearchIndex
 }
 
 "A superhero movie"

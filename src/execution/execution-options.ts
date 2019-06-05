@@ -51,6 +51,11 @@ export interface ExecutionOptions {
      * while it is in the request queue. Use cancellationToken with setTimeout() to set a overall timeout.
      */
     readonly transactionTimeoutMs?: number
+
+    /**
+     * The maximum amount of objects that can be filtered (using a normal filter) or sorted in an ArangoSearch query
+     */
+    readonly arangoSearchMaxFilterableAmountOverride?: number
 }
 
 export interface ExecutionOptionsCallbackArgs {

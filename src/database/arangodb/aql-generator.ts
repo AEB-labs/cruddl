@@ -42,12 +42,13 @@ import {
     UpdateEntitiesQueryNode,
     VariableAssignmentQueryNode,
     VariableQueryNode,
-    WithPreExecutionQueryNode, FieldPathQueryNode
+    WithPreExecutionQueryNode, FieldPathQueryNode, QuickSearchExistsQueryNode
 } from '../../query-tree';
 import { Quantifier, QuantifierFilterNode } from '../../query-tree/quantifiers';
 import { extractVariableAssignments, simplifyBooleans } from '../../query-tree/utils';
 import { not } from '../../schema-generation/filter-input-types/constants';
 import { Constructor, decapitalize } from '../../utils/utils';
+import { ArangoSearchNotSupportedError } from '../inmemory/js-generator';
 import { analyzeLikePatternPrefix } from '../like-helpers';
 import { aql, AQLCompoundQuery, aqlConfig, AQLFragment, AQLQueryResultVariable, AQLVariable } from './aql';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './arango-basics';
@@ -537,6 +538,13 @@ register(OperatorWithLanguageQueryNode, (node, context) => {
             throw new Error(`Unsupported operator: ${node.operator}`);
     }
 
+});
+
+register(QuickSearchExistsQueryNode, (node, context) => {
+    const sourceNode = processNode(node.sourceNode, context);
+    const analyzer = node.quickSearchLanguage ? `text_${node.quickSearchLanguage.toLowerCase()}` : IDENTITY_ANALYZER;
+
+    return aql`EXISTS(${sourceNode}, "analyzer", ${analyzer})`
 });
 
 

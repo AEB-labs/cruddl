@@ -1,0 +1,128 @@
+query equals{
+    quickSearchDeliveries(
+        quickSearchFilter:{
+            deliveryNumber: "1000173"
+        }
+    ){
+        deliveryNumber
+    }
+}
+
+query in{
+    quickSearchDeliveries(
+        quickSearchFilter:{
+            deliveryNumber_in: ["1000173","1000521"]
+        }
+    ){
+        deliveryNumber
+    }
+}
+
+query starts_with{
+    quickSearchDeliveries(
+        quickSearchFilter:{
+            deliveryNumber_starts_with: "10005"
+        }
+    ){
+        deliveryNumber
+    }
+}
+
+query gt_lt{
+    quickSearchDeliveries(
+        quickSearchFilter:{
+            itemsAggregation:{
+                quantity_lt: 5
+            }
+        }
+    ){
+        deliveryNumber
+    }
+}
+query containsAnyWord {
+    quickSearchDeliveries(
+        quickSearchFilter:{
+            description_contains_any_word: "anyword"
+        }
+    ){
+        deliveryNumber
+    }
+}
+query containsAllWords {
+    quickSearchDeliveries(
+        quickSearchFilter:{
+            description_contains_all_words: "all words"
+        }
+    ){
+        deliveryNumber
+    }
+}
+query containsAllPrefixes {
+    quickSearchDeliveries(
+        quickSearchFilter:{
+            description_contains_all_prefixes: "all prefixes"
+        }
+    ){
+        deliveryNumber
+    }
+}
+query containsPhrase {
+    quickSearchDeliveries(
+        quickSearchFilter:{
+            description_contains_phrase: "a phrase"
+        }
+    ){
+        deliveryNumber
+    }
+}
+
+query equals_enum {
+    quickSearchDeliveries(
+        quickSearchFilter:{
+            enumQuickSearch: Foo
+        }
+    ){
+        deliveryNumber
+    }
+}
+
+query valueObject {
+    quickSearchDeliveries(
+        quickSearchFilter:{
+            consignee: {
+                city: "Singapore"
+            }
+        }
+    ){
+        deliveryNumber
+    }
+}
+
+query equals_null {
+    quickSearchDeliveries(
+        quickSearchFilter:{
+            destinationCountryISOCode: null
+        }
+    ){
+        deliveryNumber
+    }
+}
+
+query filter_below_max {
+    quickSearchDeliveries(
+        quickSearchFilter:{
+            deliveryNumber: "1000521"
+        }
+        orderBy: id_ASC
+    ){
+        deliveryNumber
+    }
+}
+
+query filter_above_max {
+    quickSearchDeliveries(
+        orderBy: id_ASC
+    ){
+        deliveryNumber
+    }
+}

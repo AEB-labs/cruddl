@@ -1,0 +1,138 @@
+{
+  "equals": {
+    "data": {
+      "quickSearchDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        }
+      ]
+    }
+  },
+  "in": {
+    "data": {
+      "quickSearchDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        },
+        {
+          "deliveryNumber": "1000521"
+        }
+      ]
+    }
+  },
+  "starts_with": {
+    "data": {
+      "quickSearchDeliveries": [
+        {
+          "deliveryNumber": "1000521"
+        },
+        {
+          "deliveryNumber": "1000522"
+        }
+      ]
+    }
+  },
+  "gt_lt": {
+    "data": {
+      "quickSearchDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        },
+        {
+          "deliveryNumber": "1000522"
+        }
+      ]
+    }
+  },
+  "containsAnyWord": {
+    "data": {
+      "quickSearchDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        }
+      ]
+    }
+  },
+  "containsAllWords": {
+    "data": {
+      "quickSearchDeliveries": [
+        {
+          "deliveryNumber": "1000521"
+        }
+      ]
+    }
+  },
+  "containsAllPrefixes": {
+    "data": {
+      "quickSearchDeliveries": [
+        {
+          "deliveryNumber": "1000521"
+        }
+      ]
+    }
+  },
+  "containsPhrase": {
+    "data": {
+      "quickSearchDeliveries": [
+        {
+          "deliveryNumber": "1000522"
+        }
+      ]
+    }
+  },
+  "equals_enum": {
+    "data": {
+      "quickSearchDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        }
+      ]
+    }
+  },
+  "valueObject": {
+    "data": {
+      "quickSearchDeliveries": [
+        {
+          "deliveryNumber": "1000521"
+        }
+      ]
+    }
+  },
+  "equals_null": {
+    "data": {
+      "quickSearchDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        }
+      ]
+    }
+  },
+  "filter_below_max": {
+    "data": {
+      "quickSearchDeliveries": [
+        {
+          "deliveryNumber": "1000521"
+        }
+      ]
+    }
+  },
+  "filter_above_max": {
+    "errors": [
+      {
+        "message": "Too many objects",
+        "locations": [
+          {
+            "line": 123,
+            "column": 5
+          }
+        ],
+        "path": [
+          "quickSearchDeliveries"
+        ]
+      }
+    ],
+    "data": {
+      "quickSearchDeliveries": null
+    }
+  }
+}

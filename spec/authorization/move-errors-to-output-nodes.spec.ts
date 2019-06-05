@@ -76,7 +76,7 @@ describe('move-errors-to-output-nodes', () => {
         expect((newTree as ObjectQueryNode).properties[0].valueNode.constructor.name).to.equal(RuntimeErrorQueryNode.name);
     });
 
-    it('keeps errors in result node', () => {
+    it('moves errors in result node up', () => {
         const tree = new ObjectQueryNode([
             new PropertySpecification(
                 'prop1',
@@ -90,9 +90,7 @@ describe('move-errors-to-output-nodes', () => {
                 }))
         ]);
         const newTree = moveErrorsToOutputNodes(tree);
-        const withPreExecutionQueryNode = (newTree as ObjectQueryNode).properties[0].valueNode as WithPreExecutionQueryNode;
-        expect(withPreExecutionQueryNode.constructor.name).to.equal(WithPreExecutionQueryNode.name);
-        expect(withPreExecutionQueryNode.resultNode.constructor.name).to.equal(RuntimeErrorQueryNode.name);
+        expect((newTree as ObjectQueryNode).properties[0].valueNode.constructor.name).to.equal(RuntimeErrorQueryNode.name);
     });
 
 });

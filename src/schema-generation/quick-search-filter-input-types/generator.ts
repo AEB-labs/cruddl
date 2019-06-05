@@ -88,7 +88,7 @@ export class QuickSearchFilterTypeGenerator {
 
         }
 
-        const filterType = new QuickSearchFilterObjectType(type, getFields, path.length > 0);
+        const filterType = new QuickSearchFilterObjectType(type, getFields, path.length > 0 && path[0].isList);
         return filterType;
     }
 

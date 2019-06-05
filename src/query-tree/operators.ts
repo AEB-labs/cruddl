@@ -174,6 +174,19 @@ export class OperatorWithLanguageQueryNode extends QueryNode {
 }
 
 /**
+ * A node that performs an EXISTS Check
+ */
+export class QuickSearchExistsQueryNode extends QueryNode {
+    constructor(public readonly sourceNode: QueryNode, public readonly quickSearchLanguage?: QuickSearchLanguage) {
+        super();
+    }
+
+    describe() {
+        return `EXISTS(${this.sourceNode.describe()}, ${this.quickSearchLanguage ? this.quickSearchLanguage.toString() : 'identity'})`;
+    }
+    }
+
+/**
  * The operator of a OperatorWithLanguageQueryNode
  */
 export enum BinaryOperatorWithLanguage {

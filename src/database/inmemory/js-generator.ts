@@ -5,7 +5,7 @@ import {
     ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode,
     EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode,
     LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, OperatorWithLanguageQueryNode, OrderClause, OrderDirection,
-    OrderSpecification, QueryNode, QueryResultValidator, RemoveEdgesQueryNode, RootEntityIDQueryNode,
+    OrderSpecification, QueryNode, QueryResultValidator, QuickSearchExistsQueryNode, RemoveEdgesQueryNode, RootEntityIDQueryNode,
     RUNTIME_ERROR_TOKEN, RuntimeErrorQueryNode, SafeListQueryNode, SetEdgeQueryNode, TransformListQueryNode, TypeCheckQueryNode,
     UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode,
     WithPreExecutionQueryNode
@@ -534,8 +534,13 @@ register(OperatorWithLanguageQueryNode, (node, context) => {
 });
 
 register(QuickSearchQueryNode, (node, context) => {
-    throw new ArangoSearchNotSupportedError(); // TODO: Error message does not fit
+    throw new ArangoSearchNotSupportedError();
 });
+
+register(QuickSearchExistsQueryNode, (node, context) => {
+    throw new ArangoSearchNotSupportedError();
+});
+
 
 register(SetEdgeQueryNode, (node, context) => {
     const coll = getCollectionForRelation(node.relation, context);

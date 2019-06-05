@@ -56,7 +56,8 @@ function buildObjectQueryNode(sourceNode: QueryNode, type: QueryNodeObjectType, 
             throw new Error(`Missing field ${sel.fieldRequest.fieldName}`);
         }
         const newContext: FieldContext = {
-            selectionStack: [...context.selectionStack, sel]
+            ...context,
+            selectionStack: [...context.selectionStack, sel],
         };
         const fieldQueryNode = buildFieldQueryNode(sourceNode, field, sel.fieldRequest, newContext);
         return new PropertySpecification(sel.propertyName, fieldQueryNode);

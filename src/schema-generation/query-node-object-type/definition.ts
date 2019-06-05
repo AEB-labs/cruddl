@@ -12,6 +12,7 @@ import { QueryNode } from '../../query-tree';
 import { FieldContext } from './context';
 
 export interface QueryNodeResolveInfo extends FieldContext {
+
 }
 
 export interface QueryNodeField {

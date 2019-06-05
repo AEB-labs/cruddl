@@ -5,14 +5,15 @@
     },
     "arangodb": {
       "versions": {
-        // 3.3. has a more verbose error message on unique constraint violations including the index id
         "3.3": {
           "ignore": true
         },
-        "3.4": {
+        "3.2": {
           "ignore": true
         }
       }
     }
-  }
+  },
+  "waitForArangoSearch": true,
+  "arangoSearchMaxFilterableAmountOverride": 2
 }

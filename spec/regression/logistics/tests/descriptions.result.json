@@ -31,6 +31,14 @@
               "description": "A delivery"
             },
             {
+              "name": "quickSearchDeliveries",
+              "description": "Searches for Deliveries using QuickSearch."
+            },
+            {
+              "name": "_quickSearchDeliveriesMeta",
+              "description": "Searches for Deliveries using QuickSearch."
+            },
+            {
               "name": "Forwarder",
               "description": "Finds a Forwarder by id or name.\n\nYou should pass a non-null value to exactly one of the arguments."
             },
@@ -718,6 +726,14 @@
             },
             {
               "name": "dynamicData",
+              "description": null
+            },
+            {
+              "name": "description",
+              "description": null
+            },
+            {
+              "name": "enumQuickSearch",
               "description": null
             },
             {
@@ -1910,6 +1926,86 @@
               "description": null
             },
             {
+              "name": "description",
+              "description": "Checks if `description` equals a specified string, case-sensitively.\n\nIf an index exists on `description`, it can be used.\n\nSee also `like` for a case-insensitive filter."
+            },
+            {
+              "name": "description_not",
+              "description": "Checks if `description` does not equal a specified string, case-sensitively."
+            },
+            {
+              "name": "description_in",
+              "description": null
+            },
+            {
+              "name": "description_not_in",
+              "description": null
+            },
+            {
+              "name": "description_lt",
+              "description": null
+            },
+            {
+              "name": "description_lte",
+              "description": null
+            },
+            {
+              "name": "description_gt",
+              "description": null
+            },
+            {
+              "name": "description_gte",
+              "description": null
+            },
+            {
+              "name": "description_contains",
+              "description": "Checks if `description` contains a specified string, case-sensitively."
+            },
+            {
+              "name": "description_not_contains",
+              "description": null
+            },
+            {
+              "name": "description_starts_with",
+              "description": "Checks if `description` starts with a specified string, case-sensitively.\n\nNever uses an index. Consider using `like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
+            },
+            {
+              "name": "description_not_starts_with",
+              "description": null
+            },
+            {
+              "name": "description_ends_with",
+              "description": "Checks if `description` ends with a specified string, case-sensitively."
+            },
+            {
+              "name": "description_not_ends_with",
+              "description": null
+            },
+            {
+              "name": "description_like",
+              "description": "Matches `description` against a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)\n\nIf an index exists on `description`, it can be used for the literal prefix (the part until the first placeholder)."
+            },
+            {
+              "name": "description_not_like",
+              "description": "Checks if `description` does *not* match a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)"
+            },
+            {
+              "name": "enumQuickSearch",
+              "description": "Checks if `enumQuickSearch` equals a specified value.\n\nIf an index exists on `enumQuickSearch`, it can be used."
+            },
+            {
+              "name": "enumQuickSearch_not",
+              "description": "Checks if `enumQuickSearch` does not equal a specified value"
+            },
+            {
+              "name": "enumQuickSearch_in",
+              "description": null
+            },
+            {
+              "name": "enumQuickSearch_not_in",
+              "description": null
+            },
+            {
               "name": "AND",
               "description": "A field that checks if all filters in the list apply\n\nIf the list is empty, this filter applies to all objects."
             },
@@ -2818,6 +2914,355 @@
           "description": "The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).",
           "fields": null,
           "inputFields": null
+        },
+        {
+          "name": "DeliveryQuickSearchFilter",
+          "description": "QuickSearchFilter type for `Delivery`.\n\nAll fields in this type are *and*-combined; see the `or` field for *or*-combination.",
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "id",
+              "description": "Checks if `id` equals a specified value.\n\nIf an index exists on `id`, it can be used.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
+            },
+            {
+              "name": "id_not",
+              "description": "Checks if `id` does not equal a specified value\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
+            },
+            {
+              "name": "id_in",
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+            },
+            {
+              "name": "id_not_in",
+              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+            },
+            {
+              "name": "createdAt",
+              "description": "Checks if `createdAt` equals a specified value.\n\nIf an index exists on `createdAt`, it can be used.\n\nThe instant this object has been created"
+            },
+            {
+              "name": "createdAt_not",
+              "description": "Checks if `createdAt` does not equal a specified value\n\nThe instant this object has been created"
+            },
+            {
+              "name": "createdAt_in",
+              "description": "The instant this object has been created"
+            },
+            {
+              "name": "createdAt_not_in",
+              "description": "The instant this object has been created"
+            },
+            {
+              "name": "createdAt_lt",
+              "description": "The instant this object has been created"
+            },
+            {
+              "name": "createdAt_lte",
+              "description": "The instant this object has been created"
+            },
+            {
+              "name": "createdAt_gt",
+              "description": "The instant this object has been created"
+            },
+            {
+              "name": "createdAt_gte",
+              "description": "The instant this object has been created"
+            },
+            {
+              "name": "updatedAt",
+              "description": "Checks if `updatedAt` equals a specified value.\n\nIf an index exists on `updatedAt`, it can be used.\n\nThe instant this object has been updated the last time (not including relation updates)"
+            },
+            {
+              "name": "updatedAt_not",
+              "description": "Checks if `updatedAt` does not equal a specified value\n\nThe instant this object has been updated the last time (not including relation updates)"
+            },
+            {
+              "name": "updatedAt_in",
+              "description": "The instant this object has been updated the last time (not including relation updates)"
+            },
+            {
+              "name": "updatedAt_not_in",
+              "description": "The instant this object has been updated the last time (not including relation updates)"
+            },
+            {
+              "name": "updatedAt_lt",
+              "description": "The instant this object has been updated the last time (not including relation updates)"
+            },
+            {
+              "name": "updatedAt_lte",
+              "description": "The instant this object has been updated the last time (not including relation updates)"
+            },
+            {
+              "name": "updatedAt_gt",
+              "description": "The instant this object has been updated the last time (not including relation updates)"
+            },
+            {
+              "name": "updatedAt_gte",
+              "description": "The instant this object has been updated the last time (not including relation updates)"
+            },
+            {
+              "name": "deliveryNumber",
+              "description": "Checks if `deliveryNumber` equals a specified string, case-sensitively.\n\nIf an index exists on `deliveryNumber`, it can be used.\n\nSee also `like` for a case-insensitive filter."
+            },
+            {
+              "name": "deliveryNumber_not",
+              "description": "Checks if `deliveryNumber` does not equal a specified string, case-sensitively."
+            },
+            {
+              "name": "deliveryNumber_in",
+              "description": null
+            },
+            {
+              "name": "deliveryNumber_not_in",
+              "description": null
+            },
+            {
+              "name": "deliveryNumber_starts_with",
+              "description": "Checks if `deliveryNumber` starts with a specified string, case-sensitively.\n\nNever uses an index. Consider using `like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
+            },
+            {
+              "name": "deliveryNumber_not_starts_with",
+              "description": null
+            },
+            {
+              "name": "consignee",
+              "description": "Checks if `consignee` is not null, and allows to filter based on its fields."
+            },
+            {
+              "name": "itemsAggregation",
+              "description": "Checks if `items` is not null, and allows to filter based on its fields."
+            },
+            {
+              "name": "destinationCountryISOCode",
+              "description": "Checks if `destinationCountryISOCode` equals a specified string, case-sensitively.\n\nIf an index exists on `destinationCountryISOCode`, it can be used.\n\nSee also `like` for a case-insensitive filter."
+            },
+            {
+              "name": "destinationCountryISOCode_not",
+              "description": "Checks if `destinationCountryISOCode` does not equal a specified string, case-sensitively."
+            },
+            {
+              "name": "destinationCountryISOCode_in",
+              "description": null
+            },
+            {
+              "name": "destinationCountryISOCode_not_in",
+              "description": null
+            },
+            {
+              "name": "destinationCountryISOCode_starts_with",
+              "description": "Checks if `destinationCountryISOCode` starts with a specified string, case-sensitively.\n\nNever uses an index. Consider using `like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
+            },
+            {
+              "name": "destinationCountryISOCode_not_starts_with",
+              "description": null
+            },
+            {
+              "name": "description_contains_any_word",
+              "description": null
+            },
+            {
+              "name": "description_not_contains_any_word",
+              "description": null
+            },
+            {
+              "name": "description_contains_all_words",
+              "description": null
+            },
+            {
+              "name": "description_not_contains_all_words",
+              "description": null
+            },
+            {
+              "name": "description_contains_all_prefixes",
+              "description": null
+            },
+            {
+              "name": "description_not_contains_all_prefixes",
+              "description": null
+            },
+            {
+              "name": "description_contains_phrase",
+              "description": null
+            },
+            {
+              "name": "description_not_contains_phrase",
+              "description": null
+            },
+            {
+              "name": "enumQuickSearch",
+              "description": "Checks if `enumQuickSearch` equals a specified value.\n\nIf an index exists on `enumQuickSearch`, it can be used."
+            },
+            {
+              "name": "enumQuickSearch_not",
+              "description": "Checks if `enumQuickSearch` does not equal a specified value"
+            },
+            {
+              "name": "enumQuickSearch_in",
+              "description": null
+            },
+            {
+              "name": "enumQuickSearch_not_in",
+              "description": null
+            },
+            {
+              "name": "AND",
+              "description": "A field that checks if all filters in the list apply\n\nIf the list is empty, this filter applies to all objects."
+            },
+            {
+              "name": "OR",
+              "description": "A field that checks if any of the filters in the list apply.\n\nIf the list is empty, this filter applies to no objects.\n\nNote that only the items in the list *or*-combined; this complete `OR` field is *and*-combined with outer fields in the parent filter type."
+            }
+          ]
+        },
+        {
+          "name": "AddressQuickSearchFilter",
+          "description": "QuickSearchFilter type for `Address`.\n\nAll fields in this type are *and*-combined; see the `or` field for *or*-combination.",
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "city",
+              "description": "Checks if `city` equals a specified string, case-sensitively.\n\nIf an index exists on `city`, it can be used.\n\nSee also `like` for a case-insensitive filter."
+            },
+            {
+              "name": "city_not",
+              "description": "Checks if `city` does not equal a specified string, case-sensitively."
+            },
+            {
+              "name": "city_in",
+              "description": null
+            },
+            {
+              "name": "city_not_in",
+              "description": null
+            },
+            {
+              "name": "city_starts_with",
+              "description": "Checks if `city` starts with a specified string, case-sensitively.\n\nNever uses an index. Consider using `like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
+            },
+            {
+              "name": "city_not_starts_with",
+              "description": null
+            }
+          ]
+        },
+        {
+          "name": "DeliveryItemAggregationQuickSearchFilter",
+          "description": "QuickSearchFilter type for `DeliveryItem`.\n\nAll fields in this type are *and*-combined; see the `or` field for *or*-combination.",
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "id",
+              "description": "Checks if `id` equals a specified value.\n\nIf an index exists on `id`, it can be used.\n\nAn auto-generated string that identifies this child entity uniquely within this collection of child entities"
+            },
+            {
+              "name": "id_not",
+              "description": "Checks if `id` does not equal a specified value\n\nAn auto-generated string that identifies this child entity uniquely within this collection of child entities"
+            },
+            {
+              "name": "id_in",
+              "description": "An auto-generated string that identifies this child entity uniquely within this collection of child entities"
+            },
+            {
+              "name": "id_not_in",
+              "description": "An auto-generated string that identifies this child entity uniquely within this collection of child entities"
+            },
+            {
+              "name": "createdAt",
+              "description": "Checks if `createdAt` equals a specified value.\n\nIf an index exists on `createdAt`, it can be used.\n\nThe instant this object has been created"
+            },
+            {
+              "name": "createdAt_not",
+              "description": "Checks if `createdAt` does not equal a specified value\n\nThe instant this object has been created"
+            },
+            {
+              "name": "createdAt_in",
+              "description": "The instant this object has been created"
+            },
+            {
+              "name": "createdAt_not_in",
+              "description": "The instant this object has been created"
+            },
+            {
+              "name": "createdAt_lt",
+              "description": "The instant this object has been created"
+            },
+            {
+              "name": "createdAt_lte",
+              "description": "The instant this object has been created"
+            },
+            {
+              "name": "createdAt_gt",
+              "description": "The instant this object has been created"
+            },
+            {
+              "name": "createdAt_gte",
+              "description": "The instant this object has been created"
+            },
+            {
+              "name": "updatedAt",
+              "description": "Checks if `updatedAt` equals a specified value.\n\nIf an index exists on `updatedAt`, it can be used.\n\nThe instant this object has been updated the last time"
+            },
+            {
+              "name": "updatedAt_not",
+              "description": "Checks if `updatedAt` does not equal a specified value\n\nThe instant this object has been updated the last time"
+            },
+            {
+              "name": "updatedAt_in",
+              "description": "The instant this object has been updated the last time"
+            },
+            {
+              "name": "updatedAt_not_in",
+              "description": "The instant this object has been updated the last time"
+            },
+            {
+              "name": "updatedAt_lt",
+              "description": "The instant this object has been updated the last time"
+            },
+            {
+              "name": "updatedAt_lte",
+              "description": "The instant this object has been updated the last time"
+            },
+            {
+              "name": "updatedAt_gt",
+              "description": "The instant this object has been updated the last time"
+            },
+            {
+              "name": "updatedAt_gte",
+              "description": "The instant this object has been updated the last time"
+            },
+            {
+              "name": "quantity",
+              "description": "Checks if `quantity` equals a specified value.\n\nIf an index exists on `quantity`, it can be used."
+            },
+            {
+              "name": "quantity_not",
+              "description": "Checks if `quantity` does not equal a specified value"
+            },
+            {
+              "name": "quantity_in",
+              "description": null
+            },
+            {
+              "name": "quantity_not_in",
+              "description": null
+            },
+            {
+              "name": "quantity_lt",
+              "description": null
+            },
+            {
+              "name": "quantity_lte",
+              "description": null
+            },
+            {
+              "name": "quantity_gt",
+              "description": null
+            },
+            {
+              "name": "quantity_gte",
+              "description": null
+            }
+          ]
         },
         {
           "name": "ForwarderOrderBy",
@@ -3836,6 +4281,14 @@
             {
               "name": "dynamicData",
               "description": null
+            },
+            {
+              "name": "description",
+              "description": null
+            },
+            {
+              "name": "enumQuickSearch",
+              "description": null
             }
           ]
         },
@@ -4089,6 +4542,14 @@
             {
               "name": "dynamicData",
               "description": null
+            },
+            {
+              "name": "description",
+              "description": null
+            },
+            {
+              "name": "enumQuickSearch",
+              "description": null
             }
           ]
         },
@@ -4260,6 +4721,14 @@
             },
             {
               "name": "dynamicData",
+              "description": null
+            },
+            {
+              "name": "description",
+              "description": null
+            },
+            {
+              "name": "enumQuickSearch",
               "description": null
             }
           ]

@@ -3,7 +3,7 @@ import { Field, RootEntityType } from '../model/implementation';
 import { BinaryOperationQueryNode, BinaryOperator, BinaryOperatorWithLanguage, ConditionalQueryNode, ConstBoolQueryNode, CountQueryNode, FieldPathQueryNode, LiteralQueryNode, OperatorWithLanguageQueryNode, PreExecQueryParms, QueryNode, RuntimeErrorQueryNode, TransformListQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../query-tree';
 import { QuickSearchQueryNode } from '../query-tree/quick-search';
 import { simplifyBooleans } from '../query-tree/utils';
-import { QUICK_SEARCH_EXPRESSION_ARG, QUICK_SEARCH_FILTER_ARG } from '../schema/constants';
+import { FILTER_ARG, ORDER_BY_ARG, QUICK_SEARCH_EXPRESSION_ARG, QUICK_SEARCH_FILTER_ARG } from '../schema/constants';
 import { getMetaFieldName, getQuickSearchEntitiesFieldName } from '../schema/names';
 import { decapitalize } from '../utils/utils';
 import { ListAugmentation } from './list-augmentation';
@@ -13,10 +13,7 @@ import { or } from './quick-search-filter-input-types/constants';
 import { QuickSearchFilterObjectType, QuickSearchFilterTypeGenerator } from './quick-search-filter-input-types/generator';
 
 
-export const QS_QUERYNODE_ONLY_ERROR_MESSAGE = 'The Quicksearch Augmentation is only supported for QuickSearchQueryNodes';
-
-
-const MAX_AMOUNT_OF_FILTER_AND_SORTABLE_OBJECTS: number = 10; // @MSF TODO: allow overriding this in test
+export const DEFAULT_ARANGOSEARCH_MAX_FILTERABLE_AMOUNT: number = 1000;
 
 /**
  * Augments list fields with filter and pagination features
@@ -116,24 +113,28 @@ export class QuickSearchGenerator {
                     itemVariable: itemVariable
                 })),
             BinaryOperator.GREATER_THAN,
-            new LiteralQueryNode(MAX_AMOUNT_OF_FILTER_AND_SORTABLE_OBJECTS));
+            new LiteralQueryNode(context.arangoSearchMaxFilterableAmountOverride ? context.arangoSearchMaxFilterableAmountOverride : DEFAULT_ARANGOSEARCH_MAX_FILTERABLE_AMOUNT));
     }
 
     private augmentWithCondition(schemaField: QueryNodeField, rootEntityType: RootEntityType): QueryNodeField {
-
         return {
             ...schemaField,
             transform: (sourceNode, args, context) => {
                 const assertionVariable = new VariableQueryNode();
-                return new WithPreExecutionQueryNode({
-                    preExecQueries: [
-                        new PreExecQueryParms({ resultVariable: assertionVariable, query: this.getPreExecQueryNode(rootEntityType, args, context) })
-                    ],
-                    resultNode: new ConditionalQueryNode(
-                        assertionVariable,
-                        new RuntimeErrorQueryNode('Too many objects'),
-                        sourceNode)
-                });
+                if (args[FILTER_ARG] || args[ORDER_BY_ARG]) {
+                    return new WithPreExecutionQueryNode({
+                        preExecQueries: [
+                            new PreExecQueryParms({ resultVariable: assertionVariable, query: this.getPreExecQueryNode(rootEntityType, args, context) })
+                        ],
+                        resultNode: new ConditionalQueryNode(
+                            assertionVariable,
+                            new RuntimeErrorQueryNode('Too many objects'),
+                            sourceNode)
+                    });
+                } else {
+                    return sourceNode;
+                }
+
             }
         };
     }

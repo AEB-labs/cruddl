@@ -450,7 +450,7 @@ export class Field implements ModelComponent {
     }
 
     private validateQuickSearch(context: ValidationContext) {
-        if (this.isQuickSearchIndexed && !(this.type.isScalarType || this.type.isChildEntityType || this.type.isEntityExtensionType || this.type.isValueObjectType)) {
+        if (this.isQuickSearchIndexed && !(this.type.isScalarType || this.type.isChildEntityType || this.type.isEntityExtensionType || this.type.isValueObjectType || this.type.isEnumType)) {
             context.addMessage(ValidationMessage.error(`QuickSearchIndex is not supported on type "${this.type.name}".`, this.input.isQuickSearchIndexedASTNode));
         }
         if (this.isQuickSearchFulltextIndexed && !(this.type.isScalarType && this.type.name === 'String')) {
@@ -461,6 +461,9 @@ export class Field implements ModelComponent {
         }
         if (!!this.input.isSearchable && !this.isQuickSearchIndexed && !this.isQuickSearchFulltextIndexed) {
             context.addMessage(ValidationMessage.error(`Only fields that are either quickSearchIndexed or quickSearchFulltextIndexed can be 'searchable'.`, this.input.isSearchableASTNode));
+        }
+        if(this.isQuickSearchIndexed && (this.type.isEntityExtensionType || this.type.isValueObjectType) && !this.type.fields.some(value => value.isQuickSearchIndexed || value.isQuickSearchFulltextIndexed)){
+            context.addMessage(ValidationMessage.error(`At least one field on type "${this.type.name}" must be quickSearchIndexed or quickSearchFulltextIndexed.`, this.input.isQuickSearchIndexedASTNode));
         }
     }
 
