@@ -22,7 +22,7 @@ export class OrderByEnumType {
         return new Map(this.values.map((v): [string, OrderByEnumValue] => ([v.name, v])));
     }
 
-    getValue(name: string): OrderByEnumValue|undefined {
+    getValue(name: string): OrderByEnumValue | undefined {
         return this.valueMap.get(name);
     }
 
@@ -40,7 +40,7 @@ export class OrderByEnumType {
             name: this.name,
             values: chain(this.values)
                 .keyBy(value => value.name)
-                .mapValues(value => ({value: value.name}))
+                .mapValues(value => ({ value: value.name }))
                 .value()
         });
     }
@@ -96,8 +96,8 @@ export class OrderByEnumGenerator {
             // currently, all scalars and enums are ordered types
             return [
                 new OrderByEnumValue(newPath, OrderDirection.ASCENDING),
-                new OrderByEnumValue(newPath, OrderDirection.DESCENDING),
-            ]
+                new OrderByEnumValue(newPath, OrderDirection.DESCENDING)
+            ];
         }
     }
 

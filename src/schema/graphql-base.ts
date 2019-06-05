@@ -17,6 +17,40 @@ export const DIRECTIVES: DocumentNode = gql`
     "Declares a field as a to-1 or to-n relation to another root entity"
     directive @relation(inverseOf: String) on FIELD_DEFINITION
     
+    "Declares a field to be the result of a traversal of relations and fields"
+    directive @traversal(
+        """
+        A series of field names (dot-separated), starting from the declaring type.
+        
+        Recursive relation fields (e.g. from HandlingUnit to HandlingUnit) can be traversed recursively. To enable this,
+        specify a minimum and maximum depth, e.g. "children{1,3}" to include all direct children, their children, and
+        the children of them. You can also specify zero as lower bound to include the originating entity.
+        """
+        path: String!
+    ) on FIELD_DEFINITION
+
+    enum FieldAggregator {
+        COUNT,
+        SUM,
+        MIN,
+        MAX,
+        AVERAGE
+    }
+    
+    "Declares a field to be an aggregation of list items"
+    directive @aggregation(
+        """
+        A series of field names (dot-separated), starting from the declaring type.
+
+        Recursive relation fields (e.g. from HandlingUnit to HandlingUnit) can be traversed recursively. To enable this,
+        specify a minimum and maximum depth, e.g. "children{1,3}" to include all direct children, their children, and
+        the children of them. You can also specify zero as lower bound to include the originating entity.
+        """
+        path: String!
+        
+        aggregator: FieldAggregator
+    ) on FIELD_DEFINITION
+    
     "Declares a field to reference another root entity via its @key"
     directive @reference(
         """

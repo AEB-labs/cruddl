@@ -1,4 +1,4 @@
-import { ASTNode, Location } from 'graphql';
+import { ASTNode, Location, StringValueNode, ValueNode } from 'graphql';
 import { ProjectSource } from '../../project/source';
 import { getLineAndColumnFromPosition } from '../../schema/schema-utils';
 
@@ -133,4 +133,16 @@ function severityToString(severity: Severity) {
 
 function isASTNode(obj: any): obj is ASTNode {
     return 'kind' in obj;
+}
+
+export function locationWithinStringArgument(node: StringValueNode, offset: number, length: number) {
+    if (!node.loc) {
+        return undefined;
+    }
+    const loc = node.loc;
+    // add 1 because of "
+    return new MessageLocation(
+        ProjectSource.fromGraphQLSource(loc.source) || loc.source.name,
+        new SourcePosition(loc.start + 1 + offset, loc.startToken.line, loc.startToken.column + 1 + offset),
+        new SourcePosition(loc.start + 1 + offset + length, loc.endToken.line, loc.startToken.column + 1 + offset + length));
 }

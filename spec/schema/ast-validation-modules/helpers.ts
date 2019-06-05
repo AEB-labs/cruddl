@@ -65,15 +65,21 @@ export function validate(source: string, options: { permissionProfiles?: Permiss
     const validationContext = new ValidationContext();
     const parsedSource = parseProjectSource(projectSource, validationContext);
     let parsedSourceResults: ValidationResult | undefined;
-    if(parsedSource) {
+    if (parsedSource) {
         parsedSourceResults = validateParsedProjectSource(parsedSource);
     }
 
-    return new ValidationResult([
-        ...model.validate().messages,
+    const intermediateResult = new ValidationResult([
         ...sourceResults.messages,
         ...astResults.messages,
         ...validationContext.asResult().messages,
-        ...((parsedSourceResults)?parsedSourceResults.messages:[])
+        ...((parsedSourceResults) ? parsedSourceResults.messages : [])
+    ]);
+    if (intermediateResult.hasErrors()) {
+        return intermediateResult;
+    }
+    return new ValidationResult([
+        ...model.validate().messages,
+        ...intermediateResult.messages
     ]);
 }

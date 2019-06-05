@@ -1,0 +1,8 @@
+query fields {
+    Delivery(deliveryNumber: "D1") {
+        allItems {
+            itemNumber
+        }
+        allItemNumbers
+    }
+}

@@ -1,0 +1,17 @@
+{
+  "createEdges": {
+    "data": {
+      "updateShipment": {
+        "shipmentNumber": "S1"
+      }
+    }
+  },
+  "fields": {
+    "data": {
+      "Shipment": {
+        "totalWeightInKg": 63,
+        "itemCount": 8
+      }
+    }
+  }
+}

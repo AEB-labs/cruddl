@@ -11,13 +11,19 @@ type Hero @rootEntity {
     countryISOCode: String
     country: Country @reference(keyField: "countryISOCode")
     missions: [Mission]
+    friends: [Hero] @relation
+    moreFriends: [Hero] @traversal(path: "friends{0,2}")
+    subMissions: [Mission] @traversal(path: "missions.subMissions")
+    missionsAgain: [Mission] @traversal(path: "missions")
     info: JSON
+    deepSkills: [Skill] @traversal(path: "skills.skills")
 }
 
 "A heroic mission"
 type Mission @childEntity {
     date: DateTime
     title: String
+    subMissions: [Mission]
 }
 
 "A special skill of a superhero"
@@ -36,6 +42,12 @@ type Movie @rootEntity {
     "The real superhero"
     director: Director @relation
     publisher: Publisher @reference
+
+    relatedMovies: [Movie] @traversal(path: "heroes.movies")
+    community: [Hero] @traversal(path: "heroes.friends{0,2}")
+    subMissions: [Mission] @traversal(path: "heroes.friends{0,2}.missions.subMissions")
+    skillCount: Int @aggregation(path: "heroes.skills", aggregator: COUNT)
+    totalSkillStrength: Float @aggregation(path: "heroes.skills.strength", aggregator: SUM)
 }
 
 "A movie director"

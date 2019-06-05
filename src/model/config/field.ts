@@ -1,4 +1,4 @@
-import { DirectiveNode, FieldDefinitionNode, NameNode, ValueNode } from 'graphql';
+import { DirectiveNode, EnumValueNode, FieldDefinitionNode, NameNode, StringValueNode, TypeNode, ValueNode } from 'graphql';
 import { PermissionsConfig } from './permissions';
 
 export interface FieldConfig {
@@ -21,7 +21,29 @@ export interface FieldConfig {
     readonly inverseOfFieldName?: string
     readonly inverseOfASTNode?: ValueNode
 
+    readonly traversal?: TraversalConfig
+    readonly aggregation?: AggregationConfig
+
     readonly astNode?: FieldDefinitionNode
+}
+
+export interface TraversalConfig {
+    readonly astNode?: DirectiveNode
+    readonly path: string
+    readonly pathASTNode?: StringValueNode
+}
+
+export interface AggregationConfig extends TraversalConfig {
+    readonly aggregator: FieldAggregator
+    readonly aggregatorASTNode?: EnumValueNode
+}
+
+export enum FieldAggregator {
+    COUNT = 'COUNT',
+    SUM = 'SUM',
+    MIN = 'MIN',
+    MAX = 'MAX',
+    AVERAGE = 'AVERAGE'
 }
 
 export enum CalcMutationsOperator {

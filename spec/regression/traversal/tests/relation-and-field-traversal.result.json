@@ -1,0 +1,64 @@
+{
+  "createEdges": {
+    "data": {
+      "updateShipment": {
+        "shipmentNumber": "S1"
+      },
+      "updateOrder": {
+        "orderNumber": "O1"
+      }
+    }
+  },
+  "relationToNAndFields": {
+    "data": {
+      "Shipment": {
+        "allItems": [
+          {
+            "itemNumber": "DI1.1.1"
+          },
+          {
+            "itemNumber": "DI1.1.2"
+          },
+          {
+            "itemNumber": "DI1.2.1"
+          },
+          {
+            "itemNumber": "DI1.2.2"
+          },
+          {
+            "itemNumber": "DI2.1.1"
+          },
+          {
+            "itemNumber": "DI2.1.2"
+          },
+          {
+            "itemNumber": "DI2.2.1"
+          },
+          {
+            "itemNumber": "DI2.2.2"
+          }
+        ]
+      }
+    }
+  },
+  "relationTo1AndFields": {
+    "data": {
+      "Order": {
+        "allItems": [
+          {
+            "itemNumber": "DI1.1.1"
+          },
+          {
+            "itemNumber": "DI1.1.2"
+          },
+          {
+            "itemNumber": "DI1.2.1"
+          },
+          {
+            "itemNumber": "DI1.2.2"
+          }
+        ]
+      }
+    }
+  }
+}
