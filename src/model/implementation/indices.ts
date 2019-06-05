@@ -8,7 +8,7 @@ import {DirectiveNode, ObjectValueNode, StringValueNode} from 'graphql';
 import { SCALAR_JSON } from '../../schema/constants';
 
 export class IndexField implements ModelComponent {
-    readonly path: string[];
+    readonly path: ReadonlyArray<string>;
 
     constructor(public readonly dotSeparatedPath: string, public readonly declaringType: RootEntityType, public readonly astNode?: DirectiveNode | StringValueNode | ObjectValueNode) {
         this.path = dotSeparatedPath.split('.');

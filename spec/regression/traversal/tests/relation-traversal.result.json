@@ -1,0 +1,60 @@
+{
+  "createEdges": {
+    "data": {
+      "updateShipment": {
+        "shipmentNumber": "S1"
+      },
+      "d1": {
+        "deliveryNumber": "D1"
+      },
+      "d2": {
+        "deliveryNumber": "D2"
+      }
+    }
+  },
+  "toNtoN": {
+    "data": {
+      "Shipment": {
+        "allOuterHandlingUnits": [
+          {
+            "handlingUnitNumber": "H1"
+          },
+          {
+            "handlingUnitNumber": "H2"
+          },
+          {
+            "handlingUnitNumber": "H3"
+          }
+        ]
+      }
+    }
+  },
+  "toNto1": {
+    "data": {
+      "Shipment": {
+        "allOrders": [
+          {
+            "orderNumber": "O1"
+          },
+          {
+            "orderNumber": "O2"
+          }
+        ]
+      }
+    }
+  },
+  "to1toN": {
+    "data": {
+      "Order": {
+        "allOuterHandlingUnits": [
+          {
+            "handlingUnitNumber": "H1"
+          },
+          {
+            "handlingUnitNumber": "H2"
+          }
+        ]
+      }
+    }
+  }
+}

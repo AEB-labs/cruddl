@@ -1,0 +1,24 @@
+mutation createEdges {
+    updateShipment(input: { id: "@{ids/Shipment/1}", addDeliveries: [ "@{ids/Delivery/1}", "@{ids/Delivery/2}" ] }) {
+        shipmentNumber
+    }
+    updateOrder(input: { id: "@{ids/Order/1}", delivery: "@{ids/Delivery/1}" }) {
+        orderNumber
+    }
+}
+
+query relationToNAndFields {
+    Shipment(shipmentNumber: "S1") {
+        allItems {
+            itemNumber
+        }
+    }
+}
+
+query relationTo1AndFields {
+    Order(orderNumber: "O1") {
+        allItems {
+            itemNumber
+        }
+    }
+}

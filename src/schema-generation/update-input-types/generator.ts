@@ -148,6 +148,11 @@ export class UpdateInputTypeGenerator {
             }
         }
 
+        if (field.isTraversal || field.isAggregation) {
+            // traversal and aggregation fields are read-only
+            return [];
+        }
+
         throw new Error(`Field "${field.declaringType.name}.${field.name}" has an unexpected configuration`);
     }
 }

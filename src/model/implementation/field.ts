@@ -1,9 +1,13 @@
-import { FieldDefinitionNode } from 'graphql';
+import { FieldDefinitionNode, GraphQLFloat, GraphQLInt } from 'graphql';
 import memorize from 'memorize-decorator';
-import { CALC_MUTATIONS_OPERATORS } from '../../schema/constants';
-import { CalcMutationsOperator, FieldConfig, TypeKind } from '../config';
+import { AGGREGATION_DIRECTIVE, CALC_MUTATIONS_OPERATORS, RELATION_DIRECTIVE, TRAVERSAL_DIRECTIVE } from '../../schema/constants';
+import { GraphQLDateTime } from '../../schema/scalars/date-time';
+import { GraphQLLocalDate } from '../../schema/scalars/local-date';
+import { GraphQLLocalTime } from '../../schema/scalars/local-time';
+import { CalcMutationsOperator, FieldAggregator, FieldConfig, TypeKind } from '../config';
 import { ValidationMessage } from '../validation';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
+import { FieldPath } from './field-path';
 import { FieldLocalization } from './i18n';
 import { Model } from './model';
 import { PermissionProfile } from './permission-profile';
@@ -19,6 +23,11 @@ export class Field implements ModelComponent {
     readonly isList: boolean;
     readonly isReference: boolean;
     readonly isRelation: boolean;
+    readonly isTraversal: boolean;
+    readonly isAggregation: boolean;
+    readonly traversalPath: FieldPath | undefined;
+    readonly aggregationPath: FieldPath | undefined;
+    readonly aggregator: FieldAggregator | undefined;
     readonly defaultValue?: any;
     readonly calcMutationOperators: ReadonlySet<CalcMutationsOperator>;
     readonly roles: RolesSpecifier | undefined;
@@ -38,6 +47,15 @@ export class Field implements ModelComponent {
         this.defaultValue = input.defaultValue;
         this.isReference = input.isReference || false;
         this.isRelation = input.isRelation || false;
+        this.isTraversal = !!input.traversal;
+        this.isAggregation = !!input.aggregation;
+        if (input.traversal) {
+            this.traversalPath = new FieldPath(input.traversal, this.declaringType);
+        }
+        if (input.aggregation) {
+            this.aggregationPath = new FieldPath(input.aggregation, this.declaringType);
+            this.aggregator = input.aggregation.aggregator;
+        }
         this.isList = input.isList || false;
         this.calcMutationOperators = new Set(input.calcMutationOperators || []);
         this.roles = input.permissions && input.permissions.roles ? new RolesSpecifier(input.permissions.roles) : undefined;
@@ -102,6 +120,7 @@ export class Field implements ModelComponent {
         return relationSide.relation;
     }
 
+    @memorize()
     public get relationSide(): RelationSide | undefined {
         if (!this.isRelation || !this.declaringType.isRootEntityType || !this.type.isRootEntityType) {
             return undefined;
@@ -127,7 +146,7 @@ export class Field implements ModelComponent {
 
     public getRelationSideOrThrow(): RelationSide {
         if (this.type.kind != TypeKind.ROOT_ENTITY) {
-            throw new Error(`Expected "${this.type.name}" to be a root entity, but is ${this.type.kind}`);
+            throw new Error(`Expected the type of field "${this.declaringType.name}.${this.name}" to be a root entity, but "${this.type.name}" is a ${this.type.kind}`);
         }
         if (this.declaringType.kind != TypeKind.ROOT_ENTITY) {
             throw new Error(`Expected "${this.declaringType.name}" to be a root entity, but is ${this.declaringType.kind}`);
@@ -188,6 +207,8 @@ export class Field implements ModelComponent {
         this.validateChildEntityType(context);
         this.validateRelation(context);
         this.validateReference(context);
+        this.validateTraversal(context);
+        this.validateAggregation(context);
         this.validateDefaultValue(context);
         this.validateCalcMutations(context);
     }
@@ -233,7 +254,7 @@ export class Field implements ModelComponent {
         }
 
         // root entities are not embeddable
-        if (!this.isRelation && !this.isReference) {
+        if (!this.isRelation && !this.isReference && !this.isTraversal) {
             if (this.declaringType.kind == TypeKind.VALUE_OBJECT) {
                 context.addMessage(ValidationMessage.error(`Type "${this.type.name}" is a root entity type and cannot be embedded. Consider adding @reference.`, this.astNode));
             } else {
@@ -320,6 +341,87 @@ export class Field implements ModelComponent {
         this.validateReferenceKeyField(context);
     }
 
+    private validateTraversal(context: ValidationContext) {
+        if (!this.input.traversal) {
+            return;
+        }
+
+        if (this.isRelation) {
+            context.addMessage(ValidationMessage.error(`@${TRAVERSAL_DIRECTIVE} and @${RELATION_DIRECTIVE} cannot be combined.`, this.astNode));
+            return;
+        }
+        if (!this.traversalPath) {
+            context.addMessage(ValidationMessage.error(`The path cannot be empty.`, this.input.traversal.pathASTNode));
+            return;
+        }
+        if (!this.traversalPath.validate(context)) {
+            // path validation failed already
+            return;
+        }
+        const resultingType = this.traversalPath.resultingType;
+        if (resultingType && resultingType !== this.type) {
+            context.addMessage(ValidationMessage.error(`The traversal path results in type "${resultingType.name}", but this field is declared with type "${this.type.name}".`, this.astNode && this.astNode.type));
+            return;
+        }
+        if (this.traversalPath.resultIsList && !this.isList) {
+            context.addMessage(ValidationMessage.error(`This field should be a declared as a list because the traversal path results in a list.`, this.astNode && this.astNode.type));
+            return;
+        }
+        if (!this.traversalPath.resultIsList && this.isList) {
+            context.addMessage(ValidationMessage.error(`This field should not be a declared as a list because the traversal path does not result in a list.`, this.astNode && this.astNode.type));
+            return;
+        }
+    }
+
+    private validateAggregation(context: ValidationContext) {
+        if (!this.input.aggregation || !this.aggregator) { // missing aggregator is a graphql-rules error
+            return;
+        }
+        if (this.isRelation) {
+            context.addMessage(ValidationMessage.error(`@${AGGREGATION_DIRECTIVE} and @${RELATION_DIRECTIVE} cannot be combined.`, this.astNode));
+            return;
+        }
+        if (this.isTraversal) {
+            context.addMessage(ValidationMessage.error(`@${AGGREGATION_DIRECTIVE} and @${TRAVERSAL_DIRECTIVE} cannot be combined.`, this.astNode));
+            return;
+        }
+        if (!this.aggregationPath) {
+            context.addMessage(ValidationMessage.error(`The path cannot be empty.`, this.input.aggregation.pathASTNode));
+            return;
+        }
+
+        if (!this.aggregationPath.validate(context)) {
+            // path validation failed already
+            return;
+        }
+        if (!this.aggregationPath.resultIsList) {
+            context.addMessage(ValidationMessage.error(`The path does not result in a list and thus cannot be used in an aggregation.`, this.input.aggregation.pathASTNode));
+            return;
+        }
+        const resultingType = this.aggregationPath.resultingType;
+        if (this.aggregator === FieldAggregator.COUNT) {
+            if (this.type.name !== GraphQLInt.name) {
+                context.addMessage(ValidationMessage.error(`The type of an @${AGGREGATION_DIRECTIVE} field with aggregator "${FieldAggregator.COUNT}" should be "${GraphQLInt.name}".`, this.astNode && this.astNode.type));
+            }
+        } else {
+            const supportedTypeNames = getSupportedTypeNames(this.aggregator);
+            if (resultingType && supportedTypeNames && !supportedTypeNames.includes(resultingType.name)) {
+                context.addMessage(ValidationMessage.error(`Aggregator "${this.aggregator}" is not supported on type "${resultingType.name}" (supported types: ${supportedTypeNames.map(t => `"${t}"`).join(', ')}).`,
+                    this.input.aggregation.aggregatorASTNode));
+                return;
+            }
+            if (resultingType && resultingType !== this.type) {
+                context.addMessage(ValidationMessage.error(`The aggregation results in type "${resultingType.name}", but this field is declared with type "${this.type.name}".`, this.astNode && this.astNode.type));
+                return;
+            }
+        }
+
+        if (this.isList) {
+            context.addMessage(ValidationMessage.error(`This @${AGGREGATION_DIRECTIVE} field should not be a list.`, this.astNode && this.astNode.type));
+            return;
+        }
+    }
+
     private validateReferenceKeyField(context: ValidationContext) {
         if (!this.input.referenceKeyField) {
             return;
@@ -390,6 +492,11 @@ export class Field implements ModelComponent {
     private validatePermissions(context: ValidationContext) {
         const permissions = this.input.permissions || {};
 
+        if (this.isTraversal && (permissions.permissionProfileName || permissions.roles)) {
+            context.addMessage(ValidationMessage.error(`Permissions to @traversal fields cannot be restricted explicitly (permissions of traversed fields and types are applied automatically).`, this.astNode));
+            return;
+        }
+
         if (permissions.permissionProfileName != undefined && permissions.roles != undefined) {
             const message = `Permission profile and explicit role specifiers cannot be combined.`;
             context.addMessage(ValidationMessage.error(message, permissions.permissionProfileNameAstNode || this.input.astNode));
@@ -412,6 +519,11 @@ export class Field implements ModelComponent {
 
         if (this.isRelation) {
             context.addMessage(ValidationMessage.error(`Default values are not supported on relations.`, this.input.defaultValueASTNode || this.astNode));
+            return;
+        }
+
+        if (this.isTraversal) {
+            context.addMessage(ValidationMessage.error(`Default values are not supported on traversal fields.`, this.input.defaultValueASTNode || this.astNode));
             return;
         }
 
@@ -446,5 +558,24 @@ export class Field implements ModelComponent {
                 context.addMessage(ValidationMessage.error(`Calc mutation operator "${operator}" is not supported on type "${this.type.name}" (supported operators: ${supportedOperatorsDesc}).`, this.astNode));
             }
         }
+    }
+}
+
+function getSupportedTypeNames(aggregator: FieldAggregator): ReadonlyArray<string>|undefined {
+    switch (aggregator) {
+        case FieldAggregator.COUNT:
+            return undefined;
+        case FieldAggregator.MAX:
+        case FieldAggregator.MIN:
+            return [
+                GraphQLInt.name, GraphQLFloat.name, GraphQLDateTime.name, GraphQLLocalDate.name, GraphQLLocalTime.name
+            ];
+        case FieldAggregator.AVERAGE:
+        case FieldAggregator.SUM:
+            return [
+                GraphQLInt.name, GraphQLFloat.name
+            ];
+        default:
+            throw new Error(`Unsupported aggregator: ${aggregator}`);
     }
 }

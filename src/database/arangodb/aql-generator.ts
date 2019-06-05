@@ -1,5 +1,6 @@
-import { Field, Relation, RootEntityType } from '../../model';
-import { AddEdgesQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode, ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeIdentifier, EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, OrderDirection, OrderSpecification, PartialEdgeIdentifier, QueryNode, QueryResultValidator, RemoveEdgesQueryNode, RootEntityIDQueryNode, RUNTIME_ERROR_CODE_PROPERTY, RUNTIME_ERROR_TOKEN, RuntimeErrorQueryNode, SafeListQueryNode, SetEdgeQueryNode, TransformListQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../../query-tree';
+import { Field, FieldAggregator, Relation, RootEntityType } from '../../model';
+import { FieldSegment, getEffectiveTraversalSegments, RelationSegment } from '../../model/implementation/field-path';
+import { AddEdgesQueryNode, AggregationQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode, ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeIdentifier, EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, OrderDirection, OrderSpecification, PartialEdgeIdentifier, QueryNode, QueryResultValidator, RemoveEdgesQueryNode, RootEntityIDQueryNode, RUNTIME_ERROR_CODE_PROPERTY, RUNTIME_ERROR_TOKEN, RuntimeErrorQueryNode, SafeListQueryNode, SetEdgeQueryNode, TransformListQueryNode, TraversalQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../../query-tree';
 import { Quantifier, QuantifierFilterNode } from '../../query-tree/quantifiers';
 import { extractVariableAssignments, simplifyBooleans } from '../../query-tree/utils';
 import { not } from '../../schema-generation/filter-input-types/constants';
@@ -382,7 +383,35 @@ register(CountQueryNode, (node, context) => {
         aql`FOR ${itemVar}`,
         aql`IN ${processNode(node.listNode, context)}`,
         aql`COLLECT WITH COUNT INTO ${countVar}`,
-        aql`return ${countVar}`
+        aql`RETURN ${countVar}`
+    );
+});
+
+register(AggregationQueryNode, (node, context) => {
+    const itemVar = aql.variable('item');
+    const aggregationVar = aql.variable(node.aggregator.toLowerCase());
+    let fun: AQLFragment;
+    switch (node.aggregator) {
+        case FieldAggregator.SUM:
+            fun = aql`SUM`;
+            break;
+        case FieldAggregator.AVERAGE:
+            fun = aql`AVERAGE`;
+            break;
+        case FieldAggregator.MIN:
+            fun = aql`MIN`;
+            break;
+        case FieldAggregator.MAX:
+            fun = aql`MAX`;
+            break;
+        default:
+            throw new Error(`Unsupported aggregator: ${(node as any).aggregator}`);
+    }
+    return aqlExt.parenthesizeObject(
+        aql`FOR ${itemVar}`,
+        aql`IN ${processNode(node.listNode, context)}`,
+        aql`COLLECT AGGREGATE ${aggregationVar} = ${fun}(${itemVar})`,
+        aql`RETURN ${aggregationVar}`
     );
 });
 
@@ -649,6 +678,93 @@ register(FollowEdgeQueryNode, (node, context) => {
     );
 });
 
+register(TraversalQueryNode, (node, context) => {
+    const { relationSegments, fieldSegments } = getEffectiveTraversalSegments(node.path);
+    const sourceFrag = processNode(node.sourceEntityNode, context);
+    const fieldDepth = fieldSegments.filter(s => s.isListSegment).length;
+
+    if (relationSegments.length) {
+        let mapFrag: ((itemFrag: AQLFragment) => AQLFragment) | undefined;
+        if (fieldSegments.length) {
+            // if we have both, it might be beneficial to do the field traversal within the mapping node
+            // because it may allow ArangoDB to figure out that only one particular field is of interest, and e.g.
+            // discard the root entities earlier
+            mapFrag = nodeFrag => getFieldTraversalFragmentWithoutFlattening(fieldSegments, nodeFrag);
+        }
+
+        const frag = getRelationTraversalFragment({ segments: relationSegments, sourceFrag, mapFrag, context });
+        // do the field flattening after the relation traversal because it needs to flatten the relations, too
+        return getFlattenFrag(frag, fieldDepth);
+    }
+
+    if (!fieldSegments.length) {
+        // should normally not occur
+        return sourceFrag;
+    }
+
+    return getFlattenFrag(getFieldTraversalFragmentWithoutFlattening(fieldSegments, sourceFrag), fieldDepth);
+});
+
+function getRelationTraversalFragment({ segments, sourceFrag, mapFrag, context }: {
+    readonly segments: ReadonlyArray<RelationSegment>,
+    readonly sourceFrag: AQLFragment,
+    readonly mapFrag?: (itemFrag: AQLFragment) => AQLFragment,
+    readonly context: QueryContext
+}) {
+    if (!segments.length) {
+        return sourceFrag;
+    }
+
+    const forFragments: AQLFragment[] = [];
+    let currentObjectFrag = sourceFrag;
+    for (const segment of segments) {
+        const newVar = aql.variable(`node`);
+        const dir = segment.relationSide.isFromSide ? aql`OUTBOUND` : aql`INBOUND`;
+        forFragments.push(aql`FOR ${newVar} IN ${segment.minDepth}..${segment.maxDepth} ${dir} ${currentObjectFrag} ${getCollectionForRelation(segment.relationSide.relation, AccessType.READ, context)}`);
+        currentObjectFrag = newVar;
+    }
+
+    const resultIsList = segments[segments.length - 1].resultIsList;
+    const returnFrag = mapFrag ? mapFrag(currentObjectFrag) : currentObjectFrag;
+    // make sure we don't return a list with one element
+    return aqlExt[resultIsList ? 'parenthesizeList' : 'parenthesizeObject'](
+        ...forFragments,
+        aql`FILTER ${currentObjectFrag} != null`, // filter out dangling edges
+        aql`RETURN ${returnFrag}`
+    );
+}
+
+function getFlattenFrag(listFrag: AQLFragment, depth: number) {
+    if (depth <= 0) {
+        return listFrag;
+    }
+    if (depth === 1) {
+        return aql`REMOVE_VALUE(${listFrag}[**], NULL)`;
+    }
+    return aql`REMOVE_VALUE(FLATTEN(${listFrag}, ${aql.integer(depth)}), NULL)`;
+}
+
+function getFieldTraversalFragmentWithoutFlattening(segments: ReadonlyArray<FieldSegment>, sourceFrag: AQLFragment) {
+    if (!segments.length) {
+        return sourceFrag;
+    }
+
+    let frag = sourceFrag;
+    // the array expansion operator ([*]fieldName) basically does a .map(o => o.fieldName).
+    let shouldExpand = false; // don't expand the start because source is an object
+    let flattenDepth = 0;
+    for (const segment of segments) {
+        const conditionalExpansion = shouldExpand ? aql`[*]` : aql``;
+        frag = aql`${frag}${conditionalExpansion}${getFieldAccessFragment(segment.field)}`;
+        shouldExpand = segment.isListSegment;
+        if (segment.isListSegment) {
+            flattenDepth++;
+        }
+    }
+
+    return frag;
+}
+
 register(CreateEntityQueryNode, (node, context) => {
     return aqlExt.parenthesizeObject(
         aql`INSERT ${processNode(node.objectNode, context)} IN ${getCollectionForType(node.rootEntityType, AccessType.WRITE, context)}`,
@@ -832,7 +948,7 @@ function generateSortAQL(orderBy: OrderSpecification, context: QueryContext): AQ
 function processNode(node: QueryNode, context: QueryContext): AQLFragment {
     const processor = processors.get(node.constructor as Constructor<QueryNode>);
     if (!processor) {
-        throw new Error(`Unsupported query type: ${node.constructor}`);
+        throw new Error(`Unsupported query type: ${node.constructor.name}`);
     }
     return processor(node, context);
 }
@@ -861,7 +977,7 @@ function getCollectionForRelation(relation: Relation, accessType: AccessType, co
  */
 function getSimpleFollowEdgeFragment(node: FollowEdgeQueryNode, context: QueryContext): AQLFragment {
     const dir = node.relationSide.isFromSide ? aql`OUTBOUND` : aql`INBOUND`;
-    return aql`${dir}  ${processNode(node.sourceEntityNode, context)} ${getCollectionForRelation(node.relationSide.relation, AccessType.READ, context)}`;
+    return aql`${dir} ${processNode(node.sourceEntityNode, context)} ${getCollectionForRelation(node.relationSide.relation, AccessType.READ, context)}`;
 }
 
 function isStringCaseInsensitive(str: string) {

@@ -163,6 +163,59 @@ The referenced country will be looked on demand. If the referenced object does n
 
 You can omit the argument `keyField` on the `@reference` directive (and this argument has only been introduced in cruddl 0.9). In that case, you won't have access to the raw key field value via the API. In the data base, it will be stored with the name of the reference field.
 
+## Calculated fields
+
+You can extend a type with fields that can not be set directly and are not persisted, but will be calculated based on other fields. One example are references with the `keyField` argument (see previous section). This section documents two other kinds of calculated fields.
+
+### Traversal fields
+
+Relations and child entity let you define a graph of objects that can be selected by regular GraphQL fields. If you're not interested in the graph structure but only in the objects, you can define a `@traversal` field that follows a path and collects all objects on the way:
+
+```graphql
+type OrderItem @childEntity {
+  itemNumber: String
+}
+
+type Order @rootEntity {
+  items: [OrderItem]
+}
+
+type Shipment @rootEntity {
+  orders: [Order] @relation
+  allItems: [OrderItem] @traversal(path: "orders.items")
+}
+```
+
+The field `allItems` will return all items in all orders of a shipment. It will not be available for filtering or sorting and you will not be able to set it directly in *create* and *update* mutations.
+
+The path can traverse an arbitrary number of fields. Only the objects of the *last* field will be returned, and the type of that last field needs to match the traversal field type (`OrderItem` in the example). References can not be followed, but you can use other traversal fields in the path.
+
+Self-relations (relations from one type to the same type) can be traversed a variable number of times: Specify e.g. `path: "friends{1,3}"` to traverse the `friends` relation one to three times. You can also specify `0` as the lower bound to include the original object in the result.
+
+### Aggregation fields
+
+An aggregation field is a field that calculates e.g. a sum or an average of values. You can specify a path like for traversal fields and an aggregator:
+
+```graphql
+type OrderItem @childEntity {
+  itemNumber: String
+  quantity: Int
+}
+
+type Order @rootEntity {
+  items: [OrderItem]
+  totalQuantity: Int @aggregation(path: "items.quantity", aggregator: SUM)
+}
+```
+
+For the path, the same rules apply as for traversal fields.
+
+The following aggregators are supported:
+
+* `COUNT` - supported on all kinds of types (object types and scalars)
+* `MIN`, `MAX` - supported on `Int`, `Float`, `DateTime`, `LocalDate` and `LocalTime`
+* `AVERAGE`, `SUM` - supported only on `Int` and `Float`
+
 ## Permissions
 
 cruddl provides a role-based permission system. Permission rules can be defined on root entities and on fields. For root entities, the permissions can also be made dependent on a special field within the object to implement multi-tenancy.
