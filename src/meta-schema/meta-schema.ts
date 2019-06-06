@@ -316,10 +316,10 @@ export function getMetaSchema(model: Model): GraphQLSchema {
             namespace: (_, {path}) => model.getNamespaceByPath(path)
         },
         Type: {
-            __resolveType: type => resolveType(type as Type)
+            __resolveType: (type: unknown) => resolveType(type as Type)
         },
         ObjectType: {
-            __resolveType: type => resolveType(type as Type)
+            __resolveType: (type: unknown) => resolveType(type as Type)
         },
         RootEntityType: {
             localization: localizeType

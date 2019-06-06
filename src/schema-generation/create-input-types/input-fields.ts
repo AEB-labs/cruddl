@@ -101,7 +101,7 @@ export class CreateObjectInputField extends BasicCreateInputField {
         if (value == undefined) {
             return value;
         }
-        return this.objectInputType.prepareValue(value, context);
+        return this.objectInputType.prepareValue(value as PlainObject, context);
     }
 
     collectAffectedFields(value: AnyValue, fields: Set<Field>, context: FieldContext) {
@@ -110,7 +110,7 @@ export class CreateObjectInputField extends BasicCreateInputField {
             return;
         }
 
-        this.objectInputType.collectAffectedFields(value, fields, context);
+        this.objectInputType.collectAffectedFields(value as PlainObject, fields, context);
     }
 }
 

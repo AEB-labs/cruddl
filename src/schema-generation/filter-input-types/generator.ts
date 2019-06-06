@@ -31,7 +31,7 @@ export class FilterObjectType extends TypedInputObjectType<FilterField> {
         if (typeof filterValue !== 'object' || filterValue === null) {
             return new BinaryOperationQueryNode(sourceNode, BinaryOperator.EQUAL, NullQueryNode.NULL);
         }
-        const filterNodes = objectEntries(filterValue)
+        const filterNodes = objectEntries(filterValue as any)
             .map(([name, value]) => this.getFieldOrThrow(name).getFilterNode(sourceNode, value));
         return filterNodes.reduce(and, ConstBoolQueryNode.TRUE);
     }

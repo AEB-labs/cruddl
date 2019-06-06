@@ -6,7 +6,7 @@ import { QueryNode } from './base';
  * A node that evaluates to a predefined literal value
  */
 export class LiteralQueryNode extends QueryNode {
-    constructor(public readonly value: {}|null|undefined) {
+    constructor(public readonly value: unknown) {
         super();
     }
 

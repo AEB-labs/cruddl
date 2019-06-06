@@ -122,7 +122,7 @@ export class UpdateValueObjectInputField extends BasicUpdateInputField {
         if (value == undefined) {
             return value;
         }
-        return this.objectInputType.prepareValue(value, context);
+        return this.objectInputType.prepareValue(value as PlainObject, context);
     }
 
     collectAffectedFields(value: AnyValue, fields: Set<Field>, context: FieldContext) {
@@ -131,7 +131,7 @@ export class UpdateValueObjectInputField extends BasicUpdateInputField {
             return;
         }
 
-        this.objectInputType.collectAffectedFields(value, fields, context);
+        this.objectInputType.collectAffectedFields(value as PlainObject, fields, context);
     }
 }
 
@@ -189,12 +189,12 @@ export class UpdateEntityExtensionInputField implements UpdateInputField {
 
     getProperties(value: AnyValue, context: UpdateInputFieldContext) {
         // setting to null is the same as setting to {} - does not change anything (entity extensions can't be null)
-        if (value == null || Object.keys(value).length === 0) {
+        if (value == null || Object.keys(value as object).length === 0) {
             return [];
         }
 
         return [
-            new SetFieldQueryNode(this.field, this.getValueNode(value, context))
+            new SetFieldQueryNode(this.field, this.getValueNode(value as PlainObject, context))
         ];
     }
 
@@ -216,7 +216,7 @@ export class UpdateEntityExtensionInputField implements UpdateInputField {
     collectAffectedFields(value: AnyValue, fields: Set<Field>, context: UpdateInputFieldContext) {
         fields.add(this.field);
         if (value != undefined) {
-            this.objectInputType.collectAffectedFields(value, fields, context);
+            this.objectInputType.collectAffectedFields(value as PlainObject, fields, context);
         }
     }
 }
@@ -264,7 +264,7 @@ export class AddChildEntitiesInputField extends AbstractChildEntityInputField {
     collectAffectedFields(value: AnyValue, fields: Set<Field>, context: FieldContext) {
         super.collectAffectedFields(value, fields, context);
         if (value != undefined) {
-            this.createInputType.collectAffectedFields(value, fields, context);
+            this.createInputType.collectAffectedFields(value as PlainObject, fields, context);
         }
     }
 }
@@ -284,7 +284,7 @@ export class UpdateChildEntitiesInputField extends AbstractChildEntityInputField
     collectAffectedFields(value: AnyValue, fields: Set<Field>, context: FieldContext) {
         super.collectAffectedFields(value, fields, context);
         if (value != undefined) {
-            this.updateInputType.collectAffectedFields(value, fields, context);
+            this.updateInputType.collectAffectedFields(value as PlainObject, fields, context);
         }
     }
 }
