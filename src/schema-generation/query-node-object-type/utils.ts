@@ -37,5 +37,5 @@ export function makeNonNullableList<T extends QueryNodeNullableType>(type: T): Q
 }
 
 export function resolveThunk<T>(thunk: Thunk<T>): T {
-    return typeof thunk === 'function' ? thunk() : thunk;
+    return thunk instanceof Function ? thunk() : thunk;
 }

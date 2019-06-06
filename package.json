@@ -58,7 +58,7 @@
     "rimraf": "^2.6.2",
     "stats-lite": "^2.1.0",
     "ts-node": "^6.0.3",
-    "typescript": "~3.0.3"
+    "typescript": "~3.5.1"
   },
   "dependencies": {
     "ajv": "^6.0.1",
