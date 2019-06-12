@@ -4,7 +4,6 @@ import { DEFAULT_PERMISSION_PROFILE } from '../../schema/constants';
 import { capitalize, objectValues } from '../../utils/utils';
 import { ValidationMessage } from '../validation';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
-import { builtInTypeNames } from './built-in-types';
 import { PermissionProfile } from './permission-profile';
 import { RootEntityType } from './root-entity-type';
 import { Type } from './type';
@@ -18,7 +17,7 @@ export class Namespace implements ModelComponent {
     public allTypes: ReadonlyArray<Type>;
     public readonly path: ReadonlyArray<string>;
     public readonly parent: Namespace | undefined;
-    private readonly permissionProfiles: ReadonlyArray<PermissionProfile>;
+    public readonly permissionProfiles: ReadonlyArray<PermissionProfile>;
 
     constructor(config: { parent?: Namespace, path: ReadonlyArray<string>, allTypes: ReadonlyArray<Type>, allPermissionProfiles: ReadonlyArray<PermissionProfile> }) {
         this.allTypes = config.allTypes;
@@ -183,6 +182,20 @@ export class Namespace implements ModelComponent {
             throw new Error(`Permission profile "${name}" does not exist in namespace ${this.dotSeparatedPath}`);
         }
         return profile;
+    }
+
+    getAvailablePermissionProfiles() {
+        const map = new Map<string, PermissionProfile>();
+        let ns: Namespace | undefined = this;
+        while (ns) {
+            for (const profile of ns.permissionProfiles) {
+                if (!map.has(profile.name)) {
+                    map.set(profile.name, profile);
+                }
+            }
+            ns = ns.parent;
+        }
+        return Array.from(map.values());
     }
 
     validate(context: ValidationContext) {
