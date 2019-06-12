@@ -1,4 +1,3 @@
-# @MSF TODO: support ADB 3.5
 "A superhero"
 type Hero @rootEntity(quickSearchIndex: true, quickSearchLanguage: DE) {
     "The hero's screen name"

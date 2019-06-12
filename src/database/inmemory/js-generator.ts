@@ -11,7 +11,7 @@ import {
     WithPreExecutionQueryNode
 } from '../../query-tree';
 import { QuantifierFilterNode } from '../../query-tree/quantifiers';
-import { QuickSearchQueryNode } from '../../query-tree/quick-search';
+import { QuickSearchComplexOperatorQueryNode, QuickSearchQueryNode } from '../../query-tree/quick-search';
 import { simplifyBooleans } from '../../query-tree/utils';
 import { not } from '../../schema-generation/filter-input-types/constants';
 import { Constructor, decapitalize } from '../../utils/utils';
@@ -541,6 +541,9 @@ register(QuickSearchExistsQueryNode, (node, context) => {
     throw new ArangoSearchNotSupportedError();
 });
 
+register(QuickSearchComplexOperatorQueryNode, (node, context) => {
+    throw new Error(`Internal Error: QuickSearchComplexOperatorQueryNode must be expanded before generating the query.`);
+});
 
 register(SetEdgeQueryNode, (node, context) => {
     const coll = getCollectionForRelation(node.relation, context);

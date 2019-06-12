@@ -82,8 +82,8 @@ export function calculateRequiredArangoSearchViewDropOperations(views: ArangoSea
 }
 
 
-function getAnalyzerFromQuickSearchLanguage(quickSearchLanguage: QuickSearchLanguage): string {
-    return 'text_' + quickSearchLanguage.toLowerCase();
+export function getAnalyzerFromQuickSearchLanguage(quickSearchLanguage?: QuickSearchLanguage): string {
+    return quickSearchLanguage ? 'text_' + quickSearchLanguage.toLowerCase(): 'identity';
 }
 
 

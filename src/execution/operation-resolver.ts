@@ -2,13 +2,15 @@ import { GraphQLError, print } from 'graphql';
 import { applyAuthorizationToQueryTree } from '../authorization/execution';
 import { globalContext } from '../config/global';
 import { RequestProfile } from '../config/interfaces';
-import { ExecutionPlan, TransactionStats } from '../database/database-adapter';
+import { DatabaseAdapter, ExecutionPlan, TransactionStats } from '../database/database-adapter';
 import { OperationParams } from '../graphql/operation-based-resolvers';
 import { distillOperation } from '../graphql/query-distiller';
-import { ObjectQueryNode, QueryNode } from '../query-tree';
+import { ObjectQueryNode, PropertySpecification, QueryNode } from '../query-tree';
+import { ExpandingQueryNode } from '../query-tree/quick-search';
 import { evaluateQueryStatically } from '../query-tree/utils';
 import { buildConditionalObjectQueryNode, QueryNodeObjectType } from '../schema-generation/query-node-object-type';
 import { SchemaTransformationContext } from '../schema/preparation/transformation-pipeline';
+import { Visitor } from '../utils/visitor';
 import { getPreciseTime, Watch } from '../utils/watch';
 import { ExecutionOptions } from './execution-options';
 import { ExecutionResult } from './execution-result';
@@ -57,6 +59,10 @@ export class OperationResolver {
                 arangoSearchMaxFilterableAmountOverride: options ? options.arangoSearchMaxFilterableAmountOverride : undefined
             };
             queryTree = buildConditionalObjectQueryNode(rootQueryNode, rootType, operation.selectionSet, fieldContext);
+            if (logger.isTraceEnabled()) {
+                logger.trace('Before expansion: ' + queryTree.describe());
+            }
+            queryTree = await this.expandQueryNode(queryTree, this.context.databaseAdapter);
             if (logger.isTraceEnabled()) {
                 logger.trace('Before authorization: ' + queryTree.describe());
             }
@@ -131,4 +137,39 @@ export class OperationResolver {
             profile
         };
     }
+
+    private async expandQueryNode(queryNode: QueryNode, databaseAdapter: DatabaseAdapter): Promise<QueryNode> {
+        if (queryNode instanceof ExpandingQueryNode) {
+            return await queryNode.expand(databaseAdapter);
+        }
+        if (queryNode instanceof ObjectQueryNode) {
+            const specs: PropertySpecification[] = [];
+            for (const property of queryNode.properties) {
+                const expandedValueNode = await this.expandQueryNode(property.valueNode, databaseAdapter);
+                specs.push(new PropertySpecification(property.propertyName, expandedValueNode));
+            }
+            return new ObjectQueryNode(specs);
+        }
+
+        const newFieldValues: { [name: string]: QueryNode } = {};
+        let hasChanged = false;
+        for (const field of Object.keys(queryNode)) {
+            const oldValue = (queryNode as any)[field];
+            if (oldValue instanceof QueryNode) {
+                const newValue = await this.expandQueryNode(oldValue, databaseAdapter);
+                if (newValue != oldValue) {
+                    newFieldValues[field] = newValue;
+                    hasChanged = true;
+                }
+            }
+        }
+        if (!hasChanged) {
+            return queryNode;
+        }
+        const newObj = Object.create(Object.getPrototypeOf(queryNode));
+        Object.assign(newObj, queryNode, newFieldValues);
+        return newObj;
+    }
+
+
 }

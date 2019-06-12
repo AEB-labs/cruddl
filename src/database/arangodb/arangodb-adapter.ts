@@ -1,13 +1,13 @@
-import { Database } from 'arangojs';
+import { aql, Database } from 'arangojs';
 import { globalContext } from '../../config/global';
 import { ProjectOptions } from '../../config/interfaces';
 import { Logger } from '../../config/logging';
 import { ExecutionOptions } from '../../execution/execution-options';
 import { TransactionCancelledError, TransactionTimeoutError } from '../../execution/runtime-errors';
-import { Model } from '../../model';
+import { Model, QuickSearchLanguage } from '../../model';
 import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS, QueryNode } from '../../query-tree';
 import { Mutable } from '../../utils/util-types';
-import { objectValues, sleep, sleepInterruptible } from '../../utils/utils';
+import { flatMap, objectValues, sleep, sleepInterruptible } from '../../utils/utils';
 import { getPreciseTime, Watch } from '../../utils/watch';
 import { DatabaseAdapter, DatabaseAdapterTimings, ExecutionArgs, ExecutionPlan, ExecutionResult, TransactionStats } from '../database-adapter';
 import { AQLCompoundQuery, aqlConfig, AQLExecutableQuery } from './aql';
@@ -17,6 +17,7 @@ import { CancellationManager } from './cancellation-manager';
 import { ArangoDBConfig, DEFAULT_RETRY_DELAY_BASE_MS, getArangoDBLogger, initDatabase } from './config';
 import { ERROR_ARANGO_CONFLICT, ERROR_QUERY_KILLED } from './error-codes';
 import { SchemaAnalyzer } from './schema-migration/analyzer';
+import { getAnalyzerFromQuickSearchLanguage } from './schema-migration/arango-search-helpers';
 import { SchemaMigration } from './schema-migration/migrations';
 import { MigrationPerformer } from './schema-migration/performer';
 import { TransactionError } from './transaction-error';
@@ -644,6 +645,13 @@ export class ArangoDBAdapter implements DatabaseAdapter {
 
     async getArangoDBVersion(): Promise<ArangoDBVersion | undefined> {
         return this.versionHelper.getArangoDBVersion();
+    }
+
+    async tokenizeExpression(expression: string, quickSearchLanguage?: QuickSearchLanguage): Promise<ReadonlyArray<string>> {
+        const query = aql`RETURN { tokens: TOKENS(${expression},${getAnalyzerFromQuickSearchLanguage(quickSearchLanguage)}) }`;
+        const cursor = await this.db.query(query);
+        const result = await cursor.next();
+        return result.tokens;
     }
 
 }

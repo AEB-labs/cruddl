@@ -1,6 +1,6 @@
 import { GraphQLError } from 'graphql';
 import { ExecutionOptions } from '../execution/execution-options';
-import { Model } from '../model';
+import { Model, QuickSearchLanguage } from '../model';
 import { QueryNode } from '../query-tree';
 
 /**
@@ -157,5 +157,10 @@ export interface DatabaseAdapter {
      * Performs schema migrations if necessary
      */
     updateSchema(schema: Model): Promise<void>;
+
+    /**
+     * Tokenizes an expression
+     */
+    tokenizeExpression(expression: string, quickSearchLanguage?: QuickSearchLanguage):Promise<ReadonlyArray<string>>;
 
 }

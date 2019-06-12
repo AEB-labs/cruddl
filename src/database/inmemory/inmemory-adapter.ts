@@ -3,6 +3,7 @@ import { ProjectOptions } from '../../config/interfaces';
 import { Logger } from '../../config/logging';
 import { Model } from '../../model';
 import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS, QueryNode } from '../../query-tree';
+import { flatMap } from '../../utils/utils';
 import { DatabaseAdapter } from '../database-adapter';
 import { likePatternToRegExp } from '../like-helpers';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './inmemory-basics';
@@ -195,6 +196,10 @@ export class InMemoryAdapter implements DatabaseAdapter {
                 this.db.collections[coll] = [];
             }
         }
+    }
+
+    async tokenizeExpression(expression: string): Promise<ReadonlyArray<string>> {
+        return flatMap(expression.split(' '), t => t.split('-'));
     }
 
 }

@@ -53,7 +53,7 @@ import { analyzeLikePatternPrefix } from '../like-helpers';
 import { aql, AQLCompoundQuery, aqlConfig, AQLFragment, AQLQueryResultVariable, AQLVariable } from './aql';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './arango-basics';
 import { getViewNameForRootEntity, IDENTITY_ANALYZER } from './schema-migration/arango-search-helpers';
-import { QuickSearchQueryNode } from '../../query-tree/quick-search';
+import { QuickSearchComplexOperatorQueryNode, QuickSearchQueryNode } from '../../query-tree/quick-search';
 
 enum AccessType {
     READ,
@@ -545,6 +545,10 @@ register(QuickSearchExistsQueryNode, (node, context) => {
     const analyzer = node.quickSearchLanguage ? `text_${node.quickSearchLanguage.toLowerCase()}` : IDENTITY_ANALYZER;
 
     return aql`EXISTS(${sourceNode}, "analyzer", ${analyzer})`
+});
+
+register(QuickSearchComplexOperatorQueryNode, (node, context) => {
+    throw new Error(`Internal Error: QuickSearchComplexOperatorQueryNode must be expanded before generating the query.`);
 });
 
 

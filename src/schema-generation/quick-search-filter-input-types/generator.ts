@@ -1,5 +1,6 @@
 import { QuickSearchLanguage } from '../../model/config';
 import { EnumType, Field, ObjectType, RootEntityType, ScalarType, Type } from '../../model/implementation';
+import { QuickSearchComplexOperatorQueryNode } from '../../query-tree/quick-search';
 import { AnyValue, flatMap, objectEntries } from '../../utils/utils';
 import memorize from 'memorize-decorator';
 import { EnumTypeGenerator } from '../enum-type-generator';
@@ -168,21 +169,11 @@ export class QuickSearchFilterTypeGenerator {
         }
     }
 
-    private generateComplexFilterOperator(comparisonOperator: BinaryOperatorWithLanguage, logicalOperator: BinaryOperator, fieldNode: QueryNode, valueNode: QueryNode, quickSearchLanguage?: QuickSearchLanguage) {
+    private generateComplexFilterOperator(comparisonOperator: BinaryOperatorWithLanguage, logicalOperator: BinaryOperator, fieldNode: QueryNode, valueNode: QueryNode, quickSearchLanguage?: QuickSearchLanguage): QueryNode {
         if (!(valueNode instanceof LiteralQueryNode) || (typeof valueNode.value !== 'string')) {
             throw new Error('QuickSearchComplexFilters requires a LiteralQueryNode with a string-value, as valueNode');
         }
-        const tokens = this.tokenize(valueNode.value);
-        const neutralOperand = logicalOperator === BinaryOperator.AND ? ConstBoolQueryNode.TRUE : ConstBoolQueryNode.FALSE;
-        return simplifyBooleans(tokens
-            .map(value => new OperatorWithLanguageQueryNode(fieldNode, comparisonOperator, new LiteralQueryNode(value), quickSearchLanguage))
-            .reduce(and, neutralOperand));
-    }
-
-    @memorize()
-    private tokenize(value: string): string[] {
-        return flatMap(value.split(' '), t => t.split('-'));
-        //  @MSF TODO: implement tokenization via arangodb
+        return new QuickSearchComplexOperatorQueryNode(valueNode.value,comparisonOperator,logicalOperator,fieldNode,quickSearchLanguage);
     }
 
     private generateFilterFieldsForEnumField(field: Field, graphQLEnumType: GraphQLEnumType): QuickSearchFilterField[] {
