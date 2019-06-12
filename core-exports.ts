@@ -10,3 +10,5 @@ export { DatabaseAdapter } from './src/database/database-adapter';
 export { DIRECTIVES, CORE_SCALARS } from './src/schema/graphql-base';
 export { Logger, LoggerProvider } from './src/config/logging';
 export { TransactionCancelledError, TransactionTimeoutError } from './src/execution/runtime-errors';
+export * from './src/model/implementation';
+export { TypeKind } from './src/model/config';
