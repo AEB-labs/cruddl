@@ -5,7 +5,7 @@ export { ChildEntityType } from './child-entity-type';
 export { ValueObjectType } from './value-object-type';
 export { EntityExtensionType } from './entity-extension-type';
 export { ScalarType } from './scalar-type';
-export { EnumType } from './enum-type';
+export { EnumType, EnumValue } from './enum-type';
 export { Field } from './field';
 export { Namespace } from './namespace';
 export { Index, IndexField } from './indices';
