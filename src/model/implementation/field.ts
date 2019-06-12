@@ -551,7 +551,8 @@ export class Field implements ModelComponent {
         for (const operator of this.calcMutationOperators) {
             const desc = CALC_MUTATIONS_OPERATORS.find(op => op.name == operator);
             if (!desc) {
-                throw new Error(`Unknown calc mutation operator: ${operator}`);
+                // this is caught in the graphql-rules validator
+                continue;
             }
 
             if (!(desc.supportedTypes.includes(this.type.name))) {
@@ -576,6 +577,7 @@ function getSupportedTypeNames(aggregator: FieldAggregator): ReadonlyArray<strin
                 GraphQLInt.name, GraphQLFloat.name
             ];
         default:
-            throw new Error(`Unsupported aggregator: ${aggregator}`);
+            // this is caught in the graphql-rules validator
+            return undefined;
     }
 }
