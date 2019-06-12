@@ -1,13 +1,13 @@
-import {
-    AddEdgesQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, QueryNode, RemoveEdgesQueryNode,
-    RuntimeErrorQueryNode, SetEdgeQueryNode, UpdateEntitiesQueryNode
-} from '../query-tree';
+import { AddEdgesQueryNode, ATOMICITY_SKIP_ERROR, CreateEntityQueryNode, DeleteEntitiesQueryNode, QueryNode, RemoveEdgesQueryNode, RuntimeErrorQueryNode, SetEdgeQueryNode, UpdateEntitiesQueryNode } from '../query-tree';
 import { visitQueryNode } from '../query-tree/visitor';
 import { AuthContext } from './auth-basics';
 import { moveErrorsToOutputNodes } from './move-errors-to-output-nodes';
 import { transformNode } from './transformers';
 
-const MUTATIONS: Function[] = [ CreateEntityQueryNode, UpdateEntitiesQueryNode, DeleteEntitiesQueryNode, AddEdgesQueryNode, RemoveEdgesQueryNode, SetEdgeQueryNode ];
+const MUTATIONS: Function[] = [
+    CreateEntityQueryNode, UpdateEntitiesQueryNode, DeleteEntitiesQueryNode, AddEdgesQueryNode, RemoveEdgesQueryNode,
+    SetEdgeQueryNode
+];
 
 /**
  * Modifies a QueryTree so that it properly checks authorization for any access
@@ -57,9 +57,9 @@ function containsErrorsAndMutations(queryTree: QueryNode): boolean {
 
 function replaceMutationsByErrors(queryTree: QueryNode): QueryNode {
     return visitQueryNode(queryTree, {
-        enter(node: QueryNode) {
+        enter: function (node: QueryNode) {
             if (MUTATIONS.includes(node.constructor)) {
-                return { newValue: new RuntimeErrorQueryNode("SkipError: Skipped because other mutations reported errors") };
+                return { newValue: new RuntimeErrorQueryNode('Skipped because other mutations reported errors', { code: ATOMICITY_SKIP_ERROR }) };
             }
             return { newValue: node };
         }

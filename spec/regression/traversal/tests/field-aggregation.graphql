@@ -1,0 +1,9 @@
+query fields {
+    Delivery(deliveryNumber: "D1") {
+        totalWeightInKg
+        averageWeightInKg
+        minWeightInKg
+        maxWeightInKg
+        itemCount
+    }
+}

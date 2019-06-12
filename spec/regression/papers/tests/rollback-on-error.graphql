@@ -1,27 +1,49 @@
-mutation createOne {
-    paper1: createPaper(input: { key: "one" }) {
+mutation create {
+    createPaper(input: { key: "one" }) {
         key
     }
 }
 
 query queryOne {
-    allPapers(filter: { key: "one" }) {
+    one: Paper(key: "one") {
+        key
+    }
+    two: Paper(key: "two") {
         key
     }
 }
 
-mutation createTwo {
-    paper1: createPaper(input: { key: "two" }) {
+# the create should fail because the update also failed
+mutation updateMissingAndCreateAnother {
+    updatePaper(input: { id: "nonexisting"  }) {
         key
     }
+    createPaper(input: { key: "two"}) {
+        key
+    }
+}
 
-    paper2: createPaper(input: { key: "two" }) {
+query queryStillOne {
+    one: Paper(key: "one") {
+        key
+    }
+    two: Paper(key: "two") {
+        key
+    }
+}
+
+# this should work (make sure creating actually works)
+mutation createAnother {
+    createPaper(input: { key: "two"}) {
         key
     }
 }
 
 query queryTwo {
-    allPapers(filter: { key: "two" }) {
+    one: Paper(key: "one") {
+        key
+    }
+    two: Paper(key: "two") {
         key
     }
 }

@@ -1,0 +1,68 @@
+type Shipment @rootEntity {
+    shipmentNumber: String @key
+
+    deliveries: [Delivery] @relation
+
+    allOuterHandlingUnits: [HandlingUnit] @traversal(path: "deliveries.handlingUnits")
+    allHandlingUnits: [HandlingUnit] @traversal(path: "deliveries.allHandlingUnits")
+    allOrders: [Order] @traversal(path: "deliveries.order")
+    allDeliveryContents: [DeliveryContent] @traversal(path: "deliveries.deliveryContents")
+    allItems: [DeliveryItem] @traversal(path: "deliveries.deliveryContents.items")
+    totalWeightInKg: Float @aggregation(path: "allItems.weightInKg", aggregator: SUM)
+    itemCount: Int @aggregation(path: "allItems", aggregator: COUNT)
+}
+
+type Delivery @rootEntity {
+    deliveryNumber: String @key
+    deliveryContents: [DeliveryContent]
+
+    handlingUnits: [HandlingUnit] @relation
+    shipment: [Shipment] @relation(inverseOf: "deliveries")
+    order: Order @relation
+
+    allItems: [DeliveryItem] @traversal(path: "deliveryContents.items")
+    allItemNumbers: [String] @traversal(path: "deliveryContents.items.itemNumber")
+    allHandlingUnits: [HandlingUnit] @traversal(path: "handlingUnits.childHandlingUnits{0,2}")
+    allHandlingUnits0to0: [HandlingUnit] @traversal(path: "handlingUnits.childHandlingUnits{0,0}")
+    allHandlingUnits0to1: [HandlingUnit] @traversal(path: "handlingUnits.childHandlingUnits{0,1}")
+    allHandlingUnits0to2: [HandlingUnit] @traversal(path: "handlingUnits.childHandlingUnits{0,2}")
+    allHandlingUnits1to1: [HandlingUnit] @traversal(path: "handlingUnits.childHandlingUnits{1,1}")
+    allHandlingUnits1to2: [HandlingUnit] @traversal(path: "handlingUnits.childHandlingUnits{1,2}")
+    allHandlingUnits2to2: [HandlingUnit] @traversal(path: "handlingUnits.childHandlingUnits{2,2}")
+    allHandlingUnits3to3: [HandlingUnit] @traversal(path: "handlingUnits.childHandlingUnits{3,3}")
+    totalWeightInKg: Float @aggregation(path: "allItems.weightInKg", aggregator: SUM)
+    averageWeightInKg: Float @aggregation(path: "allItems.weightInKg", aggregator: AVERAGE)
+    minWeightInKg: Float @aggregation(path: "allItems.weightInKg", aggregator: MIN)
+    maxWeightInKg: Float @aggregation(path: "allItems.weightInKg", aggregator: MAX)
+    itemCount: Int @aggregation(path: "allItems", aggregator: COUNT)
+}
+
+type HandlingUnit @rootEntity {
+    handlingUnitNumber: String @key
+
+    deliveries: [Delivery] @relation(inverseOf: "handlingUnits")
+    childHandlingUnits: [HandlingUnit] @relation
+    parentHandlingUnit: HandlingUnit @relation(inverseOf: "childHandlingUnits")
+
+    allInnerHandlingUnits: [HandlingUnit] @traversal(path: "childHandlingUnits{1,2}")
+}
+
+type Order @rootEntity {
+    orderNumber: String @key
+
+    delivery: Delivery @relation(inverseOf: "order")
+
+    allOuterHandlingUnits: [HandlingUnit] @traversal(path: "delivery.handlingUnits")
+    allItems: [DeliveryItem] @traversal(path: "delivery.allItems")
+}
+
+type DeliveryContent @childEntity {
+    deliveryContentNumber: String
+
+    items: [DeliveryItem]
+}
+
+type DeliveryItem @childEntity {
+    itemNumber: String
+    weightInKg: Float
+}

@@ -2,7 +2,7 @@ import { GraphQLNonNull } from 'graphql';
 import { flatMap } from 'lodash';
 import memorize from 'memorize-decorator';
 import { Namespace, RootEntityType } from '../model';
-import { AffectedFieldInfoQueryNode, BinaryOperationQueryNode, BinaryOperator, DeleteEntitiesQueryNode, EntitiesQueryNode, EntityFromIdQueryNode, ErrorIfEmptyResultValidator, FirstOfListQueryNode, LiteralQueryNode, ObjectQueryNode, PreExecQueryParms, QueryNode, RootEntityIDQueryNode, TransformListQueryNode, UnknownValueQueryNode, UpdateEntitiesQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../query-tree';
+import { AffectedFieldInfoQueryNode, BinaryOperationQueryNode, BinaryOperator, DeleteEntitiesQueryNode, EntitiesQueryNode, EntityFromIdQueryNode, ErrorIfEmptyResultValidator, FirstOfListQueryNode, LiteralQueryNode, NOT_FOUND_ERROR, ObjectQueryNode, PreExecQueryParms, QueryNode, RootEntityIDQueryNode, TransformListQueryNode, UnknownValueQueryNode, UpdateEntitiesQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../query-tree';
 import { ID_FIELD, MUTATION_INPUT_ARG, MUTATION_TYPE } from '../schema/constants';
 import { getCreateEntityFieldName, getDeleteAllEntitiesFieldName, getDeleteEntityFieldName, getUpdateAllEntitiesFieldName, getUpdateEntityFieldName } from '../schema/names';
 import { compact, decapitalize, PlainObject } from '../utils/utils';
@@ -136,7 +136,10 @@ export class MutationTypeGenerator {
         const updateEntityPreExec = new PreExecQueryParms({
             query: updateEntityNode,
             resultVariable: updatedIdsVarNode,
-            resultValidator: new ErrorIfEmptyResultValidator(`${rootEntityType.name} with id '${input[ID_FIELD]}' could not be found.`, 'NotFoundError')
+            resultValidator: new ErrorIfEmptyResultValidator({
+                errorMessage: `${rootEntityType.name} with id '${input[ID_FIELD]}' could not be found.`,
+                errorCode: NOT_FOUND_ERROR
+            })
         });
 
         const relationStatements = inputType.getRelationStatements(input, new FirstOfListQueryNode(updatedIdsVarNode), context);

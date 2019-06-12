@@ -1,6 +1,6 @@
-import { RootEntityType } from '../model';
+import { FieldAggregator, RootEntityType } from '../model';
 import { Field } from '../model/implementation';
-import { BasicType, BinaryOperationQueryNode, BinaryOperator, ConditionalQueryNode, EntitiesQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, NullQueryNode, ObjectQueryNode, QueryNode, RootEntityIDQueryNode, SafeListQueryNode, TransformListQueryNode, TypeCheckQueryNode, VariableQueryNode } from '../query-tree';
+import { AggregationQueryNode, Aggregator, BasicType, BinaryOperationQueryNode, BinaryOperator, ConditionalQueryNode, CountQueryNode, EntitiesQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, NullQueryNode, ObjectQueryNode, QueryNode, RootEntityIDQueryNode, SafeListQueryNode, TransformListQueryNode, TraversalQueryNode, TypeCheckQueryNode, VariableQueryNode } from '../query-tree';
 import { ID_FIELD } from '../schema/constants';
 import { and } from './filter-input-types/constants';
 
@@ -14,6 +14,22 @@ export function createFieldNode(field: Field, sourceNode: QueryNode, options: { 
         sourceNode.expr1 === sourceNode.condition.valueNode
     ) {
         sourceNode = sourceNode.expr1;
+    }
+
+    if (field.traversalPath) {
+        return new TraversalQueryNode(field.traversalPath, sourceNode);
+    }
+
+    if (field.aggregationPath) {
+        const items = new TraversalQueryNode(field.aggregationPath, sourceNode);
+        if (!field.aggregator) {
+            throw new Error(`Expected "${field.declaringType.name}.${field.name}" to have an aggregator`);
+        }
+        if (field.aggregator === FieldAggregator.COUNT) {
+            return new CountQueryNode(items);
+        } else {
+            return new AggregationQueryNode(items, field.aggregator);
+        }
     }
 
     if (field.isList) {

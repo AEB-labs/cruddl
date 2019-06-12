@@ -1,3 +1,4 @@
+import { FieldPath } from '../model/implementation/field-path';
 import { blue } from '../utils/colors';
 import { Field, RelationSide, RootEntityType } from '../model';
 import { QueryNode } from './base';
@@ -82,5 +83,18 @@ export class FollowEdgeQueryNode extends QueryNode {
     describe() {
         const dir = this.relationSide.isFromSide ? 'forward' : 'backward';
         return `follow ${dir} ${blue(this.relationSide.relation.toString())} of ${this.sourceEntityNode.describe()}`;
+    }
+}
+
+/**
+ * Traverses a path of relations and other fields
+ */
+export class TraversalQueryNode extends QueryNode {
+    constructor(readonly path: FieldPath, readonly sourceEntityNode: QueryNode) {
+        super();
+    }
+
+    describe() {
+        return `traverse ${this.path.path} from ${this.sourceEntityNode.describe()}`;
     }
 }

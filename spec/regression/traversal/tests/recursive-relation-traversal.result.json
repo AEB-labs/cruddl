@@ -1,0 +1,243 @@
+{
+  "createEdges": {
+    "data": {
+      "updateShipment": {
+        "shipmentNumber": "S1"
+      },
+      "d1": {
+        "deliveryNumber": "D1"
+      },
+      "d2": {
+        "deliveryNumber": "D2"
+      },
+      "h1": {
+        "handlingUnitNumber": "H1"
+      },
+      "h2": {
+        "handlingUnitNumber": "H2"
+      },
+      "h3": {
+        "handlingUnitNumber": "H3"
+      }
+    }
+  },
+  "direct0to0": {
+    "data": {
+      "Delivery": {
+        "allHandlingUnits0to0": [
+          {
+            "handlingUnitNumber": "H1"
+          },
+          {
+            "handlingUnitNumber": "H2"
+          }
+        ]
+      }
+    }
+  },
+  "direct0to1": {
+    "data": {
+      "Delivery": {
+        "allHandlingUnits0to1": [
+          {
+            "handlingUnitNumber": "H1"
+          },
+          {
+            "handlingUnitNumber": "H1.1"
+          },
+          {
+            "handlingUnitNumber": "H1.2"
+          },
+          {
+            "handlingUnitNumber": "H2"
+          },
+          {
+            "handlingUnitNumber": "H2.1"
+          },
+          {
+            "handlingUnitNumber": "H2.2"
+          }
+        ]
+      }
+    }
+  },
+  "direct0to2": {
+    "data": {
+      "Delivery": {
+        "allHandlingUnits0to2": [
+          {
+            "handlingUnitNumber": "H1"
+          },
+          {
+            "handlingUnitNumber": "H1.1"
+          },
+          {
+            "handlingUnitNumber": "H1.1.1"
+          },
+          {
+            "handlingUnitNumber": "H1.1.2"
+          },
+          {
+            "handlingUnitNumber": "H1.2"
+          },
+          {
+            "handlingUnitNumber": "H1.2.1"
+          },
+          {
+            "handlingUnitNumber": "H1.2.2"
+          },
+          {
+            "handlingUnitNumber": "H2"
+          },
+          {
+            "handlingUnitNumber": "H2.1"
+          },
+          {
+            "handlingUnitNumber": "H2.1.1"
+          },
+          {
+            "handlingUnitNumber": "H2.2"
+          }
+        ]
+      }
+    }
+  },
+  "direct1to1": {
+    "data": {
+      "Delivery": {
+        "allHandlingUnits1to1": [
+          {
+            "handlingUnitNumber": "H1.1"
+          },
+          {
+            "handlingUnitNumber": "H1.2"
+          },
+          {
+            "handlingUnitNumber": "H2.1"
+          },
+          {
+            "handlingUnitNumber": "H2.2"
+          }
+        ]
+      }
+    }
+  },
+  "direct1to2": {
+    "data": {
+      "Delivery": {
+        "allHandlingUnits1to2": [
+          {
+            "handlingUnitNumber": "H1.1"
+          },
+          {
+            "handlingUnitNumber": "H1.1.1"
+          },
+          {
+            "handlingUnitNumber": "H1.1.2"
+          },
+          {
+            "handlingUnitNumber": "H1.2"
+          },
+          {
+            "handlingUnitNumber": "H1.2.1"
+          },
+          {
+            "handlingUnitNumber": "H1.2.2"
+          },
+          {
+            "handlingUnitNumber": "H2.1"
+          },
+          {
+            "handlingUnitNumber": "H2.1.1"
+          },
+          {
+            "handlingUnitNumber": "H2.2"
+          }
+        ]
+      }
+    }
+  },
+  "direct2to2": {
+    "data": {
+      "Delivery": {
+        "allHandlingUnits2to2": [
+          {
+            "handlingUnitNumber": "H1.1.1"
+          },
+          {
+            "handlingUnitNumber": "H1.1.2"
+          },
+          {
+            "handlingUnitNumber": "H1.2.1"
+          },
+          {
+            "handlingUnitNumber": "H1.2.2"
+          },
+          {
+            "handlingUnitNumber": "H2.1.1"
+          }
+        ]
+      }
+    }
+  },
+  "direct3to3": {
+    "data": {
+      "Delivery": {
+        "allHandlingUnits3to3": []
+      }
+    }
+  },
+  "indirect": {
+    "data": {
+      "Shipment": {
+        "allHandlingUnits": [
+          {
+            "handlingUnitNumber": "H1"
+          },
+          {
+            "handlingUnitNumber": "H1.1"
+          },
+          {
+            "handlingUnitNumber": "H1.1.1"
+          },
+          {
+            "handlingUnitNumber": "H1.1.2"
+          },
+          {
+            "handlingUnitNumber": "H1.2"
+          },
+          {
+            "handlingUnitNumber": "H1.2.1"
+          },
+          {
+            "handlingUnitNumber": "H1.2.2"
+          },
+          {
+            "handlingUnitNumber": "H2"
+          },
+          {
+            "handlingUnitNumber": "H2.1"
+          },
+          {
+            "handlingUnitNumber": "H2.1.1"
+          },
+          {
+            "handlingUnitNumber": "H2.2"
+          },
+          {
+            "handlingUnitNumber": "H3"
+          },
+          {
+            "handlingUnitNumber": "H3.1"
+          },
+          {
+            "handlingUnitNumber": "H3.1.1"
+          },
+          {
+            "handlingUnitNumber": "H3.2"
+          }
+        ]
+      }
+    }
+  }
+}

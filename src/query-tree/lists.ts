@@ -1,3 +1,4 @@
+import { FieldAggregator } from '../model/config';
 import { indent } from '../utils/utils';
 import { QueryNode } from './base';
 import { ConstBoolQueryNode } from './literals';
@@ -150,3 +151,15 @@ export class FirstOfListQueryNode extends QueryNode {
         return `first of ${this.listNode.describe()}`;
     }
 }
+
+export class AggregationQueryNode extends QueryNode {
+    constructor(readonly listNode: QueryNode, readonly aggregator: Aggregator) {
+        super();
+    }
+
+    describe() {
+        return `${this.aggregator}(${this.listNode.describe()})`;
+    }
+}
+
+export type Aggregator = FieldAggregator.AVERAGE | FieldAggregator.MAX | FieldAggregator.MIN | FieldAggregator.SUM;

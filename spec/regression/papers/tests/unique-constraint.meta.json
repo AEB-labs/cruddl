@@ -1,0 +1,21 @@
+{
+  "databases": {
+    "in-memory": {
+      "ignore": true
+    },
+    "arangodb": {
+      "versions": {
+        // 3.3, 3.4 and 3.5 have a more verbose error message on unique constraint violations including the index id
+        "3.3": {
+          "ignore": true
+        },
+        "3.4": {
+          "ignore": true
+        },
+        "3.5": {
+          "ignore": true
+        }
+      }
+    }
+  }
+}

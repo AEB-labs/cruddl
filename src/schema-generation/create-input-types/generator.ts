@@ -77,7 +77,8 @@ export class CreateInputTypeGenerator {
                 } else {
                     return [new SetEdgeCreateInputField(field), new CreateAndSetEdgeCreateInputField(field, inputType)];
                 }
-            } else {
+            }
+            if (field.isReference) {
                 // reference
                 const referenceKeyField = field.getReferenceKeyFieldOrThrow();
                 const scalarType = field.type.getKeyFieldTypeOrThrow().graphQLScalarType;
@@ -91,6 +92,13 @@ export class CreateInputTypeGenerator {
                     return [new CreateReferenceInputField(referenceKeyField, field.name, description, scalarType, `Use "${referenceKeyField.name}" instead.`)];
                 }
             }
+
+            if (field.isTraversal || field.isAggregation) {
+                // traversal and aggregation fields are read-only
+                return [];
+            }
+
+            throw new Error(`Field "${field.declaringType.name}.${field.name}" has an unexpected configuration`);
         }
 
         if (field.type.isEntityExtensionType) {

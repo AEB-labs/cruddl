@@ -3,7 +3,7 @@ import { BasicType, ConditionalQueryNode, FieldQueryNode, NullQueryNode, ObjectQ
 import { decapitalize } from '../../utils/utils';
 import { FieldContext } from './context';
 import { QueryNodeField, QueryNodeObjectType } from './definition';
-import { extractQueryTreeObjectType, isListType, resolveThunk } from './utils';
+import { extractQueryTreeObjectType, isListTypeIgnoringNonNull, resolveThunk } from './utils';
 
 export function buildConditionalObjectQueryNode(sourceNode: QueryNode, type: QueryNodeObjectType, selectionSet: ReadonlyArray<FieldSelection>, context: FieldContext = { selectionStack: [] }) {
     if (sourceNode instanceof ObjectQueryNode) {
@@ -73,7 +73,7 @@ function buildFieldQueryNode0(sourceNode: QueryNode, field: QueryNodeField, fiel
         return fieldQueryNode;
     }
 
-    if (isListType(field.type)) {
+    if (isListTypeIgnoringNonNull(field.type)) {
         // Note: previously, we had a safeguard here that converted non-lists to empty lists
         // This is no longer necessary because createFieldNode() already does this where necessary (only for simple field lookups)
         // All other code should return lists where lists are expected
