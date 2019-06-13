@@ -1,15 +1,7 @@
 import { compact } from 'lodash';
-import { Relation, RootEntityType } from '../../model';
-import {
-    AddEdgesQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, BinaryOperatorWithLanguage, ConcatListsQueryNode, ConditionalQueryNode,
-    ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode,
-    EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode,
-    LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, OperatorWithLanguageQueryNode, OrderClause, OrderDirection,
-    OrderSpecification, QueryNode, QueryResultValidator, QuickSearchExistsQueryNode, RemoveEdgesQueryNode, RootEntityIDQueryNode,
-    RUNTIME_ERROR_TOKEN, RuntimeErrorQueryNode, SafeListQueryNode, SetEdgeQueryNode, TransformListQueryNode, TypeCheckQueryNode,
-    UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode,
-    WithPreExecutionQueryNode
-} from '../../query-tree';
+import { Field, FieldAggregator, Relation, RelationSide, RootEntityType } from '../../model';
+import { getEffectiveTraversalSegments } from '../../model/implementation/field-path';
+import { AddEdgesQueryNode, AggregationQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, BinaryOperatorWithLanguage, ConcatListsQueryNode, ConditionalQueryNode, ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, OperatorWithLanguageQueryNode, OrderClause, OrderDirection, OrderSpecification, QueryNode, QueryResultValidator, QuickSearchExistsQueryNode, RemoveEdgesQueryNode, RootEntityIDQueryNode, RUNTIME_ERROR_CODE_PROPERTY, RUNTIME_ERROR_TOKEN, RuntimeErrorQueryNode, SafeListQueryNode, SetEdgeQueryNode, TransformListQueryNode, TraversalQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../../query-tree';
 import { QuantifierFilterNode } from '../../query-tree/quantifiers';
 import { QuickSearchComplexOperatorQueryNode, QuickSearchQueryNode } from '../../query-tree/quick-search';
 import { simplifyBooleans } from '../../query-tree/utils';
@@ -170,7 +162,11 @@ register(NullQueryNode, () => {
 
 register(RuntimeErrorQueryNode, node => {
     const runtimeErrorToken = js.code(RUNTIME_ERROR_TOKEN);
-    return js`{${runtimeErrorToken}: ${node.message}}`;
+    if (node.code) {
+        const codeProp = js.code(RUNTIME_ERROR_CODE_PROPERTY);
+        return js`{ ${codeProp}: ${node.code}, ${runtimeErrorToken}: ${node.message} }`;
+    }
+    return js`{ ${runtimeErrorToken}: ${node.message} }`;
 });
 
 register(ConstBoolQueryNode, node => {
@@ -247,15 +243,19 @@ register(EntityFromIdQueryNode, (node, context) => {
 
 register(FieldQueryNode, (node, context) => {
     const object = processNode(node.objectNode, context);
+    return getFieldAccessFrag(node.field, object);
+});
+
+function getFieldAccessFrag(field: Field, objectFrag: JSFragment) {
     const objectVar = js.variable('object');
-    const identifier = jsExt.safeJSONKey(node.field.name);
+    const identifier = jsExt.safeJSONKey(field.name);
     // always use [] access because we could collide with keywords
     // avoid undefined values because they cause trouble when being compared with === to null
     const raw = js`${identifier} in ${objectVar} ? ${objectVar}[${identifier}] : null`;
 
     // mimick arango behavior here which propagates null
-    return jsExt.evaluatingLambda(objectVar, js`((typeof (${objectVar}) == 'object' && (${objectVar}) != null) ? (${raw}) : null)`, object);
-});
+    return jsExt.evaluatingLambda(objectVar, js`((typeof (${objectVar}) == 'object' && (${objectVar}) != null) ? (${raw}) : null)`, objectFrag);
+}
 
 register(RootEntityIDQueryNode, (node, context) => {
     return js`${processNode(node.objectNode, context)}.${js.identifier(ID_FIELD_NAME)}`;
@@ -295,6 +295,25 @@ register(TransformListQueryNode, (node, context) => {
 
 register(CountQueryNode, (node, context) => {
     return js`${processNode(node.listNode, context)}.length`;
+});
+
+register(AggregationQueryNode, (node, context) => {
+    const itemVar = js.variable('item');
+    const accumulatorVar = js.variable('acc');
+    const listFrag = processNode(node.listNode, context);
+    switch (node.aggregator) {
+        case FieldAggregator.SUM:
+            return js`${listFrag}.reduce((${itemVar}, ${accumulatorVar}) => ${accumulatorVar} + ${itemVar})`;
+        case FieldAggregator.AVERAGE:
+            const listVar = js.variable('list');
+            return jsExt.evaluatingLambda(listVar, js`(${listVar}.reduce((${itemVar}, ${accumulatorVar}) => ${accumulatorVar} + ${itemVar}) / ${listVar}.length)`, processNode(node.listNode, context));
+        case FieldAggregator.MIN:
+            return js`${listFrag}.reduce((${itemVar}, ${accumulatorVar}) => Math.min(${accumulatorVar}, ${itemVar}))`;
+        case FieldAggregator.MAX:
+            return js`${listFrag}.reduce((${itemVar}, ${accumulatorVar}) => Math.max(${accumulatorVar}, ${itemVar}))`;
+        default:
+            throw new Error(`Unsupported aggregator: ${(node as any).aggregator}`);
+    }
 });
 
 register(MergeObjectsQueryNode, (node, context) => {
@@ -427,25 +446,88 @@ register(EntitiesQueryNode, (node, context) => {
 });
 
 register(FollowEdgeQueryNode, (node, context) => {
-    const targetType = node.relationSide.targetType;
+    const sourceID = processNode(new RootEntityIDQueryNode(node.sourceEntityNode), context);
+    return getFollowEdgeFragment(node.relationSide, sourceID, context);
+});
+
+function getFollowEdgeFragment(relationSide: RelationSide, sourceIDFrag: JSFragment, context: QueryContext): JSFragment {
+    const targetType = relationSide.targetType;
     const targetColl = getCollectionForType(targetType, context);
-    const edgeColl = getCollectionForRelation(node.relationSide.relation, context);
+    const edgeColl = getCollectionForRelation(relationSide.relation, context);
     const edgeVar = js.variable('edge');
     const itemVar = js.variable(decapitalize(targetType.name));
-    const sourceIDOnEdge = node.relationSide.isFromSide ? js`${edgeVar}._from` : js`${edgeVar}._to`;
-    const targetIDOnEdge = node.relationSide.isFromSide ? js`${edgeVar}._to` : js`${edgeVar}._from`;
-    const sourceID = processNode(new RootEntityIDQueryNode(node.sourceEntityNode), context);
+    const sourceIDOnEdge = relationSide.isFromSide ? js`${edgeVar}._from` : js`${edgeVar}._to`;
+    const targetIDOnEdge = relationSide.isFromSide ? js`${edgeVar}._to` : js`${edgeVar}._from`;
     const idOnItem = js`${itemVar}.${js.identifier(ID_FIELD_NAME)}`;
     const idOnItemEqualsTargetIDOnEdge = js`${idOnItem} === ${targetIDOnEdge}`;
 
     return js.lines(
         js`${edgeColl}`,
         js.indent(js.lines(
-            js`.filter(${jsExt.lambda(edgeVar, js`${sourceIDOnEdge} == ${sourceID}`)})`,
+            js`.filter(${jsExt.lambda(edgeVar, js`${sourceIDOnEdge} == ${sourceIDFrag}`)})`,
             js`.map(${jsExt.lambda(edgeVar, js`${targetColl}.find(${jsExt.lambda(itemVar, idOnItemEqualsTargetIDOnEdge)})`)})`,
             js`.filter(${jsExt.lambda(itemVar, itemVar)})` // filter out nulls
         ))
     );
+}
+
+register(TraversalQueryNode, (node, context) => {
+    let currentFrag: JSFragment = processNode(node.sourceEntityNode, context);
+    let isList = false;
+
+    const { relationSegments, fieldSegments } = getEffectiveTraversalSegments(node.path);
+
+    for (const segment of relationSegments) {
+        if (isList) {
+            const nodeVar = js.variable('node');
+            const accVar = js.variable('acc');
+            const idFrag = js`${nodeVar}.${js.identifier(ID_FIELD_NAME)}`;
+            const reducer = js`(${accVar}, ${nodeVar}) => ${accVar}.concat(${getFollowEdgeFragment(segment.relationSide, idFrag, context)})`;
+            currentFrag = js`${currentFrag}.reduce(${reducer}, [])`;
+        } else {
+            currentFrag = getFollowEdgeFragment(segment.relationSide, js`${currentFrag}.${js.identifier(ID_FIELD_NAME)}`, context);
+        }
+
+        if (segment.minDepth !== 1 || segment.maxDepth !== 1) {
+            throw new Error(`Traversal with min/max depth is not supported by InMemoryAdapter`);
+        }
+
+        // follow-edge always results in a list
+        isList = true;
+    }
+
+    if (isList && !relationSegments[relationSegments.length - 1].resultIsList) {
+        currentFrag = js`(${currentFrag}[0] || null)`;
+        isList = false;
+    }
+
+    for (const segment of fieldSegments) {
+        if (isList) {
+            if (segment.isListSegment) {
+                const nodeVar = js.variable('node');
+                const accVar = js.variable('acc');
+                const reducer = js`(${accVar}, ${nodeVar}) => ${accVar}.concat(${getFieldAccessFrag(segment.field, nodeVar)})`;
+                currentFrag = js`${currentFrag}.reduce(${reducer}, [])`;
+            } else {
+                const nodeVar = js.variable('node');
+                const mapper = jsExt.lambda(nodeVar, getFieldAccessFrag(segment.field, nodeVar));
+                currentFrag = js`${currentFrag}.map(${mapper})`;
+            }
+        } else {
+            currentFrag = getFieldAccessFrag(segment.field, currentFrag);
+        }
+
+        if (segment.isListSegment) {
+            isList = true;
+        }
+    }
+
+    if (node.path.resultIsList) {
+        const itemVar = js.variable('item');
+        currentFrag = js`${currentFrag}.filter(${itemVar} => ${itemVar} != null)`;
+    }
+
+    return currentFrag;
 });
 
 register(CreateEntityQueryNode, (node, context) => {

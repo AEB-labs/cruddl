@@ -58,7 +58,7 @@ export class QuickSearchComplexOperatorQueryNode extends ExpandingQueryNode{
         const tokens = await databaseAdapter.tokenizeExpression(this.expression, this.quickSearchLanguage);
         const neutralOperand = this.logicalOperator === BinaryOperator.AND ? ConstBoolQueryNode.TRUE : ConstBoolQueryNode.FALSE;
         return simplifyBooleans(tokens
-            .map(value => new OperatorWithLanguageQueryNode(this.fieldNode, this.comparisonOperator, new LiteralQueryNode(value), this.quickSearchLanguage))
+            .map(value => new OperatorWithLanguageQueryNode(this.fieldNode, this.comparisonOperator, new LiteralQueryNode(value), this.quickSearchLanguage) as QueryNode)
             .reduce(and, neutralOperand));
     }
 

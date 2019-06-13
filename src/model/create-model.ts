@@ -19,7 +19,7 @@ import { ParsedGraphQLProjectSource, ParsedObjectProjectSource, ParsedProject, P
 import { ENUM, ENUM_TYPE_DEFINITION, LIST, LIST_TYPE, NON_NULL_TYPE, OBJECT, OBJECT_TYPE_DEFINITION, STRING } from '../graphql/kinds';
 import { getValueFromAST } from '../graphql/value-from-ast';
 import {
-    CALC_MUTATIONS_DIRECTIVE,
+   AGGREGATION_AGGREGATOR_ARG, AGGREGATION_DIRECTIVE, AGGREGATION_PATH_ARG, CALC_MUTATIONS_DIRECTIVE,
     CALC_MUTATIONS_OPERATORS_ARG,
     CHILD_ENTITY_DIRECTIVE,
     DEFAULT_VALUE_DIRECTIVE,
@@ -42,7 +42,7 @@ import {
     ROLES_READ_ARG,
     ROLES_READ_WRITE_ARG,
     ROOT_ENTITY_DIRECTIVE,
-    UNIQUE_DIRECTIVE,
+   TRAVERSAL_DIRECTIVE, TRAVERSAL_PATH_ARG, UNIQUE_DIRECTIVE,
     VALUE_ARG,
     VALUE_OBJECT_DIRECTIVE,
     QUICK_SEARCH_INDEXED_LANGUAGE_ARG,
@@ -56,23 +56,7 @@ import {
     hasDirectiveWithName
 } from '../schema/schema-utils';
 import { compact, flatMap, mapValues } from '../utils/utils';
-import {
-    ArangoSearchIndexConfig,
-    CalcMutationsOperator,
-    EnumTypeConfig,
-    EnumValueConfig,
-    FieldConfig,
-    IndexDefinitionConfig,
-    LocalizationConfig,
-    NamespacedPermissionProfileConfigMap,
-    ObjectTypeConfig,
-    PermissionProfileConfigMap,
-    PermissionsConfig,
-    QuickSearchLanguage,
-    RolesSpecifierConfig,
-    TypeConfig,
-    TypeKind
-} from './config';
+import { AggregationConfig, ArangoSearchIndexConfig, CalcMutationsOperator, EnumTypeConfig, EnumValueConfig, FieldAggregator, FieldConfig, IndexDefinitionConfig, LocalizationConfig, NamespacedPermissionProfileConfigMap, ObjectTypeConfig, PermissionProfileConfigMap, PermissionsConfig, QuickSearchLanguage, RolesSpecifierConfig, TraversalConfig, TypeConfig, TypeKind } from './config';
 import { Model } from './implementation';
 import { parseI18nConfigs } from './parse-i18n';
 import { ValidationContext, ValidationMessage } from './validation';
@@ -81,8 +65,8 @@ export function createModel(parsedProject: ParsedProject): Model {
     const validationContext = new ValidationContext();
     return new Model({
         types: createTypeInputs(parsedProject, validationContext),
-        permissionProfiles: extractPermissionProfiles(parsedProject, validationContext),
-        i18n: extractI18n(parsedProject, validationContext),
+        permissionProfiles: extractPermissionProfiles(parsedProject),
+        i18n: extractI18n(parsedProject),
         validationMessages: validationContext.validationMessages
     });
 }
@@ -100,7 +84,6 @@ const VALIDATION_ERROR_DUPLICATE_KEY_FIELD = 'Only one field can be a @key field
 const VALIDATION_ERROR_MULTIPLE_OBJECT_TYPE_DIRECTIVES = `Only one of @${ROOT_ENTITY_DIRECTIVE}, @${CHILD_ENTITY_DIRECTIVE}, @${ENTITY_EXTENSION_DIRECTIVE} or @${VALUE_OBJECT_DIRECTIVE} can be used.`;
 const VALIDATION_ERROR_MISSING_OBJECT_TYPE_DIRECTIVE = `Add one of @${ROOT_ENTITY_DIRECTIVE}, @${CHILD_ENTITY_DIRECTIVE}, @${ENTITY_EXTENSION_DIRECTIVE} or @${VALUE_OBJECT_DIRECTIVE}.`;
 const VALIDATION_ERROR_INVALID_DEFINITION_KIND = 'This kind of definition is not allowed. Only object and enum type definitions are allowed.';
-const VALIDATION_WARNING_DUPLICATE_PERMISSION_PROFILES = 'Duplicate permission profiles (random wins!)';
 
 function createTypeInputs(parsedProject: ParsedProject, context: ValidationContext): ReadonlyArray<TypeConfig> {
     const graphQLSchemaParts = parsedProject.sources.filter(parsedSource => parsedSource.kind === ParsedProjectSourceBaseKind.GRAPHQL) as ReadonlyArray<ParsedGraphQLProjectSource>;
@@ -306,6 +289,7 @@ function createFieldInput(fieldNode: FieldDefinitionNode, context: ValidationCon
     const inverseOfASTNode = getInverseOfASTNode(fieldNode, context);
     const referenceDirectiveASTNode = findDirectiveWithName(fieldNode, REFERENCE_DIRECTIVE);
     const referenceKeyFieldASTNode = getReferenceKeyFieldASTNode(fieldNode, context);
+
     return {
         name: fieldNode.name.value,
         description: fieldNode.description ? fieldNode.description.value : undefined,
@@ -329,7 +313,9 @@ function createFieldInput(fieldNode: FieldDefinitionNode, context: ValidationCon
         isQuickSearchFulltextIndexedASTNode: findDirectiveWithName(fieldNode, QUICK_SEARCH_FULLTEXT_INDEXED_DIRECTIVE),
         isSearchable: getIsSearchable(fieldNode, context),
         isSearchableASTNode: findDirectiveWithName(fieldNode, QUICK_SEARCH_SEARCHABLE_DIRECTIVE),
-        quickSearchLanguage: getLanguage(fieldNode, context, parentNode)
+        quickSearchLanguage: getLanguage(fieldNode, context, parentNode),
+        traversal: getTraversalConfig(fieldNode, context),
+        aggregation: getAggregationConfig(fieldNode, context),
     };
 }
 
@@ -573,7 +559,63 @@ function getReferenceKeyFieldASTNode(fieldNode: FieldDefinitionNode, context: Va
     return keyFieldArg.value;
 }
 
-function extractPermissionProfiles(parsedProject: ParsedProject, validationContext: ValidationContext): ReadonlyArray<NamespacedPermissionProfileConfigMap> {
+function getTraversalConfig(fieldNode: FieldDefinitionNode, context: ValidationContext): TraversalConfig | undefined {
+    const directive = findDirectiveWithName(fieldNode, TRAVERSAL_DIRECTIVE);
+    if (!directive) {
+        return undefined;
+    }
+    const pathArg = getNodeByName(directive.arguments, TRAVERSAL_PATH_ARG);
+    if (!pathArg) {
+        context.addMessage(ValidationMessage.error(`Argument "${TRAVERSAL_PATH_ARG}" is missing`, directive.loc));
+        return undefined;
+    }
+    if (pathArg.value.kind !== STRING) {
+        // should be caught by the graphql validator anyway...
+        context.addMessage(ValidationMessage.error(`The argument "${TRAVERSAL_PATH_ARG}" must be of type String`, pathArg.value.loc));
+        return undefined;
+    }
+    return {
+        astNode: directive,
+        path: pathArg.value.value,
+        pathASTNode: pathArg.value
+    };
+}
+
+function getAggregationConfig(fieldNode: FieldDefinitionNode, context: ValidationContext): AggregationConfig | undefined {
+    const directive = findDirectiveWithName(fieldNode, AGGREGATION_DIRECTIVE);
+    if (!directive) {
+        return undefined;
+    }
+    const pathArg = getNodeByName(directive.arguments, AGGREGATION_PATH_ARG);
+    if (!pathArg) {
+        context.addMessage(ValidationMessage.error(`Argument "${AGGREGATION_PATH_ARG}" is missing`, directive.loc));
+        return undefined;
+    }
+    if (pathArg.value.kind !== STRING) {
+        // should be caught by the graphql validator anyway...
+        context.addMessage(ValidationMessage.error(`The argument "${AGGREGATION_PATH_ARG}" must be of type String`, pathArg.value.loc));
+        return undefined;
+    }
+    const aggregatorArg = getNodeByName(directive.arguments, AGGREGATION_AGGREGATOR_ARG);
+    if (!aggregatorArg) {
+        context.addMessage(ValidationMessage.error(`Argument "${AGGREGATION_AGGREGATOR_ARG}" is missing`, directive.loc));
+        return undefined;
+    }
+    if (aggregatorArg.value.kind !== 'EnumValue') {
+        // should be caught by the graphql validator anyway...
+        context.addMessage(ValidationMessage.error(`The argument "${AGGREGATION_AGGREGATOR_ARG}" must be an enum value`, pathArg.value.loc));
+        return undefined;
+    }
+    return {
+        astNode: directive,
+        path: pathArg.value.value,
+        pathASTNode: pathArg.value,
+        aggregator: aggregatorArg.value.value as FieldAggregator,
+        aggregatorASTNode: aggregatorArg.value
+    };
+}
+
+function extractPermissionProfiles(parsedProject: ParsedProject): ReadonlyArray<NamespacedPermissionProfileConfigMap> {
     return compact(parsedProject.sources.map((source): NamespacedPermissionProfileConfigMap | undefined => {
         if (source.kind !== ParsedProjectSourceBaseKind.OBJECT) {
             return undefined;
@@ -588,12 +630,12 @@ function extractPermissionProfiles(parsedProject: ParsedProject, validationConte
         }));
         return {
             namespacePath: source.namespacePath,
-            profiles: source.object.permissionProfiles as PermissionProfileConfigMap
+            profiles
         };
     }));
 }
 
-function extractI18n(parsedProject: ParsedProject, validationContext: ValidationContext): ReadonlyArray<LocalizationConfig> {
+function extractI18n(parsedProject: ParsedProject): ReadonlyArray<LocalizationConfig> {
     const objectSchemaParts = parsedProject.sources
         .filter(parsedSource => parsedSource.kind === ParsedProjectSourceBaseKind.OBJECT) as ReadonlyArray<ParsedObjectProjectSource>;
     return flatMap(objectSchemaParts, source => parseI18nConfigs(source));

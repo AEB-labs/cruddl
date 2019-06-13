@@ -52,7 +52,7 @@ export class QuickSearchFilterObjectType extends TypedInputObjectType<QuickSearc
         if (typeof filterValue !== 'object' || filterValue === null) {
             return new BinaryOperationQueryNode(sourceNode, BinaryOperator.EQUAL, NullQueryNode.NULL);
         }
-        const filterNodes = objectEntries(filterValue)
+        const filterNodes = objectEntries(filterValue as any)
             .map(([name, value]) => this.getFieldOrThrow(name).getFilterNode(sourceNode, value, path));
         return filterNodes.reduce(and, ConstBoolQueryNode.TRUE);
 

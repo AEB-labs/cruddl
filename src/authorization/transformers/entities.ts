@@ -1,9 +1,6 @@
-import {
-    ConditionalQueryNode, EntitiesQueryNode, EntityFromIdQueryNode, NullQueryNode, RuntimeErrorQueryNode,
-    TransformListQueryNode, VariableAssignmentQueryNode, VariableQueryNode
-} from '../../query-tree';
+import { ConditionalQueryNode, EntitiesQueryNode, EntityFromIdQueryNode, NullQueryNode, PERMISSION_DENIED_ERROR, RuntimeErrorQueryNode, TransformListQueryNode, VariableAssignmentQueryNode, VariableQueryNode } from '../../query-tree';
 import { QuickSearchQueryNode } from '../../query-tree/quick-search';
-import { AccessOperation, AuthContext, AUTHORIZATION_ERROR_NAME } from '../auth-basics';
+import { AccessOperation, AuthContext } from '../auth-basics';
 import { PermissionResult } from '../permission-descriptors';
 import { getPermissionDescriptorOfRootEntityType } from '../permission-descriptors-in-model';
 
@@ -14,7 +11,7 @@ export function transformEntitiesQueryNode(node: EntitiesQueryNode, authContext:
         case PermissionResult.GRANTED:
             return node;
         case PermissionResult.DENIED:
-            return new RuntimeErrorQueryNode(`${AUTHORIZATION_ERROR_NAME}: Not authorized to read ${node.rootEntityType.name} objects`);
+            return new RuntimeErrorQueryNode(`Not authorized to read ${node.rootEntityType.name} objects`, { code: PERMISSION_DENIED_ERROR });
         default:
             const itemVar = new VariableQueryNode('item');
             const condition = permissionDescriptor.getAccessCondition(authContext, AccessOperation.READ, itemVar);
@@ -33,7 +30,7 @@ export function transformEntityFromIdQueryNode(node: EntityFromIdQueryNode, auth
         case PermissionResult.GRANTED:
             return node;
         case PermissionResult.DENIED:
-            return new RuntimeErrorQueryNode(`${AUTHORIZATION_ERROR_NAME}: Not authorized to read ${node.rootEntityType.name} objects`);
+            return new RuntimeErrorQueryNode(`Not authorized to read ${node.rootEntityType.name} objects`, { code: PERMISSION_DENIED_ERROR });
         default:
             const entityVar = new VariableQueryNode('entity');
             const condition = permissionDescriptor.getAccessCondition(authContext, AccessOperation.READ, entityVar);
@@ -52,7 +49,7 @@ export function transformQuickSearchQueryNode(node: QuickSearchQueryNode, authCo
         case PermissionResult.GRANTED:
             return node;
         case PermissionResult.DENIED:
-            return new RuntimeErrorQueryNode(`${AUTHORIZATION_ERROR_NAME}: Not authorized to read ${node.rootEntityType.name} objects`);
+            return new RuntimeErrorQueryNode(`Not authorized to read ${node.rootEntityType.name} objects`, { code: PERMISSION_DENIED_ERROR });
         default:
             const entityVar = new VariableQueryNode('entity');
             const condition = permissionDescriptor.getAccessCondition(authContext, AccessOperation.READ, entityVar);

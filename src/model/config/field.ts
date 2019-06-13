@@ -54,6 +54,18 @@ export enum FieldAggregator {
     AVERAGE = 'AVERAGE'
 }
 
+export interface TraversalConfig {
+    readonly astNode?: DirectiveNode
+    readonly path: string
+    readonly pathASTNode?: StringValueNode
+}
+
+export interface AggregationConfig extends TraversalConfig {
+    readonly aggregator: FieldAggregator
+    readonly aggregatorASTNode?: EnumValueNode
+}
+
+
 export enum CalcMutationsOperator {
     MULTIPLY = 'MULTIPLY',
     DIVIDE = 'DIVIDE',
