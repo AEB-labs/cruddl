@@ -572,9 +572,6 @@ export class Field implements ModelComponent {
         if (this.isQuickSearchFulltextIndexed && !this.language) {
             context.addMessage(ValidationMessage.error(`QuickSearchFulltextIndex requires either a language parameter, or a defaultLanguage must be set in the entity.`, this.input.isQuickSearchFulltextIndexedASTNode));
         }
-        if (!!this.input.isSearchable && !this.isQuickSearchIndexed && !this.isQuickSearchFulltextIndexed) {
-            context.addMessage(ValidationMessage.error(`Only fields that are either quickSearchIndexed or quickSearchFulltextIndexed can be 'searchable'.`, this.input.isSearchableASTNode));
-        }
         if(this.isQuickSearchIndexed && (this.type.isEntityExtensionType || this.type.isValueObjectType) && !this.type.fields.some(value => value.isQuickSearchIndexed || value.isQuickSearchFulltextIndexed)){
             context.addMessage(ValidationMessage.error(`At least one field on type "${this.type.name}" must be quickSearchIndexed or quickSearchFulltextIndexed.`, this.input.isQuickSearchIndexedASTNode));
         }
@@ -589,8 +586,12 @@ export class Field implements ModelComponent {
         return !!this.input.isQuickSearchFulltextIndexed;
     }
 
-    get isSearchable(): boolean {
-        return !!this.input.isSearchable && (this.isQuickSearchFulltextIndexed || this.isQuickSearchIndexed);
+    get isIncludedInSearch(): boolean {
+        return !!this.input.isIncludedInSearch && this.isQuickSearchIndexed;
+    }
+
+    get isFulltextIncludedInSearch(): boolean {
+        return !!this.input.isFulltextIncludedInSearch && this.isQuickSearchFulltextIndexed;
     }
 
     get language(): QuickSearchLanguage | undefined {

@@ -31,8 +31,8 @@ export interface FieldConfig {
     readonly isQuickSearchFulltextIndexed?: boolean
     readonly isQuickSearchFulltextIndexedASTNode?: DirectiveNode
     readonly quickSearchLanguage?: QuickSearchLanguage
-    readonly isSearchable?: boolean
-    readonly isSearchableASTNode?: DirectiveNode
+    readonly isIncludedInSearch?: boolean
+    readonly isFulltextIncludedInSearch?: boolean
 }
 
 export interface TraversalConfig {

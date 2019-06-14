@@ -163,15 +163,13 @@ export class QuickSearchGenerator {
             }
 
             return new BinaryOperationQueryNode(
-                field.isQuickSearchIndexed ? getIdentityNode() : ConstBoolQueryNode.FALSE,
+                field.isQuickSearchIndexed && field.isIncludedInSearch ? getIdentityNode() : ConstBoolQueryNode.FALSE,
                 BinaryOperator.OR,
-                field.isQuickSearchFulltextIndexed ?
-                    getOperatorWithLanguageQueryNode()
-                    : ConstBoolQueryNode.FALSE
+                field.isQuickSearchFulltextIndexed && field.isFulltextIncludedInSearch ? getOperatorWithLanguageQueryNode() : ConstBoolQueryNode.FALSE
             );
         }
 
-        return rootEntityType.fields.filter(value => value.isSearchable).map(value => getQueryNodeFromField(value)).reduce(or, ConstBoolQueryNode.FALSE);
+        return rootEntityType.fields.filter(value => value.isIncludedInSearch || value.isFulltextIncludedInSearch).map(value => getQueryNodeFromField(value)).reduce(or, ConstBoolQueryNode.FALSE);
     }
 }
 

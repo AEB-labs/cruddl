@@ -30,20 +30,20 @@ const systemFieldInputs: FieldConfig[] = [
         description: 'An auto-generated string that identifies this child entity uniquely within this collection of child entities',
         isQuickSearchIndexed: true,
         isQuickSearchFulltextIndexed: false,
-        isSearchable: false
+        isIncludedInSearch: false
     }, {
         name: 'createdAt',
         typeName: 'DateTime',
         description: 'The instant this object has been created',
         isQuickSearchIndexed: true,
         isQuickSearchFulltextIndexed: false,
-        isSearchable: false
+        isIncludedInSearch: false
     }, {
         name: 'updatedAt',
         typeName: 'DateTime',
         description: 'The instant this object has been updated the last time',
         isQuickSearchIndexed: true,
         isQuickSearchFulltextIndexed: false,
-        isSearchable: false
+        isIncludedInSearch: false
     }
 ];

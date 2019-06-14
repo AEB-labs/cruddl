@@ -19,7 +19,7 @@ import { ParsedGraphQLProjectSource, ParsedObjectProjectSource, ParsedProject, P
 import { ENUM, ENUM_TYPE_DEFINITION, LIST, LIST_TYPE, NON_NULL_TYPE, OBJECT, OBJECT_TYPE_DEFINITION, STRING } from '../graphql/kinds';
 import { getValueFromAST } from '../graphql/value-from-ast';
 import {
-   AGGREGATION_AGGREGATOR_ARG, AGGREGATION_DIRECTIVE, AGGREGATION_PATH_ARG, CALC_MUTATIONS_DIRECTIVE,
+    AGGREGATION_AGGREGATOR_ARG, AGGREGATION_DIRECTIVE, AGGREGATION_PATH_ARG, CALC_MUTATIONS_DIRECTIVE,
     CALC_MUTATIONS_OPERATORS_ARG,
     CHILD_ENTITY_DIRECTIVE,
     DEFAULT_VALUE_DIRECTIVE,
@@ -42,11 +42,11 @@ import {
     ROLES_READ_ARG,
     ROLES_READ_WRITE_ARG,
     ROOT_ENTITY_DIRECTIVE,
-   TRAVERSAL_DIRECTIVE, TRAVERSAL_PATH_ARG, UNIQUE_DIRECTIVE,
+    TRAVERSAL_DIRECTIVE, TRAVERSAL_PATH_ARG, UNIQUE_DIRECTIVE,
     VALUE_ARG,
     VALUE_OBJECT_DIRECTIVE,
     QUICK_SEARCH_INDEXED_LANGUAGE_ARG,
-    QUICK_SEARCH_INDEXED_DIRECTIVE, QUICK_SEARCH_FULLTEXT_INDEXED_DIRECTIVE, QUICK_SEARCH_SEARCHABLE_DIRECTIVE, QUICK_SEARCH_DEFAULT_LANGUAGE_ARG
+    QUICK_SEARCH_INDEXED_DIRECTIVE, QUICK_SEARCH_FULLTEXT_INDEXED_DIRECTIVE, QUICK_SEARCH_DEFAULT_LANGUAGE_ARG, QUICK_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT
 } from '../schema/constants';
 import {
     findDirectiveWithName,
@@ -239,8 +239,33 @@ function createArangoSearchDefinitionInputs(objectNode: ObjectTypeDefinitionNode
 }
 
 function getIsSearchable(fieldNode: FieldDefinitionNode, context: ValidationContext): boolean {
-    let directive: DirectiveNode | undefined = findDirectiveWithName(fieldNode, QUICK_SEARCH_SEARCHABLE_DIRECTIVE);
-    return !!directive;
+    const directive = findDirectiveWithName(fieldNode, QUICK_SEARCH_INDEXED_DIRECTIVE);
+    if(directive) {
+        const argument = getNodeByName(directive.arguments, QUICK_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT)
+        if(argument){
+            if (argument.value.kind === 'BooleanValue') {
+                return argument.value.value
+            } else {
+                context.addMessage(ValidationMessage.error(VALIDATION_ERROR_EXPECTED_BOOLEAN, argument.value.loc));
+            }
+        }
+    }
+    return false;
+}
+
+function getIsFulltextSearchable(fieldNode: FieldDefinitionNode, context: ValidationContext): boolean {
+    const directive = findDirectiveWithName(fieldNode, QUICK_SEARCH_FULLTEXT_INDEXED_DIRECTIVE);
+    if(directive) {
+        const argument = getNodeByName(directive.arguments, QUICK_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT)
+        if(argument){
+            if (argument.value.kind === 'BooleanValue') {
+                return argument.value.value
+            } else {
+                context.addMessage(ValidationMessage.error(VALIDATION_ERROR_EXPECTED_BOOLEAN, argument.value.loc));
+            }
+        }
+    }
+    return false;
 }
 
 function getDefaultLanguage(parentNode: ObjectTypeDefinitionNode, context: ValidationContext): QuickSearchLanguage | undefined {
@@ -311,8 +336,8 @@ function createFieldInput(fieldNode: FieldDefinitionNode, context: ValidationCon
         isQuickSearchIndexedASTNode: findDirectiveWithName(fieldNode, QUICK_SEARCH_INDEXED_DIRECTIVE),
         isQuickSearchFulltextIndexed: hasDirectiveWithName(fieldNode, QUICK_SEARCH_FULLTEXT_INDEXED_DIRECTIVE),
         isQuickSearchFulltextIndexedASTNode: findDirectiveWithName(fieldNode, QUICK_SEARCH_FULLTEXT_INDEXED_DIRECTIVE),
-        isSearchable: getIsSearchable(fieldNode, context),
-        isSearchableASTNode: findDirectiveWithName(fieldNode, QUICK_SEARCH_SEARCHABLE_DIRECTIVE),
+        isIncludedInSearch: getIsSearchable(fieldNode, context),
+        isFulltextIncludedInSearch: getIsFulltextSearchable(fieldNode, context),
         quickSearchLanguage: getLanguage(fieldNode, context, parentNode),
         traversal: getTraversalConfig(fieldNode, context),
         aggregation: getAggregationConfig(fieldNode, context),

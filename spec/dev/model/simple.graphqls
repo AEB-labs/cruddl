@@ -3,11 +3,11 @@ type Hero @rootEntity(quickSearchIndex: true, quickSearchLanguage: DE) {
     "The hero's screen name"
     name: String @quickSearchIndex
     key: String @key
-    identity: String @quickSearchIndex @searchable
-    number: Int @quickSearchIndex @searchable
-    fullText: String @quickSearchFulltextIndex @searchable
+    identity: String @quickSearchIndex(includedInSearch: true)
+    number: Int @quickSearchIndex 
+    fullText: String @quickSearchFulltextIndex(includedInSearch: true)
     fullTextEn: String @quickSearchFulltextIndex(language: EN)
-    both: String @quickSearchIndex @quickSearchFulltextIndex @searchable
+    both: String @quickSearchIndex @quickSearchFulltextIndex
     age: Int @defaultValue(value: 42)
     nickNames: [String] @quickSearchIndex
     movies: [Movie] @relation(inverseOf: "heroes")
@@ -43,7 +43,7 @@ type Skill @valueObject {
 
 "A superhero movie"
 type Movie @rootEntity(quickSearchIndex:true, quickSearchLanguage: DE) {
-    name: String @quickSearchFulltextIndex @quickSearchIndex @searchable
+    name: String @quickSearchFulltextIndex @quickSearchIndex 
     "All the heroes starring in this movie"
     heroes: [Hero] @relation
     "The real superhero"

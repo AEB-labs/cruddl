@@ -17,9 +17,9 @@ export const REFERENCE_DIRECTIVE = 'reference';
 export const DEFAULT_VALUE_DIRECTIVE = 'defaultValue';
 export const QUICK_SEARCH_INDEXED_DIRECTIVE = 'quickSearchIndex';
 export const QUICK_SEARCH_FULLTEXT_INDEXED_DIRECTIVE = 'quickSearchFulltextIndex';
-export const QUICK_SEARCH_SEARCHABLE_DIRECTIVE = 'searchable';
 
 export const QUICK_SEARCH_INDEXED_ARGUMENT = 'quickSearchIndex';
+export const QUICK_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT = 'includedInSearch';
 export const QUICK_SEARCH_INDEXED_LANGUAGE_ARG = 'quickSearchLanguage';
 export const QUICK_SEARCH_DEFAULT_LANGUAGE_ARG = 'quickSearchLanguage';
 
