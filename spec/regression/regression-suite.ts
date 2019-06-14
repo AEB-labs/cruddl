@@ -65,8 +65,8 @@ export class RegressionSuite {
             processError: e => {
                 console.error(e.stack);
                 return e;
-            }, // @MSF TODO arangoSearchMaxFilterableAmountOverride better name or "andSortable"
-            getExecutionOptions: ({ context }) => ({ authRoles: context.authRoles, arangoSearchMaxFilterableAmountOverride: context.arangoSearchMaxFilterableAmountOverride})
+            },
+            getExecutionOptions: ({ context }) => ({ authRoles: context.authRoles, arangoSearchMaxFilterableAndSortableAmount: context.arangoSearchMaxFilterableAndSortableAmount})
         };
         const warnLevelOptions = { ...generalOptions, loggerProvider: new Log4jsLoggerProvider('warn') };
         const debugLevelOptions = { ...generalOptions, loggerProvider: new Log4jsLoggerProvider(this.options.trace ? 'trace' : 'warn', { 'schema-builder': 'warn' }) };

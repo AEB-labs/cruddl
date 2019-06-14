@@ -56,7 +56,7 @@ export class OperationResolver {
             const rootQueryNode = ObjectQueryNode.EMPTY; // can't use NULL because then the whole operation would yield null
             const fieldContext = {
                 selectionStack: [],
-                arangoSearchMaxFilterableAmountOverride: options ? options.arangoSearchMaxFilterableAmountOverride : undefined
+                arangoSearchMaxFilterableAmountOverride: options ? options.arangoSearchMaxFilterableAndSortableAmount : undefined
             };
             queryTree = buildConditionalObjectQueryNode(rootQueryNode, rootType, operation.selectionSet, fieldContext);
             if (logger.isTraceEnabled()) {

@@ -113,12 +113,13 @@ query filter_below_max {
         quickSearchFilter:{
             deliveryNumber: "1000521"
         }
-        orderBy: id_ASC
+        filter: {
+            id_gt: 1
+        }
     ){
         deliveryNumber
     }
 }
-# @MSF TODO: filter
 
 query order_below_max {
     quickSearchDeliveries(
@@ -133,12 +134,13 @@ query order_below_max {
 
 query filter_above_max {
     quickSearchDeliveries(
-        orderBy: id_ASC
+        filter: {
+            id_gt: 1
+        }
     ){
         deliveryNumber
     }
 }
-# @MSF TODO: filter
 
 query order_above_max {
     quickSearchDeliveries(

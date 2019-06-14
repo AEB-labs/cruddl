@@ -55,7 +55,7 @@ export interface ExecutionOptions {
     /**
      * The maximum amount of objects that can be filtered (using a normal filter) or sorted in an ArangoSearch query
      */
-    readonly arangoSearchMaxFilterableAmountOverride?: number
+    readonly arangoSearchMaxFilterableAndSortableAmount?: number
 }
 
 export interface ExecutionOptionsCallbackArgs {
