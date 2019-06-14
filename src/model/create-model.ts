@@ -106,7 +106,7 @@ function createTypeInputs(parsedProject: ParsedProject, context: ValidationConte
                     namespacePath: getNamespacePath(definition, schemaPart.namespacePath),
                     astNode: definition,
                     kind: TypeKind.ENUM,
-                    values: createEnumValues(definition.values || [])
+                    values: createEnumValues(definition.values || []),
                 };
                 return enumTypeInput;
             case OBJECT_TYPE_DEFINITION:
@@ -133,8 +133,9 @@ function createObjectTypeInput(definition: ObjectTypeDefinitionNode, schemaPart:
         name: definition.name.value,
         description: definition.description ? definition.description.value : undefined,
         astNode: definition,
-        fields: (definition.fields || []).map(field => createFieldInput(field, context, definition)),
-        namespacePath: getNamespacePath(definition, schemaPart.namespacePath)
+        fields: (definition.fields || []).map(field => createFieldInput(field, context)),
+        namespacePath: getNamespacePath(definition, schemaPart.namespacePath),
+        quickSearchLanguage: getDefaultLanguage(definition, context)
     };
 
     switch (entityType) {
@@ -268,12 +269,12 @@ function getIsFulltextSearchable(fieldNode: FieldDefinitionNode, context: Valida
     return false;
 }
 
-function getDefaultLanguage(parentNode: ObjectTypeDefinitionNode, context: ValidationContext): QuickSearchLanguage | undefined {
+function getDefaultLanguage(objectTypeDefinitionNode: ObjectTypeDefinitionNode, context: ValidationContext): QuickSearchLanguage | undefined {
     let directive: DirectiveNode | undefined =
-        findDirectiveWithName(parentNode, ROOT_ENTITY_DIRECTIVE)
-        || findDirectiveWithName(parentNode, CHILD_ENTITY_DIRECTIVE)
-        || findDirectiveWithName(parentNode, VALUE_OBJECT_DIRECTIVE)
-        || findDirectiveWithName(parentNode, ENTITY_EXTENSION_DIRECTIVE);
+        findDirectiveWithName(objectTypeDefinitionNode, ROOT_ENTITY_DIRECTIVE)
+        || findDirectiveWithName(objectTypeDefinitionNode, CHILD_ENTITY_DIRECTIVE)
+        || findDirectiveWithName(objectTypeDefinitionNode, VALUE_OBJECT_DIRECTIVE)
+        || findDirectiveWithName(objectTypeDefinitionNode, ENTITY_EXTENSION_DIRECTIVE);
     if (!directive) {
         return undefined;
     }
@@ -290,8 +291,7 @@ function getDefaultLanguage(parentNode: ObjectTypeDefinitionNode, context: Valid
     }
 }
 
-function getLanguage(fieldNode: FieldDefinitionNode, context: ValidationContext, parentNode: ObjectTypeDefinitionNode): QuickSearchLanguage | undefined {
-    const defaultLanguage = getDefaultLanguage(parentNode, context);
+function getLanguage(fieldNode: FieldDefinitionNode, context: ValidationContext): QuickSearchLanguage | undefined {
 
     let directive: DirectiveNode | undefined = findDirectiveWithName(fieldNode, QUICK_SEARCH_FULLTEXT_INDEXED_DIRECTIVE);
     if (!directive) {
@@ -299,7 +299,7 @@ function getLanguage(fieldNode: FieldDefinitionNode, context: ValidationContext,
     }
     const argument: ArgumentNode | undefined = getNodeByName(directive.arguments, QUICK_SEARCH_INDEXED_LANGUAGE_ARG);
     if (!argument) {
-        return defaultLanguage;
+        return undefined;
     }
 
     if (argument.value.kind === 'EnumValue') {
@@ -310,7 +310,7 @@ function getLanguage(fieldNode: FieldDefinitionNode, context: ValidationContext,
     }
 }
 
-function createFieldInput(fieldNode: FieldDefinitionNode, context: ValidationContext, parentNode: ObjectTypeDefinitionNode): FieldConfig {
+function createFieldInput(fieldNode: FieldDefinitionNode, context: ValidationContext): FieldConfig {
     const inverseOfASTNode = getInverseOfASTNode(fieldNode, context);
     const referenceDirectiveASTNode = findDirectiveWithName(fieldNode, REFERENCE_DIRECTIVE);
     const referenceKeyFieldASTNode = getReferenceKeyFieldASTNode(fieldNode, context);
@@ -338,7 +338,7 @@ function createFieldInput(fieldNode: FieldDefinitionNode, context: ValidationCon
         isQuickSearchFulltextIndexedASTNode: findDirectiveWithName(fieldNode, QUICK_SEARCH_FULLTEXT_INDEXED_DIRECTIVE),
         isIncludedInSearch: getIsSearchable(fieldNode, context),
         isFulltextIncludedInSearch: getIsFulltextSearchable(fieldNode, context),
-        quickSearchLanguage: getLanguage(fieldNode, context, parentNode),
+        quickSearchLanguage: getLanguage(fieldNode, context),
         traversal: getTraversalConfig(fieldNode, context),
         aggregation: getAggregationConfig(fieldNode, context),
     };

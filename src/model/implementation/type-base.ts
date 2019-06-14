@@ -1,7 +1,7 @@
 import { NameNode, TypeDefinitionNode } from 'graphql';
 import memorize from 'memorize-decorator';
 import * as pluralize from 'pluralize';
-import { TypeConfig, TypeKind } from '../config';
+import { QuickSearchLanguage, TypeConfig, TypeKind } from '../config';
 import { ValidationMessage } from '../validation';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
 import { TypeLocalization } from './i18n';
@@ -16,6 +16,7 @@ export abstract class TypeBase implements ModelComponent {
     abstract readonly kind: TypeKind;
     readonly astNode: TypeDefinitionNode | undefined;
     readonly nameASTNode: NameNode | undefined;
+    private _quickSearchLanguage: QuickSearchLanguage | undefined;
 
     protected constructor(input: TypeConfig, public readonly model: Model) {
         this.astNode = input.astNode;
@@ -24,6 +25,7 @@ export abstract class TypeBase implements ModelComponent {
         this.namespacePath = input.namespacePath || [];
         this.description = input.description;
         this.pluralName = pluralize(this.name);
+        this._quickSearchLanguage = input.quickSearchLanguage;
     }
 
     validate(context: ValidationContext) {
@@ -61,6 +63,10 @@ export abstract class TypeBase implements ModelComponent {
     @memorize()
     get namespace(): Namespace {
         return this.model.getNamespaceByPathOrThrow(this.namespacePath);
+    }
+
+    get quickSearchLanguage(): QuickSearchLanguage | undefined{
+        return this._quickSearchLanguage
     }
 
     abstract readonly isObjectType: boolean = false;

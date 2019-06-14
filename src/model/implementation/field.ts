@@ -1,3 +1,4 @@
+import { text } from 'body-parser';
 import { DirectiveNode, FieldDefinitionNode, GraphQLFloat, GraphQLInt } from 'graphql';
 import memorize from 'memorize-decorator';
 import { AGGREGATION_DIRECTIVE, CALC_MUTATIONS_OPERATORS, RELATION_DIRECTIVE, TRAVERSAL_DIRECTIVE } from '../../schema/constants';
@@ -562,17 +563,35 @@ export class Field implements ModelComponent {
     }
 
     private validateQuickSearch(context: ValidationContext) {
-        if (this.isQuickSearchIndexed && !(this.type.isScalarType || this.type.isChildEntityType || this.type.isEntityExtensionType || this.type.isValueObjectType || this.type.isEnumType)) {
-            context.addMessage(ValidationMessage.error(`QuickSearchIndex is not supported on type "${this.type.name}".`, this.input.isQuickSearchIndexedASTNode));
-            return; // @MSF TODO: return after errors
-        } // @MSF TODO blacklist reference, relation, traversal and aggregation instead
+        const notSupportedOn = `QuickSearchIndex is not supported on`;
+        if (this.isQuickSearchIndexed && (this.isReference || this.isRelation || this.isTraversal || this.isAggregation)) {
+            if (this.isReference) {
+                context.addMessage(ValidationMessage.error(`${notSupportedOn} references.`, this.input.isQuickSearchIndexedASTNode));
+            } else if (this.isRelation) {
+                context.addMessage(ValidationMessage.error(`${notSupportedOn} relations.`, this.input.isQuickSearchIndexedASTNode));
+            } else if (this.isAggregation) {
+                context.addMessage(ValidationMessage.error(`${notSupportedOn} aggregations.`, this.input.isQuickSearchIndexedASTNode));
+            } else if (this.isTraversal) {
+                context.addMessage(ValidationMessage.error(`${notSupportedOn} traversals.`, this.input.isQuickSearchIndexedASTNode));
+            }
+            return;
+        }
         if (this.isQuickSearchFulltextIndexed && !(this.type.isScalarType && this.type.name === 'String')) {
-            context.addMessage(ValidationMessage.error(`QuickSearchFulltextIndex is not supported on type "${this.type.name}".`, this.input.isQuickSearchFulltextIndexedASTNode));
-        } // @MSF TODO blacklist traversal and aggregation
+            context.addMessage(ValidationMessage.error(`${notSupportedOn} type "${this.type.name}".`, this.input.isQuickSearchFulltextIndexedASTNode));
+            return;
+        }
+        if (this.isQuickSearchFulltextIndexed && this.isTraversal) {
+            context.addMessage(ValidationMessage.error(`${notSupportedOn} traversals".`, this.input.isQuickSearchFulltextIndexedASTNode));
+            return;
+        }
+        if (this.isQuickSearchFulltextIndexed && this.isAggregation) {
+            context.addMessage(ValidationMessage.error(`${notSupportedOn} aggregations".`, this.input.isQuickSearchFulltextIndexedASTNode));
+            return;
+        }
         if (this.isQuickSearchFulltextIndexed && !this.language) {
             context.addMessage(ValidationMessage.error(`QuickSearchFulltextIndex requires either a language parameter, or a defaultLanguage must be set in the entity.`, this.input.isQuickSearchFulltextIndexedASTNode));
         }
-        if(this.isQuickSearchIndexed && (this.type.isEntityExtensionType || this.type.isValueObjectType) && !this.type.fields.some(value => value.isQuickSearchIndexed || value.isQuickSearchFulltextIndexed)){
+        if (this.isQuickSearchIndexed && (this.type.isEntityExtensionType || this.type.isValueObjectType) && !this.type.fields.some(value => value.isQuickSearchIndexed || value.isQuickSearchFulltextIndexed)) {
             context.addMessage(ValidationMessage.error(`At least one field on type "${this.type.name}" must be quickSearchIndexed or quickSearchFulltextIndexed.`, this.input.isQuickSearchIndexedASTNode));
         }
         // @MSF TODO: write tests (see traversal.spec.ts)
@@ -595,11 +614,11 @@ export class Field implements ModelComponent {
     }
 
     get language(): QuickSearchLanguage | undefined {
-        return this.input.quickSearchLanguage; // @MSF TODO read Default language in model instead of config
+        return this.input.quickSearchLanguage ? this.input.quickSearchLanguage : this.declaringType.quickSearchLanguage;
     }
 }
 
-function getSupportedTypeNames(aggregator: FieldAggregator): ReadonlyArray<string>|undefined {
+function getSupportedTypeNames(aggregator: FieldAggregator): ReadonlyArray<string> | undefined {
     switch (aggregator) {
         case FieldAggregator.COUNT:
             return undefined;
