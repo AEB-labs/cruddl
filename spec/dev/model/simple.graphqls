@@ -9,7 +9,7 @@ type Hero @rootEntity(quickSearchIndex: true, quickSearchLanguage: DE) {
     fullTextEn: String @quickSearchFulltextIndex(language: EN)
     both: String @quickSearchIndex @quickSearchFulltextIndex @searchable
     age: Int @defaultValue(value: 42)
-    nickNames: [String]
+    nickNames: [String] @quickSearchIndex
     movies: [Movie] @relation(inverseOf: "heroes")
     skills: [Skill]
     skill: Skill @quickSearchIndex

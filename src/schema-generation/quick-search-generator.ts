@@ -128,7 +128,7 @@ export class QuickSearchGenerator {
                         ],
                         resultNode: new ConditionalQueryNode(
                             assertionVariable,
-                            new RuntimeErrorQueryNode('Too many objects'),
+                            new RuntimeErrorQueryNode('Too many objects',{code: 'QUICKSEARCH_TOO_MANY_OBJECTS'}), // @MSF TODO better error message and constant for code in query-tree/errors.ts
                             sourceNode)
                     });
                 } else {

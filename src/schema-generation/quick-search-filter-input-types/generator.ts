@@ -89,6 +89,9 @@ export class QuickSearchFilterTypeGenerator {
 
         }
 
+
+        // @TODO @MSF path[0].isList?
+        // @MSF investigate scalar fields e.g. nickNames
         const filterType = new QuickSearchFilterObjectType(type, getFields, path.length > 0 && path[0].isList);
         return filterType;
     }

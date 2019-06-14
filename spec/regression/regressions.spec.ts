@@ -25,6 +25,7 @@ describe('regression tests', async () => {
                     saveActualAsExpected: process.argv.includes('--save-actual-as-expected'),
                     trace: process.argv.includes('--log-trace'),
                     database
+                    // @MSF TODO filter -> --regression-test / regression test filter, and read here
                 };
                 const suite = new RegressionSuite(suitePath, options);
                 describe(suiteName, async () => {

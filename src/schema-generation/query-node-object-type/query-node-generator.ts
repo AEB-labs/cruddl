@@ -72,6 +72,8 @@ function buildFieldQueryNode0(sourceNode: QueryNode, field: QueryNodeField, fiel
     if (!queryTreeObjectType) {
         return fieldQueryNode;
     }
+    // @MSF TODO do transform after each case
+    // extract into new method completeQueryNode
 
     if (isListTypeIgnoringNonNull(field.type)) {
         // Note: previously, we had a safeguard here that converted non-lists to empty lists

@@ -65,7 +65,7 @@ export class RegressionSuite {
             processError: e => {
                 console.error(e.stack);
                 return e;
-            },
+            }, // @MSF TODO arangoSearchMaxFilterableAmountOverride better name or "andSortable"
             getExecutionOptions: ({ context }) => ({ authRoles: context.authRoles, arangoSearchMaxFilterableAmountOverride: context.arangoSearchMaxFilterableAmountOverride})
         };
         const warnLevelOptions = { ...generalOptions, loggerProvider: new Log4jsLoggerProvider('warn') };
@@ -165,7 +165,7 @@ export class RegressionSuite {
         const meta = fs.existsSync(metaPath) ? JSON.parse(stripJsonComments(fs.readFileSync(metaPath, 'utf-8'))) : {};
 
         if (meta.waitForArangoSearch) {
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await new Promise(resolve => setTimeout(resolve, 1000)); // @MSF TODO test with 3.5 and higher value
         }
 
         let actualResult: any;

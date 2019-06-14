@@ -2,7 +2,7 @@ import { getNamedType, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'gra
 import * as pluralize from 'pluralize';
 import { isArray } from 'util';
 import { Field, QuickSearchLanguage, TypeKind } from '../../model';
-import { BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, FieldPathQueryNode, LiteralQueryNode, QueryNode, QuickSearchExistsQueryNode } from '../../query-tree';
+import { BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, FieldPathQueryNode, LiteralQueryNode, QueryNode, QuickSearchFieldExistsQueryNode } from '../../query-tree';
 import { AND_FILTER_FIELD, FILTER_FIELD_PREFIX_SEPARATOR, INPUT_FIELD_EQUAL, INPUT_FIELD_NOT, INPUT_FIELD_NOT_STARTS_WITH, INPUT_FIELD_STARTS_WITH, OR_FILTER_FIELD } from '../../schema/constants';
 import { AnyValue, PlainObject } from '../../utils/utils';
 import { not } from '../filter-input-types/constants';
@@ -56,16 +56,17 @@ export class QuickSearchScalarOrEnumFieldFilterField implements QuickSearchFilte
             return new BinaryOperationQueryNode(
                 this.resolveOperator(valueNode, literalNode, this.quickSearchLanguage),
                 BinaryOperator.OR,
-                not(new QuickSearchExistsQueryNode(valueNode, this.quickSearchLanguage))
+                not(new QuickSearchFieldExistsQueryNode(valueNode, this.quickSearchLanguage))
             );
         }
         if ((this.operatorPrefix == INPUT_FIELD_NOT) && filterValue == null) {
             return new BinaryOperationQueryNode(
                 this.resolveOperator(valueNode, literalNode, this.quickSearchLanguage),
                 BinaryOperator.AND,
-                new QuickSearchExistsQueryNode(valueNode, this.quickSearchLanguage)
+                new QuickSearchFieldExistsQueryNode(valueNode, this.quickSearchLanguage)
             );
         }
+        // @MSF TODO return false if not_starts_with: ""
         if((this.operatorPrefix == INPUT_FIELD_STARTS_WITH || this.operatorPrefix == INPUT_FIELD_NOT_STARTS_WITH || STRING_TEXT_ANALYZER_FILTER_FIELDS.some(value => this.operatorPrefix === value)) && (filterValue == null || filterValue === "")){
             return new ConstBoolQueryNode(true);
         }
@@ -111,7 +112,7 @@ export class QuickSearchNestedObjectFilterField implements QuickSearchFilterFiel
     constructor(
         public readonly field: Field,
         public readonly inputType: QuickSearchFilterObjectType
-    ) {
+    ) { // @MSF TODO: prevent recursion
         this.name = this.field.isList ? this.field.name + NESTED_FIELD_SUFFIX : this.field.name;
         this.description = `Checks if \`${this.field.name}\` is not null, and allows to filter based on its fields.`;
         if (this.field.isReference && this.field.type.kind == TypeKind.ROOT_ENTITY && this.field.type.keyField) {
@@ -126,13 +127,13 @@ export class QuickSearchNestedObjectFilterField implements QuickSearchFilterFiel
             const node = new BinaryOperationQueryNode(
                 new BinaryOperationQueryNode(valueNode, BinaryOperator.EQUAL, literalNode),
                 BinaryOperator.OR,
-                not(new QuickSearchExistsQueryNode(valueNode))
+                not(new QuickSearchFieldExistsQueryNode(valueNode))
             );
             if (path.length > 0) {
                 return new BinaryOperationQueryNode(
                     node,
                     BinaryOperator.AND,
-                    new QuickSearchExistsQueryNode(new FieldPathQueryNode(sourceNode, path))
+                    new QuickSearchFieldExistsQueryNode(new FieldPathQueryNode(sourceNode, path))
                 );
             } else {
                 return node;

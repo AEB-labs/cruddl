@@ -45,14 +45,14 @@ export function getRequiredViewsFromModel(model: Model): ReadonlyArray<ArangoSea
         .map(rootEntity => getViewForRootEntity(rootEntity));
 }
 
-export function getViewNameForRootEntity(rootEntity: RootEntityType) {
+export function getQuickSearchViewNameForRootEntity(rootEntity: RootEntityType) {
     return QUICK_SEARCH_VIEW_PREFIX + getCollectionNameForRootEntity(rootEntity);
 }
 
 function getViewForRootEntity(rootEntity: RootEntityType): ArangoSearchDefinition {
     return {
         fields: rootEntity.fields.filter(value => value.isQuickSearchIndexed || value.isQuickSearchFulltextIndexed),
-        viewName: getViewNameForRootEntity(rootEntity),
+        viewName: getQuickSearchViewNameForRootEntity(rootEntity),
         collectionName: getCollectionNameForRootEntity(rootEntity)
     };
 

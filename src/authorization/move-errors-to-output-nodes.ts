@@ -37,6 +37,9 @@ export function moveErrorsToOutputNodes(queryTree: QueryNode): QueryNode {
                     clazz: node.constructor,
                     outputNodeKind: kind
                 });
+                if (errorList.length && kind === OutputNodeKind.OUTPUT) {
+                    return { recurse: false, newValue: node };
+                }
             }
             return { newValue: node };
         },

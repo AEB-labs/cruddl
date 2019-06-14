@@ -43,7 +43,7 @@ import {
     UpdateEntitiesQueryNode,
     VariableAssignmentQueryNode,
     VariableQueryNode,
-    WithPreExecutionQueryNode, FieldPathQueryNode, QuickSearchExistsQueryNode
+    WithPreExecutionQueryNode, FieldPathQueryNode, QuickSearchFieldExistsQueryNode
 } from '../../query-tree';
 import { Quantifier, QuantifierFilterNode } from '../../query-tree/quantifiers';
 import { extractVariableAssignments, simplifyBooleans } from '../../query-tree/utils';
@@ -53,7 +53,7 @@ import { ArangoSearchNotSupportedError } from '../inmemory/js-generator';
 import { analyzeLikePatternPrefix } from '../like-helpers';
 import { aql, AQLCompoundQuery, aqlConfig, AQLFragment, AQLQueryResultVariable, AQLVariable } from './aql';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './arango-basics';
-import { getViewNameForRootEntity, IDENTITY_ANALYZER } from './schema-migration/arango-search-helpers';
+import { getQuickSearchViewNameForRootEntity, IDENTITY_ANALYZER } from './schema-migration/arango-search-helpers';
 import { QuickSearchComplexOperatorQueryNode, QuickSearchQueryNode } from '../../query-tree/quick-search';
 
 enum AccessType {
@@ -346,9 +346,9 @@ function getFieldAccessFragment(field: Field) {
     return aql`[${identifier}]`;
 }
 
-function getFieldPathAccessFragment(path?: ReadonlyArray<Field>): AQLFragment {
-    if (path && path.length > 0) {
-        return aql`.${aql.identifier(path[0].name)}${getFieldPathAccessFragment(path.slice(1))}`;
+function getFieldPathAccessFragment(path: ReadonlyArray<Field>): AQLFragment {
+    if (path.length > 0) {
+        return aql`${getFieldAccessFragment(path[0])}${getFieldPathAccessFragment(path.slice(1))}`;
     } else {
         return aql``;
     }
@@ -363,7 +363,7 @@ register(QuickSearchQueryNode, (node, context) => {
     let itemContext = context.introduceVariable(node.itemVariable);
     return aqlExt.parenthesizeList(
         aql`FOR ${itemContext.getVariable(node.itemVariable)}`,
-        aql`IN ${aql.identifier(getViewNameForRootEntity(node.rootEntityType!))}`,
+        aql`IN ${aql.identifier(getQuickSearchViewNameForRootEntity(node.rootEntityType!))}`,
         aql`SEARCH ${processNode(node.qsFilterNode, itemContext)}`,
         aql`RETURN ${itemContext.getVariable(node.itemVariable)}`
     );
@@ -559,7 +559,7 @@ register(OperatorWithLanguageQueryNode, (node, context) => {
     const analyzer = node.quickSearchLanguage ? `text_${node.quickSearchLanguage.toLowerCase()}` : IDENTITY_ANALYZER;
 
     switch (node.operator) {
-        case BinaryOperatorWithLanguage.QUICKSEARCH_STARTS_WITH:
+        case BinaryOperatorWithLanguage.QUICKSEARCH_STARTS_WITH: // @MSF TODO quickSearchStartsWith querynode and language not optional
             return aql`STARTS_WITH(${lhs},${rhs})`;
         case BinaryOperatorWithLanguage.QUICKSEARCH_CONTAINS_ANY_WORD:
             return aql`ANALYZER( ${lhs} IN TOKENS(${rhs}, ${analyzer}),${analyzer})`;
@@ -573,7 +573,7 @@ register(OperatorWithLanguageQueryNode, (node, context) => {
 
 });
 
-register(QuickSearchExistsQueryNode, (node, context) => {
+register(QuickSearchFieldExistsQueryNode, (node, context) => {
     const sourceNode = processNode(node.sourceNode, context);
     const analyzer = node.quickSearchLanguage ? `text_${node.quickSearchLanguage.toLowerCase()}` : IDENTITY_ANALYZER;
 

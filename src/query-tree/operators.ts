@@ -176,7 +176,7 @@ export class OperatorWithLanguageQueryNode extends QueryNode {
 /**
  * A node that performs an EXISTS Check
  */
-export class QuickSearchExistsQueryNode extends QueryNode {
+export class QuickSearchFieldExistsQueryNode extends QueryNode {
     constructor(public readonly sourceNode: QueryNode, public readonly quickSearchLanguage?: QuickSearchLanguage) {
         super();
     }

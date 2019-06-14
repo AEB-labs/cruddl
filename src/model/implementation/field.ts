@@ -564,10 +564,11 @@ export class Field implements ModelComponent {
     private validateQuickSearch(context: ValidationContext) {
         if (this.isQuickSearchIndexed && !(this.type.isScalarType || this.type.isChildEntityType || this.type.isEntityExtensionType || this.type.isValueObjectType || this.type.isEnumType)) {
             context.addMessage(ValidationMessage.error(`QuickSearchIndex is not supported on type "${this.type.name}".`, this.input.isQuickSearchIndexedASTNode));
-        }
+            return; // @MSF TODO: return after errors
+        } // @MSF TODO blacklist reference, relation, traversal and aggregation instead
         if (this.isQuickSearchFulltextIndexed && !(this.type.isScalarType && this.type.name === 'String')) {
             context.addMessage(ValidationMessage.error(`QuickSearchFulltextIndex is not supported on type "${this.type.name}".`, this.input.isQuickSearchFulltextIndexedASTNode));
-        }
+        } // @MSF TODO blacklist traversal and aggregation
         if (this.isQuickSearchFulltextIndexed && !this.language) {
             context.addMessage(ValidationMessage.error(`QuickSearchFulltextIndex requires either a language parameter, or a defaultLanguage must be set in the entity.`, this.input.isQuickSearchFulltextIndexedASTNode));
         }
@@ -577,6 +578,7 @@ export class Field implements ModelComponent {
         if(this.isQuickSearchIndexed && (this.type.isEntityExtensionType || this.type.isValueObjectType) && !this.type.fields.some(value => value.isQuickSearchIndexed || value.isQuickSearchFulltextIndexed)){
             context.addMessage(ValidationMessage.error(`At least one field on type "${this.type.name}" must be quickSearchIndexed or quickSearchFulltextIndexed.`, this.input.isQuickSearchIndexedASTNode));
         }
+        // @MSF TODO: write tests (see traversal.spec.ts)
     }
 
     get isQuickSearchIndexed(): boolean {
@@ -592,7 +594,7 @@ export class Field implements ModelComponent {
     }
 
     get language(): QuickSearchLanguage | undefined {
-        return this.input.quickSearchLanguage;
+        return this.input.quickSearchLanguage; // @MSF TODO read Default language in model instead of config
     }
 }
 

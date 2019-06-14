@@ -118,8 +118,29 @@ query filter_below_max {
         deliveryNumber
     }
 }
+# @MSF TODO: filter
+
+query order_below_max {
+    quickSearchDeliveries(
+        quickSearchFilter:{
+            deliveryNumber: "1000521"
+        }
+        orderBy: id_ASC
+    ){
+        deliveryNumber
+    }
+}
 
 query filter_above_max {
+    quickSearchDeliveries(
+        orderBy: id_ASC
+    ){
+        deliveryNumber
+    }
+}
+# @MSF TODO: filter
+
+query order_above_max {
     quickSearchDeliveries(
         orderBy: id_ASC
     ){
