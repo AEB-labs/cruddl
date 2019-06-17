@@ -15,6 +15,11 @@ import { Relation, RelationSide } from './relation';
 import { RolesSpecifier } from './roles-specifier';
 import { InvalidType, ObjectType, Type } from './type';
 
+export interface SystemFieldConfig extends FieldConfig {
+    readonly isSystemField?: boolean
+    readonly isNonNull?: boolean
+}
+
 export class Field implements ModelComponent {
     readonly model: Model;
     readonly name: string;
@@ -39,7 +44,7 @@ export class Field implements ModelComponent {
      */
     readonly isSystemField: boolean;
 
-    constructor(private readonly input: FieldConfig & { isSystemField?: boolean }, public readonly declaringType: ObjectType) {
+    constructor(private readonly input: SystemFieldConfig, public readonly declaringType: ObjectType) {
         this.model = declaringType.model;
         this.name = input.name;
         this.description = input.description;
@@ -67,6 +72,10 @@ export class Field implements ModelComponent {
      */
     get isReadOnly(): boolean {
         return this.isSystemField;
+    }
+
+    get isNonNull(): boolean {
+        return this.input.isNonNull || this.isList || this.type.isEntityExtensionType;
     }
 
     public get type(): Type {

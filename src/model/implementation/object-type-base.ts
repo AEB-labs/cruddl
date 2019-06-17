@@ -2,7 +2,7 @@ import { groupBy } from 'lodash';
 import { objectValues } from '../../utils/utils';
 import { FieldConfig, ObjectTypeConfig } from '../config';
 import { ValidationContext, ValidationMessage } from '../validation';
-import { Field } from './field';
+import { Field, SystemFieldConfig } from './field';
 import { Model } from './model';
 import { ObjectType } from './type';
 import { TypeBase } from './type-base';
@@ -11,7 +11,7 @@ export abstract class ObjectTypeBase extends TypeBase {
     readonly fields: ReadonlyArray<Field>;
     private readonly fieldMap: ReadonlyMap<string, Field>;
 
-    protected constructor(input: ObjectTypeConfig, model: Model, systemFieldInputs: ReadonlyArray<FieldConfig> = []) {
+    protected constructor(input: ObjectTypeConfig, model: Model, systemFieldInputs: ReadonlyArray<SystemFieldConfig> = []) {
         super(input, model);
         const thisAsObjectType: ObjectType = this as any;
         const customFields = (input.fields || []).map(field => new Field(field, thisAsObjectType));
