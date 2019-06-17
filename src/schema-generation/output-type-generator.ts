@@ -107,7 +107,7 @@ export class OutputTypeGenerator {
         const type = this.generate(field.type);
         const schemaField: QueryNodeField = {
             name: field.name,
-            type: field.isList ? makeNonNullableList(type) : type,
+            type: field.isList ? makeNonNullableList(type) : field.isNonNull ? new QueryNodeNonNullType(type) : type,
             description: field.description,
 
             // normally, entity extensions are converted to an empty object if null, and normally query field nodes have
