@@ -1,4 +1,4 @@
-import { assertValidatorAccepts, assertValidatorRejects, assertValidatorWarns } from './helpers';
+import { assertValidatorAccepts, assertValidatorAcceptsAndDoesNotWarn, assertValidatorRejects, assertValidatorWarns } from './helpers';
 
 describe('check-directed-relation-edges-validator', () => {
 
@@ -49,6 +49,18 @@ describe('check-directed-relation-edges-validator', () => {
             type Foo @rootEntity { bar: Bar @relation }
             type Bar @rootEntity { foo: Foo @relation }
         `, 'This field and "Bar.foo" define separate relations. Consider using the "inverseOf" argument to add a backlink to an existing relation.');
+    });
+
+    it('accepts self-relation with backlink', () => {
+        assertValidatorAcceptsAndDoesNotWarn(`
+            type Foo @rootEntity { children: [Foo] @relation, parent: Foo @relation(inverseOf: "children") }
+        `);
+    });
+
+    it('accepts self-relation without backlink', () => {
+        assertValidatorAcceptsAndDoesNotWarn(`
+            type Foo @rootEntity { children: [Foo] @relation }
+        `);
     });
 
     // value checker rule is currently disabled (TODO re-enable when graphqljs 0.13 is used)
