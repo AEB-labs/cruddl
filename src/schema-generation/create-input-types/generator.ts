@@ -93,7 +93,7 @@ export class CreateInputTypeGenerator {
                 }
             }
 
-            if (field.isTraversal || field.isAggregation) {
+            if (field.isCollectField || field.isCollectField) {
                 // traversal and aggregation fields are read-only
                 return [];
             }

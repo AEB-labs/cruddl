@@ -2,10 +2,10 @@ import { ArgumentNode, EnumValueDefinitionNode, FieldDefinitionNode, GraphQLBool
 import { ParsedGraphQLProjectSource, ParsedObjectProjectSource, ParsedProject, ParsedProjectSourceBaseKind } from '../config/parsed-project';
 import { ENUM, ENUM_TYPE_DEFINITION, LIST, LIST_TYPE, NON_NULL_TYPE, OBJECT, OBJECT_TYPE_DEFINITION, STRING } from '../graphql/kinds';
 import { getValueFromAST } from '../graphql/value-from-ast';
-import { AGGREGATION_AGGREGATOR_ARG, AGGREGATION_DIRECTIVE, AGGREGATION_PATH_ARG, CALC_MUTATIONS_DIRECTIVE, CALC_MUTATIONS_OPERATORS_ARG, CHILD_ENTITY_DIRECTIVE, DEFAULT_VALUE_DIRECTIVE, ENTITY_EXTENSION_DIRECTIVE, ID_FIELD, INDEX_DEFINITION_INPUT_TYPE, INDEX_DIRECTIVE, INDICES_ARG, INVERSE_OF_ARG, KEY_FIELD_ARG, KEY_FIELD_DIRECTIVE, NAMESPACE_DIRECTIVE, NAMESPACE_NAME_ARG, NAMESPACE_SEPARATOR, OBJECT_TYPE_KIND_DIRECTIVES, PERMISSION_PROFILE_ARG, REFERENCE_DIRECTIVE, RELATION_DIRECTIVE, ROLES_DIRECTIVE, ROLES_READ_ARG, ROLES_READ_WRITE_ARG, ROOT_ENTITY_DIRECTIVE, TRAVERSAL_DIRECTIVE, TRAVERSAL_PATH_ARG, UNIQUE_DIRECTIVE, VALUE_ARG, VALUE_OBJECT_DIRECTIVE } from '../schema/constants';
+import { CALC_MUTATIONS_DIRECTIVE, CALC_MUTATIONS_OPERATORS_ARG, CHILD_ENTITY_DIRECTIVE, COLLECT_AGGREGATE_ARG, COLLECT_DIRECTIVE, COLLECT_PATH_ARG, DEFAULT_VALUE_DIRECTIVE, ENTITY_EXTENSION_DIRECTIVE, ID_FIELD, INDEX_DEFINITION_INPUT_TYPE, INDEX_DIRECTIVE, INDICES_ARG, INVERSE_OF_ARG, KEY_FIELD_ARG, KEY_FIELD_DIRECTIVE, NAMESPACE_DIRECTIVE, NAMESPACE_NAME_ARG, NAMESPACE_SEPARATOR, OBJECT_TYPE_KIND_DIRECTIVES, PERMISSION_PROFILE_ARG, REFERENCE_DIRECTIVE, RELATION_DIRECTIVE, ROLES_DIRECTIVE, ROLES_READ_ARG, ROLES_READ_WRITE_ARG, ROOT_ENTITY_DIRECTIVE, UNIQUE_DIRECTIVE, VALUE_ARG, VALUE_OBJECT_DIRECTIVE } from '../schema/constants';
 import { findDirectiveWithName, getNamedTypeNodeIgnoringNonNullAndList, getNodeByName, getTypeNameIgnoringNonNullAndList } from '../schema/schema-utils';
 import { compact, flatMap, mapValues } from '../utils/utils';
-import { AggregationConfig, CalcMutationsOperator, EnumTypeConfig, EnumValueConfig, FieldAggregator, FieldConfig, IndexDefinitionConfig, LocalizationConfig, NamespacedPermissionProfileConfigMap, ObjectTypeConfig, PermissionProfileConfigMap, PermissionsConfig, RolesSpecifierConfig, TraversalConfig, TypeConfig, TypeKind } from './config';
+import { AggregationOperator, CalcMutationsOperator, CollectFieldConfig, EnumTypeConfig, EnumValueConfig, FieldConfig, IndexDefinitionConfig, LocalizationConfig, NamespacedPermissionProfileConfigMap, ObjectTypeConfig, PermissionProfileConfigMap, PermissionsConfig, RolesSpecifierConfig, TypeConfig, TypeKind } from './config';
 import { Model } from './implementation';
 import { parseI18nConfigs } from './parse-i18n';
 import { ValidationContext, ValidationMessage } from './validation';
@@ -185,8 +185,7 @@ function createFieldInput(fieldNode: FieldDefinitionNode, context: ValidationCon
         permissions: getPermissions(fieldNode, context),
         typeName: getTypeNameIgnoringNonNullAndList(fieldNode.type),
         typeNameAST: getNamedTypeNodeIgnoringNonNullAndList(fieldNode.type).name,
-        traversal: getTraversalConfig(fieldNode, context),
-        aggregation: getAggregationConfig(fieldNode, context),
+        collect: getCollectConfig(fieldNode, context)
     };
 }
 
@@ -430,61 +429,37 @@ function getReferenceKeyFieldASTNode(fieldNode: FieldDefinitionNode, context: Va
     return keyFieldArg.value;
 }
 
-function getTraversalConfig(fieldNode: FieldDefinitionNode, context: ValidationContext): TraversalConfig | undefined {
-    const directive = findDirectiveWithName(fieldNode, TRAVERSAL_DIRECTIVE);
+function getCollectConfig(fieldNode: FieldDefinitionNode, context: ValidationContext): CollectFieldConfig | undefined {
+    const directive = findDirectiveWithName(fieldNode, COLLECT_DIRECTIVE);
     if (!directive) {
         return undefined;
     }
-    const pathArg = getNodeByName(directive.arguments, TRAVERSAL_PATH_ARG);
+    const pathArg = getNodeByName(directive.arguments, COLLECT_PATH_ARG);
     if (!pathArg) {
-        context.addMessage(ValidationMessage.error(`Argument "${TRAVERSAL_PATH_ARG}" is missing`, directive.loc));
+        context.addMessage(ValidationMessage.error(`Argument "${COLLECT_PATH_ARG}" is missing`, directive.loc));
         return undefined;
     }
     if (pathArg.value.kind !== STRING) {
         // should be caught by the graphql validator anyway...
-        context.addMessage(ValidationMessage.error(`The argument "${TRAVERSAL_PATH_ARG}" must be of type String`, pathArg.value.loc));
+        context.addMessage(ValidationMessage.error(`The argument "${COLLECT_PATH_ARG}" must be of type String`, pathArg.value.loc));
         return undefined;
     }
-    return {
-        astNode: directive,
-        path: pathArg.value.value,
-        pathASTNode: pathArg.value
-    };
-}
-
-function getAggregationConfig(fieldNode: FieldDefinitionNode, context: ValidationContext): AggregationConfig | undefined {
-    const directive = findDirectiveWithName(fieldNode, AGGREGATION_DIRECTIVE);
-    if (!directive) {
-        return undefined;
-    }
-    const pathArg = getNodeByName(directive.arguments, AGGREGATION_PATH_ARG);
-    if (!pathArg) {
-        context.addMessage(ValidationMessage.error(`Argument "${AGGREGATION_PATH_ARG}" is missing`, directive.loc));
-        return undefined;
-    }
-    if (pathArg.value.kind !== STRING) {
+    const aggregateArg = getNodeByName(directive.arguments, COLLECT_AGGREGATE_ARG);
+    const aggregateValueNode = aggregateArg && aggregateArg.value;
+    if (aggregateValueNode && aggregateValueNode.kind !== 'EnumValue') {
         // should be caught by the graphql validator anyway...
-        context.addMessage(ValidationMessage.error(`The argument "${AGGREGATION_PATH_ARG}" must be of type String`, pathArg.value.loc));
-        return undefined;
-    }
-    const aggregatorArg = getNodeByName(directive.arguments, AGGREGATION_AGGREGATOR_ARG);
-    if (!aggregatorArg) {
-        context.addMessage(ValidationMessage.error(`Argument "${AGGREGATION_AGGREGATOR_ARG}" is missing`, directive.loc));
-        return undefined;
-    }
-    if (aggregatorArg.value.kind !== 'EnumValue') {
-        // should be caught by the graphql validator anyway...
-        context.addMessage(ValidationMessage.error(`The argument "${AGGREGATION_AGGREGATOR_ARG}" must be an enum value`, pathArg.value.loc));
+        context.addMessage(ValidationMessage.error(`The argument "${COLLECT_AGGREGATE_ARG}" must be an enum value`, pathArg.value.loc));
         return undefined;
     }
     return {
         astNode: directive,
         path: pathArg.value.value,
         pathASTNode: pathArg.value,
-        aggregator: aggregatorArg.value.value as FieldAggregator,
-        aggregatorASTNode: aggregatorArg.value
+        aggregationOperator: aggregateValueNode && aggregateValueNode.value as AggregationOperator,
+        aggregationOperatorASTNode: aggregateValueNode
     };
 }
+
 
 function extractPermissionProfiles(parsedProject: ParsedProject): ReadonlyArray<NamespacedPermissionProfileConfigMap> {
     return compact(parsedProject.sources.map((source): NamespacedPermissionProfileConfigMap | undefined => {

@@ -1,8 +1,7 @@
 import { expect } from 'chai';
-import { Model, TypeKind, ValidationContext } from '../../../src/model';
-import { FieldPath, PathSegment } from '../../../src/model/implementation/field-path';
+import { CollectPath, Model, CollectPathSegment, TypeKind, ValidationContext } from '../../../src/model';
 
-describe('TraversalPath', () => {
+describe('CollectPath', () => {
     const model = new Model({
         types: [
             {
@@ -58,6 +57,29 @@ describe('TraversalPath', () => {
                     }
                 ]
             }, {
+                name: 'PurchaseOrder',
+                kind: TypeKind.ROOT_ENTITY,
+                fields: [
+                    {
+                        name: 'handlingUnits',
+                        typeName: 'HandlingUnit',
+                        isList: true,
+                        isRelation: true
+                    },
+                    {
+                        name: 'delivery',
+                        typeName: 'Delivery',
+                        isRelation: true,
+                        inverseOfFieldName: 'order'
+                    },
+                    {
+                        name: 'shipment',
+                        typeName: 'Shipment',
+                        isRelation: true,
+                        inverseOfFieldName: 'purchaseOrder'
+                    }
+                ]
+            }, {
                 name: 'Shipment',
                 kind: TypeKind.ROOT_ENTITY,
                 fields: [
@@ -75,6 +97,11 @@ describe('TraversalPath', () => {
                         name: 'order',
                         typeName: 'Order',
                         isRelation: true
+                    },
+                    {
+                        name: 'purchaseOrder',
+                        typeName: 'PurchaseOrder',
+                        isRelation: true
                     }
                 ]
             }, {
@@ -90,6 +117,12 @@ describe('TraversalPath', () => {
                         typeName: 'HandlingUnit',
                         isList: true,
                         isRelation: true
+                    },
+                    {
+                        name: 'parentHandlingUnit',
+                        typeName: 'HandlingUnit',
+                        isRelation: true,
+                        inverseOfFieldName: 'childHandlingUnits'
                     },
                     {
                         name: 'items',
@@ -138,12 +171,13 @@ describe('TraversalPath', () => {
     const shipmentType = model.getRootEntityTypeOrThrow('Shipment');
     const handlingUnitType = model.getRootEntityTypeOrThrow('HandlingUnit');
     const orderType = model.getRootEntityTypeOrThrow('Order');
+    const purchaseOrderType = model.getRootEntityTypeOrThrow('PurchaseOrder');
     const itemType = model.getChildEntityTypeOrThrow('Item');
     const dangerousGoodsInfoType = model.getEntityExtensionTypeOrThrow('DangerousGoodsInfo');
     const deliveryContentType = model.getChildEntityTypeOrThrow('DeliveryContent');
     const deliveryType = model.getRootEntityTypeOrThrow('Delivery');
 
-    function assertSegmentsEqual(path: FieldPath, expectedSegments: ReadonlyArray<PathSegment>) {
+    function assertSegmentsEqual(path: CollectPath, expectedSegments: ReadonlyArray<CollectPathSegment>) {
         const context = new ValidationContext();
         path.validate(context);
         const errors = context.asResult().getErrors();
@@ -162,7 +196,7 @@ describe('TraversalPath', () => {
     }
 
     it('resolves direct to-n relations', () => {
-        const path = new FieldPath({ path: 'shipments' }, deliveryType);
+        const path = new CollectPath({ path: 'shipments' }, deliveryType);
         const shipmentsField = deliveryType.getFieldOrThrow('shipments');
         assertSegmentsEqual(path, [
             {
@@ -170,6 +204,9 @@ describe('TraversalPath', () => {
                 resultingType: shipmentType,
                 isListSegment: true,
                 resultIsList: true,
+                isNullableSegment: false,
+                resultIsNullable: false,
+                resultMayContainDuplicateEntities: false,
                 minDepth: 1,
                 maxDepth: 1,
                 field: shipmentsField,
@@ -180,7 +217,7 @@ describe('TraversalPath', () => {
     });
 
     it('resolves direct to-1 relations', () => {
-        const path = new FieldPath({ path: 'order' }, deliveryType);
+        const path = new CollectPath({ path: 'order' }, deliveryType);
         const orderField = deliveryType.getFieldOrThrow('order');
         assertSegmentsEqual(path, [
             {
@@ -188,6 +225,9 @@ describe('TraversalPath', () => {
                 resultingType: orderType,
                 isListSegment: false,
                 resultIsList: false,
+                isNullableSegment: true,
+                resultIsNullable: true,
+                resultMayContainDuplicateEntities: false,
                 minDepth: 1,
                 maxDepth: 1,
                 field: orderField,
@@ -198,7 +238,7 @@ describe('TraversalPath', () => {
     });
 
     it('resolves to-n-then-to-n relations', () => {
-        const path = new FieldPath({ path: 'shipments.handlingUnits' }, deliveryType);
+        const path = new CollectPath({ path: 'shipments.handlingUnits' }, deliveryType);
         const shipmentsField = deliveryType.getFieldOrThrow('shipments');
         const handlingUnitsField = shipmentType.getFieldOrThrow('handlingUnits');
         assertSegmentsEqual(path, [
@@ -207,6 +247,9 @@ describe('TraversalPath', () => {
                 resultingType: shipmentType,
                 isListSegment: true,
                 resultIsList: true,
+                isNullableSegment: false,
+                resultIsNullable: false,
+                resultMayContainDuplicateEntities: false,
                 minDepth: 1,
                 maxDepth: 1,
                 field: shipmentsField,
@@ -217,6 +260,9 @@ describe('TraversalPath', () => {
                 resultingType: handlingUnitType,
                 isListSegment: true,
                 resultIsList: true,
+                isNullableSegment: false,
+                resultIsNullable: false,
+                resultMayContainDuplicateEntities: true, // shipments->handling units is m:n
                 minDepth: 1,
                 maxDepth: 1,
                 field: handlingUnitsField,
@@ -227,7 +273,7 @@ describe('TraversalPath', () => {
     });
 
     it('resolves to-1-then-to-n relations', () => {
-        const path = new FieldPath({ path: 'order.handlingUnits' }, deliveryType);
+        const path = new CollectPath({ path: 'order.handlingUnits' }, deliveryType);
         const orderField = deliveryType.getFieldOrThrow('order');
         const handlingUnitsField = orderType.getFieldOrThrow('handlingUnits');
         assertSegmentsEqual(path, [
@@ -236,6 +282,9 @@ describe('TraversalPath', () => {
                 resultingType: orderType,
                 isListSegment: false,
                 resultIsList: false,
+                isNullableSegment: true,
+                resultIsNullable: true,
+                resultMayContainDuplicateEntities: false,
                 minDepth: 1,
                 maxDepth: 1,
                 field: orderField,
@@ -246,6 +295,9 @@ describe('TraversalPath', () => {
                 resultingType: handlingUnitType,
                 isListSegment: true,
                 resultIsList: true,
+                isNullableSegment: false,
+                resultIsNullable: false,
+                resultMayContainDuplicateEntities: false,
                 minDepth: 1,
                 maxDepth: 1,
                 field: handlingUnitsField,
@@ -255,30 +307,72 @@ describe('TraversalPath', () => {
         expect(path.resultingType).to.equal(handlingUnitType);
     });
 
-    it('resolves to-n-then-to-1 relations', () => {
-        const path = new FieldPath({ path: 'shipments.order' }, deliveryType);
-        const orderField = deliveryType.getFieldOrThrow('shipments');
-        const deliveryField = shipmentType.getFieldOrThrow('order');
+    it('resolves to-n-then-1-to-1 relations', () => {
+        const path = new CollectPath({ path: 'shipments.purchaseOrder' }, deliveryType);
+        const shipmentsField = deliveryType.getFieldOrThrow('shipments');
+        const purchaseOrderField = shipmentType.getFieldOrThrow('purchaseOrder');
         assertSegmentsEqual(path, [
             {
                 kind: 'relation',
                 resultingType: shipmentType,
                 isListSegment: true,
                 resultIsList: true,
+                isNullableSegment: false,
+                resultIsNullable: false,
+                resultMayContainDuplicateEntities: false,
                 minDepth: 1,
                 maxDepth: 1,
-                field: orderField,
-                relationSide: orderField.getRelationSideOrThrow()
+                field: shipmentsField,
+                relationSide: shipmentsField.getRelationSideOrThrow()
+            },
+            {
+                kind: 'relation',
+                resultingType: purchaseOrderType,
+                isListSegment: false,
+                resultIsList: true,
+                isNullableSegment: true,
+                resultIsNullable: true,
+                resultMayContainDuplicateEntities: false,
+                minDepth: 1,
+                maxDepth: 1,
+                field: purchaseOrderField,
+                relationSide: purchaseOrderField.getRelationSideOrThrow()
+            }
+        ] as const);
+        expect(path.resultingType).to.equal(purchaseOrderType);
+        expect(path.resultIsList).to.equal(true);
+    });
+
+    it('resolves to-n-then-n-to-1 relations', () => {
+        const path = new CollectPath({ path: 'shipments.order' }, deliveryType);
+        const shipmentsField = deliveryType.getFieldOrThrow('shipments');
+        const orderField = shipmentType.getFieldOrThrow('order');
+        assertSegmentsEqual(path, [
+            {
+                kind: 'relation',
+                resultingType: shipmentType,
+                isListSegment: true,
+                resultIsList: true,
+                isNullableSegment: false,
+                resultIsNullable: false,
+                resultMayContainDuplicateEntities: false,
+                minDepth: 1,
+                maxDepth: 1,
+                field: shipmentsField,
+                relationSide: shipmentsField.getRelationSideOrThrow()
             },
             {
                 kind: 'relation',
                 resultingType: orderType,
                 isListSegment: false,
                 resultIsList: true,
+                isNullableSegment: true,
+                resultIsNullable: true,
+                resultMayContainDuplicateEntities: true, // this here actually differs from the previous test
                 minDepth: 1,
                 maxDepth: 1,
-                field: deliveryField,
-                relationSide: deliveryField.getRelationSideOrThrow()
+                field: orderField,
+                relationSide: orderField.getRelationSideOrThrow()
             }
         ] as const);
         expect(path.resultingType).to.equal(orderType);
@@ -286,7 +380,7 @@ describe('TraversalPath', () => {
     });
 
     it('resolves to-1-then-to-1 relations', () => {
-        const path = new FieldPath({ path: 'order.delivery' }, deliveryType);
+        const path = new CollectPath({ path: 'order.delivery' }, deliveryType);
         const orderField = deliveryType.getFieldOrThrow('order');
         const deliveryField = orderType.getFieldOrThrow('delivery');
         assertSegmentsEqual(path, [
@@ -295,6 +389,9 @@ describe('TraversalPath', () => {
                 resultingType: orderType,
                 isListSegment: false,
                 resultIsList: false,
+                isNullableSegment: true,
+                resultIsNullable: true,
+                resultMayContainDuplicateEntities: false,
                 minDepth: 1,
                 maxDepth: 1,
                 field: orderField,
@@ -305,6 +402,9 @@ describe('TraversalPath', () => {
                 resultingType: deliveryType,
                 isListSegment: false,
                 resultIsList: false,
+                isNullableSegment: true,
+                resultIsNullable: true,
+                resultMayContainDuplicateEntities: false,
                 minDepth: 1,
                 maxDepth: 1,
                 field: deliveryField,
@@ -316,7 +416,7 @@ describe('TraversalPath', () => {
     });
 
     it('resolves recursive relations', () => {
-        const path = new FieldPath({ path: 'handlingUnits.childHandlingUnits.childHandlingUnits' }, deliveryType);
+        const path = new CollectPath({ path: 'handlingUnits.childHandlingUnits.childHandlingUnits' }, deliveryType);
         const handlingUnitsField = deliveryType.getFieldOrThrow('handlingUnits');
         const childHandlingUnitsField = handlingUnitType.getFieldOrThrow('childHandlingUnits');
         assertSegmentsEqual(path, [
@@ -325,6 +425,9 @@ describe('TraversalPath', () => {
                 resultingType: handlingUnitType,
                 isListSegment: true,
                 resultIsList: true,
+                isNullableSegment: false,
+                resultIsNullable: false,
+                resultMayContainDuplicateEntities: false,
                 minDepth: 1,
                 maxDepth: 1,
                 field: handlingUnitsField,
@@ -335,6 +438,9 @@ describe('TraversalPath', () => {
                 resultingType: handlingUnitType,
                 isListSegment: true,
                 resultIsList: true,
+                isNullableSegment: false,
+                resultIsNullable: false,
+                resultMayContainDuplicateEntities: false, // childHandlingUnits is a 1-to-n relation
                 minDepth: 1,
                 maxDepth: 1,
                 field: childHandlingUnitsField,
@@ -345,6 +451,9 @@ describe('TraversalPath', () => {
                 resultingType: handlingUnitType,
                 isListSegment: true,
                 resultIsList: true,
+                isNullableSegment: false,
+                resultIsNullable: false,
+                resultMayContainDuplicateEntities: false,
                 minDepth: 1,
                 maxDepth: 1,
                 field: childHandlingUnitsField,
@@ -355,7 +464,7 @@ describe('TraversalPath', () => {
     });
 
     it('resolves relations with exact depth specifier', () => {
-        const path = new FieldPath({ path: 'handlingUnits.childHandlingUnits{2}' }, deliveryType);
+        const path = new CollectPath({ path: 'handlingUnits.childHandlingUnits{2}' }, deliveryType);
         const handlingUnitsField = deliveryType.getFieldOrThrow('handlingUnits');
         const childHandlingUnitsField = handlingUnitType.getFieldOrThrow('childHandlingUnits');
         assertSegmentsEqual(path, [
@@ -364,6 +473,9 @@ describe('TraversalPath', () => {
                 resultingType: handlingUnitType,
                 isListSegment: true,
                 resultIsList: true,
+                isNullableSegment: false,
+                resultIsNullable: false,
+                resultMayContainDuplicateEntities: false,
                 minDepth: 1,
                 maxDepth: 1,
                 field: handlingUnitsField,
@@ -374,6 +486,9 @@ describe('TraversalPath', () => {
                 resultingType: handlingUnitType,
                 isListSegment: true,
                 resultIsList: true,
+                isNullableSegment: false,
+                resultIsNullable: false,
+                resultMayContainDuplicateEntities: false,
                 minDepth: 2,
                 maxDepth: 2,
                 field: childHandlingUnitsField,
@@ -384,7 +499,7 @@ describe('TraversalPath', () => {
     });
 
     it('resolves relations with min and max depth specifier', () => {
-        const path = new FieldPath({ path: 'handlingUnits.childHandlingUnits{2,4}' }, deliveryType);
+        const path = new CollectPath({ path: 'handlingUnits.childHandlingUnits{2,4}' }, deliveryType);
         const handlingUnitsField = deliveryType.getFieldOrThrow('handlingUnits');
         const childHandlingUnitsField = handlingUnitType.getFieldOrThrow('childHandlingUnits');
         assertSegmentsEqual(path, [
@@ -393,6 +508,9 @@ describe('TraversalPath', () => {
                 resultingType: handlingUnitType,
                 isListSegment: true,
                 resultIsList: true,
+                isNullableSegment: false,
+                resultIsNullable: false,
+                resultMayContainDuplicateEntities: false,
                 minDepth: 1,
                 maxDepth: 1,
                 field: handlingUnitsField,
@@ -403,6 +521,9 @@ describe('TraversalPath', () => {
                 resultingType: handlingUnitType,
                 isListSegment: true,
                 resultIsList: true,
+                isNullableSegment: false,
+                resultIsNullable: false,
+                resultMayContainDuplicateEntities: false,
                 minDepth: 2,
                 maxDepth: 4,
                 field: childHandlingUnitsField,
@@ -413,7 +534,7 @@ describe('TraversalPath', () => {
     });
 
     it('resolves direct child entities', () => {
-        const path = new FieldPath({ path: 'items' }, deliveryType);
+        const path = new CollectPath({ path: 'items' }, deliveryType);
         const itemsField = deliveryType.getFieldOrThrow('items');
         assertSegmentsEqual(path, [
             {
@@ -421,6 +542,9 @@ describe('TraversalPath', () => {
                 resultingType: itemType,
                 isListSegment: true,
                 resultIsList: true,
+                isNullableSegment: false,
+                resultIsNullable: false,
+                resultMayContainDuplicateEntities: false,
                 field: itemsField
             }
         ] as const);
@@ -428,7 +552,7 @@ describe('TraversalPath', () => {
     });
 
     it('resolves indirect child entities', () => {
-        const path = new FieldPath({ path: 'contents.items' }, deliveryType);
+        const path = new CollectPath({ path: 'contents.items' }, deliveryType);
         const contentsField = deliveryType.getFieldOrThrow('contents');
         const itemsField = deliveryContentType.getFieldOrThrow('items');
         assertSegmentsEqual(path, [
@@ -437,6 +561,9 @@ describe('TraversalPath', () => {
                 resultingType: deliveryContentType,
                 isListSegment: true,
                 resultIsList: true,
+                isNullableSegment: false,
+                resultIsNullable: false,
+                resultMayContainDuplicateEntities: false,
                 field: contentsField
             },
             {
@@ -444,6 +571,9 @@ describe('TraversalPath', () => {
                 resultingType: itemType,
                 isListSegment: true,
                 resultIsList: true,
+                isNullableSegment: false,
+                resultIsNullable: false,
+                resultMayContainDuplicateEntities: false,
                 field: itemsField
             }
         ] as const);
@@ -451,7 +581,7 @@ describe('TraversalPath', () => {
     });
 
     it('resolves child entities of entity extensions', () => {
-        const path = new FieldPath({ path: 'dangerousGoodsInfo.dangerousItems' }, deliveryType);
+        const path = new CollectPath({ path: 'dangerousGoodsInfo.dangerousItems' }, deliveryType);
         const dangerousGoodsField = deliveryType.getFieldOrThrow('dangerousGoodsInfo');
         const itemsField = dangerousGoodsInfoType.getFieldOrThrow('dangerousItems');
         assertSegmentsEqual(path, [
@@ -460,6 +590,9 @@ describe('TraversalPath', () => {
                 resultingType: dangerousGoodsInfoType,
                 isListSegment: false,
                 resultIsList: false,
+                isNullableSegment: false,
+                resultIsNullable: false,
+                resultMayContainDuplicateEntities: false,
                 field: dangerousGoodsField
             },
             {
@@ -467,6 +600,9 @@ describe('TraversalPath', () => {
                 resultingType: itemType,
                 isListSegment: true,
                 resultIsList: true,
+                isNullableSegment: false,
+                resultIsNullable: false,
+                resultMayContainDuplicateEntities: false,
                 field: itemsField
             }
         ] as const);
@@ -474,7 +610,7 @@ describe('TraversalPath', () => {
     });
 
     it('resolves recursive child entities', () => {
-        const path = new FieldPath({ path: 'contents.subContents.subContents' }, deliveryType);
+        const path = new CollectPath({ path: 'contents.subContents.subContents' }, deliveryType);
         const contentsField = deliveryType.getFieldOrThrow('contents');
         const subContentsField = deliveryContentType.getFieldOrThrow('subContents');
         assertSegmentsEqual(path, [
@@ -483,6 +619,9 @@ describe('TraversalPath', () => {
                 resultingType: deliveryContentType,
                 isListSegment: true,
                 resultIsList: true,
+                isNullableSegment: false,
+                resultIsNullable: false,
+                resultMayContainDuplicateEntities: false,
                 field: contentsField
             },
             {
@@ -490,6 +629,9 @@ describe('TraversalPath', () => {
                 resultingType: deliveryContentType,
                 isListSegment: true,
                 resultIsList: true,
+                isNullableSegment: false,
+                resultIsNullable: false,
+                resultMayContainDuplicateEntities: false,
                 field: subContentsField
             },
             {
@@ -497,6 +639,9 @@ describe('TraversalPath', () => {
                 resultingType: deliveryContentType,
                 isListSegment: true,
                 resultIsList: true,
+                isNullableSegment: false,
+                resultIsNullable: false,
+                resultMayContainDuplicateEntities: false,
                 field: subContentsField
             }
         ] as const);
@@ -504,7 +649,7 @@ describe('TraversalPath', () => {
     });
 
     it('resolves child entities of relations', () => {
-        const path = new FieldPath({ path: 'handlingUnits.items' }, deliveryType);
+        const path = new CollectPath({ path: 'handlingUnits.items' }, deliveryType);
         const handlingUnitsField = deliveryType.getFieldOrThrow('handlingUnits');
         const itemsField = handlingUnitType.getFieldOrThrow('items');
         assertSegmentsEqual(path, [
@@ -513,6 +658,9 @@ describe('TraversalPath', () => {
                 resultingType: handlingUnitType,
                 isListSegment: true,
                 resultIsList: true,
+                isNullableSegment: false,
+                resultIsNullable: false,
+                resultMayContainDuplicateEntities: false,
                 minDepth: 1,
                 maxDepth: 1,
                 field: handlingUnitsField,
@@ -523,6 +671,9 @@ describe('TraversalPath', () => {
                 resultingType: itemType,
                 isListSegment: true,
                 resultIsList: true,
+                isNullableSegment: false,
+                resultIsNullable: false,
+                resultMayContainDuplicateEntities: false,
                 field: itemsField
             }
         ] as const);

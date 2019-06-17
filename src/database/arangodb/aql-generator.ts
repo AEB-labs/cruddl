@@ -1,5 +1,5 @@
-import { Field, FieldAggregator, Relation, RootEntityType } from '../../model';
-import { FieldSegment, getEffectiveTraversalSegments, RelationSegment } from '../../model/implementation/field-path';
+import { AggregationOperator, Field, Relation, RootEntityType } from '../../model';
+import { FieldSegment, getEffectiveCollectSegments, RelationSegment } from '../../model/implementation/collect-path';
 import { AddEdgesQueryNode, AggregationQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode, ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeIdentifier, EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, OrderDirection, OrderSpecification, PartialEdgeIdentifier, QueryNode, QueryResultValidator, RemoveEdgesQueryNode, RootEntityIDQueryNode, RUNTIME_ERROR_CODE_PROPERTY, RUNTIME_ERROR_TOKEN, RuntimeErrorQueryNode, SafeListQueryNode, SetEdgeQueryNode, TransformListQueryNode, TraversalQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../../query-tree';
 import { Quantifier, QuantifierFilterNode } from '../../query-tree/quantifiers';
 import { extractVariableAssignments, simplifyBooleans } from '../../query-tree/utils';
@@ -389,29 +389,141 @@ register(CountQueryNode, (node, context) => {
 
 register(AggregationQueryNode, (node, context) => {
     const itemVar = aql.variable('item');
-    const aggregationVar = aql.variable(node.aggregator.toLowerCase());
-    let fun: AQLFragment;
-    switch (node.aggregator) {
-        case FieldAggregator.SUM:
-            fun = aql`SUM`;
+    const aggregationVar = aql.variable(node.operator.toLowerCase());
+    let aggregationFunction: AQLFragment | undefined;
+    let filterFrag: AQLFragment | undefined;
+    let itemFrag = itemVar;
+    let resultFragment = aggregationVar;
+    let isList = false;
+    let distinct = false;
+    let sort = false;
+    switch (node.operator) {
+        case AggregationOperator.MIN:
+            filterFrag = aql`${itemVar} != null`;
+            aggregationFunction = aql`MIN`;
             break;
-        case FieldAggregator.AVERAGE:
-            fun = aql`AVERAGE`;
+        case AggregationOperator.MAX:
+            filterFrag = aql`${itemVar} != null`;
+            aggregationFunction = aql`MAX`;
             break;
-        case FieldAggregator.MIN:
-            fun = aql`MIN`;
+        case AggregationOperator.SUM:
+            filterFrag = aql`${itemVar} != null`;
+            aggregationFunction = aql`SUM`;
+            resultFragment = aql`${resultFragment} != null ? ${resultFragment} : 0`; // SUM([]) === 0
             break;
-        case FieldAggregator.MAX:
-            fun = aql`MAX`;
+        case AggregationOperator.AVERAGE:
+            filterFrag = aql`${itemVar} != null`;
+            aggregationFunction = aql`AVERAGE`;
             break;
+
+        case AggregationOperator.COUNT:
+            aggregationFunction = aql`COUNT`;
+            resultFragment = aql`${resultFragment} != null ? ${resultFragment} : 0`; // arangodb 3.2 returns NULL for AGGREGATE COUNT([])
+            break;
+        case AggregationOperator.SOME:
+            aggregationFunction = aql`COUNT`;
+            resultFragment = aql`${resultFragment} > 0`;
+            break;
+        case AggregationOperator.NONE:
+            aggregationFunction = aql`COUNT`;
+            // arangodb 3.2 returns NULL for for AGGREGATE COUNT([]); NULL < 0 < other ints
+            resultFragment = aql`${resultFragment} <= 0`;
+            break;
+
+        // using MAX >= true in place of SOME
+        //   and MAX <  true in place of NONE
+        // (basically, MAX is similar to SOME, and NONE is !SOME. Can't use MIN for EVERY because MIN([]) = null.)
+        case AggregationOperator.SOME_NULL:
+            itemFrag = aql`${itemFrag} == null`;
+            aggregationFunction = aql`MAX`;
+            resultFragment = aql`${resultFragment} >= true`;
+            break;
+        case AggregationOperator.SOME_NOT_NULL:
+            itemFrag = aql`${itemFrag} != null`;
+            aggregationFunction = aql`MAX`;
+            resultFragment = aql`${resultFragment} >= true`;
+            break;
+        case AggregationOperator.NONE_NULL:
+            itemFrag = aql`${itemFrag} == null`;
+            aggregationFunction = aql`MAX`;
+            resultFragment = aql`${resultFragment} < true`;
+            break;
+        case AggregationOperator.EVERY_NULL:
+            // -> NONE_NOT_NULL
+            itemFrag = aql`${itemFrag} != null`;
+            aggregationFunction = aql`MAX`;
+            resultFragment = aql`${resultFragment} < true`;
+            break;
+        case AggregationOperator.COUNT_NULL:
+            aggregationFunction = aql`COUNT`;
+            filterFrag = aql`${itemVar} == null`;
+            resultFragment = aql`${resultFragment} != null ? ${resultFragment} : 0`; // arangodb 3.2 returns NULL for AGGREGATE COUNT([])
+            break;
+        case AggregationOperator.COUNT_NOT_NULL:
+            aggregationFunction = aql`COUNT`;
+            filterFrag = aql`${itemVar} != null`;
+            resultFragment = aql`${resultFragment} != null ? ${resultFragment} : 0`; // arangodb 3.2 returns NULL for AGGREGATE COUNT([])
+            break;
+
+        // these treat NULL like FALSE, so don't filter them away
+        // using MAX >= true in place of SOME
+        //   and MAX <  true in place of NONE
+        // (basically, MAX is similar to SOME, and NONE is !SOME. Can't use MIN for EVERY because MIN([]) = null.)
+        case AggregationOperator.SOME_TRUE:
+            aggregationFunction = aql`MAX`;
+            resultFragment = aql`${resultFragment} >= true`;
+            break;
+        case AggregationOperator.SOME_NOT_TRUE:
+            itemFrag = aql`!${itemFrag}`;
+            aggregationFunction = aql`MAX`;
+            resultFragment = aql`${resultFragment} >= true`;
+            break;
+        case AggregationOperator.EVERY_TRUE:
+            // -> NONE_NOT_TRUE
+            itemFrag = aql`!${itemFrag}`;
+            aggregationFunction = aql`MAX`;
+            resultFragment = aql`${resultFragment} < true`;
+            break;
+        case AggregationOperator.NONE_TRUE:
+            aggregationFunction = aql`MAX`;
+            resultFragment = aql`${resultFragment} < true`;
+            break;
+        case AggregationOperator.COUNT_TRUE:
+            aggregationFunction = aql`COUNT`;
+            filterFrag = aql`${itemVar} >= true`;
+            resultFragment = aql`${resultFragment} != null ? ${resultFragment} : 0`; // arangodb 3.2 returns NULL for AGGREGATE COUNT([])
+            break;
+        case AggregationOperator.COUNT_NOT_TRUE:
+            aggregationFunction = aql`COUNT`;
+            filterFrag = aql`${itemVar} < true`;
+            resultFragment = aql`${resultFragment} != null ? ${resultFragment} : 0`; // arangodb 3.2 returns NULL for AGGREGATE COUNT([])
+            break;
+
+        // these should also remove NULL values by definition
+        case AggregationOperator.DISTINCT:
+            // use COLLECT a = a instead of RETURN DISTINCT to be able to sort
+            distinct = true;
+            filterFrag = aql`${itemVar} != null`;
+            isList = true;
+            sort = node.sort;
+            break;
+
+        case AggregationOperator.COUNT_DISTINCT:
+            aggregationFunction = aql`COUNT_DISTINCT`;
+            filterFrag = aql`${itemVar} != null`;
+            resultFragment = aql`${resultFragment} != null ? ${resultFragment} : 0`; // arangodb 3.2 returns NULL for AGGREGATE COUNT([])
+            break;
+
         default:
-            throw new Error(`Unsupported aggregator: ${(node as any).aggregator}`);
+            throw new Error(`Unsupported aggregator: ${(node as any).aggregationOperator}`);
     }
-    return aqlExt.parenthesizeObject(
+    return aqlExt[isList ? 'parenthesizeList' : 'parenthesizeObject'](
         aql`FOR ${itemVar}`,
         aql`IN ${processNode(node.listNode, context)}`,
-        aql`COLLECT AGGREGATE ${aggregationVar} = ${fun}(${itemVar})`,
-        aql`RETURN ${aggregationVar}`
+        filterFrag ? aql`FILTER ${filterFrag}` : aql``,
+        sort ? aql`SORT ${itemVar}` : aql``,
+        aggregationFunction ? aql`COLLECT AGGREGATE ${aggregationVar} = ${aggregationFunction}(${itemFrag})` : distinct ? aql`COLLECT ${aggregationVar} = ${itemFrag}` : aql``,
+        aql`RETURN ${resultFragment}`
     );
 });
 
@@ -679,7 +791,7 @@ register(FollowEdgeQueryNode, (node, context) => {
 });
 
 register(TraversalQueryNode, (node, context) => {
-    const { relationSegments, fieldSegments } = getEffectiveTraversalSegments(node.path);
+    const { relationSegments, fieldSegments } = getEffectiveCollectSegments(node.path);
     const sourceFrag = processNode(node.sourceEntityNode, context);
     const fieldDepth = fieldSegments.filter(s => s.isListSegment).length;
 
@@ -715,13 +827,28 @@ function getRelationTraversalFragment({ segments, sourceFrag, mapFrag, context }
         return sourceFrag;
     }
 
+    // ArangoDB 3.4.5 introduced PRUNE which also suports IS_SAME_COLLECTION so we may be able to use just one
+    // traversal which lists all affected edge collections and prunes on the path in the future.
+
     const forFragments: AQLFragment[] = [];
     let currentObjectFrag = sourceFrag;
     for (const segment of segments) {
         const newVar = aql.variable(`node`);
         const dir = segment.relationSide.isFromSide ? aql`OUTBOUND` : aql`INBOUND`;
-        forFragments.push(aql`FOR ${newVar} IN ${segment.minDepth}..${segment.maxDepth} ${dir} ${currentObjectFrag} ${getCollectionForRelation(segment.relationSide.relation, AccessType.READ, context)}`);
-        currentObjectFrag = newVar;
+        const traversalFrag = aql`FOR ${newVar} IN ${segment.minDepth}..${segment.maxDepth} ${dir} ${currentObjectFrag} ${getCollectionForRelation(segment.relationSide.relation, AccessType.READ, context)}`;
+        if (segment.isListSegment) {
+            // this is simple - we can just pust one FOR statement after the other
+            forFragments.push(traversalFrag);
+            currentObjectFrag = newVar;
+        }
+        if (!segment.isListSegment) {
+            // if this is not a list, we need to preserve NULL values
+            // (actually, we don't in some cases, but we need to figure out when)
+            // to preserve null values, we need to use FIRST
+            const nullableVar = aql.variable(`nullableNode`);
+            forFragments.push(aql`LET ${nullableVar} = FIRST(${traversalFrag} RETURN ${newVar})`);
+            currentObjectFrag = nullableVar;
+        }
     }
 
     const resultIsList = segments[segments.length - 1].resultIsList;
@@ -729,7 +856,7 @@ function getRelationTraversalFragment({ segments, sourceFrag, mapFrag, context }
     // make sure we don't return a list with one element
     return aqlExt[resultIsList ? 'parenthesizeList' : 'parenthesizeObject'](
         ...forFragments,
-        aql`FILTER ${currentObjectFrag} != null`, // filter out dangling edges
+
         aql`RETURN ${returnFrag}`
     );
 }
@@ -739,9 +866,9 @@ function getFlattenFrag(listFrag: AQLFragment, depth: number) {
         return listFrag;
     }
     if (depth === 1) {
-        return aql`REMOVE_VALUE(${listFrag}[**], NULL)`;
+        return aql`${listFrag}[**]`;
     }
-    return aql`REMOVE_VALUE(FLATTEN(${listFrag}, ${aql.integer(depth)}), NULL)`;
+    return aql`FLATTEN(${listFrag}, ${aql.integer(depth)})`;
 }
 
 function getFieldTraversalFragmentWithoutFlattening(segments: ReadonlyArray<FieldSegment>, sourceFrag: AQLFragment) {
@@ -750,14 +877,14 @@ function getFieldTraversalFragmentWithoutFlattening(segments: ReadonlyArray<Fiel
     }
 
     let frag = sourceFrag;
-    // the array expansion operator ([*]fieldName) basically does a .map(o => o.fieldName).
-    let shouldExpand = false; // don't expand the start because source is an object
     let flattenDepth = 0;
     for (const segment of segments) {
-        const conditionalExpansion = shouldExpand ? aql`[*]` : aql``;
-        frag = aql`${frag}${conditionalExpansion}${getFieldAccessFragment(segment.field)}`;
-        shouldExpand = segment.isListSegment;
+        frag = aql`${frag}${getFieldAccessFragment(segment.field)}`;
         if (segment.isListSegment) {
+            // the array expansion operator [*] does two useful things:
+            // - it performs the next field access basically as .map(o => o.fieldName).
+            // - it converts non-lists to lists (important so that if we flatten afterwards, we don't include NULL lists
+            frag = aql`${frag}[*]`;
             flattenDepth++;
         }
     }

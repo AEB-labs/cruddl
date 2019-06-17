@@ -1,11 +1,11 @@
-import { getEffectiveTraversalSegments } from '../../model/implementation/field-path';
+import { getEffectiveCollectSegments } from '../../model/implementation/collect-path';
 import { PERMISSION_DENIED_ERROR, QueryNode, RuntimeErrorQueryNode, TraversalQueryNode } from '../../query-tree';
 import { AccessOperation, AuthContext } from '../auth-basics';
 import { PermissionResult } from '../permission-descriptors';
 import { getPermissionDescriptorOfField, getPermissionDescriptorOfRootEntityType } from '../permission-descriptors-in-model';
 
 export function transformTraversalQueryNode(node: TraversalQueryNode, authContext: AuthContext): QueryNode {
-    const { relationSegments, fieldSegments } = getEffectiveTraversalSegments(node.path);
+    const { relationSegments, fieldSegments } = getEffectiveCollectSegments(node.path);
 
     for (const segment of relationSegments) {
         const targetType = segment.resultingType;

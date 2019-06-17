@@ -21,29 +21,45 @@ export interface FieldConfig {
     readonly inverseOfFieldName?: string
     readonly inverseOfASTNode?: ValueNode
 
-    readonly traversal?: TraversalConfig
-    readonly aggregation?: AggregationConfig
+    readonly collect?: CollectFieldConfig
 
     readonly astNode?: FieldDefinitionNode
 }
 
-export interface TraversalConfig {
+export interface CollectFieldConfig {
     readonly astNode?: DirectiveNode
     readonly path: string
     readonly pathASTNode?: StringValueNode
+    readonly aggregationOperator?: AggregationOperator
+    readonly aggregationOperatorASTNode?: EnumValueNode
 }
 
-export interface AggregationConfig extends TraversalConfig {
-    readonly aggregator: FieldAggregator
-    readonly aggregatorASTNode?: EnumValueNode
-}
-
-export enum FieldAggregator {
+export enum AggregationOperator {
     COUNT = 'COUNT',
-    SUM = 'SUM',
+    SOME = 'SOME',
+    NONE = 'NONE',
+
+    COUNT_NULL = 'COUNT_NULL',
+    COUNT_NOT_NULL = 'COUNT_NOT_NULL',
+    SOME_NULL = 'SOME_NULL',
+    SOME_NOT_NULL = 'SOME_NOT_NULL',
+    EVERY_NULL = 'EVERY_NULL',
+    NONE_NULL = 'NONE_NULL',
+
     MIN = 'MIN',
     MAX = 'MAX',
-    AVERAGE = 'AVERAGE'
+    SUM = 'SUM',
+    AVERAGE = 'AVERAGE',
+
+    COUNT_TRUE = 'COUNT_TRUE',
+    COUNT_NOT_TRUE = 'COUNT_NOT_TRUE',
+    SOME_TRUE = 'SOME_TRUE',
+    SOME_NOT_TRUE = 'SOME_NOT_TRUE',
+    EVERY_TRUE = 'EVERY_TRUE',
+    NONE_TRUE = 'NONE_TRUE',
+
+    DISTINCT = 'DISTINCT',
+    COUNT_DISTINCT = 'COUNT_DISTINCT'
 }
 
 export enum CalcMutationsOperator {

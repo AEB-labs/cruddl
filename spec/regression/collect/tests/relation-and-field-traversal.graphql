@@ -9,7 +9,7 @@ mutation createEdges {
 
 query relationToNAndFields {
     Shipment(shipmentNumber: "S1") {
-        allItems {
+        allItems(orderBy: itemNumber_ASC) {
             itemNumber
         }
     }
@@ -17,7 +17,7 @@ query relationToNAndFields {
 
 query relationTo1AndFields {
     Order(orderNumber: "O1") {
-        allItems {
+        allItems(orderBy: itemNumber_ASC) {
             itemNumber
         }
     }

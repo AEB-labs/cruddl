@@ -13,7 +13,8 @@
             "items": [
               {
                 "itemNumber": "DI1.1.1",
-                "weightInKg": 1
+                "weightInKg": 1,
+                "isDangerousGoods": true
               },
               {
                 "itemNumber": "DI1.1.2",
@@ -26,7 +27,8 @@
             "items": [
               {
                 "itemNumber": "DI1.2.1",
-                "weightInKg": 4
+                "weightInKg": 4,
+                "isDangerousGoods": false
               },
               {
                 "itemNumber": "DI1.2.2",
@@ -45,11 +47,13 @@
             "items": [
               {
                 "itemNumber": "DI2.1.1",
-                "weightInKg": 16
+                "weightInKg": 16,
+                "isDangerousGoods": true
               },
               {
                 "itemNumber": "DI2.1.2",
-                "weightInKg": 32
+                "weightInKg": 32,
+                "isDangerousGoods": true
               }
             ]
           },
@@ -74,7 +78,8 @@
             "deliveryContentNumber": "DC3.1",
             "items": [
               {
-                "itemNumber": "DI3.1.1"
+                "itemNumber": "DI3.1.1",
+                "isDangerousGoods": false
               },
               {
                 "itemNumber": "DI3.1.2"
@@ -180,7 +185,8 @@
     "Order": [
       {
         "@id": "1",
-        "orderNumber": "O1"
+        "orderNumber": "O1",
+        "payedAt": "2019-06-21T18:10:00Z"
       },
       {
         "@id": "2",

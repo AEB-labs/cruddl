@@ -86,6 +86,10 @@ export class RelationSide {
         return new RelationSide(this.relation, invertRelationFieldSide(this.side));
     }
 
+    // careful, these identifiers are a bit unclear
+    /**
+     * Is ONE if a source entity can be linked to one target entity, or MANY if it can be linked to many target entities
+     */
     get sourceMultiplicity(): Multiplicity {
         if (!this.sourceField) {
             // if no inverse field exists, many-to-* is implicit
@@ -95,6 +99,9 @@ export class RelationSide {
         return this.sourceField.isList ? Multiplicity.MANY : Multiplicity.ONE;
     }
 
+    /**
+     * Is ONE if a target entity can be linked to one source entity, or MANY if it can be linked to many source entities
+     */
     get targetMultiplicity(): Multiplicity {
         return this.otherSide.sourceMultiplicity;
     }
