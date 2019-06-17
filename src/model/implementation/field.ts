@@ -1,13 +1,13 @@
-import { FieldDefinitionNode, GraphQLFloat, GraphQLInt } from 'graphql';
+import { FieldDefinitionNode, GraphQLBoolean, GraphQLFloat, GraphQLID, GraphQLInt, GraphQLString } from 'graphql';
 import memorize from 'memorize-decorator';
-import { AGGREGATION_DIRECTIVE, CALC_MUTATIONS_OPERATORS, RELATION_DIRECTIVE, TRAVERSAL_DIRECTIVE } from '../../schema/constants';
+import { CALC_MUTATIONS_OPERATORS, COLLECT_AGGREGATE_ARG, COLLECT_DIRECTIVE, RELATION_DIRECTIVE } from '../../schema/constants';
 import { GraphQLDateTime } from '../../schema/scalars/date-time';
 import { GraphQLLocalDate } from '../../schema/scalars/local-date';
 import { GraphQLLocalTime } from '../../schema/scalars/local-time';
-import { CalcMutationsOperator, FieldAggregator, FieldConfig, TypeKind } from '../config';
+import { AggregationOperator, CalcMutationsOperator, FieldConfig, TypeKind } from '../config';
 import { ValidationMessage } from '../validation';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
-import { FieldPath } from './field-path';
+import { CollectPath } from './collect-path';
 import { FieldLocalization } from './i18n';
 import { Model } from './model';
 import { PermissionProfile } from './permission-profile';
@@ -28,11 +28,9 @@ export class Field implements ModelComponent {
     readonly isList: boolean;
     readonly isReference: boolean;
     readonly isRelation: boolean;
-    readonly isTraversal: boolean;
-    readonly isAggregation: boolean;
-    readonly traversalPath: FieldPath | undefined;
-    readonly aggregationPath: FieldPath | undefined;
-    readonly aggregator: FieldAggregator | undefined;
+    readonly isCollectField: boolean;
+    readonly collectPath: CollectPath | undefined;
+    readonly aggregationOperator: AggregationOperator | undefined;
     readonly defaultValue?: any;
     readonly calcMutationOperators: ReadonlySet<CalcMutationsOperator>;
     readonly roles: RolesSpecifier | undefined;
@@ -52,14 +50,12 @@ export class Field implements ModelComponent {
         this.defaultValue = input.defaultValue;
         this.isReference = input.isReference || false;
         this.isRelation = input.isRelation || false;
-        this.isTraversal = !!input.traversal;
-        this.isAggregation = !!input.aggregation;
-        if (input.traversal) {
-            this.traversalPath = new FieldPath(input.traversal, this.declaringType);
-        }
-        if (input.aggregation) {
-            this.aggregationPath = new FieldPath(input.aggregation, this.declaringType);
-            this.aggregator = input.aggregation.aggregator;
+        this.isCollectField = !!input.collect;
+        if (input.collect) {
+            this.collectPath = new CollectPath(input.collect, this.declaringType);
+            if (input.collect) {
+                this.aggregationOperator = input.collect.aggregationOperator;
+            }
         }
         this.isList = input.isList || false;
         this.calcMutationOperators = new Set(input.calcMutationOperators || []);
@@ -74,8 +70,19 @@ export class Field implements ModelComponent {
         return this.isSystemField;
     }
 
+    /**
+     * Specifies whether this field (or items within the list if this is a list) is never null
+     */
     get isNonNull(): boolean {
-        return this.input.isNonNull || this.isList || this.type.isEntityExtensionType;
+        // list items and entity extensions are never null
+        if (this.input.isNonNull || this.type.isEntityExtensionType || this.isList) {
+            return true;
+        }
+        if (this.aggregationOperator && !canAggregationBeNull(this.aggregationOperator)) {
+            return true;
+        }
+        // regular fields are nullable
+        return false;
     }
 
     public get type(): Type {
@@ -216,8 +223,7 @@ export class Field implements ModelComponent {
         this.validateChildEntityType(context);
         this.validateRelation(context);
         this.validateReference(context);
-        this.validateTraversal(context);
-        this.validateAggregation(context);
+        this.validateCollect(context);
         this.validateDefaultValue(context);
         this.validateCalcMutations(context);
     }
@@ -263,7 +269,7 @@ export class Field implements ModelComponent {
         }
 
         // root entities are not embeddable
-        if (!this.isRelation && !this.isReference && !this.isTraversal) {
+        if (!this.isRelation && !this.isReference && !this.isCollectField) {
             if (this.declaringType.kind == TypeKind.VALUE_OBJECT) {
                 context.addMessage(ValidationMessage.error(`Type "${this.type.name}" is a root entity type and cannot be embedded. Consider adding @reference.`, this.astNode));
             } else {
@@ -350,84 +356,160 @@ export class Field implements ModelComponent {
         this.validateReferenceKeyField(context);
     }
 
-    private validateTraversal(context: ValidationContext) {
-        if (!this.input.traversal) {
+    private validateCollect(context: ValidationContext) {
+        if (!this.input.collect) {
             return;
         }
 
         if (this.isRelation) {
-            context.addMessage(ValidationMessage.error(`@${TRAVERSAL_DIRECTIVE} and @${RELATION_DIRECTIVE} cannot be combined.`, this.astNode));
+            context.addMessage(ValidationMessage.error(`@${COLLECT_DIRECTIVE} and @${RELATION_DIRECTIVE} cannot be combined.`, this.astNode));
             return;
         }
-        if (!this.traversalPath) {
-            context.addMessage(ValidationMessage.error(`The path cannot be empty.`, this.input.traversal.pathASTNode));
+        if (!this.collectPath) {
+            context.addMessage(ValidationMessage.error(`The path cannot be empty.`, this.input.collect.pathASTNode));
             return;
         }
-        if (!this.traversalPath.validate(context)) {
+        if (!this.collectPath.validate(context)) {
             // path validation failed already
             return;
         }
-        const resultingType = this.traversalPath.resultingType;
-        if (resultingType && resultingType !== this.type) {
-            context.addMessage(ValidationMessage.error(`The traversal path results in type "${resultingType.name}", but this field is declared with type "${this.type.name}".`, this.astNode && this.astNode.type));
-            return;
-        }
-        if (this.traversalPath.resultIsList && !this.isList) {
-            context.addMessage(ValidationMessage.error(`This field should be a declared as a list because the traversal path results in a list.`, this.astNode && this.astNode.type));
-            return;
-        }
-        if (!this.traversalPath.resultIsList && this.isList) {
-            context.addMessage(ValidationMessage.error(`This field should not be a declared as a list because the traversal path does not result in a list.`, this.astNode && this.astNode.type));
-            return;
-        }
-    }
+        const resultingType = this.collectPath.resultingType;
 
-    private validateAggregation(context: ValidationContext) {
-        if (!this.input.aggregation || !this.aggregator) { // missing aggregator is a graphql-rules error
-            return;
-        }
-        if (this.isRelation) {
-            context.addMessage(ValidationMessage.error(`@${AGGREGATION_DIRECTIVE} and @${RELATION_DIRECTIVE} cannot be combined.`, this.astNode));
-            return;
-        }
-        if (this.isTraversal) {
-            context.addMessage(ValidationMessage.error(`@${AGGREGATION_DIRECTIVE} and @${TRAVERSAL_DIRECTIVE} cannot be combined.`, this.astNode));
-            return;
-        }
-        if (!this.aggregationPath) {
-            context.addMessage(ValidationMessage.error(`The path cannot be empty.`, this.input.aggregation.pathASTNode));
+        if (!this.collectPath.resultIsList) {
+            context.addMessage(ValidationMessage.error(`The path does not result in a list.`, this.input.collect.aggregationOperatorASTNode));
             return;
         }
 
-        if (!this.aggregationPath.validate(context)) {
-            // path validation failed already
-            return;
-        }
-        if (!this.aggregationPath.resultIsList) {
-            context.addMessage(ValidationMessage.error(`The path does not result in a list and thus cannot be used in an aggregation.`, this.input.aggregation.pathASTNode));
-            return;
-        }
-        const resultingType = this.aggregationPath.resultingType;
-        if (this.aggregator === FieldAggregator.COUNT) {
-            if (this.type.name !== GraphQLInt.name) {
-                context.addMessage(ValidationMessage.error(`The type of an @${AGGREGATION_DIRECTIVE} field with aggregator "${FieldAggregator.COUNT}" should be "${GraphQLInt.name}".`, this.astNode && this.astNode.type));
+        if (this.aggregationOperator) {
+            const typeInfo = getAggregatorTypeInfo(this.aggregationOperator);
+            if (typeInfo.lastSegmentShouldBeList) {
+                const lastSegment = this.collectPath.segments[this.collectPath.segments.length - 1];
+                if (lastSegment && !lastSegment.isListSegment) {
+                    // we checked for resultIsList before, so there needs to be a list segment somewhere - so we can suggest to remove a segment
+                    if (lastSegment.field.type.name === GraphQLBoolean.name) {
+                        // for boolean fields, redirect to the boolean variants
+                        context.addMessage(ValidationMessage.error(`Aggregation operator "${this.aggregationOperator}" is only allowed if the last path segment is a list field. "${lastSegment.field.name}" is of type "Boolean", so you may want to use "${this.aggregationOperator + '_TRUE'}".`, this.input.collect.aggregationOperatorASTNode));
+                    } else if (lastSegment.isNullableSegment) {
+                        // show extended hint - user might have wanted to use e.g. "COUNT_NOT_NULL".
+                        context.addMessage(ValidationMessage.error(`Aggregation operator "${this.aggregationOperator}" is only allowed if the last path segment is a list field. If you want to exclude objects where "${lastSegment.field.name}" is null, use "${this.aggregationOperator + '_NOT_NULL'}; otherwise, remove "${lastSegment.field.name}" from the path.`, this.input.collect.aggregationOperatorASTNode));
+                    } else {
+                        context.addMessage(ValidationMessage.error(`Aggregation operator "${this.aggregationOperator}" is only allowed if the last path segment is a list field. Please remove "${lastSegment.field.name}" from the path.`, this.input.collect.aggregationOperatorASTNode));
+                    }
+                    return;
+                }
+
+                // even for boolean lists, we show a warning because boolean lists are sparingly used and e.g. using EVERY might be misleading there
+                if (lastSegment && lastSegment.field.type.name === GraphQLBoolean.name) {
+                    context.addMessage(ValidationMessage.warn(`Aggregation operator "${this.aggregationOperator}" only checks the number of items. "${lastSegment.field.name}" is of type "Boolean", so you may want to use the operator "${this.aggregationOperator + '_TRUE'}" instead which specifically checks for boolean "true".`, this.input.collect.aggregationOperatorASTNode));
+                }
+            }
+            if (typeInfo.shouldBeNullable && !this.collectPath.resultIsNullable) {
+                let addendum = '';
+                const operatorName = this.aggregationOperator.toString();
+                if (operatorName.endsWith('_NOT_NULL')) {
+                    addendum = ` Consider using "${operatorName.substr(0, operatorName.length - '_NOT_NULL'.length)}`;
+                }
+                context.addMessage(ValidationMessage.error(`Aggregation operator "${this.aggregationOperator}" is only supported on nullable types, but the path does not result in a nullable type.` + addendum,
+                    this.input.collect.aggregationOperatorASTNode));
+                return;
+            }
+            if (resultingType && typeInfo.typeNames && !typeInfo.typeNames.includes(resultingType.name)) {
+                context.addMessage(ValidationMessage.error(`Aggregation operator "${this.aggregationOperator}" is not supported on type "${resultingType.name}" (supported types: ${typeInfo.typeNames.map(t => `"${t}"`).join(', ')}).`,
+                    this.input.collect.aggregationOperatorASTNode));
+                return;
+            }
+
+            if (typeInfo.usesDistinct && resultingType) {
+                if (!isDistinctAggregationSupported(resultingType)) {
+                    const typeHint = resultingType.isValueObjectType ? `value object types` : resultingType.isEntityExtensionType ? `entity extension types` : `type "${resultingType.name}" (supported scalar types: "${GraphQLString.name}", "${GraphQLID.name}")`;
+                    context.addMessage(ValidationMessage.error(`Aggregation operator "${this.aggregationOperator}" is not supported on ${typeHint}.`,
+                        this.input.collect.aggregationOperatorASTNode));
+                    return;
+                }
+                // the operator is useless if it's an entity type and it can neither be null nor have duplicates
+                if ((resultingType.isRootEntityType || resultingType.isChildEntityType) && !this.collectPath.resultIsNullable && !this.collectPath.resultMayContainDuplicateEntities) {
+                    const suggestedOperator = getAggregatorWithoutDistinct(this.aggregationOperator);
+                    if (this.aggregationOperator === AggregationOperator.DISTINCT) {
+                        // this one can just be removed
+                        context.addMessage(ValidationMessage.error(`Aggregation operator "${this.aggregationOperator}" is not needed because the collect result can neither contain duplicate entities nor null values. Please remove the "${COLLECT_AGGREGATE_ARG}" argument".`, this.input.collect.aggregationOperatorASTNode));
+                        return;
+                    } else if (suggestedOperator) {
+                        // the count operator should be replaced by the non-distinct count
+                        context.addMessage(ValidationMessage.error(`Please use the operator "${suggestedOperator}" because the collect result can neither contain duplicate entities nor null values.".`, this.input.collect.aggregationOperatorASTNode));
+                        return;
+                    }
+                }
+            }
+
+            const expectedResultingTypeName = typeInfo.resultTypeName || (resultingType && resultingType.name); // undefined means that the aggregation results in the item's type
+            if (expectedResultingTypeName && this.type.name !== expectedResultingTypeName) {
+                context.addMessage(ValidationMessage.error(`The aggregation results in type "${expectedResultingTypeName}", but this field is declared with type "${this.type.name}".`, this.astNode && this.astNode.type));
+                return;
+            }
+
+            if (!typeInfo.resultIsList && this.isList) {
+                context.addMessage(ValidationMessage.error(`This aggregation field should not be declared as a list.`, this.astNode && this.astNode.type));
+                return;
+            }
+
+            if (typeInfo.resultIsList && !this.isList) {
+                context.addMessage(ValidationMessage.error(`This aggregation field should be declared as a list because "${this.aggregationOperator}" results in a list.`, this.astNode && this.astNode.type));
+                return;
             }
         } else {
-            const supportedTypeNames = getSupportedTypeNames(this.aggregator);
-            if (resultingType && supportedTypeNames && !supportedTypeNames.includes(resultingType.name)) {
-                context.addMessage(ValidationMessage.error(`Aggregator "${this.aggregator}" is not supported on type "${resultingType.name}" (supported types: ${supportedTypeNames.map(t => `"${t}"`).join(', ')}).`,
-                    this.input.aggregation.aggregatorASTNode));
-                return;
-            }
-            if (resultingType && resultingType !== this.type) {
-                context.addMessage(ValidationMessage.error(`The aggregation results in type "${resultingType.name}", but this field is declared with type "${this.type.name}".`, this.astNode && this.astNode.type));
-                return;
-            }
-        }
+            // not an aggregation
 
-        if (this.isList) {
-            context.addMessage(ValidationMessage.error(`This @${AGGREGATION_DIRECTIVE} field should not be a list.`, this.astNode && this.astNode.type));
-            return;
+            if (resultingType) {
+                if (resultingType.isEntityExtensionType) {
+                    // treat these separate from the list below because we can't even aggregate entity extensions (they're not nullable and not lists)
+                    context.addMessage(ValidationMessage.error(`The collect path results in entity extension type "${resultingType.name}", but entity extensions cannot be collected. You can either collect the parent entity by removing the last path segment, or collect values within the entity extension by adding a path segment.`, this.input.collect.pathASTNode));
+                    return;
+                }
+                if (resultingType.isEnumType || resultingType.isScalarType || resultingType.isValueObjectType) {
+                    // this is a modeling design choice - it does not really make sense to "collect" non-entities without a link to the parent and without aggregating them
+                    const typeKind = resultingType.isEnumType ? 'enum' : resultingType.isValueObjectType ? 'value object' : 'scalar';
+                    const suggestion = isDistinctAggregationSupported(resultingType) ? ` You may want to use the "${AggregationOperator.DISTINCT}" aggregation.` : `You can either collect the parent entity by removing the last path segment, or add the "aggregate" argument to aggregate the values.`;
+                    context.addMessage(ValidationMessage.error(`The collect path results in ${typeKind} type "${resultingType.name}", but ${typeKind}s cannot be collected without aggregating them. ` + suggestion, this.input.collect.pathASTNode));
+                    return;
+                }
+                if (this.collectPath.resultMayContainDuplicateEntities) {
+                    let fieldHint = '';
+                    const minimumAmbiguousPathEndIndex = this.collectPath.segments.findIndex(s => s.resultMayContainDuplicateEntities);
+                    const firstAmgiguousSegment = this.collectPath.segments[minimumAmbiguousPathEndIndex];
+                    const minimumAmbiguousPathPrefix = minimumAmbiguousPathEndIndex >= 0 ? this.collectPath.path.split('.').slice(0, minimumAmbiguousPathEndIndex + 1).join('.') : '';
+                    const firstAmbiguousSegment = this.collectPath.segments.find(s => s.resultMayContainDuplicateEntities);
+                    const path = minimumAmbiguousPathPrefix && minimumAmbiguousPathPrefix !== this.collectPath.path ? `path prefix "${minimumAmbiguousPathPrefix}"` : 'path';
+                    const entityType = firstAmgiguousSegment ? `${firstAmgiguousSegment.field.type.name} entities` : `entities`;
+                    let reason = '';
+                    if (firstAmbiguousSegment && firstAmbiguousSegment.kind === 'relation') {
+                        if (firstAmbiguousSegment.relationSide.targetField) {
+                            reason = ` (because "${firstAmbiguousSegment.relationSide.targetType.name}.${firstAmbiguousSegment.relationSide.targetField.name}", which is the inverse relation field to "${firstAmgiguousSegment.field.declaringType.name}.${firstAmbiguousSegment.field.name}", is declared as a list)`;
+                        } else {
+                            reason = ` (because the relation target type "${firstAmbiguousSegment.relationSide.targetType.name}" does not declare a inverse relation field to "${firstAmgiguousSegment.field.declaringType.name}.${firstAmbiguousSegment.field.name}")`;
+                        }
+                    }
+                    context.addMessage(ValidationMessage.error(`The ${path} can produce duplicate ${entityType}${reason}. Please set argument "${COLLECT_AGGREGATE_ARG}" to "${AggregationOperator.DISTINCT}" to filter out duplicates and null items if you don't want any other aggregation.`, this.input.collect.pathASTNode));
+                    return;
+                }
+                if (this.collectPath.resultIsNullable) {
+                    let fieldHint = '';
+                    const lastNullableSegment = [...this.collectPath.segments].reverse().find(s => s.isNullableSegment);
+                    if (lastNullableSegment) {
+                        fieldHint = ` because "${lastNullableSegment.field.declaringType.name}.${lastNullableSegment.field.name}" can be null`;
+                    }
+                    context.addMessage(ValidationMessage.error(`The collect path can produce items that are null${fieldHint}. Please set argument "${COLLECT_AGGREGATE_ARG}" to "${AggregationOperator.DISTINCT}" to filter out null items if you don't want any other aggregation.`, this.input.collect.pathASTNode));
+                    return;
+                }
+
+                if (resultingType !== this.type) {
+                    context.addMessage(ValidationMessage.error(`The collect path results in type "${resultingType.name}", but this field is declared with type "${this.type.name}".`, this.astNode && this.astNode.type));
+                    return;
+                }
+            }
+            if (!this.isList) {
+                context.addMessage(ValidationMessage.error(`This collect field should be a declared as a list.`, this.astNode && this.astNode.type));
+                return;
+            }
         }
     }
 
@@ -501,7 +583,7 @@ export class Field implements ModelComponent {
     private validatePermissions(context: ValidationContext) {
         const permissions = this.input.permissions || {};
 
-        if (this.isTraversal && (permissions.permissionProfileName || permissions.roles)) {
+        if (this.isCollectField && (permissions.permissionProfileName || permissions.roles)) {
             context.addMessage(ValidationMessage.error(`Permissions to @traversal fields cannot be restricted explicitly (permissions of traversed fields and types are applied automatically).`, this.astNode));
             return;
         }
@@ -531,7 +613,7 @@ export class Field implements ModelComponent {
             return;
         }
 
-        if (this.isTraversal) {
+        if (this.isCollectField) {
             context.addMessage(ValidationMessage.error(`Default values are not supported on traversal fields.`, this.input.defaultValueASTNode || this.astNode));
             return;
         }
@@ -571,22 +653,115 @@ export class Field implements ModelComponent {
     }
 }
 
-function getSupportedTypeNames(aggregator: FieldAggregator): ReadonlyArray<string>|undefined {
+function getAggregatorWithoutDistinct(aggregator: AggregationOperator): AggregationOperator | undefined {
     switch (aggregator) {
-        case FieldAggregator.COUNT:
+        case AggregationOperator.DISTINCT:
             return undefined;
-        case FieldAggregator.MAX:
-        case FieldAggregator.MIN:
-            return [
-                GraphQLInt.name, GraphQLFloat.name, GraphQLDateTime.name, GraphQLLocalDate.name, GraphQLLocalTime.name
-            ];
-        case FieldAggregator.AVERAGE:
-        case FieldAggregator.SUM:
-            return [
-                GraphQLInt.name, GraphQLFloat.name
-            ];
+        case AggregationOperator.COUNT_DISTINCT:
+            return AggregationOperator.COUNT;
         default:
-            // this is caught in the graphql-rules validator
             return undefined;
     }
+}
+
+function getAggregatorTypeInfo(aggregator: AggregationOperator): {
+    readonly typeNames?: ReadonlyArray<string> | undefined
+    readonly lastSegmentShouldBeList?: boolean
+    readonly shouldBeNullable?: boolean
+    readonly resultTypeName?: string
+    readonly resultIsList?: boolean
+    readonly usesDistinct?: boolean
+} {
+    switch (aggregator) {
+        case AggregationOperator.COUNT:
+            return {
+                lastSegmentShouldBeList: true,
+                resultTypeName: GraphQLInt.name
+            };
+        case AggregationOperator.SOME:
+        case AggregationOperator.NONE:
+            return {
+                lastSegmentShouldBeList: true,
+                resultTypeName: GraphQLBoolean.name
+            };
+
+        case AggregationOperator.COUNT_NULL:
+        case AggregationOperator.COUNT_NOT_NULL:
+            return {
+                shouldBeNullable: true,
+                resultTypeName: GraphQLInt.name
+            };
+        case AggregationOperator.SOME_NULL:
+        case AggregationOperator.SOME_NOT_NULL:
+        case AggregationOperator.EVERY_NULL:
+        case AggregationOperator.NONE_NULL:
+            return {
+                shouldBeNullable: true,
+                resultTypeName: GraphQLBoolean.name
+            };
+
+        case AggregationOperator.MAX:
+        case AggregationOperator.MIN:
+            return {
+                typeNames: [
+                    GraphQLInt.name, GraphQLFloat.name, GraphQLDateTime.name, GraphQLLocalDate.name,
+                    GraphQLLocalTime.name
+                ]
+            };
+        case AggregationOperator.AVERAGE:
+        case AggregationOperator.SUM:
+            return {
+                typeNames: [
+                    GraphQLInt.name, GraphQLFloat.name
+                ]
+            };
+
+        case AggregationOperator.COUNT_TRUE:
+        case AggregationOperator.COUNT_NOT_TRUE:
+            return {
+                typeNames: [
+                    GraphQLBoolean.name
+                ],
+                resultTypeName: GraphQLInt.name
+            };
+
+        case AggregationOperator.SOME_TRUE:
+        case AggregationOperator.SOME_NOT_TRUE:
+        case AggregationOperator.EVERY_TRUE:
+        case AggregationOperator.NONE_TRUE:
+            return {
+                typeNames: [
+                    GraphQLBoolean.name
+                ],
+                resultTypeName: GraphQLBoolean.name
+            };
+        case AggregationOperator.DISTINCT:
+            return {
+                usesDistinct: true,
+                resultIsList: true
+            };
+        case AggregationOperator.COUNT_DISTINCT:
+            return {
+                usesDistinct: true,
+                resultTypeName: GraphQLInt.name
+            };
+        default:
+            // this is caught in the graphql-rules validator
+            return {};
+    }
+}
+
+function canAggregationBeNull(operator: AggregationOperator): boolean {
+    switch (operator) {
+        case AggregationOperator.MAX:
+        case AggregationOperator.MIN:
+        case AggregationOperator.AVERAGE:
+            return true;
+        default:
+            return false;
+    }
+}
+
+function isDistinctAggregationSupported(type: Type) {
+    return type.isRootEntityType || type.isChildEntityType || type.isEnumType || [GraphQLString.name, GraphQLID.name].includes(type.name);
 }

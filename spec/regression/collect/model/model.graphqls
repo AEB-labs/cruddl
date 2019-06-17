@@ -1,0 +1,90 @@
+type Shipment @rootEntity {
+    shipmentNumber: String @key
+
+    deliveries: [Delivery] @relation
+
+    allOuterHandlingUnits: [HandlingUnit] @collect(path: "deliveries.handlingUnits", aggregate: DISTINCT)
+    allHandlingUnits: [HandlingUnit] @collect(path: "deliveries.allHandlingUnits", aggregate: DISTINCT)
+    allOrders: [Order] @collect(path: "deliveries.order", aggregate: DISTINCT)
+    allDeliveryContents: [DeliveryContent] @collect(path: "deliveries.deliveryContents")
+    allItems: [DeliveryItem] @collect(path: "deliveries.deliveryContents.items")
+    totalWeightInKg: Float @collect(path: "allItems.weightInKg", aggregate: SUM)
+    itemCount: Int @collect(path: "allItems", aggregate: COUNT)
+    allDeliveriesHaveOrders: Boolean @collect(path: "deliveries.order", aggregate: NONE_NULL)
+    allDeliveriesArePayed: Boolean @collect(path: "deliveries.order.payedAt", aggregate: NONE_NULL)
+    numberOfDeliveriesWithoutOrder: Int @collect(path: "deliveries.order", aggregate: COUNT_NULL)
+    numberOfDeliveriesWithoutPayedOrder: Int @collect(path: "deliveries.order.payedAt", aggregate: COUNT_NULL)
+    #numberOfUnpayedOrders: Int @collect(path: "allOrders.payedAt", aggregate: COUNT_NULL) # waiting for DISTINCT aggregations to be supported in collect paths
+}
+
+type Delivery @rootEntity {
+    deliveryNumber: String @key
+    deliveryContents: [DeliveryContent]
+
+    handlingUnits: [HandlingUnit] @relation
+    shipment: [Shipment] @relation(inverseOf: "deliveries")
+    order: Order @relation
+
+    allItems: [DeliveryItem] @collect(path: "deliveryContents.items")
+    allItemNumbers: [String] @collect(path: "deliveryContents.items.itemNumber", aggregate: DISTINCT)
+    allHandlingUnits: [HandlingUnit] @collect(path: "handlingUnits.childHandlingUnits{0,2}")
+    allHandlingUnits0to1: [HandlingUnit] @collect(path: "handlingUnits.childHandlingUnits{0,1}")
+    allHandlingUnits0to2: [HandlingUnit] @collect(path: "handlingUnits.childHandlingUnits{0,2}")
+    allHandlingUnits1to1: [HandlingUnit] @collect(path: "handlingUnits.childHandlingUnits{1,1}")
+    allHandlingUnits1to2: [HandlingUnit] @collect(path: "handlingUnits.childHandlingUnits{1,2}")
+    allHandlingUnits2to2: [HandlingUnit] @collect(path: "handlingUnits.childHandlingUnits{2,2}")
+    allHandlingUnits3to3: [HandlingUnit] @collect(path: "handlingUnits.childHandlingUnits{3,3}")
+    totalWeightInKg: Float @collect(path: "allItems.weightInKg", aggregate: SUM)
+    averageWeightInKg: Float @collect(path: "allItems.weightInKg", aggregate: AVERAGE)
+    minWeightInKg: Float @collect(path: "allItems.weightInKg", aggregate: MIN)
+    maxWeightInKg: Float @collect(path: "allItems.weightInKg", aggregate: MAX)
+    itemCount: Int @collect(path: "allItems", aggregate: COUNT)
+    hasItems: Boolean @collect(path: "allItems", aggregate: SOME)
+    hasNoItems: Boolean @collect(path: "allItems", aggregate: NONE)
+
+    hasDangerousGoods: Boolean @collect(path: "allItems.isDangerousGoods", aggregate: SOME_TRUE)
+    hasNonDangerousGoods: Boolean @collect(path: "allItems.isDangerousGoods", aggregate: SOME_NOT_TRUE)
+    hasOnlyDangerousGoods: Boolean @collect(path: "allItems.isDangerousGoods", aggregate: EVERY_TRUE)
+    hasNoDangerousGoods: Boolean @collect(path: "allItems.isDangerousGoods", aggregate: NONE_TRUE)
+    dangerousItemCount: Int @collect(path: "allItems.isDangerousGoods", aggregate: COUNT_TRUE)
+    nonDangerousItemCount: Int @collect(path: "allItems.isDangerousGoods", aggregate: COUNT_NOT_TRUE)
+
+    hasMissingDangerousGoodsFlag: Boolean @collect(path: "allItems.isDangerousGoods", aggregate: SOME_NULL)
+    hasSomeDangerousGoodsFlag: Boolean @collect(path: "allItems.isDangerousGoods", aggregate: SOME_NOT_NULL)
+    hasAllDangerousGoodsFlags: Boolean @collect(path: "allItems.isDangerousGoods", aggregate: NONE_NULL)
+    hasNoDangerousGoodsFlag: Boolean @collect(path: "allItems.isDangerousGoods", aggregate: EVERY_NULL)
+    missingDangerousGoodsFlagCount: Int @collect(path: "allItems.isDangerousGoods", aggregate: COUNT_NULL)
+    setDangerousGoodsFlagCount: Int @collect(path: "allItems.isDangerousGoods", aggregate: COUNT_NOT_NULL)
+}
+
+type HandlingUnit @rootEntity {
+    handlingUnitNumber: String @key
+
+    deliveries: [Delivery] @relation(inverseOf: "handlingUnits")
+    childHandlingUnits: [HandlingUnit] @relation
+    parentHandlingUnit: HandlingUnit @relation(inverseOf: "childHandlingUnits")
+
+    allInnerHandlingUnits: [HandlingUnit] @collect(path: "childHandlingUnits{1,2}")
+}
+
+type Order @rootEntity {
+    orderNumber: String @key
+    payedAt: DateTime
+
+    delivery: Delivery @relation(inverseOf: "order")
+
+    allOuterHandlingUnits: [HandlingUnit] @collect(path: "delivery.handlingUnits")
+    allItems: [DeliveryItem] @collect(path: "delivery.allItems")
+}
+
+type DeliveryContent @childEntity {
+    deliveryContentNumber: String
+
+    items: [DeliveryItem]
+}
+
+type DeliveryItem @childEntity {
+    itemNumber: String
+    weightInKg: Float
+    isDangerousGoods: Boolean
+}

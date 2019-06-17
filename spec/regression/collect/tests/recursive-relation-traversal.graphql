@@ -66,17 +66,9 @@ mutation createEdges {
     }
 }
 
-query direct0to0 {
-    Delivery(deliveryNumber: "D1") {
-        allHandlingUnits0to0 {
-            handlingUnitNumber
-        }
-    }
-}
-
 query direct0to1 {
     Delivery(deliveryNumber: "D1") {
-        allHandlingUnits0to1 {
+        allHandlingUnits0to1(orderBy: handlingUnitNumber_ASC) {
             handlingUnitNumber
         }
     }
@@ -84,7 +76,7 @@ query direct0to1 {
 
 query direct0to2 {
     Delivery(deliveryNumber: "D1") {
-        allHandlingUnits0to2 {
+        allHandlingUnits0to2(orderBy: handlingUnitNumber_ASC) {
             handlingUnitNumber
         }
     }
@@ -92,7 +84,7 @@ query direct0to2 {
 
 query direct1to1 {
     Delivery(deliveryNumber: "D1") {
-        allHandlingUnits1to1 {
+        allHandlingUnits1to1(orderBy: handlingUnitNumber_ASC) {
             handlingUnitNumber
         }
     }
@@ -100,7 +92,7 @@ query direct1to1 {
 
 query direct1to2 {
     Delivery(deliveryNumber: "D1") {
-        allHandlingUnits1to2 {
+        allHandlingUnits1to2(orderBy: handlingUnitNumber_ASC) {
             handlingUnitNumber
         }
     }
@@ -108,7 +100,7 @@ query direct1to2 {
 
 query direct2to2 {
     Delivery(deliveryNumber: "D1") {
-        allHandlingUnits2to2 {
+        allHandlingUnits2to2(orderBy: handlingUnitNumber_ASC) {
             handlingUnitNumber
         }
     }
@@ -116,7 +108,7 @@ query direct2to2 {
 
 query direct3to3 {
     Delivery(deliveryNumber: "D1") {
-        allHandlingUnits3to3 {
+        allHandlingUnits3to3(orderBy: handlingUnitNumber_ASC) {
             handlingUnitNumber
         }
     }
@@ -124,7 +116,7 @@ query direct3to3 {
 
 query indirect {
     Shipment(shipmentNumber: "S1") {
-        allHandlingUnits {
+        allHandlingUnits(orderBy: handlingUnitNumber_ASC) {
             handlingUnitNumber
         }
     }

@@ -12,7 +12,7 @@ mutation createEdges {
 
 query toNtoN {
     Shipment(shipmentNumber: "S1") {
-        allOuterHandlingUnits {
+        allOuterHandlingUnits (orderBy: handlingUnitNumber_ASC){
             handlingUnitNumber
         }
     }
@@ -20,7 +20,7 @@ query toNtoN {
 
 query toNto1 {
     Shipment(shipmentNumber: "S1") {
-        allOrders {
+        allOrders(orderBy: orderNumber_ASC) {
             orderNumber
         }
     }
@@ -28,7 +28,7 @@ query toNto1 {
 
 query to1toN {
     Order(orderNumber: "O1") {
-        allOuterHandlingUnits {
+        allOuterHandlingUnits(orderBy: handlingUnitNumber_ASC) {
             handlingUnitNumber
         }
     }

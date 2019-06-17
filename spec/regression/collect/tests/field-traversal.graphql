@@ -3,6 +3,5 @@ query fields {
         allItems {
             itemNumber
         }
-        allItemNumbers
     }
 }

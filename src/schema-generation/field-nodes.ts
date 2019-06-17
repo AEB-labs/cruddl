@@ -1,6 +1,6 @@
-import { FieldAggregator, RootEntityType } from '../model';
+import { AggregationOperator, RootEntityType } from '../model';
 import { Field } from '../model/implementation';
-import { AggregationQueryNode, Aggregator, BasicType, BinaryOperationQueryNode, BinaryOperator, ConditionalQueryNode, CountQueryNode, EntitiesQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, NullQueryNode, ObjectQueryNode, QueryNode, RootEntityIDQueryNode, SafeListQueryNode, TransformListQueryNode, TraversalQueryNode, TypeCheckQueryNode, VariableQueryNode } from '../query-tree';
+import { AggregationQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConditionalQueryNode, CountQueryNode, EntitiesQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, NullQueryNode, ObjectQueryNode, QueryNode, RootEntityIDQueryNode, SafeListQueryNode, TransformListQueryNode, TraversalQueryNode, TypeCheckQueryNode, VariableQueryNode } from '../query-tree';
 import { ID_FIELD } from '../schema/constants';
 import { and } from './filter-input-types/constants';
 
@@ -16,19 +16,18 @@ export function createFieldNode(field: Field, sourceNode: QueryNode, options: { 
         sourceNode = sourceNode.expr1;
     }
 
-    if (field.traversalPath) {
-        return new TraversalQueryNode(field.traversalPath, sourceNode);
-    }
-
-    if (field.aggregationPath) {
-        const items = new TraversalQueryNode(field.aggregationPath, sourceNode);
-        if (!field.aggregator) {
-            throw new Error(`Expected "${field.declaringType.name}.${field.name}" to have an aggregator`);
-        }
-        if (field.aggregator === FieldAggregator.COUNT) {
-            return new CountQueryNode(items);
+    if (field.collectPath) {
+        if (field.aggregationOperator) {
+            const items = new TraversalQueryNode(field.collectPath, sourceNode);
+            if (field.aggregationOperator === AggregationOperator.COUNT) {
+                return new CountQueryNode(items);
+            } else {
+                // scalar fields should be ordered automatically because there is no argument to sort them
+                const sort = field.aggregationOperator === AggregationOperator.DISTINCT && (field.type.isScalarType || field.type.isEnumType);
+                return new AggregationQueryNode(items, field.aggregationOperator, { sort });
+            }
         } else {
-            return new AggregationQueryNode(items, field.aggregator);
+            return new TraversalQueryNode(field.collectPath, sourceNode);
         }
     }
 
