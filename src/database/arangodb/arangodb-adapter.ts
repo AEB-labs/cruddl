@@ -645,7 +645,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         return this.versionHelper.getArangoDBVersion();
     }
 
-    // @MSF TODO: collect into one request (dataloader)
+    // @MSF TODO: collect into one request
     async tokenizeExpression(expression: string, quickSearchLanguage?: QuickSearchLanguage): Promise<ReadonlyArray<string>> {
         const query = aql`RETURN { tokens: TOKENS(${expression},${getAnalyzerFromQuickSearchLanguage(quickSearchLanguage)}) }`;
         const cursor = await this.db.query(query);

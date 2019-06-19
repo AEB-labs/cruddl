@@ -2,6 +2,7 @@ import { DatabaseAdapter } from '../../../src/database/database-adapter';
 import { QueryNode } from '../../../src/query-tree';
 import { Model, Relation, TypeKind } from '../../../src/model';
 import { expect } from 'chai';
+import { flatMap } from '../../../src/utils/utils';
 
 class FakeDBAdatper implements DatabaseAdapter {
     async execute(queryTree: QueryNode): Promise<any> {
@@ -10,6 +11,10 @@ class FakeDBAdatper implements DatabaseAdapter {
 
     async updateSchema(schema: Model): Promise<void> {
 
+    }
+
+    async tokenizeExpression(expression: string): Promise<ReadonlyArray<string>> {
+        return flatMap(expression.split(' '), t => t.split('-'));
     }
 
 }

@@ -43,7 +43,7 @@ export class QuickSearchFilterObjectType extends TypedInputObjectType<QuickSearc
     constructor(
         type: Type,
         fields: Thunk<ReadonlyArray<QuickSearchFilterField>>,
-        isAggregration: boolean,
+        public readonly isAggregration: boolean,
     ) {
         super(getQuickSearchFilterTypeName(type.name, isAggregration), fields, `QuickSearchFilter type for \`${type.name}\`.\n\nAll fields in this type are *and*-combined; see the \`or\` field for *or*-combination.`);
     }
@@ -66,22 +66,23 @@ export class QuickSearchFilterTypeGenerator {
     }
 
     @memorize()
-    generate(type: ObjectType, path?: ReadonlyArray<Field>): QuickSearchFilterObjectType {
-        return this.generateQuickSearchFilterType(type, () => {
+    generate(type: ObjectType, isAggregation: boolean): QuickSearchFilterObjectType {
+        const quickSearchFilterObjectType = this.generateQuickSearchFilterType(type, () => {
             return flatMap(
                 type.fields.filter(value => value.isQuickSearchIndexed || value.isQuickSearchFulltextIndexed),
-                (field: Field) => this.generateFieldQuickSearchFilterFields(field, path ? path : [])
+                (field: Field) => this.generateFieldQuickSearchFilterFields(field, isAggregation)
             );
-        }, path ? path : []);
+        }, isAggregation);
+        return quickSearchFilterObjectType;
 
     }
 
-    private generateQuickSearchFilterType(type: Type, fields: Thunk<ReadonlyArray<QuickSearchFilterField>>, path: ReadonlyArray<Field>): QuickSearchFilterObjectType {
+    private generateQuickSearchFilterType(type: Type, fields: Thunk<ReadonlyArray<QuickSearchFilterField>>, isAggregation: boolean): QuickSearchFilterObjectType {
         function getFields(): ReadonlyArray<QuickSearchFilterField> {
             const filterFields = [
                 ...resolveThunk(fields)
             ];
-            if (path.length < 1) {
+            if (!isAggregation) {
                 return filterFields.concat([new QuickSearchAndFilterField(filterType), new QuickSearchOrFilterField(filterType)]);
             }else{
                 return filterFields;
@@ -89,14 +90,11 @@ export class QuickSearchFilterTypeGenerator {
 
         }
 
-
-        // @TODO @MSF path[0].isList?
-        // @MSF investigate scalar fields e.g. nickNames
-        const filterType = new QuickSearchFilterObjectType(type, getFields, path.length > 0 && path[0].isList);
+        const filterType = new QuickSearchFilterObjectType(type, getFields, isAggregation);
         return filterType;
     }
 
-    public generateFieldQuickSearchFilterFields(field: Field, path: ReadonlyArray<Field>): ReadonlyArray<QuickSearchFilterField> {
+    public generateFieldQuickSearchFilterFields(field: Field, isAggregation: boolean): ReadonlyArray<QuickSearchFilterField> {
         if (field.isList) {
             return this.generateListFieldFilterFields(field);
         }
@@ -104,7 +102,7 @@ export class QuickSearchFilterTypeGenerator {
             return this.generateFilterFieldsForNonListScalar(field);
         }
         if (field.type.isObjectType) {
-            const inputType = this.generate(field.type,path.concat(field));
+            const inputType = this.generate(field.type,isAggregation);
             if (field.type.isEntityExtensionType) {
                 return [new QuickSearchEntityExtensionFilterField(field, inputType)];
             } else {
@@ -199,7 +197,7 @@ export class QuickSearchFilterTypeGenerator {
         } else if (field.type instanceof EnumType) {
             return this.buildEnumFilterFields(field.type, field, pathParam);
         } else {
-            const inputType = this.generate(field.type, pathParam.concat(field));
+            const inputType = this.generate(field.type, true);
             if (field.type.isEntityExtensionType) {
                 return [new QuickSearchEntityExtensionFilterField(field, inputType)];
             } else {

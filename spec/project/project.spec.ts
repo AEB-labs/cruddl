@@ -7,6 +7,7 @@ import { Project } from '../../src/project/project';
 import { ProjectSource } from '../../src/project/source';
 import { expect } from 'chai';
 import { Model } from '../../src/model';
+import { flatMap } from '../../src/utils/utils';
 
 class FakeDBAdatper implements DatabaseAdapter {
     async execute(queryTree: QueryNode): Promise<any> {
@@ -17,6 +18,9 @@ class FakeDBAdatper implements DatabaseAdapter {
 
     }
 
+    async tokenizeExpression(expression: string): Promise<ReadonlyArray<string>> {
+        return flatMap(expression.split(' '), t => t.split('-'));
+    }
 }
 
 describe('project', () => {

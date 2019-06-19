@@ -2,7 +2,7 @@ import { getNamedType, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'gra
 import * as pluralize from 'pluralize';
 import { isArray } from 'util';
 import { Field, QuickSearchLanguage, TypeKind } from '../../model';
-import { BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, FieldPathQueryNode, LiteralQueryNode, QueryNode, QuickSearchFieldExistsQueryNode } from '../../query-tree';
+import { BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, FieldPathQueryNode, LiteralQueryNode, QueryNode, QuickSearchFieldExistsQueryNode, RuntimeErrorQueryNode } from '../../query-tree';
 import { AND_FILTER_FIELD, FILTER_FIELD_PREFIX_SEPARATOR, INPUT_FIELD_EQUAL, INPUT_FIELD_NOT, INPUT_FIELD_NOT_STARTS_WITH, INPUT_FIELD_STARTS_WITH, OR_FILTER_FIELD } from '../../schema/constants';
 import { AnyValue, PlainObject } from '../../utils/utils';
 import { not } from '../filter-input-types/constants';
@@ -95,7 +95,10 @@ export class QuickSearchScalarOrEnumFilterField implements QuickSearchFilterFiel
     }
 
     get name() {
-        return this.operatorName;
+        if (this.operatorName == undefined) {
+            return this.field.name;
+        }
+        return this.field.name + NESTED_FIELD_SUFFIX + FILTER_FIELD_PREFIX_SEPARATOR + this.operatorName;
     }
 
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue, path: ReadonlyArray<Field>): QueryNode {
@@ -121,6 +124,11 @@ export class QuickSearchNestedObjectFilterField implements QuickSearchFilterFiel
     }
 
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue, path: ReadonlyArray<Field>): QueryNode {
+        // if path contains any Field twice
+        if(path.some(value => path.filter(value1 => value == value1).length > 1)){
+            return new RuntimeErrorQueryNode("Recursive filters can only be defined for one level of recursion.");
+            // @MSF TODO: allow configuration of recursion depth
+        }
         if (filterValue == null) {
             const valueNode = new FieldPathQueryNode(sourceNode, path.concat(this.field));
             const literalNode = new LiteralQueryNode(filterValue);
