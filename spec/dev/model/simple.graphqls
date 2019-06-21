@@ -1,18 +1,15 @@
+# @MSF TODO: includedInSearch nicht für Zahlen?
+
 "A superhero"
 type Hero @rootEntity(quickSearchIndex: true, quickSearchLanguage: DE) {
     "The hero's screen name"
-    name: String @quickSearchIndex
+    name: String @quickSearchIndex @quickSearchIndex(includedInSearch: true)
     key: String @key
     identity: String @quickSearchIndex(includedInSearch: true)
-    number: Int @quickSearchIndex 
-    fullText: String @quickSearchFulltextIndex(includedInSearch: true)
-    fullTextEn: String @quickSearchFulltextIndex(language: EN)
-    both: String @quickSearchIndex @quickSearchFulltextIndex
-    age: Int @defaultValue(value: 42)
+    age: Int @defaultValue(value: 42) @quickSearchIndex
     nickNames: [String] @quickSearchIndex
     movies: [Movie] @relation(inverseOf: "heroes")
-    skills: [Skill]
-    skill: Skill @quickSearchIndex
+    skills: [Skill] @quickSearchIndex
     suit: Suit
     morality: Morality
     countryISOCode: String
