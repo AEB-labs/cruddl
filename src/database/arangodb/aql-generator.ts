@@ -551,7 +551,7 @@ register(BinaryOperationQueryNode, (node, context) => {
     }
 
 });
-
+// @MSF TODO quickSearchStartsWith querynode and language not optional
 register(OperatorWithLanguageQueryNode, (node, context) => {
 
     const lhs = processNode(node.lhs, context);
@@ -559,7 +559,7 @@ register(OperatorWithLanguageQueryNode, (node, context) => {
     const analyzer = node.quickSearchLanguage ? `text_${node.quickSearchLanguage.toLowerCase()}` : IDENTITY_ANALYZER;
 
     switch (node.operator) {
-        case BinaryOperatorWithLanguage.QUICKSEARCH_STARTS_WITH: // @MSF TODO quickSearchStartsWith querynode and language not optional
+        case BinaryOperatorWithLanguage.QUICKSEARCH_STARTS_WITH:
             return aql`STARTS_WITH(${lhs},${rhs})`;
         case BinaryOperatorWithLanguage.QUICKSEARCH_CONTAINS_ANY_WORD:
             return aql`ANALYZER( ${lhs} IN TOKENS(${rhs}, ${analyzer}),${analyzer})`;

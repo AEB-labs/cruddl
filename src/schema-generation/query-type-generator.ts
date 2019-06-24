@@ -129,6 +129,6 @@ export class QueryTypeGenerator {
 
     private getQuickSearchEntitiesFieldMeta(rootEntityType: RootEntityType): QueryNodeField {
         const metaType = this.metaTypeGenerator.generate();
-        return this.filterAugmentation.augment(this.quickSearchGenerator.generateMeta(rootEntityType, metaType), rootEntityType);
+        return this.quickSearchGenerator.generateMeta(rootEntityType, metaType);
     }
 }

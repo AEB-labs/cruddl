@@ -1,7 +1,7 @@
 import { text } from 'body-parser';
 import { DirectiveNode, FieldDefinitionNode, GraphQLFloat, GraphQLInt } from 'graphql';
 import memorize from 'memorize-decorator';
-import { AGGREGATION_DIRECTIVE, CALC_MUTATIONS_OPERATORS, RELATION_DIRECTIVE, TRAVERSAL_DIRECTIVE } from '../../schema/constants';
+import { ACCESS_GROUP_FIELD, AGGREGATION_DIRECTIVE, CALC_MUTATIONS_OPERATORS, RELATION_DIRECTIVE, TRAVERSAL_DIRECTIVE } from '../../schema/constants';
 import { GraphQLDateTime } from '../../schema/scalars/date-time';
 import { GraphQLLocalDate } from '../../schema/scalars/local-date';
 import { GraphQLLocalTime } from '../../schema/scalars/local-time';
@@ -593,6 +593,10 @@ export class Field implements ModelComponent {
         }
         if (this.isQuickSearchIndexed && (this.type.isEntityExtensionType || this.type.isValueObjectType) && !this.type.fields.some(value => value.isQuickSearchIndexed || value.isQuickSearchFulltextIndexed)) {
             context.addMessage(ValidationMessage.error(`At least one field on type "${this.type.name}" must be quickSearchIndexed or quickSearchFulltextIndexed.`, this.input.isQuickSearchIndexedASTNode));
+        }
+        if (this.name === ACCESS_GROUP_FIELD && this.declaringType.isRootEntityType && this.declaringType.permissionProfile
+            && this.declaringType.permissionProfile.permissions.some(value => value.restrictToAccessGroups)){
+            context.addMessage(ValidationMessage.error(`When using restriction by accessGroup the field "${this.name}" must be quickSearchIndexed.`, this.astNode));
         }
         // @MSF TODO: write tests (see traversal.spec.ts)
     }

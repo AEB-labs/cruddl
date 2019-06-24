@@ -30,7 +30,7 @@ export class RootTypesGenerator {
     private readonly metaTypeGenerator = new MetaTypeGenerator();
     private readonly outputTypeGenerator = new OutputTypeGenerator(this.listAugmentation, this.filterAugmentation,
         this.enumTypeGenerator, this.orderByEnumGenerator, this.metaTypeGenerator);
-    private readonly quickSearchGenerator = new QuickSearchGenerator(this.quickSearchFilterTypeGenerator, this.outputTypeGenerator, this.listAugmentation);
+    private readonly quickSearchGenerator = new QuickSearchGenerator(this.quickSearchFilterTypeGenerator, this.outputTypeGenerator, this.listAugmentation, this.filterAugmentation);
     private readonly createTypeGenerator = new CreateInputTypeGenerator(this.enumTypeGenerator);
     private readonly updateTypeGenerator = new UpdateInputTypeGenerator(this.enumTypeGenerator, this.createTypeGenerator);
     private readonly queryTypeGenerator = new QueryTypeGenerator(this.outputTypeGenerator, this.listAugmentation,
