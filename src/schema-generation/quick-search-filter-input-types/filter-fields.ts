@@ -66,7 +66,10 @@ export class QuickSearchScalarOrEnumFieldFilterField implements QuickSearchFilte
                 new QuickSearchFieldExistsQueryNode(valueNode, this.quickSearchLanguage)
             );
         }
-        // @MSF TODO return false if not_starts_with: ""
+
+        if(this.operatorPrefix == INPUT_FIELD_NOT_STARTS_WITH && (filterValue === "")){
+            return new ConstBoolQueryNode(false);
+        }
         if((this.operatorPrefix == INPUT_FIELD_STARTS_WITH || this.operatorPrefix == INPUT_FIELD_NOT_STARTS_WITH || STRING_TEXT_ANALYZER_FILTER_FIELDS.some(value => this.operatorPrefix === value)) && (filterValue == null || filterValue === "")){
             return new ConstBoolQueryNode(true);
         }
@@ -115,7 +118,7 @@ export class QuickSearchNestedObjectFilterField implements QuickSearchFilterFiel
     constructor(
         public readonly field: Field,
         public readonly inputType: QuickSearchFilterObjectType
-    ) { // @MSF TODO: prevent recursion
+    ) {
         this.name = this.field.isList ? this.field.name + NESTED_FIELD_SUFFIX : this.field.name;
         this.description = `Checks if \`${this.field.name}\` is not null, and allows to filter based on its fields.`;
         if (this.field.isReference && this.field.type.kind == TypeKind.ROOT_ENTITY && this.field.type.keyField) {

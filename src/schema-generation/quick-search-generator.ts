@@ -6,6 +6,7 @@ import { simplifyBooleans } from '../query-tree/utils';
 import { FILTER_ARG, ORDER_BY_ARG, QUICK_SEARCH_EXPRESSION_ARG, QUICK_SEARCH_FILTER_ARG } from '../schema/constants';
 import { getMetaFieldName, getQuickSearchEntitiesFieldName } from '../schema/names';
 import { decapitalize } from '../utils/utils';
+import { FilterAugmentation } from './filter-augmentation';
 import { ListAugmentation } from './list-augmentation';
 import { OutputTypeGenerator } from './output-type-generator';
 import { QueryNodeField, QueryNodeListType, QueryNodeNonNullType, QueryNodeObjectType, QueryNodeResolveInfo } from './query-node-object-type';
@@ -24,7 +25,8 @@ export class QuickSearchGenerator {
     constructor(
         private readonly quickSearchTypeGenerator: QuickSearchFilterTypeGenerator,
         private readonly outputTypeGenerator: OutputTypeGenerator,
-        private readonly listAugmentation: ListAugmentation
+        private readonly listAugmentation: ListAugmentation,
+        private readonly filterAugmentation: FilterAugmentation
     ) {
 
     }
@@ -53,14 +55,14 @@ export class QuickSearchGenerator {
                 );
             }
         });
-        return this.generateFromConfig(fieldConfig, rootEntityType);
+        return this.filterAugmentation.augment(this.generateFromConfig(fieldConfig, rootEntityType), rootEntityType);
     }
 
     generateFromConfig(schemaField: QueryNodeField, rootEntityType: RootEntityType): QueryNodeField {
         if (!rootEntityType.isObjectType) {
             return schemaField;
         }
-        const quickSearchType = this.quickSearchTypeGenerator.generate(rootEntityType);
+        const quickSearchType = this.quickSearchTypeGenerator.generate(rootEntityType, false);
         return {
             ...schemaField,
             args: {
@@ -103,7 +105,7 @@ export class QuickSearchGenerator {
 
     private getPreExecQueryNode(rootEntityType: RootEntityType, args: { [p: string]: any }, context: QueryNodeResolveInfo): QueryNode {
         const itemVariable = new VariableQueryNode(decapitalize(rootEntityType.name));
-        const quickSearchType = this.quickSearchTypeGenerator.generate(rootEntityType);
+        const quickSearchType = this.quickSearchTypeGenerator.generate(rootEntityType, false);
         const qsFilterNode = this.buildQuickSearchFilterNode(args, quickSearchType, itemVariable, rootEntityType);
         return new BinaryOperationQueryNode(
             new CountQueryNode(

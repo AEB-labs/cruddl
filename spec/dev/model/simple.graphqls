@@ -1,9 +1,9 @@
 # @MSF TODO: includedInSearch nicht für Zahlen?
-
+# @MSF TODO: RC4: Sorting - https://www.arangodb.com/2019/06/rc4-of-arangodb-3-5-configurable-analyzers-arangosearch-upgrades/
 "A superhero"
 type Hero @rootEntity(quickSearchIndex: true, quickSearchLanguage: DE) {
     "The hero's screen name"
-    name: String @quickSearchIndex @quickSearchIndex(includedInSearch: true)
+    name: String @quickSearchIndex(includedInSearch: true)
     key: String @key
     identity: String @quickSearchIndex(includedInSearch: true)
     age: Int @defaultValue(value: 42) @quickSearchIndex

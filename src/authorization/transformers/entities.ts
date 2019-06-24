@@ -1,4 +1,4 @@
-import { ConditionalQueryNode, EntitiesQueryNode, EntityFromIdQueryNode, NullQueryNode, PERMISSION_DENIED_ERROR, RuntimeErrorQueryNode, TransformListQueryNode, VariableAssignmentQueryNode, VariableQueryNode } from '../../query-tree';
+import { BinaryOperationQueryNode, BinaryOperator, ConditionalQueryNode, EntitiesQueryNode, EntityFromIdQueryNode, NullQueryNode, PERMISSION_DENIED_ERROR, RuntimeErrorQueryNode, TransformListQueryNode, VariableAssignmentQueryNode, VariableQueryNode } from '../../query-tree';
 import { QuickSearchQueryNode } from '../../query-tree/quick-search';
 import { AccessOperation, AuthContext } from '../auth-basics';
 import { PermissionResult } from '../permission-descriptors';
@@ -51,12 +51,11 @@ export function transformQuickSearchQueryNode(node: QuickSearchQueryNode, authCo
         case PermissionResult.DENIED:
             return new RuntimeErrorQueryNode(`Not authorized to read ${node.rootEntityType.name} objects`, { code: PERMISSION_DENIED_ERROR });
         default:
-            const itemVar = new VariableQueryNode('item');
-            const condition = permissionDescriptor.getAccessCondition(authContext, AccessOperation.READ, itemVar);
-            return new TransformListQueryNode({
-                listNode: node,
-                filterNode: condition,
-                itemVariable: itemVar
+            const condition = permissionDescriptor.getAccessCondition(authContext, AccessOperation.READ, node.itemVariable);
+            return new QuickSearchQueryNode({
+                qsFilterNode: new BinaryOperationQueryNode(node.qsFilterNode, BinaryOperator.AND, condition),
+                rootEntityType: node.rootEntityType,
+                itemVariable: node.itemVariable
             });
     }
     // @MSF TODO use ArangoSearch filter for access group, and add access group to index
