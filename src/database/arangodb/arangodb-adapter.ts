@@ -158,17 +158,18 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                 }
 
                 let explainResult;
-                if (options.recordPlan) {
-                    const stmt = db._createStatement({
-                        query: query.code,
-                        bindVars
-                    });
-                    explainResult = stmt.explain({ allPlans: true });
-                }
-
                 // Execute the AQL query
                 let executionResult;
                 try {
+                    // the explain statement also can cause errors which should be caught
+                    if (options.recordPlan) {
+                        const stmt = db._createStatement({
+                            query: query.code,
+                            bindVars
+                        });
+                        explainResult = stmt.explain({ allPlans: true });
+                    }
+
                     executionResult = db._query({
                         query: `/*id:${transactionID}*/\n${query.code}`,
                         bindVars,
