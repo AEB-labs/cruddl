@@ -51,7 +51,7 @@ export class QueryTypeGenerator {
     private getNamespaceField(namespace: Namespace): QueryNodeField {
         return {
             name: namespace.name || '',
-            type: this.generate(namespace),
+            type: new QueryNodeNonNullType(this.generate(namespace)),
             description: `The Query type for the namespace "${namespace.dotSeparatedPath}"`,
             resolve: () => new ObjectQueryNode([])
         };

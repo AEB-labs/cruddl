@@ -1,4 +1,4 @@
-import { FieldAggregator } from '../model/config';
+import { AggregationOperator } from '../model/config';
 import { indent } from '../utils/utils';
 import { QueryNode } from './base';
 import { ConstBoolQueryNode } from './literals';
@@ -152,14 +152,19 @@ export class FirstOfListQueryNode extends QueryNode {
     }
 }
 
+interface AggregationQueryNodeParams {
+    sort?: boolean
+}
+
 export class AggregationQueryNode extends QueryNode {
-    constructor(readonly listNode: QueryNode, readonly aggregator: Aggregator) {
+    readonly sort: boolean;
+
+    constructor(readonly listNode: QueryNode, readonly operator: AggregationOperator, options: AggregationQueryNodeParams = {}) {
         super();
+        this.sort = options.sort || false;
     }
 
     describe() {
-        return `${this.aggregator}(${this.listNode.describe()})`;
+        return `${this.operator}(${this.listNode.describe()})`;
     }
 }
-
-export type Aggregator = FieldAggregator.AVERAGE | FieldAggregator.MAX | FieldAggregator.MIN | FieldAggregator.SUM;

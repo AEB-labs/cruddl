@@ -1,6 +1,6 @@
 import { compact } from 'lodash';
-import { Field, FieldAggregator, Relation, RelationSide, RootEntityType } from '../../model';
-import { getEffectiveTraversalSegments } from '../../model/implementation/field-path';
+import { Field, AggregationOperator, Relation, RelationSide, RootEntityType } from '../../model';
+import { getEffectiveCollectSegments } from '../../model/implementation/collect-path';
 import { AddEdgesQueryNode, AggregationQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, BinaryOperatorWithLanguage, ConcatListsQueryNode, ConditionalQueryNode, ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, OperatorWithLanguageQueryNode, OrderClause, OrderDirection, OrderSpecification, QueryNode, QueryResultValidator, QuickSearchFieldExistsQueryNode, RemoveEdgesQueryNode, RootEntityIDQueryNode, RUNTIME_ERROR_CODE_PROPERTY, RUNTIME_ERROR_TOKEN, RuntimeErrorQueryNode, SafeListQueryNode, SetEdgeQueryNode, TransformListQueryNode, TraversalQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../../query-tree';
 import { QuantifierFilterNode } from '../../query-tree/quantifiers';
 import { QuickSearchComplexOperatorQueryNode, QuickSearchQueryNode } from '../../query-tree/quick-search';
@@ -299,20 +299,64 @@ register(CountQueryNode, (node, context) => {
 
 register(AggregationQueryNode, (node, context) => {
     const itemVar = js.variable('item');
+    const indexVar = js.variable('index');
     const accumulatorVar = js.variable('acc');
     const listFrag = processNode(node.listNode, context);
-    switch (node.aggregator) {
-        case FieldAggregator.SUM:
-            return js`${listFrag}.reduce((${itemVar}, ${accumulatorVar}) => ${accumulatorVar} + ${itemVar})`;
-        case FieldAggregator.AVERAGE:
-            const listVar = js.variable('list');
-            return jsExt.evaluatingLambda(listVar, js`(${listVar}.reduce((${itemVar}, ${accumulatorVar}) => ${accumulatorVar} + ${itemVar}) / ${listVar}.length)`, processNode(node.listNode, context));
-        case FieldAggregator.MIN:
-            return js`${listFrag}.reduce((${itemVar}, ${accumulatorVar}) => Math.min(${accumulatorVar}, ${itemVar}))`;
-        case FieldAggregator.MAX:
-            return js`${listFrag}.reduce((${itemVar}, ${accumulatorVar}) => Math.max(${accumulatorVar}, ${itemVar}))`;
+    const listVar = js.variable('list');
+
+    const listWithoutNullsFrag = js`${listFrag}.filter(${itemVar} => ${itemVar} != null)`;
+
+    switch (node.operator) {
+        case AggregationOperator.SUM:
+            return js`${listWithoutNullsFrag}.reduce((${itemVar}, ${accumulatorVar}) => ${accumulatorVar} + ${itemVar}, 0)`;
+        case AggregationOperator.AVERAGE:
+            return jsExt.evaluatingLambda(listVar, js`${listVar}.length ? (${listVar}.reduce((${itemVar}, ${accumulatorVar}) => ${accumulatorVar} + ${itemVar}) / ${listVar}.length) : null`, listWithoutNullsFrag);
+        case AggregationOperator.MIN:
+            return jsExt.evaluatingLambda(listVar, js`${listVar}.length ? (${listVar}.reduce((${itemVar}, ${accumulatorVar}) => Math.min(${accumulatorVar}, ${itemVar}))) : null`, listWithoutNullsFrag);
+        case AggregationOperator.MAX:
+            return jsExt.evaluatingLambda(listVar, js`${listVar}.length ? (${listVar}.reduce((${itemVar}, ${accumulatorVar}) => Math.max(${accumulatorVar}, ${itemVar}))) : null`, listWithoutNullsFrag);
+        case AggregationOperator.SOME_TRUE:
+            return js`${listFrag}.some(${jsExt.lambda(itemVar, itemVar)})`;
+        case AggregationOperator.SOME_NOT_TRUE:
+            return js`${listFrag}.some(${jsExt.lambda(itemVar, js`!${itemVar}`)})`;
+        case AggregationOperator.EVERY_TRUE:
+            return js`${listFrag}.every(${jsExt.lambda(itemVar, itemVar)})`;
+        case AggregationOperator.NONE_TRUE:
+            return js`(!${listFrag}.some(${jsExt.lambda(itemVar, itemVar)}))`;
+        case AggregationOperator.COUNT_TRUE:
+            return js`${listFrag}.filter(${jsExt.lambda(itemVar, itemVar)}).length`;
+        case AggregationOperator.COUNT_NOT_TRUE:
+            return js`${listFrag}.filter(${jsExt.lambda(itemVar, js`!${itemVar}`)}).length`;
+        case AggregationOperator.SOME_NULL:
+            return js`${listFrag}.some(${jsExt.lambda(itemVar, js`${itemVar} == null`)})`;
+        case AggregationOperator.SOME_NOT_NULL:
+            return js`${listFrag}.some(${jsExt.lambda(itemVar, js`${itemVar} != null`)})`;
+        case AggregationOperator.EVERY_NULL:
+            return js`${listFrag}.every(${jsExt.lambda(itemVar, js`${itemVar} == null`)})`;
+        case AggregationOperator.NONE_NULL:
+            return js`${listFrag}.every(${jsExt.lambda(itemVar, js`${itemVar} != null`)})`;
+        case AggregationOperator.COUNT_NULL:
+            return js`${listFrag}.filter(${jsExt.lambda(itemVar, js`${itemVar} == null`)}).length`;
+        case AggregationOperator.COUNT_NOT_NULL:
+            return js`${listFrag}.filter(${jsExt.lambda(itemVar, js`${itemVar} != null`)}).length`;
+        case AggregationOperator.COUNT:
+            return js`${listFrag}.length`;
+        case AggregationOperator.SOME:
+            return js`(!!${listFrag}.length)`;
+        case AggregationOperator.NONE:
+            return js`(!${listFrag}.length)`;
+
+        // these should also remove null values by definition
+        case AggregationOperator.DISTINCT:
+            const list = jsExt.evaluatingLambda(listVar, js`${listVar}.filter((${itemVar}, ${indexVar}) => (${itemVar} != null && ${listVar}.indexOf(${itemVar}) === ${indexVar}))`, listWithoutNullsFrag);
+            if (node.sort) {
+                return js`${list}.sort(support.compare)`;
+            }
+            return list;
+        case AggregationOperator.COUNT_DISTINCT:
+            return jsExt.evaluatingLambda(listVar, js`${listVar}.filter((${itemVar}, ${indexVar}) => (${itemVar} != null && ${listVar}.indexOf(${itemVar}) === ${indexVar})).length`, listWithoutNullsFrag);
         default:
-            throw new Error(`Unsupported aggregator: ${(node as any).aggregator}`);
+            throw new Error(`Unsupported aggregation operator: ${(node as any).operator}`);
     }
 });
 
@@ -475,30 +519,37 @@ register(TraversalQueryNode, (node, context) => {
     let currentFrag: JSFragment = processNode(node.sourceEntityNode, context);
     let isList = false;
 
-    const { relationSegments, fieldSegments } = getEffectiveTraversalSegments(node.path);
+    const { relationSegments, fieldSegments } = getEffectiveCollectSegments(node.path);
 
     for (const segment of relationSegments) {
         if (isList) {
             const nodeVar = js.variable('node');
             const accVar = js.variable('acc');
             const idFrag = js`${nodeVar}.${js.identifier(ID_FIELD_NAME)}`;
-            const reducer = js`(${accVar}, ${nodeVar}) => ${accVar}.concat(${getFollowEdgeFragment(segment.relationSide, idFrag, context)})`;
+            let edgeListFragment = js`${nodeVar} ? ${getFollowEdgeFragment(segment.relationSide, idFrag, context)} : null`;
+            if (!segment.isListSegment) {
+                // to-1 relations can be nullable and we need to keep the NULL values (and not just pretend the source didn't exist)
+                const edgeListVar = js.variable('edges');
+                edgeListFragment = jsExt.evaluatingLambda(edgeListVar, js`${edgeListVar}.length ? ${edgeListVar} : [null]`, edgeListFragment);
+            }
+            const reducer = js`(${accVar}, ${nodeVar}) => ${accVar}.concat(${edgeListFragment})`;
             currentFrag = js`${currentFrag}.reduce(${reducer}, [])`;
         } else {
-            currentFrag = getFollowEdgeFragment(segment.relationSide, js`${currentFrag}.${js.identifier(ID_FIELD_NAME)}`, context);
+            const nodeVar = js.variable('node');
+            currentFrag = jsExt.evaluatingLambda(nodeVar, js`${nodeVar} ? ${getFollowEdgeFragment(segment.relationSide, js`${nodeVar}.${js.identifier(ID_FIELD_NAME)}`, context)} : null`, currentFrag);
+            if (!segment.isListSegment) {
+                // to-1 relations can be nullable and we need to keep the NULL values (and not just pretend the source didn't exist)
+                currentFrag = js`(${currentFrag}[0] || null)`;
+            }
         }
 
         if (segment.minDepth !== 1 || segment.maxDepth !== 1) {
             throw new Error(`Traversal with min/max depth is not supported by InMemoryAdapter`);
         }
 
-        // follow-edge always results in a list
-        isList = true;
-    }
-
-    if (isList && !relationSegments[relationSegments.length - 1].resultIsList) {
-        currentFrag = js`(${currentFrag}[0] || null)`;
-        isList = false;
+        if (segment.isListSegment) {
+            isList = true;
+        }
     }
 
     for (const segment of fieldSegments) {
@@ -506,8 +557,10 @@ register(TraversalQueryNode, (node, context) => {
             if (segment.isListSegment) {
                 const nodeVar = js.variable('node');
                 const accVar = js.variable('acc');
-                const reducer = js`(${accVar}, ${nodeVar}) => ${accVar}.concat(${getFieldAccessFrag(segment.field, nodeVar)})`;
-                currentFrag = js`${currentFrag}.reduce(${reducer}, [])`;
+                const safeListVar = js.variable('list');
+                // || [] to not concat `null` to a list
+                const reducer = js`(${accVar}, ${nodeVar}) => ${accVar}.concat(${getFieldAccessFrag(segment.field, nodeVar)} || [])`;
+                currentFrag = jsExt.evaluatingLambda(safeListVar, js`${safeListVar}.reduce(${reducer}, [])`, js`${currentFrag} || []`);
             } else {
                 const nodeVar = js.variable('node');
                 const mapper = jsExt.lambda(nodeVar, getFieldAccessFrag(segment.field, nodeVar));
@@ -520,11 +573,6 @@ register(TraversalQueryNode, (node, context) => {
         if (segment.isListSegment) {
             isList = true;
         }
-    }
-
-    if (node.path.resultIsList) {
-        const itemVar = js.variable('item');
-        currentFrag = js`${currentFrag}.filter(${itemVar} => ${itemVar} != null)`;
     }
 
     return currentFrag;

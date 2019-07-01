@@ -1,19 +1,26 @@
 import { StringValueNode } from 'graphql';
 import memorize from 'memorize-decorator';
 import { flatMap } from '../../utils/utils';
-import { TraversalConfig } from '../config';
+import { CollectFieldConfig } from '../config';
 import { locationWithinStringArgument, ValidationContext, ValidationMessage } from '../validation';
 import { Field } from './field';
-import { RelationSide } from './relation';
+import { Multiplicity, RelationSide } from './relation';
 import { RootEntityType } from './root-entity-type';
 import { ObjectType, Type } from './type';
 
 interface PathSegmentBase {
-    readonly kind: 'field' | 'relation' | 'traversal';
+    readonly kind: 'field' | 'relation' | 'collect';
     readonly field: Field
     readonly resultingType: Type
     readonly isListSegment: boolean
     readonly resultIsList: boolean
+    readonly isNullableSegment: boolean
+    readonly resultIsNullable: boolean
+
+    /**
+     * If true, the result can contain an entity multiple times. This e.g. happens when following a m-to-n relation.
+     */
+    readonly resultMayContainDuplicateEntities: boolean
 }
 
 export interface FieldSegment extends PathSegmentBase {
@@ -29,9 +36,9 @@ export interface RelationSegment extends PathSegmentBase {
 }
 
 // for embedding another traversal
-export interface TraversalSegment extends PathSegmentBase {
-    readonly kind: 'traversal';
-    readonly path: FieldPath
+export interface CollectSegment extends PathSegmentBase {
+    readonly kind: 'collect';
+    readonly path: CollectPath
 }
 
 class FieldPathRecursionError extends Error {
@@ -41,24 +48,24 @@ class FieldPathRecursionError extends Error {
     }
 }
 
-export type PathSegment = FieldSegment | RelationSegment | TraversalSegment;
+export type CollectPathSegment = FieldSegment | RelationSegment | CollectSegment;
 
-export class FieldPath {
+export class CollectPath {
     public readonly path: string;
     private readonly astNode: StringValueNode | undefined;
 
-    constructor(config: TraversalConfig, public readonly declaringType: ObjectType) {
+    constructor(config: CollectFieldConfig, public readonly declaringType: ObjectType) {
         this.path = config.path;
         this.astNode = config.pathASTNode;
     }
 
     @memorize()
-    get segments(): ReadonlyArray<PathSegment> {
+    get segments(): ReadonlyArray<CollectPathSegment> {
         return this.traversePath(() => undefined);
     }
 
     getFlatSegments(): ReadonlyArray<FieldSegment | RelationSegment> {
-        return flatMap(this.segments, seg => seg.kind === 'traversal' ? seg.path.getFlatSegments() : [seg]);
+        return flatMap(this.segments, seg => seg.kind === 'collect' ? seg.path.getFlatSegments() : [seg]);
     }
 
     get resultingType(): Type | undefined {
@@ -78,6 +85,25 @@ export class FieldPath {
         return segments[segments.length - 1].resultIsList;
     }
 
+    get resultIsNullable(): boolean {
+        const segments = this.segments;
+        if (!segments.length) {
+            return false;
+        }
+        return segments[segments.length - 1].resultIsNullable;
+    }
+
+    /**
+     * If true, the result can contain the same item multiple times. This e.g. happens when following a m-to-n relation.
+     */
+    get resultMayContainDuplicateEntities(): boolean {
+        const segments = this.segments;
+        if (!segments.length) {
+            return false;
+        }
+        return segments[segments.length - 1].resultMayContainDuplicateEntities;
+    }
+
     /**
      * @return true if valid, false if invalid
      */
@@ -86,7 +112,7 @@ export class FieldPath {
         return path.length > 0;
     }
 
-    private traversePath(addMessage: (mess: ValidationMessage) => void, pathStack?: ReadonlyArray<FieldPath>): ReadonlyArray<PathSegment> {
+    private traversePath(addMessage: (mess: ValidationMessage) => void, pathStack?: ReadonlyArray<CollectPath>): ReadonlyArray<CollectPathSegment> {
         const segmentSpecifiers = this.path.split('.');
         if (!this.path || !segmentSpecifiers.length) {
             addMessage(ValidationMessage.error(`The path cannot be empty.`, this.astNode));
@@ -94,14 +120,19 @@ export class FieldPath {
         }
 
         let currentType: Type = this.declaringType;
-        let segments: PathSegment[] = [];
+        let segments: CollectPathSegment[] = [];
         let currentResultIsList = false;
+        let previousResultIsList;
+        let currentResultIsNullable = false;
+        let currentResultMayContainDuplicateEntities = false;
         let currentOffset = 0;
         for (const segmentSpecifier of segmentSpecifiers) {
+            previousResultIsList = currentResultIsList;
+
             const segmentLocation = this.astNode ? locationWithinStringArgument(this.astNode, currentOffset, segmentSpecifier.length) : undefined;
 
             if (!currentType.isObjectType) {
-                addMessage(ValidationMessage.error(`Type "${currentType.name}" is not an object type and cannot be traversed into.`, segmentLocation));
+                addMessage(ValidationMessage.error(`Type "${currentType.name}" is not an object type and cannot be navigated into.`, segmentLocation));
                 return [];
             }
 
@@ -121,6 +152,32 @@ export class FieldPath {
                 return [];
             }
 
+            // do the recursion check at the beginning so we don't trigger stack overflow on getters
+            if (field.collectPath) {
+                // begin ugly code
+                // this works as follows:
+                // - a regular call of traversePath (e.g. through get segments()) goes into the else branch and initiates the recursion check
+                // - a call of traversePath within the recursion check goes into the then branch, does the recursion check, and digs further into
+                // only the "regular calls" generate errors because that's the path we're actually validating
+                if (pathStack) {
+                    if (pathStack.includes(field.collectPath)) {
+                        throw new FieldPathRecursionError();
+                    }
+                    field.collectPath.traversePath(() => undefined, [...pathStack, this]);
+                } else {
+                    try {
+                        field.collectPath.traversePath(() => undefined, [this]);
+                    } catch (e) {
+                        if (e instanceof FieldPathRecursionError) {
+                            addMessage(ValidationMessage.error(`Collect field "${field.name}" cannot be used here because it would cause a recursion.`, segmentLocation));
+                            return [];
+                        }
+                        throw e;
+                    }
+                }
+                // end ugly code
+            }
+
             if (field.isList) {
                 currentResultIsList = true;
             }
@@ -128,58 +185,53 @@ export class FieldPath {
             // by disallowing references, we make sure the traversal can be done by a graph traversal followed by an intra-root-entity traversal
             // also, references are supposed to be loosely coupled, and adding a traversal fields tightens that coupling.
             if (field.isReference) {
-                addMessage(ValidationMessage.error(`Field "${currentType.name}.${field.name}" is a reference and cannot be used in a traversal.`, segmentLocation));
+                addMessage(ValidationMessage.error(`Field "${currentType.name}.${field.name}" is a reference and cannot be used in a collect path.`, segmentLocation));
+                // when we support this, currentResultMayContainDuplicates should be set to true if previousResultIsList is true
                 return [];
             }
 
-            if (field.isAggregation) {
-                addMessage(ValidationMessage.error(`Field "${currentType.name}.${field.name}" is an aggregation field and cannot be used in a traversal.`, segmentLocation));
-                return [];
+            if (!field.isNonNull) {
+                currentResultIsNullable = true;
+            }
+            if (field.isList && field.isNonNull) {
+                // lists can actually *reset* nullability because the flatMap returns [] for null parents
+                currentResultIsNullable = false;
             }
 
-            if (field.isTraversal) {
-                if (field.traversalPath) {
-                    // begin ugly code
-                    // this works as follows:
-                    // - a regular call of traversePath (e.g. through get segments()) goes into the else branch and initiates the recursion check
-                    // - a call of traversePath within the recursion check goes into the then branch, does the recursion check, and digs further into
-                    // only the "regular calls" generate errors because that's the path we're actually validating
-                    if (pathStack) {
-                        if (pathStack.includes(field.traversalPath)) {
-                            throw new FieldPathRecursionError();
-                        }
-                        field.traversalPath.traversePath(() => undefined, [...pathStack, this]);
-                    } else {
-                        try {
-                            field.traversalPath.traversePath(() => undefined, [this]);
-                        } catch (e) {
-                            if (e instanceof FieldPathRecursionError) {
-                                addMessage(ValidationMessage.error(`Traversal field "${field.name}" cannot be used here because it would cause a recursion.`, segmentLocation));
-                                return [];
-                            }
-                            throw e;
-                        }
-                    }
-                    // end ugly code
-                }
+            if (field.isCollectField) {
 
-                if (!field.traversalPath || !field.traversalPath.resultingType) {
-                    addMessage(ValidationMessage.error(`The traversal path of "${currentType.name}.${field.name}" has validation errors.`, this.astNode));
+                if (!field.collectPath || !field.collectPath.resultingType) {
+                    addMessage(ValidationMessage.error(`The collect path of "${currentType.name}.${field.name}" has validation errors.`, this.astNode));
                     return [];
                 }
+                if (field.aggregationOperator) {
+                    addMessage(ValidationMessage.error(`Field "${currentType.name}.${field.name}" is an aggregation field and cannot be used in a collect path.`, segmentLocation));
+                    return [];
+                }
+
+                // we basically also need to re-evaluate the may-contain-duplicate-entities with an isList at *this* point
+                if (field.collectPath.resultMayContainDuplicateEntities ||
+                    (previousResultIsList && field.collectPath.segments.some(segment => segment.kind === 'relation' && segment.relationSide.targetMultiplicity === Multiplicity.MANY)))
+                {
+                    currentResultMayContainDuplicateEntities = true;
+                }
+
                 segments.push({
-                    kind: 'traversal',
-                    path: field.traversalPath,
-                    isListSegment: field.traversalPath.resultIsList,
+                    kind: 'collect',
+                    path: field.collectPath,
+                    isListSegment: field.collectPath.resultIsList,
                     resultIsList: currentResultIsList,
+                    isNullableSegment: !field.isNonNull,
+                    resultIsNullable: currentResultIsNullable,
                     field,
-                    resultingType: field.traversalPath.resultingType
+                    resultingType: field.collectPath.resultingType,
+                    resultMayContainDuplicateEntities: currentResultMayContainDuplicateEntities
                 });
             } else if (field.type.isRootEntityType) {
                 const relationSide = field.relationSide;
                 if (!relationSide) {
                     // might occur if directives are missing
-                    addMessage(ValidationMessage.error(`Field "${currentType.name}.${field.name}" is a root entity, but not a relation, and cannot be used in a traversal.`, segmentLocation));
+                    addMessage(ValidationMessage.error(`Field "${currentType.name}.${field.name}" is a root entity, but not a relation, and cannot be used in a collect path.`, segmentLocation));
                     return [];
                 }
 
@@ -202,9 +254,22 @@ export class FieldPath {
                     maxDepth = 1;
                 }
 
+                let isListSegment = field.isList;
                 if (minDepth !== 1 || maxDepth !== 1) {
                     // adding {0,1} can convert a to-1 relation to a list (because it now contains up to two objects)
+                    isListSegment = true;
                     currentResultIsList = true;
+                }
+                // segment stays nullable even if this is a list (if there is no edge, we include NULL for consistency)
+
+                if (maxDepth === 0) {
+                    addMessage(ValidationMessage.error(`The maximum depth cannot be zero.`, segmentLocation));
+                }
+
+                // following 1-to-n and then n-to-m means that one of the m entities may be reached via different entities of the n which all belong to the 1 entity
+                // targetMultiplicity == MANY means that a target entity can be linked to many source entities
+                if (previousResultIsList && relationSide.targetMultiplicity === Multiplicity.MANY) {
+                    currentResultMayContainDuplicateEntities = true;
                 }
 
                 segments.push({
@@ -213,9 +278,12 @@ export class FieldPath {
                     minDepth,
                     maxDepth,
                     relationSide,
-                    isListSegment: field.isList,
+                    isListSegment,
                     resultIsList: currentResultIsList,
-                    resultingType: field.type
+                    resultingType: field.type,
+                    isNullableSegment: !field.isNonNull,
+                    resultIsNullable: currentResultIsNullable,
+                    resultMayContainDuplicateEntities: currentResultMayContainDuplicateEntities
                 });
             } else {
                 if (minDepth != undefined) {
@@ -228,7 +296,10 @@ export class FieldPath {
                     field,
                     resultingType: field.type,
                     isListSegment: field.isList,
-                    resultIsList: currentResultIsList
+                    resultIsList: currentResultIsList,
+                    isNullableSegment: !field.isNonNull,
+                    resultIsNullable: currentResultIsNullable,
+                    resultMayContainDuplicateEntities: currentResultMayContainDuplicateEntities
                 });
             }
 
@@ -257,7 +328,7 @@ function parseSegmentSpecifier(specifier: string): { readonly fieldName: string,
     };
 }
 
-export function getEffectiveTraversalSegments(path: FieldPath): {
+export function getEffectiveCollectSegments(path: CollectPath): {
     readonly relationSegments: ReadonlyArray<RelationSegment>,
     readonly fieldSegments: ReadonlyArray<FieldSegment>
 } {
@@ -270,7 +341,7 @@ export function getEffectiveTraversalSegments(path: FieldPath): {
                 break;
             case 'relation':
                 if (fieldSegments.length) {
-                    throw new Error(`Unexpected field segment after relation segments in traversal path "${path.path}"`);
+                    throw new Error(`Unexpected field segment after relation segments in collect path "${path.path}"`);
                 }
                 relationSegments.push(segment);
                 break;

@@ -21,12 +21,12 @@ import { ValueObjectType } from './value-object-type';
 export class Model implements ModelComponent {
     private readonly typeMap: ReadonlyMap<string, Type>;
     private readonly builtInTypes: ReadonlyArray<Type>;
-    private readonly permissionProfiles: ReadonlyArray<PermissionProfile>;
 
     readonly rootNamespace: Namespace;
     readonly namespaces: ReadonlyArray<Namespace>;
     readonly types: ReadonlyArray<Type>;
     readonly i18n: ModelI18n;
+    readonly permissionProfiles: ReadonlyArray<PermissionProfile>;
 
     constructor(private input: ModelConfig) {
         this.builtInTypes = createBuiltInTypes(this);

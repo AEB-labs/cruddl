@@ -163,13 +163,13 @@ The referenced country will be looked on demand. If the referenced object does n
 
 You can omit the argument `keyField` on the `@reference` directive (and this argument has only been introduced in cruddl 0.9). In that case, you won't have access to the raw key field value via the API. In the data base, it will be stored with the name of the reference field.
 
-## Calculated fields
+## Collect fields
 
-You can extend a type with fields that can not be set directly and are not persisted, but will be calculated based on other fields. One example are references with the `keyField` argument (see previous section). This section documents two other kinds of calculated fields.
+With the `@collect` directive, you can define fields that are not persisted but rather compute their value when queried, based on other fields. It allows you to follow a path of relations, child entities and other fields, collect these values and optionally apply aggregations on them.
 
-### Traversal fields
+### Basics
 
-Relations and child entity let you define a graph of objects that can be selected by regular GraphQL fields. If you're not interested in the graph structure but only in the objects, you can define a `@traversal` field that follows a path and collects all objects on the way:
+You can use `@collect` to follow two relations and collect all inner entities:
 
 ```graphql
 type OrderItem @childEntity {
@@ -182,19 +182,44 @@ type Order @rootEntity {
 
 type Shipment @rootEntity {
   orders: [Order] @relation
-  allItems: [OrderItem] @traversal(path: "orders.items")
+  allItems: [OrderItem] @collect(path: "orders.items")
 }
 ```
 
 The field `allItems` will return all items in all orders of a shipment. It will not be available for filtering or sorting and you will not be able to set it directly in *create* and *update* mutations.
 
-The path can traverse an arbitrary number of fields. Only the objects of the *last* field will be returned, and the type of that last field needs to match the traversal field type (`OrderItem` in the example). References can not be followed, but you can use other traversal fields in the path.
+The path can traverse an arbitrary number of fields. Only the objects of the *last* field will be returned, and the type of that last field needs to match the traversal field type (`OrderItem` in the example). References can not yet be followed, but you can use other traversal fields in the path.
 
-Self-relations (relations from one type to the same type) can be traversed a variable number of times: Specify e.g. `path: "friends{1,3}"` to traverse the `friends` relation one to three times. You can also specify `0` as the lower bound to include the original object in the result.
+### Flattening tree structure
 
-### Aggregation fields
+If you have a root entity with a relation to itself, you can use a collect field to flatten the tree:
 
-An aggregation field is a field that calculates e.g. a sum or an average of values. You can specify a path like for traversal fields and an aggregator:
+```graphql
+type HandlingUnit {
+  childHandlingUnits: [HandlingUnit] @relation
+  parentHandlingUnit: HandlingUnit @relation(inverseOf: "childHandlingUnits")
+  
+  allInnerHandlingUnits: [HandlingUnit] @collect(path: "childHandlingUnits{1,3}")
+}
+```
+
+The field `allInnerHandlingUnits` will result in the direct children, their children, and their children (by default, in depth-first order). The first number (`1`) is the minimum depth (which can also be `0` to include the originating entity), and the second number (`3`) is the maximum depth. If you omit the maximum depth, the minimum depth will be used as maximum depth. It's not possible to entirely omit the maximum depth.
+
+The minimum and maximum depth can only be specified on directly recursive relations. It is not possible to cycle through indirectly recursive relations, and child entity don't support this feature at all.
+
+### Null values
+
+If you follow a field that can be null (e.g. a to-1 relation or a simple scalar field), the collection may include `null` values. However, it is not allowed to define a list field that could include `null` values. Therefore, you need to define an aggregation, e.g. `DISTINCT` to remove null values.
+
+If you follow a list field on an object that is be null (e.g. `order.orderItems` if `order` is be null), this null object just won't contribute any items. The resulting list will not include `null` in this case.
+
+### Collecting scalar values
+
+A collect path can also end in a scalar field. This however requires the use of an aggregator (see next section). Use the aggregator `DISTINCT` if you are interested in the individual field values.
+
+### Aggregating values
+
+With the optional `aggregate` argument, you can perform an aggregation on all collected items. For example, this allows you to sum up numbers:
 
 ```graphql
 type OrderItem @childEntity {
@@ -204,17 +229,53 @@ type OrderItem @childEntity {
 
 type Order @rootEntity {
   items: [OrderItem]
-  totalQuantity: Int @aggregation(path: "items.quantity", aggregator: SUM)
+  totalQuantity: Int @collect(path: "items.quantity", aggregate: SUM)
 }
 ```
 
-For the path, the same rules apply as for traversal fields.
+The path can use all the features from above and also use other `@collect` fields (but not nested aggregations at the moment).
 
-The following aggregators are supported:
+The following operators are supported:
 
-* `COUNT` - supported on all kinds of types (object types and scalars)
-* `MIN`, `MAX` - supported on `Int`, `Float`, `DateTime`, `LocalDate` and `LocalTime`
-* `AVERAGE`, `SUM` - supported only on `Int` and `Float`
+| Operator         | Description                                      | Supported Types                                      | Null values     | Result on empty list |
+|------------------|--------------------------------------------------|------------------------------------------------------|-----------------|----------------------|
+| `COUNT`          | Total number of items (including `null`)         | all types (last segment must be a list)              | included        | `0`                  |
+| `SOME`           | `true` if there are any items (including `null`) | all types (last segment must be a list)              | included        | `false`              |
+| `NONE`           | `true` if the list is empty                      | all types (last segment must be a list)              | included        | `true`               |
+| **Null**         |                                                  |                                                      |                 |                      |
+| `COUNT_NULL`     | Number of items that are `null`                  | all nullable types                                   | see description | `0`                  |
+| `COUNT_NOT_NULL` | Number of items that are not `null`              | all nullable types                                   | see description | `0`                  |
+| `SOME_NULL`      | `true` if there are items that are `null`        | all nullable types                                   | see description | `false`              |
+| `SOME_NOT_NULL`  | `true` if there are items that are not `null`    | all nullable types                                   | see description | `false`              |
+| `EVERY_NULL`     | `true` if there are no items that are not `null` | all nullable types                                   | see description | `true`               |
+| `NONE_NULL`      | `true` if there are no items that are `null`     | all nullable types                                   | see description | `true`               |
+| **Numbers**      |                                                  |                                                      |                 |                      |
+| `MIN`            | Minimum value (ignoring `null`)                  | `Int`, `Float`, `DateTime`, `LocalDate`, `LocalTime` | excluded        | `null`               |
+| `MAX`            | Maximum value (ignoring `null`)                  | `Int`, `Float`, `DateTime`, `LocalDate`, `LocalTime` | excluded        | `null`               |
+| `SUM`            | Sum (ignoring `null`)                            | `Int`, `Float`                                       | excluded        | `0`                  |
+| `AVERAGE`        | Sum / Count (ignoring `null`)                    | `Int`, `Float`                                       | excluded        | `null`               |
+| **Boolean**      |                                                  |                                                      |                 |                      |
+| `COUNT_TRUE`     | Number of items that are `true`                  | `Boolean`                                            | ≙ `false`       | `0`                  |
+| `COUNT_NOT_TRUE` | Number of items that are not `true`              | `Boolean`                                            | ≙ `false`       | `0`                  |
+| `SOME_TRUE`      | `true` if there are items that are `true`        | `Boolean`                                            | ≙ `false`       | `false`              |
+| `SOME_NOT_TRUE`  | `true` if there are items that are not `true`    | `Boolean`                                            | ≙ `false`       | `false`              |
+| `EVERY_TRUE`     | `true` if there are no items that are not `true` | `Boolean`                                            | ≙ `false`       | `true`               |
+| `NONE_TRUE`      | `true` if there are no items that are `true`     | `Boolean`                                            | ≙ `false`       | `true`               |
+| **Distinct**     |                                                  |                                                      |                 |                      |
+| `DISTINCT`       | all values without duplicates and `null`         | `String`, `ID`, child/root entities, and enums       | excluded        | `[]`                 |
+| `COUNT_DISTINCT` | all values without duplicates and `null`         | `String`, `ID`, child/root entities, and enums       | excluded        | `0`                  |
+
+Note that if a value is collected multiple times, it will be used multiple times by the aggregator (e.g. counted twice). In the future, it will be possible to a field with `DISTICNT` aggregation in another aggregation field.
+
+### Restrictions
+
+* Reference fields can currently not be used in the collect path.
+* Aggregation fields can currently not be used in the collect path, including the `DISTINCT` operator.
+* Min/Max depth can currently not be specified on child entities or nested value objects.
+* Min/Max depth can currently not be specified for indirectly recursive relations.
+* The InMemoryAdapter currently does not support min/max depth.
+
+Also, some possible performance optimizations are not implemented yet. For example, the `DISTINCT` operator is applied at the end of a collection and not as early as possible.
 
 ## Permissions
 

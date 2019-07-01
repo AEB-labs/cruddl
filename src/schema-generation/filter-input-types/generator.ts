@@ -61,7 +61,7 @@ export class FilterTypeGenerator {
     }
 
     private generateFieldFilterFields(field: Field): FilterField[] {
-        if (field.isTraversal || field.isAggregation) {
+        if (field.isCollectField || field.isCollectField) {
             // traversal and aggregation fields can't be used to filter
             return [];
         }

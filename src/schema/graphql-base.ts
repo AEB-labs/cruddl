@@ -16,41 +16,72 @@ export const DIRECTIVES: DocumentNode = gql`
 
     "Declares a field as a to-1 or to-n relation to another root entity"
     directive @relation(inverseOf: String) on FIELD_DEFINITION
-    
-    "Declares a field to be the result of a traversal of relations and fields"
-    directive @traversal(
+
+    "Collects values by traversing a path and optionally aggregating them"
+    directive @collect(
         """
         A series of field names (dot-separated), starting from the declaring type.
-        
+
         Recursive relation fields (e.g. from HandlingUnit to HandlingUnit) can be traversed recursively. To enable this,
         specify a minimum and maximum depth, e.g. "children{1,3}" to include all direct children, their children, and
         the children of them. You can also specify zero as lower bound to include the originating entity.
         """
         path: String!
+
+        "An optional operator to be used to aggregate the values"
+        aggregate: FieldAggregator
     ) on FIELD_DEFINITION
 
     enum FieldAggregator {
+        "Total number of items (including null)"
         COUNT,
-        SUM,
-        MIN,
-        MAX,
-        AVERAGE
-    }
-    
-    "Declares a field to be an aggregation of list items"
-    directive @aggregation(
-        """
-        A series of field names (dot-separated), starting from the declaring type.
+        "true if there are any items (including null)"
+        SOME,
+        "true if the list is empty"
+        NONE,
 
-        Recursive relation fields (e.g. from HandlingUnit to HandlingUnit) can be traversed recursively. To enable this,
-        specify a minimum and maximum depth, e.g. "children{1,3}" to include all direct children, their children, and
-        the children of them. You can also specify zero as lower bound to include the originating entity.
-        """
-        path: String!
+        "Number of items that are null"
+        COUNT_NULL,
+        "Number of items that are not null"
+        COUNT_NOT_NULL,
+        "true if there are items that are null"
+        SOME_NULL,
+        "true if there are items that are not null"
+        SOME_NOT_NULL,
+        "true if there are no items that are not null"
+        EVERY_NULL,
+        "true if there are no items that are null"
+        NONE_NULL,
+
+        "Minimum value (ignoring null)"
+        MIN,
+        "Maximum value (ignoring null)"
+        MAX,
+        "Sum (ignoring null)"
+        SUM,
+        "Sum / Count (ignoring null)"
+        AVERAGE,
+
+        "Number of items that are true"
+        COUNT_TRUE,
+        "Number of items that are not true"
+        COUNT_NOT_TRUE,
+        "true if there are items that are true"
+        SOME_TRUE,
+        "true if there are items that are not true"
+        SOME_NOT_TRUE,
+        "true if there are no items that are not true"
+        EVERY_TRUE,
+        "true if there are no items that are true"
+        NONE_TRUE,
         
-        aggregator: FieldAggregator
-    ) on FIELD_DEFINITION
-    
+        "Removes duplicate items and null values"
+        DISTINCT,
+        
+        "Counts the number of items without duplicates and null values"
+        COUNT_DISTINCT
+    }
+
     "Declares a field to reference another root entity via its @key"
     directive @reference(
         """

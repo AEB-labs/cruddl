@@ -12,7 +12,7 @@ import {
 } from '../config';
 import { ValidationMessage } from '../validation';
 import { ValidationContext } from '../validation/validation-context';
-import { Field } from './field';
+import { Field, SystemFieldConfig } from './field';
 import { Index } from './indices';
 import { Model } from './model';
 import { ObjectTypeBase } from './object-type-base';
@@ -231,10 +231,11 @@ export class RootEntityType extends ObjectTypeBase {
     }
 }
 
-const systemFieldInputs: ReadonlyArray<FieldConfig> = [
+const systemFieldInputs: ReadonlyArray<SystemFieldConfig> = [
     {
         name: 'id',
         typeName: 'ID',
+        isNonNull: true,
         description: 'An auto-generated string that identifies this root entity uniquely among others of the same type',
         isQuickSearchIndexed: true,
         isQuickSearchFulltextIndexed: false,
@@ -242,6 +243,7 @@ const systemFieldInputs: ReadonlyArray<FieldConfig> = [
     }, {
         name: 'createdAt',
         typeName: 'DateTime',
+        isNonNull: true,
         description: 'The instant this object has been created',
         isQuickSearchIndexed: true,
         isQuickSearchFulltextIndexed: false,
@@ -249,6 +251,7 @@ const systemFieldInputs: ReadonlyArray<FieldConfig> = [
     }, {
         name: 'updatedAt',
         typeName: 'DateTime',
+        isNonNull: true,
         description: 'The instant this object has been updated the last time (not including relation updates)',
         isQuickSearchIndexed: true,
         isQuickSearchFulltextIndexed: false,

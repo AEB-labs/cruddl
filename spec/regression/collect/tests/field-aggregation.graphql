@@ -1,0 +1,25 @@
+query fields {
+    allDeliveries(orderBy: deliveryNumber_ASC) {
+        deliveryNumber
+        totalWeightInKg
+        averageWeightInKg
+        minWeightInKg
+        maxWeightInKg
+        allItemNumbers
+        itemCount
+        hasItems
+        hasNoItems
+        hasDangerousGoods
+        hasNonDangerousGoods
+        hasOnlyDangerousGoods
+        hasNoDangerousGoods
+        dangerousItemCount
+        nonDangerousItemCount
+        hasMissingDangerousGoodsFlag
+        hasSomeDangerousGoodsFlag
+        hasAllDangerousGoodsFlags
+        hasNoDangerousGoodsFlag
+        missingDangerousGoodsFlagCount
+        setDangerousGoodsFlagCount
+    }
+}

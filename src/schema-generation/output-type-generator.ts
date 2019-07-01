@@ -17,7 +17,7 @@ import { OrderByEnumGenerator, OrderByEnumType } from './order-by-enum-generator
 import {
     makeNonNullableList,
     QueryNodeField,
-    QueryNodeNonNullType, QueryNodeObjectType,
+   QueryNodeListType, QueryNodeNonNullType, QueryNodeObjectType,
     QueryNodeOutputType,
 } from './query-node-object-type';
 import { getOrderByValues } from './utils/pagination';
@@ -110,9 +110,10 @@ export class OutputTypeGenerator {
 
     private createFields(field: Field): ReadonlyArray<QueryNodeField> {
         const type = this.generate(field.type);
+        const itemType = field.isNonNull ? new QueryNodeNonNullType(type) : type;
         const schemaField: QueryNodeField = {
             name: field.name,
-            type: field.isList ? makeNonNullableList(type) : type,
+            type: field.isList ? new QueryNodeNonNullType(new QueryNodeListType(itemType)) : itemType,
             description: field.description,
 
             // normally, entity extensions are converted to an empty object if null, and normally query field nodes have

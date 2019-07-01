@@ -21,20 +21,6 @@
       }
     }
   },
-  "direct0to0": {
-    "data": {
-      "Delivery": {
-        "allHandlingUnits0to0": [
-          {
-            "handlingUnitNumber": "H1"
-          },
-          {
-            "handlingUnitNumber": "H2"
-          }
-        ]
-      }
-    }
-  },
   "direct0to1": {
     "data": {
       "Delivery": {

@@ -1,4 +1,4 @@
-import { FieldPath } from '../model/implementation/field-path';
+import { CollectPath } from '../model/implementation/collect-path';
 import { blue } from '../utils/colors';
 import { Field, RelationSide, RootEntityType } from '../model';
 import { QueryNode } from './base';
@@ -90,7 +90,7 @@ export class FollowEdgeQueryNode extends QueryNode {
  * Traverses a path of relations and other fields
  */
 export class TraversalQueryNode extends QueryNode {
-    constructor(readonly path: FieldPath, readonly sourceEntityNode: QueryNode) {
+    constructor(readonly path: CollectPath, readonly sourceEntityNode: QueryNode) {
         super();
     }
 
@@ -98,3 +98,19 @@ export class TraversalQueryNode extends QueryNode {
         return `traverse ${this.path.path} from ${this.sourceEntityNode.describe()}`;
     }
 }
+
+
+// Cons 1->n  Item m->n HU
+// consigment
+//   - flat: HUs
+//       - "parent": relevantItems:
+
+
+// consignment
+// - flat HUs (with all seletion
+// - items
+//     - hus.id
+
+
+
+//

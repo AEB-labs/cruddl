@@ -23,12 +23,9 @@ export const QUICK_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT = 'includedInSearch';
 export const QUICK_SEARCH_INDEXED_LANGUAGE_ARG = 'quickSearchLanguage';
 export const QUICK_SEARCH_DEFAULT_LANGUAGE_ARG = 'quickSearchLanguage';
 
-export const TRAVERSAL_DIRECTIVE = 'traversal';
-export const TRAVERSAL_PATH_ARG = 'path';
-
-export const AGGREGATION_DIRECTIVE = 'aggregation';
-export const AGGREGATION_PATH_ARG = 'path';
-export const AGGREGATION_AGGREGATOR_ARG = 'aggregator';
+export const COLLECT_DIRECTIVE = 'collect';
+export const COLLECT_PATH_ARG = 'path';
+export const COLLECT_AGGREGATE_ARG = 'aggregate';
 
 export const INVERSE_OF_ARG = 'inverseOf';
 export const KEY_FIELD_ARG = 'keyField';
