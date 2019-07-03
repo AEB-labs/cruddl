@@ -5,7 +5,7 @@ import { Model, RootEntityType } from '../../../model/implementation';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from '../arango-basics';
 import { ArangoDBConfig, getArangoDBLogger, initDatabase } from '../config';
 import { ArangoDBVersionHelper } from '../version-helper';
-import { calculateRequiredIndexOperations, getRequiredIndicesFromModel, IndexDefinition } from './index-helpers';
+import { calculateRequiredIndexOperations, getRequiredIndicesFromModel, IndexDefinition, isArangoSearchSupported } from './index-helpers';
 import {
     CreateArangoSearchViewMigration,
     CreateDocumentCollectionMigration,
@@ -156,6 +156,10 @@ export class SchemaAnalyzer {
      * @param model
      */
     async getArangoSearchMigrations(model: Model): Promise<ReadonlyArray<CreateArangoSearchViewMigration | DropArangoSearchViewMigration | UpdateArangoSearchViewMigration>> {
+
+        if(await isArangoSearchSupported(this.versionHelper.getArangoDBVersion())){
+            return []
+        }
         // the views that match the model
         const requiredViews = getRequiredViewsFromModel(model);
         // the currently existing views

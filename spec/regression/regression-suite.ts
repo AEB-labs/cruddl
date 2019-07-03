@@ -163,7 +163,7 @@ export class RegressionSuite {
         const meta = fs.existsSync(metaPath) ? JSON.parse(stripJsonComments(fs.readFileSync(metaPath, 'utf-8'))) : {};
 
         if (meta.waitForArangoSearch) {
-            await new Promise(resolve => setTimeout(resolve, 2000)); // @MSF TODO test with 3.5 and higher value
+            await new Promise(resolve => setTimeout(resolve, 1000)); // @MSF TODO test with 3.5 and higher value
         }
 
         let actualResult: any;

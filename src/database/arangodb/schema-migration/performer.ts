@@ -1,6 +1,7 @@
 import { Database } from 'arangojs';
 import { ArangoDBConfig, initDatabase } from '../config';
 import { ArangoSearchMigrationNotSupportedError } from './ArangoSearchMigrationNotSupportedError';
+import { isArangoSearchSupported } from './index-helpers';
 import {
     CreateArangoSearchViewMigration,
     CreateDocumentCollectionMigration,
@@ -9,7 +10,7 @@ import {
     DropIndexMigration,
     SchemaMigration, UpdateArangoSearchViewMigration
 } from './migrations';
-import { ArangoDBVersionHelper } from '../version-helper';
+import { ArangoDBVersion, ArangoDBVersionHelper } from '../version-helper';
 
 export class MigrationPerformer {
     private readonly db: Database;
@@ -64,7 +65,7 @@ export class MigrationPerformer {
 
 
     private async createArangoSearchView(migration: CreateArangoSearchViewMigration) {
-        if (await this.isArangoSearchSupported()) {
+        if (await isArangoSearchSupported(this.versionHelper.getArangoDBVersion())) {
             await this.db.arangoSearchView(migration.config.viewName).create();
             // Setting the properties during creation does not work for some reason
             await this.db.arangoSearchView(migration.config.viewName).setProperties(migration.config.properties);
@@ -74,13 +75,8 @@ export class MigrationPerformer {
 
     }
 
-    private async isArangoSearchSupported() {
-        const version = await this.versionHelper.getArangoDBVersion();
-        return version && (version.major >= 3 && version.minor >= 4);
-    }
-
     private async updateArangoSearchView(migration: UpdateArangoSearchViewMigration) {
-        if (await this.isArangoSearchSupported()) {
+        if (await isArangoSearchSupported(this.versionHelper.getArangoDBVersion())) {
             await this.db.arangoSearchView(migration.config.viewName).setProperties(migration.config.properties);
         } else {
             throw new ArangoSearchMigrationNotSupportedError();
@@ -88,7 +84,7 @@ export class MigrationPerformer {
     }
 
     private async dropArangoSearchView(migration: DropArangoSearchViewMigration) {
-        if (await this.isArangoSearchSupported()) {
+        if (await isArangoSearchSupported(this.versionHelper.getArangoDBVersion())) {
             await this.db.arangoSearchView(migration.config.viewName).drop();
         } else {
             throw new ArangoSearchMigrationNotSupportedError();
