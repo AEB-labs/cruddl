@@ -2,7 +2,7 @@ import { QuickSearchLanguage } from '../../model/config';
 import { BinaryOperationQueryNode, BinaryOperator, BinaryOperatorWithLanguage, OperatorWithLanguageQueryNode, QueryNode, QuickSearchStartsWithQueryNode, RuntimeErrorQueryNode, UnaryOperationQueryNode, UnaryOperator } from '../../query-tree';
 
 
-const noLanguageWasSuppliedError = 'No Language was supplied';
+export const noLanguageWasSuppliedError = 'No Language was supplied';
 
 export function not(value: QueryNode): QueryNode {
     return new UnaryOperationQueryNode(value, UnaryOperator.NOT);

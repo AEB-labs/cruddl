@@ -16,13 +16,13 @@ import {
     OrderDirection,
     QueryNode, OperatorWithLanguageQueryNode, BinaryOperatorWithLanguage, RuntimeErrorQueryNode
 } from '../../query-tree';
-import { and, binaryNotOpWithLanguage, binaryOpWithLanguage, not } from '../utils/input-types';
+import { and, binaryNotOpWithLanguage, binaryOpWithLanguage, noLanguageWasSuppliedError, not } from '../utils/input-types';
 import {
     QUICK_SEARCH_FILTER_FIELDS_BY_TYPE,
     QUICK_SEARCH_FILTER_OPERATORS, SOME_PREFIX,
     STRING_TEXT_ANALYZER_FILTER_FIELDS
 } from './constants';
-import { ENUM_FILTER_FIELDS, FILTER_OPERATORS, noLanguageWasSuppliedError } from '../filter-input-types/constants';
+import { ENUM_FILTER_FIELDS, FILTER_OPERATORS } from '../filter-input-types/constants';
 import {
     INPUT_FIELD_CONTAINS_ALL_PREFIXES,
     INPUT_FIELD_CONTAINS_ALL_WORDS,
