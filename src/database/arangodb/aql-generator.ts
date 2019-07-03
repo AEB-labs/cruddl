@@ -47,7 +47,7 @@ import {
 } from '../../query-tree';
 import { Quantifier, QuantifierFilterNode } from '../../query-tree/quantifiers';
 import { extractVariableAssignments, simplifyBooleans } from '../../query-tree/utils';
-import { not } from '../../schema-generation/filter-input-types/constants';
+import { not } from '../../schema-generation/utils/input-types';
 import { Constructor, decapitalize } from '../../utils/utils';
 import { ArangoSearchNotSupportedError } from '../inmemory/js-generator';
 import { analyzeLikePatternPrefix } from '../like-helpers';

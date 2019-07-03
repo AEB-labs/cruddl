@@ -5,7 +5,7 @@ import { AddEdgesQueryNode, AggregationQueryNode, BasicType, BinaryOperationQuer
 import { QuantifierFilterNode } from '../../query-tree/quantifiers';
 import { QuickSearchComplexOperatorQueryNode, QuickSearchFieldExistsQueryNode, QuickSearchQueryNode } from '../../query-tree/quick-search';
 import { simplifyBooleans } from '../../query-tree/utils';
-import { not } from '../../schema-generation/filter-input-types/constants';
+import { not } from '../../schema-generation/utils/input-types';
 import { Constructor, decapitalize } from '../../utils/utils';
 import { aql } from '../arangodb/aql';
 import { IDENTITY_ANALYZER } from '../arangodb/schema-migration/arango-search-helpers';

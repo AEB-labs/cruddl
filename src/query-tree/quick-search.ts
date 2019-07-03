@@ -1,6 +1,6 @@
 import { DatabaseAdapter } from '../database/database-adapter';
 import { QuickSearchLanguage } from '../model/config';
-import { and } from '../schema-generation/quick-search-filter-input-types/constants';
+import { and } from '../schema-generation/utils/input-types';
 import { QueryNode } from './base';
 import { RootEntityType } from '../model/implementation';
 import { ConstBoolQueryNode, LiteralQueryNode } from './literals';

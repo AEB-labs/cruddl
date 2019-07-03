@@ -1,40 +1,15 @@
-import { QuickSearchLanguage } from '../../model/config';
-import { Field } from '../../model/implementation';
-import { BinaryOperator, QueryNode, BinaryOperatorWithLanguage } from '../../query-tree';
-import { AnyValue } from '../../utils/utils';
-import { NUMERIC_FILTER_FIELDS, binaryNotOpWithLanguage, binaryOpWithLanguage, startsWithOp, notStartsWithOp, binaryNotOp, binaryOp } from '../filter-input-types/constants';
-import {
-    INPUT_FIELD_CONTAINS,
-    INPUT_FIELD_CONTAINS_ALL_PREFIXES,
-    INPUT_FIELD_CONTAINS_ALL_WORDS,
-    INPUT_FIELD_CONTAINS_ANY_PREFIX,
-    INPUT_FIELD_CONTAINS_ANY_WORD, INPUT_FIELD_CONTAINS_PHRASE,
-    INPUT_FIELD_ENDS_WITH,
-    INPUT_FIELD_EQUAL,
-    INPUT_FIELD_GT,
-    INPUT_FIELD_GTE,
-    INPUT_FIELD_IN, INPUT_FIELD_LIKE,
-    INPUT_FIELD_LT,
-    INPUT_FIELD_LTE,
-    INPUT_FIELD_NOT,
-    INPUT_FIELD_NOT_CONTAINS_ALL_PREFIXES,
-    INPUT_FIELD_NOT_CONTAINS_ALL_WORDS,
-    INPUT_FIELD_NOT_CONTAINS_ANY_PREFIX,
-    INPUT_FIELD_NOT_CONTAINS_ANY_WORD, INPUT_FIELD_NOT_CONTAINS_PHRASE,
-    INPUT_FIELD_NOT_ENDS_WITH,
-    INPUT_FIELD_NOT_IN, INPUT_FIELD_NOT_LIKE,
-    INPUT_FIELD_NOT_STARTS_WITH,
-    INPUT_FIELD_STARTS_WITH
-} from '../../schema/constants';
 import { GraphQLBoolean, GraphQLFloat, GraphQLID, GraphQLInt, GraphQLString } from 'graphql';
+import { QuickSearchLanguage } from '../../model/config';
+import { BinaryOperator, QueryNode } from '../../query-tree';
+import { INPUT_FIELD_CONTAINS, INPUT_FIELD_CONTAINS_ALL_PREFIXES, INPUT_FIELD_CONTAINS_ALL_WORDS, INPUT_FIELD_CONTAINS_ANY_WORD, INPUT_FIELD_CONTAINS_PHRASE, INPUT_FIELD_ENDS_WITH, INPUT_FIELD_EQUAL, INPUT_FIELD_GT, INPUT_FIELD_GTE, INPUT_FIELD_IN, INPUT_FIELD_LIKE, INPUT_FIELD_LT, INPUT_FIELD_LTE, INPUT_FIELD_NOT, INPUT_FIELD_NOT_CONTAINS_ALL_PREFIXES, INPUT_FIELD_NOT_CONTAINS_ALL_WORDS, INPUT_FIELD_NOT_CONTAINS_ANY_WORD, INPUT_FIELD_NOT_CONTAINS_PHRASE, INPUT_FIELD_NOT_ENDS_WITH, INPUT_FIELD_NOT_IN, INPUT_FIELD_NOT_LIKE, INPUT_FIELD_NOT_STARTS_WITH, INPUT_FIELD_STARTS_WITH } from '../../schema/constants';
 import { GraphQLDateTime } from '../../schema/scalars/date-time';
 import { GraphQLLocalDate } from '../../schema/scalars/local-date';
 import { GraphQLLocalTime } from '../../schema/scalars/local-time';
+import { NUMERIC_FILTER_FIELDS } from '../filter-input-types/constants';
+import { binaryNotOp, binaryOp, notStartsWithOp, startsWithOp } from '../utils/input-types';
+
 
 export const SOME_PREFIX = 'some';
-
-export const and = binaryOp(BinaryOperator.AND);
-export const or = binaryOp(BinaryOperator.OR);
 
 export const QUICK_SEARCH_FILTER_OPERATORS: { [suffix: string]: (fieldNode: QueryNode, valueNode: QueryNode, quickSearchLanguage?: QuickSearchLanguage) => QueryNode } = {
     [INPUT_FIELD_EQUAL]: binaryOp(BinaryOperator.EQUAL),

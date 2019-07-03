@@ -10,5 +10,6 @@ export * from './queries';
 export * from './type-check';
 export * from './validation';
 export * from './variables';
+export { QuickSearchStartsWithQueryNode } from './quick-search';
 
 // visitor is intentionally not re-exported as it can be seen as an 'add-on'

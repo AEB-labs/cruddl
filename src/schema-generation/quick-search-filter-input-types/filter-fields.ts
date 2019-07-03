@@ -6,7 +6,7 @@ import { BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, FieldPath
 import { QuickSearchFieldExistsQueryNode } from '../../query-tree/quick-search';
 import { AND_FILTER_FIELD, FILTER_FIELD_PREFIX_SEPARATOR, INPUT_FIELD_EQUAL, INPUT_FIELD_NOT, INPUT_FIELD_NOT_STARTS_WITH, INPUT_FIELD_STARTS_WITH, OR_FILTER_FIELD } from '../../schema/constants';
 import { AnyValue, PlainObject } from '../../utils/utils';
-import { not } from '../filter-input-types/constants';
+import { not } from '../utils/input-types';
 import { QuickSearchFilterObjectType } from '../quick-search-filter-input-types/generator';
 import { TypedInputFieldBase } from '../typed-input-object-type';
 import { QUICK_SEARCH_FILTER_DESCRIPTIONS, QUICK_SEARCH_OPERATORS_WITH_LIST_OPERAND, STRING_TEXT_ANALYZER_FILTER_FIELDS } from './constants';

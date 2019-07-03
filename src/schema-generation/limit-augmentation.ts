@@ -8,7 +8,7 @@ import {
     AFTER_ARG, CURSOR_FIELD, FIRST_ARG, ID_FIELD, ORDER_BY_ARG, ORDER_BY_ASC_SUFFIX, SKIP_ARG
 } from '../schema/constants';
 import { decapitalize } from '../utils/utils';
-import { and } from './filter-input-types/constants';
+import { and } from './utils/input-types';
 import { OrderByEnumGenerator, OrderByEnumType, OrderByEnumValue } from './order-by-enum-generator';
 import { QueryNodeField } from './query-node-object-type';
 import { getOrderByValues } from './utils/pagination';
