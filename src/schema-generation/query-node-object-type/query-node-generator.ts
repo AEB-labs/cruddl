@@ -63,6 +63,14 @@ function buildObjectQueryNode(sourceNode: QueryNode, type: QueryNodeObjectType, 
         return new PropertySpecification(sel.propertyName, fieldQueryNode);
     }));
 }
+function buildFieldQueryNodeWithTransform(sourceNode: QueryNode, field: QueryNodeField, fieldRequest: FieldRequest, context: FieldContext):QueryNode{
+    const transformListQueryNode = buildFieldQueryNode0(sourceNode, field, fieldRequest, context);
+    if (field.transform) {
+        return field.transform(transformListQueryNode, fieldRequest.args, context);
+    } else {
+        return transformListQueryNode;
+    }
+}
 
 function buildFieldQueryNode0(sourceNode: QueryNode, field: QueryNodeField, fieldRequest: FieldRequest, context: FieldContext): QueryNode {
     const fieldQueryNode = field.resolve(sourceNode, fieldRequest.args, context);
@@ -72,20 +80,13 @@ function buildFieldQueryNode0(sourceNode: QueryNode, field: QueryNodeField, fiel
     if (!queryTreeObjectType) {
         return fieldQueryNode;
     }
-    // @MSF TODO do transform after each case
-    // extract into new method completeQueryNode
 
     if (isListTypeIgnoringNonNull(field.type)) {
         // Note: previously, we had a safeguard here that converted non-lists to empty lists
         // This is no longer necessary because createFieldNode() already does this where necessary (only for simple field lookups)
         // All other code should return lists where lists are expected
 
-        const transformListQueryNode = buildTransformListQueryNode(fieldQueryNode, queryTreeObjectType, fieldRequest.selectionSet, context);
-        if (field.transform) {
-            return field.transform(transformListQueryNode, fieldRequest.args, context);
-        } else {
-            return transformListQueryNode;
-        }
+        return buildTransformListQueryNode(fieldQueryNode, queryTreeObjectType, fieldRequest.selectionSet, context);
 
     }
 
@@ -100,7 +101,7 @@ function buildFieldQueryNode0(sourceNode: QueryNode, field: QueryNodeField, fiel
 }
 
 function buildFieldQueryNode(sourceNode: QueryNode, field: QueryNodeField, fieldRequest: FieldRequest, context: FieldContext): QueryNode {
-    const node = buildFieldQueryNode0(sourceNode, field, fieldRequest, context);
+    const node = buildFieldQueryNodeWithTransform(sourceNode, field, fieldRequest, context);
     if (!field.isSerial) {
         return node;
     }

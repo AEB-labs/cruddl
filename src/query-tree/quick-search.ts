@@ -9,6 +9,9 @@ import { simplifyBooleans } from './utils';
 import { VariableQueryNode } from './variables';
 import { decapitalize, flatMap, indent } from '../utils/utils';
 
+/**
+ * A QueryNode that represents a QuickSearch Query on a RootEntity Type
+ */
 export class QuickSearchQueryNode extends QueryNode {
 
     public readonly qsFilterNode: QueryNode;
@@ -35,10 +38,18 @@ export class QuickSearchQueryNode extends QueryNode {
 
 }
 
+/**
+ * A Query Node that needs to be expanded, after the Query Tree was created, but before authorization is applied.
+ * An Expanding QueryNode must always be replaced by a regular QueryNode during expansion.
+ */
 export abstract class ExpandingQueryNode extends QueryNode{
     abstract async expand(databaseAdapter: DatabaseAdapter):Promise<QueryNode>;
 }
 
+/**
+ * A Query Node that represents a more complex QuickSearch expression (e.g. CONTAINS_ALL_WORDS) that requires a database request,
+ * to tokenize the search expression, before the sub-tree for this expression can be built.
+ */
 export class QuickSearchComplexOperatorQueryNode extends ExpandingQueryNode{
 
     constructor(
@@ -46,7 +57,7 @@ export class QuickSearchComplexOperatorQueryNode extends ExpandingQueryNode{
         private readonly comparisonOperator: BinaryOperatorWithLanguage,
         private readonly logicalOperator: BinaryOperator,
         private readonly fieldNode: QueryNode,
-        private readonly quickSearchLanguage?: QuickSearchLanguage) {
+        private readonly quickSearchLanguage: QuickSearchLanguage) {
         super();
     }
 
@@ -63,4 +74,31 @@ export class QuickSearchComplexOperatorQueryNode extends ExpandingQueryNode{
     }
 
 
+}
+
+
+/**
+ * A node that performs an EXISTS Check
+ */
+export class QuickSearchFieldExistsQueryNode extends QueryNode {
+    constructor(public readonly sourceNode: QueryNode, public readonly quickSearchLanguage?: QuickSearchLanguage) {
+        super();
+    }
+
+    describe() {
+        return `EXISTS(${this.sourceNode.describe()}, ${this.quickSearchLanguage ? this.quickSearchLanguage.toString() : 'identity'})`;
+    }
+}
+
+/**
+ * A node that performs a QuickSearch STARTS_WITH Operation
+ */
+export class QuickSearchStartsWithQueryNode extends QueryNode {
+    constructor(public readonly lhs: QueryNode,public readonly rhs: QueryNode, public readonly quickSearchLanguage?: QuickSearchLanguage) {
+        super();
+    }
+
+    describe() {
+        return `STARTS_WITH(${this.lhs.describe()},${this.rhs.describe()}, ${this.quickSearchLanguage ? this.quickSearchLanguage.toString() : 'identity'})`;
+    }
 }

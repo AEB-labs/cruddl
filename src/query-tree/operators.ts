@@ -137,10 +137,10 @@ export enum BinaryOperator {
 }
 
 /**
- * A node that performs an operation with two operands and a parameter
+ * A node that performs an operation with two operands and a QuickSearch Language
  */
 export class OperatorWithLanguageQueryNode extends QueryNode {
-    constructor(public readonly lhs: QueryNode, public readonly operator: BinaryOperatorWithLanguage, public readonly rhs: QueryNode, public readonly quickSearchLanguage?: QuickSearchLanguage) {
+    constructor(public readonly lhs: QueryNode, public readonly operator: BinaryOperatorWithLanguage, public readonly rhs: QueryNode, public readonly quickSearchLanguage: QuickSearchLanguage) {
         super();
     }
 
@@ -152,8 +152,6 @@ export class OperatorWithLanguageQueryNode extends QueryNode {
         switch (op) {
             case BinaryOperatorWithLanguage.QUICKSEARCH_CONTAINS_ANY_WORD:
                 return 'IN TOKENS';
-            case BinaryOperatorWithLanguage.QUICKSEARCH_STARTS_WITH:
-                return 'STARTS_WITH';
             case BinaryOperatorWithLanguage.QUICKSEARCH_CONTAINS_PHRASE:
                 return 'CONTAINS_PHRASE';
             case BinaryOperatorWithLanguage.QUICKSEARCH_CONTAINS_PREFIX:
@@ -174,23 +172,9 @@ export class OperatorWithLanguageQueryNode extends QueryNode {
 }
 
 /**
- * A node that performs an EXISTS Check
- */
-export class QuickSearchFieldExistsQueryNode extends QueryNode {
-    constructor(public readonly sourceNode: QueryNode, public readonly quickSearchLanguage?: QuickSearchLanguage) {
-        super();
-    }
-
-    describe() {
-        return `EXISTS(${this.sourceNode.describe()}, ${this.quickSearchLanguage ? this.quickSearchLanguage.toString() : 'identity'})`;
-    }
-    }
-
-/**
  * The operator of a OperatorWithLanguageQueryNode
  */
 export enum BinaryOperatorWithLanguage {
-    QUICKSEARCH_STARTS_WITH = 'QUICKSEARCH_STARTS_WITH',
     QUICKSEARCH_CONTAINS_ANY_WORD = 'QUICKSEARCH_CONTAINS_ANY_WORD',
     QUICKSEARCH_CONTAINS_PREFIX = 'QUICKSEARCH_CONTAINS_PREFIX',
     QUICKSEARCH_CONTAINS_PHRASE = 'QUICKSEARCH_CONTAINS_PHRASE',

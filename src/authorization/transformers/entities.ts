@@ -58,5 +58,4 @@ export function transformQuickSearchQueryNode(node: QuickSearchQueryNode, authCo
                 itemVariable: node.itemVariable
             });
     }
-    // @MSF TODO use ArangoSearch filter for access group, and add access group to index
 }

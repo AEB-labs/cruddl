@@ -1,7 +1,7 @@
 import { GraphQLString } from 'graphql';
 import { Field, RootEntityType } from '../model/implementation';
 import { BinaryOperationQueryNode, BinaryOperator, BinaryOperatorWithLanguage, ConditionalQueryNode, ConstBoolQueryNode, CountQueryNode, FieldPathQueryNode, LiteralQueryNode, OperatorWithLanguageQueryNode, PreExecQueryParms, QueryNode, QUICKSEARCH_TOO_MANY_OBJECTS, RuntimeErrorQueryNode, TransformListQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../query-tree';
-import { QuickSearchQueryNode } from '../query-tree/quick-search';
+import { QuickSearchQueryNode, QuickSearchStartsWithQueryNode } from '../query-tree/quick-search';
 import { simplifyBooleans } from '../query-tree/utils';
 import { FILTER_ARG, ORDER_BY_ARG, QUICK_SEARCH_EXPRESSION_ARG, QUICK_SEARCH_FILTER_ARG } from '../schema/constants';
 import { getMetaFieldName, getQuickSearchEntitiesFieldName } from '../schema/names';
@@ -155,19 +155,19 @@ export class QuickSearchGenerator {
                 if (field.type.isScalarType && field.type && !isNaN(Number(expression))) {
                     return new BinaryOperationQueryNode(new FieldPathQueryNode(itemVariable, path.concat(field)), BinaryOperator.EQUAL, new LiteralQueryNode(Number(expression)));
                 } else {
-                    return new OperatorWithLanguageQueryNode(new FieldPathQueryNode(itemVariable, path.concat(field)), BinaryOperatorWithLanguage.QUICKSEARCH_STARTS_WITH, new LiteralQueryNode(expression));
+                    return new QuickSearchStartsWithQueryNode(new FieldPathQueryNode(itemVariable, path.concat(field)), new LiteralQueryNode(expression));
 
                 }
             }
 
             function getOperatorWithLanguageQueryNode() {
-                return new OperatorWithLanguageQueryNode(new FieldPathQueryNode(itemVariable, path.concat(field)), BinaryOperatorWithLanguage.QUICKSEARCH_CONTAINS_PREFIX, new LiteralQueryNode(expression), field.language);
+                return new OperatorWithLanguageQueryNode(new FieldPathQueryNode(itemVariable, path.concat(field)), BinaryOperatorWithLanguage.QUICKSEARCH_CONTAINS_PREFIX, new LiteralQueryNode(expression), field.language!);
             }
 
             return new BinaryOperationQueryNode(
                 field.isQuickSearchIndexed && field.isIncludedInSearch ? getIdentityNode() : ConstBoolQueryNode.FALSE,
                 BinaryOperator.OR,
-                field.isQuickSearchFulltextIndexed && field.isFulltextIncludedInSearch ? getOperatorWithLanguageQueryNode() : ConstBoolQueryNode.FALSE
+                field.isQuickSearchFulltextIndexed && field.isFulltextIncludedInSearch && field.language ? getOperatorWithLanguageQueryNode() : ConstBoolQueryNode.FALSE
             );
         }
 

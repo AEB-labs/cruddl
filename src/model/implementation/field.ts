@@ -1,8 +1,8 @@
 import { text } from 'body-parser';
 import { DirectiveNode, FieldDefinitionNode, GraphQLBoolean, GraphQLFloat, GraphQLID, GraphQLInt, GraphQLString } from 'graphql';
 import memorize from 'memorize-decorator';
-import { ACCESS_GROUP_FIELD, AGGREGATION_DIRECTIVE, CALC_MUTATIONS_OPERATORS, RELATION_DIRECTIVE, TRAVERSAL_DIRECTIVE } from '../../schema/constants';
-import { CALC_MUTATIONS_OPERATORS, COLLECT_AGGREGATE_ARG, COLLECT_DIRECTIVE, RELATION_DIRECTIVE } from '../../schema/constants';
+import { ACCESS_GROUP_FIELD, RELATION_DIRECTIVE } from '../../schema/constants';
+import { CALC_MUTATIONS_OPERATORS, COLLECT_AGGREGATE_ARG, COLLECT_DIRECTIVE } from '../../schema/constants';
 import { GraphQLDateTime } from '../../schema/scalars/date-time';
 import { GraphQLLocalDate } from '../../schema/scalars/local-date';
 import { GraphQLLocalTime } from '../../schema/scalars/local-time';
@@ -657,15 +657,13 @@ export class Field implements ModelComponent {
 
     private validateQuickSearch(context: ValidationContext) {
         const notSupportedOn = `QuickSearchIndex is not supported on`;
-        if (this.isQuickSearchIndexed && (this.isReference || this.isRelation || this.isTraversal || this.isAggregation)) {
+        if (this.isQuickSearchIndexed && (this.isReference || this.isRelation || this.isCollectField)) {
             if (this.isReference) {
                 context.addMessage(ValidationMessage.error(`${notSupportedOn} references.`, this.input.isQuickSearchIndexedASTNode));
             } else if (this.isRelation) {
                 context.addMessage(ValidationMessage.error(`${notSupportedOn} relations.`, this.input.isQuickSearchIndexedASTNode));
-            } else if (this.isAggregation) {
-                context.addMessage(ValidationMessage.error(`${notSupportedOn} aggregations.`, this.input.isQuickSearchIndexedASTNode));
-            } else if (this.isTraversal) {
-                context.addMessage(ValidationMessage.error(`${notSupportedOn} traversals.`, this.input.isQuickSearchIndexedASTNode));
+            } else if (this.isCollectField) {
+                context.addMessage(ValidationMessage.error(`${notSupportedOn} collect fields.`, this.input.isQuickSearchIndexedASTNode));
             }
             return;
         }
@@ -673,12 +671,8 @@ export class Field implements ModelComponent {
             context.addMessage(ValidationMessage.error(`${notSupportedOn} type "${this.type.name}".`, this.input.isQuickSearchFulltextIndexedASTNode));
             return;
         }
-        if (this.isQuickSearchFulltextIndexed && this.isTraversal) {
-            context.addMessage(ValidationMessage.error(`${notSupportedOn} traversals".`, this.input.isQuickSearchFulltextIndexedASTNode));
-            return;
-        }
-        if (this.isQuickSearchFulltextIndexed && this.isAggregation) {
-            context.addMessage(ValidationMessage.error(`${notSupportedOn} aggregations".`, this.input.isQuickSearchFulltextIndexedASTNode));
+        if (this.isQuickSearchFulltextIndexed && this.isCollectField) {
+            context.addMessage(ValidationMessage.error(`${notSupportedOn} collect fields".`, this.input.isQuickSearchFulltextIndexedASTNode));
             return;
         }
         if (this.isQuickSearchFulltextIndexed && !this.language) {
@@ -688,7 +682,7 @@ export class Field implements ModelComponent {
             context.addMessage(ValidationMessage.error(`At least one field on type "${this.type.name}" must be quickSearchIndexed or quickSearchFulltextIndexed.`, this.input.isQuickSearchIndexedASTNode));
         }
         if (this.name === ACCESS_GROUP_FIELD && this.declaringType.isRootEntityType && this.declaringType.permissionProfile
-            && this.declaringType.permissionProfile.permissions.some(value => value.restrictToAccessGroups)){
+            && this.declaringType.permissionProfile.permissions.some(value => value.restrictToAccessGroups) && this.declaringType.arangoSearchConfig.isIndexed){
             context.addMessage(ValidationMessage.error(`When using restriction by accessGroup the field "${this.name}" must be quickSearchIndexed.`, this.astNode));
         }
         // @MSF TODO: write tests (see traversal.spec.ts)

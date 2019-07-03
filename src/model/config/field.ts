@@ -76,11 +76,6 @@ export interface TraversalConfig {
     readonly pathASTNode?: StringValueNode
 }
 
-export interface AggregationConfig extends TraversalConfig {
-    readonly aggregator: FieldAggregator
-    readonly aggregatorASTNode?: EnumValueNode
-}
-
 
 export enum CalcMutationsOperator {
     MULTIPLY = 'MULTIPLY',

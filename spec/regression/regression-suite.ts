@@ -21,7 +21,8 @@ type DatabaseSpecifier = 'arangodb' | 'in-memory';
 export interface RegressionSuiteOptions {
     readonly saveActualAsExpected?: boolean
     readonly trace?: boolean
-    readonly database?: DatabaseSpecifier;
+    readonly database?: DatabaseSpecifier
+    readonly testFilter?: string
 }
 
 interface MetaOptions {
@@ -36,9 +37,6 @@ interface MetaOptions {
         }
     }
 }
-
-const filterArg = process.argv.find(value => value.startsWith('--filter='));
-const filter = filterArg ? filterArg.split('=')[1] : undefined;
 
 export class RegressionSuite {
     private schema: GraphQLSchema | undefined;
@@ -126,7 +124,7 @@ export class RegressionSuite {
                 return true;
             }
         }
-        if (filter && !name.startsWith(filter)) {
+        if (this.options.testFilter && !name.startsWith(this.options.testFilter)) {
             return true;
         }
         return false;

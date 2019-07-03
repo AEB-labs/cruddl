@@ -15,6 +15,9 @@ describe('regression tests', async () => {
     const databases: ('in-memory'|'arangodb')[]
         = process.argv.includes('--db=in-memory') ? [ 'in-memory'] : process.argv.includes('--db=arangodb') ? [ 'arangodb' ] : [ 'in-memory', 'arangodb' ];
 
+    const filterArg = process.argv.find(value => value.startsWith('--regression-test-filter='));
+    const filter = filterArg ? filterArg.split('=')[1] : undefined;
+
     for (const database of databases) {
         describe(`for ${database}`, async () => {
             for (const suiteName of dirs) {
@@ -24,8 +27,8 @@ describe('regression tests', async () => {
                 const options: RegressionSuiteOptions = {
                     saveActualAsExpected: process.argv.includes('--save-actual-as-expected'),
                     trace: process.argv.includes('--log-trace'),
-                    database
-                    // @MSF TODO filter -> --regression-test / regression test filter, and read here
+                    database,
+                    testFilter: filter
                 };
                 const suite = new RegressionSuite(suitePath, options);
                 describe(suiteName, async () => {

@@ -6,12 +6,15 @@ import {
     QueryNode, OperatorWithLanguageQueryNode,
     BinaryOperatorWithLanguage,
     UnaryOperationQueryNode,
-    UnaryOperator
+    UnaryOperator, RuntimeErrorQueryNode
 } from '../../query-tree';
+import { QuickSearchStartsWithQueryNode } from '../../query-tree/quick-search';
 import { INPUT_FIELD_CONTAINS, INPUT_FIELD_ENDS_WITH, INPUT_FIELD_EQUAL, INPUT_FIELD_EVERY, INPUT_FIELD_GT, INPUT_FIELD_GTE, INPUT_FIELD_IN, INPUT_FIELD_LIKE, INPUT_FIELD_LT, INPUT_FIELD_LTE, INPUT_FIELD_NONE, INPUT_FIELD_NOT, INPUT_FIELD_NOT_CONTAINS, INPUT_FIELD_NOT_ENDS_WITH, INPUT_FIELD_NOT_IN, INPUT_FIELD_NOT_LIKE, INPUT_FIELD_NOT_STARTS_WITH, INPUT_FIELD_SOME, INPUT_FIELD_STARTS_WITH } from '../../schema/constants';
 import { GraphQLDateTime } from '../../schema/scalars/date-time';
 import { GraphQLLocalDate } from '../../schema/scalars/local-date';
 import { GraphQLLocalTime } from '../../schema/scalars/local-time';
+
+export const noLanguageWasSuppliedError = 'No Language was supplied';
 
 export const FILTER_OPERATORS: { [suffix: string]: (fieldNode: QueryNode, valueNode: QueryNode) => QueryNode } = {
     [INPUT_FIELD_EQUAL]: binaryOp(BinaryOperator.EQUAL),
@@ -118,10 +121,30 @@ export function binaryNotOp(op: BinaryOperator) {
 
 export function binaryOpWithLanguage(op: BinaryOperatorWithLanguage) {
     return (lhs: QueryNode, rhs: QueryNode, quickSearchLanguage?: QuickSearchLanguage) => {
+        if (!quickSearchLanguage) {
+            return new RuntimeErrorQueryNode(noLanguageWasSuppliedError);
+        }
         return new OperatorWithLanguageQueryNode(lhs, op, rhs, quickSearchLanguage);
     };
 }
 
 export function binaryNotOpWithLanguage(op: BinaryOperatorWithLanguage) {
-    return (lhs: QueryNode, rhs: QueryNode, quickSearchLanguage?: QuickSearchLanguage) => not(new OperatorWithLanguageQueryNode(lhs, op, rhs, quickSearchLanguage));
+    return (lhs: QueryNode, rhs: QueryNode, quickSearchLanguage?: QuickSearchLanguage) => {
+        if (!quickSearchLanguage) {
+            return new RuntimeErrorQueryNode(noLanguageWasSuppliedError);
+        }
+        return not(new OperatorWithLanguageQueryNode(lhs, op, rhs, quickSearchLanguage));
+    };
+}
+
+export function startsWithOp(){
+    return (lhs: QueryNode, rhs: QueryNode, quickSearchLanguage?: QuickSearchLanguage) => {
+        return new QuickSearchStartsWithQueryNode(lhs, rhs, quickSearchLanguage);
+    };
+}
+
+export function notStartsWithOp(){
+    return (lhs: QueryNode, rhs: QueryNode, quickSearchLanguage?: QuickSearchLanguage) => {
+        return not(new QuickSearchStartsWithQueryNode(lhs, rhs, quickSearchLanguage));
+    };
 }

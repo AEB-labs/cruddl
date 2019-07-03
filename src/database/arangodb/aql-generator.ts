@@ -43,7 +43,7 @@ import {
     UpdateEntitiesQueryNode,
     VariableAssignmentQueryNode,
     VariableQueryNode,
-    WithPreExecutionQueryNode, FieldPathQueryNode, QuickSearchFieldExistsQueryNode
+    WithPreExecutionQueryNode, FieldPathQueryNode
 } from '../../query-tree';
 import { Quantifier, QuantifierFilterNode } from '../../query-tree/quantifiers';
 import { extractVariableAssignments, simplifyBooleans } from '../../query-tree/utils';
@@ -54,7 +54,7 @@ import { analyzeLikePatternPrefix } from '../like-helpers';
 import { aql, AQLCompoundQuery, aqlConfig, AQLFragment, AQLQueryResultVariable, AQLVariable } from './aql';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './arango-basics';
 import { getQuickSearchViewNameForRootEntity, IDENTITY_ANALYZER } from './schema-migration/arango-search-helpers';
-import { QuickSearchComplexOperatorQueryNode, QuickSearchQueryNode } from '../../query-tree/quick-search';
+import { QuickSearchComplexOperatorQueryNode, QuickSearchFieldExistsQueryNode, QuickSearchQueryNode, QuickSearchStartsWithQueryNode } from '../../query-tree/quick-search';
 
 enum AccessType {
     READ,
@@ -668,11 +668,9 @@ register(OperatorWithLanguageQueryNode, (node, context) => {
 
     const lhs = processNode(node.lhs, context);
     const rhs = processNode(node.rhs, context);
-    const analyzer = node.quickSearchLanguage ? `text_${node.quickSearchLanguage.toLowerCase()}` : IDENTITY_ANALYZER;
+    const analyzer = `text_${node.quickSearchLanguage.toLowerCase()}`;
 
     switch (node.operator) {
-        case BinaryOperatorWithLanguage.QUICKSEARCH_STARTS_WITH:
-            return aql`STARTS_WITH(${lhs},${rhs})`;
         case BinaryOperatorWithLanguage.QUICKSEARCH_CONTAINS_ANY_WORD:
             return aql`ANALYZER( ${lhs} IN TOKENS(${rhs}, ${analyzer}),${analyzer})`;
         case BinaryOperatorWithLanguage.QUICKSEARCH_CONTAINS_PREFIX:
@@ -683,6 +681,14 @@ register(OperatorWithLanguageQueryNode, (node, context) => {
             throw new Error(`Unsupported operator: ${node.operator}`);
     }
 
+});
+
+register(QuickSearchStartsWithQueryNode, (node, context) => {
+    const lhs = processNode(node.lhs, context);
+    const rhs = processNode(node.rhs, context);
+    const analyzer = node.quickSearchLanguage ? `text_${node.quickSearchLanguage.toLowerCase()}` : IDENTITY_ANALYZER;
+
+    return aql`ANALYZER(STARTS_WITH(${lhs}, ${rhs}), ${analyzer})`
 });
 
 register(QuickSearchFieldExistsQueryNode, (node, context) => {

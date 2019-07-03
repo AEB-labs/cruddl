@@ -1,57 +1,39 @@
-# @MSF TODO: includedInSearch nicht für Zahlen?
-# @MSF TODO: RC4: Sorting - https://www.arangodb.com/2019/06/rc4-of-arangodb-3-5-configurable-analyzers-arangosearch-upgrades/
-"A superhero"
+"A supehero"
 type Hero @rootEntity(quickSearchIndex: true, quickSearchLanguage: DE) {
     "The hero's screen name"
-    name: String @quickSearchIndex(includedInSearch: true)
-    key: String @key
-    identity: String @quickSearchIndex(includedInSearch: true)
-    age: Int @defaultValue(value: 42) @quickSearchIndex
-    nickNames: [String] @quickSearchIndex
+    name: String @quickSearchIndex(isIncludedInSearch: true)
+    age: Int @defaultValue(value: 42)
+    nickNames: [String]
     movies: [Movie] @relation(inverseOf: "heroes")
-    skills: [Skill] @quickSearchIndex
+    skills: [Skill]
     suit: Suit
     morality: Morality
-    countryISOCode: String
-    country: Country @reference(keyField: "countryISOCode")
+    country: Country @reference
     missions: [Mission]
-    friends: [Hero] @relation
-    moreFriends: [Hero] @traversal(path: "friends{0,2}")
-    subMissions: [Mission] @traversal(path: "missions.subMissions")
-    missionsAgain: [Mission] @traversal(path: "missions")
     info: JSON
-    deepSkills: [Skill] @traversal(path: "skills.skills")
 }
 
 "A heroic mission"
-type Mission @childEntity(quickSearchLanguage: DE) {
+type Mission @childEntity {
     date: DateTime
     title: String
-    subMissions: [Mission]
 }
 
 "A special skill of a superhero"
 type Skill @valueObject {
-    description: String @quickSearchIndex
+    description: String
     "A value between 0 and 11"
     strength: Float
-    skills: [Skill] @quickSearchIndex
+    skills: [Skill]
 }
 
 "A superhero movie"
-type Movie @rootEntity(quickSearchIndex:true, quickSearchLanguage: DE) {
-    name: String @quickSearchFulltextIndex @quickSearchIndex 
+type Movie @rootEntity {
+    name: String
     "All the heroes starring in this movie"
     heroes: [Hero] @relation
     "The real superhero"
     director: Director @relation
-    publisher: Publisher @reference
-
-    relatedMovies: [Movie] @traversal(path: "heroes.movies")
-    community: [Hero] @traversal(path: "heroes.friends{0,2}")
-    subMissions: [Mission] @traversal(path: "heroes.friends{0,2}.missions.subMissions")
-    skillCount: Int @aggregation(path: "heroes.skills", aggregator: COUNT)
-    totalSkillStrength: Float @aggregation(path: "heroes.skills.strength", aggregator: SUM)
 }
 
 "A movie director"
@@ -68,12 +50,6 @@ type Suit @entityExtension {
 
 type Country @rootEntity {
     isoCode: String @key
-    name: String
-}
-
-type Publisher @rootEntity {
-    identCode: String @key
-    name: String
 }
 
 enum Morality {
