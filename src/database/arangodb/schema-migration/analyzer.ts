@@ -157,7 +157,7 @@ export class SchemaAnalyzer {
      */
     async getArangoSearchMigrations(model: Model): Promise<ReadonlyArray<CreateArangoSearchViewMigration | DropArangoSearchViewMigration | UpdateArangoSearchViewMigration>> {
 
-        if(await isArangoSearchSupported(this.versionHelper.getArangoDBVersion())){
+        if(!await isArangoSearchSupported(this.versionHelper.getArangoDBVersion())){
             return []
         }
         // the views that match the model
