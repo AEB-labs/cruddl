@@ -56,6 +56,11 @@ export interface ExecutionOptions {
      * The maximum amount of objects that can be filtered (using a normal filter) or sorted in an ArangoSearch query
      */
     readonly arangoSearchMaxFilterableAndSortableAmount?: number
+
+    /**
+     * How many steps of recursive fields are indexed and allowed in queries for QuickSearch.
+     */
+    readonly arangoSearchRecursionDepth?: number
 }
 
 export interface ExecutionOptionsCallbackArgs {

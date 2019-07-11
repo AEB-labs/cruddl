@@ -59,7 +59,7 @@ function getViewForRootEntity(rootEntity: RootEntityType): ArangoSearchDefinitio
 }
 
 
-export async function calculateRequiredArangoSearchViewCreateOperations(existingViews: ArangoSearchView[], requiredViews: ReadonlyArray<ArangoSearchDefinition>, db: Database): Promise<ReadonlyArray<CreateArangoSearchViewMigration>> {
+export async function calculateRequiredArangoSearchViewCreateOperations(existingViews: ArangoSearchView[], requiredViews: ReadonlyArray<ArangoSearchDefinition>, db: Database, recursionDepth: number): Promise<ReadonlyArray<CreateArangoSearchViewMigration>> {
     let viewsToCreate = requiredViews.filter(value => !existingViews.some(value1 => value1.name === value.viewName));
 
     async function mapToMigration(value: ArangoSearchDefinition): Promise<CreateArangoSearchViewMigration> {
@@ -69,7 +69,7 @@ export async function calculateRequiredArangoSearchViewCreateOperations(existing
             collectionSize: count,
             collectionName: value.collectionName,
             viewName: value.viewName,
-            properties: getPropertiesFromDefinition(value)
+            properties: getPropertiesFromDefinition(value, recursionDepth)
         });
     }
 
@@ -84,11 +84,11 @@ export function calculateRequiredArangoSearchViewDropOperations(views: ArangoSea
 
 
 export function getAnalyzerFromQuickSearchLanguage(quickSearchLanguage?: QuickSearchLanguage): string {
-    return quickSearchLanguage ? 'text_' + quickSearchLanguage.toLowerCase(): 'identity';
+    return quickSearchLanguage ? 'text_' + quickSearchLanguage.toLowerCase() : 'identity';
 }
 
 
-function getPropertiesFromDefinition(definition: ArangoSearchDefinition): ArangoSearchViewPropertiesOptions {
+function getPropertiesFromDefinition(definition: ArangoSearchDefinition, recursionDepth: number): ArangoSearchViewPropertiesOptions {
     const properties: any /*ArangoSearchViewPropertiesOptions*/ = {
         links: {},
         commitIntervalMsec: 100
@@ -102,16 +102,16 @@ function getPropertiesFromDefinition(definition: ArangoSearchDefinition): Arango
         fields: {}
     };
 
-    function fieldDefinitionFor(field: Field, path: ReadonlyArray<Field> = []): ArangoSearchViewCollectionLink {
+    function fieldDefinitionFor(field: Field, recursionDepth: number, path: ReadonlyArray<Field> = []): ArangoSearchViewCollectionLink {
         if (field.type.isObjectType) {
-            const fields:{ [key: string]: ArangoSearchViewCollectionLink | undefined; } = {};
+            const fields: { [key: string]: ArangoSearchViewCollectionLink | undefined; } = {};
             field.type.fields
                 .filter(field => (field.isQuickSearchIndexed || field.isQuickSearchFulltextIndexed)
-                                    && !path.some(value => value.name === field.name && field.declaringType.name === value.declaringType.name))
-                .forEach(value => fields[value.name] = fieldDefinitionFor(value, path.concat(field)));
+                    && !path.some(value => value.name === field.name && field.declaringType.name === value.declaringType.name))
+                .forEach(value => fields[value.name] = fieldDefinitionFor(value, recursionDepth, path.concat(field)));
             return {
                 fields
-            }
+            };
         } else {
             const analyzers: string[] = [];
             if (field.isQuickSearchFulltextIndexed && field.language) {
@@ -131,7 +131,7 @@ function getPropertiesFromDefinition(definition: ArangoSearchDefinition): Arango
     }
 
     for (const field of definition.fields) {
-        link.fields![field.name] = fieldDefinitionFor(field);
+        link.fields![field.name] = fieldDefinitionFor(field, recursionDepth);
     }
 
     properties.links![definition.collectionName] = link;
@@ -144,7 +144,7 @@ function isEqualProperties(defProperties: ArangoSearchViewPropertiesOptions, pro
 
 }
 
-export async function calculateRequiredArangoSearchViewUpdateOperations(views: ArangoSearchView[], definitions: ReadonlyArray<ArangoSearchDefinition>, db: Database): Promise<ReadonlyArray<UpdateArangoSearchViewMigration>> {
+export async function calculateRequiredArangoSearchViewUpdateOperations(views: ArangoSearchView[], definitions: ReadonlyArray<ArangoSearchDefinition>, db: Database, recursionDepth: number): Promise<ReadonlyArray<UpdateArangoSearchViewMigration>> {
     const viewsWithUpdateRequired: UpdateArangoSearchViewMigration[] = [];
     for (const view of views) {
         const definition = definitions.find(value => value.viewName === view.name);
@@ -153,7 +153,7 @@ export async function calculateRequiredArangoSearchViewUpdateOperations(views: A
         }
         const viewProperties = await view.properties();
 
-        const definitionProperties = getPropertiesFromDefinition(definition);
+        const definitionProperties = getPropertiesFromDefinition(definition, recursionDepth);
         if (!isEqualProperties(definitionProperties, viewProperties)) {
             const colExists = await db.collection(definition.collectionName).exists();
             const count: number = (colExists) ? (await db.collection(definition.collectionName).count()).count : 0;

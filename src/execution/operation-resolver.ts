@@ -30,6 +30,7 @@ export class OperationResolver {
         if (!options) {
             options = this.context.getExecutionOptions ? this.context.getExecutionOptions({ context: operationInfo.context, operationDefinition: operationInfo.operation }) : {};
         }
+        // @MSF TODO: regression tests for recursive calls
 
         const watch = new Watch();
         const topLevelWatch = new Watch();
@@ -56,7 +57,8 @@ export class OperationResolver {
             const rootQueryNode = ObjectQueryNode.EMPTY; // can't use NULL because then the whole operation would yield null
             const fieldContext = {
                 selectionStack: [],
-                arangoSearchMaxFilterableAmountOverride: options ? options.arangoSearchMaxFilterableAndSortableAmount : undefined
+                arangoSearchMaxFilterableAmountOverride: options ? options.arangoSearchMaxFilterableAndSortableAmount : undefined,
+                arangoSearchRecursionDepth: options ? options.arangoSearchRecursionDepth : undefined
             };
             queryTree = buildConditionalObjectQueryNode(rootQueryNode, rootType, operation.selectionSet, fieldContext);
             if (logger.isTraceEnabled()) {

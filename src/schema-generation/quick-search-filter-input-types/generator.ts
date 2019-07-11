@@ -5,7 +5,7 @@ import { AnyValue, flatMap, objectEntries } from '../../utils/utils';
 import memorize from 'memorize-decorator';
 import { EnumTypeGenerator } from '../enum-type-generator';
 import { GraphQLEnumType, Thunk } from 'graphql';
-import { resolveThunk } from '../query-node-object-type';
+import { QueryNodeResolveInfo, resolveThunk } from '../query-node-object-type';
 import { TypedInputObjectType } from '../typed-input-object-type';
 import { getQuickSearchFilterTypeName } from '../../schema/names';
 import {
@@ -49,12 +49,12 @@ export class QuickSearchFilterObjectType extends TypedInputObjectType<QuickSearc
             `Large queries in conjunctive normal form (e.g. (a OR b) AND (c OR d)... ) and should be avoided.`);
     }
 
-    getFilterNode(sourceNode: QueryNode, filterValue: AnyValue, path: ReadonlyArray<Field>): QueryNode {
+    getFilterNode(sourceNode: QueryNode, filterValue: AnyValue, path: ReadonlyArray<Field>, info: QueryNodeResolveInfo): QueryNode {
         if (typeof filterValue !== 'object' || filterValue === null) {
             return new BinaryOperationQueryNode(sourceNode, BinaryOperator.EQUAL, NullQueryNode.NULL);
         }
         const filterNodes = objectEntries(filterValue as any)
-            .map(([name, value]) => this.getFieldOrThrow(name).getFilterNode(sourceNode, value, path));
+            .map(([name, value]) => this.getFieldOrThrow(name).getFilterNode(sourceNode, value, path, info));
         return filterNodes.reduce(and, ConstBoolQueryNode.TRUE);
 
     }

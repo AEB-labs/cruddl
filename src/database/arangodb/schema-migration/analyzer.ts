@@ -26,7 +26,7 @@ export class SchemaAnalyzer {
     private readonly logger: Logger;
     private readonly versionHelper: ArangoDBVersionHelper;
 
-    constructor(config: ArangoDBConfig, schemaContext?: ProjectOptions) {
+    constructor(readonly config: ArangoDBConfig, schemaContext?: ProjectOptions) {
         this.db = initDatabase(config);
         this.versionHelper = new ArangoDBVersionHelper(this.db);
         this.logger = getArangoDBLogger(schemaContext);
@@ -165,9 +165,10 @@ export class SchemaAnalyzer {
         // the currently existing views
         const views = (await this.db.listViews()).map(value => this.db.arangoSearchView(value.name));
 
-        const viewsToCreate = await calculateRequiredArangoSearchViewCreateOperations(views, requiredViews, this.db);
+        const recursionDepth = this.config.arangoSearchRecursionDepth ? this.config.arangoSearchRecursionDepth : 1;
+        const viewsToCreate = await calculateRequiredArangoSearchViewCreateOperations(views, requiredViews, this.db, recursionDepth);
         const viewsToDrop = calculateRequiredArangoSearchViewDropOperations(views, requiredViews);
-        const viewsToUpdate = await calculateRequiredArangoSearchViewUpdateOperations(views, requiredViews, this.db);
+        const viewsToUpdate = await calculateRequiredArangoSearchViewUpdateOperations(views, requiredViews, this.db, recursionDepth);
 
         return [...viewsToCreate, ...viewsToDrop, ...viewsToUpdate];
     }

@@ -76,7 +76,7 @@ export class QuickSearchGenerator {
             },
             resolve: (sourceNode, args, info) => {
                 const itemVariable = new VariableQueryNode(decapitalize(rootEntityType.name));
-                const qsFilterNode = this.buildQuickSearchFilterNode(args, quickSearchType, itemVariable, rootEntityType);
+                const qsFilterNode = this.buildQuickSearchFilterNode(args, quickSearchType, itemVariable, rootEntityType, info);
                 return new QuickSearchQueryNode({
                     rootEntityType: rootEntityType,
                     qsFilterNode: qsFilterNode,
@@ -90,10 +90,10 @@ export class QuickSearchGenerator {
 
     };
 
-    private buildQuickSearchFilterNode(args: { [p: string]: any }, filterType: QuickSearchFilterObjectType, itemVariable: VariableQueryNode, rootEntityType: RootEntityType) {
+    private buildQuickSearchFilterNode(args: { [p: string]: any }, filterType: QuickSearchFilterObjectType, itemVariable: VariableQueryNode, rootEntityType: RootEntityType, info: QueryNodeResolveInfo) {
         const filterValue = args[QUICK_SEARCH_FILTER_ARG] || {};
         const expression = args[QUICK_SEARCH_EXPRESSION_ARG] as string;
-        const filterNode = simplifyBooleans(filterType.getFilterNode(itemVariable, filterValue, []));
+        const filterNode = simplifyBooleans(filterType.getFilterNode(itemVariable, filterValue, [], info));
         const searchFilterNode = simplifyBooleans(this.buildQuickSearchSearchFilterNode(rootEntityType, itemVariable, expression));
         if (searchFilterNode === ConstBoolQueryNode.TRUE) {
             return filterNode;
@@ -106,7 +106,7 @@ export class QuickSearchGenerator {
     private getPreExecQueryNode(rootEntityType: RootEntityType, args: { [p: string]: any }, context: QueryNodeResolveInfo): QueryNode {
         const itemVariable = new VariableQueryNode(decapitalize(rootEntityType.name));
         const quickSearchType = this.quickSearchTypeGenerator.generate(rootEntityType, false);
-        const qsFilterNode = this.buildQuickSearchFilterNode(args, quickSearchType, itemVariable, rootEntityType);
+        const qsFilterNode = this.buildQuickSearchFilterNode(args, quickSearchType, itemVariable, rootEntityType, context);
         return new BinaryOperationQueryNode(
             new CountQueryNode(
                 new QuickSearchQueryNode({

@@ -73,6 +73,11 @@ export interface ArangoDBConfig {
      * each retry. The delay between the first *try* and the first retry is always zero. Defaults to 100ms.
      */
     readonly retryDelayBaseMs?: number;
+
+    /**
+     * How many steps of recursive fields are indexed and allowed in queries for QuickSearch.
+     */
+    readonly arangoSearchRecursionDepth?: number
 }
 
 export function initDatabase(config: ArangoDBConfig): Database {
