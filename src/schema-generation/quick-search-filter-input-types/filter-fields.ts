@@ -103,6 +103,7 @@ export class QuickSearchScalarOrEnumFilterField implements QuickSearchFilterFiel
             return this.field.name;
         }
         return this.field.name + NESTED_FIELD_SUFFIX + FILTER_FIELD_PREFIX_SEPARATOR + this.operatorName;
+        // @MSF generate own type for aggregation of scalars instead of chaining the name
     }
 
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue, path: ReadonlyArray<Field>): QueryNode {

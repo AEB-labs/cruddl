@@ -3,7 +3,7 @@ type Hero @rootEntity(quickSearchIndex: true, quickSearchLanguage: DE) {
     "The hero's screen name"
     name: String @quickSearchIndex(isIncludedInSearch: true)
     age: Int @defaultValue(value: 42)
-    nickNames: [String]
+    nickNames: [String] @quickSearchIndex
     movies: [Movie] @relation(inverseOf: "heroes")
     skills: [Skill]
     suit: Suit

@@ -106,6 +106,7 @@ interface CreateArangoSearchViewMigrationConfig {
 
     readonly viewName: string
     readonly properties: ArangoSearchViewPropertiesOptions
+    readonly collectionName: string
     readonly collectionSize?: number
 }
 
@@ -126,7 +127,7 @@ export class DropArangoSearchViewMigration {
     }
 
     get description() {
-        return `drop ArangoSearchView ${this.viewName}`;
+        return `Drop the ArangoSearchView ${this.viewName}`;
     }
 
     get id() {
@@ -144,22 +145,24 @@ export class DropArangoSearchViewMigration {
 
 export class UpdateArangoSearchViewMigration {
     readonly type: 'updateArangoSearchView' = 'updateArangoSearchView';
-    readonly config: UpdateArangoSearchViewMigrationConfig;
+    readonly viewName: string;
+    readonly properties: ArangoSearchViewPropertiesOptions;
+    readonly collectionName: string;
+    readonly collectionSize?: number;
 
     constructor(config: UpdateArangoSearchViewMigrationConfig) {
-        this.config = config;
+        this.viewName = config.viewName;
+        this.properties = config.properties;
+        this.collectionName = config.collectionName;
+        this.collectionSize = config.collectionSize;
     }
 
     get description() {
-        return `update ArangoSearchView ${this.viewName}`;
+        return `Update the ArangoSearchView ${this.viewName} for the collection ${this.collectionName}`;
     }
 
     get id() {
         return `update ArangoSearch/${this.viewName}`;
-    }
-
-    get viewName() {
-        return this.config.viewName;
     }
 
     get isMandatory() {
@@ -169,18 +172,24 @@ export class UpdateArangoSearchViewMigration {
 
 export class CreateArangoSearchViewMigration {
     readonly type: 'createArangoSearchView' = 'createArangoSearchView';
-    readonly config: CreateArangoSearchViewMigrationConfig;
+    readonly viewName: string;
+    readonly properties: ArangoSearchViewPropertiesOptions;
+    readonly collectionName: string;
+    readonly collectionSize?: number;
 
     constructor(config: CreateArangoSearchViewMigrationConfig) {
-        this.config = config;
+        this.viewName = config.viewName;
+        this.properties = config.properties;
+        this.collectionName = config.collectionName;
+        this.collectionSize = config.collectionSize;
     }
 
     get description() {
-        return `create ArangoSearchView ${this.config.viewName}`;
+        return `Create the ArangoSearchView ${this.viewName} for the collection ${this.collectionName}`;
     }
 
     get id() {
-        return `createArangoSearch/${this.config.viewName}`;
+        return `createArangoSearch/${this.viewName}`;
     }
 
     get isMandatory() {

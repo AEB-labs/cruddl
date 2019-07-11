@@ -66,9 +66,9 @@ export class MigrationPerformer {
 
     private async createArangoSearchView(migration: CreateArangoSearchViewMigration) {
         if (await isArangoSearchSupported(this.versionHelper.getArangoDBVersion())) {
-            await this.db.arangoSearchView(migration.config.viewName).create();
+            await this.db.arangoSearchView(migration.viewName).create();
             // Setting the properties during creation does not work for some reason
-            await this.db.arangoSearchView(migration.config.viewName).setProperties(migration.config.properties);
+            await this.db.arangoSearchView(migration.viewName).setProperties(migration.properties);
         } else {
             throw new ArangoSearchMigrationNotSupportedError();
         }
@@ -77,7 +77,7 @@ export class MigrationPerformer {
 
     private async updateArangoSearchView(migration: UpdateArangoSearchViewMigration) {
         if (await isArangoSearchSupported(this.versionHelper.getArangoDBVersion())) {
-            await this.db.arangoSearchView(migration.config.viewName).setProperties(migration.config.properties);
+            await this.db.arangoSearchView(migration.viewName).setProperties(migration.properties);
         } else {
             throw new ArangoSearchMigrationNotSupportedError();
         }

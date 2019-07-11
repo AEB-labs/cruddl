@@ -44,7 +44,9 @@ export class QuickSearchFilterObjectType extends TypedInputObjectType<QuickSearc
         fields: Thunk<ReadonlyArray<QuickSearchFilterField>>,
         public readonly isAggregration: boolean
     ) {
-        super(getQuickSearchFilterTypeName(type.name, isAggregration), fields, `QuickSearchFilter type for \`${type.name}\`.\n\nAll fields in this type are *and*-combined; see the \`or\` field for *or*-combination.`);
+        super(getQuickSearchFilterTypeName(type.name, isAggregration), fields,
+            `QuickSearchFilter type for \`${type.name}\`.\n\nAll fields in this type are *and*-combined; see the \`or\` field for *or*-combination.\n`+
+            `Large queries in conjunctive normal form (e.g. (a OR b) AND (c OR d)... ) and should be avoided.`);
     }
 
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue, path: ReadonlyArray<Field>): QueryNode {

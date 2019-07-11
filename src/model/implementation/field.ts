@@ -668,7 +668,7 @@ export class Field implements ModelComponent {
             return;
         }
         if (this.isQuickSearchFulltextIndexed && !(this.type.isScalarType && this.type.name === 'String')) {
-            context.addMessage(ValidationMessage.error(`${notSupportedOn} type "${this.type.name}".`, this.input.isQuickSearchFulltextIndexedASTNode));
+            context.addMessage(ValidationMessage.error(`QuickSearchFulltextIndex is not supported on type "${this.type.name}".`, this.input.isQuickSearchFulltextIndexedASTNode));
             return;
         }
         if (this.isQuickSearchFulltextIndexed && this.isCollectField) {
@@ -676,7 +676,7 @@ export class Field implements ModelComponent {
             return;
         }
         if (this.isQuickSearchFulltextIndexed && !this.language) {
-            context.addMessage(ValidationMessage.error(`QuickSearchFulltextIndex requires either a language parameter, or a defaultLanguage must be set in the entity.`, this.input.isQuickSearchFulltextIndexedASTNode));
+            context.addMessage(ValidationMessage.error(`QuickSearchFulltextIndex requires either a language parameter, or a defaultLanguage must be set in the defining type.`, this.input.isQuickSearchFulltextIndexedASTNode));
         }
         if (this.isQuickSearchIndexed && (this.type.isEntityExtensionType || this.type.isValueObjectType) && !this.type.fields.some(value => value.isQuickSearchIndexed || value.isQuickSearchFulltextIndexed)) {
             context.addMessage(ValidationMessage.error(`At least one field on type "${this.type.name}" must be quickSearchIndexed or quickSearchFulltextIndexed.`, this.input.isQuickSearchIndexedASTNode));

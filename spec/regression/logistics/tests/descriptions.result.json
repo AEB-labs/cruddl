@@ -2917,12 +2917,12 @@
         },
         {
           "name": "DeliveryQuickSearchFilter",
-          "description": "QuickSearchFilter type for `Delivery`.\n\nAll fields in this type are *and*-combined; see the `or` field for *or*-combination.",
+          "description": "QuickSearchFilter type for `Delivery`.\n\nAll fields in this type are *and*-combined; see the `or` field for *or*-combination.\nLarge queries in conjunctive normal form (e.g. (a OR b) AND (c OR d)... ) and should be avoided.",
           "fields": null,
           "inputFields": [
             {
               "name": "id",
-              "description": "Checks if `id` equals a specified value.\n\nIf an index exists on `id`, it can be used.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
+              "description": "Checks if `id` equals a specified value.\n\n\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_not",
@@ -2938,7 +2938,7 @@
             },
             {
               "name": "createdAt",
-              "description": "Checks if `createdAt` equals a specified value.\n\nIf an index exists on `createdAt`, it can be used.\n\nThe instant this object has been created"
+              "description": "Checks if `createdAt` equals a specified value.\n\n\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_not",
@@ -2970,7 +2970,7 @@
             },
             {
               "name": "updatedAt",
-              "description": "Checks if `updatedAt` equals a specified value.\n\nIf an index exists on `updatedAt`, it can be used.\n\nThe instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` equals a specified value.\n\n\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_not",
@@ -3002,11 +3002,11 @@
             },
             {
               "name": "deliveryNumber",
-              "description": "Checks if `deliveryNumber` equals a specified string, case-sensitively.\n\nIf an index exists on `deliveryNumber`, it can be used.\n\nSee also `like` for a case-insensitive filter."
+              "description": "Checks if `deliveryNumber` equals a specified string, case-insensitively.\n\n"
             },
             {
               "name": "deliveryNumber_not",
-              "description": "Checks if `deliveryNumber` does not equal a specified string, case-sensitively."
+              "description": "Checks if `deliveryNumber` does not equal a specified string, case-insensitively."
             },
             {
               "name": "deliveryNumber_in",
@@ -3018,7 +3018,7 @@
             },
             {
               "name": "deliveryNumber_starts_with",
-              "description": "Checks if `deliveryNumber` starts with a specified string, case-sensitively.\n\nNever uses an index. Consider using `like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
+              "description": "Checks if `deliveryNumber` starts with a specified string, case-insensitively.\n\n"
             },
             {
               "name": "deliveryNumber_not_starts_with",
@@ -3034,11 +3034,11 @@
             },
             {
               "name": "destinationCountryISOCode",
-              "description": "Checks if `destinationCountryISOCode` equals a specified string, case-sensitively.\n\nIf an index exists on `destinationCountryISOCode`, it can be used.\n\nSee also `like` for a case-insensitive filter."
+              "description": "Checks if `destinationCountryISOCode` equals a specified string, case-insensitively.\n\n"
             },
             {
               "name": "destinationCountryISOCode_not",
-              "description": "Checks if `destinationCountryISOCode` does not equal a specified string, case-sensitively."
+              "description": "Checks if `destinationCountryISOCode` does not equal a specified string, case-insensitively."
             },
             {
               "name": "destinationCountryISOCode_in",
@@ -3050,7 +3050,7 @@
             },
             {
               "name": "destinationCountryISOCode_starts_with",
-              "description": "Checks if `destinationCountryISOCode` starts with a specified string, case-sensitively.\n\nNever uses an index. Consider using `like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
+              "description": "Checks if `destinationCountryISOCode` starts with a specified string, case-insensitively.\n\n"
             },
             {
               "name": "destinationCountryISOCode_not_starts_with",
@@ -3058,31 +3058,31 @@
             },
             {
               "name": "description_contains_any_word",
-              "description": null
+              "description": "Tokenizes the provided string into words, and checks if `description` contains at least one of them.\n Stemming (reduction of words on their base form) is applied.\n\n"
             },
             {
               "name": "description_not_contains_any_word",
-              "description": null
+              "description": "Tokenizes the provided string into words, and checks if `description` contains none of them.\n Stemming (reduction of words on their base form) is applied.\n\n"
             },
             {
               "name": "description_contains_all_words",
-              "description": null
+              "description": "Tokenizes the provided string into words, and checks if `description` contains all of them.\n Stemming (reduction of words on their base form) is applied.\n\n"
             },
             {
               "name": "description_not_contains_all_words",
-              "description": null
+              "description": "Tokenizes the provided string into words, and checks if at least one word is not contained in `description`.\n Stemming (reduction of words on their base form) is applied.\n\n"
             },
             {
               "name": "description_contains_all_prefixes",
-              "description": null
+              "description": "Tokenizes the provided string into prefixes, and checks if all prefixes appears in `description`.\n Stemming (reduction of words on their base form) is applied.\n\n"
             },
             {
               "name": "description_not_contains_all_prefixes",
-              "description": null
+              "description": "Tokenizes the provided prefixes into words, and checks if there is at least one prefix that does not appear in `description`.\n Stemming (reduction of words on their base form) is applied.\n\n"
             },
             {
               "name": "description_contains_phrase",
-              "description": null
+              "description": "Tokenizes the provided string into words, and checks if that exact phrase (those words in excactly this order) is not included in `description`.\n Stemming (reduction of words on their base form) is applied.\n\n"
             },
             {
               "name": "description_not_contains_phrase",
@@ -3090,7 +3090,7 @@
             },
             {
               "name": "enumQuickSearch",
-              "description": "Checks if `enumQuickSearch` equals a specified value.\n\nIf an index exists on `enumQuickSearch`, it can be used."
+              "description": "Checks if `enumQuickSearch` equals a specified value.\n\n"
             },
             {
               "name": "enumQuickSearch_not",
@@ -3116,16 +3116,16 @@
         },
         {
           "name": "AddressQuickSearchFilter",
-          "description": "QuickSearchFilter type for `Address`.\n\nAll fields in this type are *and*-combined; see the `or` field for *or*-combination.",
+          "description": "QuickSearchFilter type for `Address`.\n\nAll fields in this type are *and*-combined; see the `or` field for *or*-combination.\nLarge queries in conjunctive normal form (e.g. (a OR b) AND (c OR d)... ) and should be avoided.",
           "fields": null,
           "inputFields": [
             {
               "name": "city",
-              "description": "Checks if `city` equals a specified string, case-sensitively.\n\nIf an index exists on `city`, it can be used.\n\nSee also `like` for a case-insensitive filter."
+              "description": "Checks if `city` equals a specified string, case-insensitively.\n\n"
             },
             {
               "name": "city_not",
-              "description": "Checks if `city` does not equal a specified string, case-sensitively."
+              "description": "Checks if `city` does not equal a specified string, case-insensitively."
             },
             {
               "name": "city_in",
@@ -3137,7 +3137,7 @@
             },
             {
               "name": "city_starts_with",
-              "description": "Checks if `city` starts with a specified string, case-sensitively.\n\nNever uses an index. Consider using `like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
+              "description": "Checks if `city` starts with a specified string, case-insensitively.\n\n"
             },
             {
               "name": "city_not_starts_with",
@@ -3155,12 +3155,12 @@
         },
         {
           "name": "DeliveryItemAggregationQuickSearchFilter",
-          "description": "QuickSearchFilter type for `DeliveryItem`.\n\nAll fields in this type are *and*-combined; see the `or` field for *or*-combination.",
+          "description": "QuickSearchFilter type for `DeliveryItem`.\n\nAll fields in this type are *and*-combined; see the `or` field for *or*-combination.\nLarge queries in conjunctive normal form (e.g. (a OR b) AND (c OR d)... ) and should be avoided.",
           "fields": null,
           "inputFields": [
             {
               "name": "id",
-              "description": "Checks if `id` equals a specified value.\n\nIf an index exists on `id`, it can be used.\n\nAn auto-generated string that identifies this child entity uniquely within this collection of child entities"
+              "description": "Checks if `id` equals a specified value.\n\n\n\nAn auto-generated string that identifies this child entity uniquely within this collection of child entities"
             },
             {
               "name": "id_not",
@@ -3176,7 +3176,7 @@
             },
             {
               "name": "createdAt",
-              "description": "Checks if `createdAt` equals a specified value.\n\nIf an index exists on `createdAt`, it can be used.\n\nThe instant this object has been created"
+              "description": "Checks if `createdAt` equals a specified value.\n\n\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_not",
@@ -3208,7 +3208,7 @@
             },
             {
               "name": "updatedAt",
-              "description": "Checks if `updatedAt` equals a specified value.\n\nIf an index exists on `updatedAt`, it can be used.\n\nThe instant this object has been updated the last time"
+              "description": "Checks if `updatedAt` equals a specified value.\n\n\n\nThe instant this object has been updated the last time"
             },
             {
               "name": "updatedAt_not",
@@ -3240,7 +3240,7 @@
             },
             {
               "name": "quantity",
-              "description": "Checks if `quantity` equals a specified value.\n\nIf an index exists on `quantity`, it can be used."
+              "description": "Checks if `quantity` equals a specified value.\n\n"
             },
             {
               "name": "quantity_not",

@@ -67,6 +67,7 @@ export async function calculateRequiredArangoSearchViewCreateOperations(existing
         const count: number = (colExists) ? (await db.collection(value.collectionName).count()).count : 0;
         return new CreateArangoSearchViewMigration({
             collectionSize: count,
+            collectionName: value.collectionName,
             viewName: value.viewName,
             properties: getPropertiesFromDefinition(value)
         });
@@ -158,6 +159,7 @@ export async function calculateRequiredArangoSearchViewUpdateOperations(views: A
             const count: number = (colExists) ? (await db.collection(definition.collectionName).count()).count : 0;
             viewsWithUpdateRequired.push(new UpdateArangoSearchViewMigration({
                 viewName: definition.viewName,
+                collectionName: definition.collectionName,
                 collectionSize: count,
                 properties: definitionProperties
             }));

@@ -1,7 +1,7 @@
 import { GraphQLBoolean, GraphQLFloat, GraphQLID, GraphQLInt, GraphQLString } from 'graphql';
 import { QuickSearchLanguage } from '../../model/config';
 import { BinaryOperator, QueryNode } from '../../query-tree';
-import { INPUT_FIELD_CONTAINS, INPUT_FIELD_CONTAINS_ALL_PREFIXES, INPUT_FIELD_CONTAINS_ALL_WORDS, INPUT_FIELD_CONTAINS_ANY_WORD, INPUT_FIELD_CONTAINS_PHRASE, INPUT_FIELD_ENDS_WITH, INPUT_FIELD_EQUAL, INPUT_FIELD_GT, INPUT_FIELD_GTE, INPUT_FIELD_IN, INPUT_FIELD_LIKE, INPUT_FIELD_LT, INPUT_FIELD_LTE, INPUT_FIELD_NOT, INPUT_FIELD_NOT_CONTAINS_ALL_PREFIXES, INPUT_FIELD_NOT_CONTAINS_ALL_WORDS, INPUT_FIELD_NOT_CONTAINS_ANY_WORD, INPUT_FIELD_NOT_CONTAINS_PHRASE, INPUT_FIELD_NOT_ENDS_WITH, INPUT_FIELD_NOT_IN, INPUT_FIELD_NOT_LIKE, INPUT_FIELD_NOT_STARTS_WITH, INPUT_FIELD_STARTS_WITH } from '../../schema/constants';
+import { INPUT_FIELD_CONTAINS, INPUT_FIELD_CONTAINS_ALL_PREFIXES, INPUT_FIELD_CONTAINS_ALL_WORDS, INPUT_FIELD_CONTAINS_ANY_PREFIX, INPUT_FIELD_CONTAINS_ANY_WORD, INPUT_FIELD_CONTAINS_PHRASE, INPUT_FIELD_ENDS_WITH, INPUT_FIELD_EQUAL, INPUT_FIELD_GT, INPUT_FIELD_GTE, INPUT_FIELD_IN, INPUT_FIELD_LIKE, INPUT_FIELD_LT, INPUT_FIELD_LTE, INPUT_FIELD_NOT, INPUT_FIELD_NOT_CONTAINS_ALL_PREFIXES, INPUT_FIELD_NOT_CONTAINS_ALL_WORDS, INPUT_FIELD_NOT_CONTAINS_ANY_PREFIX, INPUT_FIELD_NOT_CONTAINS_ANY_WORD, INPUT_FIELD_NOT_CONTAINS_PHRASE, INPUT_FIELD_NOT_ENDS_WITH, INPUT_FIELD_NOT_IN, INPUT_FIELD_NOT_LIKE, INPUT_FIELD_NOT_STARTS_WITH, INPUT_FIELD_STARTS_WITH } from '../../schema/constants';
 import { GraphQLDateTime } from '../../schema/scalars/date-time';
 import { GraphQLLocalDate } from '../../schema/scalars/local-date';
 import { GraphQLLocalTime } from '../../schema/scalars/local-time';
@@ -69,37 +69,38 @@ export const QUICK_SEARCH_FILTER_FIELDS_BY_TYPE: { [name: string]: string[] } = 
 
 export const QUICK_SEARCH_FILTER_DESCRIPTIONS: { [name: string]: string | { [typeName: string]: string } } = {
     [INPUT_FIELD_EQUAL]: {
-        [GraphQLString.name]: 'Checks if $field equals a specified string, case-sensitively.\n\n' +
-        'If an index exists on $field, it can be used.\n\n' +
-        'See also `like` for a case-insensitive filter.',
-
-        ['']: 'Checks if $field equals a specified value.\n\n' +
-        'If an index exists on $field, it can be used.'
+        [GraphQLString.name]: 'Checks if $field equals a specified string, case-insensitively.\n\n' ,
+        ['']: 'Checks if $field equals a specified value.\n\n'
     },
 
     [INPUT_FIELD_NOT]: {
-        [GraphQLString.name]: 'Checks if $field does not equal a specified string, case-sensitively.',
-
+        [GraphQLString.name]: 'Checks if $field does not equal a specified string, case-insensitively.',
         ['']: 'Checks if $field does not equal a specified value'
     },
 
-    [INPUT_FIELD_STARTS_WITH]: 'Checks if $field starts with a specified string, case-sensitively.\n\n' +
-    'Never uses an index. Consider using `like` (with the `%` placeholder) for a case-insensitive filter that can use an index.',
+    [INPUT_FIELD_STARTS_WITH]: 'Checks if $field starts with a specified string, case-insensitively.\n\n',
 
-    [INPUT_FIELD_ENDS_WITH]: 'Checks if $field ends with a specified string, case-sensitively.',
+    [INPUT_FIELD_CONTAINS_ANY_WORD]: 'Tokenizes the provided string into words, and checks if $field contains at least one of them.\n ' +
+    'Stemming (reduction of words on their base form) is applied.\n\n',
+    [INPUT_FIELD_NOT_CONTAINS_ANY_WORD]: 'Tokenizes the provided string into words, and checks if $field contains none of them.\n ' +
+    'Stemming (reduction of words on their base form) is applied.\n\n',
+    [INPUT_FIELD_CONTAINS_ALL_WORDS]: 'Tokenizes the provided string into words, and checks if $field contains all of them.\n ' +
+    'Stemming (reduction of words on their base form) is applied.\n\n',
+    [INPUT_FIELD_NOT_CONTAINS_ALL_WORDS]: 'Tokenizes the provided string into words, and checks if at least one word is not contained in $field.\n ' +
+    'Stemming (reduction of words on their base form) is applied.\n\n',
+    [INPUT_FIELD_CONTAINS_ANY_PREFIX]: 'Tokenizes the provided string into prefixes, and checks if $field contains any word that starts with one of these prefixes.\n ' +
+    'Stemming (reduction of words on their base form) is applied.\n\n',
+    [INPUT_FIELD_NOT_CONTAINS_ANY_PREFIX]: 'Tokenizes the provided string into prefixes, and checks if $field does not contain any word that starts with one of these prefixes.\n ' +
+    'Stemming (reduction of words on their base form) is applied.\n\n',
+    [INPUT_FIELD_CONTAINS_ALL_PREFIXES]: 'Tokenizes the provided string into prefixes, and checks if all prefixes appears in $field.\n ' +
+    'Stemming (reduction of words on their base form) is applied.\n\n',
+    [INPUT_FIELD_NOT_CONTAINS_ALL_PREFIXES]: 'Tokenizes the provided prefixes into words, and checks if there is at least one prefix that does not appear in $field.\n ' +
+    'Stemming (reduction of words on their base form) is applied.\n\n',
+    [INPUT_FIELD_CONTAINS_PHRASE]: 'Tokenizes the provided string into words, and checks if that exact phrase (those words in excactly this order) is included in $field.\n ' +
+    'Stemming (reduction of words on their base form) is applied.\n\n',
+    [INPUT_FIELD_CONTAINS_PHRASE]: 'Tokenizes the provided string into words, and checks if that exact phrase (those words in excactly this order) is not included in $field.\n ' +
+    'Stemming (reduction of words on their base form) is applied.\n\n',
 
-    [INPUT_FIELD_CONTAINS]: 'Checks if $field contains a specified string, case-sensitively.',
-
-    [INPUT_FIELD_LIKE]: 'Matches $field against a pattern case-insensitively with the following placeholders:\n\n' +
-    '- `%` matches any sequence of characters, including the empty string\n' +
-    '- `_` matches exactly one character\n' +
-    '- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)\n\n' +
-    'If an index exists on $field, it can be used for the literal prefix (the part until the first placeholder).',
-
-    [INPUT_FIELD_NOT_LIKE]: 'Checks if $field does *not* match a pattern case-insensitively with the following placeholders:\n\n' +
-    '- `%` matches any sequence of characters, including the empty string\n' +
-    '- `_` matches exactly one character\n' +
-    '- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)'
 };
 
 export const QUICK_SEARCH_OPERATORS_WITH_LIST_OPERAND = [INPUT_FIELD_IN, INPUT_FIELD_NOT_IN];

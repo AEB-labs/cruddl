@@ -222,7 +222,7 @@ export class RootEntityType extends ObjectTypeBase {
     }
 
     private validateQuickSearch(context: ValidationContext) {
-        if (!this.arangoSearchConfig.isIndexed && this.fields.some(value => value.isQuickSearchIndexed && value.isQuickSearchFulltextIndexed)) {
+        if (!this.arangoSearchConfig.isIndexed && this.fields.some(value => (value.isQuickSearchIndexed || value.isQuickSearchFulltextIndexed) && !value.isSystemField)) {
             context.addMessage(ValidationMessage.warn(
                 `The entity contains fields that are quickSearchIndexed or quickSearchFulltextIndexed, but the entity itself is not marked as quickSearchIndexed.`,
                 this.input.astNode
