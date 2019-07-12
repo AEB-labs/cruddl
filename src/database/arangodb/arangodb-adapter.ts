@@ -1,4 +1,5 @@
 import { aql, Database } from 'arangojs';
+import { GeneratedAqlQuery } from 'arangojs/lib/cjs/aql-query';
 import { globalContext } from '../../config/global';
 import { ProjectOptions } from '../../config/interfaces';
 import { Logger } from '../../config/logging';
@@ -10,8 +11,8 @@ import { Mutable } from '../../utils/util-types';
 import { flatMap, objectValues, sleep, sleepInterruptible } from '../../utils/utils';
 import { getPreciseTime, Watch } from '../../utils/watch';
 import { DatabaseAdapter, DatabaseAdapterTimings, ExecutionArgs, ExecutionPlan, ExecutionResult, TransactionStats } from '../database-adapter';
-import { AQLCompoundQuery, aqlConfig, AQLExecutableQuery } from './aql';
-import { getAQLQuery } from './aql-generator';
+import { AQLCompoundQuery, aqlConfig, AQLExecutableQuery, AQLFragment } from './aql';
+import { getAQLQuery, aqlExt } from './aql-generator';
 import { RequestInstrumentation, RequestInstrumentationPhase } from './arangojs-instrumentation/config';
 import { CancellationManager } from './cancellation-manager';
 import { ArangoDBConfig, DEFAULT_RETRY_DELAY_BASE_MS, getArangoDBLogger, initDatabase } from './config';
@@ -20,6 +21,7 @@ import { SchemaAnalyzer } from './schema-migration/analyzer';
 import { getAnalyzerFromQuickSearchLanguage } from './schema-migration/arango-search-helpers';
 import { SchemaMigration } from './schema-migration/migrations';
 import { MigrationPerformer } from './schema-migration/performer';
+import { ArangoSearchTokenizer } from './tokenizer';
 import { TransactionError } from './transaction-error';
 import { ArangoDBVersion, ArangoDBVersionHelper } from './version-helper';
 import uuid = require('uuid');
@@ -82,6 +84,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
     private readonly versionHelper: ArangoDBVersionHelper;
     private readonly doNonMandatoryMigrations: boolean;
     private readonly arangoExecutionFunction: string;
+    public readonly tokenizer = new ArangoSearchTokenizer(this);
 
     constructor(private readonly config: ArangoDBConfig, private schemaContext?: ProjectOptions) {
         this.logger = getArangoDBLogger(schemaContext);
@@ -646,12 +649,40 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         return this.versionHelper.getArangoDBVersion();
     }
 
-    // @MSF TODO: collect into one request
-    async tokenizeExpression(expression: string, quickSearchLanguage?: QuickSearchLanguage): Promise<ReadonlyArray<string>> {
+    async tokenizeExpression(expression: string, quickSearchLanguage: QuickSearchLanguage): Promise<ReadonlyArray<string>> {
+        const cachedToken = this.tokenizer.getTokenFromCache(expression, quickSearchLanguage);
+        if (cachedToken) {
+            return cachedToken;
+        }
         const query = aql`RETURN { tokens: TOKENS(${expression},${getAnalyzerFromQuickSearchLanguage(quickSearchLanguage)}) }`;
         const cursor = await this.db.query(query);
         const result = await cursor.next();
         return result.tokens;
+    }
+
+    async tokenizeToCache(tokens: ReadonlyArray<[string, QuickSearchLanguage]>) {
+        // filter duplicates
+        const tokensFiltered = tokens.filter(
+            (value, index) => !tokens.some(
+                (value2, index2) => value[0] === value2[0] && value[1] === value2[1] && index > index2
+            )
+        );
+
+        // @MSF Clean up AQL generation
+
+        const fragments: string[] = [];
+        for (let i = 0; i < tokensFiltered.length; i++) {
+            const value = tokensFiltered[i];
+            fragments.push(`token_${i}: TOKENS("${value[0]}", "text_${value[1].toLowerCase()}")`);
+        }
+        const query = `RETURN { ${fragments.join(',\n')} }`;
+
+
+        const cursor = await this.db.query(query);
+        const result = await cursor.next();
+        for(let i = 0; i < tokensFiltered.length; i++){
+            this.tokenizer.addTokenToCache(tokensFiltered[i][0], tokensFiltered[i][1], result['token_'+i]);
+        }
     }
 
 }

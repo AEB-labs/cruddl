@@ -53,11 +53,11 @@ export abstract class ExpandingQueryNode extends QueryNode{
 export class QuickSearchComplexOperatorQueryNode extends ExpandingQueryNode{
 
     constructor(
-        private readonly expression: string,
+        public readonly expression: string,
         private readonly comparisonOperator: BinaryOperatorWithLanguage,
         private readonly logicalOperator: BinaryOperator,
         private readonly fieldNode: QueryNode,
-        private readonly quickSearchLanguage: QuickSearchLanguage) {
+        public readonly quickSearchLanguage: QuickSearchLanguage) {
         super();
     }
 

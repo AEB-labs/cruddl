@@ -1,7 +1,7 @@
 import { globalContext } from '../../config/global';
 import { ProjectOptions } from '../../config/interfaces';
 import { Logger } from '../../config/logging';
-import { Model } from '../../model';
+import { Model, QuickSearchLanguage } from '../../model';
 import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS, QueryNode } from '../../query-tree';
 import { flatMap } from '../../utils/utils';
 import { DatabaseAdapter } from '../database-adapter';
@@ -198,6 +198,10 @@ export class InMemoryAdapter implements DatabaseAdapter {
 
     async tokenizeExpression(expression: string): Promise<ReadonlyArray<string>> {
         return flatMap(expression.split(' '), t => t.split('-'));
+    }
+
+    async tokenizeToCache(tokens: ReadonlyArray<[string, QuickSearchLanguage]>){
+        // not supported for inmemory
     }
 
 }

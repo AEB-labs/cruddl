@@ -1,8 +1,9 @@
-import { AggregationOperator, Field, Relation, RootEntityType } from '../../model';
+import { AqlLiteral } from 'arangojs/lib/cjs/aql-query';
+import { AggregationOperator, Field, QuickSearchLanguage, Relation, RootEntityType } from '../../model';
 import { FieldSegment, getEffectiveCollectSegments, RelationSegment } from '../../model/implementation/collect-path';
 import {
     AddEdgesQueryNode,
-   AggregationQueryNode, BasicType,
+    AggregationQueryNode, BasicType,
     BinaryOperationQueryNode,
     BinaryOperator,
     ConcatListsQueryNode,
@@ -30,14 +31,14 @@ import {
     QueryResultValidator,
     RemoveEdgesQueryNode,
     RootEntityIDQueryNode,
-   RUNTIME_ERROR_CODE_PROPERTY, RUNTIME_ERROR_TOKEN,
+    RUNTIME_ERROR_CODE_PROPERTY, RUNTIME_ERROR_TOKEN,
     RuntimeErrorQueryNode,
     SafeListQueryNode,
     SetEdgeQueryNode,
     OperatorWithLanguageQueryNode,
     BinaryOperatorWithLanguage,
     TransformListQueryNode,
-   TraversalQueryNode, TypeCheckQueryNode,
+    TraversalQueryNode, TypeCheckQueryNode,
     UnaryOperationQueryNode,
     UnaryOperator,
     UpdateEntitiesQueryNode,
@@ -209,7 +210,7 @@ function createAQLCompoundQuery(node: QueryNode,
 
 type NodeProcessor<T extends QueryNode> = (node: T, context: QueryContext) => AQLFragment;
 
-namespace aqlExt {
+export namespace aqlExt {
     export function safeJSONKey(key: string): AQLFragment {
         if (aql.isSafeIdentifier(key)) {
             return aql`${aql.string(key)}`; // if safe, use "name" approach
@@ -663,7 +664,7 @@ register(BinaryOperationQueryNode, (node, context) => {
     }
 
 });
-// @MSF TODO quickSearchStartsWith querynode and language not optional
+
 register(OperatorWithLanguageQueryNode, (node, context) => {
 
     const lhs = processNode(node.lhs, context);
@@ -688,14 +689,14 @@ register(QuickSearchStartsWithQueryNode, (node, context) => {
     const rhs = processNode(node.rhs, context);
     const analyzer = node.quickSearchLanguage ? `text_${node.quickSearchLanguage.toLowerCase()}` : IDENTITY_ANALYZER;
 
-    return aql`ANALYZER(STARTS_WITH(${lhs}, ${rhs}), ${analyzer})`
+    return aql`ANALYZER(STARTS_WITH(${lhs}, ${rhs}), ${analyzer})`;
 });
 
 register(QuickSearchFieldExistsQueryNode, (node, context) => {
     const sourceNode = processNode(node.sourceNode, context);
     const analyzer = node.quickSearchLanguage ? `text_${node.quickSearchLanguage.toLowerCase()}` : IDENTITY_ANALYZER;
 
-    return aql`EXISTS(${sourceNode}, "analyzer", ${analyzer})`
+    return aql`EXISTS(${sourceNode}, "analyzer", ${analyzer})`;
 });
 
 register(QuickSearchComplexOperatorQueryNode, (node, context) => {

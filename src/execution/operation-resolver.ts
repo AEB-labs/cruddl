@@ -5,8 +5,9 @@ import { RequestProfile } from '../config/interfaces';
 import { DatabaseAdapter, ExecutionPlan, TransactionStats } from '../database/database-adapter';
 import { OperationParams } from '../graphql/operation-based-resolvers';
 import { distillOperation } from '../graphql/query-distiller';
+import { QuickSearchLanguage } from '../model/config';
 import { ObjectQueryNode, PropertySpecification, QueryNode } from '../query-tree';
-import { ExpandingQueryNode } from '../query-tree/quick-search';
+import { ExpandingQueryNode, QuickSearchComplexOperatorQueryNode } from '../query-tree/quick-search';
 import { evaluateQueryStatically } from '../query-tree/utils';
 import { buildConditionalObjectQueryNode, QueryNodeObjectType } from '../schema-generation/query-node-object-type';
 import { SchemaTransformationContext } from '../schema/preparation/transformation-pipeline';
@@ -64,6 +65,7 @@ export class OperationResolver {
             if (logger.isTraceEnabled()) {
                 logger.trace('Before expansion: ' + queryTree.describe());
             }
+            await this.queryQuickSearchTokens(queryTree, this.context.databaseAdapter);
             queryTree = await this.expandQueryNode(queryTree, this.context.databaseAdapter);
             if (logger.isTraceEnabled()) {
                 logger.trace('Before authorization: ' + queryTree.describe());
@@ -138,6 +140,33 @@ export class OperationResolver {
             error,
             profile
         };
+    }
+
+    private async queryQuickSearchTokens(queryTree: QueryNode, databaseAdapter: DatabaseAdapter) {
+        async function collectTokens(queryNode: QueryNode): Promise<ReadonlyArray<[string, QuickSearchLanguage]>> {
+            let tokens: [string, QuickSearchLanguage][] = [];
+            if (queryNode instanceof QuickSearchComplexOperatorQueryNode) {
+                tokens.push([queryNode.expression, queryNode.quickSearchLanguage]);
+
+            }
+            if (queryNode instanceof ObjectQueryNode) {
+                const specs: PropertySpecification[] = [];
+                for (const property of queryNode.properties) {
+                    tokens = tokens.concat(await collectTokens(property.valueNode));
+                }
+            }
+
+            for (const field of Object.keys(queryNode)) {
+                const childNode = (queryNode as any)[field];
+                if (childNode instanceof QueryNode) {
+                    tokens = tokens.concat(await collectTokens(childNode));
+                }
+            }
+            return tokens;
+        }
+
+        const tokens = await collectTokens(queryTree);
+        databaseAdapter.tokenizeToCache(tokens);
     }
 
     private async expandQueryNode(queryNode: QueryNode, databaseAdapter: DatabaseAdapter): Promise<QueryNode> {

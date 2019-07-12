@@ -6,7 +6,7 @@ import { DatabaseAdapter } from '../../src/database/database-adapter';
 import { Project } from '../../src/project/project';
 import { ProjectSource } from '../../src/project/source';
 import { expect } from 'chai';
-import { Model } from '../../src/model';
+import { Model, QuickSearchLanguage } from '../../src/model';
 import { flatMap } from '../../src/utils/utils';
 
 class FakeDBAdatper implements DatabaseAdapter {
@@ -20,6 +20,10 @@ class FakeDBAdatper implements DatabaseAdapter {
 
     async tokenizeExpression(expression: string): Promise<ReadonlyArray<string>> {
         return flatMap(expression.split(' '), t => t.split('-'));
+    }
+
+    async tokenizeToCache(tokens: ReadonlyArray<[string, QuickSearchLanguage]>){
+        // do nothing
     }
 }
 

@@ -163,4 +163,5 @@ export interface DatabaseAdapter {
      */
     tokenizeExpression(expression: string, quickSearchLanguage?: QuickSearchLanguage):Promise<ReadonlyArray<string>>;
 
+    tokenizeToCache(tokens: ReadonlyArray<[string, QuickSearchLanguage]>): Promise<void>;
 }
