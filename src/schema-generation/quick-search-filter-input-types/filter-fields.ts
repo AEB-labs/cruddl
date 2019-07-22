@@ -18,7 +18,7 @@ export interface QuickSearchFilterField extends TypedInputFieldBase<QuickSearchF
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue, path: ReadonlyArray<Field>, info: QueryNodeResolveInfo): QueryNode
 }
 
-function getDescription({ operator, typeName, fieldName }: { operator: string | undefined, typeName: string, fieldName?: string }) {
+function getDescription({ operator, typeName, fieldName }: { operator: string | undefined, typeName: string, fieldName?: string, isAggregation?: boolean }) {
     let descriptionTemplate = QUICK_SEARCH_FILTER_DESCRIPTIONS[operator || INPUT_FIELD_EQUAL];
     if (typeof descriptionTemplate === 'object') {
         descriptionTemplate = descriptionTemplate[typeName] || descriptionTemplate[''];
@@ -38,7 +38,8 @@ export class QuickSearchScalarOrEnumFieldFilterField implements QuickSearchFilte
         public readonly quickSearchLanguage?: QuickSearchLanguage
     ) {
         this.inputType = QUICK_SEARCH_OPERATORS_WITH_LIST_OPERAND.includes(operatorPrefix || '') ? new GraphQLList(new GraphQLNonNull(baseInputType)) : baseInputType;
-        this.description = getDescription({ operator: operatorPrefix, fieldName: field.name, typeName: field.type.name });
+        this.description = getDescription({ operator: operatorPrefix, fieldName: field.name, typeName: field.type.name, isAggregation: this.operatorPrefix != undefined });
+
         if (this.field.description) {
             this.description = (this.description ? this.description + '\n\n' : '') + this.field.description;
         }
@@ -102,8 +103,7 @@ export class QuickSearchScalarOrEnumFilterField implements QuickSearchFilterFiel
         if (this.operatorName == undefined) {
             return this.field.name;
         }
-        return this.field.name + NESTED_FIELD_SUFFIX + FILTER_FIELD_PREFIX_SEPARATOR + this.operatorName;
-        // @MSF generate own type for aggregation of scalars instead of chaining the name
+        return this.field.name + FILTER_FIELD_PREFIX_SEPARATOR + NESTED_FIELD_SUFFIX.toLowerCase() + FILTER_FIELD_PREFIX_SEPARATOR + this.operatorName;
     }
 
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue, path: ReadonlyArray<Field>, info: QueryNodeResolveInfo): QueryNode {

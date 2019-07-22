@@ -1,4 +1,4 @@
-"A supehero"
+# @MSF TODO 3.5 sorting integration
 type Hero @rootEntity(quickSearchIndex: true, quickSearchLanguage: DE) {
     "The hero's screen name"
     name: String @quickSearchFulltextIndex(isIncludedInSearch: true)

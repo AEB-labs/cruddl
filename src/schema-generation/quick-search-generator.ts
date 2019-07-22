@@ -1,4 +1,4 @@
-import { GraphQLString } from 'graphql';
+import { GraphQLFieldConfigArgumentMap, GraphQLString } from 'graphql';
 import { Field, RootEntityType } from '../model/implementation';
 import { BinaryOperationQueryNode, BinaryOperator, BinaryOperatorWithLanguage, ConditionalQueryNode, ConstBoolQueryNode, CountQueryNode, FieldPathQueryNode, LiteralQueryNode, OperatorWithLanguageQueryNode, PreExecQueryParms, QueryNode, QUICKSEARCH_TOO_MANY_OBJECTS, RuntimeErrorQueryNode, TransformListQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../query-tree';
 import { QuickSearchQueryNode, QuickSearchStartsWithQueryNode } from '../query-tree/quick-search';
@@ -63,16 +63,23 @@ export class QuickSearchGenerator {
             return schemaField;
         }
         const quickSearchType = this.quickSearchTypeGenerator.generate(rootEntityType, false);
+        // Don't include searchExpression if there are no fields that are included in the search
+        const newArgs: GraphQLFieldConfigArgumentMap = rootEntityType.hasIncludedInSearchFields ?
+            {
+                [QUICK_SEARCH_FILTER_ARG]: { type: quickSearchType.getInputType() },
+                [QUICK_SEARCH_EXPRESSION_ARG]: { type: GraphQLString }
+            }
+            :
+            {
+                [QUICK_SEARCH_FILTER_ARG]: { type: quickSearchType.getInputType() }
+            };
+
+
         return {
             ...schemaField,
             args: {
                 ...schemaField.args,
-                [QUICK_SEARCH_FILTER_ARG]: {
-                    type: quickSearchType.getInputType()
-                },
-                [QUICK_SEARCH_EXPRESSION_ARG]: {
-                    type: GraphQLString
-                }
+                ...newArgs
             },
             resolve: (sourceNode, args, info) => {
                 const itemVariable = new VariableQueryNode(decapitalize(rootEntityType.name));
@@ -92,7 +99,7 @@ export class QuickSearchGenerator {
 
     private buildQuickSearchFilterNode(args: { [p: string]: any }, filterType: QuickSearchFilterObjectType, itemVariable: VariableQueryNode, rootEntityType: RootEntityType, info: QueryNodeResolveInfo) {
         const filterValue = args[QUICK_SEARCH_FILTER_ARG] || {};
-        const expression = args[QUICK_SEARCH_EXPRESSION_ARG] as string;
+        const expression = rootEntityType.hasIncludedInSearchFields ? args[QUICK_SEARCH_EXPRESSION_ARG] as string : undefined;
         const filterNode = simplifyBooleans(filterType.getFilterNode(itemVariable, filterValue, [], info));
         const searchFilterNode = simplifyBooleans(this.buildQuickSearchSearchFilterNode(rootEntityType, itemVariable, expression));
         if (searchFilterNode === ConstBoolQueryNode.TRUE) {
@@ -130,7 +137,7 @@ export class QuickSearchGenerator {
                         ],
                         resultNode: new ConditionalQueryNode(
                             assertionVariable,
-                            new RuntimeErrorQueryNode('Too many objects',{code: QUICKSEARCH_TOO_MANY_OBJECTS}),
+                            new RuntimeErrorQueryNode('Too many objects', { code: QUICKSEARCH_TOO_MANY_OBJECTS }),
                             sourceNode)
                     });
                 } else {
@@ -141,7 +148,7 @@ export class QuickSearchGenerator {
         };
     }
 
-    private buildQuickSearchSearchFilterNode(rootEntityType: RootEntityType, itemVariable: VariableQueryNode, expression: string): QueryNode {
+    private buildQuickSearchSearchFilterNode(rootEntityType: RootEntityType, itemVariable: VariableQueryNode, expression?: string): QueryNode {
         if (!expression || expression == '') {
             return new ConstBoolQueryNode(true);
         }
@@ -152,7 +159,7 @@ export class QuickSearchGenerator {
             }
 
             function getIdentityNode() {
-                if (field.type.isScalarType && field.type && !isNaN(Number(expression))) {
+                if (field.type.isScalarType && (field.type.graphQLScalarType.name === 'Int' || field.type.graphQLScalarType.name === 'Float') && !isNaN(Number(expression))) {
                     return new BinaryOperationQueryNode(new FieldPathQueryNode(itemVariable, path.concat(field)), BinaryOperator.EQUAL, new LiteralQueryNode(Number(expression)));
                 } else {
                     return new QuickSearchStartsWithQueryNode(new FieldPathQueryNode(itemVariable, path.concat(field)), new LiteralQueryNode(expression));

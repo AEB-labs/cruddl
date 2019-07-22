@@ -685,6 +685,10 @@ export class Field implements ModelComponent {
             && this.declaringType.permissionProfile.permissions.some(value => value.restrictToAccessGroups) && this.declaringType.arangoSearchConfig.isIndexed){
             context.addMessage(ValidationMessage.error(`When using restriction by accessGroup the field "${this.name}" must be quickSearchIndexed.`, this.astNode));
         }
+        if(this.isIncludedInSearch && this.type.isScalarType && this.type.name === 'Boolean'){
+            context.addMessage(ValidationMessage.error(`'isIncludedInSearch' is not supported on type "${this.type.name}".`, this.input.isQuickSearchFulltextIndexedASTNode));
+            return;
+        }
         // @MSF TODO: write tests (see traversal.spec.ts)
     }
 

@@ -75,6 +75,10 @@ export class RootEntityType extends ObjectTypeBase {
         };
     }
 
+    get hasIncludedInSearchFields(){
+        return this.fields.some(value => value.isIncludedInSearch)
+    }
+
     @memorize()
     get keyField(): Field | undefined {
         if (!this.input.keyFieldName) {

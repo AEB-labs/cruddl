@@ -45,8 +45,11 @@ export class QuickSearchFilterObjectType extends TypedInputObjectType<QuickSearc
         public readonly isAggregration: boolean
     ) {
         super(getQuickSearchFilterTypeName(type.name, isAggregration), fields,
-            `QuickSearchFilter type for \`${type.name}\`.\n\nAll fields in this type are *and*-combined; see the \`or\` field for *or*-combination.\n`+
-            `Large queries in conjunctive normal form (e.g. (a OR b) AND (c OR d)... ) and should be avoided.`);
+            `QuickSearchFilter type for \`${type.name}\`.\n\nAll fields in this type are *and*-combined; see the \`or\` field for *or*-combination.\n` +
+            isAggregration ?
+                `An aggregation contains all values of a list. Each check in this type is true if it matches any of the values in the list.`
+                :
+                `Large queries in conjunctive normal form (e.g. (a OR b) AND (c OR d)... ) and should be avoided.`);
     }
 
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue, path: ReadonlyArray<Field>, info: QueryNodeResolveInfo): QueryNode {

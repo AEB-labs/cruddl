@@ -2917,7 +2917,7 @@
         },
         {
           "name": "DeliveryQuickSearchFilter",
-          "description": "QuickSearchFilter type for `Delivery`.\n\nAll fields in this type are *and*-combined; see the `or` field for *or*-combination.\nLarge queries in conjunctive normal form (e.g. (a OR b) AND (c OR d)... ) and should be avoided.",
+          "description": "An aggregation contains all values of a list. Each check in this type is true if it matches any of the values in the list.",
           "fields": null,
           "inputFields": [
             {
@@ -3022,7 +3022,7 @@
             },
             {
               "name": "deliveryNumber_not_starts_with",
-              "description": null
+              "description": "Checks if `deliveryNumber` does not start with a specified string, case-insensitively.\n\n"
             },
             {
               "name": "consignee",
@@ -3054,7 +3054,7 @@
             },
             {
               "name": "destinationCountryISOCode_not_starts_with",
-              "description": null
+              "description": "Checks if `destinationCountryISOCode` does not start with a specified string, case-insensitively.\n\n"
             },
             {
               "name": "description_contains_any_word",
@@ -3082,11 +3082,11 @@
             },
             {
               "name": "description_contains_phrase",
-              "description": "Tokenizes the provided string into words, and checks if that exact phrase (those words in excactly this order) is not included in `description`.\n Stemming (reduction of words on their base form) is applied.\n\n"
+              "description": "Tokenizes the provided string into words, and checks if that exact phrase (those words in excactly this order) is included in `description`.\n Stemming (reduction of words on their base form) is applied.\n\n"
             },
             {
               "name": "description_not_contains_phrase",
-              "description": null
+              "description": "Tokenizes the provided string into words, and checks if that exact phrase (those words in excactly this order) is not included in `description`.\n Stemming (reduction of words on their base form) is applied.\n\n"
             },
             {
               "name": "enumQuickSearch",
@@ -3116,7 +3116,7 @@
         },
         {
           "name": "AddressQuickSearchFilter",
-          "description": "QuickSearchFilter type for `Address`.\n\nAll fields in this type are *and*-combined; see the `or` field for *or*-combination.\nLarge queries in conjunctive normal form (e.g. (a OR b) AND (c OR d)... ) and should be avoided.",
+          "description": "An aggregation contains all values of a list. Each check in this type is true if it matches any of the values in the list.",
           "fields": null,
           "inputFields": [
             {
@@ -3141,7 +3141,7 @@
             },
             {
               "name": "city_not_starts_with",
-              "description": null
+              "description": "Checks if `city` does not start with a specified string, case-insensitively.\n\n"
             },
             {
               "name": "AND",
@@ -3155,7 +3155,7 @@
         },
         {
           "name": "DeliveryItemAggregationQuickSearchFilter",
-          "description": "QuickSearchFilter type for `DeliveryItem`.\n\nAll fields in this type are *and*-combined; see the `or` field for *or*-combination.\nLarge queries in conjunctive normal form (e.g. (a OR b) AND (c OR d)... ) and should be avoided.",
+          "description": "An aggregation contains all values of a list. Each check in this type is true if it matches any of the values in the list.",
           "fields": null,
           "inputFields": [
             {

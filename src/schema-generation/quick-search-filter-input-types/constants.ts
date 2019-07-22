@@ -69,7 +69,7 @@ export const QUICK_SEARCH_FILTER_FIELDS_BY_TYPE: { [name: string]: string[] } = 
 
 export const QUICK_SEARCH_FILTER_DESCRIPTIONS: { [name: string]: string | { [typeName: string]: string } } = {
     [INPUT_FIELD_EQUAL]: {
-        [GraphQLString.name]: 'Checks if $field equals a specified string, case-insensitively.\n\n' ,
+        [GraphQLString.name]: 'Checks if $field equals a specified string, case-insensitively.\n\n',
         ['']: 'Checks if $field equals a specified value.\n\n'
     },
 
@@ -79,7 +79,7 @@ export const QUICK_SEARCH_FILTER_DESCRIPTIONS: { [name: string]: string | { [typ
     },
 
     [INPUT_FIELD_STARTS_WITH]: 'Checks if $field starts with a specified string, case-insensitively.\n\n',
-
+    [INPUT_FIELD_NOT_STARTS_WITH]: 'Checks if $field does not start with a specified string, case-insensitively.\n\n',
     [INPUT_FIELD_CONTAINS_ANY_WORD]: 'Tokenizes the provided string into words, and checks if $field contains at least one of them.\n ' +
     'Stemming (reduction of words on their base form) is applied.\n\n',
     [INPUT_FIELD_NOT_CONTAINS_ANY_WORD]: 'Tokenizes the provided string into words, and checks if $field contains none of them.\n ' +
@@ -98,8 +98,47 @@ export const QUICK_SEARCH_FILTER_DESCRIPTIONS: { [name: string]: string | { [typ
     'Stemming (reduction of words on their base form) is applied.\n\n',
     [INPUT_FIELD_CONTAINS_PHRASE]: 'Tokenizes the provided string into words, and checks if that exact phrase (those words in excactly this order) is included in $field.\n ' +
     'Stemming (reduction of words on their base form) is applied.\n\n',
-    [INPUT_FIELD_CONTAINS_PHRASE]: 'Tokenizes the provided string into words, and checks if that exact phrase (those words in excactly this order) is not included in $field.\n ' +
+    [INPUT_FIELD_NOT_CONTAINS_PHRASE]: 'Tokenizes the provided string into words, and checks if that exact phrase (those words in excactly this order) is not included in $field.\n ' +
+    'Stemming (reduction of words on their base form) is applied.\n\n'
+
+};
+
+export const QUICK_SEARCH_FILTER_DESCRIPTIONS_AGGREGATION: { [name: string]: string | { [typeName: string]: string } } = {
+    [INPUT_FIELD_EQUAL]: {
+        [GraphQLString.name]: 'Checks if any value in $field equals a specified string, case-insensitively.\n\n',
+        ['']: 'Checks if $field equals a specified value.\n\n'
+    },
+
+    [INPUT_FIELD_NOT]: {
+        [GraphQLString.name]: 'Checks if no value in $field equals a specified string, case-insensitively.',
+        ['']: 'Checks if $field does not equal a specified value'
+    },
+
+    [INPUT_FIELD_STARTS_WITH]: 'Checks if any value in $field starts with a specified string, case-insensitively.\n\n',
+    [INPUT_FIELD_NOT_STARTS_WITH]: 'Checks if none of the values in $field start with a specified string, case-insensitively.\n\n',
+
+    [INPUT_FIELD_CONTAINS_ANY_WORD]: 'Tokenizes the provided string into words, and checks if any value in $field contains at least one of them.\n ' +
     'Stemming (reduction of words on their base form) is applied.\n\n',
+    [INPUT_FIELD_NOT_CONTAINS_ANY_WORD]: 'Tokenizes the provided string into words, and checks if none of the values in $field contain any of them.\n ' +
+    'Stemming (reduction of words on their base form) is applied.\n\n',
+    [INPUT_FIELD_CONTAINS_ALL_WORDS]: 'Tokenizes the provided string into words, and checks if $field contains all of them in any value. ' +
+    'The words do not have to appear in the same value, but each word can appear in a different value of this list.\n ' +
+    'Stemming (reduction of words on their base form) is applied.\n\n',
+    [INPUT_FIELD_NOT_CONTAINS_ALL_WORDS]: 'Tokenizes the provided string into words, and checks if at least one word is not contained in any value of $field.\n ' +
+    'Stemming (reduction of words on their base form) is applied.\n\n',
+    [INPUT_FIELD_CONTAINS_ANY_PREFIX]: 'Tokenizes the provided string into prefixes, and checks if any value in $field contains any word that starts with one of these prefixes.\n ' +
+    'Stemming (reduction of words on their base form) is applied.\n\n',
+    [INPUT_FIELD_NOT_CONTAINS_ANY_PREFIX]: 'Tokenizes the provided string into prefixes, and checks if no value in $field contains any word that starts with one of these prefixes.\n ' +
+    'Stemming (reduction of words on their base form) is applied.\n\n',
+    [INPUT_FIELD_CONTAINS_ALL_PREFIXES]: 'Tokenizes the provided string into prefixes, and checks if all prefixes appears in any value of $field.\n ' +
+    'The prefixes do not have to appear in the same value, but each prefix can appear in a different value of this list.\n ' +
+    'Stemming (reduction of words on their base form) is applied.\n\n',
+    [INPUT_FIELD_NOT_CONTAINS_ALL_PREFIXES]: 'Tokenizes the provided prefixes into words, and checks if there is at least one prefix that does not appear in any value of $field.\n ' +
+    'Stemming (reduction of words on their base form) is applied.\n\n',
+    [INPUT_FIELD_CONTAINS_PHRASE]: 'Tokenizes the provided string into words, and checks if that exact phrase (those words in excactly this order) is included in any value of $field.\n ' +
+    'Stemming (reduction of words on their base form) is applied.\n\n',
+    [INPUT_FIELD_NOT_CONTAINS_PHRASE]: 'Tokenizes the provided string into words, and checks if that exact phrase (those words in excactly this order) is not included in any value of $field.\n ' +
+    'Stemming (reduction of words on their base form) is applied.\n\n'
 
 };
 
