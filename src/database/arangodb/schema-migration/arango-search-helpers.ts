@@ -39,6 +39,11 @@ interface ArangoSearchViewCollectionLink {
     storeValues?: 'none' | 'id';
 }
 
+export interface ArangoSearchConfiguration {
+    recursionDepth?: number
+    commitIntervalMsec?: number
+}
+
 export function getRequiredViewsFromModel(model: Model): ReadonlyArray<ArangoSearchDefinition> {
     return model.rootEntityTypes
         .filter(value => value.arangoSearchConfig.isIndexed)
@@ -59,7 +64,7 @@ function getViewForRootEntity(rootEntity: RootEntityType): ArangoSearchDefinitio
 }
 
 
-export async function calculateRequiredArangoSearchViewCreateOperations(existingViews: ArangoSearchView[], requiredViews: ReadonlyArray<ArangoSearchDefinition>, db: Database, recursionDepth: number): Promise<ReadonlyArray<CreateArangoSearchViewMigration>> {
+export async function calculateRequiredArangoSearchViewCreateOperations(existingViews: ArangoSearchView[], requiredViews: ReadonlyArray<ArangoSearchDefinition>, db: Database, configuration?: ArangoSearchConfiguration): Promise<ReadonlyArray<CreateArangoSearchViewMigration>> {
     let viewsToCreate = requiredViews.filter(value => !existingViews.some(value1 => value1.name === value.viewName));
 
     async function mapToMigration(value: ArangoSearchDefinition): Promise<CreateArangoSearchViewMigration> {
@@ -69,7 +74,7 @@ export async function calculateRequiredArangoSearchViewCreateOperations(existing
             collectionSize: count,
             collectionName: value.collectionName,
             viewName: value.viewName,
-            properties: getPropertiesFromDefinition(value, recursionDepth)
+            properties: getPropertiesFromDefinition(value, configuration)
         });
     }
 
@@ -88,10 +93,11 @@ export function getAnalyzerFromQuickSearchLanguage(quickSearchLanguage?: QuickSe
 }
 
 
-function getPropertiesFromDefinition(definition: ArangoSearchDefinition, recursionDepth: number): ArangoSearchViewPropertiesOptions {
+function getPropertiesFromDefinition(definition: ArangoSearchDefinition, configuration?: ArangoSearchConfiguration): ArangoSearchViewPropertiesOptions {
+    const recursionDepth = configuration && configuration.recursionDepth ? configuration.recursionDepth : 1
     const properties: any /*ArangoSearchViewPropertiesOptions*/ = {
         links: {},
-        commitIntervalMsec: 100
+        commitIntervalMsec: configuration && configuration.commitIntervalMsec ? configuration.commitIntervalMsec : 1000
     };
 
     const link: ArangoSearchViewCollectionLink = {
@@ -144,7 +150,7 @@ function isEqualProperties(defProperties: ArangoSearchViewPropertiesOptions, pro
 
 }
 
-export async function calculateRequiredArangoSearchViewUpdateOperations(views: ArangoSearchView[], definitions: ReadonlyArray<ArangoSearchDefinition>, db: Database, recursionDepth: number): Promise<ReadonlyArray<UpdateArangoSearchViewMigration>> {
+export async function calculateRequiredArangoSearchViewUpdateOperations(views: ArangoSearchView[], definitions: ReadonlyArray<ArangoSearchDefinition>, db: Database, configuration?: ArangoSearchConfiguration): Promise<ReadonlyArray<UpdateArangoSearchViewMigration>> {
     const viewsWithUpdateRequired: UpdateArangoSearchViewMigration[] = [];
     for (const view of views) {
         const definition = definitions.find(value => value.viewName === view.name);
@@ -153,7 +159,7 @@ export async function calculateRequiredArangoSearchViewUpdateOperations(views: A
         }
         const viewProperties = await view.properties();
 
-        const definitionProperties = getPropertiesFromDefinition(definition, recursionDepth);
+        const definitionProperties = getPropertiesFromDefinition(definition, configuration);
         if (!isEqualProperties(definitionProperties, viewProperties)) {
             const colExists = await db.collection(definition.collectionName).exists();
             const count: number = (colExists) ? (await db.collection(definition.collectionName).count()).count : 0;

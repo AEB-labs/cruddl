@@ -165,10 +165,10 @@ export class SchemaAnalyzer {
         // the currently existing views
         const views = (await this.db.listViews()).map(value => this.db.arangoSearchView(value.name));
 
-        const recursionDepth = this.config.arangoSearchRecursionDepth ? this.config.arangoSearchRecursionDepth : 1;
-        const viewsToCreate = await calculateRequiredArangoSearchViewCreateOperations(views, requiredViews, this.db, recursionDepth);
+        const configuration = this.config.arangoSearchConfiguration;
+        const viewsToCreate = await calculateRequiredArangoSearchViewCreateOperations(views, requiredViews, this.db, configuration);
         const viewsToDrop = calculateRequiredArangoSearchViewDropOperations(views, requiredViews);
-        const viewsToUpdate = await calculateRequiredArangoSearchViewUpdateOperations(views, requiredViews, this.db, recursionDepth);
+        const viewsToUpdate = await calculateRequiredArangoSearchViewUpdateOperations(views, requiredViews, this.db, configuration);
 
         return [...viewsToCreate, ...viewsToDrop, ...viewsToUpdate];
     }

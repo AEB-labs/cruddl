@@ -4,6 +4,7 @@ import { globalContext } from '../../config/global';
 import { ProjectOptions } from '../../config/interfaces';
 import { Logger } from '../../config/logging';
 import { CustomDatabase } from './arangojs-instrumentation/custom-database';
+import { ArangoSearchConfiguration } from './schema-migration/arango-search-helpers';
 
 export interface ArangoJSConfig {
     readonly url?: string | ReadonlyArray<string>;
@@ -77,7 +78,7 @@ export interface ArangoDBConfig {
     /**
      * How many steps of recursive fields are indexed and allowed in queries for QuickSearch.
      */
-    readonly arangoSearchRecursionDepth?: number
+    readonly arangoSearchConfiguration?: ArangoSearchConfiguration
 }
 
 export function initDatabase(config: ArangoDBConfig): Database {
