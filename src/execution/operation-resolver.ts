@@ -31,7 +31,6 @@ export class OperationResolver {
         if (!options) {
             options = this.context.getExecutionOptions ? this.context.getExecutionOptions({ context: operationInfo.context, operationDefinition: operationInfo.operation }) : {};
         }
-        // @MSF TODO: regression tests for recursive calls
 
         const watch = new Watch();
         const topLevelWatch = new Watch();

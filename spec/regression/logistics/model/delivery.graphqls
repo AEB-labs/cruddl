@@ -39,6 +39,7 @@ type Delivery @rootEntity(quickSearchIndex: true, quickSearchLanguage: DE) @role
     description: String @quickSearchFulltextIndex(isIncludedInSearch: true)
     enumQuickSearch: Foobarit @quickSearchIndex
     aNumber: Int @quickSearchIndex(isIncludedInSearch: true)
+    recursion: Recursion @quickSearchIndex
 }
 
 type DeliveryItem @childEntity {
@@ -62,4 +63,9 @@ enum Foobarit {
     Foo
     Bar
     Baz
+}
+
+type Recursion @valueObject{
+    recursion: Recursion @quickSearchIndex
+    name: String @quickSearchIndex
 }

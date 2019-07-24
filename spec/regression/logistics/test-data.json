@@ -97,7 +97,8 @@
         "totalValue": "EUR 1024.00",
         "description": "description with anyword phrase a all",
         "enumQuickSearch": "Foo",
-        "aNumber": 123
+        "aNumber": 123,
+        "recursion": { "name":"test_a", "recursion": { "name":"test_b", "recursion": { "name":"test_c" }}}
       },
       {
         "@id": "2",
@@ -126,7 +127,8 @@
         "destinationCountryISOCode": "XX",
         "description": "description with all words prefixesFooBar phrase",
         "enumQuickSearch": "Bar",
-        "aNumber": 1234
+        "aNumber": 1234,
+        "recursion": { "name":"test_x", "recursion": { "name":"test_y", "recursion": { "name":"test_z" }}}
       },
       {
         "@id": "3",
@@ -147,7 +149,8 @@
         ],
         "destinationCountryISOCode": "US",
         "description": "description with a phrase any word",
-        "aNumber": 1000521
+        "aNumber": 1000521,
+        "recursion": { "name":"test_1", "recursion": { "name":"test_2", "recursion": { "name":"test_3" }}}
       }
     ],
 

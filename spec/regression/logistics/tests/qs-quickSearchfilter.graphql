@@ -165,3 +165,33 @@ query expression{
         deliveryNumber
     }
 }
+
+query recursion_successfull{
+    quickSearchDeliveries(
+        quickSearchFilter: {
+            recursion: {
+                recursion: {
+                    name: "test_b"
+                }
+            }
+        }
+    ){
+        deliveryNumber
+    }
+}
+
+query recursion_error{
+    quickSearchDeliveries(
+        quickSearchFilter: {
+            recursion: {
+                recursion: {
+                    recursion: {
+                        name: "test_c"
+                    }
+                }
+            }
+        }
+    ){
+        deliveryNumber
+    }
+}
