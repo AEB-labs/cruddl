@@ -150,4 +150,18 @@ query order_above_max {
     }
 }
 
-# @MSF TODO: add tests for expression
+query expression_with_number{
+    quickSearchDeliveries(
+        quickSearchExpression: "1000521"
+    ){
+        deliveryNumber
+    }
+}
+
+query expression{
+    quickSearchDeliveries(
+        quickSearchExpression: "all"
+    ){
+        deliveryNumber
+    }
+}

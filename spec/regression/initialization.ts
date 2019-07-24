@@ -5,8 +5,7 @@ import { ArangoDBConfig } from '../../src/database/arangodb';
 import stripJsonComments = require('strip-json-comments');
 
 const DATABASE_NAME = 'cruddl-test-temp';
-// const DATABASE_URL = 'http://root:@localhost:8529';
-const DATABASE_URL = 'http://test:@localhost:7050';
+const DATABASE_URL = 'http://root:@localhost:8529';
 
 export async function createTempDatabase(): Promise<ArangoDBConfig> {
     const db = new Database({

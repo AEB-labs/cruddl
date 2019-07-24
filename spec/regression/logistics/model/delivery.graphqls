@@ -1,6 +1,6 @@
 "A delivery"
 type Delivery @rootEntity(quickSearchIndex: true, quickSearchLanguage: DE) @roles(readWrite: ["allusers"]) {
-    deliveryNumber: String @key @unique @quickSearchIndex# leave this here to catch this case, too (has caused a bug)
+    deliveryNumber: String @key @unique @quickSearchIndex(isIncludedInSearch: true)# leave this here to catch this case, too (has caused a bug)
     "The list of serial numbers associated with this delivery"
     serialNumbers: [String]
     "The address of the delivery's consignee"
@@ -36,8 +36,9 @@ type Delivery @rootEntity(quickSearchIndex: true, quickSearchLanguage: DE) @role
 
     dynamicData: JSON
 
-    description: String @quickSearchFulltextIndex
+    description: String @quickSearchFulltextIndex(isIncludedInSearch: true)
     enumQuickSearch: Foobarit @quickSearchIndex
+    aNumber: Int @quickSearchIndex(isIncludedInSearch: true)
 }
 
 type DeliveryItem @childEntity {

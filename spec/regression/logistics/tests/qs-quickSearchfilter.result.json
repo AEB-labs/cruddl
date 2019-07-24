@@ -162,5 +162,29 @@
     "data": {
       "quickSearchDeliveries": null
     }
+  },
+  "expression_with_number": {
+    "data": {
+      "quickSearchDeliveries": [
+        {
+          "deliveryNumber": "1000521"
+        },
+        {
+          "deliveryNumber": "1000522"
+        }
+      ]
+    }
+  },
+  "expression": {
+    "data": {
+      "quickSearchDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        },
+        {
+          "deliveryNumber": "1000521"
+        }
+      ]
+    }
   }
 }

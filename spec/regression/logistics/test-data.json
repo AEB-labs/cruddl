@@ -96,7 +96,8 @@
         ],
         "totalValue": "EUR 1024.00",
         "description": "description with anyword phrase a all",
-        "enumQuickSearch": "Foo"
+        "enumQuickSearch": "Foo",
+        "aNumber": 123
       },
       {
         "@id": "2",
@@ -124,7 +125,8 @@
         ],
         "destinationCountryISOCode": "XX",
         "description": "description with all words prefixesFooBar phrase",
-        "enumQuickSearch": "Bar"
+        "enumQuickSearch": "Bar",
+        "aNumber": 1234
       },
       {
         "@id": "3",
@@ -144,7 +146,8 @@
           }
         ],
         "destinationCountryISOCode": "US",
-        "description": "description with a phrase any word"
+        "description": "description with a phrase any word",
+        "aNumber": 1000521
       }
     ],
 

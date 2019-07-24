@@ -737,6 +737,10 @@
               "description": null
             },
             {
+              "name": "aNumber",
+              "description": null
+            },
+            {
               "name": "_cursor",
               "description": "Provides a value that can be supplied to the `after` argument for pagination. Depends on the value of the `orderBy` argument."
             }
@@ -2006,6 +2010,38 @@
               "description": null
             },
             {
+              "name": "aNumber",
+              "description": "Checks if `aNumber` equals a specified value.\n\nIf an index exists on `aNumber`, it can be used."
+            },
+            {
+              "name": "aNumber_not",
+              "description": "Checks if `aNumber` does not equal a specified value"
+            },
+            {
+              "name": "aNumber_in",
+              "description": null
+            },
+            {
+              "name": "aNumber_not_in",
+              "description": null
+            },
+            {
+              "name": "aNumber_lt",
+              "description": null
+            },
+            {
+              "name": "aNumber_lte",
+              "description": null
+            },
+            {
+              "name": "aNumber_gt",
+              "description": null
+            },
+            {
+              "name": "aNumber_gte",
+              "description": null
+            },
+            {
               "name": "AND",
               "description": "A field that checks if all filters in the list apply\n\nIf the list is empty, this filter applies to all objects."
             },
@@ -3102,6 +3138,38 @@
             },
             {
               "name": "enumQuickSearch_not_in",
+              "description": null
+            },
+            {
+              "name": "aNumber",
+              "description": "Checks if `aNumber` equals a specified value.\n\n"
+            },
+            {
+              "name": "aNumber_not",
+              "description": "Checks if `aNumber` does not equal a specified value"
+            },
+            {
+              "name": "aNumber_in",
+              "description": null
+            },
+            {
+              "name": "aNumber_not_in",
+              "description": null
+            },
+            {
+              "name": "aNumber_lt",
+              "description": null
+            },
+            {
+              "name": "aNumber_lte",
+              "description": null
+            },
+            {
+              "name": "aNumber_gt",
+              "description": null
+            },
+            {
+              "name": "aNumber_gte",
               "description": null
             },
             {
@@ -4297,6 +4365,10 @@
             {
               "name": "enumQuickSearch",
               "description": null
+            },
+            {
+              "name": "aNumber",
+              "description": null
             }
           ]
         },
@@ -4558,6 +4630,10 @@
             {
               "name": "enumQuickSearch",
               "description": null
+            },
+            {
+              "name": "aNumber",
+              "description": null
             }
           ]
         },
@@ -4737,6 +4813,10 @@
             },
             {
               "name": "enumQuickSearch",
+              "description": null
+            },
+            {
+              "name": "aNumber",
               "description": null
             }
           ]
