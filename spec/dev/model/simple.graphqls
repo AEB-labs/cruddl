@@ -1,5 +1,4 @@
 # @MSF TODO 3.5 sorting integration
-# @MSF TODO validation to prevent EE in EE recursion
 type Hero @rootEntity(quickSearchIndex: true, quickSearchLanguage: DE) {
     "The hero's screen name"
     name: String @quickSearchFulltextIndex(isIncludedInSearch: true)

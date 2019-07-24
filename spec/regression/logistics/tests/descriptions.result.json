@@ -741,6 +741,10 @@
               "description": null
             },
             {
+              "name": "recursion",
+              "description": null
+            },
+            {
               "name": "_cursor",
               "description": "Provides a value that can be supplied to the `after` argument for pagination. Depends on the value of the `orderBy` argument."
             }
@@ -2042,6 +2046,10 @@
               "description": null
             },
             {
+              "name": "recursion",
+              "description": "Checks if `recursion` is not null, and allows to filter based on its fields."
+            },
+            {
               "name": "AND",
               "description": "A field that checks if all filters in the list apply\n\nIf the list is empty, this filter applies to all objects."
             },
@@ -2823,6 +2831,89 @@
           "inputFields": null
         },
         {
+          "name": "RecursionFilter",
+          "description": "Filter type for `Recursion`.\n\nAll fields in this type are *and*-combined; see the `or` field for *or*-combination.",
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "recursion",
+              "description": "Checks if `recursion` is not null, and allows to filter based on its fields."
+            },
+            {
+              "name": "name",
+              "description": "Checks if `name` equals a specified string, case-sensitively.\n\nIf an index exists on `name`, it can be used.\n\nSee also `like` for a case-insensitive filter."
+            },
+            {
+              "name": "name_not",
+              "description": "Checks if `name` does not equal a specified string, case-sensitively."
+            },
+            {
+              "name": "name_in",
+              "description": null
+            },
+            {
+              "name": "name_not_in",
+              "description": null
+            },
+            {
+              "name": "name_lt",
+              "description": null
+            },
+            {
+              "name": "name_lte",
+              "description": null
+            },
+            {
+              "name": "name_gt",
+              "description": null
+            },
+            {
+              "name": "name_gte",
+              "description": null
+            },
+            {
+              "name": "name_contains",
+              "description": "Checks if `name` contains a specified string, case-sensitively."
+            },
+            {
+              "name": "name_not_contains",
+              "description": null
+            },
+            {
+              "name": "name_starts_with",
+              "description": "Checks if `name` starts with a specified string, case-sensitively.\n\nNever uses an index. Consider using `like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
+            },
+            {
+              "name": "name_not_starts_with",
+              "description": null
+            },
+            {
+              "name": "name_ends_with",
+              "description": "Checks if `name` ends with a specified string, case-sensitively."
+            },
+            {
+              "name": "name_not_ends_with",
+              "description": null
+            },
+            {
+              "name": "name_like",
+              "description": "Matches `name` against a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)\n\nIf an index exists on `name`, it can be used for the literal prefix (the part until the first placeholder)."
+            },
+            {
+              "name": "name_not_like",
+              "description": "Checks if `name` does *not* match a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)"
+            },
+            {
+              "name": "AND",
+              "description": "A field that checks if all filters in the list apply\n\nIf the list is empty, this filter applies to all objects."
+            },
+            {
+              "name": "OR",
+              "description": "A field that checks if any of the filters in the list apply.\n\nIf the list is empty, this filter applies to no objects.\n\nNote that only the items in the list *or*-combined; this complete `OR` field is *and*-combined with outer fields in the parent filter type."
+            }
+          ]
+        },
+        {
           "name": "DeliveryItemOrderBy",
           "description": null,
           "fields": null,
@@ -2949,6 +3040,25 @@
           "name": "JSON",
           "description": "The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).",
           "fields": null,
+          "inputFields": null
+        },
+        {
+          "name": "Recursion",
+          "description": null,
+          "fields": [
+            {
+              "name": "recursion",
+              "description": null
+            },
+            {
+              "name": "name",
+              "description": null
+            },
+            {
+              "name": "_cursor",
+              "description": "Provides a value that can be supplied to the `after` argument for pagination. Depends on the value of the `orderBy` argument."
+            }
+          ],
           "inputFields": null
         },
         {
@@ -3173,6 +3283,10 @@
               "description": null
             },
             {
+              "name": "recursion",
+              "description": "Checks if `recursion` is not null, and allows to filter based on its fields."
+            },
+            {
               "name": "AND",
               "description": "A field that checks if all filters in the list apply\n\nIf the list is empty, this filter applies to all objects."
             },
@@ -3337,6 +3451,49 @@
             {
               "name": "quantity_gte",
               "description": null
+            }
+          ]
+        },
+        {
+          "name": "RecursionQuickSearchFilter",
+          "description": "An aggregation contains all values of a list. Each check in this type is true if it matches any of the values in the list.",
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "recursion",
+              "description": "Checks if `recursion` is not null, and allows to filter based on its fields."
+            },
+            {
+              "name": "name",
+              "description": "Checks if `name` equals a specified string, case-insensitively.\n\n"
+            },
+            {
+              "name": "name_not",
+              "description": "Checks if `name` does not equal a specified string, case-insensitively."
+            },
+            {
+              "name": "name_in",
+              "description": null
+            },
+            {
+              "name": "name_not_in",
+              "description": null
+            },
+            {
+              "name": "name_starts_with",
+              "description": "Checks if `name` starts with a specified string, case-insensitively.\n\n"
+            },
+            {
+              "name": "name_not_starts_with",
+              "description": "Checks if `name` does not start with a specified string, case-insensitively.\n\n"
+            },
+            {
+              "name": "AND",
+              "description": "A field that checks if all filters in the list apply\n\nIf the list is empty, this filter applies to all objects."
+            },
+            {
+              "name": "OR",
+              "description": "A field that checks if any of the filters in the list apply.\n\nIf the list is empty, this filter applies to no objects.\n\nNote that only the items in the list *or*-combined; this complete `OR` field is *and*-combined with outer fields in the parent filter type."
             }
           ]
         },
@@ -4369,6 +4526,10 @@
             {
               "name": "aNumber",
               "description": null
+            },
+            {
+              "name": "recursion",
+              "description": null
             }
           ]
         },
@@ -4491,6 +4652,21 @@
             {
               "name": "createDeliveries",
               "description": "Creates new `Deliveries` and adds `deliveries` relations between them and the new `Forwarder`."
+            }
+          ]
+        },
+        {
+          "name": "RecursionInput",
+          "description": "The create/update type for the value object type `Recursion`.\n\nIf this is used in an update mutation, missing fields are set to `null`.",
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "recursion",
+              "description": null
+            },
+            {
+              "name": "name",
+              "description": null
             }
           ]
         },
@@ -4633,6 +4809,10 @@
             },
             {
               "name": "aNumber",
+              "description": null
+            },
+            {
+              "name": "recursion",
               "description": null
             }
           ]
@@ -4817,6 +4997,10 @@
             },
             {
               "name": "aNumber",
+              "description": null
+            },
+            {
+              "name": "recursion",
               "description": null
             }
           ]

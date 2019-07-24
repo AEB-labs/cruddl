@@ -186,5 +186,33 @@
         }
       ]
     }
+  },
+  "recursion_successfull": {
+    "data": {
+      "quickSearchDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        }
+      ]
+    }
+  },
+  "recursion_error": {
+    "errors": [
+      {
+        "message": "Recursive filters can only be defined for 1 level of recursion.",
+        "locations": [
+          {
+            "line": 184,
+            "column": 5
+          }
+        ],
+        "path": [
+          "quickSearchDeliveries"
+        ]
+      }
+    ],
+    "data": {
+      "quickSearchDeliveries": null
+    }
   }
 }
