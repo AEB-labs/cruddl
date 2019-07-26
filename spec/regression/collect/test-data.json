@@ -167,19 +167,35 @@
     "HandlingUnit": [
       {
         "@id": "1",
-        "handlingUnitNumber": "H1"
+        "handlingUnitNumber": "H1",
+        "warehouseSlot": {
+          "warehouse": "South",
+          "level": 0
+        }
       },
       {
         "@id": "2",
-        "handlingUnitNumber": "H2"
+        "handlingUnitNumber": "H2",
+        "warehouseSlot": {
+          "warehouse": "South",
+          "level": 1
+        }
       },
       {
         "@id": "3",
-        "handlingUnitNumber": "H3"
+        "handlingUnitNumber": "H3",
+        "warehouseSlot": {
+          "warehouse": "South",
+          "level": 0
+        }
       },
       {
         "@id": "4",
-        "handlingUnitNumber": "H4"
+        "handlingUnitNumber": "H4",
+        "warehouseSlot": {
+          "warehouse": "North",
+          "level": 0
+        }
       }
     ],
     "Order": [

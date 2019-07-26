@@ -1,6 +1,7 @@
 type Shipment @rootEntity {
     shipmentNumber: String @key
 
+
     deliveries: [Delivery] @relation
 
     allOuterHandlingUnits: [HandlingUnit] @collect(path: "deliveries.handlingUnits", aggregate: DISTINCT)
@@ -55,10 +56,13 @@ type Delivery @rootEntity {
     hasNoDangerousGoodsFlag: Boolean @collect(path: "allItems.isDangerousGoods", aggregate: EVERY_NULL)
     missingDangerousGoodsFlagCount: Int @collect(path: "allItems.isDangerousGoods", aggregate: COUNT_NULL)
     setDangerousGoodsFlagCount: Int @collect(path: "allItems.isDangerousGoods", aggregate: COUNT_NOT_NULL)
+
+    allWarehouseSlots: [WarehouseSlot] @collect(path: "handlingUnits.warehouseSlot", aggregate: DISTINCT)
 }
 
 type HandlingUnit @rootEntity {
     handlingUnitNumber: String @key
+    warehouseSlot: WarehouseSlot
 
     deliveries: [Delivery] @relation(inverseOf: "handlingUnits")
     childHandlingUnits: [HandlingUnit] @relation
@@ -87,4 +91,9 @@ type DeliveryItem @childEntity {
     itemNumber: String
     weightInKg: Float
     isDangerousGoods: Boolean
+}
+
+type WarehouseSlot @valueObject {
+    warehouse: String
+    level: Int
 }

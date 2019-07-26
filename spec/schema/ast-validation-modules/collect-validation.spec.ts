@@ -208,7 +208,7 @@ describe('collect validation', () => {
             `);
             expect(result.getErrors().map(e => e.message)).to.deep.equal([
                 `Type "HandlingUnit" does not have a field "childHandlingUnits".`,
-                `The collect path of "HandlingUnit.allInnerHandlingUnits" has validation errors.`,
+                `The collect path of "HandlingUnit.allInnerHandlingUnits" has validation errors.`
             ]);
         });
 
@@ -327,7 +327,7 @@ describe('collect validation', () => {
             `);
             expect(result.getErrors().map(e => e.message)).to.deep.equal([
                 `Type "Country" is a root entity type and cannot be embedded. Consider adding @reference or @relation.`,
-                `Field "Delivery.country" is a root entity, but not a relation, and cannot be used in a collect path.`,
+                `Field "Delivery.country" is a root entity, but not a relation, and cannot be used in a collect path.`
             ]);
         });
 
@@ -452,68 +452,68 @@ describe('collect validation', () => {
     describe('with aggregate', () => {
         it('accepts sum aggregation', () => {
             assertValidatorAccepts(`
-            type HandlingUnit @rootEntity {
-                totalWeightInKg: Float
-            }
-            type Delivery @rootEntity {
-                handlingUnits: [HandlingUnit] @relation
-                totalWeightInKg: Float @collect(path: "handlingUnits.totalWeightInKg", aggregate: SUM)
-            }
-            type Shipment @rootEntity {
-                deliveries: [Delivery] @relation
-                totalWeightInKg: Float @collect(path: "deliveries.handlingUnits.totalWeightInKg", aggregate: SUM)
-            }
-        `);
+                type HandlingUnit @rootEntity {
+                    totalWeightInKg: Float
+                }
+                type Delivery @rootEntity {
+                    handlingUnits: [HandlingUnit] @relation
+                    totalWeightInKg: Float @collect(path: "handlingUnits.totalWeightInKg", aggregate: SUM)
+                }
+                type Shipment @rootEntity {
+                    deliveries: [Delivery] @relation
+                    totalWeightInKg: Float @collect(path: "deliveries.handlingUnits.totalWeightInKg", aggregate: SUM)
+                }
+            `);
         });
 
         it('rejects wrong field type for SUM', () => {
             assertValidatorRejects(`
-            type HandlingUnit @rootEntity {
-                totalWeightInKg: Float
-            }
-            type Delivery @rootEntity {
-                handlingUnits: [HandlingUnit] @relation
-                totalWeightInKg: Int @collect(path: "handlingUnits.totalWeightInKg", aggregate: SUM)
-            }
-        `, `The aggregation results in type "Float", but this field is declared with type "Int".`);
+                type HandlingUnit @rootEntity {
+                    totalWeightInKg: Float
+                }
+                type Delivery @rootEntity {
+                    handlingUnits: [HandlingUnit] @relation
+                    totalWeightInKg: Int @collect(path: "handlingUnits.totalWeightInKg", aggregate: SUM)
+                }
+            `, `The aggregation results in type "Float", but this field is declared with type "Int".`);
         });
 
         it('rejects wrong field type for COUNT', () => {
             assertValidatorRejects(`
-            type HandlingUnit @rootEntity {
-                totalWeightInKg: Float
-            }
-            type Delivery @rootEntity {
-                handlingUnits: [HandlingUnit] @relation
-                totalWeightInKg: Float @collect(path: "handlingUnits", aggregate: COUNT)
-            }
-        `, `The aggregation results in type "Int", but this field is declared with type "Float".`);
+                type HandlingUnit @rootEntity {
+                    totalWeightInKg: Float
+                }
+                type Delivery @rootEntity {
+                    handlingUnits: [HandlingUnit] @relation
+                    totalWeightInKg: Float @collect(path: "handlingUnits", aggregate: COUNT)
+                }
+            `, `The aggregation results in type "Int", but this field is declared with type "Float".`);
         });
 
         it('rejects wrongly declared list', () => {
             assertValidatorRejects(`
-            type HandlingUnit @rootEntity {
-                totalWeightInKg: Float
-            }
-            type Delivery @rootEntity {
-                handlingUnits: [HandlingUnit] @relation
-                totalWeightInKg: [Int] @collect(path: "handlingUnits", aggregate: COUNT)
-            }
-        `, `This aggregation field should not be declared as a list.`);
+                type HandlingUnit @rootEntity {
+                    totalWeightInKg: Float
+                }
+                type Delivery @rootEntity {
+                    handlingUnits: [HandlingUnit] @relation
+                    totalWeightInKg: [Int] @collect(path: "handlingUnits", aggregate: COUNT)
+                }
+            `, `This aggregation field should not be declared as a list.`);
         });
 
         it('rejects SUM on DateTimes', () => {
             assertValidatorRejects(`
-            type HandlingUnit @rootEntity {
-                totalWeightInKg: Float
-                packedAt: DateTime
-            }
-            type Delivery @rootEntity {
-                handlingUnits: [HandlingUnit] @relation
-                packedAtCount: Int @collect(path: "handlingUnits", aggregate: COUNT)
-                totalPackedAt: DateTime @collect(path: "handlingUnits.packedAt", aggregate: SUM)
-            }
-        `, `Aggregation operator "SUM" is not supported on type "DateTime" (supported types: "Int", "Float").`);
+                type HandlingUnit @rootEntity {
+                    totalWeightInKg: Float
+                    packedAt: DateTime
+                }
+                type Delivery @rootEntity {
+                    handlingUnits: [HandlingUnit] @relation
+                    packedAtCount: Int @collect(path: "handlingUnits", aggregate: COUNT)
+                    totalPackedAt: DateTime @collect(path: "handlingUnits.packedAt", aggregate: SUM)
+                }
+            `, `Aggregation operator "SUM" is not supported on type "DateTime" (supported types: "Int", "Float").`);
         });
 
         it('accepts collect fields within aggregation paths', () => {
@@ -536,18 +536,89 @@ describe('collect validation', () => {
         it('rejects aggregations within aggregation paths', () => {
             // would need extra handling, may support in the future. stuff like average would be ambiguous though.
             assertValidatorRejects(`
-            type HandlingUnit @rootEntity {
-                weightInKg: Float
-            }
-            type Delivery @rootEntity {
-                handlingUnits: [HandlingUnit] @relation
-                totalWeightInKg: Float @collect(path: "handlingUnits.weightInKg", aggregate: SUM)
-            }
-            type Shipment @rootEntity {
-                deliveries: [Delivery] @relation
-                totalWeightInKg: Float @collect(path: "deliveries.totalWeightInKg", aggregate: SUM)
-            }
-        `, `Field "Delivery.totalWeightInKg" is an aggregation field and cannot be used in a collect path.`);
+                type HandlingUnit @rootEntity {
+                    weightInKg: Float
+                }
+                type Delivery @rootEntity {
+                    handlingUnits: [HandlingUnit] @relation
+                    totalWeightInKg: Float @collect(path: "handlingUnits.weightInKg", aggregate: SUM)
+                }
+                type Shipment @rootEntity {
+                    deliveries: [Delivery] @relation
+                    totalWeightInKg: Float @collect(path: "deliveries.totalWeightInKg", aggregate: SUM)
+                }
+            `, `Field "Delivery.totalWeightInKg" is an aggregation field and cannot be used in a collect path.`);
+        });
+
+        describe('distinct', () => {
+            it('is supported on strings', () => {
+                assertValidatorAccepts(`
+                    type Delivery @rootEntity {
+                        keys: [String]
+                        distinctKeys: [String] @collect(path: "keys", aggregate: DISTINCT)
+                    }
+                `)
+            });
+
+            it('is supported on enums', () => {
+                assertValidatorAccepts(`
+                    enum Kind { OBJECT, TYPE, FIELD }
+                
+                    type Delivery @rootEntity {
+                        kinds: [Kind]
+                        distinctKinds: [Kind] @collect(path: "kinds", aggregate: DISTINCT)
+                    }
+                `)
+            });
+
+            it('is not supported on entity extensions', () => {
+                assertValidatorRejects(`
+                    type ItemExtension @entityExtension {
+                        code: String
+                    }
+                    
+                    type Item @childEntity {
+                        extension: ItemExtension
+                    }
+                
+                    type Delivery @rootEntity {
+                        items: [Item]
+                        distinctItemExtensions: [ItemExtension] @collect(path: "items.extension", aggregate: DISTINCT)
+                    }
+                `, 'Aggregation operator "DISTINCT" is not supported on entity extension types. You can instead collect the parent objects by removing the last path segment.');
+            });
+
+            it('is supported on simple value objects', () => {
+                assertValidatorAccepts(`
+                    enum Kind { OBJECT, TYPE, FIELD }
+                
+                    type Identifier @valueObject {
+                        kind: Kind
+                        id: String
+                    }
+                
+                    type Delivery @rootEntity {
+                        identifiers: [Identifier]
+                        distinctIdentifiers: [Identifier] @collect(path: "identifiers", aggregate: DISTINCT)
+                    }
+                `)
+            });
+
+            it('is supported on value objects containing floats', () => {
+                assertValidatorRejects(`
+                    enum VolumeUnit { M3, LITER, BARRELS }
+                
+                    type Volume @valueObject {
+                        unit: VolumeUnit
+                        value: Float
+                    }
+                
+                    type Delivery @rootEntity {
+                        volumes: [Volume]
+                        distinctVolumes: [Volume] @collect(path: "volumes", aggregate: DISTINCT)
+                    }
+                `, 'Aggregation operator "DISTINCT" is not supported on value object type "Volume" because its field "value" has a type that does not support this operator.')
+            });
         });
     });
 });
