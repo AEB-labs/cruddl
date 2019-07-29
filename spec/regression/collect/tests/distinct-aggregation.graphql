@@ -1,0 +1,14 @@
+mutation createEdges {
+    updateDelivery(input: { id: "@{ids/Delivery/1}", addHandlingUnits: [ "@{ids/HandlingUnit/1}", "@{ids/HandlingUnit/2}", "@{ids/HandlingUnit/3}", "@{ids/HandlingUnit/4}" ] }) {
+        deliveryNumber
+    }
+}
+
+query distinct {
+    Delivery(deliveryNumber: "D1") {
+        allWarehouseSlots(orderBy: [warehouse_ASC, level_ASC]) {
+            warehouse
+            level
+        }
+    }
+}

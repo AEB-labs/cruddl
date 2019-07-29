@@ -43,7 +43,7 @@ export class InMemoryAdapter implements DatabaseAdapter {
             ([provider.getValidatorName(), provider.getValidatorFunction()])));
 
         const support = {
-            compare(lhs: string|boolean|number|null|undefined, rhs: string|boolean|number|null|undefined) {
+            compare(lhs: string|boolean|number|null|undefined|any, rhs: string|boolean|number|null|undefined|any): number {
                 if (lhs == undefined) {
                     if (rhs == undefined) {
                         return 0;
@@ -84,7 +84,37 @@ export class InMemoryAdapter implements DatabaseAdapter {
                     return 1;
                 }
 
-                return lhs < rhs ? -1 : lhs > rhs ? 1 : 0;
+                if (Array.isArray(lhs)) {
+                    if (!Array.isArray(rhs)) {
+                        return -1;
+                    }
+
+                    const maxLength = Math.max(lhs.length, rhs.length);
+                    for (let i = 0; i < maxLength; i++) {
+                        const lhsValue = lhs[i];
+                        const rhsValue = rhs[i];
+                        const fieldCompareResult: number = support.compare(lhsValue, rhsValue);
+                        if (fieldCompareResult !== 0) {
+                            return fieldCompareResult;
+                        }
+                    }
+                }
+                if (Array.isArray(rhs)) {
+                    return 1;
+                }
+
+                // both are objects
+
+                const properties = Array.from(new Set([...Object.getOwnPropertyNames(lhs), ...Object.getOwnPropertyNames(rhs)])).sort();
+                for (const property of properties) {
+                    const lhsValue = lhs[property];
+                    const rhsValue = rhs[property];
+                    const fieldCompareResult: number = support.compare(lhsValue, rhsValue);
+                    if (fieldCompareResult !== 0) {
+                        return fieldCompareResult;
+                    }
+                }
+                return 0;
             },
 
             getMultiComparator<T>(...valueFns: [((item: T) => string|boolean|number|null|undefined), boolean][]) {
