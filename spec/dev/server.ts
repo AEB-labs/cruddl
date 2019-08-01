@@ -15,7 +15,8 @@ import { createFastApp } from './fast-server';
 
 const port = 3000;
 const databaseName = 'cruddl';
-const databaseURL = 'http://root:@localhost:8529';
+// const databaseURL = 'http://root:@localhost:8529';
+const databaseURL = 'http://root:@localhost:7050';
 
 export async function start() {
     const loggerProvider = new Log4jsLoggerProvider('trace');
@@ -27,6 +28,8 @@ export async function start() {
         db = new ArangoDBAdapter({
             databaseName,
             url: databaseURL,
+            user: 'root',
+            password: 'admin',
             doNonMandatoryMigrations: true,
             enableExperimentalProjectionIndirection: true,
             experimentalProjectionIndirectionTypeNames: ['BusinessMessage']
