@@ -16,6 +16,7 @@ import { PermissionProfile } from './permission-profile';
 import { Relation, RelationSide } from './relation';
 import { RolesSpecifier } from './roles-specifier';
 import { InvalidType, ObjectType, Type } from './type';
+import { ValueObjectType } from './value-object-type';
 
 export interface SystemFieldConfig extends FieldConfig {
     readonly isSystemField?: boolean
@@ -424,7 +425,16 @@ export class Field implements ModelComponent {
 
             if (typeInfo.usesDistinct && resultingType) {
                 if (!isDistinctAggregationSupported(resultingType)) {
-                    const typeHint = resultingType.isValueObjectType ? `value object types` : resultingType.isEntityExtensionType ? `entity extension types` : `type "${resultingType.name}" (supported scalar types: "${GraphQLString.name}", "${GraphQLID.name}")`;
+                    let typeHint;
+                    if (resultingType.isValueObjectType) {
+                        const offendingFields = getOffendingValueObjectFieldsForDistinctAggregation(resultingType);
+                        const offendingFieldNames = offendingFields.map(f => `"${f.name}"`).join(', ');
+                        typeHint = `value object type "${resultingType.name}" because its field${offendingFields.length !== 1 ? 's' : ''} ${offendingFieldNames} has a type that does not support this operator`;
+                    } else if (resultingType.isEntityExtensionType) {
+                        typeHint = `entity extension types. You can instead collect the parent objects by removing the last path segment`;
+                    } else {
+                        typeHint = `type "${resultingType.name}" (supported scalar types: ${scalarTypesThatSupportDistinctAggregation.map(t => `"${t}"`).join(', ')})`;
+                    }
                     context.addMessage(ValidationMessage.error(`Aggregation operator "${this.aggregationOperator}" is not supported on ${typeHint}.`,
                         this.input.collect.aggregationOperatorASTNode));
                     return;
@@ -476,7 +486,6 @@ export class Field implements ModelComponent {
                     return;
                 }
                 if (this.collectPath.resultMayContainDuplicateEntities) {
-                    let fieldHint = '';
                     const minimumAmbiguousPathEndIndex = this.collectPath.segments.findIndex(s => s.resultMayContainDuplicateEntities);
                     const firstAmgiguousSegment = this.collectPath.segments[minimumAmbiguousPathEndIndex];
                     const minimumAmbiguousPathPrefix = minimumAmbiguousPathEndIndex >= 0 ? this.collectPath.path.split('.').slice(0, minimumAmbiguousPathEndIndex + 1).join('.') : '';
@@ -563,7 +572,8 @@ export class Field implements ModelComponent {
             return;
         }
 
-        if (this.isList) {
+        if (this.isList && !this.isCollectField) {
+            // don't print this error if it's used with @collect - it will fail due to @collect, and the message here would not be helpful.
             context.addMessage(ValidationMessage.error(`Type "${this.type.name}" is an entity extension type and cannot be used in a list. Change the field type to "${this.type.name}" (without brackets), or use a child entity or value object type instead.`, this.astNode));
         }
     }
@@ -822,6 +832,19 @@ function canAggregationBeNull(operator: AggregationOperator): boolean {
     }
 }
 
+const scalarTypesThatSupportDistinctAggregation: ReadonlyArray<string> = [
+    GraphQLString.name, GraphQLID.name, GraphQLBoolean.name, GraphQLInt.name, GraphQLLocalDate.name
+];
+
 function isDistinctAggregationSupported(type: Type) {
-    return type.isRootEntityType || type.isChildEntityType || type.isEnumType || [GraphQLString.name, GraphQLID.name].includes(type.name);
+    // "simple" value object types are supported to support cases like two-field identifiers (e.g. type + key)
+    if (type.isValueObjectType) {
+        return getOffendingValueObjectFieldsForDistinctAggregation(type).length === 0;
+    }
+
+    return type.isRootEntityType || type.isChildEntityType || type.isEnumType || scalarTypesThatSupportDistinctAggregation.includes(type.name);
+}
+
+function getOffendingValueObjectFieldsForDistinctAggregation(type: ValueObjectType) {
+    return type.fields.filter(field => !field.type.isEnumType && !field.type.isRootEntityType && !scalarTypesThatSupportDistinctAggregation.includes(field.type.name));
 }

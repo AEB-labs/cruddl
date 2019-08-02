@@ -1,8 +1,5 @@
 import { uniq } from 'lodash';
-import {
-    ConditionalQueryNode, FirstOfListQueryNode, ListQueryNode, ObjectQueryNode, PreExecQueryParms, PropertySpecification, QueryNode,
-    RuntimeErrorQueryNode, TransformListQueryNode, VariableAssignmentQueryNode, WithPreExecutionQueryNode
-} from '../query-tree';
+import { ConditionalQueryNode, FirstOfListQueryNode, ListQueryNode, ObjectQueryNode, PreExecQueryParms, PropertySpecification, QueryNode, RuntimeErrorQueryNode, TransformListQueryNode, VariableAssignmentQueryNode, WithPreExecutionQueryNode } from '../query-tree';
 import { visitQueryNode } from '../query-tree/visitor';
 import { VisitResult } from '../utils/visitor';
 
@@ -12,7 +9,7 @@ import { VisitResult } from '../utils/visitor';
  */
 export function moveErrorsToOutputNodes(queryTree: QueryNode): QueryNode {
     let errorList: RuntimeErrorQueryNode[] = [];
-    let minErrorDepth: number|undefined = undefined;
+    let minErrorDepth: number | undefined = undefined;
     type StackFrame = {
         clazz: Function,
         outputNodeKind: OutputNodeKind
@@ -48,6 +45,7 @@ export function moveErrorsToOutputNodes(queryTree: QueryNode): QueryNode {
             const frame = stack.pop();
             // only take care of the errors if all of them occurred within this node
             if (errorList.length) {
+
                 if (frame && frame.outputNodeKind == OutputNodeKind.OUTPUT && stack.length <= minErrorDepth!) {
                     const errors = errorList;
                     errorList = [];
@@ -90,11 +88,11 @@ export enum OutputNodeKind {
 namespace outputNodes {
     const map = new Map<Function, Map<string, OutputNodeKind>>();
 
-    function add<T>(clazz: {new(...a: any[]): T}, ...fields: ((keyof T) & string)[]) {
+    function add<T>(clazz: { new(...a: any[]): T }, ...fields: ((keyof T) & string)[]) {
         addExt(clazz, OutputNodeKind.OUTPUT, ...fields);
     }
 
-    function addExt<T>(clazz: {new(...a: any[]): T}, kind: OutputNodeKind, ...fields: ((keyof T) & string)[]) {
+    function addExt<T>(clazz: { new(...a: any[]): T }, kind: OutputNodeKind, ...fields: ((keyof T) & string)[]) {
         map.set(clazz, new Map(fields.map((field): [string, OutputNodeKind] => ([field, kind]))));
     }
 

@@ -97,7 +97,8 @@ function getPropertiesFromDefinition(definition: ArangoSearchDefinition, configu
     const recursionDepth = configuration && configuration.recursionDepth ? configuration.recursionDepth : 1
     const properties: any /*ArangoSearchViewPropertiesOptions*/ = {
         links: {},
-        commitIntervalMsec: configuration && configuration.commitIntervalMsec ? configuration.commitIntervalMsec : 1000
+        commitIntervalMsec: configuration && configuration.commitIntervalMsec ? configuration.commitIntervalMsec : 1000,
+        primarySort: [ { field: definition.fields[0], direction: "asc"} ]
     };
 
     const link: ArangoSearchViewCollectionLink = {

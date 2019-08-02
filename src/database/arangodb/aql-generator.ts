@@ -1,61 +1,15 @@
-import { AqlLiteral } from 'arangojs/lib/cjs/aql-query';
 import { AggregationOperator, Field, QuickSearchLanguage, Relation, RootEntityType } from '../../model';
 import { FieldSegment, getEffectiveCollectSegments, RelationSegment } from '../../model/implementation/collect-path';
-import {
-    AddEdgesQueryNode,
-    AggregationQueryNode, BasicType,
-    BinaryOperationQueryNode,
-    BinaryOperator,
-    ConcatListsQueryNode,
-    ConditionalQueryNode,
-    ConstBoolQueryNode,
-    ConstIntQueryNode,
-    CountQueryNode,
-    CreateEntityQueryNode,
-    DeleteEntitiesQueryNode,
-    EdgeIdentifier,
-    EntitiesQueryNode,
-    EntityFromIdQueryNode,
-    FieldQueryNode,
-    FirstOfListQueryNode,
-    FollowEdgeQueryNode,
-    ListQueryNode,
-    LiteralQueryNode,
-    MergeObjectsQueryNode,
-    NullQueryNode,
-    ObjectQueryNode,
-    OrderDirection,
-    OrderSpecification,
-    PartialEdgeIdentifier,
-    QueryNode,
-    QueryResultValidator,
-    RemoveEdgesQueryNode,
-    RootEntityIDQueryNode,
-    RUNTIME_ERROR_CODE_PROPERTY, RUNTIME_ERROR_TOKEN,
-    RuntimeErrorQueryNode,
-    SafeListQueryNode,
-    SetEdgeQueryNode,
-    OperatorWithLanguageQueryNode,
-    BinaryOperatorWithLanguage,
-    TransformListQueryNode,
-    TraversalQueryNode, TypeCheckQueryNode,
-    UnaryOperationQueryNode,
-    UnaryOperator,
-    UpdateEntitiesQueryNode,
-    VariableAssignmentQueryNode,
-    VariableQueryNode,
-    WithPreExecutionQueryNode, FieldPathQueryNode
-} from '../../query-tree';
+import { AddEdgesQueryNode, AggregationQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, BinaryOperatorWithLanguage, ConcatListsQueryNode, ConditionalQueryNode, ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeIdentifier, EntitiesQueryNode, EntityFromIdQueryNode, FieldPathQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, OperatorWithLanguageQueryNode, OrderDirection, OrderSpecification, PartialEdgeIdentifier, QueryNode, QueryResultValidator, RemoveEdgesQueryNode, RootEntityIDQueryNode, RUNTIME_ERROR_CODE_PROPERTY, RUNTIME_ERROR_TOKEN, RuntimeErrorQueryNode, SafeListQueryNode, SetEdgeQueryNode, TransformListQueryNode, TraversalQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../../query-tree';
 import { Quantifier, QuantifierFilterNode } from '../../query-tree/quantifiers';
+import { QuickSearchComplexOperatorQueryNode, QuickSearchFieldExistsQueryNode, QuickSearchQueryNode, QuickSearchStartsWithQueryNode } from '../../query-tree/quick-search';
 import { extractVariableAssignments, simplifyBooleans } from '../../query-tree/utils';
 import { not } from '../../schema-generation/utils/input-types';
 import { Constructor, decapitalize } from '../../utils/utils';
-import { ArangoSearchNotSupportedError } from '../inmemory/js-generator';
 import { analyzeLikePatternPrefix } from '../like-helpers';
 import { aql, AQLCompoundQuery, aqlConfig, AQLFragment, AQLQueryResultVariable, AQLVariable } from './aql';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './arango-basics';
 import { getQuickSearchViewNameForRootEntity, IDENTITY_ANALYZER } from './schema-migration/arango-search-helpers';
-import { QuickSearchComplexOperatorQueryNode, QuickSearchFieldExistsQueryNode, QuickSearchQueryNode, QuickSearchStartsWithQueryNode } from '../../query-tree/quick-search';
 
 enum AccessType {
     READ,
@@ -1222,4 +1176,14 @@ function getSimpleFollowEdgeFragment(node: FollowEdgeQueryNode, context: QueryCo
 
 function isStringCaseInsensitive(str: string) {
     return str.toLowerCase() === str.toUpperCase();
+}
+
+export function generateTokenizationQuery(tokensFiltered: ReadonlyArray<[string, QuickSearchLanguage]>) {
+    const fragments: string[] = [];
+    for (let i = 0; i < tokensFiltered.length; i++) {
+        const value = tokensFiltered[i];
+        fragments.push(`token_${i}: TOKENS("${value[0]}", "text_${value[1].toLowerCase()}")`);
+    }
+    const query = `RETURN { ${fragments.join(',\n')} }`;
+    return query;
 }

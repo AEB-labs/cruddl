@@ -12,7 +12,7 @@ import { flatMap, objectValues, sleep, sleepInterruptible } from '../../utils/ut
 import { getPreciseTime, Watch } from '../../utils/watch';
 import { DatabaseAdapter, DatabaseAdapterTimings, ExecutionArgs, ExecutionPlan, ExecutionResult, TransactionStats } from '../database-adapter';
 import { AQLCompoundQuery, aqlConfig, AQLExecutableQuery, AQLFragment } from './aql';
-import { getAQLQuery, aqlExt } from './aql-generator';
+import { getAQLQuery, aqlExt, generateTokenizationQuery } from './aql-generator';
 import { RequestInstrumentation, RequestInstrumentationPhase } from './arangojs-instrumentation/config';
 import { CancellationManager } from './cancellation-manager';
 import { ArangoDBConfig, DEFAULT_RETRY_DELAY_BASE_MS, getArangoDBLogger, initDatabase } from './config';
@@ -668,17 +668,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             )
         );
 
-        // @MSF Clean up AQL generation
-
-        const fragments: string[] = [];
-        for (let i = 0; i < tokensFiltered.length; i++) {
-            const value = tokensFiltered[i];
-            fragments.push(`token_${i}: TOKENS("${value[0]}", "text_${value[1].toLowerCase()}")`);
-        }
-        const query = `RETURN { ${fragments.join(',\n')} }`;
-
-
-        const cursor = await this.db.query(query);
+        const cursor = await this.db.query(generateTokenizationQuery(tokensFiltered));
         const result = await cursor.next();
         for(let i = 0; i < tokensFiltered.length; i++){
             this.tokenizer.addTokenToCache(tokensFiltered[i][0], tokensFiltered[i][1], result['token_'+i]);

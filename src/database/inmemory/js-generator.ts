@@ -348,7 +348,8 @@ register(AggregationQueryNode, (node, context) => {
 
         // these should also remove null values by definition
         case AggregationOperator.DISTINCT:
-            const list = jsExt.evaluatingLambda(listVar, js`${listVar}.filter((${itemVar}, ${indexVar}) => (${itemVar} != null && ${listVar}.indexOf(${itemVar}) === ${indexVar}))`, listWithoutNullsFrag);
+            const innerVar = js.variable();
+            const list = jsExt.evaluatingLambda(listVar, js`${listVar}.filter((${itemVar}, ${indexVar}) => (${itemVar} != null && ${listVar}.findIndex(${innerVar} => JSON.stringify(${itemVar}) === JSON.stringify(${innerVar})) === ${indexVar}))`, listWithoutNullsFrag);
             if (node.sort) {
                 return js`${list}.sort(support.compare)`;
             }

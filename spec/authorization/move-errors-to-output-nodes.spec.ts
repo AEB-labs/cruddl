@@ -1,9 +1,6 @@
-import {
-    ConditionalQueryNode, ConstBoolQueryNode,
-    ListQueryNode, ObjectQueryNode, PreExecQueryParms, PropertySpecification, RuntimeErrorQueryNode, TransformListQueryNode, WithPreExecutionQueryNode
-} from '../../src/query-tree';
-import { moveErrorsToOutputNodes } from '../../src/authorization/move-errors-to-output-nodes';
 import { expect } from 'chai';
+import { moveErrorsToOutputNodes } from '../../src/authorization/move-errors-to-output-nodes';
+import { ConditionalQueryNode, ConstBoolQueryNode, ListQueryNode, ObjectQueryNode, PreExecQueryParms, PropertySpecification, RuntimeErrorQueryNode, TransformListQueryNode, WithPreExecutionQueryNode } from '../../src/query-tree';
 
 describe('move-errors-to-output-nodes', () => {
     it('moves errors in filter up', () => {
@@ -30,7 +27,7 @@ describe('move-errors-to-output-nodes', () => {
         expect(transformList.innerNode.constructor.name).to.equal(RuntimeErrorQueryNode.name);
     });
 
-    it('moves errors in condition up', () => {
+    it('ConditionalQueryNode moves errors in condition up', () => {
         const tree = new ObjectQueryNode([
             new PropertySpecification(
                 'prop1',
@@ -44,7 +41,7 @@ describe('move-errors-to-output-nodes', () => {
     });
 
 
-    it('keeps errors in expression', () => {
+    it('ConditionalQueryNode keeps errors in expression', () => {
         const tree = new ObjectQueryNode([
             new PropertySpecification(
                 'prop1',
@@ -59,7 +56,8 @@ describe('move-errors-to-output-nodes', () => {
         expect(conditionalQueryNode.expr2.constructor.name).to.equal(RuntimeErrorQueryNode.name);
     });
 
-    it('moves errors in condition up', () => {
+
+    it('WithPreExecutionQueryNode moves errors in condition up', () => {
         const tree = new ObjectQueryNode([
             new PropertySpecification(
                 'prop1',
@@ -91,6 +89,46 @@ describe('move-errors-to-output-nodes', () => {
         ]);
         const newTree = moveErrorsToOutputNodes(tree);
         expect((newTree as ObjectQueryNode).properties[0].valueNode.constructor.name).to.equal(RuntimeErrorQueryNode.name);
+    });
+
+    it('do move up necessary error message', () => {
+        const tree = new ObjectQueryNode([
+            new PropertySpecification(
+                'prop1',
+                new WithPreExecutionQueryNode({
+                    resultNode: new RuntimeErrorQueryNode('resultNode error'),
+                    preExecQueries: [
+                        new PreExecQueryParms({
+                            query: new RuntimeErrorQueryNode('query error')
+                        })
+                    ]
+                }))
+        ]);
+        const newTree = moveErrorsToOutputNodes(tree);
+        expect((newTree as ObjectQueryNode).properties[0].valueNode.constructor.name).to.equal(RuntimeErrorQueryNode.name);
+        expect((<RuntimeErrorQueryNode>(newTree as ObjectQueryNode).properties[0].valueNode).message).to.equal('query error, resultNode error');
+    });
+
+    it('does not unnecessarily move up error message', () => {
+        const tree = new ObjectQueryNode([
+            new PropertySpecification(
+                'prop1',
+                new WithPreExecutionQueryNode({
+                    resultNode: new ConditionalQueryNode(
+                        new ConstBoolQueryNode(true),
+                        new RuntimeErrorQueryNode('resultNode error 1'),
+                        new RuntimeErrorQueryNode('resultNode error 2')
+                    ),
+                    preExecQueries: [
+                        new PreExecQueryParms({
+                            query: new RuntimeErrorQueryNode('query error')
+                        })
+                    ]
+                }))
+        ]);
+        const newTree = moveErrorsToOutputNodes(tree);
+        expect((newTree as ObjectQueryNode).properties[0].valueNode.constructor.name).to.equal(RuntimeErrorQueryNode.name);
+        expect((<RuntimeErrorQueryNode>(newTree as ObjectQueryNode).properties[0].valueNode).message).to.equal('query error');
     });
 
 });

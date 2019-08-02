@@ -1,10 +1,14 @@
 {
   "permissionProfiles": {
     "default": {
-      "permissions": [{
-        "access": "readWrite",
-        "roles": ["allusers"]
-      }]
+      "permissions": [
+        {
+          "access": "readWrite",
+          "roles": [
+            "nb"
+          ]
+        }
+      ]
     }
   }
 }

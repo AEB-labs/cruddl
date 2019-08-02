@@ -1,0 +1,29 @@
+{
+  "createEdges": {
+    "data": {
+      "updateDelivery": {
+        "deliveryNumber": "D1"
+      }
+    }
+  },
+  "distinct": {
+    "data": {
+      "Delivery": {
+        "allWarehouseSlots": [
+          {
+            "level": 0,
+            "warehouse": "North"
+          },
+          {
+            "level": 0,
+            "warehouse": "South"
+          },
+          {
+            "level": 1,
+            "warehouse": "South"
+          }
+        ]
+      }
+    }
+  }
+}
