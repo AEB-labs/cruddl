@@ -1,6 +1,7 @@
 import { uniq } from 'lodash';
 import { ConditionalQueryNode, FirstOfListQueryNode, ListQueryNode, ObjectQueryNode, PreExecQueryParms, PropertySpecification, QueryNode, RuntimeErrorQueryNode, TransformListQueryNode, VariableAssignmentQueryNode, WithPreExecutionQueryNode } from '../query-tree';
 import { visitQueryNode } from '../query-tree/visitor';
+import { TOO_MANY_OBJECTS_ERROR } from '../schema-generation/quick-search-generator';
 import { VisitResult } from '../utils/visitor';
 
 /**
@@ -53,7 +54,7 @@ export function moveErrorsToOutputNodes(queryTree: QueryNode): QueryNode {
                     if (errors.length == 1) {
                         return errors[0];
                     } else {
-                        const uniqueErrorMessages = uniq(errors.map(err => err.message));
+                        let uniqueErrorMessages = uniq(errors.map(err => err.message)).filter(value => value !== TOO_MANY_OBJECTS_ERROR);
                         return new RuntimeErrorQueryNode(uniqueErrorMessages.join(', '));
                     }
                 } else {
@@ -122,7 +123,6 @@ namespace outputNodes {
     add(TransformListQueryNode, 'innerNode');
     addExt(WithPreExecutionQueryNode, OutputNodeKind.OUTPUT_INTERMEDIATE, 'resultNode', 'preExecQueries');
     addExt(PreExecQueryParms, OutputNodeKind.OUTPUT_INTERMEDIATE, 'query');
-    // @MSF TODO: fix double error problem with auth
 
     // this one with a grain of salt... errors in any item that is not the first will get ignored
     // but we need this for single-entity queries to work properly

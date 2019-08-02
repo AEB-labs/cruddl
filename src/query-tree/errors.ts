@@ -15,7 +15,7 @@ export class UnknownValueQueryNode extends QueryNode {
  * query tree from being evaluated
  */
 export class RuntimeErrorQueryNode extends QueryNode {
-    readonly code: string | undefined;
+    public readonly code: string | undefined;
 
     constructor(public readonly message: string, args: { readonly code?: string } = {}) {
         super();

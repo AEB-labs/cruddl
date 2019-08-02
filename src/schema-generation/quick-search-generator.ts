@@ -1,6 +1,6 @@
 import { GraphQLFieldConfigArgumentMap, GraphQLString } from 'graphql';
 import { Field, RootEntityType } from '../model/implementation';
-import { BinaryOperationQueryNode, BinaryOperator, BinaryOperatorWithLanguage, ConditionalQueryNode, ConstBoolQueryNode, CountQueryNode, FieldPathQueryNode, LiteralQueryNode, OperatorWithLanguageQueryNode, PreExecQueryParms, QueryNode, QUICKSEARCH_TOO_MANY_OBJECTS, RuntimeErrorQueryNode, TransformListQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../query-tree';
+import { BinaryOperationQueryNode, BinaryOperator, BinaryOperatorWithLanguage, ConditionalQueryNode, ConstBoolQueryNode, CountQueryNode, FieldPathQueryNode, LiteralQueryNode, OperatorWithLanguageQueryNode, PreExecQueryParms, QueryNode, QUICKSEARCH_TOO_MANY_OBJECTS, RuntimeErrorQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../query-tree';
 import { QuickSearchQueryNode, QuickSearchStartsWithQueryNode } from '../query-tree/quick-search';
 import { simplifyBooleans } from '../query-tree/utils';
 import { FILTER_ARG, ORDER_BY_ARG, QUICK_SEARCH_EXPRESSION_ARG, QUICK_SEARCH_FILTER_ARG } from '../schema/constants';
@@ -15,6 +15,7 @@ import { or } from './utils/input-types';
 
 
 export const DEFAULT_ARANGOSEARCH_MAX_FILTERABLE_AMOUNT: number = 1000;
+export const TOO_MANY_OBJECTS_ERROR = 'Too many objects.';
 
 /**
  * Augments list fields with filter and pagination features
@@ -137,7 +138,7 @@ export class QuickSearchGenerator {
                         ],
                         resultNode: new ConditionalQueryNode(
                             assertionVariable,
-                            new RuntimeErrorQueryNode('Too many objects', { code: QUICKSEARCH_TOO_MANY_OBJECTS }),
+                            new RuntimeErrorQueryNode(TOO_MANY_OBJECTS_ERROR, { code: QUICKSEARCH_TOO_MANY_OBJECTS }),
                             sourceNode)
                     });
                 } else {

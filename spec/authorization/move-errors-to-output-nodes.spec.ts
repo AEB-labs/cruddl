@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 import { moveErrorsToOutputNodes } from '../../src/authorization/move-errors-to-output-nodes';
 import { ConditionalQueryNode, ConstBoolQueryNode, ListQueryNode, ObjectQueryNode, PreExecQueryParms, PropertySpecification, RuntimeErrorQueryNode, TransformListQueryNode, WithPreExecutionQueryNode } from '../../src/query-tree';
+import { TOO_MANY_OBJECTS_ERROR } from '../../src/schema-generation/quick-search-generator';
 
 describe('move-errors-to-output-nodes', () => {
     it('moves errors in filter up', () => {
@@ -116,8 +117,8 @@ describe('move-errors-to-output-nodes', () => {
                 new WithPreExecutionQueryNode({
                     resultNode: new ConditionalQueryNode(
                         new ConstBoolQueryNode(true),
-                        new RuntimeErrorQueryNode('resultNode error 1'),
-                        new RuntimeErrorQueryNode('resultNode error 2')
+                        new RuntimeErrorQueryNode(TOO_MANY_OBJECTS_ERROR),
+                        new RuntimeErrorQueryNode(TOO_MANY_OBJECTS_ERROR)
                     ),
                     preExecQueries: [
                         new PreExecQueryParms({

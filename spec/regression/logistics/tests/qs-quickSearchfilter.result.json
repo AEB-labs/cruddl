@@ -128,7 +128,7 @@
   "filter_above_max": {
     "errors": [
       {
-        "message": "Too many objects",
+        "message": "Too many objects.",
         "locations": [
           {
             "line": 136,
@@ -147,7 +147,7 @@
   "order_above_max": {
     "errors": [
       {
-        "message": "Too many objects",
+        "message": "Too many objects.",
         "locations": [
           {
             "line": 146,

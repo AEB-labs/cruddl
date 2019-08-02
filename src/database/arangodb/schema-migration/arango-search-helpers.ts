@@ -1,24 +1,10 @@
-import { undefinedVarMessage } from 'graphql/validation/rules/NoUndefinedVariables';
-import memorize from 'memorize-decorator';
-import { Field, Model, RootEntityType } from '../../../model/implementation';
-import { flatMap } from '../../../utils/utils';
-import { getCollectionNameForRootEntity } from '../arango-basics';
-import { ViewDescription } from 'arangojs/lib/async/database';
-import {
-    CreateArangoSearchViewMigration,
-    DropArangoSearchViewMigration,
-    UpdateArangoSearchViewMigration
-} from './migrations';
-import { ViewType } from 'arangojs/lib/async/view';
-import {
-    ArangoSearchView,
-    ArangoSearchViewProperties,
-    ArangoSearchViewPropertiesOptions,
-    ArangoSearchViewPropertiesResponse
-} from 'arangojs/lib/cjs/view';
-import { FieldConfig, QuickSearchLanguage } from '../../../model/config';
-import * as _ from 'lodash';
 import { Database } from 'arangojs';
+import { ArangoSearchView, ArangoSearchViewProperties, ArangoSearchViewPropertiesOptions } from 'arangojs/lib/cjs/view';
+import * as _ from 'lodash';
+import { QuickSearchLanguage } from '../../../model/config';
+import { Field, Model, RootEntityType } from '../../../model/implementation';
+import { getCollectionNameForRootEntity } from '../arango-basics';
+import { CreateArangoSearchViewMigration, DropArangoSearchViewMigration, UpdateArangoSearchViewMigration } from './migrations';
 
 export const IDENTITY_ANALYZER = 'identity';
 export const QUICK_SEARCH_VIEW_PREFIX = 'qsView_';
@@ -94,11 +80,10 @@ export function getAnalyzerFromQuickSearchLanguage(quickSearchLanguage?: QuickSe
 
 
 function getPropertiesFromDefinition(definition: ArangoSearchDefinition, configuration?: ArangoSearchConfiguration): ArangoSearchViewPropertiesOptions {
-    const recursionDepth = configuration && configuration.recursionDepth ? configuration.recursionDepth : 1
+    const recursionDepth = configuration && configuration.recursionDepth ? configuration.recursionDepth : 1;
     const properties: any /*ArangoSearchViewPropertiesOptions*/ = {
         links: {},
-        commitIntervalMsec: configuration && configuration.commitIntervalMsec ? configuration.commitIntervalMsec : 1000,
-        primarySort: [ { field: definition.fields[0], direction: "asc"} ]
+        commitIntervalMsec: configuration && configuration.commitIntervalMsec ? configuration.commitIntervalMsec : 1000
     };
 
     const link: ArangoSearchViewCollectionLink = {
