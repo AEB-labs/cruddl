@@ -130,7 +130,7 @@ export class FlexSearchNestedObjectFilterField implements FlexSearchFilterField 
 
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue, path: ReadonlyArray<Field>, info: QueryNodeResolveInfo): QueryNode {
         // if path contains any Field twice
-        const recursionDepth = info.arangoSearchRecursionDepth ? info.arangoSearchRecursionDepth : 1;
+        const recursionDepth = info.flexSearchRecursionDepth ? info.flexSearchRecursionDepth : 1;
         if (path.some(value => path.filter(value1 => value.type.isObjectType && (value.type == value1.type)).length > recursionDepth)) {
             return new RuntimeErrorQueryNode(`Recursive filters can only be defined for ${recursionDepth} level of recursion.`);
         }

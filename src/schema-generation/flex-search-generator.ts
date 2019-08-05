@@ -123,7 +123,7 @@ export class FlexSearchGenerator {
                     itemVariable: itemVariable
                 })),
             BinaryOperator.GREATER_THAN,
-            new LiteralQueryNode(context.arangoSearchMaxFilterableAmountOverride ? context.arangoSearchMaxFilterableAmountOverride : DEFAULT_ARANGOSEARCH_MAX_FILTERABLE_AMOUNT));
+            new LiteralQueryNode(context.flexSearchMaxFilterableAmountOverride ? context.flexSearchMaxFilterableAmountOverride : DEFAULT_ARANGOSEARCH_MAX_FILTERABLE_AMOUNT));
     }
 
     private augmentWithCondition(schemaField: QueryNodeField, rootEntityType: RootEntityType): QueryNodeField {

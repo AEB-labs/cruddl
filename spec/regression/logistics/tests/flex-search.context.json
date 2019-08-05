@@ -1,4 +1,6 @@
 {
-  "authRoles": [ "allusers" ],
-  "arangoSearchMaxFilterableAndSortableAmount": 2
+  "authRoles": [
+    "allusers"
+  ],
+  "flexSearchMaxFilterableAndSortableAmount": 2
 }

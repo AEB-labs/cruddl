@@ -64,7 +64,7 @@ export class RegressionSuite {
                 console.error(e.stack);
                 return e;
             },
-            getExecutionOptions: ({ context }) => ({ authRoles: context.authRoles, arangoSearchMaxFilterableAndSortableAmount: context.arangoSearchMaxFilterableAndSortableAmount})
+            getExecutionOptions: ({ context }) => ({ authRoles: context.authRoles, flexSearchMaxFilterableAndSortableAmount: context.flexSearchMaxFilterableAndSortableAmount})
         };
         const warnLevelOptions = { ...generalOptions, loggerProvider: new Log4jsLoggerProvider('warn') };
         const debugLevelOptions = { ...generalOptions, loggerProvider: new Log4jsLoggerProvider(this.options.trace ? 'trace' : 'warn', { 'schema-builder': 'warn' }) };

@@ -27,7 +27,7 @@ interface ArangoSearchViewCollectionLink {
 
 export interface ArangoSearchConfiguration {
     readonly recursionDepth?: number
-    commitIntervalMsec?: number
+    readonly commitIntervalMsec?: number
 }
 
 export function getRequiredViewsFromModel(model: Model): ReadonlyArray<ArangoSearchDefinition> {

@@ -1,4 +1,3 @@
-import { EventEmitter } from 'events';
 import { OperationDefinitionNode } from 'graphql';
 
 export type MutationMode = 'normal' | 'disallowed' | 'rollback';
@@ -55,12 +54,12 @@ export interface ExecutionOptions {
     /**
      * The maximum amount of objects that can be filtered (using a normal filter) or sorted in an ArangoSearch query
      */
-    readonly arangoSearchMaxFilterableAndSortableAmount?: number
+    readonly flexSearchMaxFilterableAndSortableAmount?: number
 
     /**
      * How many steps of recursive fields are indexed and allowed in queries for FlexSearch.
      */
-    readonly arangoSearchRecursionDepth?: number
+    readonly flexSearchRecursionDepth?: number
 }
 
 export interface ExecutionOptionsCallbackArgs {
