@@ -684,17 +684,18 @@ export class Field implements ModelComponent {
             return;
         }
         if (this.isFlexSearchFulltextIndexed && !this.language) {
-            context.addMessage(ValidationMessage.error(`@flexSearchFulltext requires either a language parameter, or a defaultLanguage must be set in the defining type.`, this.input.isFlexSearchFulltextIndexedASTNode));
+            context.addMessage(ValidationMessage.error(`@flexSearchFulltext requires either a "language" parameter, or a "flexSearchLanguage" must be set in the defining type.`, this.input.isFlexSearchFulltextIndexedASTNode));
         }
         if (this.isFlexSearchIndexed && (this.type.isEntityExtensionType || this.type.isValueObjectType) && !this.type.fields.some(value => value.isFlexSearchIndexed || value.isFlexSearchFulltextIndexed)) {
             context.addMessage(ValidationMessage.error(`At least one field on type "${this.type.name}" must be annotated with @flexSearch or @flexSearchFulltext.`, this.input.isFlexSearchIndexedASTNode));
         }
         if (this.name === ACCESS_GROUP_FIELD && this.declaringType.isRootEntityType && this.declaringType.permissionProfile
             && this.declaringType.permissionProfile.permissions.some(value => value.restrictToAccessGroups) && this.declaringType.arangoSearchConfig.isIndexed && !this.isFlexSearchIndexed) {
-            context.addMessage(ValidationMessage.error(`When using restriction by accessGroup the field "${this.name}" must be annotated with @flexSearch.`, this.astNode));
+            context.addMessage(ValidationMessage.error(`The permission profile "${this.declaringType.permissionProfile.name}" uses "restrictToAccessGroups", ` +
+                `and this fields defining type is marked with "flexSearch: true", but this field is not marked with "@flexSearch".`, this.astNode));
         }
         if (this.isIncludedInSearch && this.type.isScalarType && this.type.name === 'Boolean') {
-            context.addMessage(ValidationMessage.error(`"isIncludedInSearch" is not supported on type "${this.type.name}".`, this.input.isFlexSearchFulltextIndexedASTNode));
+            context.addMessage(ValidationMessage.error(`"isIncludedInSearch: true" is not supported on type "${this.type.name}".`, this.input.isFlexSearchFulltextIndexedASTNode));
             return;
         }
 

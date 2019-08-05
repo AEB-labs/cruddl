@@ -46,7 +46,7 @@ describe('FlexSearch', () => {
             type HandlingUnit @rootEntity(flexSearch: true) {
                 someString: String @flexSearchFulltext
             }
-        `, `@flexSearchFulltext requires either a language parameter, or a defaultLanguage must be set in the defining type.`);
+        `, `@flexSearchFulltext requires either a "language" parameter, or a "flexSearchLanguage" must be set in the defining type.`);
     });
     it('rejects flexSearch on child without indexed field', () => {
         assertValidatorRejects(`
@@ -63,7 +63,7 @@ describe('FlexSearch', () => {
             type HandlingUnit @rootEntity(flexSearch: true) {
                 someBool: Boolean @flexSearch(isIncludedInSearch: true)
             }
-        `, `"isIncludedInSearch" is not supported on type "Boolean".`);
+        `, `"isIncludedInSearch: true" is not supported on type "Boolean".`);
     });
     it('rejects flexSearch without accessField', () => {
         const model = new Model({

@@ -57,5 +57,56 @@ type Order @rootEntity(flexSearch: true, flexSearchLanguage: EN) {
 }
 ```
 
-In this example a "general search" would search in the fields `orderNumber` and `descriptionEN` but not the field `descriptionDE`.
+In this example an "expression search" would search in the fields `orderNumber` and `descriptionEN` but not the field `descriptionDE`.
 
+## API
+
+For each `rootEntity` that is marked with `flexSearch: true` a new query is available that allows to query for objects using ArangoSearch.
+The queries are prefixed with "flexSearch".
+
+This query also accepts a string parameter that provides an expression that should be searched for in all fields that were marked with `includedInSearch: true` in the schema.
+
+```graphql
+query {
+    flexSearchOrders(flexSearchExpression: "01234"){
+        orderNumber
+    }
+}
+```
+
+The query also accepts a special `flexSearchFilter` that works similar to a normal filter but contains different fields.
+
+```graphql
+query {
+    flexSearchOrders(flexSearchFilter: {
+        orderNumber_starts_with: "123"
+    }){
+        orderNumber
+    }
+}
+```
+
+The query also accepts the pagination parameters `first`, `skip` and `after`, the sorting parameter `orderBy` and the regular filtering parameter `filter`. 
+Because the ArangoSearch-index cannot be used for sorting and regular filtering, these can be very slow for large amounts of data. To prevent slow queries, cruddl returns an error in these cases.
+
+### Filter
+
+The following filter-fields are available for fields that are annotated with `@flexSearch`:
+- `equals`
+- `not_equals`
+- `in`
+- `not_in`
+- `starts_with`
+- `not_starts_with`
+
+The following filter-fields are available for fields that are annotated with `@flexSearchFulltext`
+- `contains_any_word`
+- `not_contains_any_word`
+- `contains_all_words`
+- `not_contains_all_words`
+- `contains_all_prefixes`
+- `not_contains_all_prefixes`
+- `contains_phrase`
+- `not_contains_phrase`
+
+When using `flexSearchExpression: "..."` the `starts_with` field is used for values and the `contains_all_prefixes` field for texts.
