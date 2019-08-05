@@ -3,7 +3,7 @@ import { ProjectOptions } from '../../config/interfaces';
 import { Logger } from '../../config/logging';
 import { Model, QuickSearchLanguage } from '../../model';
 import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS, QueryNode } from '../../query-tree';
-import { flatMap } from '../../utils/utils';
+import { QuickSearchTokenization } from '../../query-tree/quick-search';
 import { DatabaseAdapter } from '../database-adapter';
 import { likePatternToRegExp } from '../like-helpers';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './inmemory-basics';
@@ -29,7 +29,7 @@ export class InMemoryAdapter implements DatabaseAdapter {
         }
         globalContext.registerContext(schemaContext);
         try {
-            this.logger = globalContext.loggerProvider.getLogger("InMemoryAdapter");
+            this.logger = globalContext.loggerProvider.getLogger('InMemoryAdapter');
         } finally {
             globalContext.unregisterContext();
         }
@@ -44,7 +44,7 @@ export class InMemoryAdapter implements DatabaseAdapter {
             ([provider.getValidatorName(), provider.getValidatorFunction()])));
 
         const support = {
-            compare(lhs: string|boolean|number|null|undefined|any, rhs: string|boolean|number|null|undefined|any): number {
+            compare(lhs: string | boolean | number | null | undefined | any, rhs: string | boolean | number | null | undefined | any): number {
                 if (lhs == undefined) {
                     if (rhs == undefined) {
                         return 0;
@@ -106,7 +106,9 @@ export class InMemoryAdapter implements DatabaseAdapter {
 
                 // both are objects
 
-                const properties = Array.from(new Set([...Object.getOwnPropertyNames(lhs), ...Object.getOwnPropertyNames(rhs)])).sort();
+                const properties = Array.from(new Set([
+                    ...Object.getOwnPropertyNames(lhs), ...Object.getOwnPropertyNames(rhs)
+                ])).sort();
                 for (const property of properties) {
                     const lhsValue = lhs[property];
                     const rhsValue = rhs[property];
@@ -118,7 +120,7 @@ export class InMemoryAdapter implements DatabaseAdapter {
                 return 0;
             },
 
-            getMultiComparator<T>(...valueFns: [((item: T) => string|boolean|number|null|undefined), boolean][]) {
+            getMultiComparator<T>(...valueFns: [((item: T) => string | boolean | number | null | undefined), boolean][]) {
                 if (valueFns.length == 0) {
                     return () => 0;
                 }
@@ -154,7 +156,7 @@ export class InMemoryAdapter implements DatabaseAdapter {
             likePatternToRegExp
         };
 
-        let resultHolder: {[p: string]: any} = {};
+        let resultHolder: { [p: string]: any } = {};
         for (const query of queries) {
             const boundValues = query.boundValues; // used in eval'ed code
             for (const key in query.usedPreExecResultNames) {
@@ -226,12 +228,16 @@ export class InMemoryAdapter implements DatabaseAdapter {
         }
     }
 
-    async tokenizeExpression(expression: string): Promise<ReadonlyArray<string>> {
-        return flatMap(expression.split(' '), t => t.split('-'));
+    async tokenizeExpressions(tokenizations: ReadonlyArray<[string, QuickSearchLanguage]>): Promise<ReadonlyArray<QuickSearchTokenization>> {
+        return tokenizations.map(value => {
+            return {
+                expression: value[0],
+                language: value[1],
+                tokens: value[0].split('-')
+            };
+
+        });
     }
 
-    async tokenizeToCache(tokens: ReadonlyArray<[string, QuickSearchLanguage]>){
-        // not supported for inmemory
-    }
 
 }

@@ -1,29 +1,32 @@
-import { Logger, LoggerProvider } from '../../src/config/logging';
-import { createSchema } from '../../src/schema/schema-builder';
+import { expect } from 'chai';
 import { graphql } from 'graphql';
-import { QueryNode } from '../../src/query-tree';
+import { Logger, LoggerProvider } from '../../src/config/logging';
 import { DatabaseAdapter } from '../../src/database/database-adapter';
+import { Model, QuickSearchLanguage } from '../../src/model';
 import { Project } from '../../src/project/project';
 import { ProjectSource } from '../../src/project/source';
-import { expect } from 'chai';
-import { Model, QuickSearchLanguage } from '../../src/model';
-import { flatMap } from '../../src/utils/utils';
+import { QueryNode } from '../../src/query-tree';
+import { QuickSearchTokenization } from '../../src/query-tree/quick-search';
+import { createSchema } from '../../src/schema/schema-builder';
 
 class FakeDBAdatper implements DatabaseAdapter {
     async execute(queryTree: QueryNode): Promise<any> {
-        return { allTests: [{ name: "Test" }] };
+        return { allTests: [{ name: 'Test' }] };
     }
 
     async updateSchema(model: Model): Promise<void> {
 
     }
 
-    async tokenizeExpression(expression: string): Promise<ReadonlyArray<string>> {
-        return flatMap(expression.split(' '), t => t.split('-'));
-    }
+    async tokenizeExpressions(tokenizations: ReadonlyArray<[string, QuickSearchLanguage]>): Promise<ReadonlyArray<QuickSearchTokenization>> {
+        return tokenizations.map(value => {
+            return {
+                expression: value[0],
+                language: value[1],
+                tokens: value[0].split('-')
+            };
 
-    async tokenizeToCache(tokens: ReadonlyArray<[string, QuickSearchLanguage]>){
-        // do nothing
+        });
     }
 }
 
@@ -60,7 +63,7 @@ describe('project', () => {
             const execSchema = project.createSchema(dbAdapter);
 
             logs = [];
-            const result = await graphql(execSchema, `{ allTests { name } }`, undefined, {authRoles: ['admin']});
+            const result = await graphql(execSchema, `{ allTests { name } }`, undefined, { authRoles: ['admin'] });
             expect(logs.length).to.be.greaterThan(0);
         });
     });

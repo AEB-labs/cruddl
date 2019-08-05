@@ -1,13 +1,12 @@
-import { DatabaseAdapter } from '../database/database-adapter';
 import { QuickSearchLanguage } from '../model/config';
-import { and } from '../schema-generation/utils/input-types';
-import { QueryNode } from './base';
 import { RootEntityType } from '../model/implementation';
+import { and } from '../schema-generation/utils/input-types';
+import { decapitalize, indent } from '../utils/utils';
+import { QueryNode } from './base';
 import { ConstBoolQueryNode, LiteralQueryNode } from './literals';
 import { BinaryOperator, BinaryOperatorWithLanguage, OperatorWithLanguageQueryNode } from './operators';
 import { simplifyBooleans } from './utils';
 import { VariableQueryNode } from './variables';
-import { decapitalize, flatMap, indent } from '../utils/utils';
 
 /**
  * A QueryNode that represents a QuickSearch Query on a RootEntity Type
@@ -25,7 +24,7 @@ export class QuickSearchQueryNode extends QueryNode {
     }) {
         super();
         this.qsFilterNode = params.qsFilterNode || new ConstBoolQueryNode(true);
-        this.itemVariable = params.itemVariable || new VariableQueryNode(decapitalize(params.rootEntityType.name) );
+        this.itemVariable = params.itemVariable || new VariableQueryNode(decapitalize(params.rootEntityType.name));
         this.rootEntityType = params.rootEntityType;
     }
 
@@ -39,25 +38,17 @@ export class QuickSearchQueryNode extends QueryNode {
 }
 
 /**
- * A Query Node that needs to be expanded, after the Query Tree was created, but before authorization is applied.
- * An Expanding QueryNode must always be replaced by a regular QueryNode during expansion.
- */
-export abstract class ExpandingQueryNode extends QueryNode{
-    abstract async expand(databaseAdapter: DatabaseAdapter):Promise<QueryNode>;
-}
-
-/**
  * A Query Node that represents a more complex QuickSearch expression (e.g. CONTAINS_ALL_WORDS) that requires a database request,
  * to tokenize the search expression, before the sub-tree for this expression can be built.
  */
-export class QuickSearchComplexOperatorQueryNode extends ExpandingQueryNode{
+export class QuickSearchComplexOperatorQueryNode extends QueryNode {
 
     constructor(
-        public readonly expression: string,
+        readonly expression: string,
         private readonly comparisonOperator: BinaryOperatorWithLanguage,
         private readonly logicalOperator: BinaryOperator,
         private readonly fieldNode: QueryNode,
-        public readonly quickSearchLanguage: QuickSearchLanguage) {
+        readonly quickSearchLanguage: QuickSearchLanguage) {
         super();
     }
 
@@ -65,15 +56,21 @@ export class QuickSearchComplexOperatorQueryNode extends ExpandingQueryNode{
         return `COMPLEX_OPERATOR(${this.comparisonOperator}, ${this.expression}, ${this.quickSearchLanguage})`;
     }
 
-    async expand(databaseAdapter: DatabaseAdapter): Promise<QueryNode> {
-        const tokens = await databaseAdapter.tokenizeExpression(this.expression, this.quickSearchLanguage);
+    expand(tokenizations: ReadonlyArray<QuickSearchTokenization>): QueryNode {
+        const tokenization = tokenizations.find(value => value.expression === this.expression && value.language === this.quickSearchLanguage);
+        const tokens = tokenization ? tokenization.tokens : [];
         const neutralOperand = this.logicalOperator === BinaryOperator.AND ? ConstBoolQueryNode.TRUE : ConstBoolQueryNode.FALSE;
         return simplifyBooleans(tokens
             .map(value => new OperatorWithLanguageQueryNode(this.fieldNode, this.comparisonOperator, new LiteralQueryNode(value), this.quickSearchLanguage) as QueryNode)
             .reduce(and, neutralOperand));
     }
 
+}
 
+export interface QuickSearchTokenization {
+    expression: string
+    language: QuickSearchLanguage
+    tokens: ReadonlyArray<string>
 }
 
 
@@ -94,7 +91,7 @@ export class QuickSearchFieldExistsQueryNode extends QueryNode {
  * A node that performs a QuickSearch STARTS_WITH Operation
  */
 export class QuickSearchStartsWithQueryNode extends QueryNode {
-    constructor(public readonly lhs: QueryNode,public readonly rhs: QueryNode, public readonly quickSearchLanguage?: QuickSearchLanguage) {
+    constructor(public readonly lhs: QueryNode, public readonly rhs: QueryNode, public readonly quickSearchLanguage?: QuickSearchLanguage) {
         super();
     }
 

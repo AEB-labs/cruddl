@@ -1,8 +1,6 @@
-import { text } from 'body-parser';
-import { DirectiveNode, FieldDefinitionNode, GraphQLBoolean, GraphQLFloat, GraphQLID, GraphQLInt, GraphQLString } from 'graphql';
+import { FieldDefinitionNode, GraphQLBoolean, GraphQLFloat, GraphQLID, GraphQLInt, GraphQLString } from 'graphql';
 import memorize from 'memorize-decorator';
-import { ACCESS_GROUP_FIELD, RELATION_DIRECTIVE } from '../../schema/constants';
-import { CALC_MUTATIONS_OPERATORS, COLLECT_AGGREGATE_ARG, COLLECT_DIRECTIVE } from '../../schema/constants';
+import { ACCESS_GROUP_FIELD, CALC_MUTATIONS_OPERATORS, COLLECT_AGGREGATE_ARG, COLLECT_DIRECTIVE, RELATION_DIRECTIVE } from '../../schema/constants';
 import { GraphQLDateTime } from '../../schema/scalars/date-time';
 import { GraphQLLocalDate } from '../../schema/scalars/local-date';
 import { GraphQLLocalTime } from '../../schema/scalars/local-time';
@@ -692,10 +690,10 @@ export class Field implements ModelComponent {
             context.addMessage(ValidationMessage.error(`At least one field on type "${this.type.name}" must be quickSearchIndexed or quickSearchFulltextIndexed.`, this.input.isQuickSearchIndexedASTNode));
         }
         if (this.name === ACCESS_GROUP_FIELD && this.declaringType.isRootEntityType && this.declaringType.permissionProfile
-            && this.declaringType.permissionProfile.permissions.some(value => value.restrictToAccessGroups) && this.declaringType.arangoSearchConfig.isIndexed){
+            && this.declaringType.permissionProfile.permissions.some(value => value.restrictToAccessGroups) && this.declaringType.arangoSearchConfig.isIndexed && !this.isQuickSearchIndexed) {
             context.addMessage(ValidationMessage.error(`When using restriction by accessGroup the field "${this.name}" must be quickSearchIndexed.`, this.astNode));
         }
-        if(this.isIncludedInSearch && this.type.isScalarType && this.type.name === 'Boolean'){
+        if (this.isIncludedInSearch && this.type.isScalarType && this.type.name === 'Boolean') {
             context.addMessage(ValidationMessage.error(`"isIncludedInSearch" is not supported on type "${this.type.name}".`, this.input.isQuickSearchFulltextIndexedASTNode));
             return;
         }

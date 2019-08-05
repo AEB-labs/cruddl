@@ -26,7 +26,7 @@ interface ArangoSearchViewCollectionLink {
 }
 
 export interface ArangoSearchConfiguration {
-    recursionDepth?: number
+    readonly recursionDepth?: number
     commitIntervalMsec?: number
 }
 

@@ -1,0 +1,21 @@
+{
+  "qsAuth": {
+    "errors": [
+      {
+        "message": "Not authorized to read File objects",
+        "locations": [
+          {
+            "line": 2,
+            "column": 5
+          }
+        ],
+        "path": [
+          "quickSearchFiles"
+        ]
+      }
+    ],
+    "data": {
+      "quickSearchFiles": null
+    }
+  }
+}

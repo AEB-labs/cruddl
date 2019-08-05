@@ -1,4 +1,4 @@
-type File @rootEntity(permissionProfile: "restricted") {
-    name: String
-    accessGroup: String
+type File @rootEntity(quickSearchIndex:true, permissionProfile: "restricted") {
+    name: String @quickSearchIndex
+    accessGroup: String @quickSearchIndex
 }

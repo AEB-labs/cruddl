@@ -1,4 +1,4 @@
-import { GraphQLError, print } from 'graphql';
+import { print } from 'graphql';
 import { applyAuthorizationToQueryTree } from '../authorization/execution';
 import { globalContext } from '../config/global';
 import { RequestProfile } from '../config/interfaces';
@@ -7,11 +7,10 @@ import { OperationParams } from '../graphql/operation-based-resolvers';
 import { distillOperation } from '../graphql/query-distiller';
 import { QuickSearchLanguage } from '../model/config';
 import { ObjectQueryNode, PropertySpecification, QueryNode } from '../query-tree';
-import { ExpandingQueryNode, QuickSearchComplexOperatorQueryNode } from '../query-tree/quick-search';
+import { QuickSearchComplexOperatorQueryNode, QuickSearchTokenization } from '../query-tree/quick-search';
 import { evaluateQueryStatically } from '../query-tree/utils';
 import { buildConditionalObjectQueryNode, QueryNodeObjectType } from '../schema-generation/query-node-object-type';
 import { SchemaTransformationContext } from '../schema/preparation/transformation-pipeline';
-import { Visitor } from '../utils/visitor';
 import { getPreciseTime, Watch } from '../utils/watch';
 import { ExecutionOptions } from './execution-options';
 import { ExecutionResult } from './execution-result';
@@ -64,8 +63,8 @@ export class OperationResolver {
             if (logger.isTraceEnabled()) {
                 logger.trace('Before expansion: ' + queryTree.describe());
             }
-            await this.queryQuickSearchTokens(queryTree, this.context.databaseAdapter);
-            queryTree = await this.expandQueryNode(queryTree, this.context.databaseAdapter);
+            const tokens: ReadonlyArray<QuickSearchTokenization> = await this.queryQuickSearchTokens(queryTree, this.context.databaseAdapter);
+            queryTree = await this.expandQueryNode(queryTree, tokens);
             if (logger.isTraceEnabled()) {
                 logger.trace('Before authorization: ' + queryTree.describe());
             }
@@ -141,8 +140,10 @@ export class OperationResolver {
         };
     }
 
-    private async queryQuickSearchTokens(queryTree: QueryNode, databaseAdapter: DatabaseAdapter) {
-        async function collectTokens(queryNode: QueryNode): Promise<ReadonlyArray<[string, QuickSearchLanguage]>> {
+    private async queryQuickSearchTokens(queryTree: QueryNode, databaseAdapter: DatabaseAdapter): Promise<ReadonlyArray<QuickSearchTokenization>> {
+        const cache = {};
+
+        async function collectTokenizations(queryNode: QueryNode): Promise<ReadonlyArray<[string, QuickSearchLanguage]>> {
             let tokens: [string, QuickSearchLanguage][] = [];
             if (queryNode instanceof QuickSearchComplexOperatorQueryNode) {
                 tokens.push([queryNode.expression, queryNode.quickSearchLanguage]);
@@ -151,31 +152,31 @@ export class OperationResolver {
             if (queryNode instanceof ObjectQueryNode) {
                 const specs: PropertySpecification[] = [];
                 for (const property of queryNode.properties) {
-                    tokens = tokens.concat(await collectTokens(property.valueNode));
+                    tokens = tokens.concat(await collectTokenizations(property.valueNode));
                 }
             }
 
             for (const field of Object.keys(queryNode)) {
                 const childNode = (queryNode as any)[field];
                 if (childNode instanceof QueryNode) {
-                    tokens = tokens.concat(await collectTokens(childNode));
+                    tokens = tokens.concat(await collectTokenizations(childNode));
                 }
             }
             return tokens;
         }
 
-        const tokens = await collectTokens(queryTree);
-        databaseAdapter.tokenizeToCache(tokens);
+        const tokenizations = await collectTokenizations(queryTree);
+        return databaseAdapter.tokenizeExpressions(tokenizations);
     }
 
-    private async expandQueryNode(queryNode: QueryNode, databaseAdapter: DatabaseAdapter): Promise<QueryNode> {
-        if (queryNode instanceof ExpandingQueryNode) {
-            return await queryNode.expand(databaseAdapter);
+    private async expandQueryNode(queryNode: QueryNode, tokenizations: ReadonlyArray<QuickSearchTokenization>): Promise<QueryNode> {
+        if (queryNode instanceof QuickSearchComplexOperatorQueryNode) {
+            return await queryNode.expand(tokenizations);
         }
         if (queryNode instanceof ObjectQueryNode) {
             const specs: PropertySpecification[] = [];
             for (const property of queryNode.properties) {
-                const expandedValueNode = await this.expandQueryNode(property.valueNode, databaseAdapter);
+                const expandedValueNode = await this.expandQueryNode(property.valueNode, tokenizations);
                 specs.push(new PropertySpecification(property.propertyName, expandedValueNode));
             }
             return new ObjectQueryNode(specs);
@@ -186,7 +187,7 @@ export class OperationResolver {
         for (const field of Object.keys(queryNode)) {
             const oldValue = (queryNode as any)[field];
             if (oldValue instanceof QueryNode) {
-                const newValue = await this.expandQueryNode(oldValue, databaseAdapter);
+                const newValue = await this.expandQueryNode(oldValue, tokenizations);
                 if (newValue != oldValue) {
                     newFieldValues[field] = newValue;
                     hasChanged = true;

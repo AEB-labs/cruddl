@@ -1,7 +1,7 @@
-import { GraphQLError } from 'graphql';
 import { ExecutionOptions } from '../execution/execution-options';
 import { Model, QuickSearchLanguage } from '../model';
 import { QueryNode } from '../query-tree';
+import { QuickSearchTokenization } from '../query-tree/quick-search';
 
 /**
  * Times (in seconds) spent on specific parts of execution
@@ -159,9 +159,8 @@ export interface DatabaseAdapter {
     updateSchema(schema: Model): Promise<void>;
 
     /**
-     * Tokenizes an expression
+     * Tokenizes a List of expressions
      */
-    tokenizeExpression(expression: string, quickSearchLanguage?: QuickSearchLanguage):Promise<ReadonlyArray<string>>;
+    tokenizeExpressions(tokenizations: ReadonlyArray<[string, QuickSearchLanguage]>): Promise<ReadonlyArray<QuickSearchTokenization>>;
 
-    tokenizeToCache(tokens: ReadonlyArray<[string, QuickSearchLanguage]>): Promise<void>;
 }

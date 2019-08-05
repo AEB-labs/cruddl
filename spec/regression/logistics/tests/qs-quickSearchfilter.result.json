@@ -1,47 +1,22 @@
 {
   "equals": {
     "data": {
-      "quickSearchDeliveries": [
-        {
-          "deliveryNumber": "1000173"
-        }
-      ]
+      "quickSearchDeliveries": []
     }
   },
   "in": {
     "data": {
-      "quickSearchDeliveries": [
-        {
-          "deliveryNumber": "1000173"
-        },
-        {
-          "deliveryNumber": "1000521"
-        }
-      ]
+      "quickSearchDeliveries": []
     }
   },
   "starts_with": {
     "data": {
-      "quickSearchDeliveries": [
-        {
-          "deliveryNumber": "1000521"
-        },
-        {
-          "deliveryNumber": "1000522"
-        }
-      ]
+      "quickSearchDeliveries": []
     }
   },
   "gt_lt": {
     "data": {
-      "quickSearchDeliveries": [
-        {
-          "deliveryNumber": "1000173"
-        },
-        {
-          "deliveryNumber": "1000522"
-        }
-      ]
+      "quickSearchDeliveries": []
     }
   },
   "containsAnyWord": {

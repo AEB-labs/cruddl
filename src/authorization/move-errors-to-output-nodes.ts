@@ -1,7 +1,6 @@
 import { uniq } from 'lodash';
-import { ConditionalQueryNode, FirstOfListQueryNode, ListQueryNode, ObjectQueryNode, PreExecQueryParms, PropertySpecification, QueryNode, RuntimeErrorQueryNode, TransformListQueryNode, VariableAssignmentQueryNode, WithPreExecutionQueryNode } from '../query-tree';
+import { ConditionalQueryNode, FirstOfListQueryNode, ListQueryNode, ObjectQueryNode, PreExecQueryParms, PropertySpecification, QueryNode, QUICKSEARCH_TOO_MANY_OBJECTS, RuntimeErrorQueryNode, TransformListQueryNode, VariableAssignmentQueryNode, WithPreExecutionQueryNode } from '../query-tree';
 import { visitQueryNode } from '../query-tree/visitor';
-import { TOO_MANY_OBJECTS_ERROR } from '../schema-generation/quick-search-generator';
 import { VisitResult } from '../utils/visitor';
 
 /**
@@ -48,14 +47,18 @@ export function moveErrorsToOutputNodes(queryTree: QueryNode): QueryNode {
             if (errorList.length) {
 
                 if (frame && frame.outputNodeKind == OutputNodeKind.OUTPUT && stack.length <= minErrorDepth!) {
-                    const errors = errorList;
+                    let errors = errorList;
+                    if (errors.some(value => value.code !== QUICKSEARCH_TOO_MANY_OBJECTS)) {
+                        errors = errors.filter(value => value.code !== QUICKSEARCH_TOO_MANY_OBJECTS);
+                    }
                     errorList = [];
                     minErrorDepth = undefined;
                     if (errors.length == 1) {
                         return errors[0];
                     } else {
-                        let uniqueErrorMessages = uniq(errors.map(err => err.message)).filter(value => value !== TOO_MANY_OBJECTS_ERROR);
-                        return new RuntimeErrorQueryNode(uniqueErrorMessages.join(', '));
+                        let uniqueErrorMessages = uniq(errors.map(err => err.message));
+                        const code = errors.some(value => value.code !== errors[0].code) ? undefined : errors[0].code;
+                        return new RuntimeErrorQueryNode(uniqueErrorMessages.join(', '), { code });
                     }
                 } else {
                     // before entering the next sibling, make sure that the next sibling won't take care of these errors, because they now belong to the parent

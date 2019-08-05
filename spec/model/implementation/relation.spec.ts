@@ -1,24 +1,27 @@
-import { DatabaseAdapter } from '../../../src/database/database-adapter';
-import { QueryNode } from '../../../src/query-tree';
-import { Model, QuickSearchLanguage, Relation, TypeKind } from '../../../src/model';
 import { expect } from 'chai';
-import { flatMap } from '../../../src/utils/utils';
+import { DatabaseAdapter } from '../../../src/database/database-adapter';
+import { Model, QuickSearchLanguage, Relation, TypeKind } from '../../../src/model';
+import { QueryNode } from '../../../src/query-tree';
+import { QuickSearchTokenization } from '../../../src/query-tree/quick-search';
 
 class FakeDBAdatper implements DatabaseAdapter {
     async execute(queryTree: QueryNode): Promise<any> {
-        return {allTypeAS: [{relB: {id: 5}}], allTypeBS: [{relA: {id: 2}}]};
+        return { allTypeAS: [{ relB: { id: 5 } }], allTypeBS: [{ relA: { id: 2 } }] };
     }
 
     async updateSchema(schema: Model): Promise<void> {
 
     }
 
-    async tokenizeExpression(expression: string): Promise<ReadonlyArray<string>> {
-        return flatMap(expression.split(' '), t => t.split('-'));
-    }
+    async tokenizeExpressions(tokenizations: ReadonlyArray<[string, QuickSearchLanguage]>): Promise<ReadonlyArray<QuickSearchTokenization>> {
+        return tokenizations.map(value => {
+            return {
+                expression: value[0],
+                language: value[1],
+                tokens: value[0].split('-')
+            };
 
-    async tokenizeToCache(tokens: ReadonlyArray<[string, QuickSearchLanguage]>){
-        // do nothing
+        });
     }
 
 }
