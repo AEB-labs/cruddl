@@ -2,11 +2,11 @@ import { expect } from 'chai';
 import { graphql } from 'graphql';
 import { Logger, LoggerProvider } from '../../src/config/logging';
 import { DatabaseAdapter } from '../../src/database/database-adapter';
-import { Model, QuickSearchLanguage } from '../../src/model';
+import { FlexSearchLanguage, Model } from '../../src/model';
 import { Project } from '../../src/project/project';
 import { ProjectSource } from '../../src/project/source';
 import { QueryNode } from '../../src/query-tree';
-import { QuickSearchTokenization } from '../../src/query-tree/quick-search';
+import { FlexSearchTokenization } from '../../src/query-tree/flex-search';
 import { createSchema } from '../../src/schema/schema-builder';
 
 class FakeDBAdatper implements DatabaseAdapter {
@@ -18,7 +18,7 @@ class FakeDBAdatper implements DatabaseAdapter {
 
     }
 
-    async tokenizeExpressions(tokenizations: ReadonlyArray<[string, QuickSearchLanguage]>): Promise<ReadonlyArray<QuickSearchTokenization>> {
+    async tokenizeExpressions(tokenizations: ReadonlyArray<[string, FlexSearchLanguage]>): Promise<ReadonlyArray<FlexSearchTokenization>> {
         return tokenizations.map(value => {
             return {
                 expression: value[0],

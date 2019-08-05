@@ -76,7 +76,7 @@ export interface ArangoDBConfig {
     readonly retryDelayBaseMs?: number;
 
     /**
-     * How many steps of recursive fields are indexed and allowed in queries for QuickSearch.
+     * How many steps of recursive fields are indexed and allowed in queries for FlexSearch.
      */
     readonly arangoSearchConfiguration?: ArangoSearchConfiguration
 }

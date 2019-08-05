@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { moveErrorsToOutputNodes } from '../../src/authorization/move-errors-to-output-nodes';
-import { ConditionalQueryNode, ConstBoolQueryNode, ListQueryNode, ObjectQueryNode, PreExecQueryParms, PropertySpecification, QUICKSEARCH_TOO_MANY_OBJECTS, RuntimeErrorQueryNode, TransformListQueryNode, WithPreExecutionQueryNode } from '../../src/query-tree';
-import { TOO_MANY_OBJECTS_ERROR } from '../../src/schema-generation/quick-search-generator';
+import { ConditionalQueryNode, ConstBoolQueryNode, ListQueryNode, ObjectQueryNode, PreExecQueryParms, PropertySpecification, FLEX_SEARCH_TOO_MANY_OBJECTS, RuntimeErrorQueryNode, TransformListQueryNode, WithPreExecutionQueryNode } from '../../src/query-tree';
+import { TOO_MANY_OBJECTS_ERROR } from '../../src/schema-generation/flex-search-generator';
 
 describe('move-errors-to-output-nodes', () => {
     it('moves errors in filter up', () => {
@@ -117,8 +117,8 @@ describe('move-errors-to-output-nodes', () => {
                 new WithPreExecutionQueryNode({
                     resultNode: new ConditionalQueryNode(
                         new ConstBoolQueryNode(true),
-                        new RuntimeErrorQueryNode(TOO_MANY_OBJECTS_ERROR, { code: QUICKSEARCH_TOO_MANY_OBJECTS }),
-                        new RuntimeErrorQueryNode(TOO_MANY_OBJECTS_ERROR, { code: QUICKSEARCH_TOO_MANY_OBJECTS })
+                        new RuntimeErrorQueryNode(TOO_MANY_OBJECTS_ERROR, { code: FLEX_SEARCH_TOO_MANY_OBJECTS }),
+                        new RuntimeErrorQueryNode(TOO_MANY_OBJECTS_ERROR, { code: FLEX_SEARCH_TOO_MANY_OBJECTS })
                     ),
                     preExecQueries: [
                         new PreExecQueryParms({

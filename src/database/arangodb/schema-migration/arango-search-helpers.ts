@@ -1,13 +1,13 @@
 import { Database } from 'arangojs';
 import { ArangoSearchView, ArangoSearchViewProperties, ArangoSearchViewPropertiesOptions } from 'arangojs/lib/cjs/view';
 import * as _ from 'lodash';
-import { QuickSearchLanguage } from '../../../model/config';
+import { FlexSearchLanguage } from '../../../model/config';
 import { Field, Model, RootEntityType } from '../../../model/implementation';
 import { getCollectionNameForRootEntity } from '../arango-basics';
 import { CreateArangoSearchViewMigration, DropArangoSearchViewMigration, UpdateArangoSearchViewMigration } from './migrations';
 
 export const IDENTITY_ANALYZER = 'identity';
-export const QUICK_SEARCH_VIEW_PREFIX = 'qsView_';
+export const FLEX_SEARCH_VIEW_PREFIX = 'flex_view_';
 
 export interface ArangoSearchDefinition {
     readonly viewName: string;
@@ -36,14 +36,14 @@ export function getRequiredViewsFromModel(model: Model): ReadonlyArray<ArangoSea
         .map(rootEntity => getViewForRootEntity(rootEntity));
 }
 
-export function getQuickSearchViewNameForRootEntity(rootEntity: RootEntityType) {
-    return QUICK_SEARCH_VIEW_PREFIX + getCollectionNameForRootEntity(rootEntity);
+export function getFlexSearchViewNameForRootEntity(rootEntity: RootEntityType) {
+    return FLEX_SEARCH_VIEW_PREFIX + getCollectionNameForRootEntity(rootEntity);
 }
 
 function getViewForRootEntity(rootEntity: RootEntityType): ArangoSearchDefinition {
     return {
-        fields: rootEntity.fields.filter(value => value.isQuickSearchIndexed || value.isQuickSearchFulltextIndexed),
-        viewName: getQuickSearchViewNameForRootEntity(rootEntity),
+        fields: rootEntity.fields.filter(value => value.isFlexSearchIndexed || value.isFlexSearchFulltextIndexed),
+        viewName: getFlexSearchViewNameForRootEntity(rootEntity),
         collectionName: getCollectionNameForRootEntity(rootEntity)
     };
 
@@ -69,13 +69,13 @@ export async function calculateRequiredArangoSearchViewCreateOperations(existing
 
 export function calculateRequiredArangoSearchViewDropOperations(views: ArangoSearchView[], definitions: ReadonlyArray<ArangoSearchDefinition>): ReadonlyArray<DropArangoSearchViewMigration> {
     const viewsToDrop = views
-        .filter(value => !definitions.some(value1 => value1.viewName === value.name) && value.name.startsWith(QUICK_SEARCH_VIEW_PREFIX));
+        .filter(value => !definitions.some(value1 => value1.viewName === value.name) && value.name.startsWith(FLEX_SEARCH_VIEW_PREFIX));
     return viewsToDrop.map(value => new DropArangoSearchViewMigration({ viewName: value.name }));
 }
 
 
-export function getAnalyzerFromQuickSearchLanguage(quickSearchLanguage?: QuickSearchLanguage): string {
-    return quickSearchLanguage ? 'text_' + quickSearchLanguage.toLowerCase() : 'identity';
+export function getAnalyzerFromFlexSearchLanguage(flexSearchLanguage?: FlexSearchLanguage): string {
+    return flexSearchLanguage ? 'text_' + flexSearchLanguage.toLowerCase() : 'identity';
 }
 
 
@@ -98,7 +98,7 @@ function getPropertiesFromDefinition(definition: ArangoSearchDefinition, configu
         if (field.type.isObjectType) {
             const fields: { [key: string]: ArangoSearchViewCollectionLink | undefined; } = {};
             field.type.fields
-                .filter(field => (field.isQuickSearchIndexed || field.isQuickSearchFulltextIndexed)
+                .filter(field => (field.isFlexSearchIndexed || field.isFlexSearchFulltextIndexed)
                     && !path.some(value => value.name === field.name && field.declaringType.name === value.declaringType.name))
                 .forEach(value => fields[value.name] = fieldDefinitionFor(value, recursionDepth, path.concat(field)));
             return {
@@ -106,10 +106,10 @@ function getPropertiesFromDefinition(definition: ArangoSearchDefinition, configu
             };
         } else {
             const analyzers: string[] = [];
-            if (field.isQuickSearchFulltextIndexed && field.language) {
-                analyzers.push(getAnalyzerFromQuickSearchLanguage(field.language));
+            if (field.isFlexSearchFulltextIndexed && field.language) {
+                analyzers.push(getAnalyzerFromFlexSearchLanguage(field.language));
             }
-            if (field.isQuickSearchIndexed) {
+            if (field.isFlexSearchIndexed) {
                 analyzers.push(IDENTITY_ANALYZER);
             }
             if (_.isEqual(analyzers, [IDENTITY_ANALYZER])) {

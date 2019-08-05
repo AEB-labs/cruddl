@@ -1,8 +1,8 @@
 import { expect } from 'chai';
 import { DatabaseAdapter } from '../../../src/database/database-adapter';
-import { Model, QuickSearchLanguage, Relation, TypeKind } from '../../../src/model';
+import { FlexSearchLanguage, Model, Relation, TypeKind } from '../../../src/model';
 import { QueryNode } from '../../../src/query-tree';
-import { QuickSearchTokenization } from '../../../src/query-tree/quick-search';
+import { FlexSearchTokenization } from '../../../src/query-tree/flex-search';
 
 class FakeDBAdatper implements DatabaseAdapter {
     async execute(queryTree: QueryNode): Promise<any> {
@@ -13,7 +13,7 @@ class FakeDBAdatper implements DatabaseAdapter {
 
     }
 
-    async tokenizeExpressions(tokenizations: ReadonlyArray<[string, QuickSearchLanguage]>): Promise<ReadonlyArray<QuickSearchTokenization>> {
+    async tokenizeExpressions(tokenizations: ReadonlyArray<[string, FlexSearchLanguage]>): Promise<ReadonlyArray<FlexSearchTokenization>> {
         return tokenizations.map(value => {
             return {
                 expression: value[0],

@@ -1,30 +1,16 @@
 import { getNamedType, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
 import * as pluralize from 'pluralize';
 import { isArray } from 'util';
-import { Field, QuickSearchLanguage, TypeKind } from '../../model';
-import {
-    BinaryOperationQueryNode,
-    BinaryOperator,
-    ConstBoolQueryNode, FieldPathQueryNode,
-    FieldQueryNode,
-    LiteralQueryNode,
-    QueryNode,
-    VariableQueryNode
-} from '../../query-tree';
+import { Field, TypeKind } from '../../model';
+import { BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, LiteralQueryNode, QueryNode, VariableQueryNode } from '../../query-tree';
 import { QuantifierFilterNode } from '../../query-tree/quantifiers';
-import {
-    AND_FILTER_FIELD,
-    FILTER_FIELD_PREFIX_SEPARATOR, INPUT_FIELD_CONTAINS_ALL_PREFIXES, INPUT_FIELD_CONTAINS_ANY_PREFIX,
-    INPUT_FIELD_CONTAINS_ANY_WORD,
-    INPUT_FIELD_EQUAL, INPUT_FIELD_STARTS_WITH,
-    OR_FILTER_FIELD
-} from '../../schema/constants';
+import { AND_FILTER_FIELD, FILTER_FIELD_PREFIX_SEPARATOR, INPUT_FIELD_EQUAL, OR_FILTER_FIELD } from '../../schema/constants';
 import { AnyValue, decapitalize, PlainObject } from '../../utils/utils';
 import { createFieldNode } from '../field-nodes';
 import { TypedInputFieldBase } from '../typed-input-object-type';
 import { FILTER_DESCRIPTIONS, OPERATORS_WITH_LIST_OPERAND, Quantifier } from './constants';
 import { FilterObjectType } from './generator';
-import { QuickSearchFilterObjectType } from '../quick-search-filter-input-types/generator';
+
 export interface FilterField extends TypedInputFieldBase<FilterField> {
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode
 }

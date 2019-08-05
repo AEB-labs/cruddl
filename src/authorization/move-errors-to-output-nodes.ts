@@ -1,5 +1,5 @@
 import { uniq } from 'lodash';
-import { ConditionalQueryNode, FirstOfListQueryNode, ListQueryNode, ObjectQueryNode, PreExecQueryParms, PropertySpecification, QueryNode, QUICKSEARCH_TOO_MANY_OBJECTS, RuntimeErrorQueryNode, TransformListQueryNode, VariableAssignmentQueryNode, WithPreExecutionQueryNode } from '../query-tree';
+import { ConditionalQueryNode, FirstOfListQueryNode, ListQueryNode, ObjectQueryNode, PreExecQueryParms, PropertySpecification, QueryNode, FLEX_SEARCH_TOO_MANY_OBJECTS, RuntimeErrorQueryNode, TransformListQueryNode, VariableAssignmentQueryNode, WithPreExecutionQueryNode } from '../query-tree';
 import { visitQueryNode } from '../query-tree/visitor';
 import { VisitResult } from '../utils/visitor';
 
@@ -48,8 +48,8 @@ export function moveErrorsToOutputNodes(queryTree: QueryNode): QueryNode {
 
                 if (frame && frame.outputNodeKind == OutputNodeKind.OUTPUT && stack.length <= minErrorDepth!) {
                     let errors = errorList;
-                    if (errors.some(value => value.code !== QUICKSEARCH_TOO_MANY_OBJECTS)) {
-                        errors = errors.filter(value => value.code !== QUICKSEARCH_TOO_MANY_OBJECTS);
+                    if (errors.some(value => value.code !== FLEX_SEARCH_TOO_MANY_OBJECTS)) {
+                        errors = errors.filter(value => value.code !== FLEX_SEARCH_TOO_MANY_OBJECTS);
                     }
                     errorList = [];
                     minErrorDepth = undefined;

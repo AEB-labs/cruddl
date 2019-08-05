@@ -1,7 +1,7 @@
 {
   "equals": {
     "data": {
-      "quickSearchDeliveries": [
+      "flexSearchDeliveries": [
         {
           "deliveryNumber": "1000173"
         }
@@ -10,7 +10,7 @@
   },
   "in": {
     "data": {
-      "quickSearchDeliveries": [
+      "flexSearchDeliveries": [
         {
           "deliveryNumber": "1000173"
         },
@@ -22,7 +22,7 @@
   },
   "starts_with": {
     "data": {
-      "quickSearchDeliveries": [
+      "flexSearchDeliveries": [
         {
           "deliveryNumber": "1000521"
         },
@@ -34,7 +34,7 @@
   },
   "gt_lt": {
     "data": {
-      "quickSearchDeliveries": [
+      "flexSearchDeliveries": [
         {
           "deliveryNumber": "1000173"
         },
@@ -46,7 +46,7 @@
   },
   "containsAnyWord": {
     "data": {
-      "quickSearchDeliveries": [
+      "flexSearchDeliveries": [
         {
           "deliveryNumber": "1000173"
         }
@@ -55,7 +55,7 @@
   },
   "containsAllWords": {
     "data": {
-      "quickSearchDeliveries": [
+      "flexSearchDeliveries": [
         {
           "deliveryNumber": "1000521"
         }
@@ -64,7 +64,7 @@
   },
   "containsAllPrefixes": {
     "data": {
-      "quickSearchDeliveries": [
+      "flexSearchDeliveries": [
         {
           "deliveryNumber": "1000521"
         }
@@ -73,7 +73,7 @@
   },
   "containsPhrase": {
     "data": {
-      "quickSearchDeliveries": [
+      "flexSearchDeliveries": [
         {
           "deliveryNumber": "1000522"
         }
@@ -82,7 +82,7 @@
   },
   "equals_enum": {
     "data": {
-      "quickSearchDeliveries": [
+      "flexSearchDeliveries": [
         {
           "deliveryNumber": "1000173"
         }
@@ -91,7 +91,7 @@
   },
   "valueObject": {
     "data": {
-      "quickSearchDeliveries": [
+      "flexSearchDeliveries": [
         {
           "deliveryNumber": "1000521"
         }
@@ -100,7 +100,7 @@
   },
   "equals_null": {
     "data": {
-      "quickSearchDeliveries": [
+      "flexSearchDeliveries": [
         {
           "deliveryNumber": "1000173"
         }
@@ -109,7 +109,7 @@
   },
   "filter_below_max": {
     "data": {
-      "quickSearchDeliveries": [
+      "flexSearchDeliveries": [
         {
           "deliveryNumber": "1000521"
         }
@@ -118,7 +118,7 @@
   },
   "order_below_max": {
     "data": {
-      "quickSearchDeliveries": [
+      "flexSearchDeliveries": [
         {
           "deliveryNumber": "1000521"
         }
@@ -136,12 +136,12 @@
           }
         ],
         "path": [
-          "quickSearchDeliveries"
+          "flexSearchDeliveries"
         ]
       }
     ],
     "data": {
-      "quickSearchDeliveries": null
+      "flexSearchDeliveries": null
     }
   },
   "order_above_max": {
@@ -155,17 +155,17 @@
           }
         ],
         "path": [
-          "quickSearchDeliveries"
+          "flexSearchDeliveries"
         ]
       }
     ],
     "data": {
-      "quickSearchDeliveries": null
+      "flexSearchDeliveries": null
     }
   },
   "expression_with_number": {
     "data": {
-      "quickSearchDeliveries": [
+      "flexSearchDeliveries": [
         {
           "deliveryNumber": "1000521"
         },
@@ -177,7 +177,7 @@
   },
   "expression": {
     "data": {
-      "quickSearchDeliveries": [
+      "flexSearchDeliveries": [
         {
           "deliveryNumber": "1000173"
         },
@@ -189,7 +189,7 @@
   },
   "recursion_successfull": {
     "data": {
-      "quickSearchDeliveries": [
+      "flexSearchDeliveries": [
         {
           "deliveryNumber": "1000173"
         }
@@ -207,12 +207,12 @@
           }
         ],
         "path": [
-          "quickSearchDeliveries"
+          "flexSearchDeliveries"
         ]
       }
     ],
     "data": {
-      "quickSearchDeliveries": null
+      "flexSearchDeliveries": null
     }
   }
 }

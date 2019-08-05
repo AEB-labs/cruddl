@@ -4,9 +4,9 @@ import { ProjectOptions } from '../../config/interfaces';
 import { Logger } from '../../config/logging';
 import { ExecutionOptions } from '../../execution/execution-options';
 import { TransactionCancelledError, TransactionTimeoutError } from '../../execution/runtime-errors';
-import { Model, QuickSearchLanguage } from '../../model';
+import { FlexSearchLanguage, Model } from '../../model';
 import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS, QueryNode } from '../../query-tree';
-import { QuickSearchTokenization } from '../../query-tree/quick-search';
+import { FlexSearchTokenization } from '../../query-tree/flex-search';
 import { Mutable } from '../../utils/util-types';
 import { objectValues, sleep, sleepInterruptible } from '../../utils/utils';
 import { getPreciseTime, Watch } from '../../utils/watch';
@@ -646,7 +646,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         return this.versionHelper.getArangoDBVersion();
     }
 
-    async tokenizeExpressions(tokenizations: ReadonlyArray<[string, QuickSearchLanguage]>): Promise<ReadonlyArray<QuickSearchTokenization>> {
+    async tokenizeExpressions(tokenizations: ReadonlyArray<[string, FlexSearchLanguage]>): Promise<ReadonlyArray<FlexSearchTokenization>> {
         const tokenizationsFiltered = tokenizations.filter(
             (value, index) => !tokenizations.some(
                 (value2, index2) => value[0] === value2[0] && value[1] === value2[1] && index > index2
@@ -656,7 +656,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         const cursor = await this.db.query(generateTokenizationQuery(tokenizationsFiltered));
 
         const result = await cursor.next();
-        const resultArray: QuickSearchTokenization[] = [];
+        const resultArray: FlexSearchTokenization[] = [];
         for (let i = 0; i < tokenizationsFiltered.length; i++) {
             resultArray.push({
                 expression: tokenizationsFiltered[i][0],

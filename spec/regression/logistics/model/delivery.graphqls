@@ -1,18 +1,18 @@
 "A delivery"
-type Delivery @rootEntity(quickSearchIndex: true, quickSearchLanguage: DE) @roles(readWrite: ["allusers"]) {
-    deliveryNumber: String @key @unique @quickSearchIndex(isIncludedInSearch: true)# leave this here to catch this case, too (has caused a bug)
+type Delivery @rootEntity(flexSearch: true, flexSearchLanguage: DE) @roles(readWrite: ["allusers"]) {
+    deliveryNumber: String @key @unique @flexSearch(isIncludedInSearch: true)# leave this here to catch this case, too (has caused a bug)
     "The list of serial numbers associated with this delivery"
     serialNumbers: [String]
     "The address of the delivery's consignee"
-    consignee: Address @quickSearchIndex
+    consignee: Address @flexSearch
     contentInfo: [Translation]
     dgInfo: DangerousGoodsInfo
-    items: [DeliveryItem] @quickSearchIndex
+    items: [DeliveryItem] @flexSearch
     "The handling units the items of this delivery are packaged in"
     handlingUnits: [HandlingUnit] @relation
     "The country to where the delivery should be shipped"
     destinationCountry: Country @reference(keyField: "destinationCountryISOCode")
-    destinationCountryISOCode: String @quickSearchIndex
+    destinationCountryISOCode: String @flexSearch
 
     originCountry: Country @reference # no key field specified ("legacy" mode)
 
@@ -36,15 +36,15 @@ type Delivery @rootEntity(quickSearchIndex: true, quickSearchLanguage: DE) @role
 
     dynamicData: JSON
 
-    description: String @quickSearchFulltextIndex(isIncludedInSearch: true)
-    enumQuickSearch: Foobarit @quickSearchIndex
-    aNumber: Int @quickSearchIndex(isIncludedInSearch: true)
-    recursion: Recursion @quickSearchIndex
+    description: String @flexSearchFulltext(isIncludedInSearch: true)
+    enumFlexSearch: Foobarit @flexSearch
+    aNumber: Int @flexSearch(isIncludedInSearch: true)
+    recursion: Recursion @flexSearch
 }
 
 type DeliveryItem @childEntity {
     itemNumber: String
-    quantity: Int @quickSearchIndex
+    quantity: Int @flexSearch
     handlingUnit: HandlingUnit @reference
     dgInfo: DangerousGoodsInfo
 }
@@ -66,6 +66,6 @@ enum Foobarit {
 }
 
 type Recursion @valueObject{
-    recursion: Recursion @quickSearchIndex
-    name: String @quickSearchIndex
+    recursion: Recursion @flexSearch
+    name: String @flexSearch
 }

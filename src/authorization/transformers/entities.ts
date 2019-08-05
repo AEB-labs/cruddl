@@ -1,5 +1,5 @@
 import { BinaryOperationQueryNode, BinaryOperator, ConditionalQueryNode, EntitiesQueryNode, EntityFromIdQueryNode, NullQueryNode, PERMISSION_DENIED_ERROR, RuntimeErrorQueryNode, TransformListQueryNode, VariableAssignmentQueryNode, VariableQueryNode } from '../../query-tree';
-import { QuickSearchQueryNode } from '../../query-tree/quick-search';
+import { FlexSearchQueryNode } from '../../query-tree/flex-search';
 import { AccessOperation, AuthContext } from '../auth-basics';
 import { PermissionResult } from '../permission-descriptors';
 import { getPermissionDescriptorOfRootEntityType } from '../permission-descriptors-in-model';
@@ -42,7 +42,7 @@ export function transformEntityFromIdQueryNode(node: EntityFromIdQueryNode, auth
     }
 }
 
-export function transformQuickSearchQueryNode(node: QuickSearchQueryNode, authContext: AuthContext){
+export function transformFlexSearchQueryNode(node: FlexSearchQueryNode, authContext: AuthContext) {
     const permissionDescriptor = getPermissionDescriptorOfRootEntityType(node.rootEntityType);
     const access = permissionDescriptor.canAccess(authContext, AccessOperation.READ);
     switch (access) {
@@ -52,8 +52,8 @@ export function transformQuickSearchQueryNode(node: QuickSearchQueryNode, authCo
             return new RuntimeErrorQueryNode(`Not authorized to read ${node.rootEntityType.name} objects`, { code: PERMISSION_DENIED_ERROR });
         default:
             const condition = permissionDescriptor.getAccessCondition(authContext, AccessOperation.READ, node.itemVariable);
-            return new QuickSearchQueryNode({
-                qsFilterNode: new BinaryOperationQueryNode(node.qsFilterNode, BinaryOperator.AND, condition),
+            return new FlexSearchQueryNode({
+                flexFilterNode: new BinaryOperationQueryNode(node.flexFilterNode, BinaryOperator.AND, condition),
                 rootEntityType: node.rootEntityType,
                 itemVariable: node.itemVariable
             });

@@ -4,7 +4,7 @@ import { ACCESS_GROUP_FIELD, CALC_MUTATIONS_OPERATORS, COLLECT_AGGREGATE_ARG, CO
 import { GraphQLDateTime } from '../../schema/scalars/date-time';
 import { GraphQLLocalDate } from '../../schema/scalars/local-date';
 import { GraphQLLocalTime } from '../../schema/scalars/local-time';
-import { AggregationOperator, CalcMutationsOperator, FieldConfig, QuickSearchLanguage, TypeKind } from '../config';
+import { AggregationOperator, CalcMutationsOperator, FieldConfig, FlexSearchLanguage, TypeKind } from '../config';
 import { ValidationMessage } from '../validation';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
 import { CollectPath } from './collect-path';
@@ -227,7 +227,7 @@ export class Field implements ModelComponent {
         this.validateCollect(context);
         this.validateDefaultValue(context);
         this.validateCalcMutations(context);
-        this.validateQuickSearch(context);
+        this.validateFlexSearch(context);
     }
 
     private validateName(context: ValidationContext) {
@@ -663,61 +663,61 @@ export class Field implements ModelComponent {
         }
     }
 
-    private validateQuickSearch(context: ValidationContext) {
-        const notSupportedOn = `QuickSearchIndex is not supported on`;
-        if (this.isQuickSearchIndexed && (this.isReference || this.isRelation || this.isCollectField)) {
+    private validateFlexSearch(context: ValidationContext) {
+        const notSupportedOn = `@flexSearch is not supported on`;
+        if (this.isFlexSearchIndexed && (this.isReference || this.isRelation || this.isCollectField)) {
             if (this.isReference) {
-                context.addMessage(ValidationMessage.error(`${notSupportedOn} references.`, this.input.isQuickSearchIndexedASTNode));
+                context.addMessage(ValidationMessage.error(`${notSupportedOn} references.`, this.input.isFlexSearchIndexedASTNode));
             } else if (this.isRelation) {
-                context.addMessage(ValidationMessage.error(`${notSupportedOn} relations.`, this.input.isQuickSearchIndexedASTNode));
+                context.addMessage(ValidationMessage.error(`${notSupportedOn} relations.`, this.input.isFlexSearchIndexedASTNode));
             } else if (this.isCollectField) {
-                context.addMessage(ValidationMessage.error(`${notSupportedOn} collect fields.`, this.input.isQuickSearchIndexedASTNode));
+                context.addMessage(ValidationMessage.error(`${notSupportedOn} collect fields.`, this.input.isFlexSearchIndexedASTNode));
             }
             return;
         }
-        if (this.isQuickSearchFulltextIndexed && !(this.type.isScalarType && this.type.name === 'String')) {
-            context.addMessage(ValidationMessage.error(`QuickSearchFulltextIndex is not supported on type "${this.type.name}".`, this.input.isQuickSearchFulltextIndexedASTNode));
+        if (this.isFlexSearchFulltextIndexed && !(this.type.isScalarType && this.type.name === 'String')) {
+            context.addMessage(ValidationMessage.error(`@flexSearchFulltext is not supported on type "${this.type.name}".`, this.input.isFlexSearchFulltextIndexedASTNode));
             return;
         }
-        if (this.isQuickSearchFulltextIndexed && this.isCollectField) {
-            context.addMessage(ValidationMessage.error(`${notSupportedOn} collect fields.`, this.input.isQuickSearchFulltextIndexedASTNode));
+        if (this.isFlexSearchFulltextIndexed && this.isCollectField) {
+            context.addMessage(ValidationMessage.error(`${notSupportedOn} collect fields.`, this.input.isFlexSearchFulltextIndexedASTNode));
             return;
         }
-        if (this.isQuickSearchFulltextIndexed && !this.language) {
-            context.addMessage(ValidationMessage.error(`QuickSearchFulltextIndex requires either a language parameter, or a defaultLanguage must be set in the defining type.`, this.input.isQuickSearchFulltextIndexedASTNode));
+        if (this.isFlexSearchFulltextIndexed && !this.language) {
+            context.addMessage(ValidationMessage.error(`@flexSearchFulltext requires either a language parameter, or a defaultLanguage must be set in the defining type.`, this.input.isFlexSearchFulltextIndexedASTNode));
         }
-        if (this.isQuickSearchIndexed && (this.type.isEntityExtensionType || this.type.isValueObjectType) && !this.type.fields.some(value => value.isQuickSearchIndexed || value.isQuickSearchFulltextIndexed)) {
-            context.addMessage(ValidationMessage.error(`At least one field on type "${this.type.name}" must be quickSearchIndexed or quickSearchFulltextIndexed.`, this.input.isQuickSearchIndexedASTNode));
+        if (this.isFlexSearchIndexed && (this.type.isEntityExtensionType || this.type.isValueObjectType) && !this.type.fields.some(value => value.isFlexSearchIndexed || value.isFlexSearchFulltextIndexed)) {
+            context.addMessage(ValidationMessage.error(`At least one field on type "${this.type.name}" must be annotated with @flexSearch or @flexSearchFulltext.`, this.input.isFlexSearchIndexedASTNode));
         }
         if (this.name === ACCESS_GROUP_FIELD && this.declaringType.isRootEntityType && this.declaringType.permissionProfile
-            && this.declaringType.permissionProfile.permissions.some(value => value.restrictToAccessGroups) && this.declaringType.arangoSearchConfig.isIndexed && !this.isQuickSearchIndexed) {
-            context.addMessage(ValidationMessage.error(`When using restriction by accessGroup the field "${this.name}" must be quickSearchIndexed.`, this.astNode));
+            && this.declaringType.permissionProfile.permissions.some(value => value.restrictToAccessGroups) && this.declaringType.arangoSearchConfig.isIndexed && !this.isFlexSearchIndexed) {
+            context.addMessage(ValidationMessage.error(`When using restriction by accessGroup the field "${this.name}" must be annotated with @flexSearch.`, this.astNode));
         }
         if (this.isIncludedInSearch && this.type.isScalarType && this.type.name === 'Boolean') {
-            context.addMessage(ValidationMessage.error(`"isIncludedInSearch" is not supported on type "${this.type.name}".`, this.input.isQuickSearchFulltextIndexedASTNode));
+            context.addMessage(ValidationMessage.error(`"isIncludedInSearch" is not supported on type "${this.type.name}".`, this.input.isFlexSearchFulltextIndexedASTNode));
             return;
         }
 
     }
 
-    get isQuickSearchIndexed(): boolean {
-        return !!this.input.isQuickSearchIndexed;
+    get isFlexSearchIndexed(): boolean {
+        return !!this.input.isFlexSearchIndexed;
     }
 
-    get isQuickSearchFulltextIndexed(): boolean {
-        return !!this.input.isQuickSearchFulltextIndexed;
+    get isFlexSearchFulltextIndexed(): boolean {
+        return !!this.input.isFlexSearchFulltextIndexed;
     }
 
     get isIncludedInSearch(): boolean {
-        return !!this.input.isIncludedInSearch && this.isQuickSearchIndexed;
+        return !!this.input.isIncludedInSearch && this.isFlexSearchIndexed;
     }
 
     get isFulltextIncludedInSearch(): boolean {
-        return !!this.input.isFulltextIncludedInSearch && this.isQuickSearchFulltextIndexed;
+        return !!this.input.isFulltextIncludedInSearch && this.isFlexSearchFulltextIndexed;
     }
 
-    get language(): QuickSearchLanguage | undefined {
-        return this.input.quickSearchLanguage ? this.input.quickSearchLanguage : this.declaringType.quickSearchLanguage;
+    get language(): FlexSearchLanguage | undefined {
+        return this.input.flexSearchLanguage ? this.input.flexSearchLanguage : this.declaringType.flexSearchLanguage;
     }
 }
 

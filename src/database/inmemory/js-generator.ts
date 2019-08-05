@@ -1,15 +1,11 @@
 import { compact } from 'lodash';
-import { Field, AggregationOperator, Relation, RelationSide, RootEntityType } from '../../model';
+import { AggregationOperator, Field, Relation, RelationSide, RootEntityType } from '../../model';
 import { getEffectiveCollectSegments } from '../../model/implementation/collect-path';
-import { AddEdgesQueryNode, AggregationQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, BinaryOperatorWithLanguage, ConcatListsQueryNode, ConditionalQueryNode, ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, OperatorWithLanguageQueryNode, OrderClause, OrderDirection, OrderSpecification, QueryNode, QueryResultValidator, RemoveEdgesQueryNode, RootEntityIDQueryNode, RUNTIME_ERROR_CODE_PROPERTY, RUNTIME_ERROR_TOKEN, RuntimeErrorQueryNode, SafeListQueryNode, SetEdgeQueryNode, TransformListQueryNode, TraversalQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../../query-tree';
+import { AddEdgesQueryNode, AggregationQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode, ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, OperatorWithLanguageQueryNode, OrderClause, OrderDirection, OrderSpecification, QueryNode, QueryResultValidator, RemoveEdgesQueryNode, RootEntityIDQueryNode, RUNTIME_ERROR_CODE_PROPERTY, RUNTIME_ERROR_TOKEN, RuntimeErrorQueryNode, SafeListQueryNode, SetEdgeQueryNode, TransformListQueryNode, TraversalQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../../query-tree';
+import { FlexSearchComplexOperatorQueryNode, FlexSearchFieldExistsQueryNode, FlexSearchQueryNode } from '../../query-tree/flex-search';
 import { QuantifierFilterNode } from '../../query-tree/quantifiers';
-import { QuickSearchComplexOperatorQueryNode, QuickSearchFieldExistsQueryNode, QuickSearchQueryNode } from '../../query-tree/quick-search';
-import { simplifyBooleans } from '../../query-tree/utils';
 import { not } from '../../schema-generation/utils/input-types';
 import { Constructor, decapitalize } from '../../utils/utils';
-import { aql } from '../arangodb/aql';
-import { IDENTITY_ANALYZER } from '../arangodb/schema-migration/arango-search-helpers';
-import { ArangoSearchMigrationNotSupportedError } from '../arangodb/schema-migration/ArangoSearchMigrationNotSupportedError';
 import { likePatternToRegExp } from '../like-helpers';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './inmemory-basics';
 import { js, JSCompoundQuery, JSFragment, JSQueryResultVariable, JSVariable } from './js';
@@ -664,16 +660,16 @@ register(OperatorWithLanguageQueryNode, (node, context) => {
     throw new ArangoSearchNotSupportedError();
 });
 
-register(QuickSearchQueryNode, (node, context) => {
+register(FlexSearchQueryNode, (node, context) => {
     throw new ArangoSearchNotSupportedError();
 });
 
-register(QuickSearchFieldExistsQueryNode, (node, context) => {
+register(FlexSearchFieldExistsQueryNode, (node, context) => {
     throw new ArangoSearchNotSupportedError();
 });
 
-register(QuickSearchComplexOperatorQueryNode, (node, context) => {
-    throw new Error(`Internal Error: QuickSearchComplexOperatorQueryNode must be expanded before generating the query.`);
+register(FlexSearchComplexOperatorQueryNode, (node, context) => {
+    throw new Error(`Internal Error: FlexSearchComplexOperatorQueryNode must be expanded before generating the query.`);
 });
 
 register(SetEdgeQueryNode, (node, context) => {

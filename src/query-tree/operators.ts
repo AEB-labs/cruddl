@@ -1,11 +1,5 @@
+import { FlexSearchLanguage } from '../model/config';
 import { QueryNode } from './base';
-import { QuickSearchLanguage } from '../model/config';
-import {
-    INPUT_FIELD_CONTAINS_ALL_PREFIXES,
-    INPUT_FIELD_CONTAINS_ALL_WORDS,
-    INPUT_FIELD_CONTAINS_ANY_PREFIX, INPUT_FIELD_NOT_CONTAINS_ALL_PREFIXES,
-    INPUT_FIELD_NOT_CONTAINS_ALL_WORDS, INPUT_FIELD_NOT_CONTAINS_ANY_PREFIX
-} from '../schema/constants';
 
 /**
  * A node that performs an operation with one operand
@@ -35,7 +29,6 @@ export enum UnaryOperator {
     JSON_STRINGIFY
 }
 
-// @TODO: create own QuickSearchBinaryOperationQueryNode with all QS Operations
 /**
  * A node that performs an operation with two operands
  */
@@ -137,10 +130,10 @@ export enum BinaryOperator {
 }
 
 /**
- * A node that performs an operation with two operands and a QuickSearch Language
+ * A node that performs an operation with two operands and a FlexSearch Language
  */
 export class OperatorWithLanguageQueryNode extends QueryNode {
-    constructor(public readonly lhs: QueryNode, public readonly operator: BinaryOperatorWithLanguage, public readonly rhs: QueryNode, public readonly quickSearchLanguage: QuickSearchLanguage) {
+    constructor(public readonly lhs: QueryNode, public readonly operator: BinaryOperatorWithLanguage, public readonly rhs: QueryNode, public readonly flexSearchLanguage: FlexSearchLanguage) {
         super();
     }
 
@@ -150,11 +143,11 @@ export class OperatorWithLanguageQueryNode extends QueryNode {
 
     private describeOperator(op: BinaryOperatorWithLanguage) {
         switch (op) {
-            case BinaryOperatorWithLanguage.QUICKSEARCH_CONTAINS_ANY_WORD:
+            case BinaryOperatorWithLanguage.FLEX_SEARCH_CONTAINS_ANY_WORD:
                 return 'IN TOKENS';
-            case BinaryOperatorWithLanguage.QUICKSEARCH_CONTAINS_PHRASE:
+            case BinaryOperatorWithLanguage.FLEX_SEARCH_CONTAINS_PHRASE:
                 return 'CONTAINS_PHRASE';
-            case BinaryOperatorWithLanguage.QUICKSEARCH_CONTAINS_PREFIX:
+            case BinaryOperatorWithLanguage.FLEX_SEARCH_CONTAINS_PREFIX:
                 return 'CONTAINS_PREFIX';
             default:
                 return '(unknown operator)';
@@ -162,8 +155,8 @@ export class OperatorWithLanguageQueryNode extends QueryNode {
     }
 
     private getParamString() {
-        if (this.quickSearchLanguage) {
-            return ` with analyzer: "${this.quickSearchLanguage.toString()}"`;
+        if (this.flexSearchLanguage) {
+            return ` with analyzer: "${this.flexSearchLanguage.toString()}"`;
         } else {
             return ``;
         }
@@ -175,9 +168,9 @@ export class OperatorWithLanguageQueryNode extends QueryNode {
  * The operator of a OperatorWithLanguageQueryNode
  */
 export enum BinaryOperatorWithLanguage {
-    QUICKSEARCH_CONTAINS_ANY_WORD = 'QUICKSEARCH_CONTAINS_ANY_WORD',
-    QUICKSEARCH_CONTAINS_PREFIX = 'QUICKSEARCH_CONTAINS_PREFIX',
-    QUICKSEARCH_CONTAINS_PHRASE = 'QUICKSEARCH_CONTAINS_PHRASE',
+    FLEX_SEARCH_CONTAINS_ANY_WORD = 'FLEX_SEARCH_CONTAINS_ANY_WORD',
+    FLEX_SEARCH_CONTAINS_PREFIX = 'FLEX_SEARCH_CONTAINS_PREFIX',
+    FLEX_SEARCH_CONTAINS_PHRASE = 'FLEX_SEARCH_CONTAINS_PHRASE',
 }
 
 export class ConditionalQueryNode extends QueryNode {

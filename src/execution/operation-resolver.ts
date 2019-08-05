@@ -5,9 +5,9 @@ import { RequestProfile } from '../config/interfaces';
 import { DatabaseAdapter, ExecutionPlan, TransactionStats } from '../database/database-adapter';
 import { OperationParams } from '../graphql/operation-based-resolvers';
 import { distillOperation } from '../graphql/query-distiller';
-import { QuickSearchLanguage } from '../model/config';
+import { FlexSearchLanguage } from '../model/config';
 import { ObjectQueryNode, PropertySpecification, QueryNode } from '../query-tree';
-import { QuickSearchComplexOperatorQueryNode, QuickSearchTokenization } from '../query-tree/quick-search';
+import { FlexSearchComplexOperatorQueryNode, FlexSearchTokenization } from '../query-tree/flex-search';
 import { evaluateQueryStatically } from '../query-tree/utils';
 import { buildConditionalObjectQueryNode, QueryNodeObjectType } from '../schema-generation/query-node-object-type';
 import { SchemaTransformationContext } from '../schema/preparation/transformation-pipeline';
@@ -63,7 +63,7 @@ export class OperationResolver {
             if (logger.isTraceEnabled()) {
                 logger.trace('Before expansion: ' + queryTree.describe());
             }
-            const tokens: ReadonlyArray<QuickSearchTokenization> = await this.queryQuickSearchTokens(queryTree, this.context.databaseAdapter);
+            const tokens: ReadonlyArray<FlexSearchTokenization> = await this.queryFlexSearchTokens(queryTree, this.context.databaseAdapter);
             queryTree = await this.expandQueryNode(queryTree, tokens);
             if (logger.isTraceEnabled()) {
                 logger.trace('Before authorization: ' + queryTree.describe());
@@ -140,13 +140,13 @@ export class OperationResolver {
         };
     }
 
-    private async queryQuickSearchTokens(queryTree: QueryNode, databaseAdapter: DatabaseAdapter): Promise<ReadonlyArray<QuickSearchTokenization>> {
+    private async queryFlexSearchTokens(queryTree: QueryNode, databaseAdapter: DatabaseAdapter): Promise<ReadonlyArray<FlexSearchTokenization>> {
         const cache = {};
 
-        async function collectTokenizations(queryNode: QueryNode): Promise<ReadonlyArray<[string, QuickSearchLanguage]>> {
-            let tokens: [string, QuickSearchLanguage][] = [];
-            if (queryNode instanceof QuickSearchComplexOperatorQueryNode) {
-                tokens.push([queryNode.expression, queryNode.quickSearchLanguage]);
+        async function collectTokenizations(queryNode: QueryNode): Promise<ReadonlyArray<[string, FlexSearchLanguage]>> {
+            let tokens: [string, FlexSearchLanguage][] = [];
+            if (queryNode instanceof FlexSearchComplexOperatorQueryNode) {
+                tokens.push([queryNode.expression, queryNode.flexSearchLanguage]);
 
             }
             if (queryNode instanceof ObjectQueryNode) {
@@ -169,8 +169,8 @@ export class OperationResolver {
         return databaseAdapter.tokenizeExpressions(tokenizations);
     }
 
-    private async expandQueryNode(queryNode: QueryNode, tokenizations: ReadonlyArray<QuickSearchTokenization>): Promise<QueryNode> {
-        if (queryNode instanceof QuickSearchComplexOperatorQueryNode) {
+    private async expandQueryNode(queryNode: QueryNode, tokenizations: ReadonlyArray<FlexSearchTokenization>): Promise<QueryNode> {
+        if (queryNode instanceof FlexSearchComplexOperatorQueryNode) {
             return await queryNode.expand(tokenizations);
         }
         if (queryNode instanceof ObjectQueryNode) {

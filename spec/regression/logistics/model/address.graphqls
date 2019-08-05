@@ -1,6 +1,6 @@
 type Address @valueObject {
     street: String
-    city: String @quickSearchIndex
+    city: String @flexSearch
     zipCode: String
     country: Country @reference
 }

@@ -1,7 +1,7 @@
 import { ExecutionOptions } from '../execution/execution-options';
-import { Model, QuickSearchLanguage } from '../model';
+import { FlexSearchLanguage, Model } from '../model';
 import { QueryNode } from '../query-tree';
-import { QuickSearchTokenization } from '../query-tree/quick-search';
+import { FlexSearchTokenization } from '../query-tree/flex-search';
 
 /**
  * Times (in seconds) spent on specific parts of execution
@@ -161,6 +161,6 @@ export interface DatabaseAdapter {
     /**
      * Tokenizes a List of expressions
      */
-    tokenizeExpressions(tokenizations: ReadonlyArray<[string, QuickSearchLanguage]>): Promise<ReadonlyArray<QuickSearchTokenization>>;
+    tokenizeExpressions(tokenizations: ReadonlyArray<[string, FlexSearchLanguage]>): Promise<ReadonlyArray<FlexSearchTokenization>>;
 
 }

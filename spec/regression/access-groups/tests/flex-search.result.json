@@ -1,5 +1,5 @@
 {
-  "qsAuth": {
+  "flexAuth": {
     "errors": [
       {
         "message": "Not authorized to read File objects",
@@ -10,12 +10,12 @@
           }
         ],
         "path": [
-          "quickSearchFiles"
+          "flexSearchFiles"
         ]
       }
     ],
     "data": {
-      "quickSearchFiles": null
+      "flexSearchFiles": null
     }
   }
 }

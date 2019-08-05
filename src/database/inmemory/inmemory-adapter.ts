@@ -1,9 +1,9 @@
 import { globalContext } from '../../config/global';
 import { ProjectOptions } from '../../config/interfaces';
 import { Logger } from '../../config/logging';
-import { Model, QuickSearchLanguage } from '../../model';
+import { FlexSearchLanguage, Model } from '../../model';
 import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS, QueryNode } from '../../query-tree';
-import { QuickSearchTokenization } from '../../query-tree/quick-search';
+import { FlexSearchTokenization } from '../../query-tree/flex-search';
 import { DatabaseAdapter } from '../database-adapter';
 import { likePatternToRegExp } from '../like-helpers';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './inmemory-basics';
@@ -228,7 +228,7 @@ export class InMemoryAdapter implements DatabaseAdapter {
         }
     }
 
-    async tokenizeExpressions(tokenizations: ReadonlyArray<[string, QuickSearchLanguage]>): Promise<ReadonlyArray<QuickSearchTokenization>> {
+    async tokenizeExpressions(tokenizations: ReadonlyArray<[string, FlexSearchLanguage]>): Promise<ReadonlyArray<FlexSearchTokenization>> {
         return tokenizations.map(value => {
             return {
                 expression: value[0],

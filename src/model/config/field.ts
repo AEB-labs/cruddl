@@ -25,11 +25,11 @@ export interface FieldConfig {
 
     readonly astNode?: FieldDefinitionNode
 
-    readonly isQuickSearchIndexed?: boolean
-    readonly isQuickSearchIndexedASTNode?: DirectiveNode
-    readonly isQuickSearchFulltextIndexed?: boolean
-    readonly isQuickSearchFulltextIndexedASTNode?: DirectiveNode
-    readonly quickSearchLanguage?: QuickSearchLanguage
+    readonly isFlexSearchIndexed?: boolean
+    readonly isFlexSearchIndexedASTNode?: DirectiveNode
+    readonly isFlexSearchFulltextIndexed?: boolean
+    readonly isFlexSearchFulltextIndexedASTNode?: DirectiveNode
+    readonly flexSearchLanguage?: FlexSearchLanguage
     readonly isIncludedInSearch?: boolean
     readonly isFulltextIncludedInSearch?: boolean
 }
@@ -87,6 +87,6 @@ export enum CalcMutationsOperator {
     PREPEND = 'PREPEND'
 }
 
-export enum QuickSearchLanguage {
+export enum FlexSearchLanguage {
     EN = 'en', DE = 'de', ES = 'es', FI = 'fi', FR = 'fr', IT = 'it', NL = 'nl', NO = 'no', PT = 'pt', RU = 'ru', SV = 'sv', ZH = 'zh'
 }

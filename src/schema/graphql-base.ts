@@ -1,18 +1,18 @@
-import gql from 'graphql-tag';
 import { DocumentNode } from 'graphql';
+import gql from 'graphql-tag';
 
 export const DIRECTIVES: DocumentNode = gql`
     "Declares a type for root-level objects with ids that are stored directly in the data base"
-    directive @rootEntity(indices: [IndexDefinition!], permissionProfile: String, quickSearchIndex: Boolean = false, quickSearchLanguage: QuickSearchLanguage = EN) on OBJECT
+    directive @rootEntity(indices: [IndexDefinition!], permissionProfile: String, flexSearch: Boolean = false, flexSearchLanguage: FlexSearchLanguage = EN) on OBJECT
 
     "Declares a type for objects with ids that can be embedded as a list within another entity"
-    directive @childEntity(quickSearchLanguage: QuickSearchLanguage = EN) on OBJECT
+    directive @childEntity(flexSearchLanguage: FlexSearchLanguage = EN) on OBJECT
 
     "Declares a type for objects without id that can be embedded everywhere and can only be replaced as a whole"
-    directive @valueObject(quickSearchLanguage: QuickSearchLanguage = EN) on OBJECT
+    directive @valueObject(flexSearchLanguage: FlexSearchLanguage = EN) on OBJECT
 
     "Declares a type for objects which can be embedded within entities or entity extensions"
-    directive @entityExtension(quickSearchLanguage: QuickSearchLanguage = EN) on OBJECT
+    directive @entityExtension(flexSearchLanguage: FlexSearchLanguage = EN) on OBJECT
 
     "Declares a field as a to-1 or to-n relation to another root entity"
     directive @relation(inverseOf: String) on FIELD_DEFINITION
@@ -74,10 +74,10 @@ export const DIRECTIVES: DocumentNode = gql`
         EVERY_TRUE,
         "true if there are no items that are true"
         NONE_TRUE,
-        
+
         "Removes duplicate items and null values"
         DISTINCT,
-        
+
         "Counts the number of items without duplicates and null values"
         COUNT_DISTINCT
     }
@@ -99,14 +99,14 @@ export const DIRECTIVES: DocumentNode = gql`
     directive @index(sparse: Boolean = false) on FIELD_DEFINITION
 
     "Declares a field to be indexed with ArangoSearch"
-    directive @quickSearchIndex(isIncludedInSearch: Boolean = false) on FIELD_DEFINITION
-    
+    directive @flexSearch(isIncludedInSearch: Boolean = false) on FIELD_DEFINITION
+
     "Declares a field to be indexed with ArangoSearch with a Text Analyzer"
-    directive @quickSearchFulltextIndex(language: QuickSearchLanguage, isIncludedInSearch: Boolean = false) on FIELD_DEFINITION
-    
+    directive @flexSearchFulltext(language: FlexSearchLanguage, isIncludedInSearch: Boolean = false) on FIELD_DEFINITION
+
 
     "The available languages for ArangoSearch Analyzers"
-    enum QuickSearchLanguage {
+    enum FlexSearchLanguage {
         EN, DE, ES, FI, FR, IT, NL, NO, PT, RU, SV, ZH
     }
 

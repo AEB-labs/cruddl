@@ -1,15 +1,8 @@
 import { GraphQLID, GraphQLString } from 'graphql';
 import memorize from 'memorize-decorator';
 import { ACCESS_GROUP_FIELD, DEFAULT_PERMISSION_PROFILE, ID_FIELD, SCALAR_INT, SCALAR_STRING } from '../../schema/constants';
-import { compact, flatMap } from '../../utils/utils';
-import {
-    ArangoSearchIndexConfig,
-    FieldConfig,
-    IndexDefinitionConfig,
-    PermissionsConfig,
-    RootEntityTypeConfig,
-    TypeKind
-} from '../config';
+import { compact } from '../../utils/utils';
+import { ArangoSearchIndexConfig, PermissionsConfig, RootEntityTypeConfig, TypeKind } from '../config';
 import { ValidationMessage } from '../validation';
 import { ValidationContext } from '../validation/validation-context';
 import { Field, SystemFieldConfig } from './field';
@@ -75,8 +68,8 @@ export class RootEntityType extends ObjectTypeBase {
         };
     }
 
-    get hasIncludedInSearchFields(){
-        return this.fields.some(value => value.isIncludedInSearch)
+    get hasIncludedInSearchFields() {
+        return this.fields.some(value => value.isIncludedInSearch);
     }
 
     @memorize()
@@ -160,7 +153,7 @@ export class RootEntityType extends ObjectTypeBase {
         this.validateKeyField(context);
         this.validatePermissions(context);
         this.validateIndices(context);
-        this.validateQuickSearch(context);
+        this.validateFlexSearch(context);
     }
 
     private validateKeyField(context: ValidationContext) {
@@ -225,10 +218,10 @@ export class RootEntityType extends ObjectTypeBase {
         }
     }
 
-    private validateQuickSearch(context: ValidationContext) {
-        if (!this.arangoSearchConfig.isIndexed && this.fields.some(value => (value.isQuickSearchIndexed || value.isQuickSearchFulltextIndexed) && !value.isSystemField)) {
+    private validateFlexSearch(context: ValidationContext) {
+        if (!this.arangoSearchConfig.isIndexed && this.fields.some(value => (value.isFlexSearchIndexed || value.isFlexSearchFulltextIndexed) && !value.isSystemField)) {
             context.addMessage(ValidationMessage.warn(
-                `The entity contains fields that are quickSearchIndexed or quickSearchFulltextIndexed, but the entity itself is not marked as quickSearchIndexed.`,
+                `The entity contains fields that are annotated with @flexSearch or @flexSearchFulltext, but the entity itself is not marked with flexSearch = true.`,
                 this.input.astNode
             ));
         }
@@ -241,24 +234,24 @@ const systemFieldInputs: ReadonlyArray<SystemFieldConfig> = [
         typeName: 'ID',
         isNonNull: true,
         description: 'An auto-generated string that identifies this root entity uniquely among others of the same type',
-        isQuickSearchIndexed: true,
-        isQuickSearchFulltextIndexed: false,
+        isFlexSearchIndexed: true,
+        isFlexSearchFulltextIndexed: false,
         isIncludedInSearch: false
     }, {
         name: 'createdAt',
         typeName: 'DateTime',
         isNonNull: true,
         description: 'The instant this object has been created',
-        isQuickSearchIndexed: true,
-        isQuickSearchFulltextIndexed: false,
+        isFlexSearchIndexed: true,
+        isFlexSearchFulltextIndexed: false,
         isIncludedInSearch: false
     }, {
         name: 'updatedAt',
         typeName: 'DateTime',
         isNonNull: true,
         description: 'The instant this object has been updated the last time (not including relation updates)',
-        isQuickSearchIndexed: true,
-        isQuickSearchFulltextIndexed: false,
+        isFlexSearchIndexed: true,
+        isFlexSearchFulltextIndexed: false,
         isIncludedInSearch: false
     }
 ];

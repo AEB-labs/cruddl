@@ -1,5 +1,5 @@
 import { GraphQLBoolean, GraphQLFloat, GraphQLID, GraphQLInt, GraphQLString } from 'graphql';
-import { QuickSearchLanguage } from '../../model/config';
+import { FlexSearchLanguage } from '../../model/config';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
@@ -8,7 +8,7 @@ import {
     UnaryOperationQueryNode,
     UnaryOperator, RuntimeErrorQueryNode
 } from '../../query-tree';
-import { QuickSearchStartsWithQueryNode } from '../../query-tree';
+import { FlexSearchStartsWithQueryNode } from '../../query-tree';
 import { INPUT_FIELD_CONTAINS, INPUT_FIELD_ENDS_WITH, INPUT_FIELD_EQUAL, INPUT_FIELD_EVERY, INPUT_FIELD_GT, INPUT_FIELD_GTE, INPUT_FIELD_IN, INPUT_FIELD_LIKE, INPUT_FIELD_LT, INPUT_FIELD_LTE, INPUT_FIELD_NONE, INPUT_FIELD_NOT, INPUT_FIELD_NOT_CONTAINS, INPUT_FIELD_NOT_ENDS_WITH, INPUT_FIELD_NOT_IN, INPUT_FIELD_NOT_LIKE, INPUT_FIELD_NOT_STARTS_WITH, INPUT_FIELD_SOME, INPUT_FIELD_STARTS_WITH } from '../../schema/constants';
 import { GraphQLDateTime } from '../../schema/scalars/date-time';
 import { GraphQLLocalDate } from '../../schema/scalars/local-date';

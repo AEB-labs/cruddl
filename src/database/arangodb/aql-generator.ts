@@ -1,15 +1,15 @@
-import { AggregationOperator, Field, QuickSearchLanguage, Relation, RootEntityType } from '../../model';
+import { AggregationOperator, Field, FlexSearchLanguage, Relation, RootEntityType } from '../../model';
 import { FieldSegment, getEffectiveCollectSegments, RelationSegment } from '../../model/implementation/collect-path';
 import { AddEdgesQueryNode, AggregationQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, BinaryOperatorWithLanguage, ConcatListsQueryNode, ConditionalQueryNode, ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeIdentifier, EntitiesQueryNode, EntityFromIdQueryNode, FieldPathQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, OperatorWithLanguageQueryNode, OrderDirection, OrderSpecification, PartialEdgeIdentifier, QueryNode, QueryResultValidator, RemoveEdgesQueryNode, RootEntityIDQueryNode, RUNTIME_ERROR_CODE_PROPERTY, RUNTIME_ERROR_TOKEN, RuntimeErrorQueryNode, SafeListQueryNode, SetEdgeQueryNode, TransformListQueryNode, TraversalQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../../query-tree';
+import { FlexSearchComplexOperatorQueryNode, FlexSearchFieldExistsQueryNode, FlexSearchQueryNode, FlexSearchStartsWithQueryNode } from '../../query-tree/flex-search';
 import { Quantifier, QuantifierFilterNode } from '../../query-tree/quantifiers';
-import { QuickSearchComplexOperatorQueryNode, QuickSearchFieldExistsQueryNode, QuickSearchQueryNode, QuickSearchStartsWithQueryNode } from '../../query-tree/quick-search';
 import { extractVariableAssignments, simplifyBooleans } from '../../query-tree/utils';
 import { not } from '../../schema-generation/utils/input-types';
 import { Constructor, decapitalize } from '../../utils/utils';
 import { analyzeLikePatternPrefix } from '../like-helpers';
 import { aql, AQLCompoundQuery, aqlConfig, AQLFragment, AQLQueryResultVariable, AQLVariable } from './aql';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './arango-basics';
-import { getQuickSearchViewNameForRootEntity, IDENTITY_ANALYZER } from './schema-migration/arango-search-helpers';
+import { getFlexSearchViewNameForRootEntity, IDENTITY_ANALYZER } from './schema-migration/arango-search-helpers';
 
 enum AccessType {
     READ,
@@ -314,12 +314,12 @@ register(RootEntityIDQueryNode, (node, context) => {
     return aql`${processNode(node.objectNode, context)}._key`; // ids are stored in _key field
 });
 
-register(QuickSearchQueryNode, (node, context) => {
+register(FlexSearchQueryNode, (node, context) => {
     let itemContext = context.introduceVariable(node.itemVariable);
     return aqlExt.parenthesizeList(
         aql`FOR ${itemContext.getVariable(node.itemVariable)}`,
-        aql`IN ${aql.identifier(getQuickSearchViewNameForRootEntity(node.rootEntityType!))}`,
-        aql`SEARCH ${processNode(node.qsFilterNode, itemContext)}`,
+        aql`IN ${aql.identifier(getFlexSearchViewNameForRootEntity(node.rootEntityType!))}`,
+        aql`SEARCH ${processNode(node.flexFilterNode, itemContext)}`,
         aql`RETURN ${itemContext.getVariable(node.itemVariable)}`
     );
 });
@@ -623,14 +623,14 @@ register(OperatorWithLanguageQueryNode, (node, context) => {
 
     const lhs = processNode(node.lhs, context);
     const rhs = processNode(node.rhs, context);
-    const analyzer = `text_${node.quickSearchLanguage.toLowerCase()}`;
+    const analyzer = `text_${node.flexSearchLanguage.toLowerCase()}`;
 
     switch (node.operator) {
-        case BinaryOperatorWithLanguage.QUICKSEARCH_CONTAINS_ANY_WORD:
+        case BinaryOperatorWithLanguage.FLEX_SEARCH_CONTAINS_ANY_WORD:
             return aql`ANALYZER( ${lhs} IN TOKENS(${rhs}, ${analyzer}),${analyzer})`;
-        case BinaryOperatorWithLanguage.QUICKSEARCH_CONTAINS_PREFIX:
+        case BinaryOperatorWithLanguage.FLEX_SEARCH_CONTAINS_PREFIX:
             return aql`ANALYZER( STARTS_WITH( ${lhs}, TOKENS(${rhs},${analyzer})[0]), ${analyzer})`;
-        case BinaryOperatorWithLanguage.QUICKSEARCH_CONTAINS_PHRASE:
+        case BinaryOperatorWithLanguage.FLEX_SEARCH_CONTAINS_PHRASE:
             return aql`ANALYZER( PHRASE( ${lhs}, ${rhs}), ${analyzer})`;
         default:
             throw new Error(`Unsupported operator: ${node.operator}`);
@@ -638,23 +638,23 @@ register(OperatorWithLanguageQueryNode, (node, context) => {
 
 });
 
-register(QuickSearchStartsWithQueryNode, (node, context) => {
+register(FlexSearchStartsWithQueryNode, (node, context) => {
     const lhs = processNode(node.lhs, context);
     const rhs = processNode(node.rhs, context);
-    const analyzer = node.quickSearchLanguage ? `text_${node.quickSearchLanguage.toLowerCase()}` : IDENTITY_ANALYZER;
+    const analyzer = node.flexSearchLanguage ? `text_${node.flexSearchLanguage.toLowerCase()}` : IDENTITY_ANALYZER;
 
     return aql`ANALYZER(STARTS_WITH(${lhs}, ${rhs}), ${analyzer})`;
 });
 
-register(QuickSearchFieldExistsQueryNode, (node, context) => {
+register(FlexSearchFieldExistsQueryNode, (node, context) => {
     const sourceNode = processNode(node.sourceNode, context);
-    const analyzer = node.quickSearchLanguage ? `text_${node.quickSearchLanguage.toLowerCase()}` : IDENTITY_ANALYZER;
+    const analyzer = node.flexSearchLanguage ? `text_${node.flexSearchLanguage.toLowerCase()}` : IDENTITY_ANALYZER;
 
     return aql`EXISTS(${sourceNode}, "analyzer", ${analyzer})`;
 });
 
-register(QuickSearchComplexOperatorQueryNode, (node, context) => {
-    throw new Error(`Internal Error: QuickSearchComplexOperatorQueryNode must be expanded before generating the query.`);
+register(FlexSearchComplexOperatorQueryNode, (node, context) => {
+    throw new Error(`Internal Error: FlexSearchComplexOperatorQueryNode must be expanded before generating the query.`);
 });
 
 
@@ -1178,7 +1178,7 @@ function isStringCaseInsensitive(str: string) {
     return str.toLowerCase() === str.toUpperCase();
 }
 
-export function generateTokenizationQuery(tokensFiltered: ReadonlyArray<[string, QuickSearchLanguage]>) {
+export function generateTokenizationQuery(tokensFiltered: ReadonlyArray<[string, FlexSearchLanguage]>) {
     const fragments: string[] = [];
     for (let i = 0; i < tokensFiltered.length; i++) {
         const value = tokensFiltered[i];

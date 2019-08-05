@@ -31,12 +31,12 @@
               "description": "A delivery"
             },
             {
-              "name": "quickSearchDeliveries",
-              "description": "Searches for Deliveries using QuickSearch."
+              "name": "flexSearchDeliveries",
+              "description": "Searches for Deliveries using FlexSearch."
             },
             {
-              "name": "_quickSearchDeliveriesMeta",
-              "description": "Searches for Deliveries using QuickSearch."
+              "name": "_flexSearchDeliveriesMeta",
+              "description": "Searches for Deliveries using FlexSearch."
             },
             {
               "name": "Forwarder",
@@ -733,7 +733,7 @@
               "description": null
             },
             {
-              "name": "enumQuickSearch",
+              "name": "enumFlexSearch",
               "description": null
             },
             {
@@ -1998,19 +1998,19 @@
               "description": "Checks if `description` does *not* match a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)"
             },
             {
-              "name": "enumQuickSearch",
-              "description": "Checks if `enumQuickSearch` equals a specified value.\n\nIf an index exists on `enumQuickSearch`, it can be used."
+              "name": "enumFlexSearch",
+              "description": "Checks if `enumFlexSearch` equals a specified value.\n\nIf an index exists on `enumFlexSearch`, it can be used."
             },
             {
-              "name": "enumQuickSearch_not",
-              "description": "Checks if `enumQuickSearch` does not equal a specified value"
+              "name": "enumFlexSearch_not",
+              "description": "Checks if `enumFlexSearch` does not equal a specified value"
             },
             {
-              "name": "enumQuickSearch_in",
+              "name": "enumFlexSearch_in",
               "description": null
             },
             {
-              "name": "enumQuickSearch_not_in",
+              "name": "enumFlexSearch_not_in",
               "description": null
             },
             {
@@ -3062,7 +3062,7 @@
           "inputFields": null
         },
         {
-          "name": "DeliveryQuickSearchFilter",
+          "name": "DeliveryFlexSearchFilter",
           "description": "An aggregation contains all values of a list. Each check in this type is true if it matches any of the values in the list.",
           "fields": null,
           "inputFields": [
@@ -3235,19 +3235,19 @@
               "description": "Tokenizes the provided string into words, and checks if that exact phrase (those words in excactly this order) is not included in `description`.\n Stemming (reduction of words on their base form) is applied.\n\n"
             },
             {
-              "name": "enumQuickSearch",
-              "description": "Checks if `enumQuickSearch` equals a specified value.\n\n"
+              "name": "enumFlexSearch",
+              "description": "Checks if `enumFlexSearch` equals a specified value.\n\n"
             },
             {
-              "name": "enumQuickSearch_not",
-              "description": "Checks if `enumQuickSearch` does not equal a specified value"
+              "name": "enumFlexSearch_not",
+              "description": "Checks if `enumFlexSearch` does not equal a specified value"
             },
             {
-              "name": "enumQuickSearch_in",
+              "name": "enumFlexSearch_in",
               "description": null
             },
             {
-              "name": "enumQuickSearch_not_in",
+              "name": "enumFlexSearch_not_in",
               "description": null
             },
             {
@@ -3297,7 +3297,7 @@
           ]
         },
         {
-          "name": "AddressQuickSearchFilter",
+          "name": "AddressFlexSearchFilter",
           "description": "An aggregation contains all values of a list. Each check in this type is true if it matches any of the values in the list.",
           "fields": null,
           "inputFields": [
@@ -3336,7 +3336,7 @@
           ]
         },
         {
-          "name": "DeliveryItemAggregationQuickSearchFilter",
+          "name": "DeliveryItemAggregationFlexSearchFilter",
           "description": "An aggregation contains all values of a list. Each check in this type is true if it matches any of the values in the list.",
           "fields": null,
           "inputFields": [
@@ -3455,7 +3455,7 @@
           ]
         },
         {
-          "name": "RecursionQuickSearchFilter",
+          "name": "RecursionFlexSearchFilter",
           "description": "An aggregation contains all values of a list. Each check in this type is true if it matches any of the values in the list.",
           "fields": null,
           "inputFields": [
@@ -4520,7 +4520,7 @@
               "description": null
             },
             {
-              "name": "enumQuickSearch",
+              "name": "enumFlexSearch",
               "description": null
             },
             {
@@ -4804,7 +4804,7 @@
               "description": null
             },
             {
-              "name": "enumQuickSearch",
+              "name": "enumFlexSearch",
               "description": null
             },
             {
@@ -4992,7 +4992,7 @@
               "description": null
             },
             {
-              "name": "enumQuickSearch",
+              "name": "enumFlexSearch",
               "description": null
             },
             {

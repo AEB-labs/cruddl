@@ -1,8 +1,8 @@
-type Hero @rootEntity(quickSearchIndex: true, quickSearchLanguage: DE) {
+type Hero @rootEntity(flexSearch: true, flexSearchLanguage: DE) {
     "The hero's screen name"
-    name: String @quickSearchFulltextIndex(isIncludedInSearch: true)
+    name: String @flexSearchFulltext(isIncludedInSearch: true)
     age: Int @defaultValue(value: 42)
-    nickNames: [String] @quickSearchIndex
+    nickNames: [String] @flexSearch
     movies: [Movie] @relation(inverseOf: "heroes")
     skills: [Skill]
     suit: Suit

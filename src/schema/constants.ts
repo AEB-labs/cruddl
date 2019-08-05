@@ -1,5 +1,3 @@
-import { QUICK_SEARCH_VIEW_PREFIX } from '../database/arangodb/schema-migration/arango-search-helpers';
-
 export const WILDCARD_CHARACTER = '*';
 
 export const ROOT_ENTITY_DIRECTIVE = 'rootEntity';
@@ -15,13 +13,13 @@ export const VALUE_OBJECT_DIRECTIVE = 'valueObject';
 export const RELATION_DIRECTIVE = 'relation';
 export const REFERENCE_DIRECTIVE = 'reference';
 export const DEFAULT_VALUE_DIRECTIVE = 'defaultValue';
-export const QUICK_SEARCH_INDEXED_DIRECTIVE = 'quickSearchIndex';
-export const QUICK_SEARCH_FULLTEXT_INDEXED_DIRECTIVE = 'quickSearchFulltextIndex';
+export const FLEX_SEARCH_INDEXED_DIRECTIVE = 'flexSearch';
+export const FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE = 'flexSearchFulltext';
 
-export const QUICK_SEARCH_INDEXED_ARGUMENT = 'quickSearchIndex';
-export const QUICK_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT = 'isIncludedInSearch';
-export const QUICK_SEARCH_INDEXED_LANGUAGE_ARG = 'quickSearchLanguage';
-export const QUICK_SEARCH_DEFAULT_LANGUAGE_ARG = 'quickSearchLanguage';
+export const FLEX_SEARCH_INDEXED_ARGUMENT = 'flexSearch';
+export const FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT = 'isIncludedInSearch';
+export const FLEX_SEARCH_INDEXED_LANGUAGE_ARG = 'flexSearchLanguage';
+export const FLEX_SEARCH_DEFAULT_LANGUAGE_ARG = 'flexSearchLanguage';
 
 export const COLLECT_DIRECTIVE = 'collect';
 export const COLLECT_PATH_ARG = 'path';
@@ -39,7 +37,7 @@ export const CREATE_ENTITY_FIELD_PREFIX = 'create';
 export const CREATE_ENTITY_TYPE_SUFFIX = 'Input';
 export const UPDATE_ENTITY_FIELD_PREFIX = 'update';
 export const UPDATE_ALL_ENTITIES_FIELD_PREFIX = 'updateAll';
-export const QUICK_SEARCH_ENTITIES_FIELD_PREFIX = 'quickSearch';
+export const FLEX_SEARCH_ENTITIES_FIELD_PREFIX = 'flexSearch';
 export const DELETE_ENTITY_FIELD_PREFIX = 'delete';
 export const DELETE_ALL_ENTITIES_FIELD_PREFIX = 'deleteAll';
 export const ADD_CHILD_ENTITIES_FIELD_PREFIX = 'add';
@@ -64,8 +62,8 @@ export const ORDER_BY_DESC_SUFFIX = '_DESC';
 export const FILTER_ARG = 'filter';
 export const ORDER_BY_ARG = 'orderBy';
 
-export const QUICK_SEARCH_FILTER_ARG = 'quickSearchFilter';
-export const QUICK_SEARCH_EXPRESSION_ARG = 'quickSearchExpression';
+export const FLEX_SEARCH_FILTER_ARG = 'flexSearchFilter';
+export const FLEX_SEARCH_EXPRESSION_ARG = 'flexSearchExpression';
 
 export const CURSOR_FIELD = '_cursor';
 export const SKIP_ARG = 'skip';

@@ -8,7 +8,7 @@ import {
     CREATE_RELATED_ENTITY_FIELD_PREFIX,
     DELETE_ALL_ENTITIES_FIELD_PREFIX,
     DELETE_ENTITY_FIELD_PREFIX,
-    QUICK_SEARCH_ENTITIES_FIELD_PREFIX,
+    FLEX_SEARCH_ENTITIES_FIELD_PREFIX,
     REMOVE_CHILD_ENTITIES_FIELD_PREFIX,
     REMOVE_EDGES_FIELD_PREFIX,
     UPDATE_ALL_ENTITIES_FIELD_PREFIX,
@@ -20,8 +20,8 @@ export function getAllEntitiesFieldName(entityName: string) {
     return ALL_ENTITIES_FIELD_PREFIX + pluralize(entityName);
 }
 
-export function getQuickSearchEntitiesFieldName(entityName: string) {
-    return QUICK_SEARCH_ENTITIES_FIELD_PREFIX + pluralize(entityName);
+export function getFlexSearchEntitiesFieldName(entityName: string) {
+    return FLEX_SEARCH_ENTITIES_FIELD_PREFIX + pluralize(entityName);
 }
 
 export function getCreateEntityFieldName(entityName: string) {
@@ -76,8 +76,8 @@ export function getFilterTypeName(typeName: string) {
     return `${typeName}Filter`;
 }
 
-export function getQuickSearchFilterTypeName(typeName: string, isAggregation: boolean) {
-    return `${typeName}${isAggregation ? 'Aggregation' : ''}QuickSearchFilter`;
+export function getFlexSearchFilterTypeName(typeName: string, isAggregation: boolean) {
+    return `${typeName}${isAggregation ? 'Aggregation' : ''}FlexSearchFilter`;
 }
 
 

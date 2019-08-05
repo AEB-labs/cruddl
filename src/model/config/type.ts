@@ -2,7 +2,7 @@ import {
     ASTNode, EnumTypeDefinitionNode, EnumValueDefinitionNode, ObjectTypeDefinitionNode, ScalarTypeDefinitionNode,
     TypeDefinitionNode
 } from 'graphql';
-import { FieldConfig, QuickSearchLanguage } from './field';
+import { FieldConfig, FlexSearchLanguage } from './field';
 import { ArangoSearchIndexConfig, IndexDefinitionConfig } from './indices';
 import { PermissionsConfig } from './permissions';
 
@@ -21,7 +21,7 @@ export interface TypeConfigBase {
     readonly namespacePath?: ReadonlyArray<string>
     readonly description?: string
     readonly astNode?: TypeDefinitionNode
-    readonly quickSearchLanguage?: QuickSearchLanguage
+    readonly flexSearchLanguage?: FlexSearchLanguage
 }
 
 export interface ObjectTypeConfigBase extends TypeConfigBase {

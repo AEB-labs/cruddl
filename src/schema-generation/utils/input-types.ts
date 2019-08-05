@@ -1,5 +1,5 @@
-import { QuickSearchLanguage } from '../../model/config';
-import { BinaryOperationQueryNode, BinaryOperator, BinaryOperatorWithLanguage, OperatorWithLanguageQueryNode, QueryNode, QuickSearchStartsWithQueryNode, RuntimeErrorQueryNode, UnaryOperationQueryNode, UnaryOperator } from '../../query-tree';
+import { FlexSearchLanguage } from '../../model/config';
+import { BinaryOperationQueryNode, BinaryOperator, BinaryOperatorWithLanguage, OperatorWithLanguageQueryNode, QueryNode, FlexSearchStartsWithQueryNode, RuntimeErrorQueryNode, UnaryOperationQueryNode, UnaryOperator } from '../../query-tree';
 
 
 export const noLanguageWasSuppliedError = 'No Language was supplied';
@@ -22,31 +22,31 @@ export function binaryNotOp(op: BinaryOperator) {
 }
 
 export function binaryOpWithLanguage(op: BinaryOperatorWithLanguage) {
-    return (lhs: QueryNode, rhs: QueryNode, quickSearchLanguage?: QuickSearchLanguage) => {
-        if (!quickSearchLanguage) {
+    return (lhs: QueryNode, rhs: QueryNode, flexSearchLanguage?: FlexSearchLanguage) => {
+        if (!flexSearchLanguage) {
             return new RuntimeErrorQueryNode(noLanguageWasSuppliedError);
         }
-        return new OperatorWithLanguageQueryNode(lhs, op, rhs, quickSearchLanguage);
+        return new OperatorWithLanguageQueryNode(lhs, op, rhs, flexSearchLanguage);
     };
 }
 
 export function binaryNotOpWithLanguage(op: BinaryOperatorWithLanguage) {
-    return (lhs: QueryNode, rhs: QueryNode, quickSearchLanguage?: QuickSearchLanguage) => {
-        if (!quickSearchLanguage) {
+    return (lhs: QueryNode, rhs: QueryNode, flexSearchLanguage?: FlexSearchLanguage) => {
+        if (!flexSearchLanguage) {
             return new RuntimeErrorQueryNode(noLanguageWasSuppliedError);
         }
-        return not(new OperatorWithLanguageQueryNode(lhs, op, rhs, quickSearchLanguage));
+        return not(new OperatorWithLanguageQueryNode(lhs, op, rhs, flexSearchLanguage));
     };
 }
 
 export function startsWithOp(){
-    return (lhs: QueryNode, rhs: QueryNode, quickSearchLanguage?: QuickSearchLanguage) => {
-        return new QuickSearchStartsWithQueryNode(lhs, rhs, quickSearchLanguage);
+    return (lhs: QueryNode, rhs: QueryNode, flexSearchLanguage?: FlexSearchLanguage) => {
+        return new FlexSearchStartsWithQueryNode(lhs, rhs, flexSearchLanguage);
     };
 }
 
 export function notStartsWithOp(){
-    return (lhs: QueryNode, rhs: QueryNode, quickSearchLanguage?: QuickSearchLanguage) => {
-        return not(new QuickSearchStartsWithQueryNode(lhs, rhs, quickSearchLanguage));
+    return (lhs: QueryNode, rhs: QueryNode, flexSearchLanguage?: FlexSearchLanguage) => {
+        return not(new FlexSearchStartsWithQueryNode(lhs, rhs, flexSearchLanguage));
     };
 }

@@ -35,7 +35,7 @@ import {
     NAMESPACE_SEPARATOR,
     OBJECT_TYPE_KIND_DIRECTIVES,
     PERMISSION_PROFILE_ARG,
-    QUICK_SEARCH_INDEXED_ARGUMENT,
+    FLEX_SEARCH_INDEXED_ARGUMENT,
     REFERENCE_DIRECTIVE,
     RELATION_DIRECTIVE,
     ROLES_DIRECTIVE,
@@ -45,8 +45,8 @@ import {
      UNIQUE_DIRECTIVE,
     VALUE_ARG,
     VALUE_OBJECT_DIRECTIVE,
-    QUICK_SEARCH_INDEXED_LANGUAGE_ARG,
-    QUICK_SEARCH_INDEXED_DIRECTIVE, QUICK_SEARCH_FULLTEXT_INDEXED_DIRECTIVE, QUICK_SEARCH_DEFAULT_LANGUAGE_ARG, QUICK_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT
+    FLEX_SEARCH_INDEXED_LANGUAGE_ARG,
+    FLEX_SEARCH_INDEXED_DIRECTIVE, FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE, FLEX_SEARCH_DEFAULT_LANGUAGE_ARG, FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT
 } from '../schema/constants';
 import {
     findDirectiveWithName,
@@ -56,7 +56,7 @@ import {
     hasDirectiveWithName
 } from '../schema/schema-utils';
 import { compact, flatMap, mapValues } from '../utils/utils';
-import { AggregationOperator, ArangoSearchIndexConfig, CalcMutationsOperator, CollectFieldConfig, EnumTypeConfig, EnumValueConfig, FieldConfig, IndexDefinitionConfig, LocalizationConfig, NamespacedPermissionProfileConfigMap, ObjectTypeConfig, PermissionProfileConfigMap, PermissionsConfig, QuickSearchLanguage, RolesSpecifierConfig, TypeConfig, TypeKind } from './config';
+import { AggregationOperator, ArangoSearchIndexConfig, CalcMutationsOperator, CollectFieldConfig, EnumTypeConfig, EnumValueConfig, FieldConfig, IndexDefinitionConfig, LocalizationConfig, NamespacedPermissionProfileConfigMap, ObjectTypeConfig, PermissionProfileConfigMap, PermissionsConfig, FlexSearchLanguage, RolesSpecifierConfig, TypeConfig, TypeKind } from './config';
 import { Model } from './implementation';
 import { parseI18nConfigs } from './parse-i18n';
 import { ValidationContext, ValidationMessage } from './validation';
@@ -135,7 +135,7 @@ function createObjectTypeInput(definition: ObjectTypeDefinitionNode, schemaPart:
         astNode: definition,
         fields: (definition.fields || []).map(field => createFieldInput(field, context)),
         namespacePath: getNamespacePath(definition, schemaPart.namespacePath),
-        quickSearchLanguage: getDefaultLanguage(definition, context)
+        flexSearchLanguage: getDefaultLanguage(definition, context)
     };
 
     switch (entityType) {
@@ -225,7 +225,7 @@ function createArangoSearchDefinitionInputs(objectNode: ObjectTypeDefinitionNode
         directiveASTNode: directive
     };
     if (directive) {
-        const argumentIndexed: ArgumentNode | undefined = getNodeByName(directive.arguments, QUICK_SEARCH_INDEXED_ARGUMENT);
+        const argumentIndexed: ArgumentNode | undefined = getNodeByName(directive.arguments, FLEX_SEARCH_INDEXED_ARGUMENT);
         if (argumentIndexed) {
             if (argumentIndexed.value.kind === 'BooleanValue') {
                 config.isIndexed = argumentIndexed.value.value;
@@ -240,9 +240,9 @@ function createArangoSearchDefinitionInputs(objectNode: ObjectTypeDefinitionNode
 }
 
 function getIsSearchable(fieldNode: FieldDefinitionNode, context: ValidationContext): boolean {
-    const directive = findDirectiveWithName(fieldNode, QUICK_SEARCH_INDEXED_DIRECTIVE);
+    const directive = findDirectiveWithName(fieldNode, FLEX_SEARCH_INDEXED_DIRECTIVE);
     if(directive) {
-        const argument = getNodeByName(directive.arguments, QUICK_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT)
+        const argument = getNodeByName(directive.arguments, FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT)
         if(argument){
             if (argument.value.kind === 'BooleanValue') {
                 return argument.value.value
@@ -255,9 +255,9 @@ function getIsSearchable(fieldNode: FieldDefinitionNode, context: ValidationCont
 }
 
 function getIsFulltextSearchable(fieldNode: FieldDefinitionNode, context: ValidationContext): boolean {
-    const directive = findDirectiveWithName(fieldNode, QUICK_SEARCH_FULLTEXT_INDEXED_DIRECTIVE);
+    const directive = findDirectiveWithName(fieldNode, FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE);
     if(directive) {
-        const argument = getNodeByName(directive.arguments, QUICK_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT)
+        const argument = getNodeByName(directive.arguments, FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT)
         if(argument){
             if (argument.value.kind === 'BooleanValue') {
                 return argument.value.value
@@ -269,7 +269,7 @@ function getIsFulltextSearchable(fieldNode: FieldDefinitionNode, context: Valida
     return false;
 }
 
-function getDefaultLanguage(objectTypeDefinitionNode: ObjectTypeDefinitionNode, context: ValidationContext): QuickSearchLanguage | undefined {
+function getDefaultLanguage(objectTypeDefinitionNode: ObjectTypeDefinitionNode, context: ValidationContext): FlexSearchLanguage | undefined {
     let directive: DirectiveNode | undefined =
         findDirectiveWithName(objectTypeDefinitionNode, ROOT_ENTITY_DIRECTIVE)
         || findDirectiveWithName(objectTypeDefinitionNode, CHILD_ENTITY_DIRECTIVE)
@@ -278,32 +278,32 @@ function getDefaultLanguage(objectTypeDefinitionNode: ObjectTypeDefinitionNode, 
     if (!directive) {
         return undefined;
     }
-    const argument: ArgumentNode | undefined = getNodeByName(directive.arguments, QUICK_SEARCH_DEFAULT_LANGUAGE_ARG);
+    const argument: ArgumentNode | undefined = getNodeByName(directive.arguments, FLEX_SEARCH_DEFAULT_LANGUAGE_ARG);
     if (!argument) {
         return undefined;
     }
 
     if (argument.value.kind === 'EnumValue') {
-        return argument.value.value as QuickSearchLanguage;
+        return argument.value.value as FlexSearchLanguage;
     } else {
         context.addMessage(ValidationMessage.error(VALIDATION_ERROR_EXPECTED_ENUM, argument.value.loc));
         return undefined;
     }
 }
 
-function getLanguage(fieldNode: FieldDefinitionNode, context: ValidationContext): QuickSearchLanguage | undefined {
+function getLanguage(fieldNode: FieldDefinitionNode, context: ValidationContext): FlexSearchLanguage | undefined {
 
-    let directive: DirectiveNode | undefined = findDirectiveWithName(fieldNode, QUICK_SEARCH_FULLTEXT_INDEXED_DIRECTIVE);
+    let directive: DirectiveNode | undefined = findDirectiveWithName(fieldNode, FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE);
     if (!directive) {
         return undefined;
     }
-    const argument: ArgumentNode | undefined = getNodeByName(directive.arguments, QUICK_SEARCH_INDEXED_LANGUAGE_ARG);
+    const argument: ArgumentNode | undefined = getNodeByName(directive.arguments, FLEX_SEARCH_INDEXED_LANGUAGE_ARG);
     if (!argument) {
         return undefined;
     }
 
     if (argument.value.kind === 'EnumValue') {
-        return argument.value.value as QuickSearchLanguage;
+        return argument.value.value as FlexSearchLanguage;
     } else {
         context.addMessage(ValidationMessage.error(VALIDATION_ERROR_EXPECTED_ENUM, argument.value.loc));
         return undefined;
@@ -332,13 +332,13 @@ function createFieldInput(fieldNode: FieldDefinitionNode, context: ValidationCon
         permissions: getPermissions(fieldNode, context),
         typeName: getTypeNameIgnoringNonNullAndList(fieldNode.type),
         typeNameAST: getNamedTypeNodeIgnoringNonNullAndList(fieldNode.type).name,
-        isQuickSearchIndexed: hasDirectiveWithName(fieldNode, QUICK_SEARCH_INDEXED_DIRECTIVE),
-        isQuickSearchIndexedASTNode: findDirectiveWithName(fieldNode, QUICK_SEARCH_INDEXED_DIRECTIVE),
-        isQuickSearchFulltextIndexed: hasDirectiveWithName(fieldNode, QUICK_SEARCH_FULLTEXT_INDEXED_DIRECTIVE),
-        isQuickSearchFulltextIndexedASTNode: findDirectiveWithName(fieldNode, QUICK_SEARCH_FULLTEXT_INDEXED_DIRECTIVE),
+        isFlexSearchIndexed: hasDirectiveWithName(fieldNode, FLEX_SEARCH_INDEXED_DIRECTIVE),
+        isFlexSearchIndexedASTNode: findDirectiveWithName(fieldNode, FLEX_SEARCH_INDEXED_DIRECTIVE),
+        isFlexSearchFulltextIndexed: hasDirectiveWithName(fieldNode, FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE),
+        isFlexSearchFulltextIndexedASTNode: findDirectiveWithName(fieldNode, FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE),
         isIncludedInSearch: getIsSearchable(fieldNode, context),
         isFulltextIncludedInSearch: getIsFulltextSearchable(fieldNode, context),
-        quickSearchLanguage: getLanguage(fieldNode, context),
+        flexSearchLanguage: getLanguage(fieldNode, context),
         collect: getCollectConfig(fieldNode, context)
     };
 }

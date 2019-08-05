@@ -1,6 +1,6 @@
 query equals{
-    quickSearchDeliveries(
-        quickSearchFilter:{
+    flexSearchDeliveries(
+        flexSearchFilter:{
             deliveryNumber: "1000173"
         }
     ){
@@ -9,8 +9,8 @@ query equals{
 }
 
 query in{
-    quickSearchDeliveries(
-        quickSearchFilter:{
+    flexSearchDeliveries(
+        flexSearchFilter:{
             deliveryNumber_in: ["1000173","1000521"]
         }
     ){
@@ -19,8 +19,8 @@ query in{
 }
 
 query starts_with{
-    quickSearchDeliveries(
-        quickSearchFilter:{
+    flexSearchDeliveries(
+        flexSearchFilter:{
             deliveryNumber_starts_with: "10005"
         }
     ){
@@ -29,8 +29,8 @@ query starts_with{
 }
 
 query gt_lt{
-    quickSearchDeliveries(
-        quickSearchFilter:{
+    flexSearchDeliveries(
+        flexSearchFilter:{
             itemsAggregation:{
                 quantity_lt: 5
             }
@@ -40,8 +40,8 @@ query gt_lt{
     }
 }
 query containsAnyWord {
-    quickSearchDeliveries(
-        quickSearchFilter:{
+    flexSearchDeliveries(
+        flexSearchFilter:{
             description_contains_any_word: "anyword"
         }
     ){
@@ -49,8 +49,8 @@ query containsAnyWord {
     }
 }
 query containsAllWords {
-    quickSearchDeliveries(
-        quickSearchFilter:{
+    flexSearchDeliveries(
+        flexSearchFilter:{
             description_contains_all_words: "all words"
         }
     ){
@@ -58,8 +58,8 @@ query containsAllWords {
     }
 }
 query containsAllPrefixes {
-    quickSearchDeliveries(
-        quickSearchFilter:{
+    flexSearchDeliveries(
+        flexSearchFilter:{
             description_contains_all_prefixes: "all prefixes"
         }
     ){
@@ -67,8 +67,8 @@ query containsAllPrefixes {
     }
 }
 query containsPhrase {
-    quickSearchDeliveries(
-        quickSearchFilter:{
+    flexSearchDeliveries(
+        flexSearchFilter:{
             description_contains_phrase: "a phrase"
         }
     ){
@@ -77,9 +77,9 @@ query containsPhrase {
 }
 
 query equals_enum {
-    quickSearchDeliveries(
-        quickSearchFilter:{
-            enumQuickSearch: Foo
+    flexSearchDeliveries(
+        flexSearchFilter:{
+            enumFlexSearch: Foo
         }
     ){
         deliveryNumber
@@ -87,8 +87,8 @@ query equals_enum {
 }
 
 query valueObject {
-    quickSearchDeliveries(
-        quickSearchFilter:{
+    flexSearchDeliveries(
+        flexSearchFilter:{
             consignee: {
                 city: "Singapore"
             }
@@ -99,8 +99,8 @@ query valueObject {
 }
 
 query equals_null {
-    quickSearchDeliveries(
-        quickSearchFilter:{
+    flexSearchDeliveries(
+        flexSearchFilter:{
             destinationCountryISOCode: null
         }
     ){
@@ -109,8 +109,8 @@ query equals_null {
 }
 
 query filter_below_max {
-    quickSearchDeliveries(
-        quickSearchFilter:{
+    flexSearchDeliveries(
+        flexSearchFilter:{
             deliveryNumber: "1000521"
         }
         filter: {
@@ -122,8 +122,8 @@ query filter_below_max {
 }
 
 query order_below_max {
-    quickSearchDeliveries(
-        quickSearchFilter:{
+    flexSearchDeliveries(
+        flexSearchFilter:{
             deliveryNumber: "1000521"
         }
         orderBy: id_ASC
@@ -133,7 +133,7 @@ query order_below_max {
 }
 
 query filter_above_max {
-    quickSearchDeliveries(
+    flexSearchDeliveries(
         filter: {
             id_gt: 1
         }
@@ -143,7 +143,7 @@ query filter_above_max {
 }
 
 query order_above_max {
-    quickSearchDeliveries(
+    flexSearchDeliveries(
         orderBy: id_ASC
     ){
         deliveryNumber
@@ -151,24 +151,24 @@ query order_above_max {
 }
 
 query expression_with_number{
-    quickSearchDeliveries(
-        quickSearchExpression: "1000521"
+    flexSearchDeliveries(
+        flexSearchExpression: "1000521"
     ){
         deliveryNumber
     }
 }
 
 query expression{
-    quickSearchDeliveries(
-        quickSearchExpression: "all"
+    flexSearchDeliveries(
+        flexSearchExpression: "all"
     ){
         deliveryNumber
     }
 }
 
 query recursion_successfull{
-    quickSearchDeliveries(
-        quickSearchFilter: {
+    flexSearchDeliveries(
+        flexSearchFilter: {
             recursion: {
                 recursion: {
                     name: "test_b"
@@ -181,8 +181,8 @@ query recursion_successfull{
 }
 
 query recursion_error{
-    quickSearchDeliveries(
-        quickSearchFilter: {
+    flexSearchDeliveries(
+        flexSearchFilter: {
             recursion: {
                 recursion: {
                     recursion: {
