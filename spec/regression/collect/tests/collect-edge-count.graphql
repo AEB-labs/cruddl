@@ -1,0 +1,33 @@
+# make sure that counting edges does not include dangling edges
+# obviously, there should be no dangling edges because we should delete them properly, but this test is probably still
+# a good idea
+
+mutation createEdges {
+    updateShipment(input: { id: "@{ids/Shipment/1}", addDeliveries: [ "@{ids/Delivery/1}", "@{ids/Delivery/2}" ] }) {
+        shipmentNumber
+    }
+}
+
+query countBefore {
+    Shipment(shipmentNumber: "S1") {
+        _deliveriesMeta {
+            count
+        }
+        deliveryCount
+    }
+}
+
+mutation deleteDelivery {
+    deleteDelivery(id: "@{ids/Delivery/1}") {
+        deliveryNumber
+    }
+}
+
+query countAfter {
+    Shipment(shipmentNumber: "S1") {
+        _deliveriesMeta {
+            count
+        }
+        deliveryCount
+    }
+}
