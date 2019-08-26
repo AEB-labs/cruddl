@@ -108,13 +108,16 @@ function createObjectTypeInput(definition: ObjectTypeDefinitionNode, schemaPart:
             // interpret unknown kinds as root entity because they are least likely to cause unnecessary errors
             // (errors are already reported in getKindOfObjectTypeNode)
 
+            const rootEntityDirective = findDirectiveWithName(definition, ROOT_ENTITY_DIRECTIVE);
             return {
                 ...common,
                 ...processKeyField(definition, common.fields, context),
                 kind: TypeKind.ROOT_ENTITY,
                 permissions: getPermissions(definition, context),
                 indices: createIndexDefinitionInputs(definition, context),
-                arangoSearchIndex: createArangoSearchDefinitionInputs(definition, context)
+                arangoSearchIndex: createArangoSearchDefinitionInputs(definition, context),
+                flexSearchIndexASTNode: rootEntityDirective ? getNodeByName(rootEntityDirective.arguments, FLEX_SEARCH_INDEXED_ARGUMENT) : undefined,
+                flexSearchOrderASTNode: rootEntityDirective ? getNodeByName(rootEntityDirective.arguments, FLEX_SEARCH_ORDER_ARGUMENT) : undefined,
             };
     }
 }

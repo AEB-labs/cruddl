@@ -36,6 +36,8 @@ export interface RootEntityTypeConfig extends ObjectTypeConfigBase {
     readonly keyFieldASTNode?: ASTNode
     readonly permissions?: PermissionsConfig
     readonly arangoSearchIndex?: ArangoSearchIndexConfig
+    readonly flexSearchIndexASTNode?: ASTNode
+    readonly flexSearchOrderASTNode?: ASTNode
 }
 
 export interface ValueObjectTypeConfig extends ObjectTypeConfigBase {
