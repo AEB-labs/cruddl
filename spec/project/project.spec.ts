@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { graphql } from 'graphql';
 import { Logger, LoggerProvider } from '../../src/config/logging';
-import { DatabaseAdapter } from '../../src/database/database-adapter';
+import { DatabaseAdapter, FlexSearchTokenizable } from '../../src/database/database-adapter';
 import { FlexSearchLanguage, Model } from '../../src/model';
 import { Project } from '../../src/project/project';
 import { ProjectSource } from '../../src/project/source';
@@ -18,12 +18,12 @@ class FakeDBAdatper implements DatabaseAdapter {
 
     }
 
-    async tokenizeExpressions(tokenizations: ReadonlyArray<[string, FlexSearchLanguage]>): Promise<ReadonlyArray<FlexSearchTokenization>> {
+    async tokenizeExpressions(tokenizations: ReadonlyArray<FlexSearchTokenizable>): Promise<ReadonlyArray<FlexSearchTokenization>> {
         return tokenizations.map(value => {
             return {
-                expression: value[0],
-                language: value[1],
-                tokens: value[0].split('-')
+                expression: value.expression,
+                language: value.language,
+                tokens: value.expression.split('-')
             };
 
         });

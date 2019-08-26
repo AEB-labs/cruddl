@@ -695,7 +695,7 @@ export class Field implements ModelComponent {
                 `and this fields defining type is marked with "flexSearch: true", but this field is not marked with "@flexSearch".`, this.astNode));
         }
         if (this.isIncludedInSearch && this.type.isScalarType && this.type.name === 'Boolean') {
-            context.addMessage(ValidationMessage.error(`"isIncludedInSearch: true" is not supported on type "${this.type.name}".`, this.input.isFlexSearchFulltextIndexedASTNode));
+            context.addMessage(ValidationMessage.error(`"includeInSearch: true" is not supported on type "${this.type.name}".`, this.input.isFlexSearchFulltextIndexedASTNode));
             return;
         }
 

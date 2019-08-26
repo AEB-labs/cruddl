@@ -6,6 +6,7 @@ import { Quantifier, QuantifierFilterNode } from '../../query-tree/quantifiers';
 import { extractVariableAssignments, simplifyBooleans } from '../../query-tree/utils';
 import { not } from '../../schema-generation/utils/input-types';
 import { Constructor, decapitalize } from '../../utils/utils';
+import { FlexSearchTokenizable } from '../database-adapter';
 import { analyzeLikePatternPrefix } from '../like-helpers';
 import { aql, AQLCompoundQuery, aqlConfig, AQLFragment, AQLQueryResultVariable, AQLVariable } from './aql';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './arango-basics';
@@ -164,7 +165,7 @@ function createAQLCompoundQuery(node: QueryNode,
 
 type NodeProcessor<T extends QueryNode> = (node: T, context: QueryContext) => AQLFragment;
 
-export namespace aqlExt {
+namespace aqlExt {
     export function safeJSONKey(key: string): AQLFragment {
         if (aql.isSafeIdentifier(key)) {
             return aql`${aql.string(key)}`; // if safe, use "name" approach
@@ -303,7 +304,8 @@ function getFieldAccessFragment(field: Field) {
 
 function getFieldPathAccessFragment(path: ReadonlyArray<Field>): AQLFragment {
     if (path.length > 0) {
-        return aql`${getFieldAccessFragment(path[0])}${getFieldPathAccessFragment(path.slice(1))}`;
+        const [head, ...tail] = path;
+        return aql`${getFieldAccessFragment(head)}${getFieldPathAccessFragment(tail)}`;
     } else {
         return aql``;
     }
@@ -1184,11 +1186,11 @@ function isStringCaseInsensitive(str: string) {
     return str.toLowerCase() === str.toUpperCase();
 }
 
-export function generateTokenizationQuery(tokensFiltered: ReadonlyArray<[string, FlexSearchLanguage]>) {
+export function generateTokenizationQuery(tokensFiltered: ReadonlyArray<FlexSearchTokenizable>) {
     const fragments: string[] = [];
     for (let i = 0; i < tokensFiltered.length; i++) {
         const value = tokensFiltered[i];
-        fragments.push(`token_${i}: TOKENS("${value[0]}", "text_${value[1].toLowerCase()}")`);
+        fragments.push(`token_${i}: TOKENS("${value.expression}", "text_${value.language.toLowerCase()}")`);
     }
     const query = `RETURN { ${fragments.join(',\n')} }`;
     return query;

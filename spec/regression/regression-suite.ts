@@ -22,7 +22,7 @@ export interface RegressionSuiteOptions {
     readonly saveActualAsExpected?: boolean
     readonly trace?: boolean
     readonly database?: DatabaseSpecifier
-    readonly testFilter?: string
+    readonly testNamePrefixFilter?: string
 }
 
 interface MetaOptions {
@@ -124,7 +124,7 @@ export class RegressionSuite {
                 return true;
             }
         }
-        if (this.options.testFilter && !name.startsWith(this.options.testFilter)) {
+        if (this.options.testNamePrefixFilter && !name.startsWith(this.options.testNamePrefixFilter)) {
             return true;
         }
         return false;

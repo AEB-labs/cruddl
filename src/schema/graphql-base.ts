@@ -100,10 +100,10 @@ export const DIRECTIVES: DocumentNode = gql`
     directive @index(sparse: Boolean = false) on FIELD_DEFINITION
 
     "Declares a field to be indexed with ArangoSearch"
-    directive @flexSearch(isIncludedInSearch: Boolean = false) on FIELD_DEFINITION
+    directive @flexSearch(includeInSearch: Boolean = false) on FIELD_DEFINITION
 
     "Declares a field to be indexed with ArangoSearch with a Text Analyzer"
-    directive @flexSearchFulltext(language: FlexSearchLanguage, isIncludedInSearch: Boolean = false) on FIELD_DEFINITION
+    directive @flexSearchFulltext(language: FlexSearchLanguage, includeInSearch: Boolean = false) on FIELD_DEFINITION
 
 
     "The available languages for ArangoSearch Analyzers"

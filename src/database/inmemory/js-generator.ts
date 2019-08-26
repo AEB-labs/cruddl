@@ -657,15 +657,15 @@ register(RemoveEdgesQueryNode, (node, context) => {
 });
 
 register(OperatorWithLanguageQueryNode, (node, context) => {
-    throw new ArangoSearchNotSupportedError();
+    throw new FlexSearchNotSupportedError();
 });
 
 register(FlexSearchQueryNode, (node, context) => {
-    throw new ArangoSearchNotSupportedError();
+    throw new FlexSearchNotSupportedError();
 });
 
 register(FlexSearchFieldExistsQueryNode, (node, context) => {
-    throw new ArangoSearchNotSupportedError();
+    throw new FlexSearchNotSupportedError();
 });
 
 register(FlexSearchComplexOperatorQueryNode, (node, context) => {
@@ -748,10 +748,9 @@ function getCollectionForRelation(relation: Relation, context: QueryContext) {
 }
 
 /**
- * Is thrown if a ArangoSearchMigration is performed, in a context where it is not supported,
- * e.g. when the in-memory database is used, or the Arango-Version is not >3.4
+ * Is thrown if a FlexSearch query is performed for an in-memory database.
  */
-export class ArangoSearchNotSupportedError extends Error {
+export class FlexSearchNotSupportedError extends Error {
     constructor() {
         super(`ArangoSearch-query was not executed, because it is not supported for in-memory database.`);
         this.name = this.constructor.name;

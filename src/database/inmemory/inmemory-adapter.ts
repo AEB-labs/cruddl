@@ -4,7 +4,7 @@ import { Logger } from '../../config/logging';
 import { FlexSearchLanguage, Model } from '../../model';
 import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS, QueryNode } from '../../query-tree';
 import { FlexSearchTokenization } from '../../query-tree/flex-search';
-import { DatabaseAdapter } from '../database-adapter';
+import { DatabaseAdapter, FlexSearchTokenizable } from '../database-adapter';
 import { likePatternToRegExp } from '../like-helpers';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './inmemory-basics';
 import { JSCompoundQuery, JSExecutableQuery } from './js';
@@ -228,12 +228,12 @@ export class InMemoryAdapter implements DatabaseAdapter {
         }
     }
 
-    async tokenizeExpressions(tokenizations: ReadonlyArray<[string, FlexSearchLanguage]>): Promise<ReadonlyArray<FlexSearchTokenization>> {
+    async tokenizeExpressions(tokenizations: ReadonlyArray<FlexSearchTokenizable>): Promise<ReadonlyArray<FlexSearchTokenization>> {
         return tokenizations.map(value => {
             return {
-                expression: value[0],
-                language: value[1],
-                tokens: value[0].split('-')
+                expression: value.expression,
+                language: value.language,
+                tokens: value.expression.split('-')
             };
 
         });

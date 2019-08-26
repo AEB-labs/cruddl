@@ -10,7 +10,7 @@ import { FlexSearchTokenization } from '../../query-tree/flex-search';
 import { Mutable } from '../../utils/util-types';
 import { objectValues, sleep, sleepInterruptible } from '../../utils/utils';
 import { getPreciseTime, Watch } from '../../utils/watch';
-import { DatabaseAdapter, DatabaseAdapterTimings, ExecutionArgs, ExecutionPlan, ExecutionResult, TransactionStats } from '../database-adapter';
+import { DatabaseAdapter, DatabaseAdapterTimings, ExecutionArgs, ExecutionPlan, ExecutionResult, FlexSearchTokenizable, TransactionStats } from '../database-adapter';
 import { AQLCompoundQuery, aqlConfig, AQLExecutableQuery } from './aql';
 import { generateTokenizationQuery, getAQLQuery } from './aql-generator';
 import { RequestInstrumentation, RequestInstrumentationPhase } from './arangojs-instrumentation/config';
@@ -646,10 +646,10 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         return this.versionHelper.getArangoDBVersion();
     }
 
-    async tokenizeExpressions(tokenizations: ReadonlyArray<[string, FlexSearchLanguage]>): Promise<ReadonlyArray<FlexSearchTokenization>> {
+    async tokenizeExpressions(tokenizations: ReadonlyArray<FlexSearchTokenizable>): Promise<ReadonlyArray<FlexSearchTokenization>> {
         const tokenizationsFiltered = tokenizations.filter(
             (value, index) => !tokenizations.some(
-                (value2, index2) => value[0] === value2[0] && value[1] === value2[1] && index > index2
+                (value2, index2) => value.expression === value2.expression && value.language === value2.language && index > index2
             )
         );
 
@@ -659,8 +659,8 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         const resultArray: FlexSearchTokenization[] = [];
         for (let i = 0; i < tokenizationsFiltered.length; i++) {
             resultArray.push({
-                expression: tokenizationsFiltered[i][0],
-                language: tokenizationsFiltered[i][1],
+                expression: tokenizationsFiltered[i].expression,
+                language: tokenizationsFiltered[i].language,
                 tokens: result['token_' + i]
             });
         }

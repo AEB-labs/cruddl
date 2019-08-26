@@ -36,7 +36,7 @@ export class FlexSearchGenerator {
         const fieldConfig = ({
             name: getFlexSearchEntitiesFieldName(rootEntityType.name),
             type: new QueryNodeListType(new QueryNodeNonNullType(this.outputTypeGenerator.generate(rootEntityType))),
-            description: `Searches for ${rootEntityType.pluralName} using FlexSearch.`,
+            description: `Queries for ${rootEntityType.pluralName} using FlexSearch.`,
             resolve: () => new FlexSearchQueryNode({ rootEntityType: rootEntityType })
         });
         return this.augmentWithCondition(this.listAugmentation.augment(this.generateFromConfig(fieldConfig, rootEntityType), rootEntityType), rootEntityType);
@@ -46,7 +46,7 @@ export class FlexSearchGenerator {
         const fieldConfig: QueryNodeField = ({
             name: getMetaFieldName(getFlexSearchEntitiesFieldName(rootEntityType.name)),
             type: new QueryNodeNonNullType(metaType),
-            description: `Searches for ${rootEntityType.pluralName} using FlexSearch.`,
+            description: `Queries for ${rootEntityType.pluralName} using FlexSearch.`,
             // meta fields should never be null. Also, this is crucial for performance. Without it, we would introduce
             // an unnecessary variable with the collection contents (which is slow) and we would to an equality check of
             // a collection against NULL which is deadly (v8 evaluation)

@@ -58,12 +58,12 @@ describe('FlexSearch', () => {
             }
         `, `At least one field on type "HandlingUnitInfo" must be annotated with @flexSearch or @flexSearchFulltext.`);
     });
-    it('rejects flexSearch isIncludedInSearch for booleans', () => {
+    it('rejects flexSearch includeInSearch for booleans', () => {
         assertValidatorRejects(`
             type HandlingUnit @rootEntity(flexSearch: true) {
-                someBool: Boolean @flexSearch(isIncludedInSearch: true)
+                someBool: Boolean @flexSearch(includeInSearch: true)
             }
-        `, `"isIncludedInSearch: true" is not supported on type "Boolean".`);
+        `, `"includeInSearch: true" is not supported on type "Boolean".`);
     });
     it('rejects flexSearch without accessField', () => {
         const model = new Model({

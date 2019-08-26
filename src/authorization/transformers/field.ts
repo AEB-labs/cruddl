@@ -17,7 +17,7 @@ export function transformFieldQueryNode(node: FieldQueryNode, authContext: AuthC
 }
 
 export function transformFieldPathQueryNode(node: FieldPathQueryNode, authContext: AuthContext): QueryNode {
-    for(const field of node.path){
+    for (const field of node.path) {
         const permissionDescriptor = getPermissionDescriptorOfField(field);
         const access = permissionDescriptor.canAccess(authContext, AccessOperation.READ);
         switch (access) {

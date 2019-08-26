@@ -3,7 +3,7 @@ Cruddl allows the usage of [ArangoSearch](https://www.arangodb.com/arangodb-trai
 
 ## Schema
 
-To create an index for a rootEntity add the `flexSearch: true` parameter to the `@rootEntity` annotation.
+To create an index for a rootEntity add the `flexSearch: true` argument to the `@rootEntity` annotation.
 
 
 ```graphql
@@ -30,8 +30,8 @@ type Order @rootEntity(flexSearch: true) {
 The annotation `@flexSearchFulltext` is used to index Strings that contain text in a specific language.
 For example a description that contains a human-readable text in english. 
 
-When using `@flexSearchFulltext` a language needs to be specified, either by adding the `language` parameter,
-or by setting a default language for the whole entity by specifying the `flexSearchLanguage` parameter to the `rootEntity` annotation.
+When using `@flexSearchFulltext` a language needs to be specified, either by adding the `language` argument,
+or by setting a default language for the whole entity by specifying the `flexSearchLanguage` argument to the `rootEntity` annotation.
 
 
 ```graphql
@@ -47,12 +47,12 @@ EN, DE, ES, FI, FR, IT, NL, NO, PT, RU, SV, ZH
 Fields can also be indexed as both value and text.
 
 Cruddl also allows to predefine specific fields that will be included in a general search.
-To do this, the parameter `isIncludedInSearch` needs to be added to the `@flexSearch` or `@flexSearchFulltext` annotation.
+To do this, the argument `includeInSearch` needs to be added to the `@flexSearch` or `@flexSearchFulltext` annotation.
 
 ```graphql
 type Order @rootEntity(flexSearch: true, flexSearchLanguage: EN) {
-  orderNumber: String @flexSearch(isIncludedInSearch: true)
-  descriptionEN: String @flexSearchFulltext(isIncludedInSearch: true)
+  orderNumber: String @flexSearch(includeInSearch: true)
+  descriptionEN: String @flexSearchFulltext(includeInSearch: true)
   descriptionDE: String @flexSearchFulltext(language: DE)
 }
 ```
@@ -64,7 +64,7 @@ In this example an "expression search" would search in the fields `orderNumber` 
 For each `rootEntity` that is marked with `flexSearch: true` a new query is available that allows to query for objects using ArangoSearch.
 The queries are prefixed with "flexSearch".
 
-This query also accepts a string parameter that provides an expression that should be searched for in all fields that were marked with `includedInSearch: true` in the schema.
+This query also accepts a string argument that provides an expression that should be searched for in all fields that were marked with `includeInSearch: true` in the schema.
 
 ```graphql
 query {
@@ -86,7 +86,7 @@ query {
 }
 ```
 
-The query also accepts the pagination parameters `first`, `skip` and `after`, the sorting parameter `orderBy` and the regular filtering parameter `filter`. 
+The query also accepts the pagination arguments `first`, `skip` and `after`, the sorting argument `orderBy` and the regular filtering argument `filter`. 
 Because the ArangoSearch-index cannot be used for sorting and regular filtering, these can be very slow for large amounts of data. To prevent slow queries, cruddl returns an error in these cases.
 
 ### Filter

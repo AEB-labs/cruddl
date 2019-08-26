@@ -47,6 +47,7 @@ export function moveErrorsToOutputNodes(queryTree: QueryNode): QueryNode {
             if (errorList.length) {
 
                 if (frame && frame.outputNodeKind == OutputNodeKind.OUTPUT && stack.length <= minErrorDepth!) {
+                    // This is a workaround to remove all "FLEX_SEARCH_TOO_MANY_OBJECTS" errors from the errorList as these are only conditional, and not relevant, if any other error has been thrown as well.
                     let errors = errorList;
                     if (errors.some(value => value.code !== FLEX_SEARCH_TOO_MANY_OBJECTS)) {
                         errors = errors.filter(value => value.code !== FLEX_SEARCH_TOO_MANY_OBJECTS);

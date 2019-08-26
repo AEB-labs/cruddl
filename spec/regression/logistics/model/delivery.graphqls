@@ -1,6 +1,6 @@
 "A delivery"
 type Delivery @rootEntity(flexSearch: true, flexSearchLanguage: DE) @roles(readWrite: ["allusers"]) {
-    deliveryNumber: String @key @unique @flexSearch(isIncludedInSearch: true)# leave this here to catch this case, too (has caused a bug)
+    deliveryNumber: String @key @unique @flexSearch(includeInSearch: true)# leave this here to catch this case, too (has caused a bug)
     "The list of serial numbers associated with this delivery"
     serialNumbers: [String]
     "The address of the delivery's consignee"
@@ -36,9 +36,9 @@ type Delivery @rootEntity(flexSearch: true, flexSearchLanguage: DE) @roles(readW
 
     dynamicData: JSON
 
-    description: String @flexSearchFulltext(isIncludedInSearch: true)
+    description: String @flexSearchFulltext(includeInSearch: true)
     enumFlexSearch: Foobarit @flexSearch
-    aNumber: Int @flexSearch(isIncludedInSearch: true)
+    aNumber: Int @flexSearch(includeInSearch: true)
     recursion: Recursion @flexSearch
 }
 

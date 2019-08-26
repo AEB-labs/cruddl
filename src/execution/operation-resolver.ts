@@ -2,7 +2,7 @@ import { print } from 'graphql';
 import { applyAuthorizationToQueryTree } from '../authorization/execution';
 import { globalContext } from '../config/global';
 import { RequestProfile } from '../config/interfaces';
-import { DatabaseAdapter, ExecutionPlan, TransactionStats } from '../database/database-adapter';
+import { DatabaseAdapter, ExecutionPlan, FlexSearchTokenizable, TransactionStats } from '../database/database-adapter';
 import { OperationParams } from '../graphql/operation-based-resolvers';
 import { distillOperation } from '../graphql/query-distiller';
 import { FlexSearchLanguage } from '../model/config';
@@ -143,10 +143,10 @@ export class OperationResolver {
     private async queryFlexSearchTokens(queryTree: QueryNode, databaseAdapter: DatabaseAdapter): Promise<ReadonlyArray<FlexSearchTokenization>> {
         const cache = {};
 
-        async function collectTokenizations(queryNode: QueryNode): Promise<ReadonlyArray<[string, FlexSearchLanguage]>> {
-            let tokens: [string, FlexSearchLanguage][] = [];
+        async function collectTokenizations(queryNode: QueryNode): Promise<ReadonlyArray<FlexSearchTokenizable>> {
+            let tokens: FlexSearchTokenizable[] = [];
             if (queryNode instanceof FlexSearchComplexOperatorQueryNode) {
-                tokens.push([queryNode.expression, queryNode.flexSearchLanguage]);
+                tokens.push({ expression: queryNode.expression, language: queryNode.flexSearchLanguage });
 
             }
             if (queryNode instanceof ObjectQueryNode) {

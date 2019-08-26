@@ -78,7 +78,6 @@ function getViewForRootEntity(rootEntity: RootEntityType): ArangoSearchDefinitio
 
 }
 
-
 export async function calculateRequiredArangoSearchViewCreateOperations(existingViews: ArangoSearchView[], requiredViews: ReadonlyArray<ArangoSearchDefinition>, db: Database, configuration?: ArangoSearchConfiguration): Promise<ReadonlyArray<SchemaMigration>> {
     let viewsToCreate = requiredViews.filter(value => !existingViews.some(value1 => value1.name === value.viewName));
 
@@ -102,11 +101,9 @@ export function calculateRequiredArangoSearchViewDropOperations(views: ArangoSea
     return viewsToDrop.map(value => new DropArangoSearchViewMigration({ viewName: value.name }));
 }
 
-
 export function getAnalyzerFromFlexSearchLanguage(flexSearchLanguage?: FlexSearchLanguage): string {
     return flexSearchLanguage ? 'text_' + flexSearchLanguage.toLowerCase() : 'identity';
 }
-
 
 function getPropertiesFromDefinition(definition: ArangoSearchDefinition, configuration?: ArangoSearchConfiguration): ArangoSearchViewPropertiesOptions {
     const recursionDepth = configuration && configuration.recursionDepth ? configuration.recursionDepth : 1;
