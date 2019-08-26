@@ -162,7 +162,7 @@ export class RegressionSuite {
         const context = fs.existsSync(contextPath) ? JSON.parse(stripJsonComments(fs.readFileSync(contextPath, 'utf-8'))) : {};
         const meta = fs.existsSync(metaPath) ? JSON.parse(stripJsonComments(fs.readFileSync(metaPath, 'utf-8'))) : {};
 
-        if (meta.waitForArangoSearch && this.databaseVersion && this.databaseVersion === '3.4') {
+        if (meta.waitForArangoSearch) {
             await new Promise(resolve => setTimeout(resolve, 1000));
         }
 
