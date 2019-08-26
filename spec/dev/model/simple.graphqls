@@ -10,7 +10,6 @@ type Hero @rootEntity(flexSearch: true, flexSearchLanguage: DE) {
     country: Country @reference
     missions: [Mission]
     info: JSON
-    xyz: Boolean @flexSearch(isIncludedInSearch: true)
 }
 
 "A heroic mission"

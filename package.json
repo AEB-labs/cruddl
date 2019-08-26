@@ -1,6 +1,6 @@
 {
   "name": "cruddl",
-  "version": "1.0.0-qs.1.6",
+  "version": "1.0.3",
   "description": "",
   "license": "MIT",
   "main": "dist/index.js",
@@ -63,7 +63,7 @@
   "dependencies": {
     "ajv": "^6.0.1",
     "ansi-styles": "^3.2.1",
-    "arangojs": "^6.10.0",
+    "arangojs": "^6.11.0",
     "graphql-tag": "^2.10.1",
     "graphql-tools": "^4.0.0",
     "graphql-transformer": "^0.2.0",
