@@ -11,6 +11,7 @@ type Shipment @rootEntity {
     allItems: [DeliveryItem] @collect(path: "deliveries.deliveryContents.items")
     totalWeightInKg: Float @collect(path: "allItems.weightInKg", aggregate: SUM)
     itemCount: Int @collect(path: "allItems", aggregate: COUNT)
+    deliveryCount: Int @collect(path: "deliveries", aggregate: COUNT)
     allDeliveriesHaveOrders: Boolean @collect(path: "deliveries.order", aggregate: NONE_NULL)
     allDeliveriesArePayed: Boolean @collect(path: "deliveries.order.payedAt", aggregate: NONE_NULL)
     numberOfDeliveriesWithoutOrder: Int @collect(path: "deliveries.order", aggregate: COUNT_NULL)
@@ -23,7 +24,7 @@ type Delivery @rootEntity {
     deliveryContents: [DeliveryContent]
 
     handlingUnits: [HandlingUnit] @relation
-    shipment: [Shipment] @relation(inverseOf: "deliveries")
+    shipment: Shipment @relation(inverseOf: "deliveries")
     order: Order @relation
 
     allItems: [DeliveryItem] @collect(path: "deliveryContents.items")

@@ -894,7 +894,7 @@ function getRelationTraversalFragment({ segments, sourceFrag, mapFrag, context }
         return sourceFrag;
     }
 
-    // ArangoDB 3.4.5 introduced PRUNE which also suports IS_SAME_COLLECTION so we may be able to use just one
+    // ArangoDB 3.4.5 introduced PRUNE which also supports IS_SAME_COLLECTION so we may be able to use just one
     // traversal which lists all affected edge collections and prunes on the path in the future.
 
     const forFragments: AQLFragment[] = [];
@@ -904,7 +904,7 @@ function getRelationTraversalFragment({ segments, sourceFrag, mapFrag, context }
         const dir = segment.relationSide.isFromSide ? aql`OUTBOUND` : aql`INBOUND`;
         const traversalFrag = aql`FOR ${newVar} IN ${segment.minDepth}..${segment.maxDepth} ${dir} ${currentObjectFrag} ${getCollectionForRelation(segment.relationSide.relation, AccessType.READ, context)}`;
         if (segment.isListSegment) {
-            // this is simple - we can just pust one FOR statement after the other
+            // this is simple - we can just push one FOR statement after the other
             forFragments.push(traversalFrag);
             currentObjectFrag = newVar;
         }
@@ -912,18 +912,24 @@ function getRelationTraversalFragment({ segments, sourceFrag, mapFrag, context }
             // if this is not a list, we need to preserve NULL values
             // (actually, we don't in some cases, but we need to figure out when)
             // to preserve null values, we need to use FIRST
+            // to ignore dangling edges, add a FILTER though (if there was one dangling edge and one real edge collected, we should use the real one)
             const nullableVar = aql.variable(`nullableNode`);
-            forFragments.push(aql`LET ${nullableVar} = FIRST(${traversalFrag} RETURN ${newVar})`);
+            forFragments.push(aql`LET ${nullableVar} = FIRST(${traversalFrag} FILTER ${newVar} != null RETURN ${newVar})`);
             currentObjectFrag = nullableVar;
         }
     }
 
-    const resultIsList = segments[segments.length - 1].resultIsList;
+    const lastSegment = segments[segments.length - 1];
+
+    // remove dangling edges, unless we already did because the last segment wasn't a list segment (see above, we add the FILTER there)
+    if (lastSegment.isListSegment) {
+        forFragments.push(aql`FILTER ${currentObjectFrag} != null`);
+    }
+
     const returnFrag = mapFrag ? mapFrag(currentObjectFrag) : currentObjectFrag;
     // make sure we don't return a list with one element
-    return aqlExt[resultIsList ? 'parenthesizeList' : 'parenthesizeObject'](
+    return aqlExt[lastSegment.resultIsList ? 'parenthesizeList' : 'parenthesizeObject'](
         ...forFragments,
-
         aql`RETURN ${returnFrag}`
     );
 }

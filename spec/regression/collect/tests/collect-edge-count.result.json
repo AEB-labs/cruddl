@@ -1,0 +1,36 @@
+{
+  "createEdges": {
+    "data": {
+      "updateShipment": {
+        "shipmentNumber": "S1"
+      }
+    }
+  },
+  "countBefore": {
+    "data": {
+      "Shipment": {
+        "_deliveriesMeta": {
+          "count": 2
+        },
+        "deliveryCount": 2
+      }
+    }
+  },
+  "deleteDelivery": {
+    "data": {
+      "deleteDelivery": {
+        "deliveryNumber": "D1"
+      }
+    }
+  },
+  "countAfter": {
+    "data": {
+      "Shipment": {
+        "_deliveriesMeta": {
+          "count": 1
+        },
+        "deliveryCount": 1
+      }
+    }
+  }
+}

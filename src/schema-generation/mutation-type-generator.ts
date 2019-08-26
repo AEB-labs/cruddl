@@ -261,7 +261,7 @@ export class MutationTypeGenerator {
             listNode: entitiesNode
         });
 
-        const removeEdgesStatements = getRemoveAllEntityEdgesStatements(rootEntityType, entitiesNode);
+        const removeEdgesStatements = getRemoveAllEntityEdgesStatements(rootEntityType, idsVariable);
 
         // no preexec for the actual deletion here because we need to evaluate the result while the entity still exists
         // and it won't exist if already deleted in the pre-exec
@@ -313,7 +313,7 @@ export class MutationTypeGenerator {
             listNode: entitiesNode
         });
 
-        const removeEdgesStatements = getRemoveAllEntityEdgesStatements(rootEntityType, entitiesNode);
+        const removeEdgesStatements = getRemoveAllEntityEdgesStatements(rootEntityType, idsVariable);
 
         return new WithPreExecutionQueryNode({
             preExecQueries: [
