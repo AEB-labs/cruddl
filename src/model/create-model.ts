@@ -1,8 +1,9 @@
-import { ArgumentNode, DirectiveNode, EnumValueDefinitionNode, FieldDefinitionNode, GraphQLBoolean, GraphQLID, GraphQLInputObjectType, GraphQLList, GraphQLNonNull, GraphQLString, ObjectTypeDefinitionNode, ObjectValueNode, StringValueNode, TypeDefinitionNode, valueFromAST } from 'graphql';
+import { ArgumentNode, DirectiveNode, EnumValueDefinitionNode, FieldDefinitionNode, GraphQLBoolean, GraphQLEnumType, GraphQLID, GraphQLInputObjectType, GraphQLList, GraphQLNonNull, GraphQLString, ObjectTypeDefinitionNode, ObjectValueNode, StringValueNode, TypeDefinitionNode, valueFromAST } from 'graphql';
 import { ParsedGraphQLProjectSource, ParsedObjectProjectSource, ParsedProject, ParsedProjectSourceBaseKind } from '../config/parsed-project';
+import { ArangoSearchPrimarySortConfig } from '../database/arangodb/schema-migration/arango-search-helpers';
 import { ENUM, ENUM_TYPE_DEFINITION, LIST, LIST_TYPE, NON_NULL_TYPE, OBJECT, OBJECT_TYPE_DEFINITION, STRING } from '../graphql/kinds';
 import { getValueFromAST } from '../graphql/value-from-ast';
-import { CALC_MUTATIONS_DIRECTIVE, CALC_MUTATIONS_OPERATORS_ARG, CHILD_ENTITY_DIRECTIVE, COLLECT_AGGREGATE_ARG, COLLECT_DIRECTIVE, COLLECT_PATH_ARG, DEFAULT_VALUE_DIRECTIVE, ENTITY_EXTENSION_DIRECTIVE, FLEX_SEARCH_DEFAULT_LANGUAGE_ARG, FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE, FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT, FLEX_SEARCH_INDEXED_ARGUMENT, FLEX_SEARCH_INDEXED_DIRECTIVE, FLEX_SEARCH_INDEXED_LANGUAGE_ARG, ID_FIELD, INDEX_DEFINITION_INPUT_TYPE, INDEX_DIRECTIVE, INDICES_ARG, INVERSE_OF_ARG, KEY_FIELD_ARG, KEY_FIELD_DIRECTIVE, NAMESPACE_DIRECTIVE, NAMESPACE_NAME_ARG, NAMESPACE_SEPARATOR, OBJECT_TYPE_KIND_DIRECTIVES, PERMISSION_PROFILE_ARG, REFERENCE_DIRECTIVE, RELATION_DIRECTIVE, ROLES_DIRECTIVE, ROLES_READ_ARG, ROLES_READ_WRITE_ARG, ROOT_ENTITY_DIRECTIVE, UNIQUE_DIRECTIVE, VALUE_ARG, VALUE_OBJECT_DIRECTIVE } from '../schema/constants';
+import { CALC_MUTATIONS_DIRECTIVE, CALC_MUTATIONS_OPERATORS_ARG, CHILD_ENTITY_DIRECTIVE, COLLECT_AGGREGATE_ARG, COLLECT_DIRECTIVE, COLLECT_PATH_ARG, DEFAULT_VALUE_DIRECTIVE, ENTITY_EXTENSION_DIRECTIVE, FLEX_SEARCH_DEFAULT_LANGUAGE_ARG, FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE, FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT, FLEX_SEARCH_INDEXED_ARGUMENT, FLEX_SEARCH_INDEXED_DIRECTIVE, FLEX_SEARCH_INDEXED_LANGUAGE_ARG, FLEX_SEARCH_ORDER_ARGUMENT, ID_FIELD, INDEX_DEFINITION_INPUT_TYPE, INDEX_DIRECTIVE, INDICES_ARG, INVERSE_OF_ARG, KEY_FIELD_ARG, KEY_FIELD_DIRECTIVE, NAMESPACE_DIRECTIVE, NAMESPACE_NAME_ARG, NAMESPACE_SEPARATOR, OBJECT_TYPE_KIND_DIRECTIVES, PERMISSION_PROFILE_ARG, REFERENCE_DIRECTIVE, RELATION_DIRECTIVE, ROLES_DIRECTIVE, ROLES_READ_ARG, ROLES_READ_WRITE_ARG, ROOT_ENTITY_DIRECTIVE, UNIQUE_DIRECTIVE, VALUE_ARG, VALUE_OBJECT_DIRECTIVE } from '../schema/constants';
 import { findDirectiveWithName, getNamedTypeNodeIgnoringNonNullAndList, getNodeByName, getTypeNameIgnoringNonNullAndList, hasDirectiveWithName } from '../schema/schema-utils';
 import { compact, flatMap, mapValues } from '../utils/utils';
 import { AggregationOperator, ArangoSearchIndexConfig, CalcMutationsOperator, CollectFieldConfig, EnumTypeConfig, EnumValueConfig, FieldConfig, FlexSearchLanguage, IndexDefinitionConfig, LocalizationConfig, NamespacedPermissionProfileConfigMap, ObjectTypeConfig, PermissionProfileConfigMap, PermissionsConfig, RolesSpecifierConfig, TypeConfig, TypeKind } from './config';
@@ -167,19 +168,38 @@ function getDefaultValue(fieldNode: FieldDefinitionNode, context: ValidationCont
     return getValueFromAST(defaultValueArg.value);
 }
 
+function getFlexSearchOrder(rootEntityDirective?: DirectiveNode): ArangoSearchPrimarySortConfig[] {
+    if (!rootEntityDirective) {
+        return [];
+    }
+    const argumentFlexSearchOrder: ArgumentNode | undefined = getNodeByName(rootEntityDirective.arguments, FLEX_SEARCH_ORDER_ARGUMENT);
+    if (argumentFlexSearchOrder && argumentFlexSearchOrder.value.kind === 'ListValue') {
+        return argumentFlexSearchOrder.value.values.map(orderArgument => {
+            return valueFromAST(orderArgument, flexSearchOrderInputObjectType);
+        }).map((value: any) => {
+            return {
+                field: value.field,
+                direction: value.direction === 'ASC' ? 'asc' : 'desc'
+            };
+        });
+
+
+    }
+    return [];
+}
+
 function createArangoSearchDefinitionInputs(objectNode: ObjectTypeDefinitionNode, context: ValidationContext): ArangoSearchIndexConfig {
     let directive = findDirectiveWithName(objectNode, ROOT_ENTITY_DIRECTIVE);
     let config = {
         isIndexed: false,
-        directiveASTNode: directive
+        directiveASTNode: directive,
+        primarySort: getFlexSearchOrder(directive)
     };
     if (directive) {
         const argumentIndexed: ArgumentNode | undefined = getNodeByName(directive.arguments, FLEX_SEARCH_INDEXED_ARGUMENT);
         if (argumentIndexed) {
             if (argumentIndexed.value.kind === 'BooleanValue') {
                 config.isIndexed = argumentIndexed.value.value;
-            } else {
-                context.addMessage(ValidationMessage.error(VALIDATION_ERROR_EXPECTED_BOOLEAN, argumentIndexed.value.loc));
             }
         }
     }
@@ -563,7 +583,6 @@ function getCollectConfig(fieldNode: FieldDefinitionNode, context: ValidationCon
     };
 }
 
-
 function extractPermissionProfiles(parsedProject: ParsedProject): ReadonlyArray<NamespacedPermissionProfileConfigMap> {
     return compact(parsedProject.sources.map((source): NamespacedPermissionProfileConfigMap | undefined => {
         if (source.kind !== ParsedProjectSourceBaseKind.OBJECT) {
@@ -600,3 +619,12 @@ const indexDefinitionInputObjectType: GraphQLInputObjectType = new GraphQLInputO
     },
     name: INDEX_DEFINITION_INPUT_TYPE
 });
+
+const flexSearchOrderInputObjectType: GraphQLInputObjectType = new GraphQLInputObjectType({
+    name: 'FlexSearchOrderArgument',
+    fields: {
+        field: { type: GraphQLString },
+        direction: { type: new GraphQLEnumType({ name: 'OrderDirection', values: { ASC: { value: 'ASC' }, DESC: { value: 'DESC' } } }) }
+    }
+});
+

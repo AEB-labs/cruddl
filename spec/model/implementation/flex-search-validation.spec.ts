@@ -75,7 +75,7 @@ describe('FlexSearch', () => {
                     permissions: {
                         permissionProfileName: 'restricted'
                     },
-                    arangoSearchIndex: { isIndexed: true }
+                    arangoSearchIndex: { isIndexed: true, primarySort: [] }
                 }
             ],
             permissionProfiles: [{ namespacePath: [], profiles: { ['restricted']: { permissions: [{ access: 'readWrite', roles: ['allusers'], restrictToAccessGroups: ['RESTRICTED'] }] } } }]

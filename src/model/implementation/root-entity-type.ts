@@ -64,7 +64,8 @@ export class RootEntityType extends ObjectTypeBase {
     @memorize()
     get arangoSearchConfig(): ArangoSearchIndexConfig {
         return this.input.arangoSearchIndex || {
-            isIndexed: false
+            isIndexed: false,
+            primarySort: []
         };
     }
 

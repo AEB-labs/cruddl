@@ -3,7 +3,8 @@ import gql from 'graphql-tag';
 
 export const DIRECTIVES: DocumentNode = gql`
     "Declares a type for root-level objects with ids that are stored directly in the data base"
-    directive @rootEntity(indices: [IndexDefinition!], permissionProfile: String, flexSearch: Boolean = false, flexSearchLanguage: FlexSearchLanguage = EN) on OBJECT
+    directive @rootEntity(indices: [IndexDefinition!], permissionProfile: String,
+        flexSearch: Boolean = false, flexSearchLanguage: FlexSearchLanguage = EN, flexSearchOrder: [FlexSearchOrderArgument!] = []) on OBJECT
 
     "Declares a type for objects with ids that can be embedded as a list within another entity"
     directive @childEntity(flexSearchLanguage: FlexSearchLanguage = EN) on OBJECT
@@ -108,6 +109,16 @@ export const DIRECTIVES: DocumentNode = gql`
     "The available languages for ArangoSearch Analyzers"
     enum FlexSearchLanguage {
         EN, DE, ES, FI, FR, IT, NL, NO, PT, RU, SV, ZH
+    }
+
+    "An argument to define the order of a flexSearchIndex"
+    input FlexSearchOrderArgument {
+        field: String,
+        direction: OrderDirection
+    }
+
+    enum OrderDirection {
+        ASC, DESC
     }
 
     "Declares a field to be unique-indexed"

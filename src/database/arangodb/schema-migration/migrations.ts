@@ -6,7 +6,7 @@ import { ArangoSearchViewPropertiesOptions } from 'arangojs/lib/cjs/view';
 
 export type SchemaMigration = CreateIndexMigration | DropIndexMigration | CreateDocumentCollectionMigration
     | CreateEdgeCollectionMigration | CreateArangoSearchViewMigration | DropArangoSearchViewMigration
-    | UpdateArangoSearchViewMigration;
+    | UpdateArangoSearchViewMigration | RecreateArangoSearchViewMigration;
 
 interface CreateIndexMigrationConfig {
     readonly index: IndexDefinition
@@ -190,6 +190,33 @@ export class CreateArangoSearchViewMigration {
 
     get id() {
         return `createArangoSearch/${this.viewName}`;
+    }
+
+    get isMandatory() {
+        return false;
+    }
+}
+
+export class RecreateArangoSearchViewMigration {
+    readonly type: 'recreateArangoSearchView' = 'recreateArangoSearchView';
+    readonly viewName: string;
+    readonly properties: ArangoSearchViewPropertiesOptions;
+    readonly collectionName: string;
+    readonly collectionSize?: number;
+
+    constructor(config: CreateArangoSearchViewMigrationConfig) {
+        this.viewName = config.viewName;
+        this.properties = config.properties;
+        this.collectionName = config.collectionName;
+        this.collectionSize = config.collectionSize;
+    }
+
+    get description() {
+        return `Recreate the ArangoSearchView ${this.viewName} for the collection ${this.collectionName}`;
+    }
+
+    get id() {
+        return `recreateArangoSearch/${this.viewName}`;
     }
 
     get isMandatory() {

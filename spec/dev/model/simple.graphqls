@@ -1,4 +1,4 @@
-type Hero @rootEntity(flexSearch: true, flexSearchLanguage: DE) {
+type Hero @rootEntity(flexSearch: true, flexSearchLanguage: DE, flexSearchOrder: [{field: "name", direction: ASC}]) {
     "The hero's screen name"
     name: String @flexSearchFulltext(isIncludedInSearch: true)
     age: Int @defaultValue(value: 42)

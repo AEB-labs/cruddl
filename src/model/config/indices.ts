@@ -1,4 +1,5 @@
 import { DirectiveNode, ObjectValueNode, StringValueNode } from 'graphql';
+import { ArangoSearchPrimarySortConfig } from '../../database/arangodb/schema-migration/arango-search-helpers';
 
 export interface IndexDefinitionConfig {
     readonly id?: string,
@@ -20,4 +21,5 @@ export interface IndexDefinitionConfig {
 export interface ArangoSearchIndexConfig {
     readonly isIndexed: boolean
     readonly directiveASTNode?: DirectiveNode
+    readonly primarySort: ArangoSearchPrimarySortConfig[]
 }

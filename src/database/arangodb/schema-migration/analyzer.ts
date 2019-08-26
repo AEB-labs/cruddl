@@ -43,8 +43,7 @@ export class SchemaAnalyzer {
 
     async getDocumentCollectionMigrations(model: Model): Promise<ReadonlyArray<CreateDocumentCollectionMigration>> {
         // Get existing collections in ArangoDB
-        const existingCollections = (await this.db.collections()).filter(coll => (coll as any).type === 2 /* document */);
-        ;
+        const existingCollections = (await this.db.collections()).filter(coll => (coll as any).type === 2 /* document */)
         const existingCollectionNames = new Set(existingCollections.map(coll => (<any>coll).name)); // typing for name missing
 
         const migrations: CreateDocumentCollectionMigration[] = [];
@@ -155,7 +154,7 @@ export class SchemaAnalyzer {
      * Calculates all required migrations to sync the arangodb-views with the model
      * @param model
      */
-    async getArangoSearchMigrations(model: Model): Promise<ReadonlyArray<CreateArangoSearchViewMigration | DropArangoSearchViewMigration | UpdateArangoSearchViewMigration>> {
+    async getArangoSearchMigrations(model: Model): Promise<ReadonlyArray<SchemaMigration>> {
 
         if(!await isArangoSearchSupported(this.versionHelper.getArangoDBVersion())){
             return []

@@ -7,7 +7,7 @@ import {
     CreateDocumentCollectionMigration,
     CreateEdgeCollectionMigration,
     CreateIndexMigration, DropArangoSearchViewMigration,
-    DropIndexMigration,
+    DropIndexMigration, RecreateArangoSearchViewMigration,
     SchemaMigration, UpdateArangoSearchViewMigration
 } from './migrations';
 import { ArangoDBVersion, ArangoDBVersionHelper } from '../version-helper';
@@ -37,6 +37,8 @@ export class MigrationPerformer {
                 return this.updateArangoSearchView(migration);
             case 'dropArangoSearchView':
                 return this.dropArangoSearchView(migration);
+            case 'recreateArangoSearchView':
+                return this.recreateArangoSearchView(migration);
             default:
                 throw new Error(`Unknown migration type: ${(migration as any).type}`);
         }
@@ -66,9 +68,7 @@ export class MigrationPerformer {
 
     private async createArangoSearchView(migration: CreateArangoSearchViewMigration) {
         if (await isArangoSearchSupported(this.versionHelper.getArangoDBVersion())) {
-            await this.db.arangoSearchView(migration.viewName).create();
-            // Setting the properties during creation does not work for some reason
-            await this.db.arangoSearchView(migration.viewName).setProperties(migration.properties);
+            await this.db.arangoSearchView(migration.viewName).create(migration.properties);
         } else {
             throw new ArangoSearchMigrationNotSupportedError();
         }
@@ -86,6 +86,15 @@ export class MigrationPerformer {
     private async dropArangoSearchView(migration: DropArangoSearchViewMigration) {
         if (await isArangoSearchSupported(this.versionHelper.getArangoDBVersion())) {
             await this.db.arangoSearchView(migration.config.viewName).drop();
+        } else {
+            throw new ArangoSearchMigrationNotSupportedError();
+        }
+    }
+
+    private async recreateArangoSearchView(migration: RecreateArangoSearchViewMigration) {
+        if (await isArangoSearchSupported(this.versionHelper.getArangoDBVersion())) {
+            await this.db.arangoSearchView(migration.viewName).drop();
+            await this.db.arangoSearchView(migration.viewName).create(migration.properties);
         } else {
             throw new ArangoSearchMigrationNotSupportedError();
         }
