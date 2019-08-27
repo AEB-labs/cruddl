@@ -115,8 +115,7 @@ function createObjectTypeInput(definition: ObjectTypeDefinitionNode, schemaPart:
                 kind: TypeKind.ROOT_ENTITY,
                 permissions: getPermissions(definition, context),
                 indices: createIndexDefinitionInputs(definition, context),
-                arangoSearchIndex: createArangoSearchDefinitionInputs(definition, context),
-                flexSearchOrderASTNode: rootEntityDirective ? getNodeByName(rootEntityDirective.arguments, FLEX_SEARCH_ORDER_ARGUMENT) : undefined
+                arangoSearchIndex: createArangoSearchDefinitionInputs(definition, context)
             };
     }
 }

@@ -1,6 +1,6 @@
 import { Model, RootEntityType, TypeKind } from '../../../core-exports';
 import { FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT } from '../../../src/schema/constants';
-import { assertValidatorRejects } from '../../schema/ast-validation-modules/helpers';
+import { assertValidatorAccepts, assertValidatorRejects } from '../../schema/ast-validation-modules/helpers';
 import { expectSingleErrorToInclude } from './validation-utils';
 
 describe('FlexSearch', () => {
@@ -84,5 +84,30 @@ describe('FlexSearch', () => {
         const type = <RootEntityType>model.types.find(value => value.name === 'HandlingUnit');
         expectSingleErrorToInclude(type.fields.find(value => value.name === 'accessGroup')!, '');
 
+    });
+    it('accepts a valid primarySort', () => {
+        assertValidatorAccepts(`
+            type HandlingUnit @rootEntity(flexSearch: true, flexSearchOrder: [{field: "someString", direction: ASC}]) {
+                someString: String @flexSearch
+            }
+        `);
+        assertValidatorAccepts(`
+            type HandlingUnit @rootEntity(flexSearch: true, flexSearchOrder: [{field: "someExtension.someString", direction: ASC}]) {
+                someExtension: HandlingUnitInfo @flexSearch
+            }
+            type HandlingUnitInfo @entityExtension{
+                someString: String @flexSearch
+            }
+        `);
+    });
+    it('rejects an invalid primarySort', () => {
+        assertValidatorRejects(`
+            type HandlingUnit @rootEntity(flexSearch: true, flexSearchOrder: [{field: "someTypo", direction: ASC}]) {
+                someExtension: HandlingUnitInfo @flexSearch
+            }
+            type HandlingUnitInfo @entityExtension{
+                someString: String
+            }
+        `, `At least one field on type "HandlingUnitInfo" must be annotated with @flexSearch or @flexSearchFulltext if @flexSearch is specified on the type declaration.`);
     });
 });

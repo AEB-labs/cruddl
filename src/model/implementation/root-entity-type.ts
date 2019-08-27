@@ -1,6 +1,6 @@
 import { GraphQLID, GraphQLString } from 'graphql';
 import memorize from 'memorize-decorator';
-import { ACCESS_GROUP_FIELD, DEFAULT_PERMISSION_PROFILE, ID_FIELD, SCALAR_INT, SCALAR_STRING } from '../../schema/constants';
+import { ACCESS_GROUP_FIELD, DEFAULT_PERMISSION_PROFILE, FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE, FLEX_SEARCH_INDEXED_DIRECTIVE, FLEX_SEARCH_ORDER_ARGUMENT, ID_FIELD, ROOT_ENTITY_DIRECTIVE, SCALAR_INT, SCALAR_STRING } from '../../schema/constants';
 import { compact } from '../../utils/utils';
 import { ArangoSearchIndexConfig, PermissionsConfig, RootEntityTypeConfig, TypeKind } from '../config';
 import { ValidationMessage } from '../validation';
@@ -222,9 +222,37 @@ export class RootEntityType extends ObjectTypeBase {
     private validateFlexSearch(context: ValidationContext) {
         if (!this.arangoSearchConfig.isIndexed && this.fields.some(value => (value.isFlexSearchIndexed || value.isFlexSearchFulltextIndexed) && !value.isSystemField)) {
             context.addMessage(ValidationMessage.warn(
-                `The type contains fields that are annotated with @flexSearch or @flexSearchFulltext, but the type itself is not marked with flexSearch = true.`,
+                `The type contains fields that are annotated with ${FLEX_SEARCH_INDEXED_DIRECTIVE} or ${FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE}, but the type itself is not marked with flexSearch = true.`,
                 this.input.astNode!.name
             ));
+        }
+        // validate primarySort
+        for (const primarySortConfig of this.arangoSearchConfig.primarySort) {
+            const primarySortPath = primarySortConfig.field.split('.');
+            const astNode = this.input.astNode!.directives!.find(value => value.name.value === ROOT_ENTITY_DIRECTIVE)!.arguments!.find(value => value.name.value === FLEX_SEARCH_ORDER_ARGUMENT)!;
+
+            function isValidPath(fields: ReadonlyArray<Field>, path: ReadonlyArray<string>): boolean {
+                const [head, ...tail] = path;
+                const field = fields.find(value => value.name === head);
+                if (field) {
+                    if (field.type.isScalarType || field.type.isEnumType && tail.length == 0) {
+                        return true;
+                    } else if (field.type.isObjectType && !field.isList && tail.length > 0) {
+                        return isValidPath(field.type.fields, tail);
+                    } else {
+                        return false;
+                    }
+                } else {
+                    return false;
+                }
+            }
+
+            if (!isValidPath(this.fields, primarySortPath)) {
+                context.addMessage(ValidationMessage.warn(
+                    `The provided flexSearchOrder is invalid. It must be a path that evaluates to a scalar value and the full path must be annotated with ${FLEX_SEARCH_INDEXED_DIRECTIVE}.`,
+                    astNode
+                ));
+            }
         }
     }
 }
