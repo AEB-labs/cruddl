@@ -1,16 +1,9 @@
 import { Database } from 'arangojs';
 import { ArangoDBConfig, initDatabase } from '../config';
+import { ArangoDBVersionHelper } from '../version-helper';
 import { ArangoSearchMigrationNotSupportedError } from './ArangoSearchMigrationNotSupportedError';
 import { isArangoSearchSupported } from './index-helpers';
-import {
-    CreateArangoSearchViewMigration,
-    CreateDocumentCollectionMigration,
-    CreateEdgeCollectionMigration,
-    CreateIndexMigration, DropArangoSearchViewMigration,
-    DropIndexMigration, RecreateArangoSearchViewMigration,
-    SchemaMigration, UpdateArangoSearchViewMigration
-} from './migrations';
-import { ArangoDBVersion, ArangoDBVersionHelper } from '../version-helper';
+import { CreateArangoSearchViewMigration, CreateDocumentCollectionMigration, CreateEdgeCollectionMigration, CreateIndexMigration, DropArangoSearchViewMigration, DropIndexMigration, RecreateArangoSearchViewMigration, SchemaMigration, UpdateArangoSearchViewMigration } from './migrations';
 
 export class MigrationPerformer {
     private readonly db: Database;
@@ -69,6 +62,7 @@ export class MigrationPerformer {
     private async createArangoSearchView(migration: CreateArangoSearchViewMigration) {
         if (await isArangoSearchSupported(this.versionHelper.getArangoDBVersion())) {
             await this.db.arangoSearchView(migration.viewName).create(migration.properties);
+            await this.db.arangoSearchView(migration.viewName).setProperties(migration.properties);
         } else {
             throw new ArangoSearchMigrationNotSupportedError();
         }
@@ -95,6 +89,7 @@ export class MigrationPerformer {
         if (await isArangoSearchSupported(this.versionHelper.getArangoDBVersion())) {
             await this.db.arangoSearchView(migration.viewName).drop();
             await this.db.arangoSearchView(migration.viewName).create(migration.properties);
+            await this.db.arangoSearchView(migration.viewName).setProperties(migration.properties);
         } else {
             throw new ArangoSearchMigrationNotSupportedError();
         }
