@@ -5,7 +5,6 @@ import { RequestProfile } from '../config/interfaces';
 import { DatabaseAdapter, ExecutionPlan, FlexSearchTokenizable, TransactionStats } from '../database/database-adapter';
 import { OperationParams } from '../graphql/operation-based-resolvers';
 import { distillOperation } from '../graphql/query-distiller';
-import { FlexSearchLanguage } from '../model/config';
 import { ObjectQueryNode, PropertySpecification, QueryNode } from '../query-tree';
 import { FlexSearchComplexOperatorQueryNode, FlexSearchTokenization } from '../query-tree/flex-search';
 import { evaluateQueryStatically } from '../query-tree/utils';
@@ -56,8 +55,8 @@ export class OperationResolver {
             const rootQueryNode = ObjectQueryNode.EMPTY; // can't use NULL because then the whole operation would yield null
             const fieldContext = {
                 selectionStack: [],
-                flexSearchMaxFilterableAmountOverride: options ? options.flexSearchMaxFilterableAndSortableAmount : undefined,
-                flexSearchRecursionDepth: options ? options.flexSearchRecursionDepth : undefined
+                flexSearchMaxFilterableAmountOverride: options.flexSearchMaxFilterableAndSortableAmount,
+                flexSearchRecursionDepth: options.flexSearchRecursionDepth
             };
             queryTree = buildConditionalObjectQueryNode(rootQueryNode, rootType, operation.selectionSet, fieldContext);
             if (logger.isTraceEnabled()) {
@@ -141,8 +140,6 @@ export class OperationResolver {
     }
 
     private async queryFlexSearchTokens(queryTree: QueryNode, databaseAdapter: DatabaseAdapter): Promise<ReadonlyArray<FlexSearchTokenization>> {
-        const cache = {};
-
         async function collectTokenizations(queryNode: QueryNode): Promise<ReadonlyArray<FlexSearchTokenizable>> {
             let tokens: FlexSearchTokenizable[] = [];
             if (queryNode instanceof FlexSearchComplexOperatorQueryNode) {

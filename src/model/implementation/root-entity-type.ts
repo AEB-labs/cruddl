@@ -69,7 +69,7 @@ export class RootEntityType extends ObjectTypeBase {
         };
     }
 
-    get hasIncludedInSearchFields() {
+    get hasFieldsIncludedInSearch() {
         return this.fields.some(value => value.isIncludedInSearch);
     }
 
@@ -222,8 +222,8 @@ export class RootEntityType extends ObjectTypeBase {
     private validateFlexSearch(context: ValidationContext) {
         if (!this.arangoSearchConfig.isIndexed && this.fields.some(value => (value.isFlexSearchIndexed || value.isFlexSearchFulltextIndexed) && !value.isSystemField)) {
             context.addMessage(ValidationMessage.warn(
-                `The entity contains fields that are annotated with @flexSearch or @flexSearchFulltext, but the entity itself is not marked with flexSearch = true.`,
-                this.input.flexSearchIndexASTNode
+                `The type contains fields that are annotated with @flexSearch or @flexSearchFulltext, but the type itself is not marked with flexSearch = true.`,
+                this.input.astNode!.name
             ));
         }
     }

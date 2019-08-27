@@ -1,199 +1,92 @@
 {
   "equals": {
     "data": {
-      "flexSearchDeliveries": [
-        {
-          "deliveryNumber": "1000173"
-        }
-      ]
+      "flexSearchDeliveries": []
     }
   },
   "in": {
     "data": {
-      "flexSearchDeliveries": [
-        {
-          "deliveryNumber": "1000173"
-        },
-        {
-          "deliveryNumber": "1000521"
-        }
-      ]
+      "flexSearchDeliveries": []
     }
   },
   "starts_with": {
     "data": {
-      "flexSearchDeliveries": [
-        {
-          "deliveryNumber": "1000521"
-        },
-        {
-          "deliveryNumber": "1000522"
-        }
-      ]
+      "flexSearchDeliveries": []
     }
   },
   "gt_lt": {
     "data": {
-      "flexSearchDeliveries": [
-        {
-          "deliveryNumber": "1000173"
-        },
-        {
-          "deliveryNumber": "1000522"
-        }
-      ]
+      "flexSearchDeliveries": []
     }
   },
   "containsAnyWord": {
     "data": {
-      "flexSearchDeliveries": [
-        {
-          "deliveryNumber": "1000173"
-        }
-      ]
+      "flexSearchDeliveries": []
     }
   },
   "containsAllWords": {
     "data": {
-      "flexSearchDeliveries": [
-        {
-          "deliveryNumber": "1000521"
-        }
-      ]
+      "flexSearchDeliveries": []
     }
   },
   "containsAllPrefixes": {
     "data": {
-      "flexSearchDeliveries": [
-        {
-          "deliveryNumber": "1000521"
-        }
-      ]
+      "flexSearchDeliveries": []
     }
   },
   "containsPhrase": {
     "data": {
-      "flexSearchDeliveries": [
-        {
-          "deliveryNumber": "1000522"
-        }
-      ]
+      "flexSearchDeliveries": []
     }
   },
   "equals_enum": {
     "data": {
-      "flexSearchDeliveries": [
-        {
-          "deliveryNumber": "1000173"
-        }
-      ]
+      "flexSearchDeliveries": []
     }
   },
   "valueObject": {
     "data": {
-      "flexSearchDeliveries": [
-        {
-          "deliveryNumber": "1000521"
-        }
-      ]
+      "flexSearchDeliveries": []
     }
   },
   "equals_null": {
     "data": {
-      "flexSearchDeliveries": [
-        {
-          "deliveryNumber": "1000173"
-        }
-      ]
+      "flexSearchDeliveries": []
     }
   },
   "filter_below_max": {
     "data": {
-      "flexSearchDeliveries": [
-        {
-          "deliveryNumber": "1000521"
-        }
-      ]
+      "flexSearchDeliveries": []
     }
   },
   "order_below_max": {
     "data": {
-      "flexSearchDeliveries": [
-        {
-          "deliveryNumber": "1000521"
-        }
-      ]
+      "flexSearchDeliveries": []
     }
   },
   "filter_above_max": {
-    "errors": [
-      {
-        "message": "Too many objects.",
-        "locations": [
-          {
-            "line": 136,
-            "column": 5
-          }
-        ],
-        "path": [
-          "flexSearchDeliveries"
-        ]
-      }
-    ],
     "data": {
-      "flexSearchDeliveries": null
+      "flexSearchDeliveries": []
     }
   },
   "order_above_max": {
-    "errors": [
-      {
-        "message": "Too many objects.",
-        "locations": [
-          {
-            "line": 146,
-            "column": 5
-          }
-        ],
-        "path": [
-          "flexSearchDeliveries"
-        ]
-      }
-    ],
     "data": {
-      "flexSearchDeliveries": null
+      "flexSearchDeliveries": []
     }
   },
   "expression_with_number": {
     "data": {
-      "flexSearchDeliveries": [
-        {
-          "deliveryNumber": "1000521"
-        },
-        {
-          "deliveryNumber": "1000522"
-        }
-      ]
+      "flexSearchDeliveries": []
     }
   },
   "expression": {
     "data": {
-      "flexSearchDeliveries": [
-        {
-          "deliveryNumber": "1000173"
-        },
-        {
-          "deliveryNumber": "1000521"
-        }
-      ]
+      "flexSearchDeliveries": []
     }
   },
   "recursion_successfull": {
     "data": {
-      "flexSearchDeliveries": [
-        {
-          "deliveryNumber": "1000173"
-        }
-      ]
+      "flexSearchDeliveries": []
     }
   },
   "recursion_error": {

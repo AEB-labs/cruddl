@@ -116,8 +116,7 @@ function createObjectTypeInput(definition: ObjectTypeDefinitionNode, schemaPart:
                 permissions: getPermissions(definition, context),
                 indices: createIndexDefinitionInputs(definition, context),
                 arangoSearchIndex: createArangoSearchDefinitionInputs(definition, context),
-                flexSearchIndexASTNode: rootEntityDirective ? getNodeByName(rootEntityDirective.arguments, FLEX_SEARCH_INDEXED_ARGUMENT) : undefined,
-                flexSearchOrderASTNode: rootEntityDirective ? getNodeByName(rootEntityDirective.arguments, FLEX_SEARCH_ORDER_ARGUMENT) : undefined,
+                flexSearchOrderASTNode: rootEntityDirective ? getNodeByName(rootEntityDirective.arguments, FLEX_SEARCH_ORDER_ARGUMENT) : undefined
             };
     }
 }

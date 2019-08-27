@@ -718,7 +718,7 @@ export class Field implements ModelComponent {
     }
 
     get language(): FlexSearchLanguage | undefined {
-        return this.input.flexSearchLanguage ? this.input.flexSearchLanguage : this.declaringType.flexSearchLanguage;
+        return this.input.flexSearchLanguage || this.declaringType.flexSearchLanguage;
     }
 }
 

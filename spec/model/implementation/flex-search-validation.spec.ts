@@ -1,4 +1,5 @@
 import { Model, RootEntityType, TypeKind } from '../../../core-exports';
+import { FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT } from '../../../src/schema/constants';
 import { assertValidatorRejects } from '../../schema/ast-validation-modules/helpers';
 import { expectSingleErrorToInclude } from './validation-utils';
 
@@ -63,7 +64,7 @@ describe('FlexSearch', () => {
             type HandlingUnit @rootEntity(flexSearch: true) {
                 someBool: Boolean @flexSearch(includeInSearch: true)
             }
-        `, `"includeInSearch: true" is not supported on type "Boolean".`);
+        `, `"${FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT}: true" is not supported on type "Boolean".`);
     });
     it('rejects flexSearch without accessField', () => {
         const model = new Model({

@@ -2,7 +2,7 @@ import { getNamedType, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'gra
 import * as pluralize from 'pluralize';
 import { isArray } from 'util';
 import { Field, FlexSearchLanguage, TypeKind } from '../../model';
-import { BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, FieldPathQueryNode, LiteralQueryNode, QueryNode, RuntimeErrorQueryNode } from '../../query-tree';
+import { BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, FieldPathQueryNode, LiteralQueryNode, NullQueryNode, QueryNode, RuntimeErrorQueryNode } from '../../query-tree';
 import { FlexSearchFieldExistsQueryNode } from '../../query-tree/flex-search';
 import { AND_FILTER_FIELD, FILTER_FIELD_PREFIX_SEPARATOR, INPUT_FIELD_EQUAL, INPUT_FIELD_NOT, INPUT_FIELD_NOT_STARTS_WITH, INPUT_FIELD_STARTS_WITH, OR_FILTER_FIELD } from '../../schema/constants';
 import { AnyValue, PlainObject } from '../../utils/utils';
@@ -77,10 +77,7 @@ export class FlexSearchScalarOrEnumFieldFilterField implements FlexSearchFilterF
             return new ConstBoolQueryNode(true);
         }
 
-
         return this.resolveOperator(valueNode, literalNode, this.flexSearchLanguage);
-
-
     }
 }
 
@@ -136,7 +133,7 @@ export class FlexSearchNestedObjectFilterField implements FlexSearchFilterField 
         }
         if (filterValue == null) {
             const valueNode = new FieldPathQueryNode(sourceNode, path.concat(this.field));
-            const literalNode = new LiteralQueryNode(filterValue);
+            const literalNode = new NullQueryNode();
             const node = new BinaryOperationQueryNode(
                 new BinaryOperationQueryNode(valueNode, BinaryOperator.EQUAL, literalNode),
                 BinaryOperator.OR,

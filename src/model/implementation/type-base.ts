@@ -16,7 +16,7 @@ export abstract class TypeBase implements ModelComponent {
     abstract readonly kind: TypeKind;
     readonly astNode: TypeDefinitionNode | undefined;
     readonly nameASTNode: NameNode | undefined;
-    private _flexSearchLanguage: FlexSearchLanguage | undefined;
+    private readonly flexSearchLanguage: FlexSearchLanguage | undefined;
 
     protected constructor(input: TypeConfig, public readonly model: Model) {
         this.astNode = input.astNode;
@@ -25,7 +25,7 @@ export abstract class TypeBase implements ModelComponent {
         this.namespacePath = input.namespacePath || [];
         this.description = input.description;
         this.pluralName = pluralize(this.name);
-        this._flexSearchLanguage = input.flexSearchLanguage;
+        this.flexSearchLanguage = input.flexSearchLanguage;
     }
 
     validate(context: ValidationContext) {
@@ -63,10 +63,6 @@ export abstract class TypeBase implements ModelComponent {
     @memorize()
     get namespace(): Namespace {
         return this.model.getNamespaceByPathOrThrow(this.namespacePath);
-    }
-
-    get flexSearchLanguage(): FlexSearchLanguage | undefined{
-        return this._flexSearchLanguage
     }
 
     abstract readonly isObjectType: boolean = false;

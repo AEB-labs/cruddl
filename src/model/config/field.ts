@@ -1,4 +1,4 @@
-import { DirectiveNode, EnumValueNode, FieldDefinitionNode, NameNode, StringValueNode, TypeNode, ValueNode } from 'graphql';
+import { DirectiveNode, EnumValueNode, FieldDefinitionNode, NameNode, StringValueNode, ValueNode } from 'graphql';
 import { PermissionsConfig } from './permissions';
 
 export interface FieldConfig {
@@ -30,7 +30,14 @@ export interface FieldConfig {
     readonly isFlexSearchFulltextIndexed?: boolean
     readonly isFlexSearchFulltextIndexedASTNode?: DirectiveNode
     readonly flexSearchLanguage?: FlexSearchLanguage
+
+    /**
+     * Specifies if the field should be included in the expression-search of FlexSearch as a value.
+     */
     readonly isIncludedInSearch?: boolean
+    /**
+     * Specifies if the field should be included in the expression-search of FlexSearch as a text.
+     */
     readonly isFulltextIncludedInSearch?: boolean
 }
 

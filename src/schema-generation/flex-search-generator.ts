@@ -1,4 +1,4 @@
-import { GraphQLFieldConfigArgumentMap, GraphQLString } from 'graphql';
+import { GraphQLFieldConfigArgumentMap, GraphQLFloat, GraphQLInt, GraphQLString } from 'graphql';
 import { Field, RootEntityType } from '../model/implementation';
 import { BinaryOperationQueryNode, BinaryOperator, BinaryOperatorWithLanguage, ConditionalQueryNode, ConstBoolQueryNode, CountQueryNode, FieldPathQueryNode, FLEX_SEARCH_TOO_MANY_OBJECTS, LiteralQueryNode, OperatorWithLanguageQueryNode, PreExecQueryParms, QueryNode, RuntimeErrorQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../query-tree';
 import { FlexSearchQueryNode, FlexSearchStartsWithQueryNode } from '../query-tree/flex-search';
@@ -65,7 +65,7 @@ export class FlexSearchGenerator {
         }
         const flexSearchType = this.flexSearchTypeGenerator.generate(rootEntityType, false);
         // Don't include searchExpression if there are no fields that are included in the search
-        const newArgs: GraphQLFieldConfigArgumentMap = rootEntityType.hasIncludedInSearchFields ?
+        const newArgs: GraphQLFieldConfigArgumentMap = rootEntityType.hasFieldsIncludedInSearch ?
             {
                 [FLEX_SEARCH_FILTER_ARG]: { type: flexSearchType.getInputType() },
                 [FLEX_SEARCH_EXPRESSION_ARG]: { type: GraphQLString }
@@ -100,7 +100,7 @@ export class FlexSearchGenerator {
 
     private buildFlexSearchFilterNode(args: { [p: string]: any }, filterType: FlexSearchFilterObjectType, itemVariable: VariableQueryNode, rootEntityType: RootEntityType, info: QueryNodeResolveInfo) {
         const filterValue = args[FLEX_SEARCH_FILTER_ARG] || {};
-        const expression = rootEntityType.hasIncludedInSearchFields ? args[FLEX_SEARCH_EXPRESSION_ARG] as string : undefined;
+        const expression = rootEntityType.hasFieldsIncludedInSearch ? args[FLEX_SEARCH_EXPRESSION_ARG] as string : undefined;
         const filterNode = simplifyBooleans(filterType.getFilterNode(itemVariable, filterValue, [], info));
         const searchFilterNode = simplifyBooleans(this.buildFlexSearchSearchFilterNode(rootEntityType, itemVariable, expression));
         if (searchFilterNode === ConstBoolQueryNode.TRUE) {
@@ -160,12 +160,19 @@ export class FlexSearchGenerator {
             }
 
             function getIdentityNode() {
-                if (field.type.isScalarType && (field.type.graphQLScalarType.name === 'Int' || field.type.graphQLScalarType.name === 'Float') && !isNaN(Number(expression))) {
-                    return new BinaryOperationQueryNode(new FieldPathQueryNode(itemVariable, path.concat(field)), BinaryOperator.EQUAL, new LiteralQueryNode(Number(expression)));
+                if (field.type.isScalarType && (field.type.graphQLScalarType.name === GraphQLInt.name || field.type.graphQLScalarType.name === GraphQLFloat.name)) {
+                    // if the field and the expression are numbers, compare with equals
+                    if (!isNaN(Number(expression))) {
+                        return new BinaryOperationQueryNode(new FieldPathQueryNode(itemVariable, path.concat(field)), BinaryOperator.EQUAL, new LiteralQueryNode(Number(expression)));
+                    } else {
+                        // if the field is a number but the expression is not, don't search for this field
+                        return new ConstBoolQueryNode(false);
+                    }
                 } else {
+                    // if the field is not a number, compare with starts_with
                     return new FlexSearchStartsWithQueryNode(new FieldPathQueryNode(itemVariable, path.concat(field)), new LiteralQueryNode(expression));
-
                 }
+
             }
 
             function getOperatorWithLanguageQueryNode() {
