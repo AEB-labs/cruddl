@@ -1,7 +1,7 @@
 import { GraphQLBoolean, GraphQLFloat, GraphQLID, GraphQLInt, GraphQLString } from 'graphql';
 import { FlexSearchLanguage } from '../../model/config';
 import { BinaryOperator, QueryNode } from '../../query-tree';
-import { INPUT_FIELD_CONTAINS, INPUT_FIELD_CONTAINS_ALL_PREFIXES, INPUT_FIELD_CONTAINS_ALL_WORDS, INPUT_FIELD_CONTAINS_ANY_PREFIX, INPUT_FIELD_CONTAINS_ANY_WORD, INPUT_FIELD_CONTAINS_PHRASE, INPUT_FIELD_ENDS_WITH, INPUT_FIELD_EQUAL, INPUT_FIELD_GT, INPUT_FIELD_GTE, INPUT_FIELD_IN, INPUT_FIELD_LIKE, INPUT_FIELD_LT, INPUT_FIELD_LTE, INPUT_FIELD_NOT, INPUT_FIELD_NOT_CONTAINS_ALL_PREFIXES, INPUT_FIELD_NOT_CONTAINS_ALL_WORDS, INPUT_FIELD_NOT_CONTAINS_ANY_PREFIX, INPUT_FIELD_NOT_CONTAINS_ANY_WORD, INPUT_FIELD_NOT_CONTAINS_PHRASE, INPUT_FIELD_NOT_ENDS_WITH, INPUT_FIELD_NOT_IN, INPUT_FIELD_NOT_LIKE, INPUT_FIELD_NOT_STARTS_WITH, INPUT_FIELD_STARTS_WITH } from '../../schema/constants';
+import { INPUT_FIELD_CONTAINS_ALL_PREFIXES, INPUT_FIELD_CONTAINS_ALL_WORDS, INPUT_FIELD_CONTAINS_ANY_PREFIX, INPUT_FIELD_CONTAINS_ANY_WORD, INPUT_FIELD_CONTAINS_PHRASE, INPUT_FIELD_ENDS_WITH, INPUT_FIELD_EQUAL, INPUT_FIELD_GT, INPUT_FIELD_GTE, INPUT_FIELD_IN, INPUT_FIELD_LT, INPUT_FIELD_LTE, INPUT_FIELD_NOT, INPUT_FIELD_NOT_CONTAINS_ALL_PREFIXES, INPUT_FIELD_NOT_CONTAINS_ALL_WORDS, INPUT_FIELD_NOT_CONTAINS_ANY_PREFIX, INPUT_FIELD_NOT_CONTAINS_ANY_WORD, INPUT_FIELD_NOT_CONTAINS_PHRASE, INPUT_FIELD_NOT_ENDS_WITH, INPUT_FIELD_NOT_IN, INPUT_FIELD_NOT_STARTS_WITH, INPUT_FIELD_STARTS_WITH } from '../../schema/constants';
 import { GraphQLDateTime } from '../../schema/scalars/date-time';
 import { GraphQLLocalDate } from '../../schema/scalars/local-date';
 import { GraphQLLocalTime } from '../../schema/scalars/local-time';
@@ -78,6 +78,14 @@ export const FLEX_SEARCH_FILTER_DESCRIPTIONS: { [name: string]: string | { [type
         ['']: 'Checks if $field does not equal a specified value'
     },
 
+    [INPUT_FIELD_IN]: 'Checks if $field is contained in a specified list.',
+    [INPUT_FIELD_NOT_IN]: 'Checks if $field is not contained in a specified list.',
+    [INPUT_FIELD_LT]: 'Checks if $field is less then a specified value.',
+    [INPUT_FIELD_LTE]: 'Checks if $field is less or equal a specified value.',
+    [INPUT_FIELD_GT]: 'Checks if $field is greater then a specified value.',
+    [INPUT_FIELD_GTE]: 'Checks if $field is greater or equal a specified value.',
+
+
     [INPUT_FIELD_STARTS_WITH]: 'Checks if $field starts with a specified string, case-insensitively.',
     [INPUT_FIELD_NOT_STARTS_WITH]: 'Checks if $field does not start with a specified string, case-insensitively.',
     [INPUT_FIELD_CONTAINS_ANY_WORD]: 'Tokenizes the provided string into words, and checks if $field contains at least one of them.\n ' +
@@ -116,6 +124,13 @@ export const FLEX_SEARCH_FILTER_DESCRIPTIONS_AGGREGATION: { [name: string]: stri
 
     [INPUT_FIELD_STARTS_WITH]: 'Checks if any value in $field starts with a specified string, case-insensitively.',
     [INPUT_FIELD_NOT_STARTS_WITH]: 'Checks if none of the values in $field start with a specified string, case-insensitively.',
+
+    [INPUT_FIELD_IN]: 'Checks if $field is contained in a specified list.',
+    [INPUT_FIELD_NOT_IN]: 'Checks if $field is not contained in a specified list.',
+    [INPUT_FIELD_LT]: 'Checks if $field is less then a specified value.',
+    [INPUT_FIELD_LTE]: 'Checks if $field is less or equal a specified value.',
+    [INPUT_FIELD_GT]: 'Checks if $field is greater then a specified value.',
+    [INPUT_FIELD_GTE]: 'Checks if $field is greater or equal a specified value.',
 
     [INPUT_FIELD_CONTAINS_ANY_WORD]: 'Tokenizes the provided string into words, and checks if any value in $field contains at least one of them.\n ' +
     'Stemming (reduction of words on their base form) is applied.',

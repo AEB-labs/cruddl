@@ -1,14 +1,19 @@
 type Hero @rootEntity(flexSearch: true, flexSearchLanguage: DE, flexSearchOrder: [{field: "name", direction: ASC}]) {
     "The hero's screen name"
-    name: String @flexSearchFulltext(includeInSearch: true)
+    name: String @unique @flexSearchFulltext(includeInSearch: true)
     age: Int @defaultValue(value: 42)
     nickNames: [String] @flexSearch
     movies: [Movie] @relation(inverseOf: "heroes")
     skills: [Skill]
     suit: Suit
     morality: Morality
-    country: Country @reference
+    countryISOCode: String
+    country: Country @reference(keyField: "countryISOCode")
     missions: [Mission]
+    friends: [Hero] @relation
+    moreFriends: [Hero] @collect(path: "friends{0,2}")
+    subMissions: [Mission] @collect(path: "missions.subMissions")
+    missionsAgain: [Mission] @collect(path: "missions")
     info: JSON
 }
 
@@ -16,6 +21,7 @@ type Hero @rootEntity(flexSearch: true, flexSearchLanguage: DE, flexSearchOrder:
 type Mission @childEntity {
     date: DateTime
     title: String
+    subMissions: [Mission]
 }
 
 "A special skill of a superhero"
@@ -33,6 +39,13 @@ type Movie @rootEntity {
     heroes: [Hero] @relation
     "The real superhero"
     director: Director @relation
+    publisher: Publisher @reference
+
+    relatedMovies: [Movie] @collect(path: "heroes.movies" aggregate: DISTINCT)
+    community: [Hero] @collect(path: "heroes.friends{0,2}" aggregate: DISTINCT)
+    subMissions: [Mission] @collect(path: "heroes.friends{0,2}.missions.subMissions" aggregate: DISTINCT)
+    skillCount: Int @collect(path: "heroes.skills", aggregate: COUNT)
+    totalSkillStrength: Float @collect(path: "heroes.skills.strength", aggregate: SUM)
 }
 
 "A movie director"
@@ -49,6 +62,12 @@ type Suit @entityExtension {
 
 type Country @rootEntity {
     isoCode: String @key
+    name: String
+}
+
+type Publisher @rootEntity {
+    identCode: String @key
+    name: String
 }
 
 enum Morality {

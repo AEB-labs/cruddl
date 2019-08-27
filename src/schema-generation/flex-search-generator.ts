@@ -111,6 +111,12 @@ export class FlexSearchGenerator {
 
     }
 
+    /**
+     * Creates the FlexSearchNode without the List-augmentation so it can be used in the PreExecutionQueryNode that prevents the usage of the list-augmentation arguments for too many objects
+     * @param rootEntityType
+     * @param args
+     * @param context
+     */
     private getPreExecQueryNode(rootEntityType: RootEntityType, args: { [p: string]: any }, context: QueryNodeResolveInfo): QueryNode {
         const itemVariable = new VariableQueryNode(decapitalize(rootEntityType.name));
         const flexSearchType = this.flexSearchTypeGenerator.generate(rootEntityType, false);
@@ -131,6 +137,8 @@ export class FlexSearchGenerator {
             ...schemaField,
             transform: (sourceNode, args, context) => {
                 const assertionVariable = new VariableQueryNode();
+                // If a filter or an order_by is specified, a pre-execution query node is added that throws a TOO_MANY_OBJECTS_ERROR if the amount of objects the filter or order_by is
+                // used on is to large
                 if (args[FILTER_ARG] || args[ORDER_BY_ARG]) {
                     return new WithPreExecutionQueryNode({
                         preExecQueries: [

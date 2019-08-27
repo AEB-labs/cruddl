@@ -687,7 +687,7 @@ export class Field implements ModelComponent {
             context.addMessage(ValidationMessage.error(`@flexSearchFulltext requires either a "language" parameter, or a "flexSearchLanguage" must be set in the defining type.`, this.input.isFlexSearchFulltextIndexedASTNode));
         }
         if (this.isFlexSearchIndexed && (this.type.isEntityExtensionType || this.type.isValueObjectType) && !this.type.fields.some(value => value.isFlexSearchIndexed || value.isFlexSearchFulltextIndexed)) {
-            context.addMessage(ValidationMessage.error(`At least one field on type "${this.type.name}" must be annotated with @flexSearch or @flexSearchFulltext.`, this.input.isFlexSearchIndexedASTNode));
+            context.addMessage(ValidationMessage.error(`At least one field on type "${this.type.name}" must be annotated with @flexSearch or @flexSearchFulltext if @flexSearch is specified on the type declaration.`, this.input.isFlexSearchIndexedASTNode));
         }
         if (this.name === ACCESS_GROUP_FIELD && this.declaringType.isRootEntityType && this.declaringType.permissionProfile
             && this.declaringType.permissionProfile.permissions.some(value => value.restrictToAccessGroups) && this.declaringType.arangoSearchConfig.isIndexed && !this.isFlexSearchIndexed) {

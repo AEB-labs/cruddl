@@ -2,14 +2,13 @@ import { GraphQLEnumType, Thunk } from 'graphql';
 import memorize from 'memorize-decorator';
 import { FlexSearchLanguage } from '../../model/config';
 import { EnumType, Field, ObjectType, ScalarType, Type } from '../../model/implementation';
-import { BinaryOperationQueryNode, BinaryOperator, BinaryOperatorWithLanguage, ConstBoolQueryNode, LiteralQueryNode, NullQueryNode, OrderDirection, QueryNode, RuntimeErrorQueryNode } from '../../query-tree';
+import { BinaryOperationQueryNode, BinaryOperator, BinaryOperatorWithLanguage, ConstBoolQueryNode, LiteralQueryNode, NullQueryNode, QueryNode, RuntimeErrorQueryNode } from '../../query-tree';
 import { FlexSearchComplexOperatorQueryNode } from '../../query-tree/flex-search';
 import { INPUT_FIELD_CONTAINS_ALL_PREFIXES, INPUT_FIELD_CONTAINS_ALL_WORDS, INPUT_FIELD_CONTAINS_ANY_PREFIX, INPUT_FIELD_CONTAINS_ANY_WORD, INPUT_FIELD_CONTAINS_PHRASE, INPUT_FIELD_EQUAL, INPUT_FIELD_NOT_CONTAINS_ALL_PREFIXES, INPUT_FIELD_NOT_CONTAINS_ALL_WORDS, INPUT_FIELD_NOT_CONTAINS_ANY_PREFIX, INPUT_FIELD_NOT_CONTAINS_ANY_WORD, INPUT_FIELD_NOT_CONTAINS_PHRASE } from '../../schema/constants';
 import { getFlexSearchFilterTypeName } from '../../schema/names';
 import { AnyValue, flatMap, objectEntries } from '../../utils/utils';
 import { EnumTypeGenerator } from '../enum-type-generator';
 import { ENUM_FILTER_FIELDS, FILTER_OPERATORS } from '../filter-input-types/constants';
-import { OrderByEnumValue } from '../order-by-enum-generator';
 import { QueryNodeResolveInfo, resolveThunk } from '../query-node-object-type';
 import { TypedInputObjectType } from '../typed-input-object-type';
 import { and, binaryNotOpWithLanguage, binaryOpWithLanguage, noLanguageWasSuppliedError, not } from '../utils/input-types';
@@ -246,31 +245,5 @@ export class FlexSearchFilterTypeGenerator {
                 this.enumTypeGenerator.generate(type));
         });
     }
-
-    private getValues(type: ObjectType, path: ReadonlyArray<Field>): ReadonlyArray<OrderByEnumValue> {
-        return flatMap(type.fields, field => this.getValuesForField(field, path));
-    }
-
-    private getValuesForField(field: Field, path: ReadonlyArray<Field>) {
-        // Don't recurse
-        if (path.includes(field)) {
-            return [];
-        }
-
-        // can't sort by list value
-        if (field.isList) {
-            return [];
-        }
-
-        const newPath = [...path, field];
-        if (field.type.isObjectType) {
-            return this.getValues(field.type, newPath);
-        } else {
-            // currently, all scalars and enums are ordered types
-            return [
-                new OrderByEnumValue(newPath, OrderDirection.ASCENDING),
-                new OrderByEnumValue(newPath, OrderDirection.DESCENDING)
-            ];
-        }
-    }
+    
 }

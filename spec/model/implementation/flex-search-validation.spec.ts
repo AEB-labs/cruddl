@@ -57,7 +57,7 @@ describe('FlexSearch', () => {
             type HandlingUnitInfo @entityExtension{
                 someString: String
             }
-        `, `At least one field on type "HandlingUnitInfo" must be annotated with @flexSearch or @flexSearchFulltext.`);
+        `, `At least one field on type "HandlingUnitInfo" must be annotated with @flexSearch or @flexSearchFulltext if @flexSearch is specified on the type declaration.`);
     });
     it('rejects flexSearch includeInSearch for booleans', () => {
         assertValidatorRejects(`

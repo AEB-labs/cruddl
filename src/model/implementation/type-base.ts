@@ -16,7 +16,7 @@ export abstract class TypeBase implements ModelComponent {
     abstract readonly kind: TypeKind;
     readonly astNode: TypeDefinitionNode | undefined;
     readonly nameASTNode: NameNode | undefined;
-    private readonly flexSearchLanguage: FlexSearchLanguage | undefined;
+    readonly flexSearchLanguage: FlexSearchLanguage | undefined;
 
     protected constructor(input: TypeConfig, public readonly model: Model) {
         this.astNode = input.astNode;
