@@ -694,7 +694,7 @@ export class Field implements ModelComponent {
             context.addMessage(ValidationMessage.error(`The permission profile "${this.declaringType.permissionProfile.name}" uses "restrictToAccessGroups", ` +
                 `and this fields defining type is marked with "flexSearch: true", but this field is not marked with "@flexSearch".`, this.astNode));
         }
-        if (this.isIncludedInSearch && this.type.isScalarType && this.type.name === 'Boolean') {
+        if (this.isIncludedInSearch && !(this.type.isScalarType && this.type.name === 'String')) {
             context.addMessage(ValidationMessage.error(`"includeInSearch: true" is not supported on type "${this.type.name}".`, this.input.isFlexSearchFulltextIndexedASTNode));
             return;
         }

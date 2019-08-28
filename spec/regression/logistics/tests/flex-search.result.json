@@ -163,18 +163,6 @@
       "flexSearchDeliveries": null
     }
   },
-  "expression_with_number": {
-    "data": {
-      "flexSearchDeliveries": [
-        {
-          "deliveryNumber": "1000521"
-        },
-        {
-          "deliveryNumber": "1000522"
-        }
-      ]
-    }
-  },
   "expression": {
     "data": {
       "flexSearchDeliveries": [
@@ -202,7 +190,7 @@
         "message": "Recursive filters can only be defined for 1 level of recursion.",
         "locations": [
           {
-            "line": 184,
+            "line": 176,
             "column": 5
           }
         ],

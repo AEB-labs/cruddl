@@ -114,7 +114,6 @@
         "totalValue": "EUR 1024.00",
         "description": "description with anyword phrase a all",
         "enumFlexSearch": "Foo",
-        "aNumber": 123,
         "recursion": {
           "name": "test_a",
           "recursion": {
@@ -155,7 +154,6 @@
         "destinationCountryISOCode": "XX",
         "description": "description with all words prefixesFooBar phrase",
         "enumFlexSearch": "Bar",
-        "aNumber": 1234,
         "recursion": {
           "name": "test_x",
           "recursion": {
@@ -187,7 +185,6 @@
         ],
         "destinationCountryISOCode": "US",
         "description": "description with a phrase any word",
-        "aNumber": 1000521,
         "recursion": {
           "name": "test_1",
           "recursion": {

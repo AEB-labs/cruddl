@@ -66,6 +66,13 @@ describe('FlexSearch', () => {
             }
         `, `"${FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT}: true" is not supported on type "Boolean".`);
     });
+    it('accepts flexSearch includeInSearch for string arrays', () => {
+        assertValidatorAccepts(`
+            type HandlingUnit @rootEntity(flexSearch: true) {
+                someListOfStrings: [String] @flexSearch(includeInSearch: true)
+            }
+        `);
+    });
     it('rejects flexSearch without accessField', () => {
         const model = new Model({
             types: [

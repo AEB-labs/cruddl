@@ -150,14 +150,6 @@ query order_above_max {
     }
 }
 
-query expression_with_number{
-    flexSearchDeliveries(
-        flexSearchExpression: "1000521"
-    ){
-        deliveryNumber
-    }
-}
-
 query expression{
     flexSearchDeliveries(
         flexSearchExpression: "all"

@@ -167,30 +167,16 @@ export class FlexSearchGenerator {
                 return field.type.fields.map(value => getQueryNodeFromField(value, path.concat(field))).reduce(or, ConstBoolQueryNode.FALSE);
             }
 
-            function getIdentityNode() {
-                if (field.type.isScalarType && (field.type.graphQLScalarType.name === GraphQLInt.name || field.type.graphQLScalarType.name === GraphQLFloat.name)) {
-                    // if the field and the expression are numbers, compare with equals
-                    if (!isNaN(Number(expression))) {
-                        return new BinaryOperationQueryNode(new FieldPathQueryNode(itemVariable, path.concat(field)), BinaryOperator.EQUAL, new LiteralQueryNode(Number(expression)));
-                    } else {
-                        // if the field is a number but the expression is not, don't search for this field
-                        return new ConstBoolQueryNode(false);
-                    }
-                } else {
-                    // if the field is not a number, compare with starts_with
-                    return new FlexSearchStartsWithQueryNode(new FieldPathQueryNode(itemVariable, path.concat(field)), new LiteralQueryNode(expression));
-                }
-
-            }
-
-            function getOperatorWithLanguageQueryNode() {
-                return new OperatorWithLanguageQueryNode(new FieldPathQueryNode(itemVariable, path.concat(field)), BinaryOperatorWithLanguage.FLEX_SEARCH_CONTAINS_PREFIX, new LiteralQueryNode(expression), field.language!);
-            }
+            const identityNode = new FlexSearchStartsWithQueryNode(new FieldPathQueryNode(itemVariable, path.concat(field)), new LiteralQueryNode(expression));
+            const operatorWithLanguageNode = new OperatorWithLanguageQueryNode(
+                new FieldPathQueryNode(itemVariable, path.concat(field)), BinaryOperatorWithLanguage.FLEX_SEARCH_CONTAINS_PREFIX, new LiteralQueryNode(expression),
+                field.language!
+            );
 
             return new BinaryOperationQueryNode(
-                field.isFlexSearchIndexed && field.isIncludedInSearch ? getIdentityNode() : ConstBoolQueryNode.FALSE,
+                field.isFlexSearchIndexed && field.isIncludedInSearch ? identityNode : ConstBoolQueryNode.FALSE,
                 BinaryOperator.OR,
-                field.isFlexSearchFulltextIndexed && field.isFulltextIncludedInSearch && field.language ? getOperatorWithLanguageQueryNode() : ConstBoolQueryNode.FALSE
+                field.isFlexSearchFulltextIndexed && field.isFulltextIncludedInSearch && field.language ? operatorWithLanguageNode : ConstBoolQueryNode.FALSE
             );
         }
 
