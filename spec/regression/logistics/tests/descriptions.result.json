@@ -173,27 +173,27 @@
             },
             {
               "name": "languageIsoCode_in",
-              "description": null
+              "description": "Checks if `languageIsoCode` is contained in a specified list."
             },
             {
               "name": "languageIsoCode_not_in",
-              "description": null
+              "description": "Checks if `languageIsoCode` is not contained in a specified list."
             },
             {
               "name": "languageIsoCode_lt",
-              "description": null
+              "description": "Checks if `languageIsoCode` is less then a specified value."
             },
             {
               "name": "languageIsoCode_lte",
-              "description": null
+              "description": "Checks if `languageIsoCode` is less or equal a specified value."
             },
             {
               "name": "languageIsoCode_gt",
-              "description": null
+              "description": "Checks if `languageIsoCode` is greater then a specified value."
             },
             {
               "name": "languageIsoCode_gte",
-              "description": null
+              "description": "Checks if `languageIsoCode` is greater or equal a specified value."
             },
             {
               "name": "languageIsoCode_contains",
@@ -201,7 +201,7 @@
             },
             {
               "name": "languageIsoCode_not_contains",
-              "description": null
+              "description": "Checks if `languageIsoCode` does not contain a specified string, case-sensitively."
             },
             {
               "name": "languageIsoCode_starts_with",
@@ -209,7 +209,7 @@
             },
             {
               "name": "languageIsoCode_not_starts_with",
-              "description": null
+              "description": "Checks if `languageIsoCode` does not start with a specified string, case-sensitively.\n\nNever uses an index. Consider using `not_like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
             },
             {
               "name": "languageIsoCode_ends_with",
@@ -217,7 +217,7 @@
             },
             {
               "name": "languageIsoCode_not_ends_with",
-              "description": null
+              "description": "Checks if `languageIsoCode` does not end with a specified string, case-sensitively."
             },
             {
               "name": "languageIsoCode_like",
@@ -237,27 +237,27 @@
             },
             {
               "name": "translation_in",
-              "description": null
+              "description": "Checks if `translation` is contained in a specified list."
             },
             {
               "name": "translation_not_in",
-              "description": null
+              "description": "Checks if `translation` is not contained in a specified list."
             },
             {
               "name": "translation_lt",
-              "description": null
+              "description": "Checks if `translation` is less then a specified value."
             },
             {
               "name": "translation_lte",
-              "description": null
+              "description": "Checks if `translation` is less or equal a specified value."
             },
             {
               "name": "translation_gt",
-              "description": null
+              "description": "Checks if `translation` is greater then a specified value."
             },
             {
               "name": "translation_gte",
-              "description": null
+              "description": "Checks if `translation` is greater or equal a specified value."
             },
             {
               "name": "translation_contains",
@@ -265,7 +265,7 @@
             },
             {
               "name": "translation_not_contains",
-              "description": null
+              "description": "Checks if `translation` does not contain a specified string, case-sensitively."
             },
             {
               "name": "translation_starts_with",
@@ -273,7 +273,7 @@
             },
             {
               "name": "translation_not_starts_with",
-              "description": null
+              "description": "Checks if `translation` does not start with a specified string, case-sensitively.\n\nNever uses an index. Consider using `not_like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
             },
             {
               "name": "translation_ends_with",
@@ -281,7 +281,7 @@
             },
             {
               "name": "translation_not_ends_with",
-              "description": null
+              "description": "Checks if `translation` does not end with a specified string, case-sensitively."
             },
             {
               "name": "translation_like",
@@ -358,27 +358,27 @@
             },
             {
               "name": "id_in",
-              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+              "description": "Checks if `id` is contained in a specified list.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_not_in",
-              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+              "description": "Checks if `id` is not contained in a specified list.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_lt",
-              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+              "description": "Checks if `id` is less then a specified value.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_lte",
-              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+              "description": "Checks if `id` is less or equal a specified value.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_gt",
-              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+              "description": "Checks if `id` is greater then a specified value.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_gte",
-              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+              "description": "Checks if `id` is greater or equal a specified value.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "createdAt",
@@ -390,27 +390,27 @@
             },
             {
               "name": "createdAt_in",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is contained in a specified list.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_not_in",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is not contained in a specified list.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_lt",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is less then a specified value.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_lte",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is less or equal a specified value.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_gt",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is greater then a specified value.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_gte",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is greater or equal a specified value.\n\nThe instant this object has been created"
             },
             {
               "name": "updatedAt",
@@ -422,27 +422,27 @@
             },
             {
               "name": "updatedAt_in",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is contained in a specified list.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_not_in",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is not contained in a specified list.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_lt",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is less then a specified value.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_lte",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is less or equal a specified value.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_gt",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is greater then a specified value.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_gte",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is greater or equal a specified value.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "isoCode",
@@ -454,27 +454,27 @@
             },
             {
               "name": "isoCode_in",
-              "description": null
+              "description": "Checks if `isoCode` is contained in a specified list."
             },
             {
               "name": "isoCode_not_in",
-              "description": null
+              "description": "Checks if `isoCode` is not contained in a specified list."
             },
             {
               "name": "isoCode_lt",
-              "description": null
+              "description": "Checks if `isoCode` is less then a specified value."
             },
             {
               "name": "isoCode_lte",
-              "description": null
+              "description": "Checks if `isoCode` is less or equal a specified value."
             },
             {
               "name": "isoCode_gt",
-              "description": null
+              "description": "Checks if `isoCode` is greater then a specified value."
             },
             {
               "name": "isoCode_gte",
-              "description": null
+              "description": "Checks if `isoCode` is greater or equal a specified value."
             },
             {
               "name": "isoCode_contains",
@@ -482,7 +482,7 @@
             },
             {
               "name": "isoCode_not_contains",
-              "description": null
+              "description": "Checks if `isoCode` does not contain a specified string, case-sensitively."
             },
             {
               "name": "isoCode_starts_with",
@@ -490,7 +490,7 @@
             },
             {
               "name": "isoCode_not_starts_with",
-              "description": null
+              "description": "Checks if `isoCode` does not start with a specified string, case-sensitively.\n\nNever uses an index. Consider using `not_like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
             },
             {
               "name": "isoCode_ends_with",
@@ -498,7 +498,7 @@
             },
             {
               "name": "isoCode_not_ends_with",
-              "description": null
+              "description": "Checks if `isoCode` does not end with a specified string, case-sensitively."
             },
             {
               "name": "isoCode_like",
@@ -530,27 +530,27 @@
             },
             {
               "name": "totalInvestment_in",
-              "description": null
+              "description": "Checks if `totalInvestment` is contained in a specified list."
             },
             {
               "name": "totalInvestment_not_in",
-              "description": null
+              "description": "Checks if `totalInvestment` is not contained in a specified list."
             },
             {
               "name": "totalInvestment_lt",
-              "description": null
+              "description": "Checks if `totalInvestment` is less then a specified value."
             },
             {
               "name": "totalInvestment_lte",
-              "description": null
+              "description": "Checks if `totalInvestment` is less or equal a specified value."
             },
             {
               "name": "totalInvestment_gt",
-              "description": null
+              "description": "Checks if `totalInvestment` is greater then a specified value."
             },
             {
               "name": "totalInvestment_gte",
-              "description": null
+              "description": "Checks if `totalInvestment` is greater or equal a specified value."
             },
             {
               "name": "totalInvestment_contains",
@@ -558,7 +558,7 @@
             },
             {
               "name": "totalInvestment_not_contains",
-              "description": null
+              "description": "Checks if `totalInvestment` does not contain a specified string, case-sensitively."
             },
             {
               "name": "totalInvestment_starts_with",
@@ -566,7 +566,7 @@
             },
             {
               "name": "totalInvestment_not_starts_with",
-              "description": null
+              "description": "Checks if `totalInvestment` does not start with a specified string, case-sensitively.\n\nNever uses an index. Consider using `not_like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
             },
             {
               "name": "totalInvestment_ends_with",
@@ -574,7 +574,7 @@
             },
             {
               "name": "totalInvestment_not_ends_with",
-              "description": null
+              "description": "Checks if `totalInvestment` does not end with a specified string, case-sensitively."
             },
             {
               "name": "totalInvestment_like",
@@ -833,27 +833,27 @@
             },
             {
               "name": "id_in",
-              "description": "An auto-generated string that identifies this child entity uniquely within this collection of child entities"
+              "description": "Checks if `id` is contained in a specified list.\n\nAn auto-generated string that identifies this child entity uniquely within this collection of child entities"
             },
             {
               "name": "id_not_in",
-              "description": "An auto-generated string that identifies this child entity uniquely within this collection of child entities"
+              "description": "Checks if `id` is not contained in a specified list.\n\nAn auto-generated string that identifies this child entity uniquely within this collection of child entities"
             },
             {
               "name": "id_lt",
-              "description": "An auto-generated string that identifies this child entity uniquely within this collection of child entities"
+              "description": "Checks if `id` is less then a specified value.\n\nAn auto-generated string that identifies this child entity uniquely within this collection of child entities"
             },
             {
               "name": "id_lte",
-              "description": "An auto-generated string that identifies this child entity uniquely within this collection of child entities"
+              "description": "Checks if `id` is less or equal a specified value.\n\nAn auto-generated string that identifies this child entity uniquely within this collection of child entities"
             },
             {
               "name": "id_gt",
-              "description": "An auto-generated string that identifies this child entity uniquely within this collection of child entities"
+              "description": "Checks if `id` is greater then a specified value.\n\nAn auto-generated string that identifies this child entity uniquely within this collection of child entities"
             },
             {
               "name": "id_gte",
-              "description": "An auto-generated string that identifies this child entity uniquely within this collection of child entities"
+              "description": "Checks if `id` is greater or equal a specified value.\n\nAn auto-generated string that identifies this child entity uniquely within this collection of child entities"
             },
             {
               "name": "createdAt",
@@ -865,27 +865,27 @@
             },
             {
               "name": "createdAt_in",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is contained in a specified list.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_not_in",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is not contained in a specified list.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_lt",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is less then a specified value.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_lte",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is less or equal a specified value.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_gt",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is greater then a specified value.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_gte",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is greater or equal a specified value.\n\nThe instant this object has been created"
             },
             {
               "name": "updatedAt",
@@ -897,27 +897,27 @@
             },
             {
               "name": "updatedAt_in",
-              "description": "The instant this object has been updated the last time"
+              "description": "Checks if `updatedAt` is contained in a specified list.\n\nThe instant this object has been updated the last time"
             },
             {
               "name": "updatedAt_not_in",
-              "description": "The instant this object has been updated the last time"
+              "description": "Checks if `updatedAt` is not contained in a specified list.\n\nThe instant this object has been updated the last time"
             },
             {
               "name": "updatedAt_lt",
-              "description": "The instant this object has been updated the last time"
+              "description": "Checks if `updatedAt` is less then a specified value.\n\nThe instant this object has been updated the last time"
             },
             {
               "name": "updatedAt_lte",
-              "description": "The instant this object has been updated the last time"
+              "description": "Checks if `updatedAt` is less or equal a specified value.\n\nThe instant this object has been updated the last time"
             },
             {
               "name": "updatedAt_gt",
-              "description": "The instant this object has been updated the last time"
+              "description": "Checks if `updatedAt` is greater then a specified value.\n\nThe instant this object has been updated the last time"
             },
             {
               "name": "updatedAt_gte",
-              "description": "The instant this object has been updated the last time"
+              "description": "Checks if `updatedAt` is greater or equal a specified value.\n\nThe instant this object has been updated the last time"
             },
             {
               "name": "itemNumber",
@@ -929,27 +929,27 @@
             },
             {
               "name": "itemNumber_in",
-              "description": null
+              "description": "Checks if `itemNumber` is contained in a specified list."
             },
             {
               "name": "itemNumber_not_in",
-              "description": null
+              "description": "Checks if `itemNumber` is not contained in a specified list."
             },
             {
               "name": "itemNumber_lt",
-              "description": null
+              "description": "Checks if `itemNumber` is less then a specified value."
             },
             {
               "name": "itemNumber_lte",
-              "description": null
+              "description": "Checks if `itemNumber` is less or equal a specified value."
             },
             {
               "name": "itemNumber_gt",
-              "description": null
+              "description": "Checks if `itemNumber` is greater then a specified value."
             },
             {
               "name": "itemNumber_gte",
-              "description": null
+              "description": "Checks if `itemNumber` is greater or equal a specified value."
             },
             {
               "name": "itemNumber_contains",
@@ -957,7 +957,7 @@
             },
             {
               "name": "itemNumber_not_contains",
-              "description": null
+              "description": "Checks if `itemNumber` does not contain a specified string, case-sensitively."
             },
             {
               "name": "itemNumber_starts_with",
@@ -965,7 +965,7 @@
             },
             {
               "name": "itemNumber_not_starts_with",
-              "description": null
+              "description": "Checks if `itemNumber` does not start with a specified string, case-sensitively.\n\nNever uses an index. Consider using `not_like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
             },
             {
               "name": "itemNumber_ends_with",
@@ -973,7 +973,7 @@
             },
             {
               "name": "itemNumber_not_ends_with",
-              "description": null
+              "description": "Checks if `itemNumber` does not end with a specified string, case-sensitively."
             },
             {
               "name": "itemNumber_like",
@@ -993,27 +993,27 @@
             },
             {
               "name": "quantity_in",
-              "description": null
+              "description": "Checks if `quantity` is contained in a specified list."
             },
             {
               "name": "quantity_not_in",
-              "description": null
+              "description": "Checks if `quantity` is not contained in a specified list."
             },
             {
               "name": "quantity_lt",
-              "description": null
+              "description": "Checks if `quantity` is less then a specified value."
             },
             {
               "name": "quantity_lte",
-              "description": null
+              "description": "Checks if `quantity` is less or equal a specified value."
             },
             {
               "name": "quantity_gt",
-              "description": null
+              "description": "Checks if `quantity` is greater then a specified value."
             },
             {
               "name": "quantity_gte",
-              "description": null
+              "description": "Checks if `quantity` is greater or equal a specified value."
             },
             {
               "name": "handlingUnit",
@@ -1048,27 +1048,27 @@
             },
             {
               "name": "id_in",
-              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+              "description": "Checks if `id` is contained in a specified list.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_not_in",
-              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+              "description": "Checks if `id` is not contained in a specified list.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_lt",
-              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+              "description": "Checks if `id` is less then a specified value.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_lte",
-              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+              "description": "Checks if `id` is less or equal a specified value.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_gt",
-              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+              "description": "Checks if `id` is greater then a specified value.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_gte",
-              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+              "description": "Checks if `id` is greater or equal a specified value.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "createdAt",
@@ -1080,27 +1080,27 @@
             },
             {
               "name": "createdAt_in",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is contained in a specified list.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_not_in",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is not contained in a specified list.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_lt",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is less then a specified value.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_lte",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is less or equal a specified value.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_gt",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is greater then a specified value.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_gte",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is greater or equal a specified value.\n\nThe instant this object has been created"
             },
             {
               "name": "updatedAt",
@@ -1112,27 +1112,27 @@
             },
             {
               "name": "updatedAt_in",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is contained in a specified list.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_not_in",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is not contained in a specified list.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_lt",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is less then a specified value.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_lte",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is less or equal a specified value.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_gt",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is greater then a specified value.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_gte",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is greater or equal a specified value.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "huNumber",
@@ -1144,27 +1144,27 @@
             },
             {
               "name": "huNumber_in",
-              "description": null
+              "description": "Checks if `huNumber` is contained in a specified list."
             },
             {
               "name": "huNumber_not_in",
-              "description": null
+              "description": "Checks if `huNumber` is not contained in a specified list."
             },
             {
               "name": "huNumber_lt",
-              "description": null
+              "description": "Checks if `huNumber` is less then a specified value."
             },
             {
               "name": "huNumber_lte",
-              "description": null
+              "description": "Checks if `huNumber` is less or equal a specified value."
             },
             {
               "name": "huNumber_gt",
-              "description": null
+              "description": "Checks if `huNumber` is greater then a specified value."
             },
             {
               "name": "huNumber_gte",
-              "description": null
+              "description": "Checks if `huNumber` is greater or equal a specified value."
             },
             {
               "name": "huNumber_contains",
@@ -1172,7 +1172,7 @@
             },
             {
               "name": "huNumber_not_contains",
-              "description": null
+              "description": "Checks if `huNumber` does not contain a specified string, case-sensitively."
             },
             {
               "name": "huNumber_starts_with",
@@ -1180,7 +1180,7 @@
             },
             {
               "name": "huNumber_not_starts_with",
-              "description": null
+              "description": "Checks if `huNumber` does not start with a specified string, case-sensitively.\n\nNever uses an index. Consider using `not_like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
             },
             {
               "name": "huNumber_ends_with",
@@ -1188,7 +1188,7 @@
             },
             {
               "name": "huNumber_not_ends_with",
-              "description": null
+              "description": "Checks if `huNumber` does not end with a specified string, case-sensitively."
             },
             {
               "name": "huNumber_like",
@@ -1227,27 +1227,27 @@
             },
             {
               "name": "id_in",
-              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+              "description": "Checks if `id` is contained in a specified list.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_not_in",
-              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+              "description": "Checks if `id` is not contained in a specified list.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_lt",
-              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+              "description": "Checks if `id` is less then a specified value.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_lte",
-              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+              "description": "Checks if `id` is less or equal a specified value.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_gt",
-              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+              "description": "Checks if `id` is greater then a specified value.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_gte",
-              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+              "description": "Checks if `id` is greater or equal a specified value.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "createdAt",
@@ -1259,27 +1259,27 @@
             },
             {
               "name": "createdAt_in",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is contained in a specified list.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_not_in",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is not contained in a specified list.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_lt",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is less then a specified value.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_lte",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is less or equal a specified value.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_gt",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is greater then a specified value.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_gte",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is greater or equal a specified value.\n\nThe instant this object has been created"
             },
             {
               "name": "updatedAt",
@@ -1291,27 +1291,27 @@
             },
             {
               "name": "updatedAt_in",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is contained in a specified list.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_not_in",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is not contained in a specified list.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_lt",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is less then a specified value.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_lte",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is less or equal a specified value.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_gt",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is greater then a specified value.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_gte",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is greater or equal a specified value.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "deliveryNumber",
@@ -1323,27 +1323,27 @@
             },
             {
               "name": "deliveryNumber_in",
-              "description": null
+              "description": "Checks if `deliveryNumber` is contained in a specified list."
             },
             {
               "name": "deliveryNumber_not_in",
-              "description": null
+              "description": "Checks if `deliveryNumber` is not contained in a specified list."
             },
             {
               "name": "deliveryNumber_lt",
-              "description": null
+              "description": "Checks if `deliveryNumber` is less then a specified value."
             },
             {
               "name": "deliveryNumber_lte",
-              "description": null
+              "description": "Checks if `deliveryNumber` is less or equal a specified value."
             },
             {
               "name": "deliveryNumber_gt",
-              "description": null
+              "description": "Checks if `deliveryNumber` is greater then a specified value."
             },
             {
               "name": "deliveryNumber_gte",
-              "description": null
+              "description": "Checks if `deliveryNumber` is greater or equal a specified value."
             },
             {
               "name": "deliveryNumber_contains",
@@ -1351,7 +1351,7 @@
             },
             {
               "name": "deliveryNumber_not_contains",
-              "description": null
+              "description": "Checks if `deliveryNumber` does not contain a specified string, case-sensitively."
             },
             {
               "name": "deliveryNumber_starts_with",
@@ -1359,7 +1359,7 @@
             },
             {
               "name": "deliveryNumber_not_starts_with",
-              "description": null
+              "description": "Checks if `deliveryNumber` does not start with a specified string, case-sensitively.\n\nNever uses an index. Consider using `not_like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
             },
             {
               "name": "deliveryNumber_ends_with",
@@ -1367,7 +1367,7 @@
             },
             {
               "name": "deliveryNumber_not_ends_with",
-              "description": null
+              "description": "Checks if `deliveryNumber` does not end with a specified string, case-sensitively."
             },
             {
               "name": "deliveryNumber_like",
@@ -1447,27 +1447,27 @@
             },
             {
               "name": "destinationCountryISOCode_in",
-              "description": null
+              "description": "Checks if `destinationCountryISOCode` is contained in a specified list."
             },
             {
               "name": "destinationCountryISOCode_not_in",
-              "description": null
+              "description": "Checks if `destinationCountryISOCode` is not contained in a specified list."
             },
             {
               "name": "destinationCountryISOCode_lt",
-              "description": null
+              "description": "Checks if `destinationCountryISOCode` is less then a specified value."
             },
             {
               "name": "destinationCountryISOCode_lte",
-              "description": null
+              "description": "Checks if `destinationCountryISOCode` is less or equal a specified value."
             },
             {
               "name": "destinationCountryISOCode_gt",
-              "description": null
+              "description": "Checks if `destinationCountryISOCode` is greater then a specified value."
             },
             {
               "name": "destinationCountryISOCode_gte",
-              "description": null
+              "description": "Checks if `destinationCountryISOCode` is greater or equal a specified value."
             },
             {
               "name": "destinationCountryISOCode_contains",
@@ -1475,7 +1475,7 @@
             },
             {
               "name": "destinationCountryISOCode_not_contains",
-              "description": null
+              "description": "Checks if `destinationCountryISOCode` does not contain a specified string, case-sensitively."
             },
             {
               "name": "destinationCountryISOCode_starts_with",
@@ -1483,7 +1483,7 @@
             },
             {
               "name": "destinationCountryISOCode_not_starts_with",
-              "description": null
+              "description": "Checks if `destinationCountryISOCode` does not start with a specified string, case-sensitively.\n\nNever uses an index. Consider using `not_like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
             },
             {
               "name": "destinationCountryISOCode_ends_with",
@@ -1491,7 +1491,7 @@
             },
             {
               "name": "destinationCountryISOCode_not_ends_with",
-              "description": null
+              "description": "Checks if `destinationCountryISOCode` does not end with a specified string, case-sensitively."
             },
             {
               "name": "destinationCountryISOCode_like",
@@ -1515,27 +1515,27 @@
             },
             {
               "name": "shippedAt_in",
-              "description": null
+              "description": "Checks if `shippedAt` is contained in a specified list."
             },
             {
               "name": "shippedAt_not_in",
-              "description": null
+              "description": "Checks if `shippedAt` is not contained in a specified list."
             },
             {
               "name": "shippedAt_lt",
-              "description": null
+              "description": "Checks if `shippedAt` is less then a specified value."
             },
             {
               "name": "shippedAt_lte",
-              "description": null
+              "description": "Checks if `shippedAt` is less or equal a specified value."
             },
             {
               "name": "shippedAt_gt",
-              "description": null
+              "description": "Checks if `shippedAt` is greater then a specified value."
             },
             {
               "name": "shippedAt_gte",
-              "description": null
+              "description": "Checks if `shippedAt` is greater or equal a specified value."
             },
             {
               "name": "totalValue",
@@ -1547,27 +1547,27 @@
             },
             {
               "name": "totalValue_in",
-              "description": null
+              "description": "Checks if `totalValue` is contained in a specified list."
             },
             {
               "name": "totalValue_not_in",
-              "description": null
+              "description": "Checks if `totalValue` is not contained in a specified list."
             },
             {
               "name": "totalValue_lt",
-              "description": null
+              "description": "Checks if `totalValue` is less then a specified value."
             },
             {
               "name": "totalValue_lte",
-              "description": null
+              "description": "Checks if `totalValue` is less or equal a specified value."
             },
             {
               "name": "totalValue_gt",
-              "description": null
+              "description": "Checks if `totalValue` is greater then a specified value."
             },
             {
               "name": "totalValue_gte",
-              "description": null
+              "description": "Checks if `totalValue` is greater or equal a specified value."
             },
             {
               "name": "totalValue_contains",
@@ -1575,7 +1575,7 @@
             },
             {
               "name": "totalValue_not_contains",
-              "description": null
+              "description": "Checks if `totalValue` does not contain a specified string, case-sensitively."
             },
             {
               "name": "totalValue_starts_with",
@@ -1583,7 +1583,7 @@
             },
             {
               "name": "totalValue_not_starts_with",
-              "description": null
+              "description": "Checks if `totalValue` does not start with a specified string, case-sensitively.\n\nNever uses an index. Consider using `not_like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
             },
             {
               "name": "totalValue_ends_with",
@@ -1591,7 +1591,7 @@
             },
             {
               "name": "totalValue_not_ends_with",
-              "description": null
+              "description": "Checks if `totalValue` does not end with a specified string, case-sensitively."
             },
             {
               "name": "totalValue_like",
@@ -1619,27 +1619,27 @@
             },
             {
               "name": "defaultValueString_in",
-              "description": null
+              "description": "Checks if `defaultValueString` is contained in a specified list."
             },
             {
               "name": "defaultValueString_not_in",
-              "description": null
+              "description": "Checks if `defaultValueString` is not contained in a specified list."
             },
             {
               "name": "defaultValueString_lt",
-              "description": null
+              "description": "Checks if `defaultValueString` is less then a specified value."
             },
             {
               "name": "defaultValueString_lte",
-              "description": null
+              "description": "Checks if `defaultValueString` is less or equal a specified value."
             },
             {
               "name": "defaultValueString_gt",
-              "description": null
+              "description": "Checks if `defaultValueString` is greater then a specified value."
             },
             {
               "name": "defaultValueString_gte",
-              "description": null
+              "description": "Checks if `defaultValueString` is greater or equal a specified value."
             },
             {
               "name": "defaultValueString_contains",
@@ -1647,7 +1647,7 @@
             },
             {
               "name": "defaultValueString_not_contains",
-              "description": null
+              "description": "Checks if `defaultValueString` does not contain a specified string, case-sensitively."
             },
             {
               "name": "defaultValueString_starts_with",
@@ -1655,7 +1655,7 @@
             },
             {
               "name": "defaultValueString_not_starts_with",
-              "description": null
+              "description": "Checks if `defaultValueString` does not start with a specified string, case-sensitively.\n\nNever uses an index. Consider using `not_like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
             },
             {
               "name": "defaultValueString_ends_with",
@@ -1663,7 +1663,7 @@
             },
             {
               "name": "defaultValueString_not_ends_with",
-              "description": null
+              "description": "Checks if `defaultValueString` does not end with a specified string, case-sensitively."
             },
             {
               "name": "defaultValueString_like",
@@ -1683,27 +1683,27 @@
             },
             {
               "name": "defaultValueString2_in",
-              "description": null
+              "description": "Checks if `defaultValueString2` is contained in a specified list."
             },
             {
               "name": "defaultValueString2_not_in",
-              "description": null
+              "description": "Checks if `defaultValueString2` is not contained in a specified list."
             },
             {
               "name": "defaultValueString2_lt",
-              "description": null
+              "description": "Checks if `defaultValueString2` is less then a specified value."
             },
             {
               "name": "defaultValueString2_lte",
-              "description": null
+              "description": "Checks if `defaultValueString2` is less or equal a specified value."
             },
             {
               "name": "defaultValueString2_gt",
-              "description": null
+              "description": "Checks if `defaultValueString2` is greater then a specified value."
             },
             {
               "name": "defaultValueString2_gte",
-              "description": null
+              "description": "Checks if `defaultValueString2` is greater or equal a specified value."
             },
             {
               "name": "defaultValueString2_contains",
@@ -1711,7 +1711,7 @@
             },
             {
               "name": "defaultValueString2_not_contains",
-              "description": null
+              "description": "Checks if `defaultValueString2` does not contain a specified string, case-sensitively."
             },
             {
               "name": "defaultValueString2_starts_with",
@@ -1719,7 +1719,7 @@
             },
             {
               "name": "defaultValueString2_not_starts_with",
-              "description": null
+              "description": "Checks if `defaultValueString2` does not start with a specified string, case-sensitively.\n\nNever uses an index. Consider using `not_like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
             },
             {
               "name": "defaultValueString2_ends_with",
@@ -1727,7 +1727,7 @@
             },
             {
               "name": "defaultValueString2_not_ends_with",
-              "description": null
+              "description": "Checks if `defaultValueString2` does not end with a specified string, case-sensitively."
             },
             {
               "name": "defaultValueString2_like",
@@ -1747,27 +1747,27 @@
             },
             {
               "name": "defaultValueInt_in",
-              "description": null
+              "description": "Checks if `defaultValueInt` is contained in a specified list."
             },
             {
               "name": "defaultValueInt_not_in",
-              "description": null
+              "description": "Checks if `defaultValueInt` is not contained in a specified list."
             },
             {
               "name": "defaultValueInt_lt",
-              "description": null
+              "description": "Checks if `defaultValueInt` is less then a specified value."
             },
             {
               "name": "defaultValueInt_lte",
-              "description": null
+              "description": "Checks if `defaultValueInt` is less or equal a specified value."
             },
             {
               "name": "defaultValueInt_gt",
-              "description": null
+              "description": "Checks if `defaultValueInt` is greater then a specified value."
             },
             {
               "name": "defaultValueInt_gte",
-              "description": null
+              "description": "Checks if `defaultValueInt` is greater or equal a specified value."
             },
             {
               "name": "defaultValueTrue",
@@ -1795,27 +1795,27 @@
             },
             {
               "name": "defaultValueFloat_in",
-              "description": null
+              "description": "Checks if `defaultValueFloat` is contained in a specified list."
             },
             {
               "name": "defaultValueFloat_not_in",
-              "description": null
+              "description": "Checks if `defaultValueFloat` is not contained in a specified list."
             },
             {
               "name": "defaultValueFloat_lt",
-              "description": null
+              "description": "Checks if `defaultValueFloat` is less then a specified value."
             },
             {
               "name": "defaultValueFloat_lte",
-              "description": null
+              "description": "Checks if `defaultValueFloat` is less or equal a specified value."
             },
             {
               "name": "defaultValueFloat_gt",
-              "description": null
+              "description": "Checks if `defaultValueFloat` is greater then a specified value."
             },
             {
               "name": "defaultValueFloat_gte",
-              "description": null
+              "description": "Checks if `defaultValueFloat` is greater or equal a specified value."
             },
             {
               "name": "defaultValueEnum",
@@ -1827,11 +1827,11 @@
             },
             {
               "name": "defaultValueEnum_in",
-              "description": null
+              "description": "Checks if `defaultValueEnum` is contained in a specified list."
             },
             {
               "name": "defaultValueEnum_not_in",
-              "description": null
+              "description": "Checks if `defaultValueEnum` is not contained in a specified list."
             },
             {
               "name": "pickupDate",
@@ -1843,27 +1843,27 @@
             },
             {
               "name": "pickupDate_in",
-              "description": null
+              "description": "Checks if `pickupDate` is contained in a specified list."
             },
             {
               "name": "pickupDate_not_in",
-              "description": null
+              "description": "Checks if `pickupDate` is not contained in a specified list."
             },
             {
               "name": "pickupDate_lt",
-              "description": null
+              "description": "Checks if `pickupDate` is less then a specified value."
             },
             {
               "name": "pickupDate_lte",
-              "description": null
+              "description": "Checks if `pickupDate` is less or equal a specified value."
             },
             {
               "name": "pickupDate_gt",
-              "description": null
+              "description": "Checks if `pickupDate` is greater then a specified value."
             },
             {
               "name": "pickupDate_gte",
-              "description": null
+              "description": "Checks if `pickupDate` is greater or equal a specified value."
             },
             {
               "name": "pickupTimeStart",
@@ -1875,27 +1875,27 @@
             },
             {
               "name": "pickupTimeStart_in",
-              "description": null
+              "description": "Checks if `pickupTimeStart` is contained in a specified list."
             },
             {
               "name": "pickupTimeStart_not_in",
-              "description": null
+              "description": "Checks if `pickupTimeStart` is not contained in a specified list."
             },
             {
               "name": "pickupTimeStart_lt",
-              "description": null
+              "description": "Checks if `pickupTimeStart` is less then a specified value."
             },
             {
               "name": "pickupTimeStart_lte",
-              "description": null
+              "description": "Checks if `pickupTimeStart` is less or equal a specified value."
             },
             {
               "name": "pickupTimeStart_gt",
-              "description": null
+              "description": "Checks if `pickupTimeStart` is greater then a specified value."
             },
             {
               "name": "pickupTimeStart_gte",
-              "description": null
+              "description": "Checks if `pickupTimeStart` is greater or equal a specified value."
             },
             {
               "name": "pickupTimeEnd",
@@ -1907,27 +1907,27 @@
             },
             {
               "name": "pickupTimeEnd_in",
-              "description": null
+              "description": "Checks if `pickupTimeEnd` is contained in a specified list."
             },
             {
               "name": "pickupTimeEnd_not_in",
-              "description": null
+              "description": "Checks if `pickupTimeEnd` is not contained in a specified list."
             },
             {
               "name": "pickupTimeEnd_lt",
-              "description": null
+              "description": "Checks if `pickupTimeEnd` is less then a specified value."
             },
             {
               "name": "pickupTimeEnd_lte",
-              "description": null
+              "description": "Checks if `pickupTimeEnd` is less or equal a specified value."
             },
             {
               "name": "pickupTimeEnd_gt",
-              "description": null
+              "description": "Checks if `pickupTimeEnd` is greater then a specified value."
             },
             {
               "name": "pickupTimeEnd_gte",
-              "description": null
+              "description": "Checks if `pickupTimeEnd` is greater or equal a specified value."
             },
             {
               "name": "description",
@@ -1939,27 +1939,27 @@
             },
             {
               "name": "description_in",
-              "description": null
+              "description": "Checks if `description` is contained in a specified list."
             },
             {
               "name": "description_not_in",
-              "description": null
+              "description": "Checks if `description` is not contained in a specified list."
             },
             {
               "name": "description_lt",
-              "description": null
+              "description": "Checks if `description` is less then a specified value."
             },
             {
               "name": "description_lte",
-              "description": null
+              "description": "Checks if `description` is less or equal a specified value."
             },
             {
               "name": "description_gt",
-              "description": null
+              "description": "Checks if `description` is greater then a specified value."
             },
             {
               "name": "description_gte",
-              "description": null
+              "description": "Checks if `description` is greater or equal a specified value."
             },
             {
               "name": "description_contains",
@@ -1967,7 +1967,7 @@
             },
             {
               "name": "description_not_contains",
-              "description": null
+              "description": "Checks if `description` does not contain a specified string, case-sensitively."
             },
             {
               "name": "description_starts_with",
@@ -1975,7 +1975,7 @@
             },
             {
               "name": "description_not_starts_with",
-              "description": null
+              "description": "Checks if `description` does not start with a specified string, case-sensitively.\n\nNever uses an index. Consider using `not_like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
             },
             {
               "name": "description_ends_with",
@@ -1983,7 +1983,7 @@
             },
             {
               "name": "description_not_ends_with",
-              "description": null
+              "description": "Checks if `description` does not end with a specified string, case-sensitively."
             },
             {
               "name": "description_like",
@@ -2003,11 +2003,11 @@
             },
             {
               "name": "enumFlexSearch_in",
-              "description": null
+              "description": "Checks if `enumFlexSearch` is contained in a specified list."
             },
             {
               "name": "enumFlexSearch_not_in",
-              "description": null
+              "description": "Checks if `enumFlexSearch` is not contained in a specified list."
             },
             {
               "name": "recursion",
@@ -2038,27 +2038,27 @@
             },
             {
               "name": "in",
-              "description": null
+              "description": "Checks if the value is contained in a specified list."
             },
             {
               "name": "not_in",
-              "description": null
+              "description": "Checks if the value is not contained in a specified list."
             },
             {
               "name": "lt",
-              "description": null
+              "description": "Checks if the value is less then a specified value."
             },
             {
               "name": "lte",
-              "description": null
+              "description": "Checks if the value is less or equal a specified value."
             },
             {
               "name": "gt",
-              "description": null
+              "description": "Checks if the value is greater then a specified value."
             },
             {
               "name": "gte",
-              "description": null
+              "description": "Checks if the value is greater or equal a specified value."
             },
             {
               "name": "contains",
@@ -2066,7 +2066,7 @@
             },
             {
               "name": "not_contains",
-              "description": null
+              "description": "Checks if the value does not contain a specified string, case-sensitively."
             },
             {
               "name": "starts_with",
@@ -2074,7 +2074,7 @@
             },
             {
               "name": "not_starts_with",
-              "description": null
+              "description": "Checks if the value does not start with a specified string, case-sensitively.\n\nNever uses an index. Consider using `not_like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
             },
             {
               "name": "ends_with",
@@ -2082,7 +2082,7 @@
             },
             {
               "name": "not_ends_with",
-              "description": null
+              "description": "Checks if the value does not end with a specified string, case-sensitively."
             },
             {
               "name": "like",
@@ -2117,27 +2117,27 @@
             },
             {
               "name": "street_in",
-              "description": null
+              "description": "Checks if `street` is contained in a specified list."
             },
             {
               "name": "street_not_in",
-              "description": null
+              "description": "Checks if `street` is not contained in a specified list."
             },
             {
               "name": "street_lt",
-              "description": null
+              "description": "Checks if `street` is less then a specified value."
             },
             {
               "name": "street_lte",
-              "description": null
+              "description": "Checks if `street` is less or equal a specified value."
             },
             {
               "name": "street_gt",
-              "description": null
+              "description": "Checks if `street` is greater then a specified value."
             },
             {
               "name": "street_gte",
-              "description": null
+              "description": "Checks if `street` is greater or equal a specified value."
             },
             {
               "name": "street_contains",
@@ -2145,7 +2145,7 @@
             },
             {
               "name": "street_not_contains",
-              "description": null
+              "description": "Checks if `street` does not contain a specified string, case-sensitively."
             },
             {
               "name": "street_starts_with",
@@ -2153,7 +2153,7 @@
             },
             {
               "name": "street_not_starts_with",
-              "description": null
+              "description": "Checks if `street` does not start with a specified string, case-sensitively.\n\nNever uses an index. Consider using `not_like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
             },
             {
               "name": "street_ends_with",
@@ -2161,7 +2161,7 @@
             },
             {
               "name": "street_not_ends_with",
-              "description": null
+              "description": "Checks if `street` does not end with a specified string, case-sensitively."
             },
             {
               "name": "street_like",
@@ -2181,27 +2181,27 @@
             },
             {
               "name": "city_in",
-              "description": null
+              "description": "Checks if `city` is contained in a specified list."
             },
             {
               "name": "city_not_in",
-              "description": null
+              "description": "Checks if `city` is not contained in a specified list."
             },
             {
               "name": "city_lt",
-              "description": null
+              "description": "Checks if `city` is less then a specified value."
             },
             {
               "name": "city_lte",
-              "description": null
+              "description": "Checks if `city` is less or equal a specified value."
             },
             {
               "name": "city_gt",
-              "description": null
+              "description": "Checks if `city` is greater then a specified value."
             },
             {
               "name": "city_gte",
-              "description": null
+              "description": "Checks if `city` is greater or equal a specified value."
             },
             {
               "name": "city_contains",
@@ -2209,7 +2209,7 @@
             },
             {
               "name": "city_not_contains",
-              "description": null
+              "description": "Checks if `city` does not contain a specified string, case-sensitively."
             },
             {
               "name": "city_starts_with",
@@ -2217,7 +2217,7 @@
             },
             {
               "name": "city_not_starts_with",
-              "description": null
+              "description": "Checks if `city` does not start with a specified string, case-sensitively.\n\nNever uses an index. Consider using `not_like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
             },
             {
               "name": "city_ends_with",
@@ -2225,7 +2225,7 @@
             },
             {
               "name": "city_not_ends_with",
-              "description": null
+              "description": "Checks if `city` does not end with a specified string, case-sensitively."
             },
             {
               "name": "city_like",
@@ -2245,27 +2245,27 @@
             },
             {
               "name": "zipCode_in",
-              "description": null
+              "description": "Checks if `zipCode` is contained in a specified list."
             },
             {
               "name": "zipCode_not_in",
-              "description": null
+              "description": "Checks if `zipCode` is not contained in a specified list."
             },
             {
               "name": "zipCode_lt",
-              "description": null
+              "description": "Checks if `zipCode` is less then a specified value."
             },
             {
               "name": "zipCode_lte",
-              "description": null
+              "description": "Checks if `zipCode` is less or equal a specified value."
             },
             {
               "name": "zipCode_gt",
-              "description": null
+              "description": "Checks if `zipCode` is greater then a specified value."
             },
             {
               "name": "zipCode_gte",
-              "description": null
+              "description": "Checks if `zipCode` is greater or equal a specified value."
             },
             {
               "name": "zipCode_contains",
@@ -2273,7 +2273,7 @@
             },
             {
               "name": "zipCode_not_contains",
-              "description": null
+              "description": "Checks if `zipCode` does not contain a specified string, case-sensitively."
             },
             {
               "name": "zipCode_starts_with",
@@ -2281,7 +2281,7 @@
             },
             {
               "name": "zipCode_not_starts_with",
-              "description": null
+              "description": "Checks if `zipCode` does not start with a specified string, case-sensitively.\n\nNever uses an index. Consider using `not_like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
             },
             {
               "name": "zipCode_ends_with",
@@ -2289,7 +2289,7 @@
             },
             {
               "name": "zipCode_not_ends_with",
-              "description": null
+              "description": "Checks if `zipCode` does not end with a specified string, case-sensitively."
             },
             {
               "name": "zipCode_like",
@@ -2328,27 +2328,27 @@
             },
             {
               "name": "unNumber_in",
-              "description": null
+              "description": "Checks if `unNumber` is contained in a specified list."
             },
             {
               "name": "unNumber_not_in",
-              "description": null
+              "description": "Checks if `unNumber` is not contained in a specified list."
             },
             {
               "name": "unNumber_lt",
-              "description": null
+              "description": "Checks if `unNumber` is less then a specified value."
             },
             {
               "name": "unNumber_lte",
-              "description": null
+              "description": "Checks if `unNumber` is less or equal a specified value."
             },
             {
               "name": "unNumber_gt",
-              "description": null
+              "description": "Checks if `unNumber` is greater then a specified value."
             },
             {
               "name": "unNumber_gte",
-              "description": null
+              "description": "Checks if `unNumber` is greater or equal a specified value."
             },
             {
               "name": "unNumber_contains",
@@ -2356,7 +2356,7 @@
             },
             {
               "name": "unNumber_not_contains",
-              "description": null
+              "description": "Checks if `unNumber` does not contain a specified string, case-sensitively."
             },
             {
               "name": "unNumber_starts_with",
@@ -2364,7 +2364,7 @@
             },
             {
               "name": "unNumber_not_starts_with",
-              "description": null
+              "description": "Checks if `unNumber` does not start with a specified string, case-sensitively.\n\nNever uses an index. Consider using `not_like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
             },
             {
               "name": "unNumber_ends_with",
@@ -2372,7 +2372,7 @@
             },
             {
               "name": "unNumber_not_ends_with",
-              "description": null
+              "description": "Checks if `unNumber` does not end with a specified string, case-sensitively."
             },
             {
               "name": "unNumber_like",
@@ -2392,27 +2392,27 @@
             },
             {
               "name": "flashpoint_in",
-              "description": null
+              "description": "Checks if `flashpoint` is contained in a specified list."
             },
             {
               "name": "flashpoint_not_in",
-              "description": null
+              "description": "Checks if `flashpoint` is not contained in a specified list."
             },
             {
               "name": "flashpoint_lt",
-              "description": null
+              "description": "Checks if `flashpoint` is less then a specified value."
             },
             {
               "name": "flashpoint_lte",
-              "description": null
+              "description": "Checks if `flashpoint` is less or equal a specified value."
             },
             {
               "name": "flashpoint_gt",
-              "description": null
+              "description": "Checks if `flashpoint` is greater then a specified value."
             },
             {
               "name": "flashpoint_gte",
-              "description": null
+              "description": "Checks if `flashpoint` is greater or equal a specified value."
             },
             {
               "name": "flashpoint_contains",
@@ -2420,7 +2420,7 @@
             },
             {
               "name": "flashpoint_not_contains",
-              "description": null
+              "description": "Checks if `flashpoint` does not contain a specified string, case-sensitively."
             },
             {
               "name": "flashpoint_starts_with",
@@ -2428,7 +2428,7 @@
             },
             {
               "name": "flashpoint_not_starts_with",
-              "description": null
+              "description": "Checks if `flashpoint` does not start with a specified string, case-sensitively.\n\nNever uses an index. Consider using `not_like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
             },
             {
               "name": "flashpoint_ends_with",
@@ -2436,7 +2436,7 @@
             },
             {
               "name": "flashpoint_not_ends_with",
-              "description": null
+              "description": "Checks if `flashpoint` does not end with a specified string, case-sensitively."
             },
             {
               "name": "flashpoint_like",
@@ -2487,27 +2487,27 @@
             },
             {
               "name": "expiryDate_in",
-              "description": null
+              "description": "Checks if `expiryDate` is contained in a specified list."
             },
             {
               "name": "expiryDate_not_in",
-              "description": null
+              "description": "Checks if `expiryDate` is not contained in a specified list."
             },
             {
               "name": "expiryDate_lt",
-              "description": null
+              "description": "Checks if `expiryDate` is less then a specified value."
             },
             {
               "name": "expiryDate_lte",
-              "description": null
+              "description": "Checks if `expiryDate` is less or equal a specified value."
             },
             {
               "name": "expiryDate_gt",
-              "description": null
+              "description": "Checks if `expiryDate` is greater then a specified value."
             },
             {
               "name": "expiryDate_gte",
-              "description": null
+              "description": "Checks if `expiryDate` is greater or equal a specified value."
             },
             {
               "name": "comment",
@@ -2519,27 +2519,27 @@
             },
             {
               "name": "comment_in",
-              "description": null
+              "description": "Checks if `comment` is contained in a specified list."
             },
             {
               "name": "comment_not_in",
-              "description": null
+              "description": "Checks if `comment` is not contained in a specified list."
             },
             {
               "name": "comment_lt",
-              "description": null
+              "description": "Checks if `comment` is less then a specified value."
             },
             {
               "name": "comment_lte",
-              "description": null
+              "description": "Checks if `comment` is less or equal a specified value."
             },
             {
               "name": "comment_gt",
-              "description": null
+              "description": "Checks if `comment` is greater then a specified value."
             },
             {
               "name": "comment_gte",
-              "description": null
+              "description": "Checks if `comment` is greater or equal a specified value."
             },
             {
               "name": "comment_contains",
@@ -2547,7 +2547,7 @@
             },
             {
               "name": "comment_not_contains",
-              "description": null
+              "description": "Checks if `comment` does not contain a specified string, case-sensitively."
             },
             {
               "name": "comment_starts_with",
@@ -2555,7 +2555,7 @@
             },
             {
               "name": "comment_not_starts_with",
-              "description": null
+              "description": "Checks if `comment` does not start with a specified string, case-sensitively.\n\nNever uses an index. Consider using `not_like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
             },
             {
               "name": "comment_ends_with",
@@ -2563,7 +2563,7 @@
             },
             {
               "name": "comment_not_ends_with",
-              "description": null
+              "description": "Checks if `comment` does not end with a specified string, case-sensitively."
             },
             {
               "name": "comment_like",
@@ -2598,27 +2598,27 @@
             },
             {
               "name": "id_in",
-              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+              "description": "Checks if `id` is contained in a specified list.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_not_in",
-              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+              "description": "Checks if `id` is not contained in a specified list.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_lt",
-              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+              "description": "Checks if `id` is less then a specified value.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_lte",
-              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+              "description": "Checks if `id` is less or equal a specified value.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_gt",
-              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+              "description": "Checks if `id` is greater then a specified value.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_gte",
-              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+              "description": "Checks if `id` is greater or equal a specified value.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "createdAt",
@@ -2630,27 +2630,27 @@
             },
             {
               "name": "createdAt_in",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is contained in a specified list.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_not_in",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is not contained in a specified list.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_lt",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is less then a specified value.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_lte",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is less or equal a specified value.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_gt",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is greater then a specified value.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_gte",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is greater or equal a specified value.\n\nThe instant this object has been created"
             },
             {
               "name": "updatedAt",
@@ -2662,27 +2662,27 @@
             },
             {
               "name": "updatedAt_in",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is contained in a specified list.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_not_in",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is not contained in a specified list.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_lt",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is less then a specified value.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_lte",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is less or equal a specified value.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_gt",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is greater then a specified value.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_gte",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is greater or equal a specified value.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "name",
@@ -2694,27 +2694,27 @@
             },
             {
               "name": "name_in",
-              "description": null
+              "description": "Checks if `name` is contained in a specified list."
             },
             {
               "name": "name_not_in",
-              "description": null
+              "description": "Checks if `name` is not contained in a specified list."
             },
             {
               "name": "name_lt",
-              "description": null
+              "description": "Checks if `name` is less then a specified value."
             },
             {
               "name": "name_lte",
-              "description": null
+              "description": "Checks if `name` is less or equal a specified value."
             },
             {
               "name": "name_gt",
-              "description": null
+              "description": "Checks if `name` is greater then a specified value."
             },
             {
               "name": "name_gte",
-              "description": null
+              "description": "Checks if `name` is greater or equal a specified value."
             },
             {
               "name": "name_contains",
@@ -2722,7 +2722,7 @@
             },
             {
               "name": "name_not_contains",
-              "description": null
+              "description": "Checks if `name` does not contain a specified string, case-sensitively."
             },
             {
               "name": "name_starts_with",
@@ -2730,7 +2730,7 @@
             },
             {
               "name": "name_not_starts_with",
-              "description": null
+              "description": "Checks if `name` does not start with a specified string, case-sensitively.\n\nNever uses an index. Consider using `not_like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
             },
             {
               "name": "name_ends_with",
@@ -2738,7 +2738,7 @@
             },
             {
               "name": "name_not_ends_with",
-              "description": null
+              "description": "Checks if `name` does not end with a specified string, case-sensitively."
             },
             {
               "name": "name_like",
@@ -2813,27 +2813,27 @@
             },
             {
               "name": "name_in",
-              "description": null
+              "description": "Checks if `name` is contained in a specified list."
             },
             {
               "name": "name_not_in",
-              "description": null
+              "description": "Checks if `name` is not contained in a specified list."
             },
             {
               "name": "name_lt",
-              "description": null
+              "description": "Checks if `name` is less then a specified value."
             },
             {
               "name": "name_lte",
-              "description": null
+              "description": "Checks if `name` is less or equal a specified value."
             },
             {
               "name": "name_gt",
-              "description": null
+              "description": "Checks if `name` is greater then a specified value."
             },
             {
               "name": "name_gte",
-              "description": null
+              "description": "Checks if `name` is greater or equal a specified value."
             },
             {
               "name": "name_contains",
@@ -2841,7 +2841,7 @@
             },
             {
               "name": "name_not_contains",
-              "description": null
+              "description": "Checks if `name` does not contain a specified string, case-sensitively."
             },
             {
               "name": "name_starts_with",
@@ -2849,7 +2849,7 @@
             },
             {
               "name": "name_not_starts_with",
-              "description": null
+              "description": "Checks if `name` does not start with a specified string, case-sensitively.\n\nNever uses an index. Consider using `not_like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
             },
             {
               "name": "name_ends_with",
@@ -2857,7 +2857,7 @@
             },
             {
               "name": "name_not_ends_with",
-              "description": null
+              "description": "Checks if `name` does not end with a specified string, case-sensitively."
             },
             {
               "name": "name_like",
@@ -3040,11 +3040,11 @@
             },
             {
               "name": "id_in",
-              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+              "description": "Checks if `id` is contained in a specified list.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_not_in",
-              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+              "description": "Checks if `id` is not contained in a specified list.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "createdAt",
@@ -3056,27 +3056,27 @@
             },
             {
               "name": "createdAt_in",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is contained in a specified list.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_not_in",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is not contained in a specified list.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_lt",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is less then a specified value.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_lte",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is less or equal a specified value.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_gt",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is greater then a specified value.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_gte",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is greater or equal a specified value.\n\nThe instant this object has been created"
             },
             {
               "name": "updatedAt",
@@ -3088,27 +3088,27 @@
             },
             {
               "name": "updatedAt_in",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is contained in a specified list.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_not_in",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is not contained in a specified list.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_lt",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is less then a specified value.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_lte",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is less or equal a specified value.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_gt",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is greater then a specified value.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_gte",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is greater or equal a specified value.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "deliveryNumber",
@@ -3120,11 +3120,11 @@
             },
             {
               "name": "deliveryNumber_in",
-              "description": null
+              "description": "Checks if `deliveryNumber` is contained in a specified list."
             },
             {
               "name": "deliveryNumber_not_in",
-              "description": null
+              "description": "Checks if `deliveryNumber` is not contained in a specified list."
             },
             {
               "name": "deliveryNumber_starts_with",
@@ -3152,11 +3152,11 @@
             },
             {
               "name": "destinationCountryISOCode_in",
-              "description": null
+              "description": "Checks if `destinationCountryISOCode` is contained in a specified list."
             },
             {
               "name": "destinationCountryISOCode_not_in",
-              "description": null
+              "description": "Checks if `destinationCountryISOCode` is not contained in a specified list."
             },
             {
               "name": "destinationCountryISOCode_starts_with",
@@ -3208,11 +3208,11 @@
             },
             {
               "name": "enumFlexSearch_in",
-              "description": null
+              "description": "Checks if `enumFlexSearch` is contained in a specified list."
             },
             {
               "name": "enumFlexSearch_not_in",
-              "description": null
+              "description": "Checks if `enumFlexSearch` is not contained in a specified list."
             },
             {
               "name": "recursion",
@@ -3243,11 +3243,11 @@
             },
             {
               "name": "city_in",
-              "description": null
+              "description": "Checks if `city` is contained in a specified list."
             },
             {
               "name": "city_not_in",
-              "description": null
+              "description": "Checks if `city` is not contained in a specified list."
             },
             {
               "name": "city_starts_with",
@@ -3282,11 +3282,11 @@
             },
             {
               "name": "id_in",
-              "description": "An auto-generated string that identifies this child entity uniquely within this collection of child entities"
+              "description": "Checks if `id` is contained in a specified list.\n\nAn auto-generated string that identifies this child entity uniquely within this collection of child entities"
             },
             {
               "name": "id_not_in",
-              "description": "An auto-generated string that identifies this child entity uniquely within this collection of child entities"
+              "description": "Checks if `id` is not contained in a specified list.\n\nAn auto-generated string that identifies this child entity uniquely within this collection of child entities"
             },
             {
               "name": "createdAt",
@@ -3298,27 +3298,27 @@
             },
             {
               "name": "createdAt_in",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is contained in a specified list.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_not_in",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is not contained in a specified list.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_lt",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is less then a specified value.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_lte",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is less or equal a specified value.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_gt",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is greater then a specified value.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_gte",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is greater or equal a specified value.\n\nThe instant this object has been created"
             },
             {
               "name": "updatedAt",
@@ -3330,27 +3330,27 @@
             },
             {
               "name": "updatedAt_in",
-              "description": "The instant this object has been updated the last time"
+              "description": "Checks if `updatedAt` is contained in a specified list.\n\nThe instant this object has been updated the last time"
             },
             {
               "name": "updatedAt_not_in",
-              "description": "The instant this object has been updated the last time"
+              "description": "Checks if `updatedAt` is not contained in a specified list.\n\nThe instant this object has been updated the last time"
             },
             {
               "name": "updatedAt_lt",
-              "description": "The instant this object has been updated the last time"
+              "description": "Checks if `updatedAt` is less then a specified value.\n\nThe instant this object has been updated the last time"
             },
             {
               "name": "updatedAt_lte",
-              "description": "The instant this object has been updated the last time"
+              "description": "Checks if `updatedAt` is less or equal a specified value.\n\nThe instant this object has been updated the last time"
             },
             {
               "name": "updatedAt_gt",
-              "description": "The instant this object has been updated the last time"
+              "description": "Checks if `updatedAt` is greater then a specified value.\n\nThe instant this object has been updated the last time"
             },
             {
               "name": "updatedAt_gte",
-              "description": "The instant this object has been updated the last time"
+              "description": "Checks if `updatedAt` is greater or equal a specified value.\n\nThe instant this object has been updated the last time"
             },
             {
               "name": "quantity",
@@ -3362,27 +3362,27 @@
             },
             {
               "name": "quantity_in",
-              "description": null
+              "description": "Checks if `quantity` is contained in a specified list."
             },
             {
               "name": "quantity_not_in",
-              "description": null
+              "description": "Checks if `quantity` is not contained in a specified list."
             },
             {
               "name": "quantity_lt",
-              "description": null
+              "description": "Checks if `quantity` is less then a specified value."
             },
             {
               "name": "quantity_lte",
-              "description": null
+              "description": "Checks if `quantity` is less or equal a specified value."
             },
             {
               "name": "quantity_gt",
-              "description": null
+              "description": "Checks if `quantity` is greater then a specified value."
             },
             {
               "name": "quantity_gte",
-              "description": null
+              "description": "Checks if `quantity` is greater or equal a specified value."
             }
           ]
         },
@@ -3405,11 +3405,11 @@
             },
             {
               "name": "name_in",
-              "description": null
+              "description": "Checks if `name` is contained in a specified list."
             },
             {
               "name": "name_not_in",
-              "description": null
+              "description": "Checks if `name` is not contained in a specified list."
             },
             {
               "name": "name_starts_with",
@@ -3481,27 +3481,27 @@
             },
             {
               "name": "id_in",
-              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+              "description": "Checks if `id` is contained in a specified list.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_not_in",
-              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+              "description": "Checks if `id` is not contained in a specified list.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_lt",
-              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+              "description": "Checks if `id` is less then a specified value.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_lte",
-              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+              "description": "Checks if `id` is less or equal a specified value.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_gt",
-              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+              "description": "Checks if `id` is greater then a specified value.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_gte",
-              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+              "description": "Checks if `id` is greater or equal a specified value.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "createdAt",
@@ -3513,27 +3513,27 @@
             },
             {
               "name": "createdAt_in",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is contained in a specified list.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_not_in",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is not contained in a specified list.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_lt",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is less then a specified value.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_lte",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is less or equal a specified value.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_gt",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is greater then a specified value.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_gte",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is greater or equal a specified value.\n\nThe instant this object has been created"
             },
             {
               "name": "updatedAt",
@@ -3545,27 +3545,27 @@
             },
             {
               "name": "updatedAt_in",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is contained in a specified list.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_not_in",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is not contained in a specified list.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_lt",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is less then a specified value.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_lte",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is less or equal a specified value.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_gt",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is greater then a specified value.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_gte",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is greater or equal a specified value.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "deliveries_some",
@@ -3641,27 +3641,27 @@
             },
             {
               "name": "id_in",
-              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+              "description": "Checks if `id` is contained in a specified list.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_not_in",
-              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+              "description": "Checks if `id` is not contained in a specified list.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_lt",
-              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+              "description": "Checks if `id` is less then a specified value.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_lte",
-              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+              "description": "Checks if `id` is less or equal a specified value.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_gt",
-              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+              "description": "Checks if `id` is greater then a specified value.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_gte",
-              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+              "description": "Checks if `id` is greater or equal a specified value.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "createdAt",
@@ -3673,27 +3673,27 @@
             },
             {
               "name": "createdAt_in",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is contained in a specified list.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_not_in",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is not contained in a specified list.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_lt",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is less then a specified value.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_lte",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is less or equal a specified value.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_gt",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is greater then a specified value.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_gte",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is greater or equal a specified value.\n\nThe instant this object has been created"
             },
             {
               "name": "updatedAt",
@@ -3705,27 +3705,27 @@
             },
             {
               "name": "updatedAt_in",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is contained in a specified list.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_not_in",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is not contained in a specified list.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_lt",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is less then a specified value.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_lte",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is less or equal a specified value.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_gt",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is greater then a specified value.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_gte",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is greater or equal a specified value.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "name",
@@ -3737,27 +3737,27 @@
             },
             {
               "name": "name_in",
-              "description": null
+              "description": "Checks if `name` is contained in a specified list."
             },
             {
               "name": "name_not_in",
-              "description": null
+              "description": "Checks if `name` is not contained in a specified list."
             },
             {
               "name": "name_lt",
-              "description": null
+              "description": "Checks if `name` is less then a specified value."
             },
             {
               "name": "name_lte",
-              "description": null
+              "description": "Checks if `name` is less or equal a specified value."
             },
             {
               "name": "name_gt",
-              "description": null
+              "description": "Checks if `name` is greater then a specified value."
             },
             {
               "name": "name_gte",
-              "description": null
+              "description": "Checks if `name` is greater or equal a specified value."
             },
             {
               "name": "name_contains",
@@ -3765,7 +3765,7 @@
             },
             {
               "name": "name_not_contains",
-              "description": null
+              "description": "Checks if `name` does not contain a specified string, case-sensitively."
             },
             {
               "name": "name_starts_with",
@@ -3773,7 +3773,7 @@
             },
             {
               "name": "name_not_starts_with",
-              "description": null
+              "description": "Checks if `name` does not start with a specified string, case-sensitively.\n\nNever uses an index. Consider using `not_like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
             },
             {
               "name": "name_ends_with",
@@ -3781,7 +3781,7 @@
             },
             {
               "name": "name_not_ends_with",
-              "description": null
+              "description": "Checks if `name` does not end with a specified string, case-sensitively."
             },
             {
               "name": "name_like",
@@ -3801,27 +3801,27 @@
             },
             {
               "name": "number_in",
-              "description": null
+              "description": "Checks if `number` is contained in a specified list."
             },
             {
               "name": "number_not_in",
-              "description": null
+              "description": "Checks if `number` is not contained in a specified list."
             },
             {
               "name": "number_lt",
-              "description": null
+              "description": "Checks if `number` is less then a specified value."
             },
             {
               "name": "number_lte",
-              "description": null
+              "description": "Checks if `number` is less or equal a specified value."
             },
             {
               "name": "number_gt",
-              "description": null
+              "description": "Checks if `number` is greater then a specified value."
             },
             {
               "name": "number_gte",
-              "description": null
+              "description": "Checks if `number` is greater or equal a specified value."
             },
             {
               "name": "AND",
@@ -3885,27 +3885,27 @@
             },
             {
               "name": "id_in",
-              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+              "description": "Checks if `id` is contained in a specified list.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_not_in",
-              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+              "description": "Checks if `id` is not contained in a specified list.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_lt",
-              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+              "description": "Checks if `id` is less then a specified value.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_lte",
-              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+              "description": "Checks if `id` is less or equal a specified value.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_gt",
-              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+              "description": "Checks if `id` is greater then a specified value.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "id_gte",
-              "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+              "description": "Checks if `id` is greater or equal a specified value.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
             },
             {
               "name": "createdAt",
@@ -3917,27 +3917,27 @@
             },
             {
               "name": "createdAt_in",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is contained in a specified list.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_not_in",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is not contained in a specified list.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_lt",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is less then a specified value.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_lte",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is less or equal a specified value.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_gt",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is greater then a specified value.\n\nThe instant this object has been created"
             },
             {
               "name": "createdAt_gte",
-              "description": "The instant this object has been created"
+              "description": "Checks if `createdAt` is greater or equal a specified value.\n\nThe instant this object has been created"
             },
             {
               "name": "updatedAt",
@@ -3949,27 +3949,27 @@
             },
             {
               "name": "updatedAt_in",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is contained in a specified list.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_not_in",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is not contained in a specified list.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_lt",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is less then a specified value.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_lte",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is less or equal a specified value.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_gt",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is greater then a specified value.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "updatedAt_gte",
-              "description": "The instant this object has been updated the last time (not including relation updates)"
+              "description": "Checks if `updatedAt` is greater or equal a specified value.\n\nThe instant this object has been updated the last time (not including relation updates)"
             },
             {
               "name": "key",
@@ -3981,27 +3981,27 @@
             },
             {
               "name": "key_in",
-              "description": null
+              "description": "Checks if `key` is contained in a specified list."
             },
             {
               "name": "key_not_in",
-              "description": null
+              "description": "Checks if `key` is not contained in a specified list."
             },
             {
               "name": "key_lt",
-              "description": null
+              "description": "Checks if `key` is less then a specified value."
             },
             {
               "name": "key_lte",
-              "description": null
+              "description": "Checks if `key` is less or equal a specified value."
             },
             {
               "name": "key_gt",
-              "description": null
+              "description": "Checks if `key` is greater then a specified value."
             },
             {
               "name": "key_gte",
-              "description": null
+              "description": "Checks if `key` is greater or equal a specified value."
             },
             {
               "name": "key_contains",
@@ -4009,7 +4009,7 @@
             },
             {
               "name": "key_not_contains",
-              "description": null
+              "description": "Checks if `key` does not contain a specified string, case-sensitively."
             },
             {
               "name": "key_starts_with",
@@ -4017,7 +4017,7 @@
             },
             {
               "name": "key_not_starts_with",
-              "description": null
+              "description": "Checks if `key` does not start with a specified string, case-sensitively.\n\nNever uses an index. Consider using `not_like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
             },
             {
               "name": "key_ends_with",
@@ -4025,7 +4025,7 @@
             },
             {
               "name": "key_not_ends_with",
-              "description": null
+              "description": "Checks if `key` does not end with a specified string, case-sensitively."
             },
             {
               "name": "key_like",
@@ -4045,27 +4045,27 @@
             },
             {
               "name": "value_in",
-              "description": null
+              "description": "Checks if `value` is contained in a specified list."
             },
             {
               "name": "value_not_in",
-              "description": null
+              "description": "Checks if `value` is not contained in a specified list."
             },
             {
               "name": "value_lt",
-              "description": null
+              "description": "Checks if `value` is less then a specified value."
             },
             {
               "name": "value_lte",
-              "description": null
+              "description": "Checks if `value` is less or equal a specified value."
             },
             {
               "name": "value_gt",
-              "description": null
+              "description": "Checks if `value` is greater then a specified value."
             },
             {
               "name": "value_gte",
-              "description": null
+              "description": "Checks if `value` is greater or equal a specified value."
             },
             {
               "name": "value_contains",
@@ -4073,7 +4073,7 @@
             },
             {
               "name": "value_not_contains",
-              "description": null
+              "description": "Checks if `value` does not contain a specified string, case-sensitively."
             },
             {
               "name": "value_starts_with",
@@ -4081,7 +4081,7 @@
             },
             {
               "name": "value_not_starts_with",
-              "description": null
+              "description": "Checks if `value` does not start with a specified string, case-sensitively.\n\nNever uses an index. Consider using `not_like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
             },
             {
               "name": "value_ends_with",
@@ -4089,7 +4089,7 @@
             },
             {
               "name": "value_not_ends_with",
-              "description": null
+              "description": "Checks if `value` does not end with a specified string, case-sensitively."
             },
             {
               "name": "value_like",
