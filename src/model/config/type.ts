@@ -1,6 +1,6 @@
 import { ASTNode, EnumTypeDefinitionNode, EnumValueDefinitionNode, ObjectTypeDefinitionNode, ScalarTypeDefinitionNode, TypeDefinitionNode } from 'graphql';
 import { FieldConfig, FlexSearchLanguage } from './field';
-import { ArangoSearchIndexConfig, IndexDefinitionConfig } from './indices';
+import { FlexSearchIndexConfig, IndexDefinitionConfig } from './indices';
 import { PermissionsConfig } from './permissions';
 
 export enum TypeKind {
@@ -32,7 +32,7 @@ export interface RootEntityTypeConfig extends ObjectTypeConfigBase {
     readonly keyFieldName?: string
     readonly keyFieldASTNode?: ASTNode
     readonly permissions?: PermissionsConfig
-    readonly arangoSearchIndex?: ArangoSearchIndexConfig
+    readonly flexSearchIndexConfig?: FlexSearchIndexConfig
 }
 
 export interface ValueObjectTypeConfig extends ObjectTypeConfigBase {

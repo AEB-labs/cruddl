@@ -1,4 +1,5 @@
 import { GraphQLFieldConfigArgumentMap, GraphQLFloat, GraphQLInt, GraphQLString } from 'graphql';
+import { FlexSearchPrimarySortConfig } from '../database/arangodb/schema-migration/arango-search-helpers';
 import { Field, RootEntityType } from '../model/implementation';
 import { BinaryOperationQueryNode, BinaryOperator, BinaryOperatorWithLanguage, ConditionalQueryNode, ConstBoolQueryNode, CountQueryNode, FieldPathQueryNode, FLEX_SEARCH_TOO_MANY_OBJECTS, LiteralQueryNode, OperatorWithLanguageQueryNode, PreExecQueryParms, QueryNode, RuntimeErrorQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../query-tree';
 import { FlexSearchQueryNode, FlexSearchStartsWithQueryNode } from '../query-tree/flex-search';
@@ -14,7 +15,7 @@ import { QueryNodeField, QueryNodeListType, QueryNodeNonNullType, QueryNodeObjec
 import { or } from './utils/input-types';
 
 
-export const DEFAULT_ARANGOSEARCH_MAX_FILTERABLE_AMOUNT: number = 1000;
+export const DEFAULT_FLEXSEARCH_MAX_FILTERABLE_AMOUNT: number = 1000;
 export const TOO_MANY_OBJECTS_ERROR = 'Too many objects.';
 
 /**
@@ -129,7 +130,7 @@ export class FlexSearchGenerator {
                     itemVariable: itemVariable
                 })),
             BinaryOperator.GREATER_THAN,
-            new LiteralQueryNode(context.flexSearchMaxFilterableAmountOverride ? context.flexSearchMaxFilterableAmountOverride : DEFAULT_ARANGOSEARCH_MAX_FILTERABLE_AMOUNT));
+            new LiteralQueryNode(context.flexSearchMaxFilterableAmountOverride ? context.flexSearchMaxFilterableAmountOverride : DEFAULT_FLEXSEARCH_MAX_FILTERABLE_AMOUNT));
     }
 
     private augmentWithCondition(schemaField: QueryNodeField, rootEntityType: RootEntityType): QueryNodeField {
@@ -139,7 +140,7 @@ export class FlexSearchGenerator {
                 const assertionVariable = new VariableQueryNode();
                 // If a filter or an order_by is specified, a pre-execution query node is added that throws a TOO_MANY_OBJECTS_ERROR if the amount of objects the filter or order_by is
                 // used on is to large
-                if (args[FILTER_ARG] || args[ORDER_BY_ARG]) {
+                if (args[FILTER_ARG] || (args[ORDER_BY_ARG] && !this.orderArgMatchesPrimarySort(args[ORDER_BY_ARG], rootEntityType.flexSearchIndexConfig.primarySort))) {
                     return new WithPreExecutionQueryNode({
                         preExecQueries: [
                             new PreExecQueryParms({ resultVariable: assertionVariable, query: this.getPreExecQueryNode(rootEntityType, args, context) })
@@ -155,6 +156,27 @@ export class FlexSearchGenerator {
 
             }
         };
+    }
+
+    private orderArgMatchesPrimarySort(args: ReadonlyArray<string>, primarySort: FlexSearchPrimarySortConfig[]): boolean {
+        if (args.length > primarySort.length) {
+            return false;
+        }
+        let matchesPrimarySort: boolean = true;
+        args.forEach((arg, index) => {
+            if (arg.endsWith('_ASC')) {
+                const field = arg.substring(0, arg.length - 4);
+                if (primarySort[index].field !== field || primarySort[index].direction != 'asc') {
+                    matchesPrimarySort = false;
+                }
+            } else {
+                const field = arg.substring(0, arg.length - 5);
+                if (primarySort[index].field !== field || primarySort[index].direction != 'desc') {
+                    matchesPrimarySort = false;
+                }
+            }
+        });
+        return matchesPrimarySort;
     }
 
     private buildFlexSearchSearchFilterNode(rootEntityType: RootEntityType, itemVariable: VariableQueryNode, expression?: string): QueryNode {

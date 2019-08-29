@@ -2,7 +2,7 @@ import { GraphQLID, GraphQLString } from 'graphql';
 import memorize from 'memorize-decorator';
 import { ACCESS_GROUP_FIELD, DEFAULT_PERMISSION_PROFILE, FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE, FLEX_SEARCH_INDEXED_DIRECTIVE, FLEX_SEARCH_ORDER_ARGUMENT, ID_FIELD, ROOT_ENTITY_DIRECTIVE, SCALAR_INT, SCALAR_STRING } from '../../schema/constants';
 import { compact } from '../../utils/utils';
-import { ArangoSearchIndexConfig, PermissionsConfig, RootEntityTypeConfig, TypeKind } from '../config';
+import { FlexSearchIndexConfig, PermissionsConfig, RootEntityTypeConfig, TypeKind } from '../config';
 import { ValidationMessage } from '../validation';
 import { ValidationContext } from '../validation/validation-context';
 import { Field, SystemFieldConfig } from './field';
@@ -62,8 +62,8 @@ export class RootEntityType extends ObjectTypeBase {
     }
 
     @memorize()
-    get arangoSearchConfig(): ArangoSearchIndexConfig {
-        return this.input.arangoSearchIndex || {
+    get flexSearchIndexConfig(): FlexSearchIndexConfig {
+        return this.input.flexSearchIndexConfig || {
             isIndexed: false,
             primarySort: []
         };
@@ -220,14 +220,14 @@ export class RootEntityType extends ObjectTypeBase {
     }
 
     private validateFlexSearch(context: ValidationContext) {
-        if (!this.arangoSearchConfig.isIndexed && this.fields.some(value => (value.isFlexSearchIndexed || value.isFlexSearchFulltextIndexed) && !value.isSystemField)) {
+        if (!this.flexSearchIndexConfig.isIndexed && this.fields.some(value => (value.isFlexSearchIndexed || value.isFlexSearchFulltextIndexed) && !value.isSystemField)) {
             context.addMessage(ValidationMessage.warn(
                 `The type contains fields that are annotated with ${FLEX_SEARCH_INDEXED_DIRECTIVE} or ${FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE}, but the type itself is not marked with flexSearch = true.`,
                 this.input.astNode!.name
             ));
         }
         // validate primarySort
-        for (const primarySortConfig of this.arangoSearchConfig.primarySort) {
+        for (const primarySortConfig of this.flexSearchIndexConfig.primarySort) {
             const primarySortPath = primarySortConfig.field.split('.');
             const astNode = this.input.astNode!.directives!.find(value => value.name.value === ROOT_ENTITY_DIRECTIVE)!.arguments!.find(value => value.name.value === FLEX_SEARCH_ORDER_ARGUMENT)!;
 

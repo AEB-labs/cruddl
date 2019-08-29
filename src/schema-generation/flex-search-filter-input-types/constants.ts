@@ -78,11 +78,11 @@ export const FLEX_SEARCH_FILTER_DESCRIPTIONS: { [name: string]: string | { [type
         ['']: 'Checks if $field does not equal a specified value'
     },
 
-    [INPUT_FIELD_IN]: 'Checks if $field is contained in a specified list.',
-    [INPUT_FIELD_NOT_IN]: 'Checks if $field is not contained in a specified list.',
-    [INPUT_FIELD_LT]: 'Checks if $field is less then a specified value.',
+    [INPUT_FIELD_IN]: 'Checks if $field is equal to one of the specified values.',
+    [INPUT_FIELD_NOT_IN]: 'Checks if $field is not equal to one of the specified values.',
+    [INPUT_FIELD_LT]: 'Checks if $field is less than a specified value.',
     [INPUT_FIELD_LTE]: 'Checks if $field is less or equal a specified value.',
-    [INPUT_FIELD_GT]: 'Checks if $field is greater then a specified value.',
+    [INPUT_FIELD_GT]: 'Checks if $field is greater than a specified value.',
     [INPUT_FIELD_GTE]: 'Checks if $field is greater or equal a specified value.',
 
 

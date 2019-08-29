@@ -1,6 +1,6 @@
 import { FieldDefinitionNode, GraphQLBoolean, GraphQLFloat, GraphQLID, GraphQLInt, GraphQLString } from 'graphql';
 import memorize from 'memorize-decorator';
-import { ACCESS_GROUP_FIELD, CALC_MUTATIONS_OPERATORS, COLLECT_AGGREGATE_ARG, COLLECT_DIRECTIVE, RELATION_DIRECTIVE } from '../../schema/constants';
+import { ACCESS_GROUP_FIELD, CALC_MUTATIONS_OPERATORS, COLLECT_AGGREGATE_ARG, COLLECT_DIRECTIVE, FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT, RELATION_DIRECTIVE } from '../../schema/constants';
 import { GraphQLDateTime } from '../../schema/scalars/date-time';
 import { GraphQLLocalDate } from '../../schema/scalars/local-date';
 import { GraphQLLocalTime } from '../../schema/scalars/local-time';
@@ -690,12 +690,12 @@ export class Field implements ModelComponent {
             context.addMessage(ValidationMessage.error(`At least one field on type "${this.type.name}" must be annotated with @flexSearch or @flexSearchFulltext if @flexSearch is specified on the type declaration.`, this.input.isFlexSearchIndexedASTNode));
         }
         if (this.name === ACCESS_GROUP_FIELD && this.declaringType.isRootEntityType && this.declaringType.permissionProfile
-            && this.declaringType.permissionProfile.permissions.some(value => value.restrictToAccessGroups) && this.declaringType.arangoSearchConfig.isIndexed && !this.isFlexSearchIndexed) {
+            && this.declaringType.permissionProfile.permissions.some(value => value.restrictToAccessGroups) && this.declaringType.flexSearchIndexConfig.isIndexed && !this.isFlexSearchIndexed) {
             context.addMessage(ValidationMessage.error(`The permission profile "${this.declaringType.permissionProfile.name}" uses "restrictToAccessGroups", ` +
                 `and this fields defining type is marked with "flexSearch: true", but this field is not marked with "@flexSearch".`, this.astNode));
         }
         if (this.isIncludedInSearch && !(this.type.isScalarType && this.type.name === 'String')) {
-            context.addMessage(ValidationMessage.error(`"includeInSearch: true" is not supported on type "${this.type.name}".`, this.input.isFlexSearchFulltextIndexedASTNode));
+            context.addMessage(ValidationMessage.error(`"${FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT}: true" is only supported on type "String" and "[String]".`, this.input.isFlexSearchFulltextIndexedASTNode));
             return;
         }
 

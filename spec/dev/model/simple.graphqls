@@ -1,11 +1,11 @@
-type Hero @rootEntity(flexSearch: true, flexSearchLanguage: DE, flexSearchOrder: [{field: "name", direction: ASC}]) {
+type Hero @rootEntity(flexSearch: true, flexSearchLanguage: DE, flexSearchOrder: [{field: "name", direction: ASC},{field: "age", direction: DESC}]) {
     "The hero's screen name"
     name: String @unique @flexSearchFulltext(includeInSearch: true)
     age: Int @defaultValue(value: 42)
     nickNames: [String] @flexSearch
     movies: [Movie] @relation(inverseOf: "heroes")
     skills: [Skill]
-    suit: Suit
+    suit: Suit @flexSearch
     morality: Morality
     countryISOCode: String
     country: Country @reference(keyField: "countryISOCode")
@@ -57,7 +57,7 @@ type Director @rootEntity {
 "A description of a hero suit"
 type Suit @entityExtension {
     "The dominant color of the suit"
-    color: String
+    color: String @flexSearch
 }
 
 type Country @rootEntity {

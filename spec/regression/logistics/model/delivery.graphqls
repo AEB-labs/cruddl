@@ -1,5 +1,5 @@
 "A delivery"
-type Delivery @rootEntity(flexSearch: true, flexSearchLanguage: DE) @roles(readWrite: ["allusers"]) {
+type Delivery @rootEntity(flexSearch: true, flexSearchLanguage: DE, flexSearchOrder: [{field: "deliveryNumber", direction: DESC}]) @roles(readWrite: ["allusers"]) {
     deliveryNumber: String @key @unique @flexSearch(includeInSearch: true)# leave this here to catch this case, too (has caused a bug)
     "The list of serial numbers associated with this delivery"
     serialNumbers: [String]
@@ -38,6 +38,7 @@ type Delivery @rootEntity(flexSearch: true, flexSearchLanguage: DE) @roles(readW
 
     description: String @flexSearchFulltext(includeInSearch: true)
     enumFlexSearch: Foobarit @flexSearch
+    aNumber: Int @flexSearch
     recursion: Recursion @flexSearch
 }
 

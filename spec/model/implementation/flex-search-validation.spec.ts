@@ -64,7 +64,7 @@ describe('FlexSearch', () => {
             type HandlingUnit @rootEntity(flexSearch: true) {
                 someBool: Boolean @flexSearch(includeInSearch: true)
             }
-        `, `"${FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT}: true" is not supported on type "Boolean".`);
+        `, `"${FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT}: true" is only supported on type "String" and "[String]".`);
     });
     it('accepts flexSearch includeInSearch for string arrays', () => {
         assertValidatorAccepts(`
@@ -83,7 +83,7 @@ describe('FlexSearch', () => {
                     permissions: {
                         permissionProfileName: 'restricted'
                     },
-                    arangoSearchIndex: { isIndexed: true, primarySort: [] }
+                    flexSearchIndexConfig: { isIndexed: true, primarySort: [] }
                 }
             ],
             permissionProfiles: [{ namespacePath: [], profiles: { ['restricted']: { permissions: [{ access: 'readWrite', roles: ['allusers'], restrictToAccessGroups: ['RESTRICTED'] }] } } }]
