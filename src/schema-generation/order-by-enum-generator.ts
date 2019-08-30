@@ -68,17 +68,24 @@ export class OrderByEnumValue {
     }
 }
 
+export interface OrderByEnumGeneratorConfig {
+    readonly maxRootEntityDepth?: number;
+}
+
 export class OrderByEnumGenerator {
+    constructor(private readonly config: OrderByEnumGeneratorConfig = {}) {
+    }
+
     @memorize()
     generate(objectType: ObjectType) {
-        return new OrderByEnumType(objectType, this.getValues(objectType, []));
+        return new OrderByEnumType(objectType, this.getValues(objectType, [], this.config.maxRootEntityDepth));
     }
 
-    private getValues(type: ObjectType, path: ReadonlyArray<Field>): ReadonlyArray<OrderByEnumValue> {
-        return flatMap(type.fields, field => this.getValuesForField(field, path));
+    private getValues(type: ObjectType, path: ReadonlyArray<Field>, maxRootEntityDepth: number | undefined): ReadonlyArray<OrderByEnumValue> {
+        return flatMap(type.fields, field => this.getValuesForField(field, path, maxRootEntityDepth));
     }
 
-    private getValuesForField(field: Field, path: ReadonlyArray<Field>) {
+    private getValuesForField(field: Field, path: ReadonlyArray<Field>, maxRootEntityDepth: number | undefined) {
         // Don't recurse
         if (path.includes(field)) {
             return [];
@@ -91,7 +98,14 @@ export class OrderByEnumGenerator {
 
         const newPath = [...path, field];
         if (field.type.isObjectType) {
-            return this.getValues(field.type, newPath);
+            let newDepth = maxRootEntityDepth;
+            if (field.type.isRootEntityType && maxRootEntityDepth != undefined) {
+                newDepth = maxRootEntityDepth - 1;
+                if (newDepth < 0) {
+                    return [];
+                }
+            }
+            return this.getValues(field.type, newPath, newDepth);
         } else {
             // currently, all scalars and enums are ordered types
             return [
