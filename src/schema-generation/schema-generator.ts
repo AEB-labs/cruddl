@@ -7,7 +7,7 @@ import { QueryNodeObjectTypeConverter } from './query-node-object-type';
 import { RootTypesGenerator } from './root-types-generator';
 
 export class SchemaGenerator {
-    private readonly rootTypesGenerator = new RootTypesGenerator();
+    private readonly rootTypesGenerator = new RootTypesGenerator(this.context.schemaOptions);
     private readonly queryNodeObjectTypeConverter = new QueryNodeObjectTypeConverter();
     private readonly operationResolver: OperationResolver;
 

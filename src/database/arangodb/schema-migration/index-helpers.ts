@@ -1,3 +1,4 @@
+import { GraphQLInt } from 'graphql';
 import { IndexField, Model, RootEntityType } from '../../../model';
 import { ID_FIELD } from '../../../schema/constants';
 import { compact, flatMap } from '../../../utils/utils';

@@ -16,10 +16,19 @@ export interface RequestProfile extends RequestContext {
     readonly plan?: ExecutionPlan;
 }
 
+export interface SchemaOptions {
+    /**
+     * The maximum depth root entities can be traversed through for orderBy values
+     */
+    readonly maxOrderByRootEntityDepth?: number;
+}
+
 export interface ProjectOptions {
     readonly loggerProvider?: LoggerProvider;
     readonly profileConsumer?: (profile: RequestProfile) => void;
     readonly getExecutionOptions?: (args: ExecutionOptionsCallbackArgs) => ExecutionOptions;
+
+    readonly schemaOptions?: SchemaOptions
 
     /**
      * Is called when an operation execution throws an error
