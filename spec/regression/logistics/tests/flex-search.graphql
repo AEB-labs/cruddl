@@ -160,14 +160,6 @@ query order_above_max {
     }
 }
 
-query order_above_max_primary_sort {
-    flexSearchDeliveries(
-        orderBy: deliveryNumber_DESC
-    ){
-        deliveryNumber
-    }
-}
-
 query expression{
     flexSearchDeliveries(
         flexSearchExpression: "all"
