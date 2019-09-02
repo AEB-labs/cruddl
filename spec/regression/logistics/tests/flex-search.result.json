@@ -21,10 +21,10 @@
     "data": {
       "flexSearchDeliveries": [
         {
-          "deliveryNumber": "1000173"
+          "deliveryNumber": "1000521"
         },
         {
-          "deliveryNumber": "1000521"
+          "deliveryNumber": "1000173"
         }
       ]
     }
@@ -33,10 +33,10 @@
     "data": {
       "flexSearchDeliveries": [
         {
-          "deliveryNumber": "1000521"
+          "deliveryNumber": "1000522"
         },
         {
-          "deliveryNumber": "1000522"
+          "deliveryNumber": "1000521"
         }
       ]
     }
@@ -45,10 +45,10 @@
     "data": {
       "flexSearchDeliveries": [
         {
-          "deliveryNumber": "1000173"
+          "deliveryNumber": "1000522"
         },
         {
-          "deliveryNumber": "1000522"
+          "deliveryNumber": "1000173"
         }
       ]
     }
@@ -172,14 +172,29 @@
       "flexSearchDeliveries": null
     }
   },
+  "order_above_max_primary_sort": {
+    "data": {
+      "flexSearchDeliveries": [
+        {
+          "deliveryNumber": "1000522"
+        },
+        {
+          "deliveryNumber": "1000521"
+        },
+        {
+          "deliveryNumber": "1000173"
+        }
+      ]
+    }
+  },
   "expression": {
     "data": {
       "flexSearchDeliveries": [
         {
-          "deliveryNumber": "1000173"
+          "deliveryNumber": "1000521"
         },
         {
-          "deliveryNumber": "1000521"
+          "deliveryNumber": "1000173"
         }
       ]
     }
@@ -199,7 +214,7 @@
         "message": "Recursive filters can only be defined for 1 level of recursion.",
         "locations": [
           {
-            "line": 186,
+            "line": 194,
             "column": 5
           }
         ],
