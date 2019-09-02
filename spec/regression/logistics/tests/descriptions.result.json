@@ -75,6 +75,14 @@
               "description": null
             },
             {
+              "name": "flexSearchHandlingUnits",
+              "description": "Queries for HandlingUnits using FlexSearch."
+            },
+            {
+              "name": "_flexSearchHandlingUnitsMeta",
+              "description": "Queries for HandlingUnits using FlexSearch."
+            },
+            {
               "name": "NumberRange",
               "description": "Finds a NumberRange by id"
             },
@@ -3662,6 +3670,125 @@
           "description": null,
           "fields": null,
           "inputFields": null
+        },
+        {
+          "name": "HandlingUnitFlexSearchFilter",
+          "description": "An aggregation contains all values of a list. Each check in this type is true if it matches any of the values in the list.",
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "id",
+              "description": "Checks if `id` equals a specified value.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
+            },
+            {
+              "name": "id_not",
+              "description": "Checks if `id` does not equal a specified value\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
+            },
+            {
+              "name": "id_in",
+              "description": "Checks if `id` is equal to one of the specified values.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
+            },
+            {
+              "name": "id_not_in",
+              "description": "Checks if `id` is not equal to one of the specified values.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
+            },
+            {
+              "name": "createdAt",
+              "description": "Checks if `createdAt` equals a specified value.\n\nThe instant this object has been created"
+            },
+            {
+              "name": "createdAt_not",
+              "description": "Checks if `createdAt` does not equal a specified value\n\nThe instant this object has been created"
+            },
+            {
+              "name": "createdAt_in",
+              "description": "Checks if `createdAt` is equal to one of the specified values.\n\nThe instant this object has been created"
+            },
+            {
+              "name": "createdAt_not_in",
+              "description": "Checks if `createdAt` is not equal to one of the specified values.\n\nThe instant this object has been created"
+            },
+            {
+              "name": "createdAt_lt",
+              "description": "Checks if `createdAt` is less than a specified value.\n\nThe instant this object has been created"
+            },
+            {
+              "name": "createdAt_lte",
+              "description": "Checks if `createdAt` is less or equal a specified value.\n\nThe instant this object has been created"
+            },
+            {
+              "name": "createdAt_gt",
+              "description": "Checks if `createdAt` is greater than a specified value.\n\nThe instant this object has been created"
+            },
+            {
+              "name": "createdAt_gte",
+              "description": "Checks if `createdAt` is greater or equal a specified value.\n\nThe instant this object has been created"
+            },
+            {
+              "name": "updatedAt",
+              "description": "Checks if `updatedAt` equals a specified value.\n\nThe instant this object has been updated the last time (not including relation updates)"
+            },
+            {
+              "name": "updatedAt_not",
+              "description": "Checks if `updatedAt` does not equal a specified value\n\nThe instant this object has been updated the last time (not including relation updates)"
+            },
+            {
+              "name": "updatedAt_in",
+              "description": "Checks if `updatedAt` is equal to one of the specified values.\n\nThe instant this object has been updated the last time (not including relation updates)"
+            },
+            {
+              "name": "updatedAt_not_in",
+              "description": "Checks if `updatedAt` is not equal to one of the specified values.\n\nThe instant this object has been updated the last time (not including relation updates)"
+            },
+            {
+              "name": "updatedAt_lt",
+              "description": "Checks if `updatedAt` is less than a specified value.\n\nThe instant this object has been updated the last time (not including relation updates)"
+            },
+            {
+              "name": "updatedAt_lte",
+              "description": "Checks if `updatedAt` is less or equal a specified value.\n\nThe instant this object has been updated the last time (not including relation updates)"
+            },
+            {
+              "name": "updatedAt_gt",
+              "description": "Checks if `updatedAt` is greater than a specified value.\n\nThe instant this object has been updated the last time (not including relation updates)"
+            },
+            {
+              "name": "updatedAt_gte",
+              "description": "Checks if `updatedAt` is greater or equal a specified value.\n\nThe instant this object has been updated the last time (not including relation updates)"
+            },
+            {
+              "name": "huNumber",
+              "description": "Checks if `huNumber` equals a specified string, case-insensitively."
+            },
+            {
+              "name": "huNumber_not",
+              "description": "Checks if `huNumber` does not equal a specified string, case-insensitively."
+            },
+            {
+              "name": "huNumber_in",
+              "description": "Checks if `huNumber` is equal to one of the specified values."
+            },
+            {
+              "name": "huNumber_not_in",
+              "description": "Checks if `huNumber` is not equal to one of the specified values."
+            },
+            {
+              "name": "huNumber_starts_with",
+              "description": "Checks if `huNumber` starts with a specified string, case-insensitively."
+            },
+            {
+              "name": "huNumber_not_starts_with",
+              "description": "Checks if `huNumber` does not start with a specified string, case-insensitively."
+            },
+            {
+              "name": "AND",
+              "description": "A field that checks if all filters in the list apply\n\nIf the list is empty, this filter applies to all objects."
+            },
+            {
+              "name": "OR",
+              "description": "A field that checks if any of the filters in the list apply.\n\nIf the list is empty, this filter applies to no objects.\n\nNote that only the items in the list *or*-combined; this complete `OR` field is *and*-combined with outer fields in the parent filter type."
+            }
+          ]
         },
         {
           "name": "NumberRange",
