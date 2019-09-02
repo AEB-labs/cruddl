@@ -152,9 +152,9 @@ query filter_above_max {
     }
 }
 
-query order_above_max_primary_sort {
+query order_above_max {
     flexSearchDeliveries(
-        orderBy: deliveryNumber_DESC
+        orderBy: id_ASC
     ){
         deliveryNumber
     }
