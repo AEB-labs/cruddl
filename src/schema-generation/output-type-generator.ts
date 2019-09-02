@@ -3,7 +3,7 @@ import { sortBy } from 'lodash';
 import memorize from 'memorize-decorator';
 import { FieldRequest } from '../graphql/query-distiller';
 import { isListTypeIgnoringNonNull } from '../graphql/schema-utils';
-import { Field, ObjectType, Type, TypeKind } from '../model';
+import { Field, ObjectType, RootEntityType, Type, TypeKind } from '../model';
 import { NullQueryNode, ObjectQueryNode, PropertySpecification, QueryNode, UnaryOperationQueryNode, UnaryOperator } from '../query-tree';
 import { CURSOR_FIELD } from '../schema/constants';
 import { getMetaFieldName } from '../schema/names';
@@ -14,7 +14,12 @@ import { FilterAugmentation } from './filter-augmentation';
 import { ListAugmentation } from './list-augmentation';
 import { MetaTypeGenerator } from './meta-type-generator';
 import { OrderByEnumGenerator, OrderByEnumType } from './order-by-enum-generator';
-import { makeNonNullableList, QueryNodeField, QueryNodeListType, QueryNodeNonNullType, QueryNodeOutputType } from './query-node-object-type';
+import {
+    makeNonNullableList,
+    QueryNodeField,
+   QueryNodeListType, QueryNodeNonNullType, QueryNodeObjectType,
+    QueryNodeOutputType,
+} from './query-node-object-type';
 import { getOrderByValues } from './utils/pagination';
 
 export class OutputTypeGenerator {

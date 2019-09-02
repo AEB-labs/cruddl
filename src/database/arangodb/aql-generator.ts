@@ -1,13 +1,16 @@
-import { AggregationOperator, Field, Relation, RootEntityType } from '../../model';
+import { AggregationOperator, Field, FlexSearchLanguage, Relation, RootEntityType } from '../../model';
 import { FieldSegment, getEffectiveCollectSegments, RelationSegment } from '../../model/implementation/collect-path';
-import { AddEdgesQueryNode, AggregationQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode, ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeIdentifier, EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, OrderDirection, OrderSpecification, PartialEdgeIdentifier, QueryNode, QueryResultValidator, RemoveEdgesQueryNode, RootEntityIDQueryNode, RUNTIME_ERROR_CODE_PROPERTY, RUNTIME_ERROR_TOKEN, RuntimeErrorQueryNode, SafeListQueryNode, SetEdgeQueryNode, TransformListQueryNode, TraversalQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../../query-tree';
+import { AddEdgesQueryNode, AggregationQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, BinaryOperatorWithLanguage, ConcatListsQueryNode, ConditionalQueryNode, ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeIdentifier, EntitiesQueryNode, EntityFromIdQueryNode, FieldPathQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, OperatorWithLanguageQueryNode, OrderDirection, OrderSpecification, PartialEdgeIdentifier, QueryNode, QueryResultValidator, RemoveEdgesQueryNode, RootEntityIDQueryNode, RUNTIME_ERROR_CODE_PROPERTY, RUNTIME_ERROR_TOKEN, RuntimeErrorQueryNode, SafeListQueryNode, SetEdgeQueryNode, TransformListQueryNode, TraversalQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../../query-tree';
+import { FlexSearchComplexOperatorQueryNode, FlexSearchFieldExistsQueryNode, FlexSearchQueryNode, FlexSearchStartsWithQueryNode } from '../../query-tree/flex-search';
 import { Quantifier, QuantifierFilterNode } from '../../query-tree/quantifiers';
 import { extractVariableAssignments, simplifyBooleans } from '../../query-tree/utils';
-import { not } from '../../schema-generation/filter-input-types/constants';
+import { not } from '../../schema-generation/utils/input-types';
 import { Constructor, decapitalize } from '../../utils/utils';
+import { FlexSearchTokenizable } from '../database-adapter';
 import { analyzeLikePatternPrefix } from '../like-helpers';
 import { aql, AQLCompoundQuery, aqlConfig, AQLFragment, AQLQueryResultVariable, AQLVariable } from './aql';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './arango-basics';
+import { getFlexSearchViewNameForRootEntity, IDENTITY_ANALYZER } from './schema-migration/arango-search-helpers';
 
 enum AccessType {
     READ,
@@ -241,6 +244,7 @@ register(ListQueryNode, (node, context) => {
     );
 });
 
+
 register(ConcatListsQueryNode, (node, context) => {
     const listNodes = node.listNodes.map(node => processNode(node, context));
     const listNodeStr = aql.join(listNodes, aql`, `);
@@ -278,9 +282,15 @@ register(EntityFromIdQueryNode, (node, context) => {
     return aql`DOCUMENT(${collection}, ${processNode(node.idNode, context)})`;
 });
 
+
 register(FieldQueryNode, (node, context) => {
     const object = processNode(node.objectNode, context);
     return aql`${object}${getFieldAccessFragment(node.field)}`;
+});
+
+register(FieldPathQueryNode, (node, context) => {
+    const object = processNode(node.objectNode, context);
+    return aql`${object}${getFieldPathAccessFragment(node.path)}`;
 });
 
 function getFieldAccessFragment(field: Field) {
@@ -292,8 +302,28 @@ function getFieldAccessFragment(field: Field) {
     return aql`[${identifier}]`;
 }
 
+function getFieldPathAccessFragment(path: ReadonlyArray<Field>): AQLFragment {
+    if (path.length > 0) {
+        const [head, ...tail] = path;
+        return aql`${getFieldAccessFragment(head)}${getFieldPathAccessFragment(tail)}`;
+    } else {
+        return aql``;
+    }
+
+}
+
 register(RootEntityIDQueryNode, (node, context) => {
     return aql`${processNode(node.objectNode, context)}._key`; // ids are stored in _key field
+});
+
+register(FlexSearchQueryNode, (node, context) => {
+    let itemContext = context.introduceVariable(node.itemVariable);
+    return aqlExt.parenthesizeList(
+        aql`FOR ${itemContext.getVariable(node.itemVariable)}`,
+        aql`IN ${aql.identifier(getFlexSearchViewNameForRootEntity(node.rootEntityType!))}`,
+        aql`SEARCH ${processNode(node.flexFilterNode, itemContext)}`,
+        aql`RETURN ${itemContext.getVariable(node.itemVariable)}`
+    );
 });
 
 register(TransformListQueryNode, (node, context) => {
@@ -590,6 +620,45 @@ register(BinaryOperationQueryNode, (node, context) => {
     }
 
 });
+
+register(OperatorWithLanguageQueryNode, (node, context) => {
+
+    const lhs = processNode(node.lhs, context);
+    const rhs = processNode(node.rhs, context);
+    const analyzer = `text_${node.flexSearchLanguage.toLowerCase()}`;
+
+    switch (node.operator) {
+        case BinaryOperatorWithLanguage.FLEX_SEARCH_CONTAINS_ANY_WORD:
+            return aql`ANALYZER( ${lhs} IN TOKENS(${rhs}, ${analyzer}),${analyzer})`;
+        case BinaryOperatorWithLanguage.FLEX_SEARCH_CONTAINS_PREFIX:
+            return aql`ANALYZER( STARTS_WITH( ${lhs}, TOKENS(${rhs},${analyzer})[0]), ${analyzer})`;
+        case BinaryOperatorWithLanguage.FLEX_SEARCH_CONTAINS_PHRASE:
+            return aql`ANALYZER( PHRASE( ${lhs}, ${rhs}), ${analyzer})`;
+        default:
+            throw new Error(`Unsupported operator: ${node.operator}`);
+    }
+
+});
+
+register(FlexSearchStartsWithQueryNode, (node, context) => {
+    const lhs = processNode(node.lhs, context);
+    const rhs = processNode(node.rhs, context);
+    const analyzer = node.flexSearchLanguage ? `text_${node.flexSearchLanguage.toLowerCase()}` : IDENTITY_ANALYZER;
+
+    return aql`ANALYZER(STARTS_WITH(${lhs}, ${rhs}), ${analyzer})`;
+});
+
+register(FlexSearchFieldExistsQueryNode, (node, context) => {
+    const sourceNode = processNode(node.sourceNode, context);
+    const analyzer = node.flexSearchLanguage ? `text_${node.flexSearchLanguage.toLowerCase()}` : IDENTITY_ANALYZER;
+
+    return aql`EXISTS(${sourceNode}, "analyzer", ${analyzer})`;
+});
+
+register(FlexSearchComplexOperatorQueryNode, (node, context) => {
+    throw new Error(`Internal Error: FlexSearchComplexOperatorQueryNode must be expanded before generating the query.`);
+});
+
 
 function getFastStartsWithQuery(lhs: AQLFragment, rhsValue: string): AQLFragment {
     if (!rhsValue.length) {
@@ -1115,4 +1184,14 @@ function getSimpleFollowEdgeFragment(node: FollowEdgeQueryNode, context: QueryCo
 
 function isStringCaseInsensitive(str: string) {
     return str.toLowerCase() === str.toUpperCase();
+}
+
+export function generateTokenizationQuery(tokensFiltered: ReadonlyArray<FlexSearchTokenizable>) {
+    const fragments: string[] = [];
+    for (let i = 0; i < tokensFiltered.length; i++) {
+        const value = tokensFiltered[i];
+        fragments.push(`token_${i}: TOKENS("${value.expression}", "text_${value.language.toLowerCase()}")`);
+    }
+    const query = `RETURN { ${fragments.join(',\n')} }`;
+    return query;
 }

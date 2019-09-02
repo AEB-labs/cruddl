@@ -28,16 +28,25 @@ const systemFieldInputs: ReadonlyArray<SystemFieldConfig> = [
         name: 'id',
         typeName: 'ID',
         isNonNull: true,
-        description: 'An auto-generated string that identifies this child entity uniquely within this collection of child entities'
+        description: 'An auto-generated string that identifies this child entity uniquely within this collection of child entities',
+        isFlexSearchIndexed: true,
+        isFlexSearchFulltextIndexed: false,
+        isIncludedInSearch: false
     }, {
         name: 'createdAt',
         typeName: 'DateTime',
         isNonNull: true,
-        description: 'The instant this object has been created'
+        description: 'The instant this object has been created',
+        isFlexSearchIndexed: true,
+        isFlexSearchFulltextIndexed: false,
+        isIncludedInSearch: false
     }, {
         name: 'updatedAt',
         typeName: 'DateTime',
         isNonNull: true,
-        description: 'The instant this object has been updated the last time'
+        description: 'The instant this object has been updated the last time',
+        isFlexSearchIndexed: true,
+        isFlexSearchFulltextIndexed: false,
+        isIncludedInSearch: false
     }
 ];

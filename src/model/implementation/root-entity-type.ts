@@ -1,8 +1,8 @@
 import { GraphQLID, GraphQLString } from 'graphql';
 import memorize from 'memorize-decorator';
-import { ACCESS_GROUP_FIELD, DEFAULT_PERMISSION_PROFILE, ID_FIELD, SCALAR_INT, SCALAR_STRING } from '../../schema/constants';
-import { compact, flatMap } from '../../utils/utils';
-import { FieldConfig, IndexDefinitionConfig, PermissionsConfig, RootEntityTypeConfig, TypeKind } from '../config';
+import { ACCESS_GROUP_FIELD, DEFAULT_PERMISSION_PROFILE, FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE, FLEX_SEARCH_INDEXED_DIRECTIVE, FLEX_SEARCH_ORDER_ARGUMENT, ID_FIELD, ROOT_ENTITY_DIRECTIVE, SCALAR_INT, SCALAR_STRING } from '../../schema/constants';
+import { compact } from '../../utils/utils';
+import { FlexSearchIndexConfig, PermissionsConfig, RootEntityTypeConfig, TypeKind } from '../config';
 import { ValidationMessage } from '../validation';
 import { ValidationContext } from '../validation/validation-context';
 import { Field, SystemFieldConfig } from './field';
@@ -39,7 +39,7 @@ export class RootEntityType extends ObjectTypeBase {
         if (this.keyField) {
             const keyField = this.keyField;
             if (!indexConfigs.some(f => f.unique === true && f.fields.length == 1 && f.fields[0] === keyField.name)) {
-                indexConfigs.push({unique: true, fields: [keyField.name] });
+                indexConfigs.push({ unique: true, fields: [keyField.name] });
             }
         }
 
@@ -59,6 +59,18 @@ export class RootEntityType extends ObjectTypeBase {
 
         // deduplicate indices
         return indices.filter((index, i1) => !indices.some((other, i2) => i1 < i2 && other.equals(index)));
+    }
+
+    @memorize()
+    get flexSearchIndexConfig(): FlexSearchIndexConfig {
+        return this.input.flexSearchIndexConfig || {
+            isIndexed: false,
+            primarySort: []
+        };
+    }
+
+    get hasFieldsIncludedInSearch() {
+        return this.fields.some(value => value.isIncludedInSearch);
     }
 
     @memorize()
@@ -142,6 +154,7 @@ export class RootEntityType extends ObjectTypeBase {
         this.validateKeyField(context);
         this.validatePermissions(context);
         this.validateIndices(context);
+        this.validateFlexSearch(context);
     }
 
     private validateKeyField(context: ValidationContext) {
@@ -205,6 +218,43 @@ export class RootEntityType extends ObjectTypeBase {
             index.validate(context);
         }
     }
+
+    private validateFlexSearch(context: ValidationContext) {
+        if (!this.flexSearchIndexConfig.isIndexed && this.fields.some(value => (value.isFlexSearchIndexed || value.isFlexSearchFulltextIndexed) && !value.isSystemField)) {
+            context.addMessage(ValidationMessage.warn(
+                `The type contains fields that are annotated with ${FLEX_SEARCH_INDEXED_DIRECTIVE} or ${FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE}, but the type itself is not marked with flexSearch = true.`,
+                this.input.astNode!.name
+            ));
+        }
+        // validate primarySort
+        for (const primarySortConfig of this.flexSearchIndexConfig.primarySort) {
+            const primarySortPath = primarySortConfig.field.split('.');
+            const astNode = this.input.astNode!.directives!.find(value => value.name.value === ROOT_ENTITY_DIRECTIVE)!.arguments!.find(value => value.name.value === FLEX_SEARCH_ORDER_ARGUMENT)!;
+
+            function isValidPath(fields: ReadonlyArray<Field>, path: ReadonlyArray<string>): boolean {
+                const [head, ...tail] = path;
+                const field = fields.find(value => value.name === head);
+                if (field) {
+                    if (field.type.isScalarType || field.type.isEnumType && tail.length == 0) {
+                        return true;
+                    } else if (field.type.isObjectType && !field.isList && tail.length > 0) {
+                        return isValidPath(field.type.fields, tail);
+                    } else {
+                        return false;
+                    }
+                } else {
+                    return false;
+                }
+            }
+
+            if (!isValidPath(this.fields, primarySortPath)) {
+                context.addMessage(ValidationMessage.warn(
+                    `The provided flexSearchOrder is invalid. It must be a path that evaluates to a scalar value and the full path must be annotated with ${FLEX_SEARCH_INDEXED_DIRECTIVE}.`,
+                    astNode
+                ));
+            }
+        }
+    }
 }
 
 const systemFieldInputs: ReadonlyArray<SystemFieldConfig> = [
@@ -212,16 +262,25 @@ const systemFieldInputs: ReadonlyArray<SystemFieldConfig> = [
         name: 'id',
         typeName: 'ID',
         isNonNull: true,
-        description: 'An auto-generated string that identifies this root entity uniquely among others of the same type'
+        description: 'An auto-generated string that identifies this root entity uniquely among others of the same type',
+        isFlexSearchIndexed: true,
+        isFlexSearchFulltextIndexed: false,
+        isIncludedInSearch: false
     }, {
         name: 'createdAt',
         typeName: 'DateTime',
         isNonNull: true,
-        description: 'The instant this object has been created'
+        description: 'The instant this object has been created',
+        isFlexSearchIndexed: true,
+        isFlexSearchFulltextIndexed: false,
+        isIncludedInSearch: false
     }, {
         name: 'updatedAt',
         typeName: 'DateTime',
         isNonNull: true,
-        description: 'The instant this object has been updated the last time (not including relation updates)'
+        description: 'The instant this object has been updated the last time (not including relation updates)',
+        isFlexSearchIndexed: true,
+        isFlexSearchFulltextIndexed: false,
+        isIncludedInSearch: false
     }
 ];

@@ -5,6 +5,7 @@ import { QUERY_TYPE } from '../schema/constants';
 import { getAllEntitiesFieldName, getMetaFieldName } from '../schema/names';
 import { flatMap } from '../utils/utils';
 import { FilterAugmentation } from './filter-augmentation';
+import { FlexSearchGenerator } from './flex-search-generator';
 import { MetaFirstAugmentation } from './limit-augmentation';
 import { ListAugmentation } from './list-augmentation';
 import { MetaTypeGenerator } from './meta-type-generator';
@@ -18,7 +19,8 @@ export class QueryTypeGenerator {
         private readonly listAugmentation: ListAugmentation,
         private readonly filterAugmentation: FilterAugmentation,
         private readonly metaFirstAugmentation: MetaFirstAugmentation,
-        private readonly metaTypeGenerator: MetaTypeGenerator
+        private readonly metaTypeGenerator: MetaTypeGenerator,
+        private readonly flexSearchGenerator: FlexSearchGenerator
     ) {
 
     }
@@ -31,13 +33,16 @@ export class QueryTypeGenerator {
             .filter(namespace => namespace.allRootEntityTypes.length > 0)
             .map(namespace => this.getNamespaceField(namespace));
 
+        const fields = [
+            ...namespaceFields,
+            ...flatMap(namespace.rootEntityTypes, type => this.getFields(type))
+        ];
+
+
         return {
             name: namespace.pascalCasePath + QUERY_TYPE,
             description: `The Query type for ${namespaceDesc}`,
-            fields: [
-                ...namespaceFields,
-                ...flatMap(namespace.rootEntityTypes, type => this.getFields(type)),
-            ]
+            fields: fields
         };
     }
 
@@ -51,11 +56,16 @@ export class QueryTypeGenerator {
     }
 
     private getFields(rootEntityType: RootEntityType): ReadonlyArray<QueryNodeField> {
-        return [
+        const queryNodeFields = [
             this.getSingleRootEntityField(rootEntityType),
             this.getAllRootEntitiesField(rootEntityType),
             this.getAllRootEntitiesMetaField(rootEntityType)
         ];
+        if (rootEntityType.flexSearchIndexConfig.isIndexed) {
+            queryNodeFields.push(this.getFlexSearchEntitiesField(rootEntityType));
+            queryNodeFields.push(this.getFlexSearchEntitiesFieldMeta(rootEntityType));
+        }
+        return queryNodeFields;
     }
 
     private getSingleRootEntityField(rootEntityType: RootEntityType): QueryNodeField {
@@ -109,5 +119,14 @@ export class QueryTypeGenerator {
             resolve: () => this.getAllRootEntitiesNode(rootEntityType)
         });
         return this.metaFirstAugmentation.augment(this.filterAugmentation.augment(fieldConfig, rootEntityType));
+    }
+
+    private getFlexSearchEntitiesField(rootEntityType: RootEntityType): QueryNodeField {
+        return this.flexSearchGenerator.generate(rootEntityType);
+    }
+
+    private getFlexSearchEntitiesFieldMeta(rootEntityType: RootEntityType): QueryNodeField {
+        const metaType = this.metaTypeGenerator.generate();
+        return this.flexSearchGenerator.generateMeta(rootEntityType, metaType);
     }
 }

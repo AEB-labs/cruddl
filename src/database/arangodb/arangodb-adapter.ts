@@ -4,19 +4,20 @@ import { ProjectOptions } from '../../config/interfaces';
 import { Logger } from '../../config/logging';
 import { ExecutionOptions } from '../../execution/execution-options';
 import { TransactionCancelledError, TransactionTimeoutError } from '../../execution/runtime-errors';
-import { Model } from '../../model';
+import { FlexSearchLanguage, Model } from '../../model';
 import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS, QueryNode } from '../../query-tree';
+import { FlexSearchTokenization } from '../../query-tree/flex-search';
 import { Mutable } from '../../utils/util-types';
 import { objectValues, sleep, sleepInterruptible } from '../../utils/utils';
 import { getPreciseTime, Watch } from '../../utils/watch';
-import { DatabaseAdapter, DatabaseAdapterTimings, ExecutionArgs, ExecutionPlan, ExecutionResult, TransactionStats } from '../database-adapter';
+import { DatabaseAdapter, DatabaseAdapterTimings, ExecutionArgs, ExecutionPlan, ExecutionResult, FlexSearchTokenizable, TransactionStats } from '../database-adapter';
 import { AQLCompoundQuery, aqlConfig, AQLExecutableQuery } from './aql';
-import { getAQLQuery } from './aql-generator';
+import { generateTokenizationQuery, getAQLQuery } from './aql-generator';
 import { RequestInstrumentation, RequestInstrumentationPhase } from './arangojs-instrumentation/config';
 import { CancellationManager } from './cancellation-manager';
 import { ArangoDBConfig, DEFAULT_RETRY_DELAY_BASE_MS, getArangoDBLogger, initDatabase } from './config';
 import { ERROR_ARANGO_CONFLICT, ERROR_QUERY_KILLED } from './error-codes';
-import { SchemaAnalyzer } from './schema-migration/anaylzer';
+import { SchemaAnalyzer } from './schema-migration/analyzer';
 import { SchemaMigration } from './schema-migration/migrations';
 import { MigrationPerformer } from './schema-migration/performer';
 import { TransactionError } from './transaction-error';
@@ -72,14 +73,14 @@ interface TransactionResult {
 }
 
 export class ArangoDBAdapter implements DatabaseAdapter {
+
     private readonly db: Database;
     private readonly logger: Logger;
     private readonly analyzer: SchemaAnalyzer;
     private readonly migrationPerformer: MigrationPerformer;
     private readonly cancellationManager: CancellationManager;
     private readonly versionHelper: ArangoDBVersionHelper;
-    private readonly autocreateIndices: boolean;
-    private readonly autoremoveIndices: boolean;
+    private readonly doNonMandatoryMigrations: boolean;
     private readonly arangoExecutionFunction: string;
 
     constructor(private readonly config: ArangoDBConfig, private schemaContext?: ProjectOptions) {
@@ -91,8 +92,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         this.arangoExecutionFunction = this.buildUpArangoExecutionFunction();
         // the cancellation manager gets its own database instance so its cancellation requests are not queued
         this.cancellationManager = new CancellationManager({ database: initDatabase(config) });
-        this.autocreateIndices = config.autocreateIndices !== false; // defaults to true
-        this.autoremoveIndices = config.autoremoveIndices !== false; // defaults to true
+        this.doNonMandatoryMigrations = config.doNonMandatoryMigrations !== false; // defaults to true
     }
 
     /**
@@ -624,9 +624,11 @@ export class ArangoDBAdapter implements DatabaseAdapter {
      */
     async updateSchema(model: Model): Promise<void> {
         const migrations = await this.getOutstandingMigrations(model);
+        const skippedMigrations: SchemaMigration[] = [];
         for (const migration of migrations) {
-            if (migration.type === 'createIndex' && !this.autocreateIndices || migration.type === 'dropIndex' && !this.autoremoveIndices) {
+            if (!migration.isMandatory && !this.doNonMandatoryMigrations) {
                 this.logger.debug(`Skipping migration "${migration.description}" because of configuration`);
+                skippedMigrations.push(migration);
                 continue;
             }
             try {
@@ -643,6 +645,30 @@ export class ArangoDBAdapter implements DatabaseAdapter {
     async getArangoDBVersion(): Promise<ArangoDBVersion | undefined> {
         return this.versionHelper.getArangoDBVersion();
     }
+
+    async tokenizeExpressions(tokenizations: ReadonlyArray<FlexSearchTokenizable>): Promise<ReadonlyArray<FlexSearchTokenization>> {
+        const tokenizationsFiltered = tokenizations.filter(
+            (value, index) => !tokenizations.some(
+                (value2, index2) => value.expression === value2.expression && value.language === value2.language && index > index2
+            )
+        );
+
+        const cursor = await this.db.query(generateTokenizationQuery(tokenizationsFiltered));
+
+        const result = await cursor.next();
+        const resultArray: FlexSearchTokenization[] = [];
+        for (let i = 0; i < tokenizationsFiltered.length; i++) {
+            resultArray.push({
+                expression: tokenizationsFiltered[i].expression,
+                language: tokenizationsFiltered[i].language,
+                tokens: result['token_' + i]
+            });
+        }
+
+        return resultArray;
+    }
+
+
 }
 
 function sumUpValues(objects: ReadonlyArray<{ readonly [key: string]: number }>): { readonly [key: string]: number } {

@@ -1,18 +1,18 @@
 "A delivery"
-type Delivery @rootEntity @roles(readWrite: ["allusers"]) {
-    deliveryNumber: String @key @unique # leave this here to catch this case, too (has caused a bug)
+type Delivery @rootEntity(flexSearch: true, flexSearchLanguage: DE) @roles(readWrite: ["allusers"]) {
+    deliveryNumber: String @key @unique @flexSearch(includeInSearch: true)# leave this here to catch this case, too (has caused a bug)
     "The list of serial numbers associated with this delivery"
     serialNumbers: [String]
     "The address of the delivery's consignee"
-    consignee: Address
+    consignee: Address @flexSearch
     contentInfo: [Translation]
     dgInfo: DangerousGoodsInfo
-    items: [DeliveryItem]
+    items: [DeliveryItem] @flexSearch
     "The handling units the items of this delivery are packaged in"
     handlingUnits: [HandlingUnit] @relation
     "The country to where the delivery should be shipped"
     destinationCountry: Country @reference(keyField: "destinationCountryISOCode")
-    destinationCountryISOCode: String
+    destinationCountryISOCode: String @flexSearch
 
     originCountry: Country @reference # no key field specified ("legacy" mode)
 
@@ -35,11 +35,16 @@ type Delivery @rootEntity @roles(readWrite: ["allusers"]) {
     pickupTimeEnd: LocalTime
 
     dynamicData: JSON
+
+    description: String @flexSearchFulltext(includeInSearch: true)
+    enumFlexSearch: Foobarit @flexSearch
+    aNumber: Int @flexSearch
+    recursion: Recursion @flexSearch
 }
 
 type DeliveryItem @childEntity {
     itemNumber: String
-    quantity: Int
+    quantity: Int @flexSearch
     handlingUnit: HandlingUnit @reference
     dgInfo: DangerousGoodsInfo
 }
@@ -58,4 +63,9 @@ enum Foobarit {
     Foo
     Bar
     Baz
+}
+
+type Recursion @valueObject{
+    recursion: Recursion @flexSearch
+    name: String @flexSearch
 }

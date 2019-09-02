@@ -1,4 +1,5 @@
 import { DirectiveNode, ObjectValueNode, StringValueNode } from 'graphql';
+import { FlexSearchPrimarySortConfig } from '../../database/arangodb/schema-migration/arango-search-helpers';
 
 export interface IndexDefinitionConfig {
     readonly id?: string,
@@ -15,4 +16,10 @@ export interface IndexDefinitionConfig {
     readonly sparse?: boolean
 
     readonly astNode?: DirectiveNode | ObjectValueNode
+}
+
+export interface FlexSearchIndexConfig {
+    readonly isIndexed: boolean
+    readonly directiveASTNode?: DirectiveNode
+    readonly primarySort: FlexSearchPrimarySortConfig[]
 }

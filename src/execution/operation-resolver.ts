@@ -1,11 +1,12 @@
-import { GraphQLError, print } from 'graphql';
+import { print } from 'graphql';
 import { applyAuthorizationToQueryTree } from '../authorization/execution';
 import { globalContext } from '../config/global';
 import { RequestProfile } from '../config/interfaces';
-import { ExecutionPlan, TransactionStats } from '../database/database-adapter';
+import { DatabaseAdapter, ExecutionPlan, FlexSearchTokenizable, TransactionStats } from '../database/database-adapter';
 import { OperationParams } from '../graphql/operation-based-resolvers';
 import { distillOperation } from '../graphql/query-distiller';
-import { ObjectQueryNode, QueryNode } from '../query-tree';
+import { ObjectQueryNode, PropertySpecification, QueryNode } from '../query-tree';
+import { FlexSearchComplexOperatorQueryNode, FlexSearchTokenization } from '../query-tree/flex-search';
 import { evaluateQueryStatically } from '../query-tree/utils';
 import { buildConditionalObjectQueryNode, QueryNodeObjectType } from '../schema-generation/query-node-object-type';
 import { SchemaTransformationContext } from '../schema/preparation/transformation-pipeline';
@@ -52,7 +53,17 @@ export class OperationResolver {
             watch.stop('distillation');
 
             const rootQueryNode = ObjectQueryNode.EMPTY; // can't use NULL because then the whole operation would yield null
-            queryTree = buildConditionalObjectQueryNode(rootQueryNode, rootType, operation.selectionSet);
+            const fieldContext = {
+                selectionStack: [],
+                flexSearchMaxFilterableAmountOverride: options.flexSearchMaxFilterableAndSortableAmount,
+                flexSearchRecursionDepth: options.flexSearchRecursionDepth
+            };
+            queryTree = buildConditionalObjectQueryNode(rootQueryNode, rootType, operation.selectionSet, fieldContext);
+            if (logger.isTraceEnabled()) {
+                logger.trace('Before expansion: ' + queryTree.describe());
+            }
+            const tokens: ReadonlyArray<FlexSearchTokenization> = await this.queryFlexSearchTokens(queryTree, this.context.databaseAdapter);
+            queryTree = await this.expandQueryNode(queryTree, tokens);
             if (logger.isTraceEnabled()) {
                 logger.trace('Before authorization: ' + queryTree.describe());
             }
@@ -127,4 +138,66 @@ export class OperationResolver {
             profile
         };
     }
+
+    private async queryFlexSearchTokens(queryTree: QueryNode, databaseAdapter: DatabaseAdapter): Promise<ReadonlyArray<FlexSearchTokenization>> {
+        async function collectTokenizations(queryNode: QueryNode): Promise<ReadonlyArray<FlexSearchTokenizable>> {
+            let tokens: FlexSearchTokenizable[] = [];
+            if (queryNode instanceof FlexSearchComplexOperatorQueryNode) {
+                tokens.push({ expression: queryNode.expression, language: queryNode.flexSearchLanguage });
+
+            }
+            if (queryNode instanceof ObjectQueryNode) {
+                const specs: PropertySpecification[] = [];
+                for (const property of queryNode.properties) {
+                    tokens = tokens.concat(await collectTokenizations(property.valueNode));
+                }
+            }
+
+            for (const field of Object.keys(queryNode)) {
+                const childNode = (queryNode as any)[field];
+                if (childNode instanceof QueryNode) {
+                    tokens = tokens.concat(await collectTokenizations(childNode));
+                }
+            }
+            return tokens;
+        }
+
+        const tokenizations = await collectTokenizations(queryTree);
+        return databaseAdapter.tokenizeExpressions(tokenizations);
+    }
+
+    private async expandQueryNode(queryNode: QueryNode, tokenizations: ReadonlyArray<FlexSearchTokenization>): Promise<QueryNode> {
+        if (queryNode instanceof FlexSearchComplexOperatorQueryNode) {
+            return await queryNode.expand(tokenizations);
+        }
+        if (queryNode instanceof ObjectQueryNode) {
+            const specs: PropertySpecification[] = [];
+            for (const property of queryNode.properties) {
+                const expandedValueNode = await this.expandQueryNode(property.valueNode, tokenizations);
+                specs.push(new PropertySpecification(property.propertyName, expandedValueNode));
+            }
+            return new ObjectQueryNode(specs);
+        }
+
+        const newFieldValues: { [name: string]: QueryNode } = {};
+        let hasChanged = false;
+        for (const field of Object.keys(queryNode)) {
+            const oldValue = (queryNode as any)[field];
+            if (oldValue instanceof QueryNode) {
+                const newValue = await this.expandQueryNode(oldValue, tokenizations);
+                if (newValue != oldValue) {
+                    newFieldValues[field] = newValue;
+                    hasChanged = true;
+                }
+            }
+        }
+        if (!hasChanged) {
+            return queryNode;
+        }
+        const newObj = Object.create(Object.getPrototypeOf(queryNode));
+        Object.assign(newObj, queryNode, newFieldValues);
+        return newObj;
+    }
+
+
 }

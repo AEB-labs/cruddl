@@ -2,7 +2,12 @@ import {
     GraphQLEnumType, GraphQLInterfaceType, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLOutputType,
     GraphQLScalarType, GraphQLUnionType, isListType, isNonNullType, Thunk
 } from 'graphql';
-import { QueryNodeListType, QueryNodeNonNullType, QueryNodeObjectType, QueryNodeOutputType } from './definition';
+import {
+    QueryNodeListType,
+    QueryNodeNonNullType,
+    QueryNodeObjectType,
+    QueryNodeOutputType,
+} from './definition';
 import { QueryNodeNullableType } from './index';
 
 export function isGraphQLOutputType(type: {}): type is GraphQLOutputType {
@@ -15,7 +20,7 @@ export function isGraphQLOutputType(type: {}): type is GraphQLOutputType {
         type instanceof GraphQLList;
 }
 
-export function extractQueryTreeObjectType(type: QueryNodeOutputType): QueryNodeObjectType|undefined {
+export function extractQueryTreeObjectType(type: QueryNodeOutputType): QueryNodeObjectType | undefined {
     if (isGraphQLOutputType(type)) {
         return undefined;
     }

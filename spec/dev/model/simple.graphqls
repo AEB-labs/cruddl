@@ -1,22 +1,20 @@
-"A supehero"
-type Hero @rootEntity {
+type Hero @rootEntity(flexSearch: true, flexSearchLanguage: DE, flexSearchOrder: [{field: "name", direction: ASC},{field: "age", direction: DESC}]) {
     "The hero's screen name"
-    name: String @unique
+    name: String @unique @flexSearchFulltext(includeInSearch: true)
     age: Int @defaultValue(value: 42)
-    nickNames: [String]
+    nickNames: [String] @flexSearch
     movies: [Movie] @relation(inverseOf: "heroes")
     skills: [Skill]
-    suit: Suit
+    suit: Suit @flexSearch
     morality: Morality
     countryISOCode: String
     country: Country @reference(keyField: "countryISOCode")
     missions: [Mission]
     friends: [Hero] @relation
-    moreFriends: [Hero] @traversal(path: "friends{0,2}")
-    subMissions: [Mission] @traversal(path: "missions.subMissions")
-    missionsAgain: [Mission] @traversal(path: "missions")
+    moreFriends: [Hero] @collect(path: "friends{0,2}")
+    subMissions: [Mission] @collect(path: "missions.subMissions")
+    missionsAgain: [Mission] @collect(path: "missions")
     info: JSON
-    deepSkills: [Skill] @traversal(path: "skills.skills")
 }
 
 "A heroic mission"
@@ -43,11 +41,11 @@ type Movie @rootEntity {
     director: Director @relation
     publisher: Publisher @reference
 
-    relatedMovies: [Movie] @traversal(path: "heroes.movies")
-    community: [Hero] @traversal(path: "heroes.friends{0,2}")
-    subMissions: [Mission] @traversal(path: "heroes.friends{0,2}.missions.subMissions")
-    skillCount: Int @aggregation(path: "heroes.skills", aggregator: COUNT)
-    totalSkillStrength: Float @aggregation(path: "heroes.skills.strength", aggregator: SUM)
+    relatedMovies: [Movie] @collect(path: "heroes.movies" aggregate: DISTINCT)
+    community: [Hero] @collect(path: "heroes.friends{0,2}" aggregate: DISTINCT)
+    subMissions: [Mission] @collect(path: "heroes.friends{0,2}.missions.subMissions" aggregate: DISTINCT)
+    skillCount: Int @collect(path: "heroes.skills", aggregate: COUNT)
+    totalSkillStrength: Float @collect(path: "heroes.skills.strength", aggregate: SUM)
 }
 
 "A movie director"
@@ -59,7 +57,7 @@ type Director @rootEntity {
 "A description of a hero suit"
 type Suit @entityExtension {
     "The dominant color of the suit"
-    color: String
+    color: String @flexSearch
 }
 
 type Country @rootEntity {

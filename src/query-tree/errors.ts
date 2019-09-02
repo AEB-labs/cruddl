@@ -17,7 +17,7 @@ export class UnknownValueQueryNode extends QueryNode {
 export class RuntimeErrorQueryNode extends QueryNode {
     readonly code: string | undefined;
 
-    constructor(public readonly message: string, args: { readonly code?: string } = {}) {
+    constructor(readonly message: string, args: { readonly code?: string } = {}) {
         super();
         this.code = args.code;
     }
@@ -31,6 +31,7 @@ export const PERMISSION_DENIED_ERROR = 'PERMISSION_DENIED';
 export const ATOMICITY_SKIP_ERROR = 'ATOMICITY_SKIP';
 export const INVALID_CURSOR_ERROR = 'INVALID_CURSOR';
 export const NOT_FOUND_ERROR = 'NOT_FOUND';
+export const FLEX_SEARCH_TOO_MANY_OBJECTS = 'FLEX_SEARCH_TOO_MANY_OBJECTS';
 
 export const RUNTIME_ERROR_TOKEN = '__cruddl_runtime_error';
 export const RUNTIME_ERROR_CODE_PROPERTY = '__cruddl_runtime_error_code';

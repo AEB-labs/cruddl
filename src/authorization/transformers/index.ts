@@ -1,9 +1,10 @@
-import { AffectedFieldInfoQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FollowEdgeQueryNode, QueryNode, TraversalQueryNode, UpdateEntitiesQueryNode } from '../../query-tree';
+import { AffectedFieldInfoQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EntitiesQueryNode, EntityFromIdQueryNode, FieldPathQueryNode, FieldQueryNode, FollowEdgeQueryNode, QueryNode, TraversalQueryNode, UpdateEntitiesQueryNode } from '../../query-tree';
+import { FlexSearchQueryNode } from '../../query-tree/flex-search';
 import { AuthContext } from '../auth-basics';
 import { transformAffectedFieldInfoQueryNode } from './affected-field-info';
 import { transformCreateEntityQueryNode } from './create-entity';
-import { transformEntitiesQueryNode, transformEntityFromIdQueryNode } from './entities';
-import { transformFieldQueryNode } from './field';
+import { transformEntitiesQueryNode, transformEntityFromIdQueryNode, transformFlexSearchQueryNode } from './entities';
+import { transformFieldPathQueryNode, transformFieldQueryNode } from './field';
 import { transformFollowEdgeQueryNode } from './follow-edge';
 import { transformTraversalQueryNode } from './traversal';
 import { transformDeleteEntitiesQueryNode, transformUpdateEntitiesQueryNode } from './update-delete-entities';
@@ -25,6 +26,8 @@ addTransformer(CreateEntityQueryNode, transformCreateEntityQueryNode);
 addTransformer(UpdateEntitiesQueryNode, transformUpdateEntitiesQueryNode);
 addTransformer(DeleteEntitiesQueryNode, transformDeleteEntitiesQueryNode);
 addTransformer(AffectedFieldInfoQueryNode, transformAffectedFieldInfoQueryNode);
+addTransformer(FlexSearchQueryNode, transformFlexSearchQueryNode);
+addTransformer(FieldPathQueryNode, transformFieldPathQueryNode);
 
 export function transformNode(node: QueryNode, authContext: AuthContext): QueryNode {
     const transformer = map.get(node.constructor);

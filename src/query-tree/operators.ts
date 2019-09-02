@@ -1,3 +1,4 @@
+import { FlexSearchLanguage } from '../model/config';
 import { QueryNode } from './base';
 
 /**
@@ -92,40 +93,84 @@ export class BinaryOperationQueryNode extends QueryNode {
  * The operator of a BinaryOperationQueryNode
  */
 export enum BinaryOperator {
-    AND,
-    OR,
+    AND = 'AND',
+    OR = 'OR',
 
     /**
      * Strict equality (values of different types are considered unequal)
      */
-    EQUAL,
+    EQUAL = 'EQUAL',
 
     /**
      * Strict inequality (values of different types are considered unequal)
      */
-    UNEQUAL,
+    UNEQUAL = 'UNEQUAL',
 
-    LESS_THAN,
-    LESS_THAN_OR_EQUAL,
-    GREATER_THAN,
-    GREATER_THAN_OR_EQUAL,
-    IN,
-    CONTAINS,
-    STARTS_WITH,
-    ENDS_WITH,
+    LESS_THAN = 'LESS_THAN',
+    LESS_THAN_OR_EQUAL = 'LESS_THAN_OR_EQUAL',
+    GREATER_THAN = 'GREATER_THAN',
+    GREATER_THAN_OR_EQUAL = 'GREATER_THAN_OR_EQUAL',
+    IN = 'IN',
+    CONTAINS = 'CONTAINS',
+    STARTS_WITH = 'STARTS_WITH',
+    ENDS_WITH = 'ENDS_WITH',
 
     /**
      * Comparison for string using placeholders (% for arbitrary char sequences, _ for a single character).
      * Case-insensitive. Use backslashes to escape %, _ and \
      */
-    LIKE,
-    ADD,
-    SUBTRACT,
-    MULTIPLY,
-    DIVIDE,
-    MODULO,
-    APPEND,
-    PREPEND,
+    LIKE = 'LIKE',
+    ADD = 'ADD',
+    SUBTRACT = 'SUBTRACT',
+    MULTIPLY = 'MULTIPLY',
+    DIVIDE = 'DIVIDE',
+    MODULO = 'MODULO',
+    APPEND = 'APPEND',
+    PREPEND = 'PREPEND',
+}
+
+/**
+ * A node that performs an operation with two operands and a FlexSearch Language
+ */
+export class OperatorWithLanguageQueryNode extends QueryNode {
+    constructor(public readonly lhs: QueryNode, public readonly operator: BinaryOperatorWithLanguage, public readonly rhs: QueryNode, public readonly flexSearchLanguage: FlexSearchLanguage) {
+        super();
+    }
+
+    describe() {
+        return `(${this.lhs.describe()} ${this.describeOperator(this.operator)} ${this.rhs.describe()}${this.getParamString()})`;
+    }
+
+    private describeOperator(op: BinaryOperatorWithLanguage) {
+        switch (op) {
+            case BinaryOperatorWithLanguage.FLEX_SEARCH_CONTAINS_ANY_WORD:
+                return 'IN TOKENS';
+            case BinaryOperatorWithLanguage.FLEX_SEARCH_CONTAINS_PHRASE:
+                return 'CONTAINS_PHRASE';
+            case BinaryOperatorWithLanguage.FLEX_SEARCH_CONTAINS_PREFIX:
+                return 'CONTAINS_PREFIX';
+            default:
+                return '(unknown operator)';
+        }
+    }
+
+    private getParamString() {
+        if (this.flexSearchLanguage) {
+            return ` with analyzer: "${this.flexSearchLanguage.toString()}"`;
+        } else {
+            return ``;
+        }
+
+    }
+}
+
+/**
+ * The operator of a OperatorWithLanguageQueryNode
+ */
+export enum BinaryOperatorWithLanguage {
+    FLEX_SEARCH_CONTAINS_ANY_WORD = 'FLEX_SEARCH_CONTAINS_ANY_WORD',
+    FLEX_SEARCH_CONTAINS_PREFIX = 'FLEX_SEARCH_CONTAINS_PREFIX',
+    FLEX_SEARCH_CONTAINS_PHRASE = 'FLEX_SEARCH_CONTAINS_PHRASE',
 }
 
 export class ConditionalQueryNode extends QueryNode {
@@ -136,4 +181,7 @@ export class ConditionalQueryNode extends QueryNode {
     describe() {
         return `(if ${this.condition.describe()} then ${this.expr1.describe()} else ${this.expr2.describe()} endif)`;
     }
+
 }
+
+

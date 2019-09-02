@@ -2,7 +2,7 @@ import { AggregationOperator, RootEntityType } from '../model';
 import { Field } from '../model/implementation';
 import { AggregationQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConditionalQueryNode, CountQueryNode, EntitiesQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, NullQueryNode, ObjectQueryNode, QueryNode, RootEntityIDQueryNode, SafeListQueryNode, TransformListQueryNode, TraversalQueryNode, TypeCheckQueryNode, VariableQueryNode } from '../query-tree';
 import { ID_FIELD } from '../schema/constants';
-import { and } from './filter-input-types/constants';
+import { and } from './utils/input-types';
 
 export function createFieldNode(field: Field, sourceNode: QueryNode, options: { skipNullFallbackForEntityExtensions?: boolean } = {}): QueryNode {
     // make use of the fact that field access on non-objects is NULL, so that type checks for OBJECT are redundant

@@ -1,9 +1,10 @@
 import { GraphQLBoolean, GraphQLFloat, GraphQLID, GraphQLInt, GraphQLString } from 'graphql';
-import { BinaryOperationQueryNode, BinaryOperator, QueryNode, UnaryOperationQueryNode, UnaryOperator } from '../../query-tree';
+import { BinaryOperator, QueryNode } from '../../query-tree';
 import { INPUT_FIELD_CONTAINS, INPUT_FIELD_ENDS_WITH, INPUT_FIELD_EQUAL, INPUT_FIELD_EVERY, INPUT_FIELD_GT, INPUT_FIELD_GTE, INPUT_FIELD_IN, INPUT_FIELD_LIKE, INPUT_FIELD_LT, INPUT_FIELD_LTE, INPUT_FIELD_NONE, INPUT_FIELD_NOT, INPUT_FIELD_NOT_CONTAINS, INPUT_FIELD_NOT_ENDS_WITH, INPUT_FIELD_NOT_IN, INPUT_FIELD_NOT_LIKE, INPUT_FIELD_NOT_STARTS_WITH, INPUT_FIELD_SOME, INPUT_FIELD_STARTS_WITH } from '../../schema/constants';
 import { GraphQLDateTime } from '../../schema/scalars/date-time';
 import { GraphQLLocalDate } from '../../schema/scalars/local-date';
 import { GraphQLLocalTime } from '../../schema/scalars/local-time';
+import { binaryNotOp, binaryOp } from '../utils/input-types';
 
 export const FILTER_OPERATORS: { [suffix: string]: (fieldNode: QueryNode, valueNode: QueryNode) => QueryNode } = {
     [INPUT_FIELD_EQUAL]: binaryOp(BinaryOperator.EQUAL),
@@ -58,10 +59,14 @@ export const FILTER_DESCRIPTIONS: { [name: string]: string | { [typeName: string
 
     [INPUT_FIELD_STARTS_WITH]: 'Checks if $field starts with a specified string, case-sensitively.\n\n' +
     'Never uses an index. Consider using `like` (with the `%` placeholder) for a case-insensitive filter that can use an index.',
+    [INPUT_FIELD_NOT_STARTS_WITH]: 'Checks if $field does not start with a specified string, case-sensitively.\n\n' +
+    'Never uses an index. Consider using `not_like` (with the `%` placeholder) for a case-insensitive filter that can use an index.',
 
     [INPUT_FIELD_ENDS_WITH]: 'Checks if $field ends with a specified string, case-sensitively.',
+    [INPUT_FIELD_NOT_ENDS_WITH]: 'Checks if $field does not end with a specified string, case-sensitively.',
 
     [INPUT_FIELD_CONTAINS]: 'Checks if $field contains a specified string, case-sensitively.',
+    [INPUT_FIELD_NOT_CONTAINS]: 'Checks if $field does not contain a specified string, case-sensitively.',
 
     [INPUT_FIELD_LIKE]: 'Matches $field against a pattern case-insensitively with the following placeholders:\n\n' +
     '- `%` matches any sequence of characters, including the empty string\n' +
@@ -72,7 +77,14 @@ export const FILTER_DESCRIPTIONS: { [name: string]: string | { [typeName: string
     [INPUT_FIELD_NOT_LIKE]: 'Checks if $field does *not* match a pattern case-insensitively with the following placeholders:\n\n' +
     '- `%` matches any sequence of characters, including the empty string\n' +
     '- `_` matches exactly one character\n' +
-    '- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)'
+    '- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)',
+
+    [INPUT_FIELD_IN]: 'Checks if $field is equal to one of the specified values.',
+    [INPUT_FIELD_NOT_IN]: 'Checks if $field is not equal to one of the specified values.',
+    [INPUT_FIELD_LT]: 'Checks if $field is less than a specified value.',
+    [INPUT_FIELD_LTE]: 'Checks if $field is less or equal a specified value.',
+    [INPUT_FIELD_GT]: 'Checks if $field is greater than a specified value.',
+    [INPUT_FIELD_GTE]: 'Checks if $field is greater or equal a specified value.'
 };
 
 export const OPERATORS_WITH_LIST_OPERAND = [INPUT_FIELD_IN, INPUT_FIELD_NOT_IN];
@@ -90,17 +102,3 @@ export const FILTER_FIELDS_BY_TYPE: { [name: string]: string[] } = {
 
 export type Quantifier = 'some' | 'every' | 'none';
 export const QUANTIFIERS: ReadonlyArray<Quantifier> = [INPUT_FIELD_SOME, INPUT_FIELD_EVERY, INPUT_FIELD_NONE];
-
-export function not(value: QueryNode): QueryNode {
-    return new UnaryOperationQueryNode(value, UnaryOperator.NOT);
-}
-
-export const and = binaryOp(BinaryOperator.AND);
-
-export function binaryOp(op: BinaryOperator) {
-    return (lhs: QueryNode, rhs: QueryNode) => new BinaryOperationQueryNode(lhs, op, rhs);
-}
-
-export function binaryNotOp(op: BinaryOperator) {
-    return (lhs: QueryNode, rhs: QueryNode) => not(new BinaryOperationQueryNode(lhs, op, rhs));
-}

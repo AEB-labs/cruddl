@@ -5,15 +5,28 @@ import { Model, RootEntityType } from '../../../model/implementation';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from '../arango-basics';
 import { ArangoDBConfig, getArangoDBLogger, initDatabase } from '../config';
 import { ArangoDBVersionHelper } from '../version-helper';
-import { calculateRequiredIndexOperations, getRequiredIndicesFromModel, IndexDefinition } from './index-helpers';
-import { CreateDocumentCollectionMigration, CreateEdgeCollectionMigration, CreateIndexMigration, DropIndexMigration, SchemaMigration } from './migrations';
+import { calculateRequiredIndexOperations, getRequiredIndicesFromModel, IndexDefinition, isArangoSearchSupported } from './index-helpers';
+import {
+    CreateArangoSearchViewMigration,
+    CreateDocumentCollectionMigration,
+    CreateEdgeCollectionMigration,
+    CreateIndexMigration, DropArangoSearchViewMigration,
+    DropIndexMigration,
+    SchemaMigration, UpdateArangoSearchViewMigration
+} from './migrations';
+import {
+    calculateRequiredArangoSearchViewCreateOperations,
+    calculateRequiredArangoSearchViewDropOperations,
+    calculateRequiredArangoSearchViewUpdateOperations,
+    getRequiredViewsFromModel
+} from './arango-search-helpers';
 
 export class SchemaAnalyzer {
     private readonly db: Database;
     private readonly logger: Logger;
     private readonly versionHelper: ArangoDBVersionHelper;
 
-    constructor(config: ArangoDBConfig, schemaContext?: ProjectOptions) {
+    constructor(readonly config: ArangoDBConfig, schemaContext?: ProjectOptions) {
         this.db = initDatabase(config);
         this.versionHelper = new ArangoDBVersionHelper(this.db);
         this.logger = getArangoDBLogger(schemaContext);
@@ -23,14 +36,14 @@ export class SchemaAnalyzer {
         return [
             ...await this.getDocumentCollectionMigrations(model),
             ...await this.getEdgeCollectionMigrations(model),
-            ...await this.getIndexMigrations(model)
+            ...await this.getIndexMigrations(model),
+            ...await this.getArangoSearchMigrations(model)
         ];
     }
 
     async getDocumentCollectionMigrations(model: Model): Promise<ReadonlyArray<CreateDocumentCollectionMigration>> {
         // Get existing collections in ArangoDB
-        const existingCollections = (await this.db.collections()).filter(coll => (coll as any).type === 2 /* document */);
-        ;
+        const existingCollections = (await this.db.collections()).filter(coll => (coll as any).type === 2 /* document */)
         const existingCollectionNames = new Set(existingCollections.map(coll => (<any>coll).name)); // typing for name missing
 
         const migrations: CreateDocumentCollectionMigration[] = [];
@@ -136,4 +149,28 @@ export class SchemaAnalyzer {
         this.logger.debug(`ArangoDB version: ${version}. Workaround for sparse indices will be enabled.`);
         return true;
     }
+
+    /**
+     * Calculates all required migrations to sync the arangodb-views with the model
+     * @param model
+     */
+    async getArangoSearchMigrations(model: Model): Promise<ReadonlyArray<SchemaMigration>> {
+
+        if(!await isArangoSearchSupported(this.versionHelper.getArangoDBVersion())){
+            return []
+        }
+        // the views that match the model
+        const requiredViews = getRequiredViewsFromModel(model);
+        // the currently existing views
+        const views = (await this.db.listViews()).map(value => this.db.arangoSearchView(value.name));
+
+        const configuration = this.config.arangoSearchConfiguration;
+        const viewsToCreate = await calculateRequiredArangoSearchViewCreateOperations(views, requiredViews, this.db, configuration);
+        const viewsToDrop = calculateRequiredArangoSearchViewDropOperations(views, requiredViews);
+        const viewsToUpdate = await calculateRequiredArangoSearchViewUpdateOperations(views, requiredViews, this.db, configuration);
+
+        return [...viewsToCreate, ...viewsToDrop, ...viewsToUpdate];
+    }
+
+
 }

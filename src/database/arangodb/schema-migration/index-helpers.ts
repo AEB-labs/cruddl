@@ -3,6 +3,7 @@ import { IndexField, Model, RootEntityType } from '../../../model';
 import { ID_FIELD } from '../../../schema/constants';
 import { compact, flatMap } from '../../../utils/utils';
 import { getCollectionNameForRootEntity } from '../arango-basics';
+import { ArangoDBVersion } from '../version-helper';
 
 const DEFAULT_INDEX_TYPE = 'persistent'; // persistent is a skiplist index
 
@@ -114,4 +115,9 @@ function getArangoFieldPath(indexField: IndexField): string {
     return (indexField.fieldsInPath || [])
         .map(field => field.isList ? `${field.name}[*]` : field.name)
         .join('.');
+}
+
+export async function isArangoSearchSupported(versionPromise: Promise<ArangoDBVersion | undefined>) {
+    const version = await versionPromise;
+    return version && (version.major >= 3 && version.minor >= 4);
 }

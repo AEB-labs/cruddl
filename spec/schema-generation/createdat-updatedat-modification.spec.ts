@@ -85,7 +85,7 @@ describe('mutation', () => {
 
     it('sets createdAt and updatedAt correctly', async () => {
         // on a freshly created delivery
-        const project = new Project({ sources: [new ProjectSource('schema.graphql', astSchema)], getExecutionOptions: ({ context }) => ({ authRoles: context.authRoles })});
+        const project = new Project({ sources: [new ProjectSource('schema.graphql', astSchema)], getExecutionOptions: ({ context }) => ({ authRoles: context.authRoles }) });
         const db = new InMemoryAdapter();
         const schema = project.createSchema(db);
         await db.updateSchema(project.getModel());
@@ -112,7 +112,7 @@ describe('mutation', () => {
         const minimumEstimatedUpdatedAt = Date.parse(updateCreatedAt) + 1;
         const maximumEstimatedUpdatedAt = Date.now();
         expect(Date.parse(updateUpdatedAt)).to.be.greaterThan(minimumEstimatedUpdatedAt);
-        expect(Date.parse(updateUpdatedAt)).to.be.lessThan(maximumEstimatedUpdatedAt);
+        expect(Date.parse(updateUpdatedAt)).to.be.lte(maximumEstimatedUpdatedAt);
 
         await sleep(1);
 
@@ -154,5 +154,5 @@ describe('mutation', () => {
         // former result is persisted
         expect(selectUpdatedAt).to.equal(updateUpdatedAt);
     })
-        ;
-    });
+    ;
+});

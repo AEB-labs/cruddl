@@ -9,7 +9,7 @@ const DATABASE_URL = 'http://root:@localhost:8529';
 
 export async function createTempDatabase(): Promise<ArangoDBConfig> {
     const db = new Database({
-        url: DATABASE_URL
+        url: DATABASE_URL,
     });
     const dbs = await db.listDatabases();
     if (dbs.indexOf(DATABASE_NAME) >= 0) {
@@ -21,7 +21,8 @@ export async function createTempDatabase(): Promise<ArangoDBConfig> {
     }
     return {
         url: DATABASE_URL,
-        databaseName: DATABASE_NAME
+        databaseName: DATABASE_NAME,
+
     };
 }
 

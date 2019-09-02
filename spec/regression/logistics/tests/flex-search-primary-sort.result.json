@@ -1,0 +1,36 @@
+{
+  "order_above_max": {
+    "errors": [
+      {
+        "message": "Too many objects.",
+        "locations": [
+          {
+            "line": 2,
+            "column": 5
+          }
+        ],
+        "path": [
+          "flexSearchHandlingUnits"
+        ]
+      }
+    ],
+    "data": {
+      "flexSearchHandlingUnits": null
+    }
+  },
+  "order_above_max_primary_sort": {
+    "data": {
+      "flexSearchHandlingUnits": [
+        {
+          "huNumber": "1000021"
+        },
+        {
+          "huNumber": "1000014"
+        },
+        {
+          "huNumber": "1000007"
+        }
+      ]
+    }
+  }
+}

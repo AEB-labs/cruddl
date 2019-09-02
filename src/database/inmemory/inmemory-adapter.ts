@@ -1,9 +1,10 @@
 import { globalContext } from '../../config/global';
 import { ProjectOptions } from '../../config/interfaces';
 import { Logger } from '../../config/logging';
-import { Model } from '../../model';
+import { FlexSearchLanguage, Model } from '../../model';
 import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS, QueryNode } from '../../query-tree';
-import { DatabaseAdapter } from '../database-adapter';
+import { FlexSearchTokenization } from '../../query-tree/flex-search';
+import { DatabaseAdapter, FlexSearchTokenizable } from '../database-adapter';
 import { likePatternToRegExp } from '../like-helpers';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './inmemory-basics';
 import { JSCompoundQuery, JSExecutableQuery } from './js';
@@ -28,7 +29,7 @@ export class InMemoryAdapter implements DatabaseAdapter {
         }
         globalContext.registerContext(schemaContext);
         try {
-            this.logger = globalContext.loggerProvider.getLogger("InMemoryAdapter");
+            this.logger = globalContext.loggerProvider.getLogger('InMemoryAdapter');
         } finally {
             globalContext.unregisterContext();
         }
@@ -43,7 +44,7 @@ export class InMemoryAdapter implements DatabaseAdapter {
             ([provider.getValidatorName(), provider.getValidatorFunction()])));
 
         const support = {
-            compare(lhs: string|boolean|number|null|undefined|any, rhs: string|boolean|number|null|undefined|any): number {
+            compare(lhs: string | boolean | number | null | undefined | any, rhs: string | boolean | number | null | undefined | any): number {
                 if (lhs == undefined) {
                     if (rhs == undefined) {
                         return 0;
@@ -105,7 +106,9 @@ export class InMemoryAdapter implements DatabaseAdapter {
 
                 // both are objects
 
-                const properties = Array.from(new Set([...Object.getOwnPropertyNames(lhs), ...Object.getOwnPropertyNames(rhs)])).sort();
+                const properties = Array.from(new Set([
+                    ...Object.getOwnPropertyNames(lhs), ...Object.getOwnPropertyNames(rhs)
+                ])).sort();
                 for (const property of properties) {
                     const lhsValue = lhs[property];
                     const rhsValue = rhs[property];
@@ -117,7 +120,7 @@ export class InMemoryAdapter implements DatabaseAdapter {
                 return 0;
             },
 
-            getMultiComparator<T>(...valueFns: [((item: T) => string|boolean|number|null|undefined), boolean][]) {
+            getMultiComparator<T>(...valueFns: [((item: T) => string | boolean | number | null | undefined), boolean][]) {
                 if (valueFns.length == 0) {
                     return () => 0;
                 }
@@ -153,7 +156,7 @@ export class InMemoryAdapter implements DatabaseAdapter {
             likePatternToRegExp
         };
 
-        let resultHolder: {[p: string]: any} = {};
+        let resultHolder: { [p: string]: any } = {};
         for (const query of queries) {
             const boundValues = query.boundValues; // used in eval'ed code
             for (const key in query.usedPreExecResultNames) {
@@ -224,4 +227,17 @@ export class InMemoryAdapter implements DatabaseAdapter {
             }
         }
     }
+
+    async tokenizeExpressions(tokenizations: ReadonlyArray<FlexSearchTokenizable>): Promise<ReadonlyArray<FlexSearchTokenization>> {
+        return tokenizations.map(value => {
+            return {
+                expression: value.expression,
+                language: value.language,
+                tokens: value.expression.split('-')
+            };
+
+        });
+    }
+
+
 }

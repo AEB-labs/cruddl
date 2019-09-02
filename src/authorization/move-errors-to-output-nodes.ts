@@ -1,8 +1,5 @@
 import { uniq } from 'lodash';
-import {
-    ConditionalQueryNode, FirstOfListQueryNode, ListQueryNode, ObjectQueryNode, PropertySpecification, QueryNode,
-    RuntimeErrorQueryNode, TransformListQueryNode, VariableAssignmentQueryNode
-} from '../query-tree';
+import { ConditionalQueryNode, FirstOfListQueryNode, ListQueryNode, ObjectQueryNode, PreExecQueryParms, PropertySpecification, QueryNode, FLEX_SEARCH_TOO_MANY_OBJECTS, RuntimeErrorQueryNode, TransformListQueryNode, VariableAssignmentQueryNode, WithPreExecutionQueryNode } from '../query-tree';
 import { visitQueryNode } from '../query-tree/visitor';
 import { VisitResult } from '../utils/visitor';
 
@@ -12,7 +9,7 @@ import { VisitResult } from '../utils/visitor';
  */
 export function moveErrorsToOutputNodes(queryTree: QueryNode): QueryNode {
     let errorList: RuntimeErrorQueryNode[] = [];
-    let minErrorDepth: number|undefined = undefined;
+    let minErrorDepth: number | undefined = undefined;
     type StackFrame = {
         clazz: Function,
         outputNodeKind: OutputNodeKind
@@ -37,6 +34,9 @@ export function moveErrorsToOutputNodes(queryTree: QueryNode): QueryNode {
                     clazz: node.constructor,
                     outputNodeKind: kind
                 });
+                if (errorList.length && kind === OutputNodeKind.OUTPUT) {
+                    return { recurse: false, newValue: node };
+                }
             }
             return { newValue: node };
         },
@@ -45,15 +45,21 @@ export function moveErrorsToOutputNodes(queryTree: QueryNode): QueryNode {
             const frame = stack.pop();
             // only take care of the errors if all of them occurred within this node
             if (errorList.length) {
+
                 if (frame && frame.outputNodeKind == OutputNodeKind.OUTPUT && stack.length <= minErrorDepth!) {
-                    const errors = errorList;
+                    // This is a workaround to remove all "FLEX_SEARCH_TOO_MANY_OBJECTS" errors from the errorList as these are only conditional, and not relevant, if any other error has been thrown as well.
+                    let errors = errorList;
+                    if (errors.some(value => value.code !== FLEX_SEARCH_TOO_MANY_OBJECTS)) {
+                        errors = errors.filter(value => value.code !== FLEX_SEARCH_TOO_MANY_OBJECTS);
+                    }
                     errorList = [];
                     minErrorDepth = undefined;
                     if (errors.length == 1) {
                         return errors[0];
                     } else {
-                        const uniqueErrorMessages = uniq(errors.map(err => err.message));
-                        return new RuntimeErrorQueryNode(uniqueErrorMessages.join(', '));
+                        let uniqueErrorMessages = uniq(errors.map(err => err.message));
+                        const code = errors.some(value => value.code !== errors[0].code) ? undefined : errors[0].code;
+                        return new RuntimeErrorQueryNode(uniqueErrorMessages.join(', '), { code });
                     }
                 } else {
                     // before entering the next sibling, make sure that the next sibling won't take care of these errors, because they now belong to the parent
@@ -87,11 +93,11 @@ export enum OutputNodeKind {
 namespace outputNodes {
     const map = new Map<Function, Map<string, OutputNodeKind>>();
 
-    function add<T>(clazz: {new(...a: any[]): T}, ...fields: ((keyof T) & string)[]) {
+    function add<T>(clazz: { new(...a: any[]): T }, ...fields: ((keyof T) & string)[]) {
         addExt(clazz, OutputNodeKind.OUTPUT, ...fields);
     }
 
-    function addExt<T>(clazz: {new(...a: any[]): T}, kind: OutputNodeKind, ...fields: ((keyof T) & string)[]) {
+    function addExt<T>(clazz: { new(...a: any[]): T }, kind: OutputNodeKind, ...fields: ((keyof T) & string)[]) {
         map.set(clazz, new Map(fields.map((field): [string, OutputNodeKind] => ([field, kind]))));
     }
 
@@ -119,6 +125,8 @@ namespace outputNodes {
     add(ListQueryNode, 'itemNodes');
     add(ConditionalQueryNode, 'expr1', 'expr2');
     add(TransformListQueryNode, 'innerNode');
+    addExt(WithPreExecutionQueryNode, OutputNodeKind.OUTPUT_INTERMEDIATE, 'resultNode', 'preExecQueries');
+    addExt(PreExecQueryParms, OutputNodeKind.OUTPUT_INTERMEDIATE, 'query');
 
     // this one with a grain of salt... errors in any item that is not the first will get ignored
     // but we need this for single-entity queries to work properly

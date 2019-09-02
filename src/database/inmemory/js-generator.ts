@@ -1,9 +1,10 @@
 import { compact } from 'lodash';
-import { Field, AggregationOperator, Relation, RelationSide, RootEntityType } from '../../model';
+import { AggregationOperator, Field, Relation, RelationSide, RootEntityType } from '../../model';
 import { getEffectiveCollectSegments } from '../../model/implementation/collect-path';
-import { AddEdgesQueryNode, AggregationQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode, ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, OrderClause, OrderDirection, OrderSpecification, QueryNode, QueryResultValidator, RemoveEdgesQueryNode, RootEntityIDQueryNode, RUNTIME_ERROR_CODE_PROPERTY, RUNTIME_ERROR_TOKEN, RuntimeErrorQueryNode, SafeListQueryNode, SetEdgeQueryNode, TransformListQueryNode, TraversalQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../../query-tree';
+import { AddEdgesQueryNode, AggregationQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode, ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, OperatorWithLanguageQueryNode, OrderClause, OrderDirection, OrderSpecification, QueryNode, QueryResultValidator, RemoveEdgesQueryNode, RootEntityIDQueryNode, RUNTIME_ERROR_CODE_PROPERTY, RUNTIME_ERROR_TOKEN, RuntimeErrorQueryNode, SafeListQueryNode, SetEdgeQueryNode, TransformListQueryNode, TraversalQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../../query-tree';
+import { FlexSearchComplexOperatorQueryNode, FlexSearchFieldExistsQueryNode, FlexSearchQueryNode } from '../../query-tree/flex-search';
 import { QuantifierFilterNode } from '../../query-tree/quantifiers';
-import { not } from '../../schema-generation/filter-input-types/constants';
+import { not } from '../../schema-generation/utils/input-types';
 import { Constructor, decapitalize } from '../../utils/utils';
 import { likePatternToRegExp } from '../like-helpers';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './inmemory-basics';
@@ -145,6 +146,7 @@ const processors = new Map<Constructor<QueryNode>, NodeProcessor<QueryNode>>();
 function register<T extends QueryNode>(type: Constructor<T>, processor: NodeProcessor<T>) {
     processors.set(type, processor as NodeProcessor<QueryNode>); // probably some bivariancy issue
 }
+
 
 register(LiteralQueryNode, node => {
     return js.value(node.value);
@@ -654,6 +656,22 @@ register(RemoveEdgesQueryNode, (node, context) => {
     );
 });
 
+register(OperatorWithLanguageQueryNode, (node, context) => {
+    throw new FlexSearchNotSupportedError();
+});
+
+register(FlexSearchQueryNode, (node, context) => {
+    throw new FlexSearchNotSupportedError();
+});
+
+register(FlexSearchFieldExistsQueryNode, (node, context) => {
+    throw new FlexSearchNotSupportedError();
+});
+
+register(FlexSearchComplexOperatorQueryNode, (node, context) => {
+    throw new Error(`Internal Error: FlexSearchComplexOperatorQueryNode must be expanded before generating the query.`);
+});
+
 register(SetEdgeQueryNode, (node, context) => {
     const coll = getCollectionForRelation(node.relation, context);
     const edgeVar = js.variable('edge');
@@ -727,4 +745,14 @@ function getCollectionForType(type: RootEntityType, context: QueryContext) {
 function getCollectionForRelation(relation: Relation, context: QueryContext) {
     const name = getCollectionNameForRelation(relation);
     return js.collection(name);
+}
+
+/**
+ * Is thrown if a FlexSearch query is performed for an in-memory database.
+ */
+export class FlexSearchNotSupportedError extends Error {
+    constructor() {
+        super(`ArangoSearch-query was not executed, because it is not supported for in-memory database.`);
+        this.name = this.constructor.name;
+    }
 }

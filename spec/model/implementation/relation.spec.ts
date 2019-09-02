@@ -1,16 +1,29 @@
-import { DatabaseAdapter } from '../../../src/database/database-adapter';
-import { QueryNode } from '../../../src/query-tree';
-import { Model, Relation, TypeKind } from '../../../src/model';
 import { expect } from 'chai';
+import { DatabaseAdapter, FlexSearchTokenizable } from '../../../src/database/database-adapter';
+import { FlexSearchLanguage, Model, Relation, TypeKind } from '../../../src/model';
+import { QueryNode } from '../../../src/query-tree';
+import { FlexSearchTokenization } from '../../../src/query-tree/flex-search';
 
 class FakeDBAdatper implements DatabaseAdapter {
     async execute(queryTree: QueryNode): Promise<any> {
-        return {allTypeAS: [{relB: {id: 5}}], allTypeBS: [{relA: {id: 2}}]};
+        return { allTypeAS: [{ relB: { id: 5 } }], allTypeBS: [{ relA: { id: 2 } }] };
     }
 
     async updateSchema(schema: Model): Promise<void> {
 
     }
+
+    async tokenizeExpressions(tokenizations: ReadonlyArray<FlexSearchTokenizable>): Promise<ReadonlyArray<FlexSearchTokenization>> {
+        return tokenizations.map(value => {
+            return {
+                expression: value.expression,
+                language: value.language,
+                tokens: value.expression.split('-')
+            };
+
+        });
+    }
+
 }
 
 describe('Relation', () => {

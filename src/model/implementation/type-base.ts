@@ -1,7 +1,7 @@
 import { NameNode, TypeDefinitionNode } from 'graphql';
 import memorize from 'memorize-decorator';
 import * as pluralize from 'pluralize';
-import { TypeConfig, TypeKind } from '../config';
+import { FlexSearchLanguage, TypeConfig, TypeKind } from '../config';
 import { ValidationMessage } from '../validation';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
 import { TypeLocalization } from './i18n';
@@ -16,6 +16,7 @@ export abstract class TypeBase implements ModelComponent {
     abstract readonly kind: TypeKind;
     readonly astNode: TypeDefinitionNode | undefined;
     readonly nameASTNode: NameNode | undefined;
+    readonly flexSearchLanguage: FlexSearchLanguage | undefined;
 
     protected constructor(input: TypeConfig, public readonly model: Model) {
         this.astNode = input.astNode;
@@ -24,6 +25,7 @@ export abstract class TypeBase implements ModelComponent {
         this.namespacePath = input.namespacePath || [];
         this.description = input.description;
         this.pluralName = pluralize(this.name);
+        this.flexSearchLanguage = input.flexSearchLanguage;
     }
 
     validate(context: ValidationContext) {

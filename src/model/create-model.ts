@@ -1,11 +1,12 @@
-import { ArgumentNode, EnumValueDefinitionNode, FieldDefinitionNode, GraphQLBoolean, GraphQLID, GraphQLInputObjectType, GraphQLList, GraphQLNonNull, GraphQLString, ObjectTypeDefinitionNode, ObjectValueNode, StringValueNode, TypeDefinitionNode, valueFromAST } from 'graphql';
+import { ArgumentNode, DirectiveNode, EnumValueDefinitionNode, FieldDefinitionNode, GraphQLBoolean, GraphQLEnumType, GraphQLID, GraphQLInputObjectType, GraphQLList, GraphQLNonNull, GraphQLString, ObjectTypeDefinitionNode, ObjectValueNode, StringValueNode, TypeDefinitionNode, valueFromAST } from 'graphql';
 import { ParsedGraphQLProjectSource, ParsedObjectProjectSource, ParsedProject, ParsedProjectSourceBaseKind } from '../config/parsed-project';
+import { FlexSearchPrimarySortConfig } from '../database/arangodb/schema-migration/arango-search-helpers';
 import { ENUM, ENUM_TYPE_DEFINITION, LIST, LIST_TYPE, NON_NULL_TYPE, OBJECT, OBJECT_TYPE_DEFINITION, STRING } from '../graphql/kinds';
 import { getValueFromAST } from '../graphql/value-from-ast';
-import { CALC_MUTATIONS_DIRECTIVE, CALC_MUTATIONS_OPERATORS_ARG, CHILD_ENTITY_DIRECTIVE, COLLECT_AGGREGATE_ARG, COLLECT_DIRECTIVE, COLLECT_PATH_ARG, DEFAULT_VALUE_DIRECTIVE, ENTITY_EXTENSION_DIRECTIVE, ID_FIELD, INDEX_DEFINITION_INPUT_TYPE, INDEX_DIRECTIVE, INDICES_ARG, INVERSE_OF_ARG, KEY_FIELD_ARG, KEY_FIELD_DIRECTIVE, NAMESPACE_DIRECTIVE, NAMESPACE_NAME_ARG, NAMESPACE_SEPARATOR, OBJECT_TYPE_KIND_DIRECTIVES, PERMISSION_PROFILE_ARG, REFERENCE_DIRECTIVE, RELATION_DIRECTIVE, ROLES_DIRECTIVE, ROLES_READ_ARG, ROLES_READ_WRITE_ARG, ROOT_ENTITY_DIRECTIVE, UNIQUE_DIRECTIVE, VALUE_ARG, VALUE_OBJECT_DIRECTIVE } from '../schema/constants';
-import { findDirectiveWithName, getNamedTypeNodeIgnoringNonNullAndList, getNodeByName, getTypeNameIgnoringNonNullAndList } from '../schema/schema-utils';
+import { CALC_MUTATIONS_DIRECTIVE, CALC_MUTATIONS_OPERATORS_ARG, CHILD_ENTITY_DIRECTIVE, COLLECT_AGGREGATE_ARG, COLLECT_DIRECTIVE, COLLECT_PATH_ARG, DEFAULT_VALUE_DIRECTIVE, ENTITY_EXTENSION_DIRECTIVE, FLEX_SEARCH_DEFAULT_LANGUAGE_ARG, FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE, FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT, FLEX_SEARCH_INDEXED_ARGUMENT, FLEX_SEARCH_INDEXED_DIRECTIVE, FLEX_SEARCH_INDEXED_LANGUAGE_ARG, FLEX_SEARCH_ORDER_ARGUMENT, ID_FIELD, INDEX_DEFINITION_INPUT_TYPE, INDEX_DIRECTIVE, INDICES_ARG, INVERSE_OF_ARG, KEY_FIELD_ARG, KEY_FIELD_DIRECTIVE, NAMESPACE_DIRECTIVE, NAMESPACE_NAME_ARG, NAMESPACE_SEPARATOR, OBJECT_TYPE_KIND_DIRECTIVES, PERMISSION_PROFILE_ARG, REFERENCE_DIRECTIVE, RELATION_DIRECTIVE, ROLES_DIRECTIVE, ROLES_READ_ARG, ROLES_READ_WRITE_ARG, ROOT_ENTITY_DIRECTIVE, UNIQUE_DIRECTIVE, VALUE_ARG, VALUE_OBJECT_DIRECTIVE } from '../schema/constants';
+import { findDirectiveWithName, getNamedTypeNodeIgnoringNonNullAndList, getNodeByName, getTypeNameIgnoringNonNullAndList, hasDirectiveWithName } from '../schema/schema-utils';
 import { compact, flatMap, mapValues } from '../utils/utils';
-import { AggregationOperator, CalcMutationsOperator, CollectFieldConfig, EnumTypeConfig, EnumValueConfig, FieldConfig, IndexDefinitionConfig, LocalizationConfig, NamespacedPermissionProfileConfigMap, ObjectTypeConfig, PermissionProfileConfigMap, PermissionsConfig, RolesSpecifierConfig, TypeConfig, TypeKind } from './config';
+import { AggregationOperator, FlexSearchIndexConfig, CalcMutationsOperator, CollectFieldConfig, EnumTypeConfig, EnumValueConfig, FieldConfig, FlexSearchLanguage, IndexDefinitionConfig, LocalizationConfig, NamespacedPermissionProfileConfigMap, ObjectTypeConfig, PermissionProfileConfigMap, PermissionsConfig, RolesSpecifierConfig, TypeConfig, TypeKind } from './config';
 import { Model } from './implementation';
 import { parseI18nConfigs } from './parse-i18n';
 import { ValidationContext, ValidationMessage } from './validation';
@@ -22,7 +23,9 @@ export function createModel(parsedProject: ParsedProject): Model {
 
 const VALIDATION_ERROR_INVALID_PERMISSION_PROFILE = `Invalid argument value, expected string`;
 const VALIDATION_ERROR_EXPECTED_STRING_OR_LIST_OF_STRINGS = 'Expected string or list of strings';
+const VALIDATION_ERROR_EXPECTED_BOOLEAN = 'Expected boolean';
 const VALIDATION_ERROR_EXPECTED_ENUM_OR_LIST_OF_ENUMS = 'Expected enum or list of enums';
+const VALIDATION_ERROR_EXPECTED_ENUM = 'Expected enum';
 const VALIDATION_ERROR_INVERSE_OF_ARG_MUST_BE_STRING = 'inverseOf must be specified as String';
 const VALIDATION_ERROR_MISSING_ARGUMENT_OPERATORS = 'Missing argument \'operators\'';
 const VALIDATION_ERROR_MISSING_ARGUMENT_DEFAULT_VALUE = DEFAULT_VALUE_DIRECTIVE + ' needs an argument named ' + VALUE_ARG;
@@ -81,7 +84,8 @@ function createObjectTypeInput(definition: ObjectTypeDefinitionNode, schemaPart:
         description: definition.description ? definition.description.value : undefined,
         astNode: definition,
         fields: (definition.fields || []).map(field => createFieldInput(field, context)),
-        namespacePath: getNamespacePath(definition, schemaPart.namespacePath)
+        namespacePath: getNamespacePath(definition, schemaPart.namespacePath),
+        flexSearchLanguage: getDefaultLanguage(definition, context)
     };
 
     switch (entityType) {
@@ -104,12 +108,14 @@ function createObjectTypeInput(definition: ObjectTypeDefinitionNode, schemaPart:
             // interpret unknown kinds as root entity because they are least likely to cause unnecessary errors
             // (errors are already reported in getKindOfObjectTypeNode)
 
+            const rootEntityDirective = findDirectiveWithName(definition, ROOT_ENTITY_DIRECTIVE);
             return {
                 ...common,
                 ...processKeyField(definition, common.fields, context),
                 kind: TypeKind.ROOT_ENTITY,
                 permissions: getPermissions(definition, context),
-                indices: createIndexDefinitionInputs(definition, context)
+                indices: createIndexDefinitionInputs(definition, context),
+                flexSearchIndexConfig: createFlexSearchDefinitionInputs(definition, context)
             };
     }
 }
@@ -163,6 +169,117 @@ function getDefaultValue(fieldNode: FieldDefinitionNode, context: ValidationCont
     return getValueFromAST(defaultValueArg.value);
 }
 
+function getFlexSearchOrder(rootEntityDirective?: DirectiveNode): FlexSearchPrimarySortConfig[] {
+    if (!rootEntityDirective) {
+        return [];
+    }
+    const argumentFlexSearchOrder: ArgumentNode | undefined = getNodeByName(rootEntityDirective.arguments, FLEX_SEARCH_ORDER_ARGUMENT);
+    if (argumentFlexSearchOrder && argumentFlexSearchOrder.value.kind === 'ListValue') {
+        return argumentFlexSearchOrder.value.values.map(orderArgument => {
+            return valueFromAST(orderArgument, flexSearchOrderInputObjectType);
+        }).map((value: any) => {
+            return {
+                field: value.field,
+                direction: value.direction === 'ASC' ? 'asc' : 'desc'
+            };
+        });
+
+
+    }
+    return [];
+}
+
+function createFlexSearchDefinitionInputs(objectNode: ObjectTypeDefinitionNode, context: ValidationContext): FlexSearchIndexConfig {
+    let directive = findDirectiveWithName(objectNode, ROOT_ENTITY_DIRECTIVE);
+    let config = {
+        isIndexed: false,
+        directiveASTNode: directive,
+        primarySort: getFlexSearchOrder(directive)
+    };
+    if (directive) {
+        const argumentIndexed: ArgumentNode | undefined = getNodeByName(directive.arguments, FLEX_SEARCH_INDEXED_ARGUMENT);
+        if (argumentIndexed) {
+            if (argumentIndexed.value.kind === 'BooleanValue') {
+                config.isIndexed = argumentIndexed.value.value;
+            }
+        }
+    }
+    return config;
+
+
+}
+
+function getIsIncludedInSearch(fieldNode: FieldDefinitionNode, context: ValidationContext): boolean {
+    const directive = findDirectiveWithName(fieldNode, FLEX_SEARCH_INDEXED_DIRECTIVE);
+    if (directive) {
+        const argument = getNodeByName(directive.arguments, FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT);
+        if (argument) {
+            if (argument.value.kind === 'BooleanValue') {
+                return argument.value.value;
+            } else {
+                context.addMessage(ValidationMessage.error(VALIDATION_ERROR_EXPECTED_BOOLEAN, argument.value.loc));
+            }
+        }
+    }
+    return false;
+}
+
+function getIsFulltextIncludedInSearch(fieldNode: FieldDefinitionNode, context: ValidationContext): boolean {
+    const directive = findDirectiveWithName(fieldNode, FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE);
+    if (directive) {
+        const argument = getNodeByName(directive.arguments, FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT);
+        if (argument) {
+            if (argument.value.kind === 'BooleanValue') {
+                return argument.value.value;
+            } else {
+                context.addMessage(ValidationMessage.error(VALIDATION_ERROR_EXPECTED_BOOLEAN, argument.value.loc));
+            }
+        }
+    }
+    return false;
+}
+
+function getDefaultLanguage(objectTypeDefinitionNode: ObjectTypeDefinitionNode, context: ValidationContext): FlexSearchLanguage | undefined {
+    let directive: DirectiveNode | undefined =
+        findDirectiveWithName(objectTypeDefinitionNode, ROOT_ENTITY_DIRECTIVE)
+        || findDirectiveWithName(objectTypeDefinitionNode, CHILD_ENTITY_DIRECTIVE)
+        || findDirectiveWithName(objectTypeDefinitionNode, VALUE_OBJECT_DIRECTIVE)
+        || findDirectiveWithName(objectTypeDefinitionNode, ENTITY_EXTENSION_DIRECTIVE);
+    if (!directive) {
+        return undefined;
+    }
+    const argument: ArgumentNode | undefined = getNodeByName(directive.arguments, FLEX_SEARCH_DEFAULT_LANGUAGE_ARG);
+    if (!argument) {
+        return undefined;
+    }
+
+    if (argument.value.kind === 'EnumValue') {
+        return argument.value.value as FlexSearchLanguage;
+    } else {
+        context.addMessage(ValidationMessage.error(VALIDATION_ERROR_EXPECTED_ENUM, argument.value.loc));
+        return undefined;
+    }
+}
+
+function getLanguage(fieldNode: FieldDefinitionNode, context: ValidationContext): FlexSearchLanguage | undefined {
+
+    let directive: DirectiveNode | undefined = findDirectiveWithName(fieldNode, FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE);
+    if (!directive) {
+        return undefined;
+    }
+    const argument: ArgumentNode | undefined = getNodeByName(directive.arguments, FLEX_SEARCH_INDEXED_LANGUAGE_ARG);
+    if (!argument) {
+        return undefined;
+    }
+
+    if (argument.value.kind === 'EnumValue') {
+        return argument.value.value as FlexSearchLanguage;
+    } else {
+        context.addMessage(ValidationMessage.error(VALIDATION_ERROR_EXPECTED_ENUM, argument.value.loc));
+        return undefined;
+    }
+}
+
 function createFieldInput(fieldNode: FieldDefinitionNode, context: ValidationContext): FieldConfig {
     const inverseOfASTNode = getInverseOfASTNode(fieldNode, context);
     const referenceDirectiveASTNode = findDirectiveWithName(fieldNode, REFERENCE_DIRECTIVE);
@@ -185,6 +302,13 @@ function createFieldInput(fieldNode: FieldDefinitionNode, context: ValidationCon
         permissions: getPermissions(fieldNode, context),
         typeName: getTypeNameIgnoringNonNullAndList(fieldNode.type),
         typeNameAST: getNamedTypeNodeIgnoringNonNullAndList(fieldNode.type).name,
+        isFlexSearchIndexed: hasDirectiveWithName(fieldNode, FLEX_SEARCH_INDEXED_DIRECTIVE),
+        isFlexSearchIndexedASTNode: findDirectiveWithName(fieldNode, FLEX_SEARCH_INDEXED_DIRECTIVE),
+        isFlexSearchFulltextIndexed: hasDirectiveWithName(fieldNode, FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE),
+        isFlexSearchFulltextIndexedASTNode: findDirectiveWithName(fieldNode, FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE),
+        isIncludedInSearch: getIsIncludedInSearch(fieldNode, context),
+        isFulltextIncludedInSearch: getIsFulltextIncludedInSearch(fieldNode, context),
+        flexSearchLanguage: getLanguage(fieldNode, context),
         collect: getCollectConfig(fieldNode, context)
     };
 }
@@ -460,7 +584,6 @@ function getCollectConfig(fieldNode: FieldDefinitionNode, context: ValidationCon
     };
 }
 
-
 function extractPermissionProfiles(parsedProject: ParsedProject): ReadonlyArray<NamespacedPermissionProfileConfigMap> {
     return compact(parsedProject.sources.map((source): NamespacedPermissionProfileConfigMap | undefined => {
         if (source.kind !== ParsedProjectSourceBaseKind.OBJECT) {
@@ -497,3 +620,12 @@ const indexDefinitionInputObjectType: GraphQLInputObjectType = new GraphQLInputO
     },
     name: INDEX_DEFINITION_INPUT_TYPE
 });
+
+const flexSearchOrderInputObjectType: GraphQLInputObjectType = new GraphQLInputObjectType({
+    name: 'FlexSearchOrderArgument',
+    fields: {
+        field: { type: GraphQLString },
+        direction: { type: new GraphQLEnumType({ name: 'OrderDirection', values: { ASC: { value: 'ASC' }, DESC: { value: 'DESC' } } }) }
+    }
+});
+

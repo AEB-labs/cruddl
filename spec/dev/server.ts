@@ -17,6 +17,8 @@ const port = 3000;
 const databaseName = 'cruddl';
 const databaseURL = 'http://root:@localhost:8529';
 
+// const databaseURL = 'http://root:@localhost:7050';
+
 export async function start() {
     const loggerProvider = new Log4jsLoggerProvider('trace');
 
@@ -27,8 +29,9 @@ export async function start() {
         db = new ArangoDBAdapter({
             databaseName,
             url: databaseURL,
-            autocreateIndices: false,
-            autoremoveIndices: false,
+            // user: 'root',
+            // password: 'admin',
+            doNonMandatoryMigrations: true,
             enableExperimentalProjectionIndirection: true,
             experimentalProjectionIndirectionTypeNames: ['BusinessMessage']
         }, { loggerProvider });
@@ -44,6 +47,7 @@ export async function start() {
                 recordTimings: true,
                 recordPlan: true,
                 mutationMode: 'normal',
+
                 //queryMemoryLimit: 1000000,
                 cancellationToken: new Promise(resolve => context.request.on('aborted', resolve))
             });

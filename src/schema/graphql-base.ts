@@ -1,18 +1,19 @@
-import gql from 'graphql-tag';
 import { DocumentNode } from 'graphql';
+import gql from 'graphql-tag';
 
 export const DIRECTIVES: DocumentNode = gql`
     "Declares a type for root-level objects with ids that are stored directly in the data base"
-    directive @rootEntity(indices: [IndexDefinition!], permissionProfile: String) on OBJECT
+    directive @rootEntity(indices: [IndexDefinition!], permissionProfile: String,
+        flexSearch: Boolean = false, flexSearchLanguage: FlexSearchLanguage = EN, flexSearchOrder: [FlexSearchOrderArgument!] = []) on OBJECT
 
     "Declares a type for objects with ids that can be embedded as a list within another entity"
-    directive @childEntity on OBJECT
+    directive @childEntity(flexSearchLanguage: FlexSearchLanguage = EN) on OBJECT
 
     "Declares a type for objects without id that can be embedded everywhere and can only be replaced as a whole"
-    directive @valueObject on OBJECT
+    directive @valueObject(flexSearchLanguage: FlexSearchLanguage = EN) on OBJECT
 
     "Declares a type for objects which can be embedded within entities or entity extensions"
-    directive @entityExtension on OBJECT
+    directive @entityExtension(flexSearchLanguage: FlexSearchLanguage = EN) on OBJECT
 
     "Declares a field as a to-1 or to-n relation to another root entity"
     directive @relation(inverseOf: String) on FIELD_DEFINITION
@@ -74,10 +75,10 @@ export const DIRECTIVES: DocumentNode = gql`
         EVERY_TRUE,
         "true if there are no items that are true"
         NONE_TRUE,
-        
+
         "Removes duplicate items and null values"
         DISTINCT,
-        
+
         "Counts the number of items without duplicates and null values"
         COUNT_DISTINCT
     }
@@ -97,6 +98,28 @@ export const DIRECTIVES: DocumentNode = gql`
 
     "Declares a field to be indexed"
     directive @index(sparse: Boolean = false) on FIELD_DEFINITION
+
+    "Declares a field to be indexed with FlexSearch"
+    directive @flexSearch(includeInSearch: Boolean = false) on FIELD_DEFINITION
+
+    "Declares a field to be indexed with FlexSearch with a Text Analyzer"
+    directive @flexSearchFulltext(language: FlexSearchLanguage, includeInSearch: Boolean = false) on FIELD_DEFINITION
+
+
+    "The available languages for FlexSearch Analyzers"
+    enum FlexSearchLanguage {
+        EN, DE, ES, FI, FR, IT, NL, NO, PT, RU, SV, ZH
+    }
+
+    "An argument to define the order of a flexSearchIndex"
+    input FlexSearchOrderArgument {
+        field: String,
+        direction: OrderDirection
+    }
+
+    enum OrderDirection {
+        ASC, DESC
+    }
 
     "Declares a field to be unique-indexed"
     directive @unique(sparse: Boolean = true) on FIELD_DEFINITION

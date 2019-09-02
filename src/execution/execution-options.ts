@@ -1,4 +1,3 @@
-import { EventEmitter } from 'events';
 import { OperationDefinitionNode } from 'graphql';
 
 export type MutationMode = 'normal' | 'disallowed' | 'rollback';
@@ -51,6 +50,16 @@ export interface ExecutionOptions {
      * while it is in the request queue. Use cancellationToken with setTimeout() to set a overall timeout.
      */
     readonly transactionTimeoutMs?: number
+
+    /**
+     * The maximum amount of objects that can be filtered (using a normal filter) or sorted in an ArangoSearch query
+     */
+    readonly flexSearchMaxFilterableAndSortableAmount?: number
+
+    /**
+     * How many steps of recursive fields are indexed and allowed in queries for FlexSearch.
+     */
+    readonly flexSearchRecursionDepth?: number
 }
 
 export interface ExecutionOptionsCallbackArgs {

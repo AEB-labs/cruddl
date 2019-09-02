@@ -1,7 +1,7 @@
-import { GraphQLError } from 'graphql';
 import { ExecutionOptions } from '../execution/execution-options';
-import { Model } from '../model';
+import { FlexSearchLanguage, Model } from '../model';
 import { QueryNode } from '../query-tree';
+import { FlexSearchTokenization } from '../query-tree/flex-search';
 
 /**
  * Times (in seconds) spent on specific parts of execution
@@ -157,4 +157,15 @@ export interface DatabaseAdapter {
      * Performs schema migrations if necessary
      */
     updateSchema(schema: Model): Promise<void>;
+
+    /**
+     * Tokenizes a List of expressions
+     */
+    tokenizeExpressions(tokenizations: ReadonlyArray<FlexSearchTokenizable>): Promise<ReadonlyArray<FlexSearchTokenization>>;
+
+}
+
+export interface FlexSearchTokenizable {
+    expression: string,
+    language: FlexSearchLanguage
 }

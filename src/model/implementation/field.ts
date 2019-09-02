@@ -1,10 +1,10 @@
 import { FieldDefinitionNode, GraphQLBoolean, GraphQLFloat, GraphQLID, GraphQLInt, GraphQLString } from 'graphql';
 import memorize from 'memorize-decorator';
-import { CALC_MUTATIONS_OPERATORS, COLLECT_AGGREGATE_ARG, COLLECT_DIRECTIVE, RELATION_DIRECTIVE } from '../../schema/constants';
+import { ACCESS_GROUP_FIELD, CALC_MUTATIONS_OPERATORS, COLLECT_AGGREGATE_ARG, COLLECT_DIRECTIVE, FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT, RELATION_DIRECTIVE } from '../../schema/constants';
 import { GraphQLDateTime } from '../../schema/scalars/date-time';
 import { GraphQLLocalDate } from '../../schema/scalars/local-date';
 import { GraphQLLocalTime } from '../../schema/scalars/local-time';
-import { AggregationOperator, CalcMutationsOperator, FieldConfig, TypeKind } from '../config';
+import { AggregationOperator, CalcMutationsOperator, FieldConfig, FlexSearchLanguage, TypeKind } from '../config';
 import { ValidationMessage } from '../validation';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
 import { CollectPath } from './collect-path';
@@ -227,6 +227,7 @@ export class Field implements ModelComponent {
         this.validateCollect(context);
         this.validateDefaultValue(context);
         this.validateCalcMutations(context);
+        this.validateFlexSearch(context);
     }
 
     private validateName(context: ValidationContext) {
@@ -660,6 +661,64 @@ export class Field implements ModelComponent {
                 context.addMessage(ValidationMessage.error(`Calc mutation operator "${operator}" is not supported on type "${this.type.name}" (supported operators: ${supportedOperatorsDesc}).`, this.astNode));
             }
         }
+    }
+
+    private validateFlexSearch(context: ValidationContext) {
+        const notSupportedOn = `@flexSearch is not supported on`;
+        if (this.isFlexSearchIndexed && (this.isReference || this.isRelation || this.isCollectField)) {
+            if (this.isReference) {
+                context.addMessage(ValidationMessage.error(`${notSupportedOn} references.`, this.input.isFlexSearchIndexedASTNode));
+            } else if (this.isRelation) {
+                context.addMessage(ValidationMessage.error(`${notSupportedOn} relations.`, this.input.isFlexSearchIndexedASTNode));
+            } else if (this.isCollectField) {
+                context.addMessage(ValidationMessage.error(`${notSupportedOn} collect fields.`, this.input.isFlexSearchIndexedASTNode));
+            }
+            return;
+        }
+        if (this.isFlexSearchFulltextIndexed && !(this.type.isScalarType && this.type.name === 'String')) {
+            context.addMessage(ValidationMessage.error(`@flexSearchFulltext is not supported on type "${this.type.name}".`, this.input.isFlexSearchFulltextIndexedASTNode));
+            return;
+        }
+        if (this.isFlexSearchFulltextIndexed && this.isCollectField) {
+            context.addMessage(ValidationMessage.error(`${notSupportedOn} collect fields.`, this.input.isFlexSearchFulltextIndexedASTNode));
+            return;
+        }
+        if (this.isFlexSearchFulltextIndexed && !this.language) {
+            context.addMessage(ValidationMessage.error(`@flexSearchFulltext requires either a "language" parameter, or a "flexSearchLanguage" must be set in the defining type.`, this.input.isFlexSearchFulltextIndexedASTNode));
+        }
+        if (this.isFlexSearchIndexed && (this.type.isEntityExtensionType || this.type.isValueObjectType) && !this.type.fields.some(value => value.isFlexSearchIndexed || value.isFlexSearchFulltextIndexed)) {
+            context.addMessage(ValidationMessage.error(`At least one field on type "${this.type.name}" must be annotated with @flexSearch or @flexSearchFulltext if @flexSearch is specified on the type declaration.`, this.input.isFlexSearchIndexedASTNode));
+        }
+        if (this.name === ACCESS_GROUP_FIELD && this.declaringType.isRootEntityType && this.declaringType.permissionProfile
+            && this.declaringType.permissionProfile.permissions.some(value => value.restrictToAccessGroups) && this.declaringType.flexSearchIndexConfig.isIndexed && !this.isFlexSearchIndexed) {
+            context.addMessage(ValidationMessage.error(`The permission profile "${this.declaringType.permissionProfile.name}" uses "restrictToAccessGroups", ` +
+                `and this fields defining type is marked with "flexSearch: true", but this field is not marked with "@flexSearch".`, this.astNode));
+        }
+        if (this.isIncludedInSearch && !(this.type.isScalarType && this.type.name === 'String')) {
+            context.addMessage(ValidationMessage.error(`"${FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT}: true" is only supported on type "String" and "[String]".`, this.input.isFlexSearchFulltextIndexedASTNode));
+            return;
+        }
+
+    }
+
+    get isFlexSearchIndexed(): boolean {
+        return !!this.input.isFlexSearchIndexed;
+    }
+
+    get isFlexSearchFulltextIndexed(): boolean {
+        return !!this.input.isFlexSearchFulltextIndexed;
+    }
+
+    get isIncludedInSearch(): boolean {
+        return !!this.input.isIncludedInSearch && this.isFlexSearchIndexed;
+    }
+
+    get isFulltextIncludedInSearch(): boolean {
+        return !!this.input.isFulltextIncludedInSearch && this.isFlexSearchFulltextIndexed;
+    }
+
+    get language(): FlexSearchLanguage | undefined {
+        return this.input.flexSearchLanguage || this.declaringType.flexSearchLanguage;
     }
 }
 

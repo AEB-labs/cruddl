@@ -1,46 +1,54 @@
 import { expect } from 'chai';
 import {
-    BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, LiteralQueryNode, QueryNode, UnaryOperationQueryNode,
+    BinaryOperationQueryNode,
+    BinaryOperator,
+    ConstBoolQueryNode,
+    LiteralQueryNode,
+    QueryNode,
+    UnaryOperationQueryNode,
     UnaryOperator
 } from '../../../src/query-tree';
 import { simplifyBooleans } from '../../../src/query-tree/utils';
 
 describe('query-tree-utils', () => {
     describe('simplifyBooleans', () => {
+
+        function evaluate(op: QueryNode): boolean {
+            if (op instanceof ConstBoolQueryNode) {
+                return op.value;
+            }
+            if (op instanceof LiteralQueryNode) {
+                return op.value as boolean;
+            }
+            if (op instanceof BinaryOperationQueryNode && op.operator == BinaryOperator.AND) {
+                return evaluate(op.lhs) && evaluate(op.rhs);
+            }
+            if (op instanceof BinaryOperationQueryNode && op.operator == BinaryOperator.OR) {
+                return evaluate(op.lhs) || evaluate(op.rhs);
+            }
+            if (op instanceof UnaryOperationQueryNode && op.operator == UnaryOperator.NOT) {
+                return !evaluate(op.valueNode);
+            }
+            throw new Error(`Unsupported node: ${op.constructor.name}`);
+        }
+
+        function not(value: QueryNode) {
+            return new UnaryOperationQueryNode(value, UnaryOperator.NOT);
+        }
+
+        function and(lhs: QueryNode, rhs: QueryNode) {
+            return new BinaryOperationQueryNode(lhs, BinaryOperator.AND, rhs);
+        }
+
+        function or(lhs: QueryNode, rhs: QueryNode) {
+            return new BinaryOperationQueryNode(lhs, BinaryOperator.OR, rhs);
+        }
+
+        const TRUE = ConstBoolQueryNode.TRUE;
+        const FALSE = ConstBoolQueryNode.FALSE;
+
         describe('does not change value of', () => {
-            function evaluate(op: QueryNode): boolean {
-                if (op instanceof ConstBoolQueryNode) {
-                    return op.value;
-                }
-                if (op instanceof LiteralQueryNode) {
-                    return op.value as boolean;
-                }
-                if (op instanceof BinaryOperationQueryNode && op.operator == BinaryOperator.AND) {
-                    return evaluate(op.lhs) && evaluate(op.rhs);
-                }
-                if (op instanceof BinaryOperationQueryNode && op.operator == BinaryOperator.OR) {
-                    return evaluate(op.lhs) || evaluate(op.rhs);
-                }
-                if (op instanceof UnaryOperationQueryNode && op.operator == UnaryOperator.NOT) {
-                    return !evaluate(op.valueNode);
-                }
-                throw new Error(`Unsupported node: ${op.constructor.name}`);
-            }
 
-            function not(value: QueryNode) {
-                return new UnaryOperationQueryNode(value, UnaryOperator.NOT);
-            }
-
-            function and(lhs: QueryNode, rhs: QueryNode) {
-                return new BinaryOperationQueryNode(lhs, BinaryOperator.AND, rhs);
-            }
-
-            function or(lhs: QueryNode, rhs: QueryNode) {
-                return new BinaryOperationQueryNode(lhs, BinaryOperator.OR, rhs);
-            }
-
-            const TRUE = ConstBoolQueryNode.TRUE;
-            const FALSE = ConstBoolQueryNode.FALSE;
 
             const testCases: Array<(var1: QueryNode) => QueryNode> = [
                 () => TRUE,
@@ -72,7 +80,7 @@ describe('query-tree-utils', () => {
                 var1 => or(not(TRUE), not(var1)),
                 var1 => or(not(FALSE), not(var1)),
                 var1 => or(not(var1), not(TRUE)),
-                var1 => or(not(var1), not(FALSE)),
+                var1 => or(not(var1), not(FALSE))
             ];
 
             for (const testCase of testCases) {
@@ -87,6 +95,15 @@ describe('query-tree-utils', () => {
                     });
                 }
             }
+
+        });
+
+        it('does simplify double-nested expression', () => {
+            const literalQueryNode = new LiteralQueryNode('');
+            const node = or(or(or(FALSE, FALSE), literalQueryNode), literalQueryNode);
+            const simplified = simplifyBooleans(node);
+            const expected = new BinaryOperationQueryNode(literalQueryNode, BinaryOperator.OR, literalQueryNode);
+            expect(simplified.equals(expected)).to.be.true;
         });
     });
 });

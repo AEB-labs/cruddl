@@ -1,4 +1,4 @@
-import { DirectiveNode, EnumValueNode, FieldDefinitionNode, NameNode, StringValueNode, TypeNode, ValueNode } from 'graphql';
+import { DirectiveNode, EnumValueNode, FieldDefinitionNode, NameNode, StringValueNode, ValueNode } from 'graphql';
 import { PermissionsConfig } from './permissions';
 
 export interface FieldConfig {
@@ -24,6 +24,21 @@ export interface FieldConfig {
     readonly collect?: CollectFieldConfig
 
     readonly astNode?: FieldDefinitionNode
+
+    readonly isFlexSearchIndexed?: boolean
+    readonly isFlexSearchIndexedASTNode?: DirectiveNode
+    readonly isFlexSearchFulltextIndexed?: boolean
+    readonly isFlexSearchFulltextIndexedASTNode?: DirectiveNode
+    readonly flexSearchLanguage?: FlexSearchLanguage
+
+    /**
+     * Specifies if the field should be included in the expression-search of FlexSearch as a value.
+     */
+    readonly isIncludedInSearch?: boolean
+    /**
+     * Specifies if the field should be included in the expression-search of FlexSearch as a text.
+     */
+    readonly isFulltextIncludedInSearch?: boolean
 }
 
 export interface CollectFieldConfig {
@@ -62,6 +77,13 @@ export enum AggregationOperator {
     COUNT_DISTINCT = 'COUNT_DISTINCT'
 }
 
+export interface TraversalConfig {
+    readonly astNode?: DirectiveNode
+    readonly path: string
+    readonly pathASTNode?: StringValueNode
+}
+
+
 export enum CalcMutationsOperator {
     MULTIPLY = 'MULTIPLY',
     DIVIDE = 'DIVIDE',
@@ -70,4 +92,8 @@ export enum CalcMutationsOperator {
     MODULO = 'MODULO',
     APPEND = 'APPEND',
     PREPEND = 'PREPEND'
+}
+
+export enum FlexSearchLanguage {
+    EN = 'en', DE = 'de', ES = 'es', FI = 'fi', FR = 'fr', IT = 'it', NL = 'nl', NO = 'no', PT = 'pt', RU = 'ru', SV = 'sv', ZH = 'zh'
 }

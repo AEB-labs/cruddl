@@ -1,5 +1,5 @@
 import { FieldRequest, FieldSelection } from '../../graphql/query-distiller';
-import { BasicType, ConditionalQueryNode, FieldQueryNode, NullQueryNode, ObjectQueryNode, PreExecQueryParms, PropertySpecification, QueryNode, TransformListQueryNode, TypeCheckQueryNode, VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../../query-tree';
+import { BasicType, ConditionalQueryNode, FieldQueryNode, NullQueryNode, ObjectQueryNode, PreExecQueryParms, PropertySpecification, QueryNode, RuntimeErrorQueryNode, TransformListQueryNode, TypeCheckQueryNode, VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../../query-tree';
 import { decapitalize } from '../../utils/utils';
 import { FieldContext } from './context';
 import { QueryNodeField, QueryNodeObjectType } from './definition';
@@ -56,11 +56,20 @@ function buildObjectQueryNode(sourceNode: QueryNode, type: QueryNodeObjectType, 
             throw new Error(`Missing field ${sel.fieldRequest.fieldName}`);
         }
         const newContext: FieldContext = {
-            selectionStack: [...context.selectionStack, sel]
+            ...context,
+            selectionStack: [...context.selectionStack, sel],
         };
         const fieldQueryNode = buildFieldQueryNode(sourceNode, field, sel.fieldRequest, newContext);
         return new PropertySpecification(sel.propertyName, fieldQueryNode);
     }));
+}
+function buildFieldQueryNodeWithTransform(sourceNode: QueryNode, field: QueryNodeField, fieldRequest: FieldRequest, context: FieldContext):QueryNode{
+    const transformListQueryNode = buildFieldQueryNode0(sourceNode, field, fieldRequest, context);
+    if (field.transform) {
+        return field.transform(transformListQueryNode, fieldRequest.args, context);
+    } else {
+        return transformListQueryNode;
+    }
 }
 
 function buildFieldQueryNode0(sourceNode: QueryNode, field: QueryNodeField, fieldRequest: FieldRequest, context: FieldContext): QueryNode {
@@ -76,7 +85,9 @@ function buildFieldQueryNode0(sourceNode: QueryNode, field: QueryNodeField, fiel
         // Note: previously, we had a safeguard here that converted non-lists to empty lists
         // This is no longer necessary because createFieldNode() already does this where necessary (only for simple field lookups)
         // All other code should return lists where lists are expected
+
         return buildTransformListQueryNode(fieldQueryNode, queryTreeObjectType, fieldRequest.selectionSet, context);
+
     }
 
     // object
@@ -90,7 +101,7 @@ function buildFieldQueryNode0(sourceNode: QueryNode, field: QueryNodeField, fiel
 }
 
 function buildFieldQueryNode(sourceNode: QueryNode, field: QueryNodeField, fieldRequest: FieldRequest, context: FieldContext): QueryNode {
-    const node = buildFieldQueryNode0(sourceNode, field, fieldRequest, context);
+    const node = buildFieldQueryNodeWithTransform(sourceNode, field, fieldRequest, context);
     if (!field.isSerial) {
         return node;
     }

@@ -44,6 +44,22 @@ export class FieldQueryNode extends QueryNode {
 }
 
 /**
+ * A node that evaluates to the value of a field of an object, or NULL if it does not exist or objectNode does not
+ * evaluate to an object
+ *
+ * Note: this is unrelated to storing the value in a property of a result object, see ObjectQueryNode
+ */
+export class FieldPathQueryNode extends QueryNode {
+    constructor(public readonly objectNode: QueryNode, public readonly path: ReadonlyArray<Field>) {
+        super();
+    }
+
+    public describe() {
+        return `${this.objectNode.describe()}.${blue(this.path.map(value => value.name).join("."))}`;
+    }
+}
+
+/**
  * A node that evaluates to the id of a root entity
  */
 export class RootEntityIDQueryNode extends QueryNode {

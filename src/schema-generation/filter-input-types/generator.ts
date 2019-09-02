@@ -9,7 +9,8 @@ import { AnyValue, objectEntries } from '../../utils/utils';
 import { EnumTypeGenerator } from '../enum-type-generator';
 import { resolveThunk } from '../query-node-object-type';
 import { TypedInputObjectType } from '../typed-input-object-type';
-import { and, ENUM_FILTER_FIELDS, FILTER_FIELDS_BY_TYPE, FILTER_OPERATORS, QUANTIFIERS } from './constants';
+import { and } from '../utils/input-types';
+import { ENUM_FILTER_FIELDS, FILTER_FIELDS_BY_TYPE, FILTER_OPERATORS, QUANTIFIERS } from './constants';
 import { AndFilterField, EntityExtensionFilterField, FilterField, ListFilterField, NestedObjectFilterField, OrFilterField, QuantifierFilterField, ScalarOrEnumFieldFilterField, ScalarOrEnumFilterField } from './filter-fields';
 
 export class FilterObjectType extends TypedInputObjectType<FilterField> {

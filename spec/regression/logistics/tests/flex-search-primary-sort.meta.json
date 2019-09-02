@@ -1,0 +1,21 @@
+{
+  "databases": {
+    "in-memory": {
+      "ignore": true
+    },
+    "arangodb": {
+      "versions": {
+        "3.4": {
+          "ignore": true
+        },
+        "3.3": {
+          "ignore": true
+        },
+        "3.2": {
+          "ignore": true
+        }
+      }
+    }
+  },
+  "waitForArangoSearch": true
+}

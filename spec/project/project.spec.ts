@@ -1,20 +1,32 @@
-import { Logger, LoggerProvider } from '../../src/config/logging';
-import { createSchema } from '../../src/schema/schema-builder';
+import { expect } from 'chai';
 import { graphql } from 'graphql';
-import { QueryNode } from '../../src/query-tree';
-import { DatabaseAdapter } from '../../src/database/database-adapter';
+import { Logger, LoggerProvider } from '../../src/config/logging';
+import { DatabaseAdapter, FlexSearchTokenizable } from '../../src/database/database-adapter';
+import { FlexSearchLanguage, Model } from '../../src/model';
 import { Project } from '../../src/project/project';
 import { ProjectSource } from '../../src/project/source';
-import { expect } from 'chai';
-import { Model } from '../../src/model';
+import { QueryNode } from '../../src/query-tree';
+import { FlexSearchTokenization } from '../../src/query-tree/flex-search';
+import { createSchema } from '../../src/schema/schema-builder';
 
 class FakeDBAdatper implements DatabaseAdapter {
     async execute(queryTree: QueryNode): Promise<any> {
-        return { allTests: [{ name: "Test" }] };
+        return { allTests: [{ name: 'Test' }] };
     }
 
     async updateSchema(model: Model): Promise<void> {
 
+    }
+
+    async tokenizeExpressions(tokenizations: ReadonlyArray<FlexSearchTokenizable>): Promise<ReadonlyArray<FlexSearchTokenization>> {
+        return tokenizations.map(value => {
+            return {
+                expression: value.expression,
+                language: value.language,
+                tokens: value.expression.split('-')
+            };
+
+        });
     }
 }
 
@@ -51,7 +63,7 @@ describe('project', () => {
             const execSchema = project.createSchema(dbAdapter);
 
             logs = [];
-            const result = await graphql(execSchema, `{ allTests { name } }`, undefined, {authRoles: ['admin']});
+            const result = await graphql(execSchema, `{ allTests { name } }`, undefined, { authRoles: ['admin'] });
             expect(logs.length).to.be.greaterThan(0);
         });
     });

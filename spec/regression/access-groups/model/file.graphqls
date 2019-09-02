@@ -1,4 +1,4 @@
-type File @rootEntity(permissionProfile: "restricted") {
-    name: String
-    accessGroup: String
+type File @rootEntity(flexSearch:true, permissionProfile: "restricted") {
+    name: String @flexSearch
+    accessGroup: String @flexSearch
 }

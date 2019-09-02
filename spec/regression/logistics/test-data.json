@@ -1,55 +1,71 @@
 {
-  "roles": [ "allusers", "accounting", "logistics", "admin" ],
+  "roles": [
+    "allusers",
+    "accounting",
+    "logistics",
+    "admin"
+  ],
   "rootEntities": {
     "Country": [
       {
         "@id": "1",
         "isoCode": "DE",
-        "description": [{
-          "languageIsoCode": "DE",
-          "translation": "Deutschland"
-        },{
-          "languageIsoCode": "EN",
-          "translation": "Germany"
-        }],
+        "description": [
+          {
+            "languageIsoCode": "DE",
+            "translation": "Deutschland"
+          },
+          {
+            "languageIsoCode": "EN",
+            "translation": "Germany"
+          }
+        ],
         "totalInvestment": "EUR 50000000"
       },
       {
         "@id": "2",
         "isoCode": "GB",
-        "description": [{
-          "languageIsoCode": "DE",
-          "translation": "Vereinigtes Königreich"
-        },{
-          "languageIsoCode": "EN",
-          "translation": "United Kingdom"
-        }],
+        "description": [
+          {
+            "languageIsoCode": "DE",
+            "translation": "Vereinigtes Königreich"
+          },
+          {
+            "languageIsoCode": "EN",
+            "translation": "United Kingdom"
+          }
+        ],
         "totalInvestment": "EUR 3000000"
       },
       {
         "@id": "3",
         "isoCode": "US",
-        "description": [{
-          "languageIsoCode": "DE",
-          "translation": "Vereinigte Staaten"
-        },{
-          "languageIsoCode": "EN",
-          "translation": "United States"
-        }]
+        "description": [
+          {
+            "languageIsoCode": "DE",
+            "translation": "Vereinigte Staaten"
+          },
+          {
+            "languageIsoCode": "EN",
+            "translation": "United States"
+          }
+        ]
       },
       {
         "@id": "4",
         "isoCode": "CH",
-        "description": [{
-          "languageIsoCode": "DE",
-          "translation": "Schweiz"
-        },{
-          "languageIsoCode": "EN",
-          "translation": "Switzerland"
-        }]
+        "description": [
+          {
+            "languageIsoCode": "DE",
+            "translation": "Schweiz"
+          },
+          {
+            "languageIsoCode": "EN",
+            "translation": "Switzerland"
+          }
+        ]
       }
     ],
-
     "HandlingUnit": [
       {
         "@id": "1",
@@ -64,7 +80,6 @@
         "huNumber": "1000021"
       }
     ],
-
     "Delivery": [
       {
         "@id": "1",
@@ -74,10 +89,12 @@
           "city": "Port Neldahaven",
           "zipCode": "17624"
         },
-        "contentInfo": [{
-          "languageIsoCode": "DE",
-          "translation": "Kerosin 1000L"
-        }],
+        "contentInfo": [
+          {
+            "languageIsoCode": "DE",
+            "translation": "Kerosin 1000L"
+          }
+        ],
         "dgInfo": {
           "unNumber": "1863",
           "flashpoint": "37 °C"
@@ -94,7 +111,19 @@
             "handlingUnit": "@{ids/HandlingUnit/2}"
           }
         ],
-        "totalValue": "EUR 1024.00"
+        "totalValue": "EUR 1024.00",
+        "description": "description with anyword phrase a all",
+        "enumFlexSearch": "Foo",
+        "aNumber": 123,
+        "recursion": {
+          "name": "test_a",
+          "recursion": {
+            "name": "test_b",
+            "recursion": {
+              "name": "test_c"
+            }
+          }
+        }
       },
       {
         "@id": "2",
@@ -105,30 +134,47 @@
           "zipCode": "179094"
           //"country": "US" // schema is currently wrong (accepts CreateCountry instead of String)
         },
-        "contentInfo": [{
-          "languageIsoCode": "DE",
-          "translation": "Hartplastik-Bausteine"
-        }],
+        "contentInfo": [
+          {
+            "languageIsoCode": "DE",
+            "translation": "Hartplastik-Bausteine"
+          }
+        ],
         "items": [
           {
             "itemNumber": "2001",
             "quantity": 13,
-            "handlingUnit": "@{ids/Country/1}" //wrong ID (Country instead of HandlingUnit) should not be resolved as reference
+            "handlingUnit": "@{ids/Country/1}"
+            //wrong ID (Country instead of HandlingUnit) should not be resolved as reference
           },
           {
             "itemNumber": "2002",
             "quantity": 18
           }
         ],
-        "destinationCountryISOCode": "XX"
+        "destinationCountryISOCode": "XX",
+        "description": "description with all words prefixesFooBar phrase",
+        "enumFlexSearch": "Bar",
+        "aNumber": 1234,
+        "recursion": {
+          "name": "test_x",
+          "recursion": {
+            "name": "test_y",
+            "recursion": {
+              "name": "test_z"
+            }
+          }
+        }
       },
       {
         "@id": "3",
         "deliveryNumber": "1000522",
-        "contentInfo": [{
-          "languageIsoCode": "DE",
-          "translation": "Metall-Bausteine"
-        }],
+        "contentInfo": [
+          {
+            "languageIsoCode": "DE",
+            "translation": "Metall-Bausteine"
+          }
+        ],
         "items": [
           {
             "itemNumber": "3001",
@@ -139,18 +185,29 @@
             "quantity": 18
           }
         ],
-        "destinationCountryISOCode": "US"
+        "destinationCountryISOCode": "US",
+        "description": "description with a phrase any word",
+        "aNumber": 1000521,
+        "recursion": {
+          "name": "test_1",
+          "recursion": {
+            "name": "test_2",
+            "recursion": {
+              "name": "test_3"
+            }
+          }
+        }
       }
     ],
-
     "Forwarder": [
       {
         "@id": "1",
         "name": "DHL",
-        "deliveries": [ "@{ids/Delivery/1}" ]
+        "deliveries": [
+          "@{ids/Delivery/1}"
+        ]
       }
     ],
-
     "SecretKey": [
       {
         "@id": "1",

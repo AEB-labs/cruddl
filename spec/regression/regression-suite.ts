@@ -21,7 +21,8 @@ type DatabaseSpecifier = 'arangodb' | 'in-memory';
 export interface RegressionSuiteOptions {
     readonly saveActualAsExpected?: boolean
     readonly trace?: boolean
-    readonly database?: DatabaseSpecifier;
+    readonly database?: DatabaseSpecifier
+    readonly testNamePrefixFilter?: string
 }
 
 interface MetaOptions {
@@ -58,7 +59,12 @@ export class RegressionSuite {
     private async setUp() {
         this.inMemoryDB = new InMemoryDB();
         const generalOptions: ProjectOptions = {
-            getExecutionOptions: ({ context }) => ({ authRoles: context.authRoles })
+
+            processError: e => {
+                console.error(e.stack);
+                return e;
+            },
+            getExecutionOptions: ({ context }) => ({ authRoles: context.authRoles, flexSearchMaxFilterableAndSortableAmount: context.flexSearchMaxFilterableAndSortableAmount })
         };
         const warnLevelOptions = { ...generalOptions, loggerProvider: new Log4jsLoggerProvider('warn') };
         const debugLevelOptions = { ...generalOptions, loggerProvider: new Log4jsLoggerProvider(this.options.trace ? 'trace' : 'warn', { 'schema-builder': 'warn' }) };
@@ -81,6 +87,7 @@ export class RegressionSuite {
                 this.databaseVersion = `${version.major}.${version.minor}`;
             }
         }
+
 
         this._isSetUpClean = true;
     }
@@ -117,6 +124,9 @@ export class RegressionSuite {
                 return true;
             }
         }
+        if (this.options.testNamePrefixFilter && !name.startsWith(this.options.testNamePrefixFilter)) {
+            return true;
+        }
         return false;
     }
 
@@ -133,6 +143,7 @@ export class RegressionSuite {
         const resultPath = path.resolve(this.testsPath, name + '.result.json');
         const variablesPath = path.resolve(this.testsPath, name + '.vars.json');
         let contextPath = path.resolve(this.testsPath, name + '.context.json');
+        const metaPath = path.resolve(this.testsPath, name + '.meta.json');
         if (!fs.existsSync(contextPath)) {
             contextPath = path.resolve(this.path, 'default-context.json');
         }
@@ -149,6 +160,11 @@ export class RegressionSuite {
         const expectedResult = this.testDataEnvironment.fillTemplateStrings(expectedResultTemplate);
         const variableValues = fs.existsSync(variablesPath) ? JSON.parse(stripJsonComments(fs.readFileSync(variablesPath, 'utf-8'))) : {};
         const context = fs.existsSync(contextPath) ? JSON.parse(stripJsonComments(fs.readFileSync(contextPath, 'utf-8'))) : {};
+        const meta = fs.existsSync(metaPath) ? JSON.parse(stripJsonComments(fs.readFileSync(metaPath, 'utf-8'))) : {};
+
+        if (meta.waitForArangoSearch) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        }
 
         let actualResult: any;
         if (hasNamedOperations) {

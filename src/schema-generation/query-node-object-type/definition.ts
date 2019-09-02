@@ -1,8 +1,18 @@
-import { GraphQLEnumType, GraphQLFieldConfigArgumentMap, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLScalarType, Thunk } from 'graphql';
+import {
+    GraphQLEnumType,
+    GraphQLFieldConfigArgumentMap,
+    GraphQLList,
+    GraphQLNonNull,
+    GraphQLObjectType,
+    GraphQLScalarType,
+    GraphQLUnionType,
+    Thunk
+} from 'graphql';
 import { QueryNode } from '../../query-tree';
 import { FieldContext } from './context';
 
 export interface QueryNodeResolveInfo extends FieldContext {
+
 }
 
 export interface QueryNodeField {
@@ -11,6 +21,11 @@ export interface QueryNodeField {
     type: QueryNodeOutputType
     args?: GraphQLFieldConfigArgumentMap
     resolve: (sourceNode: QueryNode, args: { [name: string]: any }, info: QueryNodeResolveInfo) => QueryNode
+
+    /**
+     * Will be called with the final node, after field selection transformations
+     */
+    transform?: (node: QueryNode, args: { [name: string]: any }, info: QueryNodeResolveInfo) => QueryNode
 
     /**
      * Indicates whether this field should be resolved in the user-specified sequence among other serial fields
@@ -31,6 +46,7 @@ export interface QueryNodeObjectType {
     description?: string
     fields: Thunk<ReadonlyArray<QueryNodeField>>
 }
+
 
 export class QueryNodeNonNullType<T extends QueryNodeNullableType> {
     constructor(public readonly ofType: T) {
