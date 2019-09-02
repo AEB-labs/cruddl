@@ -1,4 +1,5 @@
 import memorize from 'memorize-decorator';
+import { SchemaOptions } from '../config/interfaces';
 import { Model } from '../model';
 import { CreateInputTypeGenerator } from './create-input-types';
 import { EnumTypeGenerator } from './enum-type-generator';
@@ -18,10 +19,13 @@ import { QueryTypeGenerator } from './query-type-generator';
 import { UpdateInputTypeGenerator } from './update-input-types';
 
 export class RootTypesGenerator {
+    constructor(private readonly options: SchemaOptions = {}) {
+    }
+
     private readonly enumTypeGenerator = new EnumTypeGenerator();
     private readonly filterTypeGenerator = new FilterTypeGenerator(this.enumTypeGenerator);
     private readonly flexSearchFilterTypeGenerator = new FlexSearchFilterTypeGenerator(this.enumTypeGenerator);
-    private readonly orderByEnumGenerator = new OrderByEnumGenerator();
+    private readonly orderByEnumGenerator = new OrderByEnumGenerator({ maxRootEntityDepth: this.options.maxOrderByRootEntityDepth });
     private readonly orderByAugmentation = new OrderByAndPaginationAugmentation(this.orderByEnumGenerator);
     private readonly filterAugmentation = new FilterAugmentation(this.filterTypeGenerator);
     private readonly listAugmentation = new ListAugmentation(this.filterAugmentation, this.orderByAugmentation);
