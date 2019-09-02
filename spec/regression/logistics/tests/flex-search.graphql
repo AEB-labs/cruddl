@@ -152,19 +152,11 @@ query filter_above_max {
     }
 }
 
-query order_above_max {
-    flexSearchHandlingUnits(
-        orderBy: id_ASC
-    ){
-        huNumber
-    }
-}
-
 query order_above_max_primary_sort {
-    flexSearchHandlingUnits(
-        orderBy: huNumber_DESC
+    flexSearchDeliveries(
+        orderBy: deliveryNumber_DESC
     ){
-        huNumber
+        deliveryNumber
     }
 }
 
