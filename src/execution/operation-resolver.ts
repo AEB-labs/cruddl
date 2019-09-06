@@ -30,11 +30,12 @@ export class OperationResolver {
             options = this.context.getExecutionOptions ? this.context.getExecutionOptions({ context: operationInfo.context, operationDefinition: operationInfo.operation }) : {};
         }
 
-        const watch = new Watch();
-        const topLevelWatch = new Watch();
+        const needsTimings = profileConsumer || options.recordPlan || options.recordTimings;
+        const watch = needsTimings ? new Watch() : undefined;
+        const topLevelWatch = needsTimings ? new Watch() : undefined;
 
         const operationDesc = `${operationInfo.operation.operation} ${operationInfo.operation.name ? operationInfo.operation.name.value : ''}`;
-        const start = getPreciseTime();
+        const start = needsTimings ? getPreciseTime() : undefined;
         if (operationInfo.operation.operation === 'mutation' && options.mutationMode === 'disallowed') {
             throw new Error(`Mutations are not allowed`);
         }
@@ -50,7 +51,9 @@ export class OperationResolver {
             if (logger.isTraceEnabled()) {
                 logger.trace(`DistilledOperation: ${operation.describe()}`);
             }
-            watch.stop('distillation');
+            if (watch) {
+                watch.stop('distillation');
+            }
 
             const rootQueryNode = ObjectQueryNode.EMPTY; // can't use NULL because then the whole operation would yield null
             const fieldContext = {
@@ -67,12 +70,16 @@ export class OperationResolver {
             if (logger.isTraceEnabled()) {
                 logger.trace('Before authorization: ' + queryTree.describe());
             }
-            watch.stop('queryTree');
+            if (watch) {
+                watch.stop('queryTree');
+            }
             queryTree = applyAuthorizationToQueryTree(queryTree, { authRoles: requestRoles });
             if (logger.isTraceEnabled()) {
                 logger.trace('After authorization: ' + queryTree.describe());
             }
-            watch.stop('authorization');
+            if (watch) {
+                watch.stop('authorization');
+            }
         } finally {
             globalContext.unregisterContext();
         }
@@ -81,8 +88,10 @@ export class OperationResolver {
         let plan: ExecutionPlan | undefined;
         let error: Error | undefined;
         let { canEvaluateStatically, result: data } = evaluateQueryStatically(queryTree);
-        watch.stop('staticEvaluation');
-        topLevelWatch.stop('preparation');
+        if (watch && topLevelWatch) {
+            watch.stop('staticEvaluation');
+            topLevelWatch.stop('preparation');
+        }
         if (!canEvaluateStatically) {
             const res = this.context.databaseAdapter.executeExt ? (await this.context.databaseAdapter.executeExt({
                 queryTree,
@@ -90,7 +99,9 @@ export class OperationResolver {
             })) : {
                 data: this.context.databaseAdapter.execute(queryTree)
             };
-            topLevelWatch.stop('database');
+            if (topLevelWatch) {
+                topLevelWatch.stop('database');
+            }
             dbAdapterTimings = res.timings;
             error = res.error;
             data = res.data;
@@ -110,7 +121,7 @@ export class OperationResolver {
             logger.trace('Result: ' + JSON.stringify(data, undefined, '  '));
         }
         let profile: RequestProfile | undefined;
-        if (profileConsumer || options.recordPlan || options.recordTimings) {
+        if (watch && topLevelWatch && (start != undefined)) { // equivalent to (profileConsumer || options.recordPlan || options.recordTimings) but pleases typescript
             const preparation = {
                 ...(dbAdapterTimings ? dbAdapterTimings.preparation : {}),
                 ...watch.timings,
