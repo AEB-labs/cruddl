@@ -72,18 +72,22 @@ const project = new Project({
             }
         })
     } ],
-    getExecutionOptions: ({context}) => ({ authRoles: ['users'] })
+    getExecutionOptions: ({context}) => ({ authRoles: ['users'] }),
+    getOperationIdentifier: ({context}) => context as object, // each operation is executed with an unique context object
 });
 ```
 
 Then, create the GraphQL schema and serve it:
 
 ```typescript
-import { GraphQLServer } from 'graphql-yoga';
+import { ApolloServer } from 'apollo-server';
 const schema = project.createSchema(db);
 db.updateSchema(project.getModel()); // create missing collections
-const server = new GraphQLServer({ schema });
-server.start(() => console.log('Server is running on http://localhost:4000/'));
+const server = new ApolloServer({
+    schema,
+    context: ({ req }) => req // pass request as context so we have a unique context object for each operation
+});
+server.listen(4000, () => console.log('Server is running on http://localhost:4000/'));
 ```
 
 See the [modelling guide](docs/modelling.md) and the [api documentation](docs/api.md) for details.
