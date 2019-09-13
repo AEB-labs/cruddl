@@ -1,4 +1,5 @@
 export { RequestProfile, ProjectOptions, RequestContext } from './src/config/interfaces';
+export { FieldResolverParameters } from './src/graphql/operation-based-resolvers';
 export { Project, ProjectConfig } from './src/project/project';
 export { InvalidProjectError } from './src/project/invalid-project-error';
 export { ProjectSource, SourceConfig, SourceType, SourceLike } from './src/project/source';
@@ -12,3 +13,4 @@ export { Logger, LoggerProvider } from './src/config/logging';
 export { TransactionCancelledError, TransactionTimeoutError } from './src/execution/runtime-errors';
 export * from './src/model/implementation';
 export { TypeKind } from './src/model/config';
+export { NoOperationIdentifierError } from './src/graphql/operation-based-resolvers';

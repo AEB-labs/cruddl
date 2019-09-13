@@ -1,6 +1,7 @@
 import { FragmentDefinitionNode, OperationDefinitionNode } from 'graphql';
 import { DatabaseAdapterTimings, ExecutionPlan, TransactionStats } from '../database/database-adapter';
 import { ExecutionOptions, ExecutionOptionsCallbackArgs } from '../execution/execution-options';
+import { FieldResolverParameters } from '../graphql/operation-based-resolvers';
 import { LoggerProvider } from './logging';
 
 export interface RequestContext {
@@ -29,6 +30,22 @@ export interface ProjectOptions {
     readonly getExecutionOptions?: (args: ExecutionOptionsCallbackArgs) => ExecutionOptions;
 
     readonly schemaOptions?: SchemaOptions
+
+    /**
+     * Should return a token object that is the same for all field resolves of one operation, but different for each
+     * operation call.
+     *
+     * This callback is required to group field requests of operations that include multiple top-level fields as
+     * graphql-js offers no reliable way to group these requests together. Cruddl's transactional guarantees can only
+     * be kept if it know which field requests belong to one operation.
+     *
+     * The result must be an object because it is used in a WeakMap so that query results are cleaned up when the
+     * operation is complete.
+     *
+     * If this is not implemented or the callback returns undefined, operations with more than one top-level fields or
+     * operations containing top-level fragment spreads will not be supported.
+     */
+    readonly getOperationIdentifier?: (params: FieldResolverParameters) => object | undefined
 
     /**
      * Is called when an operation execution throws an error

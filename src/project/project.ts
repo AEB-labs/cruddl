@@ -42,6 +42,7 @@ export class Project {
             loggerProvider: config.loggerProvider,
             profileConsumer: config.profileConsumer,
             getExecutionOptions: config.getExecutionOptions,
+            getOperationIdentifier: config.getOperationIdentifier,
             processError: config.processError,
             schemaOptions: config.schemaOptions
         };

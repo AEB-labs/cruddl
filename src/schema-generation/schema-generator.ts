@@ -1,6 +1,6 @@
 import { GraphQLError, GraphQLSchema } from 'graphql';
 import { OperationResolver } from '../execution/operation-resolver';
-import { addOperationBasedResolvers } from '../graphql/operation-based-resolvers';
+import { addOperationBasedResolvers, AddOperationBasedResolversParams } from '../graphql/operation-based-resolvers';
 import { Model } from '../model';
 import { SchemaTransformationContext } from '../schema/preparation/transformation-pipeline';
 import { QueryNodeObjectTypeConverter } from './query-node-object-type';
@@ -19,29 +19,35 @@ export class SchemaGenerator {
 
     generate(model: Model) {
         const { queryType, mutationType, dumbSchema } = this.generateTypesAndDumbSchema(model);
-        return addOperationBasedResolvers(dumbSchema, async op => {
-            const rootType = op.operation.operation === 'mutation' ? mutationType : queryType;
-            let error: Error;
-            try {
-                const res = await this.operationResolver.resolveOperation(op, rootType);
-                // report the profile before throwing
-                if (this.context.profileConsumer && res.profile) {
-                    this.context.profileConsumer(res.profile);
+        // somehow didn't work when inlined - maybe a ts-node caching issue
+        const options: AddOperationBasedResolversParams = {
+            schema: dumbSchema,
+            getOperationIdentifier: this.context.getOperationIdentifier,
+            operationResolver: async op => {
+                const rootType = op.operation.operation === 'mutation' ? mutationType : queryType;
+                let error: Error;
+                try {
+                    const res = await this.operationResolver.resolveOperation(op, rootType);
+                    // report the profile before throwing
+                    if (this.context.profileConsumer && res.profile) {
+                        this.context.profileConsumer(res.profile);
+                    }
+                    if (res.error) {
+                        error = res.error;
+                    } else {
+                        return res.data;
+                    }
+                } catch (e) {
+                    error = e;
                 }
-                if (res.error) {
-                    error = res.error;
-                } else {
-                    return res.data;
-                }
-            } catch (e) {
-                error = e;
-            }
 
-            if (this.context.processError) {
-                throw this.context.processError(error, op);
+                if (this.context.processError) {
+                    throw this.context.processError(error, op);
+                }
+                throw error;
             }
-            throw error;
-        });
+        };
+        return addOperationBasedResolvers(options);
     }
 
     generateTypesAndDumbSchema(model: Model) {
