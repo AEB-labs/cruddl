@@ -192,13 +192,13 @@ export class FlexSearchGenerator {
             const identityNode = new FlexSearchStartsWithQueryNode(new FieldPathQueryNode(itemVariable, path.concat(field)), new LiteralQueryNode(expression));
             const operatorWithLanguageNode = new OperatorWithLanguageQueryNode(
                 new FieldPathQueryNode(itemVariable, path.concat(field)), BinaryOperatorWithLanguage.FLEX_SEARCH_CONTAINS_PREFIX, new LiteralQueryNode(expression),
-                field.language!
+                field.flexSearchLanguage!
             );
 
             return new BinaryOperationQueryNode(
                 field.isFlexSearchIndexed && field.isIncludedInSearch ? identityNode : ConstBoolQueryNode.FALSE,
                 BinaryOperator.OR,
-                field.isFlexSearchFulltextIndexed && field.isFulltextIncludedInSearch && field.language ? operatorWithLanguageNode : ConstBoolQueryNode.FALSE
+                field.isFlexSearchFulltextIndexed && field.isFulltextIncludedInSearch && field.flexSearchLanguage ? operatorWithLanguageNode : ConstBoolQueryNode.FALSE
             );
         }
 

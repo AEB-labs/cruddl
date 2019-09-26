@@ -41,6 +41,12 @@ const typeDefs = gql`
         localization(
             ${resolutionOrderDescription} resolutionOrder: [String]
         ): FieldLocalization
+
+        isFlexSearchIndexed: Boolean!
+        isIncludedInSearch: Boolean!
+        isFlexSearchFulltextIndexed: Boolean!
+        isFulltextIncludedInSearch: Boolean!
+        flexSearchLanguage: FlexSearchLanguage
     }
 
     type Index {
@@ -97,6 +103,9 @@ const typeDefs = gql`
         indices: [Index!]!
 
         fields: [Field!]!
+
+        isFlexSearchIndexed: Boolean!
+        flexSearchPrimarySort: [OrderClause!]!
 
         """
         All relations between this type and other types
@@ -197,6 +206,20 @@ const typeDefs = gql`
     type EnumValueLocalization {
         label: String
         hint: String
+    }
+    
+    type OrderClause{
+        field: Field
+        order: OrderDirection
+    }
+
+    enum OrderDirection {
+        ASC, DESC
+    }
+
+    "The available languages for FlexSearch Analyzers"
+    enum FlexSearchLanguage {
+        EN, DE, ES, FI, FR, IT, NL, NO, PT, RU, SV, ZH
     }
 
     """
@@ -322,7 +345,8 @@ export function getMetaSchema(model: Model): GraphQLSchema {
             __resolveType: (type: unknown) => resolveType(type as Type)
         },
         RootEntityType: {
-            localization: localizeType
+            localization: localizeType,
+            flexSearchPrimarySort: flexSearchPrimarySort
         },
         ChildEntityType: {
             localization: localizeType
@@ -366,6 +390,16 @@ export function getMetaSchema(model: Model): GraphQLSchema {
 
     function localizeEnumValue(enumValue: {}, {resolutionOrder}: { resolutionOrder?: ReadonlyArray<string> }, context: I18nSchemaContextPart) {
         return model.i18n.getEnumValueLocalization(enumValue as EnumValue, getResolutionOrder(resolutionOrder, context));
+    }
+
+    function flexSearchPrimarySort(type: {}):{field: Field, order: 'ASC' | 'DESC'}[]{
+        const rootEntityType = type as RootEntityType;
+        return rootEntityType.flexSearchIndexConfig.primarySort.map(value => {
+            return {
+                field: rootEntityType.getField(value.field)!,
+                order: value.asc ? 'ASC' : 'DESC'
+            }
+        })
     }
 
     return makeExecutableSchema({
