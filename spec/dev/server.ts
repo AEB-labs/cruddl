@@ -1,8 +1,7 @@
+import { ApolloServer } from 'apollo-server';
 import * as bodyParser from 'body-parser';
 import * as cors from 'cors';
 import * as express from 'express';
-import { GraphQLServer } from 'graphql-yoga';
-import { ContextParameters } from 'graphql-yoga/dist/types';
 import * as path from 'path';
 import { ArangoDBAdapter } from '../..';
 import { globalContext } from '../../src/config/global';
@@ -41,7 +40,8 @@ export async function start() {
         profileConsumer: profile => {
             console.log(`${profile.operation.operation} ${profile.operation.name ? profile.operation.name.value : '<anonymous>'}: ${JSON.stringify(profile.timings, undefined, '  ')}`);
         },
-        getExecutionOptions: ({ context }: { context: ContextParameters }) => {
+        getOperationIdentifier: ({ context }) => context as object, // each operation is executed with an unique context object
+        getExecutionOptions: ({ context }: { context: any }) => {
             return ({
                 authRoles: ['allusers', 'logistics-reader', 'system'],
                 recordTimings: true,
@@ -49,7 +49,7 @@ export async function start() {
                 mutationMode: 'normal',
 
                 //queryMemoryLimit: 1000000,
-                cancellationToken: new Promise(resolve => context.request.on('aborted', resolve))
+                cancellationToken: new Promise(resolve => context.req.on('aborted', resolve))
             });
         },
         /*processError(error: Error) {
@@ -65,8 +65,8 @@ export async function start() {
     await db.updateSchema(project.getModel());
     logger.info('Schema is up to date');
 
-    const server = new GraphQLServer({
-        schema: schema as any, // yoga declares a direct dependency to @types/graphql and it's 0.13
+    const server = new ApolloServer({
+        schema: schema,
         context: props => props
     });
 
@@ -76,7 +76,7 @@ export async function start() {
     fastServer.post('/', createFastApp(project, db));
     fastServer.listen(3002);
 
-    await server.start({ port });
+    await server.listen({ port });
     logger.info(`Server started on http://localhost:${port}`);
 
     await startMetaServer(project.getModel());
@@ -93,11 +93,11 @@ export async function startMetaServer(model: Model) {
     const logger = globalContext.loggerProvider.getLogger('server');
 
     const metaSchemaPort = port + 1;
-    const metaSchemaServer = new GraphQLServer({
-        schema: getMetaSchema(model) as any, // yoga declares a direct dependency to @types/graphql and it's 0.13
+    const metaSchemaServer = new ApolloServer({
+        schema: getMetaSchema(model),
         context: { locale: 'en' }
     });
-    expressServerReference = await metaSchemaServer.start({ port: metaSchemaPort });
+    expressServerReference = await metaSchemaServer.listen({ port: metaSchemaPort });
     logger.info(`Meta-Schema-Server started on http://localhost:${metaSchemaPort}`);
 }
 

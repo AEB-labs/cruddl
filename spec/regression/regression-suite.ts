@@ -59,12 +59,12 @@ export class RegressionSuite {
     private async setUp() {
         this.inMemoryDB = new InMemoryDB();
         const generalOptions: ProjectOptions = {
-
             processError: e => {
                 console.error(e.stack);
                 return e;
             },
-            getExecutionOptions: ({ context }) => ({ authRoles: context.authRoles, flexSearchMaxFilterableAndSortableAmount: context.flexSearchMaxFilterableAndSortableAmount })
+            getExecutionOptions: ({ context }) => ({ authRoles: context.authRoles, flexSearchMaxFilterableAndSortableAmount: context.flexSearchMaxFilterableAndSortableAmount }),
+            getOperationIdentifier: ({ info }) => info.operation
         };
         const warnLevelOptions = { ...generalOptions, loggerProvider: new Log4jsLoggerProvider('warn') };
         const debugLevelOptions = { ...generalOptions, loggerProvider: new Log4jsLoggerProvider(this.options.trace ? 'trace' : 'warn', { 'schema-builder': 'warn' }) };

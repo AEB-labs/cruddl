@@ -43,7 +43,6 @@ export interface ASTTransformationContext {
 
 export interface SchemaTransformationContext extends ProjectOptions {
     databaseAdapter: DatabaseAdapter
-
 }
 
 export interface ASTTransformer {
