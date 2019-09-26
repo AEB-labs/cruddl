@@ -11,7 +11,7 @@ export const FLEX_SEARCH_VIEW_PREFIX = 'flex_view_';
 
 export interface FlexSearchPrimarySortConfig {
     field: string;
-    direction: 'asc' | 'desc';
+    asc: boolean
 }
 
 export interface ArangoSearchDefinition {
@@ -133,8 +133,8 @@ function getPropertiesFromDefinition(definition: ArangoSearchDefinition, configu
             };
         } else {
             const analyzers: string[] = [];
-            if (field.isFlexSearchFulltextIndexed && field.language) {
-                analyzers.push(getAnalyzerFromFlexSearchLanguage(field.language));
+            if (field.isFlexSearchFulltextIndexed && field.flexSearchLanguage) {
+                analyzers.push(getAnalyzerFromFlexSearchLanguage(field.flexSearchLanguage));
             }
             if (field.isFlexSearchIndexed) {
                 analyzers.push(IDENTITY_ANALYZER);

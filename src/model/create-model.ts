@@ -180,7 +180,7 @@ function getFlexSearchOrder(rootEntityDirective?: DirectiveNode): FlexSearchPrim
         }).map((value: any) => {
             return {
                 field: value.field,
-                direction: value.direction === 'ASC' ? 'asc' : 'desc'
+                asc: value.direction === 'ASC' ? true : false
             };
         });
 

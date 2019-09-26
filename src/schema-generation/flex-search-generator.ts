@@ -166,12 +166,12 @@ export class FlexSearchGenerator {
         args.forEach((arg, index) => {
             if (arg.endsWith('_ASC')) {
                 const field = arg.substring(0, arg.length - 4);
-                if (primarySort[index].field !== field || primarySort[index].direction != 'asc') {
+                if (primarySort[index].field !== field || !primarySort[index].asc) {
                     matchesPrimarySort = false;
                 }
             } else {
                 const field = arg.substring(0, arg.length - 5);
-                if (primarySort[index].field !== field || primarySort[index].direction != 'desc') {
+                if (primarySort[index].field !== field || primarySort[index].asc) {
                     matchesPrimarySort = false;
                 }
             }
