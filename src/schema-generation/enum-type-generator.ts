@@ -13,7 +13,8 @@ export class EnumTypeGenerator {
                 .keyBy(value => value.value)
                 .mapValues((value): GraphQLEnumValueConfig => ({
                     value: value.value,
-                    description: value.description
+                    description: value.description,
+                    deprecationReason: value.deprecationReason
                 }))
                 .value()
         });
