@@ -1,0 +1,853 @@
+{
+  "data": {
+    "Delivery": {
+      "name": "Delivery",
+      "fields": [
+        {
+          "name": "id",
+          "isDeprecated": false,
+          "deprecationReason": null,
+          "type": {
+            "enumValues": null
+          }
+        },
+        {
+          "name": "createdAt",
+          "isDeprecated": false,
+          "deprecationReason": null,
+          "type": {
+            "enumValues": null
+          }
+        },
+        {
+          "name": "updatedAt",
+          "isDeprecated": false,
+          "deprecationReason": null,
+          "type": {
+            "enumValues": null
+          }
+        },
+        {
+          "name": "deliveryNumber",
+          "isDeprecated": false,
+          "deprecationReason": null,
+          "type": {
+            "enumValues": null
+          }
+        },
+        {
+          "name": "serialNumbers",
+          "isDeprecated": false,
+          "deprecationReason": null,
+          "type": {
+            "enumValues": null
+          }
+        },
+        {
+          "name": "consignee",
+          "isDeprecated": false,
+          "deprecationReason": null,
+          "type": {
+            "enumValues": null
+          }
+        },
+        {
+          "name": "contentInfo",
+          "isDeprecated": false,
+          "deprecationReason": null,
+          "type": {
+            "enumValues": null
+          }
+        },
+        {
+          "name": "_contentInfoMeta",
+          "isDeprecated": false,
+          "deprecationReason": null,
+          "type": {
+            "enumValues": null
+          }
+        },
+        {
+          "name": "dgInfo",
+          "isDeprecated": false,
+          "deprecationReason": null,
+          "type": {
+            "enumValues": null
+          }
+        },
+        {
+          "name": "items",
+          "isDeprecated": false,
+          "deprecationReason": null,
+          "type": {
+            "enumValues": null
+          }
+        },
+        {
+          "name": "_itemsMeta",
+          "isDeprecated": false,
+          "deprecationReason": null,
+          "type": {
+            "enumValues": null
+          }
+        },
+        {
+          "name": "handlingUnits",
+          "isDeprecated": false,
+          "deprecationReason": null,
+          "type": {
+            "enumValues": null
+          }
+        },
+        {
+          "name": "_handlingUnitsMeta",
+          "isDeprecated": false,
+          "deprecationReason": null,
+          "type": {
+            "enumValues": null
+          }
+        },
+        {
+          "name": "destinationCountry",
+          "isDeprecated": false,
+          "deprecationReason": null,
+          "type": {
+            "enumValues": null
+          }
+        },
+        {
+          "name": "destinationCountryISOCode",
+          "isDeprecated": false,
+          "deprecationReason": null,
+          "type": {
+            "enumValues": null
+          }
+        },
+        {
+          "name": "originCountry",
+          "isDeprecated": false,
+          "deprecationReason": null,
+          "type": {
+            "enumValues": null
+          }
+        },
+        {
+          "name": "shippedAt",
+          "isDeprecated": false,
+          "deprecationReason": null,
+          "type": {
+            "enumValues": null
+          }
+        },
+        {
+          "name": "totalValue",
+          "isDeprecated": false,
+          "deprecationReason": null,
+          "type": {
+            "enumValues": null
+          }
+        },
+        {
+          "name": "forwarder",
+          "isDeprecated": false,
+          "deprecationReason": null,
+          "type": {
+            "enumValues": null
+          }
+        },
+        {
+          "name": "destination",
+          "isDeprecated": false,
+          "deprecationReason": null,
+          "type": {
+            "enumValues": null
+          }
+        },
+        {
+          "name": "defaultValueString",
+          "isDeprecated": false,
+          "deprecationReason": null,
+          "type": {
+            "enumValues": null
+          }
+        },
+        {
+          "name": "defaultValueString2",
+          "isDeprecated": false,
+          "deprecationReason": null,
+          "type": {
+            "enumValues": null
+          }
+        },
+        {
+          "name": "defaultValueInt",
+          "isDeprecated": false,
+          "deprecationReason": null,
+          "type": {
+            "enumValues": null
+          }
+        },
+        {
+          "name": "defaultValueTrue",
+          "isDeprecated": false,
+          "deprecationReason": null,
+          "type": {
+            "enumValues": null
+          }
+        },
+        {
+          "name": "defaultValueFalse",
+          "isDeprecated": false,
+          "deprecationReason": null,
+          "type": {
+            "enumValues": null
+          }
+        },
+        {
+          "name": "defaultValueFloat",
+          "isDeprecated": false,
+          "deprecationReason": null,
+          "type": {
+            "enumValues": null
+          }
+        },
+        {
+          "name": "defaultValueEnum",
+          "isDeprecated": false,
+          "deprecationReason": null,
+          "type": {
+            "enumValues": [
+              {
+                "name": "Foo",
+                "isDeprecated": false,
+                "deprecationReason": null
+              },
+              {
+                "name": "Bar",
+                "isDeprecated": false,
+                "deprecationReason": null
+              },
+              {
+                "name": "Baz",
+                "isDeprecated": false,
+                "deprecationReason": null
+              }
+            ]
+          }
+        },
+        {
+          "name": "pickupDate",
+          "isDeprecated": false,
+          "deprecationReason": null,
+          "type": {
+            "enumValues": null
+          }
+        },
+        {
+          "name": "pickupTimeStart",
+          "isDeprecated": false,
+          "deprecationReason": null,
+          "type": {
+            "enumValues": null
+          }
+        },
+        {
+          "name": "pickupTimeEnd",
+          "isDeprecated": false,
+          "deprecationReason": null,
+          "type": {
+            "enumValues": null
+          }
+        },
+        {
+          "name": "dynamicData",
+          "isDeprecated": false,
+          "deprecationReason": null,
+          "type": {
+            "enumValues": null
+          }
+        },
+        {
+          "name": "deprecatedField",
+          "isDeprecated": true,
+          "deprecationReason": "do not use",
+          "type": {
+            "enumValues": null
+          }
+        },
+        {
+          "name": "enumWithDeprecation",
+          "isDeprecated": false,
+          "deprecationReason": null,
+          "type": {
+            "enumValues": [
+              {
+                "name": "A",
+                "isDeprecated": false,
+                "deprecationReason": null
+              },
+              {
+                "name": "B",
+                "isDeprecated": true,
+                "deprecationReason": "do not use B"
+              }
+            ]
+          }
+        },
+        {
+          "name": "_cursor",
+          "isDeprecated": false,
+          "deprecationReason": null,
+          "type": {
+            "enumValues": null
+          }
+        }
+      ]
+    },
+    "DeliveryOrderBy": {
+      "name": "DeliveryOrderBy",
+      "enumValues": [
+        {
+          "name": "id_ASC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "id_DESC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "createdAt_ASC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "createdAt_DESC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "updatedAt_ASC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "updatedAt_DESC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "deliveryNumber_ASC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "deliveryNumber_DESC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "consignee_street_ASC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "consignee_street_DESC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "consignee_city_ASC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "consignee_city_DESC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "consignee_zipCode_ASC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "consignee_zipCode_DESC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "consignee_country_id_ASC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "consignee_country_id_DESC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "consignee_country_createdAt_ASC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "consignee_country_createdAt_DESC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "consignee_country_updatedAt_ASC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "consignee_country_updatedAt_DESC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "consignee_country_isoCode_ASC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "consignee_country_isoCode_DESC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "consignee_country_totalInvestment_ASC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "consignee_country_totalInvestment_DESC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "dgInfo_unNumber_ASC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "dgInfo_unNumber_DESC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "dgInfo_flashpoint_ASC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "dgInfo_flashpoint_DESC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "dgInfo_details_expiryDate_ASC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "dgInfo_details_expiryDate_DESC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "dgInfo_details_comment_ASC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "dgInfo_details_comment_DESC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "destinationCountry_id_ASC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "destinationCountry_id_DESC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "destinationCountry_createdAt_ASC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "destinationCountry_createdAt_DESC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "destinationCountry_updatedAt_ASC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "destinationCountry_updatedAt_DESC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "destinationCountry_isoCode_ASC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "destinationCountry_isoCode_DESC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "destinationCountry_totalInvestment_ASC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "destinationCountry_totalInvestment_DESC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "destinationCountryISOCode_ASC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "destinationCountryISOCode_DESC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "originCountry_id_ASC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "originCountry_id_DESC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "originCountry_createdAt_ASC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "originCountry_createdAt_DESC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "originCountry_updatedAt_ASC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "originCountry_updatedAt_DESC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "originCountry_isoCode_ASC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "originCountry_isoCode_DESC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "originCountry_totalInvestment_ASC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "originCountry_totalInvestment_DESC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "shippedAt_ASC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "shippedAt_DESC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "totalValue_ASC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "totalValue_DESC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "forwarder_id_ASC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "forwarder_id_DESC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "forwarder_createdAt_ASC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "forwarder_createdAt_DESC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "forwarder_updatedAt_ASC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "forwarder_updatedAt_DESC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "forwarder_name_ASC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "forwarder_name_DESC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "destination_street_ASC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "destination_street_DESC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "destination_city_ASC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "destination_city_DESC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "destination_zipCode_ASC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "destination_zipCode_DESC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "destination_country_id_ASC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "destination_country_id_DESC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "destination_country_createdAt_ASC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "destination_country_createdAt_DESC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "destination_country_updatedAt_ASC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "destination_country_updatedAt_DESC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "destination_country_isoCode_ASC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "destination_country_isoCode_DESC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "destination_country_totalInvestment_ASC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "destination_country_totalInvestment_DESC",
+          "isDeprecated": true,
+          "deprecationReason": "OrderBy values that include relations or references are deprecated"
+        },
+        {
+          "name": "defaultValueString_ASC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "defaultValueString_DESC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "defaultValueString2_ASC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "defaultValueString2_DESC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "defaultValueInt_ASC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "defaultValueInt_DESC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "defaultValueTrue_ASC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "defaultValueTrue_DESC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "defaultValueFalse_ASC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "defaultValueFalse_DESC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "defaultValueFloat_ASC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "defaultValueFloat_DESC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "defaultValueEnum_ASC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "defaultValueEnum_DESC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "pickupDate_ASC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "pickupDate_DESC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "pickupTimeStart_ASC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "pickupTimeStart_DESC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "pickupTimeEnd_ASC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "pickupTimeEnd_DESC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "dynamicData_ASC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "dynamicData_DESC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "deprecatedField_ASC",
+          "isDeprecated": true,
+          "deprecationReason": "do not use"
+        },
+        {
+          "name": "deprecatedField_DESC",
+          "isDeprecated": true,
+          "deprecationReason": "do not use"
+        },
+        {
+          "name": "enumWithDeprecation_ASC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "enumWithDeprecation_DESC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        }
+      ]
+    }
+  }
+}

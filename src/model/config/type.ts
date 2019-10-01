@@ -57,6 +57,7 @@ export interface EnumTypeConfig extends TypeConfigBase {
 export interface EnumValueConfig {
     readonly value: string
     readonly description?: string
+    readonly deprecationReason?: string
     readonly astNode?: EnumValueDefinitionNode
 }
 

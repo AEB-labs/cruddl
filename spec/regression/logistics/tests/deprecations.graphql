@@ -1,0 +1,26 @@
+{
+    Delivery: __type(name: "Delivery") {
+        name
+        fields(includeDeprecated: true) {
+            name
+            isDeprecated
+            deprecationReason
+            type {
+                enumValues(includeDeprecated: true) {
+                    name
+                    isDeprecated
+                    deprecationReason
+                }
+            }
+        }
+    }
+
+    DeliveryOrderBy: __type(name: "DeliveryOrderBy") {
+        name
+        enumValues(includeDeprecated: true) {
+            name
+            isDeprecated
+            deprecationReason
+        }
+    }
+}
