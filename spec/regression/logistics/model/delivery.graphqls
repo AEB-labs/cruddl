@@ -35,6 +35,14 @@ type Delivery @rootEntity @roles(readWrite: ["allusers"]) {
     pickupTimeEnd: LocalTime
 
     dynamicData: JSON
+
+    deprecatedField: String @deprecated(reason: "do not use")
+    enumWithDeprecation: EnumWithDeprecation
+}
+
+enum EnumWithDeprecation {
+    A,
+    B @deprecated(reason: "do not use B")
 }
 
 type DeliveryItem @childEntity {

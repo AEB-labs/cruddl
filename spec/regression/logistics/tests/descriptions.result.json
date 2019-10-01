@@ -721,6 +721,10 @@
               "description": null
             },
             {
+              "name": "enumWithDeprecation",
+              "description": null
+            },
+            {
               "name": "_cursor",
               "description": "Provides a value that can be supplied to the `after` argument for pagination. Depends on the value of the `orderBy` argument."
             }
@@ -1910,6 +1914,86 @@
               "description": null
             },
             {
+              "name": "deprecatedField",
+              "description": "Checks if `deprecatedField` equals a specified string, case-sensitively.\n\nIf an index exists on `deprecatedField`, it can be used.\n\nSee also `like` for a case-insensitive filter."
+            },
+            {
+              "name": "deprecatedField_not",
+              "description": "Checks if `deprecatedField` does not equal a specified string, case-sensitively."
+            },
+            {
+              "name": "deprecatedField_in",
+              "description": null
+            },
+            {
+              "name": "deprecatedField_not_in",
+              "description": null
+            },
+            {
+              "name": "deprecatedField_lt",
+              "description": null
+            },
+            {
+              "name": "deprecatedField_lte",
+              "description": null
+            },
+            {
+              "name": "deprecatedField_gt",
+              "description": null
+            },
+            {
+              "name": "deprecatedField_gte",
+              "description": null
+            },
+            {
+              "name": "deprecatedField_contains",
+              "description": "Checks if `deprecatedField` contains a specified string, case-sensitively."
+            },
+            {
+              "name": "deprecatedField_not_contains",
+              "description": null
+            },
+            {
+              "name": "deprecatedField_starts_with",
+              "description": "Checks if `deprecatedField` starts with a specified string, case-sensitively.\n\nNever uses an index. Consider using `like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
+            },
+            {
+              "name": "deprecatedField_not_starts_with",
+              "description": null
+            },
+            {
+              "name": "deprecatedField_ends_with",
+              "description": "Checks if `deprecatedField` ends with a specified string, case-sensitively."
+            },
+            {
+              "name": "deprecatedField_not_ends_with",
+              "description": null
+            },
+            {
+              "name": "deprecatedField_like",
+              "description": "Matches `deprecatedField` against a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)\n\nIf an index exists on `deprecatedField`, it can be used for the literal prefix (the part until the first placeholder)."
+            },
+            {
+              "name": "deprecatedField_not_like",
+              "description": "Checks if `deprecatedField` does *not* match a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)"
+            },
+            {
+              "name": "enumWithDeprecation",
+              "description": "Checks if `enumWithDeprecation` equals a specified value.\n\nIf an index exists on `enumWithDeprecation`, it can be used."
+            },
+            {
+              "name": "enumWithDeprecation_not",
+              "description": "Checks if `enumWithDeprecation` does not equal a specified value"
+            },
+            {
+              "name": "enumWithDeprecation_in",
+              "description": null
+            },
+            {
+              "name": "enumWithDeprecation_not_in",
+              "description": null
+            },
+            {
               "name": "AND",
               "description": "A field that checks if all filters in the list apply\n\nIf the list is empty, this filter applies to all objects."
             },
@@ -2687,6 +2771,12 @@
         {
           "name": "LocalTime",
           "description": "The `LocalTime` scalar type represents a time without time zone in a format specified by ISO 8601, such as 10:15:30 or 17:05:03.521.\n\nThe valid range is between 00:00:00 and 23:59:59.999999999. 24:00 is not allowed to avoid bugs in clients that treat 24:00 as 0:00.\n\nThe seconds part is cut off if it is zero, e.g. 12:34:00 is converted to 12:34. Second fraction digits are cut off at the nearest three-digit group, e.g. 00:00:00.1234 is converted to 00:00:00.123400.\n\nLeap seconds can not be specified.",
+          "fields": null,
+          "inputFields": null
+        },
+        {
+          "name": "EnumWithDeprecation",
+          "description": null,
           "fields": null,
           "inputFields": null
         },
@@ -3836,6 +3926,14 @@
             {
               "name": "dynamicData",
               "description": null
+            },
+            {
+              "name": "deprecatedField",
+              "description": null
+            },
+            {
+              "name": "enumWithDeprecation",
+              "description": null
             }
           ]
         },
@@ -4089,6 +4187,14 @@
             {
               "name": "dynamicData",
               "description": null
+            },
+            {
+              "name": "deprecatedField",
+              "description": null
+            },
+            {
+              "name": "enumWithDeprecation",
+              "description": null
             }
           ]
         },
@@ -4260,6 +4366,14 @@
             },
             {
               "name": "dynamicData",
+              "description": null
+            },
+            {
+              "name": "deprecatedField",
+              "description": null
+            },
+            {
+              "name": "enumWithDeprecation",
               "description": null
             }
           ]

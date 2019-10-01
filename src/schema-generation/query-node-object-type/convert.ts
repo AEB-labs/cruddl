@@ -17,6 +17,7 @@ export class QueryNodeObjectTypeConverter {
                 .keyBy(field => field.name)
                 .mapValues((field): GraphQLFieldConfig<any, any> => ({
                     description: field.description,
+                    deprecationReason: field.deprecationReason,
                     args: field.args,
                     resolve: aliasBasedResolver,
                     type: this.convertToGraphQLType(field.type)

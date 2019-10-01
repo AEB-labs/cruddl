@@ -111,6 +111,7 @@ export class OutputTypeGenerator {
             name: field.name,
             type: field.isList ? new QueryNodeNonNullType(new QueryNodeListType(itemType)) : itemType,
             description: field.description,
+            deprecationReason: field.deprecationReason,
 
             // normally, entity extensions are converted to an empty object if null, and normally query field nodes have
             // a check that they return null if the source node is null.

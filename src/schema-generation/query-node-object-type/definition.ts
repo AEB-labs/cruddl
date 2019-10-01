@@ -8,6 +8,7 @@ export interface QueryNodeResolveInfo extends FieldContext {
 export interface QueryNodeField {
     name: string
     description?: string
+    deprecationReason?: string
     type: QueryNodeOutputType
     args?: GraphQLFieldConfigArgumentMap
     resolve: (sourceNode: QueryNode, args: { [name: string]: any }, info: QueryNodeResolveInfo) => QueryNode

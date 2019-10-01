@@ -4,6 +4,7 @@ import { PermissionsConfig } from './permissions';
 export interface FieldConfig {
     readonly name: string
     readonly description?: string
+    readonly deprecationReason?: string
     readonly typeName: string
     readonly typeNameAST?: NameNode
     readonly isList?: boolean

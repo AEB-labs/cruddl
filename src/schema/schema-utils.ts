@@ -170,6 +170,18 @@ export function findDirectiveWithName(typeOrField: TypeDefinitionNode|FieldDefin
     return typeOrField.directives.find(directive => directive.name.value === directiveName);
 }
 
+export function getDeprecationReason(node: FieldDefinitionNode | EnumValueDefinitionNode): string | undefined {
+    const directive = findDirectiveWithName(node, 'deprecated');
+    if (!directive || !directive.arguments) {
+        return undefined;
+    }
+    const arg = directive.arguments.find(a => a.name.value === 'reason');
+    if (!arg || arg.value.kind !== 'StringValue') {
+        return undefined;
+    }
+    return arg.value.value;
+}
+
 export function hasDirectiveWithName(typeOrField: ObjectTypeDefinitionNode|FieldDefinitionNode|InputValueDefinitionNode, directiveName: string): boolean {
     return !!findDirectiveWithName(typeOrField, directiveName);
 }
