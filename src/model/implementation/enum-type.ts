@@ -25,11 +25,13 @@ export class EnumType extends TypeBase {
 export class EnumValue {
     readonly value: string;
     readonly description: string | undefined;
+    readonly deprecationReason: string | undefined;
     readonly astNode: EnumValueDefinitionNode | undefined;
 
     constructor(input: EnumValueConfig, public readonly declaringType: EnumType) {
         this.value = input.value;
         this.description = input.description;
+        this.deprecationReason = input.deprecationReason;
         this.astNode = input.astNode;
     }
 

@@ -4,9 +4,9 @@ import { FlexSearchPrimarySortConfig } from '../database/arangodb/schema-migrati
 import { ENUM, ENUM_TYPE_DEFINITION, LIST, LIST_TYPE, NON_NULL_TYPE, OBJECT, OBJECT_TYPE_DEFINITION, STRING } from '../graphql/kinds';
 import { getValueFromAST } from '../graphql/value-from-ast';
 import { CALC_MUTATIONS_DIRECTIVE, CALC_MUTATIONS_OPERATORS_ARG, CHILD_ENTITY_DIRECTIVE, COLLECT_AGGREGATE_ARG, COLLECT_DIRECTIVE, COLLECT_PATH_ARG, DEFAULT_VALUE_DIRECTIVE, ENTITY_EXTENSION_DIRECTIVE, FLEX_SEARCH_DEFAULT_LANGUAGE_ARG, FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE, FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT, FLEX_SEARCH_INDEXED_ARGUMENT, FLEX_SEARCH_INDEXED_DIRECTIVE, FLEX_SEARCH_INDEXED_LANGUAGE_ARG, FLEX_SEARCH_ORDER_ARGUMENT, ID_FIELD, INDEX_DEFINITION_INPUT_TYPE, INDEX_DIRECTIVE, INDICES_ARG, INVERSE_OF_ARG, KEY_FIELD_ARG, KEY_FIELD_DIRECTIVE, NAMESPACE_DIRECTIVE, NAMESPACE_NAME_ARG, NAMESPACE_SEPARATOR, OBJECT_TYPE_KIND_DIRECTIVES, PERMISSION_PROFILE_ARG, REFERENCE_DIRECTIVE, RELATION_DIRECTIVE, ROLES_DIRECTIVE, ROLES_READ_ARG, ROLES_READ_WRITE_ARG, ROOT_ENTITY_DIRECTIVE, UNIQUE_DIRECTIVE, VALUE_ARG, VALUE_OBJECT_DIRECTIVE } from '../schema/constants';
-import { findDirectiveWithName, getNamedTypeNodeIgnoringNonNullAndList, getNodeByName, getTypeNameIgnoringNonNullAndList, hasDirectiveWithName } from '../schema/schema-utils';
+import { findDirectiveWithName, getDeprecationReason, getNamedTypeNodeIgnoringNonNullAndList, getNodeByName, getTypeNameIgnoringNonNullAndList, hasDirectiveWithName } from '../schema/schema-utils';
 import { compact, flatMap, mapValues } from '../utils/utils';
-import { AggregationOperator, FlexSearchIndexConfig, CalcMutationsOperator, CollectFieldConfig, EnumTypeConfig, EnumValueConfig, FieldConfig, FlexSearchLanguage, IndexDefinitionConfig, LocalizationConfig, NamespacedPermissionProfileConfigMap, ObjectTypeConfig, PermissionProfileConfigMap, PermissionsConfig, RolesSpecifierConfig, TypeConfig, TypeKind } from './config';
+import { AggregationOperator, CalcMutationsOperator, CollectFieldConfig, EnumTypeConfig, EnumValueConfig, FieldConfig, FlexSearchIndexConfig, FlexSearchLanguage, IndexDefinitionConfig, LocalizationConfig, NamespacedPermissionProfileConfigMap, ObjectTypeConfig, PermissionProfileConfigMap, PermissionsConfig, RolesSpecifierConfig, TypeConfig, TypeKind } from './config';
 import { Model } from './implementation';
 import { parseI18nConfigs } from './parse-i18n';
 import { ValidationContext, ValidationMessage } from './validation';
@@ -72,6 +72,7 @@ function createEnumValues(valueNodes: ReadonlyArray<EnumValueDefinitionNode>): R
     return valueNodes.map((valNode): EnumValueConfig => ({
         value: valNode.name.value,
         description: valNode.description && valNode.description.value,
+        deprecationReason: getDeprecationReason(valNode),
         astNode: valNode
     }));
 }
@@ -288,6 +289,7 @@ function createFieldInput(fieldNode: FieldDefinitionNode, context: ValidationCon
     return {
         name: fieldNode.name.value,
         description: fieldNode.description ? fieldNode.description.value : undefined,
+        deprecationReason: getDeprecationReason(fieldNode),
         astNode: fieldNode,
         calcMutationOperators: getCalcMutationOperators(fieldNode, context),
         defaultValueASTNode: findDirectiveWithName(fieldNode, DEFAULT_VALUE_DIRECTIVE),

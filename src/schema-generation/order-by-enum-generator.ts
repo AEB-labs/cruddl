@@ -63,6 +63,13 @@ export class OrderByEnumValue {
         if (this.rootEntityDepth) {
             return `OrderBy values that include relations or references are deprecated`;
         }
+        if (this.path.length === 1) {
+            return this.path[0].deprecationReason;
+        }
+        const deprecations = this.path.filter(f => f.deprecationReason).map(f => `${f.declaringType.name}.${f.name}: ${f.deprecationReason}`);
+        if (deprecations.length) {
+            return deprecations.join(', ');
+        }
         return undefined;
     }
 

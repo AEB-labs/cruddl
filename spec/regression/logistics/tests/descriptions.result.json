@@ -753,6 +753,10 @@
               "description": null
             },
             {
+              "name": "enumWithDeprecation",
+              "description": null
+            },
+            {
               "name": "_cursor",
               "description": "Provides a value that can be supplied to the `after` argument for pagination. Depends on the value of the `orderBy` argument."
             }
@@ -2058,6 +2062,86 @@
               "description": "Checks if `recursion` is not null, and allows to filter based on its fields."
             },
             {
+              "name": "deprecatedField",
+              "description": "Checks if `deprecatedField` equals a specified string, case-sensitively.\n\nIf an index exists on `deprecatedField`, it can be used.\n\nSee also `like` for a case-insensitive filter."
+            },
+            {
+              "name": "deprecatedField_not",
+              "description": "Checks if `deprecatedField` does not equal a specified string, case-sensitively."
+            },
+            {
+              "name": "deprecatedField_in",
+              "description": "Checks if `deprecatedField` is equal to one of the specified values."
+            },
+            {
+              "name": "deprecatedField_not_in",
+              "description": "Checks if `deprecatedField` is not equal to one of the specified values."
+            },
+            {
+              "name": "deprecatedField_lt",
+              "description": "Checks if `deprecatedField` is less than a specified value."
+            },
+            {
+              "name": "deprecatedField_lte",
+              "description": "Checks if `deprecatedField` is less or equal a specified value."
+            },
+            {
+              "name": "deprecatedField_gt",
+              "description": "Checks if `deprecatedField` is greater than a specified value."
+            },
+            {
+              "name": "deprecatedField_gte",
+              "description": "Checks if `deprecatedField` is greater or equal a specified value."
+            },
+            {
+              "name": "deprecatedField_contains",
+              "description": "Checks if `deprecatedField` contains a specified string, case-sensitively."
+            },
+            {
+              "name": "deprecatedField_not_contains",
+              "description": "Checks if `deprecatedField` does not contain a specified string, case-sensitively."
+            },
+            {
+              "name": "deprecatedField_starts_with",
+              "description": "Checks if `deprecatedField` starts with a specified string, case-sensitively.\n\nNever uses an index. Consider using `like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
+            },
+            {
+              "name": "deprecatedField_not_starts_with",
+              "description": "Checks if `deprecatedField` does not start with a specified string, case-sensitively.\n\nNever uses an index. Consider using `not_like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
+            },
+            {
+              "name": "deprecatedField_ends_with",
+              "description": "Checks if `deprecatedField` ends with a specified string, case-sensitively."
+            },
+            {
+              "name": "deprecatedField_not_ends_with",
+              "description": "Checks if `deprecatedField` does not end with a specified string, case-sensitively."
+            },
+            {
+              "name": "deprecatedField_like",
+              "description": "Matches `deprecatedField` against a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)\n\nIf an index exists on `deprecatedField`, it can be used for the literal prefix (the part until the first placeholder)."
+            },
+            {
+              "name": "deprecatedField_not_like",
+              "description": "Checks if `deprecatedField` does *not* match a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)"
+            },
+            {
+              "name": "enumWithDeprecation",
+              "description": "Checks if `enumWithDeprecation` equals a specified value.\n\nIf an index exists on `enumWithDeprecation`, it can be used."
+            },
+            {
+              "name": "enumWithDeprecation_not",
+              "description": "Checks if `enumWithDeprecation` does not equal a specified value"
+            },
+            {
+              "name": "enumWithDeprecation_in",
+              "description": "Checks if `enumWithDeprecation` is equal to one of the specified values."
+            },
+            {
+              "name": "enumWithDeprecation_not_in",
+              "description": "Checks if `enumWithDeprecation` is not equal to one of the specified values."
+            },
+            {
               "name": "AND",
               "description": "A field that checks if all filters in the list apply\n\nIf the list is empty, this filter applies to all objects."
             },
@@ -2920,6 +3004,12 @@
               "description": "A field that checks if any of the filters in the list apply.\n\nIf the list is empty, this filter applies to no objects.\n\nNote that only the items in the list *or*-combined; this complete `OR` field is *and*-combined with outer fields in the parent filter type."
             }
           ]
+        },
+        {
+          "name": "EnumWithDeprecation",
+          "description": null,
+          "fields": null,
+          "inputFields": null
         },
         {
           "name": "DeliveryItemOrderBy",
@@ -4657,6 +4747,14 @@
             {
               "name": "recursion",
               "description": null
+            },
+            {
+              "name": "deprecatedField",
+              "description": null
+            },
+            {
+              "name": "enumWithDeprecation",
+              "description": null
             }
           ]
         },
@@ -4941,6 +5039,14 @@
             {
               "name": "recursion",
               "description": null
+            },
+            {
+              "name": "deprecatedField",
+              "description": null
+            },
+            {
+              "name": "enumWithDeprecation",
+              "description": null
             }
           ]
         },
@@ -5128,6 +5234,14 @@
             },
             {
               "name": "recursion",
+              "description": null
+            },
+            {
+              "name": "deprecatedField",
+              "description": null
+            },
+            {
+              "name": "enumWithDeprecation",
               "description": null
             }
           ]

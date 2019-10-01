@@ -25,6 +25,7 @@ export class Field implements ModelComponent {
     readonly model: Model;
     readonly name: string;
     description: string | undefined;
+    readonly deprecationReason: string | undefined;
     readonly astNode: FieldDefinitionNode | undefined;
     readonly isList: boolean;
     readonly isReference: boolean;
@@ -47,6 +48,7 @@ export class Field implements ModelComponent {
         this.model = declaringType.model;
         this.name = input.name;
         this.description = input.description;
+        this.deprecationReason = input.deprecationReason;
         this.astNode = input.astNode;
         this.defaultValue = input.defaultValue;
         this.isReference = input.isReference || false;

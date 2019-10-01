@@ -40,6 +40,14 @@ type Delivery @rootEntity(flexSearch: true, flexSearchLanguage: DE) @roles(readW
     enumFlexSearch: Foobarit @flexSearch
     aNumber: Int @flexSearch
     recursion: Recursion @flexSearch
+
+    deprecatedField: String @deprecated(reason: "do not use")
+    enumWithDeprecation: EnumWithDeprecation
+}
+
+enum EnumWithDeprecation {
+    A,
+    B @deprecated(reason: "do not use B")
 }
 
 type DeliveryItem @childEntity {
