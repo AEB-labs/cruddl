@@ -168,4 +168,11 @@ describe('OrderByEnumGenerator', () => {
             'dangerousGoodsInfo_isDangerousGoods_DESC'
         ]);
     });
+
+    it('marks all root entity traversal fields as deprecated', () => {
+        const generator = new OrderByEnumGenerator();
+        const enumType = generator.generate(deliveryType);
+        expect(enumType.getValueOrThrow('dangerousGoodsInfo_isDangerousGoods_ASC').deprecationReason).to.be.undefined;
+        expect(enumType.getValueOrThrow('shipment_updatedAt_ASC').deprecationReason).to.equal('OrderBy values that include relations or references are deprecated');
+    });
 });
