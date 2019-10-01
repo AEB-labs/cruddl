@@ -1,4 +1,4 @@
-import { FragmentDefinitionNode, OperationDefinitionNode } from 'graphql';
+import { FragmentDefinitionNode, GraphQLSchema, OperationDefinitionNode } from 'graphql';
 import { DatabaseAdapterTimings, ExecutionPlan, TransactionStats } from '../database/database-adapter';
 import { ExecutionOptions, ExecutionOptionsCallbackArgs } from '../execution/execution-options';
 import { LoggerProvider } from './logging';
@@ -8,6 +8,7 @@ export interface RequestContext {
     readonly variableValues: { readonly [name: string]: unknown }
     readonly fragments: { readonly [fragmentName: string]: FragmentDefinitionNode }
     readonly context: unknown;
+    readonly schema: GraphQLSchema;
 }
 
 export interface RequestProfile extends RequestContext {
