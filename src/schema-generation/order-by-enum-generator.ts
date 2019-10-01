@@ -1,4 +1,4 @@
-import { GraphQLEnumType } from 'graphql';
+import { GraphQLEnumType, GraphQLEnumValueConfig } from 'graphql';
 import { chain } from 'lodash';
 import memorize from 'memorize-decorator';
 import { Field, ObjectType } from '../model';
@@ -40,14 +40,14 @@ export class OrderByEnumType {
             name: this.name,
             values: chain(this.values)
                 .keyBy(value => value.name)
-                .mapValues(value => ({ value: value.name }))
+                .mapValues((value): GraphQLEnumValueConfig => ({ value: value.name, deprecationReason: value.deprecationReason }))
                 .value()
         });
     }
 }
 
 export class OrderByEnumValue {
-    constructor(public readonly path: ReadonlyArray<Field>, public readonly direction: OrderDirection) {
+    constructor(public readonly path: ReadonlyArray<Field>, public readonly direction: OrderDirection, readonly rootEntityDepth?: number) {
 
     }
 
@@ -57,6 +57,13 @@ export class OrderByEnumValue {
 
     get name() {
         return this.underscoreSeparatedPath + (this.direction == OrderDirection.ASCENDING ? ORDER_BY_ASC_SUFFIX : ORDER_BY_DESC_SUFFIX);
+    }
+
+    get deprecationReason(): string | undefined {
+        if (this.rootEntityDepth) {
+            return `OrderBy values that include relations or references are deprecated`;
+        }
+        return undefined;
     }
 
     getValueNode(itemNode: QueryNode): QueryNode {
@@ -72,20 +79,25 @@ export interface OrderByEnumGeneratorConfig {
     readonly maxRootEntityDepth?: number;
 }
 
+interface RecursionOptions {
+    readonly path?: ReadonlyArray<Field>
+    readonly rootEntityDepth?: number
+}
+
 export class OrderByEnumGenerator {
     constructor(private readonly config: OrderByEnumGeneratorConfig = {}) {
     }
 
     @memorize()
     generate(objectType: ObjectType) {
-        return new OrderByEnumType(objectType, this.getValues(objectType, [], this.config.maxRootEntityDepth));
+        return new OrderByEnumType(objectType, this.getValues(objectType));
     }
 
-    private getValues(type: ObjectType, path: ReadonlyArray<Field>, maxRootEntityDepth: number | undefined): ReadonlyArray<OrderByEnumValue> {
-        return flatMap(type.fields, field => this.getValuesForField(field, path, maxRootEntityDepth));
+    private getValues(type: ObjectType, options?: RecursionOptions): ReadonlyArray<OrderByEnumValue> {
+        return flatMap(type.fields, field => this.getValuesForField(field, options));
     }
 
-    private getValuesForField(field: Field, path: ReadonlyArray<Field>, maxRootEntityDepth: number | undefined) {
+    private getValuesForField(field: Field, { path = [], rootEntityDepth = 0 }: RecursionOptions = {}) {
         // Don't recurse
         if (path.includes(field)) {
             return [];
@@ -98,21 +110,18 @@ export class OrderByEnumGenerator {
 
         const newPath = [...path, field];
         if (field.type.isObjectType) {
-            let newDepth = maxRootEntityDepth;
-            if (field.type.isRootEntityType && maxRootEntityDepth != undefined) {
-                newDepth = maxRootEntityDepth - 1;
-                if (newDepth < 0) {
-                    return [];
-                }
+            const newRootEntityDepth = field.type.isRootEntityType ? rootEntityDepth + 1 : rootEntityDepth;
+            if (this.config.maxRootEntityDepth != undefined && newRootEntityDepth > this.config.maxRootEntityDepth) {
+                return [];
             }
-            return this.getValues(field.type, newPath, newDepth);
-        } else {
-            // currently, all scalars and enums are ordered types
-            return [
-                new OrderByEnumValue(newPath, OrderDirection.ASCENDING),
-                new OrderByEnumValue(newPath, OrderDirection.DESCENDING)
-            ];
+            return this.getValues(field.type, { path: newPath, rootEntityDepth: newRootEntityDepth });
         }
+
+        // currently, all scalars and enums are ordered types
+        return [
+            new OrderByEnumValue(newPath, OrderDirection.ASCENDING, rootEntityDepth),
+            new OrderByEnumValue(newPath, OrderDirection.DESCENDING, rootEntityDepth)
+        ];
     }
 
 }
