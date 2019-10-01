@@ -140,7 +140,8 @@ export class OperationResolver {
                 context: operationInfo.context,
                 operation: operationInfo.operation,
                 variableValues: operationInfo.variableValues,
-                fragments: operationInfo.fragments
+                fragments: operationInfo.fragments,
+                schema: operationInfo.schema
             };
         }
         return {
