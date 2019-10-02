@@ -1,4 +1,5 @@
 import { DocumentNode, FieldNode, FragmentDefinitionNode, getNamedType, GraphQLCompositeType, GraphQLField, GraphQLObjectType, GraphQLOutputType, GraphQLSchema, isCompositeType, OperationDefinitionNode, OperationTypeNode, SelectionNode } from 'graphql';
+import { isEqual } from 'lodash';
 import { blue, cyan, green } from '../utils/colors';
 import { arrayToObject, flatMap, groupArray, indent, INDENTATION } from '../utils/utils';
 import { getArgumentValues } from './argument-values';
@@ -40,6 +41,21 @@ export class FieldRequest {
         return this.field.name;
     }
 
+    equals(other: FieldRequest) {
+        if (this.field !== other.field || this.parentType !== other.parentType || this.schema !== other.schema
+            || this.selectionSet.length !== other.selectionSet.length || !isEqual(this.args, other.args)) {
+            return false;
+        }
+
+        for (let i = 0; i < this.selectionSet.length; i++) {
+            if (!other.selectionSet[i].equals(this.selectionSet[i])) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public describe(): string {
         const selectionItemsDesc = this.selectionSet
             .map(selection => `${green(JSON.stringify(selection.propertyName))}: ${selection.fieldRequest.describe()}`)
@@ -63,6 +79,10 @@ export class FieldSelection {
     constructor(public readonly propertyName: string,
                 public readonly fieldRequest: FieldRequest) {
 
+    }
+
+    equals(other: FieldSelection) {
+        return this.propertyName === other.propertyName && this.fieldRequest.equals(other.fieldRequest);
     }
 }
 

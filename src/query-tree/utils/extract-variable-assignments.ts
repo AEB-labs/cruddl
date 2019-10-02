@@ -1,7 +1,4 @@
-import {
-    BinaryOperationQueryNode, ConditionalQueryNode, FieldQueryNode, FirstOfListQueryNode, ObjectQueryNode, OrderClause, OrderSpecification,
-    PropertySpecification, QueryNode, RootEntityIDQueryNode, UnaryOperationQueryNode, VariableAssignmentQueryNode
-} from '..';
+import { BinaryOperationQueryNode, ConditionalQueryNode, FieldQueryNode, FirstOfListQueryNode, ObjectQueryNode, OrderClause, OrderSpecification, PropertySpecification, QueryNode, RootEntityIDQueryNode, UnaryOperationQueryNode, VariableAssignmentQueryNode } from '..';
 
 /**
  * Traverses recursively through Unary/Binary operations, extracts all variable definitions and replaces them by their
@@ -27,7 +24,17 @@ export function extractVariableAssignments(node: QueryNode, variableAssignmentsL
         );
     }
     if (node instanceof VariableAssignmentQueryNode) {
-        variableAssignmentsList.push(node);
+        // traverse into the variable value node
+        const newVariableValueNode = extractVariableAssignments(node.variableValueNode, variableAssignmentsList);
+        if (newVariableValueNode === node.variableValueNode) {
+            variableAssignmentsList.push(node);
+        } else {
+            variableAssignmentsList.push(new VariableAssignmentQueryNode({
+                variableNode: node.variableNode,
+                resultNode: node.resultNode,
+                variableValueNode: newVariableValueNode
+            }));
+        }
         return extractVariableAssignments(node.resultNode, variableAssignmentsList);
     }
     if (node instanceof FirstOfListQueryNode) {

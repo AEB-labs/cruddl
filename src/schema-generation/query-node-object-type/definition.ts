@@ -39,6 +39,13 @@ export interface QueryNodeField {
      * NULL is passed to the field resolvers within.
      */
     skipNullCheck?: boolean
+
+    /**
+     * If set to `true`, multiple identical invocations of this field can be optimized to require only one computation.
+     *
+     * Pure fields are assumed to be pure all the way down - the purity of nested fields is not checked.
+     */
+    isPure?: boolean
 }
 
 export interface QueryNodeObjectType {

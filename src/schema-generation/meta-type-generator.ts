@@ -19,6 +19,7 @@ export class MetaTypeGenerator {
             name: COUNT_META_FIELD,
             type: GraphQLInt,
             description: 'The number of items in the collection or list, after applying the filter if specified.',
+            isPure: true,
             resolve: listNode => new CountQueryNode(listNode)
         };
     }

@@ -89,6 +89,7 @@ export class OutputTypeGenerator {
         return {
             name: CURSOR_FIELD,
             type: GraphQLString,
+            isPure: true,
             description: `Provides a value that can be supplied to the \`after\` argument for pagination. Depends on the value of the \`orderBy\` argument.`,
             resolve: (source, args, info) => this.getCursorNode(source, info.selectionStack[info.selectionStack.length - 2].fieldRequest, orderByType)
         };
@@ -121,6 +122,7 @@ export class OutputTypeGenerator {
             // if we skip both, entity extensions will be passed as null, but they will only ever be used to look up
             // fields in them, and a FieldQueryNode returns null if the source is null.
             skipNullCheck: field.type.isEntityExtensionType,
+            isPure: true,
             resolve: (sourceNode) => createFieldNode(field, sourceNode, { skipNullFallbackForEntityExtensions: true })
         };
 
@@ -145,6 +147,7 @@ export class OutputTypeGenerator {
             type: new QueryNodeNonNullType(metaType),
             skipNullCheck: true, // meta fields should never be null
             description: field.description,
+            isPure: true,
             resolve: (sourceNode) => createFieldNode(field, sourceNode)
         };
         return this.filterAugmentation.augment(plainField, field.type);
