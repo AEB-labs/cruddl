@@ -38,6 +38,13 @@ query nullArg {
     }
 }
 
+# empty string counts as specified
+query emptyArg {
+    Delivery(id: "") {
+        deliveryNumber
+    }
+}
+
 query twoNullArgs {
     Delivery(id: null, deliveryNumber: null) {
         deliveryNumber

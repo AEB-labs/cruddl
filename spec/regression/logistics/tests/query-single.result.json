@@ -75,13 +75,18 @@
       "Delivery": null
     }
   },
+  "emptyArg": {
+    "data": {
+      "Delivery": null
+    }
+  },
   "twoNullArgs": {
     "errors": [
       {
         "message": "Must specify exactly one non-null argument to field \"Delivery\"",
         "locations": [
           {
-            "line": 42,
+            "line": 49,
             "column": 5
           }
         ],
