@@ -11,7 +11,7 @@ import { createGraphQLError } from '../graphql-errors';
 import { FieldContext } from '../query-node-object-type';
 
 export function getEntitiesByUniqueFieldQuery(rootEntityType: RootEntityType, args: {[name:string]: any}, context: FieldContext) {
-    const nonNullArgs = objectEntries(args).filter(([key, value]) => value);
+    const nonNullArgs = objectEntries(args).filter(([key, value]) => value != undefined);
     if (nonNullArgs.length !== 1) {
         throw createGraphQLError(`Must specify exactly one non-null argument to field "${rootEntityType.name}"`, context);
     }
