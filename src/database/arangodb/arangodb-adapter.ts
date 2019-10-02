@@ -542,7 +542,10 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                     write: aqlQuery.writeAccessedCollections
                 },
                 this.arangoExecutionFunction,
-                args
+                args,
+                {
+                    waitForSync: true
+                }
             );
         } catch (e) {
             isTransactionFinished = true;
