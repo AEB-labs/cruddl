@@ -1,6 +1,7 @@
 import { FieldRequest, FieldSelection } from '../../graphql/query-distiller';
 import { BasicType, ConditionalQueryNode, FieldQueryNode, NullQueryNode, ObjectQueryNode, PreExecQueryParms, PropertySpecification, QueryNode, TransformListQueryNode, TypeCheckQueryNode, VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../../query-tree';
-import { decapitalize } from '../../utils/utils';
+import { groupByEquivalence } from '../../utils/group-by-equivalence';
+import { decapitalize, flatMap } from '../../utils/utils';
 import { FieldContext } from './context';
 import { QueryNodeField, QueryNodeObjectType } from './definition';
 import { extractQueryTreeObjectType, isListTypeIgnoringNonNull, resolveThunk } from './utils';
@@ -48,19 +49,43 @@ function getFieldMap(type: QueryNodeObjectType) {
     return fieldMap;
 }
 
-function buildObjectQueryNode(sourceNode: QueryNode, type: QueryNodeObjectType, selectionSet: ReadonlyArray<FieldSelection>, context: FieldContext) {
+function buildObjectQueryNode(sourceNode: QueryNode, type: QueryNodeObjectType, selections: ReadonlyArray<FieldSelection>, context: FieldContext) {
+    // de-duplicate pure fields if they are completely identical
     const fieldMap = getFieldMap(type);
-    return new ObjectQueryNode(selectionSet.map(sel => {
-        const field = fieldMap.get(sel.fieldRequest.fieldName);
+    const distinctFieldRequests = groupByEquivalence(selections, (a, b) => {
+        const field = fieldMap.get(a.fieldRequest.fieldName);
+        if (!field || !field.isPure) {
+            return false;
+        }
+        return a.fieldRequest.equals(b.fieldRequest);
+    });
+    const variableAssignments: [VariableQueryNode, QueryNode][] = [];
+    let resultNode: QueryNode = new ObjectQueryNode(flatMap(distinctFieldRequests, selections => {
+        const fieldRequest = selections[0].fieldRequest;
+        const field = fieldMap.get(fieldRequest.fieldName);
         if (!field) {
-            throw new Error(`Missing field ${sel.fieldRequest.fieldName}`);
+            throw new Error(`Missing field ${fieldRequest.fieldName}`);
         }
         const newContext: FieldContext = {
-            selectionStack: [...context.selectionStack, sel]
+            selectionStack: [...context.selectionStack, selections[0]]
         };
-        const fieldQueryNode = buildFieldQueryNode(sourceNode, field, sel.fieldRequest, newContext);
-        return new PropertySpecification(sel.propertyName, fieldQueryNode);
+        const fieldQueryNode = buildFieldQueryNode(sourceNode, field, fieldRequest, newContext);
+        if (selections.length === 1) {
+            return [new PropertySpecification(selections[0].propertyName, fieldQueryNode)];
+        } else {
+            const variableNode = new VariableQueryNode(field.name);
+            variableAssignments.push([variableNode, fieldQueryNode]);
+            return selections.map(s => new PropertySpecification(s.propertyName, variableNode));
+        }
     }));
+    for (const [variableNode, variableValueNode] of variableAssignments) {
+        resultNode = new VariableAssignmentQueryNode({
+            variableNode,
+            variableValueNode,
+            resultNode
+        });
+    }
+    return resultNode;
 }
 
 function buildFieldQueryNode0(sourceNode: QueryNode, field: QueryNodeField, fieldRequest: FieldRequest, context: FieldContext): QueryNode {

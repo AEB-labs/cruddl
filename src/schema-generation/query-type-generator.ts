@@ -46,6 +46,7 @@ export class QueryTypeGenerator {
             name: namespace.name || '',
             type: new QueryNodeNonNullType(this.generate(namespace)),
             description: `The Query type for the namespace "${namespace.dotSeparatedPath}"`,
+            isPure: true,
             resolve: () => new ObjectQueryNode([])
         };
     }
@@ -74,6 +75,7 @@ export class QueryTypeGenerator {
             type: this.outputTypeGenerator.generate(rootEntityType),
             args: getArgumentsForUniqueFields(rootEntityType),
             description,
+            isPure: true,
             resolve: (_, args, info) => this.getSingleRootEntityNode(rootEntityType, args, info)
         };
     }
@@ -87,6 +89,7 @@ export class QueryTypeGenerator {
             name: getAllEntitiesFieldName(rootEntityType.name),
             type: new QueryNodeListType(new QueryNodeNonNullType(this.outputTypeGenerator.generate(rootEntityType))),
             description: rootEntityType.description,
+            isPure: true,
             resolve: () => this.getAllRootEntitiesNode(rootEntityType)
         });
         return this.listAugmentation.augment(fieldConfig, rootEntityType);
@@ -106,6 +109,7 @@ export class QueryTypeGenerator {
             // an unnecessary variable with the collection contents (which is slow) and we would to an equality check of
             // a collection against NULL which is deadly (v8 evaluation)
             skipNullCheck: true,
+            isPure: true,
             resolve: () => this.getAllRootEntitiesNode(rootEntityType)
         });
         return this.metaFirstAugmentation.augment(this.filterAugmentation.augment(fieldConfig, rootEntityType));
