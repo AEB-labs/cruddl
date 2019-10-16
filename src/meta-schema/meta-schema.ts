@@ -346,7 +346,7 @@ export function getMetaSchema(model: Model): GraphQLSchema {
         },
         RootEntityType: {
             localization: localizeType,
-            flexSearchPrimarySort: flexSearchPrimarySort
+            flexSearchPrimarySort: getFlexSearchPrimarySort
         },
         ChildEntityType: {
             localization: localizeType
@@ -392,14 +392,14 @@ export function getMetaSchema(model: Model): GraphQLSchema {
         return model.i18n.getEnumValueLocalization(enumValue as EnumValue, getResolutionOrder(resolutionOrder, context));
     }
 
-    function flexSearchPrimarySort(type: {}):{field: Field, order: 'ASC' | 'DESC'}[]{
+    function getFlexSearchPrimarySort(type: {}):{field: Field, order: 'ASC' | 'DESC'}[]{
         const rootEntityType = type as RootEntityType;
         return rootEntityType.flexSearchIndexConfig.primarySort.map(value => {
             return {
                 field: rootEntityType.getField(value.field)!,
                 order: value.asc ? 'ASC' : 'DESC'
-            }
-        })
+            };
+        });
     }
 
     return makeExecutableSchema({
