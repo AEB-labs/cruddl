@@ -7,7 +7,9 @@ import { CALC_MUTATIONS_DIRECTIVE, CALC_MUTATIONS_OPERATORS_ARG, CHILD_ENTITY_DI
 import { findDirectiveWithName, getDeprecationReason, getNamedTypeNodeIgnoringNonNullAndList, getNodeByName, getTypeNameIgnoringNonNullAndList, hasDirectiveWithName } from '../schema/schema-utils';
 import { compact, flatMap, mapValues } from '../utils/utils';
 import { AggregationOperator, CalcMutationsOperator, CollectFieldConfig, EnumTypeConfig, EnumValueConfig, FieldConfig, FlexSearchIndexConfig, FlexSearchLanguage, IndexDefinitionConfig, LocalizationConfig, NamespacedPermissionProfileConfigMap, ObjectTypeConfig, PermissionProfileConfigMap, PermissionsConfig, RolesSpecifierConfig, TypeConfig, TypeKind } from './config';
+import { BillingConfig } from './config/billing';
 import { Model } from './implementation';
+import { parseBillingConfigs } from './parse-billing';
 import { parseI18nConfigs } from './parse-i18n';
 import { ValidationContext, ValidationMessage } from './validation';
 
@@ -17,7 +19,8 @@ export function createModel(parsedProject: ParsedProject): Model {
         types: createTypeInputs(parsedProject, validationContext),
         permissionProfiles: extractPermissionProfiles(parsedProject),
         i18n: extractI18n(parsedProject),
-        validationMessages: validationContext.validationMessages
+        validationMessages: validationContext.validationMessages,
+        billing: extractBilling(parsedProject)
     });
 }
 
@@ -610,6 +613,18 @@ function extractI18n(parsedProject: ParsedProject): ReadonlyArray<LocalizationCo
     const objectSchemaParts = parsedProject.sources
         .filter(parsedSource => parsedSource.kind === ParsedProjectSourceBaseKind.OBJECT) as ReadonlyArray<ParsedObjectProjectSource>;
     return flatMap(objectSchemaParts, source => parseI18nConfigs(source));
+}
+
+function extractBilling(parsedProject: ParsedProject): BillingConfig {
+    const objectSchemaParts = parsedProject.sources
+        .filter(parsedSource => parsedSource.kind === ParsedProjectSourceBaseKind.OBJECT) as ReadonlyArray<ParsedObjectProjectSource>;
+    return objectSchemaParts.map(source => parseBillingConfigs(source)).reduce((previousValue, currentValue) => {
+        return {
+            ...previousValue,
+            billingEntities: [...currentValue.billingEntities, ...previousValue.billingEntities]
+            // @MSF TODO: What happens with multiple definitions
+        };
+    });
 }
 
 // fake input type for index mapping

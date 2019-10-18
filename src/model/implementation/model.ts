@@ -10,6 +10,7 @@ import { ChildEntityType } from './child-entity-type';
 import { EntityExtensionType } from './entity-extension-type';
 import { EnumType } from './enum-type';
 import { ModelI18n } from './i18n';
+import { BillingEntityType } from './billing';
 import { Namespace } from './namespace';
 import { PermissionProfile } from './permission-profile';
 import { Relation } from './relation';
@@ -27,6 +28,7 @@ export class Model implements ModelComponent {
     readonly types: ReadonlyArray<Type>;
     readonly i18n: ModelI18n;
     readonly permissionProfiles: ReadonlyArray<PermissionProfile>;
+    readonly billingEntityTypes: ReadonlyArray<BillingEntityType>;
 
     constructor(private input: ModelConfig) {
         this.builtInTypes = createBuiltInTypes(this);
@@ -44,12 +46,15 @@ export class Model implements ModelComponent {
         this.namespaces = [this.rootNamespace, ...this.rootNamespace.descendantNamespaces];
         this.typeMap = new Map(this.types.map((type): [string, Type] => ([type.name, type])));
         this.i18n = new ModelI18n(input.i18n || [], this);
+        this.billingEntityTypes = input.billing ? input.billing.billingEntities.map(value => new BillingEntityType(value, this)) : [];
     }
 
     validate(context = new ValidationContext()): ValidationResult {
         this.validateDuplicateTypes(context);
 
         this.i18n.validate(context);
+
+        this.billingEntityTypes.forEach(value => value.validate(context));
 
         for (const type of this.types) {
             type.validate(context);

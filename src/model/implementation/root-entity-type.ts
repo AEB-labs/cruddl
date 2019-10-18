@@ -151,6 +151,10 @@ export class RootEntityType extends ObjectTypeBase {
     validate(context: ValidationContext) {
         super.validate(context);
 
+        if (this.name.toLowerCase() === "billing") {
+            context.addMessage(ValidationMessage.error(`RootEntities cannot be named "billing".`, this.astNode));
+        }
+
         this.validateKeyField(context);
         this.validatePermissions(context);
         this.validateIndices(context);

@@ -986,7 +986,7 @@ var validate = (function() {
       var errs__0 = errors;
       var valid1 = true;
       for (var key0 in data) {
-        var isAdditional0 = !(false || key0 == 'permissionProfiles' || key0 == 'i18n');
+        var isAdditional0 = !(false || key0 == 'permissionProfiles' || key0 == 'i18n' || key0 == 'billing');
         if (isAdditional0) {
           valid1 = false;
           var err = {
@@ -1105,6 +1105,140 @@ var validate = (function() {
         }
         var valid1 = errors === errs_1;
       }
+      var data1 = data.billing;
+      if (data1 !== undefined) {
+        var errs_1 = errors;
+        if ((data1 && typeof data1 === "object" && !Array.isArray(data1))) {
+          var errs__1 = errors;
+          var valid2 = true;
+          var data2 = data1.billingEntities;
+          if (data2 !== undefined) {
+            var errs_2 = errors;
+            if (Array.isArray(data2)) {
+              var errs__2 = errors;
+              var valid2;
+              for (var i2 = 0; i2 < data2.length; i2++) {
+                var data3 = data2[i2];
+                var errs_3 = errors;
+                if ((data3 && typeof data3 === "object" && !Array.isArray(data3))) {
+                  var errs__3 = errors;
+                  var valid4 = true;
+                  var data4 = data3.typeName;
+                  if (data4 !== undefined) {
+                    var errs_4 = errors;
+                    if (typeof data4 === "string") {
+                      if (!pattern2.test(data4)) {
+                        var err = {
+                          keyword: 'pattern',
+                          dataPath: (dataPath || '') + '.billing.billingEntities[' + i2 + '].typeName',
+                          schemaPath: '#/properties/billing/properties/billingEntities/items/properties/typeName/pattern',
+                          params: {
+                            pattern: '^[a-zA-Z0-9_-]+$'
+                          },
+                          message: 'should match pattern "^[a-zA-Z0-9_-]+$"'
+                        };
+                        if (vErrors === null) vErrors = [err];
+                        else vErrors.push(err);
+                        errors++;
+                      }
+                    } else {
+                      var err = {
+                        keyword: 'type',
+                        dataPath: (dataPath || '') + '.billing.billingEntities[' + i2 + '].typeName',
+                        schemaPath: '#/properties/billing/properties/billingEntities/items/properties/typeName/type',
+                        params: {
+                          type: 'string'
+                        },
+                        message: 'should be string'
+                      };
+                      if (vErrors === null) vErrors = [err];
+                      else vErrors.push(err);
+                      errors++;
+                    }
+                    var valid4 = errors === errs_4;
+                  }
+                  var data4 = data3.keyFieldName;
+                  if (data4 !== undefined) {
+                    var errs_4 = errors;
+                    if (typeof data4 === "string") {
+                      if (!pattern2.test(data4)) {
+                        var err = {
+                          keyword: 'pattern',
+                          dataPath: (dataPath || '') + '.billing.billingEntities[' + i2 + '].keyFieldName',
+                          schemaPath: '#/properties/billing/properties/billingEntities/items/properties/keyFieldName/pattern',
+                          params: {
+                            pattern: '^[a-zA-Z0-9_-]+$'
+                          },
+                          message: 'should match pattern "^[a-zA-Z0-9_-]+$"'
+                        };
+                        if (vErrors === null) vErrors = [err];
+                        else vErrors.push(err);
+                        errors++;
+                      }
+                    } else {
+                      var err = {
+                        keyword: 'type',
+                        dataPath: (dataPath || '') + '.billing.billingEntities[' + i2 + '].keyFieldName',
+                        schemaPath: '#/properties/billing/properties/billingEntities/items/properties/keyFieldName/type',
+                        params: {
+                          type: 'string'
+                        },
+                        message: 'should be string'
+                      };
+                      if (vErrors === null) vErrors = [err];
+                      else vErrors.push(err);
+                      errors++;
+                    }
+                    var valid4 = errors === errs_4;
+                  }
+                } else {
+                  var err = {
+                    keyword: 'type',
+                    dataPath: (dataPath || '') + '.billing.billingEntities[' + i2 + ']',
+                    schemaPath: '#/properties/billing/properties/billingEntities/items/type',
+                    params: {
+                      type: 'object'
+                    },
+                    message: 'should be object'
+                  };
+                  if (vErrors === null) vErrors = [err];
+                  else vErrors.push(err);
+                  errors++;
+                }
+                var valid3 = errors === errs_3;
+              }
+            } else {
+              var err = {
+                keyword: 'type',
+                dataPath: (dataPath || '') + '.billing.billingEntities',
+                schemaPath: '#/properties/billing/properties/billingEntities/type',
+                params: {
+                  type: 'array'
+                },
+                message: 'should be array'
+              };
+              if (vErrors === null) vErrors = [err];
+              else vErrors.push(err);
+              errors++;
+            }
+            var valid2 = errors === errs_2;
+          }
+        } else {
+          var err = {
+            keyword: 'type',
+            dataPath: (dataPath || '') + '.billing',
+            schemaPath: '#/properties/billing/type',
+            params: {
+              type: 'object'
+            },
+            message: 'should be object'
+          };
+          if (vErrors === null) vErrors = [err];
+          else vErrors.push(err);
+          errors++;
+        }
+        var valid1 = errors === errs_1;
+      }
     } else {
       var err = {
         keyword: 'type',
@@ -1145,6 +1279,27 @@ validate.schema = {
       "patternProperties": {
         "^[a-zA-Z0-9_-]+$": {
           "$ref": "#/definitions/NamespaceLocalization"
+        }
+      }
+    },
+    "billing": {
+      "type": "object",
+      "properties": {
+        "billingEntities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "typeName": {
+                "type": "string",
+                "pattern": "^[a-zA-Z0-9_-]+$"
+              },
+              "keyFieldName": {
+                "type": "string",
+                "pattern": "^[a-zA-Z0-9_-]+$"
+              }
+            }
+          }
         }
       }
     }

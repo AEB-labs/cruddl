@@ -2,12 +2,12 @@ import { Database } from 'arangojs';
 import { ProjectOptions } from '../../../config/interfaces';
 import { Logger } from '../../../config/logging';
 import { Model, RootEntityType } from '../../../model/implementation';
-import { getCollectionNameForRelation, getCollectionNameForRootEntity } from '../arango-basics';
+import { getCollectionNameForBillingEntityType, getCollectionNameForRelation, getCollectionNameForRootEntity } from '../arango-basics';
 import { ArangoDBConfig, getArangoDBLogger, initDatabase } from '../config';
 import { ArangoDBVersionHelper } from '../version-helper';
 import { calculateRequiredIndexOperations, getRequiredIndicesFromModel, IndexDefinition, isArangoSearchSupported } from './index-helpers';
 import {
-    CreateArangoSearchViewMigration,
+    CreateArangoSearchViewMigration, CreateBillingCollectionMigration,
     CreateDocumentCollectionMigration,
     CreateEdgeCollectionMigration,
     CreateIndexMigration, DropArangoSearchViewMigration,
@@ -37,7 +37,8 @@ export class SchemaAnalyzer {
             ...await this.getDocumentCollectionMigrations(model),
             ...await this.getEdgeCollectionMigrations(model),
             ...await this.getIndexMigrations(model),
-            ...await this.getArangoSearchMigrations(model)
+            ...await this.getArangoSearchMigrations(model),
+            ...await this.getBillingCollectionMigrations(model),
         ];
     }
 
@@ -54,6 +55,24 @@ export class SchemaAnalyzer {
                 continue;
             }
             migrations.push(new CreateDocumentCollectionMigration(rootEntity, collectionName));
+        }
+
+        return migrations;
+    }
+
+    async getBillingCollectionMigrations(model: Model): Promise<ReadonlyArray<CreateBillingCollectionMigration>>{
+        // Get existing collections in ArangoDB
+        const existingCollections = (await this.db.collections()).filter(coll => (coll as any).type === 2 /* document */);
+
+        const existingCollectionNames = new Set(existingCollections.map(coll => (<any>coll).name)); // typing for name missing
+
+        const migrations: CreateBillingCollectionMigration[] = [];
+        for(const billingEntityType of model.billingEntityTypes){
+            const collectionName = getCollectionNameForBillingEntityType(billingEntityType);
+            if (existingCollectionNames.has(collectionName)) {
+                continue;
+            }
+            migrations.push(new CreateBillingCollectionMigration(billingEntityType, collectionName));
         }
 
         return migrations;

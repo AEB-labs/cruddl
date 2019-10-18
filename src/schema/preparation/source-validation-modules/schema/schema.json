@@ -22,6 +22,27 @@
           "$ref": "#/definitions/NamespaceLocalization"
         }
       }
+    },
+    "billing": {
+      "type": "object",
+      "properties": {
+        "billingEntities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "typeName": {
+                "type": "string",
+                "pattern": "^[a-zA-Z0-9_-]+$"
+              },
+              "keyFieldName": {
+                "type": "string",
+                "pattern": "^[a-zA-Z0-9_-]+$"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
