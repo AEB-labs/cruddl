@@ -209,7 +209,7 @@ const typeDefs = gql`
     }
     
     type OrderClause{
-        field: Field
+        field: String
         order: OrderDirection
     }
 
@@ -392,11 +392,11 @@ export function getMetaSchema(model: Model): GraphQLSchema {
         return model.i18n.getEnumValueLocalization(enumValue as EnumValue, getResolutionOrder(resolutionOrder, context));
     }
 
-    function getFlexSearchPrimarySort(type: {}):{field: Field, order: 'ASC' | 'DESC'}[]{
+    function getFlexSearchPrimarySort(type: {}):{field: string, order: 'ASC' | 'DESC'}[]{
         const rootEntityType = type as RootEntityType;
         return rootEntityType.flexSearchIndexConfig.primarySort.map(value => {
             return {
-                field: rootEntityType.getField(value.field)!,
+                field: value.field,
                 order: value.asc ? 'ASC' : 'DESC'
             };
         });
