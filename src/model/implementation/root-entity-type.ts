@@ -69,6 +69,10 @@ export class RootEntityType extends ObjectTypeBase {
         };
     }
 
+    get isFlexSearchIndexed(): boolean{
+        return this.flexSearchIndexConfig.isIndexed
+    }
+
     get hasFieldsIncludedInSearch() {
         return this.fields.some(value => value.isIncludedInSearch);
     }

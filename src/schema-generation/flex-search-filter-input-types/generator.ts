@@ -112,9 +112,9 @@ export class FlexSearchFilterTypeGenerator {
                 .map(name => new FlexSearchScalarOrEnumFieldFilterField(field, FLEX_SEARCH_FILTER_OPERATORS[name], name === INPUT_FIELD_EQUAL ? undefined : name, inputType, undefined)));
         }
 
-        if (field.language && field.isFlexSearchFulltextIndexed) {
+        if (field.flexSearchLanguage && field.isFlexSearchFulltextIndexed) {
             scalarFields = scalarFields.concat(
-                STRING_TEXT_ANALYZER_FILTER_FIELDS.map(name => new FlexSearchScalarOrEnumFieldFilterField(field, this.getComplexFilterOperatorByName(name), name, inputType, field.language))
+                STRING_TEXT_ANALYZER_FILTER_FIELDS.map(name => new FlexSearchScalarOrEnumFieldFilterField(field, this.getComplexFilterOperatorByName(name), name, inputType, field.flexSearchLanguage))
             );
         }
         return scalarFields;
@@ -193,7 +193,7 @@ export class FlexSearchFilterTypeGenerator {
                 field,
                 FILTER_OPERATORS[name],
                 name === INPUT_FIELD_EQUAL ? undefined : name, graphQLEnumType,
-                field.isFlexSearchIndexed ? field.language : undefined));
+                field.isFlexSearchIndexed ? field.flexSearchLanguage : undefined));
     }
 
     @memorize()
@@ -222,14 +222,14 @@ export class FlexSearchFilterTypeGenerator {
             scalarFields = scalarFields.concat(filterFields.map(name => new FlexSearchScalarOrEnumFilterField(field, FLEX_SEARCH_FILTER_OPERATORS[name], name, type.graphQLScalarType)));
         }
 
-        if (field.language && field.isFlexSearchFulltextIndexed) {
+        if (field.flexSearchLanguage && field.isFlexSearchFulltextIndexed) {
             scalarFields = scalarFields.concat(STRING_TEXT_ANALYZER_FILTER_FIELDS.map(name =>
                 new FlexSearchScalarOrEnumFilterField(
                     field,
                     this.getComplexFilterOperatorByName(name),
                     name,
                     type.graphQLScalarType,
-                    field.language)));
+                    field.flexSearchLanguage)));
         }
 
         return scalarFields;
