@@ -92,6 +92,12 @@ See the [modelling guide](docs/modelling.md) and the [api documentation](docs/ap
 
 The core of cruddl perfectly works in a browser (e.g., using webpack), and this can be useful to generate a mock GraphQL schema on the fly or to validate a cruddl project. However, the ArangoDB adapter only works with node imports like `path`. Unless you configure webpack to provide mock modules for them, you will get an error when you import `cruddl` in a webpack environment. To solve this, you can import the core symbols from `cruddl/core` and the `InMemoryAdapter` from `cruddl/inmemory`.
 
+### Running Tests
+
+1. arangodb --starter.mode=single --starter.local --starter.port=8528 start
+2. npm run build
+3. npm run test
+
 ## Documentation
 
 * [Modelling guide](docs/modelling.md)
