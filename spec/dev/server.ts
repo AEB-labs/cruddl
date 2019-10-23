@@ -54,12 +54,12 @@ export async function start() {
         },*/
         loggerProvider
     });
-    //@ts-ignore
+
     const schema = project.createSchema(db);
 
     const logger = globalContext.loggerProvider.getLogger('server');
     logger.info('Making sure schema is up to date...');
-       //@ts-ignore
+
     await db.updateSchema(project.getModel());
     logger.info('Schema is up to date');
 
@@ -71,7 +71,7 @@ export async function start() {
     const fastServer = express();
     fastServer.use(cors());
     fastServer.use(bodyParser.json());
-       //@ts-ignore
+
     fastServer.post('/', createFastApp(project, db));
     fastServer.listen(3002);
 
