@@ -30,7 +30,7 @@
   },
   "devDependencies": {
     "@types/ansi-styles": "^3.2.1",
-    "@types/chai": "^4.2.3",
+    "@types/chai": "^4.2.4",
     "@types/chai-as-promised": "^7.1.2",
     "@types/deep-equal": "^1.0.1",
     "@types/deep-equal-in-any-order": "^1.0.1",
