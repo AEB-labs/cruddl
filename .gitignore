@@ -58,3 +58,5 @@ dist/
 reports/
 .nyc_output
 coverage
+
+db/
