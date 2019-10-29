@@ -48,4 +48,14 @@ export class BillingEntityType implements ModelComponent {
         }
 
     }
+
+    @memorize()
+    get typeName() {
+        return this.input.typeName;
+    }
+
+    @memorize()
+    get keyFieldName() {
+        return this.input.keyFieldName || (this.rootEntityType ? this.rootEntityType.keyField : undefined);
+    }
 }
