@@ -1,13 +1,10 @@
-import { Relation, RootEntityType } from '../../../model/implementation';
-import { BillingEntityType } from '../../../model/implementation/billing';
-import { describeIndex, getIndexDescriptor, IndexDefinition } from './index-helpers';
-import { ArangoSearchDefinition } from './arango-search-helpers';
-import { FieldConfig } from '../../../model/config';
 import { ArangoSearchViewPropertiesOptions } from 'arangojs/lib/cjs/view';
+import { BillingEntityType, Relation, RootEntityType } from '../../../model/implementation';
+import { describeIndex, getIndexDescriptor, IndexDefinition } from './index-helpers';
 
 export type SchemaMigration = CreateIndexMigration | DropIndexMigration | CreateDocumentCollectionMigration
     | CreateEdgeCollectionMigration | CreateArangoSearchViewMigration | DropArangoSearchViewMigration
-    | UpdateArangoSearchViewMigration | RecreateArangoSearchViewMigration | CreateBillingCollectionMigration;
+    | UpdateArangoSearchViewMigration | RecreateArangoSearchViewMigration;
 
 interface CreateIndexMigrationConfig {
     readonly index: IndexDefinition
@@ -68,7 +65,7 @@ export class DropIndexMigration {
 export class CreateDocumentCollectionMigration {
     readonly type: 'createDocumentCollection' = 'createDocumentCollection';
 
-    constructor(public readonly rootEntity: RootEntityType, public readonly collectionName: string) {
+    constructor(public readonly collectionName: string) {
     }
 
     get description() {
@@ -141,25 +138,6 @@ export class DropArangoSearchViewMigration {
 
     get isMandatory() {
         return false;
-    }
-}
-
-export class CreateBillingCollectionMigration {
-    readonly type: 'createBillingCollection' = 'createBillingCollection';
-
-    constructor(public readonly billingEntityType: BillingEntityType, public readonly collectionName: string) {
-    }
-
-    get description() {
-        return `create billing collection ${this.collectionName}`;
-    }
-
-    get id() {
-        return `createBillingCollection/collection:${this.collectionName}`;
-    }
-
-    get isMandatory() {
-        return true;
     }
 }
 

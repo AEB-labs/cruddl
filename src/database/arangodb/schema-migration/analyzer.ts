@@ -2,24 +2,12 @@ import { Database } from 'arangojs';
 import { ProjectOptions } from '../../../config/interfaces';
 import { Logger } from '../../../config/logging';
 import { Model, RootEntityType } from '../../../model/implementation';
-import { getCollectionNameForBillingEntityType, getCollectionNameForRelation, getCollectionNameForRootEntity } from '../arango-basics';
+import { billingCollectionName, getCollectionNameForRelation, getCollectionNameForRootEntity } from '../arango-basics';
 import { ArangoDBConfig, getArangoDBLogger, initDatabase } from '../config';
 import { ArangoDBVersionHelper } from '../version-helper';
+import { calculateRequiredArangoSearchViewCreateOperations, calculateRequiredArangoSearchViewDropOperations, calculateRequiredArangoSearchViewUpdateOperations, getRequiredViewsFromModel } from './arango-search-helpers';
 import { calculateRequiredIndexOperations, getRequiredIndicesFromModel, IndexDefinition, isArangoSearchSupported } from './index-helpers';
-import {
-    CreateArangoSearchViewMigration, CreateBillingCollectionMigration,
-    CreateDocumentCollectionMigration,
-    CreateEdgeCollectionMigration,
-    CreateIndexMigration, DropArangoSearchViewMigration,
-    DropIndexMigration,
-    SchemaMigration, UpdateArangoSearchViewMigration
-} from './migrations';
-import {
-    calculateRequiredArangoSearchViewCreateOperations,
-    calculateRequiredArangoSearchViewDropOperations,
-    calculateRequiredArangoSearchViewUpdateOperations,
-    getRequiredViewsFromModel
-} from './arango-search-helpers';
+import { CreateDocumentCollectionMigration, CreateEdgeCollectionMigration, CreateIndexMigration, DropIndexMigration, SchemaMigration } from './migrations';
 
 export class SchemaAnalyzer {
     private readonly db: Database;
@@ -38,7 +26,6 @@ export class SchemaAnalyzer {
             ...await this.getEdgeCollectionMigrations(model),
             ...await this.getIndexMigrations(model),
             ...await this.getArangoSearchMigrations(model),
-            ...await this.getBillingCollectionMigrations(model),
         ];
     }
 
@@ -54,25 +41,11 @@ export class SchemaAnalyzer {
             if (existingCollectionNames.has(collectionName)) {
                 continue;
             }
-            migrations.push(new CreateDocumentCollectionMigration(rootEntity, collectionName));
+            migrations.push(new CreateDocumentCollectionMigration(collectionName));
         }
 
-        return migrations;
-    }
-
-    async getBillingCollectionMigrations(model: Model): Promise<ReadonlyArray<CreateBillingCollectionMigration>>{
-        // Get existing collections in ArangoDB
-        const existingCollections = (await this.db.collections()).filter(coll => (coll as any).type === 2 /* document */);
-
-        const existingCollectionNames = new Set(existingCollections.map(coll => (<any>coll).name)); // typing for name missing
-
-        const migrations: CreateBillingCollectionMigration[] = [];
-        for(const billingEntityType of model.billingEntityTypes){
-            const collectionName = getCollectionNameForBillingEntityType(billingEntityType);
-            if (existingCollectionNames.has(collectionName)) {
-                continue;
-            }
-            migrations.push(new CreateBillingCollectionMigration(billingEntityType, collectionName));
+        if(!existingCollectionNames.has(billingCollectionName)){
+            migrations.push(new CreateDocumentCollectionMigration(billingCollectionName));
         }
 
         return migrations;

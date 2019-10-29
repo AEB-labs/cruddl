@@ -3,7 +3,7 @@ import { ArangoDBConfig, initDatabase } from '../config';
 import { ArangoDBVersionHelper } from '../version-helper';
 import { ArangoSearchMigrationNotSupportedError } from './ArangoSearchMigrationNotSupportedError';
 import { isArangoSearchSupported } from './index-helpers';
-import { CreateArangoSearchViewMigration, CreateBillingCollectionMigration, CreateDocumentCollectionMigration, CreateEdgeCollectionMigration, CreateIndexMigration, DropArangoSearchViewMigration, DropIndexMigration, RecreateArangoSearchViewMigration, SchemaMigration, UpdateArangoSearchViewMigration } from './migrations';
+import { CreateArangoSearchViewMigration, CreateDocumentCollectionMigration, CreateEdgeCollectionMigration, CreateIndexMigration, DropArangoSearchViewMigration, DropIndexMigration, RecreateArangoSearchViewMigration, SchemaMigration, UpdateArangoSearchViewMigration } from './migrations';
 
 export class MigrationPerformer {
     private readonly db: Database;
@@ -32,8 +32,6 @@ export class MigrationPerformer {
                 return this.dropArangoSearchView(migration);
             case 'recreateArangoSearchView':
                 return this.recreateArangoSearchView(migration);
-            case 'createBillingCollection':
-                return this.createBillingCollection(migration);
             default:
                 throw new Error(`Unknown migration type: ${(migration as any).type}`);
         }
@@ -53,10 +51,6 @@ export class MigrationPerformer {
     }
 
     private async createDocumentCollection(migration: CreateDocumentCollectionMigration) {
-        await this.db.collection(migration.collectionName).create();
-    }
-
-    private async createBillingCollection(migration: CreateBillingCollectionMigration) {
         await this.db.collection(migration.collectionName).create();
     }
 
