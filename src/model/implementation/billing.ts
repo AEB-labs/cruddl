@@ -56,6 +56,6 @@ export class BillingEntityType implements ModelComponent {
 
     @memorize()
     get keyFieldName() {
-        return this.input.keyFieldName || (this.rootEntityType ? this.rootEntityType.keyField : undefined);
+        return this.input.keyFieldName || (this.rootEntityType && this.rootEntityType.keyField ? this.rootEntityType.keyField.name : undefined);
     }
 }

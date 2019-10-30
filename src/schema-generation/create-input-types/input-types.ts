@@ -1,7 +1,7 @@
 import { Thunk } from 'graphql';
 import { fromPairs, toPairs } from 'lodash';
 import { ChildEntityType, EntityExtensionType, Field, ObjectType, RootEntityType, ValueObjectType } from '../../model';
-import { AffectedFieldInfoQueryNode, CreateEntityQueryNode, LiteralQueryNode, PreExecQueryParms, QueryNode, VariableQueryNode } from '../../query-tree';
+import { AffectedFieldInfoQueryNode, CreateBillingEntityQueryNode, CreateEntityQueryNode, LiteralQueryNode, PreExecQueryParms, QueryNode, VariableQueryNode } from '../../query-tree';
 import { ENTITY_CREATED_AT, ENTITY_UPDATED_AT, ID_FIELD } from '../../schema/constants';
 import { getCreateInputTypeName, getValueObjectInputTypeName } from '../../schema/names';
 import { flatMap, PlainObject } from '../../utils/utils';
@@ -78,7 +78,18 @@ export class CreateRootEntityInputType extends CreateObjectInputType {
         // Note: these statements contain validators which should arguably be moved to the front
         // works with transactional DB adapters, but e.g. not with JavaScript
 
-        return [newEntityPreExec, ...relationStatements];
+
+        const preExecQueryParms = [newEntityPreExec, ...relationStatements];
+
+        if (this.rootEntityType.billingEntityConfig
+            && this.rootEntityType.billingEntityConfig.keyFieldName
+            && input[this.rootEntityType.billingEntityConfig.keyFieldName]) {
+            preExecQueryParms.push(new PreExecQueryParms({
+                query: new CreateBillingEntityQueryNode(<number | string>input[this.rootEntityType.billingEntityConfig.keyFieldName], this.rootEntityType.name)
+            }));
+        }
+
+        return preExecQueryParms;
     }
 
     getAdditionalProperties() {

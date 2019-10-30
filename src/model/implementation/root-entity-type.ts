@@ -259,6 +259,11 @@ export class RootEntityType extends ObjectTypeBase {
             }
         }
     }
+
+    @memorize()
+    get billingEntityConfig(){
+        return this.model.billingEntityTypes.find(value => value.rootEntityType === this)
+    }
 }
 
 const systemFieldInputs: ReadonlyArray<SystemFieldConfig> = [

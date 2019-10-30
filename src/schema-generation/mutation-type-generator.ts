@@ -2,7 +2,7 @@ import { GraphQLNonNull } from 'graphql';
 import { flatMap } from 'lodash';
 import memorize from 'memorize-decorator';
 import { Namespace, RootEntityType } from '../model';
-import { AffectedFieldInfoQueryNode, BinaryOperationQueryNode, BinaryOperator, DeleteEntitiesQueryNode, EntitiesQueryNode, EntityFromIdQueryNode, ErrorIfEmptyResultValidator, FirstOfListQueryNode, LiteralQueryNode, NOT_FOUND_ERROR, ObjectQueryNode, PreExecQueryParms, QueryNode, RootEntityIDQueryNode, TransformListQueryNode, UnknownValueQueryNode, UpdateEntitiesQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../query-tree';
+import { AffectedFieldInfoQueryNode, BinaryOperationQueryNode, BinaryOperator, CreateBillingEntityQueryNode, DeleteEntitiesQueryNode, EntitiesQueryNode, EntityFromIdQueryNode, ErrorIfEmptyResultValidator, FirstOfListQueryNode, LiteralQueryNode, NOT_FOUND_ERROR, ObjectQueryNode, PreExecQueryParms, QueryNode, RootEntityIDQueryNode, TransformListQueryNode, UnknownValueQueryNode, UpdateEntitiesQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../query-tree';
 import { ID_FIELD, MUTATION_INPUT_ARG, MUTATION_TYPE } from '../schema/constants';
 import { getCreateEntityFieldName, getDeleteAllEntitiesFieldName, getDeleteEntityFieldName, getUpdateAllEntitiesFieldName, getUpdateEntityFieldName } from '../schema/names';
 import { compact, decapitalize, PlainObject } from '../utils/utils';
@@ -144,13 +144,24 @@ export class MutationTypeGenerator {
 
         const relationStatements = inputType.getRelationStatements(input, new FirstOfListQueryNode(updatedIdsVarNode), context);
 
+        const preExecQueryParms = [
+            updateEntityPreExec,
+            ...relationStatements
+        ];
+
+        if (rootEntityType.billingEntityConfig
+            && rootEntityType.billingEntityConfig.keyFieldName
+            && input[rootEntityType.billingEntityConfig.keyFieldName]) {
+            preExecQueryParms.push(new PreExecQueryParms({
+                query: new CreateBillingEntityQueryNode(<number | string>input[rootEntityType.billingEntityConfig.keyFieldName], rootEntityType.name)
+            }));
+        }
+
         // PreExecute creation and relation queries and return result
+
         return new WithPreExecutionQueryNode({
             resultNode: new EntityFromIdQueryNode(rootEntityType, new FirstOfListQueryNode(updatedIdsVarNode)),
-            preExecQueries: [
-                updateEntityPreExec,
-                ...relationStatements
-            ]
+            preExecQueries: preExecQueryParms
         });
     }
 

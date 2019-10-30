@@ -1,6 +1,6 @@
 import { AggregationOperator, Field, FlexSearchLanguage, Relation, RootEntityType } from '../../model';
 import { FieldSegment, getEffectiveCollectSegments, RelationSegment } from '../../model/implementation/collect-path';
-import { AddEdgesQueryNode, AggregationQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, BinaryOperatorWithLanguage, ConcatListsQueryNode, ConditionalQueryNode, ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeIdentifier, EntitiesQueryNode, EntityFromIdQueryNode, FieldPathQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, OperatorWithLanguageQueryNode, OrderDirection, OrderSpecification, PartialEdgeIdentifier, QueryNode, QueryResultValidator, RemoveEdgesQueryNode, RootEntityIDQueryNode, RUNTIME_ERROR_CODE_PROPERTY, RUNTIME_ERROR_TOKEN, RuntimeErrorQueryNode, SafeListQueryNode, SetEdgeQueryNode, TransformListQueryNode, TraversalQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../../query-tree';
+import { AddEdgesQueryNode, AggregationQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, BinaryOperatorWithLanguage, ConcatListsQueryNode, ConditionalQueryNode, ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateBillingEntityQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeIdentifier, EntitiesQueryNode, EntityFromIdQueryNode, FieldPathQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, OperatorWithLanguageQueryNode, OrderDirection, OrderSpecification, PartialEdgeIdentifier, QueryNode, QueryResultValidator, RemoveEdgesQueryNode, RootEntityIDQueryNode, RUNTIME_ERROR_CODE_PROPERTY, RUNTIME_ERROR_TOKEN, RuntimeErrorQueryNode, SafeListQueryNode, SetEdgeQueryNode, TransformListQueryNode, TraversalQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../../query-tree';
 import { FlexSearchComplexOperatorQueryNode, FlexSearchFieldExistsQueryNode, FlexSearchQueryNode, FlexSearchStartsWithQueryNode } from '../../query-tree/flex-search';
 import { Quantifier, QuantifierFilterNode } from '../../query-tree/quantifiers';
 import { extractVariableAssignments, simplifyBooleans } from '../../query-tree/utils';
@@ -9,7 +9,7 @@ import { Constructor, decapitalize } from '../../utils/utils';
 import { FlexSearchTokenizable } from '../database-adapter';
 import { analyzeLikePatternPrefix } from '../like-helpers';
 import { aql, AQLCompoundQuery, aqlConfig, AQLFragment, AQLQueryResultVariable, AQLVariable } from './aql';
-import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './arango-basics';
+import { billingCollectionName, getCollectionNameForRelation, getCollectionNameForRootEntity } from './arango-basics';
 import { getFlexSearchViewNameForRootEntity, IDENTITY_ANALYZER } from './schema-migration/arango-search-helpers';
 
 enum AccessType {
@@ -659,6 +659,26 @@ register(FlexSearchComplexOperatorQueryNode, (node, context) => {
     throw new Error(`Internal Error: FlexSearchComplexOperatorQueryNode must be expanded before generating the query.`);
 });
 
+function getBillingInput(node: CreateBillingEntityQueryNode, context: QueryContext) {
+    const currentTimestamp = new Date().toISOString();
+    return aql`
+        keyField: ${node.keyFieldValue},
+        type: ${node.rootEntityTypeName},
+        isConfirmedForExport: ${false},
+        isExported: ${false},
+        createdAt: ${currentTimestamp},
+        updatedAt: ${currentTimestamp}
+    `;
+}
+
+register(CreateBillingEntityQueryNode, (node, context) => {
+    return aqlExt.parenthesizeList(
+        aql`UPSERT { ${getBillingInput(node, context)} }`,
+        aql`INSERT { ${getBillingInput(node, context)} }`,
+        aql`UPDATE {}`,
+        aql`IN ${getCollectionForBilling(AccessType.WRITE, context)}`
+    );
+});
 
 function getFastStartsWithQuery(lhs: AQLFragment, rhsValue: string): AQLFragment {
     if (!rhsValue.length) {
@@ -1159,6 +1179,12 @@ function processNode(node: QueryNode, context: QueryContext): AQLFragment {
 // we should rather export AQLExecutableQuery[] (as AQL transaction) directly.
 export function getAQLQuery(node: QueryNode): AQLCompoundQuery {
     return createAQLCompoundQuery(node, aql.queryResultVariable('result'), undefined, new QueryContext());
+}
+
+function getCollectionForBilling(accessType: AccessType, context: QueryContext) {
+    const name = billingCollectionName;
+    context.addCollectionAccess(name, accessType);
+    return aql.collection(name);
 }
 
 function getCollectionForType(type: RootEntityType, accessType: AccessType, context: QueryContext) {

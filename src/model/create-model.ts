@@ -622,7 +622,7 @@ function extractBilling(parsedProject: ParsedProject): BillingConfig {
         return {
             ...previousValue,
             billingEntities: [...currentValue.billingEntities, ...previousValue.billingEntities]
-            // @MSF TODO: What happens with multiple definitions
+            // MSF TODO: What happens with multiple definitions
         };
     });
 }
