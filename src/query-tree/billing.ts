@@ -1,24 +1,31 @@
-
 import { QueryNode } from './base';
 
-// MSF TODO: comment
-export class CreateBillingEntityQueryNode extends QueryNode{
+/**
+ * A QueryNode that creates a Billing entry.
+ */
+export class CreateBillingEntityQueryNode extends QueryNode {
     constructor(readonly keyFieldValue: number | string, readonly rootEntityTypeName: string) {
         super();
     }
 
 
     describe(): string {
-        return ""; // MSF TODO: description
+        return `Create BillingEntry for ${this.rootEntityTypeName} with key "${this.keyFieldValue}"`;
     }
 
 }
 
-// MSF TODO: comment
-export class ApproveForBillingQueryNode extends QueryNode{
+/**
+ * A QueryNode that set the "isConfirmedForExport" and the "confirmedForExportTimestamp" for a billingEntry
+ */
+export class ConfirmForBillingQueryNode extends QueryNode {
+
+    constructor(readonly keyFieldValue: number | string, readonly rootEntityTypeName: string) {
+        super();
+    }
 
     describe(): string {
-        return ""; // MSF TODO: description
+        return `Confirm BillingEntry for ${this.rootEntityTypeName} with key "${this.keyFieldValue}"`;
     }
 
 }

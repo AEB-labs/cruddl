@@ -6,6 +6,7 @@ import { AffectedFieldInfoQueryNode, BinaryOperationQueryNode, BinaryOperator, C
 import { ID_FIELD, MUTATION_INPUT_ARG, MUTATION_TYPE } from '../schema/constants';
 import { getCreateEntityFieldName, getDeleteAllEntitiesFieldName, getDeleteEntityFieldName, getUpdateAllEntitiesFieldName, getUpdateEntityFieldName } from '../schema/names';
 import { compact, decapitalize, PlainObject } from '../utils/utils';
+import { BillingTypeGenerator } from './billing-type-generator';
 import { CreateInputTypeGenerator, CreateRootEntityInputType } from './create-input-types';
 import { ListAugmentation } from './list-augmentation';
 import { OutputTypeGenerator } from './output-type-generator';
@@ -20,7 +21,8 @@ export class MutationTypeGenerator {
         private readonly outputTypeGenerator: OutputTypeGenerator,
         private readonly createTypeGenerator: CreateInputTypeGenerator,
         private readonly updateTypeGenerator: UpdateInputTypeGenerator,
-        private readonly listAugmentation: ListAugmentation
+        private readonly listAugmentation: ListAugmentation,
+        private readonly billingTypeGenerator:BillingTypeGenerator
     ) {
 
     }
@@ -54,7 +56,8 @@ export class MutationTypeGenerator {
             this.generateUpdateField(rootEntityType),
             this.generateUpdateAllField(rootEntityType),
             this.generateDeleteField(rootEntityType),
-            this.generateDeleteAllField(rootEntityType)
+            this.generateDeleteAllField(rootEntityType),
+            this.billingTypeGenerator.getMutationField(rootEntityType)
         ]);
     }
 

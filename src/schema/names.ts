@@ -3,7 +3,7 @@ import { capitalize } from '../utils/utils';
 import {
     ADD_CHILD_ENTITIES_FIELD_PREFIX,
     ADD_EDGES_FIELD_PREFIX,
-    ALL_ENTITIES_FIELD_PREFIX,
+    ALL_ENTITIES_FIELD_PREFIX, CONFIRM_FOR_BILLING_FIELD_PREFIX,
     CREATE_ENTITY_FIELD_PREFIX,
     CREATE_RELATED_ENTITY_FIELD_PREFIX,
     DELETE_ALL_ENTITIES_FIELD_PREFIX,
@@ -42,6 +42,10 @@ export function getDeleteEntityFieldName(entityName: string) {
 
 export function getDeleteAllEntitiesFieldName(entityName: string) {
     return DELETE_ALL_ENTITIES_FIELD_PREFIX + pluralize(entityName);
+}
+
+export function getConfirmForBillingFieldName(entityName: string){
+    return CONFIRM_FOR_BILLING_FIELD_PREFIX + entityName
 }
 
 export function getMetaFieldName(field: string) {

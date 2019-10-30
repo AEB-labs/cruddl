@@ -1,6 +1,7 @@
 import memorize from 'memorize-decorator';
 import { SchemaOptions } from '../config/interfaces';
 import { Model } from '../model';
+import { BillingTypeGenerator } from './billing-type-generator';
 import { CreateInputTypeGenerator } from './create-input-types';
 import { EnumTypeGenerator } from './enum-type-generator';
 import { FilterAugmentation } from './filter-augmentation';
@@ -31,6 +32,7 @@ export class RootTypesGenerator {
     private readonly listAugmentation = new ListAugmentation(this.filterAugmentation, this.orderByAugmentation);
     private readonly metaFirstAugmentation = new MetaFirstAugmentation();
 
+
     private readonly metaTypeGenerator = new MetaTypeGenerator();
     private readonly outputTypeGenerator = new OutputTypeGenerator(this.listAugmentation, this.filterAugmentation,
         this.enumTypeGenerator, this.orderByEnumGenerator, this.metaTypeGenerator);
@@ -40,8 +42,10 @@ export class RootTypesGenerator {
     private readonly queryTypeGenerator = new QueryTypeGenerator(this.outputTypeGenerator, this.listAugmentation,
         this.filterAugmentation, this.metaFirstAugmentation, this.metaTypeGenerator, this.flexSearchGenerator);
 
+    private readonly billingTypeGenerator = new BillingTypeGenerator(this.outputTypeGenerator);
     private readonly mutationTypeGenerator = new MutationTypeGenerator(this.outputTypeGenerator, this.createTypeGenerator,
-        this.updateTypeGenerator, this.listAugmentation);
+        this.updateTypeGenerator, this.listAugmentation, this.billingTypeGenerator);
+
 
     @memorize()
     generateQueryType(model: Model): QueryNodeObjectType {

@@ -25,8 +25,13 @@ export class BillingEntityType implements ModelComponent {
             context.addMessage(ValidationMessage.error(`The type "${this.input.typeName}" does not define a keyField and no "keyFieldName" is defined.`, this.input.keyFieldNameLoc));
             return;
         }
-        if (!this.billingKeyField!.type.isScalarType || !(this.billingKeyField!.type.name === 'String')) {
-            context.addMessage(ValidationMessage.error(`The field "${this.input.keyFieldName}" in the type "${this.input.typeName}" is not a "String".`, this.input.keyFieldNameLoc));
+        if (!this.billingKeyField!.type.isScalarType
+            || !(this.billingKeyField!.type.name === 'String' || this.billingKeyField!.type.name === 'Int' || this.billingKeyField!.type.name === 'ID')) {
+            context.addMessage(ValidationMessage.error(`The field "${this.input.keyFieldName}" in the type "${this.input.typeName}" is not a "String", "Int" or "ID".`, this.input.keyFieldNameLoc));
+            return;
+        }
+        if(this.model.billingEntityTypes.find(value => value.typeName === this.typeName && value !== this)){
+            context.addMessage(ValidationMessage.error(`There are multiple billing configurations for the type "${this.typeName}".`, this.input.typeNameLoc));
             return;
         }
     }
