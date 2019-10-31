@@ -9,6 +9,7 @@ import { getMetaSchema } from '../meta-schema/meta-schema';
 import { Model, ValidationResult } from '../model';
 import { createSchema, getModel, validateSchema } from '../schema/schema-builder';
 import { ProjectSource, SourceLike, SourceType } from './source';
+
 export { ProjectOptions };
 
 export interface ProjectConfig extends ProjectOptions {
@@ -44,7 +45,8 @@ export class Project {
             getExecutionOptions: config.getExecutionOptions,
             getOperationIdentifier: config.getOperationIdentifier,
             processError: config.processError,
-            schemaOptions: config.schemaOptions
+            schemaOptions: config.schemaOptions,
+            modelValidationOptions: config.modelValidationOptions
         };
     }
 
