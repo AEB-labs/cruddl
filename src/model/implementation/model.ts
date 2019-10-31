@@ -6,12 +6,12 @@ import { ModelConfig, TypeKind } from '../config';
 import { NamespacedPermissionProfileConfigMap } from '../index';
 import { ValidationMessage, ValidationResult } from '../validation';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
+import { BillingEntityType } from './billing';
 import { builtInTypeNames, createBuiltInTypes } from './built-in-types';
 import { ChildEntityType } from './child-entity-type';
 import { EntityExtensionType } from './entity-extension-type';
 import { EnumType } from './enum-type';
 import { ModelI18n } from './i18n';
-import { BillingEntityType } from './billing';
 import { Namespace } from './namespace';
 import { PermissionProfile } from './permission-profile';
 import { Relation } from './relation';
@@ -231,7 +231,7 @@ export class Model implements ModelComponent {
     get forbiddenRootEntityNames(): ReadonlyArray<string> {
         if (!this.modelValidationOptions || !this.modelValidationOptions.forbiddenRootEntityNames) {
             return [
-                'billing' // MSF TODO: constant + rename billing collection
+                'BillingEntity' // MSF TODO: constant
             ];
         }
         return this.modelValidationOptions!.forbiddenRootEntityNames;

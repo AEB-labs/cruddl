@@ -1,8 +1,8 @@
 import * as pluralize from 'pluralize';
+import { Relation, RootEntityType } from '../../model';
 import { decapitalize } from '../../utils/utils';
-import { BillingEntityType, Relation, RootEntityType } from '../../model';
 
-export const billingCollectionName = 'billing';
+export const billingCollectionName = 'billingEntities';
 
 export function getCollectionNameForRootEntity(type: RootEntityType) {
     return decapitalize(pluralize(type.name));
