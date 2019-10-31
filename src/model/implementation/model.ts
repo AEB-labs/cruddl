@@ -1,5 +1,6 @@
 import { groupBy, uniqBy } from 'lodash';
 import memorize from 'memorize-decorator';
+import { ModelValidationOptions } from '../../config/interfaces';
 import { flatMap, objectEntries, objectValues } from '../../utils/utils';
 import { ModelConfig, TypeKind } from '../config';
 import { NamespacedPermissionProfileConfigMap } from '../index';
@@ -29,6 +30,7 @@ export class Model implements ModelComponent {
     readonly i18n: ModelI18n;
     readonly permissionProfiles: ReadonlyArray<PermissionProfile>;
     readonly billingEntityTypes: ReadonlyArray<BillingEntityType>;
+    readonly modelValidationOptions?: ModelValidationOptions;
 
     constructor(private input: ModelConfig) {
         this.builtInTypes = createBuiltInTypes(this);
@@ -47,6 +49,7 @@ export class Model implements ModelComponent {
         this.typeMap = new Map(this.types.map((type): [string, Type] => ([type.name, type])));
         this.i18n = new ModelI18n(input.i18n || [], this);
         this.billingEntityTypes = input.billing ? input.billing.billingEntities.map(value => new BillingEntityType(value, this)) : [];
+        this.modelValidationOptions = input.modelValidationOptions;
     }
 
     validate(context = new ValidationContext()): ValidationResult {
@@ -223,6 +226,15 @@ export class Model implements ModelComponent {
     get relations(): ReadonlyArray<Relation> {
         const withDuplicates = flatMap(this.rootEntityTypes, entity => entity.explicitRelations);
         return uniqBy(withDuplicates, rel => rel.identifier);
+    }
+
+    get forbiddenRootEntityNames(): ReadonlyArray<string> {
+        if (!this.modelValidationOptions || !this.modelValidationOptions.forbiddenRootEntityNames) {
+            return [
+                'billing' // MSF TODO: constant + rename billing collection
+            ];
+        }
+        return this.modelValidationOptions!.forbiddenRootEntityNames;
     }
 }
 

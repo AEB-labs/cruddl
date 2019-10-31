@@ -1,4 +1,5 @@
 import { ArgumentNode, DirectiveNode, EnumValueDefinitionNode, FieldDefinitionNode, GraphQLBoolean, GraphQLEnumType, GraphQLID, GraphQLInputObjectType, GraphQLList, GraphQLNonNull, GraphQLString, ObjectTypeDefinitionNode, ObjectValueNode, StringValueNode, TypeDefinitionNode, valueFromAST } from 'graphql';
+import { ModelValidationOptions } from '../config/interfaces';
 import { ParsedGraphQLProjectSource, ParsedObjectProjectSource, ParsedProject, ParsedProjectSourceBaseKind } from '../config/parsed-project';
 import { FlexSearchPrimarySortConfig } from '../database/arangodb/schema-migration/arango-search-helpers';
 import { ENUM, ENUM_TYPE_DEFINITION, LIST, LIST_TYPE, NON_NULL_TYPE, OBJECT, OBJECT_TYPE_DEFINITION, STRING } from '../graphql/kinds';
@@ -13,14 +14,15 @@ import { parseBillingConfigs } from './parse-billing';
 import { parseI18nConfigs } from './parse-i18n';
 import { ValidationContext, ValidationMessage } from './validation';
 
-export function createModel(parsedProject: ParsedProject): Model {
+export function createModel(parsedProject: ParsedProject, modelValidationOptions?: ModelValidationOptions): Model {
     const validationContext = new ValidationContext();
     return new Model({
         types: createTypeInputs(parsedProject, validationContext),
         permissionProfiles: extractPermissionProfiles(parsedProject),
         i18n: extractI18n(parsedProject),
         validationMessages: validationContext.validationMessages,
-        billing: extractBilling(parsedProject)
+        billing: extractBilling(parsedProject),
+        modelValidationOptions
     });
 }
 

@@ -151,8 +151,8 @@ export class RootEntityType extends ObjectTypeBase {
     validate(context: ValidationContext) {
         super.validate(context);
 
-        if (this.name.toLowerCase() === "billing") {
-            context.addMessage(ValidationMessage.error(`RootEntities cannot be named "billing".`, this.astNode));
+        if (this.model.forbiddenRootEntityNames.find(value => this.name.toLowerCase() === value.toLowerCase())) {
+            context.addMessage(ValidationMessage.error(`RootEntities cannot be named ${this.name}.`, this.astNode));
         }
 
         this.validateKeyField(context);
@@ -261,8 +261,8 @@ export class RootEntityType extends ObjectTypeBase {
     }
 
     @memorize()
-    get billingEntityConfig(){
-        return this.model.billingEntityTypes.find(value => value.rootEntityType === this)
+    get billingEntityConfig() {
+        return this.model.billingEntityTypes.find(value => value.rootEntityType === this);
     }
 }
 
