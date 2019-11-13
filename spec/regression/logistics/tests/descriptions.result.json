@@ -146,7 +146,7 @@
         },
         {
           "name": "DateTime",
-          "description": "The `DateTime` scalar type represents a point in time in UTC, in a format specified by ISO 8601, such as `2007-12-03T10:15:30Z` or `2007-12-03T10:15:30.123Z`.\n\nThis scalar type rejects values without timezone specifier or with a timezone other than UTC. See also `LocalDate` and `LocalTime` for values without timezone specifier. To store Date/time values with timezones other than UTC, define a value object type with the fields you need.\n\nThe second part is added if not specified, e.g. `2007-12-03T12:34Z` is converted to `2007-12-03T12:34:00Z`. Second fraction digits are cut off at the nearest three-digit group, e.g. `2007-12-03T00:00:00.1234Z` is converted to `2007-12-03T00:00:00.123400Z`.\n\nValues with leap seconds are shifted back by one second, but this behavior should not be relied upon.",
+          "description": "The `DateTime` scalar type represents a point in time in UTC, in a format specified by ISO 8601, such as `2007-12-03T10:15:30Z` or `2007-12-03T10:15:30.123Z`.\n\nThis scalar type rejects values without timezone specifier or with a timezone other than UTC. See also `LocalDate` and `LocalTime` for values without timezone specifier. To store Date/time values with timezones other than UTC, define a value object type with the fields you need.\n\nThe *second* part is added if not specified, e.g. `2007-12-03T12:34Z` is converted to `2007-12-03T12:34:00Z`. Second fraction digits are cut off at the nearest three-digit group, e.g. `2007-12-03T00:00:00.1234Z` is converted to `2007-12-03T00:00:00.123400Z`.\n\nValues with leap seconds are shifted back by one second, but this behavior should not be relied upon.",
           "fields": null,
           "inputFields": null
         },
@@ -702,6 +702,10 @@
             },
             {
               "name": "defaultValueEnum",
+              "description": null
+            },
+            {
+              "name": "dispatchDate",
               "description": null
             },
             {
@@ -1818,6 +1822,38 @@
               "description": null
             },
             {
+              "name": "dispatchDate",
+              "description": "Checks if `dispatchDate` equals a specified value.\n\nIf an index exists on `dispatchDate`, it can be used."
+            },
+            {
+              "name": "dispatchDate_not",
+              "description": "Checks if `dispatchDate` does not equal a specified value"
+            },
+            {
+              "name": "dispatchDate_in",
+              "description": null
+            },
+            {
+              "name": "dispatchDate_not_in",
+              "description": null
+            },
+            {
+              "name": "dispatchDate_lt",
+              "description": null
+            },
+            {
+              "name": "dispatchDate_lte",
+              "description": null
+            },
+            {
+              "name": "dispatchDate_gt",
+              "description": null
+            },
+            {
+              "name": "dispatchDate_gte",
+              "description": null
+            },
+            {
               "name": "pickupDate",
               "description": "Checks if `pickupDate` equals a specified value.\n\nIf an index exists on `pickupDate`, it can be used."
             },
@@ -2765,6 +2801,12 @@
         {
           "name": "Foobarit",
           "description": null,
+          "fields": null,
+          "inputFields": null
+        },
+        {
+          "name": "OffsetDateTime",
+          "description": "The `OffsetDateTime` scalar type represents a point in time with a timezone offset, in a format specified by ISO 8601, such as `2007-12-03T10:15:30+01:00` or `2007-12-03T10:15:30.123Z`.\n\nOnly use this type for timestamps that are inherently tied to a location and the timezone offset should be calculated eagerly. To only store a point in time, use `DateTime`.\n\nThe *second* part is added if not specified, e.g. `2007-12-03T12:34Z` is converted to `2007-12-03T12:34:00Z`. Offset specifier `Z` is accepted but will be converted to `+00:00`. Leap seconds are not supported.",
           "fields": null,
           "inputFields": null
         },
@@ -3912,6 +3954,10 @@
               "description": null
             },
             {
+              "name": "dispatchDate",
+              "description": null
+            },
+            {
               "name": "pickupDate",
               "description": null
             },
@@ -4173,6 +4219,10 @@
               "description": null
             },
             {
+              "name": "dispatchDate",
+              "description": null
+            },
+            {
               "name": "pickupDate",
               "description": null
             },
@@ -4350,6 +4400,10 @@
             },
             {
               "name": "defaultValueEnum",
+              "description": null
+            },
+            {
+              "name": "dispatchDate",
               "description": null
             },
             {

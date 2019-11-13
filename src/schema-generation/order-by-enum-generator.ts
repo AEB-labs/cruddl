@@ -2,9 +2,10 @@ import { GraphQLEnumType, GraphQLEnumValueConfig } from 'graphql';
 import { chain } from 'lodash';
 import memorize from 'memorize-decorator';
 import { Field, ObjectType } from '../model';
-import { OrderClause, OrderDirection, QueryNode } from '../query-tree';
+import { OrderClause, OrderDirection, PropertyAccessQueryNode, QueryNode } from '../query-tree';
 import { ORDER_BY_ASC_SUFFIX, ORDER_BY_DESC_SUFFIX } from '../schema/constants';
 import { getOrderByTypeName } from '../schema/names';
+import { GraphQLOffsetDateTime, TIMESTAMP_PROPERTY } from '../schema/scalars/offset-date-time';
 import { flatMap } from '../utils/utils';
 import { createFieldNode } from './field-nodes';
 
@@ -74,7 +75,12 @@ export class OrderByEnumValue {
     }
 
     getValueNode(itemNode: QueryNode): QueryNode {
-        return this.path.reduce((node, field) => createFieldNode(field, node), itemNode);
+        const valueNode = this.path.reduce((node, field) => createFieldNode(field, node), itemNode);
+        const lastField = this.path[this.path.length - 1];
+        if (lastField && lastField.type.isScalarType && lastField.type.graphQLScalarType === GraphQLOffsetDateTime) {
+            return new PropertyAccessQueryNode(valueNode, TIMESTAMP_PROPERTY);
+        }
+        return valueNode;
     }
 
     getClause(itemNode: QueryNode): OrderClause {

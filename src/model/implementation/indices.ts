@@ -14,6 +14,9 @@ export class IndexField implements ModelComponent {
         this.path = dotSeparatedPath.split('.');
     }
 
+    /**
+     * Gets the innermost field
+     */
     get field(): Field | undefined {
         const res = this.traversePath(() => undefined);
         return res ? res.field : undefined;

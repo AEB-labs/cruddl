@@ -1,5 +1,5 @@
 "A supehero"
-type Hero @rootEntity {
+type Hero @rootEntity(indices: [ { fields: "missions.date" } ]) {
     "The hero's screen name"
     name: String @unique
     age: Int @defaultValue(value: 42)
@@ -12,16 +12,15 @@ type Hero @rootEntity {
     country: Country @reference(keyField: "countryISOCode")
     missions: [Mission]
     friends: [Hero] @relation
-    moreFriends: [Hero] @traversal(path: "friends{0,2}")
-    subMissions: [Mission] @traversal(path: "missions.subMissions")
-    missionsAgain: [Mission] @traversal(path: "missions")
+    moreFriends: [Hero] @collect(path: "friends{0,2}")
+    subMissions: [Mission] @collect(path: "missions.subMissions")
+    missionsAgain: [Mission] @collect(path: "missions")
     info: JSON
-    deepSkills: [Skill] @traversal(path: "skills.skills")
 }
 
 "A heroic mission"
 type Mission @childEntity {
-    date: DateTime
+    date: OffsetDateTime
     title: String
     subMissions: [Mission]
 }
@@ -43,11 +42,11 @@ type Movie @rootEntity {
     director: Director @relation
     publisher: Publisher @reference
 
-    relatedMovies: [Movie] @traversal(path: "heroes.movies")
-    community: [Hero] @traversal(path: "heroes.friends{0,2}")
-    subMissions: [Mission] @traversal(path: "heroes.friends{0,2}.missions.subMissions")
-    skillCount: Int @aggregation(path: "heroes.skills", aggregator: COUNT)
-    totalSkillStrength: Float @aggregation(path: "heroes.skills.strength", aggregator: SUM)
+    relatedMovies: [Movie] @collect(path: "heroes.movies", aggregate: DISTINCT)
+    community: [Hero] @collect(path: "heroes.friends{0,2}", aggregate: DISTINCT)
+    subMissions: [Mission] @collect(path: "heroes.friends{0,2}.missions.subMissions", aggregate: DISTINCT)
+    skillCount: Int @collect(path: "heroes.skills", aggregate: COUNT)
+    totalSkillStrength: Float @collect(path: "heroes.skills.strength", aggregate: SUM)
 }
 
 "A movie director"

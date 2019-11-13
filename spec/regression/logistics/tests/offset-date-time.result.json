@@ -1,0 +1,92 @@
+{
+  "before": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173",
+          "dispatchDate": null
+        },
+        {
+          "deliveryNumber": "1000521",
+          "dispatchDate": null
+        },
+        {
+          "deliveryNumber": "1000522",
+          "dispatchDate": null
+        }
+      ]
+    }
+  },
+  "set": {
+    "data": {
+      "d1": {
+        "dispatchDate": "2000-01-02T03:00:00+00:00"
+      },
+      "d2": {
+        "dispatchDate": "2000-01-02T04:00:00+01:00"
+      },
+      "d3": {
+        "dispatchDate": null
+      },
+      "d4": {
+        "dispatchDate": "2000-01-02T04:00:00+02:00"
+      }
+    }
+  },
+  "after": {
+    "data": {
+      "asc": [
+        {
+          "deliveryNumber": "1000522",
+          "dispatchDate": null
+        },
+        {
+          "deliveryNumber": "d4",
+          "dispatchDate": "2000-01-02T04:00:00+02:00"
+        },
+        {
+          "deliveryNumber": "1000173",
+          "dispatchDate": "2000-01-02T03:00:00+00:00"
+        },
+        {
+          "deliveryNumber": "1000521",
+          "dispatchDate": "2000-01-02T04:00:00+01:00"
+        }
+      ],
+      "desc": [
+        {
+          "deliveryNumber": "1000521",
+          "dispatchDate": "2000-01-02T04:00:00+01:00"
+        },
+        {
+          "deliveryNumber": "1000173",
+          "dispatchDate": "2000-01-02T03:00:00+00:00"
+        },
+        {
+          "deliveryNumber": "d4",
+          "dispatchDate": "2000-01-02T04:00:00+02:00"
+        },
+        {
+          "deliveryNumber": "1000522",
+          "dispatchDate": null
+        }
+      ],
+      "eq1": [
+        {
+          "deliveryNumber": "d4",
+          "dispatchDate": "2000-01-02T04:00:00+02:00"
+        }
+      ],
+      "eq2": [
+        {
+          "deliveryNumber": "1000173",
+          "dispatchDate": "2000-01-02T03:00:00+00:00"
+        },
+        {
+          "deliveryNumber": "1000521",
+          "dispatchDate": "2000-01-02T04:00:00+01:00"
+        }
+      ]
+    }
+  }
+}

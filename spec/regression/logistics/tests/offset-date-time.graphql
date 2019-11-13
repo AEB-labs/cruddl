@@ -1,0 +1,55 @@
+query before {
+    allDeliveries(orderBy: [dispatchDate_ASC, deliveryNumber_ASC]) {
+        deliveryNumber
+        dispatchDate
+    }
+}
+
+mutation set {
+    d1: updateDelivery(input: {
+        id: "@{ids/Delivery/1}"
+        dispatchDate: "2000-01-02T03:00:00Z"
+    }) {
+        dispatchDate
+    }
+
+    d2: updateDelivery(input: {
+        id: "@{ids/Delivery/2}"
+        dispatchDate: "2000-01-02T04:00:00+01:00"
+    }) {
+        dispatchDate
+    }
+
+    d3: updateDelivery(input: {
+        id: "@{ids/Delivery/3}"
+        dispatchDate: null
+    }) {
+        dispatchDate
+    }
+
+    d4: createDelivery(input: {
+        deliveryNumber: "d4"
+        dispatchDate: "2000-01-02T04:00:00+02:00"
+    }) {
+        dispatchDate
+    }
+}
+
+query after {
+    asc: allDeliveries(orderBy: [dispatchDate_ASC, deliveryNumber_ASC]) {
+        deliveryNumber
+        dispatchDate
+    }
+    desc: allDeliveries(orderBy: [dispatchDate_DESC, deliveryNumber_DESC]) {
+        deliveryNumber
+        dispatchDate
+    }
+    eq1: allDeliveries(filter: { dispatchDate: "2000-01-02T04:00:00+02:00" }) {
+        deliveryNumber
+        dispatchDate
+    }
+    eq2: allDeliveries(filter: { dispatchDate: "2000-01-02T03:00:00Z" }) {
+        deliveryNumber
+        dispatchDate
+    }
+}

@@ -236,6 +236,14 @@
           }
         },
         {
+          "name": "dispatchDate",
+          "isDeprecated": false,
+          "deprecationReason": null,
+          "type": {
+            "enumValues": null
+          }
+        },
+        {
           "name": "pickupDate",
           "isDeprecated": false,
           "deprecationReason": null,
@@ -784,6 +792,16 @@
         },
         {
           "name": "defaultValueEnum_DESC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "dispatchDate_ASC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "dispatchDate_DESC",
           "isDeprecated": false,
           "deprecationReason": null
         },

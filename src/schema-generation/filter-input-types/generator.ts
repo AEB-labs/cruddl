@@ -112,10 +112,10 @@ export class FilterTypeGenerator {
 
     private buildScalarFilterFields(type: ScalarType): ScalarOrEnumFilterField[] {
         const filterFields = FILTER_FIELDS_BY_TYPE[type.name] || [];
-        return filterFields.map(name => new ScalarOrEnumFilterField(FILTER_OPERATORS[name], name, type.graphQLScalarType));
+        return filterFields.map(name => new ScalarOrEnumFilterField(FILTER_OPERATORS[name], name, type, type.graphQLScalarType));
     }
 
     private buildEnumFilterFields(type: EnumType) {
-        return ENUM_FILTER_FIELDS.map(name => new ScalarOrEnumFilterField(FILTER_OPERATORS[name], name, this.enumTypeGenerator.generate(type)));
+        return ENUM_FILTER_FIELDS.map(name => new ScalarOrEnumFilterField(FILTER_OPERATORS[name], name, type, this.enumTypeGenerator.generate(type)));
     }
 }
