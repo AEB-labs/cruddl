@@ -1,6 +1,6 @@
-import { GraphQLInt } from 'graphql';
 import { IndexField, Model, RootEntityType } from '../../../model';
 import { ID_FIELD } from '../../../schema/constants';
+import { GraphQLOffsetDateTime, TIMESTAMP_PROPERTY } from '../../../schema/scalars/offset-date-time';
 import { compact, flatMap } from '../../../utils/utils';
 import { getCollectionNameForRootEntity } from '../arango-basics';
 
@@ -17,7 +17,7 @@ export interface IndexDefinition {
 }
 
 export function describeIndex(index: IndexDefinition) {
-    return `${ index.unique ? 'unique ' : ''}${ index.sparse ? 'sparse ' : ''}${index.type} index${index.id ? ' ' + index.id : ''} on collection ${index.collectionName} on ${index.fields.length > 1 ? 'fields' : 'field'} '${index.fields.join(',')}'`;
+    return `${index.unique ? 'unique ' : ''}${index.sparse ? 'sparse ' : ''}${index.type} index${index.id ? ' ' + index.id : ''} on collection ${index.collectionName} on ${index.fields.length > 1 ? 'fields' : 'field'} '${index.fields.join(',')}'`;
 }
 
 export function getIndexDescriptor(index: IndexDefinition) {
@@ -111,7 +111,12 @@ function getArangoFieldPath(indexField: IndexField): string {
         return '_key';
     }
 
-    return (indexField.fieldsInPath || [])
-        .map(field => field.isList ? `${field.name}[*]` : field.name)
-        .join('.');
+    let segments = (indexField.fieldsInPath || []).map(field => field.isList ? `${field.name}[*]` : field.name);
+
+    // OffsetDateTime filters / sorts on the timestamp, so we should also index this field
+    if (indexField.field && indexField.field.type.isScalarType && indexField.field.type.graphQLScalarType === GraphQLOffsetDateTime) {
+        segments = [...segments, TIMESTAMP_PROPERTY];
+    }
+
+    return segments.join('.');
 }

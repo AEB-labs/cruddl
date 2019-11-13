@@ -4,6 +4,7 @@ import { INPUT_FIELD_CONTAINS, INPUT_FIELD_ENDS_WITH, INPUT_FIELD_EQUAL, INPUT_F
 import { GraphQLDateTime } from '../../schema/scalars/date-time';
 import { GraphQLLocalDate } from '../../schema/scalars/local-date';
 import { GraphQLLocalTime } from '../../schema/scalars/local-time';
+import { GraphQLOffsetDateTime } from '../../schema/scalars/offset-date-time';
 
 export const FILTER_OPERATORS: { [suffix: string]: (fieldNode: QueryNode, valueNode: QueryNode) => QueryNode } = {
     [INPUT_FIELD_EQUAL]: binaryOp(BinaryOperator.EQUAL),
@@ -83,6 +84,7 @@ export const FILTER_FIELDS_BY_TYPE: { [name: string]: string[] } = {
     [GraphQLInt.name]: NUMERIC_FILTER_FIELDS,
     [GraphQLFloat.name]: NUMERIC_FILTER_FIELDS,
     [GraphQLDateTime.name]: NUMERIC_FILTER_FIELDS,
+    [GraphQLOffsetDateTime.name]: NUMERIC_FILTER_FIELDS,
     [GraphQLLocalDate.name]: NUMERIC_FILTER_FIELDS,
     [GraphQLLocalTime.name]: NUMERIC_FILTER_FIELDS,
     [GraphQLBoolean.name]: [INPUT_FIELD_EQUAL, INPUT_FIELD_NOT]

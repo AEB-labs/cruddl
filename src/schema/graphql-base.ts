@@ -151,8 +151,46 @@ export const DIRECTIVES: DocumentNode = gql`
 `;
 
 export const CORE_SCALARS: DocumentNode = gql`
+    """
+    The \`DateTime\` scalar type represents a point in time in UTC, in a format specified by ISO 8601, such as \`2007-12-03T10:15:30Z\` or \`2007-12-03T10:15:30.123Z\`.
+    
+    This scalar type rejects values without timezone specifier or with a timezone other than UTC. See also \`LocalDate\` and \`LocalTime\` for values without timezone specifier. To store Date/time values with timezones other than UTC, define a value object type with the fields you need.
+    
+    The *second* part is added if not specified, e.g. \`2007-12-03T12:34Z\` is converted to \`2007-12-03T12:34:00Z\`. Second fraction digits are cut off at the nearest three-digit group, e.g. \`2007-12-03T00:00:00.1234Z\` is converted to \`2007-12-03T00:00:00.123400Z\`.
+    
+    Values with leap seconds are shifted back by one second, but this behavior should not be relied upon.
+    """
     scalar DateTime
+
+    """
+    The \`LocalDate\` scalar type represents a date without time zone in a format specified by ISO 8601, such as 2007-12-03.
+    """
     scalar LocalDate
+    
+    """
+    The \`LocalTime\` scalar type represents a time without time zone in a format specified by ISO 8601, such as 10:15:30 or 17:05:03.521.
+    
+    The valid range is between 00:00:00 and 23:59:59.999999999. 24:00 is not allowed to avoid bugs in clients that treat 24:00 as 0:00.
+    
+    The seconds part is cut off if it is zero, e.g. 12:34:00 is converted to 12:34. Second fraction digits are cut off at the nearest three-digit group, e.g. 00:00:00.1234 is converted to 00:00:00.123400.
+    
+    Leap seconds can not be specified.
+    """
     scalar LocalTime
+    
+    """
+    The \`OffsetDateTime\` scalar type represents a point in time with a timezone offset, in a format specified by ISO 8601, such as \`2007-12-03T10:15:30+01:00\` or \`2007-12-03T10:15:30.123Z\`.
+    
+    Only use this type for timestamps that are inherently tied to a location and the timezone offset should be calculated eagerly. To only store a point in time, use \`DateTime\`.
+    
+    The *second* part is added if not specified, e.g. \`2007-12-03T12:34Z\` is converted to \`2007-12-03T12:34:00Z\`. Offset specifier \`Z\` is accepted but will be converted to \`+00:00\`. Leap seconds are not supported.
+    """
+    scalar OffsetDateTime
+    
+    """
+    The \`JSON\` scalar type represents an arbitrary JSON value. This can be a string, number, boolean, null, list, or object.
+    
+    Values are *not* additionally JSON-encoded or JSON-parsed, so e.g. pass a raw JSON object here instead of a JSON-representation of that object.
+    """
     scalar JSON
 `;

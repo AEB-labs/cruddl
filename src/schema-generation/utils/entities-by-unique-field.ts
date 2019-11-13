@@ -1,16 +1,13 @@
-import { FieldNode, GraphQLError, GraphQLFieldConfigArgumentMap, GraphQLID, GraphQLInputType, GraphQLNonNull } from 'graphql';
+import { GraphQLFieldConfigArgumentMap, GraphQLID } from 'graphql';
 import { RootEntityType, ScalarType, Type } from '../../model';
-import {
-    BinaryOperationQueryNode, BinaryOperator, EntitiesQueryNode, ListQueryNode, LiteralQueryNode, TransformListQueryNode,
-    VariableQueryNode
-} from '../../query-tree';
+import { BinaryOperationQueryNode, BinaryOperator, EntitiesQueryNode, LiteralQueryNode, TransformListQueryNode, VariableQueryNode } from '../../query-tree';
 import { ID_FIELD } from '../../schema/constants';
 import { decapitalize, objectEntries } from '../../utils/utils';
 import { createFieldNode } from '../field-nodes';
 import { createGraphQLError } from '../graphql-errors';
 import { FieldContext } from '../query-node-object-type';
 
-export function getEntitiesByUniqueFieldQuery(rootEntityType: RootEntityType, args: {[name:string]: any}, context: FieldContext) {
+export function getEntitiesByUniqueFieldQuery(rootEntityType: RootEntityType, args: { [name: string]: any }, context: FieldContext) {
     const nonNullArgs = objectEntries(args).filter(([key, value]) => value != undefined);
     if (nonNullArgs.length !== 1) {
         throw createGraphQLError(`Must specify exactly one non-null argument to field "${rootEntityType.name}"`, context);

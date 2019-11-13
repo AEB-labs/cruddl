@@ -1,10 +1,12 @@
 import { getNamedType, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
+import { ZonedDateTime } from 'js-joda';
 import * as pluralize from 'pluralize';
 import { isArray } from 'util';
-import { Field, TypeKind } from '../../model';
-import { BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, LiteralQueryNode, QueryNode, VariableQueryNode } from '../../query-tree';
+import { EnumType, Field, ScalarType, Type, TypeKind } from '../../model';
+import { BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, LiteralQueryNode, PropertyAccessQueryNode, QueryNode, VariableQueryNode } from '../../query-tree';
 import { QuantifierFilterNode } from '../../query-tree/quantifiers';
 import { AND_FILTER_FIELD, FILTER_FIELD_PREFIX_SEPARATOR, INPUT_FIELD_EQUAL, OR_FILTER_FIELD } from '../../schema/constants';
+import { GraphQLOffsetDateTime, TIMESTAMP_PROPERTY } from '../../schema/scalars/offset-date-time';
 import { AnyValue, decapitalize, PlainObject } from '../../utils/utils';
 import { createFieldNode } from '../field-nodes';
 import { TypedInputFieldBase } from '../typed-input-object-type';
@@ -21,6 +23,20 @@ function getDescription({ operator, typeName, fieldName }: { operator: string | 
         descriptionTemplate = descriptionTemplate[typeName] || descriptionTemplate[''];
     }
     return descriptionTemplate ? descriptionTemplate.replace(/\$field/g, fieldName ? '`' + fieldName + '`' : 'the value') : undefined;
+}
+
+function getScalarFilterValueNode(fieldNode: QueryNode, type: Type): QueryNode {
+    if (type.isScalarType && type.graphQLScalarType === GraphQLOffsetDateTime) {
+        return new PropertyAccessQueryNode(fieldNode, TIMESTAMP_PROPERTY);
+    }
+    return fieldNode;
+}
+
+function getScalarFilterLiteralValue(value: unknown, type: Type): unknown {
+    if (type.isScalarType && type.graphQLScalarType === GraphQLOffsetDateTime && value instanceof ZonedDateTime) {
+        return value.toInstant().toString();
+    }
+    return value;
 }
 
 export class ScalarOrEnumFieldFilterField implements FilterField {
@@ -48,8 +64,8 @@ export class ScalarOrEnumFieldFilterField implements FilterField {
     }
 
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
-        const valueNode = createFieldNode(this.field, sourceNode);
-        const literalNode = new LiteralQueryNode(filterValue);
+        const valueNode = getScalarFilterValueNode(createFieldNode(this.field, sourceNode), this.field.type);
+        const literalNode = new LiteralQueryNode(getScalarFilterLiteralValue(filterValue, this.field.type));
         return this.resolveOperator(valueNode, literalNode);
     }
 }
@@ -61,6 +77,7 @@ export class ScalarOrEnumFilterField implements FilterField {
     constructor(
         public readonly resolveOperator: (fieldNode: QueryNode, valueNode: QueryNode) => QueryNode,
         public readonly operatorName: string,
+        private readonly baseType: ScalarType | EnumType,
         baseInputType: GraphQLInputType
     ) {
         this.inputType = OPERATORS_WITH_LIST_OPERAND.includes(operatorName) ? new GraphQLList(new GraphQLNonNull(baseInputType)) : baseInputType;
@@ -72,8 +89,8 @@ export class ScalarOrEnumFilterField implements FilterField {
     }
 
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
-        const literalNode = new LiteralQueryNode(filterValue);
-        return this.resolveOperator(sourceNode, literalNode);
+        const literalNode = new LiteralQueryNode(getScalarFilterLiteralValue(filterValue, this.baseType));
+        return this.resolveOperator(getScalarFilterValueNode(sourceNode, this.baseType), literalNode);
     }
 }
 

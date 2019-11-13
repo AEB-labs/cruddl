@@ -1,6 +1,6 @@
 import { AggregationOperator, Field, Relation, RootEntityType } from '../../model';
 import { FieldSegment, getEffectiveCollectSegments, RelationSegment } from '../../model/implementation/collect-path';
-import { AddEdgesQueryNode, AggregationQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode, ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeIdentifier, EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, OrderDirection, OrderSpecification, PartialEdgeIdentifier, QueryNode, QueryResultValidator, RemoveEdgesQueryNode, RootEntityIDQueryNode, RUNTIME_ERROR_CODE_PROPERTY, RUNTIME_ERROR_TOKEN, RuntimeErrorQueryNode, SafeListQueryNode, SetEdgeQueryNode, TransformListQueryNode, TraversalQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../../query-tree';
+import { AddEdgesQueryNode, AggregationQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode, ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeIdentifier, EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, OrderDirection, OrderSpecification, PartialEdgeIdentifier, PropertyAccessQueryNode, QueryNode, QueryResultValidator, RemoveEdgesQueryNode, RootEntityIDQueryNode, RUNTIME_ERROR_CODE_PROPERTY, RUNTIME_ERROR_TOKEN, RuntimeErrorQueryNode, SafeListQueryNode, SetEdgeQueryNode, TransformListQueryNode, TraversalQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../../query-tree';
 import { Quantifier, QuantifierFilterNode } from '../../query-tree/quantifiers';
 import { extractVariableAssignments, simplifyBooleans } from '../../query-tree/utils';
 import { not } from '../../schema-generation/filter-input-types/constants';
@@ -278,18 +278,22 @@ register(EntityFromIdQueryNode, (node, context) => {
     return aql`DOCUMENT(${collection}, ${processNode(node.idNode, context)})`;
 });
 
-register(FieldQueryNode, (node, context) => {
+register(PropertyAccessQueryNode, (node, context) => {
     const object = processNode(node.objectNode, context);
-    return aql`${object}${getFieldAccessFragment(node.field)}`;
+    return aql`${object}${getPropertyAccessFragment(node.propertyName)}`;
 });
 
-function getFieldAccessFragment(field: Field) {
-    let identifier = field.name;
-    if (aql.isSafeIdentifier(identifier)) {
-        return aql`.${aql.identifier(identifier)}`;
+register(FieldQueryNode, (node, context) => {
+    const object = processNode(node.objectNode, context);
+    return aql`${object}${getPropertyAccessFragment(node.field.name)}`;
+});
+
+function getPropertyAccessFragment(propertyName: string) {
+    if (aql.isSafeIdentifier(propertyName)) {
+        return aql`.${aql.identifier(propertyName)}`;
     }
     // fall back to bound values. do not attempt aql.string for security reasons - should not be the case normally, anyway.
-    return aql`[${identifier}]`;
+    return aql`[${propertyName}]`;
 }
 
 register(RootEntityIDQueryNode, (node, context) => {
@@ -771,7 +775,7 @@ function getQuantifierFilterUsingArrayExpansion(
     } while (currentFieldNode !== itemVariable);
 
     const valueFrag = processNode(conditionNode.rhs, context);
-    const fieldAccessFrag = aql.concat(fields.map(f => getFieldAccessFragment(f)));
+    const fieldAccessFrag = aql.concat(fields.map(f => getPropertyAccessFragment(f.name)));
     return aql`${valueFrag} IN ${processNode(listNode, context)}[*]${fieldAccessFrag}`;
 }
 
@@ -885,7 +889,7 @@ function getFieldTraversalFragmentWithoutFlattening(segments: ReadonlyArray<Fiel
     let frag = sourceFrag;
     let flattenDepth = 0;
     for (const segment of segments) {
-        frag = aql`${frag}${getFieldAccessFragment(segment.field)}`;
+        frag = aql`${frag}${getPropertyAccessFragment(segment.field.name)}`;
         if (segment.isListSegment) {
             // the array expansion operator [*] does two useful things:
             // - it performs the next field access basically as .map(o => o.fieldName).

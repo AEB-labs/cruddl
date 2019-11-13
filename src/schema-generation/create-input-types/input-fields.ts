@@ -1,5 +1,7 @@
 import { GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
+import { ZonedDateTime } from 'js-joda';
 import { Field } from '../../model';
+import { GraphQLOffsetDateTime, serializeForStorage } from '../../schema/scalars/offset-date-time';
 import { AnyValue, PlainObject } from '../../utils/utils';
 import { createGraphQLError } from '../graphql-errors';
 import { FieldContext } from '../query-node-object-type/context';
@@ -53,6 +55,9 @@ export class BasicCreateInputField implements CreateInputField {
     }
 
     protected coerceValue(value: AnyValue, context: FieldContext): AnyValue {
+        if (this.field.type.isScalarType && this.field.type.graphQLScalarType === GraphQLOffsetDateTime && value instanceof ZonedDateTime) {
+            return serializeForStorage(value);
+        }
         return value;
     }
 
@@ -77,13 +82,10 @@ export class BasicCreateInputField implements CreateInputField {
 
 export class BasicListCreateInputField extends BasicCreateInputField {
     protected coerceValue(value: AnyValue, context: FieldContext): AnyValue {
-        value = super.coerceValue(value, context);
-        if (value === null) {
-            // null is not a valid list value - if the user specified it, coerce it to [] to not have a mix of [] and
-            // null in the database
-            return [];
-        }
-        return value;
+        // null is not a valid list value - if the user specified it, coerce it to [] to not have a mix of [] and
+        // null in the database
+        let listValue = Array.isArray(value) ? value : [];
+        return listValue.map(itemValue => super.coerceValue(itemValue, context));
     }
 }
 

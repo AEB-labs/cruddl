@@ -26,7 +26,6 @@ export class EntitiesQueryNode extends QueryNode {
     }
 }
 
-
 /**
  * A node that evaluates to the value of a field of an object, or NULL if it does not exist or objectNode does not
  * evaluate to an object
@@ -40,6 +39,23 @@ export class FieldQueryNode extends QueryNode {
 
     public describe() {
         return `${this.objectNode.describe()}.${blue(this.field.name)}`;
+    }
+}
+
+/**
+ * A node that evaluates to the value of a property of an object, or NULL if it does not exist or objectNode does not
+ * evaluate to an object
+ *
+ * This is equivalent to a FieldQueryNode except there does not need to be a model field. Authorization checks will not
+ * be applied.
+ */
+export class PropertyAccessQueryNode extends QueryNode {
+    constructor(public readonly objectNode: QueryNode, public readonly propertyName: string) {
+        super();
+    }
+
+    public describe() {
+        return `${this.objectNode.describe()}.${blue(this.propertyName)}`;
     }
 }
 

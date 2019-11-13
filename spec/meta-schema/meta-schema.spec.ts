@@ -6,7 +6,6 @@ import { Model, TypeKind } from '../../src/model';
 import { stopMetaServer } from '../dev/server';
 
 describe('Meta schema API', () => {
-
     const introQuery = gql`
         query {
             __schema {
@@ -152,7 +151,7 @@ describe('Meta schema API', () => {
             }, {
                 name: 'TransportKind',
                 kind: TypeKind.ENUM,
-                values: [{value: 'AIR'}, {value: 'ROAD'}, {value: 'SEA'}]
+                values: [{ value: 'AIR' }, { value: 'ROAD' }, { value: 'SEA' }]
             }
         ],
         permissionProfiles: [
@@ -213,7 +212,7 @@ describe('Meta schema API', () => {
     const metaSchema = getMetaSchema(model);
 
     async function execute(doc: DocumentNode, context?: any) {
-        const {data, errors} = await graphql(metaSchema, print(doc), {}, context);
+        const { data, errors } = await graphql(metaSchema, print(doc), {}, context);
         if (errors) {
             throw new Error(JSON.stringify(errors));
         }
@@ -224,139 +223,140 @@ describe('Meta schema API', () => {
         const result = await execute(typeQuery);
         expect(result).to.deep.equal({
             'types': [
-                {'name': 'ID', 'kind': 'SCALAR'},
-                {'name': 'String', 'kind': 'SCALAR'},
-                {'name': 'Boolean', 'kind': 'SCALAR'},
-                {'name': 'Int', 'kind': 'SCALAR'},
-                {'name': 'Float', 'kind': 'SCALAR'},
-                {'name': 'JSON', 'kind': 'SCALAR'},
-                {'name': 'DateTime', 'kind': 'SCALAR'},
-                {'name': 'LocalDate', 'kind': 'SCALAR'},
-                {'name': 'LocalTime', 'kind': 'SCALAR'},
+                { 'name': 'ID', 'kind': 'SCALAR' },
+                { 'name': 'String', 'kind': 'SCALAR' },
+                { 'name': 'Boolean', 'kind': 'SCALAR' },
+                { 'name': 'Int', 'kind': 'SCALAR' },
+                { 'name': 'Float', 'kind': 'SCALAR' },
+                { 'name': 'JSON', 'kind': 'SCALAR' },
+                { 'name': 'DateTime', 'kind': 'SCALAR' },
+                { 'name': 'LocalDate', 'kind': 'SCALAR' },
+                { 'name': 'LocalTime', 'kind': 'SCALAR' },
+                { 'name': 'OffsetDateTime', 'kind': 'SCALAR' },
                 {
                     'name': 'Address', 'kind': 'VALUE_OBJECT', 'fields': [
                         {
                             'name': 'street', 'isList': false, 'isReference': false,
-                            'isRelation': false, 'type': {'__typename': 'ScalarType'}
+                            'isRelation': false, 'type': { '__typename': 'ScalarType' }
                         }
                     ]
                 },
                 {
-                    'name': 'Country', 'pluralName': 'Countries', 'kind': 'ROOT_ENTITY', 'keyField': {'name': 'isoCode'}, 'fields': [
+                    'name': 'Country', 'pluralName': 'Countries', 'kind': 'ROOT_ENTITY', 'keyField': { 'name': 'isoCode' }, 'fields': [
                         {
                             'name': 'id', 'isList': false, 'isReference': false,
-                            'isRelation': false, 'type': {'__typename': 'ScalarType'}
+                            'isRelation': false, 'type': { '__typename': 'ScalarType' }
                         },
                         {
                             'name': 'createdAt', 'isList': false, 'isReference': false,
-                            'isRelation': false, 'type': {'__typename': 'ScalarType'}
+                            'isRelation': false, 'type': { '__typename': 'ScalarType' }
                         },
                         {
                             'name': 'updatedAt', 'isList': false, 'isReference': false,
-                            'isRelation': false, 'type': {'__typename': 'ScalarType'}
+                            'isRelation': false, 'type': { '__typename': 'ScalarType' }
                         },
                         {
                             'name': 'isoCode', 'isList': false, 'isReference': false,
-                            'isRelation': false, 'type': {'__typename': 'ScalarType'}
+                            'isRelation': false, 'type': { '__typename': 'ScalarType' }
                         }
                     ]
                 }, {
                     'name': 'Shipment', 'pluralName': 'Shipments', 'kind': 'ROOT_ENTITY', 'keyField': null, 'fields': [
                         {
                             'name': 'id', 'isList': false, 'isReference': false,
-                            'isRelation': false, 'type': {'__typename': 'ScalarType'}
+                            'isRelation': false, 'type': { '__typename': 'ScalarType' }
                         },
                         {
                             'name': 'createdAt', 'isList': false, 'isReference': false,
-                            'isRelation': false, 'type': {'__typename': 'ScalarType'}
+                            'isRelation': false, 'type': { '__typename': 'ScalarType' }
                         },
                         {
                             'name': 'updatedAt', 'isList': false, 'isReference': false,
-                            'isRelation': false, 'type': {'__typename': 'ScalarType'}
+                            'isRelation': false, 'type': { '__typename': 'ScalarType' }
                         },
                         {
                             'name': 'deliveries', 'isList': true, 'isReference': false,
-                            'isRelation': true, 'type': {'__typename': 'RootEntityType'}
+                            'isRelation': true, 'type': { '__typename': 'RootEntityType' }
                         },
                         {
                             'name': 'delivery', 'isList': false, 'isReference': false,
-                            'isRelation': true, 'type': {'__typename': 'RootEntityType'}
+                            'isRelation': true, 'type': { '__typename': 'RootEntityType' }
                         },
                         {
                             'name': 'deliveryNonRelation', 'isList': false, 'isReference': false,
-                            'isRelation': false, 'type': {'__typename': 'RootEntityType'}
+                            'isRelation': false, 'type': { '__typename': 'RootEntityType' }
                         },
                         {
                             'name': 'deliveryWithInverseOf', 'isList': false, 'isReference': false,
-                            'isRelation': true, 'type': {'__typename': 'RootEntityType'}
+                            'isRelation': true, 'type': { '__typename': 'RootEntityType' }
                         },
                         {
                             'name': 'handlingUnits', 'isList': true, 'isReference': false,
-                            'isRelation': true, 'type': {'__typename': 'RootEntityType'}
+                            'isRelation': true, 'type': { '__typename': 'RootEntityType' }
                         },
                         {
                             'isList': false, 'isReference': false, 'isRelation': false,
-                            'name': 'transportKind', 'type': {'__typename': 'EnumType'}
+                            'name': 'transportKind', 'type': { '__typename': 'EnumType' }
                         }
                     ]
                 }, {
                     'name': 'Delivery', 'pluralName': 'Deliveries', 'kind': 'ROOT_ENTITY', 'keyField': null, 'fields': [
                         {
                             'name': 'id', 'isList': false, 'isReference': false,
-                            'isRelation': false, 'type': {'__typename': 'ScalarType'}
+                            'isRelation': false, 'type': { '__typename': 'ScalarType' }
                         },
                         {
                             'name': 'createdAt', 'isList': false, 'isReference': false,
-                            'isRelation': false, 'type': {'__typename': 'ScalarType'}
+                            'isRelation': false, 'type': { '__typename': 'ScalarType' }
                         },
                         {
                             'name': 'updatedAt', 'isList': false, 'isReference': false,
-                            'isRelation': false, 'type': {'__typename': 'ScalarType'}
+                            'isRelation': false, 'type': { '__typename': 'ScalarType' }
                         },
                         {
                             'name': 'shipment', 'isList': false, 'isReference': false,
-                            'isRelation': true, 'type': {'__typename': 'RootEntityType'}
+                            'isRelation': true, 'type': { '__typename': 'RootEntityType' }
                         }
                     ]
                 }, {
                     'name': 'HandlingUnit', 'pluralName': 'HandlingUnits', 'kind': 'ROOT_ENTITY', 'keyField': null, 'fields': [
                         {
                             'name': 'id', 'isList': false, 'isReference': false,
-                            'isRelation': false, 'type': {'__typename': 'ScalarType'}
+                            'isRelation': false, 'type': { '__typename': 'ScalarType' }
                         },
                         {
                             'name': 'createdAt', 'isList': false, 'isReference': false,
-                            'isRelation': false, 'type': {'__typename': 'ScalarType'}
+                            'isRelation': false, 'type': { '__typename': 'ScalarType' }
                         },
                         {
                             'name': 'updatedAt', 'isList': false, 'isReference': false,
-                            'isRelation': false, 'type': {'__typename': 'ScalarType'}
+                            'isRelation': false, 'type': { '__typename': 'ScalarType' }
                         }
                     ]
                 }, {
                     'name': 'Item', 'kind': 'CHILD_ENTITY', 'fields': [
                         {
                             'name': 'id', 'isList': false, 'isReference': false,
-                            'isRelation': false, 'type': {'__typename': 'ScalarType'}
+                            'isRelation': false, 'type': { '__typename': 'ScalarType' }
                         },
                         {
                             'name': 'createdAt', 'isList': false, 'isReference': false,
-                            'isRelation': false, 'type': {'__typename': 'ScalarType'}
+                            'isRelation': false, 'type': { '__typename': 'ScalarType' }
                         },
                         {
                             'name': 'updatedAt', 'isList': false, 'isReference': false,
-                            'isRelation': false, 'type': {'__typename': 'ScalarType'}
+                            'isRelation': false, 'type': { '__typename': 'ScalarType' }
                         }
                     ]
                 },
-                {'name': 'DangerousGoodsInfo', 'kind': 'ENTITY_EXTENSION', 'fields': []},
+                { 'name': 'DangerousGoodsInfo', 'kind': 'ENTITY_EXTENSION', 'fields': [] },
                 {
                     'name': 'TransportKind',
                     'kind': 'ENUM',
                     'values': [
-                        {'value': 'AIR'},
-                        {'value': 'ROAD'},
-                        {'value': 'SEA'}
+                        { 'value': 'AIR' },
+                        { 'value': 'ROAD' },
+                        { 'value': 'SEA' }
                     ]
                 }
             ]
@@ -367,17 +367,18 @@ describe('Meta schema API', () => {
         const result = await execute(queryPerTypeQuery);
         expect(result).to.deep.equal({
             'rootEntityTypes': [
-                {'name': 'Country'}, {'name': 'Shipment'}, {'name': 'Delivery'}, {'name': 'HandlingUnit'}
+                { 'name': 'Country' }, { 'name': 'Shipment' }, { 'name': 'Delivery' }, { 'name': 'HandlingUnit' }
             ],
-            'childEntityTypes': [{'name': 'Item'}],
-            'entityExtensionTypes': [{'name': 'DangerousGoodsInfo'}],
-            'valueObjectTypes': [{'name': 'Address'}],
+            'childEntityTypes': [{ 'name': 'Item' }],
+            'entityExtensionTypes': [{ 'name': 'DangerousGoodsInfo' }],
+            'valueObjectTypes': [{ 'name': 'Address' }],
             'scalarTypes': [
-                {'name': 'ID'}, {'name': 'String'}, {'name': 'Boolean'}, {'name': 'Int'}, {'name': 'Float'},
-                {'name': 'JSON'}, {'name': 'DateTime'}, {'name': 'LocalDate'}, {'name': 'LocalTime'}
+                { 'name': 'ID' }, { 'name': 'String' }, { 'name': 'Boolean' }, { 'name': 'Int' }, { 'name': 'Float' },
+                { 'name': 'JSON' }, { 'name': 'DateTime' }, { 'name': 'LocalDate' }, { 'name': 'LocalTime' },
+                { 'name': 'OffsetDateTime' }
             ],
             'enumTypes': [
-                {'name': 'TransportKind'}
+                { 'name': 'TransportKind' }
             ]
         });
     });
@@ -388,22 +389,22 @@ describe('Meta schema API', () => {
             'rootEntityType': {
                 'name': 'Delivery', 'relations': [
                     {
-                        'fromField': {'name': 'deliveries'},
-                        'fromType': {'name': 'Shipment'},
+                        'fromField': { 'name': 'deliveries' },
+                        'fromType': { 'name': 'Shipment' },
                         'toField': null,
-                        'toType': {'name': 'Delivery'}
+                        'toType': { 'name': 'Delivery' }
                     },
                     {
-                        'fromField': {'name': 'delivery'},
-                        'fromType': {'name': 'Shipment'},
+                        'fromField': { 'name': 'delivery' },
+                        'fromType': { 'name': 'Shipment' },
                         'toField': null,
-                        'toType': {'name': 'Delivery'}
+                        'toType': { 'name': 'Delivery' }
                     },
                     {
-                        'fromField': {'name': 'shipment'},
-                        'fromType': {'name': 'Delivery'},
-                        'toField': {'name': 'deliveryWithInverseOf'},
-                        'toType': {'name': 'Shipment'}
+                        'fromField': { 'name': 'shipment' },
+                        'fromType': { 'name': 'Delivery' },
+                        'toField': { 'name': 'deliveryWithInverseOf' },
+                        'toType': { 'name': 'Shipment' }
                     }
                 ]
             }
@@ -414,10 +415,10 @@ describe('Meta schema API', () => {
         const result = await execute(gql`{namespaces{name path isRoot}}`);
         expect(result).to.deep.equal({
             'namespaces': [
-                {'name': null, 'path': [], 'isRoot': true},
-                {'name': 'generic', 'path': ['generic'], 'isRoot': false},
-                {'name': 'logistics', 'path': ['logistics'], 'isRoot': false},
-                {'name': 'shipments', 'path': ['logistics', 'shipments'], 'isRoot': false}
+                { 'name': null, 'path': [], 'isRoot': true },
+                { 'name': 'generic', 'path': ['generic'], 'isRoot': false },
+                { 'name': 'logistics', 'path': ['logistics'], 'isRoot': false },
+                { 'name': 'shipments', 'path': ['logistics', 'shipments'], 'isRoot': false }
             ]
         });
     });
@@ -425,8 +426,8 @@ describe('Meta schema API', () => {
     it('can query namespace by path', async () => {
         const result = await execute(gql`{logistics: namespace(path: ["logistics"]) { name path } root: namespace(path: []) { name path } }`);
         expect(result).to.deep.equal({
-            'logistics': {'name': 'logistics', 'path': ['logistics']},
-            'root': {'name': null, 'path': []}
+            'logistics': { 'name': 'logistics', 'path': ['logistics'] },
+            'root': { 'name': null, 'path': [] }
         });
     });
 
@@ -466,7 +467,7 @@ describe('Meta schema API', () => {
     });
 
     it('can query localization with provided language', async () => {
-        const result = await execute(localizationQuery, {locale: ['de', 'en']});
+        const result = await execute(localizationQuery, { locale: ['de', 'en'] });
         const addressType = result!.valueObjectType;
         expect(addressType.localization).to.deep.equal({
             label: 'Adresse',

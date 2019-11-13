@@ -1,7 +1,7 @@
 import { compact } from 'lodash';
 import { Field, AggregationOperator, Relation, RelationSide, RootEntityType } from '../../model';
 import { getEffectiveCollectSegments } from '../../model/implementation/collect-path';
-import { AddEdgesQueryNode, AggregationQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode, ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, OrderClause, OrderDirection, OrderSpecification, QueryNode, QueryResultValidator, RemoveEdgesQueryNode, RootEntityIDQueryNode, RUNTIME_ERROR_CODE_PROPERTY, RUNTIME_ERROR_TOKEN, RuntimeErrorQueryNode, SafeListQueryNode, SetEdgeQueryNode, TransformListQueryNode, TraversalQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../../query-tree';
+import { AddEdgesQueryNode, AggregationQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode, ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, OrderClause, OrderDirection, OrderSpecification, PropertyAccessQueryNode, QueryNode, QueryResultValidator, RemoveEdgesQueryNode, RootEntityIDQueryNode, RUNTIME_ERROR_CODE_PROPERTY, RUNTIME_ERROR_TOKEN, RuntimeErrorQueryNode, SafeListQueryNode, SetEdgeQueryNode, TransformListQueryNode, TraversalQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../../query-tree';
 import { QuantifierFilterNode } from '../../query-tree/quantifiers';
 import { not } from '../../schema-generation/filter-input-types/constants';
 import { Constructor, decapitalize } from '../../utils/utils';
@@ -237,12 +237,17 @@ register(EntityFromIdQueryNode, (node, context) => {
 
 register(FieldQueryNode, (node, context) => {
     const object = processNode(node.objectNode, context);
-    return getFieldAccessFrag(node.field, object);
+    return getPropertyAccessFrag(node.field.name, object);
 });
 
-function getFieldAccessFrag(field: Field, objectFrag: JSFragment) {
+register(PropertyAccessQueryNode, (node, context) => {
+    const object = processNode(node.objectNode, context);
+    return getPropertyAccessFrag(node.propertyName, object);
+});
+
+function getPropertyAccessFrag(propertyName: string, objectFrag: JSFragment) {
     const objectVar = js.variable('object');
-    const identifier = jsExt.safeJSONKey(field.name);
+    const identifier = jsExt.safeJSONKey(propertyName);
     // always use [] access because we could collide with keywords
     // avoid undefined values because they cause trouble when being compared with === to null
     const raw = js`${identifier} in ${objectVar} ? ${objectVar}[${identifier}] : null`;
@@ -554,15 +559,15 @@ register(TraversalQueryNode, (node, context) => {
                 const accVar = js.variable('acc');
                 const safeListVar = js.variable('list');
                 // || [] to not concat `null` to a list
-                const reducer = js`(${accVar}, ${nodeVar}) => ${accVar}.concat(${getFieldAccessFrag(segment.field, nodeVar)} || [])`;
+                const reducer = js`(${accVar}, ${nodeVar}) => ${accVar}.concat(${getPropertyAccessFrag(segment.field.name, nodeVar)} || [])`;
                 currentFrag = jsExt.evaluatingLambda(safeListVar, js`${safeListVar}.reduce(${reducer}, [])`, js`${currentFrag} || []`);
             } else {
                 const nodeVar = js.variable('node');
-                const mapper = jsExt.lambda(nodeVar, getFieldAccessFrag(segment.field, nodeVar));
+                const mapper = jsExt.lambda(nodeVar, getPropertyAccessFrag(segment.field.name, nodeVar));
                 currentFrag = js`${currentFrag}.map(${mapper})`;
             }
         } else {
-            currentFrag = getFieldAccessFrag(segment.field, currentFrag);
+            currentFrag = getPropertyAccessFrag(segment.field.name, currentFrag);
         }
 
         if (segment.isListSegment) {
