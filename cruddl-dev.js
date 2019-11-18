@@ -1,2 +1,2 @@
-require('ts-node').register({lazy: true, ignore: /node_modules\/(?!@aeb\/)/});
+require('ts-node').register({ lazy: true });
 require('./spec/dev/start');
