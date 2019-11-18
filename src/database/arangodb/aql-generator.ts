@@ -640,6 +640,15 @@ register(FirstOfListQueryNode, (node, context) => {
 
 register(BinaryOperationQueryNode, (node, context) => {
     const lhs = processNode(node.lhs, context);
+
+    // a > NULL is equivalent to a != NULL, and it can use indices better
+    if (
+        node.operator === BinaryOperator.UNEQUAL &&
+        (node.rhs instanceof NullQueryNode || (node.rhs instanceof LiteralQueryNode && node.rhs.value == undefined))
+    ) {
+        return aql`(${lhs} > NULL)`;
+    }
+
     const rhs = processNode(node.rhs, context);
     const op = getAQLOperator(node.operator);
     if (op) {
