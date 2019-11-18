@@ -1,4 +1,14 @@
-type Hero @rootEntity(flexSearch: true, flexSearchLanguage: DE, flexSearchOrder: [{field: "name", direction: ASC},{field: "age", direction: DESC}]) {
+type Hero @rootEntity(
+    flexSearch: true,
+    flexSearchLanguage: DE,
+    flexSearchOrder: [
+        { field: "name", direction: ASC },
+        { field: "age", direction: DESC }
+    ],
+    indices: [
+        { fields: "missions.date" }
+    ]
+) {
     "The hero's screen name"
     name: String @unique @flexSearchFulltext(includeInSearch: true)
     age: Int @defaultValue(value: 42)
@@ -19,7 +29,7 @@ type Hero @rootEntity(flexSearch: true, flexSearchLanguage: DE, flexSearchOrder:
 
 "A heroic mission"
 type Mission @childEntity {
-    date: DateTime
+    date: OffsetDateTime
     title: String
     subMissions: [Mission]
 }

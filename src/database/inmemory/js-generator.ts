@@ -1,8 +1,58 @@
 import { compact } from 'lodash';
 import { AggregationOperator, Field, Relation, RelationSide, RootEntityType } from '../../model';
 import { getEffectiveCollectSegments } from '../../model/implementation/collect-path';
-import { AddEdgesQueryNode, AggregationQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode, ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, OperatorWithLanguageQueryNode, OrderClause, OrderDirection, OrderSpecification, QueryNode, QueryResultValidator, RemoveEdgesQueryNode, RootEntityIDQueryNode, RUNTIME_ERROR_CODE_PROPERTY, RUNTIME_ERROR_TOKEN, RuntimeErrorQueryNode, SafeListQueryNode, SetEdgeQueryNode, TransformListQueryNode, TraversalQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../../query-tree';
-import { FlexSearchComplexOperatorQueryNode, FlexSearchFieldExistsQueryNode, FlexSearchQueryNode } from '../../query-tree/flex-search';
+import {
+    AddEdgesQueryNode,
+    AggregationQueryNode,
+    BasicType,
+    BinaryOperationQueryNode,
+    BinaryOperator,
+    ConcatListsQueryNode,
+    ConditionalQueryNode,
+    ConstBoolQueryNode,
+    ConstIntQueryNode,
+    CountQueryNode,
+    CreateEntityQueryNode,
+    DeleteEntitiesQueryNode,
+    EntitiesQueryNode,
+    EntityFromIdQueryNode,
+    FieldQueryNode,
+    FirstOfListQueryNode,
+    FollowEdgeQueryNode,
+    ListQueryNode,
+    LiteralQueryNode,
+    MergeObjectsQueryNode,
+    NullQueryNode,
+    ObjectQueryNode,
+    OperatorWithLanguageQueryNode,
+    OrderClause,
+    OrderDirection,
+    OrderSpecification,
+    PropertyAccessQueryNode,
+    QueryNode,
+    QueryResultValidator,
+    RemoveEdgesQueryNode,
+    RootEntityIDQueryNode,
+    RUNTIME_ERROR_CODE_PROPERTY,
+    RUNTIME_ERROR_TOKEN,
+    RuntimeErrorQueryNode,
+    SafeListQueryNode,
+    SetEdgeQueryNode,
+    TransformListQueryNode,
+    TraversalQueryNode,
+    TypeCheckQueryNode,
+    UnaryOperationQueryNode,
+    UnaryOperator,
+    UpdateEntitiesQueryNode,
+    VariableAssignmentQueryNode,
+    VariableQueryNode,
+    WithPreExecutionQueryNode
+} from '../../query-tree';
+import {
+    FlexSearchComplexOperatorQueryNode,
+    FlexSearchFieldExistsQueryNode,
+    FlexSearchQueryNode
+} from '../../query-tree/flex-search';
 import { QuantifierFilterNode } from '../../query-tree/quantifiers';
 import { not } from '../../schema-generation/utils/input-types';
 import { Constructor, decapitalize } from '../../utils/utils';
@@ -70,7 +120,11 @@ class QueryContext {
      * @param resultVariable the variable to store the query result
      * @param resultValidator an optional validator for the query result
      */
-    addPreExecuteQuery(preExecQuery: QueryNode, resultVariable?: VariableQueryNode, resultValidator?: QueryResultValidator): QueryContext {
+    addPreExecuteQuery(
+        preExecQuery: QueryNode,
+        resultVariable?: VariableQueryNode,
+        resultValidator?: QueryResultValidator
+    ): QueryContext {
         let resultVar: JSQueryResultVariable | undefined;
         let newContext: QueryContext;
         if (resultVariable) {
@@ -103,10 +157,12 @@ class QueryContext {
     }
 }
 
-function createJSCompoundQuery(node: QueryNode,
-                               resultVariable: JSQueryResultVariable | undefined,
-                               resultValidator: QueryResultValidator | undefined,
-                               context: QueryContext): JSCompoundQuery {
+function createJSCompoundQuery(
+    node: QueryNode,
+    resultVariable: JSQueryResultVariable | undefined,
+    resultValidator: QueryResultValidator | undefined,
+    context: QueryContext
+): JSCompoundQuery {
     const jsQuery = processNode(node, context);
     const preExecQueries = context.getPreExecuteQueries();
 
@@ -125,11 +181,7 @@ namespace jsExt {
     }
 
     export function executingFunction(...content: JSFragment[]): JSFragment {
-        return js.lines(
-            js`(function() {`,
-            js.indent(js.lines(...content)),
-            js`})()`
-        );
+        return js.lines(js`(function() {`, js.indent(js.lines(...content)), js`})()`);
     }
 
     export function lambda(variable: JSVariable, expression: JSFragment) {
@@ -146,7 +198,6 @@ const processors = new Map<Constructor<QueryNode>, NodeProcessor<QueryNode>>();
 function register<T extends QueryNode>(type: Constructor<T>, processor: NodeProcessor<T>) {
     processors.set(type, processor as NodeProcessor<QueryNode>); // probably some bivariancy issue
 }
-
 
 register(LiteralQueryNode, node => {
     return js.value(node.value);
@@ -178,13 +229,10 @@ register(ObjectQueryNode, (node, context) => {
         return js`{}`;
     }
 
-    const properties = node.properties.map(p =>
-        js`${jsExt.safeJSONKey(p.propertyName)}: ${processNode(p.valueNode, context)}`);
-    return js.lines(
-        js`{`,
-        js.indent(js.join(properties, js`,\n`)),
-        js`}`
+    const properties = node.properties.map(
+        p => js`${jsExt.safeJSONKey(p.propertyName)}: ${processNode(p.valueNode, context)}`
     );
+    return js.lines(js`{`, js.indent(js.join(properties, js`,\n`)), js`}`);
 });
 
 register(ListQueryNode, (node, context) => {
@@ -222,7 +270,11 @@ register(VariableAssignmentQueryNode, (node, context) => {
 register(WithPreExecutionQueryNode, (node, context) => {
     let currentContext = context;
     for (const preExecParm of node.preExecQueries) {
-        currentContext = currentContext.addPreExecuteQuery(preExecParm.query, preExecParm.resultVariable, preExecParm.resultValidator);
+        currentContext = currentContext.addPreExecuteQuery(
+            preExecParm.query,
+            preExecParm.resultVariable,
+            preExecParm.resultValidator
+        );
     }
 
     return js`${processNode(node.resultNode, currentContext)}`;
@@ -230,27 +282,45 @@ register(WithPreExecutionQueryNode, (node, context) => {
 
 register(EntityFromIdQueryNode, (node, context) => {
     const itemVariable = new VariableQueryNode(decapitalize(node.rootEntityType.name));
-    return processNode(new FirstOfListQueryNode(new TransformListQueryNode({
-        listNode: new EntitiesQueryNode(node.rootEntityType),
-        itemVariable,
-        filterNode: new BinaryOperationQueryNode(new RootEntityIDQueryNode(itemVariable), BinaryOperator.EQUAL, node.idNode)
-    })), context);
+    return processNode(
+        new FirstOfListQueryNode(
+            new TransformListQueryNode({
+                listNode: new EntitiesQueryNode(node.rootEntityType),
+                itemVariable,
+                filterNode: new BinaryOperationQueryNode(
+                    new RootEntityIDQueryNode(itemVariable),
+                    BinaryOperator.EQUAL,
+                    node.idNode
+                )
+            })
+        ),
+        context
+    );
 });
 
 register(FieldQueryNode, (node, context) => {
     const object = processNode(node.objectNode, context);
-    return getFieldAccessFrag(node.field, object);
+    return getPropertyAccessFrag(node.field.name, object);
 });
 
-function getFieldAccessFrag(field: Field, objectFrag: JSFragment) {
+register(PropertyAccessQueryNode, (node, context) => {
+    const object = processNode(node.objectNode, context);
+    return getPropertyAccessFrag(node.propertyName, object);
+});
+
+function getPropertyAccessFrag(propertyName: string, objectFrag: JSFragment) {
     const objectVar = js.variable('object');
-    const identifier = jsExt.safeJSONKey(field.name);
+    const identifier = jsExt.safeJSONKey(propertyName);
     // always use [] access because we could collide with keywords
     // avoid undefined values because they cause trouble when being compared with === to null
     const raw = js`${identifier} in ${objectVar} ? ${objectVar}[${identifier}] : null`;
 
     // mimick arango behavior here which propagates null
-    return jsExt.evaluatingLambda(objectVar, js`((typeof (${objectVar}) == 'object' && (${objectVar}) != null) ? (${raw}) : null)`, objectFrag);
+    return jsExt.evaluatingLambda(
+        objectVar,
+        js`((typeof (${objectVar}) == 'object' && (${objectVar}) != null) ? (${raw}) : null)`,
+        objectFrag
+    );
 }
 
 register(RootEntityIDQueryNode, (node, context) => {
@@ -265,7 +335,9 @@ register(TransformListQueryNode, (node, context) => {
         return jsExt.lambda(itemVar, processNode(exprNode, itemContext));
     }
 
-    const comparator = node.orderBy.isUnordered() ? undefined : getComparatorForOrderSpecification(node.orderBy, itemVar, itemContext);
+    const comparator = node.orderBy.isUnordered()
+        ? undefined
+        : getComparatorForOrderSpecification(node.orderBy, itemVar, itemContext);
     const isFiltered = !(node.filterNode instanceof ConstBoolQueryNode) || node.filterNode.value != true;
     const isMapped = node.innerNode != node.itemVariable;
 
@@ -280,12 +352,14 @@ register(TransformListQueryNode, (node, context) => {
 
     return js.lines(
         processNode(node.listNode, context),
-        js.indent(js.lines(
-            isFiltered ? js`.filter(${lambda(node.filterNode)})` : js``,
-            comparator ? js`.slice().sort(${comparator})` : js``, // need slice() to not replace something in-place
-            sliceClause,
-            isMapped ? js`.map(${lambda(node.innerNode)})` : js``
-        ))
+        js.indent(
+            js.lines(
+                isFiltered ? js`.filter(${lambda(node.filterNode)})` : js``,
+                comparator ? js`.slice().sort(${comparator})` : js``, // need slice() to not replace something in-place
+                sliceClause,
+                isMapped ? js`.map(${lambda(node.innerNode)})` : js``
+            )
+        )
     );
 });
 
@@ -306,11 +380,23 @@ register(AggregationQueryNode, (node, context) => {
         case AggregationOperator.SUM:
             return js`${listWithoutNullsFrag}.reduce((${itemVar}, ${accumulatorVar}) => ${accumulatorVar} + ${itemVar}, 0)`;
         case AggregationOperator.AVERAGE:
-            return jsExt.evaluatingLambda(listVar, js`${listVar}.length ? (${listVar}.reduce((${itemVar}, ${accumulatorVar}) => ${accumulatorVar} + ${itemVar}) / ${listVar}.length) : null`, listWithoutNullsFrag);
+            return jsExt.evaluatingLambda(
+                listVar,
+                js`${listVar}.length ? (${listVar}.reduce((${itemVar}, ${accumulatorVar}) => ${accumulatorVar} + ${itemVar}) / ${listVar}.length) : null`,
+                listWithoutNullsFrag
+            );
         case AggregationOperator.MIN:
-            return jsExt.evaluatingLambda(listVar, js`${listVar}.length ? (${listVar}.reduce((${itemVar}, ${accumulatorVar}) => Math.min(${accumulatorVar}, ${itemVar}))) : null`, listWithoutNullsFrag);
+            return jsExt.evaluatingLambda(
+                listVar,
+                js`${listVar}.length ? (${listVar}.reduce((${itemVar}, ${accumulatorVar}) => Math.min(${accumulatorVar}, ${itemVar}))) : null`,
+                listWithoutNullsFrag
+            );
         case AggregationOperator.MAX:
-            return jsExt.evaluatingLambda(listVar, js`${listVar}.length ? (${listVar}.reduce((${itemVar}, ${accumulatorVar}) => Math.max(${accumulatorVar}, ${itemVar}))) : null`, listWithoutNullsFrag);
+            return jsExt.evaluatingLambda(
+                listVar,
+                js`${listVar}.length ? (${listVar}.reduce((${itemVar}, ${accumulatorVar}) => Math.max(${accumulatorVar}, ${itemVar}))) : null`,
+                listWithoutNullsFrag
+            );
         case AggregationOperator.SOME_TRUE:
             return js`${listFrag}.some(${jsExt.lambda(itemVar, itemVar)})`;
         case AggregationOperator.SOME_NOT_TRUE:
@@ -345,13 +431,21 @@ register(AggregationQueryNode, (node, context) => {
         // these should also remove null values by definition
         case AggregationOperator.DISTINCT:
             const innerVar = js.variable();
-            const list = jsExt.evaluatingLambda(listVar, js`${listVar}.filter((${itemVar}, ${indexVar}) => (${itemVar} != null && ${listVar}.findIndex(${innerVar} => JSON.stringify(${itemVar}) === JSON.stringify(${innerVar})) === ${indexVar}))`, listWithoutNullsFrag);
+            const list = jsExt.evaluatingLambda(
+                listVar,
+                js`${listVar}.filter((${itemVar}, ${indexVar}) => (${itemVar} != null && ${listVar}.findIndex(${innerVar} => JSON.stringify(${itemVar}) === JSON.stringify(${innerVar})) === ${indexVar}))`,
+                listWithoutNullsFrag
+            );
             if (node.sort) {
                 return js`${list}.sort(support.compare)`;
             }
             return list;
         case AggregationOperator.COUNT_DISTINCT:
-            return jsExt.evaluatingLambda(listVar, js`${listVar}.filter((${itemVar}, ${indexVar}) => (${itemVar} != null && ${listVar}.indexOf(${itemVar}) === ${indexVar})).length`, listWithoutNullsFrag);
+            return jsExt.evaluatingLambda(
+                listVar,
+                js`${listVar}.filter((${itemVar}, ${indexVar}) => (${itemVar} != null && ${listVar}.indexOf(${itemVar}) === ${indexVar})).length`,
+                listWithoutNullsFrag
+            );
         default:
             throw new Error(`Unsupported aggregation operator: ${(node as any).operator}`);
     }
@@ -365,7 +459,11 @@ register(MergeObjectsQueryNode, (node, context) => {
 
 register(FirstOfListQueryNode, (node, context) => {
     const listVar = js.variable('list');
-    return jsExt.evaluatingLambda(listVar, js`${listVar}.length ? ${listVar}[0] : null`, processNode(node.listNode, context));
+    return jsExt.evaluatingLambda(
+        listVar,
+        js`${listVar}.length ? ${listVar}[0] : null`,
+        processNode(node.listNode, context)
+    );
 });
 
 register(BinaryOperationQueryNode, (node, context) => {
@@ -373,22 +471,23 @@ register(BinaryOperationQueryNode, (node, context) => {
     const rhs = processNode(node.rhs, context);
     const lhsVar = js.variable('lhs');
     const rhsVar = js.variable('rhs');
-    const lhsListOrString = jsExt.evaluatingLambda(lhsVar, js`(Array.isArray(${lhsVar}) ? ${lhsVar} : String(${lhsVar}))`, lhs);
-    const rhsListOrString = jsExt.evaluatingLambda(rhsVar, js`(Array.isArray(${rhsVar}) ? ${rhsVar} : String(${rhsVar}))`, rhs);
+    const lhsListOrString = jsExt.evaluatingLambda(
+        lhsVar,
+        js`(Array.isArray(${lhsVar}) ? ${lhsVar} : String(${lhsVar}))`,
+        lhs
+    );
+    const rhsListOrString = jsExt.evaluatingLambda(
+        rhsVar,
+        js`(Array.isArray(${rhsVar}) ? ${rhsVar} : String(${rhsVar}))`,
+        rhs
+    );
     const op = getJSOperator(node.operator);
     if (op) {
         return js`(${lhs} ${op} ${rhs})`;
     }
 
     function compare(comp: JSFragment) {
-        return js.lines(
-            js`support.compare(`,
-            js.indent(js.lines(
-                js`${lhs},`,
-                js`${rhs}`
-            )),
-            js`) ${comp} 0`
-        );
+        return js.lines(js`support.compare(`, js.indent(js.lines(js`${lhs},`, js`${rhs}`)), js`) ${comp} 0`);
     }
 
     switch (node.operator) {
@@ -447,18 +546,30 @@ register(TypeCheckQueryNode, (node, context) => {
 
     switch (node.type) {
         case BasicType.SCALAR:
-            return jsExt.evaluatingLambda(valueVar, js`(typeof ${valueVar} == 'boolean' || typeof ${valueVar} == 'number || typeof ${valueVar} == 'string')`, value);
+            return jsExt.evaluatingLambda(
+                valueVar,
+                js`(typeof ${valueVar} == 'boolean' || typeof ${valueVar} == 'number || typeof ${valueVar} == 'string')`,
+                value
+            );
         case BasicType.LIST:
             return js`Array.isArray(${value})`;
         case BasicType.OBJECT:
-            return jsExt.evaluatingLambda(valueVar, js`typeof ${valueVar} == 'object' && ${valueVar} != null && !Array.isArray(${valueVar})`, value);
+            return jsExt.evaluatingLambda(
+                valueVar,
+                js`typeof ${valueVar} == 'object' && ${valueVar} != null && !Array.isArray(${valueVar})`,
+                value
+            );
         case BasicType.NULL:
             return js`${value} == null`;
     }
 });
 
 register(SafeListQueryNode, (node, context) => {
-    const reducedNode = new ConditionalQueryNode(new TypeCheckQueryNode(node.sourceNode, BasicType.LIST), node.sourceNode, ListQueryNode.EMPTY);
+    const reducedNode = new ConditionalQueryNode(
+        new TypeCheckQueryNode(node.sourceNode, BasicType.LIST),
+        node.sourceNode,
+        ListQueryNode.EMPTY
+    );
     return processNode(reducedNode, context);
 });
 
@@ -477,8 +588,11 @@ register(QuantifierFilterNode, (node, context) => {
         itemVariable
     });
 
-    const finalNode = new BinaryOperationQueryNode(new CountQueryNode(filteredListNode),
-        quantifier === 'none' ? BinaryOperator.EQUAL : BinaryOperator.GREATER_THAN, new LiteralQueryNode(0));
+    const finalNode = new BinaryOperationQueryNode(
+        new CountQueryNode(filteredListNode),
+        quantifier === 'none' ? BinaryOperator.EQUAL : BinaryOperator.GREATER_THAN,
+        new LiteralQueryNode(0)
+    );
     return processNode(finalNode, context);
 });
 
@@ -491,7 +605,11 @@ register(FollowEdgeQueryNode, (node, context) => {
     return getFollowEdgeFragment(node.relationSide, sourceID, context);
 });
 
-function getFollowEdgeFragment(relationSide: RelationSide, sourceIDFrag: JSFragment, context: QueryContext): JSFragment {
+function getFollowEdgeFragment(
+    relationSide: RelationSide,
+    sourceIDFrag: JSFragment,
+    context: QueryContext
+): JSFragment {
     const targetType = relationSide.targetType;
     const targetColl = getCollectionForType(targetType, context);
     const edgeColl = getCollectionForRelation(relationSide.relation, context);
@@ -504,11 +622,16 @@ function getFollowEdgeFragment(relationSide: RelationSide, sourceIDFrag: JSFragm
 
     return js.lines(
         js`${edgeColl}`,
-        js.indent(js.lines(
-            js`.filter(${jsExt.lambda(edgeVar, js`${sourceIDOnEdge} == ${sourceIDFrag}`)})`,
-            js`.map(${jsExt.lambda(edgeVar, js`${targetColl}.find(${jsExt.lambda(itemVar, idOnItemEqualsTargetIDOnEdge)})`)})`,
-            js`.filter(${jsExt.lambda(itemVar, itemVar)})` // filter out nulls
-        ))
+        js.indent(
+            js.lines(
+                js`.filter(${jsExt.lambda(edgeVar, js`${sourceIDOnEdge} == ${sourceIDFrag}`)})`,
+                js`.map(${jsExt.lambda(
+                    edgeVar,
+                    js`${targetColl}.find(${jsExt.lambda(itemVar, idOnItemEqualsTargetIDOnEdge)})`
+                )})`,
+                js`.filter(${jsExt.lambda(itemVar, itemVar)})` // filter out nulls
+            )
+        )
     );
 }
 
@@ -523,17 +646,33 @@ register(TraversalQueryNode, (node, context) => {
             const nodeVar = js.variable('node');
             const accVar = js.variable('acc');
             const idFrag = js`${nodeVar}.${js.identifier(ID_FIELD_NAME)}`;
-            let edgeListFragment = js`${nodeVar} ? ${getFollowEdgeFragment(segment.relationSide, idFrag, context)} : null`;
+            let edgeListFragment = js`${nodeVar} ? ${getFollowEdgeFragment(
+                segment.relationSide,
+                idFrag,
+                context
+            )} : null`;
             if (!segment.isListSegment) {
                 // to-1 relations can be nullable and we need to keep the NULL values (and not just pretend the source didn't exist)
                 const edgeListVar = js.variable('edges');
-                edgeListFragment = jsExt.evaluatingLambda(edgeListVar, js`${edgeListVar}.length ? ${edgeListVar} : [null]`, edgeListFragment);
+                edgeListFragment = jsExt.evaluatingLambda(
+                    edgeListVar,
+                    js`${edgeListVar}.length ? ${edgeListVar} : [null]`,
+                    edgeListFragment
+                );
             }
             const reducer = js`(${accVar}, ${nodeVar}) => ${accVar}.concat(${edgeListFragment})`;
             currentFrag = js`${currentFrag}.reduce(${reducer}, [])`;
         } else {
             const nodeVar = js.variable('node');
-            currentFrag = jsExt.evaluatingLambda(nodeVar, js`${nodeVar} ? ${getFollowEdgeFragment(segment.relationSide, js`${nodeVar}.${js.identifier(ID_FIELD_NAME)}`, context)} : null`, currentFrag);
+            currentFrag = jsExt.evaluatingLambda(
+                nodeVar,
+                js`${nodeVar} ? ${getFollowEdgeFragment(
+                    segment.relationSide,
+                    js`${nodeVar}.${js.identifier(ID_FIELD_NAME)}`,
+                    context
+                )} : null`,
+                currentFrag
+            );
             if (!segment.isListSegment) {
                 // to-1 relations can be nullable and we need to keep the NULL values (and not just pretend the source didn't exist)
                 currentFrag = js`(${currentFrag}[0] || null)`;
@@ -556,15 +695,22 @@ register(TraversalQueryNode, (node, context) => {
                 const accVar = js.variable('acc');
                 const safeListVar = js.variable('list');
                 // || [] to not concat `null` to a list
-                const reducer = js`(${accVar}, ${nodeVar}) => ${accVar}.concat(${getFieldAccessFrag(segment.field, nodeVar)} || [])`;
-                currentFrag = jsExt.evaluatingLambda(safeListVar, js`${safeListVar}.reduce(${reducer}, [])`, js`${currentFrag} || []`);
+                const reducer = js`(${accVar}, ${nodeVar}) => ${accVar}.concat(${getPropertyAccessFrag(
+                    segment.field.name,
+                    nodeVar
+                )} || [])`;
+                currentFrag = jsExt.evaluatingLambda(
+                    safeListVar,
+                    js`${safeListVar}.reduce(${reducer}, [])`,
+                    js`${currentFrag} || []`
+                );
             } else {
                 const nodeVar = js.variable('node');
-                const mapper = jsExt.lambda(nodeVar, getFieldAccessFrag(segment.field, nodeVar));
+                const mapper = jsExt.lambda(nodeVar, getPropertyAccessFrag(segment.field.name, nodeVar));
                 currentFrag = js`${currentFrag}.map(${mapper})`;
             }
         } else {
-            currentFrag = getFieldAccessFrag(segment.field, currentFrag);
+            currentFrag = getPropertyAccessFrag(segment.field.name, currentFrag);
         }
 
         if (segment.isListSegment) {
@@ -602,9 +748,7 @@ register(UpdateEntitiesQueryNode, (node, context) => {
 
     return js.lines(
         js`${processNode(node.listNode, context)}`,
-        js.indent(js.lines(
-            js`.map(${lambda(updateFunction)})`
-        ))
+        js.indent(js.lines(js`.map(${lambda(updateFunction)})`))
     );
 });
 
@@ -616,8 +760,14 @@ register(DeleteEntitiesQueryNode, (node, context) => {
 
     return jsExt.executingFunction(
         js`const ${listVar} = ${processNode(node.listNode, context)}`,
-        js`const ${idsVar} = new Set(${listVar}.map(${jsExt.lambda(entityVar, js`${entityVar}.${js.identifier(ID_FIELD_NAME)}`)}));`,
-        js`${coll} = ${coll}.filter(${jsExt.lambda(entityVar, js`!${idsVar}.has(${entityVar}.${js.identifier(ID_FIELD_NAME)}`)}));`,
+        js`const ${idsVar} = new Set(${listVar}.map(${jsExt.lambda(
+            entityVar,
+            js`${entityVar}.${js.identifier(ID_FIELD_NAME)}`
+        )}));`,
+        js`${coll} = ${coll}.filter(${jsExt.lambda(
+            entityVar,
+            js`!${idsVar}.has(${entityVar}.${js.identifier(ID_FIELD_NAME)}`
+        )}));`,
         js`return ${listVar};`
     );
 });
@@ -627,17 +777,34 @@ register(AddEdgesQueryNode, (node, context) => {
 
     const edgesJS = js.lines(
         js`[`,
-        js.indent(js.join(node.edges.map(edge => js`{ _from: ${processNode(edge.fromIDNode, context)}, _to: ${processNode(edge.toIDNode, context)} }`), js`,\n`)),
+        js.indent(
+            js.join(
+                node.edges.map(
+                    edge =>
+                        js`{ _from: ${processNode(edge.fromIDNode, context)}, _to: ${processNode(
+                            edge.toIDNode,
+                            context
+                        )} }`
+                ),
+                js`,\n`
+            )
+        ),
         js`]`
     );
 
     function edgeExists(edge: JSFragment) {
         const edgeVar = js.variable('edge');
-        return js`${coll}.some(${jsExt.lambda(edgeVar, js`${edgeVar}._from == ${edge}._from && ${edgeVar}._to === ${edge}._to`)})`;
+        return js`${coll}.some(${jsExt.lambda(
+            edgeVar,
+            js`${edgeVar}._from == ${edge}._from && ${edgeVar}._to === ${edge}._to`
+        )})`;
     }
 
     const toAdd = js.variable(`toAdd`);
-    return js`${edgesJS}.forEach(${jsExt.lambda(toAdd, js`${edgeExists(toAdd)} ? undefined : ${coll}.push(${toAdd})`)})`;
+    return js`${edgesJS}.forEach(${jsExt.lambda(
+        toAdd,
+        js`${edgeExists(toAdd)} ? undefined : ${coll}.push(${toAdd})`
+    )})`;
 });
 
 register(RemoveEdgesQueryNode, (node, context) => {
@@ -651,9 +818,7 @@ register(RemoveEdgesQueryNode, (node, context) => {
     ]);
     const edgeShouldStay = js`!(${js.join(edgeRemovalCriteria, js` && `)})`;
 
-    return jsExt.executingFunction(
-        js`${coll} = ${coll}.filter(${jsExt.lambda(edgeVar, edgeShouldStay)});`
-    );
+    return jsExt.executingFunction(js`${coll} = ${coll}.filter(${jsExt.lambda(edgeVar, edgeShouldStay)});`);
 });
 
 register(OperatorWithLanguageQueryNode, (node, context) => {
@@ -676,14 +841,21 @@ register(SetEdgeQueryNode, (node, context) => {
     const coll = getCollectionForRelation(node.relation, context);
     const edgeVar = js.variable('edge');
     const edgeRemovalCriteria = compact([
-        node.existingEdge.fromIDNode ? js`${edgeVar}._from == ${processNode(node.existingEdge.fromIDNode, context)}` : undefined,
-        node.existingEdge.toIDNode ? js`${edgeVar}._to == ${processNode(node.existingEdge.toIDNode, context)}` : undefined
+        node.existingEdge.fromIDNode
+            ? js`${edgeVar}._from == ${processNode(node.existingEdge.fromIDNode, context)}`
+            : undefined,
+        node.existingEdge.toIDNode
+            ? js`${edgeVar}._to == ${processNode(node.existingEdge.toIDNode, context)}`
+            : undefined
     ]);
     const edgeShouldStay = js`!(${js.join(edgeRemovalCriteria, js` && `)})`;
 
     return jsExt.executingFunction(
         js`${coll} = ${coll}.filter(${jsExt.lambda(edgeVar, edgeShouldStay)});`,
-        js`${coll}.push({ _from: ${processNode(node.newEdge.fromIDNode, context)}, _to: ${processNode(node.newEdge.toIDNode, context)} });`
+        js`${coll}.push({ _from: ${processNode(node.newEdge.fromIDNode, context)}, _to: ${processNode(
+            node.newEdge.toIDNode,
+            context
+        )} });`
     );
 });
 

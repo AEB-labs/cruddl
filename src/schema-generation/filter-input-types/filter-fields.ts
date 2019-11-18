@@ -1,10 +1,25 @@
 import { getNamedType, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
+import { ZonedDateTime } from 'js-joda';
 import * as pluralize from 'pluralize';
 import { isArray } from 'util';
-import { Field, TypeKind } from '../../model';
-import { BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, LiteralQueryNode, QueryNode, VariableQueryNode } from '../../query-tree';
+import { EnumType, Field, ScalarType, Type, TypeKind } from '../../model';
+import {
+    BinaryOperationQueryNode,
+    BinaryOperator,
+    ConstBoolQueryNode,
+    LiteralQueryNode,
+    PropertyAccessQueryNode,
+    QueryNode,
+    VariableQueryNode
+} from '../../query-tree';
 import { QuantifierFilterNode } from '../../query-tree/quantifiers';
-import { AND_FILTER_FIELD, FILTER_FIELD_PREFIX_SEPARATOR, INPUT_FIELD_EQUAL, OR_FILTER_FIELD } from '../../schema/constants';
+import {
+    AND_FILTER_FIELD,
+    FILTER_FIELD_PREFIX_SEPARATOR,
+    INPUT_FIELD_EQUAL,
+    OR_FILTER_FIELD
+} from '../../schema/constants';
+import { GraphQLOffsetDateTime, TIMESTAMP_PROPERTY } from '../../schema/scalars/offset-date-time';
 import { AnyValue, decapitalize, PlainObject } from '../../utils/utils';
 import { createFieldNode } from '../field-nodes';
 import { TypedInputFieldBase } from '../typed-input-object-type';
@@ -12,15 +27,39 @@ import { FILTER_DESCRIPTIONS, OPERATORS_WITH_LIST_OPERAND, Quantifier } from './
 import { FilterObjectType } from './generator';
 
 export interface FilterField extends TypedInputFieldBase<FilterField> {
-    getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode
+    getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode;
 }
 
-function getDescription({ operator, typeName, fieldName }: { operator: string | undefined, typeName: string, fieldName?: string }) {
+function getDescription({
+    operator,
+    typeName,
+    fieldName
+}: {
+    operator: string | undefined;
+    typeName: string;
+    fieldName?: string;
+}) {
     let descriptionTemplate = FILTER_DESCRIPTIONS[operator || INPUT_FIELD_EQUAL];
     if (typeof descriptionTemplate === 'object') {
         descriptionTemplate = descriptionTemplate[typeName] || descriptionTemplate[''];
     }
-    return descriptionTemplate ? descriptionTemplate.replace(/\$field/g, fieldName ? '`' + fieldName + '`' : 'the value') : undefined;
+    return descriptionTemplate
+        ? descriptionTemplate.replace(/\$field/g, fieldName ? '`' + fieldName + '`' : 'the value')
+        : undefined;
+}
+
+function getScalarFilterValueNode(fieldNode: QueryNode, type: Type): QueryNode {
+    if (type.isScalarType && type.graphQLScalarType === GraphQLOffsetDateTime) {
+        return new PropertyAccessQueryNode(fieldNode, TIMESTAMP_PROPERTY);
+    }
+    return fieldNode;
+}
+
+function getScalarFilterLiteralValue(value: unknown, type: Type): unknown {
+    if (type.isScalarType && type.graphQLScalarType === GraphQLOffsetDateTime && value instanceof ZonedDateTime) {
+        return value.toInstant().toString();
+    }
+    return value;
 }
 
 export class ScalarOrEnumFieldFilterField implements FilterField {
@@ -33,8 +72,14 @@ export class ScalarOrEnumFieldFilterField implements FilterField {
         public readonly operatorPrefix: string | undefined,
         baseInputType: GraphQLInputType
     ) {
-        this.inputType = OPERATORS_WITH_LIST_OPERAND.includes(operatorPrefix || '') ? new GraphQLList(new GraphQLNonNull(baseInputType)) : baseInputType;
-        this.description = getDescription({ operator: operatorPrefix, fieldName: field.name, typeName: field.type.name });
+        this.inputType = OPERATORS_WITH_LIST_OPERAND.includes(operatorPrefix || '')
+            ? new GraphQLList(new GraphQLNonNull(baseInputType))
+            : baseInputType;
+        this.description = getDescription({
+            operator: operatorPrefix,
+            fieldName: field.name,
+            typeName: field.type.name
+        });
         if (this.field.description) {
             this.description = (this.description ? this.description + '\n\n' : '') + this.field.description;
         }
@@ -48,8 +93,8 @@ export class ScalarOrEnumFieldFilterField implements FilterField {
     }
 
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
-        const valueNode = createFieldNode(this.field, sourceNode);
-        const literalNode = new LiteralQueryNode(filterValue);
+        const valueNode = getScalarFilterValueNode(createFieldNode(this.field, sourceNode), this.field.type);
+        const literalNode = new LiteralQueryNode(getScalarFilterLiteralValue(filterValue, this.field.type));
         return this.resolveOperator(valueNode, literalNode);
     }
 }
@@ -61,9 +106,12 @@ export class ScalarOrEnumFilterField implements FilterField {
     constructor(
         public readonly resolveOperator: (fieldNode: QueryNode, valueNode: QueryNode) => QueryNode,
         public readonly operatorName: string,
+        private readonly baseType: ScalarType | EnumType,
         baseInputType: GraphQLInputType
     ) {
-        this.inputType = OPERATORS_WITH_LIST_OPERAND.includes(operatorName) ? new GraphQLList(new GraphQLNonNull(baseInputType)) : baseInputType;
+        this.inputType = OPERATORS_WITH_LIST_OPERAND.includes(operatorName)
+            ? new GraphQLList(new GraphQLNonNull(baseInputType))
+            : baseInputType;
         this.description = getDescription({ operator: operatorName, typeName: getNamedType(baseInputType).name });
     }
 
@@ -72,8 +120,8 @@ export class ScalarOrEnumFilterField implements FilterField {
     }
 
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
-        const literalNode = new LiteralQueryNode(filterValue);
-        return this.resolveOperator(sourceNode, literalNode);
+        const literalNode = new LiteralQueryNode(getScalarFilterLiteralValue(filterValue, this.baseType));
+        return this.resolveOperator(getScalarFilterValueNode(sourceNode, this.baseType), literalNode);
     }
 }
 
@@ -93,11 +141,15 @@ export class QuantifierFilterField implements FilterField {
             case 'every':
                 return `Makes sure all items in \`${this.field.name}\` match a certain filter.`;
             case 'none':
-                return `Makes sure none of the items in \`${this.field.name}\` match a certain filter.\n\n` +
-                    `Note that you can specify the empty object for this filter to make sure \`${this.field.name}\` has no items.`;
+                return (
+                    `Makes sure none of the items in \`${this.field.name}\` match a certain filter.\n\n` +
+                    `Note that you can specify the empty object for this filter to make sure \`${this.field.name}\` has no items.`
+                );
             case 'some':
-                return `Makes sure at least one of the items in "${this.field.name}" matches a certain filter.\n\n` +
-                    `Note that you can specify the empty object for this filter to make sure \`${this.field.name}\` has at least one item.`;
+                return (
+                    `Makes sure at least one of the items in "${this.field.name}" matches a certain filter.\n\n` +
+                    `Note that you can specify the empty object for this filter to make sure \`${this.field.name}\` has at least one item.`
+                );
         }
         return undefined;
     }
@@ -120,14 +172,14 @@ export class NestedObjectFilterField implements FilterField {
     readonly name: string;
     readonly description: string;
 
-    constructor(
-        public readonly field: Field,
-        public readonly inputType: FilterObjectType
-    ) {
+    constructor(public readonly field: Field, public readonly inputType: FilterObjectType) {
         this.name = this.field.name;
         this.description = `Checks if \`${this.field.name}\` is not null, and allows to filter based on its fields.`;
         if (this.field.isReference && this.field.type.kind == TypeKind.ROOT_ENTITY && this.field.type.keyField) {
-            this.description = `Filters the through \`${this.field.type.keyField.name}\` referenced ${pluralize(this.field.type.name)} that fulfills the given requirements.\n\n ` + this.description;
+            this.description =
+                `Filters the through \`${this.field.type.keyField.name}\` referenced ${pluralize(
+                    this.field.type.name
+                )} that fulfills the given requirements.\n\n ` + this.description;
         }
     }
 
@@ -140,10 +192,7 @@ export class EntityExtensionFilterField implements FilterField {
     readonly name: string;
     readonly description: string;
 
-    constructor(
-        public readonly field: Field,
-        public readonly inputType: FilterObjectType
-    ) {
+    constructor(public readonly field: Field, public readonly inputType: FilterObjectType) {
         this.name = this.field.name;
         this.description = `Allows to filter on the fields of \`${this.field.name}\`.\n\nNote that \`${this.field.name}\` is an entity extension and thus can never be \`null\`, so specifying \`null\` to this filter field has no effect.`;
     }
@@ -158,8 +207,8 @@ export class EntityExtensionFilterField implements FilterField {
 }
 
 export interface ListFilterField extends FilterField {
-    readonly inputType: FilterObjectType
-    readonly field: Field
+    readonly inputType: FilterObjectType;
+    readonly field: Field;
 }
 
 export class AndFilterField implements FilterField {
@@ -167,8 +216,7 @@ export class AndFilterField implements FilterField {
     readonly description: string;
     readonly inputType: GraphQLInputType;
 
-    constructor(
-        public readonly filterType: FilterObjectType) {
+    constructor(public readonly filterType: FilterObjectType) {
         this.name = AND_FILTER_FIELD;
         this.description = `A field that checks if all filters in the list apply\n\nIf the list is empty, this filter applies to all objects.`;
         this.inputType = new GraphQLList(new GraphQLNonNull(filterType.getInputType()));
@@ -189,8 +237,7 @@ export class OrFilterField implements FilterField {
     public readonly description?: string;
     public readonly inputType: GraphQLInputType;
 
-    constructor(
-        public readonly filterType: FilterObjectType) {
+    constructor(public readonly filterType: FilterObjectType) {
         this.name = OR_FILTER_FIELD;
         this.description = `A field that checks if any of the filters in the list apply.\n\nIf the list is empty, this filter applies to no objects.\n\nNote that only the items in the list *or*-combined; this complete \`OR\` field is *and*-combined with outer fields in the parent filter type.`;
         this.inputType = new GraphQLList(new GraphQLNonNull(filterType.getInputType()));

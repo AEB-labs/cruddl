@@ -1,6 +1,6 @@
-import { GraphQLInt } from 'graphql';
 import { IndexField, Model, RootEntityType } from '../../../model';
 import { ID_FIELD } from '../../../schema/constants';
+import { GraphQLOffsetDateTime, TIMESTAMP_PROPERTY } from '../../../schema/scalars/offset-date-time';
 import { compact, flatMap } from '../../../utils/utils';
 import { getCollectionNameForRootEntity } from '../arango-basics';
 import { ArangoDBVersion } from '../version-helper';
@@ -18,7 +18,11 @@ export interface IndexDefinition {
 }
 
 export function describeIndex(index: IndexDefinition) {
-    return `${ index.unique ? 'unique ' : ''}${ index.sparse ? 'sparse ' : ''}${index.type} index${index.id ? ' ' + index.id : ''} on collection ${index.collectionName} on ${index.fields.length > 1 ? 'fields' : 'field'} '${index.fields.join(',')}'`;
+    return `${index.unique ? 'unique ' : ''}${index.sparse ? 'sparse ' : ''}${index.type} index${
+        index.id ? ' ' + index.id : ''
+    } on collection ${index.collectionName} on ${index.fields.length > 1 ? 'fields' : 'field'} '${index.fields.join(
+        ','
+    )}'`;
 }
 
 export function getIndexDescriptor(index: IndexDefinition) {
@@ -33,14 +37,28 @@ export function getIndexDescriptor(index: IndexDefinition) {
 }
 
 function indexDefinitionsEqual(a: IndexDefinition, b: IndexDefinition) {
-    return a.rootEntity === b.rootEntity && a.fields.join('|') === b.fields.join('|') && a.unique === b.unique && a.sparse === b.sparse && a.type === b.type;
+    return (
+        a.rootEntity === b.rootEntity &&
+        a.fields.join('|') === b.fields.join('|') &&
+        a.unique === b.unique &&
+        a.sparse === b.sparse &&
+        a.type === b.type
+    );
 }
 
-export function getRequiredIndicesFromModel(model: Model, { shouldUseWorkaroundForSparseIndices = false }: { shouldUseWorkaroundForSparseIndices?: boolean } = {}): ReadonlyArray<IndexDefinition> {
-    return flatMap(model.rootEntityTypes, rootEntity => getIndicesForRootEntity(rootEntity, { shouldUseWorkaroundForSparseIndices }));
+export function getRequiredIndicesFromModel(
+    model: Model,
+    { shouldUseWorkaroundForSparseIndices = false }: { shouldUseWorkaroundForSparseIndices?: boolean } = {}
+): ReadonlyArray<IndexDefinition> {
+    return flatMap(model.rootEntityTypes, rootEntity =>
+        getIndicesForRootEntity(rootEntity, { shouldUseWorkaroundForSparseIndices })
+    );
 }
 
-function getIndicesForRootEntity(rootEntity: RootEntityType, options: { shouldUseWorkaroundForSparseIndices: boolean }): ReadonlyArray<IndexDefinition> {
+function getIndicesForRootEntity(
+    rootEntity: RootEntityType,
+    options: { shouldUseWorkaroundForSparseIndices: boolean }
+): ReadonlyArray<IndexDefinition> {
     const indices: IndexDefinition[] = rootEntity.indices.map(index => ({
         rootEntity,
         collectionName: getCollectionNameForRootEntity(rootEntity),
@@ -72,7 +90,12 @@ function getIndicesForRootEntity(rootEntity: RootEntityType, options: { shouldUs
 }
 
 function indexStartsWith(index: IndexDefinition, prefix: IndexDefinition) {
-    if (index.sparse !== prefix.sparse || index.unique !== prefix.unique || index.rootEntity !== prefix.rootEntity || index.type !== prefix.type) {
+    if (
+        index.sparse !== prefix.sparse ||
+        index.unique !== prefix.unique ||
+        index.rootEntity !== prefix.rootEntity ||
+        index.type !== prefix.type
+    ) {
         return false;
     }
     if (index.fields.length < prefix.fields.length) {
@@ -86,19 +109,24 @@ function indexStartsWith(index: IndexDefinition, prefix: IndexDefinition) {
     return true;
 }
 
-export function calculateRequiredIndexOperations(existingIndices: ReadonlyArray<IndexDefinition>, requiredIndices: ReadonlyArray<IndexDefinition>): {
-    indicesToDelete: ReadonlyArray<IndexDefinition>,
-    indicesToCreate: ReadonlyArray<IndexDefinition>
+export function calculateRequiredIndexOperations(
+    existingIndices: ReadonlyArray<IndexDefinition>,
+    requiredIndices: ReadonlyArray<IndexDefinition>
+): {
+    indicesToDelete: ReadonlyArray<IndexDefinition>;
+    indicesToCreate: ReadonlyArray<IndexDefinition>;
 } {
     let indicesToDelete = [...existingIndices];
-    const indicesToCreate = compact(requiredIndices.map(requiredIndex => {
-        const existingIndex = existingIndices.find(index => indexDefinitionsEqual(index, requiredIndex));
-        indicesToDelete = indicesToDelete.filter(index => index !== existingIndex);
-        if (!!existingIndex) {
-            return undefined;
-        }
-        return requiredIndex;
-    }));
+    const indicesToCreate = compact(
+        requiredIndices.map(requiredIndex => {
+            const existingIndex = existingIndices.find(index => indexDefinitionsEqual(index, requiredIndex));
+            indicesToDelete = indicesToDelete.filter(index => index !== existingIndex);
+            if (!!existingIndex) {
+                return undefined;
+            }
+            return requiredIndex;
+        })
+    );
     indicesToDelete = indicesToDelete.filter(index => index.type === DEFAULT_INDEX_TYPE); // only remove indexes of types that we also add
     return { indicesToDelete, indicesToCreate };
 }
@@ -112,9 +140,18 @@ function getArangoFieldPath(indexField: IndexField): string {
         return '_key';
     }
 
-    return (indexField.fieldsInPath || [])
-        .map(field => field.isList ? `${field.name}[*]` : field.name)
-        .join('.');
+    let segments = (indexField.fieldsInPath || []).map(field => (field.isList ? `${field.name}[*]` : field.name));
+
+    // OffsetDateTime filters / sorts on the timestamp, so we should also index this field
+    if (
+        indexField.field &&
+        indexField.field.type.isScalarType &&
+        indexField.field.type.graphQLScalarType === GraphQLOffsetDateTime
+    ) {
+        segments = [...segments, TIMESTAMP_PROPERTY];
+    }
+
+    return segments.join('.');
 }
 
 export async function isArangoSearchSupported(versionPromise: Promise<ArangoDBVersion | undefined>) {
