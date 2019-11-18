@@ -1,7 +1,61 @@
 import { AggregationOperator, Field, FlexSearchLanguage, Relation, RootEntityType } from '../../model';
 import { FieldSegment, getEffectiveCollectSegments, RelationSegment } from '../../model/implementation/collect-path';
-import { AddEdgesQueryNode, AggregationQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, BinaryOperatorWithLanguage, ConcatListsQueryNode, ConditionalQueryNode, ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EdgeIdentifier, EntitiesQueryNode, EntityFromIdQueryNode, FieldPathQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, OperatorWithLanguageQueryNode, OrderDirection, OrderSpecification, PartialEdgeIdentifier, QueryNode, QueryResultValidator, RemoveEdgesQueryNode, RootEntityIDQueryNode, RUNTIME_ERROR_CODE_PROPERTY, RUNTIME_ERROR_TOKEN, RuntimeErrorQueryNode, SafeListQueryNode, SetEdgeQueryNode, TransformListQueryNode, TraversalQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../../query-tree';
-import { FlexSearchComplexOperatorQueryNode, FlexSearchFieldExistsQueryNode, FlexSearchQueryNode, FlexSearchStartsWithQueryNode } from '../../query-tree/flex-search';
+import {
+    AddEdgesQueryNode,
+    AggregationQueryNode,
+    BasicType,
+    BinaryOperationQueryNode,
+    BinaryOperator,
+    BinaryOperatorWithLanguage,
+    ConcatListsQueryNode,
+    ConditionalQueryNode,
+    ConstBoolQueryNode,
+    ConstIntQueryNode,
+    CountQueryNode,
+    CreateEntityQueryNode,
+    DeleteEntitiesQueryNode,
+    EdgeIdentifier,
+    EntitiesQueryNode,
+    EntityFromIdQueryNode,
+    FieldPathQueryNode,
+    FieldQueryNode,
+    FirstOfListQueryNode,
+    FollowEdgeQueryNode,
+    ListQueryNode,
+    LiteralQueryNode,
+    MergeObjectsQueryNode,
+    NullQueryNode,
+    ObjectQueryNode,
+    OperatorWithLanguageQueryNode,
+    OrderDirection,
+    OrderSpecification,
+    PartialEdgeIdentifier,
+    PropertyAccessQueryNode,
+    QueryNode,
+    QueryResultValidator,
+    RemoveEdgesQueryNode,
+    RootEntityIDQueryNode,
+    RUNTIME_ERROR_CODE_PROPERTY,
+    RUNTIME_ERROR_TOKEN,
+    RuntimeErrorQueryNode,
+    SafeListQueryNode,
+    SetEdgeQueryNode,
+    TransformListQueryNode,
+    TraversalQueryNode,
+    TypeCheckQueryNode,
+    UnaryOperationQueryNode,
+    UnaryOperator,
+    UpdateEntitiesQueryNode,
+    VariableAssignmentQueryNode,
+    VariableQueryNode,
+    WithPreExecutionQueryNode
+} from '../../query-tree';
+import {
+    FlexSearchComplexOperatorQueryNode,
+    FlexSearchFieldExistsQueryNode,
+    FlexSearchQueryNode,
+    FlexSearchStartsWithQueryNode
+} from '../../query-tree/flex-search';
 import { Quantifier, QuantifierFilterNode } from '../../query-tree/quantifiers';
 import { extractVariableAssignments, simplifyBooleans } from '../../query-tree/utils';
 import { not } from '../../schema-generation/utils/input-types';
@@ -81,7 +135,11 @@ class QueryContext {
      * @param resultVariable the variable to store the query result
      * @param resultValidator an optional validator for the query result
      */
-    addPreExecuteQuery(preExecQuery: QueryNode, resultVariable?: VariableQueryNode, resultValidator?: QueryResultValidator): QueryContext {
+    addPreExecuteQuery(
+        preExecQuery: QueryNode,
+        resultVariable?: VariableQueryNode,
+        resultValidator?: QueryResultValidator
+    ): QueryContext {
         let resultVar: AQLQueryResultVariable | undefined;
         let newContext: QueryContext;
         if (resultVariable) {
@@ -136,10 +194,12 @@ class QueryContext {
     }
 }
 
-function createAQLCompoundQuery(node: QueryNode,
-                                resultVariable: AQLQueryResultVariable | undefined,
-                                resultValidator: QueryResultValidator | undefined,
-                                context: QueryContext): AQLCompoundQuery {
+function createAQLCompoundQuery(
+    node: QueryNode,
+    resultVariable: AQLQueryResultVariable | undefined,
+    resultValidator: QueryResultValidator | undefined,
+    context: QueryContext
+): AQLCompoundQuery {
     // move LET statements up
     // they often occur for value objects / entity extensions
     // this avoids the FIRST() and the subquery which reduces load on the AQL query optimizer
@@ -152,15 +212,19 @@ function createAQLCompoundQuery(node: QueryNode,
         variableAssignments.push(aql`LET ${tmpVar} = ${processNode(assignmentNode.variableValueNode, context)}`);
     }
 
-    const aqlQuery = aql.lines(
-        ...variableAssignments,
-        aql`RETURN ${processNode(node, context)}`
-    );
+    const aqlQuery = aql.lines(...variableAssignments, aql`RETURN ${processNode(node, context)}`);
     const preExecQueries = context.getPreExecuteQueries();
     const readAccessedCollections = context.getReadAccessedCollections();
     const writeAccessedCollections = context.getWriteAccessedCollections();
 
-    return new AQLCompoundQuery(preExecQueries, aqlQuery, resultVariable, resultValidator, readAccessedCollections, writeAccessedCollections);
+    return new AQLCompoundQuery(
+        preExecQueries,
+        aqlQuery,
+        resultVariable,
+        resultValidator,
+        readAccessedCollections,
+        writeAccessedCollections
+    );
 }
 
 type NodeProcessor<T extends QueryNode> = (node: T, context: QueryContext) => AQLFragment;
@@ -175,11 +239,7 @@ namespace aqlExt {
     }
 
     export function parenthesizeList(...content: AQLFragment[]): AQLFragment {
-        return aql.lines(
-            aql`(`,
-            aql.indent(aql.lines(...content)),
-            aql`)`
-        );
+        return aql.lines(aql`(`, aql.indent(aql.lines(...content)), aql`)`);
     }
 
     export function parenthesizeObject(...content: AQLFragment[]): AQLFragment {
@@ -223,13 +283,10 @@ register(ObjectQueryNode, (node, context) => {
         return aql`{}`;
     }
 
-    const properties = node.properties.map(p =>
-        aql`${aqlExt.safeJSONKey(p.propertyName)}: ${processNode(p.valueNode, context)}`);
-    return aql.lines(
-        aql`{`,
-        aql.indent(aql.join(properties, aql`,\n`)),
-        aql`}`
+    const properties = node.properties.map(
+        p => aql`${aqlExt.safeJSONKey(p.propertyName)}: ${processNode(p.valueNode, context)}`
     );
+    return aql.lines(aql`{`, aql.indent(aql.join(properties, aql`,\n`)), aql`}`);
 });
 
 register(ListQueryNode, (node, context) => {
@@ -243,7 +300,6 @@ register(ListQueryNode, (node, context) => {
         aql`]`
     );
 });
-
 
 register(ConcatListsQueryNode, (node, context) => {
     const listNodes = node.listNodes.map(node => processNode(node, context));
@@ -271,7 +327,11 @@ register(VariableAssignmentQueryNode, (node, context) => {
 register(WithPreExecutionQueryNode, (node, context) => {
     let currentContext = context;
     for (const preExecParm of node.preExecQueries) {
-        currentContext = currentContext.addPreExecuteQuery(preExecParm.query, preExecParm.resultVariable, preExecParm.resultValidator);
+        currentContext = currentContext.addPreExecuteQuery(
+            preExecParm.query,
+            preExecParm.resultVariable,
+            preExecParm.resultValidator
+        );
     }
 
     return aql`${processNode(node.resultNode, currentContext)}`;
@@ -282,10 +342,14 @@ register(EntityFromIdQueryNode, (node, context) => {
     return aql`DOCUMENT(${collection}, ${processNode(node.idNode, context)})`;
 });
 
+register(PropertyAccessQueryNode, (node, context) => {
+    const object = processNode(node.objectNode, context);
+    return aql`${object}${getPropertyAccessFragment(node.propertyName)}`;
+});
 
 register(FieldQueryNode, (node, context) => {
     const object = processNode(node.objectNode, context);
-    return aql`${object}${getFieldAccessFragment(node.field)}`;
+    return aql`${object}${getPropertyAccessFragment(node.field.name)}`;
 });
 
 register(FieldPathQueryNode, (node, context) => {
@@ -293,23 +357,21 @@ register(FieldPathQueryNode, (node, context) => {
     return aql`${object}${getFieldPathAccessFragment(node.path)}`;
 });
 
-function getFieldAccessFragment(field: Field) {
-    let identifier = field.name;
-    if (aql.isSafeIdentifier(identifier)) {
-        return aql`.${aql.identifier(identifier)}`;
+function getPropertyAccessFragment(propertyName: string) {
+    if (aql.isSafeIdentifier(propertyName)) {
+        return aql`.${aql.identifier(propertyName)}`;
     }
     // fall back to bound values. do not attempt aql.string for security reasons - should not be the case normally, anyway.
-    return aql`[${identifier}]`;
+    return aql`[${propertyName}]`;
 }
 
 function getFieldPathAccessFragment(path: ReadonlyArray<Field>): AQLFragment {
     if (path.length > 0) {
         const [head, ...tail] = path;
-        return aql`${getFieldAccessFragment(head)}${getFieldPathAccessFragment(tail)}`;
+        return aql`${getPropertyAccessFragment(head.name)}${getFieldPathAccessFragment(tail)}`;
     } else {
         return aql``;
     }
-
 }
 
 register(RootEntityIDQueryNode, (node, context) => {
@@ -332,12 +394,15 @@ register(TransformListQueryNode, (node, context) => {
 
     // in certain conditions, it greatly reduces memory consumption if the projection part is
     // indirected via a DOCUMENT() call, see https://github.com/arangodb/arangodb/issues/7821
-    const useIndirectedProjection = aqlConfig.optimizationConfig.enableExperimentalProjectionIndirection
-        && node.listNode instanceof EntitiesQueryNode
-        && (!aqlConfig.optimizationConfig.experimentalProjectionIndirectionTypeNames
-            || aqlConfig.optimizationConfig.experimentalProjectionIndirectionTypeNames.includes(node.listNode.rootEntityType.name))
-        && node.innerNode !== node.itemVariable
-        && node.maxCount !== undefined;
+    const useIndirectedProjection =
+        aqlConfig.optimizationConfig.enableExperimentalProjectionIndirection &&
+        node.listNode instanceof EntitiesQueryNode &&
+        (!aqlConfig.optimizationConfig.experimentalProjectionIndirectionTypeNames ||
+            aqlConfig.optimizationConfig.experimentalProjectionIndirectionTypeNames.includes(
+                node.listNode.rootEntityType.name
+            )) &&
+        node.innerNode !== node.itemVariable &&
+        node.maxCount !== undefined;
     let itemProjectionContext = itemContext;
     let itemProjectionVar = itemVar;
     if (useIndirectedProjection) {
@@ -378,13 +443,15 @@ register(TransformListQueryNode, (node, context) => {
     for (const assignmentNode of variableAssignmentNodes) {
         itemProjectionContext = itemProjectionContext.introduceVariable(assignmentNode.variableNode);
         const tmpVar = itemProjectionContext.getVariable(assignmentNode.variableNode);
-        variableAssignments.push(aql`LET ${tmpVar} = ${processNode(assignmentNode.variableValueNode, itemProjectionContext)}`);
+        variableAssignments.push(
+            aql`LET ${tmpVar} = ${processNode(assignmentNode.variableValueNode, itemProjectionContext)}`
+        );
     }
 
     return aqlExt.parenthesizeList(
         aql`FOR ${itemVar}`,
         aql`IN ${list}`,
-        (filter instanceof ConstBoolQueryNode && filter.value) ? aql`` : aql`FILTER ${processNode(filter, itemContext)}`,
+        filter instanceof ConstBoolQueryNode && filter.value ? aql`` : aql`FILTER ${processNode(filter, itemContext)}`,
         filterDanglingEdges,
         generateSortAQL(node.orderBy, itemContext),
         limitClause,
@@ -552,7 +619,11 @@ register(AggregationQueryNode, (node, context) => {
         aql`IN ${processNode(node.listNode, context)}`,
         filterFrag ? aql`FILTER ${filterFrag}` : aql``,
         sort ? aql`SORT ${itemVar}` : aql``,
-        aggregationFunction ? aql`COLLECT AGGREGATE ${aggregationVar} = ${aggregationFunction}(${itemFrag})` : distinct ? aql`COLLECT ${aggregationVar} = ${itemFrag}` : aql``,
+        aggregationFunction
+            ? aql`COLLECT AGGREGATE ${aggregationVar} = ${aggregationFunction}(${itemFrag})`
+            : distinct
+            ? aql`COLLECT ${aggregationVar} = ${itemFrag}`
+            : aql``,
         aql`RETURN ${resultFragment}`
     );
 });
@@ -592,7 +663,9 @@ register(BinaryOperationQueryNode, (node, context) => {
         case BinaryOperator.LIKE:
             const slowLikeFrag = aql`LIKE(${lhs}, ${rhs}, true)`; // true: caseInsensitive
             if (node.rhs instanceof LiteralQueryNode && typeof node.rhs.value === 'string') {
-                const { literalPrefix, isSimplePrefixPattern, isLiteralPattern } = analyzeLikePatternPrefix(node.rhs.value);
+                const { literalPrefix, isSimplePrefixPattern, isLiteralPattern } = analyzeLikePatternPrefix(
+                    node.rhs.value
+                );
 
                 if (isLiteralPattern) {
                     return getEqualsIgnoreCaseQuery(lhs, literalPrefix);
@@ -618,11 +691,9 @@ register(BinaryOperationQueryNode, (node, context) => {
         default:
             throw new Error(`Unsupported binary operator: ${op}`);
     }
-
 });
 
 register(OperatorWithLanguageQueryNode, (node, context) => {
-
     const lhs = processNode(node.lhs, context);
     const rhs = processNode(node.rhs, context);
     const analyzer = `text_${node.flexSearchLanguage.toLowerCase()}`;
@@ -637,7 +708,6 @@ register(OperatorWithLanguageQueryNode, (node, context) => {
         default:
             throw new Error(`Unsupported operator: ${node.operator}`);
     }
-
 });
 
 register(FlexSearchStartsWithQueryNode, (node, context) => {
@@ -659,14 +729,13 @@ register(FlexSearchComplexOperatorQueryNode, (node, context) => {
     throw new Error(`Internal Error: FlexSearchComplexOperatorQueryNode must be expanded before generating the query.`);
 });
 
-
 function getFastStartsWithQuery(lhs: AQLFragment, rhsValue: string): AQLFragment {
     if (!rhsValue.length) {
         return aql`IS_STRING(${lhs})`;
     }
 
     // this works as long as the highest possible code point is also the last one in the collation
-    const maxChar = String.fromCodePoint(0x10FFFF);
+    const maxChar = String.fromCodePoint(0x10ffff);
     const maxStr = rhsValue + maxChar;
 
     // UPPER is used to get the "smallest" representation of the value case-sensitive, LOWER for the "largest".
@@ -753,7 +822,11 @@ register(TypeCheckQueryNode, (node, context) => {
 });
 
 register(SafeListQueryNode, (node, context) => {
-    const reducedNode = new ConditionalQueryNode(new TypeCheckQueryNode(node.sourceNode, BasicType.LIST), node.sourceNode, ListQueryNode.EMPTY);
+    const reducedNode = new ConditionalQueryNode(
+        new TypeCheckQueryNode(node.sourceNode, BasicType.LIST),
+        node.sourceNode,
+        ListQueryNode.EMPTY
+    );
     return processNode(reducedNode, context);
 });
 
@@ -761,7 +834,10 @@ register(QuantifierFilterNode, (node, context) => {
     let { quantifier, conditionNode, listNode, itemVariable } = node;
     conditionNode = simplifyBooleans(conditionNode);
 
-    const fastFragment = getQuantifierFilterUsingArrayExpansion({ quantifier, conditionNode, listNode, itemVariable }, context);
+    const fastFragment = getQuantifierFilterUsingArrayExpansion(
+        { quantifier, conditionNode, listNode, itemVariable },
+        context
+    );
     if (fastFragment) {
         return fastFragment;
     }
@@ -778,8 +854,11 @@ register(QuantifierFilterNode, (node, context) => {
         itemVariable
     });
 
-    const finalNode = new BinaryOperationQueryNode(new CountQueryNode(filteredListNode),
-        quantifier === 'none' ? BinaryOperator.EQUAL : BinaryOperator.GREATER_THAN, new LiteralQueryNode(0));
+    const finalNode = new BinaryOperationQueryNode(
+        new CountQueryNode(filteredListNode),
+        quantifier === 'none' ? BinaryOperator.EQUAL : BinaryOperator.GREATER_THAN,
+        new LiteralQueryNode(0)
+    );
     return processNode(finalNode, context);
 });
 
@@ -787,8 +866,16 @@ register(QuantifierFilterNode, (node, context) => {
 // that can utilize an index like "items[*].itemNumber" if possible
 // (specifically for something like items_some: {itemNumber: "abc"})
 function getQuantifierFilterUsingArrayExpansion(
-    { quantifier, conditionNode, listNode, itemVariable }: {
-        quantifier: Quantifier, conditionNode: QueryNode, listNode: QueryNode, itemVariable: VariableQueryNode
+    {
+        quantifier,
+        conditionNode,
+        listNode,
+        itemVariable
+    }: {
+        quantifier: Quantifier;
+        conditionNode: QueryNode;
+        listNode: QueryNode;
+        itemVariable: VariableQueryNode;
     },
     context: QueryContext
 ): AQLFragment | undefined {
@@ -815,7 +902,7 @@ function getQuantifierFilterUsingArrayExpansion(
             break;
         case BinaryOperator.LIKE:
             // see if this really is a equals search so we can optimize it (only possible as long as it does not contain any case-specific characters)
-            if (!(conditionNode.rhs instanceof LiteralQueryNode) || (typeof conditionNode.rhs.value !== 'string')) {
+            if (!(conditionNode.rhs instanceof LiteralQueryNode) || typeof conditionNode.rhs.value !== 'string') {
                 return undefined;
             }
             const likePattern: string = conditionNode.rhs.value;
@@ -840,7 +927,7 @@ function getQuantifierFilterUsingArrayExpansion(
     } while (currentFieldNode !== itemVariable);
 
     const valueFrag = processNode(conditionNode.rhs, context);
-    const fieldAccessFrag = aql.concat(fields.map(f => getFieldAccessFragment(f)));
+    const fieldAccessFrag = aql.concat(fields.map(f => getPropertyAccessFragment(f.name)));
     return aql`${valueFrag} IN ${processNode(listNode, context)}[*]${fieldAccessFrag}`;
 }
 
@@ -886,11 +973,16 @@ register(TraversalQueryNode, (node, context) => {
     return getFlattenFrag(getFieldTraversalFragmentWithoutFlattening(fieldSegments, sourceFrag), fieldDepth);
 });
 
-function getRelationTraversalFragment({ segments, sourceFrag, mapFrag, context }: {
-    readonly segments: ReadonlyArray<RelationSegment>,
-    readonly sourceFrag: AQLFragment,
-    readonly mapFrag?: (itemFrag: AQLFragment) => AQLFragment,
-    readonly context: QueryContext
+function getRelationTraversalFragment({
+    segments,
+    sourceFrag,
+    mapFrag,
+    context
+}: {
+    readonly segments: ReadonlyArray<RelationSegment>;
+    readonly sourceFrag: AQLFragment;
+    readonly mapFrag?: (itemFrag: AQLFragment) => AQLFragment;
+    readonly context: QueryContext;
 }) {
     if (!segments.length) {
         return sourceFrag;
@@ -904,7 +996,13 @@ function getRelationTraversalFragment({ segments, sourceFrag, mapFrag, context }
     for (const segment of segments) {
         const newVar = aql.variable(`node`);
         const dir = segment.relationSide.isFromSide ? aql`OUTBOUND` : aql`INBOUND`;
-        const traversalFrag = aql`FOR ${newVar} IN ${segment.minDepth}..${segment.maxDepth} ${dir} ${currentObjectFrag} ${getCollectionForRelation(segment.relationSide.relation, AccessType.READ, context)}`;
+        const traversalFrag = aql`FOR ${newVar} IN ${segment.minDepth}..${
+            segment.maxDepth
+        } ${dir} ${currentObjectFrag} ${getCollectionForRelation(
+            segment.relationSide.relation,
+            AccessType.READ,
+            context
+        )}`;
         if (segment.isListSegment) {
             // this is simple - we can just push one FOR statement after the other
             forFragments.push(traversalFrag);
@@ -916,7 +1014,9 @@ function getRelationTraversalFragment({ segments, sourceFrag, mapFrag, context }
             // to preserve null values, we need to use FIRST
             // to ignore dangling edges, add a FILTER though (if there was one dangling edge and one real edge collected, we should use the real one)
             const nullableVar = aql.variable(`nullableNode`);
-            forFragments.push(aql`LET ${nullableVar} = FIRST(${traversalFrag} FILTER ${newVar} != null RETURN ${newVar})`);
+            forFragments.push(
+                aql`LET ${nullableVar} = FIRST(${traversalFrag} FILTER ${newVar} != null RETURN ${newVar})`
+            );
             currentObjectFrag = nullableVar;
         }
     }
@@ -954,7 +1054,7 @@ function getFieldTraversalFragmentWithoutFlattening(segments: ReadonlyArray<Fiel
     let frag = sourceFrag;
     let flattenDepth = 0;
     for (const segment of segments) {
-        frag = aql`${frag}${getFieldAccessFragment(segment.field)}`;
+        frag = aql`${frag}${getPropertyAccessFragment(segment.field.name)}`;
         if (segment.isListSegment) {
             // the array expansion operator [*] does two useful things:
             // - it performs the next field access basically as .map(o => o.fieldName).
@@ -969,7 +1069,11 @@ function getFieldTraversalFragmentWithoutFlattening(segments: ReadonlyArray<Fiel
 
 register(CreateEntityQueryNode, (node, context) => {
     return aqlExt.parenthesizeObject(
-        aql`INSERT ${processNode(node.objectNode, context)} IN ${getCollectionForType(node.rootEntityType, AccessType.WRITE, context)}`,
+        aql`INSERT ${processNode(node.objectNode, context)} IN ${getCollectionForType(
+            node.rootEntityType,
+            AccessType.WRITE,
+            context
+        )}`,
         aql`RETURN NEW._key`
     );
 });
@@ -1026,8 +1130,16 @@ register(RemoveEdgesQueryNode, (node, context) => {
         edgeFilter = aql``;
     }
     return aqlExt.parenthesizeList(
-        node.edgeFilter.fromIDsNode ? aql`FOR ${fromVar} IN ${getFullIDsFromKeysNode(node.edgeFilter.fromIDsNode!, node.relation.fromType, context)}` : aql``,
-        node.edgeFilter.toIDsNode ? aql`FOR ${toVar} IN ${getFullIDsFromKeysNode(node.edgeFilter.toIDsNode!, node.relation.toType, context)}` : aql``,
+        node.edgeFilter.fromIDsNode
+            ? aql`FOR ${fromVar} IN ${getFullIDsFromKeysNode(
+                  node.edgeFilter.fromIDsNode!,
+                  node.relation.fromType,
+                  context
+              )}`
+            : aql``,
+        node.edgeFilter.toIDsNode
+            ? aql`FOR ${toVar} IN ${getFullIDsFromKeysNode(node.edgeFilter.toIDsNode!, node.relation.toType, context)}`
+            : aql``,
         aql`FOR ${edgeVar} IN ${getCollectionForRelation(node.relation, AccessType.READ, context)}`,
         edgeFilter,
         aql`REMOVE ${edgeVar} IN ${getCollectionForRelation(node.relation, AccessType.WRITE, context)}`
@@ -1063,27 +1175,42 @@ function getFullIDFromKeyNode(node: QueryNode, rootEntityType: RootEntityType, c
     return getFullIDFromKeyFragment(processNode(node, context), rootEntityType);
 }
 
-function getFullIDsFromKeysNode(idsNode: QueryNode, rootEntityType: RootEntityType, context: QueryContext): AQLFragment {
+function getFullIDsFromKeysNode(
+    idsNode: QueryNode,
+    rootEntityType: RootEntityType,
+    context: QueryContext
+): AQLFragment {
     if (idsNode instanceof ListQueryNode) {
         // this probably generates cleaner AQL without dynamic concat
         const idFragments = idsNode.itemNodes.map(idNode => getFullIDFromKeyNode(idNode, rootEntityType, context));
         return aql`[${aql.join(idFragments, aql`, `)}]`;
     }
-    if (idsNode instanceof LiteralQueryNode && Array.isArray(idsNode.value) && idsNode.value.every(v => typeof v === 'string')) {
+    if (
+        idsNode instanceof LiteralQueryNode &&
+        Array.isArray(idsNode.value) &&
+        idsNode.value.every(v => typeof v === 'string')
+    ) {
         const collName = getCollectionNameForRootEntity(rootEntityType);
         const ids = idsNode.value.map(val => collName + '/' + val);
         return aql.value(ids);
     }
 
     const idVar = aql.variable('id');
-    return aql`(FOR ${idVar} IN ${processNode(idsNode, context)} RETURN ${getFullIDFromKeyFragment(idVar, rootEntityType)})`;
+    return aql`(FOR ${idVar} IN ${processNode(idsNode, context)} RETURN ${getFullIDFromKeyFragment(
+        idVar,
+        rootEntityType
+    )})`;
 }
 
 function getFullIDFromKeyFragment(keyFragment: AQLFragment, rootEntityType: RootEntityType): AQLFragment {
     return aql`CONCAT(${getCollectionNameForRootEntity(rootEntityType) + '/'}, ${keyFragment})`;
 }
 
-function formatEdge(relation: Relation, edge: PartialEdgeIdentifier | EdgeIdentifier, context: QueryContext): AQLFragment {
+function formatEdge(
+    relation: Relation,
+    edge: PartialEdgeIdentifier | EdgeIdentifier,
+    context: QueryContext
+): AQLFragment {
     const conditions = [];
     if (edge.fromIDNode) {
         conditions.push(aql`_from: ${getFullIDFromKeyNode(edge.fromIDNode, relation.fromType, context)}`);
@@ -1179,7 +1306,11 @@ function getCollectionForRelation(relation: Relation, accessType: AccessType, co
  */
 function getSimpleFollowEdgeFragment(node: FollowEdgeQueryNode, context: QueryContext): AQLFragment {
     const dir = node.relationSide.isFromSide ? aql`OUTBOUND` : aql`INBOUND`;
-    return aql`${dir} ${processNode(node.sourceEntityNode, context)} ${getCollectionForRelation(node.relationSide.relation, AccessType.READ, context)}`;
+    return aql`${dir} ${processNode(node.sourceEntityNode, context)} ${getCollectionForRelation(
+        node.relationSide.relation,
+        AccessType.READ,
+        context
+    )}`;
 }
 
 function isStringCaseInsensitive(str: string) {

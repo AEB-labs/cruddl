@@ -30,6 +30,7 @@ type Delivery @rootEntity(flexSearch: true, flexSearchLanguage: DE) @roles(readW
     defaultValueFloat: Float @defaultValue(value: 3.14)
     defaultValueEnum: Foobarit @defaultValue(value: Bar)
 
+    dispatchDate: OffsetDateTime @index
     pickupDate: LocalDate
     pickupTimeStart: LocalTime
     pickupTimeEnd: LocalTime

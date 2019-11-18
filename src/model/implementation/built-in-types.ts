@@ -3,6 +3,7 @@ import { GraphQLJSON } from 'graphql-type-json';
 import { GraphQLDateTime } from '../../schema/scalars/date-time';
 import { GraphQLLocalDate } from '../../schema/scalars/local-date';
 import { GraphQLLocalTime } from '../../schema/scalars/local-time';
+import { GraphQLOffsetDateTime } from '../../schema/scalars/offset-date-time';
 import { TypeKind } from '../config';
 import { Model } from './model';
 import { ScalarType } from './scalar-type';
@@ -17,7 +18,8 @@ const graphQLTypes: ReadonlyArray<GraphQLScalarType> = [
     GraphQLJSON,
     GraphQLDateTime,
     GraphQLLocalDate,
-    GraphQLLocalTime
+    GraphQLLocalTime,
+    GraphQLOffsetDateTime
 ];
 
 export const builtInTypeNames: ReadonlySet<string> = new Set(graphQLTypes.map(t => t.name));
@@ -27,8 +29,13 @@ export function createBuiltInTypes(model: Model): ReadonlyArray<Type> {
 }
 
 function buildScalarType(type: GraphQLScalarType, model: Model) {
-    return new ScalarType({
-        kind: TypeKind.SCALAR,
-        name: type.name
-    }, model, type);
+    return new ScalarType(
+        {
+            kind: TypeKind.SCALAR,
+            name: type.name,
+            description: type.description || undefined
+        },
+        model,
+        type
+    );
 }

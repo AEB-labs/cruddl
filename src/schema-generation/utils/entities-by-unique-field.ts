@@ -1,7 +1,11 @@
-import { FieldNode, GraphQLError, GraphQLFieldConfigArgumentMap, GraphQLID, GraphQLInputType, GraphQLNonNull } from 'graphql';
+import { GraphQLFieldConfigArgumentMap, GraphQLID } from 'graphql';
 import { RootEntityType, ScalarType, Type } from '../../model';
 import {
-    BinaryOperationQueryNode, BinaryOperator, EntitiesQueryNode, ListQueryNode, LiteralQueryNode, TransformListQueryNode,
+    BinaryOperationQueryNode,
+    BinaryOperator,
+    EntitiesQueryNode,
+    LiteralQueryNode,
+    TransformListQueryNode,
     VariableQueryNode
 } from '../../query-tree';
 import { ID_FIELD } from '../../schema/constants';
@@ -10,10 +14,17 @@ import { createFieldNode } from '../field-nodes';
 import { createGraphQLError } from '../graphql-errors';
 import { FieldContext } from '../query-node-object-type';
 
-export function getEntitiesByUniqueFieldQuery(rootEntityType: RootEntityType, args: {[name:string]: any}, context: FieldContext) {
+export function getEntitiesByUniqueFieldQuery(
+    rootEntityType: RootEntityType,
+    args: { [name: string]: any },
+    context: FieldContext
+) {
     const nonNullArgs = objectEntries(args).filter(([key, value]) => value != undefined);
     if (nonNullArgs.length !== 1) {
-        throw createGraphQLError(`Must specify exactly one non-null argument to field "${rootEntityType.name}"`, context);
+        throw createGraphQLError(
+            `Must specify exactly one non-null argument to field "${rootEntityType.name}"`,
+            context
+        );
     }
     const [fieldName, value] = nonNullArgs[0];
 
@@ -42,14 +53,14 @@ export function getArgumentsForUniqueFields(rootEntityType: RootEntityType): Gra
             type: GraphQLID,
             description: rootEntityType.getFieldOrThrow('id').description
         },
-        ...(
-            rootEntityType.keyField ? {
-                [rootEntityType.keyField.name]: {
-                    type: getAsScalarTypeOrThrow(rootEntityType.keyField.type).graphQLScalarType,
-                    description: rootEntityType.keyField.description
-                }
-            } : {}
-        )
+        ...(rootEntityType.keyField
+            ? {
+                  [rootEntityType.keyField.name]: {
+                      type: getAsScalarTypeOrThrow(rootEntityType.keyField.type).graphQLScalarType,
+                      description: rootEntityType.keyField.description
+                  }
+              }
+            : {})
     };
 }
 

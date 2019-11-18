@@ -3,8 +3,13 @@ import gql from 'graphql-tag';
 
 export const DIRECTIVES: DocumentNode = gql`
     "Declares a type for root-level objects with ids that are stored directly in the data base"
-    directive @rootEntity(indices: [IndexDefinition!], permissionProfile: String,
-        flexSearch: Boolean = false, flexSearchLanguage: FlexSearchLanguage = EN, flexSearchOrder: [FlexSearchOrderArgument!] = []) on OBJECT
+    directive @rootEntity(
+        indices: [IndexDefinition!]
+        permissionProfile: String
+        flexSearch: Boolean = false
+        flexSearchLanguage: FlexSearchLanguage = EN
+        flexSearchOrder: [FlexSearchOrderArgument!] = []
+    ) on OBJECT
 
     "Declares a type for objects with ids that can be embedded as a list within another entity"
     directive @childEntity(flexSearchLanguage: FlexSearchLanguage = EN) on OBJECT
@@ -35,49 +40,49 @@ export const DIRECTIVES: DocumentNode = gql`
 
     enum FieldAggregator {
         "Total number of items (including null)"
-        COUNT,
+        COUNT
         "true if there are any items (including null)"
-        SOME,
+        SOME
         "true if the list is empty"
-        NONE,
+        NONE
 
         "Number of items that are null"
-        COUNT_NULL,
+        COUNT_NULL
         "Number of items that are not null"
-        COUNT_NOT_NULL,
+        COUNT_NOT_NULL
         "true if there are items that are null"
-        SOME_NULL,
+        SOME_NULL
         "true if there are items that are not null"
-        SOME_NOT_NULL,
+        SOME_NOT_NULL
         "true if there are no items that are not null"
-        EVERY_NULL,
+        EVERY_NULL
         "true if there are no items that are null"
-        NONE_NULL,
+        NONE_NULL
 
         "Minimum value (ignoring null)"
-        MIN,
+        MIN
         "Maximum value (ignoring null)"
-        MAX,
+        MAX
         "Sum (ignoring null)"
-        SUM,
+        SUM
         "Sum / Count (ignoring null)"
-        AVERAGE,
+        AVERAGE
 
         "Number of items that are true"
-        COUNT_TRUE,
+        COUNT_TRUE
         "Number of items that are not true"
-        COUNT_NOT_TRUE,
+        COUNT_NOT_TRUE
         "true if there are items that are true"
-        SOME_TRUE,
+        SOME_TRUE
         "true if there are items that are not true"
-        SOME_NOT_TRUE,
+        SOME_NOT_TRUE
         "true if there are no items that are not true"
-        EVERY_TRUE,
+        EVERY_TRUE
         "true if there are no items that are true"
-        NONE_TRUE,
+        NONE_TRUE
 
         "Removes duplicate items and null values"
-        DISTINCT,
+        DISTINCT
 
         "Counts the number of items without duplicates and null values"
         COUNT_DISTINCT
@@ -105,20 +110,31 @@ export const DIRECTIVES: DocumentNode = gql`
     "Declares a field to be indexed with FlexSearch with a Text Analyzer"
     directive @flexSearchFulltext(language: FlexSearchLanguage, includeInSearch: Boolean = false) on FIELD_DEFINITION
 
-
     "The available languages for FlexSearch Analyzers"
     enum FlexSearchLanguage {
-        EN, DE, ES, FI, FR, IT, NL, NO, PT, RU, SV, ZH
+        EN
+        DE
+        ES
+        FI
+        FR
+        IT
+        NL
+        NO
+        PT
+        RU
+        SV
+        ZH
     }
 
     "An argument to define the order of a flexSearchIndex"
     input FlexSearchOrderArgument {
-        field: String,
+        field: String
         direction: OrderDirection
     }
 
     enum OrderDirection {
-        ASC, DESC
+        ASC
+        DESC
     }
 
     "Declares a field to be unique-indexed"
@@ -132,35 +148,32 @@ export const DIRECTIVES: DocumentNode = gql`
         "A list of roles that are authorized to read objects of this type"
         read: [String!]
         "A list of roles that are authorized to read, create, update and delete objects of this type"
-        readWrite: [String!])
-    on FIELD_DEFINITION|OBJECT
+        readWrite: [String!]
+    ) on FIELD_DEFINITION | OBJECT
 
     "Specifies the indices of a root entity"
-    directive @indices(
-        indices: [IndexDefinition!]
-    )
-    on OBJECT
+    directive @indices(indices: [IndexDefinition!]) on OBJECT
 
     enum CalcMutationsOperator {
-        MULTIPLY,
-        DIVIDE,
-        ADD,
-        SUBTRACT,
-        MODULO,
-        APPEND,
+        MULTIPLY
+        DIVIDE
+        ADD
+        SUBTRACT
+        MODULO
+        APPEND
         PREPEND
     }
     "Specifies which special calculation update mutations should be generated for this field"
     directive @calcMutations(
         "A list of operators. For each operator a update calculation mutation will be generated"
-        operators: [CalcMutationsOperator!])
-    on FIELD_DEFINITION
+        operators: [CalcMutationsOperator!]
+    ) on FIELD_DEFINITION
 
     ""
     directive @defaultValue(value: JSON!) on FIELD_DEFINITION
 
     input IndexDefinition {
-        id: String,
+        id: String
         fields: [String!]!
         unique: Boolean = false
 
@@ -174,8 +187,46 @@ export const DIRECTIVES: DocumentNode = gql`
 `;
 
 export const CORE_SCALARS: DocumentNode = gql`
+    """
+    The \`DateTime\` scalar type represents a point in time in UTC, in a format specified by ISO 8601, such as \`2007-12-03T10:15:30Z\` or \`2007-12-03T10:15:30.123Z\`.
+
+    This scalar type rejects values without timezone specifier or with a timezone other than UTC. See also \`LocalDate\` and \`LocalTime\` for values without timezone specifier. To store Date/time values with timezones other than UTC, define a value object type with the fields you need.
+
+    The *second* part is added if not specified, e.g. \`2007-12-03T12:34Z\` is converted to \`2007-12-03T12:34:00Z\`. Second fraction digits are cut off at the nearest three-digit group, e.g. \`2007-12-03T00:00:00.1234Z\` is converted to \`2007-12-03T00:00:00.123400Z\`.
+
+    Values with leap seconds are shifted back by one second, but this behavior should not be relied upon.
+    """
     scalar DateTime
+
+    """
+    The \`LocalDate\` scalar type represents a date without time zone in a format specified by ISO 8601, such as 2007-12-03.
+    """
     scalar LocalDate
+
+    """
+    The \`LocalTime\` scalar type represents a time without time zone in a format specified by ISO 8601, such as 10:15:30 or 17:05:03.521.
+
+    The valid range is between 00:00:00 and 23:59:59.999999999. 24:00 is not allowed to avoid bugs in clients that treat 24:00 as 0:00.
+
+    The seconds part is cut off if it is zero, e.g. 12:34:00 is converted to 12:34. Second fraction digits are cut off at the nearest three-digit group, e.g. 00:00:00.1234 is converted to 00:00:00.123400.
+
+    Leap seconds can not be specified.
+    """
     scalar LocalTime
+
+    """
+    The \`OffsetDateTime\` scalar type represents a point in time with a timezone offset, in a format specified by ISO 8601, such as \`2007-12-03T10:15:30+01:00\` or \`2007-12-03T10:15:30.123Z\`.
+
+    Only use this type for timestamps that are inherently tied to a location and the timezone offset should be calculated eagerly. To only store a point in time, use \`DateTime\`.
+
+    The *second* part is added if not specified, e.g. \`2007-12-03T12:34Z\` is converted to \`2007-12-03T12:34:00Z\`. Offset specifier \`Z\` is accepted but will be converted to \`+00:00\`. Leap seconds are not supported.
+    """
+    scalar OffsetDateTime
+
+    """
+    The \`JSON\` scalar type represents an arbitrary JSON value. This can be a string, number, boolean, null, list, or object.
+
+    Values are *not* additionally JSON-encoded or JSON-parsed, so e.g. pass a raw JSON object here instead of a JSON-representation of that object.
+    """
     scalar JSON
 `;
