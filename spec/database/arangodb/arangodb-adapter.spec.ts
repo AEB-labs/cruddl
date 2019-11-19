@@ -7,7 +7,8 @@ import { isArangoDBDisabled } from './arangodb-test-utils';
 
 describe('ArangoDBAdapter', () => {
     describe('updateSchema', () => {
-        it('it creates and removes indices', async function () { // can't use arrow function because we need the "this"
+        it('it creates and removes indices', async function() {
+            // can't use arrow function because we need the "this"
             if (isArangoDBDisabled()) {
                 (this as any).skip();
                 return;
@@ -22,7 +23,11 @@ describe('ArangoDBAdapter', () => {
                 }
             `);
 
-            const adapter = new ArangoDBAdapter(await createTempDatabase());
+            const dbConfig = await createTempDatabase();
+            const adapter = new ArangoDBAdapter({
+                ...dbConfig,
+                createIndicesInBackground: true
+            });
             const db = getTempDatabase();
             const dbVersion = await db.version();
             const isArangoDB34or35 = dbVersion.version.startsWith('3.4.') || dbVersion.version.startsWith('3.5.');
@@ -59,50 +64,38 @@ describe('ArangoDBAdapter', () => {
             const indices = await db.collection('deliveries').indexes();
             const expectedIndices = [
                 {
-                    fields: [
-                        '_key'
-                    ],
+                    fields: ['_key'],
                     sparse: false,
                     type: 'primary',
                     unique: true
                 },
                 {
-                    fields: [
-                        'isShipped'
-                    ],
+                    fields: ['isShipped'],
                     sparse: false,
                     type: 'persistent',
                     unique: false
                 },
                 {
-                    fields: [
-                        'itemCount'
-                    ],
+                    fields: ['itemCount'],
                     sparse: false,
                     type: 'persistent',
                     unique: false
                 },
                 // for automatic absolute ordering
                 {
-                    fields: [
-                        '_key'
-                    ],
+                    fields: ['_key'],
                     sparse: false,
                     type: 'persistent',
                     unique: false
                 },
                 {
-                    fields: [
-                        'deliveryNumber'
-                    ],
+                    fields: ['deliveryNumber'],
                     sparse: true,
                     type: 'persistent',
                     unique: true
                 },
                 {
-                    fields: [
-                        'shippedAt'
-                    ],
+                    fields: ['shippedAt'],
                     sparse: true,
                     unique: false,
                     type: 'persistent'
@@ -112,40 +105,39 @@ describe('ArangoDBAdapter', () => {
                 expectedIndices.push(
                     // this one is for @reference lookup which needs a non-sparse (see shouldUseWorkaroundForSparseIndices)
                     {
-                        fields: [
-                            'deliveryNumber'
-                        ],
+                        fields: ['deliveryNumber'],
                         sparse: false,
                         type: 'persistent',
                         unique: false
-                    });
+                    }
+                );
             }
-            expect(indices.map((index: any) => ({
-                fields: index.fields,
-                sparse: index.sparse,
-                type: index.type,
-                unique: index.unique
-            }))).to.deep.equalInAnyOrder(expectedIndices);
+            expect(
+                indices.map((index: any) => ({
+                    fields: index.fields,
+                    sparse: index.sparse,
+                    type: index.type,
+                    unique: index.unique
+                }))
+            ).to.deep.equalInAnyOrder(expectedIndices);
 
             const indicesOnOtherCollection = await db.collection('second').indexes();
-            expect(indicesOnOtherCollection.map((index: any) => ({
-                fields: index.fields,
-                sparse: index.sparse,
-                type: index.type,
-                unique: index.unique
-            }))).to.deep.equal([
+            expect(
+                indicesOnOtherCollection.map((index: any) => ({
+                    fields: index.fields,
+                    sparse: index.sparse,
+                    type: index.type,
+                    unique: index.unique
+                }))
+            ).to.deep.equal([
                 {
-                    fields: [
-                        '_key'
-                    ],
+                    fields: ['_key'],
                     sparse: false,
                     type: 'primary',
                     unique: true
                 },
                 {
-                    fields: [
-                        'test'
-                    ],
+                    fields: ['test'],
                     sparse: false,
                     type: 'persistent',
                     unique: true

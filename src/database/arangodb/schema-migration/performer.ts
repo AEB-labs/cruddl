@@ -3,13 +3,23 @@ import { ArangoDBConfig, initDatabase } from '../config';
 import { ArangoDBVersionHelper } from '../version-helper';
 import { ArangoSearchMigrationNotSupportedError } from './ArangoSearchMigrationNotSupportedError';
 import { isArangoSearchSupported } from './index-helpers';
-import { CreateArangoSearchViewMigration, CreateDocumentCollectionMigration, CreateEdgeCollectionMigration, CreateIndexMigration, DropArangoSearchViewMigration, DropIndexMigration, RecreateArangoSearchViewMigration, SchemaMigration, UpdateArangoSearchViewMigration } from './migrations';
+import {
+    CreateArangoSearchViewMigration,
+    CreateDocumentCollectionMigration,
+    CreateEdgeCollectionMigration,
+    CreateIndexMigration,
+    DropArangoSearchViewMigration,
+    DropIndexMigration,
+    RecreateArangoSearchViewMigration,
+    SchemaMigration,
+    UpdateArangoSearchViewMigration
+} from './migrations';
 
 export class MigrationPerformer {
     private readonly db: Database;
     private versionHelper: ArangoDBVersionHelper;
 
-    constructor(config: ArangoDBConfig) {
+    constructor(private readonly config: ArangoDBConfig) {
         this.db = initDatabase(config);
         this.versionHelper = new ArangoDBVersionHelper(this.db);
     }
@@ -42,7 +52,8 @@ export class MigrationPerformer {
             fields: migration.index.fields,
             unique: migration.index.unique,
             sparse: migration.index.sparse,
-            type: migration.index.type
+            type: migration.index.type,
+            inBackground: this.config.createIndicesInBackground
         });
     }
 
@@ -58,7 +69,6 @@ export class MigrationPerformer {
         await this.db.edgeCollection(migration.collectionName).create();
     }
 
-
     private async createArangoSearchView(migration: CreateArangoSearchViewMigration) {
         if (await isArangoSearchSupported(this.versionHelper.getArangoDBVersion())) {
             await this.db.arangoSearchView(migration.viewName).create(migration.properties);
@@ -66,7 +76,6 @@ export class MigrationPerformer {
         } else {
             throw new ArangoSearchMigrationNotSupportedError();
         }
-
     }
 
     private async updateArangoSearchView(migration: UpdateArangoSearchViewMigration) {

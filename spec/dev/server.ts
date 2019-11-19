@@ -25,24 +25,32 @@ export async function start() {
     if (process.argv.includes('--db=in-memory')) {
         db = new InMemoryAdapter(undefined, { loggerProvider });
     } else {
-        db = new ArangoDBAdapter({
-            databaseName,
-            url: databaseURL,
-            // user: 'root',
-            // password: 'admin',
-            doNonMandatoryMigrations: true,
-            enableExperimentalProjectionIndirection: true,
-            experimentalProjectionIndirectionTypeNames: ['BusinessMessage']
-        }, { loggerProvider });
+        db = new ArangoDBAdapter(
+            {
+                databaseName,
+                url: databaseURL,
+                // user: 'root',
+                // password: 'admin',
+                doNonMandatoryMigrations: true,
+                enableExperimentalProjectionIndirection: true,
+                experimentalProjectionIndirectionTypeNames: ['BusinessMessage'],
+                createIndicesInBackground: true
+            },
+            { loggerProvider }
+        );
     }
 
     const project = await loadProjectFromDir(path.resolve(__dirname, './model'), {
         profileConsumer: profile => {
-            console.log(`${profile.operation.operation} ${profile.operation.name ? profile.operation.name.value : '<anonymous>'}: ${JSON.stringify(profile.timings, undefined, '  ')}`);
+            console.log(
+                `${profile.operation.operation} ${
+                    profile.operation.name ? profile.operation.name.value : '<anonymous>'
+                }: ${JSON.stringify(profile.timings, undefined, '  ')}`
+            );
         },
         getOperationIdentifier: ({ context }) => context as object, // each operation is executed with an unique context object
         getExecutionOptions: ({ context }: { context: any }) => {
-            return ({
+            return {
                 authRoles: ['allusers', 'logistics-reader', 'system'],
                 recordTimings: true,
                 recordPlan: true,
@@ -50,7 +58,7 @@ export async function start() {
 
                 //queryMemoryLimit: 1000000,
                 cancellationToken: new Promise(resolve => context.req.on('aborted', resolve))
-            });
+            };
         },
         /*processError(error: Error) {
             console.error(`Internal error: ${error.stack}`);
