@@ -19,6 +19,7 @@ describe('ArangoDBAdapter', () => {
                     isShipped: Boolean @index
                     shippedAt: DateTime @index(sparse: true)
                     itemCount: Int @index
+                    indexedTwice: String @index @unique
                 }
             `);
 
@@ -51,6 +52,14 @@ describe('ArangoDBAdapter', () => {
                 fields: ['test'],
                 sparse: false,
                 unique: true,
+                type: 'persistent'
+            });
+
+            // add a non-unique index that is needed for @index, but should not satisfy the @unique index
+            await db.collection('deliveries').createIndex({
+                fields: ['indexedTwice'],
+                sparse: false,
+                unique: false,
                 type: 'persistent'
             });
 
@@ -104,6 +113,18 @@ describe('ArangoDBAdapter', () => {
                         'shippedAt'
                     ],
                     sparse: true,
+                    unique: false,
+                    type: 'persistent'
+                },
+                {
+                    fields: ['indexedTwice'],
+                    sparse: true,
+                    unique: true,
+                    type: 'persistent'
+                },
+                {
+                    fields: ['indexedTwice'],
+                    sparse: false,
                     unique: false,
                     type: 'persistent'
                 }
