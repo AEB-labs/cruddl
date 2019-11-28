@@ -6,7 +6,12 @@ import { createSimpleModel } from './model-spec.helper';
 
 describe('createModel', () => {
     it('translates _key: String @key properly', () => {
-        const document: DocumentNode = gql`type Test @rootEntity { _key: String @key, test: String }`;
+        const document: DocumentNode = gql`
+            type Test @rootEntity {
+                _key: String @key
+                test: String
+            }
+        `;
         const model = createSimpleModel(document);
         expect(model.validate().getErrors(), model.validate().toString()).to.deep.equal([]);
         const testType = model.getRootEntityTypeOrThrow('Test');
@@ -16,7 +21,12 @@ describe('createModel', () => {
     });
 
     it('translates id: ID @key properly', () => {
-        const document: DocumentNode = gql`type Test @rootEntity { id: ID @key, test: String }`;
+        const document: DocumentNode = gql`
+            type Test @rootEntity {
+                id: ID @key
+                test: String
+            }
+        `;
         const model = createSimpleModel(document);
         expect(model.validate().getErrors(), model.validate().toString()).to.deep.equal([]);
         const testType = model.getRootEntityTypeOrThrow('Test');
@@ -27,11 +37,18 @@ describe('createModel', () => {
     });
 
     it('translates indices declared on root entity', () => {
-        const document: DocumentNode = gql`type Test @rootEntity(indices: [
-            { id: "a" fields: "test" }
-            { id: "b" fields: ["test", "id"], unique: true }
-            { id: "c" fields: ["test", "id"], unique: true, sparse: false }
-        ]) { test: String }`;
+        const document: DocumentNode = gql`
+            type Test
+                @rootEntity(
+                    indices: [
+                        { id: "a", fields: "test" }
+                        { id: "b", fields: ["test", "id"], unique: true }
+                        { id: "c", fields: ["test", "id"], unique: true, sparse: false }
+                    ]
+                ) {
+                test: String
+            }
+        `;
         const model = createSimpleModel(document);
         expect(model.validate().getErrors(), model.validate().toString()).to.deep.equal([]);
         const testType = model.getRootEntityTypeOrThrow('Test');
@@ -56,11 +73,13 @@ describe('createModel', () => {
     });
 
     it('translates indices declared on a field', () => {
-        const document: DocumentNode = gql`type Test @rootEntity { 
-            testA: String @index
-            testB: String @unique
-            testC: String @unique(sparse: false) 
-        }`;
+        const document: DocumentNode = gql`
+            type Test @rootEntity {
+                testA: String @index
+                testB: String @unique
+                testC: String @unique(sparse: false)
+            }
+        `;
         const model = createSimpleModel(document);
         expect(model.validate().getErrors(), model.validate().toString()).to.deep.equal([]);
         const testType = model.getRootEntityTypeOrThrow('Test');
@@ -79,5 +98,30 @@ describe('createModel', () => {
         expect(indexC).not.to.be.undefined;
         expect(indexC!.unique).to.equal(true);
         expect(indexC!.sparse).to.equal(false);
+    });
+
+    // We don't disallow combining @index and @unique because it can be useful when you want a sparse unique constraint,
+    // but still be able to filter for null values.
+    it('supports both @index and @unique on a single field', () => {
+        const document: DocumentNode = gql`
+            type Test @rootEntity {
+                test: String @index @unique
+            }
+        `;
+
+        const model = createSimpleModel(document);
+        expect(model.validate().getErrors(), model.validate().toString()).to.deep.equal([]);
+        const testType = model.getRootEntityTypeOrThrow('Test');
+
+        const indices = testType.indices.filter(i => i.fields.length === 1 && i.fields[0].dotSeparatedPath === 'test');
+        expect(indices.length).to.equal(2);
+        const [indexA, indexB] = indices;
+
+        expect(indexA).not.to.be.undefined;
+        expect(indexA!.unique).to.equal(false);
+        expect(indexA!.sparse).to.equal(false);
+        expect(indexB).not.to.be.undefined;
+        expect(indexB!.unique).to.equal(true);
+        expect(indexB!.sparse).to.equal(true);
     });
 });
