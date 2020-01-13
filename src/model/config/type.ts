@@ -1,4 +1,11 @@
-import { ASTNode, EnumTypeDefinitionNode, EnumValueDefinitionNode, ObjectTypeDefinitionNode, ScalarTypeDefinitionNode, TypeDefinitionNode } from 'graphql';
+import {
+    ASTNode,
+    EnumTypeDefinitionNode,
+    EnumValueDefinitionNode,
+    ObjectTypeDefinitionNode,
+    ScalarTypeDefinitionNode,
+    TypeDefinitionNode
+} from 'graphql';
 import { FieldConfig, FlexSearchLanguage } from './field';
 import { FlexSearchIndexConfig, IndexDefinitionConfig } from './indices';
 import { PermissionsConfig } from './permissions';
@@ -13,60 +20,61 @@ export enum TypeKind {
 }
 
 export interface TypeConfigBase {
-    readonly kind: TypeKind
-    readonly name: string
-    readonly namespacePath?: ReadonlyArray<string>
-    readonly description?: string
-    readonly astNode?: TypeDefinitionNode
-    readonly flexSearchLanguage?: FlexSearchLanguage
+    readonly kind: TypeKind;
+    readonly name: string;
+    readonly namespacePath?: ReadonlyArray<string>;
+    readonly description?: string;
+    readonly astNode?: TypeDefinitionNode;
+    readonly flexSearchLanguage?: FlexSearchLanguage;
 }
 
 export interface ObjectTypeConfigBase extends TypeConfigBase {
-    readonly fields: ReadonlyArray<FieldConfig>
-    readonly astNode?: ObjectTypeDefinitionNode
+    readonly fields: ReadonlyArray<FieldConfig>;
+    readonly astNode?: ObjectTypeDefinitionNode;
 }
 
 export interface RootEntityTypeConfig extends ObjectTypeConfigBase {
-    readonly kind: TypeKind.ROOT_ENTITY
-    readonly indices?: ReadonlyArray<IndexDefinitionConfig>
-    readonly keyFieldName?: string
-    readonly keyFieldASTNode?: ASTNode
-    readonly permissions?: PermissionsConfig
-    readonly flexSearchIndexConfig?: FlexSearchIndexConfig
+    readonly kind: TypeKind.ROOT_ENTITY;
+    readonly indices?: ReadonlyArray<IndexDefinitionConfig>;
+    readonly keyFieldName?: string;
+    readonly keyFieldASTNode?: ASTNode;
+    readonly permissions?: PermissionsConfig;
+    readonly flexSearchIndexConfig?: FlexSearchIndexConfig;
+    readonly isBusinessObject?: boolean;
 }
 
 export interface ValueObjectTypeConfig extends ObjectTypeConfigBase {
-    readonly kind: TypeKind.VALUE_OBJECT
+    readonly kind: TypeKind.VALUE_OBJECT;
 }
 
 export interface ChildEntityTypeConfig extends ObjectTypeConfigBase {
-    readonly kind: TypeKind.CHILD_ENTITY
+    readonly kind: TypeKind.CHILD_ENTITY;
 }
 
 export interface EntityExtensionTypeConfig extends ObjectTypeConfigBase {
-    readonly kind: TypeKind.ENTITY_EXTENSION
+    readonly kind: TypeKind.ENTITY_EXTENSION;
 }
 
 export interface EnumTypeConfig extends TypeConfigBase {
-    readonly kind: TypeKind.ENUM
-    readonly values: ReadonlyArray<EnumValueConfig>
-    readonly astNode?: EnumTypeDefinitionNode
+    readonly kind: TypeKind.ENUM;
+    readonly values: ReadonlyArray<EnumValueConfig>;
+    readonly astNode?: EnumTypeDefinitionNode;
 }
 
 export interface EnumValueConfig {
-    readonly value: string
-    readonly description?: string
-    readonly deprecationReason?: string
-    readonly astNode?: EnumValueDefinitionNode
+    readonly value: string;
+    readonly description?: string;
+    readonly deprecationReason?: string;
+    readonly astNode?: EnumValueDefinitionNode;
 }
 
 export interface ScalarTypeConfig extends TypeConfigBase {
-    readonly kind: TypeKind.SCALAR
-    readonly astNode?: ScalarTypeDefinitionNode
+    readonly kind: TypeKind.SCALAR;
+    readonly astNode?: ScalarTypeDefinitionNode;
 }
 
 export type ObjectTypeConfig =
-    RootEntityTypeConfig
+    | RootEntityTypeConfig
     | ChildEntityTypeConfig
     | ValueObjectTypeConfig
     | EntityExtensionTypeConfig;

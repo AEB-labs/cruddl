@@ -1,6 +1,16 @@
 import { GraphQLID, GraphQLString } from 'graphql';
 import memorize from 'memorize-decorator';
-import { ACCESS_GROUP_FIELD, DEFAULT_PERMISSION_PROFILE, FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE, FLEX_SEARCH_INDEXED_DIRECTIVE, FLEX_SEARCH_ORDER_ARGUMENT, ID_FIELD, ROOT_ENTITY_DIRECTIVE, SCALAR_INT, SCALAR_STRING } from '../../schema/constants';
+import {
+    ACCESS_GROUP_FIELD,
+    DEFAULT_PERMISSION_PROFILE,
+    FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE,
+    FLEX_SEARCH_INDEXED_DIRECTIVE,
+    FLEX_SEARCH_ORDER_ARGUMENT,
+    ID_FIELD,
+    ROOT_ENTITY_DIRECTIVE,
+    SCALAR_INT,
+    SCALAR_STRING
+} from '../../schema/constants';
 import { compact } from '../../utils/utils';
 import { FlexSearchIndexConfig, PermissionsConfig, RootEntityTypeConfig, TypeKind } from '../config';
 import { ValidationMessage } from '../validation';
@@ -24,10 +34,14 @@ export class RootEntityType extends ObjectTypeBase {
     readonly isEntityExtensionType: false = false;
     readonly isValueObjectType: false = false;
 
+    readonly isBusinessObject: boolean;
+
     constructor(private readonly input: RootEntityTypeConfig, model: Model) {
         super(input, model, systemFieldInputs);
         this.permissions = input.permissions || {};
-        this.roles = input.permissions && input.permissions.roles ? new RolesSpecifier(input.permissions.roles) : undefined;
+        this.roles =
+            input.permissions && input.permissions.roles ? new RolesSpecifier(input.permissions.roles) : undefined;
+        this.isBusinessObject = input.isBusinessObject || false;
     }
 
     @memorize()
@@ -46,14 +60,21 @@ export class RootEntityType extends ObjectTypeBase {
         const indices = indexConfigs.map(config => new Index(config, this));
 
         if (this.discriminatorField !== this.keyField) {
-            if (!indices.some(index => index.fields.length === 1 && index.fields[0].field === this.discriminatorField)) {
+            if (
+                !indices.some(index => index.fields.length === 1 && index.fields[0].field === this.discriminatorField)
+            ) {
                 // make sure there is an index on the discriminator field that can be used for sorting
                 // arangodb already has an index on 'id', but it's a hash index which is unusable for sorting
                 // if the discriminator field is the key field, we already added an index above.
                 // don't use unique to avoid running into performance workarounds for unique indices (sparseness)
-                indices.push(new Index({
-                    fields: [this.discriminatorField.name]
-                }, this));
+                indices.push(
+                    new Index(
+                        {
+                            fields: [this.discriminatorField.name]
+                        },
+                        this
+                    )
+                );
             }
         }
 
@@ -63,14 +84,16 @@ export class RootEntityType extends ObjectTypeBase {
 
     @memorize()
     get flexSearchIndexConfig(): FlexSearchIndexConfig {
-        return this.input.flexSearchIndexConfig || {
-            isIndexed: false,
-            primarySort: []
-        };
+        return (
+            this.input.flexSearchIndexConfig || {
+                isIndexed: false,
+                primarySort: []
+            }
+        );
     }
 
-    get isFlexSearchIndexed(): boolean{
-        return this.flexSearchIndexConfig.isIndexed
+    get isFlexSearchIndexed(): boolean {
+        return this.flexSearchIndexConfig.isIndexed;
     }
 
     get hasFieldsIncludedInSearch() {
@@ -170,13 +193,26 @@ export class RootEntityType extends ObjectTypeBase {
         const field = this.getField(this.input.keyFieldName);
 
         if (!field) {
-            context.addMessage(ValidationMessage.error(`Field "${this.input.keyFieldName}" does not exist on type "${this.name}".`, astNode));
+            context.addMessage(
+                ValidationMessage.error(
+                    `Field "${this.input.keyFieldName}" does not exist on type "${this.name}".`,
+                    astNode
+                )
+            );
             return;
         }
 
         // support for ID is needed because id: ID @key is possible
-        if (field.type.kind !== TypeKind.SCALAR || !(field.type.name === SCALAR_INT || field.type.name === SCALAR_STRING || field.type.name === GraphQLID.name)) {
-            context.addMessage(ValidationMessage.error(`Only fields of type "String", "Int", and "ID" can be used as key field.`, astNode));
+        if (
+            field.type.kind !== TypeKind.SCALAR ||
+            !(field.type.name === SCALAR_INT || field.type.name === SCALAR_STRING || field.type.name === GraphQLID.name)
+        ) {
+            context.addMessage(
+                ValidationMessage.error(
+                    `Only fields of type "String", "Int", and "ID" can be used as key field.`,
+                    astNode
+                )
+            );
         }
 
         if (field.isList) {
@@ -188,29 +224,59 @@ export class RootEntityType extends ObjectTypeBase {
         const permissions = this.permissions;
         if (permissions.permissionProfileName != undefined && permissions.roles != undefined) {
             const message = `Permission profile and explicit role specifiers cannot be combined.`;
-            context.addMessage(ValidationMessage.error(message, permissions.permissionProfileNameAstNode || this.nameASTNode));
+            context.addMessage(
+                ValidationMessage.error(message, permissions.permissionProfileNameAstNode || this.nameASTNode)
+            );
             context.addMessage(ValidationMessage.error(message, permissions.roles.astNode || this.nameASTNode));
         }
 
-        if (permissions.permissionProfileName != undefined && !this.namespace.getPermissionProfile(permissions.permissionProfileName)) {
-            context.addMessage(ValidationMessage.error(`Permission profile "${permissions.permissionProfileName}" not found.`, permissions.permissionProfileNameAstNode || this.nameASTNode));
+        if (
+            permissions.permissionProfileName != undefined &&
+            !this.namespace.getPermissionProfile(permissions.permissionProfileName)
+        ) {
+            context.addMessage(
+                ValidationMessage.error(
+                    `Permission profile "${permissions.permissionProfileName}" not found.`,
+                    permissions.permissionProfileNameAstNode || this.nameASTNode
+                )
+            );
         }
 
-        if (permissions.permissionProfileName == undefined && permissions.roles == undefined && this.namespace.defaultPermissionProfile == undefined) {
-            context.addMessage(ValidationMessage.error(`No permissions specified for root entity "${this.name}". Specify "permissionProfile" in @rootEntity, use the @roles directive, or add a permission profile with the name "${DEFAULT_PERMISSION_PROFILE}".`, permissions.permissionProfileNameAstNode || this.nameASTNode));
+        if (
+            permissions.permissionProfileName == undefined &&
+            permissions.roles == undefined &&
+            this.namespace.defaultPermissionProfile == undefined
+        ) {
+            context.addMessage(
+                ValidationMessage.error(
+                    `No permissions specified for root entity "${this.name}". Specify "permissionProfile" in @rootEntity, use the @roles directive, or add a permission profile with the name "${DEFAULT_PERMISSION_PROFILE}".`,
+                    permissions.permissionProfileNameAstNode || this.nameASTNode
+                )
+            );
         }
 
         if (this.roles) {
             this.roles.validate(context);
         }
 
-        const usesAccessGroup = this.permissionProfile && this.permissionProfile.permissions.some(per => !!per.restrictToAccessGroups);
+        const usesAccessGroup =
+            this.permissionProfile && this.permissionProfile.permissions.some(per => !!per.restrictToAccessGroups);
         if (usesAccessGroup) {
             const accessGroupField = this.getField(ACCESS_GROUP_FIELD);
             if (!accessGroupField) {
-                context.addMessage(ValidationMessage.error(`The permission profile "${permissions.permissionProfileName}" uses "restrictToAccessGroups", but this root entity does not have a "${ACCESS_GROUP_FIELD}" field.`, permissions.permissionProfileNameAstNode || this.nameASTNode));
+                context.addMessage(
+                    ValidationMessage.error(
+                        `The permission profile "${permissions.permissionProfileName}" uses "restrictToAccessGroups", but this root entity does not have a "${ACCESS_GROUP_FIELD}" field.`,
+                        permissions.permissionProfileNameAstNode || this.nameASTNode
+                    )
+                );
             } else if (!accessGroupField.type.isEnumType && accessGroupField.type.name !== GraphQLString.name) {
-                context.addMessage(ValidationMessage.error(`This field must be of String or enum type to be used as "accessGroup" with the permission profile "${permissions.permissionProfileName}".`, accessGroupField.astNode || this.nameASTNode));
+                context.addMessage(
+                    ValidationMessage.error(
+                        `This field must be of String or enum type to be used as "accessGroup" with the permission profile "${permissions.permissionProfileName}".`,
+                        accessGroupField.astNode || this.nameASTNode
+                    )
+                );
             }
         }
     }
@@ -224,22 +290,31 @@ export class RootEntityType extends ObjectTypeBase {
     }
 
     private validateFlexSearch(context: ValidationContext) {
-        if (!this.flexSearchIndexConfig.isIndexed && this.fields.some(value => (value.isFlexSearchIndexed || value.isFlexSearchFulltextIndexed) && !value.isSystemField)) {
-            context.addMessage(ValidationMessage.warn(
-                `The type contains fields that are annotated with ${FLEX_SEARCH_INDEXED_DIRECTIVE} or ${FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE}, but the type itself is not marked with flexSearch = true.`,
-                this.input.astNode!.name
-            ));
+        if (
+            !this.flexSearchIndexConfig.isIndexed &&
+            this.fields.some(
+                value => (value.isFlexSearchIndexed || value.isFlexSearchFulltextIndexed) && !value.isSystemField
+            )
+        ) {
+            context.addMessage(
+                ValidationMessage.warn(
+                    `The type contains fields that are annotated with ${FLEX_SEARCH_INDEXED_DIRECTIVE} or ${FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE}, but the type itself is not marked with flexSearch = true.`,
+                    this.input.astNode!.name
+                )
+            );
         }
         // validate primarySort
         for (const primarySortConfig of this.flexSearchIndexConfig.primarySort) {
             const primarySortPath = primarySortConfig.field.split('.');
-            const astNode = this.input.astNode!.directives!.find(value => value.name.value === ROOT_ENTITY_DIRECTIVE)!.arguments!.find(value => value.name.value === FLEX_SEARCH_ORDER_ARGUMENT)!;
+            const astNode = this.input
+                .astNode!.directives!.find(value => value.name.value === ROOT_ENTITY_DIRECTIVE)!
+                .arguments!.find(value => value.name.value === FLEX_SEARCH_ORDER_ARGUMENT)!;
 
             function isValidPath(fields: ReadonlyArray<Field>, path: ReadonlyArray<string>): boolean {
                 const [head, ...tail] = path;
                 const field = fields.find(value => value.name === head);
                 if (field) {
-                    if (field.type.isScalarType || field.type.isEnumType && tail.length == 0) {
+                    if (field.type.isScalarType || (field.type.isEnumType && tail.length == 0)) {
                         return true;
                     } else if (field.type.isObjectType && !field.isList && tail.length > 0) {
                         return isValidPath(field.type.fields, tail);
@@ -252,10 +327,12 @@ export class RootEntityType extends ObjectTypeBase {
             }
 
             if (!isValidPath(this.fields, primarySortPath)) {
-                context.addMessage(ValidationMessage.warn(
-                    `The provided flexSearchOrder is invalid. It must be a path that evaluates to a scalar value and the full path must be annotated with ${FLEX_SEARCH_INDEXED_DIRECTIVE}.`,
-                    astNode
-                ));
+                context.addMessage(
+                    ValidationMessage.warn(
+                        `The provided flexSearchOrder is invalid. It must be a path that evaluates to a scalar value and the full path must be annotated with ${FLEX_SEARCH_INDEXED_DIRECTIVE}.`,
+                        astNode
+                    )
+                );
             }
         }
     }
@@ -270,7 +347,8 @@ const systemFieldInputs: ReadonlyArray<SystemFieldConfig> = [
         isFlexSearchIndexed: true,
         isFlexSearchFulltextIndexed: false,
         isIncludedInSearch: false
-    }, {
+    },
+    {
         name: 'createdAt',
         typeName: 'DateTime',
         isNonNull: true,
@@ -278,7 +356,8 @@ const systemFieldInputs: ReadonlyArray<SystemFieldConfig> = [
         isFlexSearchIndexed: true,
         isFlexSearchFulltextIndexed: false,
         isIncludedInSearch: false
-    }, {
+    },
+    {
         name: 'updatedAt',
         typeName: 'DateTime',
         isNonNull: true,

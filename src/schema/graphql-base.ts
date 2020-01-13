@@ -184,6 +184,9 @@ export const DIRECTIVES: DocumentNode = gql`
         """
         sparse: Boolean
     }
+
+    "Declares a root entity type to be one of the core objects of business transactions"
+    directive @businessObject on OBJECT
 `;
 
 export const CORE_SCALARS: DocumentNode = gql`
