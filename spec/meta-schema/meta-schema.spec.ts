@@ -26,6 +26,7 @@ describe('Meta schema API', () => {
                     keyField {
                         name
                     }
+                    isBusinessObject
                     fields {
                         name
                         isList
@@ -180,6 +181,7 @@ describe('Meta schema API', () => {
             {
                 name: 'Shipment',
                 kind: TypeKind.ROOT_ENTITY,
+                isBusinessObject: true,
                 fields: [
                     {
                         name: 'deliveries',
@@ -218,6 +220,7 @@ describe('Meta schema API', () => {
             {
                 name: 'Delivery',
                 kind: TypeKind.ROOT_ENTITY,
+                isBusinessObject: true,
                 fields: [
                     {
                         name: 'shipment',
@@ -345,6 +348,7 @@ describe('Meta schema API', () => {
                     pluralName: 'Countries',
                     kind: 'ROOT_ENTITY',
                     keyField: { name: 'isoCode' },
+                    isBusinessObject: false,
                     fields: [
                         {
                             name: 'id',
@@ -381,6 +385,7 @@ describe('Meta schema API', () => {
                     pluralName: 'Shipments',
                     kind: 'ROOT_ENTITY',
                     keyField: null,
+                    isBusinessObject: true,
                     fields: [
                         {
                             name: 'id',
@@ -452,6 +457,7 @@ describe('Meta schema API', () => {
                     pluralName: 'Deliveries',
                     kind: 'ROOT_ENTITY',
                     keyField: null,
+                    isBusinessObject: true,
                     fields: [
                         {
                             name: 'id',
@@ -488,6 +494,7 @@ describe('Meta schema API', () => {
                     pluralName: 'HandlingUnits',
                     kind: 'ROOT_ENTITY',
                     keyField: null,
+                    isBusinessObject: false,
                     fields: [
                         {
                             name: 'id',

@@ -35,6 +35,7 @@ import {
 } from '../graphql/kinds';
 import { getValueFromAST } from '../graphql/value-from-ast';
 import {
+    BUSINESS_OBJECT_DIRECTIVE,
     CALC_MUTATIONS_DIRECTIVE,
     CALC_MUTATIONS_OPERATORS_ARG,
     CHILD_ENTITY_DIRECTIVE,
@@ -195,6 +196,16 @@ function createObjectTypeInput(
         flexSearchLanguage: getDefaultLanguage(definition, context)
     };
 
+    const businessObjectDirective = findDirectiveWithName(definition, BUSINESS_OBJECT_DIRECTIVE);
+    if (businessObjectDirective && !findDirectiveWithName(definition, ROOT_ENTITY_DIRECTIVE)) {
+        context.addMessage(
+            ValidationMessage.error(
+                `The directive @${BUSINESS_OBJECT_DIRECTIVE} can only be used on root entity type definitions.`,
+                definition.loc
+            )
+        );
+    }
+
     switch (entityType) {
         case CHILD_ENTITY_DIRECTIVE:
             return {
@@ -215,14 +226,14 @@ function createObjectTypeInput(
             // interpret unknown kinds as root entity because they are least likely to cause unnecessary errors
             // (errors are already reported in getKindOfObjectTypeNode)
 
-            const rootEntityDirective = findDirectiveWithName(definition, ROOT_ENTITY_DIRECTIVE);
             return {
                 ...common,
                 ...processKeyField(definition, common.fields, context),
                 kind: TypeKind.ROOT_ENTITY,
                 permissions: getPermissions(definition, context),
                 indices: createIndexDefinitionInputs(definition, context),
-                flexSearchIndexConfig: createFlexSearchDefinitionInputs(definition, context)
+                flexSearchIndexConfig: createFlexSearchDefinitionInputs(definition, context),
+                isBusinessObject: !!businessObjectDirective
             };
     }
 }

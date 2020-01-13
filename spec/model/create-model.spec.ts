@@ -124,4 +124,25 @@ describe('createModel', () => {
         expect(indexB!.unique).to.equal(true);
         expect(indexB!.sparse).to.equal(true);
     });
+
+    it('respects @businessObject directive', () => {
+        const document: DocumentNode = gql`
+            type Test @rootEntity @businessObject {
+                key: String
+            }
+
+            type Test2 @rootEntity {
+                key: String
+            }
+        `;
+
+        const model = createSimpleModel(document);
+        expect(model.validate().getErrors(), model.validate().toString()).to.deep.equal([]);
+
+        const type = model.getRootEntityTypeOrThrow('Test');
+        expect(type.isBusinessObject).to.be.true;
+
+        const type2 = model.getRootEntityTypeOrThrow('Test2');
+        expect(type2.isBusinessObject).to.be.false;
+    });
 });
