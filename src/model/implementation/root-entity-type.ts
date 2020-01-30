@@ -1,10 +1,10 @@
 import { GraphQLID, GraphQLString } from 'graphql';
 import memorize from 'memorize-decorator';
 import { ACCESS_GROUP_FIELD, DEFAULT_PERMISSION_PROFILE, ID_FIELD, SCALAR_INT, SCALAR_STRING } from '../../schema/constants';
-import { compact, flatMap } from '../../utils/utils';
-import { FieldConfig, IndexDefinitionConfig, PermissionsConfig, RootEntityTypeConfig, TypeKind } from '../config';
-import { ValidationMessage } from '../validation';
-import { ValidationContext } from '../validation/validation-context';
+import { GraphQLLocalDate } from '../../schema/scalars/local-date';
+import { compact } from '../../utils/utils';
+import { PermissionsConfig, RootEntityTypeConfig, TypeKind } from '../config';
+import { ValidationContext, ValidationMessage } from '../validation';
 import { Field, SystemFieldConfig } from './field';
 import { Index } from './indices';
 import { Model } from './model';
@@ -39,7 +39,7 @@ export class RootEntityType extends ObjectTypeBase {
         if (this.keyField) {
             const keyField = this.keyField;
             if (!indexConfigs.some(f => f.unique === true && f.fields.length == 1 && f.fields[0] === keyField.name)) {
-                indexConfigs.push({unique: true, fields: [keyField.name] });
+                indexConfigs.push({ unique: true, fields: [keyField.name] });
             }
         }
 
@@ -158,8 +158,10 @@ export class RootEntityType extends ObjectTypeBase {
         }
 
         // support for ID is needed because id: ID @key is possible
-        if (field.type.kind !== TypeKind.SCALAR || !(field.type.name === SCALAR_INT || field.type.name === SCALAR_STRING || field.type.name === GraphQLID.name)) {
-            context.addMessage(ValidationMessage.error(`Only fields of type "String", "Int", and "ID" can be used as key field.`, astNode));
+        if (field.type.kind !== TypeKind.SCALAR || ![
+            SCALAR_INT, SCALAR_STRING, GraphQLID.name, GraphQLLocalDate.name
+        ].includes(field.type.name)) {
+            context.addMessage(ValidationMessage.error(`Only fields of type "String", "Int", "ID", and "LocalDate" can be used as key field.`, astNode));
         }
 
         if (field.isList) {
