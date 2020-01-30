@@ -1,14 +1,41 @@
 import { AggregationOperator, RootEntityType } from '../model';
 import { Field } from '../model/implementation';
-import { AggregationQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConditionalQueryNode, CountQueryNode, EntitiesQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, NullQueryNode, ObjectQueryNode, QueryNode, RootEntityIDQueryNode, SafeListQueryNode, TransformListQueryNode, TraversalQueryNode, TypeCheckQueryNode, VariableQueryNode } from '../query-tree';
+import {
+    AggregationQueryNode,
+    BasicType,
+    BinaryOperationQueryNode,
+    BinaryOperator,
+    ConditionalQueryNode,
+    CountQueryNode,
+    EntitiesQueryNode,
+    FieldQueryNode,
+    FirstOfListQueryNode,
+    FollowEdgeQueryNode,
+    NullQueryNode,
+    ObjectQueryNode,
+    PropertyAccessQueryNode,
+    QueryNode,
+    RootEntityIDQueryNode,
+    SafeListQueryNode,
+    TransformListQueryNode,
+    TraversalQueryNode,
+    TypeCheckQueryNode,
+    VariableQueryNode
+} from '../query-tree';
 import { ID_FIELD } from '../schema/constants';
+import { GraphQLOffsetDateTime, TIMESTAMP_PROPERTY } from '../schema/scalars/offset-date-time';
 import { and } from './filter-input-types/constants';
 
-export function createFieldNode(field: Field, sourceNode: QueryNode, options: { skipNullFallbackForEntityExtensions?: boolean } = {}): QueryNode {
+export function createFieldNode(
+    field: Field,
+    sourceNode: QueryNode,
+    options: { skipNullFallbackForEntityExtensions?: boolean } = {}
+): QueryNode {
     // make use of the fact that field access on non-objects is NULL, so that type checks for OBJECT are redundant
     // this e.g. reverses the effect of the isEntityExtensionType check below
     // this is important for filter/orderBy which do not work if there is a conditional
-    if (sourceNode instanceof ConditionalQueryNode &&
+    if (
+        sourceNode instanceof ConditionalQueryNode &&
         sourceNode.condition instanceof TypeCheckQueryNode &&
         sourceNode.condition.type === BasicType.OBJECT &&
         sourceNode.expr1 === sourceNode.condition.valueNode
@@ -18,14 +45,30 @@ export function createFieldNode(field: Field, sourceNode: QueryNode, options: { 
 
     if (field.collectPath) {
         if (field.aggregationOperator) {
-            const items = new TraversalQueryNode(field.collectPath, sourceNode);
+            let items: QueryNode = new TraversalQueryNode(field.collectPath, sourceNode);
+
             if (field.aggregationOperator === AggregationOperator.COUNT) {
                 return new CountQueryNode(items);
-            } else {
-                // scalar fields should be ordered automatically because there is no argument to sort them
-                const sort = field.aggregationOperator === AggregationOperator.DISTINCT && (field.type.isScalarType || field.type.isEnumType);
-                return new AggregationQueryNode(items, field.aggregationOperator, { sort });
             }
+
+            if (
+                field.collectPath.resultingType &&
+                field.collectPath.resultingType.isScalarType &&
+                field.collectPath.resultingType.graphQLScalarType === GraphQLOffsetDateTime
+            ) {
+                const offsetDateTimeNode = new VariableQueryNode('offsetDateTime');
+                items = new TransformListQueryNode({
+                    listNode: items,
+                    itemVariable: offsetDateTimeNode,
+                    innerNode: new PropertyAccessQueryNode(offsetDateTimeNode, TIMESTAMP_PROPERTY)
+                });
+            }
+
+            // scalar fields should be ordered automatically because there is no argument to sort them
+            const sort =
+                field.aggregationOperator === AggregationOperator.DISTINCT &&
+                (field.type.isScalarType || field.type.isEnumType);
+            return new AggregationQueryNode(items, field.aggregationOperator, { sort });
         } else {
             return new TraversalQueryNode(field.collectPath, sourceNode);
         }
@@ -55,7 +98,11 @@ export function createFieldNode(field: Field, sourceNode: QueryNode, options: { 
 
     const fieldNode = new FieldQueryNode(sourceNode, field);
     if (field.type.isEntityExtensionType && !options.skipNullFallbackForEntityExtensions) {
-        return new ConditionalQueryNode(new TypeCheckQueryNode(fieldNode, BasicType.OBJECT), fieldNode, ObjectQueryNode.EMPTY);
+        return new ConditionalQueryNode(
+            new TypeCheckQueryNode(fieldNode, BasicType.OBJECT),
+            fieldNode,
+            ObjectQueryNode.EMPTY
+        );
     }
 
     return fieldNode;
@@ -68,19 +115,11 @@ function createTo1ReferenceNode(field: Field, sourceNode: QueryNode): QueryNode 
     const referenceKeyNode = new FieldQueryNode(sourceNode, field.getReferenceKeyFieldOrThrow());
     const listItemVar = new VariableQueryNode(field.name);
     const itemKeyNode = createFieldNode(keyFieldInReferencedEntity, listItemVar);
-    const equalFilterNode = new BinaryOperationQueryNode(
-        itemKeyNode,
-        BinaryOperator.EQUAL,
-        referenceKeyNode
-    );
+    const equalFilterNode = new BinaryOperationQueryNode(itemKeyNode, BinaryOperator.EQUAL, referenceKeyNode);
     // this is a hint for the database that we're not interested in items where the key is null so it can use sparse
     // indices. this is used by arangodb >= 3.4. It would be preferable to implement this in the ArangoDBAdapter, but
     // then we would need a way to convey non-nullness somehow.
-    const nonNullFilterNode = new BinaryOperationQueryNode(
-        itemKeyNode,
-        BinaryOperator.UNEQUAL,
-        NullQueryNode.NULL
-    );
+    const nonNullFilterNode = new BinaryOperationQueryNode(itemKeyNode, BinaryOperator.UNEQUAL, NullQueryNode.NULL);
     const filterNode = and(nonNullFilterNode, equalFilterNode);
 
     const listNode = new EntitiesQueryNode(referencedEntityType);
@@ -91,7 +130,11 @@ function createTo1ReferenceNode(field: Field, sourceNode: QueryNode): QueryNode 
         itemVariable: listItemVar
     });
     const rawNode = new FirstOfListQueryNode(filteredListNode);
-    return new ConditionalQueryNode(new TypeCheckQueryNode(referenceKeyNode, BasicType.NULL), NullQueryNode.NULL, rawNode);
+    return new ConditionalQueryNode(
+        new TypeCheckQueryNode(referenceKeyNode, BasicType.NULL),
+        NullQueryNode.NULL,
+        rawNode
+    );
 }
 
 function createTo1RelationNode(field: Field, sourceNode: QueryNode): QueryNode {

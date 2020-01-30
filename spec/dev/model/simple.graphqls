@@ -15,6 +15,8 @@ type Hero @rootEntity(indices: [ { fields: "missions.date" } ]) {
     moreFriends: [Hero] @collect(path: "friends{0,2}")
     subMissions: [Mission] @collect(path: "missions.subMissions")
     missionsAgain: [Mission] @collect(path: "missions")
+    latestMission: DateTime @collect(path: "missions.date", aggregate: MAX)
+    firstMoviePremiere: DateTime @collect(path: "movies.premiere", aggregate: MIN)
     info: JSON
 }
 
@@ -41,6 +43,7 @@ type Movie @rootEntity {
     "The real superhero"
     director: Director @relation
     publisher: Publisher @reference
+    premiere: OffsetDateTime
 
     relatedMovies: [Movie] @collect(path: "heroes.movies", aggregate: DISTINCT)
     community: [Hero] @collect(path: "heroes.friends{0,2}", aggregate: DISTINCT)

@@ -1,7 +1,6 @@
 type Shipment @rootEntity {
     shipmentNumber: String @key
 
-
     deliveries: [Delivery] @relation
 
     allOuterHandlingUnits: [HandlingUnit] @collect(path: "deliveries.handlingUnits", aggregate: DISTINCT)
@@ -10,6 +9,7 @@ type Shipment @rootEntity {
     allDeliveryContents: [DeliveryContent] @collect(path: "deliveries.deliveryContents")
     allItems: [DeliveryItem] @collect(path: "deliveries.deliveryContents.items")
     totalWeightInKg: Float @collect(path: "allItems.weightInKg", aggregate: SUM)
+    maxPriority: Int @collect(path: "deliveries.priority", aggregate: MAX)
     itemCount: Int @collect(path: "allItems", aggregate: COUNT)
     deliveryCount: Int @collect(path: "deliveries", aggregate: COUNT)
     allDeliveriesHaveOrders: Boolean @collect(path: "deliveries.order", aggregate: NONE_NULL)
@@ -17,10 +17,15 @@ type Shipment @rootEntity {
     numberOfDeliveriesWithoutOrder: Int @collect(path: "deliveries.order", aggregate: COUNT_NULL)
     numberOfDeliveriesWithoutPayedOrder: Int @collect(path: "deliveries.order.payedAt", aggregate: COUNT_NULL)
     #numberOfUnpayedOrders: Int @collect(path: "allOrders.payedAt", aggregate: COUNT_NULL) # waiting for DISTINCT aggregations to be supported in collect paths
+
+    startedDispatchingAt: DateTime @collect(path: "deliveries.dispatchedAt", aggregate: MIN)
+    fullyDispatchedAt: DateTime @collect(path: "deliveries.dispatchedAt", aggregate: MAX)
 }
 
 type Delivery @rootEntity {
     deliveryNumber: String @key
+    dispatchedAt: OffsetDateTime
+    priority: Int
     deliveryContents: [DeliveryContent]
 
     handlingUnits: [HandlingUnit] @relation
