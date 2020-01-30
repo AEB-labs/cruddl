@@ -1,8 +1,6 @@
 import { expect } from 'chai';
 import { Model, RootEntityType, Severity, TypeKind } from '../../../src/model';
-import {
-    expectMultipleMessagesToInclude, expectSingleErrorToInclude, expectSingleMessageToInclude, expectToBeValid, validate
-} from './validation-utils';
+import { expectSingleErrorToInclude, expectToBeValid, validate } from './validation-utils';
 
 describe('RootEntityType', () => {
     const modelWithoutDefaultProfile = new Model({
@@ -93,7 +91,7 @@ describe('RootEntityType', () => {
                                 access: 'read'
                             }
                         ]
-                    },
+                    }
                 }
             }
         ]
@@ -179,7 +177,7 @@ describe('RootEntityType', () => {
                 keyFieldName: 'address'
             }, model);
 
-            expectSingleMessageToInclude(type, `Only fields of type "String", "Int", and "ID" can be used as key field.`, Severity.Error);
+            expectSingleErrorToInclude(type, `Only fields of type "String", "Int", "ID", and "LocalDate" can be used as key field.`);
         });
 
         it('creates a unique index for it', () => {
