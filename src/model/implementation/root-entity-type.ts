@@ -1,20 +1,10 @@
 import { GraphQLID, GraphQLString } from 'graphql';
 import memorize from 'memorize-decorator';
-import {
-    ACCESS_GROUP_FIELD,
-    DEFAULT_PERMISSION_PROFILE,
-    FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE,
-    FLEX_SEARCH_INDEXED_DIRECTIVE,
-    FLEX_SEARCH_ORDER_ARGUMENT,
-    ID_FIELD,
-    ROOT_ENTITY_DIRECTIVE,
-    SCALAR_INT,
-    SCALAR_STRING
-} from '../../schema/constants';
+import { ACCESS_GROUP_FIELD, DEFAULT_PERMISSION_PROFILE, FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE, FLEX_SEARCH_INDEXED_DIRECTIVE, FLEX_SEARCH_ORDER_ARGUMENT, ID_FIELD, ROOT_ENTITY_DIRECTIVE, SCALAR_INT, SCALAR_STRING } from '../../schema/constants';
+import { GraphQLLocalDate } from '../../schema/scalars/local-date';
 import { compact } from '../../utils/utils';
 import { FlexSearchIndexConfig, PermissionsConfig, RootEntityTypeConfig, TypeKind } from '../config';
-import { ValidationMessage } from '../validation';
-import { ValidationContext } from '../validation/validation-context';
+import { ValidationContext, ValidationMessage } from '../validation';
 import { Field, SystemFieldConfig } from './field';
 import { Index } from './indices';
 import { Model } from './model';
@@ -205,11 +195,13 @@ export class RootEntityType extends ObjectTypeBase {
         // support for ID is needed because id: ID @key is possible
         if (
             field.type.kind !== TypeKind.SCALAR ||
-            !(field.type.name === SCALAR_INT || field.type.name === SCALAR_STRING || field.type.name === GraphQLID.name)
+            ![
+                SCALAR_INT, SCALAR_STRING, GraphQLID.name, GraphQLLocalDate.name
+            ].includes(field.type.name)
         ) {
             context.addMessage(
                 ValidationMessage.error(
-                    `Only fields of type "String", "Int", and "ID" can be used as key field.`,
+                    `Only fields of type "String", "Int", "ID", and "LocalDate" can be used as key field.`,
                     astNode
                 )
             );
