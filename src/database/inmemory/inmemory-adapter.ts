@@ -117,6 +117,20 @@ export class InMemoryAdapter implements DatabaseAdapter {
                 return 0;
             },
 
+            min(items: ReadonlyArray<string|number>) {
+                if (!items.length) {
+                    return null;
+                }
+                return items.reduce((acc, item) => support.compare(item, acc) < 0 ? item : acc);
+            },
+
+            max(items: ReadonlyArray<string|number>) {
+                if (!items.length) {
+                    return null;
+                }
+                return items.reduce((acc, item) => support.compare(item, acc) > 0 ? item : acc);
+            },
+
             getMultiComparator<T>(...valueFns: [((item: T) => string|boolean|number|null|undefined), boolean][]) {
                 if (valueFns.length == 0) {
                     return () => 0;

@@ -311,9 +311,9 @@ register(AggregationQueryNode, (node, context) => {
         case AggregationOperator.AVERAGE:
             return jsExt.evaluatingLambda(listVar, js`${listVar}.length ? (${listVar}.reduce((${itemVar}, ${accumulatorVar}) => ${accumulatorVar} + ${itemVar}) / ${listVar}.length) : null`, listWithoutNullsFrag);
         case AggregationOperator.MIN:
-            return jsExt.evaluatingLambda(listVar, js`${listVar}.length ? (${listVar}.reduce((${itemVar}, ${accumulatorVar}) => Math.min(${accumulatorVar}, ${itemVar}))) : null`, listWithoutNullsFrag);
+            return js`support.min(${listWithoutNullsFrag})`;
         case AggregationOperator.MAX:
-            return jsExt.evaluatingLambda(listVar, js`${listVar}.length ? (${listVar}.reduce((${itemVar}, ${accumulatorVar}) => Math.max(${accumulatorVar}, ${itemVar}))) : null`, listWithoutNullsFrag);
+            return js`support.max(${listWithoutNullsFrag})`;
         case AggregationOperator.SOME_TRUE:
             return js`${listFrag}.some(${jsExt.lambda(itemVar, itemVar)})`;
         case AggregationOperator.SOME_NOT_TRUE:
