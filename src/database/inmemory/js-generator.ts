@@ -1,58 +1,8 @@
 import { compact } from 'lodash';
-import { AggregationOperator, Field, Relation, RelationSide, RootEntityType } from '../../model';
+import { AggregationOperator, Relation, RelationSide, RootEntityType } from '../../model';
 import { getEffectiveCollectSegments } from '../../model/implementation/collect-path';
-import {
-    AddEdgesQueryNode,
-    AggregationQueryNode,
-    BasicType,
-    BinaryOperationQueryNode,
-    BinaryOperator,
-    ConcatListsQueryNode,
-    ConditionalQueryNode,
-    ConstBoolQueryNode,
-    ConstIntQueryNode,
-    CountQueryNode,
-    CreateEntityQueryNode,
-    DeleteEntitiesQueryNode,
-    EntitiesQueryNode,
-    EntityFromIdQueryNode,
-    FieldQueryNode,
-    FirstOfListQueryNode,
-    FollowEdgeQueryNode,
-    ListQueryNode,
-    LiteralQueryNode,
-    MergeObjectsQueryNode,
-    NullQueryNode,
-    ObjectQueryNode,
-    OperatorWithLanguageQueryNode,
-    OrderClause,
-    OrderDirection,
-    OrderSpecification,
-    PropertyAccessQueryNode,
-    QueryNode,
-    QueryResultValidator,
-    RemoveEdgesQueryNode,
-    RootEntityIDQueryNode,
-    RUNTIME_ERROR_CODE_PROPERTY,
-    RUNTIME_ERROR_TOKEN,
-    RuntimeErrorQueryNode,
-    SafeListQueryNode,
-    SetEdgeQueryNode,
-    TransformListQueryNode,
-    TraversalQueryNode,
-    TypeCheckQueryNode,
-    UnaryOperationQueryNode,
-    UnaryOperator,
-    UpdateEntitiesQueryNode,
-    VariableAssignmentQueryNode,
-    VariableQueryNode,
-    WithPreExecutionQueryNode
-} from '../../query-tree';
-import {
-    FlexSearchComplexOperatorQueryNode,
-    FlexSearchFieldExistsQueryNode,
-    FlexSearchQueryNode
-} from '../../query-tree/flex-search';
+import { AddEdgesQueryNode, AggregationQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode, ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, OperatorWithLanguageQueryNode, OrderClause, OrderDirection, OrderSpecification, PropertyAccessQueryNode, QueryNode, QueryResultValidator, RemoveEdgesQueryNode, RootEntityIDQueryNode, RUNTIME_ERROR_CODE_PROPERTY, RUNTIME_ERROR_TOKEN, RuntimeErrorQueryNode, SafeListQueryNode, SetEdgeQueryNode, TransformListQueryNode, TraversalQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../../query-tree';
+import { FlexSearchComplexOperatorQueryNode, FlexSearchFieldExistsQueryNode, FlexSearchQueryNode } from '../../query-tree/flex-search';
 import { QuantifierFilterNode } from '../../query-tree/quantifiers';
 import { not } from '../../schema-generation/utils/input-types';
 import { Constructor, decapitalize } from '../../utils/utils';
@@ -386,17 +336,9 @@ register(AggregationQueryNode, (node, context) => {
                 listWithoutNullsFrag
             );
         case AggregationOperator.MIN:
-            return jsExt.evaluatingLambda(
-                listVar,
-                js`${listVar}.length ? (${listVar}.reduce((${itemVar}, ${accumulatorVar}) => Math.min(${accumulatorVar}, ${itemVar}))) : null`,
-                listWithoutNullsFrag
-            );
+            return js`support.min(${listWithoutNullsFrag})`;
         case AggregationOperator.MAX:
-            return jsExt.evaluatingLambda(
-                listVar,
-                js`${listVar}.length ? (${listVar}.reduce((${itemVar}, ${accumulatorVar}) => Math.max(${accumulatorVar}, ${itemVar}))) : null`,
-                listWithoutNullsFrag
-            );
+            return js`support.max(${listWithoutNullsFrag})`;
         case AggregationOperator.SOME_TRUE:
             return js`${listFrag}.some(${jsExt.lambda(itemVar, itemVar)})`;
         case AggregationOperator.SOME_NOT_TRUE:
