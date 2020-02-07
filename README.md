@@ -1,6 +1,6 @@
 # cruddl
 
-[![npm version](https://badge.fury.io/js/cruddl.svg)](https://npmjs.org/cruddl) [![Build Status](https://travis-ci.org/AEB-labs/cruddl.svg?branch=master)](https://travis-ci.org/AEB-labs/cruddl) [![Package Quality](https://npm.packagequality.com/shield/cruddl.svg)](https://packagequality.com/#?package=cruddl)
+[![npm version](https://badge.fury.io/js/cruddl.svg)](https://npmjs.org/cruddl) [![Build Status](https://github.com/AEB-labs/cruddl/actions?query=branch%3Amaster) [![Package Quality](https://npm.packagequality.com/shield/cruddl.svg)](https://packagequality.com/#?package=cruddl)
 
 **cruddl** - create a cuddly GraphQL API for your database, using the GraphQL SDL to model your schema.
 
@@ -10,12 +10,12 @@ This TypeScript library creates an executable GraphQL schema from a model defini
 
 ## Features
 
-- Schema definition using GraphQL types, fields and directives
-- Modelling features like relations, embedded lists and objects
-- Query features include filtering, sorting, cursor-based pagination and arbitrary nesting
-- Schema validation
-- Role-based authorization (field and type-based; static and data-dependent)
-- Pluggable database backends (currently supports ArangoDB and an in-memory implementation)
+-   Schema definition using GraphQL types, fields and directives
+-   Modelling features like relations, embedded lists and objects
+-   Query features include filtering, sorting, cursor-based pagination and arbitrary nesting
+-   Schema validation
+-   Role-based authorization (field and type-based; static and data-dependent)
+-   Pluggable database backends (currently supports ArangoDB and an in-memory implementation)
 
 ## Usage
 
@@ -26,31 +26,31 @@ npm install --save cruddl
 Install [ArangoDB](https://www.arangodb.com/) and create a new database.
 
 ```typescript
-import { ArangoDBAdapter } from "cruddl";
+import { ArangoDBAdapter } from 'cruddl';
 const db = new ArangoDBAdapter({
-  databaseName: "databaseName",
-  url: "http://root:@localhost:8529",
-  user: "root",
-  password: ""
+    databaseName: 'databaseName',
+    url: 'http://root:@localhost:8529',
+    user: 'root',
+    password: ''
 });
 ```
 
 If you just want to explore the features, you can also use an in-memory database implementation - but don't use this for anything else.
 
 ```typescript
-import { InMemoryAdapter } from "cruddl";
+import { InMemoryAdapter } from 'cruddl';
 const db = new InMemoryAdapter();
 ```
 
 Define your data model and create a project:
 
 ```typescript
-import { Project } from "cruddl";
+import { Project } from 'cruddl';
 const project = new Project({
-  sources: [
-    {
-      name: "schema.graphqls",
-      body: `
+    sources: [
+        {
+            name: 'schema.graphqls',
+            body: `
             type Movie @rootEntity {
               title: String
               actors: Actor @relation
@@ -60,41 +60,39 @@ const project = new Project({
               name: String
               movies: Movie @relation(inverseOf: "actors")
             }`
-    },
-    {
-      name: "permission-profiles.json",
-      body: JSON.stringify({
-        permissionProfiles: {
-          default: {
-            permissions: [
-              {
-                roles: ["users"],
-                access: "readWrite"
-              }
-            ]
-          }
+        },
+        {
+            name: 'permission-profiles.json',
+            body: JSON.stringify({
+                permissionProfiles: {
+                    default: {
+                        permissions: [
+                            {
+                                roles: ['users'],
+                                access: 'readWrite'
+                            }
+                        ]
+                    }
+                }
+            })
         }
-      })
-    }
-  ],
-  getExecutionOptions: ({ context }) => ({ authRoles: ["users"] }),
-  getOperationIdentifier: ({ context }) => context as object // each operation is executed with an unique context object
+    ],
+    getExecutionOptions: ({ context }) => ({ authRoles: ['users'] }),
+    getOperationIdentifier: ({ context }) => context as object // each operation is executed with an unique context object
 });
 ```
 
 Then, create the GraphQL schema and serve it:
 
 ```typescript
-import { ApolloServer } from "apollo-server";
+import { ApolloServer } from 'apollo-server';
 const schema = project.createSchema(db);
 db.updateSchema(project.getModel()); // create missing collections
 const server = new ApolloServer({
-  schema,
-  context: ({ req }) => req // pass request as context so we have a unique context object for each operation
+    schema,
+    context: ({ req }) => req // pass request as context so we have a unique context object for each operation
 });
-server.listen(4000, () =>
-  console.log("Server is running on http://localhost:4000/")
-);
+server.listen(4000, () => console.log('Server is running on http://localhost:4000/'));
 ```
 
 See the [modelling guide](docs/modelling.md) and the [api documentation](docs/api.md) for details.
@@ -116,6 +114,6 @@ When done, stop the instance with `npm run stop_arangodb`
 
 ## Documentation
 
-- [Modelling guide](docs/modelling.md)
-- [GraphQL API](docs/api.md)
-- [I18n](docs/i18n.md)
+-   [Modelling guide](docs/modelling.md)
+-   [GraphQL API](docs/api.md)
+-   [I18n](docs/i18n.md)
