@@ -5,7 +5,7 @@ jobs:
         runs-on: ubuntu-latest
         strategy:
             matrix:
-                arango-image: ['arangodb:3.2', 'arangodb:3.3', 'arangodb:3.4', 'arangodb:3.5']
+                arango-image: ['arangodb:3.2', 'arangodb:3.3', 'arangodb:3.4', 'arangodb:3.5', 'arangodb:3.6']
                 node-version: [10.x, 12.x]
         steps:
             - uses: actions/checkout@v2
