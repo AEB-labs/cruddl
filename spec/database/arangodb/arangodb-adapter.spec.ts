@@ -31,7 +31,10 @@ describe('ArangoDBAdapter', () => {
             });
             const db = getTempDatabase();
             const dbVersion = await db.version();
-            const isArangoDB34or35 = dbVersion.version.startsWith('3.4.') || dbVersion.version.startsWith('3.5.');
+            const isArangoDB34orHigher =
+                dbVersion.version.startsWith('3.4.') ||
+                dbVersion.version.startsWith('3.5.') ||
+                dbVersion.version.startsWith('3.6.');
 
             await db.collection('deliveries').create({});
 
@@ -122,7 +125,7 @@ describe('ArangoDBAdapter', () => {
                     type: 'persistent'
                 }
             ];
-            if (!isArangoDB34or35) {
+            if (!isArangoDB34orHigher) {
                 expectedIndices.push(
                     // this one is for @reference lookup which needs a non-sparse (see shouldUseWorkaroundForSparseIndices)
                     {
