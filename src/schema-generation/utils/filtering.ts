@@ -1,5 +1,5 @@
 import { Type } from '../../model';
-import { ConstBoolQueryNode, QueryNode, TransformListQueryNode, VariableQueryNode } from '../../query-tree';
+import { BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, QueryNode, TransformListQueryNode, VariableQueryNode } from '../../query-tree';
 import { simplifyBooleans } from '../../query-tree/utils';
 import { FILTER_ARG } from '../../schema/constants';
 import { decapitalize } from '../../utils/utils';
@@ -16,6 +16,23 @@ export function buildFilteredListNode(listNode: QueryNode, args: { [name: string
         return listNode;
     }
 
+    return new TransformListQueryNode({
+        listNode,
+        itemVariable,
+        filterNode
+    });
+}
+
+export function getFilterNode(listNode: QueryNode, predicate: (itemNode: QueryNode) => QueryNode) {
+    if (listNode instanceof TransformListQueryNode) {
+        return new TransformListQueryNode({
+            ...listNode,
+            filterNode: new BinaryOperationQueryNode(listNode.filterNode, BinaryOperator.AND, predicate(listNode.itemVariable))
+        });
+    }
+
+    const itemVariable = new VariableQueryNode('item');
+    const filterNode = predicate(itemVariable);
     return new TransformListQueryNode({
         listNode,
         itemVariable,

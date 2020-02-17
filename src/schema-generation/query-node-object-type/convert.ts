@@ -1,10 +1,8 @@
 import { GraphQLFieldConfig, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLOutputType, Thunk } from 'graphql';
-import { chain, uniqBy } from 'lodash';
+import { chain, uniq, uniqBy } from 'lodash';
 import memorize from 'memorize-decorator';
 import { aliasBasedResolver } from '../../graphql/alias-based-resolvers';
-import {
-    QueryNodeField, QueryNodeListType, QueryNodeNonNullType, QueryNodeObjectType, QueryNodeOutputType
-} from './definition';
+import { QueryNodeField, QueryNodeListType, QueryNodeNonNullType, QueryNodeObjectType, QueryNodeOutputType } from './definition';
 import { isGraphQLOutputType, resolveThunk } from './utils';
 
 export class QueryNodeObjectTypeConverter {
@@ -45,7 +43,7 @@ export class QueryNodeObjectTypeConverter {
 function resolveAndCheckFields(fieldsThunk: Thunk<ReadonlyArray<QueryNodeField>>, typeName: string): ReadonlyArray<QueryNodeField> {
     const fields = resolveThunk(fieldsThunk);
     if (uniqBy(fields, f => f.name).length !== fields.length) {
-        throw new Error(`Output type "${typeName}" has duplicate fields (fields: ${fields.map(f => f.name).join(', ')})`);
+        throw new Error(`Output type "${typeName}" has duplicate fields: ${uniq(fields.filter(f => fields.find(f2 => f2 !== f && f2.name === f.name)).map(f => f.name)).join(', ')})`);
     }
     return fields;
 }

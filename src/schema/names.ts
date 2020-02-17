@@ -15,8 +15,16 @@ export function getCreateEntityFieldName(entityName: string) {
     return CREATE_ENTITY_FIELD_PREFIX + entityName;
 }
 
+export function getCreateEntitiesFieldName(entityName: string) {
+    return CREATE_ENTITY_FIELD_PREFIX + pluralize(entityName);
+}
+
 export function getUpdateEntityFieldName(entityName: string) {
     return UPDATE_ENTITY_FIELD_PREFIX + entityName;
+}
+
+export function getUpdateEntitiesFieldName(entityName: string) {
+    return UPDATE_ENTITY_FIELD_PREFIX + pluralize(entityName);
 }
 
 export function getUpdateAllEntitiesFieldName(entityName: string) {
@@ -25,6 +33,10 @@ export function getUpdateAllEntitiesFieldName(entityName: string) {
 
 export function getDeleteEntityFieldName(entityName: string) {
     return DELETE_ENTITY_FIELD_PREFIX + entityName;
+}
+
+export function getDeleteEntitiesFieldName(entityName: string) {
+    return DELETE_ENTITY_FIELD_PREFIX + pluralize(entityName);
 }
 
 export function getDeleteAllEntitiesFieldName(entityName: string) {

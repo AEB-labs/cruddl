@@ -1,0 +1,117 @@
+fragment Request on Delivery {
+    deliveryNumber
+    consignee {
+        city
+        country {
+            isoCode
+            description {
+                languageIsoCode
+                translation
+            }
+        }
+        street
+    }
+    contentInfo {
+        translation
+        languageIsoCode
+    }
+    destinationCountry {
+        isoCode
+    }
+    dgInfo {
+        flashpoint
+        unNumber
+        notices
+    }
+    serialNumbers
+    items {
+        itemNumber
+    }
+    handlingUnits(orderBy: huNumber_ASC) {
+        huNumber
+    }
+}
+
+mutation create {
+    createDeliveries(input: [
+        {
+            deliveryNumber: "the-dn",
+            consignee: {
+                city: "Saint Nowhere",
+                country: "DE",
+                street: "Sunrise Avenue 1",
+            }
+            contentInfo: [{
+                languageIsoCode: "de",
+                translation: "für dich"
+            },{
+                languageIsoCode: "en",
+                translation: "for you"
+            }],
+            destinationCountry: "GB",
+            dgInfo: {
+                flashpoint: "37 °C",
+                unNumber: "123",
+                notices: [ "handle with care", "do not throw" ]
+            },
+            serialNumbers: [ "456", "424242" ],
+            items: [
+                {
+                    itemNumber: "44",
+                }, {
+                    itemNumber: "45"
+                }
+            ],
+            handlingUnits: ["@{ids/HandlingUnit/1}", "@{ids/HandlingUnit/2}"],
+            createHandlingUnits: [
+                {
+                    huNumber: "123"
+                }
+            ]
+        },
+
+        {
+            deliveryNumber: "dn2",
+            consignee: {
+                city: "Saint Nowhere",
+                country: "DE",
+                street: "Sunrise Avenue 2",
+            }
+            contentInfo: [{
+                languageIsoCode: "de",
+                translation: "für dich"
+            },{
+                languageIsoCode: "en",
+                translation: "for you"
+            }],
+            destinationCountry: "GB",
+            dgInfo: {
+                flashpoint: "37 °C",
+                unNumber: "123",
+                notices: [ "do not care", "throw with handle" ]
+            },
+            serialNumbers: [ "456", "424242" ],
+            items: [
+                {
+                    itemNumber: "44",
+                }, {
+                    itemNumber: "45"
+                }
+            ],
+            handlingUnits:["@{ids/HandlingUnit/1}", "@{ids/HandlingUnit/3}"],
+            createHandlingUnits: [
+                {
+                    huNumber: "456"
+                }
+            ]
+        }
+    ]) {
+        ...Request
+    }
+}
+
+query query {
+    allDeliveries(orderBy: [deliveryNumber_ASC], first: 1) {
+        ...Request
+    }
+}

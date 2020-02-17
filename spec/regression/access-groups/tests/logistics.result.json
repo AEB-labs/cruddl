@@ -1,70 +1,91 @@
 {
   "q": {
-    "errors": [
-      {
-        "message": "There can be only one operation named \"updateToAccessGroupWithPermissions\".",
-        "locations": [
-          {
-            "line": 8,
-            "column": 10
-          },
-          {
-            "line": 15,
-            "column": 10
-          }
-        ]
-      }
-    ]
+    "data": {
+      "allFiles": [
+        {
+          "name": "logistics"
+        },
+        {
+          "name": "public"
+        }
+      ]
+    }
   },
   "updateToAccessGroupWithPermissions": {
-    "errors": [
-      {
-        "message": "There can be only one operation named \"updateToAccessGroupWithPermissions\".",
-        "locations": [
-          {
-            "line": 8,
-            "column": 10
-          },
-          {
-            "line": 15,
-            "column": 10
-          }
-        ]
+    "data": {
+      "updateFile": {
+        "name": "public"
       }
-    ]
+    }
+  },
+  "updateAllToAccessGroupWithPermissions": {
+    "data": {
+      "updateAllFiles": [
+        {
+          "name": "public"
+        }
+      ]
+    }
+  },
+  "updateManyToAccessGroupWithPermissions": {
+    "data": {
+      "updateFiles": [
+        {
+          "name": "public"
+        }
+      ]
+    }
   },
   "createWithAccessGroupWithoutPermissions": {
     "errors": [
       {
-        "message": "There can be only one operation named \"updateToAccessGroupWithPermissions\".",
+        "message": "Not authorized to set File.accessGroup to this value (allowed values: logistics, public)",
         "locations": [
           {
-            "line": 8,
-            "column": 10
-          },
-          {
-            "line": 15,
-            "column": 10
+            "line": 30,
+            "column": 5
           }
+        ],
+        "path": [
+          "createFile"
         ]
       }
-    ]
+    ],
+    "data": null
   },
-  "createWithAccessGroupWithPermissions": {
+  "createManyWithAccessGroupWithoutPermissions": {
     "errors": [
       {
-        "message": "There can be only one operation named \"updateToAccessGroupWithPermissions\".",
+        "message": "Not authorized to set File.accessGroup to this value (allowed values: logistics, public)",
         "locations": [
           {
-            "line": 8,
-            "column": 10
-          },
-          {
-            "line": 15,
-            "column": 10
+            "line": 37,
+            "column": 5
           }
+        ],
+        "path": [
+          "createFiles"
         ]
       }
-    ]
+    ],
+    "data": {
+      "createFiles": null
+    }
+  },
+  "createWithAccessGroupWithPermissions": {
+    "data": {
+      "createFile": {
+        "name": "test"
+      }
+    }
+  },
+  "createManyWithAccessGroupWithPermissions": {
+    "data": {
+      "createFiles": [
+        {
+          "name": "test"
+        }
+      ]
+    }
   }
 }

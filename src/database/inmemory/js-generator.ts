@@ -257,7 +257,7 @@ function getPropertyAccessFrag(propertyName: string, objectFrag: JSFragment) {
 }
 
 register(RootEntityIDQueryNode, (node, context) => {
-    return js`${processNode(node.objectNode, context)}.${js.identifier(ID_FIELD_NAME)}`;
+    return getPropertyAccessFrag('id', processNode(node.objectNode, context));
 });
 
 register(TransformListQueryNode, (node, context) => {

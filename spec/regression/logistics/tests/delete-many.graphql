@@ -1,0 +1,8 @@
+mutation onlyFirst {
+    deleteDeliveries(ids: ["@{ids/Delivery/3}", "@{ids/Delivery/1}", "non-existant"]) {
+        deliveryNumber
+        consignee {
+            city
+        }
+    }
+}
