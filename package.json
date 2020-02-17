@@ -37,7 +37,7 @@
     "@types/graphql": "~14.2.0",
     "@types/graphql-type-json": "^0.1.2",
     "@types/js-yaml": "^3.10.1",
-    "@types/lodash": "^4.14.77",
+    "@types/lodash": "^4.14.149",
     "@types/mocha": "^2.2.48",
     "@types/node": "^8.0.28",
     "@types/pluralize": "0.0.27",
