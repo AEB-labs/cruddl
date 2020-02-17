@@ -42,7 +42,7 @@ export function analyzeLikePatternPrefix(pattern: string): { literalPrefix: stri
     return { literalPrefix, isSimplePrefixPattern: false, isLiteralPattern: true };
 }
 
-export function likePatternToRegExp(pattern: string): RegExp {
+export function likePatternToRegExp(pattern: string, { wildcardChar = '%', singleWildcardChar = '_' }: { wildcardChar?: string, singleWildcardChar?: string } = {}): RegExp {
     let regex = '';
     let i = 0;
     while (i < pattern.length) {
@@ -50,7 +50,7 @@ export function likePatternToRegExp(pattern: string): RegExp {
         switch (char) {
             case '\\':
                 const nextChar = pattern[i + 1];
-                if (nextChar === '%' || nextChar === '_' || pattern[ + 1] === '\\') {
+                if (nextChar === wildcardChar || nextChar === singleWildcardChar || pattern[+1] === '\\') {
                     regex += escapeRegExp(nextChar);
                     i += 2;
                 } else {
@@ -60,12 +60,12 @@ export function likePatternToRegExp(pattern: string): RegExp {
                     i++;
                 }
                 break;
-            case '%':
+            case wildcardChar:
                 // no dotall modifier for now in JavaScript (there is a proposal for it though)
                 regex += '([\\s\\S]*)';
                 i++;
                 break;
-            case '_':
+            case singleWildcardChar:
                 regex += '[\\s\\S]';
                 i++;
                 break;
