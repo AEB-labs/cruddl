@@ -1,0 +1,83 @@
+query q {
+    allFiles(orderBy: name_ASC) {
+        name
+    }
+}
+
+mutation updatePublic {
+    updateFiles(input: [{ id: "@{ids/File/3}", name: "public2" }]) {
+        name
+    }
+}
+
+# should fail
+mutation updateToAccessGroupWithoutReadPermissions {
+    updateFiles(input: [{ id: "@{ids/File/3}", accessGroup: "accounting" }]) {
+        name
+    }
+}
+
+# should fail
+mutation updateToAccessGroupWithoutWritePermissions {
+    updateFiles(input: [{ id: "@{ids/File/3}", accessGroup: "logistics" }]) {
+        name
+    }
+}
+
+# should pass
+mutation createWithAccessGroupWithWritePermissions {
+    createFiles(input: [{ name: "test", accessGroup: "public" }]) {
+        name
+    }
+}
+
+# should fail
+mutation createWithAccessGroupWithoutWritePermissions {
+    createFiles(input: [{ name: "test", accessGroup: "logistics" }]) {
+        name
+    }
+}
+
+mutation updateWriteRestricted {
+    updateFiles(input: [{ id: "@{ids/File/2}", name: "logistics2" }]) {
+        name
+    }
+}
+
+# should fail with first error (write restriction vs. setting the value)
+mutation updateWriteRestrictedToAccessGroupWithoutWritePermissions {
+    updateFiles(input: [{ id: "@{ids/File/2}", accessGroup: "logistics" }]) {
+        name
+    }
+}
+
+mutation updateReadRestricted {
+    updateFiles(input: [{ id: "@{ids/File/1}", name: "accounting" }]) {
+        name
+    }
+}
+
+# should not find this and not report that the accessGroup can not be set
+mutation updateReadRestrictedToAccessGroupWithoutWritePermissions {
+    updateFiles(input: [{ id: "@{ids/File/1}", accessGroup: "logistics" }]) {
+        name
+    }
+}
+
+mutation deletePublic {
+    deleteFiles(ids: ["@{ids/File/3}"]) {
+        name
+    }
+}
+
+mutation deleteWriteRestricted {
+    deleteFiles(ids: ["@{ids/File/2}"]) {
+        name
+    }
+}
+
+mutation deleteReadRestricted {
+    deleteFiles(ids: ["@{ids/File/1}"]) {
+        name
+    }
+}

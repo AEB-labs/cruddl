@@ -1,0 +1,157 @@
+{
+    "create": {
+        "data": {
+            "createDeliveries": [
+                {
+                    "deliveryNumber": "the-dn",
+                    "consignee": {
+                        "city": "Saint Nowhere",
+                        "country": {
+                            "isoCode": "DE",
+                            "description": [
+                                {
+                                    "languageIsoCode": "DE",
+                                    "translation": "Deutschland"
+                                },
+                                {
+                                    "languageIsoCode": "EN",
+                                    "translation": "Germany"
+                                }
+                            ]
+                        },
+                        "street": "Sunrise Avenue 1"
+                    },
+                    "contentInfo": [
+                        {
+                            "translation": "für dich",
+                            "languageIsoCode": "de"
+                        },
+                        {
+                            "translation": "for you",
+                            "languageIsoCode": "en"
+                        }
+                    ],
+                    "destinationCountry": {
+                        "isoCode": "GB"
+                    },
+                    "dgInfo": {
+                        "flashpoint": "37 °C",
+                        "unNumber": "123",
+                        "notices": ["handle with care", "do not throw"]
+                    },
+                    "serialNumbers": ["456", "424242"],
+                    "items": [
+                        {
+                            "itemNumber": "44"
+                        },
+                        {
+                            "itemNumber": "45"
+                        }
+                    ],
+                    "handlingUnits": [
+                        {
+                            "huNumber": "1000014"
+                        },
+                        {
+                            "huNumber": "123"
+                        }
+                    ]
+                },
+                {
+                    "deliveryNumber": "dn2",
+                    "consignee": {
+                        "city": "Saint Nowhere",
+                        "country": {
+                            "isoCode": "DE",
+                            "description": [
+                                {
+                                    "languageIsoCode": "DE",
+                                    "translation": "Deutschland"
+                                },
+                                {
+                                    "languageIsoCode": "EN",
+                                    "translation": "Germany"
+                                }
+                            ]
+                        },
+                        "street": "Sunrise Avenue 2"
+                    },
+                    "contentInfo": [
+                        {
+                            "translation": "für dich",
+                            "languageIsoCode": "de"
+                        },
+                        {
+                            "translation": "for you",
+                            "languageIsoCode": "en"
+                        }
+                    ],
+                    "destinationCountry": {
+                        "isoCode": "GB"
+                    },
+                    "dgInfo": {
+                        "flashpoint": "37 °C",
+                        "unNumber": "123",
+                        "notices": ["do not care", "throw with handle"]
+                    },
+                    "serialNumbers": ["456", "424242"],
+                    "items": [
+                        {
+                            "itemNumber": "44"
+                        },
+                        {
+                            "itemNumber": "45"
+                        }
+                    ],
+                    "handlingUnits": [
+                        {
+                            "huNumber": "1000007"
+                        },
+                        {
+                            "huNumber": "1000021"
+                        },
+                        {
+                            "huNumber": "456"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "query": {
+        "data": {
+            "allDeliveries": [
+                {
+                    "deliveryNumber": "1000173",
+                    "consignee": {
+                        "city": "Port Neldahaven",
+                        "country": null,
+                        "street": "675 Kurtis Route"
+                    },
+                    "contentInfo": [
+                        {
+                            "translation": "Kerosin 1000L",
+                            "languageIsoCode": "DE"
+                        }
+                    ],
+                    "destinationCountry": null,
+                    "dgInfo": {
+                        "flashpoint": "37 °C",
+                        "unNumber": "1863",
+                        "notices": ["No special treatment necessary."]
+                    },
+                    "serialNumbers": [],
+                    "items": [
+                        {
+                            "itemNumber": "1001"
+                        },
+                        {
+                            "itemNumber": "1002"
+                        }
+                    ],
+                    "handlingUnits": []
+                }
+            ]
+        }
+    }
+}
