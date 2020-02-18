@@ -1,0 +1,14 @@
+{
+    "schemaPath": "schema.graphql",
+    "extensions": {
+        "endpoints": {
+            "Default Introspection Endpoint": {
+                "url": "http://localhost:3000/",
+                "introspect": true
+            },
+            "cruddl": {
+                "url": "http://localhost:3000/"
+            }
+        }
+    }
+}
