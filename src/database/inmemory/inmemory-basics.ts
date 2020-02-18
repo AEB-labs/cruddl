@@ -3,7 +3,7 @@ import { decapitalize } from '../../utils/utils';
 import { Relation, RootEntityType } from '../../model';
 
 export function getCollectionNameForRootEntity(rootEntityType: RootEntityType) {
-    return decapitalize(pluralize(rootEntityType.name));
+    return decapitalize(rootEntityType.pluralName);
 }
 
 export function getCollectionNameForRelation(relation: Relation) {

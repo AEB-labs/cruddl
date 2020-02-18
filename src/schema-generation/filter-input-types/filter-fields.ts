@@ -1,6 +1,5 @@
 import { getNamedType, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
 import { ZonedDateTime } from 'js-joda';
-import * as pluralize from 'pluralize';
 import { isArray } from 'util';
 import { EnumType, Field, ScalarType, Type, TypeKind } from '../../model';
 import {
@@ -177,9 +176,8 @@ export class NestedObjectFilterField implements FilterField {
         this.description = `Checks if \`${this.field.name}\` is not null, and allows to filter based on its fields.`;
         if (this.field.isReference && this.field.type.kind == TypeKind.ROOT_ENTITY && this.field.type.keyField) {
             this.description =
-                `Filters the through \`${this.field.type.keyField.name}\` referenced ${pluralize(
-                    this.field.type.name
-                )} that fulfills the given requirements.\n\n ` + this.description;
+                `Filters the through \`${this.field.type.keyField.name}\` referenced ${this.field.type.pluralName} that fulfills the given requirements.\n\n ` +
+                this.description;
         }
     }
 
