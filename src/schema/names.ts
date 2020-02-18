@@ -1,4 +1,4 @@
-import * as pluralize from 'pluralize';
+import { RootEntityType } from '../model/implementation';
 import { capitalize } from '../utils/utils';
 import {
     ADD_CHILD_ENTITIES_FIELD_PREFIX,
@@ -16,44 +16,44 @@ import {
     UPDATE_ENTITY_FIELD_PREFIX
 } from './constants';
 
-export function getAllEntitiesFieldName(entityName: string) {
-    return ALL_ENTITIES_FIELD_PREFIX + pluralize(entityName);
+export function getAllEntitiesFieldName(rootEntityType: RootEntityType) {
+    return ALL_ENTITIES_FIELD_PREFIX + rootEntityType.pluralName;
 }
 
-export function getFlexSearchEntitiesFieldName(entityName: string) {
-    return FLEX_SEARCH_ENTITIES_FIELD_PREFIX + pluralize(entityName);
+export function getFlexSearchEntitiesFieldName(rootEntityType: RootEntityType) {
+    return FLEX_SEARCH_ENTITIES_FIELD_PREFIX + rootEntityType.pluralName;
 }
 
-export function getCreateEntityFieldName(entityName: string) {
-    return CREATE_ENTITY_FIELD_PREFIX + entityName;
+export function getCreateEntityFieldName(rootEntityType: RootEntityType) {
+    return CREATE_ENTITY_FIELD_PREFIX + rootEntityType.name;
 }
 
-export function getCreateEntitiesFieldName(entityName: string) {
-    return CREATE_ENTITY_FIELD_PREFIX + pluralize(entityName);
+export function getCreateEntitiesFieldName(rootEntityType: RootEntityType) {
+    return CREATE_ENTITY_FIELD_PREFIX + rootEntityType.pluralName;
 }
 
-export function getUpdateEntityFieldName(entityName: string) {
-    return UPDATE_ENTITY_FIELD_PREFIX + entityName;
+export function getUpdateEntityFieldName(rootEntityType: RootEntityType) {
+    return UPDATE_ENTITY_FIELD_PREFIX + rootEntityType.name;
 }
 
-export function getUpdateEntitiesFieldName(entityName: string) {
-    return UPDATE_ENTITY_FIELD_PREFIX + pluralize(entityName);
+export function getUpdateEntitiesFieldName(rootEntityType: RootEntityType) {
+    return UPDATE_ENTITY_FIELD_PREFIX + rootEntityType.pluralName;
 }
 
-export function getUpdateAllEntitiesFieldName(entityName: string) {
-    return UPDATE_ALL_ENTITIES_FIELD_PREFIX + pluralize(entityName);
+export function getUpdateAllEntitiesFieldName(rootEntityType: RootEntityType) {
+    return UPDATE_ALL_ENTITIES_FIELD_PREFIX + rootEntityType.pluralName;
 }
 
-export function getDeleteEntityFieldName(entityName: string) {
-    return DELETE_ENTITY_FIELD_PREFIX + entityName;
+export function getDeleteEntityFieldName(rootEntityType: RootEntityType) {
+    return DELETE_ENTITY_FIELD_PREFIX + rootEntityType.name;
 }
 
-export function getDeleteEntitiesFieldName(entityName: string) {
-    return DELETE_ENTITY_FIELD_PREFIX + pluralize(entityName);
+export function getDeleteEntitiesFieldName(rootEntityType: RootEntityType) {
+    return DELETE_ENTITY_FIELD_PREFIX + rootEntityType.pluralName;
 }
 
-export function getDeleteAllEntitiesFieldName(entityName: string) {
-    return DELETE_ALL_ENTITIES_FIELD_PREFIX + pluralize(entityName);
+export function getDeleteAllEntitiesFieldName(rootEntityType: RootEntityType) {
+    return DELETE_ALL_ENTITIES_FIELD_PREFIX + rootEntityType.pluralName;
 }
 
 export function getMetaFieldName(field: string) {
@@ -108,6 +108,6 @@ export function getUpdateInputTypeName(typeName: string) {
     return `Update${typeName}Input`;
 }
 
-export function getUpdateAllInputTypeName(typeName: string) {
-    return `UpdateAll${pluralize(typeName)}Input`;
+export function getUpdateAllInputTypeName(rootEntityType: RootEntityType) {
+    return `UpdateAll${rootEntityType.pluralName}Input`;
 }

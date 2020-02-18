@@ -106,7 +106,7 @@ export class MutationTypeGenerator {
         const inputType = this.createTypeGenerator.generateForRootEntityType(rootEntityType);
 
         return {
-            name: getCreateEntityFieldName(rootEntityType.name),
+            name: getCreateEntityFieldName(rootEntityType),
             type: new QueryNodeNonNullType(this.outputTypeGenerator.generate(rootEntityType)),
             args: {
                 [MUTATION_INPUT_ARG]: {
@@ -140,7 +140,7 @@ export class MutationTypeGenerator {
         const inputType = this.createTypeGenerator.generateForRootEntityType(rootEntityType);
 
         return {
-            name: getCreateEntitiesFieldName(rootEntityType.name),
+            name: getCreateEntitiesFieldName(rootEntityType),
             type: new QueryNodeListType(new QueryNodeNonNullType(this.outputTypeGenerator.generate(rootEntityType))),
             args: {
                 [MUTATION_INPUT_ARG]: {
@@ -181,7 +181,7 @@ export class MutationTypeGenerator {
         const inputType = this.updateTypeGenerator.generateForRootEntityType(rootEntityType);
 
         return {
-            name: getUpdateEntitiesFieldName(rootEntityType.name),
+            name: getUpdateEntitiesFieldName(rootEntityType),
             type: new QueryNodeListType(new QueryNodeNonNullType(this.outputTypeGenerator.generate(rootEntityType))),
             args: {
                 [MUTATION_INPUT_ARG]: {
@@ -235,7 +235,7 @@ export class MutationTypeGenerator {
         const inputType = this.updateTypeGenerator.generateForRootEntityType(rootEntityType);
 
         return {
-            name: getUpdateEntityFieldName(rootEntityType.name),
+            name: getUpdateEntityFieldName(rootEntityType),
             type: this.outputTypeGenerator.generate(rootEntityType),
             args: {
                 [MUTATION_INPUT_ARG]: {
@@ -324,7 +324,7 @@ export class MutationTypeGenerator {
     private generateUpdateAllField(rootEntityType: RootEntityType): QueryNodeField | undefined {
         // we construct this field like a regular query field first so that the list augmentation works
         const fieldBase: QueryNodeField = {
-            name: getUpdateAllEntitiesFieldName(rootEntityType.name),
+            name: getUpdateAllEntitiesFieldName(rootEntityType),
             type: makeNonNullableList(this.outputTypeGenerator.generate(rootEntityType)),
             resolve: () => new EntitiesQueryNode(rootEntityType)
         };
@@ -416,7 +416,7 @@ export class MutationTypeGenerator {
         }
 
         return {
-            name: getDeleteEntityFieldName(rootEntityType.name),
+            name: getDeleteEntityFieldName(rootEntityType),
             type: this.outputTypeGenerator.generate(rootEntityType),
             args: getArgumentsForUniqueFields(rootEntityType),
             isSerial: true,
@@ -458,7 +458,7 @@ export class MutationTypeGenerator {
 
     private generateDeleteManyField(rootEntityType: RootEntityType): QueryNodeField {
         return {
-            name: getDeleteEntitiesFieldName(rootEntityType.name),
+            name: getDeleteEntitiesFieldName(rootEntityType),
             type: new QueryNodeListType(new QueryNodeNonNullType(this.outputTypeGenerator.generate(rootEntityType))),
             args: {
                 ids: {
@@ -511,7 +511,7 @@ export class MutationTypeGenerator {
     private generateDeleteAllField(rootEntityType: RootEntityType): QueryNodeField {
         // we construct this field like a regular query field first so that the list augmentation works
         const fieldBase: QueryNodeField = {
-            name: getDeleteAllEntitiesFieldName(rootEntityType.name),
+            name: getDeleteAllEntitiesFieldName(rootEntityType),
             type: makeNonNullableList(this.outputTypeGenerator.generate(rootEntityType)),
             resolve: () => new EntitiesQueryNode(rootEntityType)
         };

@@ -62,7 +62,7 @@ export class UpdateInputTypeGenerator {
 
     @memorize()
     generateUpdateAllRootEntitiesInputType(type: RootEntityType): UpdateRootEntityInputType {
-        return new UpdateRootEntityInputType(type, getUpdateAllInputTypeName(type.name), () =>
+        return new UpdateRootEntityInputType(type, getUpdateAllInputTypeName(type), () =>
             flatMap(type.fields, (field: Field) =>
                 this.generateFields(field, {
                     skipID: true,
