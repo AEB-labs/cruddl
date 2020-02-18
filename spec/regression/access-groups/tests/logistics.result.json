@@ -1,70 +1,87 @@
 {
-  "q": {
-    "errors": [
-      {
-        "message": "There can be only one operation named \"updateToAccessGroupWithPermissions\".",
-        "locations": [
-          {
-            "line": 8,
-            "column": 10
-          },
-          {
-            "line": 15,
-            "column": 10
-          }
-        ]
-      }
-    ]
-  },
-  "updateToAccessGroupWithPermissions": {
-    "errors": [
-      {
-        "message": "There can be only one operation named \"updateToAccessGroupWithPermissions\".",
-        "locations": [
-          {
-            "line": 8,
-            "column": 10
-          },
-          {
-            "line": 15,
-            "column": 10
-          }
-        ]
-      }
-    ]
-  },
-  "createWithAccessGroupWithoutPermissions": {
-    "errors": [
-      {
-        "message": "There can be only one operation named \"updateToAccessGroupWithPermissions\".",
-        "locations": [
-          {
-            "line": 8,
-            "column": 10
-          },
-          {
-            "line": 15,
-            "column": 10
-          }
-        ]
-      }
-    ]
-  },
-  "createWithAccessGroupWithPermissions": {
-    "errors": [
-      {
-        "message": "There can be only one operation named \"updateToAccessGroupWithPermissions\".",
-        "locations": [
-          {
-            "line": 8,
-            "column": 10
-          },
-          {
-            "line": 15,
-            "column": 10
-          }
-        ]
-      }
-    ]
-  }
+    "q": {
+        "data": {
+            "allFiles": [
+                {
+                    "name": "logistics"
+                },
+                {
+                    "name": "public"
+                }
+            ]
+        }
+    },
+    "updateToAccessGroupWithPermissions": {
+        "data": {
+            "updateFile": {
+                "name": "public"
+            }
+        }
+    },
+    "updateAllToAccessGroupWithPermissions": {
+        "data": {
+            "updateAllFiles": [
+                {
+                    "name": "public"
+                }
+            ]
+        }
+    },
+    "updateManyToAccessGroupWithPermissions": {
+        "data": {
+            "updateFiles": [
+                {
+                    "name": "public"
+                }
+            ]
+        }
+    },
+    "createWithAccessGroupWithoutPermissions": {
+        "errors": [
+            {
+                "message": "Not authorized to set File.accessGroup to this value (allowed values: logistics, public)",
+                "locations": [
+                    {
+                        "line": 30,
+                        "column": 5
+                    }
+                ],
+                "path": ["createFile"]
+            }
+        ],
+        "data": null
+    },
+    "createManyWithAccessGroupWithoutPermissions": {
+        "errors": [
+            {
+                "message": "Not authorized to set File.accessGroup to this value (allowed values: logistics, public)",
+                "locations": [
+                    {
+                        "line": 37,
+                        "column": 5
+                    }
+                ],
+                "path": ["createFiles"]
+            }
+        ],
+        "data": {
+            "createFiles": null
+        }
+    },
+    "createWithAccessGroupWithPermissions": {
+        "data": {
+            "createFile": {
+                "name": "test"
+            }
+        }
+    },
+    "createManyWithAccessGroupWithPermissions": {
+        "data": {
+            "createFiles": [
+                {
+                    "name": "test"
+                }
+            ]
+        }
+    }
 }
