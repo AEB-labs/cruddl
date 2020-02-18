@@ -1,8 +1,58 @@
 import { compact } from 'lodash';
 import { AggregationOperator, Relation, RelationSide, RootEntityType } from '../../model';
 import { getEffectiveCollectSegments } from '../../model/implementation/collect-path';
-import { AddEdgesQueryNode, AggregationQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode, ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EntitiesQueryNode, EntityFromIdQueryNode, FieldQueryNode, FirstOfListQueryNode, FollowEdgeQueryNode, ListQueryNode, LiteralQueryNode, MergeObjectsQueryNode, NullQueryNode, ObjectQueryNode, OperatorWithLanguageQueryNode, OrderClause, OrderDirection, OrderSpecification, PropertyAccessQueryNode, QueryNode, QueryResultValidator, RemoveEdgesQueryNode, RootEntityIDQueryNode, RUNTIME_ERROR_CODE_PROPERTY, RUNTIME_ERROR_TOKEN, RuntimeErrorQueryNode, SafeListQueryNode, SetEdgeQueryNode, TransformListQueryNode, TraversalQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode } from '../../query-tree';
-import { FlexSearchComplexOperatorQueryNode, FlexSearchFieldExistsQueryNode, FlexSearchQueryNode } from '../../query-tree/flex-search';
+import {
+    AddEdgesQueryNode,
+    AggregationQueryNode,
+    BasicType,
+    BinaryOperationQueryNode,
+    BinaryOperator,
+    ConcatListsQueryNode,
+    ConditionalQueryNode,
+    ConstBoolQueryNode,
+    ConstIntQueryNode,
+    CountQueryNode,
+    CreateEntityQueryNode,
+    DeleteEntitiesQueryNode,
+    EntitiesQueryNode,
+    EntityFromIdQueryNode,
+    FieldQueryNode,
+    FirstOfListQueryNode,
+    FollowEdgeQueryNode,
+    ListQueryNode,
+    LiteralQueryNode,
+    MergeObjectsQueryNode,
+    NullQueryNode,
+    ObjectQueryNode,
+    OperatorWithLanguageQueryNode,
+    OrderClause,
+    OrderDirection,
+    OrderSpecification,
+    PropertyAccessQueryNode,
+    QueryNode,
+    QueryResultValidator,
+    RemoveEdgesQueryNode,
+    RootEntityIDQueryNode,
+    RUNTIME_ERROR_CODE_PROPERTY,
+    RUNTIME_ERROR_TOKEN,
+    RuntimeErrorQueryNode,
+    SafeListQueryNode,
+    SetEdgeQueryNode,
+    TransformListQueryNode,
+    TraversalQueryNode,
+    TypeCheckQueryNode,
+    UnaryOperationQueryNode,
+    UnaryOperator,
+    UpdateEntitiesQueryNode,
+    VariableAssignmentQueryNode,
+    VariableQueryNode,
+    WithPreExecutionQueryNode
+} from '../../query-tree';
+import {
+    FlexSearchComplexOperatorQueryNode,
+    FlexSearchFieldExistsQueryNode,
+    FlexSearchQueryNode
+} from '../../query-tree/flex-search';
 import { QuantifierFilterNode } from '../../query-tree/quantifiers';
 import { not } from '../../schema-generation/utils/input-types';
 import { Constructor, decapitalize } from '../../utils/utils';
@@ -274,7 +324,7 @@ function getPropertyAccessFrag(propertyName: string, objectFrag: JSFragment) {
 }
 
 register(RootEntityIDQueryNode, (node, context) => {
-    return js`${processNode(node.objectNode, context)}.${js.identifier(ID_FIELD_NAME)}`;
+    return getPropertyAccessFrag('id', processNode(node.objectNode, context));
 });
 
 register(TransformListQueryNode, (node, context) => {

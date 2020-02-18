@@ -1,0 +1,18 @@
+{
+    "onlyFirst": {
+        "data": {
+            "deleteDeliveries": [
+                {
+                    "deliveryNumber": "1000522",
+                    "consignee": null
+                },
+                {
+                    "deliveryNumber": "1000173",
+                    "consignee": {
+                        "city": "Port Neldahaven"
+                    }
+                }
+            ]
+        }
+    }
+}

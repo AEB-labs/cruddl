@@ -6,14 +6,21 @@ query q {
 
 # should pass
 mutation updateToAccessGroupWithPermissions {
-    updateFile(input: {id: "@{ids/File/3}", accessGroup: "logistics"}) {
+    updateFile(input: { id: "@{ids/File/3}", accessGroup: "logistics" }) {
         name
     }
 }
 
 # should pass
-mutation updateToAccessGroupWithPermissions {
-    updateAllFiles(filter: { id: "@{ids/File/3}" } input: { accessGroup: "logistics" }) {
+mutation updateAllToAccessGroupWithPermissions {
+    updateAllFiles(filter: { id: "@{ids/File/3}" }, input: { accessGroup: "logistics" }) {
+        name
+    }
+}
+
+# should pass
+mutation updateManyToAccessGroupWithPermissions {
+    updateFiles(input: [{ id: "@{ids/File/3}", accessGroup: "logistics" }]) {
         name
     }
 }
@@ -25,9 +32,22 @@ mutation createWithAccessGroupWithoutPermissions {
     }
 }
 
+# should fail
+mutation createManyWithAccessGroupWithoutPermissions {
+    createFiles(input: [{ name: "test", accessGroup: "accounting" }]) {
+        name
+    }
+}
+
 # should pass
 mutation createWithAccessGroupWithPermissions {
     createFile(input: { name: "test", accessGroup: "logistics" }) {
+        name
+    }
+}
+# should pass
+mutation createManyWithAccessGroupWithPermissions {
+    createFiles(input: [{ name: "test", accessGroup: "logistics" }]) {
         name
     }
 }

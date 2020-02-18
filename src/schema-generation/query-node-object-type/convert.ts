@@ -1,13 +1,5 @@
-import {
-    GraphQLFieldConfig,
-    GraphQLList,
-    GraphQLNonNull,
-    GraphQLObjectType,
-    GraphQLOutputType,
-    GraphQLUnionType,
-    Thunk
-} from 'graphql';
-import { chain, uniqBy } from 'lodash';
+import { GraphQLFieldConfig, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLOutputType, Thunk } from 'graphql';
+import { chain, uniq, uniqBy } from 'lodash';
 import memorize from 'memorize-decorator';
 import { aliasBasedResolver } from '../../graphql/alias-based-resolvers';
 import {
@@ -15,7 +7,7 @@ import {
     QueryNodeListType,
     QueryNodeNonNullType,
     QueryNodeObjectType,
-    QueryNodeOutputType,
+    QueryNodeOutputType
 } from './definition';
 import { isGraphQLOutputType, resolveThunk } from './utils';
 
@@ -25,15 +17,19 @@ export class QueryNodeObjectTypeConverter {
         return new GraphQLObjectType({
             name: type.name,
             description: type.description,
-            fields: () => chain(resolveAndCheckFields(type.fields, type.name))
-                .keyBy(field => field.name)
-                .mapValues((field): GraphQLFieldConfig<any, any> => ({
-                    description: field.description,
-                    deprecationReason: field.deprecationReason,
-                    args: field.args,
-                    resolve: aliasBasedResolver,
-                    type: this.convertToGraphQLType(field.type)
-                })).value()
+            fields: () =>
+                chain(resolveAndCheckFields(type.fields, type.name))
+                    .keyBy(field => field.name)
+                    .mapValues(
+                        (field): GraphQLFieldConfig<any, any> => ({
+                            description: field.description,
+                            deprecationReason: field.deprecationReason,
+                            args: field.args,
+                            resolve: aliasBasedResolver,
+                            type: this.convertToGraphQLType(field.type)
+                        })
+                    )
+                    .value()
         });
     }
 
@@ -54,10 +50,17 @@ export class QueryNodeObjectTypeConverter {
     }
 }
 
-function resolveAndCheckFields(fieldsThunk: Thunk<ReadonlyArray<QueryNodeField>>, typeName: string): ReadonlyArray<QueryNodeField> {
+function resolveAndCheckFields(
+    fieldsThunk: Thunk<ReadonlyArray<QueryNodeField>>,
+    typeName: string
+): ReadonlyArray<QueryNodeField> {
     const fields = resolveThunk(fieldsThunk);
     if (uniqBy(fields, f => f.name).length !== fields.length) {
-        throw new Error(`Output type "${typeName}" has duplicate fields (fields: ${fields.map(f => f.name).join(', ')})`);
+        throw new Error(
+            `Output type "${typeName}" has duplicate fields: ${uniq(
+                fields.filter(f => fields.find(f2 => f2 !== f && f2.name === f.name)).map(f => f.name)
+            ).join(', ')})`
+        );
     }
     return fields;
 }

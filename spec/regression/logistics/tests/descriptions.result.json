@@ -4451,8 +4451,16 @@
                             "description": "Creates a new Country"
                         },
                         {
+                            "name": "createCountries",
+                            "description": "Creates multiple new Countries"
+                        },
+                        {
                             "name": "updateCountry",
                             "description": "Updates an existing Country"
+                        },
+                        {
+                            "name": "updateCountries",
+                            "description": "Updates multiple existing Countries (referenced by their ids)"
                         },
                         {
                             "name": "updateAllCountries",
@@ -4463,6 +4471,10 @@
                             "description": "Deletes a Country by id or isoCode.\n\nYou should pass a non-null value to exactly one of the arguments."
                         },
                         {
+                            "name": "deleteCountries",
+                            "description": "Deletes multiple Countries by their ids.\n\nIDs that are not found are silently ignored."
+                        },
+                        {
                             "name": "deleteAllCountries",
                             "description": "Deletes Countries that match a specified filter"
                         },
@@ -4471,8 +4483,16 @@
                             "description": "Creates a new Delivery"
                         },
                         {
+                            "name": "createDeliveries",
+                            "description": "Creates multiple new Deliveries"
+                        },
+                        {
                             "name": "updateDelivery",
                             "description": "Updates an existing Delivery"
+                        },
+                        {
+                            "name": "updateDeliveries",
+                            "description": "Updates multiple existing Deliveries (referenced by their ids)"
                         },
                         {
                             "name": "updateAllDeliveries",
@@ -4483,6 +4503,10 @@
                             "description": "Deletes a Delivery by id or deliveryNumber.\n\nYou should pass a non-null value to exactly one of the arguments."
                         },
                         {
+                            "name": "deleteDeliveries",
+                            "description": "Deletes multiple Deliveries by their ids.\n\nIDs that are not found are silently ignored."
+                        },
+                        {
                             "name": "deleteAllDeliveries",
                             "description": "Deletes Deliveries that match a specified filter"
                         },
@@ -4491,8 +4515,16 @@
                             "description": "Creates a new Forwarder"
                         },
                         {
+                            "name": "createForwarders",
+                            "description": "Creates multiple new Forwarders"
+                        },
+                        {
                             "name": "updateForwarder",
                             "description": "Updates an existing Forwarder"
+                        },
+                        {
+                            "name": "updateForwarders",
+                            "description": "Updates multiple existing Forwarders (referenced by their ids)"
                         },
                         {
                             "name": "updateAllForwarders",
@@ -4501,6 +4533,10 @@
                         {
                             "name": "deleteForwarder",
                             "description": "Deletes a Forwarder by id or name.\n\nYou should pass a non-null value to exactly one of the arguments."
+                        },
+                        {
+                            "name": "deleteForwarders",
+                            "description": "Deletes multiple Forwarders by their ids.\n\nIDs that are not found are silently ignored."
                         },
                         {
                             "name": "deleteAllForwarders",
@@ -4527,8 +4563,16 @@
                             "description": "Creates a new HandlingUnit"
                         },
                         {
+                            "name": "createHandlingUnits",
+                            "description": "Creates multiple new HandlingUnits"
+                        },
+                        {
                             "name": "updateHandlingUnit",
                             "description": "Updates an existing HandlingUnit"
+                        },
+                        {
+                            "name": "updateHandlingUnits",
+                            "description": "Updates multiple existing HandlingUnits (referenced by their ids)"
                         },
                         {
                             "name": "updateAllHandlingUnits",
@@ -4539,6 +4583,10 @@
                             "description": "Deletes a HandlingUnit by id or id.\n\nYou should pass a non-null value to exactly one of the arguments."
                         },
                         {
+                            "name": "deleteHandlingUnits",
+                            "description": "Deletes multiple HandlingUnits by their ids.\n\nIDs that are not found are silently ignored."
+                        },
+                        {
                             "name": "deleteAllHandlingUnits",
                             "description": "Deletes HandlingUnits that match a specified filter"
                         },
@@ -4547,8 +4595,16 @@
                             "description": "Creates a new NumberRange"
                         },
                         {
+                            "name": "createNumberRanges",
+                            "description": "Creates multiple new NumberRanges"
+                        },
+                        {
                             "name": "updateNumberRange",
                             "description": "Updates an existing NumberRange"
+                        },
+                        {
+                            "name": "updateNumberRanges",
+                            "description": "Updates multiple existing NumberRanges (referenced by their ids)"
                         },
                         {
                             "name": "updateAllNumberRanges",
@@ -4559,6 +4615,10 @@
                             "description": "Deletes a NumberRange by id"
                         },
                         {
+                            "name": "deleteNumberRanges",
+                            "description": "Deletes multiple NumberRanges by their ids.\n\nIDs that are not found are silently ignored."
+                        },
+                        {
                             "name": "deleteAllNumberRanges",
                             "description": "Deletes NumberRanges that match a specified filter"
                         },
@@ -4567,8 +4627,16 @@
                             "description": "Creates a new SecretKey"
                         },
                         {
+                            "name": "createSecretKeys",
+                            "description": "Creates multiple new SecretKeys"
+                        },
+                        {
                             "name": "updateSecretKey",
                             "description": "Updates an existing SecretKey"
+                        },
+                        {
+                            "name": "updateSecretKeys",
+                            "description": "Updates multiple existing SecretKeys (referenced by their ids)"
                         },
                         {
                             "name": "updateAllSecretKeys",
@@ -4577,6 +4645,10 @@
                         {
                             "name": "deleteSecretKey",
                             "description": "Deletes a SecretKey by id or key.\n\nYou should pass a non-null value to exactly one of the arguments."
+                        },
+                        {
+                            "name": "deleteSecretKeys",
+                            "description": "Deletes multiple SecretKeys by their ids.\n\nIDs that are not found are silently ignored."
                         },
                         {
                             "name": "deleteAllSecretKeys",
