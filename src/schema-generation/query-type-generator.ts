@@ -10,7 +10,13 @@ import { MetaFirstAugmentation } from './limit-augmentation';
 import { ListAugmentation } from './list-augmentation';
 import { MetaTypeGenerator } from './meta-type-generator';
 import { OutputTypeGenerator } from './output-type-generator';
-import { FieldContext, QueryNodeField, QueryNodeListType, QueryNodeNonNullType, QueryNodeObjectType } from './query-node-object-type';
+import {
+    FieldContext,
+    QueryNodeField,
+    QueryNodeListType,
+    QueryNodeNonNullType,
+    QueryNodeObjectType
+} from './query-node-object-type';
 import { getArgumentsForUniqueFields, getEntitiesByUniqueFieldQuery } from './utils/entities-by-unique-field';
 
 export class QueryTypeGenerator {
@@ -21,23 +27,19 @@ export class QueryTypeGenerator {
         private readonly metaFirstAugmentation: MetaFirstAugmentation,
         private readonly metaTypeGenerator: MetaTypeGenerator,
         private readonly flexSearchGenerator: FlexSearchGenerator
-    ) {
-
-    }
+    ) {}
 
     @memorize()
     generate(namespace: Namespace): QueryNodeObjectType {
-        const namespaceDesc = namespace.isRoot ? `the root namespace` : `the namespace \`${namespace.dotSeparatedPath}\``;
+        const namespaceDesc = namespace.isRoot
+            ? `the root namespace`
+            : `the namespace \`${namespace.dotSeparatedPath}\``;
 
         const namespaceFields = namespace.childNamespaces
             .filter(namespace => namespace.allRootEntityTypes.length > 0)
             .map(namespace => this.getNamespaceField(namespace));
 
-        const fields = [
-            ...namespaceFields,
-            ...flatMap(namespace.rootEntityTypes, type => this.getFields(type))
-        ];
-
+        const fields = [...namespaceFields, ...flatMap(namespace.rootEntityTypes, type => this.getFields(type))];
 
         return {
             name: namespace.pascalCasePath + QUERY_TYPE,
@@ -90,18 +92,22 @@ export class QueryTypeGenerator {
         };
     }
 
-    private getSingleRootEntityNode(rootEntityType: RootEntityType, args: { [name: string]: any }, context: FieldContext): QueryNode {
+    private getSingleRootEntityNode(
+        rootEntityType: RootEntityType,
+        args: { [name: string]: any },
+        context: FieldContext
+    ): QueryNode {
         return new FirstOfListQueryNode(getEntitiesByUniqueFieldQuery(rootEntityType, args, context));
     }
 
     private getAllRootEntitiesField(rootEntityType: RootEntityType): QueryNodeField {
-        const fieldConfig = ({
-            name: getAllEntitiesFieldName(rootEntityType.name),
+        const fieldConfig = {
+            name: getAllEntitiesFieldName(rootEntityType),
             type: new QueryNodeListType(new QueryNodeNonNullType(this.outputTypeGenerator.generate(rootEntityType))),
             description: rootEntityType.description,
             isPure: true,
             resolve: () => this.getAllRootEntitiesNode(rootEntityType)
-        });
+        };
         return this.listAugmentation.augment(fieldConfig, rootEntityType);
     }
 
@@ -111,8 +117,8 @@ export class QueryTypeGenerator {
 
     private getAllRootEntitiesMetaField(rootEntityType: RootEntityType): QueryNodeField {
         const metaType = this.metaTypeGenerator.generate();
-        const fieldConfig = ({
-            name: getMetaFieldName(getAllEntitiesFieldName(rootEntityType.name)),
+        const fieldConfig = {
+            name: getMetaFieldName(getAllEntitiesFieldName(rootEntityType)),
             type: new QueryNodeNonNullType(metaType),
             description: rootEntityType.description,
             // meta fields should never be null. Also, this is crucial for performance. Without it, we would introduce
@@ -121,7 +127,7 @@ export class QueryTypeGenerator {
             skipNullCheck: true,
             isPure: true,
             resolve: () => this.getAllRootEntitiesNode(rootEntityType)
-        });
+        };
         return this.metaFirstAugmentation.augment(this.filterAugmentation.augment(fieldConfig, rootEntityType));
     }
 
