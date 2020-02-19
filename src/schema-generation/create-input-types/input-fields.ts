@@ -4,8 +4,8 @@ import { Field } from '../../model';
 import { GraphQLOffsetDateTime, serializeForStorage } from '../../schema/scalars/offset-date-time';
 import { AnyValue, PlainObject } from '../../utils/utils';
 import { createGraphQLError } from '../graphql-errors';
-import { FieldContext } from '../query-node-object-type/context';
-import { TypedInputFieldBase } from '../typed-input-object-type';
+import { FieldContext } from '../query-node-object-type';
+import { TypedInputFieldBase, TypedInputObjectType } from '../typed-input-object-type';
 import { CreateObjectInputType } from './input-types';
 
 export interface FieldValidationContext extends FieldContext {
@@ -20,6 +20,32 @@ export interface CreateInputField extends TypedInputFieldBase<CreateInputField> 
     appliesToMissingFields(): boolean;
 
     validateInContext(value: AnyValue, context: FieldValidationContext): void;
+}
+
+export class DummyCreateInputField implements CreateInputField {
+    readonly deprecationReason: string | undefined;
+
+    constructor(
+        readonly name: string,
+        readonly inputType: GraphQLInputType | TypedInputObjectType<CreateInputField>,
+        opts: {
+            readonly deprecationReason?: string;
+        } = {}
+    ) {
+        this.deprecationReason = opts.deprecationReason;
+    }
+
+    appliesToMissingFields(): boolean {
+        return false;
+    }
+
+    collectAffectedFields(value: AnyValue, fields: Set<Field>, context: FieldContext): void {}
+
+    getProperties(value: AnyValue, context: FieldContext): PlainObject {
+        return {};
+    }
+
+    validateInContext(value: AnyValue, context: FieldValidationContext): void {}
 }
 
 export class BasicCreateInputField implements CreateInputField {

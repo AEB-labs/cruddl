@@ -1,0 +1,28 @@
+# @collect fields were actually writeable for a while, and to stay compatible, we still include the fields in the schema
+# these fields do nothing, they have a deprecation note, and trigger deprecation warnings.
+
+mutation create {
+    createDelivery(input: { itemCount: 123, allItems: [{ itemNumber: "42" }] }) {
+        itemCount
+        allItems {
+            itemNumber
+        }
+    }
+}
+
+mutation update {
+    updateDelivery(
+        input: {
+            id: "@{ids/Delivery/1}"
+            itemCount: 42
+            addAllItems: [{ itemNumber: "43" }]
+            updateAllItems: [{ id: "test", itemNumber: "43" }]
+            removeAllItems: ["testid"]
+        }
+    ) {
+        itemCount
+        allItems {
+            itemNumber
+        }
+    }
+}
