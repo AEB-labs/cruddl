@@ -1,9 +1,15 @@
-import { GraphQLID, GraphQLList, GraphQLNonNull } from 'graphql';
+import { GraphQLID, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
 import { flatMap } from 'lodash';
 import memorize from 'memorize-decorator';
 import { CalcMutationsOperator, ChildEntityType, EntityExtensionType, Field, RootEntityType } from '../../model';
 import { CALC_MUTATIONS_OPERATORS, CalcMutationOperator, ID_FIELD } from '../../schema/constants';
-import { getUpdateAllInputTypeName, getUpdateInputTypeName } from '../../schema/names';
+import {
+    getAddChildEntitiesFieldName,
+    getRemoveChildEntitiesFieldName,
+    getUpdateAllInputTypeName,
+    getUpdateChildEntitiesFieldName,
+    getUpdateInputTypeName
+} from '../../schema/names';
 import { CreateInputTypeGenerator } from '../create-input-types';
 import { EnumTypeGenerator } from '../enum-type-generator';
 import {
@@ -11,6 +17,7 @@ import {
     BasicListUpdateInputField,
     BasicUpdateInputField,
     CalcMutationInputField,
+    DummyUpdateInputField,
     RemoveChildEntitiesInputField,
     UpdateChildEntitiesInputField,
     UpdateEntityExtensionInputField,
@@ -103,9 +110,56 @@ export class UpdateInputTypeGenerator {
             return [];
         }
 
+        // @collect fields generated input fields for a while, so to stay compatible, we keep them (but do nothing)
         if (field.isCollectField) {
-            // collect fields are calculated fields and thus can not be set
-            return [];
+            const deprecationReason = `Setting @collect fields is not possible. This dummy field will be removed soon.`;
+
+            if (field.type.isRootEntityType) {
+                // we never generated collect input fields on root entities
+                return [];
+            }
+
+            if (field.type.isChildEntityType) {
+                const inputType = new GraphQLList(new GraphQLNonNull(this.generate(field.type).getInputType()));
+
+                return [
+                    new DummyUpdateInputField(
+                        field,
+                        getAddChildEntitiesFieldName(field.name),
+                        new GraphQLList(
+                            new GraphQLNonNull(this.createInputTypeGenerator.generate(field.type).getInputType())
+                        ),
+                        { deprecationReason }
+                    ),
+                    new DummyUpdateInputField(
+                        field,
+                        getUpdateChildEntitiesFieldName(field.name),
+                        new GraphQLList(new GraphQLNonNull(this.generate(field.type).getInputType())),
+                        { deprecationReason }
+                    ),
+                    new DummyUpdateInputField(
+                        field,
+                        getRemoveChildEntitiesFieldName(field.name),
+                        new GraphQLList(new GraphQLNonNull(GraphQLID)),
+                        { deprecationReason }
+                    )
+                ];
+            }
+
+            let inputType: GraphQLInputType;
+            if (field.type.isScalarType || field.type.isEnumType) {
+                inputType = field.type.isEnumType
+                    ? this.enumTypeGenerator.generate(field.type)
+                    : field.type.graphQLScalarType;
+            } else if (field.type.isValueObjectType) {
+                inputType = this.createInputTypeGenerator.generate(field.type).getInputType();
+            } else {
+                inputType = this.generate(field.type).getInputType();
+            }
+            if (field.isList) {
+                inputType = new GraphQLList(new GraphQLNonNull(inputType));
+            }
+            return [new DummyUpdateInputField(field, field.name, inputType, { deprecationReason })];
         }
 
         if (field.type.isScalarType || field.type.isEnumType) {
