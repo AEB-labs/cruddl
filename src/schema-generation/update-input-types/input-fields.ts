@@ -17,10 +17,15 @@ import {
 } from '../../schema/names';
 import { GraphQLOffsetDateTime, serializeForStorage } from '../../schema/scalars/offset-date-time';
 import { AnyValue, PlainObject } from '../../utils/utils';
-import { CreateChildEntityInputType, CreateObjectInputType } from '../create-input-types';
+import {
+    CreateChildEntityInputType,
+    CreateInputField,
+    CreateObjectInputType,
+    FieldValidationContext
+} from '../create-input-types';
 import { createFieldNode } from '../field-nodes';
 import { FieldContext } from '../query-node-object-type';
-import { TypedInputFieldBase } from '../typed-input-object-type';
+import { TypedInputFieldBase, TypedInputObjectType } from '../typed-input-object-type';
 import { UpdateChildEntityInputType, UpdateEntityExtensionInputType, UpdateObjectInputType } from './input-types';
 
 export interface UpdateInputFieldContext extends FieldContext {
@@ -35,6 +40,30 @@ export interface UpdateInputField extends TypedInputFieldBase<UpdateInputField> 
     collectAffectedFields(value: AnyValue, fields: Set<Field>, context: FieldContext): void;
 
     appliesToMissingFields(): boolean;
+}
+export class DummyUpdateInputField implements UpdateInputField {
+    readonly deprecationReason: string | undefined;
+
+    constructor(
+        readonly field: Field,
+        readonly name: string,
+        readonly inputType: GraphQLInputType | TypedInputObjectType<UpdateInputField>,
+        opts: {
+            readonly deprecationReason?: string;
+        } = {}
+    ) {
+        this.deprecationReason = opts.deprecationReason;
+    }
+
+    appliesToMissingFields(): boolean {
+        return false;
+    }
+
+    collectAffectedFields(value: AnyValue, fields: Set<Field>, context: FieldContext): void {}
+
+    getProperties(value: AnyValue, context: UpdateInputFieldContext): ReadonlyArray<SetFieldQueryNode> {
+        return [];
+    }
 }
 
 export class UpdateFilterInputField implements UpdateInputField {

@@ -1,4 +1,4 @@
-import { GraphQLList, GraphQLNonNull } from 'graphql';
+import { GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
 import { flatMap } from 'lodash';
 import memorize from 'memorize-decorator';
 import { ChildEntityType, EntityExtensionType, Field, ObjectType, RootEntityType, ValueObjectType } from '../../model';
@@ -10,6 +10,7 @@ import {
     CreateInputField,
     CreateObjectInputField,
     CreateReferenceInputField,
+    DummyCreateInputField,
     ObjectListCreateInputField
 } from './input-fields';
 import {
@@ -74,9 +75,27 @@ export class CreateInputTypeGenerator {
             return [];
         }
 
+        // @collect fields generated input fields for a while, so to stay compatible, we keep them (but do nothing)
         if (field.isCollectField) {
-            // collect fields are calculated fields and thus can not be set
-            return [];
+            const deprecationReason = `Setting @collect fields is not possible. This dummy field will be removed soon.`;
+
+            if (field.type.isRootEntityType) {
+                // we never generated collect input fields on root entities
+                return [];
+            }
+
+            let inputType: GraphQLInputType;
+            if (field.type.isScalarType || field.type.isEnumType) {
+                inputType = field.type.isEnumType
+                    ? this.enumTypeGenerator.generate(field.type)
+                    : field.type.graphQLScalarType;
+            } else {
+                inputType = this.generate(field.type).getInputType();
+            }
+            if (field.isList) {
+                inputType = new GraphQLList(new GraphQLNonNull(inputType));
+            }
+            return [new DummyCreateInputField(field.name, inputType, { deprecationReason })];
         }
 
         if (field.type.isScalarType || field.type.isEnumType) {
