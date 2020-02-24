@@ -13,7 +13,6 @@ import { arrayToObject } from '../utils/utils';
 import { ExecutionOptions } from './execution-options';
 import { ExecutionResult } from './execution-result';
 import { OperationResolver } from './operation-resolver';
-import { SchemaExecutionArgs } from './schema-executor';
 
 type ValidationResult = { readonly canExecute: false, errorMessage: string } | SuccessfulValidationResult
 
