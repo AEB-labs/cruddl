@@ -82,6 +82,10 @@ export class Field implements ModelComponent {
         return this.isSystemField;
     }
 
+    get isDeprecated(): boolean {
+        return !!this.deprecationReason;
+    }
+
     /**
      * Specifies whether this field (or items within the list if this is a list) is never null
      */

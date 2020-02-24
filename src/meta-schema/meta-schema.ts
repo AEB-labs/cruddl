@@ -1,8 +1,7 @@
 import { GraphQLSchema } from 'graphql';
 import gql from 'graphql-tag';
 import { IResolvers, makeExecutableSchema } from 'graphql-tools';
-import { Field, Model, RootEntityType, Type, TypeKind } from '../model';
-import { EnumValue } from '../model/implementation/enum-type';
+import { EnumValue, Field, Model, RootEntityType, Type, TypeKind } from '../model';
 import { compact, flatMap } from '../utils/utils';
 import { I18N_GENERIC, I18N_LOCALE } from './constants';
 
@@ -19,6 +18,11 @@ const typeDefs = gql`
         name: String!
         description: String
 
+        isDeprecated: Boolean!
+        deprecationReason: String
+
+        declaringType: ObjectType!
+
         "Indicates if this field is a list."
         isList: Boolean!
 
@@ -34,11 +38,17 @@ const typeDefs = gql`
         "If \`true\`, this field is defined by the system, otherwise, by the schema."
         isSystemField: Boolean!
 
+        "If \`true\`, this the value of this field is calculated via a collect expression and can not be set."
+        isCollectField: Boolean!
+
         "The type for the field's value"
         type: Type!
 
         "Relation information, if \`isRelation\` is \`true\`, \`null\` otherwise"
         relation: Relation
+
+        "Information about the @collect field configuration, if \`isCollectField\` is \`true\`, \`null\` otherwise"
+        collectFieldConfig: CollectFieldConfig
 
         localization(
             ${resolutionOrderDescription} resolutionOrder: [String]
@@ -67,6 +77,40 @@ const typeDefs = gql`
         fromField: Field!
         toType: RootEntityType!
         toField: Field
+    }
+
+    type CollectFieldConfig {
+        fieldsInPath: [Field!]!
+        path: [String!]!
+        aggregationOperator: AggregationOperator
+    }
+
+    enum AggregationOperator {
+        COUNT,
+        SOME,
+        NONE,
+
+        COUNT_NULL,
+        COUNT_NOT_NULL,
+        SOME_NULL,
+        SOME_NOT_NULL,
+        EVERY_NULL,
+        NONE_NULL,
+
+        MIN,
+        MAX,
+        SUM,
+        AVERAGE,
+
+        COUNT_TRUE,
+        COUNT_NOT_TRUE,
+        SOME_TRUE,
+        SOME_NOT_TRUE,
+        EVERY_TRUE,
+        NONE_TRUE,
+
+        DISTINCT,
+        COUNT_DISTINCT
     }
 
     interface Type {
@@ -369,7 +413,17 @@ export function getMetaSchema(model: Model): GraphQLSchema {
             localization: localizeType
         },
         Field: {
-            localization: localizeField
+            localization: localizeField,
+            collectFieldConfig: (field: unknown) => {
+                if (!(field instanceof Field) || !field.collectPath) {
+                    return undefined;
+                }
+                return {
+                    path: field.collectPath.segments.map(s => s.field.name),
+                    fieldsInPath: field.collectPath.segments.map(s => s.field),
+                    aggregationOperator: field.aggregationOperator
+                };
+            }
         },
         EnumValue: {
             localization: localizeEnumValue
