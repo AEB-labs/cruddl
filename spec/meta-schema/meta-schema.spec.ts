@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import { DocumentNode, graphql, print } from 'graphql';
 import gql from 'graphql-tag';
 import { getMetaSchema } from '../../src/meta-schema/meta-schema';
-import { Model, TypeKind } from '../../src/model';
+import { AggregationOperator, Model, TypeKind } from '../../src/model';
 import { stopMetaServer } from '../dev/server';
 
 describe('Meta schema API', () => {
@@ -21,54 +21,34 @@ describe('Meta schema API', () => {
             types {
                 name
                 kind
+                ... on ObjectType {
+                    fields {
+                        name
+                        isList
+                        isReference
+                        isRelation
+                        isCollectField
+                        collectFieldConfig {
+                            path
+                            fieldsInPath {
+                                name
+                                declaringType {
+                                    name
+                                }
+                            }
+                            aggregationOperator
+                        }
+                        type {
+                            __typename
+                        }
+                    }
+                }
                 ... on RootEntityType {
                     pluralName
                     keyField {
                         name
                     }
                     isBusinessObject
-                    fields {
-                        name
-                        isList
-                        isReference
-                        isRelation
-                        type {
-                            __typename
-                        }
-                    }
-                }
-                ... on ValueObjectType {
-                    fields {
-                        name
-                        isList
-                        isReference
-                        isRelation
-                        type {
-                            __typename
-                        }
-                    }
-                }
-                ... on ChildEntityType {
-                    fields {
-                        name
-                        isList
-                        isReference
-                        isRelation
-                        type {
-                            __typename
-                        }
-                    }
-                }
-                ... on EntityExtensionType {
-                    fields {
-                        name
-                        isList
-                        isReference
-                        isRelation
-                        type {
-                            __typename
-                        }
-                    }
                 }
                 ... on EnumType {
                     values {
@@ -213,6 +193,14 @@ describe('Meta schema API', () => {
                     {
                         name: 'transportKind',
                         typeName: 'TransportKind'
+                    },
+                    {
+                        name: 'totalWeightInKg',
+                        typeName: 'Int',
+                        collect: {
+                            path: 'deliveries.weightInKg',
+                            aggregationOperator: AggregationOperator.SUM
+                        }
                     }
                 ],
                 namespacePath: ['logistics', 'shipments']
@@ -226,6 +214,10 @@ describe('Meta schema API', () => {
                         name: 'shipment',
                         typeName: 'Shipment',
                         isRelation: true
+                    },
+                    {
+                        name: 'weightInKg',
+                        typeName: 'Int'
                     }
                 ],
                 namespacePath: ['logistics']
@@ -339,6 +331,8 @@ describe('Meta schema API', () => {
                             isList: false,
                             isReference: false,
                             isRelation: false,
+                            isCollectField: false,
+                            collectFieldConfig: null,
                             type: { __typename: 'ScalarType' }
                         }
                     ]
@@ -355,6 +349,8 @@ describe('Meta schema API', () => {
                             isList: false,
                             isReference: false,
                             isRelation: false,
+                            isCollectField: false,
+                            collectFieldConfig: null,
                             type: { __typename: 'ScalarType' }
                         },
                         {
@@ -362,6 +358,8 @@ describe('Meta schema API', () => {
                             isList: false,
                             isReference: false,
                             isRelation: false,
+                            isCollectField: false,
+                            collectFieldConfig: null,
                             type: { __typename: 'ScalarType' }
                         },
                         {
@@ -369,6 +367,8 @@ describe('Meta schema API', () => {
                             isList: false,
                             isReference: false,
                             isRelation: false,
+                            isCollectField: false,
+                            collectFieldConfig: null,
                             type: { __typename: 'ScalarType' }
                         },
                         {
@@ -376,6 +376,8 @@ describe('Meta schema API', () => {
                             isList: false,
                             isReference: false,
                             isRelation: false,
+                            isCollectField: false,
+                            collectFieldConfig: null,
                             type: { __typename: 'ScalarType' }
                         }
                     ]
@@ -392,6 +394,8 @@ describe('Meta schema API', () => {
                             isList: false,
                             isReference: false,
                             isRelation: false,
+                            isCollectField: false,
+                            collectFieldConfig: null,
                             type: { __typename: 'ScalarType' }
                         },
                         {
@@ -399,6 +403,8 @@ describe('Meta schema API', () => {
                             isList: false,
                             isReference: false,
                             isRelation: false,
+                            isCollectField: false,
+                            collectFieldConfig: null,
                             type: { __typename: 'ScalarType' }
                         },
                         {
@@ -406,6 +412,8 @@ describe('Meta schema API', () => {
                             isList: false,
                             isReference: false,
                             isRelation: false,
+                            isCollectField: false,
+                            collectFieldConfig: null,
                             type: { __typename: 'ScalarType' }
                         },
                         {
@@ -413,6 +421,8 @@ describe('Meta schema API', () => {
                             isList: true,
                             isReference: false,
                             isRelation: true,
+                            isCollectField: false,
+                            collectFieldConfig: null,
                             type: { __typename: 'RootEntityType' }
                         },
                         {
@@ -420,6 +430,8 @@ describe('Meta schema API', () => {
                             isList: false,
                             isReference: false,
                             isRelation: true,
+                            isCollectField: false,
+                            collectFieldConfig: null,
                             type: { __typename: 'RootEntityType' }
                         },
                         {
@@ -427,6 +439,8 @@ describe('Meta schema API', () => {
                             isList: false,
                             isReference: false,
                             isRelation: false,
+                            isCollectField: false,
+                            collectFieldConfig: null,
                             type: { __typename: 'RootEntityType' }
                         },
                         {
@@ -434,6 +448,8 @@ describe('Meta schema API', () => {
                             isList: false,
                             isReference: false,
                             isRelation: true,
+                            isCollectField: false,
+                            collectFieldConfig: null,
                             type: { __typename: 'RootEntityType' }
                         },
                         {
@@ -441,14 +457,36 @@ describe('Meta schema API', () => {
                             isList: true,
                             isReference: false,
                             isRelation: true,
+                            isCollectField: false,
+                            collectFieldConfig: null,
                             type: { __typename: 'RootEntityType' }
                         },
                         {
                             isList: false,
                             isReference: false,
                             isRelation: false,
+                            isCollectField: false,
+                            collectFieldConfig: null,
                             name: 'transportKind',
                             type: { __typename: 'EnumType' }
+                        },
+                        {
+                            name: 'totalWeightInKg',
+                            collectFieldConfig: {
+                                aggregationOperator: 'SUM',
+                                fieldsInPath: [
+                                    { declaringType: { name: 'Shipment' }, name: 'deliveries' },
+                                    { declaringType: { name: 'Delivery' }, name: 'weightInKg' }
+                                ],
+                                path: ['deliveries', 'weightInKg']
+                            },
+                            isCollectField: true,
+                            isList: false,
+                            isReference: false,
+                            isRelation: false,
+                            type: {
+                                __typename: 'ScalarType'
+                            }
                         }
                     ]
                 },
@@ -464,6 +502,8 @@ describe('Meta schema API', () => {
                             isList: false,
                             isReference: false,
                             isRelation: false,
+                            isCollectField: false,
+                            collectFieldConfig: null,
                             type: { __typename: 'ScalarType' }
                         },
                         {
@@ -471,6 +511,8 @@ describe('Meta schema API', () => {
                             isList: false,
                             isReference: false,
                             isRelation: false,
+                            isCollectField: false,
+                            collectFieldConfig: null,
                             type: { __typename: 'ScalarType' }
                         },
                         {
@@ -478,6 +520,8 @@ describe('Meta schema API', () => {
                             isList: false,
                             isReference: false,
                             isRelation: false,
+                            isCollectField: false,
+                            collectFieldConfig: null,
                             type: { __typename: 'ScalarType' }
                         },
                         {
@@ -485,7 +529,18 @@ describe('Meta schema API', () => {
                             isList: false,
                             isReference: false,
                             isRelation: true,
+                            isCollectField: false,
+                            collectFieldConfig: null,
                             type: { __typename: 'RootEntityType' }
+                        },
+                        {
+                            name: 'weightInKg',
+                            isList: false,
+                            isReference: false,
+                            isRelation: false,
+                            isCollectField: false,
+                            collectFieldConfig: null,
+                            type: { __typename: 'ScalarType' }
                         }
                     ]
                 },
@@ -501,6 +556,8 @@ describe('Meta schema API', () => {
                             isList: false,
                             isReference: false,
                             isRelation: false,
+                            isCollectField: false,
+                            collectFieldConfig: null,
                             type: { __typename: 'ScalarType' }
                         },
                         {
@@ -508,6 +565,8 @@ describe('Meta schema API', () => {
                             isList: false,
                             isReference: false,
                             isRelation: false,
+                            isCollectField: false,
+                            collectFieldConfig: null,
                             type: { __typename: 'ScalarType' }
                         },
                         {
@@ -515,6 +574,8 @@ describe('Meta schema API', () => {
                             isList: false,
                             isReference: false,
                             isRelation: false,
+                            isCollectField: false,
+                            collectFieldConfig: null,
                             type: { __typename: 'ScalarType' }
                         }
                     ]
@@ -528,6 +589,8 @@ describe('Meta schema API', () => {
                             isList: false,
                             isReference: false,
                             isRelation: false,
+                            isCollectField: false,
+                            collectFieldConfig: null,
                             type: { __typename: 'ScalarType' }
                         },
                         {
@@ -535,6 +598,8 @@ describe('Meta schema API', () => {
                             isList: false,
                             isReference: false,
                             isRelation: false,
+                            isCollectField: false,
+                            collectFieldConfig: null,
                             type: { __typename: 'ScalarType' }
                         },
                         {
@@ -542,6 +607,8 @@ describe('Meta schema API', () => {
                             isList: false,
                             isReference: false,
                             isRelation: false,
+                            isCollectField: false,
+                            collectFieldConfig: null,
                             type: { __typename: 'ScalarType' }
                         }
                     ]
