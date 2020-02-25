@@ -4772,7 +4772,7 @@
                         },
                         {
                             "name": "destinationCountry",
-                            "description": "Specify the `isoCode` of the `Country` to be referenced"
+                            "description": "Specify the `isoCode` of the `Country` to be referenced\n\nUse \"destinationCountryISOCode\" instead."
                         },
                         {
                             "name": "destinationCountryISOCode",
@@ -5068,7 +5068,7 @@
                         },
                         {
                             "name": "destinationCountry",
-                            "description": "Specify the `isoCode` of the `Country` to be referenced"
+                            "description": "Specify the `isoCode` of the `Country` to be referenced\n\nUse \"destinationCountryISOCode\" instead."
                         },
                         {
                             "name": "destinationCountryISOCode",
@@ -5276,7 +5276,7 @@
                         },
                         {
                             "name": "destinationCountry",
-                            "description": "Specify the `isoCode` of the `Country` to be referenced"
+                            "description": "Specify the `isoCode` of the `Country` to be referenced\n\nUse \"destinationCountryISOCode\" instead."
                         },
                         {
                             "name": "destinationCountryISOCode",
