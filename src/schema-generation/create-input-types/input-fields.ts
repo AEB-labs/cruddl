@@ -1,9 +1,11 @@
 import { GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
+import { ZonedDateTime } from 'js-joda';
 import { Field } from '../../model';
+import { GraphQLOffsetDateTime, serializeForStorage } from '../../schema/scalars/offset-date-time';
 import { AnyValue, PlainObject } from '../../utils/utils';
 import { createGraphQLError } from '../graphql-errors';
-import { FieldContext } from '../query-node-object-type/context';
-import { TypedInputFieldBase } from '../typed-input-object-type';
+import { FieldContext } from '../query-node-object-type';
+import { TypedInputFieldBase, TypedInputObjectType } from '../typed-input-object-type';
 import { CreateObjectInputType } from './input-types';
 
 export interface FieldValidationContext extends FieldContext {
@@ -18,6 +20,32 @@ export interface CreateInputField extends TypedInputFieldBase<CreateInputField> 
     appliesToMissingFields(): boolean;
 
     validateInContext(value: AnyValue, context: FieldValidationContext): void;
+}
+
+export class DummyCreateInputField implements CreateInputField {
+    readonly deprecationReason: string | undefined;
+
+    constructor(
+        readonly name: string,
+        readonly inputType: GraphQLInputType | TypedInputObjectType<CreateInputField>,
+        opts: {
+            readonly deprecationReason?: string;
+        } = {}
+    ) {
+        this.deprecationReason = opts.deprecationReason;
+    }
+
+    appliesToMissingFields(): boolean {
+        return false;
+    }
+
+    collectAffectedFields(value: AnyValue, fields: Set<Field>, context: FieldContext): void {}
+
+    getProperties(value: AnyValue, context: FieldContext): PlainObject {
+        return {};
+    }
+
+    validateInContext(value: AnyValue, context: FieldValidationContext): void {}
 }
 
 export class BasicCreateInputField implements CreateInputField {
@@ -53,6 +81,13 @@ export class BasicCreateInputField implements CreateInputField {
     }
 
     protected coerceValue(value: AnyValue, context: FieldContext): AnyValue {
+        if (
+            this.field.type.isScalarType &&
+            this.field.type.graphQLScalarType === GraphQLOffsetDateTime &&
+            value instanceof ZonedDateTime
+        ) {
+            return serializeForStorage(value);
+        }
         return value;
     }
 
@@ -70,29 +105,20 @@ export class BasicCreateInputField implements CreateInputField {
         return this.field.hasDefaultValue;
     }
 
-    validateInContext(value: AnyValue, context: FieldValidationContext) {
-
-    }
+    validateInContext(value: AnyValue, context: FieldValidationContext) {}
 }
 
 export class BasicListCreateInputField extends BasicCreateInputField {
     protected coerceValue(value: AnyValue, context: FieldContext): AnyValue {
-        value = super.coerceValue(value, context);
-        if (value === null) {
-            // null is not a valid list value - if the user specified it, coerce it to [] to not have a mix of [] and
-            // null in the database
-            return [];
-        }
-        return value;
+        // null is not a valid list value - if the user specified it, coerce it to [] to not have a mix of [] and
+        // null in the database
+        let listValue = Array.isArray(value) ? value : [];
+        return listValue.map(itemValue => super.coerceValue(itemValue, context));
     }
 }
 
 export class CreateObjectInputField extends BasicCreateInputField {
-    constructor(
-        field: Field,
-        public readonly objectInputType: CreateObjectInputType,
-        inputType?: GraphQLInputType
-    ) {
+    constructor(field: Field, public readonly objectInputType: CreateObjectInputType, inputType?: GraphQLInputType) {
         super(field, undefined, inputType || objectInputType.getInputType());
     }
 
@@ -133,16 +159,16 @@ export class CreateReferenceInputField extends BasicCreateInputField {
         // if there are two fields to specify the reference key, users must only specify one
         // if this is the legacy field (named after the reference field), complain if the key field is set, too
         if (this.field.name !== this.name && this.field.name in context.objectValue) {
-            throw createGraphQLError(`Cannot set both "${this.field.name}" and "${this.name}" because they refer to the same reference`, context);
+            throw createGraphQLError(
+                `Cannot set both "${this.field.name}" and "${this.name}" because they refer to the same reference`,
+                context
+            );
         }
     }
 }
 
 export class ObjectListCreateInputField extends BasicCreateInputField {
-    constructor(
-        field: Field,
-        public readonly objectInputType: CreateObjectInputType
-    ) {
+    constructor(field: Field, public readonly objectInputType: CreateObjectInputType) {
         super(field, undefined, new GraphQLList(new GraphQLNonNull(objectInputType.getInputType())));
     }
 

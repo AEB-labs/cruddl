@@ -12,30 +12,29 @@ import { createTempDatabase, initTestData, TestDataEnvironment } from './initial
 import deepEqual = require('deep-equal');
 
 interface TestResult {
-    readonly actualResult: any
-    readonly expectedResult: any
+    readonly actualResult: any;
+    readonly expectedResult: any;
 }
 
 type DatabaseSpecifier = 'arangodb' | 'in-memory';
 
 export interface RegressionSuiteOptions {
-    readonly saveActualAsExpected?: boolean
-    readonly trace?: boolean
-    readonly database?: DatabaseSpecifier
-    readonly testNamePrefixFilter?: string
+    readonly saveActualAsExpected?: boolean;
+    readonly trace?: boolean;
+    readonly database?: DatabaseSpecifier;
 }
 
 interface MetaOptions {
     readonly databases?: {
         readonly [database: string]: {
-            readonly ignore?: boolean,
+            readonly ignore?: boolean;
             readonly versions: {
                 readonly [version: string]: {
-                    readonly ignore?: boolean
-                }
-            }
-        }
-    }
+                    readonly ignore?: boolean;
+                };
+            };
+        };
+    };
 }
 
 export class RegressionSuite {
@@ -63,11 +62,19 @@ export class RegressionSuite {
                 console.error(e.stack);
                 return e;
             },
-            getExecutionOptions: ({ context }) => ({ authRoles: context.authRoles, flexSearchMaxFilterableAndSortableAmount: context.flexSearchMaxFilterableAndSortableAmount }),
+            getExecutionOptions: ({ context }) => ({
+                authRoles: context.authRoles,
+                flexSearchMaxFilterableAndSortableAmount: context.flexSearchMaxFilterableAndSortableAmount
+            }),
             getOperationIdentifier: ({ info }) => info.operation
         };
         const warnLevelOptions = { ...generalOptions, loggerProvider: new Log4jsLoggerProvider('warn') };
-        const debugLevelOptions = { ...generalOptions, loggerProvider: new Log4jsLoggerProvider(this.options.trace ? 'trace' : 'warn', { 'schema-builder': 'warn' }) };
+        const debugLevelOptions = {
+            ...generalOptions,
+            loggerProvider: new Log4jsLoggerProvider(this.options.trace ? 'trace' : 'warn', {
+                'schema-builder': 'warn'
+            })
+        };
 
         // use a schema that logs less for initTestData and for schema migrations
         const silentProject = await loadProjectFromDir(path.resolve(this.path, 'model'), warnLevelOptions);
@@ -88,7 +95,6 @@ export class RegressionSuite {
             }
         }
 
-
         this._isSetUpClean = true;
     }
 
@@ -105,7 +111,8 @@ export class RegressionSuite {
     }
 
     getTestNames() {
-        return fs.readdirSync(path.resolve(this.path, 'tests'))
+        return fs
+            .readdirSync(path.resolve(this.path, 'tests'))
             .filter(name => name.endsWith('.graphql'))
             .map(name => name.substr(0, name.length - '.graphql'.length));
     }
@@ -115,17 +122,21 @@ export class RegressionSuite {
             await this.setUp();
         }
         const metaPath = path.resolve(this.testsPath, name + '.meta.json');
-        const meta: MetaOptions | undefined = fs.existsSync(metaPath) ? JSON.parse(stripJsonComments(fs.readFileSync(metaPath, 'utf-8'))) : undefined;
+        const meta: MetaOptions | undefined = fs.existsSync(metaPath)
+            ? JSON.parse(stripJsonComments(fs.readFileSync(metaPath, 'utf-8')))
+            : undefined;
         if (meta && meta.databases && meta.databases[this.databaseSpecifier]) {
             if (meta.databases[this.databaseSpecifier].ignore) {
                 return true;
             }
-            if (this.databaseVersion && meta.databases[this.databaseSpecifier].versions && meta.databases[this.databaseSpecifier].versions[this.databaseVersion] && meta.databases[this.databaseSpecifier].versions[this.databaseVersion].ignore) {
+            if (
+                this.databaseVersion &&
+                meta.databases[this.databaseSpecifier].versions &&
+                meta.databases[this.databaseSpecifier].versions[this.databaseVersion] &&
+                meta.databases[this.databaseSpecifier].versions[this.databaseVersion].ignore
+            ) {
                 return true;
             }
-        }
-        if (this.options.testNamePrefixFilter && !name.startsWith(this.options.testNamePrefixFilter)) {
-            return true;
         }
         return false;
     }
@@ -151,15 +162,20 @@ export class RegressionSuite {
         const gqlTemplate = fs.readFileSync(gqlPath, 'utf-8');
         const gqlSource = this.testDataEnvironment.fillTemplateStrings(gqlTemplate);
 
-        const operations = parse(gqlSource).definitions
-            .filter(def => def.kind == 'OperationDefinition') as OperationDefinitionNode[];
+        const operations = parse(gqlSource).definitions.filter(
+            def => def.kind == 'OperationDefinition'
+        ) as OperationDefinitionNode[];
         this._isSetUpClean = this._isSetUpClean && !operations.some(op => op.operation == 'mutation');
         const hasNamedOperations = operations.length && operations[0].name;
 
         const expectedResultTemplate = JSON.parse(stripJsonComments(fs.readFileSync(resultPath, 'utf-8')));
         const expectedResult = this.testDataEnvironment.fillTemplateStrings(expectedResultTemplate);
-        const variableValues = fs.existsSync(variablesPath) ? JSON.parse(stripJsonComments(fs.readFileSync(variablesPath, 'utf-8'))) : {};
-        const context = fs.existsSync(contextPath) ? JSON.parse(stripJsonComments(fs.readFileSync(contextPath, 'utf-8'))) : {};
+        const variableValues = fs.existsSync(variablesPath)
+            ? JSON.parse(stripJsonComments(fs.readFileSync(variablesPath, 'utf-8')))
+            : {};
+        const context = fs.existsSync(contextPath)
+            ? JSON.parse(stripJsonComments(fs.readFileSync(contextPath, 'utf-8')))
+            : {};
         const meta = fs.existsSync(metaPath) ? JSON.parse(stripJsonComments(fs.readFileSync(metaPath, 'utf-8'))) : {};
 
         if (meta.waitForArangoSearch) {
@@ -171,7 +187,14 @@ export class RegressionSuite {
             const operationNames = operations.map(def => def.name!.value);
             actualResult = {};
             for (const operationName of operationNames) {
-                let operationResult = await graphql(this.schema, gqlSource, {} /* root */, context, variableValues, operationName);
+                let operationResult = await graphql(
+                    this.schema,
+                    gqlSource,
+                    {} /* root */,
+                    context,
+                    variableValues,
+                    operationName
+                );
                 operationResult = JSON.parse(JSON.stringify(operationResult)); // serialize e.g. errors as they would be in a GraphQL server
                 actualResult[operationName] = operationResult;
             }

@@ -1,6 +1,6 @@
 # cruddl
 
-[![npm version](https://badge.fury.io/js/cruddl.svg)](https://npmjs.org/cruddl) [![Build Status](https://travis-ci.org/AEB-labs/cruddl.svg?branch=master)](https://travis-ci.org/AEB-labs/cruddl) [![Package Quality](https://npm.packagequality.com/shield/cruddl.svg)](https://packagequality.com/#?package=cruddl)
+[![npm version](https://badge.fury.io/js/cruddl.svg)](https://npmjs.org/cruddl) [![Build Status](https://github.com/AEB-labs/cruddl/workflows/CI/badge.svg)](https://github.com/AEB-labs/cruddl/actions?query=branch%3Amaster) [![Package Quality](https://npm.packagequality.com/shield/cruddl.svg)](https://packagequality.com/#?package=cruddl)
 
 **cruddl** - create a cuddly GraphQL API for your database, using the GraphQL SDL to model your schema.
 
@@ -10,12 +10,12 @@ This TypeScript library creates an executable GraphQL schema from a model defini
 
 ## Features
 
-* Schema definition using GraphQL types, fields and directives
-* Modelling features like relations, embedded lists and objects
-* Query features include filtering, sorting, cursor-based pagination and arbitrary nesting
-* Schema validation
-* Role-based authorization (field and type-based; static and data-dependent)
-* Pluggable database backends (currently supports ArangoDB and an in-memory implementation)
+-   Schema definition using GraphQL types, fields and directives
+-   Modelling features like relations, embedded lists and objects
+-   Query features include filtering, sorting, cursor-based pagination and arbitrary nesting
+-   Schema validation
+-   Role-based authorization (field and type-based; static and data-dependent)
+-   Pluggable database backends (currently supports ArangoDB and an in-memory implementation)
 
 ## Usage
 
@@ -47,9 +47,10 @@ Define your data model and create a project:
 ```typescript
 import { Project } from 'cruddl';
 const project = new Project({
-    sources: [ {
-        name: 'schema.graphqls',
-        body: `
+    sources: [
+        {
+            name: 'schema.graphqls',
+            body: `
             type Movie @rootEntity {
               title: String
               actors: Actor @relation
@@ -59,21 +60,25 @@ const project = new Project({
               name: String
               movies: Movie @relation(inverseOf: "actors")
             }`
-    }, {
-        name: 'permission-profiles.json',
-        body: JSON.stringify({
-            permissionProfiles: {
-                default: {
-                    permissions: [{
-                      roles: ['users'],
-                      access: 'readWrite'
-                    }]
+        },
+        {
+            name: 'permission-profiles.json',
+            body: JSON.stringify({
+                permissionProfiles: {
+                    default: {
+                        permissions: [
+                            {
+                                roles: ['users'],
+                                access: 'readWrite'
+                            }
+                        ]
+                    }
                 }
-            }
-        })
-    } ],
-    getExecutionOptions: ({context}) => ({ authRoles: ['users'] }),
-    getOperationIdentifier: ({context}) => context as object, // each operation is executed with an unique context object
+            })
+        }
+    ],
+    getExecutionOptions: ({ context }) => ({ authRoles: ['users'] }),
+    getOperationIdentifier: ({ context }) => context as object // each operation is executed with an unique context object
 });
 ```
 
@@ -96,8 +101,19 @@ See the [modelling guide](docs/modelling.md) and the [api documentation](docs/ap
 
 The core of cruddl perfectly works in a browser (e.g., using webpack), and this can be useful to generate a mock GraphQL schema on the fly or to validate a cruddl project. However, the ArangoDB adapter only works with node imports like `path`. Unless you configure webpack to provide mock modules for them, you will get an error when you import `cruddl` in a webpack environment. To solve this, you can import the core symbols from `cruddl/core` and the `InMemoryAdapter` from `cruddl/inmemory`.
 
+## Running Tests
+
+For consistency, tests shall be run against a single arangodb node:
+
+1. npm i
+2. npm run start_arangodb
+3. ensure you have access to console at http://localhost:8529
+4. npm run test
+
+When done, stop the instance with `npm run stop_arangodb`
+
 ## Documentation
 
-* [Modelling guide](docs/modelling.md)
-* [GraphQL API](docs/api.md)
-* [I18n](docs/i18n.md)
+-   [Modelling guide](docs/modelling.md)
+-   [GraphQL API](docs/api.md)
+-   [I18n](docs/i18n.md)

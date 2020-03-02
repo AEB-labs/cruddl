@@ -26,7 +26,6 @@ export class EntitiesQueryNode extends QueryNode {
     }
 }
 
-
 /**
  * A node that evaluates to the value of a field of an object, or NULL if it does not exist or objectNode does not
  * evaluate to an object
@@ -55,7 +54,24 @@ export class FieldPathQueryNode extends QueryNode {
     }
 
     public describe() {
-        return `${this.objectNode.describe()}.${blue(this.path.map(value => value.name).join("."))}`;
+        return `${this.objectNode.describe()}.${blue(this.path.map(value => value.name).join('.'))}`;
+    }
+}
+
+/**
+ * A node that evaluates to the value of a property of an object, or NULL if it does not exist or objectNode does not
+ * evaluate to an object
+ *
+ * This is equivalent to a FieldQueryNode except there does not need to be a model field. Authorization checks will not
+ * be applied.
+ */
+export class PropertyAccessQueryNode extends QueryNode {
+    constructor(public readonly objectNode: QueryNode, public readonly propertyName: string) {
+        super();
+    }
+
+    public describe() {
+        return `${this.objectNode.describe()}.${blue(this.propertyName)}`;
     }
 }
 
@@ -99,18 +115,14 @@ export class TraversalQueryNode extends QueryNode {
     }
 }
 
-
 // Cons 1->n  Item m->n HU
 // consigment
 //   - flat: HUs
 //       - "parent": relevantItems:
 
-
 // consignment
 // - flat HUs (with all seletion
 // - items
 //     - hus.id
-
-
 
 //

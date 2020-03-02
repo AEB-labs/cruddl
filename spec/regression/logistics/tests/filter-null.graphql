@@ -1,4 +1,3 @@
-
 query filterNullRelation {
     allHandlingUnits(filter: { delivery: null }, orderBy: huNumber_ASC) {
         id
@@ -13,6 +12,18 @@ query filterNullReference {
 
 query filterNullValueObject {
     allDeliveries(filter: { consignee: null }, orderBy: deliveryNumber_ASC) {
+        id
+    }
+}
+
+query filterNullScalar {
+    allDeliveries(filter: { destinationCountryISOCode: null }, orderBy: deliveryNumber_ASC) {
+        id
+    }
+}
+
+query filterNotNullScalar {
+    allDeliveries(filter: { destinationCountryISOCode_not: null }, orderBy: deliveryNumber_ASC) {
         id
     }
 }

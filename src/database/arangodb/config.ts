@@ -27,7 +27,7 @@ export interface ArangoDBConfig {
     /**
      * Additional configuration options that will be passed to the ArangoJS Database constructor
      */
-    readonly arangoJSConfig?: ArangoJSConfig
+    readonly arangoJSConfig?: ArangoJSConfig;
 
     readonly url: string;
     readonly user?: string;
@@ -44,7 +44,7 @@ export interface ArangoDBConfig {
      *
      * Can be overridden with the queryMemoryLimit option in ExecutionOptions
      */
-    readonly queryMemoryLimit?: number
+    readonly queryMemoryLimit?: number;
 
     /**
      * If enabled, collection traversals add an indirection between the filter/order part and the projection part
@@ -56,12 +56,12 @@ export interface ArangoDBConfig {
      *
      * See https://github.com/arangodb/arangodb/issues/7821
      */
-    readonly enableExperimentalProjectionIndirection?: boolean
+    readonly enableExperimentalProjectionIndirection?: boolean;
 
     /**
      * If set, enableExperimentalProjectionIndirection will only apply to root entity types specified in this list.
      */
-    readonly experimentalProjectionIndirectionTypeNames?: ReadonlyArray<string>
+    readonly experimentalProjectionIndirectionTypeNames?: ReadonlyArray<string>;
 
     /**
      * The number of times a transaction that generated an optimistic locking error (ERROR_ARANGO_CONFLICT) will be
@@ -78,7 +78,15 @@ export interface ArangoDBConfig {
     /**
      * How many steps of recursive fields are indexed and allowed in queries for FlexSearch.
      */
-    readonly arangoSearchConfiguration?: ArangoSearchConfiguration
+    readonly arangoSearchConfiguration?: ArangoSearchConfiguration;
+
+    /**
+     * If set to `true`, collections will still be available for modifications during index creation.
+     *
+     * Only supported from ArangoDB 3.5 onwards. Background index creation can be slower and take more memory and should
+     * still be performed during times of reduced load.
+     */
+    readonly createIndicesInBackground?: boolean;
 }
 
 export function initDatabase(config: ArangoDBConfig): Database {

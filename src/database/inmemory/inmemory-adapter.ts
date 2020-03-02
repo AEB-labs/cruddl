@@ -1,7 +1,7 @@
 import { globalContext } from '../../config/global';
 import { ProjectOptions } from '../../config/interfaces';
 import { Logger } from '../../config/logging';
-import { FlexSearchLanguage, Model } from '../../model';
+import { Model } from '../../model';
 import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS, QueryNode } from '../../query-tree';
 import { FlexSearchTokenization } from '../../query-tree/flex-search';
 import { DatabaseAdapter, FlexSearchTokenizable } from '../database-adapter';
@@ -118,6 +118,20 @@ export class InMemoryAdapter implements DatabaseAdapter {
                     }
                 }
                 return 0;
+            },
+
+            min(items: ReadonlyArray<string | number>) {
+                if (!items.length) {
+                    return null;
+                }
+                return items.reduce((acc, item) => support.compare(item, acc) < 0 ? item : acc);
+            },
+
+            max(items: ReadonlyArray<string | number>) {
+                if (!items.length) {
+                    return null;
+                }
+                return items.reduce((acc, item) => support.compare(item, acc) > 0 ? item : acc);
             },
 
             getMultiComparator<T>(...valueFns: [((item: T) => string | boolean | number | null | undefined), boolean][]) {

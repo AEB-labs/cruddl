@@ -27,7 +27,7 @@ describe('key field validator', () => {
             type Bar @valueObject {
                 count: Int
             }
-        `, `Only fields of type "String", "Int", and "ID" can be used as key field.`);
+        `, `Only fields of type "String", "Int", "ID", and "LocalDate" can be used as key field.`);
     });
 
     it('finds bad list type usage', () => {
@@ -49,13 +49,22 @@ describe('key field validator', () => {
             'A @key field can only be declared on root entities.');
     });
 
-    it('disallows keys on fields which are not String or Int', () => {
+    it('allows LocalDate keys', () => {
+        assertValidatorAccepts(`
+            type Stuff @rootEntity {
+                foo: String
+                bar: LocalDate @key
+            }
+        `);
+    });
+
+    it('disallows keys on fields which are not String, Int, or LocalDate', () => {
         assertValidatorRejects(`
             type Stuff @rootEntity {
                 foo: String
                 bar: JSON @key
             }
-        `, 'Only fields of type "String", "Int", and "ID" can be used as key field.');
+        `, 'Only fields of type "String", "Int", "ID", and "LocalDate" can be used as key field.');
     });
 
     it('accepts correct key usage', () => {

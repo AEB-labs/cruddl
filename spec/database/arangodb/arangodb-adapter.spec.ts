@@ -7,7 +7,8 @@ import { isArangoDBDisabled } from './arangodb-test-utils';
 
 describe('ArangoDBAdapter', () => {
     describe('updateSchema', () => {
-        it('it creates and removes indices', async function () { // can't use arrow function because we need the "this"
+        it('it creates and removes indices', async function() {
+            // can't use arrow function because we need the "this"
             if (isArangoDBDisabled()) {
                 (this as any).skip();
                 return;
@@ -19,13 +20,21 @@ describe('ArangoDBAdapter', () => {
                     isShipped: Boolean @index
                     shippedAt: DateTime @index(sparse: true)
                     itemCount: Int @index
+                    indexedTwice: String @index @unique
                 }
             `);
 
-            const adapter = new ArangoDBAdapter(await createTempDatabase());
+            const dbConfig = await createTempDatabase();
+            const adapter = new ArangoDBAdapter({
+                ...dbConfig,
+                createIndicesInBackground: true
+            });
             const db = getTempDatabase();
             const dbVersion = await db.version();
-            const isArangoDB34or35 = dbVersion.version.startsWith('3.4.') || dbVersion.version.startsWith('3.5.');
+            const isArangoDB34orHigher =
+                dbVersion.version.startsWith('3.4.') ||
+                dbVersion.version.startsWith('3.5.') ||
+                dbVersion.version.startsWith('3.6.');
 
             await db.collection('deliveries').create({});
 
@@ -54,98 +63,105 @@ describe('ArangoDBAdapter', () => {
                 type: 'persistent'
             });
 
+            // add a non-unique index that is needed for @index, but should not satisfy the @unique index
+            await db.collection('deliveries').createIndex({
+                fields: ['indexedTwice'],
+                sparse: false,
+                unique: false,
+                type: 'persistent'
+            });
+
             await adapter.updateSchema(model);
 
             const indices = await db.collection('deliveries').indexes();
             const expectedIndices = [
                 {
-                    fields: [
-                        '_key'
-                    ],
+                    fields: ['_key'],
                     sparse: false,
                     type: 'primary',
                     unique: true
                 },
                 {
-                    fields: [
-                        'isShipped'
-                    ],
+                    fields: ['isShipped'],
                     sparse: false,
                     type: 'persistent',
                     unique: false
                 },
                 {
-                    fields: [
-                        'itemCount'
-                    ],
+                    fields: ['itemCount'],
                     sparse: false,
                     type: 'persistent',
                     unique: false
                 },
                 // for automatic absolute ordering
                 {
-                    fields: [
-                        '_key'
-                    ],
+                    fields: ['_key'],
                     sparse: false,
                     type: 'persistent',
                     unique: false
                 },
                 {
-                    fields: [
-                        'deliveryNumber'
-                    ],
+                    fields: ['deliveryNumber'],
                     sparse: true,
                     type: 'persistent',
                     unique: true
                 },
                 {
-                    fields: [
-                        'shippedAt'
-                    ],
+                    fields: ['shippedAt'],
                     sparse: true,
+                    unique: false,
+                    type: 'persistent'
+                },
+                {
+                    fields: ['indexedTwice'],
+                    sparse: true,
+                    unique: true,
+                    type: 'persistent'
+                },
+                {
+                    fields: ['indexedTwice'],
+                    sparse: false,
                     unique: false,
                     type: 'persistent'
                 }
             ];
-            if (!isArangoDB34or35) {
+            if (!isArangoDB34orHigher) {
                 expectedIndices.push(
                     // this one is for @reference lookup which needs a non-sparse (see shouldUseWorkaroundForSparseIndices)
                     {
-                        fields: [
-                            'deliveryNumber'
-                        ],
+                        fields: ['deliveryNumber'],
                         sparse: false,
                         type: 'persistent',
                         unique: false
-                    });
+                    }
+                );
             }
-            expect(indices.map((index: any) => ({
-                fields: index.fields,
-                sparse: index.sparse,
-                type: index.type,
-                unique: index.unique
-            }))).to.deep.equalInAnyOrder(expectedIndices);
+            expect(
+                indices.map((index: any) => ({
+                    fields: index.fields,
+                    sparse: index.sparse,
+                    type: index.type,
+                    unique: index.unique
+                }))
+            ).to.deep.equalInAnyOrder(expectedIndices);
 
             const indicesOnOtherCollection = await db.collection('second').indexes();
-            expect(indicesOnOtherCollection.map((index: any) => ({
-                fields: index.fields,
-                sparse: index.sparse,
-                type: index.type,
-                unique: index.unique
-            }))).to.deep.equal([
+            expect(
+                indicesOnOtherCollection.map((index: any) => ({
+                    fields: index.fields,
+                    sparse: index.sparse,
+                    type: index.type,
+                    unique: index.unique
+                }))
+            ).to.deep.equal([
                 {
-                    fields: [
-                        '_key'
-                    ],
+                    fields: ['_key'],
                     sparse: false,
                     type: 'primary',
                     unique: true
                 },
                 {
-                    fields: [
-                        'test'
-                    ],
+                    fields: ['test'],
                     sparse: false,
                     type: 'persistent',
                     unique: true

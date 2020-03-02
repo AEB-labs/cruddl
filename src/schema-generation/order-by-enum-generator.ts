@@ -2,16 +2,15 @@ import { GraphQLEnumType, GraphQLEnumValueConfig } from 'graphql';
 import { chain } from 'lodash';
 import memorize from 'memorize-decorator';
 import { Field, ObjectType } from '../model';
-import { OrderClause, OrderDirection, QueryNode } from '../query-tree';
+import { OrderClause, OrderDirection, PropertyAccessQueryNode, QueryNode } from '../query-tree';
 import { ORDER_BY_ASC_SUFFIX, ORDER_BY_DESC_SUFFIX } from '../schema/constants';
 import { getOrderByTypeName } from '../schema/names';
+import { GraphQLOffsetDateTime, TIMESTAMP_PROPERTY } from '../schema/scalars/offset-date-time';
 import { flatMap } from '../utils/utils';
 import { createFieldNode } from './field-nodes';
 
 export class OrderByEnumType {
-    constructor(public readonly objectType: ObjectType, public readonly values: ReadonlyArray<OrderByEnumValue>) {
-
-    }
+    constructor(public readonly objectType: ObjectType, public readonly values: ReadonlyArray<OrderByEnumValue>) {}
 
     get name() {
         return getOrderByTypeName(this.objectType.name);
@@ -19,7 +18,7 @@ export class OrderByEnumType {
 
     @memorize()
     private get valueMap(): Map<string, OrderByEnumValue> {
-        return new Map(this.values.map((v): [string, OrderByEnumValue] => ([v.name, v])));
+        return new Map(this.values.map((v): [string, OrderByEnumValue] => [v.name, v]));
     }
 
     getValue(name: string): OrderByEnumValue | undefined {
@@ -40,23 +39,33 @@ export class OrderByEnumType {
             name: this.name,
             values: chain(this.values)
                 .keyBy(value => value.name)
-                .mapValues((value): GraphQLEnumValueConfig => ({ value: value.name, deprecationReason: value.deprecationReason }))
+                .mapValues(
+                    (value): GraphQLEnumValueConfig => ({
+                        value: value.name,
+                        deprecationReason: value.deprecationReason
+                    })
+                )
                 .value()
         });
     }
 }
 
 export class OrderByEnumValue {
-    constructor(public readonly path: ReadonlyArray<Field>, public readonly direction: OrderDirection, readonly rootEntityDepth?: number) {
-
-    }
+    constructor(
+        public readonly path: ReadonlyArray<Field>,
+        public readonly direction: OrderDirection,
+        readonly rootEntityDepth?: number
+    ) {}
 
     get underscoreSeparatedPath(): string {
         return this.path.map(field => field.name).join('_');
     }
 
     get name() {
-        return this.underscoreSeparatedPath + (this.direction == OrderDirection.ASCENDING ? ORDER_BY_ASC_SUFFIX : ORDER_BY_DESC_SUFFIX);
+        return (
+            this.underscoreSeparatedPath +
+            (this.direction == OrderDirection.ASCENDING ? ORDER_BY_ASC_SUFFIX : ORDER_BY_DESC_SUFFIX)
+        );
     }
 
     get deprecationReason(): string | undefined {
@@ -66,7 +75,9 @@ export class OrderByEnumValue {
         if (this.path.length === 1) {
             return this.path[0].deprecationReason;
         }
-        const deprecations = this.path.filter(f => f.deprecationReason).map(f => `${f.declaringType.name}.${f.name}: ${f.deprecationReason}`);
+        const deprecations = this.path
+            .filter(f => f.deprecationReason)
+            .map(f => `${f.declaringType.name}.${f.name}: ${f.deprecationReason}`);
         if (deprecations.length) {
             return deprecations.join(', ');
         }
@@ -74,7 +85,12 @@ export class OrderByEnumValue {
     }
 
     getValueNode(itemNode: QueryNode): QueryNode {
-        return this.path.reduce((node, field) => createFieldNode(field, node), itemNode);
+        const valueNode = this.path.reduce((node, field) => createFieldNode(field, node), itemNode);
+        const lastField = this.path[this.path.length - 1];
+        if (lastField && lastField.type.isScalarType && lastField.type.graphQLScalarType === GraphQLOffsetDateTime) {
+            return new PropertyAccessQueryNode(valueNode, TIMESTAMP_PROPERTY);
+        }
+        return valueNode;
     }
 
     getClause(itemNode: QueryNode): OrderClause {
@@ -87,13 +103,12 @@ export interface OrderByEnumGeneratorConfig {
 }
 
 interface RecursionOptions {
-    readonly path?: ReadonlyArray<Field>
-    readonly rootEntityDepth?: number
+    readonly path?: ReadonlyArray<Field>;
+    readonly rootEntityDepth?: number;
 }
 
 export class OrderByEnumGenerator {
-    constructor(private readonly config: OrderByEnumGeneratorConfig = {}) {
-    }
+    constructor(private readonly config: OrderByEnumGeneratorConfig = {}) {}
 
     @memorize()
     generate(objectType: ObjectType) {
@@ -130,5 +145,4 @@ export class OrderByEnumGenerator {
             new OrderByEnumValue(newPath, OrderDirection.DESCENDING, rootEntityDepth)
         ];
     }
-
 }

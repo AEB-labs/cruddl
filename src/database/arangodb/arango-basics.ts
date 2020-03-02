@@ -5,7 +5,7 @@ import { decapitalize } from '../../utils/utils';
 export const billingCollectionName = 'billingEntities';
 
 export function getCollectionNameForRootEntity(type: RootEntityType) {
-    return decapitalize(pluralize(type.name));
+    return decapitalize(type.pluralName);
 }
 
 export function getCollectionNameForRelation(relation: Relation) {

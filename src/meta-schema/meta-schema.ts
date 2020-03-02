@@ -1,12 +1,13 @@
 import { GraphQLSchema } from 'graphql';
 import gql from 'graphql-tag';
 import { IResolvers, makeExecutableSchema } from 'graphql-tools';
-import { Field, Model, RootEntityType, Type, TypeKind } from '../model';
-import { EnumValue } from '../model/implementation/enum-type';
+import { EnumValue, Field, Model, RootEntityType, Type, TypeKind } from '../model';
 import { compact, flatMap } from '../utils/utils';
 import { I18N_GENERIC, I18N_LOCALE } from './constants';
 
-const resolutionOrderDescription = JSON.stringify('The order in which languages and other localization providers are queried for a localization. You can specify languages as defined in the schema as well as the following special identifiers:\n\n- `_LOCALE`: The language defined by the GraphQL request (might be a list of languages, e.g. ["de_DE", "de", "en"])\n- `_GENERIC`: is auto-generated localization from field and type names (e. G. `orderDate` => `Order date`)\n\nThe default `resolutionOrder` is `["_LOCALE", "_GENERIC"]` (if not specified).');
+const resolutionOrderDescription = JSON.stringify(
+    'The order in which languages and other localization providers are queried for a localization. You can specify languages as defined in the schema as well as the following special identifiers:\n\n- `_LOCALE`: The language defined by the GraphQL request (might be a list of languages, e.g. ["de_DE", "de", "en"])\n- `_GENERIC`: is auto-generated localization from field and type names (e. G. `orderDate` => `Order date`)\n\nThe default `resolutionOrder` is `["_LOCALE", "_GENERIC"]` (if not specified).'
+);
 
 const typeDefs = gql`
     enum TypeKind {
@@ -16,6 +17,11 @@ const typeDefs = gql`
     type Field {
         name: String!
         description: String
+
+        isDeprecated: Boolean!
+        deprecationReason: String
+
+        declaringType: ObjectType!
 
         "Indicates if this field is a list."
         isList: Boolean!
@@ -32,15 +38,27 @@ const typeDefs = gql`
         "If \`true\`, this field is defined by the system, otherwise, by the schema."
         isSystemField: Boolean!
 
+        "If \`true\`, this the value of this field is calculated via a collect expression and can not be set."
+        isCollectField: Boolean!
+
         "The type for the field's value"
         type: Type!
 
         "Relation information, if \`isRelation\` is \`true\`, \`null\` otherwise"
         relation: Relation
-        
+
+        "Information about the @collect field configuration, if \`isCollectField\` is \`true\`, \`null\` otherwise"
+        collectFieldConfig: CollectFieldConfig
+
         localization(
             ${resolutionOrderDescription} resolutionOrder: [String]
         ): FieldLocalization
+
+        isFlexSearchIndexed: Boolean!
+        isIncludedInSearch: Boolean!
+        isFlexSearchFulltextIndexed: Boolean!
+        isFulltextIncludedInSearch: Boolean!
+        flexSearchLanguage: FlexSearchLanguage
     }
 
     type Index {
@@ -59,6 +77,40 @@ const typeDefs = gql`
         fromField: Field!
         toType: RootEntityType!
         toField: Field
+    }
+
+    type CollectFieldConfig {
+        fieldsInPath: [Field!]!
+        path: [String!]!
+        aggregationOperator: AggregationOperator
+    }
+
+    enum AggregationOperator {
+        COUNT,
+        SOME,
+        NONE,
+
+        COUNT_NULL,
+        COUNT_NOT_NULL,
+        SOME_NULL,
+        SOME_NOT_NULL,
+        EVERY_NULL,
+        NONE_NULL,
+
+        MIN,
+        MAX,
+        SUM,
+        AVERAGE,
+
+        COUNT_TRUE,
+        COUNT_NOT_TRUE,
+        SOME_TRUE,
+        SOME_NOT_TRUE,
+        EVERY_TRUE,
+        NONE_TRUE,
+
+        DISTINCT,
+        COUNT_DISTINCT
     }
 
     interface Type {
@@ -98,6 +150,9 @@ const typeDefs = gql`
 
         fields: [Field!]!
 
+        isFlexSearchIndexed: Boolean!
+        flexSearchPrimarySort: [OrderClause!]!
+
         """
         All relations between this type and other types
 
@@ -107,6 +162,9 @@ const typeDefs = gql`
         localization(
             ${resolutionOrderDescription} resolutionOrder: [String]
         ): TypeLocalization
+
+        "Indicates if this root entity type is one of the core objects of business transactions"
+        isBusinessObject: Boolean
     }
 
     type ChildEntityType implements ObjectType & Type {
@@ -198,10 +256,24 @@ const typeDefs = gql`
         label: String
         hint: String
     }
-    
+
     type BillingEntityType {
         typeName: String
         keyFieldName: String
+    }
+
+    type OrderClause{
+        field: String
+        order: OrderDirection
+    }
+
+    enum OrderDirection {
+        ASC, DESC
+    }
+
+    "The available languages for FlexSearch Analyzers"
+    enum FlexSearchLanguage {
+        EN, DE, ES, FI, FR, IT, NL, NO, PT, RU, SV, ZH
     }
 
     """
@@ -286,14 +358,14 @@ const typeDefs = gql`
 
         "The root namespace"
         rootNamespace: Namespace!
-    
+
         "The billingEntityTypes that define the billing configuration."
         billingEntityTypes: [BillingEntityType!]!
     }
 `;
 
 export interface I18nSchemaContextPart {
-    locale: string | ReadonlyArray<string>
+    locale: string | ReadonlyArray<string>;
 }
 
 /**
@@ -306,22 +378,22 @@ export function getMetaSchema(model: Model): GraphQLSchema {
     const resolvers: IResolvers<{}, { locale: string }> = {
         Query: {
             types: () => model.types,
-            type: (_, {name}) => model.getType(name),
+            type: (_, { name }) => model.getType(name),
             rootEntityTypes: () => model.rootEntityTypes,
-            rootEntityType: (_, {name}) => model.getRootEntityType(name),
+            rootEntityType: (_, { name }) => model.getRootEntityType(name),
             childEntityTypes: () => model.childEntityTypes,
-            childEntityType: (_, {name}) => model.getChildEntityType(name),
+            childEntityType: (_, { name }) => model.getChildEntityType(name),
             entityExtensionTypes: () => model.entityExtensionTypes,
-            entityExtensionType: (_, {name}) => model.getEntityExtensionType(name),
+            entityExtensionType: (_, { name }) => model.getEntityExtensionType(name),
             valueObjectTypes: () => model.valueObjectTypes,
-            valueObjectType: (_, {name}) => model.getValueObjectType(name),
+            valueObjectType: (_, { name }) => model.getValueObjectType(name),
             scalarTypes: () => model.scalarTypes,
-            scalarType: (_, {name}) => model.getScalarType(name),
+            scalarType: (_, { name }) => model.getScalarType(name),
             enumTypes: () => model.enumTypes,
-            enumType: (_, {name}) => model.getEnumType(name),
+            enumType: (_, { name }) => model.getEnumType(name),
             namespaces: () => model.namespaces,
             rootNamespace: () => model.rootNamespace,
-            namespace: (_, {path}) => model.getNamespaceByPath(path),
+            namespace: (_, { path }) => model.getNamespaceByPath(path),
             billingEntityTypes: () => model.billingEntityTypes
         },
         Type: {
@@ -331,7 +403,8 @@ export function getMetaSchema(model: Model): GraphQLSchema {
             __resolveType: (type: unknown) => resolveType(type as Type)
         },
         RootEntityType: {
-            localization: localizeType
+            localization: localizeType,
+            flexSearchPrimarySort: getFlexSearchPrimarySort
         },
         ChildEntityType: {
             localization: localizeType
@@ -349,7 +422,17 @@ export function getMetaSchema(model: Model): GraphQLSchema {
             localization: localizeType
         },
         Field: {
-            localization: localizeField
+            localization: localizeField,
+            collectFieldConfig: (field: unknown) => {
+                if (!(field instanceof Field) || !field.collectPath) {
+                    return undefined;
+                }
+                return {
+                    path: field.collectPath.segments.map(s => s.field.name),
+                    fieldsInPath: field.collectPath.segments.map(s => s.field),
+                    aggregationOperator: field.aggregationOperator
+                };
+            }
         },
         EnumValue: {
             localization: localizeEnumValue
@@ -362,19 +445,44 @@ export function getMetaSchema(model: Model): GraphQLSchema {
             resolutionOrder = [I18N_LOCALE, I18N_GENERIC];
         }
         // replace _LOCALE
-        return compact(flatMap(resolutionOrder, l => l === I18N_LOCALE ? getLocaleFromContext(context) : [l]));
+        return compact(flatMap(resolutionOrder, l => (l === I18N_LOCALE ? getLocaleFromContext(context) : [l])));
     }
 
-    function localizeType(type: {}, {resolutionOrder}: { resolutionOrder?: ReadonlyArray<string> }, context: I18nSchemaContextPart) {
+    function localizeType(
+        type: {},
+        { resolutionOrder }: { resolutionOrder?: ReadonlyArray<string> },
+        context: I18nSchemaContextPart
+    ) {
         return model.i18n.getTypeLocalization(type as Type, getResolutionOrder(resolutionOrder, context));
     }
 
-    function localizeField(field: {}, {resolutionOrder}: { resolutionOrder?: ReadonlyArray<string> }, context: I18nSchemaContextPart) {
+    function localizeField(
+        field: {},
+        { resolutionOrder }: { resolutionOrder?: ReadonlyArray<string> },
+        context: I18nSchemaContextPart
+    ) {
         return model.i18n.getFieldLocalization(field as Field, getResolutionOrder(resolutionOrder, context));
     }
 
-    function localizeEnumValue(enumValue: {}, {resolutionOrder}: { resolutionOrder?: ReadonlyArray<string> }, context: I18nSchemaContextPart) {
-        return model.i18n.getEnumValueLocalization(enumValue as EnumValue, getResolutionOrder(resolutionOrder, context));
+    function localizeEnumValue(
+        enumValue: {},
+        { resolutionOrder }: { resolutionOrder?: ReadonlyArray<string> },
+        context: I18nSchemaContextPart
+    ) {
+        return model.i18n.getEnumValueLocalization(
+            enumValue as EnumValue,
+            getResolutionOrder(resolutionOrder, context)
+        );
+    }
+
+    function getFlexSearchPrimarySort(type: {}): { field: string; order: 'ASC' | 'DESC' }[] {
+        const rootEntityType = type as RootEntityType;
+        return rootEntityType.flexSearchIndexConfig.primarySort.map(value => {
+            return {
+                field: value.field,
+                order: value.asc ? 'ASC' : 'DESC'
+            };
+        });
     }
 
     return makeExecutableSchema({

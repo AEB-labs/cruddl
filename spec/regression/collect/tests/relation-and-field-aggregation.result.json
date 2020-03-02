@@ -1,35 +1,38 @@
 {
-  "createEdges": {
-    "data": {
-      "updateShipment": {
-        "shipmentNumber": "S1"
-      },
-      "d1": {
-        "deliveryNumber": "D1"
-      },
-      "d2": {
-        "deliveryNumber": "D2"
-      }
+    "createEdges": {
+        "data": {
+            "updateShipment": {
+                "shipmentNumber": "S1"
+            },
+            "d1": {
+                "deliveryNumber": "D1"
+            },
+            "d2": {
+                "deliveryNumber": "D2"
+            }
+        }
+    },
+    "fields": {
+        "data": {
+            "Shipment": {
+                "totalWeightInKg": 63,
+                "itemCount": 8,
+                "allDeliveriesHaveOrders": false,
+                "allDeliveriesArePayed": false,
+                "numberOfDeliveriesWithoutOrder": 2,
+                "numberOfDeliveriesWithoutPayedOrder": 3,
+                "startedDispatchingAt": "2020-01-30T08:00:00Z",
+                "fullyDispatchedAt": "2020-01-30T09:00:00Z",
+                "maxPriority": 3,
+                "allOrders": [
+                    {
+                        "orderNumber": "O1"
+                    },
+                    {
+                        "orderNumber": "O2"
+                    }
+                ]
+            }
+        }
     }
-  },
-  "fields": {
-    "data": {
-      "Shipment": {
-        "totalWeightInKg": 63,
-        "itemCount": 8,
-        "allDeliveriesHaveOrders": false,
-        "allDeliveriesArePayed": false,
-        "numberOfDeliveriesWithoutOrder": 2,
-        "numberOfDeliveriesWithoutPayedOrder": 3,
-        "allOrders": [
-          {
-            "orderNumber": "O1"
-          },
-          {
-            "orderNumber": "O2"
-          }
-        ]
-      }
-    }
-  }
 }
