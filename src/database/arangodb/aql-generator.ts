@@ -1,7 +1,20 @@
 import { AggregationOperator, Field, FlexSearchLanguage, Relation, RootEntityType } from '../../model';
 import { FieldSegment, getEffectiveCollectSegments, RelationSegment } from '../../model/implementation/collect-path';
 import {
-    AddEdgesQueryNode, AggregationQueryNode, ConfirmForBillingQueryNode, BasicType, BinaryOperationQueryNode, BinaryOperator, BinaryOperatorWithLanguage, ConcatListsQueryNode, ConditionalQueryNode, ConstBoolQueryNode, ConstIntQueryNode, CountQueryNode, CreateBillingEntityQueryNode, CreateEntityQueryNode,
+    AddEdgesQueryNode,
+    AggregationQueryNode,
+    ConfirmForBillingQueryNode,
+    BasicType,
+    BinaryOperationQueryNode,
+    BinaryOperator,
+    BinaryOperatorWithLanguage,
+    ConcatListsQueryNode,
+    ConditionalQueryNode,
+    ConstBoolQueryNode,
+    ConstIntQueryNode,
+    CountQueryNode,
+    CreateBillingEntityQueryNode,
+    CreateEntityQueryNode,
     DeleteEntitiesQueryNode,
     EdgeIdentifier,
     EntitiesQueryNode,
@@ -19,9 +32,32 @@ import {
     OrderDirection,
     OrderSpecification,
     PartialEdgeIdentifier,
-    PropertyAccessQueryNode, QueryNode, QueryResultValidator, RemoveEdgesQueryNode, RootEntityIDQueryNode, RUNTIME_ERROR_CODE_PROPERTY, RUNTIME_ERROR_TOKEN, RuntimeErrorQueryNode, SafeListQueryNode, SetEdgeQueryNode, TransformListQueryNode, TraversalQueryNode, TypeCheckQueryNode, UnaryOperationQueryNode, UnaryOperator, UpdateEntitiesQueryNode, VariableAssignmentQueryNode, VariableQueryNode, WithPreExecutionQueryNode
+    PropertyAccessQueryNode,
+    QueryNode,
+    QueryResultValidator,
+    RemoveEdgesQueryNode,
+    RootEntityIDQueryNode,
+    RUNTIME_ERROR_CODE_PROPERTY,
+    RUNTIME_ERROR_TOKEN,
+    RuntimeErrorQueryNode,
+    SafeListQueryNode,
+    SetEdgeQueryNode,
+    TransformListQueryNode,
+    TraversalQueryNode,
+    TypeCheckQueryNode,
+    UnaryOperationQueryNode,
+    UnaryOperator,
+    UpdateEntitiesQueryNode,
+    VariableAssignmentQueryNode,
+    VariableQueryNode,
+    WithPreExecutionQueryNode
 } from '../../query-tree';
-import { FlexSearchComplexOperatorQueryNode, FlexSearchFieldExistsQueryNode, FlexSearchQueryNode, FlexSearchStartsWithQueryNode } from '../../query-tree/flex-search';
+import {
+    FlexSearchComplexOperatorQueryNode,
+    FlexSearchFieldExistsQueryNode,
+    FlexSearchQueryNode,
+    FlexSearchStartsWithQueryNode
+} from '../../query-tree/flex-search';
 import { Quantifier, QuantifierFilterNode } from '../../query-tree/quantifiers';
 import { extractVariableAssignments, simplifyBooleans } from '../../query-tree/utils';
 import { not } from '../../schema-generation/utils/input-types';
@@ -704,11 +740,15 @@ register(FlexSearchComplexOperatorQueryNode, (node, context) => {
     throw new Error(`Internal Error: FlexSearchComplexOperatorQueryNode must be expanded before generating the query.`);
 });
 
-function getBillingInput(node: CreateBillingEntityQueryNode | ConfirmForBillingQueryNode, context: QueryContext, currentTimestamp: string) {
+function getBillingInput(
+    node: CreateBillingEntityQueryNode | ConfirmForBillingQueryNode,
+    context: QueryContext,
+    currentTimestamp: string
+) {
     return aql`
         keyField: ${node.keyFieldValue},
         type: ${node.rootEntityTypeName},
-        isExported: ${false},
+        isExported: false,
         createdAt: ${currentTimestamp},
         updatedAt: ${currentTimestamp}`;
 }
@@ -716,13 +756,13 @@ function getBillingInput(node: CreateBillingEntityQueryNode | ConfirmForBillingQ
 register(CreateBillingEntityQueryNode, (node, context) => {
     const currentTimestamp = new Date().toISOString();
     return aqlExt.parenthesizeList(
-        aql`UPSERT { 
+        aql`UPSERT {
             keyField: ${node.keyFieldValue},
             type: ${node.rootEntityTypeName}
         }`,
-        aql`INSERT { 
+        aql`INSERT {
             ${getBillingInput(node, context, currentTimestamp)},
-            isConfirmedForExport: ${false}
+            isConfirmedForExport: false
          }`,
         aql`UPDATE {}`,
         aql`IN ${getCollectionForBilling(AccessType.WRITE, context)}`,
@@ -737,20 +777,20 @@ register(ConfirmForBillingQueryNode, (node, context) => {
             keyField: ${node.keyFieldValue},
             type: ${node.rootEntityTypeName}
         }`,
-        aql`INSERT { 
+        aql`INSERT {
             ${getBillingInput(node, context, currentTimestamp)},
-            isConfirmedForExport: ${true},
-            confirmedForExportTimestamp: ${currentTimestamp}  
+            isConfirmedForExport: true,
+            confirmedForExportTimestamp: ${currentTimestamp}
          }`,
         aql`UPDATE {
-            isConfirmedForExport: ${true},
+            isConfirmedForExport: true,
             updatedAt: ${currentTimestamp},
-            confirmedForExportTimestamp: ${currentTimestamp} 
+            confirmedForExportTimestamp: ${currentTimestamp}
         }`,
         aql`IN ${getCollectionForBilling(AccessType.WRITE, context)}`,
         aql`RETURN true`
     );
-})
+});
 
 function getFastStartsWithQuery(lhs: AQLFragment, rhsValue: string): AQLFragment {
     if (!rhsValue.length) {

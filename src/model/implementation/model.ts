@@ -34,10 +34,7 @@ export class Model implements ModelComponent {
 
     constructor(private input: ModelConfig) {
         this.builtInTypes = createBuiltInTypes(this);
-        this.types = [
-            ...this.builtInTypes,
-            ...input.types.map(typeInput => createType(typeInput, this))
-        ];
+        this.types = [...this.builtInTypes, ...input.types.map(typeInput => createType(typeInput, this))];
         this.permissionProfiles = flatMap(input.permissionProfiles || [], createPermissionProfiles);
         this.rootNamespace = new Namespace({
             parent: undefined,
@@ -46,9 +43,11 @@ export class Model implements ModelComponent {
             allPermissionProfiles: this.permissionProfiles
         });
         this.namespaces = [this.rootNamespace, ...this.rootNamespace.descendantNamespaces];
-        this.typeMap = new Map(this.types.map((type): [string, Type] => ([type.name, type])));
+        this.typeMap = new Map(this.types.map((type): [string, Type] => [type.name, type]));
         this.i18n = new ModelI18n(input.i18n || [], this);
-        this.billingEntityTypes = input.billing ? input.billing.billingEntities.map(value => new BillingEntityType(value, this)) : [];
+        this.billingEntityTypes = input.billing
+            ? input.billing.billingEntities.map(value => new BillingEntityType(value, this))
+            : [];
         this.modelValidationOptions = input.modelValidationOptions;
     }
 
@@ -63,10 +62,7 @@ export class Model implements ModelComponent {
             type.validate(context);
         }
 
-        return new ValidationResult([
-            ...this.input.validationMessages || [],
-            ...context.validationMessages
-        ]);
+        return new ValidationResult([...(this.input.validationMessages || []), ...context.validationMessages]);
     }
 
     private validateDuplicateTypes(context: ValidationContext) {
@@ -80,9 +76,16 @@ export class Model implements ModelComponent {
 
                 if (builtInTypeNames.has(type.name)) {
                     // user does not see duplicate type, so provide better message
-                    context.addMessage(ValidationMessage.error(`Type name "${type.name}" is reserved by a built-in type.`, type.nameASTNode));
+                    context.addMessage(
+                        ValidationMessage.error(
+                            `Type name "${type.name}" is reserved by a built-in type.`,
+                            type.nameASTNode
+                        )
+                    );
                 } else {
-                    context.addMessage(ValidationMessage.error(`Duplicate type name: "${type.name}".`, type.nameASTNode));
+                    context.addMessage(
+                        ValidationMessage.error(`Duplicate type name: "${type.name}".`, type.nameASTNode)
+                    );
                 }
             }
         }
@@ -230,14 +233,14 @@ export class Model implements ModelComponent {
 
     get forbiddenRootEntityNames(): ReadonlyArray<string> {
         if (!this.modelValidationOptions || !this.modelValidationOptions.forbiddenRootEntityNames) {
-            return [
-                'BillingEntity' // MSF TODO: constant
-            ];
+            return ['BillingEntity'];
         }
         return this.modelValidationOptions!.forbiddenRootEntityNames;
     }
 }
 
 function createPermissionProfiles(map: NamespacedPermissionProfileConfigMap): ReadonlyArray<PermissionProfile> {
-    return objectEntries(map.profiles).map(([name, profile]) => new PermissionProfile(name, map.namespacePath || [], profile));
+    return objectEntries(map.profiles).map(
+        ([name, profile]) => new PermissionProfile(name, map.namespacePath || [], profile)
+    );
 }
