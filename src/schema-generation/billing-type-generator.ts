@@ -14,6 +14,7 @@ import {
     QueryNode,
     RootEntityIDQueryNode,
     TransformListQueryNode,
+    UpdateEntitiesQueryNode,
     VariableQueryNode,
     WithPreExecutionQueryNode
 } from '../query-tree';
@@ -49,9 +50,13 @@ export class BillingTypeGenerator {
     }
 
     private generateQueryNode(arg: number | string, rootEntityType: RootEntityType) {
+        const entityIdVariableQueryNode = new VariableQueryNode(); // MSF TODO: better variable name
         return new WithPreExecutionQueryNode({
             preExecQueries: [
-                this.getExistancePreExecQueryParms(arg, rootEntityType),
+                this.getExistancePreExecQueryParms(arg, rootEntityType, entityIdVariableQueryNode),
+                new PreExecQueryParms({
+                    query: this.getEmptyUpdateQueryNode(rootEntityType, entityIdVariableQueryNode)
+                }),
                 new PreExecQueryParms({
                     query: new ConfirmForBillingQueryNode(arg, rootEntityType.name)
                 })
@@ -60,19 +65,42 @@ export class BillingTypeGenerator {
         });
     }
 
-    private getExistancePreExecQueryParms(arg: number | string, rootEntityType: RootEntityType) {
-        const variable = new VariableQueryNode();
+    private getEmptyUpdateQueryNode(rootEntityType: RootEntityType, entityIdVariableQueryNode: VariableQueryNode) {
+        const itemVariableNode = new VariableQueryNode();
+        return new UpdateEntitiesQueryNode({
+            rootEntityType,
+            updates: [],
+            listNode: new TransformListQueryNode({
+                listNode: new EntitiesQueryNode(rootEntityType),
+                filterNode: new BinaryOperationQueryNode(
+                    new FieldQueryNode(itemVariableNode, rootEntityType.getField('id')!), // MSF TODO: better way to specify id field
+                    BinaryOperator.EQUAL,
+                    entityIdVariableQueryNode
+                ),
+                itemVariable: itemVariableNode
+            }),
+            affectedFields: []
+        });
+    }
+
+    private getExistancePreExecQueryParms(
+        arg: number | string,
+        rootEntityType: RootEntityType,
+        entityIdVariableQueryNode: VariableQueryNode
+    ) {
+        const itemVariableNode = new VariableQueryNode();
         return new PreExecQueryParms({
             query: new RootEntityIDQueryNode(
                 new FirstOfListQueryNode(
                     new TransformListQueryNode({
                         maxCount: 1,
-                        itemVariable: variable,
-                        filterNode: this.getExistanceConditionQueryNode(arg, rootEntityType, variable),
+                        itemVariable: itemVariableNode,
+                        filterNode: this.getExistanceConditionQueryNode(arg, rootEntityType, itemVariableNode),
                         listNode: new EntitiesQueryNode(rootEntityType)
                     })
                 )
             ),
+            resultVariable: entityIdVariableQueryNode,
             resultValidator: new ErrorIfNotTruthyResultValidator({
                 errorCode: 'XY',
                 errorMessage: 'No entity with provided key found.'
