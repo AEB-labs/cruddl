@@ -1,6 +1,6 @@
 {
     "name": "cruddl",
-    "version": "1.1.0-billing.8",
+    "version": "1.1.0-billing.9",
     "description": "",
     "license": "MIT",
     "main": "dist/index.js",
