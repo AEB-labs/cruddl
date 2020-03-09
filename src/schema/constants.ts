@@ -127,7 +127,7 @@ export const CALC_MUTATIONS_OPERATORS: CalcMutationOperator[] = [
 export const COUNT_META_FIELD = 'count';
 
 export const MUTATION_INPUT_ARG = 'input';
-export const BILLING_MUTATION_INPUT_ARG = 'keyFieldValue';
+export const BILLING_MUTATION_INPUT_ARG = 'id';
 
 export const ROLES_DIRECTIVE = 'roles';
 export const ROLES_READ_ARG = 'read';

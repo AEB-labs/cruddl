@@ -50,22 +50,23 @@ export class BillingTypeGenerator {
     }
 
     private generateQueryNode(arg: number | string, rootEntityType: RootEntityType) {
-        const entityIdVariableQueryNode = new VariableQueryNode(); // MSF TODO: better variable name
+        const entityIdQueryNode = new LiteralQueryNode(arg);
+        const keyFieldVariableQueryNode = new VariableQueryNode();
         return new WithPreExecutionQueryNode({
             preExecQueries: [
-                this.getExistancePreExecQueryParms(arg, rootEntityType, entityIdVariableQueryNode),
+                this.getExistancePreExecQueryParms(rootEntityType, entityIdQueryNode, keyFieldVariableQueryNode),
                 new PreExecQueryParms({
-                    query: this.getEmptyUpdateQueryNode(rootEntityType, entityIdVariableQueryNode)
+                    query: this.getEmptyUpdateQueryNode(rootEntityType, entityIdQueryNode)
                 }),
                 new PreExecQueryParms({
-                    query: new ConfirmForBillingQueryNode(arg, rootEntityType.name)
+                    query: new ConfirmForBillingQueryNode(keyFieldVariableQueryNode, rootEntityType.name)
                 })
             ],
             resultNode: new LiteralQueryNode(true)
         });
     }
 
-    private getEmptyUpdateQueryNode(rootEntityType: RootEntityType, entityIdVariableQueryNode: VariableQueryNode) {
+    private getEmptyUpdateQueryNode(rootEntityType: RootEntityType, entityIdQueryNode: LiteralQueryNode) {
         const itemVariableNode = new VariableQueryNode();
         return new UpdateEntitiesQueryNode({
             rootEntityType,
@@ -73,9 +74,9 @@ export class BillingTypeGenerator {
             listNode: new TransformListQueryNode({
                 listNode: new EntitiesQueryNode(rootEntityType),
                 filterNode: new BinaryOperationQueryNode(
-                    new FieldQueryNode(itemVariableNode, rootEntityType.getField('id')!), // MSF TODO: better way to specify id field
+                    new RootEntityIDQueryNode(itemVariableNode),
                     BinaryOperator.EQUAL,
-                    entityIdVariableQueryNode
+                    entityIdQueryNode
                 ),
                 itemVariable: itemVariableNode
             }),
@@ -84,43 +85,51 @@ export class BillingTypeGenerator {
     }
 
     private getExistancePreExecQueryParms(
-        arg: number | string,
         rootEntityType: RootEntityType,
-        entityIdVariableQueryNode: VariableQueryNode
+        entityIdQueryNode: LiteralQueryNode,
+        keyFieldVariableQueryNode: VariableQueryNode
     ) {
+        if (!rootEntityType.billingEntityConfig || !rootEntityType.billingEntityConfig.billingKeyField) {
+            throw new Error('RootEntityType does not have a billing-keyField'); // MSF TODO: proper error message
+        }
         const itemVariableNode = new VariableQueryNode();
         return new PreExecQueryParms({
-            query: new RootEntityIDQueryNode(
+            query: new FieldQueryNode(
                 new FirstOfListQueryNode(
                     new TransformListQueryNode({
                         maxCount: 1,
                         itemVariable: itemVariableNode,
-                        filterNode: this.getExistanceConditionQueryNode(arg, rootEntityType, itemVariableNode),
+                        filterNode: this.getExistanceConditionQueryNode(
+                            entityIdQueryNode,
+                            rootEntityType,
+                            itemVariableNode
+                        ),
                         listNode: new EntitiesQueryNode(rootEntityType)
                     })
-                )
+                ),
+                rootEntityType.billingEntityConfig.billingKeyField
             ),
-            resultVariable: entityIdVariableQueryNode,
+            resultVariable: keyFieldVariableQueryNode,
             resultValidator: new ErrorIfNotTruthyResultValidator({
                 errorCode: 'XY',
-                errorMessage: 'No entity with provided key found.'
+                errorMessage: 'No entity with provided id found.'
             }) // MSF TODO: proper error message
         });
     }
 
     private getExistanceConditionQueryNode(
-        arg: number | string,
+        entityIdQueryNode: LiteralQueryNode,
         rootEntityType: RootEntityType,
         variable: VariableQueryNode
     ): QueryNode {
         if (!rootEntityType.billingEntityConfig || !rootEntityType.billingEntityConfig.billingKeyField) {
-            throw new Error('RootEntityType does not have a keyField'); // MSF TODO: proper error message
+            throw new Error('RootEntityType does not have a billing-keyField'); // MSF TODO: proper error message
         }
 
         return new BinaryOperationQueryNode(
-            new FieldQueryNode(variable, rootEntityType.billingEntityConfig.billingKeyField),
+            new RootEntityIDQueryNode(variable),
             BinaryOperator.EQUAL,
-            new LiteralQueryNode(arg)
+            entityIdQueryNode
         );
     }
 }

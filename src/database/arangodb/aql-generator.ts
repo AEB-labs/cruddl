@@ -741,13 +741,14 @@ register(FlexSearchComplexOperatorQueryNode, (node, context) => {
 });
 
 function getBillingInput(
-    node: CreateBillingEntityQueryNode | ConfirmForBillingQueryNode,
+    keyField: string | number | AQLFragment,
+    rootEntityTypeName: string,
     context: QueryContext,
     currentTimestamp: string
 ) {
     return aql`
-        keyField: ${node.keyFieldValue},
-        type: ${node.rootEntityTypeName},
+        keyField: ${keyField},
+        type: ${rootEntityTypeName},
         isExported: false,
         createdAt: ${currentTimestamp},
         updatedAt: ${currentTimestamp}`;
@@ -761,7 +762,7 @@ register(CreateBillingEntityQueryNode, (node, context) => {
             type: ${node.rootEntityTypeName}
         }`,
         aql`INSERT {
-            ${getBillingInput(node, context, currentTimestamp)},
+            ${getBillingInput(node.keyFieldValue, node.rootEntityTypeName, context, currentTimestamp)},
             isConfirmedForExport: false
          }`,
         aql`UPDATE {}`,
@@ -771,14 +772,15 @@ register(CreateBillingEntityQueryNode, (node, context) => {
 });
 
 register(ConfirmForBillingQueryNode, (node, context) => {
+    const keyField = processNode(node.keyField, context);
     const currentTimestamp = new Date().toISOString();
     return aqlExt.parenthesizeList(
         aql`UPSERT {
-            keyField: ${node.keyFieldValue},
+            keyField: ${keyField},
             type: ${node.rootEntityTypeName}
         }`,
         aql`INSERT {
-            ${getBillingInput(node, context, currentTimestamp)},
+            ${getBillingInput(keyField, node.rootEntityTypeName, context, currentTimestamp)},
             isConfirmedForExport: true,
             confirmedForExportTimestamp: ${currentTimestamp}
          }`,
