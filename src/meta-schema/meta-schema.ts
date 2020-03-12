@@ -260,6 +260,12 @@ const typeDefs = gql`
     type BillingEntityType {
         typeName: String
         keyFieldName: String
+        configuredValues: [KeyValuePair!]!
+    }
+
+    type KeyValuePair {
+        key: String
+        value: String
     }
 
     type OrderClause{
