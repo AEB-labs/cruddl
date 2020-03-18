@@ -96,12 +96,4 @@ export class BillingEntityType implements ModelComponent {
             (this.rootEntityType && this.rootEntityType.keyField ? this.rootEntityType.keyField.name : undefined)
         );
     }
-
-    @memorize()
-    get configuredValues() {
-        return Object.keys(this.input.configuredValues).map(key => ({
-            key,
-            value: this.input.configuredValues[key]
-        }));
-    }
 }

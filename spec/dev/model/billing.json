@@ -3,11 +3,7 @@
         "billingEntities": [
             {
                 "typeName": "Hero",
-                "keyFieldName": "name",
-                "configuredValues": {
-                    "serviceCode": "next1",
-                    "uom": "HER"
-                }
+                "keyFieldName": "name"
             }
         ]
     }

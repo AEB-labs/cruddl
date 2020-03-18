@@ -6,14 +6,12 @@ var validate = (function() {
     var pattern1 = new RegExp('.+');
     var pattern2 = new RegExp('^[a-zA-Z0-9_-]+$');
     var pattern3 = new RegExp('^[a-zA-Z0-9_]+$');
-    var pattern4 = new RegExp('^.*$');
     var refVal = [];
     var refVal1 = (function() {
         var pattern0 = new RegExp('^[a-zA-Z0-9]+$');
         var pattern1 = new RegExp('.+');
         var pattern2 = new RegExp('^[a-zA-Z0-9_-]+$');
         var pattern3 = new RegExp('^[a-zA-Z0-9_]+$');
-        var pattern4 = new RegExp('^.*$');
         return function validate(data, dataPath, parentData, parentDataProperty, rootData) {
             'use strict';
             var vErrors = null;
@@ -447,7 +445,6 @@ var validate = (function() {
         var pattern1 = new RegExp('.+');
         var pattern2 = new RegExp('^[a-zA-Z0-9_-]+$');
         var pattern3 = new RegExp('^[a-zA-Z0-9_]+$');
-        var pattern4 = new RegExp('^.*$');
         return function validate(data, dataPath, parentData, parentDataProperty, rootData) {
             'use strict';
             var vErrors = null;
@@ -656,7 +653,6 @@ var validate = (function() {
         var pattern1 = new RegExp('.+');
         var pattern2 = new RegExp('^[a-zA-Z0-9_-]+$');
         var pattern3 = new RegExp('^[a-zA-Z0-9_]+$');
-        var pattern4 = new RegExp('^.*$');
         return function validate(data, dataPath, parentData, parentDataProperty, rootData) {
             'use strict';
             var vErrors = null;
@@ -1046,7 +1042,7 @@ var validate = (function() {
                     params: {
                         limit: 1
                     },
-                    message: 'should NOT have fewer than 1 properties'
+                    message: 'should NOT have less than 1 properties'
                 };
                 if (vErrors === null) vErrors = [err];
                 else vErrors.push(err);
@@ -1202,30 +1198,6 @@ var validate = (function() {
                                 if (data3 && typeof data3 === 'object' && !Array.isArray(data3)) {
                                     var errs__3 = errors;
                                     var valid4 = true;
-                                    for (var key3 in data3) {
-                                        var isAdditional3 = !(
-                                            false ||
-                                            key3 == 'typeName' ||
-                                            key3 == 'keyFieldName' ||
-                                            key3 == 'configuredValues'
-                                        );
-                                        if (isAdditional3) {
-                                            valid4 = false;
-                                            var err = {
-                                                keyword: 'additionalProperties',
-                                                dataPath: (dataPath || '') + '.billing.billingEntities[' + i2 + ']',
-                                                schemaPath:
-                                                    '#/properties/billing/properties/billingEntities/items/additionalProperties',
-                                                params: {
-                                                    additionalProperty: '' + key3 + ''
-                                                },
-                                                message: 'should NOT have additional properties'
-                                            };
-                                            if (vErrors === null) vErrors = [err];
-                                            else vErrors.push(err);
-                                            errors++;
-                                        }
-                                    }
                                     var data4 = data3.typeName;
                                     if (data4 !== undefined) {
                                         var errs_4 = errors;
@@ -1304,60 +1276,6 @@ var validate = (function() {
                                                     type: 'string'
                                                 },
                                                 message: 'should be string'
-                                            };
-                                            if (vErrors === null) vErrors = [err];
-                                            else vErrors.push(err);
-                                            errors++;
-                                        }
-                                        var valid4 = errors === errs_4;
-                                    }
-                                    var data4 = data3.configuredValues;
-                                    if (data4 !== undefined) {
-                                        var errs_4 = errors;
-                                        if (data4 && typeof data4 === 'object' && !Array.isArray(data4)) {
-                                            var errs__4 = errors;
-                                            var valid5 = true;
-                                            for (var key4 in data4) {
-                                                if (pattern4.test(key4)) {
-                                                    var errs_5 = errors;
-                                                    if (typeof data4[key4] !== 'string') {
-                                                        var err = {
-                                                            keyword: 'type',
-                                                            dataPath:
-                                                                (dataPath || '') +
-                                                                '.billing.billingEntities[' +
-                                                                i2 +
-                                                                "].configuredValues['" +
-                                                                key4 +
-                                                                "']",
-                                                            schemaPath:
-                                                                '#/properties/billing/properties/billingEntities/items/properties/configuredValues/patternProperties/%5E.*%24/type',
-                                                            params: {
-                                                                type: 'string'
-                                                            },
-                                                            message: 'should be string'
-                                                        };
-                                                        if (vErrors === null) vErrors = [err];
-                                                        else vErrors.push(err);
-                                                        errors++;
-                                                    }
-                                                    var valid5 = errors === errs_5;
-                                                }
-                                            }
-                                        } else {
-                                            var err = {
-                                                keyword: 'type',
-                                                dataPath:
-                                                    (dataPath || '') +
-                                                    '.billing.billingEntities[' +
-                                                    i2 +
-                                                    '].configuredValues',
-                                                schemaPath:
-                                                    '#/properties/billing/properties/billingEntities/items/properties/configuredValues/type',
-                                                params: {
-                                                    type: 'object'
-                                                },
-                                                message: 'should be object'
                                             };
                                             if (vErrors === null) vErrors = [err];
                                             else vErrors.push(err);
@@ -1463,7 +1381,6 @@ validate.schema = {
                     type: 'array',
                     items: {
                         type: 'object',
-                        additionalProperties: false,
                         properties: {
                             typeName: {
                                 type: 'string',
@@ -1472,15 +1389,6 @@ validate.schema = {
                             keyFieldName: {
                                 type: 'string',
                                 pattern: '^[a-zA-Z0-9_-]+$'
-                            },
-                            configuredValues: {
-                                type: 'object',
-                                additionalProperties: true,
-                                patternProperties: {
-                                    '^.*$': {
-                                        type: 'string'
-                                    }
-                                }
                             }
                         }
                     }

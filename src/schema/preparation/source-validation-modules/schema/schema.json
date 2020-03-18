@@ -30,7 +30,6 @@
                     "type": "array",
                     "items": {
                         "type": "object",
-                        "additionalProperties": false,
                         "properties": {
                             "typeName": {
                                 "type": "string",
@@ -39,15 +38,6 @@
                             "keyFieldName": {
                                 "type": "string",
                                 "pattern": "^[a-zA-Z0-9_-]+$"
-                            },
-                            "configuredValues": {
-                                "type": "object",
-                                "additionalProperties": true,
-                                "patternProperties": {
-                                    "^.*$": {
-                                        "type": "string"
-                                    }
-                                }
                             }
                         }
                     }

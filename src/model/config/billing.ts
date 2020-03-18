@@ -10,5 +10,4 @@ export interface BillingEntityConfig {
     readonly keyFieldName?: string;
     readonly typeNameLoc: MessageLocation;
     readonly keyFieldNameLoc: MessageLocation;
-    readonly configuredValues: { [key: string]: string };
 }

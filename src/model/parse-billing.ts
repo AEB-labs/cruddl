@@ -1,5 +1,6 @@
 import { ParsedObjectProjectSource } from '../config/parsed-project';
-import { BillingConfig } from './config/billing';
+import { LocalizationConfig, NamespaceLocalizationConfig } from './config';
+import { BillingConfig, BillingEntityConfig } from './config/billing';
 
 export function parseBillingConfigs(source: ParsedObjectProjectSource): BillingConfig {
     if (!source.object || !source.object.billing || typeof source.object.billing !== 'object') {
