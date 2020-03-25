@@ -32,6 +32,12 @@ export interface ArangoDBConfig {
     readonly url: string;
     readonly user?: string;
     readonly password?: string;
+
+    /**
+     * If set, this token will be sent using Authorization: Bearer
+     */
+    readonly authToken?: string;
+
     readonly databaseName: string;
 
     /**
@@ -95,9 +101,10 @@ export function initDatabase(config: ArangoDBConfig): Database {
         url: config.url
     }).useDatabase(config.databaseName);
     if (config.user) {
-        // Unfortunately the typings of arangojs do not include the method "useBasicAuth" although it is present in the implementation of arangojs.
-        // Therefore we cast to any
-        (db as any).useBasicAuth(config.user, config.password);
+        db.useBasicAuth(config.user, config.password);
+    }
+    if (config.authToken) {
+        db.useBearerAuth(config.authToken);
     }
     return db;
 }
