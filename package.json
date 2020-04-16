@@ -73,7 +73,7 @@
         "graphql-tag": "^2.10.1",
         "graphql-tools": "^4.0.5",
         "graphql-transformer": "^0.2.1",
-        "graphql-type-json": "^0.3.0",
+        "graphql-type-json": "^0.3.1",
         "js-joda": "^1.11.0",
         "json-lint": "^0.1.0",
         "json-source-map": "^0.6.1",

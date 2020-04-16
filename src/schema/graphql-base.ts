@@ -227,9 +227,36 @@ export const CORE_SCALARS: DocumentNode = gql`
     scalar OffsetDateTime
 
     """
-    The \`JSON\` scalar type represents an arbitrary JSON value. This can be a string, number, boolean, null, list, or object.
+    The \`JSON\` scalar type represents an arbitrary JSON value. This can be a string, number, boolean, array, or object.
 
     Values are *not* additionally JSON-encoded or JSON-parsed, so e.g. pass a raw JSON object here instead of a JSON-representation of that object.
     """
     scalar JSON
+
+    """
+    The \`JSONObject\` scalar type represents a JSON object type with arbitrary properties.
+
+    This is similar to the \`JSON\` scalar type but disallows arrays, strings, numbers, and booleans.
+
+    Values are *not* additionally JSON-encoded or JSON-parsed, so e.g. pass a raw JSON object here instead of a JSON-representation of that object.
+    """
+    scalar JSONObject
+
+    """
+    The "StringMap" scalar type consists of a JSON object with only strings as values.
+
+    This type can be used for key-value mappings where fetching keys without values or values without keys does not make sense. For arbitrary maps, the "JSONObject" type can be used instead.
+
+    Values are *not* additionally JSON-encoded or JSON-parsed, so e.g. pass a raw JSON object here instead of a JSON-representation of that object.
+    """
+    scalar StringMap
+
+    """
+    The "I18nString" scalar type represents an internationalized string.
+
+    Structurally, the "I18nString\`" type is equivalent to the "StringMap" type. Keys are ISO 639-1 language codes, and values are the localized strings. In the future, more specific features may be added to this type, so it is preferred over the "StringMap" type to represent internationalized strings.
+
+    Values are *not* additionally JSON-encoded or JSON-parsed, so e.g. pass a raw JSON object here instead of a JSON-representation of that object.
+    """
+    scalar I18nString
 `;
