@@ -26,6 +26,9 @@ describe('Meta schema API', () => {
                         name
                         isList
                         isReference
+                        referenceKeyField {
+                            name
+                        }
                         isRelation
                         isCollectField
                         collectFieldConfig {
@@ -201,6 +204,11 @@ describe('Meta schema API', () => {
                             path: 'deliveries.weightInKg',
                             aggregationOperator: AggregationOperator.SUM
                         }
+                    },
+                    {
+                        name: 'destinationCountry',
+                        typeName: 'Country',
+                        isReference: true
                     }
                 ],
                 namespacePath: ['logistics', 'shipments']
@@ -218,6 +226,16 @@ describe('Meta schema API', () => {
                     {
                         name: 'weightInKg',
                         typeName: 'Int'
+                    },
+                    {
+                        name: 'countryOfOriginIsoCode',
+                        typeName: 'String'
+                    },
+                    {
+                        name: 'countryOfOrigin',
+                        typeName: 'Country',
+                        isReference: true,
+                        referenceKeyField: 'countryOfOriginIsoCode'
                     }
                 ],
                 namespacePath: ['logistics']
@@ -333,6 +351,7 @@ describe('Meta schema API', () => {
                             name: 'street',
                             isList: false,
                             isReference: false,
+                            referenceKeyField: null,
                             isRelation: false,
                             isCollectField: false,
                             collectFieldConfig: null,
@@ -351,6 +370,7 @@ describe('Meta schema API', () => {
                             name: 'id',
                             isList: false,
                             isReference: false,
+                            referenceKeyField: null,
                             isRelation: false,
                             isCollectField: false,
                             collectFieldConfig: null,
@@ -360,6 +380,7 @@ describe('Meta schema API', () => {
                             name: 'createdAt',
                             isList: false,
                             isReference: false,
+                            referenceKeyField: null,
                             isRelation: false,
                             isCollectField: false,
                             collectFieldConfig: null,
@@ -369,6 +390,7 @@ describe('Meta schema API', () => {
                             name: 'updatedAt',
                             isList: false,
                             isReference: false,
+                            referenceKeyField: null,
                             isRelation: false,
                             isCollectField: false,
                             collectFieldConfig: null,
@@ -378,6 +400,7 @@ describe('Meta schema API', () => {
                             name: 'isoCode',
                             isList: false,
                             isReference: false,
+                            referenceKeyField: null,
                             isRelation: false,
                             isCollectField: false,
                             collectFieldConfig: null,
@@ -396,6 +419,7 @@ describe('Meta schema API', () => {
                             name: 'id',
                             isList: false,
                             isReference: false,
+                            referenceKeyField: null,
                             isRelation: false,
                             isCollectField: false,
                             collectFieldConfig: null,
@@ -405,6 +429,7 @@ describe('Meta schema API', () => {
                             name: 'createdAt',
                             isList: false,
                             isReference: false,
+                            referenceKeyField: null,
                             isRelation: false,
                             isCollectField: false,
                             collectFieldConfig: null,
@@ -414,6 +439,7 @@ describe('Meta schema API', () => {
                             name: 'updatedAt',
                             isList: false,
                             isReference: false,
+                            referenceKeyField: null,
                             isRelation: false,
                             isCollectField: false,
                             collectFieldConfig: null,
@@ -423,6 +449,7 @@ describe('Meta schema API', () => {
                             name: 'deliveries',
                             isList: true,
                             isReference: false,
+                            referenceKeyField: null,
                             isRelation: true,
                             isCollectField: false,
                             collectFieldConfig: null,
@@ -432,6 +459,7 @@ describe('Meta schema API', () => {
                             name: 'delivery',
                             isList: false,
                             isReference: false,
+                            referenceKeyField: null,
                             isRelation: true,
                             isCollectField: false,
                             collectFieldConfig: null,
@@ -441,6 +469,7 @@ describe('Meta schema API', () => {
                             name: 'deliveryNonRelation',
                             isList: false,
                             isReference: false,
+                            referenceKeyField: null,
                             isRelation: false,
                             isCollectField: false,
                             collectFieldConfig: null,
@@ -450,6 +479,7 @@ describe('Meta schema API', () => {
                             name: 'deliveryWithInverseOf',
                             isList: false,
                             isReference: false,
+                            referenceKeyField: null,
                             isRelation: true,
                             isCollectField: false,
                             collectFieldConfig: null,
@@ -459,6 +489,7 @@ describe('Meta schema API', () => {
                             name: 'handlingUnits',
                             isList: true,
                             isReference: false,
+                            referenceKeyField: null,
                             isRelation: true,
                             isCollectField: false,
                             collectFieldConfig: null,
@@ -467,6 +498,7 @@ describe('Meta schema API', () => {
                         {
                             isList: false,
                             isReference: false,
+                            referenceKeyField: null,
                             isRelation: false,
                             isCollectField: false,
                             collectFieldConfig: null,
@@ -486,9 +518,24 @@ describe('Meta schema API', () => {
                             isCollectField: true,
                             isList: false,
                             isReference: false,
+                            referenceKeyField: null,
                             isRelation: false,
                             type: {
                                 __typename: 'ScalarType'
+                            }
+                        },
+                        {
+                            name: 'destinationCountry',
+                            collectFieldConfig: null,
+                            isCollectField: false,
+                            isList: false,
+                            isReference: true,
+                            isRelation: false,
+                            referenceKeyField: {
+                                name: 'destinationCountry'
+                            },
+                            type: {
+                                __typename: 'RootEntityType'
                             }
                         }
                     ]
@@ -504,6 +551,7 @@ describe('Meta schema API', () => {
                             name: 'id',
                             isList: false,
                             isReference: false,
+                            referenceKeyField: null,
                             isRelation: false,
                             isCollectField: false,
                             collectFieldConfig: null,
@@ -513,6 +561,7 @@ describe('Meta schema API', () => {
                             name: 'createdAt',
                             isList: false,
                             isReference: false,
+                            referenceKeyField: null,
                             isRelation: false,
                             isCollectField: false,
                             collectFieldConfig: null,
@@ -522,6 +571,7 @@ describe('Meta schema API', () => {
                             name: 'updatedAt',
                             isList: false,
                             isReference: false,
+                            referenceKeyField: null,
                             isRelation: false,
                             isCollectField: false,
                             collectFieldConfig: null,
@@ -531,6 +581,7 @@ describe('Meta schema API', () => {
                             name: 'shipment',
                             isList: false,
                             isReference: false,
+                            referenceKeyField: null,
                             isRelation: true,
                             isCollectField: false,
                             collectFieldConfig: null,
@@ -540,10 +591,37 @@ describe('Meta schema API', () => {
                             name: 'weightInKg',
                             isList: false,
                             isReference: false,
+                            referenceKeyField: null,
                             isRelation: false,
                             isCollectField: false,
                             collectFieldConfig: null,
                             type: { __typename: 'ScalarType' }
+                        },
+                        {
+                            name: 'countryOfOriginIsoCode',
+                            collectFieldConfig: null,
+                            isCollectField: false,
+                            isList: false,
+                            isReference: false,
+                            isRelation: false,
+                            referenceKeyField: null,
+                            type: {
+                                __typename: 'ScalarType'
+                            }
+                        },
+                        {
+                            collectFieldConfig: null,
+                            isCollectField: false,
+                            isList: false,
+                            isReference: true,
+                            isRelation: false,
+                            name: 'countryOfOrigin',
+                            referenceKeyField: {
+                                name: 'countryOfOriginIsoCode'
+                            },
+                            type: {
+                                __typename: 'RootEntityType'
+                            }
                         }
                     ]
                 },
@@ -558,6 +636,7 @@ describe('Meta schema API', () => {
                             name: 'id',
                             isList: false,
                             isReference: false,
+                            referenceKeyField: null,
                             isRelation: false,
                             isCollectField: false,
                             collectFieldConfig: null,
@@ -567,6 +646,7 @@ describe('Meta schema API', () => {
                             name: 'createdAt',
                             isList: false,
                             isReference: false,
+                            referenceKeyField: null,
                             isRelation: false,
                             isCollectField: false,
                             collectFieldConfig: null,
@@ -576,6 +656,7 @@ describe('Meta schema API', () => {
                             name: 'updatedAt',
                             isList: false,
                             isReference: false,
+                            referenceKeyField: null,
                             isRelation: false,
                             isCollectField: false,
                             collectFieldConfig: null,
@@ -591,6 +672,7 @@ describe('Meta schema API', () => {
                             name: 'id',
                             isList: false,
                             isReference: false,
+                            referenceKeyField: null,
                             isRelation: false,
                             isCollectField: false,
                             collectFieldConfig: null,
@@ -600,6 +682,7 @@ describe('Meta schema API', () => {
                             name: 'createdAt',
                             isList: false,
                             isReference: false,
+                            referenceKeyField: null,
                             isRelation: false,
                             isCollectField: false,
                             collectFieldConfig: null,
@@ -609,6 +692,7 @@ describe('Meta schema API', () => {
                             name: 'updatedAt',
                             isList: false,
                             isReference: false,
+                            referenceKeyField: null,
                             isRelation: false,
                             isCollectField: false,
                             collectFieldConfig: null,
