@@ -50,6 +50,13 @@ const typeDefs = gql`
         "Information about the @collect field configuration, if \`isCollectField\` is \`true\`, \`null\` otherwise"
         collectFieldConfig: CollectFieldConfig
 
+        """
+        The field holding the key of the referenced object, if \`isReference\` is true.
+
+        If this is a reference without a dedicated key value field, this is the reference field itself.
+        """
+        referenceKeyField: Field
+
         localization(
             ${resolutionOrderDescription} resolutionOrder: [String]
         ): FieldLocalization

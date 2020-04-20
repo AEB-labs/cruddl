@@ -25,6 +25,8 @@ type Hero @rootEntity(
     subMissions: [Mission] @collect(path: "missions.subMissions")
     missionsAgain: [Mission] @collect(path: "missions")
     info: JSON
+    infoObj: JSONObject
+    attributes: StringMap
 }
 
 "A heroic mission"
@@ -36,7 +38,7 @@ type Mission @childEntity {
 
 "A special skill of a superhero"
 type Skill @valueObject {
-    description: String
+    description: I18nString
     "A value between 0 and 11"
     strength: Float
     skills: [Skill]
