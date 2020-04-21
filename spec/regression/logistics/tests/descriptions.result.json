@@ -7,6 +7,18 @@
                     "description": "The Query type for the root namespace",
                     "fields": [
                         {
+                            "name": "BillingEntity",
+                            "description": "Finds a BillingEntity by id"
+                        },
+                        {
+                            "name": "allBillingEntities",
+                            "description": null
+                        },
+                        {
+                            "name": "_allBillingEntitiesMeta",
+                            "description": null
+                        },
+                        {
                             "name": "Country",
                             "description": "Finds a Country by id or isoCode.\n\nYou should pass a non-null value to exactly one of the arguments."
                         },
@@ -116,9 +128,410 @@
                     "inputFields": null
                 },
                 {
+                    "name": "BillingEntity",
+                    "description": null,
+                    "fields": [
+                        {
+                            "name": "id",
+                            "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+                        },
+                        {
+                            "name": "createdAt",
+                            "description": "The instant this object has been created"
+                        },
+                        {
+                            "name": "updatedAt",
+                            "description": "The instant this object has been updated the last time (not including relation updates)"
+                        },
+                        {
+                            "name": "keyField",
+                            "description": null
+                        },
+                        {
+                            "name": "type",
+                            "description": null
+                        },
+                        {
+                            "name": "isConfirmedForExport",
+                            "description": null
+                        },
+                        {
+                            "name": "isExported",
+                            "description": null
+                        },
+                        {
+                            "name": "confirmedForExportTimestamp",
+                            "description": null
+                        },
+                        {
+                            "name": "exportedTimestamp",
+                            "description": null
+                        },
+                        {
+                            "name": "_cursor",
+                            "description": "Provides a value that can be supplied to the `after` argument for pagination. Depends on the value of the `orderBy` argument."
+                        }
+                    ],
+                    "inputFields": null
+                },
+                {
+                    "name": "DateTime",
+                    "description": "The `DateTime` scalar type represents a point in time in UTC, in a format specified by ISO 8601, such as `2007-12-03T10:15:30Z` or `2007-12-03T10:15:30.123Z`.\n\nThis scalar type rejects values without timezone specifier or with a timezone other than UTC. See also `LocalDate` and `LocalTime` for values without timezone specifier. To store Date/time values with timezones other than UTC, define a value object type with the fields you need.\n\nThe *second* part is added if not specified, e.g. `2007-12-03T12:34Z` is converted to `2007-12-03T12:34:00Z`. Second fraction digits are cut off at the nearest three-digit group, e.g. `2007-12-03T00:00:00.1234Z` is converted to `2007-12-03T00:00:00.123400Z`.\n\nValues with leap seconds are shifted back by one second, but this behavior should not be relied upon.",
+                    "fields": null,
+                    "inputFields": null
+                },
+                {
                     "name": "String",
                     "description": "The `String` scalar type represents textual data, represented as UTF-8 character sequences. The String type is most often used by GraphQL to represent free-form human-readable text.",
                     "fields": null,
+                    "inputFields": null
+                },
+                {
+                    "name": "Boolean",
+                    "description": "The `Boolean` scalar type represents `true` or `false`.",
+                    "fields": null,
+                    "inputFields": null
+                },
+                {
+                    "name": "BillingEntityFilter",
+                    "description": "Filter type for `BillingEntity`.\n\nAll fields in this type are *and*-combined; see the `or` field for *or*-combination.",
+                    "fields": null,
+                    "inputFields": [
+                        {
+                            "name": "id",
+                            "description": "Checks if `id` equals a specified value.\n\nIf an index exists on `id`, it can be used.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
+                        },
+                        {
+                            "name": "id_not",
+                            "description": "Checks if `id` does not equal a specified value\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
+                        },
+                        {
+                            "name": "id_in",
+                            "description": "Checks if `id` is equal to one of the specified values.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
+                        },
+                        {
+                            "name": "id_not_in",
+                            "description": "Checks if `id` is not equal to one of the specified values.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
+                        },
+                        {
+                            "name": "id_lt",
+                            "description": "Checks if `id` is less than a specified value.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
+                        },
+                        {
+                            "name": "id_lte",
+                            "description": "Checks if `id` is less or equal a specified value.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
+                        },
+                        {
+                            "name": "id_gt",
+                            "description": "Checks if `id` is greater than a specified value.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
+                        },
+                        {
+                            "name": "id_gte",
+                            "description": "Checks if `id` is greater or equal a specified value.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
+                        },
+                        {
+                            "name": "createdAt",
+                            "description": "Checks if `createdAt` equals a specified value.\n\nIf an index exists on `createdAt`, it can be used.\n\nThe instant this object has been created"
+                        },
+                        {
+                            "name": "createdAt_not",
+                            "description": "Checks if `createdAt` does not equal a specified value\n\nThe instant this object has been created"
+                        },
+                        {
+                            "name": "createdAt_in",
+                            "description": "Checks if `createdAt` is equal to one of the specified values.\n\nThe instant this object has been created"
+                        },
+                        {
+                            "name": "createdAt_not_in",
+                            "description": "Checks if `createdAt` is not equal to one of the specified values.\n\nThe instant this object has been created"
+                        },
+                        {
+                            "name": "createdAt_lt",
+                            "description": "Checks if `createdAt` is less than a specified value.\n\nThe instant this object has been created"
+                        },
+                        {
+                            "name": "createdAt_lte",
+                            "description": "Checks if `createdAt` is less or equal a specified value.\n\nThe instant this object has been created"
+                        },
+                        {
+                            "name": "createdAt_gt",
+                            "description": "Checks if `createdAt` is greater than a specified value.\n\nThe instant this object has been created"
+                        },
+                        {
+                            "name": "createdAt_gte",
+                            "description": "Checks if `createdAt` is greater or equal a specified value.\n\nThe instant this object has been created"
+                        },
+                        {
+                            "name": "updatedAt",
+                            "description": "Checks if `updatedAt` equals a specified value.\n\nIf an index exists on `updatedAt`, it can be used.\n\nThe instant this object has been updated the last time (not including relation updates)"
+                        },
+                        {
+                            "name": "updatedAt_not",
+                            "description": "Checks if `updatedAt` does not equal a specified value\n\nThe instant this object has been updated the last time (not including relation updates)"
+                        },
+                        {
+                            "name": "updatedAt_in",
+                            "description": "Checks if `updatedAt` is equal to one of the specified values.\n\nThe instant this object has been updated the last time (not including relation updates)"
+                        },
+                        {
+                            "name": "updatedAt_not_in",
+                            "description": "Checks if `updatedAt` is not equal to one of the specified values.\n\nThe instant this object has been updated the last time (not including relation updates)"
+                        },
+                        {
+                            "name": "updatedAt_lt",
+                            "description": "Checks if `updatedAt` is less than a specified value.\n\nThe instant this object has been updated the last time (not including relation updates)"
+                        },
+                        {
+                            "name": "updatedAt_lte",
+                            "description": "Checks if `updatedAt` is less or equal a specified value.\n\nThe instant this object has been updated the last time (not including relation updates)"
+                        },
+                        {
+                            "name": "updatedAt_gt",
+                            "description": "Checks if `updatedAt` is greater than a specified value.\n\nThe instant this object has been updated the last time (not including relation updates)"
+                        },
+                        {
+                            "name": "updatedAt_gte",
+                            "description": "Checks if `updatedAt` is greater or equal a specified value.\n\nThe instant this object has been updated the last time (not including relation updates)"
+                        },
+                        {
+                            "name": "keyField",
+                            "description": "Checks if `keyField` equals a specified string, case-sensitively.\n\nIf an index exists on `keyField`, it can be used.\n\nSee also `like` for a case-insensitive filter."
+                        },
+                        {
+                            "name": "keyField_not",
+                            "description": "Checks if `keyField` does not equal a specified string, case-sensitively."
+                        },
+                        {
+                            "name": "keyField_in",
+                            "description": "Checks if `keyField` is equal to one of the specified values."
+                        },
+                        {
+                            "name": "keyField_not_in",
+                            "description": "Checks if `keyField` is not equal to one of the specified values."
+                        },
+                        {
+                            "name": "keyField_lt",
+                            "description": "Checks if `keyField` is less than a specified value."
+                        },
+                        {
+                            "name": "keyField_lte",
+                            "description": "Checks if `keyField` is less or equal a specified value."
+                        },
+                        {
+                            "name": "keyField_gt",
+                            "description": "Checks if `keyField` is greater than a specified value."
+                        },
+                        {
+                            "name": "keyField_gte",
+                            "description": "Checks if `keyField` is greater or equal a specified value."
+                        },
+                        {
+                            "name": "keyField_contains",
+                            "description": "Checks if `keyField` contains a specified string, case-sensitively."
+                        },
+                        {
+                            "name": "keyField_not_contains",
+                            "description": "Checks if `keyField` does not contain a specified string, case-sensitively."
+                        },
+                        {
+                            "name": "keyField_starts_with",
+                            "description": "Checks if `keyField` starts with a specified string, case-sensitively.\n\nNever uses an index. Consider using `like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
+                        },
+                        {
+                            "name": "keyField_not_starts_with",
+                            "description": "Checks if `keyField` does not start with a specified string, case-sensitively.\n\nNever uses an index. Consider using `not_like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
+                        },
+                        {
+                            "name": "keyField_ends_with",
+                            "description": "Checks if `keyField` ends with a specified string, case-sensitively."
+                        },
+                        {
+                            "name": "keyField_not_ends_with",
+                            "description": "Checks if `keyField` does not end with a specified string, case-sensitively."
+                        },
+                        {
+                            "name": "keyField_like",
+                            "description": "Matches `keyField` against a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)\n\nIf an index exists on `keyField`, it can be used for the literal prefix (the part until the first placeholder)."
+                        },
+                        {
+                            "name": "keyField_not_like",
+                            "description": "Checks if `keyField` does *not* match a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)"
+                        },
+                        {
+                            "name": "type",
+                            "description": "Checks if `type` equals a specified string, case-sensitively.\n\nIf an index exists on `type`, it can be used.\n\nSee also `like` for a case-insensitive filter."
+                        },
+                        {
+                            "name": "type_not",
+                            "description": "Checks if `type` does not equal a specified string, case-sensitively."
+                        },
+                        {
+                            "name": "type_in",
+                            "description": "Checks if `type` is equal to one of the specified values."
+                        },
+                        {
+                            "name": "type_not_in",
+                            "description": "Checks if `type` is not equal to one of the specified values."
+                        },
+                        {
+                            "name": "type_lt",
+                            "description": "Checks if `type` is less than a specified value."
+                        },
+                        {
+                            "name": "type_lte",
+                            "description": "Checks if `type` is less or equal a specified value."
+                        },
+                        {
+                            "name": "type_gt",
+                            "description": "Checks if `type` is greater than a specified value."
+                        },
+                        {
+                            "name": "type_gte",
+                            "description": "Checks if `type` is greater or equal a specified value."
+                        },
+                        {
+                            "name": "type_contains",
+                            "description": "Checks if `type` contains a specified string, case-sensitively."
+                        },
+                        {
+                            "name": "type_not_contains",
+                            "description": "Checks if `type` does not contain a specified string, case-sensitively."
+                        },
+                        {
+                            "name": "type_starts_with",
+                            "description": "Checks if `type` starts with a specified string, case-sensitively.\n\nNever uses an index. Consider using `like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
+                        },
+                        {
+                            "name": "type_not_starts_with",
+                            "description": "Checks if `type` does not start with a specified string, case-sensitively.\n\nNever uses an index. Consider using `not_like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
+                        },
+                        {
+                            "name": "type_ends_with",
+                            "description": "Checks if `type` ends with a specified string, case-sensitively."
+                        },
+                        {
+                            "name": "type_not_ends_with",
+                            "description": "Checks if `type` does not end with a specified string, case-sensitively."
+                        },
+                        {
+                            "name": "type_like",
+                            "description": "Matches `type` against a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)\n\nIf an index exists on `type`, it can be used for the literal prefix (the part until the first placeholder)."
+                        },
+                        {
+                            "name": "type_not_like",
+                            "description": "Checks if `type` does *not* match a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)"
+                        },
+                        {
+                            "name": "isConfirmedForExport",
+                            "description": "Checks if `isConfirmedForExport` equals a specified value.\n\nIf an index exists on `isConfirmedForExport`, it can be used."
+                        },
+                        {
+                            "name": "isConfirmedForExport_not",
+                            "description": "Checks if `isConfirmedForExport` does not equal a specified value"
+                        },
+                        {
+                            "name": "isExported",
+                            "description": "Checks if `isExported` equals a specified value.\n\nIf an index exists on `isExported`, it can be used."
+                        },
+                        {
+                            "name": "isExported_not",
+                            "description": "Checks if `isExported` does not equal a specified value"
+                        },
+                        {
+                            "name": "confirmedForExportTimestamp",
+                            "description": "Checks if `confirmedForExportTimestamp` equals a specified value.\n\nIf an index exists on `confirmedForExportTimestamp`, it can be used."
+                        },
+                        {
+                            "name": "confirmedForExportTimestamp_not",
+                            "description": "Checks if `confirmedForExportTimestamp` does not equal a specified value"
+                        },
+                        {
+                            "name": "confirmedForExportTimestamp_in",
+                            "description": "Checks if `confirmedForExportTimestamp` is equal to one of the specified values."
+                        },
+                        {
+                            "name": "confirmedForExportTimestamp_not_in",
+                            "description": "Checks if `confirmedForExportTimestamp` is not equal to one of the specified values."
+                        },
+                        {
+                            "name": "confirmedForExportTimestamp_lt",
+                            "description": "Checks if `confirmedForExportTimestamp` is less than a specified value."
+                        },
+                        {
+                            "name": "confirmedForExportTimestamp_lte",
+                            "description": "Checks if `confirmedForExportTimestamp` is less or equal a specified value."
+                        },
+                        {
+                            "name": "confirmedForExportTimestamp_gt",
+                            "description": "Checks if `confirmedForExportTimestamp` is greater than a specified value."
+                        },
+                        {
+                            "name": "confirmedForExportTimestamp_gte",
+                            "description": "Checks if `confirmedForExportTimestamp` is greater or equal a specified value."
+                        },
+                        {
+                            "name": "exportedTimestamp",
+                            "description": "Checks if `exportedTimestamp` equals a specified value.\n\nIf an index exists on `exportedTimestamp`, it can be used."
+                        },
+                        {
+                            "name": "exportedTimestamp_not",
+                            "description": "Checks if `exportedTimestamp` does not equal a specified value"
+                        },
+                        {
+                            "name": "exportedTimestamp_in",
+                            "description": "Checks if `exportedTimestamp` is equal to one of the specified values."
+                        },
+                        {
+                            "name": "exportedTimestamp_not_in",
+                            "description": "Checks if `exportedTimestamp` is not equal to one of the specified values."
+                        },
+                        {
+                            "name": "exportedTimestamp_lt",
+                            "description": "Checks if `exportedTimestamp` is less than a specified value."
+                        },
+                        {
+                            "name": "exportedTimestamp_lte",
+                            "description": "Checks if `exportedTimestamp` is less or equal a specified value."
+                        },
+                        {
+                            "name": "exportedTimestamp_gt",
+                            "description": "Checks if `exportedTimestamp` is greater than a specified value."
+                        },
+                        {
+                            "name": "exportedTimestamp_gte",
+                            "description": "Checks if `exportedTimestamp` is greater or equal a specified value."
+                        },
+                        {
+                            "name": "AND",
+                            "description": "A field that checks if all filters in the list apply\n\nIf the list is empty, this filter applies to all objects."
+                        },
+                        {
+                            "name": "OR",
+                            "description": "A field that checks if any of the filters in the list apply.\n\nIf the list is empty, this filter applies to no objects.\n\nNote that only the items in the list *or*-combined; this complete `OR` field is *and*-combined with outer fields in the parent filter type."
+                        }
+                    ]
+                },
+                {
+                    "name": "BillingEntityOrderBy",
+                    "description": null,
+                    "fields": null,
+                    "inputFields": null
+                },
+                {
+                    "name": "Int",
+                    "description": "The `Int` scalar type represents non-fractional signed whole numeric values. Int can represent values between -(2^31) and 2^31 - 1.",
+                    "fields": null,
+                    "inputFields": null
+                },
+                {
+                    "name": "_QueryMeta",
+                    "description": "Provides aggregated information about a collection or list",
+                    "fields": [
+                        {
+                            "name": "count",
+                            "description": "The number of items in the collection or list, after applying the filter if specified."
+                        }
+                    ],
                     "inputFields": null
                 },
                 {
@@ -158,12 +571,6 @@
                             "description": "Provides a value that can be supplied to the `after` argument for pagination. Depends on the value of the `orderBy` argument."
                         }
                     ],
-                    "inputFields": null
-                },
-                {
-                    "name": "DateTime",
-                    "description": "The `DateTime` scalar type represents a point in time in UTC, in a format specified by ISO 8601, such as `2007-12-03T10:15:30Z` or `2007-12-03T10:15:30.123Z`.\n\nThis scalar type rejects values without timezone specifier or with a timezone other than UTC. See also `LocalDate` and `LocalTime` for values without timezone specifier. To store Date/time values with timezones other than UTC, define a value object type with the fields you need.\n\nThe *second* part is added if not specified, e.g. `2007-12-03T12:34Z` is converted to `2007-12-03T12:34:00Z`. Second fraction digits are cut off at the nearest three-digit group, e.g. `2007-12-03T00:00:00.1234Z` is converted to `2007-12-03T00:00:00.123400Z`.\n\nValues with leap seconds are shifted back by one second, but this behavior should not be relied upon.",
-                    "fields": null,
                     "inputFields": null
                 },
                 {
@@ -316,12 +723,6 @@
                     "inputFields": null
                 },
                 {
-                    "name": "Int",
-                    "description": "The `Int` scalar type represents non-fractional signed whole numeric values. Int can represent values between -(2^31) and 2^31 - 1.",
-                    "fields": null,
-                    "inputFields": null
-                },
-                {
                     "name": "Translation",
                     "description": null,
                     "fields": [
@@ -336,17 +737,6 @@
                         {
                             "name": "_cursor",
                             "description": "Provides a value that can be supplied to the `after` argument for pagination. Depends on the value of the `orderBy` argument."
-                        }
-                    ],
-                    "inputFields": null
-                },
-                {
-                    "name": "_QueryMeta",
-                    "description": "Provides aggregated information about a collection or list",
-                    "fields": [
-                        {
-                            "name": "count",
-                            "description": "The number of items in the collection or list, after applying the filter if specified."
                         }
                     ],
                     "inputFields": null
@@ -2935,12 +3325,6 @@
                     ]
                 },
                 {
-                    "name": "Boolean",
-                    "description": "The `Boolean` scalar type represents `true` or `false`.",
-                    "fields": null,
-                    "inputFields": null
-                },
-                {
                     "name": "Float",
                     "description": "The `Float` scalar type represents signed double-precision fractional values as specified by [IEEE 754](https://en.wikipedia.org/wiki/IEEE_floating_point).",
                     "fields": null,
@@ -4447,6 +4831,38 @@
                     "description": "The Mutation type for the root namespace\n\nFields are executed serially in the order they occur in the selection set (the result of the first field does not see the changes made by the second field). All mutations are executed atomically - if any of them fail, the complete operation is rolled back.",
                     "fields": [
                         {
+                            "name": "createBillingEntity",
+                            "description": "Creates a new BillingEntity"
+                        },
+                        {
+                            "name": "createBillingEntities",
+                            "description": "Creates multiple new BillingEntities"
+                        },
+                        {
+                            "name": "updateBillingEntity",
+                            "description": "Updates an existing BillingEntity"
+                        },
+                        {
+                            "name": "updateBillingEntities",
+                            "description": "Updates multiple existing BillingEntities (referenced by their ids)"
+                        },
+                        {
+                            "name": "updateAllBillingEntities",
+                            "description": "Updates BillingEntities that match a specified filter"
+                        },
+                        {
+                            "name": "deleteBillingEntity",
+                            "description": "Deletes a BillingEntity by id"
+                        },
+                        {
+                            "name": "deleteBillingEntities",
+                            "description": "Deletes multiple BillingEntities by their ids.\n\nIDs that are not found are silently ignored."
+                        },
+                        {
+                            "name": "deleteAllBillingEntities",
+                            "description": "Deletes BillingEntities that match a specified filter"
+                        },
+                        {
                             "name": "createCountry",
                             "description": "Creates a new Country"
                         },
@@ -4509,6 +4925,10 @@
                         {
                             "name": "deleteAllDeliveries",
                             "description": "Deletes Deliveries that match a specified filter"
+                        },
+                        {
+                            "name": "confirmBillingForDelivery",
+                            "description": "Confirms a Delivery to be exported to billing."
                         },
                         {
                             "name": "createForwarder",
@@ -4656,6 +5076,103 @@
                         }
                     ],
                     "inputFields": null
+                },
+                {
+                    "name": "CreateBillingEntityInput",
+                    "description": "The create type for the root entity type `BillingEntity`.\n\nThe fields `id`, `createdAt`, and `updatedAt` are set automatically.",
+                    "fields": null,
+                    "inputFields": [
+                        {
+                            "name": "keyField",
+                            "description": null
+                        },
+                        {
+                            "name": "type",
+                            "description": null
+                        },
+                        {
+                            "name": "isConfirmedForExport",
+                            "description": null
+                        },
+                        {
+                            "name": "isExported",
+                            "description": null
+                        },
+                        {
+                            "name": "confirmedForExportTimestamp",
+                            "description": null
+                        },
+                        {
+                            "name": "exportedTimestamp",
+                            "description": null
+                        }
+                    ]
+                },
+                {
+                    "name": "UpdateBillingEntityInput",
+                    "description": "The update type for the root entity type `BillingEntity`.\n\nThe `updatedAt` field is updated automatically unless only relations are updated. If fields are omitted, their value is left unchanged. Explicitly set fields to `null` to clear their value.",
+                    "fields": null,
+                    "inputFields": [
+                        {
+                            "name": "id",
+                            "description": "The `id` of the `BillingEntity` to be updated (does not change the `id`)."
+                        },
+                        {
+                            "name": "keyField",
+                            "description": null
+                        },
+                        {
+                            "name": "type",
+                            "description": null
+                        },
+                        {
+                            "name": "isConfirmedForExport",
+                            "description": null
+                        },
+                        {
+                            "name": "isExported",
+                            "description": null
+                        },
+                        {
+                            "name": "confirmedForExportTimestamp",
+                            "description": null
+                        },
+                        {
+                            "name": "exportedTimestamp",
+                            "description": null
+                        }
+                    ]
+                },
+                {
+                    "name": "UpdateAllBillingEntitiesInput",
+                    "description": "The update type for the root entity type `BillingEntity`.\n\nThe `updatedAt` field is updated automatically unless only relations are updated. If fields are omitted, their value is left unchanged. Explicitly set fields to `null` to clear their value.",
+                    "fields": null,
+                    "inputFields": [
+                        {
+                            "name": "keyField",
+                            "description": null
+                        },
+                        {
+                            "name": "type",
+                            "description": null
+                        },
+                        {
+                            "name": "isConfirmedForExport",
+                            "description": null
+                        },
+                        {
+                            "name": "isExported",
+                            "description": null
+                        },
+                        {
+                            "name": "confirmedForExportTimestamp",
+                            "description": null
+                        },
+                        {
+                            "name": "exportedTimestamp",
+                            "description": null
+                        }
+                    ]
                 },
                 {
                     "name": "CreateCountryInput",

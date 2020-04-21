@@ -1,0 +1,16 @@
+mutation createDelivery {
+    createDelivery(input: { deliveryNumber: "billing" }) {
+        deliveryNumber
+    }
+}
+
+query billingEntity_existing {
+    allBillingEntities(filter: { keyField: "billing", type: "Delivery" }) {
+        keyField
+        type
+        isConfirmedForExport
+        isExported
+        confirmedForExportTimestamp
+        exportedTimestamp
+    }
+}
