@@ -2,6 +2,7 @@ import { GraphQLBoolean } from 'graphql';
 import memorize from 'memorize-decorator';
 import { RootEntityType } from '../model/implementation';
 import {
+    BILLING_KEYFIELD_NOT_FILLED_ERROR,
     BinaryOperationQueryNode,
     BinaryOperator,
     ConfirmForBillingQueryNode,
@@ -10,6 +11,7 @@ import {
     FieldQueryNode,
     FirstOfListQueryNode,
     LiteralQueryNode,
+    NOT_FOUND_ERROR,
     PreExecQueryParms,
     QueryNode,
     RootEntityIDQueryNode,
@@ -32,7 +34,7 @@ export class BillingTypeGenerator {
             return undefined;
         }
         if (!rootEntityType.billingEntityConfig.billingKeyField.type.isScalarType) {
-            throw new Error('The BillingKeyField must'); // MSF TODO: proper error message
+            throw new Error('The BillingKeyField must be a scalar field.');
         }
         const inputType = rootEntityType.billingEntityConfig.billingKeyField.type.graphQLScalarType;
         return {
@@ -54,7 +56,8 @@ export class BillingTypeGenerator {
         const keyFieldVariableQueryNode = new VariableQueryNode();
         return new WithPreExecutionQueryNode({
             preExecQueries: [
-                this.getExistancePreExecQueryParms(rootEntityType, entityIdQueryNode, keyFieldVariableQueryNode),
+                this.getExistancePreExecQueryParms(rootEntityType, entityIdQueryNode),
+                this.getKeyfieldPreExecQueryParms(rootEntityType, entityIdQueryNode, keyFieldVariableQueryNode),
                 new PreExecQueryParms({
                     query: this.getEmptyUpdateQueryNode(rootEntityType, entityIdQueryNode)
                 }),
@@ -84,37 +87,56 @@ export class BillingTypeGenerator {
         });
     }
 
-    private getExistancePreExecQueryParms(
+    private getKeyfieldPreExecQueryParms(
         rootEntityType: RootEntityType,
         entityIdQueryNode: LiteralQueryNode,
         keyFieldVariableQueryNode: VariableQueryNode
     ) {
         if (!rootEntityType.billingEntityConfig || !rootEntityType.billingEntityConfig.billingKeyField) {
-            throw new Error('RootEntityType does not have a billing-keyField'); // MSF TODO: proper error message
+            throw this.getKeyFieldNotFilledError(rootEntityType);
         }
         const itemVariableNode = new VariableQueryNode();
         return new PreExecQueryParms({
             query: new FieldQueryNode(
-                new FirstOfListQueryNode(
-                    new TransformListQueryNode({
-                        maxCount: 1,
-                        itemVariable: itemVariableNode,
-                        filterNode: this.getExistanceConditionQueryNode(
-                            entityIdQueryNode,
-                            rootEntityType,
-                            itemVariableNode
-                        ),
-                        listNode: new EntitiesQueryNode(rootEntityType)
-                    })
-                ),
+                this.getRootEntityQueryNode(itemVariableNode, entityIdQueryNode, rootEntityType),
                 rootEntityType.billingEntityConfig.billingKeyField
             ),
             resultVariable: keyFieldVariableQueryNode,
             resultValidator: new ErrorIfNotTruthyResultValidator({
-                errorCode: 'XY',
-                errorMessage: 'No entity with provided id found.'
-            }) // MSF TODO: proper error message
+                errorCode: BILLING_KEYFIELD_NOT_FILLED_ERROR,
+                errorMessage: `The keyfield ${rootEntityType.billingEntityConfig.billingKeyField.name} with id ${entityIdQueryNode.value} is not filled.`
+            })
         });
+    }
+
+    private getExistancePreExecQueryParms(rootEntityType: RootEntityType, entityIdQueryNode: LiteralQueryNode) {
+        const itemVariableNode = new VariableQueryNode();
+        return new PreExecQueryParms({
+            query: this.getRootEntityQueryNode(itemVariableNode, entityIdQueryNode, rootEntityType),
+            resultValidator: new ErrorIfNotTruthyResultValidator({
+                errorCode: NOT_FOUND_ERROR,
+                errorMessage: `No ${rootEntityType.name} with id ${entityIdQueryNode.value} found.`
+            })
+        });
+    }
+
+    private getKeyFieldNotFilledError(rootEntityType: RootEntityType) {
+        return new Error(`The RootEntityType "${rootEntityType.name}" does not have a billing-keyField.`);
+    }
+
+    private getRootEntityQueryNode(
+        itemVariableNode: VariableQueryNode,
+        entityIdQueryNode: LiteralQueryNode,
+        rootEntityType: RootEntityType
+    ) {
+        return new FirstOfListQueryNode(
+            new TransformListQueryNode({
+                maxCount: 1,
+                itemVariable: itemVariableNode,
+                filterNode: this.getExistanceConditionQueryNode(entityIdQueryNode, rootEntityType, itemVariableNode),
+                listNode: new EntitiesQueryNode(rootEntityType)
+            })
+        );
     }
 
     private getExistanceConditionQueryNode(
@@ -123,7 +145,7 @@ export class BillingTypeGenerator {
         variable: VariableQueryNode
     ): QueryNode {
         if (!rootEntityType.billingEntityConfig || !rootEntityType.billingEntityConfig.billingKeyField) {
-            throw new Error('RootEntityType does not have a billing-keyField'); // MSF TODO: proper error message
+            throw this.getKeyFieldNotFilledError(rootEntityType);
         }
 
         return new BinaryOperationQueryNode(
