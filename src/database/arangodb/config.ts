@@ -21,6 +21,28 @@ export interface ArangoJSConfig {
     };
 }
 
+export interface CreateCollectionOptions {
+    readonly waitForSync?: boolean;
+    readonly journalSize?: number;
+    readonly isVolatile?: boolean;
+    readonly isSystem?: boolean;
+    readonly keyOptions?: {
+        readonly type?: KeyGeneratorType;
+        readonly allowUserKeys?: boolean;
+        readonly increment?: number;
+        readonly offset?: number;
+    };
+    readonly numberOfShards?: number;
+    readonly shardKeys?: readonly string[];
+    readonly distributeShardsLike?: string;
+    readonly shardingStrategy?: string;
+    readonly smartJoinAttribute?: string;
+    readonly replicationFactor?: number;
+    readonly minReplicationFactor?: number;
+}
+
+export declare type KeyGeneratorType = 'traditional' | 'autoincrement' | 'uuid' | 'padded';
+
 export const DEFAULT_RETRY_DELAY_BASE_MS = 100;
 
 export interface ArangoDBConfig {
@@ -93,6 +115,8 @@ export interface ArangoDBConfig {
      * still be performed during times of reduced load.
      */
     readonly createIndicesInBackground?: boolean;
+
+    readonly createCollectionOptions?: CreateCollectionOptions;
 }
 
 export function initDatabase(config: ArangoDBConfig): Database {

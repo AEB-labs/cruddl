@@ -62,11 +62,11 @@ export class MigrationPerformer {
     }
 
     private async createDocumentCollection(migration: CreateDocumentCollectionMigration) {
-        await this.db.collection(migration.collectionName).create();
+        await this.db.collection(migration.collectionName).create(this.config.createCollectionOptions as any);
     }
 
     private async createEdgeCollection(migration: CreateEdgeCollectionMigration) {
-        await this.db.edgeCollection(migration.collectionName).create();
+        await this.db.edgeCollection(migration.collectionName).create(this.config.createCollectionOptions as any);
     }
 
     private async createArangoSearchView(migration: CreateArangoSearchViewMigration) {
