@@ -1,168 +1,181 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "description": "Sidecar file for schema definitions",
-  "type": "object",
-  "minProperties": 1,
-  "additionalProperties": false,
-  "properties": {
-    "permissionProfiles": {
-      "type": "object",
-      "additionalProperties": false,
-      "patternProperties": {
-        "^[a-zA-Z0-9]+$": {
-          "$ref": "#/definitions/PermissionProfile"
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Sidecar file for schema definitions",
+    "type": "object",
+    "minProperties": 1,
+    "additionalProperties": false,
+    "properties": {
+        "permissionProfiles": {
+            "type": "object",
+            "additionalProperties": false,
+            "patternProperties": {
+                "^[a-zA-Z0-9]+$": {
+                    "$ref": "#/definitions/PermissionProfile"
+                }
+            }
+        },
+        "i18n": {
+            "type": "object",
+            "additionalProperties": false,
+            "patternProperties": {
+                "^[a-zA-Z0-9_-]+$": {
+                    "$ref": "#/definitions/NamespaceLocalization"
+                }
+            }
+        },
+        "billing": {
+            "type": "object",
+            "properties": {
+                "billingEntities": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "typeName": {
+                                "type": "string",
+                                "pattern": "^[a-zA-Z0-9_-]+$"
+                            },
+                            "keyFieldName": {
+                                "type": "string",
+                                "pattern": "^[a-zA-Z0-9_-]+$"
+                            }
+                        }
+                    }
+                }
+            }
         }
-      }
     },
-    "i18n": {
-      "type": "object",
-      "additionalProperties": false,
-      "patternProperties": {
-        "^[a-zA-Z0-9_-]+$": {
-          "$ref": "#/definitions/NamespaceLocalization"
+    "definitions": {
+        "PermissionProfile": {
+            "type": "object",
+            "required": ["permissions"],
+            "additionalProperties": false,
+            "properties": {
+                "permissions": {
+                    "type": "array",
+                    "minLength": 1,
+                    "items": {
+                        "$ref": "#/definitions/Permission"
+                    }
+                }
+            }
+        },
+        "Permission": {
+            "type": "object",
+            "required": ["roles", "access"],
+            "additionalProperties": false,
+            "properties": {
+                "roles": {
+                    "type": "array",
+                    "minLength": 1,
+                    "items": {
+                        "type": "string",
+                        "pattern": ".+"
+                    }
+                },
+                "access": {
+                    "type": "string",
+                    "enum": ["read", "readWrite"]
+                },
+                "restrictToAccessGroups": {
+                    "type": "array",
+                    "minLength": 1,
+                    "items": {
+                        "type": "string",
+                        "pattern": ".+"
+                    }
+                }
+            }
+        },
+        "NamespaceLocalization": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "types": {
+                    "patternProperties": {
+                        "^[a-zA-Z0-9_]+$": {
+                            "$ref": "#/definitions/TypeLocalization"
+                        }
+                    }
+                },
+                "fields": {
+                    "patternProperties": {
+                        "^[a-zA-Z0-9_]+$": {
+                            "anyOf": [
+                                {
+                                    "$ref": "#/definitions/FieldLocalization"
+                                },
+                                {
+                                    "type": "string"
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "TypeLocalization": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "fields": {
+                    "patternProperties": {
+                        "^[a-zA-Z0-9_]+$": {
+                            "anyOf": [
+                                {
+                                    "$ref": "#/definitions/FieldLocalization"
+                                },
+                                {
+                                    "type": "string"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "values": {
+                    "patternProperties": {
+                        "^[a-zA-Z0-9_]+$": {
+                            "anyOf": [
+                                {
+                                    "$ref": "#/definitions/EnumValueLocalization"
+                                },
+                                {
+                                    "type": "string"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "label": {
+                    "type": "string"
+                },
+                "labelPlural": {
+                    "type": "string"
+                },
+                "hint": {
+                    "type": "string"
+                }
+            }
+        },
+        "FieldLocalization": {
+            "properties": {
+                "label": {
+                    "type": "string"
+                },
+                "hint": {
+                    "type": "string"
+                }
+            }
+        },
+        "EnumValueLocalization": {
+            "properties": {
+                "label": {
+                    "type": "string"
+                },
+                "hint": {
+                    "type": "string"
+                }
+            }
         }
-      }
     }
-  },
-  "definitions": {
-    "PermissionProfile": {
-      "type": "object",
-      "required": [
-        "permissions"
-      ],
-      "additionalProperties": false,
-      "properties": {
-        "permissions": {
-          "type": "array",
-          "minLength": 1,
-          "items": {
-            "$ref": "#/definitions/Permission"
-          }
-        }
-      }
-    },
-    "Permission": {
-      "type": "object",
-      "required": [
-        "roles",
-        "access"
-      ],
-      "additionalProperties": false,
-      "properties": {
-        "roles": {
-          "type": "array",
-          "minLength": 1,
-          "items": {
-            "type": "string",
-            "pattern": ".+"
-          }
-        },
-        "access": {
-          "type": "string",
-          "enum": [
-            "read",
-            "readWrite"
-          ]
-        },
-        "restrictToAccessGroups": {
-          "type": "array",
-          "minLength": 1,
-          "items": {
-            "type": "string",
-            "pattern": ".+"
-          }
-        }
-      }
-    },
-    "NamespaceLocalization": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "types": {
-          "patternProperties": {
-            "^[a-zA-Z0-9_]+$": {
-              "$ref": "#/definitions/TypeLocalization"
-            }
-          }
-        },
-        "fields": {
-          "patternProperties": {
-            "^[a-zA-Z0-9_]+$": {
-              "anyOf": [
-                {
-                  "$ref": "#/definitions/FieldLocalization"
-                },
-                {
-                  "type": "string"
-                }
-              ]
-            }
-          }
-        }
-      }
-    },
-    "TypeLocalization": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "fields": {
-          "patternProperties": {
-            "^[a-zA-Z0-9_]+$": {
-              "anyOf": [
-                {
-                  "$ref": "#/definitions/FieldLocalization"
-                },
-                {
-                  "type": "string"
-                }
-              ]
-            }
-          }
-        },
-        "values": {
-          "patternProperties": {
-            "^[a-zA-Z0-9_]+$": {
-              "anyOf": [
-                {
-                  "$ref": "#/definitions/EnumValueLocalization"
-                },
-                {
-                  "type": "string"
-                }
-              ]
-            }
-          }
-        },
-        "label": {
-          "type": "string"
-        },
-        "labelPlural": {
-          "type": "string"
-        },
-        "hint": {
-          "type": "string"
-        }
-      }
-    },
-    "FieldLocalization": {
-      "properties": {
-        "label": {
-          "type": "string"
-        },
-        "hint": {
-          "type": "string"
-        }
-      }
-    },
-    "EnumValueLocalization": {
-      "properties": {
-        "label": {
-          "type": "string"
-        },
-        "hint": {
-          "type": "string"
-        }
-      }
-    }
-  }
 }

@@ -44,6 +44,7 @@ export const DELETE_ALL_ENTITIES_FIELD_PREFIX = 'deleteAll';
 export const ADD_CHILD_ENTITIES_FIELD_PREFIX = 'add';
 export const UPDATE_CHILD_ENTITIES_FIELD_PREFIX = 'update';
 export const REMOVE_CHILD_ENTITIES_FIELD_PREFIX = 'remove';
+export const CONFIRM_FOR_BILLING_FIELD_PREFIX = 'confirmBillingFor';
 export const ADD_EDGES_FIELD_PREFIX = 'add';
 export const REMOVE_EDGES_FIELD_PREFIX = 'remove';
 export const CREATE_RELATED_ENTITY_FIELD_PREFIX = 'create';
@@ -126,6 +127,7 @@ export const CALC_MUTATIONS_OPERATORS: CalcMutationOperator[] = [
 export const COUNT_META_FIELD = 'count';
 
 export const MUTATION_INPUT_ARG = 'input';
+export const BILLING_MUTATION_INPUT_ARG = 'id';
 
 export const ROLES_DIRECTIVE = 'roles';
 export const ROLES_READ_ARG = 'read';

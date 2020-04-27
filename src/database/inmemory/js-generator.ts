@@ -9,9 +9,11 @@ import {
     BinaryOperator,
     ConcatListsQueryNode,
     ConditionalQueryNode,
+    ConfirmForBillingQueryNode,
     ConstBoolQueryNode,
     ConstIntQueryNode,
     CountQueryNode,
+    CreateBillingEntityQueryNode,
     CreateEntityQueryNode,
     DeleteEntitiesQueryNode,
     EntitiesQueryNode,
@@ -827,6 +829,51 @@ register(FlexSearchFieldExistsQueryNode, (node, context) => {
 
 register(FlexSearchComplexOperatorQueryNode, (node, context) => {
     throw new Error(`Internal Error: FlexSearchComplexOperatorQueryNode must be expanded before generating the query.`);
+});
+
+register(CreateBillingEntityQueryNode, (node, context) => {
+    const currentTimestamp = new Date().toISOString();
+    const billingEntities = js.collection('billingEntities');
+
+    return jsExt.executingFunction(
+        js`
+            const entry = ${billingEntities}.find(value => (value.key === ${node.key} && value.type === ${node.rootEntityTypeName}));
+            if(!entry){
+                ${billingEntities}.push({
+                    key: ${node.key},
+                    type: ${node.rootEntityTypeName},
+                    isExported: false,
+                    isConfirmedForExport: false,
+                    createdAt: ${currentTimestamp},
+                    updatedAt: ${currentTimestamp}
+                });
+           }`
+    );
+});
+
+register(ConfirmForBillingQueryNode, (node, context) => {
+    const key = processNode(node.key, context);
+    const currentTimestamp = new Date().toISOString();
+    const billingEntities = js.collection('billingEntities');
+
+    return jsExt.executingFunction(
+        js`
+            const entry = ${billingEntities}.find(value => (value.key === ${key} && value.type === ${node.rootEntityTypeName}));
+            if(!entry){
+                ${billingEntities}.push({
+                    key: ${key},
+                    type: ${node.rootEntityTypeName},
+                    isExported: false,
+                    isConfirmedForExport: true,
+                    confirmedForExportAt: ${currentTimestamp},
+                    createdAt: ${currentTimestamp},
+                    updatedAt: ${currentTimestamp}
+                });
+           } else {
+               entry.isConfirmedForExport = true;
+               entry.confirmedForExportAt = ${currentTimestamp};
+           }`
+    );
 });
 
 register(SetEdgeQueryNode, (node, context) => {

@@ -1,0 +1,10 @@
+{
+    "billing": {
+        "billingEntities": [
+            {
+                "typeName": "Hero",
+                "keyFieldName": "name"
+            }
+        ]
+    }
+}

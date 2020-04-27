@@ -1,0 +1,23 @@
+{
+    "createDelivery": {
+        "data": {
+            "createDelivery": {
+                "deliveryNumber": "billing"
+            }
+        }
+    },
+    "billingEntity_existing": {
+        "data": {
+            "allBillingEntities": [
+                {
+                    "key": "billing",
+                    "type": "Delivery",
+                    "isConfirmedForExport": false,
+                    "isExported": false,
+                    "confirmedForExportAt": null,
+                    "exportedAt": null
+                }
+            ]
+        }
+    }
+}

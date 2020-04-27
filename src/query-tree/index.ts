@@ -11,5 +11,7 @@ export * from './type-check';
 export * from './validation';
 export * from './variables';
 export { FlexSearchStartsWithQueryNode } from './flex-search';
+export * from './billing'
+
 
 // visitor is intentionally not re-exported as it can be seen as an 'add-on'

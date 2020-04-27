@@ -3,6 +3,7 @@ import { FieldSegment, getEffectiveCollectSegments, RelationSegment } from '../.
 import {
     AddEdgesQueryNode,
     AggregationQueryNode,
+    ConfirmForBillingQueryNode,
     BasicType,
     BinaryOperationQueryNode,
     BinaryOperator,
@@ -12,6 +13,7 @@ import {
     ConstBoolQueryNode,
     ConstIntQueryNode,
     CountQueryNode,
+    CreateBillingEntityQueryNode,
     CreateEntityQueryNode,
     DeleteEntitiesQueryNode,
     EdgeIdentifier,
@@ -63,7 +65,7 @@ import { Constructor, decapitalize } from '../../utils/utils';
 import { FlexSearchTokenizable } from '../database-adapter';
 import { analyzeLikePatternPrefix } from '../like-helpers';
 import { aql, AQLCompoundQuery, aqlConfig, AQLFragment, AQLQueryResultVariable, AQLVariable } from './aql';
-import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './arango-basics';
+import { billingCollectionName, getCollectionNameForRelation, getCollectionNameForRootEntity } from './arango-basics';
 import { getFlexSearchViewNameForRootEntity, IDENTITY_ANALYZER } from './schema-migration/arango-search-helpers';
 
 enum AccessType {
@@ -738,6 +740,62 @@ register(FlexSearchComplexOperatorQueryNode, (node, context) => {
     throw new Error(`Internal Error: FlexSearchComplexOperatorQueryNode must be expanded before generating the query.`);
 });
 
+function getBillingInput(
+    key: string | number | AQLFragment,
+    rootEntityTypeName: string,
+    context: QueryContext,
+    currentTimestamp: string
+) {
+    return aql`
+        key: ${key},
+        type: ${rootEntityTypeName},
+        isExported: false,
+        createdAt: ${currentTimestamp},
+        updatedAt: ${currentTimestamp}`;
+}
+
+register(CreateBillingEntityQueryNode, (node, context) => {
+    const currentTimestamp = new Date().toISOString();
+    return aqlExt.parenthesizeList(
+        aql`UPSERT {
+            key: ${node.key},
+            type: ${node.rootEntityTypeName}
+        }`,
+        aql`INSERT {
+            ${getBillingInput(node.key, node.rootEntityTypeName, context, currentTimestamp)},
+            isConfirmedForExport: false
+         }`,
+        aql`UPDATE {
+            updatedAt: ${currentTimestamp}
+        }`,
+        aql`IN ${getCollectionForBilling(AccessType.WRITE, context)}`,
+        aql`RETURN ${node.key}`
+    );
+});
+
+register(ConfirmForBillingQueryNode, (node, context) => {
+    const key = processNode(node.key, context);
+    const currentTimestamp = new Date().toISOString();
+    return aqlExt.parenthesizeList(
+        aql`UPSERT {
+            key: ${key},
+            type: ${node.rootEntityTypeName}
+        }`,
+        aql`INSERT {
+            ${getBillingInput(key, node.rootEntityTypeName, context, currentTimestamp)},
+            isConfirmedForExport: true,
+            confirmedForExportAt: ${currentTimestamp}
+         }`,
+        aql`UPDATE {
+            isConfirmedForExport: true,
+            updatedAt: ${currentTimestamp},
+            confirmedForExportAt: ${currentTimestamp}
+        }`,
+        aql`IN ${getCollectionForBilling(AccessType.WRITE, context)}`,
+        aql`RETURN true`
+    );
+});
+
 function getFastStartsWithQuery(lhs: AQLFragment, rhsValue: string): AQLFragment {
     if (!rhsValue.length) {
         return aql`IS_STRING(${lhs})`;
@@ -1295,6 +1353,12 @@ function processNode(node: QueryNode, context: QueryContext): AQLFragment {
 // we should rather export AQLExecutableQuery[] (as AQL transaction) directly.
 export function getAQLQuery(node: QueryNode): AQLCompoundQuery {
     return createAQLCompoundQuery(node, aql.queryResultVariable('result'), undefined, new QueryContext());
+}
+
+function getCollectionForBilling(accessType: AccessType, context: QueryContext) {
+    const name = billingCollectionName;
+    context.addCollectionAccess(name, accessType);
+    return aql.collection(name);
 }
 
 function getCollectionForType(type: RootEntityType, accessType: AccessType, context: QueryContext) {

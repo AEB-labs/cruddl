@@ -1,8 +1,6 @@
-import { Relation, RootEntityType } from '../../../model/implementation';
-import { describeIndex, getIndexDescriptor, IndexDefinition } from './index-helpers';
-import { ArangoSearchDefinition } from './arango-search-helpers';
-import { FieldConfig } from '../../../model/config';
 import { ArangoSearchViewPropertiesOptions } from 'arangojs/lib/cjs/view';
+import { BillingEntityType, Relation, RootEntityType } from '../../../model/implementation';
+import { describeIndex, getIndexDescriptor, IndexDefinition } from './index-helpers';
 
 export type SchemaMigration = CreateIndexMigration | DropIndexMigration | CreateDocumentCollectionMigration
     | CreateEdgeCollectionMigration | CreateArangoSearchViewMigration | DropArangoSearchViewMigration
@@ -67,7 +65,7 @@ export class DropIndexMigration {
 export class CreateDocumentCollectionMigration {
     readonly type: 'createDocumentCollection' = 'createDocumentCollection';
 
-    constructor(public readonly rootEntity: RootEntityType, public readonly collectionName: string) {
+    constructor(public readonly collectionName: string) {
     }
 
     get description() {

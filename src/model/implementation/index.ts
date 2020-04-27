@@ -14,3 +14,4 @@ export { PermissionProfile, Permission, RoleSpecifier } from './permission-profi
 export { Relation, RelationSide, Multiplicity } from './relation';
 export { ModelI18n, NamespaceLocalization, TypeLocalization, FieldLocalization }from './i18n';
 export { CollectPath, CollectPathSegment } from './collect-path';
+export { BillingEntityType } from './billing';

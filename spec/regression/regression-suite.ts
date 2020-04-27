@@ -66,6 +66,9 @@ export class RegressionSuite {
                 authRoles: context.authRoles,
                 flexSearchMaxFilterableAndSortableAmount: context.flexSearchMaxFilterableAndSortableAmount
             }),
+            modelValidationOptions: {
+                forbiddenRootEntityNames: []
+            },
             getOperationIdentifier: ({ info }) => info.operation
         };
         const warnLevelOptions = { ...generalOptions, loggerProvider: new Log4jsLoggerProvider('warn') };

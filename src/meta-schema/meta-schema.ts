@@ -264,6 +264,11 @@ const typeDefs = gql`
         hint: String
     }
 
+    type BillingEntityType {
+        typeName: String
+        keyFieldName: String
+    }
+
     type OrderClause{
         field: String
         order: OrderDirection
@@ -360,6 +365,9 @@ const typeDefs = gql`
 
         "The root namespace"
         rootNamespace: Namespace!
+
+        "The billingEntityTypes that define the billing configuration."
+        billingEntityTypes: [BillingEntityType!]!
     }
 `;
 
@@ -392,7 +400,8 @@ export function getMetaSchema(model: Model): GraphQLSchema {
             enumType: (_, { name }) => model.getEnumType(name),
             namespaces: () => model.namespaces,
             rootNamespace: () => model.rootNamespace,
-            namespace: (_, { path }) => model.getNamespaceByPath(path)
+            namespace: (_, { path }) => model.getNamespaceByPath(path),
+            billingEntityTypes: () => model.billingEntityTypes
         },
         Type: {
             __resolveType: (type: unknown) => resolveType(type as Type)

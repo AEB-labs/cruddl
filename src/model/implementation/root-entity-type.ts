@@ -1,6 +1,16 @@
 import { GraphQLID, GraphQLString } from 'graphql';
 import memorize from 'memorize-decorator';
-import { ACCESS_GROUP_FIELD, DEFAULT_PERMISSION_PROFILE, FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE, FLEX_SEARCH_INDEXED_DIRECTIVE, FLEX_SEARCH_ORDER_ARGUMENT, ID_FIELD, ROOT_ENTITY_DIRECTIVE, SCALAR_INT, SCALAR_STRING } from '../../schema/constants';
+import {
+    ACCESS_GROUP_FIELD,
+    DEFAULT_PERMISSION_PROFILE,
+    FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE,
+    FLEX_SEARCH_INDEXED_DIRECTIVE,
+    FLEX_SEARCH_ORDER_ARGUMENT,
+    ID_FIELD,
+    ROOT_ENTITY_DIRECTIVE,
+    SCALAR_INT,
+    SCALAR_STRING
+} from '../../schema/constants';
 import { GraphQLLocalDate } from '../../schema/scalars/local-date';
 import { compact } from '../../utils/utils';
 import { FlexSearchIndexConfig, PermissionsConfig, RootEntityTypeConfig, TypeKind } from '../config';
@@ -168,6 +178,10 @@ export class RootEntityType extends ObjectTypeBase {
     validate(context: ValidationContext) {
         super.validate(context);
 
+        if (this.model.forbiddenRootEntityNames.find(value => this.name.toLowerCase() === value.toLowerCase())) {
+            context.addMessage(ValidationMessage.error(`RootEntities cannot be named ${this.name}.`, this.nameASTNode));
+        }
+
         this.validateKeyField(context);
         this.validatePermissions(context);
         this.validateIndices(context);
@@ -195,9 +209,7 @@ export class RootEntityType extends ObjectTypeBase {
         // support for ID is needed because id: ID @key is possible
         if (
             field.type.kind !== TypeKind.SCALAR ||
-            ![
-                SCALAR_INT, SCALAR_STRING, GraphQLID.name, GraphQLLocalDate.name
-            ].includes(field.type.name)
+            ![SCALAR_INT, SCALAR_STRING, GraphQLID.name, GraphQLLocalDate.name].includes(field.type.name)
         ) {
             context.addMessage(
                 ValidationMessage.error(
@@ -327,6 +339,11 @@ export class RootEntityType extends ObjectTypeBase {
                 );
             }
         }
+    }
+
+    @memorize()
+    get billingEntityConfig() {
+        return this.model.billingEntityTypes.find(value => value.rootEntityType === this);
     }
 }
 

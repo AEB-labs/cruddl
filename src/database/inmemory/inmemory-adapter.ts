@@ -40,11 +40,18 @@ export class InMemoryAdapter implements DatabaseAdapter {
      * @returns {string}
      */
     private executeQueries(queries: JSExecutableQuery[]) {
-        const validators = new Map(ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS.map((provider): [string, Function] =>
-            ([provider.getValidatorName(), provider.getValidatorFunction()])));
+        const validators = new Map(
+            ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS.map((provider): [string, Function] => [
+                provider.getValidatorName(),
+                provider.getValidatorFunction()
+            ])
+        );
 
         const support = {
-            compare(lhs: string | boolean | number | null | undefined | any, rhs: string | boolean | number | null | undefined | any): number {
+            compare(
+                lhs: string | boolean | number | null | undefined | any,
+                rhs: string | boolean | number | null | undefined | any
+            ): number {
                 if (lhs == undefined) {
                     if (rhs == undefined) {
                         return 0;
@@ -106,9 +113,9 @@ export class InMemoryAdapter implements DatabaseAdapter {
 
                 // both are objects
 
-                const properties = Array.from(new Set([
-                    ...Object.getOwnPropertyNames(lhs), ...Object.getOwnPropertyNames(rhs)
-                ])).sort();
+                const properties = Array.from(
+                    new Set([...Object.getOwnPropertyNames(lhs), ...Object.getOwnPropertyNames(rhs)])
+                ).sort();
                 for (const property of properties) {
                     const lhsValue = lhs[property];
                     const rhsValue = rhs[property];
@@ -124,41 +131,52 @@ export class InMemoryAdapter implements DatabaseAdapter {
                 if (!items.length) {
                     return null;
                 }
-                return items.reduce((acc, item) => support.compare(item, acc) < 0 ? item : acc);
+                return items.reduce((acc, item) => (support.compare(item, acc) < 0 ? item : acc));
             },
 
             max(items: ReadonlyArray<string | number>) {
                 if (!items.length) {
                     return null;
                 }
-                return items.reduce((acc, item) => support.compare(item, acc) > 0 ? item : acc);
+                return items.reduce((acc, item) => (support.compare(item, acc) > 0 ? item : acc));
             },
 
-            getMultiComparator<T>(...valueFns: [((item: T) => string | boolean | number | null | undefined), boolean][]) {
+            getMultiComparator<T>(
+                ...valueFns: [((item: T) => string | boolean | number | null | undefined), boolean][]
+            ) {
                 if (valueFns.length == 0) {
                     return () => 0;
                 }
 
                 if (valueFns.length == 1) {
                     const [valueFn, invert] = valueFns[0];
-                    return (lhs: T, rhs: T) => invert ? support.compare(valueFn(rhs), valueFn(lhs)) : support.compare(valueFn(lhs), valueFn(rhs));
+                    return (lhs: T, rhs: T) =>
+                        invert
+                            ? support.compare(valueFn(rhs), valueFn(lhs))
+                            : support.compare(valueFn(lhs), valueFn(rhs));
                 }
 
                 if (valueFns.length == 2) {
                     const [valueFn1, invert1] = valueFns[0];
                     const [valueFn2, invert2] = valueFns[1];
                     return (lhs: T, rhs: T) => {
-                        const comparison = invert1 ? support.compare(valueFn1(rhs), valueFn1(lhs)) : support.compare(valueFn1(lhs), valueFn1(rhs));
+                        const comparison = invert1
+                            ? support.compare(valueFn1(rhs), valueFn1(lhs))
+                            : support.compare(valueFn1(lhs), valueFn1(rhs));
                         if (comparison != 0) {
                             return comparison;
                         }
-                        return invert2 ? support.compare(valueFn2(rhs), valueFn2(lhs)) : support.compare(valueFn2(lhs), valueFn2(rhs));
+                        return invert2
+                            ? support.compare(valueFn2(rhs), valueFn2(lhs))
+                            : support.compare(valueFn2(lhs), valueFn2(rhs));
                     };
                 }
 
                 return (lhs: T, rhs: T): number => {
                     for (const [valueFn, invert] of valueFns) {
-                        const comparison = invert ? support.compare(valueFn(rhs), valueFn(lhs)) : support.compare(valueFn(lhs), valueFn(rhs));
+                        const comparison = invert
+                            ? support.compare(valueFn(rhs), valueFn(lhs))
+                            : support.compare(valueFn(lhs), valueFn(rhs));
                         if (comparison != 0) {
                             return comparison;
                         }
@@ -235,6 +253,9 @@ export class InMemoryAdapter implements DatabaseAdapter {
         const requiredEdgeCollections = Array.from(new Set(model.relations.map(getCollectionNameForRelation)));
 
         const requiredCollections = rootEntities.map(entity => getCollectionNameForRootEntity(entity));
+        if (!requiredCollections.some(value => value === 'billingEntities')) {
+            requiredCollections.push('billingEntities');
+        }
         for (const coll of [...requiredCollections, ...requiredEdgeCollections]) {
             if (!(coll in this.db.collections)) {
                 this.db.collections[coll] = [];
@@ -242,16 +263,15 @@ export class InMemoryAdapter implements DatabaseAdapter {
         }
     }
 
-    async tokenizeExpressions(tokenizations: ReadonlyArray<FlexSearchTokenizable>): Promise<ReadonlyArray<FlexSearchTokenization>> {
+    async tokenizeExpressions(
+        tokenizations: ReadonlyArray<FlexSearchTokenizable>
+    ): Promise<ReadonlyArray<FlexSearchTokenization>> {
         return tokenizations.map(value => {
             return {
                 expression: value.expression,
                 language: value.language,
                 tokens: value.expression.split('-')
             };
-
         });
     }
-
-
 }

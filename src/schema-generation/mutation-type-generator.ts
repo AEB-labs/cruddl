@@ -6,6 +6,7 @@ import {
     AffectedFieldInfoQueryNode,
     BinaryOperationQueryNode,
     BinaryOperator,
+    CreateBillingEntityQueryNode,
     DeleteEntitiesQueryNode,
     EntitiesQueryNode,
     EntityFromIdQueryNode,
@@ -37,6 +38,7 @@ import {
     getUpdateEntityFieldName
 } from '../schema/names';
 import { compact, decapitalize, PlainObject } from '../utils/utils';
+import { BillingTypeGenerator } from './billing-type-generator';
 import { CreateInputTypeGenerator, CreateRootEntityInputType } from './create-input-types';
 import { createGraphQLError } from './graphql-errors';
 import { ListAugmentation } from './list-augmentation';
@@ -60,7 +62,8 @@ export class MutationTypeGenerator {
         private readonly outputTypeGenerator: OutputTypeGenerator,
         private readonly createTypeGenerator: CreateInputTypeGenerator,
         private readonly updateTypeGenerator: UpdateInputTypeGenerator,
-        private readonly listAugmentation: ListAugmentation
+        private readonly listAugmentation: ListAugmentation,
+        private readonly billingTypeGenerator: BillingTypeGenerator
     ) {}
 
     @memorize()
@@ -98,7 +101,8 @@ export class MutationTypeGenerator {
             this.generateUpdateAllField(rootEntityType),
             this.generateDeleteField(rootEntityType),
             canCreatePluralFields ? this.generateDeleteManyField(rootEntityType) : undefined,
-            this.generateDeleteAllField(rootEntityType)
+            this.generateDeleteAllField(rootEntityType),
+            this.billingTypeGenerator.getMutationField(rootEntityType)
         ]);
     }
 
@@ -318,7 +322,24 @@ export class MutationTypeGenerator {
             context
         );
 
-        return [updateEntityPreExec, ...relationStatements];
+        const preExecQueryParms = [updateEntityPreExec, ...relationStatements];
+
+        if (
+            rootEntityType.billingEntityConfig &&
+            rootEntityType.billingEntityConfig.keyFieldName &&
+            input[rootEntityType.billingEntityConfig.keyFieldName]
+        ) {
+            preExecQueryParms.push(
+                new PreExecQueryParms({
+                    query: new CreateBillingEntityQueryNode(
+                        input[rootEntityType.billingEntityConfig.keyFieldName] as number | string,
+                        rootEntityType.name
+                    )
+                })
+            );
+        }
+
+        return preExecQueryParms;
     }
 
     private generateUpdateAllField(rootEntityType: RootEntityType): QueryNodeField | undefined {

@@ -1,23 +1,6 @@
-import {
-    ArgumentNode,
-    DirectiveNode,
-    EnumValueDefinitionNode,
-    FieldDefinitionNode,
-    GraphQLBoolean,
-    GraphQLEnumType,
-    GraphQLID,
-    GraphQLInputObjectType,
-    GraphQLList,
-    GraphQLNonNull,
-    GraphQLString,
-    ObjectTypeDefinitionNode,
-    ObjectValueNode,
-    StringValueNode,
-    TypeDefinitionNode,
-    valueFromAST
-} from 'graphql';
-import {
-    ParsedGraphQLProjectSource,
+import { ArgumentNode, DirectiveNode, EnumValueDefinitionNode, FieldDefinitionNode, GraphQLBoolean, GraphQLEnumType, GraphQLID, GraphQLInputObjectType, GraphQLList, GraphQLNonNull, GraphQLString, ObjectTypeDefinitionNode, ObjectValueNode, StringValueNode, TypeDefinitionNode, valueFromAST } from 'graphql';
+import { ModelValidationOptions } from '../config/interfaces';
+import { ParsedGraphQLProjectSource,
     ParsedObjectProjectSource,
     ParsedProject,
     ParsedProjectSourceBaseKind
@@ -101,17 +84,21 @@ import {
     TypeConfig,
     TypeKind
 } from './config';
+import { BillingConfig } from './config/billing';
 import { Model } from './implementation';
+import { parseBillingConfigs } from './parse-billing';
 import { parseI18nConfigs } from './parse-i18n';
 import { ValidationContext, ValidationMessage } from './validation';
 
-export function createModel(parsedProject: ParsedProject): Model {
+export function createModel(parsedProject: ParsedProject, modelValidationOptions?: ModelValidationOptions): Model {
     const validationContext = new ValidationContext();
     return new Model({
         types: createTypeInputs(parsedProject, validationContext),
         permissionProfiles: extractPermissionProfiles(parsedProject),
         i18n: extractI18n(parsedProject),
-        validationMessages: validationContext.validationMessages
+        validationMessages: validationContext.validationMessages,
+        billing: extractBilling(parsedProject),
+        modelValidationOptions
     });
 }
 
@@ -838,6 +825,17 @@ function extractI18n(parsedProject: ParsedProject): ReadonlyArray<LocalizationCo
         parsedSource => parsedSource.kind === ParsedProjectSourceBaseKind.OBJECT
     ) as ReadonlyArray<ParsedObjectProjectSource>;
     return flatMap(objectSchemaParts, source => parseI18nConfigs(source));
+}
+
+function extractBilling(parsedProject: ParsedProject): BillingConfig {
+    const objectSchemaParts = parsedProject.sources
+        .filter(parsedSource => parsedSource.kind === ParsedProjectSourceBaseKind.OBJECT) as ReadonlyArray<ParsedObjectProjectSource>;
+    return objectSchemaParts.map(source => parseBillingConfigs(source)).reduce((previousValue, currentValue) => {
+        return {
+            ...previousValue,
+            billingEntities: [...currentValue.billingEntities, ...previousValue.billingEntities]
+        };
+    }, {billingEntities: []});
 }
 
 // fake input type for index mapping

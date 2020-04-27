@@ -1,10 +1,12 @@
 import { groupBy, uniqBy } from 'lodash';
 import memorize from 'memorize-decorator';
+import { ModelValidationOptions } from '../../config/interfaces';
 import { flatMap, objectEntries, objectValues } from '../../utils/utils';
 import { ModelConfig, TypeKind } from '../config';
 import { NamespacedPermissionProfileConfigMap } from '../index';
 import { ValidationMessage, ValidationResult } from '../validation';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
+import { BillingEntityType } from './billing';
 import { builtInTypeNames, createBuiltInTypes } from './built-in-types';
 import { ChildEntityType } from './child-entity-type';
 import { EntityExtensionType } from './entity-extension-type';
@@ -27,13 +29,12 @@ export class Model implements ModelComponent {
     readonly types: ReadonlyArray<Type>;
     readonly i18n: ModelI18n;
     readonly permissionProfiles: ReadonlyArray<PermissionProfile>;
+    readonly billingEntityTypes: ReadonlyArray<BillingEntityType>;
+    readonly modelValidationOptions?: ModelValidationOptions;
 
     constructor(private input: ModelConfig) {
         this.builtInTypes = createBuiltInTypes(this);
-        this.types = [
-            ...this.builtInTypes,
-            ...input.types.map(typeInput => createType(typeInput, this))
-        ];
+        this.types = [...this.builtInTypes, ...input.types.map(typeInput => createType(typeInput, this))];
         this.permissionProfiles = flatMap(input.permissionProfiles || [], createPermissionProfiles);
         this.rootNamespace = new Namespace({
             parent: undefined,
@@ -42,8 +43,12 @@ export class Model implements ModelComponent {
             allPermissionProfiles: this.permissionProfiles
         });
         this.namespaces = [this.rootNamespace, ...this.rootNamespace.descendantNamespaces];
-        this.typeMap = new Map(this.types.map((type): [string, Type] => ([type.name, type])));
+        this.typeMap = new Map(this.types.map((type): [string, Type] => [type.name, type]));
         this.i18n = new ModelI18n(input.i18n || [], this);
+        this.billingEntityTypes = input.billing
+            ? input.billing.billingEntities.map(value => new BillingEntityType(value, this))
+            : [];
+        this.modelValidationOptions = input.modelValidationOptions;
     }
 
     validate(context = new ValidationContext()): ValidationResult {
@@ -51,14 +56,15 @@ export class Model implements ModelComponent {
 
         this.i18n.validate(context);
 
+        for (let billingEntityType of this.billingEntityTypes) {
+            billingEntityType.validate(context);
+        }
+
         for (const type of this.types) {
             type.validate(context);
         }
 
-        return new ValidationResult([
-            ...this.input.validationMessages || [],
-            ...context.validationMessages
-        ]);
+        return new ValidationResult([...(this.input.validationMessages || []), ...context.validationMessages]);
     }
 
     private validateDuplicateTypes(context: ValidationContext) {
@@ -72,9 +78,16 @@ export class Model implements ModelComponent {
 
                 if (builtInTypeNames.has(type.name)) {
                     // user does not see duplicate type, so provide better message
-                    context.addMessage(ValidationMessage.error(`Type name "${type.name}" is reserved by a built-in type.`, type.nameASTNode));
+                    context.addMessage(
+                        ValidationMessage.error(
+                            `Type name "${type.name}" is reserved by a built-in type.`,
+                            type.nameASTNode
+                        )
+                    );
                 } else {
-                    context.addMessage(ValidationMessage.error(`Duplicate type name: "${type.name}".`, type.nameASTNode));
+                    context.addMessage(
+                        ValidationMessage.error(`Duplicate type name: "${type.name}".`, type.nameASTNode)
+                    );
                 }
             }
         }
@@ -219,8 +232,17 @@ export class Model implements ModelComponent {
         const withDuplicates = flatMap(this.rootEntityTypes, entity => entity.explicitRelations);
         return uniqBy(withDuplicates, rel => rel.identifier);
     }
+
+    get forbiddenRootEntityNames(): ReadonlyArray<string> {
+        if (!this.modelValidationOptions || !this.modelValidationOptions.forbiddenRootEntityNames) {
+            return ['BillingEntity'];
+        }
+        return this.modelValidationOptions!.forbiddenRootEntityNames;
+    }
 }
 
 function createPermissionProfiles(map: NamespacedPermissionProfileConfigMap): ReadonlyArray<PermissionProfile> {
-    return objectEntries(map.profiles).map(([name, profile]) => new PermissionProfile(name, map.namespacePath || [], profile));
+    return objectEntries(map.profiles).map(
+        ([name, profile]) => new PermissionProfile(name, map.namespacePath || [], profile)
+    );
 }

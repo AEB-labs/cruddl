@@ -2,6 +2,7 @@ import { FragmentDefinitionNode, GraphQLSchema, OperationDefinitionNode } from '
 import { DatabaseAdapterTimings, ExecutionPlan, TransactionStats } from '../database/database-adapter';
 import { ExecutionOptions, ExecutionOptionsCallbackArgs } from '../execution/execution-options';
 import { FieldResolverParameters } from '../graphql/operation-based-resolvers';
+import { Model } from '../model/implementation';
 import { LoggerProvider } from './logging';
 
 export interface RequestContext {
@@ -23,6 +24,15 @@ export interface SchemaOptions {
      * The maximum depth root entities can be traversed through for orderBy values
      */
     readonly maxOrderByRootEntityDepth?: number;
+
+}
+
+export interface ModelValidationOptions {
+
+    /**
+     * A list of root entity names that are not allowed.
+     */
+    readonly forbiddenRootEntityNames?: ReadonlyArray<string>
 }
 
 export interface ProjectOptions {
@@ -31,6 +41,7 @@ export interface ProjectOptions {
     readonly getExecutionOptions?: (args: ExecutionOptionsCallbackArgs) => ExecutionOptions;
 
     readonly schemaOptions?: SchemaOptions
+    readonly modelValidationOptions?: ModelValidationOptions
 
     /**
      * Should return a token object that is the same for all field resolves of one operation, but different for each

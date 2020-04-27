@@ -2,24 +2,28 @@ import { Database } from 'arangojs';
 import { ProjectOptions } from '../../../config/interfaces';
 import { Logger } from '../../../config/logging';
 import { Model, RootEntityType } from '../../../model/implementation';
-import { getCollectionNameForRelation, getCollectionNameForRootEntity } from '../arango-basics';
+import { billingCollectionName, getCollectionNameForRelation, getCollectionNameForRootEntity } from '../arango-basics';
 import { ArangoDBConfig, getArangoDBLogger, initDatabase } from '../config';
 import { ArangoDBVersionHelper } from '../version-helper';
-import { calculateRequiredIndexOperations, getRequiredIndicesFromModel, IndexDefinition, isArangoSearchSupported } from './index-helpers';
-import {
-    CreateArangoSearchViewMigration,
-    CreateDocumentCollectionMigration,
-    CreateEdgeCollectionMigration,
-    CreateIndexMigration, DropArangoSearchViewMigration,
-    DropIndexMigration,
-    SchemaMigration, UpdateArangoSearchViewMigration
-} from './migrations';
 import {
     calculateRequiredArangoSearchViewCreateOperations,
     calculateRequiredArangoSearchViewDropOperations,
     calculateRequiredArangoSearchViewUpdateOperations,
     getRequiredViewsFromModel
 } from './arango-search-helpers';
+import {
+    calculateRequiredIndexOperations,
+    getRequiredIndicesFromModel,
+    IndexDefinition,
+    isArangoSearchSupported
+} from './index-helpers';
+import {
+    CreateDocumentCollectionMigration,
+    CreateEdgeCollectionMigration,
+    CreateIndexMigration,
+    DropIndexMigration,
+    SchemaMigration
+} from './migrations';
 
 export class SchemaAnalyzer {
     private readonly db: Database;
@@ -34,16 +38,18 @@ export class SchemaAnalyzer {
 
     async getOutstandingMigrations(model: Model): Promise<ReadonlyArray<SchemaMigration>> {
         return [
-            ...await this.getDocumentCollectionMigrations(model),
-            ...await this.getEdgeCollectionMigrations(model),
-            ...await this.getIndexMigrations(model),
-            ...await this.getArangoSearchMigrations(model)
+            ...(await this.getDocumentCollectionMigrations(model)),
+            ...(await this.getEdgeCollectionMigrations(model)),
+            ...(await this.getIndexMigrations(model)),
+            ...(await this.getArangoSearchMigrations(model))
         ];
     }
 
     async getDocumentCollectionMigrations(model: Model): Promise<ReadonlyArray<CreateDocumentCollectionMigration>> {
         // Get existing collections in ArangoDB
-        const existingCollections = (await this.db.collections()).filter(coll => (coll as any).type === 2 /* document */)
+        const existingCollections = (await this.db.collections()).filter(
+            coll => (coll as any).type === 2 /* document */
+        );
         const existingCollectionNames = new Set(existingCollections.map(coll => (<any>coll).name)); // typing for name missing
 
         const migrations: CreateDocumentCollectionMigration[] = [];
@@ -53,7 +59,14 @@ export class SchemaAnalyzer {
             if (existingCollectionNames.has(collectionName)) {
                 continue;
             }
-            migrations.push(new CreateDocumentCollectionMigration(rootEntity, collectionName));
+            migrations.push(new CreateDocumentCollectionMigration(collectionName));
+        }
+
+        if (
+            !existingCollectionNames.has(billingCollectionName) &&
+            !migrations.some(value => value.collectionName === billingCollectionName)
+        ) {
+            migrations.push(new CreateDocumentCollectionMigration(billingCollectionName));
         }
 
         return migrations;
@@ -82,9 +95,13 @@ export class SchemaAnalyzer {
 
         // update indices
         const requiredIndices = getRequiredIndicesFromModel(model, { shouldUseWorkaroundForSparseIndices });
-        const existingIndicesPromises = model.rootEntityTypes.map(rootEntityType => this.getCollectionIndices(rootEntityType));
+        const existingIndicesPromises = model.rootEntityTypes.map(rootEntityType =>
+            this.getCollectionIndices(rootEntityType)
+        );
         let existingIndices: IndexDefinition[] = [];
-        await Promise.all(existingIndicesPromises).then(promiseResults => promiseResults.forEach(indices => indices.forEach(index => existingIndices.push(index))));
+        await Promise.all(existingIndicesPromises).then(promiseResults =>
+            promiseResults.forEach(indices => indices.forEach(index => existingIndices.push(index)))
+        );
         const { indicesToDelete, indicesToCreate } = calculateRequiredIndexOperations(existingIndices, requiredIndices);
 
         // this is useful to show a warning on large collections which would take a while to create an index
@@ -104,8 +121,12 @@ export class SchemaAnalyzer {
         }
 
         return [
-            ...indicesToCreate.map(index => new CreateIndexMigration({ index, collectionSize: collectionSizes.get(index.collectionName) })),
-            ...indicesToDelete.map(index => new DropIndexMigration({ index, collectionSize: collectionSizes.get(index.collectionName) }))
+            ...indicesToCreate.map(
+                index => new CreateIndexMigration({ index, collectionSize: collectionSizes.get(index.collectionName) })
+            ),
+            ...indicesToDelete.map(
+                index => new DropIndexMigration({ index, collectionSize: collectionSizes.get(index.collectionName) })
+            )
         ];
     }
 
@@ -132,17 +153,21 @@ export class SchemaAnalyzer {
         try {
             version = await this.versionHelper.getArangoDBVersionAsString();
         } catch (e) {
-            this.logger.warn(`Error fetching ArangoDB version. Workaround for sparse indices will not be enabled. ` + e.stack);
+            this.logger.warn(
+                `Error fetching ArangoDB version. Workaround for sparse indices will not be enabled. ` + e.stack
+            );
             return false;
         }
         const parsed = version && this.versionHelper.parseVersion(version);
         if (!parsed) {
-            this.logger.warn(`ArangoDB version not recognized ("${version}"). Workaround for sparse indices will not be enabled.`);
+            this.logger.warn(
+                `ArangoDB version not recognized ("${version}"). Workaround for sparse indices will not be enabled.`
+            );
             return false;
         }
 
         const { major, minor } = parsed;
-        if ((major > 3) || (major === 3 && minor >= 4)) {
+        if (major > 3 || (major === 3 && minor >= 4)) {
             this.logger.debug(`ArangoDB version: ${version}. Workaround for sparse indices will not be enabled.`);
             return false;
         }
@@ -155,9 +180,8 @@ export class SchemaAnalyzer {
      * @param model
      */
     async getArangoSearchMigrations(model: Model): Promise<ReadonlyArray<SchemaMigration>> {
-
-        if(!await isArangoSearchSupported(this.versionHelper.getArangoDBVersion())){
-            return []
+        if (!(await isArangoSearchSupported(this.versionHelper.getArangoDBVersion()))) {
+            return [];
         }
         // the views that match the model
         const requiredViews = getRequiredViewsFromModel(model);
@@ -165,12 +189,20 @@ export class SchemaAnalyzer {
         const views = (await this.db.listViews()).map(value => this.db.arangoSearchView(value.name));
 
         const configuration = this.config.arangoSearchConfiguration;
-        const viewsToCreate = await calculateRequiredArangoSearchViewCreateOperations(views, requiredViews, this.db, configuration);
+        const viewsToCreate = await calculateRequiredArangoSearchViewCreateOperations(
+            views,
+            requiredViews,
+            this.db,
+            configuration
+        );
         const viewsToDrop = calculateRequiredArangoSearchViewDropOperations(views, requiredViews);
-        const viewsToUpdate = await calculateRequiredArangoSearchViewUpdateOperations(views, requiredViews, this.db, configuration);
+        const viewsToUpdate = await calculateRequiredArangoSearchViewUpdateOperations(
+            views,
+            requiredViews,
+            this.db,
+            configuration
+        );
 
         return [...viewsToCreate, ...viewsToDrop, ...viewsToUpdate];
     }
-
-
 }

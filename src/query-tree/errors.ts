@@ -32,6 +32,7 @@ export const ATOMICITY_SKIP_ERROR = 'ATOMICITY_SKIP';
 export const INVALID_CURSOR_ERROR = 'INVALID_CURSOR';
 export const NOT_FOUND_ERROR = 'NOT_FOUND';
 export const FLEX_SEARCH_TOO_MANY_OBJECTS = 'FLEX_SEARCH_TOO_MANY_OBJECTS';
+export const BILLING_KEY_FIELD_NOT_FILLED_ERROR = 'BILLING_KEY_FIELD_NOT_FILLED';
 
 export const RUNTIME_ERROR_TOKEN = '__cruddl_runtime_error';
 export const RUNTIME_ERROR_CODE_PROPERTY = '__cruddl_runtime_error_code';
@@ -43,9 +44,9 @@ export interface RuntimeErrorValue {
     /**
      * The error message
      */
-    readonly __cruddl_runtime_error: string
+    readonly __cruddl_runtime_error: string;
 
-    readonly __cruddl_runtime_error_code?: string
+    readonly __cruddl_runtime_error_code?: string;
 }
 
 /**
@@ -74,7 +75,6 @@ export class RuntimeError extends Error {
         this.code = args.code;
     }
 }
-
 
 /**
  * Creates an instance of RuntimeErrorValue
