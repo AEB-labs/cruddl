@@ -741,13 +741,13 @@ register(FlexSearchComplexOperatorQueryNode, (node, context) => {
 });
 
 function getBillingInput(
-    keyField: string | number | AQLFragment,
+    key: string | number | AQLFragment,
     rootEntityTypeName: string,
     context: QueryContext,
     currentTimestamp: string
 ) {
     return aql`
-        keyField: ${keyField},
+        key: ${key},
         type: ${rootEntityTypeName},
         isExported: false,
         createdAt: ${currentTimestamp},
@@ -758,36 +758,38 @@ register(CreateBillingEntityQueryNode, (node, context) => {
     const currentTimestamp = new Date().toISOString();
     return aqlExt.parenthesizeList(
         aql`UPSERT {
-            keyField: ${node.keyFieldValue},
+            key: ${node.key},
             type: ${node.rootEntityTypeName}
         }`,
         aql`INSERT {
-            ${getBillingInput(node.keyFieldValue, node.rootEntityTypeName, context, currentTimestamp)},
+            ${getBillingInput(node.key, node.rootEntityTypeName, context, currentTimestamp)},
             isConfirmedForExport: false
          }`,
-        aql`UPDATE {}`,
+        aql`UPDATE {
+            updatedAt: ${currentTimestamp}
+        }`,
         aql`IN ${getCollectionForBilling(AccessType.WRITE, context)}`,
-        aql`RETURN ${node.keyFieldValue}`
+        aql`RETURN ${node.key}`
     );
 });
 
 register(ConfirmForBillingQueryNode, (node, context) => {
-    const keyField = processNode(node.keyField, context);
+    const key = processNode(node.key, context);
     const currentTimestamp = new Date().toISOString();
     return aqlExt.parenthesizeList(
         aql`UPSERT {
-            keyField: ${keyField},
+            key: ${key},
             type: ${node.rootEntityTypeName}
         }`,
         aql`INSERT {
-            ${getBillingInput(keyField, node.rootEntityTypeName, context, currentTimestamp)},
+            ${getBillingInput(key, node.rootEntityTypeName, context, currentTimestamp)},
             isConfirmedForExport: true,
-            confirmedForExportTimestamp: ${currentTimestamp}
+            confirmedForExportAt: ${currentTimestamp}
          }`,
         aql`UPDATE {
             isConfirmedForExport: true,
             updatedAt: ${currentTimestamp},
-            confirmedForExportTimestamp: ${currentTimestamp}
+            confirmedForExportAt: ${currentTimestamp}
         }`,
         aql`IN ${getCollectionForBilling(AccessType.WRITE, context)}`,
         aql`RETURN true`

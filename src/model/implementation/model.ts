@@ -56,7 +56,9 @@ export class Model implements ModelComponent {
 
         this.i18n.validate(context);
 
-        this.billingEntityTypes.forEach(value => value.validate(context));
+        for (let billingEntityType of this.billingEntityTypes) {
+            billingEntityType.validate(context);
+        }
 
         for (const type of this.types) {
             type.validate(context);

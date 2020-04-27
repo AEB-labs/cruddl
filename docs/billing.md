@@ -27,7 +27,7 @@ Only RootEntities can be defined as BillingEntities.
 
 Whenever a _create_ mutation is called for a rootEntity that is configured as BillingEntity, a new entry in the `billingEntities` database collection is created. An entry is also created if the key field is changed for a rootEntity that is configured as BillingEntity.
 
-In both cases, if there already is an entry with the same keyField value, no billing entry is created.
+In both cases, if there already is an entry with the same key, no billing entry is created.
 
 ##Logged Entries
 
@@ -35,7 +35,7 @@ A billing entry has the following structure:
 
 ```json
 {
-    "keyField": "000006",
+    "key": "000006",
     "type": "Order",
     "isExported": false,
     "isConfirmedForExport": false,

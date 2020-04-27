@@ -10,12 +10,12 @@
         "data": {
             "allBillingEntities": [
                 {
-                    "keyField": "billing",
+                    "key": "billing",
                     "type": "Delivery",
                     "isConfirmedForExport": false,
                     "isExported": false,
-                    "confirmedForExportTimestamp": null,
-                    "exportedTimestamp": null
+                    "confirmedForExportAt": null,
+                    "exportedAt": null
                 }
             ]
         }

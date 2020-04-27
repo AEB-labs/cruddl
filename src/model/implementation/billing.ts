@@ -84,7 +84,6 @@ export class BillingEntityType implements ModelComponent {
         }
     }
 
-    @memorize()
     get typeName() {
         return this.input.typeName;
     }

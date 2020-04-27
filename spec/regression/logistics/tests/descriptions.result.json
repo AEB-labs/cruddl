@@ -144,7 +144,7 @@
                             "description": "The instant this object has been updated the last time (not including relation updates)"
                         },
                         {
-                            "name": "keyField",
+                            "name": "key",
                             "description": null
                         },
                         {
@@ -160,11 +160,11 @@
                             "description": null
                         },
                         {
-                            "name": "confirmedForExportTimestamp",
+                            "name": "confirmedForExportAt",
                             "description": null
                         },
                         {
-                            "name": "exportedTimestamp",
+                            "name": "exportedAt",
                             "description": null
                         },
                         {
@@ -294,68 +294,68 @@
                             "description": "Checks if `updatedAt` is greater or equal a specified value.\n\nThe instant this object has been updated the last time (not including relation updates)"
                         },
                         {
-                            "name": "keyField",
-                            "description": "Checks if `keyField` equals a specified string, case-sensitively.\n\nIf an index exists on `keyField`, it can be used.\n\nSee also `like` for a case-insensitive filter."
+                            "name": "key",
+                            "description": "Checks if `key` equals a specified string, case-sensitively.\n\nIf an index exists on `key`, it can be used.\n\nSee also `like` for a case-insensitive filter."
                         },
                         {
-                            "name": "keyField_not",
-                            "description": "Checks if `keyField` does not equal a specified string, case-sensitively."
+                            "name": "key_not",
+                            "description": "Checks if `key` does not equal a specified string, case-sensitively."
                         },
                         {
-                            "name": "keyField_in",
-                            "description": "Checks if `keyField` is equal to one of the specified values."
+                            "name": "key_in",
+                            "description": "Checks if `key` is equal to one of the specified values."
                         },
                         {
-                            "name": "keyField_not_in",
-                            "description": "Checks if `keyField` is not equal to one of the specified values."
+                            "name": "key_not_in",
+                            "description": "Checks if `key` is not equal to one of the specified values."
                         },
                         {
-                            "name": "keyField_lt",
-                            "description": "Checks if `keyField` is less than a specified value."
+                            "name": "key_lt",
+                            "description": "Checks if `key` is less than a specified value."
                         },
                         {
-                            "name": "keyField_lte",
-                            "description": "Checks if `keyField` is less or equal a specified value."
+                            "name": "key_lte",
+                            "description": "Checks if `key` is less or equal a specified value."
                         },
                         {
-                            "name": "keyField_gt",
-                            "description": "Checks if `keyField` is greater than a specified value."
+                            "name": "key_gt",
+                            "description": "Checks if `key` is greater than a specified value."
                         },
                         {
-                            "name": "keyField_gte",
-                            "description": "Checks if `keyField` is greater or equal a specified value."
+                            "name": "key_gte",
+                            "description": "Checks if `key` is greater or equal a specified value."
                         },
                         {
-                            "name": "keyField_contains",
-                            "description": "Checks if `keyField` contains a specified string, case-sensitively."
+                            "name": "key_contains",
+                            "description": "Checks if `key` contains a specified string, case-sensitively."
                         },
                         {
-                            "name": "keyField_not_contains",
-                            "description": "Checks if `keyField` does not contain a specified string, case-sensitively."
+                            "name": "key_not_contains",
+                            "description": "Checks if `key` does not contain a specified string, case-sensitively."
                         },
                         {
-                            "name": "keyField_starts_with",
-                            "description": "Checks if `keyField` starts with a specified string, case-sensitively.\n\nNever uses an index. Consider using `like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
+                            "name": "key_starts_with",
+                            "description": "Checks if `key` starts with a specified string, case-sensitively.\n\nNever uses an index. Consider using `like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
                         },
                         {
-                            "name": "keyField_not_starts_with",
-                            "description": "Checks if `keyField` does not start with a specified string, case-sensitively.\n\nNever uses an index. Consider using `not_like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
+                            "name": "key_not_starts_with",
+                            "description": "Checks if `key` does not start with a specified string, case-sensitively.\n\nNever uses an index. Consider using `not_like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
                         },
                         {
-                            "name": "keyField_ends_with",
-                            "description": "Checks if `keyField` ends with a specified string, case-sensitively."
+                            "name": "key_ends_with",
+                            "description": "Checks if `key` ends with a specified string, case-sensitively."
                         },
                         {
-                            "name": "keyField_not_ends_with",
-                            "description": "Checks if `keyField` does not end with a specified string, case-sensitively."
+                            "name": "key_not_ends_with",
+                            "description": "Checks if `key` does not end with a specified string, case-sensitively."
                         },
                         {
-                            "name": "keyField_like",
-                            "description": "Matches `keyField` against a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)\n\nIf an index exists on `keyField`, it can be used for the literal prefix (the part until the first placeholder)."
+                            "name": "key_like",
+                            "description": "Matches `key` against a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)\n\nIf an index exists on `key`, it can be used for the literal prefix (the part until the first placeholder)."
                         },
                         {
-                            "name": "keyField_not_like",
-                            "description": "Checks if `keyField` does *not* match a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)"
+                            "name": "key_not_like",
+                            "description": "Checks if `key` does *not* match a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)"
                         },
                         {
                             "name": "type",
@@ -438,68 +438,68 @@
                             "description": "Checks if `isExported` does not equal a specified value"
                         },
                         {
-                            "name": "confirmedForExportTimestamp",
-                            "description": "Checks if `confirmedForExportTimestamp` equals a specified value.\n\nIf an index exists on `confirmedForExportTimestamp`, it can be used."
+                            "name": "confirmedForExportAt",
+                            "description": "Checks if `confirmedForExportAt` equals a specified value.\n\nIf an index exists on `confirmedForExportAt`, it can be used."
                         },
                         {
-                            "name": "confirmedForExportTimestamp_not",
-                            "description": "Checks if `confirmedForExportTimestamp` does not equal a specified value"
+                            "name": "confirmedForExportAt_not",
+                            "description": "Checks if `confirmedForExportAt` does not equal a specified value"
                         },
                         {
-                            "name": "confirmedForExportTimestamp_in",
-                            "description": "Checks if `confirmedForExportTimestamp` is equal to one of the specified values."
+                            "name": "confirmedForExportAt_in",
+                            "description": "Checks if `confirmedForExportAt` is equal to one of the specified values."
                         },
                         {
-                            "name": "confirmedForExportTimestamp_not_in",
-                            "description": "Checks if `confirmedForExportTimestamp` is not equal to one of the specified values."
+                            "name": "confirmedForExportAt_not_in",
+                            "description": "Checks if `confirmedForExportAt` is not equal to one of the specified values."
                         },
                         {
-                            "name": "confirmedForExportTimestamp_lt",
-                            "description": "Checks if `confirmedForExportTimestamp` is less than a specified value."
+                            "name": "confirmedForExportAt_lt",
+                            "description": "Checks if `confirmedForExportAt` is less than a specified value."
                         },
                         {
-                            "name": "confirmedForExportTimestamp_lte",
-                            "description": "Checks if `confirmedForExportTimestamp` is less or equal a specified value."
+                            "name": "confirmedForExportAt_lte",
+                            "description": "Checks if `confirmedForExportAt` is less or equal a specified value."
                         },
                         {
-                            "name": "confirmedForExportTimestamp_gt",
-                            "description": "Checks if `confirmedForExportTimestamp` is greater than a specified value."
+                            "name": "confirmedForExportAt_gt",
+                            "description": "Checks if `confirmedForExportAt` is greater than a specified value."
                         },
                         {
-                            "name": "confirmedForExportTimestamp_gte",
-                            "description": "Checks if `confirmedForExportTimestamp` is greater or equal a specified value."
+                            "name": "confirmedForExportAt_gte",
+                            "description": "Checks if `confirmedForExportAt` is greater or equal a specified value."
                         },
                         {
-                            "name": "exportedTimestamp",
-                            "description": "Checks if `exportedTimestamp` equals a specified value.\n\nIf an index exists on `exportedTimestamp`, it can be used."
+                            "name": "exportedAt",
+                            "description": "Checks if `exportedAt` equals a specified value.\n\nIf an index exists on `exportedAt`, it can be used."
                         },
                         {
-                            "name": "exportedTimestamp_not",
-                            "description": "Checks if `exportedTimestamp` does not equal a specified value"
+                            "name": "exportedAt_not",
+                            "description": "Checks if `exportedAt` does not equal a specified value"
                         },
                         {
-                            "name": "exportedTimestamp_in",
-                            "description": "Checks if `exportedTimestamp` is equal to one of the specified values."
+                            "name": "exportedAt_in",
+                            "description": "Checks if `exportedAt` is equal to one of the specified values."
                         },
                         {
-                            "name": "exportedTimestamp_not_in",
-                            "description": "Checks if `exportedTimestamp` is not equal to one of the specified values."
+                            "name": "exportedAt_not_in",
+                            "description": "Checks if `exportedAt` is not equal to one of the specified values."
                         },
                         {
-                            "name": "exportedTimestamp_lt",
-                            "description": "Checks if `exportedTimestamp` is less than a specified value."
+                            "name": "exportedAt_lt",
+                            "description": "Checks if `exportedAt` is less than a specified value."
                         },
                         {
-                            "name": "exportedTimestamp_lte",
-                            "description": "Checks if `exportedTimestamp` is less or equal a specified value."
+                            "name": "exportedAt_lte",
+                            "description": "Checks if `exportedAt` is less or equal a specified value."
                         },
                         {
-                            "name": "exportedTimestamp_gt",
-                            "description": "Checks if `exportedTimestamp` is greater than a specified value."
+                            "name": "exportedAt_gt",
+                            "description": "Checks if `exportedAt` is greater than a specified value."
                         },
                         {
-                            "name": "exportedTimestamp_gte",
-                            "description": "Checks if `exportedTimestamp` is greater or equal a specified value."
+                            "name": "exportedAt_gte",
+                            "description": "Checks if `exportedAt` is greater or equal a specified value."
                         },
                         {
                             "name": "AND",
@@ -5083,7 +5083,7 @@
                     "fields": null,
                     "inputFields": [
                         {
-                            "name": "keyField",
+                            "name": "key",
                             "description": null
                         },
                         {
@@ -5099,11 +5099,11 @@
                             "description": null
                         },
                         {
-                            "name": "confirmedForExportTimestamp",
+                            "name": "confirmedForExportAt",
                             "description": null
                         },
                         {
-                            "name": "exportedTimestamp",
+                            "name": "exportedAt",
                             "description": null
                         }
                     ]
@@ -5118,7 +5118,7 @@
                             "description": "The `id` of the `BillingEntity` to be updated (does not change the `id`)."
                         },
                         {
-                            "name": "keyField",
+                            "name": "key",
                             "description": null
                         },
                         {
@@ -5134,11 +5134,11 @@
                             "description": null
                         },
                         {
-                            "name": "confirmedForExportTimestamp",
+                            "name": "confirmedForExportAt",
                             "description": null
                         },
                         {
-                            "name": "exportedTimestamp",
+                            "name": "exportedAt",
                             "description": null
                         }
                     ]
@@ -5149,7 +5149,7 @@
                     "fields": null,
                     "inputFields": [
                         {
-                            "name": "keyField",
+                            "name": "key",
                             "description": null
                         },
                         {
@@ -5165,11 +5165,11 @@
                             "description": null
                         },
                         {
-                            "name": "confirmedForExportTimestamp",
+                            "name": "confirmedForExportAt",
                             "description": null
                         },
                         {
-                            "name": "exportedTimestamp",
+                            "name": "exportedAt",
                             "description": null
                         }
                     ]

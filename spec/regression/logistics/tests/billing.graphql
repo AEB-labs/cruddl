@@ -5,12 +5,12 @@ mutation createDelivery {
 }
 
 query billingEntity_existing {
-    allBillingEntities(filter: { keyField: "billing", type: "Delivery" }) {
-        keyField
+    allBillingEntities(filter: { key: "billing", type: "Delivery" }) {
+        key
         type
         isConfirmedForExport
         isExported
-        confirmedForExportTimestamp
-        exportedTimestamp
+        confirmedForExportAt
+        exportedAt
     }
 }

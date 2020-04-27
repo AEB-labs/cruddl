@@ -1,7 +1,15 @@
 import { Thunk } from 'graphql';
 import { fromPairs, toPairs } from 'lodash';
 import { ChildEntityType, EntityExtensionType, Field, ObjectType, RootEntityType, ValueObjectType } from '../../model';
-import { AffectedFieldInfoQueryNode, CreateBillingEntityQueryNode, CreateEntityQueryNode, LiteralQueryNode, PreExecQueryParms, QueryNode, VariableQueryNode } from '../../query-tree';
+import {
+    AffectedFieldInfoQueryNode,
+    CreateBillingEntityQueryNode,
+    CreateEntityQueryNode,
+    LiteralQueryNode,
+    PreExecQueryParms,
+    QueryNode,
+    VariableQueryNode
+} from '../../query-tree';
 import { ENTITY_CREATED_AT, ENTITY_UPDATED_AT, ID_FIELD } from '../../schema/constants';
 import { getCreateInputTypeName, getValueObjectInputTypeName } from '../../schema/names';
 import { flatMap, PlainObject } from '../../utils/utils';
@@ -16,12 +24,7 @@ function getCurrentISODate() {
 }
 
 export class CreateObjectInputType extends TypedInputObjectType<CreateInputField> {
-    constructor(
-        type: ObjectType,
-        name: string,
-        fields: Thunk<ReadonlyArray<CreateInputField>>,
-        description: string
-    ) {
+    constructor(type: ObjectType, name: string, fields: Thunk<ReadonlyArray<CreateInputField>>, description: string) {
         super(name, fields, description);
     }
 
@@ -43,7 +46,9 @@ export class CreateObjectInputType extends TypedInputObjectType<CreateInputField
     }
 
     collectAffectedFields(value: PlainObject, fields: Set<Field>, context: FieldContext) {
-        this.getApplicableInputFields(value).forEach(field => field.collectAffectedFields(value[field.name], fields, context));
+        this.getApplicableInputFields(value).forEach(field =>
+            field.collectAffectedFields(value[field.name], fields, context)
+        );
     }
 
     getAffectedFields(value: PlainObject, context: FieldContext): ReadonlyArray<Field> {
@@ -58,18 +63,21 @@ export class CreateObjectInputType extends TypedInputObjectType<CreateInputField
 }
 
 export class CreateRootEntityInputType extends CreateObjectInputType {
-    constructor(
-        public readonly rootEntityType: RootEntityType,
-        fields: Thunk<ReadonlyArray<CreateInputField>>
-    ) {
-        super(rootEntityType, getCreateInputTypeName(rootEntityType.name), fields,
-            `The create type for the root entity type \`${rootEntityType.name}\`.\n\nThe fields \`id\`, \`createdAt\`, and \`updatedAt\` are set automatically.`);
+    constructor(public readonly rootEntityType: RootEntityType, fields: Thunk<ReadonlyArray<CreateInputField>>) {
+        super(
+            rootEntityType,
+            getCreateInputTypeName(rootEntityType.name),
+            fields,
+            `The create type for the root entity type \`${rootEntityType.name}\`.\n\nThe fields \`id\`, \`createdAt\`, and \`updatedAt\` are set automatically.`
+        );
     }
 
     getCreateStatements(input: PlainObject, newEntityIdVarNode: VariableQueryNode, context: FieldContext) {
         // Create new entity
         const objectNode = new LiteralQueryNode(this.prepareValue(input, context));
-        const affectedFields = this.getAffectedFields(input, context).map(field => new AffectedFieldInfoQueryNode(field));
+        const affectedFields = this.getAffectedFields(input, context).map(
+            field => new AffectedFieldInfoQueryNode(field)
+        );
         const createEntityNode = new CreateEntityQueryNode(this.rootEntityType, objectNode, affectedFields);
         const newEntityPreExec = new PreExecQueryParms({ query: createEntityNode, resultVariable: newEntityIdVarNode });
 
@@ -78,15 +86,21 @@ export class CreateRootEntityInputType extends CreateObjectInputType {
         // Note: these statements contain validators which should arguably be moved to the front
         // works with transactional DB adapters, but e.g. not with JavaScript
 
-
         const preExecQueryParms = [newEntityPreExec, ...relationStatements];
 
-        if (this.rootEntityType.billingEntityConfig
-            && this.rootEntityType.billingEntityConfig.keyFieldName
-            && input[this.rootEntityType.billingEntityConfig.keyFieldName]) {
-            preExecQueryParms.push(new PreExecQueryParms({
-                query: new CreateBillingEntityQueryNode(<number | string>input[this.rootEntityType.billingEntityConfig.keyFieldName], this.rootEntityType.name)
-            }));
+        if (
+            this.rootEntityType.billingEntityConfig &&
+            this.rootEntityType.billingEntityConfig.keyFieldName &&
+            input[this.rootEntityType.billingEntityConfig.keyFieldName]
+        ) {
+            preExecQueryParms.push(
+                new PreExecQueryParms({
+                    query: new CreateBillingEntityQueryNode(
+                        input[this.rootEntityType.billingEntityConfig.keyFieldName] as number | string,
+                        this.rootEntityType.name
+                    )
+                })
+            );
         }
 
         return preExecQueryParms;
@@ -100,7 +114,11 @@ export class CreateRootEntityInputType extends CreateObjectInputType {
         };
     }
 
-    private getRelationStatements(input: PlainObject, idNode: QueryNode, context: FieldContext): ReadonlyArray<PreExecQueryParms> {
+    private getRelationStatements(
+        input: PlainObject,
+        idNode: QueryNode,
+        context: FieldContext
+    ): ReadonlyArray<PreExecQueryParms> {
         const relationFields = this.fields
             .filter(isRelationCreateField)
             .filter(field => field.appliesToMissingFields() || field.name in input);
@@ -109,12 +127,13 @@ export class CreateRootEntityInputType extends CreateObjectInputType {
 }
 
 export class CreateChildEntityInputType extends CreateObjectInputType {
-    constructor(
-        public readonly childEntityType: ChildEntityType,
-        fields: Thunk<ReadonlyArray<CreateInputField>>
-    ) {
-        super(childEntityType, getCreateInputTypeName(childEntityType.name), fields,
-            `The create type for the child entity type \`${childEntityType.name}\`.\n\nThe fields \`id\`, \`createdAt\`, and \`updatedAt\` are set automatically.`);
+    constructor(public readonly childEntityType: ChildEntityType, fields: Thunk<ReadonlyArray<CreateInputField>>) {
+        super(
+            childEntityType,
+            getCreateInputTypeName(childEntityType.name),
+            fields,
+            `The create type for the child entity type \`${childEntityType.name}\`.\n\nThe fields \`id\`, \`createdAt\`, and \`updatedAt\` are set automatically.`
+        );
     }
 
     getAdditionalProperties() {
@@ -128,15 +147,26 @@ export class CreateChildEntityInputType extends CreateObjectInputType {
 }
 
 export class CreateEntityExtensionInputType extends CreateObjectInputType {
-    constructor(public readonly entityExtensionType: EntityExtensionType, fields: Thunk<ReadonlyArray<CreateInputField>>) {
-        super(entityExtensionType, getCreateInputTypeName(entityExtensionType.name), fields,
-            `The create type for the entity extension type \`${entityExtensionType.name}\`.`);
+    constructor(
+        public readonly entityExtensionType: EntityExtensionType,
+        fields: Thunk<ReadonlyArray<CreateInputField>>
+    ) {
+        super(
+            entityExtensionType,
+            getCreateInputTypeName(entityExtensionType.name),
+            fields,
+            `The create type for the entity extension type \`${entityExtensionType.name}\`.`
+        );
     }
 }
 
 export class ValueObjectInputType extends CreateObjectInputType {
     constructor(public readonly valueObjectType: ValueObjectType, fields: Thunk<ReadonlyArray<CreateInputField>>) {
-        super(valueObjectType, getValueObjectInputTypeName(valueObjectType.name), fields,
-            `The create/update type for the value object type \`${valueObjectType.name}\`.\n\nIf this is used in an update mutation, missing fields are set to \`null\`.`);
+        super(
+            valueObjectType,
+            getValueObjectInputTypeName(valueObjectType.name),
+            fields,
+            `The create/update type for the value object type \`${valueObjectType.name}\`.\n\nIf this is used in an update mutation, missing fields are set to \`null\`.`
+        );
     }
 }

@@ -1,8 +1,8 @@
-import { GraphQLBoolean } from 'graphql';
+import { GraphQLBoolean, GraphQLID } from 'graphql';
 import memorize from 'memorize-decorator';
 import { RootEntityType } from '../model/implementation';
 import {
-    BILLING_KEYFIELD_NOT_FILLED_ERROR,
+    BILLING_KEY_FIELD_NOT_FILLED_ERROR,
     BinaryOperationQueryNode,
     BinaryOperator,
     ConfirmForBillingQueryNode,
@@ -36,13 +36,12 @@ export class BillingTypeGenerator {
         if (!rootEntityType.billingEntityConfig.billingKeyField.type.isScalarType) {
             throw new Error('The BillingKeyField must be a scalar field.');
         }
-        const inputType = rootEntityType.billingEntityConfig.billingKeyField.type.graphQLScalarType;
         return {
             name: getConfirmForBillingFieldName(rootEntityType.name),
             type: GraphQLBoolean,
             args: {
                 [BILLING_MUTATION_INPUT_ARG]: {
-                    type: inputType
+                    type: GraphQLID
                 }
             },
             isSerial: true,
@@ -53,16 +52,16 @@ export class BillingTypeGenerator {
 
     private generateQueryNode(arg: number | string, rootEntityType: RootEntityType) {
         const entityIdQueryNode = new LiteralQueryNode(arg);
-        const keyFieldVariableQueryNode = new VariableQueryNode();
+        const keyVariableQueryNode = new VariableQueryNode();
         return new WithPreExecutionQueryNode({
             preExecQueries: [
                 this.getExistancePreExecQueryParms(rootEntityType, entityIdQueryNode),
-                this.getKeyfieldPreExecQueryParms(rootEntityType, entityIdQueryNode, keyFieldVariableQueryNode),
+                this.getKeyPreExecQueryParms(rootEntityType, entityIdQueryNode, keyVariableQueryNode),
                 new PreExecQueryParms({
                     query: this.getEmptyUpdateQueryNode(rootEntityType, entityIdQueryNode)
                 }),
                 new PreExecQueryParms({
-                    query: new ConfirmForBillingQueryNode(keyFieldVariableQueryNode, rootEntityType.name)
+                    query: new ConfirmForBillingQueryNode(keyVariableQueryNode, rootEntityType.name)
                 })
             ],
             resultNode: new LiteralQueryNode(true)
@@ -87,13 +86,13 @@ export class BillingTypeGenerator {
         });
     }
 
-    private getKeyfieldPreExecQueryParms(
+    private getKeyPreExecQueryParms(
         rootEntityType: RootEntityType,
         entityIdQueryNode: LiteralQueryNode,
-        keyFieldVariableQueryNode: VariableQueryNode
+        keyVariableQueryNode: VariableQueryNode
     ) {
         if (!rootEntityType.billingEntityConfig || !rootEntityType.billingEntityConfig.billingKeyField) {
-            throw this.getKeyFieldNotFilledError(rootEntityType);
+            throw this.getKeyNotFilledError(rootEntityType);
         }
         const itemVariableNode = new VariableQueryNode();
         return new PreExecQueryParms({
@@ -101,10 +100,10 @@ export class BillingTypeGenerator {
                 this.getRootEntityQueryNode(itemVariableNode, entityIdQueryNode, rootEntityType),
                 rootEntityType.billingEntityConfig.billingKeyField
             ),
-            resultVariable: keyFieldVariableQueryNode,
+            resultVariable: keyVariableQueryNode,
             resultValidator: new ErrorIfNotTruthyResultValidator({
-                errorCode: BILLING_KEYFIELD_NOT_FILLED_ERROR,
-                errorMessage: `The keyfield ${rootEntityType.billingEntityConfig.billingKeyField.name} with id ${entityIdQueryNode.value} is not filled.`
+                errorCode: BILLING_KEY_FIELD_NOT_FILLED_ERROR,
+                errorMessage: `The key ${rootEntityType.billingEntityConfig.billingKeyField.name} is not filled for ${rootEntityType.name} with id ${entityIdQueryNode.value}.`
             })
         });
     }
@@ -120,7 +119,7 @@ export class BillingTypeGenerator {
         });
     }
 
-    private getKeyFieldNotFilledError(rootEntityType: RootEntityType) {
+    private getKeyNotFilledError(rootEntityType: RootEntityType) {
         return new Error(`The RootEntityType "${rootEntityType.name}" does not have a billing-keyField.`);
     }
 
@@ -145,7 +144,7 @@ export class BillingTypeGenerator {
         variable: VariableQueryNode
     ): QueryNode {
         if (!rootEntityType.billingEntityConfig || !rootEntityType.billingEntityConfig.billingKeyField) {
-            throw this.getKeyFieldNotFilledError(rootEntityType);
+            throw this.getKeyNotFilledError(rootEntityType);
         }
 
         return new BinaryOperationQueryNode(

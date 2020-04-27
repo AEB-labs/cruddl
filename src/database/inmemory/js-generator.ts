@@ -837,10 +837,10 @@ register(CreateBillingEntityQueryNode, (node, context) => {
 
     return jsExt.executingFunction(
         js`
-            const entry = ${billingEntities}.find(value => (value.keyField === ${node.keyFieldValue} && value.type === ${node.rootEntityTypeName}));
+            const entry = ${billingEntities}.find(value => (value.key === ${node.key} && value.type === ${node.rootEntityTypeName}));
             if(!entry){
                 ${billingEntities}.push({
-                    keyField: ${node.keyFieldValue},
+                    key: ${node.key},
                     type: ${node.rootEntityTypeName},
                     isExported: false,
                     isConfirmedForExport: false,
@@ -852,26 +852,26 @@ register(CreateBillingEntityQueryNode, (node, context) => {
 });
 
 register(ConfirmForBillingQueryNode, (node, context) => {
-    const keyField = processNode(node.keyField, context);
+    const key = processNode(node.key, context);
     const currentTimestamp = new Date().toISOString();
     const billingEntities = js.collection('billingEntities');
 
     return jsExt.executingFunction(
         js`
-            const entry = ${billingEntities}.find(value => (value.keyField === ${keyField} && value.type === ${node.rootEntityTypeName}));
+            const entry = ${billingEntities}.find(value => (value.key === ${key} && value.type === ${node.rootEntityTypeName}));
             if(!entry){
                 ${billingEntities}.push({
-                    keyField: ${keyField},
+                    key: ${key},
                     type: ${node.rootEntityTypeName},
                     isExported: false,
                     isConfirmedForExport: true,
-                    confirmedForExportTimestamp: ${currentTimestamp},
+                    confirmedForExportAt: ${currentTimestamp},
                     createdAt: ${currentTimestamp},
                     updatedAt: ${currentTimestamp}
                 });
            } else {
                entry.isConfirmedForExport = true;
-               entry.confirmedForExportTimestamp = ${currentTimestamp};
+               entry.confirmedForExportAt = ${currentTimestamp};
            }`
     );
 });

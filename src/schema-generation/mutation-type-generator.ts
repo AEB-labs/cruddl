@@ -2,7 +2,12 @@ import { GraphQLID, GraphQLList, GraphQLNonNull } from 'graphql';
 import { flatMap } from 'lodash';
 import memorize from 'memorize-decorator';
 import { Namespace, RootEntityType } from '../model';
-import { AffectedFieldInfoQueryNode, BinaryOperationQueryNode, BinaryOperator, CreateBillingEntityQueryNode, DeleteEntitiesQueryNode,
+import {
+    AffectedFieldInfoQueryNode,
+    BinaryOperationQueryNode,
+    BinaryOperator,
+    CreateBillingEntityQueryNode,
+    DeleteEntitiesQueryNode,
     EntitiesQueryNode,
     EntityFromIdQueryNode,
     ErrorIfEmptyResultValidator,
@@ -58,7 +63,7 @@ export class MutationTypeGenerator {
         private readonly createTypeGenerator: CreateInputTypeGenerator,
         private readonly updateTypeGenerator: UpdateInputTypeGenerator,
         private readonly listAugmentation: ListAugmentation,
-        private readonly billingTypeGenerator:BillingTypeGenerator
+        private readonly billingTypeGenerator: BillingTypeGenerator
     ) {}
 
     @memorize()
@@ -317,17 +322,21 @@ export class MutationTypeGenerator {
             context
         );
 
-        const preExecQueryParms = [
-            updateEntityPreExec,
-            ...relationStatements
-        ];
+        const preExecQueryParms = [updateEntityPreExec, ...relationStatements];
 
-        if (rootEntityType.billingEntityConfig
-            && rootEntityType.billingEntityConfig.keyFieldName
-            && input[rootEntityType.billingEntityConfig.keyFieldName]) {
-            preExecQueryParms.push(new PreExecQueryParms({
-                query: new CreateBillingEntityQueryNode(<number | string>input[rootEntityType.billingEntityConfig.keyFieldName], rootEntityType.name)
-            }));
+        if (
+            rootEntityType.billingEntityConfig &&
+            rootEntityType.billingEntityConfig.keyFieldName &&
+            input[rootEntityType.billingEntityConfig.keyFieldName]
+        ) {
+            preExecQueryParms.push(
+                new PreExecQueryParms({
+                    query: new CreateBillingEntityQueryNode(
+                        input[rootEntityType.billingEntityConfig.keyFieldName] as number | string,
+                        rootEntityType.name
+                    )
+                })
+            );
         }
 
         return preExecQueryParms;
