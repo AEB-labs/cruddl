@@ -2,7 +2,7 @@ import { QueryNode } from './base';
 import { VariableQueryNode } from './variables';
 
 /**
- * A QueryNode that creates a Billing entry.
+ * A QueryNode that creates a Billing entry, or updates it if it already exists.
  */
 export class CreateBillingEntityQueryNode extends QueryNode {
     constructor(readonly keyFieldValue: number | string, readonly rootEntityTypeName: string) {
