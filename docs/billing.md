@@ -1,6 +1,6 @@
 #Billing guide
 Cruddl can be configured to log the creation of business objects for specific type.
-This can be used for applications, where a customer is billed based on the number of created business objects.
+This can be used for applications where a customer is billed based on the number of created business objects.
 
 ## Configuration
 
@@ -25,9 +25,7 @@ Only RootEntities can be defined as BillingEntities.
 
 ## How it works
 
-Whenever a create mutation is called for a rootEntity that is configured as BillingEntity, a new entry in the `billingEntities` Database-Collection is created.
-
-An entry is also created, if an update mutation is called for a rootEntity that is configured as BillingEntity, where the keyField is changed.
+Whenever a _create_ mutation is called for a rootEntity that is configured as BillingEntity, a new entry in the `billingEntities` database collection is created. An entry is also created if the key field is changed for a rootEntity that is configured as BillingEntity.
 
 In both cases, if there already is an entry with the same keyField value, no billing entry is created.
 
@@ -50,5 +48,5 @@ Cruddl does not perform any clean up, so a service that exports these entries sh
 
 ## Confirm Billing
 
-In some cases the billing entries should not be exported, before a specific event in the business process.
-For these cases, cruddl provides a `confirmBillingForOrder` mutation, that sets the `isConfirmedForExport` flag and the `confirmedForExportTimestamp`.
+In some cases, the billing entries should not be exported before a specific event in the business process occurs.
+For these cases, cruddl provides a `confirmBillingForOrder` mutation that sets the `isConfirmedForExport` flag and the `confirmedForExportTimestamp`.
