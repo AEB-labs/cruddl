@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { Model, TypeKind } from '../../src/model';
+import { EntityExtensionType, Model, TypeKind, ValueObjectType } from '../../src/model';
 import { OrderByEnumGenerator } from '../../src/schema-generation/order-by-enum-generator';
 
 describe('OrderByEnumGenerator', () => {
@@ -20,7 +20,7 @@ describe('OrderByEnumGenerator', () => {
             ]
         });
         const enumType = generator.generate(model.getObjectTypeOrThrow('Test'));
-        expect(enumType.values.map(v => v.name)).to.deep.equal([
+        expect(enumType!.values.map(v => v.name)).to.deep.equal([
             'id_ASC',
             'id_DESC',
             'createdAt_ASC',
@@ -50,7 +50,7 @@ describe('OrderByEnumGenerator', () => {
             ]
         });
         const enumType = generator.generate(model.getObjectTypeOrThrow('Test'));
-        expect(enumType.values.map(v => v.name)).to.deep.equal([
+        expect(enumType!.values.map(v => v.name)).to.deep.equal([
             'id_ASC',
             'id_DESC',
             'createdAt_ASC',
@@ -107,7 +107,7 @@ describe('OrderByEnumGenerator', () => {
     it('includes root entity traversal fields', () => {
         const generator = new OrderByEnumGenerator();
         const enumType = generator.generate(deliveryType);
-        expect(enumType.values.map(v => v.name)).to.deep.equal([
+        expect(enumType!.values.map(v => v.name)).to.deep.equal([
             'id_ASC',
             'id_DESC',
             'createdAt_ASC',
@@ -136,7 +136,7 @@ describe('OrderByEnumGenerator', () => {
     it('cuts off root entity traversal fields if specified', () => {
         const generator = new OrderByEnumGenerator({ maxRootEntityDepth: 1 });
         const enumType = generator.generate(deliveryType);
-        expect(enumType.values.map(v => v.name)).to.deep.equal([
+        expect(enumType!.values.map(v => v.name)).to.deep.equal([
             'id_ASC',
             'id_DESC',
             'createdAt_ASC',
@@ -150,14 +150,14 @@ describe('OrderByEnumGenerator', () => {
             'shipment_createdAt_ASC',
             'shipment_createdAt_DESC',
             'shipment_updatedAt_ASC',
-            'shipment_updatedAt_DESC',
+            'shipment_updatedAt_DESC'
         ]);
     });
 
     it('does not generate root entity traversal fields if specified as 0', () => {
         const generator = new OrderByEnumGenerator({ maxRootEntityDepth: 0 });
         const enumType = generator.generate(deliveryType);
-        expect(enumType.values.map(v => v.name)).to.deep.equal([
+        expect(enumType!.values.map(v => v.name)).to.deep.equal([
             'id_ASC',
             'id_DESC',
             'createdAt_ASC',
@@ -172,7 +172,29 @@ describe('OrderByEnumGenerator', () => {
     it('marks all root entity traversal fields as deprecated', () => {
         const generator = new OrderByEnumGenerator();
         const enumType = generator.generate(deliveryType);
-        expect(enumType.getValueOrThrow('dangerousGoodsInfo_isDangerousGoods_ASC').deprecationReason).to.be.undefined;
-        expect(enumType.getValueOrThrow('shipment_updatedAt_ASC').deprecationReason).to.equal('OrderBy values that include relations or references are deprecated');
+        expect(enumType!.getValueOrThrow('dangerousGoodsInfo_isDangerousGoods_ASC').deprecationReason).to.be.undefined;
+        expect(enumType!.getValueOrThrow('shipment_updatedAt_ASC').deprecationReason).to.equal(
+            'OrderBy values that include relations or references are deprecated'
+        );
+    });
+
+    it('returns undefined if there are no fields to order by', () => {
+        const type = new ValueObjectType(
+            {
+                kind: TypeKind.VALUE_OBJECT,
+                name: 'NoOrder',
+                fields: [
+                    {
+                        name: 'rel',
+                        typeName: 'Delivery',
+                        isRelation: true
+                    }
+                ]
+            },
+            shipmentDeliveryModel
+        );
+
+        const generator = new OrderByEnumGenerator({ maxRootEntityDepth: 0 });
+        expect(generator.generate(type)).to.be.undefined;
     });
 });

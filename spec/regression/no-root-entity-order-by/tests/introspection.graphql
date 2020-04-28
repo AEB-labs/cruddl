@@ -1,0 +1,30 @@
+{
+    # should not exist
+    shipmentDataOrderByType: __type(name: "ShipmentDataOrderBy") {
+        name
+    }
+
+    # should exist
+    shipmentOrderByType: __type(name: "ShipmentOrderBy") {
+        name
+    }
+
+    # should not include orderBy for shipmentDatas, but for shipments
+    deliveryType: __type(name: "Delivery") {
+        fields {
+            name
+            args {
+                name
+                type {
+                    name
+                    ofType {
+                        name
+                        ofType {
+                            name
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
