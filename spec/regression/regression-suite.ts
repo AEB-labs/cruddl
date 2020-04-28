@@ -56,6 +56,11 @@ export class RegressionSuite {
     }
 
     private async setUp() {
+        const optionsPath = path.resolve(this.path, 'options.json');
+        const options = fs.existsSync(optionsPath)
+            ? JSON.parse(stripJsonComments(fs.readFileSync(optionsPath, 'utf-8')))
+            : {};
+
         this.inMemoryDB = new InMemoryDB();
         const generalOptions: ProjectOptions = {
             processError: e => {
@@ -69,6 +74,7 @@ export class RegressionSuite {
             modelValidationOptions: {
                 forbiddenRootEntityNames: []
             },
+            ...options,
             getOperationIdentifier: ({ info }) => info.operation
         };
         const warnLevelOptions = { ...generalOptions, loggerProvider: new Log4jsLoggerProvider('warn') };

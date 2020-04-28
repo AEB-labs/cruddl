@@ -110,9 +110,16 @@ interface RecursionOptions {
 export class OrderByEnumGenerator {
     constructor(private readonly config: OrderByEnumGeneratorConfig = {}) {}
 
+    /**
+     * Generate the OrderBy type for an object type, or undefined if has not any fields to order by
+     */
     @memorize()
-    generate(objectType: ObjectType) {
-        return new OrderByEnumType(objectType, this.getValues(objectType));
+    generate(objectType: ObjectType): OrderByEnumType | undefined {
+        const values = this.getValues(objectType);
+        if (!values.length) {
+            return undefined;
+        }
+        return new OrderByEnumType(objectType, values);
     }
 
     private getValues(type: ObjectType, options?: RecursionOptions): ReadonlyArray<OrderByEnumValue> {

@@ -3,8 +3,15 @@ import { sortBy } from 'lodash';
 import memorize from 'memorize-decorator';
 import { FieldRequest } from '../graphql/query-distiller';
 import { isListTypeIgnoringNonNull } from '../graphql/schema-utils';
-import { Field, ObjectType, RootEntityType, Type, TypeKind } from '../model';
-import { NullQueryNode, ObjectQueryNode, PropertySpecification, QueryNode, UnaryOperationQueryNode, UnaryOperator } from '../query-tree';
+import { Field, ObjectType, Type, TypeKind } from '../model';
+import {
+    NullQueryNode,
+    ObjectQueryNode,
+    PropertySpecification,
+    QueryNode,
+    UnaryOperationQueryNode,
+    UnaryOperator
+} from '../query-tree';
 import { CURSOR_FIELD } from '../schema/constants';
 import { getMetaFieldName } from '../schema/names';
 import { flatMap } from '../utils/utils';
@@ -14,12 +21,7 @@ import { FilterAugmentation } from './filter-augmentation';
 import { ListAugmentation } from './list-augmentation';
 import { MetaTypeGenerator } from './meta-type-generator';
 import { OrderByEnumGenerator, OrderByEnumType } from './order-by-enum-generator';
-import {
-    makeNonNullableList,
-    QueryNodeField,
-   QueryNodeListType, QueryNodeNonNullType, QueryNodeObjectType,
-    QueryNodeOutputType,
-} from './query-node-object-type';
+import { QueryNodeField, QueryNodeListType, QueryNodeNonNullType, QueryNodeOutputType } from './query-node-object-type';
 import { getOrderByValues } from './utils/pagination';
 
 export class OutputTypeGenerator {
@@ -29,9 +31,7 @@ export class OutputTypeGenerator {
         private readonly enumTypeGenerator: EnumTypeGenerator,
         private readonly orderByEnumGenerator: OrderByEnumGenerator,
         private readonly metaTypeGenerator: MetaTypeGenerator
-    ) {
-
-    }
+    ) {}
 
     generate(type: Type): QueryNodeOutputType {
         if (type.isObjectType) {
@@ -65,37 +65,51 @@ export class OutputTypeGenerator {
                 const type = field.type;
                 if (type.kind === TypeKind.ROOT_ENTITY) {
                     nodeFields.forEach(nf => {
-                        nf.description = (field.description ? field.description + '\n\n' : '') + 'This field references a `' + type.name + '` by its `' + (type.keyField ? type.keyField.name : 'key') + '` field';
+                        nf.description =
+                            (field.description ? field.description + '\n\n' : '') +
+                            'This field references a `' +
+                            type.name +
+                            '` by its `' +
+                            (type.keyField ? type.keyField.name : 'key') +
+                            '` field';
                     });
                 }
             }
             return nodeFields;
         });
 
-
-        // include cursor fields in all types that could occur in lists
-        const specialFields = objectType.isEntityExtensionType ? [] : [
-            this.createCursorField(objectType)
-        ];
-
-        return [
-            ...fields,
-            ...specialFields
-        ];
+        // include cursor fields in all types that could occur in lists and that can be ordered (unorderable types can't use cursor-based navigation)
+        const cursorField = this.createCursorField(objectType);
+        return [...fields, ...(cursorField ? [cursorField] : [])];
     }
 
-    private createCursorField(objectType: ObjectType): QueryNodeField {
+    private createCursorField(objectType: ObjectType): QueryNodeField | undefined {
+        if (objectType.isEntityExtensionType) {
+            return undefined;
+        }
         const orderByType = this.orderByEnumGenerator.generate(objectType);
+        if (!orderByType) {
+            return undefined;
+        }
         return {
             name: CURSOR_FIELD,
             type: GraphQLString,
             isPure: true,
             description: `Provides a value that can be supplied to the \`after\` argument for pagination. Depends on the value of the \`orderBy\` argument.`,
-            resolve: (source, args, info) => this.getCursorNode(source, info.selectionStack[info.selectionStack.length - 2].fieldRequest, orderByType)
+            resolve: (source, args, info) =>
+                this.getCursorNode(
+                    source,
+                    info.selectionStack[info.selectionStack.length - 2].fieldRequest,
+                    orderByType
+                )
         };
     }
 
-    private getCursorNode(itemNode: QueryNode, listFieldRequest: FieldRequest | undefined, orderByType: OrderByEnumType): QueryNode {
+    private getCursorNode(
+        itemNode: QueryNode,
+        listFieldRequest: FieldRequest | undefined,
+        orderByType: OrderByEnumType
+    ): QueryNode {
         if (!listFieldRequest || !isListTypeIgnoringNonNull(listFieldRequest.field.type)) {
             return NullQueryNode.NULL;
         }
@@ -104,8 +118,11 @@ export class OutputTypeGenerator {
         // so one can use a _cursor value from a query without orderBy as 'after' argument without orderBy.
         const clauses = getOrderByValues(listFieldRequest.args, orderByType, { isAbsoluteOrderRequired: true });
         const sortedClauses = sortBy(clauses, clause => clause.name);
-        const objectNode = new ObjectQueryNode(sortedClauses.map(clause =>
-            new PropertySpecification(clause.underscoreSeparatedPath, clause.getValueNode(itemNode))));
+        const objectNode = new ObjectQueryNode(
+            sortedClauses.map(
+                clause => new PropertySpecification(clause.underscoreSeparatedPath, clause.getValueNode(itemNode))
+            )
+        );
         return new UnaryOperationQueryNode(objectNode, UnaryOperator.JSON_STRINGIFY);
     }
 
@@ -124,14 +141,11 @@ export class OutputTypeGenerator {
             // fields in them, and a FieldQueryNode returns null if the source is null.
             skipNullCheck: field.type.isEntityExtensionType,
             isPure: true,
-            resolve: (sourceNode) => createFieldNode(field, sourceNode, { skipNullFallbackForEntityExtensions: true })
+            resolve: sourceNode => createFieldNode(field, sourceNode, { skipNullFallbackForEntityExtensions: true })
         };
 
         if (field.isList && field.type.isObjectType) {
-            return [
-                this.listAugmentation.augment(schemaField, field.type),
-                this.createMetaField(field)
-            ];
+            return [this.listAugmentation.augment(schemaField, field.type), this.createMetaField(field)];
         } else {
             return [schemaField];
         }
@@ -149,7 +163,7 @@ export class OutputTypeGenerator {
             skipNullCheck: true, // meta fields should never be null
             description: field.description,
             isPure: true,
-            resolve: (sourceNode) => createFieldNode(field, sourceNode)
+            resolve: sourceNode => createFieldNode(field, sourceNode)
         };
         return this.filterAugmentation.augment(plainField, field.type);
     }

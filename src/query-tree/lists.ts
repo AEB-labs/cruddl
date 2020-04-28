@@ -29,13 +29,13 @@ export class ListQueryNode extends QueryNode {
  */
 export class TransformListQueryNode extends QueryNode {
     constructor(params: {
-        listNode: QueryNode,
-        innerNode?: QueryNode,
-        filterNode?: QueryNode,
-        orderBy?: OrderSpecification,
-        skip?: number,
-        maxCount?: number
-        itemVariable?: VariableQueryNode
+        listNode: QueryNode;
+        innerNode?: QueryNode;
+        filterNode?: QueryNode;
+        orderBy?: OrderSpecification;
+        skip?: number;
+        maxCount?: number;
+        itemVariable?: VariableQueryNode;
     }) {
         super();
         this.itemVariable = params.itemVariable || new VariableQueryNode();
@@ -56,15 +56,18 @@ export class TransformListQueryNode extends QueryNode {
     public readonly itemVariable: VariableQueryNode;
 
     describe() {
-        return `${this.listNode.describe()} as list with ${this.itemVariable.describe()} => \n` + indent('' + // '' to move the arg label here in WebStorm
-            (this.filterNode.equals(ConstBoolQueryNode.TRUE) ? '' : `where ${this.filterNode.describe()}\n`) +
-            (this.orderBy.isUnordered() ? '' : `order by ${this.orderBy.describe()}\n`) +
-            (this.skip != 0 ? `skip ${this.skip}\n` : '') +
-            (this.maxCount != undefined ? `limit ${this.maxCount}\n` : '') +
-            `as ${this.innerNode.describe()}`
+        return (
+            `${this.listNode.describe()} as list with ${this.itemVariable.describe()} => \n` +
+            indent(
+                '' + // '' to move the arg label here in WebStorm
+                    (this.filterNode.equals(ConstBoolQueryNode.TRUE) ? '' : `where ${this.filterNode.describe()}\n`) +
+                    (this.orderBy.isUnordered() ? '' : `order by ${this.orderBy.describe()}\n`) +
+                    (this.skip != 0 ? `skip ${this.skip}\n` : '') +
+                    (this.maxCount != undefined ? `limit ${this.maxCount}\n` : '') +
+                    `as ${this.innerNode.describe()}`
+            )
         );
     }
-
 }
 
 export class OrderClause extends QueryNode {
@@ -88,6 +91,8 @@ export class OrderSpecification extends QueryNode {
     constructor(public readonly clauses: ReadonlyArray<OrderClause>) {
         super();
     }
+
+    static readonly UNORDERED = new OrderSpecification([]);
 
     isUnordered() {
         return this.clauses.length == 0;
@@ -120,9 +125,7 @@ export class ConcatListsQueryNode extends QueryNode {
         if (!this.listNodes.length) {
             return `[]`;
         }
-        return `[\n` +
-            this.listNodes.map(node => indent('...' + node.describe())).join(',\n') +
-            `]`;
+        return `[\n` + this.listNodes.map(node => indent('...' + node.describe())).join(',\n') + `]`;
     }
 }
 
@@ -153,13 +156,17 @@ export class FirstOfListQueryNode extends QueryNode {
 }
 
 interface AggregationQueryNodeParams {
-    sort?: boolean
+    sort?: boolean;
 }
 
 export class AggregationQueryNode extends QueryNode {
     readonly sort: boolean;
 
-    constructor(readonly listNode: QueryNode, readonly operator: AggregationOperator, options: AggregationQueryNodeParams = {}) {
+    constructor(
+        readonly listNode: QueryNode,
+        readonly operator: AggregationOperator,
+        options: AggregationQueryNodeParams = {}
+    ) {
         super();
         this.sort = options.sort || false;
     }

@@ -1,0 +1,13 @@
+type Delivery @rootEntity {
+    deliveryNumber: String @key
+    orderDatas: [ShipmentData]
+    orders: [Shipment] @relation
+}
+
+type ShipmentData @valueObject {
+    shipment: Shipment @reference
+}
+
+type Shipment @rootEntity {
+    shipmentNumber: String @key
+}
