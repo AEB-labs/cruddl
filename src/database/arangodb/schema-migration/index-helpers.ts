@@ -46,19 +46,11 @@ function indexDefinitionsEqual(a: IndexDefinition, b: IndexDefinition) {
     );
 }
 
-export function getRequiredIndicesFromModel(
-    model: Model,
-    { shouldUseWorkaroundForSparseIndices = false }: { shouldUseWorkaroundForSparseIndices?: boolean } = {}
-): ReadonlyArray<IndexDefinition> {
-    return flatMap(model.rootEntityTypes, rootEntity =>
-        getIndicesForRootEntity(rootEntity, { shouldUseWorkaroundForSparseIndices })
-    );
+export function getRequiredIndicesFromModel(model: Model): ReadonlyArray<IndexDefinition> {
+    return flatMap(model.rootEntityTypes, rootEntity => getIndicesForRootEntity(rootEntity));
 }
 
-function getIndicesForRootEntity(
-    rootEntity: RootEntityType,
-    options: { shouldUseWorkaroundForSparseIndices: boolean }
-): ReadonlyArray<IndexDefinition> {
+function getIndicesForRootEntity(rootEntity: RootEntityType): ReadonlyArray<IndexDefinition> {
     const indices: IndexDefinition[] = rootEntity.indices.map(index => ({
         rootEntity,
         collectionName: getCollectionNameForRootEntity(rootEntity),
@@ -68,23 +60,6 @@ function getIndicesForRootEntity(
         type: DEFAULT_INDEX_TYPE,
         sparse: index.sparse
     }));
-
-    if (options.shouldUseWorkaroundForSparseIndices && rootEntity.keyField) {
-        // add a non-sparse index to be used for @reference lookups if arangodb does not support dynamic usage of sparse
-        // indices yet
-        const newIndex: IndexDefinition = {
-            rootEntity,
-            collectionName: getCollectionNameForRootEntity(rootEntity),
-            fields: [rootEntity.keyField.name],
-            sparse: false,
-            unique: false,
-            type: DEFAULT_INDEX_TYPE
-        };
-
-        if (!indices.some(index => indexStartsWith(index, newIndex))) {
-            indices.push(newIndex);
-        }
-    }
 
     return indices;
 }

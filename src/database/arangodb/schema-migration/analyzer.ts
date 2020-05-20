@@ -91,10 +91,8 @@ export class SchemaAnalyzer {
     }
 
     async getIndexMigrations(model: Model): Promise<ReadonlyArray<CreateIndexMigration | DropIndexMigration>> {
-        const shouldUseWorkaroundForSparseIndices = await this.shouldUseWorkaroundForSparseIndices();
-
         // update indices
-        const requiredIndices = getRequiredIndicesFromModel(model, { shouldUseWorkaroundForSparseIndices });
+        const requiredIndices = getRequiredIndicesFromModel(model);
         const existingIndicesPromises = model.rootEntityTypes.map(rootEntityType =>
             this.getCollectionIndices(rootEntityType)
         );
@@ -141,38 +139,6 @@ export class SchemaAnalyzer {
         return result.map((index: any) => {
             return { ...index, rootEntity: rootEntityType, collectionName };
         });
-    }
-
-    private async shouldUseWorkaroundForSparseIndices(): Promise<boolean> {
-        // arangodb <= 3.2 does not support dynamic usage of sparse indices
-        // We use unique indices for @key, and we enable sparse for all unique indices to support multiple NULL values
-        // however, this means we can't use the unique index for @reference lookups. To ensure this is still fast
-        // (as one would expect for a @reference), we create a non-sparse, non-unique index in addition to the regular
-        // unique sparse index.
-        let version;
-        try {
-            version = await this.versionHelper.getArangoDBVersionAsString();
-        } catch (e) {
-            this.logger.warn(
-                `Error fetching ArangoDB version. Workaround for sparse indices will not be enabled. ` + e.stack
-            );
-            return false;
-        }
-        const parsed = version && this.versionHelper.parseVersion(version);
-        if (!parsed) {
-            this.logger.warn(
-                `ArangoDB version not recognized ("${version}"). Workaround for sparse indices will not be enabled.`
-            );
-            return false;
-        }
-
-        const { major, minor } = parsed;
-        if (major > 3 || (major === 3 && minor >= 4)) {
-            this.logger.debug(`ArangoDB version: ${version}. Workaround for sparse indices will not be enabled.`);
-            return false;
-        }
-        this.logger.debug(`ArangoDB version: ${version}. Workaround for sparse indices will be enabled.`);
-        return true;
     }
 
     /**
