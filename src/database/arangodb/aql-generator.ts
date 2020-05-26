@@ -74,7 +74,7 @@ enum AccessType {
 }
 
 class QueryContext {
-    private variableMap = new Map<VariableQueryNode, AQLVariable>();
+    private variableMap = new Map<VariableQueryNode, AQLFragment>();
     private preExecQueries: AQLCompoundQuery[] = [];
     private readAccessedCollections = new Set<string>();
     private writeAccessedCollections = new Set<string>();
@@ -100,10 +100,10 @@ class QueryContext {
      * @param variableNode the variable token as it is referenced in the query tree
      * @param aqlVariable the variable token as it will be available within the AQL fragment
      */
-    private newNestedContextWithNewVariable(variableNode: VariableQueryNode, aqlVariable: AQLVariable): QueryContext {
-        if (this.variableMap.has(variableNode)) {
-            throw new Error(`Variable ${variableNode} is introduced twice`);
-        }
+    private newNestedContextWithVariableMapping(
+        variableNode: VariableQueryNode,
+        aqlVariable: AQLFragment
+    ): QueryContext {
         const newContext = new QueryContext();
         newContext.variableMap = new Map(this.variableMap);
         newContext.variableMap.set(variableNode, aqlVariable);
@@ -122,8 +122,22 @@ class QueryContext {
      * @returns {QueryContext} the nested context
      */
     introduceVariable(variableNode: VariableQueryNode): QueryContext {
+        if (this.variableMap.has(variableNode)) {
+            throw new Error(`Variable ${variableNode} is introduced twice`);
+        }
         const variable = new AQLVariable(variableNode.label);
-        return this.newNestedContextWithNewVariable(variableNode, variable);
+        return this.newNestedContextWithVariableMapping(variableNode, variable);
+    }
+
+    /**
+     * Creates a new QueryContext that is identical to this one but has one additional variable binding
+     *
+     * @param variableNode the variable as referenced in the query tree
+     * @param existingVariable a variable that has been previously introduced with introduceVariable() and fetched by getVariable
+     * @returns {QueryContext} the nested context
+     */
+    introduceVariableAlias(variableNode: VariableQueryNode, existingVariable: AQLFragment): QueryContext {
+        return this.newNestedContextWithVariableMapping(variableNode, existingVariable);
     }
 
     /**
@@ -146,7 +160,7 @@ class QueryContext {
         let newContext: QueryContext;
         if (resultVariable) {
             resultVar = new AQLQueryResultVariable(resultVariable.label);
-            newContext = this.newNestedContextWithNewVariable(resultVariable, resultVar);
+            newContext = this.newNestedContextWithVariableMapping(resultVariable, resultVar);
         } else {
             resultVar = undefined;
             newContext = this;
@@ -175,12 +189,12 @@ class QueryContext {
     /**
      * Gets an AQLFragment that evaluates to the value of a variable in the current scope
      */
-    getVariable(variableNode: VariableQueryNode): AQLFragment {
+    getVariable(variableNode: VariableQueryNode): AQLVariable {
         const variable = this.variableMap.get(variableNode);
         if (!variable) {
             throw new Error(`Variable ${variableNode.toString()} is used but not introduced`);
         }
-        return aql`${variable}`;
+        return variable;
     }
 
     getPreExecuteQueries(): AQLCompoundQuery[] {
@@ -1014,30 +1028,29 @@ register(FollowEdgeQueryNode, (node, context) => {
 });
 
 register(TraversalQueryNode, (node, context) => {
-    const { relationSegments, fieldSegments } = getEffectiveCollectSegments(node.path);
     const sourceFrag = processNode(node.sourceEntityNode, context);
-    const fieldDepth = fieldSegments.filter(s => s.isListSegment).length;
+    const fieldDepth = node.fieldSegments.filter(s => s.isListSegment).length;
 
-    if (relationSegments.length) {
+    if (node.relationSegments.length) {
         let mapFrag: ((itemFrag: AQLFragment) => AQLFragment) | undefined;
-        if (fieldSegments.length) {
+        if (node.fieldSegments.length) {
             // if we have both, it might be beneficial to do the field traversal within the mapping node
             // because it may allow ArangoDB to figure out that only one particular field is of interest, and e.g.
             // discard the root entities earlier
-            mapFrag = nodeFrag => getFieldTraversalFragmentWithoutFlattening(fieldSegments, nodeFrag);
+            mapFrag = nodeFrag => getFieldTraversalFragmentWithoutFlattening(node.fieldSegments, nodeFrag);
         }
 
-        const frag = getRelationTraversalFragment({ segments: relationSegments, sourceFrag, mapFrag, context });
+        const frag = getRelationTraversalFragment({ segments: node.relationSegments, sourceFrag, mapFrag, context });
         // do the field flattening after the relation traversal because it needs to flatten the relations, too
         return getFlattenFrag(frag, fieldDepth);
     }
 
-    if (!fieldSegments.length) {
+    if (!node.fieldSegments.length) {
         // should normally not occur
         return sourceFrag;
     }
 
-    return getFlattenFrag(getFieldTraversalFragmentWithoutFlattening(fieldSegments, sourceFrag), fieldDepth);
+    return getFlattenFrag(getFieldTraversalFragmentWithoutFlattening(node.fieldSegments, sourceFrag), fieldDepth);
 });
 
 function getRelationTraversalFragment({
@@ -1061,19 +1074,62 @@ function getRelationTraversalFragment({
     const forFragments: AQLFragment[] = [];
     let currentObjectFrag = sourceFrag;
     for (const segment of segments) {
-        const newVar = aql.variable(`node`);
+        const nodeVar = aql.variable(`node`);
+        const edgeVar = aql.variable(`edge`);
+        const pathVar = aql.variable(`path`);
         const dir = segment.relationSide.isFromSide ? aql`OUTBOUND` : aql`INBOUND`;
-        const traversalFrag = aql`FOR ${newVar} IN ${segment.minDepth}..${
+        let filterFrag = aql``;
+        let pruneFrag = aql``;
+        if (segment.vertexFilter) {
+            if (!segment.vertexFilterVariable) {
+                throw new Error(`vertexFilter is set, but vertexFilterVariable is not`);
+            }
+            const filterContext = context.introduceVariableAlias(segment.vertexFilterVariable, nodeVar);
+            // PRUNE to stop on a node that has to be filtered out (only necessary for traversals > 1 path length)
+            // however, PRUNE only seems to be a performance feature and is not reliably evaluated
+            // (e.g. it's not when using COLLECT with distinct for some reason), so we need to add a path filter
+            if (segment.maxDepth > 1) {
+                if (
+                    !(
+                        segment.vertexFilter instanceof BinaryOperationQueryNode &&
+                        segment.vertexFilter.lhs instanceof FieldQueryNode &&
+                        segment.vertexFilter.lhs.objectNode === segment.vertexFilterVariable
+                    )
+                ) {
+                    throw new Error(`Unsupported filter pattern for graph traversal`);
+                }
+                const vertexInPathFrag = aql`${pathVar}.vertices[*]`;
+                const pathFilterContext = context.introduceVariableAlias(
+                    segment.vertexFilterVariable,
+                    vertexInPathFrag
+                );
+                const lhsFrag = processNode(segment.vertexFilter.lhs, pathFilterContext);
+                const opFrag = getAQLOperator(segment.vertexFilter.operator);
+                if (!opFrag) {
+                    throw new Error(`Unsupported filter pattern for graph traversal`);
+                }
+                const pathFilterFrag = aql`${lhsFrag} ALL ${opFrag} ${processNode(
+                    segment.vertexFilter.rhs,
+                    pathFilterContext
+                )}`;
+                filterFrag = aql`\nFILTER ${pathFilterFrag}`;
+                pruneFrag = aql`\nPRUNE !(${processNode(segment.vertexFilter, filterContext)})`;
+            } else {
+                // FILTER to filter out result nodes
+                filterFrag = aql`\nFILTER ${processNode(segment.vertexFilter, filterContext)}`;
+            }
+        }
+        const traversalFrag = aql`FOR ${nodeVar}, ${edgeVar}, ${pathVar} IN ${segment.minDepth}..${
             segment.maxDepth
         } ${dir} ${currentObjectFrag} ${getCollectionForRelation(
             segment.relationSide.relation,
             AccessType.READ,
             context
-        )}`;
+        )}${pruneFrag}${filterFrag}`;
         if (segment.isListSegment) {
             // this is simple - we can just push one FOR statement after the other
             forFragments.push(traversalFrag);
-            currentObjectFrag = newVar;
+            currentObjectFrag = nodeVar;
         }
         if (!segment.isListSegment) {
             // if this is not a list, we need to preserve NULL values
@@ -1082,7 +1138,7 @@ function getRelationTraversalFragment({
             // to ignore dangling edges, add a FILTER though (if there was one dangling edge and one real edge collected, we should use the real one)
             const nullableVar = aql.variable(`nullableNode`);
             forFragments.push(
-                aql`LET ${nullableVar} = FIRST(${traversalFrag} FILTER ${newVar} != null RETURN ${newVar})`
+                aql`LET ${nullableVar} = FIRST(${traversalFrag} FILTER ${nodeVar} != null RETURN ${nodeVar})`
             );
             currentObjectFrag = nullableVar;
         }

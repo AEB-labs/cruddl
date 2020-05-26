@@ -5,6 +5,7 @@
             {
                 "@id": "1",
                 "deliveryNumber": "D1",
+                "accessGroup": "D1",
                 "dispatchedAt": "2020-01-30T10:00:00+01:00",
                 "priority": 1,
                 "deliveryContents": [
@@ -41,6 +42,7 @@
             {
                 "@id": "2",
                 "deliveryNumber": "D2",
+                "accessGroup": "D2",
                 "dispatchedAt": "2020-01-30T11:00:00+03:00",
                 "priority": 3,
                 "deliveryContents": [
@@ -75,6 +77,7 @@
             {
                 "@id": "3",
                 "deliveryNumber": "D3",
+                "accessGroup": "D3",
                 "priority": 2,
                 "deliveryContents": [
                     {
@@ -105,6 +108,7 @@
             {
                 "@id": "4",
                 "deliveryNumber": "D4",
+                "accessGroup": "D4",
                 "deliveryContents": [
                     {
                         "deliveryContentNumber": "DC4.1",
@@ -133,6 +137,7 @@
             {
                 "@id": "5",
                 "deliveryNumber": "D5",
+                "accessGroup": "D5",
                 "deliveryContents": [
                     {
                         "deliveryContentNumber": "DC5.1"
@@ -151,25 +156,30 @@
         "Shipment": [
             {
                 "@id": "1",
-                "shipmentNumber": "S1"
+                "shipmentNumber": "S1",
+                "accessGroup": "S1"
             },
             {
                 "@id": "2",
-                "shipmentNumber": "S2"
+                "shipmentNumber": "S2",
+                "accessGroup": "S2"
             },
             {
                 "@id": "3",
-                "shipmentNumber": "S3"
+                "shipmentNumber": "S3",
+                "accessGroup": "S3"
             },
             {
                 "@id": "4",
-                "shipmentNumber": "S4"
+                "shipmentNumber": "S4",
+                "accessGroup": "S4"
             }
         ],
         "HandlingUnit": [
             {
                 "@id": "1",
                 "handlingUnitNumber": "H1",
+                "accessGroup": "H1",
                 "warehouseSlot": {
                     "warehouse": "South",
                     "level": 0
@@ -178,6 +188,7 @@
             {
                 "@id": "2",
                 "handlingUnitNumber": "H2",
+                "accessGroup": "H2",
                 "warehouseSlot": {
                     "warehouse": "South",
                     "level": 1
@@ -186,6 +197,7 @@
             {
                 "@id": "3",
                 "handlingUnitNumber": "H3",
+                "accessGroup": "H3",
                 "warehouseSlot": {
                     "warehouse": "South",
                     "level": 0
@@ -194,6 +206,7 @@
             {
                 "@id": "4",
                 "handlingUnitNumber": "H4",
+                "accessGroup": "H4",
                 "warehouseSlot": {
                     "warehouse": "North",
                     "level": 0
@@ -204,19 +217,23 @@
             {
                 "@id": "1",
                 "orderNumber": "O1",
+                "accessGroup": "O1",
                 "payedAt": "2019-06-21T18:10:00Z"
             },
             {
                 "@id": "2",
-                "orderNumber": "O2"
+                "orderNumber": "O2",
+                "accessGroup": "O2"
             },
             {
                 "@id": "3",
-                "orderNumber": "O3"
+                "orderNumber": "O3",
+                "accessGroup": "O3"
             },
             {
                 "@id": "4",
-                "orderNumber": "O4"
+                "orderNumber": "O4",
+                "accessGroup": "O4"
             }
         ]
     }

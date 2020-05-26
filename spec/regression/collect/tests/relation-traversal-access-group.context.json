@@ -1,0 +1,8 @@
+{
+    "authRoles": ["s1d2d3h1h3h4o2o3"],
+    "operations": {
+        "createEdges": {
+            "authRoles": ["users"]
+        }
+    }
+}

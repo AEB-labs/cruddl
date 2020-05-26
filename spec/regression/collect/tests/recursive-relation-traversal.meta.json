@@ -1,8 +1,8 @@
 {
-  "databases": {
-    // recursive traversal is not implemented in InMemoryAdapter
-    "in-memory": {
-      "ignore": true
+    "databases": {
+        // recursive traversal is not implemented in InMemoryAdapter
+        "in-memory": {
+            "ignore": true
+        }
     }
-  }
 }
