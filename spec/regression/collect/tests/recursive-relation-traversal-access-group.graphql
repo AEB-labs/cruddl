@@ -1,0 +1,124 @@
+mutation createEdges {
+    updateShipment(input: { id: "@{ids/Shipment/1}", addDeliveries: ["@{ids/Delivery/1}", "@{ids/Delivery/2}"] }) {
+        shipmentNumber
+    }
+    d1: updateDelivery(
+        input: { id: "@{ids/Delivery/1}", addHandlingUnits: ["@{ids/HandlingUnit/1}", "@{ids/HandlingUnit/2}"] }
+    ) {
+        deliveryNumber
+    }
+    d2: updateDelivery(input: { id: "@{ids/Delivery/2}", addHandlingUnits: ["@{ids/HandlingUnit/3}"] }) {
+        deliveryNumber
+    }
+    h1: updateHandlingUnit(
+        input: {
+            id: "@{ids/HandlingUnit/1}"
+            createChildHandlingUnits: [
+                {
+                    handlingUnitNumber: "H1.1"
+                    accessGroup: "H1"
+                    createChildHandlingUnits: [
+                        { handlingUnitNumber: "H1.1.1", accessGroup: "H1" }
+                        { handlingUnitNumber: "H1.1.2", accessGroup: "restricted" }
+                    ]
+                }
+                {
+                    handlingUnitNumber: "H1.2"
+                    accessGroup: "restricted"
+                    createChildHandlingUnits: [
+                        { handlingUnitNumber: "H1.2.1", accessGroup: "H1" }
+                        { handlingUnitNumber: "H1.2.2", accessGroup: "H1" }
+                    ]
+                }
+            ]
+        }
+    ) {
+        handlingUnitNumber
+    }
+    h2: updateHandlingUnit(
+        input: {
+            id: "@{ids/HandlingUnit/2}"
+            createChildHandlingUnits: [
+                {
+                    handlingUnitNumber: "H2.1"
+                    accessGroup: "H2"
+                    createChildHandlingUnits: [{ handlingUnitNumber: "H2.1.1", accessGroup: "restricted" }]
+                }
+                { handlingUnitNumber: "H2.2", accessGroup: "H2" }
+            ]
+        }
+    ) {
+        handlingUnitNumber
+    }
+    h3: updateHandlingUnit(
+        input: {
+            id: "@{ids/HandlingUnit/3}"
+            createChildHandlingUnits: [
+                {
+                    handlingUnitNumber: "H3.1"
+                    accessGroup: "H3"
+                    createChildHandlingUnits: [{ handlingUnitNumber: "H3.1.1", accessGroup: "H1" }]
+                }
+                { handlingUnitNumber: "H3.2", accessGroup: "H3" }
+            ]
+        }
+    ) {
+        handlingUnitNumber
+    }
+}
+
+query direct0to1 {
+    Delivery(deliveryNumber: "D1") {
+        allHandlingUnits0to1(orderBy: handlingUnitNumber_ASC) {
+            handlingUnitNumber
+        }
+    }
+}
+
+query direct0to2 {
+    Delivery(deliveryNumber: "D1") {
+        allHandlingUnits0to2(orderBy: handlingUnitNumber_ASC) {
+            handlingUnitNumber
+        }
+    }
+}
+
+query direct1to1 {
+    Delivery(deliveryNumber: "D1") {
+        allHandlingUnits1to1(orderBy: handlingUnitNumber_ASC) {
+            handlingUnitNumber
+        }
+    }
+}
+
+query direct1to2 {
+    Delivery(deliveryNumber: "D1") {
+        allHandlingUnits1to2(orderBy: handlingUnitNumber_ASC) {
+            handlingUnitNumber
+        }
+    }
+}
+
+query direct2to2 {
+    Delivery(deliveryNumber: "D1") {
+        allHandlingUnits2to2(orderBy: handlingUnitNumber_ASC) {
+            handlingUnitNumber
+        }
+    }
+}
+
+query direct3to3 {
+    Delivery(deliveryNumber: "D1") {
+        allHandlingUnits3to3(orderBy: handlingUnitNumber_ASC) {
+            handlingUnitNumber
+        }
+    }
+}
+
+query indirect {
+    Shipment(shipmentNumber: "S1") {
+        allHandlingUnits(orderBy: handlingUnitNumber_ASC) {
+            handlingUnitNumber
+        }
+    }
+}

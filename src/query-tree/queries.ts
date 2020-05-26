@@ -1,6 +1,6 @@
-import { CollectPath } from '../model/implementation/collect-path';
-import { blue } from '../utils/colors';
 import { Field, RelationSide, RootEntityType } from '../model';
+import { CollectPathSegment, FieldSegment, RelationSegment } from '../model/implementation/collect-path';
+import { blue } from '../utils/colors';
 import { QueryNode } from './base';
 
 export class EntityFromIdQueryNode extends QueryNode {
@@ -106,23 +106,25 @@ export class FollowEdgeQueryNode extends QueryNode {
  * Traverses a path of relations and other fields
  */
 export class TraversalQueryNode extends QueryNode {
-    constructor(readonly path: CollectPath, readonly sourceEntityNode: QueryNode) {
+    constructor(
+        readonly sourceEntityNode: QueryNode,
+        readonly relationSegments: ReadonlyArray<RelationSegment>,
+        readonly fieldSegments: ReadonlyArray<FieldSegment>
+    ) {
         super();
     }
 
     describe() {
-        return `traverse ${this.path.path} from ${this.sourceEntityNode.describe()}`;
+        const segments = [...this.relationSegments, ...this.fieldSegments];
+        return `traverse ${segments
+            .map(s => this.describeSegment(s))
+            .join('.')} from ${this.sourceEntityNode.describe()}`;
+    }
+
+    private describeSegment(segment: CollectPathSegment) {
+        if (segment.kind === 'relation') {
+            return `${segment.field.name}{${segment.minDepth},${segment.maxDepth}}`;
+        }
+        return segment.field.name;
     }
 }
-
-// Cons 1->n  Item m->n HU
-// consigment
-//   - flat: HUs
-//       - "parent": relevantItems:
-
-// consignment
-// - flat HUs (with all seletion
-// - items
-//     - hus.id
-
-//

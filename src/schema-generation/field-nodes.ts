@@ -1,5 +1,6 @@
 import { AggregationOperator, RootEntityType } from '../model';
 import { Field } from '../model/implementation';
+import { getEffectiveCollectSegments } from '../model/implementation/collect-path';
 import {
     AggregationQueryNode,
     BasicType,
@@ -45,7 +46,8 @@ export function createFieldNode(
 
     if (field.collectPath) {
         if (field.aggregationOperator) {
-            let items: QueryNode = new TraversalQueryNode(field.collectPath, sourceNode);
+            const { relationSegments, fieldSegments } = getEffectiveCollectSegments(field.collectPath);
+            let items: QueryNode = new TraversalQueryNode(sourceNode, relationSegments, fieldSegments);
 
             if (field.aggregationOperator === AggregationOperator.COUNT) {
                 return new CountQueryNode(items);
@@ -70,7 +72,8 @@ export function createFieldNode(
                 (field.type.isScalarType || field.type.isEnumType);
             return new AggregationQueryNode(items, field.aggregationOperator, { sort });
         } else {
-            return new TraversalQueryNode(field.collectPath, sourceNode);
+            const { relationSegments, fieldSegments } = getEffectiveCollectSegments(field.collectPath);
+            return new TraversalQueryNode(sourceNode, relationSegments, fieldSegments);
         }
     }
 

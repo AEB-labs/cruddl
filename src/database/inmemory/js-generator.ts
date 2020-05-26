@@ -633,9 +633,11 @@ register(TraversalQueryNode, (node, context) => {
     let currentFrag: JSFragment = processNode(node.sourceEntityNode, context);
     let isList = false;
 
-    const { relationSegments, fieldSegments } = getEffectiveCollectSegments(node.path);
+    for (const segment of node.relationSegments) {
+        if (segment.vertexFilter) {
+            throw new Error(`@collect with accessGroup restrictions is not supported by InMemoryAdapter`);
+        }
 
-    for (const segment of relationSegments) {
         if (isList) {
             const nodeVar = js.variable('node');
             const accVar = js.variable('acc');
@@ -682,7 +684,7 @@ register(TraversalQueryNode, (node, context) => {
         }
     }
 
-    for (const segment of fieldSegments) {
+    for (const segment of node.fieldSegments) {
         if (isList) {
             if (segment.isListSegment) {
                 const nodeVar = js.variable('node');

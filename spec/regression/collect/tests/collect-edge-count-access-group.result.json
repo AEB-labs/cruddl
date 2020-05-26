@@ -1,0 +1,19 @@
+{
+    "createEdges": {
+        "data": {
+            "updateShipment": {
+                "shipmentNumber": "S1"
+            }
+        }
+    },
+    "count": {
+        "data": {
+            "Shipment": {
+                "_deliveriesMeta": {
+                    "count": 1
+                },
+                "deliveryCount": 1
+            }
+        }
+    }
+}

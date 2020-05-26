@@ -196,11 +196,15 @@ export class RegressionSuite {
             const operationNames = operations.map(def => def.name!.value);
             actualResult = {};
             for (const operationName of operationNames) {
+                let operationContext = context;
+                if (context && context.operations && context.operations[operationName]) {
+                    operationContext = context.operations[operationName];
+                }
                 let operationResult = await graphql(
                     this.schema,
                     gqlSource,
                     {} /* root */,
-                    context,
+                    operationContext,
                     variableValues,
                     operationName
                 );

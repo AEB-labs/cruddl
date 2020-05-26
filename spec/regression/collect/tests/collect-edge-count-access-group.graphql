@@ -1,0 +1,14 @@
+mutation createEdges {
+    updateShipment(input: { id: "@{ids/Shipment/1}", addDeliveries: ["@{ids/Delivery/1}", "@{ids/Delivery/2}"] }) {
+        shipmentNumber
+    }
+}
+
+query count {
+    Shipment(shipmentNumber: "S1") {
+        _deliveriesMeta {
+            count
+        }
+        deliveryCount
+    }
+}
