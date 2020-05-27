@@ -48,12 +48,10 @@
     "definitions": {
         "PermissionProfile": {
             "type": "object",
-            "required": ["permissions"],
             "additionalProperties": false,
             "properties": {
                 "permissions": {
                     "type": "array",
-                    "minLength": 1,
                     "items": {
                         "$ref": "#/definitions/Permission"
                     }
