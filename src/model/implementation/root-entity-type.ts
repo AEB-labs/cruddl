@@ -246,19 +246,6 @@ export class RootEntityType extends ObjectTypeBase {
             );
         }
 
-        if (
-            permissions.permissionProfileName == undefined &&
-            permissions.roles == undefined &&
-            this.namespace.defaultPermissionProfile == undefined
-        ) {
-            context.addMessage(
-                ValidationMessage.error(
-                    `No permissions specified for root entity "${this.name}". Specify "permissionProfile" in @rootEntity, use the @roles directive, or add a permission profile with the name "${DEFAULT_PERMISSION_PROFILE}".`,
-                    permissions.permissionProfileNameAstNode || this.nameASTNode
-                )
-            );
-        }
-
         if (this.roles) {
             this.roles.validate(context);
         }
