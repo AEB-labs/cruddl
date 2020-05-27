@@ -15,26 +15,33 @@ import { ExecutionOptions } from './execution-options';
 import { ExecutionResult } from './execution-result';
 
 export class OperationResolver {
-    constructor(
-        private context: SchemaTransformationContext
-    ) {
+    constructor(private context: SchemaTransformationContext) {}
 
-    }
-
-    async resolveOperation(operationInfo: OperationParams, rootType: QueryNodeObjectType, options?: ExecutionOptions): Promise<ExecutionResult> {
+    async resolveOperation(
+        operationInfo: OperationParams,
+        rootType: QueryNodeObjectType,
+        options?: ExecutionOptions
+    ): Promise<ExecutionResult> {
         globalContext.registerContext(this.context);
         let profileConsumer = this.context.profileConsumer;
         const logger = globalContext.loggerProvider.getLogger('query-resolvers');
 
         if (!options) {
-            options = this.context.getExecutionOptions ? this.context.getExecutionOptions({ context: operationInfo.context, operationDefinition: operationInfo.operation }) : {};
+            options = this.context.getExecutionOptions
+                ? this.context.getExecutionOptions({
+                      context: operationInfo.context,
+                      operationDefinition: operationInfo.operation
+                  })
+                : {};
         }
 
         const needsTimings = profileConsumer || options.recordPlan || options.recordTimings;
         const watch = needsTimings ? new Watch() : undefined;
         const topLevelWatch = needsTimings ? new Watch() : undefined;
 
-        const operationDesc = `${operationInfo.operation.operation} ${operationInfo.operation.name ? operationInfo.operation.name.value : ''}`;
+        const operationDesc = `${operationInfo.operation.operation} ${
+            operationInfo.operation.name ? operationInfo.operation.name.value : ''
+        }`;
         const start = needsTimings ? getPreciseTime() : undefined;
         if (operationInfo.operation.operation === 'mutation' && options.mutationMode === 'disallowed') {
             throw new Error(`Mutations are not allowed`);
@@ -65,7 +72,10 @@ export class OperationResolver {
             if (logger.isTraceEnabled()) {
                 logger.trace('Before expansion: ' + queryTree.describe());
             }
-            const tokens: ReadonlyArray<FlexSearchTokenization> = await this.queryFlexSearchTokens(queryTree, this.context.databaseAdapter);
+            const tokens: ReadonlyArray<FlexSearchTokenization> = await this.queryFlexSearchTokens(
+                queryTree,
+                this.context.databaseAdapter
+            );
             queryTree = await this.expandQueryNode(queryTree, tokens);
             if (logger.isTraceEnabled()) {
                 logger.trace('Before authorization: ' + queryTree.describe());
@@ -73,12 +83,14 @@ export class OperationResolver {
             if (watch) {
                 watch.stop('queryTree');
             }
-            queryTree = applyAuthorizationToQueryTree(queryTree, { authRoles: requestRoles });
-            if (logger.isTraceEnabled()) {
-                logger.trace('After authorization: ' + queryTree.describe());
-            }
-            if (watch) {
-                watch.stop('authorization');
+            if (!options.disableAuthorization) {
+                queryTree = applyAuthorizationToQueryTree(queryTree, { authRoles: requestRoles });
+                if (logger.isTraceEnabled()) {
+                    logger.trace('After authorization: ' + queryTree.describe());
+                }
+                if (watch) {
+                    watch.stop('authorization');
+                }
             }
         } finally {
             globalContext.unregisterContext();
@@ -93,12 +105,14 @@ export class OperationResolver {
             topLevelWatch.stop('preparation');
         }
         if (!canEvaluateStatically) {
-            const res = this.context.databaseAdapter.executeExt ? (await this.context.databaseAdapter.executeExt({
-                queryTree,
-                ...options
-            })) : {
-                data: this.context.databaseAdapter.execute(queryTree)
-            };
+            const res = this.context.databaseAdapter.executeExt
+                ? await this.context.databaseAdapter.executeExt({
+                      queryTree,
+                      ...options
+                  })
+                : {
+                      data: this.context.databaseAdapter.execute(queryTree)
+                  };
             if (topLevelWatch) {
                 topLevelWatch.stop('database');
             }
@@ -121,7 +135,8 @@ export class OperationResolver {
             logger.trace('Result: ' + JSON.stringify(data, undefined, '  '));
         }
         let profile: RequestProfile | undefined;
-        if (watch && topLevelWatch && (start != undefined)) { // equivalent to (profileConsumer || options.recordPlan || options.recordTimings) but pleases typescript
+        if (watch && topLevelWatch && start != undefined) {
+            // equivalent to (profileConsumer || options.recordPlan || options.recordTimings) but pleases typescript
             const preparation = {
                 ...(dbAdapterTimings ? dbAdapterTimings.preparation : {}),
                 ...watch.timings,
@@ -151,12 +166,14 @@ export class OperationResolver {
         };
     }
 
-    private async queryFlexSearchTokens(queryTree: QueryNode, databaseAdapter: DatabaseAdapter): Promise<ReadonlyArray<FlexSearchTokenization>> {
+    private async queryFlexSearchTokens(
+        queryTree: QueryNode,
+        databaseAdapter: DatabaseAdapter
+    ): Promise<ReadonlyArray<FlexSearchTokenization>> {
         async function collectTokenizations(queryNode: QueryNode): Promise<ReadonlyArray<FlexSearchTokenizable>> {
             let tokens: FlexSearchTokenizable[] = [];
             if (queryNode instanceof FlexSearchComplexOperatorQueryNode) {
                 tokens.push({ expression: queryNode.expression, language: queryNode.flexSearchLanguage });
-
             }
             if (queryNode instanceof ObjectQueryNode) {
                 const specs: PropertySpecification[] = [];
@@ -178,7 +195,10 @@ export class OperationResolver {
         return databaseAdapter.tokenizeExpressions(tokenizations);
     }
 
-    private async expandQueryNode(queryNode: QueryNode, tokenizations: ReadonlyArray<FlexSearchTokenization>): Promise<QueryNode> {
+    private async expandQueryNode(
+        queryNode: QueryNode,
+        tokenizations: ReadonlyArray<FlexSearchTokenization>
+    ): Promise<QueryNode> {
         if (queryNode instanceof FlexSearchComplexOperatorQueryNode) {
             return await queryNode.expand(tokenizations);
         }
@@ -210,6 +230,4 @@ export class OperationResolver {
         Object.assign(newObj, queryNode, newFieldValues);
         return newObj;
     }
-
-
 }
