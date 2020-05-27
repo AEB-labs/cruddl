@@ -1,16 +1,21 @@
 import { Field, RootEntityType } from '../model';
 import {
-    AlwaysGrantPermissionDescriptor, PermissionDescriptor, ProfileBasedPermissionDescriptor, StaticPermissionDescriptor
+    AlwaysDenyPermissionDescriptor,
+    AlwaysGrantPermissionDescriptor,
+    PermissionDescriptor,
+    ProfileBasedPermissionDescriptor,
+    StaticPermissionDescriptor
 } from './permission-descriptors';
 
-export function getPermissionDescriptorOfRootEntityType(rootEntityType: RootEntityType): PermissionDescriptor{
+export function getPermissionDescriptorOfRootEntityType(rootEntityType: RootEntityType): PermissionDescriptor {
     if (rootEntityType.permissionProfile) {
         return new ProfileBasedPermissionDescriptor(rootEntityType.permissionProfile, rootEntityType);
     }
     if (rootEntityType.roles) {
         return new StaticPermissionDescriptor(rootEntityType.roles.read, rootEntityType.roles.readWrite);
     }
-    throw new Error(`Root entity "${rootEntityType}" neither has a permission profile, nor does it define roles.`);
+    // by default, no permissions are granted
+    return new AlwaysDenyPermissionDescriptor();
 }
 
 export function getPermissionDescriptorOfField(field: Field): PermissionDescriptor {
