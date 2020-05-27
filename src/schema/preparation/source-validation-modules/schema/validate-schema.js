@@ -38,38 +38,8 @@ var validate = (function() {
                     }
                 }
                 var data1 = data.permissions;
-                if (data1 === undefined) {
-                    valid1 = false;
-                    var err = {
-                        keyword: 'required',
-                        dataPath: (dataPath || '') + '',
-                        schemaPath: '#/required',
-                        params: {
-                            missingProperty: 'permissions'
-                        },
-                        message: "should have required property 'permissions'"
-                    };
-                    if (vErrors === null) vErrors = [err];
-                    else vErrors.push(err);
-                    errors++;
-                } else {
+                if (data1 !== undefined) {
                     var errs_1 = errors;
-                    if (typeof data1 === 'string') {
-                        if (ucs2length(data1) < 1) {
-                            var err = {
-                                keyword: 'minLength',
-                                dataPath: (dataPath || '') + '.permissions',
-                                schemaPath: '#/properties/permissions/minLength',
-                                params: {
-                                    limit: 1
-                                },
-                                message: 'should NOT be shorter than 1 characters'
-                            };
-                            if (vErrors === null) vErrors = [err];
-                            else vErrors.push(err);
-                            errors++;
-                        }
-                    }
                     if (Array.isArray(data1)) {
                         var errs__1 = errors;
                         var valid1;
@@ -398,12 +368,10 @@ var validate = (function() {
     })();
     refVal1.schema = {
         type: 'object',
-        required: ['permissions'],
         additionalProperties: false,
         properties: {
             permissions: {
                 type: 'array',
-                minLength: 1,
                 items: {
                     $ref: '#/definitions/Permission'
                 }
@@ -1042,7 +1010,7 @@ var validate = (function() {
                     params: {
                         limit: 1
                     },
-                    message: 'should NOT have less than 1 properties'
+                    message: 'should NOT have fewer than 1 properties'
                 };
                 if (vErrors === null) vErrors = [err];
                 else vErrors.push(err);
@@ -1399,12 +1367,10 @@ validate.schema = {
     definitions: {
         PermissionProfile: {
             type: 'object',
-            required: ['permissions'],
             additionalProperties: false,
             properties: {
                 permissions: {
                     type: 'array',
-                    minLength: 1,
                     items: {
                         $ref: '#/definitions/Permission'
                     }

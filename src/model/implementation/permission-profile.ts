@@ -7,8 +7,12 @@ export class PermissionProfile {
     readonly permissions: ReadonlyArray<Permission>;
     readonly loc: MessageLocation | undefined;
 
-    constructor(public readonly name: string, public readonly namespacePath: ReadonlyArray<string>, config: PermissionProfileConfig) {
-        this.permissions = config.permissions.map(permissionConfig => new Permission(permissionConfig));
+    constructor(
+        public readonly name: string,
+        public readonly namespacePath: ReadonlyArray<string>,
+        config: PermissionProfileConfig
+    ) {
+        this.permissions = (config.permissions || []).map(permissionConfig => new Permission(permissionConfig));
         this.loc = config.loc;
     }
 }
