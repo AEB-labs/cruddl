@@ -1,6 +1,5 @@
 import { compact } from 'lodash';
 import { AggregationOperator, Relation, RelationSide, RootEntityType } from '../../model';
-import { getEffectiveCollectSegments } from '../../model/implementation/collect-path';
 import {
     AddEdgesQueryNode,
     AggregationQueryNode,
@@ -486,12 +485,16 @@ register(BinaryOperationQueryNode, (node, context) => {
 
     switch (node.operator) {
         case BinaryOperator.LESS_THAN:
+        case BinaryOperator.FLEX_LESS_THAN:
             return compare(js`<`);
         case BinaryOperator.LESS_THAN_OR_EQUAL:
+        case BinaryOperator.FLEX_LESS_THAN_OR_EQUAL:
             return compare(js`<=`);
         case BinaryOperator.GREATER_THAN:
+        case BinaryOperator.FLEX_GREATER_THAN:
             return compare(js`>`);
         case BinaryOperator.GREATER_THAN_OR_EQUAL:
+        case BinaryOperator.FLEX_GREATER_THAN_OR_EQUAL:
             return compare(js`>=`);
         case BinaryOperator.CONTAINS:
             return js`${lhsListOrString}.includes(${rhsListOrString})`;
