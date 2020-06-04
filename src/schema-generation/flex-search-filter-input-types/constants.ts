@@ -42,10 +42,10 @@ export const FLEX_SEARCH_FILTER_OPERATORS: {
 } = {
     [INPUT_FIELD_EQUAL]: binaryOp(BinaryOperator.EQUAL),
     [INPUT_FIELD_NOT]: binaryOp(BinaryOperator.UNEQUAL),
-    [INPUT_FIELD_LT]: binaryOp(BinaryOperator.FLEX_LESS_THAN),
-    [INPUT_FIELD_LTE]: binaryOp(BinaryOperator.FLEX_LESS_THAN_OR_EQUAL),
-    [INPUT_FIELD_GT]: binaryOp(BinaryOperator.FLEX_GREATER_THAN),
-    [INPUT_FIELD_GTE]: binaryOp(BinaryOperator.FLEX_GREATER_THAN_OR_EQUAL),
+    [INPUT_FIELD_LT]: binaryOp(BinaryOperator.LESS_THAN),
+    [INPUT_FIELD_LTE]: binaryOp(BinaryOperator.LESS_THAN_OR_EQUAL),
+    [INPUT_FIELD_GT]: binaryOp(BinaryOperator.GREATER_THAN),
+    [INPUT_FIELD_GTE]: binaryOp(BinaryOperator.GREATER_THAN_OR_EQUAL),
     [INPUT_FIELD_IN]: binaryOp(BinaryOperator.IN),
     [INPUT_FIELD_NOT_IN]: binaryNotOp(BinaryOperator.IN),
     [INPUT_FIELD_STARTS_WITH]: startsWithOp(),
@@ -54,17 +54,31 @@ export const FLEX_SEARCH_FILTER_OPERATORS: {
     [INPUT_FIELD_NOT_ENDS_WITH]: binaryNotOp(BinaryOperator.ENDS_WITH)
 };
 
+export const STRING_FLEX_SEARCH_FILTER_OPERATORS: {
+    [suffix: string]: (
+        fieldNode: QueryNode,
+        valueNode: QueryNode,
+        flexSearchLanguage?: FlexSearchLanguage
+    ) => QueryNode;
+} = {
+    ...FLEX_SEARCH_FILTER_OPERATORS,
+    [INPUT_FIELD_LT]: binaryOp(BinaryOperator.FLEX_LESS_THAN),
+    [INPUT_FIELD_LTE]: binaryOp(BinaryOperator.FLEX_LESS_THAN_OR_EQUAL),
+    [INPUT_FIELD_GT]: binaryOp(BinaryOperator.FLEX_GREATER_THAN),
+    [INPUT_FIELD_GTE]: binaryOp(BinaryOperator.FLEX_GREATER_THAN_OR_EQUAL)
+};
+
 export const STRING_FLEX_SEARCH_FILTER_FIELDS = [
     INPUT_FIELD_EQUAL,
     INPUT_FIELD_NOT,
-    INPUT_FIELD_IN,
-    INPUT_FIELD_NOT_IN,
-    INPUT_FIELD_STARTS_WITH,
-    INPUT_FIELD_NOT_STARTS_WITH,
     INPUT_FIELD_LT,
     INPUT_FIELD_LTE,
     INPUT_FIELD_GT,
-    INPUT_FIELD_GTE
+    INPUT_FIELD_GTE,
+    INPUT_FIELD_IN,
+    INPUT_FIELD_NOT_IN,
+    INPUT_FIELD_STARTS_WITH,
+    INPUT_FIELD_NOT_STARTS_WITH
 ];
 
 export const STRING_TEXT_ANALYZER_FILTER_FIELDS = [

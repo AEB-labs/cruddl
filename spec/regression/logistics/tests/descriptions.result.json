@@ -3679,6 +3679,22 @@
                             "description": "Checks if `deliveryNumber` does not equal a specified string, case-insensitively."
                         },
                         {
+                            "name": "deliveryNumber_lt",
+                            "description": "Checks if `deliveryNumber` is less than a specified value."
+                        },
+                        {
+                            "name": "deliveryNumber_lte",
+                            "description": "Checks if `deliveryNumber` is less or equal a specified value."
+                        },
+                        {
+                            "name": "deliveryNumber_gt",
+                            "description": "Checks if `deliveryNumber` is greater than a specified value."
+                        },
+                        {
+                            "name": "deliveryNumber_gte",
+                            "description": "Checks if `deliveryNumber` is greater or equal a specified value."
+                        },
+                        {
                             "name": "deliveryNumber_in",
                             "description": "Checks if `deliveryNumber` is equal to one of the specified values."
                         },
@@ -3709,6 +3725,22 @@
                         {
                             "name": "destinationCountryISOCode_not",
                             "description": "Checks if `destinationCountryISOCode` does not equal a specified string, case-insensitively."
+                        },
+                        {
+                            "name": "destinationCountryISOCode_lt",
+                            "description": "Checks if `destinationCountryISOCode` is less than a specified value."
+                        },
+                        {
+                            "name": "destinationCountryISOCode_lte",
+                            "description": "Checks if `destinationCountryISOCode` is less or equal a specified value."
+                        },
+                        {
+                            "name": "destinationCountryISOCode_gt",
+                            "description": "Checks if `destinationCountryISOCode` is greater than a specified value."
+                        },
+                        {
+                            "name": "destinationCountryISOCode_gte",
+                            "description": "Checks if `destinationCountryISOCode` is greater or equal a specified value."
                         },
                         {
                             "name": "destinationCountryISOCode_in",
@@ -3832,6 +3864,22 @@
                         {
                             "name": "city_not",
                             "description": "Checks if `city` does not equal a specified string, case-insensitively."
+                        },
+                        {
+                            "name": "city_lt",
+                            "description": "Checks if `city` is less than a specified value."
+                        },
+                        {
+                            "name": "city_lte",
+                            "description": "Checks if `city` is less or equal a specified value."
+                        },
+                        {
+                            "name": "city_gt",
+                            "description": "Checks if `city` is greater than a specified value."
+                        },
+                        {
+                            "name": "city_gte",
+                            "description": "Checks if `city` is greater or equal a specified value."
                         },
                         {
                             "name": "city_in",
@@ -3994,6 +4042,22 @@
                         {
                             "name": "name_not",
                             "description": "Checks if `name` does not equal a specified string, case-insensitively."
+                        },
+                        {
+                            "name": "name_lt",
+                            "description": "Checks if `name` is less than a specified value."
+                        },
+                        {
+                            "name": "name_lte",
+                            "description": "Checks if `name` is less or equal a specified value."
+                        },
+                        {
+                            "name": "name_gt",
+                            "description": "Checks if `name` is greater than a specified value."
+                        },
+                        {
+                            "name": "name_gte",
+                            "description": "Checks if `name` is greater or equal a specified value."
                         },
                         {
                             "name": "name_in",
@@ -4279,6 +4343,22 @@
                         {
                             "name": "huNumber_not",
                             "description": "Checks if `huNumber` does not equal a specified string, case-insensitively."
+                        },
+                        {
+                            "name": "huNumber_lt",
+                            "description": "Checks if `huNumber` is less than a specified value."
+                        },
+                        {
+                            "name": "huNumber_lte",
+                            "description": "Checks if `huNumber` is less or equal a specified value."
+                        },
+                        {
+                            "name": "huNumber_gt",
+                            "description": "Checks if `huNumber` is greater than a specified value."
+                        },
+                        {
+                            "name": "huNumber_gte",
+                            "description": "Checks if `huNumber` is greater or equal a specified value."
                         },
                         {
                             "name": "huNumber_in",
