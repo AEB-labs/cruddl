@@ -1,15 +1,15 @@
-import { AggregationOperator, Field, FlexSearchLanguage, Relation, RootEntityType } from '../../model';
-import { FieldSegment, getEffectiveCollectSegments, RelationSegment } from '../../model/implementation/collect-path';
+import { AggregationOperator, Field, Relation, RootEntityType } from '../../model';
+import { FieldSegment, RelationSegment } from '../../model/implementation/collect-path';
 import {
     AddEdgesQueryNode,
     AggregationQueryNode,
-    ConfirmForBillingQueryNode,
     BasicType,
     BinaryOperationQueryNode,
     BinaryOperator,
     BinaryOperatorWithLanguage,
     ConcatListsQueryNode,
     ConditionalQueryNode,
+    ConfirmForBillingQueryNode,
     ConstBoolQueryNode,
     ConstIntQueryNode,
     CountQueryNode,
@@ -400,6 +400,7 @@ register(FlexSearchQueryNode, (node, context) => {
         aql`FOR ${itemContext.getVariable(node.itemVariable)}`,
         aql`IN ${aql.identifier(getFlexSearchViewNameForRootEntity(node.rootEntityType!))}`,
         aql`SEARCH ${processNode(node.flexFilterNode, itemContext)}`,
+        node.isOptimisationsDisabled ? aql`OPTIONS { conditionOptimization: 'none' }` : aql``,
         aql`RETURN ${itemContext.getVariable(node.itemVariable)}`
     );
 });

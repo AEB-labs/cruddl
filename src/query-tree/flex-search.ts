@@ -15,16 +15,19 @@ export class FlexSearchQueryNode extends QueryNode {
     public readonly flexFilterNode: QueryNode;
     public readonly rootEntityType: RootEntityType;
     public readonly itemVariable: VariableQueryNode;
+    public readonly isOptimisationsDisabled: boolean;
 
     constructor(params: {
         rootEntityType: RootEntityType;
         flexFilterNode?: QueryNode;
         itemVariable?: VariableQueryNode;
+        isOptimisationsDisabled?: boolean;
     }) {
         super();
         this.flexFilterNode = params.flexFilterNode || new ConstBoolQueryNode(true);
         this.itemVariable = params.itemVariable || new VariableQueryNode(decapitalize(params.rootEntityType.name));
         this.rootEntityType = params.rootEntityType;
+        this.isOptimisationsDisabled = params.isOptimisationsDisabled || false;
     }
 
     describe(): string {
@@ -45,8 +48,8 @@ export class FlexSearchQueryNode extends QueryNode {
 export class FlexSearchComplexOperatorQueryNode extends QueryNode {
     constructor(
         readonly expression: string,
-        private readonly comparisonOperator: BinaryOperatorWithLanguage,
-        private readonly logicalOperator: BinaryOperator,
+        readonly comparisonOperator: BinaryOperatorWithLanguage,
+        readonly logicalOperator: BinaryOperator,
         private readonly fieldNode: QueryNode,
         readonly flexSearchLanguage: FlexSearchLanguage
     ) {
