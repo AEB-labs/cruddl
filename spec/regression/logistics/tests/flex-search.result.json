@@ -104,6 +104,18 @@
             ]
         }
     },
+    "containsAnyPrefix": {
+        "data": {
+            "flexSearchDeliveries": [
+                {
+                    "deliveryNumber": "1000173"
+                },
+                {
+                    "deliveryNumber": "1000521"
+                }
+            ]
+        }
+    },
     "containsPhrase": {
         "data": {
             "flexSearchDeliveries": [
@@ -164,7 +176,7 @@
                 "message": "Too many objects.",
                 "locations": [
                     {
-                        "line": 95,
+                        "line": 102,
                         "column": 5
                     }
                 ],
@@ -181,7 +193,7 @@
                 "message": "Too many objects.",
                 "locations": [
                     {
-                        "line": 101,
+                        "line": 108,
                         "column": 5
                     }
                 ],
@@ -219,7 +231,7 @@
                 "message": "Recursive filters can only be defined for 1 level of recursion.",
                 "locations": [
                     {
-                        "line": 119,
+                        "line": 126,
                         "column": 5
                     }
                 ],

@@ -400,6 +400,7 @@ register(FlexSearchQueryNode, (node, context) => {
         aql`FOR ${itemContext.getVariable(node.itemVariable)}`,
         aql`IN ${aql.identifier(getFlexSearchViewNameForRootEntity(node.rootEntityType!))}`,
         aql`SEARCH ${processNode(node.flexFilterNode, itemContext)}`,
+        node.isOptimisationsDisabled ? aql`OPTIONS { conditionOptimization: 'none' }` : aql``,
         aql`RETURN ${itemContext.getVariable(node.itemVariable)}`
     );
 });

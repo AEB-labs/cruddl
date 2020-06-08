@@ -55,6 +55,13 @@ query containsAllPrefixes {
         deliveryNumber
     }
 }
+
+query containsAnyPrefix {
+    flexSearchDeliveries(flexSearchFilter: { description_contains_any_prefix: "all prefixes" }) {
+        deliveryNumber
+    }
+}
+
 query containsPhrase {
     flexSearchDeliveries(flexSearchFilter: { description_contains_phrase: "a phrase" }) {
         deliveryNumber
