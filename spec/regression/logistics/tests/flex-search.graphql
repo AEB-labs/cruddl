@@ -1,45 +1,3 @@
-query equals {
-    flexSearchDeliveries(flexSearchFilter: { deliveryNumber: "1000173" }) {
-        deliveryNumber
-    }
-}
-
-query equals_number {
-    flexSearchDeliveries(flexSearchFilter: { aNumber: 1000521 }) {
-        deliveryNumber
-    }
-}
-
-query in {
-    flexSearchDeliveries(flexSearchFilter: { deliveryNumber_in: ["1000173", "1000521"] }) {
-        deliveryNumber
-    }
-}
-
-query starts_with {
-    flexSearchDeliveries(flexSearchFilter: { deliveryNumber_starts_with: "10005" }) {
-        deliveryNumber
-    }
-}
-
-query gt_lt_number {
-    flexSearchDeliveries(flexSearchFilter: { itemsAggregation: { quantity_lt: 5 } }) {
-        deliveryNumber
-    }
-}
-
-query gte_string {
-    flexSearchDeliveries(flexSearchFilter: { deliveryNumber_gte: "1000521" }) {
-        deliveryNumber
-    }
-}
-
-query lte_string {
-    flexSearchDeliveries(flexSearchFilter: { deliveryNumber_lte: "1000521" }) {
-        deliveryNumber
-    }
-}
-
 query containsAnyWord {
     flexSearchDeliveries(flexSearchFilter: { description_contains_any_word: "anyword" }) {
         deliveryNumber
@@ -68,44 +26,8 @@ query containsPhrase {
     }
 }
 
-query equals_enum {
-    flexSearchDeliveries(flexSearchFilter: { enumFlexSearch: Foo }) {
-        deliveryNumber
-    }
-}
-
-query valueObject {
-    flexSearchDeliveries(flexSearchFilter: { consignee: { city: "Singapore" } }) {
-        deliveryNumber
-    }
-}
-
 query equals_null {
     flexSearchDeliveries(flexSearchFilter: { destinationCountryISOCode: null }) {
-        deliveryNumber
-    }
-}
-
-query filter_below_max {
-    flexSearchDeliveries(flexSearchFilter: { deliveryNumber: "1000521" }, filter: { id_gt: 1 }) {
-        deliveryNumber
-    }
-}
-
-query order_below_max {
-    flexSearchDeliveries(flexSearchFilter: { deliveryNumber: "1000521" }, orderBy: id_ASC) {
-        deliveryNumber
-    }
-}
-
-query filter_above_max {
-    flexSearchDeliveries(filter: { id_gt: 1 }) {
-        deliveryNumber
-    }
-}
-
-query order_above_max {
-    flexSearchDeliveries(orderBy: id_ASC) {
         deliveryNumber
     }
 }
@@ -116,14 +38,14 @@ query expression {
     }
 }
 
-query recursion_successfull {
-    flexSearchDeliveries(flexSearchFilter: { recursion: { recursion: { name: "test_b" } } }) {
+query gt_lt_number {
+    flexSearchDeliveries(flexSearchFilter: { itemsAggregation: { quantity_lt: 5 } }) {
         deliveryNumber
     }
 }
 
-query recursion_error {
-    flexSearchDeliveries(flexSearchFilter: { recursion: { recursion: { recursion: { name: "test_c" } } } }) {
+query starts_with {
+    flexSearchDeliveries(flexSearchFilter: { deliveryNumber_starts_with: "10005" }) {
         deliveryNumber
     }
 }
