@@ -1,215 +1,221 @@
 {
-  "equals": {
-    "data": {
-      "flexSearchDeliveries": [
-        {
-          "deliveryNumber": "1000173"
+    "equals": {
+        "data": {
+            "flexSearchDeliveries": [
+                {
+                    "deliveryNumber": "1000173"
+                }
+            ]
         }
-      ]
-    }
-  },
-  "equals_number": {
-    "data": {
-      "flexSearchDeliveries": [
-        {
-          "deliveryNumber": "1000522"
+    },
+    "equals_number": {
+        "data": {
+            "flexSearchDeliveries": [
+                {
+                    "deliveryNumber": "1000522"
+                }
+            ]
         }
-      ]
-    }
-  },
-  "in": {
-    "data": {
-      "flexSearchDeliveries": [
-        {
-          "deliveryNumber": "1000173"
-        },
-        {
-          "deliveryNumber": "1000521"
+    },
+    "in": {
+        "data": {
+            "flexSearchDeliveries": [
+                {
+                    "deliveryNumber": "1000173"
+                },
+                {
+                    "deliveryNumber": "1000521"
+                }
+            ]
         }
-      ]
-    }
-  },
-  "starts_with": {
-    "data": {
-      "flexSearchDeliveries": [
-        {
-          "deliveryNumber": "1000521"
-        },
-        {
-          "deliveryNumber": "1000522"
+    },
+    "starts_with": {
+        "data": {
+            "flexSearchDeliveries": [
+                {
+                    "deliveryNumber": "1000521"
+                },
+                {
+                    "deliveryNumber": "1000522"
+                }
+            ]
         }
-      ]
-    }
-  },
-  "gt_lt": {
-    "data": {
-      "flexSearchDeliveries": [
-        {
-          "deliveryNumber": "1000173"
-        },
-        {
-          "deliveryNumber": "1000522"
+    },
+    "gt_lt": {
+        "data": {
+            "flexSearchDeliveries": [
+                {
+                    "deliveryNumber": "1000173"
+                },
+                {
+                    "deliveryNumber": "1000522"
+                }
+            ]
         }
-      ]
-    }
-  },
-  "containsAnyWord": {
-    "data": {
-      "flexSearchDeliveries": [
-        {
-          "deliveryNumber": "1000173"
+    },
+    "containsAnyWord": {
+        "data": {
+            "flexSearchDeliveries": [
+                {
+                    "deliveryNumber": "1000173"
+                }
+            ]
         }
-      ]
-    }
-  },
-  "containsAllWords": {
-    "data": {
-      "flexSearchDeliveries": [
-        {
-          "deliveryNumber": "1000521"
+    },
+    "containsAllWords": {
+        "data": {
+            "flexSearchDeliveries": [
+                {
+                    "deliveryNumber": "1000521"
+                }
+            ]
         }
-      ]
-    }
-  },
-  "containsAllPrefixes": {
-    "data": {
-      "flexSearchDeliveries": [
-        {
-          "deliveryNumber": "1000521"
+    },
+    "containsAllPrefixes": {
+        "data": {
+            "flexSearchDeliveries": [
+                {
+                    "deliveryNumber": "1000521"
+                }
+            ]
         }
-      ]
-    }
-  },
-  "containsPhrase": {
-    "data": {
-      "flexSearchDeliveries": [
-        {
-          "deliveryNumber": "1000522"
+    },
+    "containsAnyPrefix": {
+        "data": {
+            "flexSearchDeliveries": [
+                {
+                    "deliveryNumber": "1000173"
+                },
+                {
+                    "deliveryNumber": "1000521"
+                }
+            ]
         }
-      ]
-    }
-  },
-  "equals_enum": {
-    "data": {
-      "flexSearchDeliveries": [
-        {
-          "deliveryNumber": "1000173"
+    },
+    "containsPhrase": {
+        "data": {
+            "flexSearchDeliveries": [
+                {
+                    "deliveryNumber": "1000522"
+                }
+            ]
         }
-      ]
-    }
-  },
-  "valueObject": {
-    "data": {
-      "flexSearchDeliveries": [
-        {
-          "deliveryNumber": "1000521"
+    },
+    "equals_enum": {
+        "data": {
+            "flexSearchDeliveries": [
+                {
+                    "deliveryNumber": "1000173"
+                }
+            ]
         }
-      ]
-    }
-  },
-  "equals_null": {
-    "data": {
-      "flexSearchDeliveries": [
-        {
-          "deliveryNumber": "1000173"
+    },
+    "valueObject": {
+        "data": {
+            "flexSearchDeliveries": [
+                {
+                    "deliveryNumber": "1000521"
+                }
+            ]
         }
-      ]
-    }
-  },
-  "filter_below_max": {
-    "data": {
-      "flexSearchDeliveries": [
-        {
-          "deliveryNumber": "1000521"
+    },
+    "equals_null": {
+        "data": {
+            "flexSearchDeliveries": [
+                {
+                    "deliveryNumber": "1000173"
+                }
+            ]
         }
-      ]
-    }
-  },
-  "order_below_max": {
-    "data": {
-      "flexSearchDeliveries": [
-        {
-          "deliveryNumber": "1000521"
+    },
+    "filter_below_max": {
+        "data": {
+            "flexSearchDeliveries": [
+                {
+                    "deliveryNumber": "1000521"
+                }
+            ]
         }
-      ]
-    }
-  },
-  "filter_above_max": {
-    "errors": [
-      {
-        "message": "Too many objects.",
-        "locations": [
-          {
-            "line": 146,
-            "column": 5
-          }
+    },
+    "order_below_max": {
+        "data": {
+            "flexSearchDeliveries": [
+                {
+                    "deliveryNumber": "1000521"
+                }
+            ]
+        }
+    },
+    "filter_above_max": {
+        "errors": [
+            {
+                "message": "Too many objects.",
+                "locations": [
+                    {
+                        "line": 89,
+                        "column": 5
+                    }
+                ],
+                "path": ["flexSearchDeliveries"]
+            }
         ],
-        "path": [
-          "flexSearchDeliveries"
-        ]
-      }
-    ],
-    "data": {
-      "flexSearchDeliveries": null
-    }
-  },
-  "order_above_max": {
-    "errors": [
-      {
-        "message": "Too many objects.",
-        "locations": [
-          {
-            "line": 156,
-            "column": 5
-          }
-        ],
-        "path": [
-          "flexSearchDeliveries"
-        ]
-      }
-    ],
-    "data": {
-      "flexSearchDeliveries": null
-    }
-  },
-  "expression": {
-    "data": {
-      "flexSearchDeliveries": [
-        {
-          "deliveryNumber": "1000173"
-        },
-        {
-          "deliveryNumber": "1000521"
+        "data": {
+            "flexSearchDeliveries": null
         }
-      ]
-    }
-  },
-  "recursion_successfull": {
-    "data": {
-      "flexSearchDeliveries": [
-        {
-          "deliveryNumber": "1000173"
-        }
-      ]
-    }
-  },
-  "recursion_error": {
-    "errors": [
-      {
-        "message": "Recursive filters can only be defined for 1 level of recursion.",
-        "locations": [
-          {
-            "line": 186,
-            "column": 5
-          }
+    },
+    "order_above_max": {
+        "errors": [
+            {
+                "message": "Too many objects.",
+                "locations": [
+                    {
+                        "line": 95,
+                        "column": 5
+                    }
+                ],
+                "path": ["flexSearchDeliveries"]
+            }
         ],
-        "path": [
-          "flexSearchDeliveries"
-        ]
-      }
-    ],
-    "data": {
-      "flexSearchDeliveries": null
+        "data": {
+            "flexSearchDeliveries": null
+        }
+    },
+    "expression": {
+        "data": {
+            "flexSearchDeliveries": [
+                {
+                    "deliveryNumber": "1000173"
+                },
+                {
+                    "deliveryNumber": "1000521"
+                }
+            ]
+        }
+    },
+    "recursion_successfull": {
+        "data": {
+            "flexSearchDeliveries": [
+                {
+                    "deliveryNumber": "1000173"
+                }
+            ]
+        }
+    },
+    "recursion_error": {
+        "errors": [
+            {
+                "message": "Recursive filters can only be defined for 1 level of recursion.",
+                "locations": [
+                    {
+                        "line": 113,
+                        "column": 5
+                    }
+                ],
+                "path": ["flexSearchDeliveries"]
+            }
+        ],
+        "data": {
+            "flexSearchDeliveries": null
+        }
     }
-  }
 }

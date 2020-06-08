@@ -5,8 +5,12 @@ import { RequestProfile } from '../config/interfaces';
 import { DatabaseAdapter, ExecutionPlan, FlexSearchTokenizable, TransactionStats } from '../database/database-adapter';
 import { OperationParams } from '../graphql/operation-based-resolvers';
 import { distillOperation } from '../graphql/query-distiller';
-import { ObjectQueryNode, PropertySpecification, QueryNode } from '../query-tree';
-import { FlexSearchComplexOperatorQueryNode, FlexSearchTokenization } from '../query-tree/flex-search';
+import { BinaryOperator, ObjectQueryNode, PropertySpecification, QueryNode } from '../query-tree';
+import {
+    FlexSearchComplexOperatorQueryNode,
+    FlexSearchQueryNode,
+    FlexSearchTokenization
+} from '../query-tree/flex-search';
 import { evaluateQueryStatically } from '../query-tree/utils';
 import { buildConditionalObjectQueryNode, QueryNodeObjectType } from '../schema-generation/query-node-object-type';
 import { SchemaTransformationContext } from '../schema/preparation/transformation-pipeline';
@@ -76,7 +80,7 @@ export class OperationResolver {
                 queryTree,
                 this.context.databaseAdapter
             );
-            queryTree = await this.expandQueryNode(queryTree, tokens);
+            queryTree = this.expandQueryNode(queryTree, tokens).node;
             if (logger.isTraceEnabled()) {
                 logger.trace('Before authorization: ' + queryTree.describe());
             }
@@ -195,39 +199,73 @@ export class OperationResolver {
         return databaseAdapter.tokenizeExpressions(tokenizations);
     }
 
-    private async expandQueryNode(
+    private expandQueryNode(
         queryNode: QueryNode,
         tokenizations: ReadonlyArray<FlexSearchTokenization>
-    ): Promise<QueryNode> {
+    ): { node: QueryNode; containsComplexOR: boolean } {
         if (queryNode instanceof FlexSearchComplexOperatorQueryNode) {
-            return await queryNode.expand(tokenizations);
+            return {
+                node: queryNode.expand(tokenizations),
+                containsComplexOR: queryNode.logicalOperator === BinaryOperator.OR
+            };
         }
+
+        if (queryNode instanceof FlexSearchQueryNode) {
+            const expandedFilter = this.expandQueryNode(queryNode.flexFilterNode, tokenizations);
+            return {
+                node: new FlexSearchQueryNode({
+                    rootEntityType: queryNode.rootEntityType,
+                    itemVariable: queryNode.itemVariable,
+                    flexFilterNode: expandedFilter.node,
+                    isOptimisationsDisabled: expandedFilter.containsComplexOR
+                }),
+                containsComplexOR: expandedFilter.containsComplexOR
+            };
+        }
+
         if (queryNode instanceof ObjectQueryNode) {
             const specs: PropertySpecification[] = [];
+            let containsComplexOR = false;
             for (const property of queryNode.properties) {
-                const expandedValueNode = await this.expandQueryNode(property.valueNode, tokenizations);
-                specs.push(new PropertySpecification(property.propertyName, expandedValueNode));
+                const expandedValue = this.expandQueryNode(property.valueNode, tokenizations);
+                specs.push(new PropertySpecification(property.propertyName, expandedValue.node));
+                if (expandedValue.containsComplexOR) {
+                    containsComplexOR = true;
+                }
             }
-            return new ObjectQueryNode(specs);
+            return {
+                node: new ObjectQueryNode(specs),
+                containsComplexOR: containsComplexOR
+            };
         }
 
         const newFieldValues: { [name: string]: QueryNode } = {};
         let hasChanged = false;
+        let containsComplexOR = false;
         for (const field of Object.keys(queryNode)) {
             const oldValue = (queryNode as any)[field];
             if (oldValue instanceof QueryNode) {
-                const newValue = await this.expandQueryNode(oldValue, tokenizations);
-                if (newValue != oldValue) {
-                    newFieldValues[field] = newValue;
+                const newValue = this.expandQueryNode(oldValue, tokenizations);
+                if (newValue.containsComplexOR) {
+                    containsComplexOR = true;
+                }
+                if (newValue.node != oldValue) {
+                    newFieldValues[field] = newValue.node;
                     hasChanged = true;
                 }
             }
         }
         if (!hasChanged) {
-            return queryNode;
+            return {
+                node: queryNode,
+                containsComplexOR: false
+            };
         }
         const newObj = Object.create(Object.getPrototypeOf(queryNode));
         Object.assign(newObj, queryNode, newFieldValues);
-        return newObj;
+        return {
+            node: newObj,
+            containsComplexOR: containsComplexOR
+        };
     }
 }

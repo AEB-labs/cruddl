@@ -3743,6 +3743,14 @@
                             "description": "Tokenizes the provided string into words, and checks if at least one word is not contained in `description`.\n Stemming (reduction of words on their base form) is applied."
                         },
                         {
+                            "name": "description_contains_any_prefix",
+                            "description": "Tokenizes the provided string into prefixes, and checks if `description` contains any word that starts with one of these prefixes.\n Stemming (reduction of words on their base form) is applied."
+                        },
+                        {
+                            "name": "description_not_contains_any_prefix",
+                            "description": "Tokenizes the provided string into prefixes, and checks if `description` does not contain any word that starts with one of these prefixes.\n Stemming (reduction of words on their base form) is applied."
+                        },
+                        {
                             "name": "description_contains_all_prefixes",
                             "description": "Tokenizes the provided string into prefixes, and checks if all prefixes appears in `description`.\n Stemming (reduction of words on their base form) is applied."
                         },

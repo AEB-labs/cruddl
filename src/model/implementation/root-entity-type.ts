@@ -2,7 +2,6 @@ import { GraphQLID, GraphQLString } from 'graphql';
 import memorize from 'memorize-decorator';
 import {
     ACCESS_GROUP_FIELD,
-    DEFAULT_PERMISSION_PROFILE,
     FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE,
     FLEX_SEARCH_INDEXED_DIRECTIVE,
     FLEX_SEARCH_ORDER_ARGUMENT,
@@ -97,7 +96,10 @@ export class RootEntityType extends ObjectTypeBase {
     }
 
     get hasFieldsIncludedInSearch() {
-        return this.fields.some(value => value.isIncludedInSearch);
+        return (
+            this.fields.some(value => value.isIncludedInSearch) ||
+            this.fields.some(value => value.isFulltextIncludedInSearch)
+        );
     }
 
     @memorize()
