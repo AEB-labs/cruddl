@@ -22,11 +22,24 @@ query starts_with {
     }
 }
 
-query gt_lt {
+query gt_lt_number {
     flexSearchDeliveries(flexSearchFilter: { itemsAggregation: { quantity_lt: 5 } }) {
         deliveryNumber
     }
 }
+
+query gte_string {
+    flexSearchDeliveries(flexSearchFilter: { deliveryNumber_gte: "1000521" }) {
+        deliveryNumber
+    }
+}
+
+query lte_string {
+    flexSearchDeliveries(flexSearchFilter: { deliveryNumber_lte: "1000521" }) {
+        deliveryNumber
+    }
+}
+
 query containsAnyWord {
     flexSearchDeliveries(flexSearchFilter: { description_contains_any_word: "anyword" }) {
         deliveryNumber

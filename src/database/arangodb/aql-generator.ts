@@ -714,6 +714,14 @@ register(BinaryOperationQueryNode, (node, context) => {
             return aql`CONCAT(${lhs}, ${rhs})`;
         case BinaryOperator.PREPEND:
             return aql`CONCAT(${rhs}, ${lhs})`;
+        case BinaryOperator.FLEX_LESS_THAN:
+            return aql`IN_RANGE(${lhs}, ${''} , ${rhs}, true, false)`;
+        case BinaryOperator.FLEX_LESS_THAN_OR_EQUAL:
+            return aql`IN_RANGE(${lhs}, ${''} , ${rhs}, true, true)`;
+        case BinaryOperator.FLEX_GREATER_THAN:
+            return aql`IN_RANGE(${lhs}, ${rhs}, ${String.fromCodePoint(0x10ffff)}, false, true)`;
+        case BinaryOperator.FLEX_GREATER_THAN_OR_EQUAL:
+            return aql`IN_RANGE(${lhs}, ${rhs}, ${String.fromCodePoint(0x10ffff)}, true, true)`;
         default:
             throw new Error(`Unsupported binary operator: ${op}`);
     }

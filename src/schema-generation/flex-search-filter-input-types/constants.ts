@@ -54,9 +54,27 @@ export const FLEX_SEARCH_FILTER_OPERATORS: {
     [INPUT_FIELD_NOT_ENDS_WITH]: binaryNotOp(BinaryOperator.ENDS_WITH)
 };
 
+export const STRING_FLEX_SEARCH_FILTER_OPERATORS: {
+    [suffix: string]: (
+        fieldNode: QueryNode,
+        valueNode: QueryNode,
+        flexSearchLanguage?: FlexSearchLanguage
+    ) => QueryNode;
+} = {
+    ...FLEX_SEARCH_FILTER_OPERATORS,
+    [INPUT_FIELD_LT]: binaryOp(BinaryOperator.FLEX_LESS_THAN),
+    [INPUT_FIELD_LTE]: binaryOp(BinaryOperator.FLEX_LESS_THAN_OR_EQUAL),
+    [INPUT_FIELD_GT]: binaryOp(BinaryOperator.FLEX_GREATER_THAN),
+    [INPUT_FIELD_GTE]: binaryOp(BinaryOperator.FLEX_GREATER_THAN_OR_EQUAL)
+};
+
 export const STRING_FLEX_SEARCH_FILTER_FIELDS = [
     INPUT_FIELD_EQUAL,
     INPUT_FIELD_NOT,
+    INPUT_FIELD_LT,
+    INPUT_FIELD_LTE,
+    INPUT_FIELD_GT,
+    INPUT_FIELD_GTE,
     INPUT_FIELD_IN,
     INPUT_FIELD_NOT_IN,
     INPUT_FIELD_STARTS_WITH,

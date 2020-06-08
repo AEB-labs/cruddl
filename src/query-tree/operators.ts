@@ -33,7 +33,11 @@ export enum UnaryOperator {
  * A node that performs an operation with two operands
  */
 export class BinaryOperationQueryNode extends QueryNode {
-    constructor(public readonly lhs: QueryNode, public readonly operator: BinaryOperator, public readonly rhs: QueryNode) {
+    constructor(
+        public readonly lhs: QueryNode,
+        public readonly operator: BinaryOperator,
+        public readonly rhs: QueryNode
+    ) {
         super();
     }
 
@@ -52,12 +56,16 @@ export class BinaryOperationQueryNode extends QueryNode {
             case BinaryOperator.UNEQUAL:
                 return '!=';
             case BinaryOperator.GREATER_THAN:
+            case BinaryOperator.FLEX_GREATER_THAN:
                 return '>';
             case BinaryOperator.GREATER_THAN_OR_EQUAL:
+            case BinaryOperator.FLEX_GREATER_THAN_OR_EQUAL:
                 return '>=';
             case BinaryOperator.LESS_THAN:
+            case BinaryOperator.FLEX_LESS_THAN:
                 return '<';
             case BinaryOperator.LESS_THAN_OR_EQUAL:
+            case BinaryOperator.FLEX_LESS_THAN_OR_EQUAL:
                 return '<=';
             case BinaryOperator.IN:
                 return 'IN';
@@ -110,6 +118,10 @@ export enum BinaryOperator {
     LESS_THAN_OR_EQUAL = 'LESS_THAN_OR_EQUAL',
     GREATER_THAN = 'GREATER_THAN',
     GREATER_THAN_OR_EQUAL = 'GREATER_THAN_OR_EQUAL',
+    FLEX_LESS_THAN = 'FLEX_LESS_THAN',
+    FLEX_LESS_THAN_OR_EQUAL = 'FLEX_LESS_THAN_OR_EQUAL',
+    FLEX_GREATER_THAN = 'FLEX_GREATER_THAN',
+    FLEX_GREATER_THAN_OR_EQUAL = 'FLEX_GREATER_THAN_OR_EQUAL',
     IN = 'IN',
     CONTAINS = 'CONTAINS',
     STARTS_WITH = 'STARTS_WITH',
@@ -126,19 +138,26 @@ export enum BinaryOperator {
     DIVIDE = 'DIVIDE',
     MODULO = 'MODULO',
     APPEND = 'APPEND',
-    PREPEND = 'PREPEND',
+    PREPEND = 'PREPEND'
 }
 
 /**
  * A node that performs an operation with two operands and a FlexSearch Language
  */
 export class OperatorWithLanguageQueryNode extends QueryNode {
-    constructor(public readonly lhs: QueryNode, public readonly operator: BinaryOperatorWithLanguage, public readonly rhs: QueryNode, public readonly flexSearchLanguage: FlexSearchLanguage) {
+    constructor(
+        public readonly lhs: QueryNode,
+        public readonly operator: BinaryOperatorWithLanguage,
+        public readonly rhs: QueryNode,
+        public readonly flexSearchLanguage: FlexSearchLanguage
+    ) {
         super();
     }
 
     describe() {
-        return `(${this.lhs.describe()} ${this.describeOperator(this.operator)} ${this.rhs.describe()}${this.getParamString()})`;
+        return `(${this.lhs.describe()} ${this.describeOperator(
+            this.operator
+        )} ${this.rhs.describe()}${this.getParamString()})`;
     }
 
     private describeOperator(op: BinaryOperatorWithLanguage) {
@@ -160,7 +179,6 @@ export class OperatorWithLanguageQueryNode extends QueryNode {
         } else {
             return ``;
         }
-
     }
 }
 
@@ -170,18 +188,19 @@ export class OperatorWithLanguageQueryNode extends QueryNode {
 export enum BinaryOperatorWithLanguage {
     FLEX_SEARCH_CONTAINS_ANY_WORD = 'FLEX_SEARCH_CONTAINS_ANY_WORD',
     FLEX_SEARCH_CONTAINS_PREFIX = 'FLEX_SEARCH_CONTAINS_PREFIX',
-    FLEX_SEARCH_CONTAINS_PHRASE = 'FLEX_SEARCH_CONTAINS_PHRASE',
+    FLEX_SEARCH_CONTAINS_PHRASE = 'FLEX_SEARCH_CONTAINS_PHRASE'
 }
 
 export class ConditionalQueryNode extends QueryNode {
-    constructor(public readonly condition: QueryNode, public readonly expr1: QueryNode, public readonly expr2: QueryNode) {
+    constructor(
+        public readonly condition: QueryNode,
+        public readonly expr1: QueryNode,
+        public readonly expr2: QueryNode
+    ) {
         super();
     }
 
     describe() {
         return `(if ${this.condition.describe()} then ${this.expr1.describe()} else ${this.expr2.describe()} endif)`;
     }
-
 }
-
-
