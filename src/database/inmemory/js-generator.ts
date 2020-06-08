@@ -17,6 +17,7 @@ import {
     DeleteEntitiesQueryNode,
     EntitiesQueryNode,
     EntityFromIdQueryNode,
+    FieldPathQueryNode,
     FieldQueryNode,
     FirstOfListQueryNode,
     FollowEdgeQueryNode,
@@ -821,15 +822,41 @@ register(RemoveEdgesQueryNode, (node, context) => {
 });
 
 register(OperatorWithLanguageQueryNode, (node, context) => {
-    throw new FlexSearchNotSupportedError();
+    throw new FlexSearchOperatorWithLanguageNotSupportedError();
 });
 
 register(FlexSearchQueryNode, (node, context) => {
-    throw new FlexSearchNotSupportedError();
+    let itemContext = context.introduceVariable(node.itemVariable);
+    const itemVar = itemContext.getVariable(node.itemVariable);
+
+    function lambda(exprNode: QueryNode) {
+        return jsExt.lambda(itemVar, processNode(exprNode, itemContext));
+    }
+
+    const isFiltered = !(node.flexFilterNode instanceof ConstBoolQueryNode) || node.flexFilterNode.value != true;
+
+    return js.lines(
+        getCollectionForType(node.rootEntityType, context),
+        js.indent(js.lines(isFiltered ? js`.filter(${lambda(node.flexFilterNode)})` : js``))
+    );
 });
 
 register(FlexSearchFieldExistsQueryNode, (node, context) => {
-    throw new FlexSearchNotSupportedError();
+    throw new FlexSearchExistsNotSupportedError();
+});
+
+register(FieldPathQueryNode, (node, context) => {
+    const object = processNode(node.objectNode, context);
+    for (const field of node.path) {
+        if (field.isList) {
+            throw new FlexSearchAggregationNotSupportedError();
+        }
+    }
+    let fragment = getPropertyAccessFrag(node.path[0].name, object);
+    for (const field of node.path.slice(1, node.path.length)) {
+        fragment = getPropertyAccessFrag(field.name, fragment);
+    }
+    return fragment;
 });
 
 register(FlexSearchComplexOperatorQueryNode, (node, context) => {
@@ -964,11 +991,31 @@ function getCollectionForRelation(relation: Relation, context: QueryContext) {
 }
 
 /**
- * Is thrown if a FlexSearch query is performed for an in-memory database.
+ * Is thrown if a FlexSearch query containing fulltext-filters is performed for an in-memory database.
  */
-export class FlexSearchNotSupportedError extends Error {
+export class FlexSearchOperatorWithLanguageNotSupportedError extends Error {
     constructor() {
-        super(`ArangoSearch-query was not executed, because it is not supported for in-memory database.`);
+        super(`FlexSearch-query was not executed, because fulltext-filters are not supported for in-memory database.`);
+        this.name = this.constructor.name;
+    }
+}
+
+/**
+ * Is thrown if a FlexSearch query containing an aggregation filter is performed for an in-memory database.
+ */
+export class FlexSearchAggregationNotSupportedError extends Error {
+    constructor() {
+        super(`FlexSearch-query was not executed, because aggregations are not supported for in-memory database.`);
+        this.name = this.constructor.name;
+    }
+}
+
+/**
+ * Is thrown if a FlexSearch query containing an exists filter is performed for an in-memory database.
+ */
+export class FlexSearchExistsNotSupportedError extends Error {
+    constructor() {
+        super(`FlexSearch-query was not executed, because exists filters are not supported for in-memory database.`);
         this.name = this.constructor.name;
     }
 }
