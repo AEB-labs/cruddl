@@ -95,7 +95,7 @@
                 "message": "Too many objects.",
                 "locations": [
                     {
-                        "line": 56,
+                        "line": 59,
                         "column": 5
                     }
                 ],
@@ -112,7 +112,7 @@
                 "message": "Too many objects.",
                 "locations": [
                     {
-                        "line": 62,
+                        "line": 65,
                         "column": 5
                     }
                 ],
@@ -138,7 +138,7 @@
                 "message": "Recursive filters can only be defined for 1 level of recursion.",
                 "locations": [
                     {
-                        "line": 74,
+                        "line": 77,
                         "column": 5
                     }
                 ],
