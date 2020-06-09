@@ -41,25 +41,28 @@ query valueObject {
 }
 
 query filter_below_max {
-    flexSearchDeliveries(flexSearchFilter: { deliveryNumber: "1000521" }, filter: { id_gt: 1 }) {
+    flexSearchDeliveries(
+        flexSearchFilter: { deliveryNumber: "1000521" }
+        filter: { description_starts_with: "description" }
+    ) {
         deliveryNumber
     }
 }
 
 query order_below_max {
-    flexSearchDeliveries(flexSearchFilter: { deliveryNumber: "1000521" }, orderBy: id_ASC) {
+    flexSearchDeliveries(flexSearchFilter: { deliveryNumber: "1000521" }, orderBy: deliveryNumber_ASC) {
         deliveryNumber
     }
 }
 
 query filter_above_max {
-    flexSearchDeliveries(filter: { id_gt: 1 }) {
+    flexSearchDeliveries(filter: { description_starts_with: "description" }) {
         deliveryNumber
     }
 }
 
 query order_above_max {
-    flexSearchDeliveries(orderBy: id_ASC) {
+    flexSearchDeliveries(orderBy: deliveryNumber_ASC) {
         deliveryNumber
     }
 }
