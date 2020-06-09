@@ -1,0 +1,15 @@
+{
+    "databases": {
+        "arangodb": {
+            "versions": {
+                "3.3": {
+                    "ignore": true
+                },
+                "3.2": {
+                    "ignore": true
+                }
+            }
+        }
+    },
+    "waitForArangoSearch": true
+}

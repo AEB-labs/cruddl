@@ -1,82 +1,4 @@
 {
-    "equals": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000173"
-                }
-            ]
-        }
-    },
-    "equals_number": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000522"
-                }
-            ]
-        }
-    },
-    "in": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000173"
-                },
-                {
-                    "deliveryNumber": "1000521"
-                }
-            ]
-        }
-    },
-    "starts_with": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000521"
-                },
-                {
-                    "deliveryNumber": "1000522"
-                }
-            ]
-        }
-    },
-    "gt_lt_number": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000173"
-                },
-                {
-                    "deliveryNumber": "1000522"
-                }
-            ]
-        }
-    },
-    "gte_string": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000521"
-                },
-                {
-                    "deliveryNumber": "1000522"
-                }
-            ]
-        }
-    },
-    "lte_string": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000173"
-                },
-                {
-                    "deliveryNumber": "1000521"
-                }
-            ]
-        }
-    },
     "containsAnyWord": {
         "data": {
             "flexSearchDeliveries": [
@@ -125,24 +47,6 @@
             ]
         }
     },
-    "equals_enum": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000173"
-                }
-            ]
-        }
-    },
-    "valueObject": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000521"
-                }
-            ]
-        }
-    },
     "equals_null": {
         "data": {
             "flexSearchDeliveries": [
@@ -150,58 +54,6 @@
                     "deliveryNumber": "1000173"
                 }
             ]
-        }
-    },
-    "filter_below_max": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000521"
-                }
-            ]
-        }
-    },
-    "order_below_max": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000521"
-                }
-            ]
-        }
-    },
-    "filter_above_max": {
-        "errors": [
-            {
-                "message": "Too many objects.",
-                "locations": [
-                    {
-                        "line": 102,
-                        "column": 5
-                    }
-                ],
-                "path": ["flexSearchDeliveries"]
-            }
-        ],
-        "data": {
-            "flexSearchDeliveries": null
-        }
-    },
-    "order_above_max": {
-        "errors": [
-            {
-                "message": "Too many objects.",
-                "locations": [
-                    {
-                        "line": 108,
-                        "column": 5
-                    }
-                ],
-                "path": ["flexSearchDeliveries"]
-            }
-        ],
-        "data": {
-            "flexSearchDeliveries": null
         }
     },
     "expression": {
@@ -216,30 +68,28 @@
             ]
         }
     },
-    "recursion_successfull": {
+    "gt_lt_number": {
         "data": {
             "flexSearchDeliveries": [
                 {
                     "deliveryNumber": "1000173"
+                },
+                {
+                    "deliveryNumber": "1000522"
                 }
             ]
         }
     },
-    "recursion_error": {
-        "errors": [
-            {
-                "message": "Recursive filters can only be defined for 1 level of recursion.",
-                "locations": [
-                    {
-                        "line": 126,
-                        "column": 5
-                    }
-                ],
-                "path": ["flexSearchDeliveries"]
-            }
-        ],
+    "starts_with": {
         "data": {
-            "flexSearchDeliveries": null
+            "flexSearchDeliveries": [
+                {
+                    "deliveryNumber": "1000521"
+                },
+                {
+                    "deliveryNumber": "1000522"
+                }
+            ]
         }
     }
 }

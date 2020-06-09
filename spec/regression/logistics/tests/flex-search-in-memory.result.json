@@ -1,0 +1,152 @@
+{
+    "equals": {
+        "data": {
+            "flexSearchDeliveries": [
+                {
+                    "deliveryNumber": "1000173"
+                }
+            ]
+        }
+    },
+    "equals_number": {
+        "data": {
+            "flexSearchDeliveries": [
+                {
+                    "deliveryNumber": "1000522"
+                }
+            ]
+        }
+    },
+    "in": {
+        "data": {
+            "flexSearchDeliveries": [
+                {
+                    "deliveryNumber": "1000173"
+                },
+                {
+                    "deliveryNumber": "1000521"
+                }
+            ]
+        }
+    },
+    "gte_string": {
+        "data": {
+            "flexSearchDeliveries": [
+                {
+                    "deliveryNumber": "1000521"
+                },
+                {
+                    "deliveryNumber": "1000522"
+                }
+            ]
+        }
+    },
+    "lte_string": {
+        "data": {
+            "flexSearchDeliveries": [
+                {
+                    "deliveryNumber": "1000173"
+                },
+                {
+                    "deliveryNumber": "1000521"
+                }
+            ]
+        }
+    },
+    "equals_enum": {
+        "data": {
+            "flexSearchDeliveries": [
+                {
+                    "deliveryNumber": "1000173"
+                }
+            ]
+        }
+    },
+    "valueObject": {
+        "data": {
+            "flexSearchDeliveries": [
+                {
+                    "deliveryNumber": "1000521"
+                }
+            ]
+        }
+    },
+    "filter_below_max": {
+        "data": {
+            "flexSearchDeliveries": [
+                {
+                    "deliveryNumber": "1000521"
+                }
+            ]
+        }
+    },
+    "order_below_max": {
+        "data": {
+            "flexSearchDeliveries": [
+                {
+                    "deliveryNumber": "1000521"
+                }
+            ]
+        }
+    },
+    "filter_above_max": {
+        "errors": [
+            {
+                "message": "Too many objects.",
+                "locations": [
+                    {
+                        "line": 59,
+                        "column": 5
+                    }
+                ],
+                "path": ["flexSearchDeliveries"]
+            }
+        ],
+        "data": {
+            "flexSearchDeliveries": null
+        }
+    },
+    "order_above_max": {
+        "errors": [
+            {
+                "message": "Too many objects.",
+                "locations": [
+                    {
+                        "line": 65,
+                        "column": 5
+                    }
+                ],
+                "path": ["flexSearchDeliveries"]
+            }
+        ],
+        "data": {
+            "flexSearchDeliveries": null
+        }
+    },
+    "recursion_successfull": {
+        "data": {
+            "flexSearchDeliveries": [
+                {
+                    "deliveryNumber": "1000173"
+                }
+            ]
+        }
+    },
+    "recursion_error": {
+        "errors": [
+            {
+                "message": "Recursive filters can only be defined for 1 level of recursion.",
+                "locations": [
+                    {
+                        "line": 77,
+                        "column": 5
+                    }
+                ],
+                "path": ["flexSearchDeliveries"]
+            }
+        ],
+        "data": {
+            "flexSearchDeliveries": null
+        }
+    }
+}
