@@ -32,8 +32,11 @@ var validate = (function() {
                             },
                             message: 'should NOT have additional properties'
                         };
-                        if (vErrors === null) vErrors = [err];
-                        else vErrors.push(err);
+                        if (vErrors === null) {
+                            vErrors = [err];
+                        } else {
+                            vErrors.push(err);
+                        }
                         errors++;
                     }
                 }
@@ -68,8 +71,11 @@ var validate = (function() {
                                             },
                                             message: 'should NOT have additional properties'
                                         };
-                                        if (vErrors === null) vErrors = [err];
-                                        else vErrors.push(err);
+                                        if (vErrors === null) {
+                                            vErrors = [err];
+                                        } else {
+                                            vErrors.push(err);
+                                        }
                                         errors++;
                                     }
                                 }
@@ -85,8 +91,11 @@ var validate = (function() {
                                         },
                                         message: "should have required property 'roles'"
                                     };
-                                    if (vErrors === null) vErrors = [err];
-                                    else vErrors.push(err);
+                                    if (vErrors === null) {
+                                        vErrors = [err];
+                                    } else {
+                                        vErrors.push(err);
+                                    }
                                     errors++;
                                 } else {
                                     var errs_4 = errors;
@@ -101,8 +110,11 @@ var validate = (function() {
                                                 },
                                                 message: 'should NOT be shorter than 1 characters'
                                             };
-                                            if (vErrors === null) vErrors = [err];
-                                            else vErrors.push(err);
+                                            if (vErrors === null) {
+                                                vErrors = [err];
+                                            } else {
+                                                vErrors.push(err);
+                                            }
                                             errors++;
                                         }
                                     }
@@ -130,8 +142,11 @@ var validate = (function() {
                                                         },
                                                         message: 'should match pattern ".+"'
                                                     };
-                                                    if (vErrors === null) vErrors = [err];
-                                                    else vErrors.push(err);
+                                                    if (vErrors === null) {
+                                                        vErrors = [err];
+                                                    } else {
+                                                        vErrors.push(err);
+                                                    }
                                                     errors++;
                                                 }
                                             } else {
@@ -145,8 +160,11 @@ var validate = (function() {
                                                     },
                                                     message: 'should be string'
                                                 };
-                                                if (vErrors === null) vErrors = [err];
-                                                else vErrors.push(err);
+                                                if (vErrors === null) {
+                                                    vErrors = [err];
+                                                } else {
+                                                    vErrors.push(err);
+                                                }
                                                 errors++;
                                             }
                                             var valid5 = errors === errs_5;
@@ -161,8 +179,11 @@ var validate = (function() {
                                             },
                                             message: 'should be array'
                                         };
-                                        if (vErrors === null) vErrors = [err];
-                                        else vErrors.push(err);
+                                        if (vErrors === null) {
+                                            vErrors = [err];
+                                        } else {
+                                            vErrors.push(err);
+                                        }
                                         errors++;
                                     }
                                     var valid4 = errors === errs_4;
@@ -179,8 +200,11 @@ var validate = (function() {
                                         },
                                         message: "should have required property 'access'"
                                     };
-                                    if (vErrors === null) vErrors = [err];
-                                    else vErrors.push(err);
+                                    if (vErrors === null) {
+                                        vErrors = [err];
+                                    } else {
+                                        vErrors.push(err);
+                                    }
                                     errors++;
                                 } else {
                                     var errs_4 = errors;
@@ -194,18 +218,22 @@ var validate = (function() {
                                             },
                                             message: 'should be string'
                                         };
-                                        if (vErrors === null) vErrors = [err];
-                                        else vErrors.push(err);
+                                        if (vErrors === null) {
+                                            vErrors = [err];
+                                        } else {
+                                            vErrors.push(err);
+                                        }
                                         errors++;
                                     }
                                     var schema4 = refVal2.properties.access.enum;
                                     var valid4;
                                     valid4 = false;
-                                    for (var i4 = 0; i4 < schema4.length; i4++)
+                                    for (var i4 = 0; i4 < schema4.length; i4++) {
                                         if (equal(data3, schema4[i4])) {
                                             valid4 = true;
                                             break;
                                         }
+                                    }
                                     if (!valid4) {
                                         var err = {
                                             keyword: 'enum',
@@ -216,8 +244,11 @@ var validate = (function() {
                                             },
                                             message: 'should be equal to one of the allowed values'
                                         };
-                                        if (vErrors === null) vErrors = [err];
-                                        else vErrors.push(err);
+                                        if (vErrors === null) {
+                                            vErrors = [err];
+                                        } else {
+                                            vErrors.push(err);
+                                        }
                                         errors++;
                                     }
                                     var valid4 = errors === errs_4;
@@ -241,8 +272,11 @@ var validate = (function() {
                                                 },
                                                 message: 'should NOT be shorter than 1 characters'
                                             };
-                                            if (vErrors === null) vErrors = [err];
-                                            else vErrors.push(err);
+                                            if (vErrors === null) {
+                                                vErrors = [err];
+                                            } else {
+                                                vErrors.push(err);
+                                            }
                                             errors++;
                                         }
                                     }
@@ -270,8 +304,11 @@ var validate = (function() {
                                                         },
                                                         message: 'should match pattern ".+"'
                                                     };
-                                                    if (vErrors === null) vErrors = [err];
-                                                    else vErrors.push(err);
+                                                    if (vErrors === null) {
+                                                        vErrors = [err];
+                                                    } else {
+                                                        vErrors.push(err);
+                                                    }
                                                     errors++;
                                                 }
                                             } else {
@@ -291,8 +328,11 @@ var validate = (function() {
                                                     },
                                                     message: 'should be string'
                                                 };
-                                                if (vErrors === null) vErrors = [err];
-                                                else vErrors.push(err);
+                                                if (vErrors === null) {
+                                                    vErrors = [err];
+                                                } else {
+                                                    vErrors.push(err);
+                                                }
                                                 errors++;
                                             }
                                             var valid5 = errors === errs_5;
@@ -309,8 +349,11 @@ var validate = (function() {
                                             },
                                             message: 'should be array'
                                         };
-                                        if (vErrors === null) vErrors = [err];
-                                        else vErrors.push(err);
+                                        if (vErrors === null) {
+                                            vErrors = [err];
+                                        } else {
+                                            vErrors.push(err);
+                                        }
                                         errors++;
                                     }
                                     var valid4 = errors === errs_4;
@@ -325,8 +368,11 @@ var validate = (function() {
                                     },
                                     message: 'should be object'
                                 };
-                                if (vErrors === null) vErrors = [err];
-                                else vErrors.push(err);
+                                if (vErrors === null) {
+                                    vErrors = [err];
+                                } else {
+                                    vErrors.push(err);
+                                }
                                 errors++;
                             }
                             var valid3 = errors === errs_3;
@@ -342,8 +388,11 @@ var validate = (function() {
                             },
                             message: 'should be array'
                         };
-                        if (vErrors === null) vErrors = [err];
-                        else vErrors.push(err);
+                        if (vErrors === null) {
+                            vErrors = [err];
+                        } else {
+                            vErrors.push(err);
+                        }
                         errors++;
                     }
                     var valid1 = errors === errs_1;
@@ -358,8 +407,11 @@ var validate = (function() {
                     },
                     message: 'should be object'
                 };
-                if (vErrors === null) vErrors = [err];
-                else vErrors.push(err);
+                if (vErrors === null) {
+                    vErrors = [err];
+                } else {
+                    vErrors.push(err);
+                }
                 errors++;
             }
             validate.errors = vErrors;
@@ -417,7 +469,9 @@ var validate = (function() {
             'use strict';
             var vErrors = null;
             var errors = 0;
-            if (rootData === undefined) rootData = data;
+            if (rootData === undefined) {
+                rootData = data;
+            }
             if (data && typeof data === 'object' && !Array.isArray(data)) {
                 var errs__0 = errors;
                 var valid1 = true;
@@ -434,8 +488,11 @@ var validate = (function() {
                             },
                             message: 'should NOT have additional properties'
                         };
-                        if (vErrors === null) vErrors = [err];
-                        else vErrors.push(err);
+                        if (vErrors === null) {
+                            vErrors = [err];
+                        } else {
+                            vErrors.push(err);
+                        }
                         errors++;
                     }
                 }
@@ -457,8 +514,11 @@ var validate = (function() {
                                         rootData
                                     )
                                 ) {
-                                    if (vErrors === null) vErrors = refVal4.errors;
-                                    else vErrors = vErrors.concat(refVal4.errors);
+                                    if (vErrors === null) {
+                                        vErrors = refVal4.errors;
+                                    } else {
+                                        vErrors = vErrors.concat(refVal4.errors);
+                                    }
                                     errors = vErrors.length;
                                 }
                                 var valid2 = errors === errs_2;
@@ -496,8 +556,11 @@ var validate = (function() {
                                                 },
                                                 message: 'should be string'
                                             };
-                                            if (vErrors === null) vErrors = [err];
-                                            else vErrors.push(err);
+                                            if (vErrors === null) {
+                                                vErrors = [err];
+                                            } else {
+                                                vErrors.push(err);
+                                            }
                                             errors++;
                                         }
                                         var valid5 = errors === errs_5;
@@ -514,8 +577,11 @@ var validate = (function() {
                                                 },
                                                 message: 'should be string'
                                             };
-                                            if (vErrors === null) vErrors = [err];
-                                            else vErrors.push(err);
+                                            if (vErrors === null) {
+                                                vErrors = [err];
+                                            } else {
+                                                vErrors.push(err);
+                                            }
                                             errors++;
                                         }
                                         var valid5 = errors === errs_5;
@@ -537,8 +603,11 @@ var validate = (function() {
                                             },
                                             message: 'should be string'
                                         };
-                                        if (vErrors === null) vErrors = [err];
-                                        else vErrors.push(err);
+                                        if (vErrors === null) {
+                                            vErrors = [err];
+                                        } else {
+                                            vErrors.push(err);
+                                        }
                                         errors++;
                                     }
                                     var valid3 = errors === errs_3;
@@ -553,14 +622,20 @@ var validate = (function() {
                                         params: {},
                                         message: 'should match some schema in anyOf'
                                     };
-                                    if (vErrors === null) vErrors = [err];
-                                    else vErrors.push(err);
+                                    if (vErrors === null) {
+                                        vErrors = [err];
+                                    } else {
+                                        vErrors.push(err);
+                                    }
                                     errors++;
                                 } else {
                                     errors = errs__2;
                                     if (vErrors !== null) {
-                                        if (errs__2) vErrors.length = errs__2;
-                                        else vErrors = null;
+                                        if (errs__2) {
+                                            vErrors.length = errs__2;
+                                        } else {
+                                            vErrors = null;
+                                        }
                                     }
                                 }
                                 var valid2 = errors === errs_2;
@@ -579,8 +654,11 @@ var validate = (function() {
                     },
                     message: 'should be object'
                 };
-                if (vErrors === null) vErrors = [err];
-                else vErrors.push(err);
+                if (vErrors === null) {
+                    vErrors = [err];
+                } else {
+                    vErrors.push(err);
+                }
                 errors++;
             }
             validate.errors = vErrors;
@@ -648,8 +726,11 @@ var validate = (function() {
                             },
                             message: 'should NOT have additional properties'
                         };
-                        if (vErrors === null) vErrors = [err];
-                        else vErrors.push(err);
+                        if (vErrors === null) {
+                            vErrors = [err];
+                        } else {
+                            vErrors.push(err);
+                        }
                         errors++;
                     }
                 }
@@ -682,8 +763,11 @@ var validate = (function() {
                                                 },
                                                 message: 'should be string'
                                             };
-                                            if (vErrors === null) vErrors = [err];
-                                            else vErrors.push(err);
+                                            if (vErrors === null) {
+                                                vErrors = [err];
+                                            } else {
+                                                vErrors.push(err);
+                                            }
                                             errors++;
                                         }
                                         var valid5 = errors === errs_5;
@@ -700,8 +784,11 @@ var validate = (function() {
                                                 },
                                                 message: 'should be string'
                                             };
-                                            if (vErrors === null) vErrors = [err];
-                                            else vErrors.push(err);
+                                            if (vErrors === null) {
+                                                vErrors = [err];
+                                            } else {
+                                                vErrors.push(err);
+                                            }
                                             errors++;
                                         }
                                         var valid5 = errors === errs_5;
@@ -723,8 +810,11 @@ var validate = (function() {
                                             },
                                             message: 'should be string'
                                         };
-                                        if (vErrors === null) vErrors = [err];
-                                        else vErrors.push(err);
+                                        if (vErrors === null) {
+                                            vErrors = [err];
+                                        } else {
+                                            vErrors.push(err);
+                                        }
                                         errors++;
                                     }
                                     var valid3 = errors === errs_3;
@@ -739,14 +829,20 @@ var validate = (function() {
                                         params: {},
                                         message: 'should match some schema in anyOf'
                                     };
-                                    if (vErrors === null) vErrors = [err];
-                                    else vErrors.push(err);
+                                    if (vErrors === null) {
+                                        vErrors = [err];
+                                    } else {
+                                        vErrors.push(err);
+                                    }
                                     errors++;
                                 } else {
                                     errors = errs__2;
                                     if (vErrors !== null) {
-                                        if (errs__2) vErrors.length = errs__2;
-                                        else vErrors = null;
+                                        if (errs__2) {
+                                            vErrors.length = errs__2;
+                                        } else {
+                                            vErrors = null;
+                                        }
                                     }
                                 }
                                 var valid2 = errors === errs_2;
@@ -784,8 +880,11 @@ var validate = (function() {
                                                 },
                                                 message: 'should be string'
                                             };
-                                            if (vErrors === null) vErrors = [err];
-                                            else vErrors.push(err);
+                                            if (vErrors === null) {
+                                                vErrors = [err];
+                                            } else {
+                                                vErrors.push(err);
+                                            }
                                             errors++;
                                         }
                                         var valid5 = errors === errs_5;
@@ -802,8 +901,11 @@ var validate = (function() {
                                                 },
                                                 message: 'should be string'
                                             };
-                                            if (vErrors === null) vErrors = [err];
-                                            else vErrors.push(err);
+                                            if (vErrors === null) {
+                                                vErrors = [err];
+                                            } else {
+                                                vErrors.push(err);
+                                            }
                                             errors++;
                                         }
                                         var valid5 = errors === errs_5;
@@ -825,8 +927,11 @@ var validate = (function() {
                                             },
                                             message: 'should be string'
                                         };
-                                        if (vErrors === null) vErrors = [err];
-                                        else vErrors.push(err);
+                                        if (vErrors === null) {
+                                            vErrors = [err];
+                                        } else {
+                                            vErrors.push(err);
+                                        }
                                         errors++;
                                     }
                                     var valid3 = errors === errs_3;
@@ -841,14 +946,20 @@ var validate = (function() {
                                         params: {},
                                         message: 'should match some schema in anyOf'
                                     };
-                                    if (vErrors === null) vErrors = [err];
-                                    else vErrors.push(err);
+                                    if (vErrors === null) {
+                                        vErrors = [err];
+                                    } else {
+                                        vErrors.push(err);
+                                    }
                                     errors++;
                                 } else {
                                     errors = errs__2;
                                     if (vErrors !== null) {
-                                        if (errs__2) vErrors.length = errs__2;
-                                        else vErrors = null;
+                                        if (errs__2) {
+                                            vErrors.length = errs__2;
+                                        } else {
+                                            vErrors = null;
+                                        }
                                     }
                                 }
                                 var valid2 = errors === errs_2;
@@ -869,8 +980,11 @@ var validate = (function() {
                             },
                             message: 'should be string'
                         };
-                        if (vErrors === null) vErrors = [err];
-                        else vErrors.push(err);
+                        if (vErrors === null) {
+                            vErrors = [err];
+                        } else {
+                            vErrors.push(err);
+                        }
                         errors++;
                     }
                     var valid1 = errors === errs_1;
@@ -887,8 +1001,11 @@ var validate = (function() {
                             },
                             message: 'should be string'
                         };
-                        if (vErrors === null) vErrors = [err];
-                        else vErrors.push(err);
+                        if (vErrors === null) {
+                            vErrors = [err];
+                        } else {
+                            vErrors.push(err);
+                        }
                         errors++;
                     }
                     var valid1 = errors === errs_1;
@@ -905,8 +1022,11 @@ var validate = (function() {
                             },
                             message: 'should be string'
                         };
-                        if (vErrors === null) vErrors = [err];
-                        else vErrors.push(err);
+                        if (vErrors === null) {
+                            vErrors = [err];
+                        } else {
+                            vErrors.push(err);
+                        }
                         errors++;
                     }
                     var valid1 = errors === errs_1;
@@ -921,8 +1041,11 @@ var validate = (function() {
                     },
                     message: 'should be object'
                 };
-                if (vErrors === null) vErrors = [err];
-                else vErrors.push(err);
+                if (vErrors === null) {
+                    vErrors = [err];
+                } else {
+                    vErrors.push(err);
+                }
                 errors++;
             }
             validate.errors = vErrors;
@@ -1000,7 +1123,9 @@ var validate = (function() {
         'use strict';
         var vErrors = null;
         var errors = 0;
-        if (rootData === undefined) rootData = data;
+        if (rootData === undefined) {
+            rootData = data;
+        }
         if (data && typeof data === 'object' && !Array.isArray(data)) {
             if (Object.keys(data).length < 1) {
                 var err = {
@@ -1012,8 +1137,11 @@ var validate = (function() {
                     },
                     message: 'should NOT have fewer than 1 properties'
                 };
-                if (vErrors === null) vErrors = [err];
-                else vErrors.push(err);
+                if (vErrors === null) {
+                    vErrors = [err];
+                } else {
+                    vErrors.push(err);
+                }
                 errors++;
             }
             var errs__0 = errors;
@@ -1031,8 +1159,11 @@ var validate = (function() {
                         },
                         message: 'should NOT have additional properties'
                     };
-                    if (vErrors === null) vErrors = [err];
-                    else vErrors.push(err);
+                    if (vErrors === null) {
+                        vErrors = [err];
+                    } else {
+                        vErrors.push(err);
+                    }
                     errors++;
                 }
             }
@@ -1055,8 +1186,11 @@ var validate = (function() {
                                 },
                                 message: 'should NOT have additional properties'
                             };
-                            if (vErrors === null) vErrors = [err];
-                            else vErrors.push(err);
+                            if (vErrors === null) {
+                                vErrors = [err];
+                            } else {
+                                vErrors.push(err);
+                            }
                             errors++;
                         }
                     }
@@ -1072,8 +1206,11 @@ var validate = (function() {
                                     rootData
                                 )
                             ) {
-                                if (vErrors === null) vErrors = refVal1.errors;
-                                else vErrors = vErrors.concat(refVal1.errors);
+                                if (vErrors === null) {
+                                    vErrors = refVal1.errors;
+                                } else {
+                                    vErrors = vErrors.concat(refVal1.errors);
+                                }
                                 errors = vErrors.length;
                             }
                             var valid2 = errors === errs_2;
@@ -1089,8 +1226,11 @@ var validate = (function() {
                         },
                         message: 'should be object'
                     };
-                    if (vErrors === null) vErrors = [err];
-                    else vErrors.push(err);
+                    if (vErrors === null) {
+                        vErrors = [err];
+                    } else {
+                        vErrors.push(err);
+                    }
                     errors++;
                 }
                 var valid1 = errors === errs_1;
@@ -1114,8 +1254,11 @@ var validate = (function() {
                                 },
                                 message: 'should NOT have additional properties'
                             };
-                            if (vErrors === null) vErrors = [err];
-                            else vErrors.push(err);
+                            if (vErrors === null) {
+                                vErrors = [err];
+                            } else {
+                                vErrors.push(err);
+                            }
                             errors++;
                         }
                     }
@@ -1125,8 +1268,11 @@ var validate = (function() {
                             if (
                                 !refVal3(data1[key1], (dataPath || '') + ".i18n['" + key1 + "']", data1, key1, rootData)
                             ) {
-                                if (vErrors === null) vErrors = refVal3.errors;
-                                else vErrors = vErrors.concat(refVal3.errors);
+                                if (vErrors === null) {
+                                    vErrors = refVal3.errors;
+                                } else {
+                                    vErrors = vErrors.concat(refVal3.errors);
+                                }
                                 errors = vErrors.length;
                             }
                             var valid2 = errors === errs_2;
@@ -1142,8 +1288,11 @@ var validate = (function() {
                         },
                         message: 'should be object'
                     };
-                    if (vErrors === null) vErrors = [err];
-                    else vErrors.push(err);
+                    if (vErrors === null) {
+                        vErrors = [err];
+                    } else {
+                        vErrors.push(err);
+                    }
                     errors++;
                 }
                 var valid1 = errors === errs_1;
@@ -1185,8 +1334,11 @@ var validate = (function() {
                                                     },
                                                     message: 'should match pattern "^[a-zA-Z0-9_-]+$"'
                                                 };
-                                                if (vErrors === null) vErrors = [err];
-                                                else vErrors.push(err);
+                                                if (vErrors === null) {
+                                                    vErrors = [err];
+                                                } else {
+                                                    vErrors.push(err);
+                                                }
                                                 errors++;
                                             }
                                         } else {
@@ -1201,8 +1353,11 @@ var validate = (function() {
                                                 },
                                                 message: 'should be string'
                                             };
-                                            if (vErrors === null) vErrors = [err];
-                                            else vErrors.push(err);
+                                            if (vErrors === null) {
+                                                vErrors = [err];
+                                            } else {
+                                                vErrors.push(err);
+                                            }
                                             errors++;
                                         }
                                         var valid4 = errors === errs_4;
@@ -1226,8 +1381,11 @@ var validate = (function() {
                                                     },
                                                     message: 'should match pattern "^[a-zA-Z0-9_-]+$"'
                                                 };
-                                                if (vErrors === null) vErrors = [err];
-                                                else vErrors.push(err);
+                                                if (vErrors === null) {
+                                                    vErrors = [err];
+                                                } else {
+                                                    vErrors.push(err);
+                                                }
                                                 errors++;
                                             }
                                         } else {
@@ -1245,8 +1403,11 @@ var validate = (function() {
                                                 },
                                                 message: 'should be string'
                                             };
-                                            if (vErrors === null) vErrors = [err];
-                                            else vErrors.push(err);
+                                            if (vErrors === null) {
+                                                vErrors = [err];
+                                            } else {
+                                                vErrors.push(err);
+                                            }
                                             errors++;
                                         }
                                         var valid4 = errors === errs_4;
@@ -1261,8 +1422,11 @@ var validate = (function() {
                                         },
                                         message: 'should be object'
                                     };
-                                    if (vErrors === null) vErrors = [err];
-                                    else vErrors.push(err);
+                                    if (vErrors === null) {
+                                        vErrors = [err];
+                                    } else {
+                                        vErrors.push(err);
+                                    }
                                     errors++;
                                 }
                                 var valid3 = errors === errs_3;
@@ -1277,8 +1441,11 @@ var validate = (function() {
                                 },
                                 message: 'should be array'
                             };
-                            if (vErrors === null) vErrors = [err];
-                            else vErrors.push(err);
+                            if (vErrors === null) {
+                                vErrors = [err];
+                            } else {
+                                vErrors.push(err);
+                            }
                             errors++;
                         }
                         var valid2 = errors === errs_2;
@@ -1293,8 +1460,11 @@ var validate = (function() {
                         },
                         message: 'should be object'
                     };
-                    if (vErrors === null) vErrors = [err];
-                    else vErrors.push(err);
+                    if (vErrors === null) {
+                        vErrors = [err];
+                    } else {
+                        vErrors.push(err);
+                    }
                     errors++;
                 }
                 var valid1 = errors === errs_1;
@@ -1309,8 +1479,11 @@ var validate = (function() {
                 },
                 message: 'should be object'
             };
-            if (vErrors === null) vErrors = [err];
-            else vErrors.push(err);
+            if (vErrors === null) {
+                vErrors = [err];
+            } else {
+                vErrors.push(err);
+            }
             errors++;
         }
         validate.errors = vErrors;

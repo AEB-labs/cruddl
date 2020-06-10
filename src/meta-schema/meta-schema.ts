@@ -291,82 +291,82 @@ const typeDefs = gql`
     kinds and relations.
     """
     type Query {
-        "A list of all user-defined and system-provided types"
-        types: [Type!]!
+    "A list of all user-defined and system-provided types"
+    types: [Type!]!
 
-        "Finds a type by its name"
-        type(name: String!): Type
+    "Finds a type by its name"
+    type(name: String namePlural: String): Type
 
-        "A list of all root entity types in all namespaces"
-        rootEntityTypes: [RootEntityType!]!
+    "A list of all root entity types in all namespaces"
+    rootEntityTypes: [RootEntityType!]!
 
-        """
-        Finds a root entity type by its name.
+    """
+    Finds a root entity type by its name.
 
-        Returns \`null\` if the type does not exist or is not a root entity type.
-        """
-        rootEntityType(name: String!): RootEntityType
+    Returns \`null\` if the type does not exist or is not a root entity type.
+    """
+    rootEntityType(name: String namePlural: String): RootEntityType
 
-        "A list of all child entity types"
-        childEntityTypes: [ChildEntityType!]!
+    "A list of all child entity types"
+    childEntityTypes: [ChildEntityType!]!
 
-        """
-        Finds a child entity type by its name.
+    """
+    Finds a child entity type by its name.
 
-        Returns \`null\` if the type does not exist or is not a child entity type.
-        """
-        childEntityType(name: String!): ChildEntityType
+    Returns \`null\` if the type does not exist or is not a child entity type.
+    """
+    childEntityType(name: String namePlural: String): ChildEntityType
 
-        "A list of all entity extension types"
-        entityExtensionTypes: [EntityExtensionType!]!
+    "A list of all entity extension types"
+    entityExtensionTypes: [EntityExtensionType!]!
 
-        """
-        Finds an entity extension type by its name.
+    """
+    Finds an entity extension type by its name.
 
-        Returns \`null\` if the type does not exist or is not an entity extension type.
-        """
-        entityExtensionType(name: String!): EntityExtensionType
+    Returns \`null\` if the type does not exist or is not an entity extension type.
+    """
+    entityExtensionType(name: String namePlural: String): EntityExtensionType
 
-        "A list of all value object types"
-        valueObjectTypes: [ValueObjectType!]!
+    "A list of all value object types"
+    valueObjectTypes: [ValueObjectType!]!
 
-        """
-        Finds a value object type by its name.
+    """
+    Finds a value object type by its name.
 
-        Returns \`null\` if the type does not exist or is not a value object type.
-        """
-        valueObjectType(name: String!): ValueObjectType
+    Returns \`null\` if the type does not exist or is not a value object type.
+    """
+    valueObjectType(name: String namePlural: String): ValueObjectType
 
-        "A list of all scalar types, including predefined ones."
-        scalarTypes: [ScalarType!]!
+    "A list of all scalar types, including predefined ones."
+    scalarTypes: [ScalarType!]!
 
-        """
-        Finds a scalar type by its name.
+    """
+    Finds a scalar type by its name.
 
-        Returns \`null\` if the type does not exist or is not a scalar type.
-        """
-        scalarType(name: String!): ScalarType
+    Returns \`null\` if the type does not exist or is not a scalar type.
+    """
+    scalarType(name: String  namePlural: String): ScalarType
 
-        "A list of all enum types"
-        enumTypes: [EnumType!]!
+    "A list of all enum types"
+    enumTypes: [EnumType!]!
 
-        """
-        Finds an enum type by its name.
+    """
+    Finds an enum type by its name.
 
-        Returns \`null\` if the type does not exist or is not an enum type.
-        """
-        enumType(name: String!): EnumType
+    Returns \`null\` if the type does not exist or is not an enum type.
+    """
+    enumType(name: String namePlural: String): EnumType
 
-        "A list of all namespaces (including nested ones)"
-        namespaces: [Namespace!]!
+    "A list of all namespaces (including nested ones)"
+    namespaces: [Namespace!]!
 
-        """Finds a namespace by its path segments"""
-        namespace("The path segments, e.g. \`[\\"logistics\\", \\"packaging\\"]\`" path: [String!]!): Namespace
+    """Finds a namespace by its path segments"""
+    namespace("The path segments, e.g. \`[\\"logistics\\", \\"packaging\\"]\`" path: [String!]!): Namespace
 
-        "The root namespace"
-        rootNamespace: Namespace!
+    "The root namespace"
+    rootNamespace: Namespace!
 
-        "The billingEntityTypes that define the billing configuration."
+    "The billingEntityTypes that define the billing configuration."
         billingEntityTypes: [BillingEntityType!]!
     }
 `;
@@ -387,17 +387,17 @@ export function getMetaSchema(model: Model): GraphQLSchema {
             types: () => model.types,
             type: (_, { name }) => model.getType(name),
             rootEntityTypes: () => model.rootEntityTypes,
-            rootEntityType: (_, { name }) => model.getRootEntityType(name),
+            rootEntityType: (_, { name, namePlural }) => model.getRootEntityType(name, namePlural),
             childEntityTypes: () => model.childEntityTypes,
-            childEntityType: (_, { name }) => model.getChildEntityType(name),
+            childEntityType: (_, { name, namePlural }) => model.getChildEntityType(name, namePlural),
             entityExtensionTypes: () => model.entityExtensionTypes,
-            entityExtensionType: (_, { name }) => model.getEntityExtensionType(name),
+            entityExtensionType: (_, { name, namePlural }) => model.getEntityExtensionType(name, namePlural),
             valueObjectTypes: () => model.valueObjectTypes,
-            valueObjectType: (_, { name }) => model.getValueObjectType(name),
+            valueObjectType: (_, { name, namePlural }) => model.getValueObjectType(name, namePlural),
             scalarTypes: () => model.scalarTypes,
-            scalarType: (_, { name }) => model.getScalarType(name),
+            scalarType: (_, { name, namePlural }) => model.getScalarType(name, namePlural),
             enumTypes: () => model.enumTypes,
-            enumType: (_, { name }) => model.getEnumType(name),
+            enumType: (_, { name, namePlural }) => model.getEnumType(name, namePlural),
             namespaces: () => model.namespaces,
             rootNamespace: () => model.rootNamespace,
             namespace: (_, { path }) => model.getNamespaceByPath(path),

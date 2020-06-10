@@ -1,5 +1,6 @@
 import { groupBy, uniqBy } from 'lodash';
 import memorize from 'memorize-decorator';
+import { singular } from 'pluralize';
 import { ModelValidationOptions } from '../../config/interfaces';
 import { flatMap, objectEntries, objectValues } from '../../utils/utils';
 import { ModelConfig, TypeKind } from '../config';
@@ -165,28 +166,64 @@ export class Model implements ModelComponent {
         return this.getTypeOfKindOrThrow(name, TypeKind.ENUM);
     }
 
-    getRootEntityType(name: string): RootEntityType | undefined {
-        return this.getTypeOfKind(name, TypeKind.ROOT_ENTITY);
+    getRootEntityType(name: string | undefined, namePlural?: string | undefined): RootEntityType | undefined {
+        if (name) {
+            return this.getTypeOfKind(name, TypeKind.ROOT_ENTITY);
+        } else if (namePlural) {
+            return this.getTypeOfKind(singular(namePlural), TypeKind.ROOT_ENTITY);
+        } else {
+            return undefined;
+        }
     }
 
-    getChildEntityType(name: string): ChildEntityType | undefined {
-        return this.getTypeOfKind(name, TypeKind.CHILD_ENTITY);
+    getChildEntityType(name: string | undefined, namePlural?: string | undefined): ChildEntityType | undefined {
+        if (name) {
+            return this.getTypeOfKind(name, TypeKind.CHILD_ENTITY);
+        } else if (namePlural) {
+            return this.getTypeOfKind(singular(namePlural), TypeKind.CHILD_ENTITY);
+        } else {
+            return undefined;
+        }
     }
 
-    getValueObjectType(name: string): ValueObjectType | undefined {
-        return this.getTypeOfKind(name, TypeKind.VALUE_OBJECT);
+    getValueObjectType(name: string | undefined, namePlural?: string | undefined): ValueObjectType | undefined {
+        if (name) {
+            return this.getTypeOfKind(name, TypeKind.VALUE_OBJECT);
+        } else if (namePlural) {
+            return this.getTypeOfKind(singular(namePlural), TypeKind.VALUE_OBJECT);
+        } else {
+            return undefined;
+        }
     }
 
-    getEntityExtensionType(name: string): EntityExtensionType | undefined {
-        return this.getTypeOfKind(name, TypeKind.ENTITY_EXTENSION);
+    getEntityExtensionType(name: string | undefined, namePlural?: string | undefined): EntityExtensionType | undefined {
+        if (name) {
+            return this.getTypeOfKind(name, TypeKind.ENTITY_EXTENSION);
+        } else if (namePlural) {
+            return this.getTypeOfKind(singular(namePlural), TypeKind.ENTITY_EXTENSION);
+        } else {
+            return undefined;
+        }
     }
 
-    getScalarType(name: string): ScalarType | undefined {
-        return this.getTypeOfKind(name, TypeKind.SCALAR);
+    getScalarType(name: string | undefined, namePlural?: string | undefined): ScalarType | undefined {
+        if (name) {
+            return this.getTypeOfKind(name, TypeKind.SCALAR);
+        } else if (namePlural) {
+            return this.getTypeOfKind(singular(namePlural), TypeKind.SCALAR);
+        } else {
+            return undefined;
+        }
     }
 
-    getEnumType(name: string): EnumType | undefined {
-        return this.getTypeOfKind(name, TypeKind.ENUM);
+    getEnumType(name: string | undefined, namePlural?: string | undefined): EnumType | undefined {
+        if (name) {
+            return this.getTypeOfKind(name, TypeKind.ENUM);
+        } else if (namePlural) {
+            return this.getTypeOfKind(singular(namePlural), TypeKind.ENUM);
+        } else {
+            return undefined;
+        }
     }
 
     getTypeOfKindOrThrow<T extends Type>(name: string, kind: TypeKind): T {
