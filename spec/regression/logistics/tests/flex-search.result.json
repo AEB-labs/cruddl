@@ -79,17 +79,5 @@
                 }
             ]
         }
-    },
-    "starts_with": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000521"
-                },
-                {
-                    "deliveryNumber": "1000522"
-                }
-            ]
-        }
     }
 }

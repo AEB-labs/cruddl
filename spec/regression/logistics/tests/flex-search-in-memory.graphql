@@ -78,3 +78,9 @@ query recursion_error {
         deliveryNumber
     }
 }
+
+query starts_with {
+    flexSearchDeliveries(flexSearchFilter: { deliveryNumber_starts_with: "10005" }) {
+        deliveryNumber
+    }
+}

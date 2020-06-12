@@ -5,11 +5,10 @@ Cruddl allows the usage of [ArangoSearch](https://www.arangodb.com/arangodb-trai
 
 To create an index for a rootEntity add the `flexSearch: true` argument to the `@rootEntity` annotation.
 
-
 ```graphql
 type Order @rootEntity(flexSearch: true) {
-  orderNumber: String
-  description: String
+    orderNumber: String
+    description: String
 }
 ```
 
@@ -23,21 +22,20 @@ Value comparisons in FlexSearch are case-sensitive.
 
 ```graphql
 type Order @rootEntity(flexSearch: true) {
-  orderNumber: String @flexSearch
+    orderNumber: String @flexSearch
 }
 ```
 
 The annotation `@flexSearchFulltext` is used to index Strings that contain text in a specific language.
-For example a description that contains a human-readable text in english. 
+For example a description that contains a human-readable text in english.
 
 When using `@flexSearchFulltext` a language needs to be specified, either by adding the `language` argument,
 or by setting a default language for the whole entity by specifying the `flexSearchLanguage` argument to the `rootEntity` annotation.
 
-
 ```graphql
 type Order @rootEntity(flexSearch: true, flexSearchLanguage: EN) {
-  descriptionEN: String @flexSearchFulltext
-  descriptionDE: String @flexSearchFulltext(language: DE)
+    descriptionEN: String @flexSearchFulltext
+    descriptionDE: String @flexSearchFulltext(language: DE)
 }
 ```
 
@@ -51,9 +49,9 @@ To do this, the argument `includeInSearch` needs to be added to the `@flexSearch
 
 ```graphql
 type Order @rootEntity(flexSearch: true, flexSearchLanguage: EN) {
-  orderNumber: String @flexSearch(includeInSearch: true)
-  descriptionEN: String @flexSearchFulltext(includeInSearch: true)
-  descriptionDE: String @flexSearchFulltext(language: DE)
+    orderNumber: String @flexSearch(includeInSearch: true)
+    descriptionEN: String @flexSearchFulltext(includeInSearch: true)
+    descriptionDE: String @flexSearchFulltext(language: DE)
 }
 ```
 
@@ -68,7 +66,7 @@ This query also accepts a string argument that provides an expression that shoul
 
 ```graphql
 query {
-    flexSearchOrders(flexSearchExpression: "01234"){
+    flexSearchOrders(flexSearchExpression: "01234") {
         orderNumber
     }
 }
@@ -78,35 +76,37 @@ The query also accepts a special `flexSearchFilter` that works similar to a norm
 
 ```graphql
 query {
-    flexSearchOrders(flexSearchFilter: {
-        orderNumber_starts_with: "123"
-    }){
+    flexSearchOrders(flexSearchFilter: { orderNumber_starts_with: "123" }) {
         orderNumber
     }
 }
 ```
 
-The query also accepts the pagination arguments `first`, `skip` and `after`, the sorting argument `orderBy` and the regular filtering argument `filter`. 
+The query also accepts the pagination arguments `first`, `skip` and `after`, the sorting argument `orderBy` and the regular filtering argument `filter`.
 Because the ArangoSearch-index cannot be used for sorting and regular filtering, these can be very slow for large amounts of data. To prevent slow queries, cruddl returns an error in these cases.
 
 ### Filter
 
 The following filter-fields are available for fields that are annotated with `@flexSearch`:
-- `equals`
-- `not_equals`
-- `in`
-- `not_in`
-- `starts_with`
-- `not_starts_with`
+
+-   `equals`
+-   `not_equals`
+-   `in`
+-   `not_in`
+-   `starts_with`
+-   `not_starts_with`
 
 The following filter-fields are available for fields that are annotated with `@flexSearchFulltext`
-- `contains_any_word`
-- `not_contains_any_word`
-- `contains_all_words`
-- `not_contains_all_words`
-- `contains_all_prefixes`
-- `not_contains_all_prefixes`
-- `contains_phrase`
-- `not_contains_phrase`
+
+-   `contains_any_word`
+-   `not_contains_any_word`
+-   `contains_all_words`
+-   `not_contains_all_words`
+-   `contains_all_prefixes`
+-   `not_contains_all_prefixes`
+-   `contains_any_prefix`
+-   `not_contains_any_prefix`
+-   `contains_phrase`
+-   `not_contains_phrase`
 
 When using `flexSearchExpression: "..."` the `starts_with` field is used for values and the `contains_all_prefixes` field for texts.
