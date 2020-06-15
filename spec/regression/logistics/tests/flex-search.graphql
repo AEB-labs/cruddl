@@ -43,9 +43,3 @@ query gt_lt_number {
         deliveryNumber
     }
 }
-
-query starts_with {
-    flexSearchDeliveries(flexSearchFilter: { deliveryNumber_starts_with: "10005" }) {
-        deliveryNumber
-    }
-}

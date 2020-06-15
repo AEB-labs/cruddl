@@ -39,6 +39,7 @@ type Delivery @rootEntity(flexSearch: true, flexSearchLanguage: DE) @roles(readW
 
     description: String @flexSearchFulltext(includeInSearch: true)
     enumFlexSearch: Foobarit @flexSearch
+    aText: String @flexSearch #sometimes null in testdata
     aNumber: Int @flexSearch
     recursion: Recursion @flexSearch
 

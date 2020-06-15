@@ -20,6 +20,7 @@ import {
     FieldPathQueryNode,
     FieldQueryNode,
     FirstOfListQueryNode,
+    FlexSearchStartsWithQueryNode,
     FollowEdgeQueryNode,
     ListQueryNode,
     LiteralQueryNode,
@@ -857,6 +858,12 @@ register(FieldPathQueryNode, (node, context) => {
         fragment = getPropertyAccessFrag(field.name, fragment);
     }
     return fragment;
+});
+
+register(FlexSearchStartsWithQueryNode, (node, context) => {
+    const lhs = processNode(node.lhs, context);
+    const rhs = processNode(node.rhs, context);
+    return js`(String(${lhs}).startsWith(${rhs}))`;
 });
 
 register(FlexSearchComplexOperatorQueryNode, (node, context) => {
