@@ -1139,6 +1139,10 @@
                             "description": null
                         },
                         {
+                            "name": "aText",
+                            "description": null
+                        },
+                        {
                             "name": "aNumber",
                             "description": null
                         },
@@ -2450,6 +2454,70 @@
                         {
                             "name": "enumFlexSearch_not_in",
                             "description": "Checks if `enumFlexSearch` is not equal to one of the specified values."
+                        },
+                        {
+                            "name": "aText",
+                            "description": "Checks if `aText` equals a specified string, case-sensitively.\n\nIf an index exists on `aText`, it can be used.\n\nSee also `like` for a case-insensitive filter."
+                        },
+                        {
+                            "name": "aText_not",
+                            "description": "Checks if `aText` does not equal a specified string, case-sensitively."
+                        },
+                        {
+                            "name": "aText_in",
+                            "description": "Checks if `aText` is equal to one of the specified values."
+                        },
+                        {
+                            "name": "aText_not_in",
+                            "description": "Checks if `aText` is not equal to one of the specified values."
+                        },
+                        {
+                            "name": "aText_lt",
+                            "description": "Checks if `aText` is less than a specified value."
+                        },
+                        {
+                            "name": "aText_lte",
+                            "description": "Checks if `aText` is less or equal a specified value."
+                        },
+                        {
+                            "name": "aText_gt",
+                            "description": "Checks if `aText` is greater than a specified value."
+                        },
+                        {
+                            "name": "aText_gte",
+                            "description": "Checks if `aText` is greater or equal a specified value."
+                        },
+                        {
+                            "name": "aText_contains",
+                            "description": "Checks if `aText` contains a specified string, case-sensitively."
+                        },
+                        {
+                            "name": "aText_not_contains",
+                            "description": "Checks if `aText` does not contain a specified string, case-sensitively."
+                        },
+                        {
+                            "name": "aText_starts_with",
+                            "description": "Checks if `aText` starts with a specified string, case-sensitively.\n\nNever uses an index. Consider using `like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
+                        },
+                        {
+                            "name": "aText_not_starts_with",
+                            "description": "Checks if `aText` does not start with a specified string, case-sensitively.\n\nNever uses an index. Consider using `not_like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
+                        },
+                        {
+                            "name": "aText_ends_with",
+                            "description": "Checks if `aText` ends with a specified string, case-sensitively."
+                        },
+                        {
+                            "name": "aText_not_ends_with",
+                            "description": "Checks if `aText` does not end with a specified string, case-sensitively."
+                        },
+                        {
+                            "name": "aText_like",
+                            "description": "Matches `aText` against a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)\n\nIf an index exists on `aText`, it can be used for the literal prefix (the part until the first placeholder)."
+                        },
+                        {
+                            "name": "aText_not_like",
+                            "description": "Checks if `aText` does *not* match a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)"
                         },
                         {
                             "name": "aNumber",
@@ -3813,6 +3881,46 @@
                         {
                             "name": "enumFlexSearch_not_in",
                             "description": "Checks if `enumFlexSearch` is not equal to one of the specified values."
+                        },
+                        {
+                            "name": "aText",
+                            "description": "Checks if `aText` equals a specified string, case-insensitively."
+                        },
+                        {
+                            "name": "aText_not",
+                            "description": "Checks if `aText` does not equal a specified string, case-insensitively."
+                        },
+                        {
+                            "name": "aText_lt",
+                            "description": "Checks if `aText` is less than a specified value."
+                        },
+                        {
+                            "name": "aText_lte",
+                            "description": "Checks if `aText` is less or equal a specified value."
+                        },
+                        {
+                            "name": "aText_gt",
+                            "description": "Checks if `aText` is greater than a specified value."
+                        },
+                        {
+                            "name": "aText_gte",
+                            "description": "Checks if `aText` is greater or equal a specified value."
+                        },
+                        {
+                            "name": "aText_in",
+                            "description": "Checks if `aText` is equal to one of the specified values."
+                        },
+                        {
+                            "name": "aText_not_in",
+                            "description": "Checks if `aText` is not equal to one of the specified values."
+                        },
+                        {
+                            "name": "aText_starts_with",
+                            "description": "Checks if `aText` starts with a specified string, case-insensitively."
+                        },
+                        {
+                            "name": "aText_not_starts_with",
+                            "description": "Checks if `aText` does not start with a specified string, case-insensitively."
                         },
                         {
                             "name": "aNumber",
@@ -5464,6 +5572,10 @@
                             "description": null
                         },
                         {
+                            "name": "aText",
+                            "description": null
+                        },
+                        {
                             "name": "aNumber",
                             "description": null
                         },
@@ -5760,6 +5872,10 @@
                             "description": null
                         },
                         {
+                            "name": "aText",
+                            "description": null
+                        },
+                        {
                             "name": "aNumber",
                             "description": null
                         },
@@ -5957,6 +6073,10 @@
                         },
                         {
                             "name": "enumFlexSearch",
+                            "description": null
+                        },
+                        {
+                            "name": "aText",
                             "description": null
                         },
                         {

@@ -84,3 +84,9 @@ query starts_with {
         deliveryNumber
     }
 }
+
+query null_starts_with {
+    flexSearchDeliveries(flexSearchFilter: { aText_starts_with: "foo" }) {
+        deliveryNumber
+    }
+}

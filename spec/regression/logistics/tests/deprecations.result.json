@@ -308,6 +308,14 @@
                     }
                 },
                 {
+                    "name": "aText",
+                    "isDeprecated": false,
+                    "deprecationReason": null,
+                    "type": {
+                        "enumValues": null
+                    }
+                },
+                {
                     "name": "aNumber",
                     "isDeprecated": false,
                     "deprecationReason": null,
@@ -910,6 +918,16 @@
                 },
                 {
                     "name": "enumFlexSearch_DESC",
+                    "isDeprecated": false,
+                    "deprecationReason": null
+                },
+                {
+                    "name": "aText_ASC",
+                    "isDeprecated": false,
+                    "deprecationReason": null
+                },
+                {
+                    "name": "aText_DESC",
                     "isDeprecated": false,
                     "deprecationReason": null
                 },

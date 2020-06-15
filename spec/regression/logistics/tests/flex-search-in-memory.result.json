@@ -160,5 +160,14 @@
                 }
             ]
         }
+    },
+    "null_starts_with": {
+        "data": {
+            "flexSearchDeliveries": [
+                {
+                    "deliveryNumber": "1000173"
+                }
+            ]
+        }
     }
 }

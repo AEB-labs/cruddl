@@ -863,7 +863,7 @@ register(FieldPathQueryNode, (node, context) => {
 register(FlexSearchStartsWithQueryNode, (node, context) => {
     const lhs = processNode(node.lhs, context);
     const rhs = processNode(node.rhs, context);
-    return js`(${lhs}.startsWith(${rhs}))`;
+    return js`(String(${lhs}).startsWith(${rhs}))`;
 });
 
 register(FlexSearchComplexOperatorQueryNode, (node, context) => {
