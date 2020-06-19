@@ -1,11 +1,12 @@
 import { Database } from 'arangojs';
-import { MigrationOptions, ProjectOptions } from '../../../config/interfaces';
+import { ProjectOptions } from '../../../config/interfaces';
 import { Logger } from '../../../config/logging';
 import { Model, RootEntityType } from '../../../model/implementation';
 import { billingCollectionName, getCollectionNameForRelation, getCollectionNameForRootEntity } from '../arango-basics';
 import { ArangoDBConfig, getArangoDBLogger, initDatabase } from '../config';
 import { ArangoDBVersionHelper } from '../version-helper';
 import {
+    ArangoSearchConfiguration,
     calculateRequiredArangoSearchViewCreateOperations,
     calculateRequiredArangoSearchViewDropOperations,
     calculateRequiredArangoSearchViewUpdateOperations,
@@ -30,7 +31,7 @@ export class SchemaAnalyzer {
     private readonly logger: Logger;
     private readonly versionHelper: ArangoDBVersionHelper;
 
-    constructor(readonly config: ArangoDBConfig, readonly schemaContext?: ProjectOptions) {
+    constructor(readonly config: ArangoDBConfig, schemaContext?: ProjectOptions) {
         this.db = initDatabase(config);
         this.versionHelper = new ArangoDBVersionHelper(this.db);
         this.logger = getArangoDBLogger(schemaContext);
@@ -41,7 +42,7 @@ export class SchemaAnalyzer {
             ...(await this.getDocumentCollectionMigrations(model)),
             ...(await this.getEdgeCollectionMigrations(model)),
             ...(await this.getIndexMigrations(model)),
-            ...(await this.getArangoSearchMigrations(model, this.schemaContext && this.schemaContext.migrationOptions))
+            ...(await this.getArangoSearchMigrations(model, this.config.arangoSearchConfiguration))
         ];
     }
 
@@ -147,10 +148,10 @@ export class SchemaAnalyzer {
      */
     async getArangoSearchMigrations(
         model: Model,
-        migrationOptions?: MigrationOptions
+        arangoSearchConfiguration?: ArangoSearchConfiguration
     ): Promise<ReadonlyArray<SchemaMigration>> {
         if (
-            (!migrationOptions || !migrationOptions.skipVersionCheckForArangoSearchMigrations) &&
+            (!arangoSearchConfiguration || !arangoSearchConfiguration.skipVersionCheckForArangoSearchMigrations) &&
             !(await isArangoSearchSupported(this.versionHelper.getArangoDBVersion()))
         ) {
             return [];

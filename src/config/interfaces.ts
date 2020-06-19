@@ -32,14 +32,6 @@ export interface ModelValidationOptions {
     readonly forbiddenRootEntityNames?: ReadonlyArray<string>;
 }
 
-export interface MigrationOptions {
-    /**
-     * Skips the check for arangoDB version for arangoSearchMutations.
-     * This is required, if a non-root user is used, as only the root-user can check the arangoDB-version.
-     */
-    readonly skipVersionCheckForArangoSearchMigrations?: boolean;
-}
-
 export interface ProjectOptions {
     readonly loggerProvider?: LoggerProvider;
     readonly profileConsumer?: (profile: RequestProfile) => void;
@@ -47,7 +39,6 @@ export interface ProjectOptions {
 
     readonly schemaOptions?: SchemaOptions;
     readonly modelValidationOptions?: ModelValidationOptions;
-    readonly migrationOptions?: MigrationOptions;
 
     /**
      * Should return a token object that is the same for all field resolves of one operation, but different for each
