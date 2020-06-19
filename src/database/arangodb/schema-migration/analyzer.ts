@@ -1,5 +1,5 @@
 import { Database } from 'arangojs';
-import { ProjectOptions } from '../../../config/interfaces';
+import { MigrationOptions, ProjectOptions } from '../../../config/interfaces';
 import { Logger } from '../../../config/logging';
 import { Model, RootEntityType } from '../../../model/implementation';
 import { billingCollectionName, getCollectionNameForRelation, getCollectionNameForRootEntity } from '../arango-basics';
@@ -30,7 +30,7 @@ export class SchemaAnalyzer {
     private readonly logger: Logger;
     private readonly versionHelper: ArangoDBVersionHelper;
 
-    constructor(readonly config: ArangoDBConfig, schemaContext?: ProjectOptions) {
+    constructor(readonly config: ArangoDBConfig, readonly schemaContext?: ProjectOptions) {
         this.db = initDatabase(config);
         this.versionHelper = new ArangoDBVersionHelper(this.db);
         this.logger = getArangoDBLogger(schemaContext);
@@ -41,7 +41,7 @@ export class SchemaAnalyzer {
             ...(await this.getDocumentCollectionMigrations(model)),
             ...(await this.getEdgeCollectionMigrations(model)),
             ...(await this.getIndexMigrations(model)),
-            ...(await this.getArangoSearchMigrations(model))
+            ...(await this.getArangoSearchMigrations(model, this.schemaContext && this.schemaContext.migrationOptions))
         ];
     }
 
@@ -145,8 +145,14 @@ export class SchemaAnalyzer {
      * Calculates all required migrations to sync the arangodb-views with the model
      * @param model
      */
-    async getArangoSearchMigrations(model: Model): Promise<ReadonlyArray<SchemaMigration>> {
-        if (!(await isArangoSearchSupported(this.versionHelper.getArangoDBVersion()))) {
+    async getArangoSearchMigrations(
+        model: Model,
+        migrationOptions?: MigrationOptions
+    ): Promise<ReadonlyArray<SchemaMigration>> {
+        if (
+            (!migrationOptions || !migrationOptions.skipVersionCheckForArangoSearchMigrations) &&
+            !(await isArangoSearchSupported(this.versionHelper.getArangoDBVersion()))
+        ) {
             return [];
         }
         // the views that match the model
