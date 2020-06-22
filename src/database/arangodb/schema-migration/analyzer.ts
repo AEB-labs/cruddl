@@ -6,6 +6,7 @@ import { billingCollectionName, getCollectionNameForRelation, getCollectionNameF
 import { ArangoDBConfig, getArangoDBLogger, initDatabase } from '../config';
 import { ArangoDBVersionHelper } from '../version-helper';
 import {
+    ArangoSearchConfiguration,
     calculateRequiredArangoSearchViewCreateOperations,
     calculateRequiredArangoSearchViewDropOperations,
     calculateRequiredArangoSearchViewUpdateOperations,
@@ -41,7 +42,7 @@ export class SchemaAnalyzer {
             ...(await this.getDocumentCollectionMigrations(model)),
             ...(await this.getEdgeCollectionMigrations(model)),
             ...(await this.getIndexMigrations(model)),
-            ...(await this.getArangoSearchMigrations(model))
+            ...(await this.getArangoSearchMigrations(model, this.config.arangoSearchConfiguration))
         ];
     }
 
@@ -145,8 +146,14 @@ export class SchemaAnalyzer {
      * Calculates all required migrations to sync the arangodb-views with the model
      * @param model
      */
-    async getArangoSearchMigrations(model: Model): Promise<ReadonlyArray<SchemaMigration>> {
-        if (!(await isArangoSearchSupported(this.versionHelper.getArangoDBVersion()))) {
+    async getArangoSearchMigrations(
+        model: Model,
+        arangoSearchConfiguration?: ArangoSearchConfiguration
+    ): Promise<ReadonlyArray<SchemaMigration>> {
+        if (
+            (!arangoSearchConfiguration || !arangoSearchConfiguration.skipVersionCheckForArangoSearchMigrations) &&
+            !(await isArangoSearchSupported(this.versionHelper.getArangoDBVersion()))
+        ) {
             return [];
         }
         // the views that match the model
