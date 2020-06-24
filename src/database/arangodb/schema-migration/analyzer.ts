@@ -42,7 +42,7 @@ export class SchemaAnalyzer {
             ...(await this.getDocumentCollectionMigrations(model)),
             ...(await this.getEdgeCollectionMigrations(model)),
             ...(await this.getIndexMigrations(model)),
-            ...(await this.getArangoSearchMigrations(model, this.config.arangoSearchConfiguration))
+            ...(await this.getArangoSearchMigrations(model))
         ];
     }
 
@@ -146,14 +146,11 @@ export class SchemaAnalyzer {
      * Calculates all required migrations to sync the arangodb-views with the model
      * @param model
      */
-    async getArangoSearchMigrations(
-        model: Model,
-        arangoSearchConfiguration?: ArangoSearchConfiguration
-    ): Promise<ReadonlyArray<SchemaMigration>> {
-        if (
-            (!arangoSearchConfiguration || !arangoSearchConfiguration.skipVersionCheckForArangoSearchMigrations) &&
-            !(await isArangoSearchSupported(this.versionHelper.getArangoDBVersion()))
-        ) {
+    async getArangoSearchMigrations(model: Model): Promise<ReadonlyArray<SchemaMigration>> {
+        const isSkipVersionCheck =
+            this.config.arangoSearchConfiguration &&
+            this.config.arangoSearchConfiguration.skipVersionCheckForArangoSearchMigrations;
+        if (!isSkipVersionCheck && !(await isArangoSearchSupported(this.versionHelper.getArangoDBVersion()))) {
             return [];
         }
         // the views that match the model
