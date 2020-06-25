@@ -161,9 +161,7 @@ export class SchemaAnalyzer {
             .map(value => this.db.arangoSearchView(value.name))
             .filter(view =>
                 model.rootEntityTypes.some(
-                    rootEntityType =>
-                        view.name.substr(FLEX_SEARCH_VIEW_PREFIX.length) ===
-                        getCollectionNameForRootEntity(rootEntityType)
+                    rootEntityType => view.name === getFlexSearchViewNameForRootEntity(rootEntityType)
                 )
             );
 
