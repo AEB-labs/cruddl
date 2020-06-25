@@ -10,6 +10,7 @@ import {
     calculateRequiredArangoSearchViewCreateOperations,
     calculateRequiredArangoSearchViewDropOperations,
     calculateRequiredArangoSearchViewUpdateOperations,
+    FLEX_SEARCH_VIEW_PREFIX,
     getRequiredViewsFromModel
 } from './arango-search-helpers';
 import {
@@ -156,7 +157,15 @@ export class SchemaAnalyzer {
         // the views that match the model
         const requiredViews = getRequiredViewsFromModel(model);
         // the currently existing views
-        const views = (await this.db.listViews()).map(value => this.db.arangoSearchView(value.name));
+        const views = (await this.db.listViews())
+            .map(value => this.db.arangoSearchView(value.name))
+            .filter(view =>
+                model.rootEntityTypes.some(
+                    rootEntityType =>
+                        view.name.substr(FLEX_SEARCH_VIEW_PREFIX.length) ===
+                        getCollectionNameForRootEntity(rootEntityType)
+                )
+            );
 
         const configuration = this.config.arangoSearchConfiguration;
         const viewsToCreate = await calculateRequiredArangoSearchViewCreateOperations(
