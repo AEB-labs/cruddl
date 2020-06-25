@@ -10,7 +10,7 @@ import {
     calculateRequiredArangoSearchViewCreateOperations,
     calculateRequiredArangoSearchViewDropOperations,
     calculateRequiredArangoSearchViewUpdateOperations,
-    FLEX_SEARCH_VIEW_PREFIX,
+    getFlexSearchViewNameForRootEntity,
     getRequiredViewsFromModel
 } from './arango-search-helpers';
 import {
