@@ -1,4 +1,5 @@
-#FlexSearch Guide
+# FlexSearch Guide
+
 Cruddl allows the usage of [ArangoSearch](https://www.arangodb.com/arangodb-training-center/search/) to create fulltext-indices on your data.
 
 ## Schema
@@ -56,6 +57,8 @@ type Order @rootEntity(flexSearch: true, flexSearchLanguage: EN) {
 ```
 
 In this example an "expression search" would search in the fields `orderNumber` and `descriptionEN` but not the field `descriptionDE`.
+
+### Primary Sort
 
 ## API
 
