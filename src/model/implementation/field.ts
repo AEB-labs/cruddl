@@ -1067,11 +1067,15 @@ export class Field implements ModelComponent {
                 )
             );
         }
-        if (this.isIncludedInSearch && !(this.type.isScalarType && this.type.name === 'String')) {
+        if (
+            this.isIncludedInSearch &&
+            !this.type.isObjectType &&
+            !(this.type.isScalarType && this.type.name === 'String')
+        ) {
             context.addMessage(
                 ValidationMessage.error(
-                    `"${FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT}: true" is only supported on type "String" and "[String]".`,
-                    this.input.isFlexSearchFulltextIndexedASTNode
+                    `"${FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT}: true" is only supported on the types "String", "[String]" and object types.`,
+                    this.input.isFlexSearchIndexedASTNode
                 )
             );
             return;
