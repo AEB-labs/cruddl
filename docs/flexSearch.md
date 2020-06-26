@@ -58,8 +58,6 @@ type Order @rootEntity(flexSearch: true, flexSearchLanguage: EN) {
 
 In this example an "expression search" would search in the fields `orderNumber` and `descriptionEN` but not the field `descriptionDE`.
 
-### Primary Sort
-
 ## API
 
 For each `rootEntity` that is marked with `flexSearch: true` a new query is available that allows to query for objects using ArangoSearch.
