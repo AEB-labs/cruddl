@@ -58,6 +58,32 @@ type Order @rootEntity(flexSearch: true, flexSearchLanguage: EN) {
 
 In this example an "expression search" would search in the fields `orderNumber` and `descriptionEN` but not the field `descriptionDE`.
 
+### FlexSearch Order
+
+A rootEntity that is marked with `flexSearch: true` can also define a `flexSearchOrder`.
+This will define the order in which the elements are saved in the index.
+
+This will be the default order in which the elements of a flexSearch-query are returned.
+
+If a query matches the default order, or a "prefix" of the default order, the elements can simply be read from the index, and no sorting is necessary.
+
+Inverted sorting directions are not supported by the index.
+
+So in the following example either `[orderNumber_ASC]` or `[orderNumber_ASC, createdAt_DESC]` will skip the sorting, while `[orderNumber_DESC]` or `[createdAt_DESC]` will not.
+
+```graphql
+type Order @rootEntity(
+    flexSearch: true,
+    flexSearchLanguage: EN,
+    flexSearchOrder: [
+        { field: "orderNumber", direction: ASC },
+        { field: "createdAt", direction: DESC }
+    ]
+) {
+ #...
+}
+```
+
 ## API
 
 For each `rootEntity` that is marked with `flexSearch: true` a new query is available that allows to query for objects using ArangoSearch.
