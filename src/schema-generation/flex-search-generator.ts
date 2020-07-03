@@ -185,7 +185,7 @@ export class FlexSearchGenerator {
                 // If a filter or an order_by is specified, a pre-execution query node is added that throws a TOO_MANY_OBJECTS_ERROR if the amount of objects the filter or order_by is
                 // used on is to large
                 if (
-                    args[FILTER_ARG] ||
+                    (args[FILTER_ARG] && Object.keys(args[FILTER_ARG]).length > 0) ||
                     (args[ORDER_BY_ARG] &&
                         !this.orderArgMatchesPrimarySort(
                             args[ORDER_BY_ARG],
