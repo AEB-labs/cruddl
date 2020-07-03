@@ -5,7 +5,14 @@ import { RequestProfile } from '../config/interfaces';
 import { DatabaseAdapter, ExecutionPlan, FlexSearchTokenizable, TransactionStats } from '../database/database-adapter';
 import { OperationParams } from '../graphql/operation-based-resolvers';
 import { distillOperation } from '../graphql/query-distiller';
-import { BinaryOperator, ObjectQueryNode, PropertySpecification, QueryNode } from '../query-tree';
+import {
+    BinaryOperator,
+    ObjectQueryNode,
+    PreExecQueryParms,
+    PropertySpecification,
+    QueryNode,
+    WithPreExecutionQueryNode
+} from '../query-tree';
 import {
     FlexSearchComplexOperatorQueryNode,
     FlexSearchQueryNode,
@@ -236,6 +243,35 @@ export class OperationResolver {
             return {
                 node: new ObjectQueryNode(specs),
                 containsComplexOR: containsComplexOR
+            };
+        }
+
+        if (queryNode instanceof WithPreExecutionQueryNode) {
+            const newParms: PreExecQueryParms[] = [];
+            let containsComplexOR = false;
+            for (const preExecQueryParms of queryNode.preExecQueries) {
+                const expandedValue = this.expandQueryNode(preExecQueryParms.query, tokenizations);
+                newParms.push(
+                    new PreExecQueryParms({
+                        query: expandedValue.node,
+                        resultValidator: preExecQueryParms.resultValidator,
+                        resultVariable: preExecQueryParms.resultVariable
+                    })
+                );
+                if (expandedValue.containsComplexOR) {
+                    containsComplexOR = true;
+                }
+            }
+            let expandedResultNode = this.expandQueryNode(queryNode.resultNode, tokenizations);
+            if (expandedResultNode.containsComplexOR) {
+                containsComplexOR = true;
+            }
+            return {
+                node: new WithPreExecutionQueryNode({
+                    resultNode: expandedResultNode.node,
+                    preExecQueries: newParms
+                }),
+                containsComplexOR
             };
         }
 

@@ -14,6 +14,12 @@ query containsAllPrefixes {
     }
 }
 
+query containsAllPrefixesWithEmptyFilter {
+    flexSearchDeliveries(filter: {}, flexSearchFilter: { description_contains_all_prefixes: "all prefixes" }) {
+        deliveryNumber
+    }
+}
+
 query containsAnyPrefix {
     flexSearchDeliveries(flexSearchFilter: { description_contains_any_prefix: "all prefixes" }) {
         deliveryNumber
