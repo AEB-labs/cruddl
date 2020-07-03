@@ -26,6 +26,15 @@
             ]
         }
     },
+    "containsAllPrefixesWithEmptyFilter": {
+        "data": {
+            "flexSearchDeliveries": [
+                {
+                    "deliveryNumber": "1000521"
+                }
+            ]
+        }
+    },
     "containsAnyPrefix": {
         "data": {
             "flexSearchDeliveries": [
