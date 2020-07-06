@@ -4,26 +4,31 @@ A cruddl project consists of one or multiple [GraphQL schema](http://graphql.org
 
 ```typescript
 import { Project } from 'cruddl';
-const project = new Project([{
-  name: 'schema.graphqls',
-  body: `
+const project = new Project([
+    {
+        name: 'schema.graphqls',
+        body: `
         type Order @rootEntity {
           orderNumber: String
         }
     `
-}, {
-  name: 'permission-profiles.json',
-  body: JSON.stringify({
-    permissionProfiles: {
-      default: {
-        permissions: [{
-          roles: ['users'],
-          access: 'readWrite'
-        }]
-      }
+    },
+    {
+        name: 'permission-profiles.json',
+        body: JSON.stringify({
+            permissionProfiles: {
+                default: {
+                    permissions: [
+                        {
+                            roles: ['users'],
+                            access: 'readWrite'
+                        }
+                    ]
+                }
+            }
+        })
     }
-  })
-}]);
+]);
 ```
 
 The file `schema.graphqls` contains type definitions while `permission-profiles.json` provides metadata (in this case, to grant unrestricted access users with the "users" role). The two file formats are distinguished by the extension of the `name`.
@@ -39,9 +44,8 @@ In the example above, `Order` is decorated with the `@rootEntity` directive, whi
 Root entity types are the equivalent of documents in a document database. They have an implicit, auto-generated `id` field that identifies a root entity uniquely and is used to update and delete existing root entities. All queries and mutations start on root entities - all other kinds of objects are only accessible via their parent root entity.
 
 ```graphql
-
 type Order @rootEntity {
-  orderNumber: String
+    orderNumber: String
 }
 ```
 
@@ -53,13 +57,13 @@ Child entities behave like collections within root entities. They also have an a
 
 ```graphql
 type OrderItem @childEntity {
-  itemNumber: String
-  quantity: Int
+    itemNumber: String
+    quantity: Int
 }
- 
+
 type Order @rootEntity {
-  # ...
-  items: [OrderItem]
+    # ...
+    items: [OrderItem]
 }
 ```
 
@@ -71,13 +75,13 @@ Child entity types can only be used within list types. To group a set of fields 
 
 ```graphql
 type PaymentInfo @entityExtension {
-  creditCardNumber: String
-  payPalToken: String
+    creditCardNumber: String
+    payPalToken: String
 }
 
 type Order @rootEntity {
-  # ...
-  paymentInfo: PaymentInfo
+    # ...
+    paymentInfo: PaymentInfo
 }
 ```
 
@@ -89,14 +93,14 @@ Value objects are treated as atomic values much like scalars are. They can not b
 
 ```graphql
 type Address @valueObject {
-  street: String
-  postalCode: String
-  city: String
+    street: String
+    postalCode: String
+    city: String
 }
 
 type Order @rootEntity {
-  # ...
-  shippingAddress: Address
+    # ...
+    shippingAddress: Address
 }
 ```
 
@@ -110,19 +114,19 @@ Relations define links between root entities. Use the `@relation` directive to d
 
 ```graphql
 type Order @rootEntity {
-  # ...
-  customer: Customer @relation
+    # ...
+    customer: Customer @relation
 }
 
 type Customer @rootEntity {
-  name: String
-  orders: [Order] @relation(inverseOf: "customer")
+    name: String
+    orders: [Order] @relation(inverseOf: "customer")
 }
 ```
 
-The back link can be omitted. If you however only omit the `inverseOf` argument on the back link, this creates two independent relations - one from customers to orders, and one from orders to customers. The cardinality of relations is determined by the field types. In this case, `customer` is of type `Customer`, but the inverse field - `orders` has a list type, resulting in a *n-to-1* relation from orders to customers.
+The back link can be omitted. If you however only omit the `inverseOf` argument on the back link, this creates two independent relations - one from customers to orders, and one from orders to customers. The cardinality of relations is determined by the field types. In this case, `customer` is of type `Customer`, but the inverse field - `orders` has a list type, resulting in a _n-to-1_ relation from orders to customers.
 
-In ArangoDB, relations are stored in an edge collection with the name ```orders_customer``` (the plural of the source object combined with the field name).
+In ArangoDB, relations are stored in an edge collection with the name `orders_customer` (the plural of the source object combined with the field name).
 
 ### References
 
@@ -132,14 +136,14 @@ References are built from regular scalar fields that hold key, e.g. `countryISOC
 
 ```graphql
 type Country @rootEntity {
-  isoCode: String @key
-  name: String
+    isoCode: String @key
+    name: String
 }
 
 type Address @valueObject {
-  # ...
-  countryISOCode: String
-  country: Country @reference(keyField: "countryISOCode")
+    # ...
+    countryISOCode: String
+    country: Country @reference(keyField: "countryISOCode")
 }
 ```
 
@@ -173,22 +177,22 @@ You can use `@collect` to follow two relations and collect all inner entities:
 
 ```graphql
 type OrderItem @childEntity {
-  itemNumber: String
+    itemNumber: String
 }
 
 type Order @rootEntity {
-  items: [OrderItem]
+    items: [OrderItem]
 }
 
 type Shipment @rootEntity {
-  orders: [Order] @relation
-  allItems: [OrderItem] @collect(path: "orders.items")
+    orders: [Order] @relation
+    allItems: [OrderItem] @collect(path: "orders.items")
 }
 ```
 
-The field `allItems` will return all items in all orders of a shipment. It will not be available for filtering or sorting and you will not be able to set it directly in *create* and *update* mutations.
+The field `allItems` will return all items in all orders of a shipment. It will not be available for filtering or sorting and you will not be able to set it directly in _create_ and _update_ mutations.
 
-The path can traverse an arbitrary number of fields. Only the objects of the *last* field will be returned, and the type of that last field needs to match the traversal field type (`OrderItem` in the example). References can not yet be followed, but you can use other traversal fields in the path.
+The path can traverse an arbitrary number of fields. Only the objects of the _last_ field will be returned, and the type of that last field needs to match the traversal field type (`OrderItem` in the example). References can not yet be followed, but you can use other traversal fields in the path.
 
 ### Flattening tree structure
 
@@ -196,10 +200,10 @@ If you have a root entity with a relation to itself, you can use a collect field
 
 ```graphql
 type HandlingUnit {
-  childHandlingUnits: [HandlingUnit] @relation
-  parentHandlingUnit: HandlingUnit @relation(inverseOf: "childHandlingUnits")
-  
-  allInnerHandlingUnits: [HandlingUnit] @collect(path: "childHandlingUnits{1,3}")
+    childHandlingUnits: [HandlingUnit] @relation
+    parentHandlingUnit: HandlingUnit @relation(inverseOf: "childHandlingUnits")
+
+    allInnerHandlingUnits: [HandlingUnit] @collect(path: "childHandlingUnits{1,3}")
 }
 ```
 
@@ -223,13 +227,13 @@ With the optional `aggregate` argument, you can perform an aggregation on all co
 
 ```graphql
 type OrderItem @childEntity {
-  itemNumber: String
-  quantity: Int
+    itemNumber: String
+    quantity: Int
 }
 
 type Order @rootEntity {
-  items: [OrderItem]
-  totalQuantity: Int @collect(path: "items.quantity", aggregate: SUM)
+    items: [OrderItem]
+    totalQuantity: Int @collect(path: "items.quantity", aggregate: SUM)
 }
 ```
 
@@ -238,7 +242,7 @@ The path can use all the features from above and also use other `@collect` field
 The following operators are supported:
 
 | Operator         | Description                                      | Supported Types                                      | Null values     | Result on empty list |
-|------------------|--------------------------------------------------|------------------------------------------------------|-----------------|----------------------|
+| ---------------- | ------------------------------------------------ | ---------------------------------------------------- | --------------- | -------------------- |
 | `COUNT`          | Total number of items (including `null`)         | all types (last segment must be a list)              | included        | `0`                  |
 | `SOME`           | `true` if there are any items (including `null`) | all types (last segment must be a list)              | included        | `false`              |
 | `NONE`           | `true` if the list is empty                      | all types (last segment must be a list)              | included        | `true`               |
@@ -269,11 +273,11 @@ Note that if a value is collected multiple times, it will be used multiple times
 
 ### Restrictions
 
-* Reference fields can currently not be used in the collect path.
-* Aggregation fields can currently not be used in the collect path, including the `DISTINCT` operator.
-* Min/Max depth can currently not be specified on child entities or nested value objects.
-* Min/Max depth can currently not be specified for indirectly recursive relations.
-* The InMemoryAdapter currently does not support min/max depth.
+-   Reference fields can currently not be used in the collect path.
+-   Aggregation fields can currently not be used in the collect path, including the `DISTINCT` operator.
+-   Min/Max depth can currently not be specified on child entities or nested value objects.
+-   Min/Max depth can currently not be specified for indirectly recursive relations.
+-   The InMemoryAdapter currently does not support min/max depth.
 
 Also, some possible performance optimizations are not implemented yet. For example, the `DISTINCT` operator is applied at the end of a collection and not as early as possible.
 
@@ -283,18 +287,20 @@ cruddl provides a role-based permission system. Permission rules can be defined 
 
 Currently, there are two ways to specify permissions: Via the `@roles` directive or via permission profiles. The `@roles` directive will be deprecated in the future, but currently it is needed for field-based permissions.
 
-The basic example above already specified a permission profile `default` which is  applied to all root entities without an explicit `permissionProfile` argument in the `@rootEntity` directive:
+The basic example above already specified a permission profile `default` which is applied to all root entities without an explicit `permissionProfile` argument in the `@rootEntity` directive:
 
 ```json
 {
-  "permissionProfiles": {
-    "default": {
-      "permissions": [{
-        "roles": ["users"],
-        "access": "readWrite"
-      }]
+    "permissionProfiles": {
+        "default": {
+            "permissions": [
+                {
+                    "roles": ["users"],
+                    "access": "readWrite"
+                }
+            ]
+        }
     }
-  }
 }
 ```
 
@@ -302,17 +308,20 @@ This profile grants unrestricted access for the "users" role. The roles of a use
 
 ```json
 {
-  "permissionProfiles": {
-    "restricted": {
-      "permissions": [{
-        "roles": ["admin"],
-        "access": "readWrite"
-      }, {
-        "roles": ["user*"],
-        "access": "read"
-      }]
+    "permissionProfiles": {
+        "restricted": {
+            "permissions": [
+                {
+                    "roles": ["admin"],
+                    "access": "readWrite"
+                },
+                {
+                    "roles": ["user*"],
+                    "access": "read"
+                }
+            ]
+        }
     }
-  }
 }
 ```
 
@@ -326,40 +335,45 @@ type Order @rootEntity(permissionProfile: "restricted") {
 
 Permission profiles are looked up in all json/yaml files within the type's namespace. If not found there, the namespace tree is navigated upwards. Permission profiles can be shadowed (i.e. a profile can be defined in a parent and in a child namespace, and the child namespace wins), but this generates a warning. The permission profile `default` can be shadowed without warning, so you can have namespace-dependent default permission profiles.
 
+If a role specifier in a permission profile starts with a forward slash (`/`), it is interpreted as a regular expression. Be careful to use the start-of-string and end-of-string anchors (`^` and `$`) to match the whole role instead of just part of it. An example would be `"/^supplier-([a-z]+)$/"`.
+
 ### Field permissions
 
 To set permissions on individual fields, you need to use the `@roles` directive. This will be changed in the future to also work with permission profiles.
 
 ```graphql
 type Customer @rootEntity {
-  paymentInfo: PaymentInfo @roles(readWrite: ["support-privileged"], read: [])
+    paymentInfo: PaymentInfo @roles(readWrite: ["support-privileged"], read: [])
 }
 ```
-
 
 ### Data-dependent permissions
 
 Use `restrictToAccessGroups` for a data-dependent permission profile:
- grants unrestricted access for all roles. The following permission profile "restricted" allows read access to all roles starting with "user" and provides full access to the role "admin":
+grants unrestricted access for all roles. The following permission profile "restricted" allows read access to all roles starting with "user" and provides full access to the role "admin":
 
 ```json
 {
-  "permissionProfiles": {
-    "restricted": {
-      "permissions": [{
-        "roles": ["admin"],
-        "access": "readWrite"
-      }, {
-        "roles": ["support-europe"],
-        "access": "read",
-        "restrictToAccessGroups": [ "EUROPE" ]
-      }, {
-        "roles": ["support-america"],
-        "access": "read",
-        "restrictToAccessGroups": [ "NORTH_AMERICA", "SOUTH_AMERICA" ]
-      }]
+    "permissionProfiles": {
+        "restricted": {
+            "permissions": [
+                {
+                    "roles": ["admin"],
+                    "access": "readWrite"
+                },
+                {
+                    "roles": ["support-europe"],
+                    "access": "read",
+                    "restrictToAccessGroups": ["EUROPE"]
+                },
+                {
+                    "roles": ["support-america"],
+                    "access": "read",
+                    "restrictToAccessGroups": ["NORTH_AMERICA", "SOUTH_AMERICA"]
+                }
+            ]
+        }
     }
-  }
 }
 ```
 
@@ -367,19 +381,38 @@ You can use this profile as follows:
 
 ```graphql
 type Order @rootEntity(permissionProfile: "restricted") {
-  # ...
-  accessGroup: OrderAccessGroup
+    # ...
+    accessGroup: OrderAccessGroup
 }
 
 enum OrderAccessGroup {
-  EUROPE, NORTH_AMERICA, SOUTH_AMERICA, RESTRICTED
+    EUROPE
+    NORTH_AMERICA
+    SOUTH_AMERICA
+    RESTRICTED
 }
 ```
 
-* Users with role "admin" can access all orders.
-* Users with role "support-europe" can only access orders where `accessGroup` has the value "EUROPE".
-* Users with role "support-america" can only access orders where `accessGroup` has the value "NORTH_AMERICA" or "SOUTH_AMERICA".
-* Users with role "support-america" and "support-europe" can only access orders where `accessGroup` has the value "EUROPE", "NORTH_AMERICA", or "SOUTH_AMERICA".
+-   Users with role "admin" can access all orders.
+-   Users with role "support-europe" can only access orders where `accessGroup` has the value "EUROPE".
+-   Users with role "support-america" can only access orders where `accessGroup` has the value "NORTH_AMERICA" or "SOUTH_AMERICA".
+-   Users with role "support-america" and "support-europe" can only access orders where `accessGroup` has the value "EUROPE", "NORTH_AMERICA", or "SOUTH_AMERICA".
+
+You can also dynamically assign role-dependent access groups using regular expressions and capturing groups. For example:
+
+```json
+{
+    "permissionProfiles": {
+        "forwarders": {
+            "roles": ["/^forwarder-(.+)$/"],
+            "access": "readWrite",
+            "restrictToAccessGroups": ["forwarded-by-$1", "forwarded-by-anyone"]
+        }
+    }
+}
+```
+
+A user with roles `forwarder-fast` and `forwarder-quick` is granted access to objects with `accessGroup` `forwarded-by-fast`, and `forwarded-by-quick`, and `forwarded-by-anyone`.
 
 ## Indices
 
@@ -401,9 +434,9 @@ Indices can also be directly attached to fields. Multi-field indices are not sup
 
 ```graphql
 type Order @rootEntity {
-  orderNumber: String @unique
-  trackingNumber: String @index
-  # ...
+    orderNumber: String @unique
+    trackingNumber: String @index
+    # ...
 }
 ```
 
