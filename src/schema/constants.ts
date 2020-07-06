@@ -19,7 +19,7 @@ export const FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE = 'flexSearchFulltext';
 export const FLEX_SEARCH_INDEXED_ARGUMENT = 'flexSearch';
 export const FLEX_SEARCH_ORDER_ARGUMENT = 'flexSearchOrder';
 export const FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT = 'includeInSearch';
-export const FLEX_SEARCH_INDEXED_LANGUAGE_ARG = 'flexSearchLanguage';
+export const FLEX_SEARCH_INDEXED_LANGUAGE_ARG = 'language';
 export const FLEX_SEARCH_DEFAULT_LANGUAGE_ARG = 'flexSearchLanguage';
 
 export const COLLECT_DIRECTIVE = 'collect';
