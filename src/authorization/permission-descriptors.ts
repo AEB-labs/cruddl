@@ -162,7 +162,7 @@ export class ProfileBasedPermissionDescriptor extends PermissionDescriptor {
             return ConstBoolQueryNode.TRUE;
         }
 
-        const allowedAccessGroups = this.getAllowedAccessGroups(applicablePermissions);
+        const allowedAccessGroups = this.getAllowedAccessGroups(applicablePermissions, authContext);
         if (!this.accessGroupField) {
             if (this.rootEntityType) {
                 throw new Error(
@@ -186,8 +186,8 @@ export class ProfileBasedPermissionDescriptor extends PermissionDescriptor {
         );
     }
 
-    private getAllowedAccessGroups(applicablePermissions: ReadonlyArray<Permission>) {
-        return flatMap(applicablePermissions, permission => permission.restrictToAccessGroups!);
+    private getAllowedAccessGroups(applicablePermissions: ReadonlyArray<Permission>, authContext: AuthContext) {
+        return flatMap(applicablePermissions, permission => permission.getAllowedAccessGroups(authContext)!);
     }
 
     getExplanationForCondition(
@@ -202,7 +202,7 @@ export class ProfileBasedPermissionDescriptor extends PermissionDescriptor {
             return undefined;
         }
 
-        const allowedAccessGroups = this.getAllowedAccessGroups(applicablePermissions);
+        const allowedAccessGroups = this.getAllowedAccessGroups(applicablePermissions, authContext);
         const prefix = this.getExplanationPrefix(context);
         return `${prefix}${allowedAccessGroups.join(', ')})`;
     }

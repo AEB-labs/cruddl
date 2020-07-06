@@ -10,12 +10,14 @@ import { RolesOnNonRootEntityTypesValidator } from './ast-validation-modules/rol
 import { GraphQLRulesValidator } from './source-validation-modules/graphql-rules';
 import { SidecarSchemaValidator } from './source-validation-modules/sidecar-schema';
 import { ParsedProjectSource } from '../../config/parsed-project';
+import { PermissionProfileValidator } from './source-validation-modules/permission-profile-validator';
 
-const sourceValidators: ReadonlyArray<SourceValidator>  = [];
+const sourceValidators: ReadonlyArray<SourceValidator> = [];
 
-const parsedProjectSourceValidators: ReadonlyArray<ParsedSourceValidator>  = [
+const parsedProjectSourceValidators: ReadonlyArray<ParsedSourceValidator> = [
     new GraphQLRulesValidator(),
-    new SidecarSchemaValidator()
+    new SidecarSchemaValidator(),
+    new PermissionProfileValidator()
 ];
 
 const postMergeValidators: ReadonlyArray<ASTValidator> = [
@@ -47,15 +49,17 @@ export function validateParsedProjectSource(source: ParsedProjectSource): Valida
 }
 
 export function validatePostMerge(ast: DocumentNode, model: Model): ValidationResult {
-    return new ValidationResult(flatMap(postMergeValidators, validator => {
-        // All validators rely on a valid model except for the things they test.
-        // That's why they allow them to throw errors due to a bad model.
-        // To keep the validators simple, we just ignore these errors and
-        // trust on the appropriate validator for the modelling mistake.
-        try {
-            return validator.validate(ast, model)
-        } catch(e) {
-            return []
-        }
-    }));
+    return new ValidationResult(
+        flatMap(postMergeValidators, validator => {
+            // All validators rely on a valid model except for the things they test.
+            // That's why they allow them to throw errors due to a bad model.
+            // To keep the validators simple, we just ignore these errors and
+            // trust on the appropriate validator for the modelling mistake.
+            try {
+                return validator.validate(ast, model);
+            } catch (e) {
+                return [];
+            }
+        })
+    );
 }
