@@ -10,7 +10,7 @@ type Hero @rootEntity(
     ]
 ) {
     "The hero's screen name"
-    name: String @unique @flexSearchFulltext(includeInSearch: true)
+    name: String @unique @flexSearchFulltext(includeInSearch: true language: DE)
     age: Int @defaultValue(value: 42)
     nickNames: [String] @flexSearch
     movies: [Movie] @relation(inverseOf: "heroes")

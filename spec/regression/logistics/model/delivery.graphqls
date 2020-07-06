@@ -53,7 +53,7 @@ enum EnumWithDeprecation {
 }
 
 type DeliveryItem @childEntity {
-    itemNumber: String
+    itemNumber: String @flexSearchFulltext(language: DE)
     quantity: Int @flexSearch
     handlingUnit: HandlingUnit @reference
     dgInfo: DangerousGoodsInfo
