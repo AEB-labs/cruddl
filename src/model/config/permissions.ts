@@ -18,7 +18,7 @@ export interface NamespacedPermissionProfileConfigMap {
     readonly profiles: PermissionProfileConfigMap;
 }
 
-export type PermissionAccessKind = 'read' | 'readWrite';
+export type PermissionAccessKind = 'read' | 'readWrite' | 'create' | 'update' | 'delete';
 
 export interface PermissionProfileConfig {
     readonly permissions?: ReadonlyArray<PermissionConfig>;
@@ -33,7 +33,7 @@ export interface PermissionConfig {
      */
     roles: ReadonlyArray<string>;
 
-    access: PermissionAccessKind;
+    access: PermissionAccessKind | ReadonlyArray<PermissionAccessKind>;
 
     /**
      * If specified, the permission is only granted for objects with certain access groups

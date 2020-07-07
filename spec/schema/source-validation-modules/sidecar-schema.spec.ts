@@ -65,23 +65,25 @@ describe('sidecar-schema validator', () => {
 
     function getValidatorMessages(ps: ProjectSource): ValidationMessage[] {
         const parsedSource = parseProjectSource(ps, new ValidationContext());
-        if(parsedSource){
+        if (parsedSource) {
             return validator.validate(parsedSource);
         }
 
         expect(parsedSource).to.not.be.undefined;
-        throw new Error("Not reachable");
+        throw new Error('Not reachable');
     }
 
     it('reports errors in json files', () => {
         const messages = getValidatorMessages(new ProjectSource('test.json', invalidValue));
-        expect(messages.length).to.equal(2);
-        expect(messages[0].message).to.equal("should be equal to one of the allowed values");
-        expect(messages[1].message).to.equal("should be array");
-        expect(JSON.parse(JSON.stringify(messages[1].location))).to.deep.equal({
-            "_end": 364,
-            "_start": 352,
-            "sourceName": "test.json"
+        expect(messages.length).to.equal(4);
+        expect(messages[0].message).to.equal('should be equal to one of the allowed values');
+        expect(messages[1].message).to.equal('should be array');
+        expect(messages[2].message).to.equal('should match exactly one schema in oneOf');
+        expect(messages[3].message).to.equal('should be array');
+        expect(JSON.parse(JSON.stringify(messages[3].location))).to.deep.equal({
+            _end: 364,
+            _start: 352,
+            sourceName: 'test.json'
         });
     });
 
@@ -92,39 +94,50 @@ describe('sidecar-schema validator', () => {
 
     it('reports errors in files with comments', () => {
         const messages = getValidatorMessages(new ProjectSource('test.json', invalidValueWithComments));
-        expect(messages.length).to.equal(2);
-        expect(messages[0].message).to.equal("should be equal to one of the allowed values");
-        expect(messages[1].message).to.equal("should be array");
-        expect(JSON.parse(JSON.stringify(messages[1].location))).to.deep.equal({
-            "_end": 419,
-            "_start": 407,
-            "sourceName": "test.json"
+        expect(messages.length).to.equal(4);
+        expect(messages[0].message).to.equal('should be equal to one of the allowed values');
+        expect(messages[1].message).to.equal('should be array');
+        expect(messages[2].message).to.equal('should match exactly one schema in oneOf');
+        expect(messages[3].message).to.equal('should be array');
+        expect(JSON.parse(JSON.stringify(messages[3].location))).to.deep.equal({
+            _end: 419,
+            _start: 407,
+            sourceName: 'test.json'
         });
     });
 
     it('accepts valid yaml files', () => {
-        const messages = getValidatorMessages(new ProjectSource('file.yaml', `
+        const messages = getValidatorMessages(
+            new ProjectSource(
+                'file.yaml',
+                `
 i18n:
   de:
     types:
       Temp:
-        label: Test`));
+        label: Test`
+            )
+        );
         expect(messages).to.deep.equal([]);
     });
 
     it('reports errors in yaml files', () => {
-        const messages = getValidatorMessages(new ProjectSource('file.yaml', `
+        const messages = getValidatorMessages(
+            new ProjectSource(
+                'file.yaml',
+                `
 i18n:
   de:
     typess:
       Temp:
-        label: Test`));
+        label: Test`
+            )
+        );
         expect(messages.length).to.equal(1);
         expect(JSON.parse(JSON.stringify(messages[0].location))).to.deep.equal({
-            "_end": 56,
-            "_start": 9,
-            "sourceName": "file.yaml"
+            _end: 56,
+            _start: 9,
+            sourceName: 'file.yaml'
         });
     });
-
 });

@@ -72,8 +72,20 @@
                     }
                 },
                 "access": {
-                    "type": "string",
-                    "enum": ["read", "readWrite"]
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "enum": ["read", "readWrite", "create", "update", "delete"]
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "enum": ["read", "readWrite", "create", "update", "delete"]
+                            },
+                            "minItems": 1
+                        }
+                    ]
                 },
                 "restrictToAccessGroups": {
                     "type": "array",
