@@ -1,0 +1,24 @@
+{
+    "permissionProfiles": {
+        "default": {
+            "permissions": [
+                {
+                    "roles": ["allusers"],
+                    "access": "readWrite"
+                },
+                {
+                    "roles": ["creator"],
+                    "access": ["create", "read"]
+                },
+                {
+                    "roles": ["updater"],
+                    "access": ["update", "read"]
+                },
+                {
+                    "roles": ["deleter"],
+                    "access": ["delete", "read"]
+                }
+            ]
+        }
+    }
+}

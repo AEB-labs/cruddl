@@ -19,13 +19,13 @@ export class PermissionProfile {
 
 export class Permission {
     readonly roles: RoleSpecifier;
-    readonly access: PermissionAccessKind;
+    readonly access: ReadonlyArray<PermissionAccessKind>;
     readonly restrictToAccessGroups?: ReadonlyArray<string>;
     readonly hasDynamicAccessGroups: boolean;
 
     constructor(config: PermissionConfig) {
         this.roles = new RoleSpecifier(config.roles);
-        this.access = config.access;
+        this.access = Array.isArray(config.access) ? config.access : [config.access];
         this.restrictToAccessGroups = config.restrictToAccessGroups;
         this.hasDynamicAccessGroups =
             !!this.restrictToAccessGroups && this.restrictToAccessGroups.some(group => group.includes('$'));
@@ -38,9 +38,13 @@ export class Permission {
     allowsOperation(operation: AccessOperation) {
         switch (operation) {
             case AccessOperation.READ:
-                return this.access == 'read' || this.access == 'readWrite';
-            case AccessOperation.WRITE:
-                return this.access == 'readWrite';
+                return this.access.includes('read') || this.access.includes('readWrite');
+            case AccessOperation.CREATE:
+                return this.access.includes('readWrite') || this.access.includes('create');
+            case AccessOperation.UPDATE:
+                return this.access.includes('readWrite') || this.access.includes('update');
+            case AccessOperation.DELETE:
+                return this.access.includes('readWrite') || this.access.includes('delete');
             default:
                 return false;
         }
@@ -106,6 +110,7 @@ export class InvalidRoleSpecifierError extends Error {
 
 export interface RoleSpecifierEntry {
     matchesRole(role: string): boolean;
+
     getReplacementForRole(role: string, replacementExpression: string): string | undefined;
 
     readonly mayHaveCapturingGroups: boolean;

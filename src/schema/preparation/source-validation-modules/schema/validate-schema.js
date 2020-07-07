@@ -184,11 +184,16 @@ var validate = (function() {
                                     errors++;
                                 } else {
                                     var errs_4 = errors;
+                                    var errs__4 = errors,
+                                        prevValid4 = false,
+                                        valid4 = false,
+                                        passingSchemas4 = null;
+                                    var errs_5 = errors;
                                     if (typeof data3 !== 'string') {
                                         var err = {
                                             keyword: 'type',
                                             dataPath: (dataPath || '') + '.permissions[' + i1 + '].access',
-                                            schemaPath: '#/definitions/Permission/properties/access/type',
+                                            schemaPath: '#/definitions/Permission/properties/access/oneOf/0/type',
                                             params: {
                                                 type: 'string'
                                             },
@@ -198,27 +203,150 @@ var validate = (function() {
                                         else vErrors.push(err);
                                         errors++;
                                     }
-                                    var schema4 = refVal2.properties.access.enum;
-                                    var valid4;
-                                    valid4 = false;
-                                    for (var i4 = 0; i4 < schema4.length; i4++)
-                                        if (equal(data3, schema4[i4])) {
-                                            valid4 = true;
+                                    var schema5 = refVal2.properties.access.oneOf[0].enum;
+                                    var valid5;
+                                    valid5 = false;
+                                    for (var i5 = 0; i5 < schema5.length; i5++)
+                                        if (equal(data3, schema5[i5])) {
+                                            valid5 = true;
                                             break;
                                         }
-                                    if (!valid4) {
+                                    if (!valid5) {
                                         var err = {
                                             keyword: 'enum',
                                             dataPath: (dataPath || '') + '.permissions[' + i1 + '].access',
-                                            schemaPath: '#/definitions/Permission/properties/access/enum',
+                                            schemaPath: '#/definitions/Permission/properties/access/oneOf/0/enum',
                                             params: {
-                                                allowedValues: schema4
+                                                allowedValues: schema5
                                             },
                                             message: 'should be equal to one of the allowed values'
                                         };
                                         if (vErrors === null) vErrors = [err];
                                         else vErrors.push(err);
                                         errors++;
+                                    }
+                                    var valid5 = errors === errs_5;
+                                    if (valid5) {
+                                        valid4 = prevValid4 = true;
+                                        passingSchemas4 = 0;
+                                    }
+                                    var errs_5 = errors;
+                                    if (Array.isArray(data3)) {
+                                        if (data3.length < 1) {
+                                            var err = {
+                                                keyword: 'minItems',
+                                                dataPath: (dataPath || '') + '.permissions[' + i1 + '].access',
+                                                schemaPath:
+                                                    '#/definitions/Permission/properties/access/oneOf/1/minItems',
+                                                params: {
+                                                    limit: 1
+                                                },
+                                                message: 'should NOT have fewer than 1 items'
+                                            };
+                                            if (vErrors === null) vErrors = [err];
+                                            else vErrors.push(err);
+                                            errors++;
+                                        }
+                                        var errs__5 = errors;
+                                        var valid5;
+                                        for (var i5 = 0; i5 < data3.length; i5++) {
+                                            var data4 = data3[i5];
+                                            var errs_6 = errors;
+                                            if (typeof data4 !== 'string') {
+                                                var err = {
+                                                    keyword: 'type',
+                                                    dataPath:
+                                                        (dataPath || '') +
+                                                        '.permissions[' +
+                                                        i1 +
+                                                        '].access[' +
+                                                        i5 +
+                                                        ']',
+                                                    schemaPath:
+                                                        '#/definitions/Permission/properties/access/oneOf/1/items/type',
+                                                    params: {
+                                                        type: 'string'
+                                                    },
+                                                    message: 'should be string'
+                                                };
+                                                if (vErrors === null) vErrors = [err];
+                                                else vErrors.push(err);
+                                                errors++;
+                                            }
+                                            var schema6 = refVal2.properties.access.oneOf[1].items.enum;
+                                            var valid6;
+                                            valid6 = false;
+                                            for (var i6 = 0; i6 < schema6.length; i6++)
+                                                if (equal(data4, schema6[i6])) {
+                                                    valid6 = true;
+                                                    break;
+                                                }
+                                            if (!valid6) {
+                                                var err = {
+                                                    keyword: 'enum',
+                                                    dataPath:
+                                                        (dataPath || '') +
+                                                        '.permissions[' +
+                                                        i1 +
+                                                        '].access[' +
+                                                        i5 +
+                                                        ']',
+                                                    schemaPath:
+                                                        '#/definitions/Permission/properties/access/oneOf/1/items/enum',
+                                                    params: {
+                                                        allowedValues: schema6
+                                                    },
+                                                    message: 'should be equal to one of the allowed values'
+                                                };
+                                                if (vErrors === null) vErrors = [err];
+                                                else vErrors.push(err);
+                                                errors++;
+                                            }
+                                            var valid6 = errors === errs_6;
+                                        }
+                                    } else {
+                                        var err = {
+                                            keyword: 'type',
+                                            dataPath: (dataPath || '') + '.permissions[' + i1 + '].access',
+                                            schemaPath: '#/definitions/Permission/properties/access/oneOf/1/type',
+                                            params: {
+                                                type: 'array'
+                                            },
+                                            message: 'should be array'
+                                        };
+                                        if (vErrors === null) vErrors = [err];
+                                        else vErrors.push(err);
+                                        errors++;
+                                    }
+                                    var valid5 = errors === errs_5;
+                                    if (valid5 && prevValid4) {
+                                        valid4 = false;
+                                        passingSchemas4 = [passingSchemas4, 1];
+                                    } else {
+                                        if (valid5) {
+                                            valid4 = prevValid4 = true;
+                                            passingSchemas4 = 1;
+                                        }
+                                    }
+                                    if (!valid4) {
+                                        var err = {
+                                            keyword: 'oneOf',
+                                            dataPath: (dataPath || '') + '.permissions[' + i1 + '].access',
+                                            schemaPath: '#/definitions/Permission/properties/access/oneOf',
+                                            params: {
+                                                passingSchemas: passingSchemas4
+                                            },
+                                            message: 'should match exactly one schema in oneOf'
+                                        };
+                                        if (vErrors === null) vErrors = [err];
+                                        else vErrors.push(err);
+                                        errors++;
+                                    } else {
+                                        errors = errs__4;
+                                        if (vErrors !== null) {
+                                            if (errs__4) vErrors.length = errs__4;
+                                            else vErrors = null;
+                                        }
                                     }
                                     var valid4 = errors === errs_4;
                                 }
@@ -394,8 +522,20 @@ var validate = (function() {
                 }
             },
             access: {
-                type: 'string',
-                enum: ['read', 'readWrite']
+                oneOf: [
+                    {
+                        type: 'string',
+                        enum: ['read', 'readWrite', 'create', 'update', 'delete']
+                    },
+                    {
+                        type: 'array',
+                        items: {
+                            type: 'string',
+                            enum: ['read', 'readWrite', 'create', 'update', 'delete']
+                        },
+                        minItems: 1
+                    }
+                ]
             },
             restrictToAccessGroups: {
                 type: 'array',
@@ -1391,8 +1531,20 @@ validate.schema = {
                     }
                 },
                 access: {
-                    type: 'string',
-                    enum: ['read', 'readWrite']
+                    oneOf: [
+                        {
+                            type: 'string',
+                            enum: ['read', 'readWrite', 'create', 'update', 'delete']
+                        },
+                        {
+                            type: 'array',
+                            items: {
+                                type: 'string',
+                                enum: ['read', 'readWrite', 'create', 'update', 'delete']
+                            },
+                            minItems: 1
+                        }
+                    ]
                 },
                 restrictToAccessGroups: {
                     type: 'array',
