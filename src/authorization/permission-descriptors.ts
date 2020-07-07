@@ -135,7 +135,10 @@ export class StaticPermissionDescriptor extends PermissionDescriptor {
             case AccessOperation.READ:
                 roles = this.allReadRoles;
                 break;
-            case AccessOperation.WRITE:
+            // @roles can't distinguish between create/update/delete
+            case AccessOperation.CREATE:
+            case AccessOperation.UPDATE:
+            case AccessOperation.DELETE:
                 roles = this.readWriteRoles;
         }
         const allowed = roles.some(allowedRole => authContext.authRoles.includes(allowedRole));

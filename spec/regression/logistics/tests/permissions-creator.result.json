@@ -1,0 +1,61 @@
+{
+    "create": {
+        "data": {
+            "createDelivery": {
+                "deliveryNumber": "new"
+            }
+        }
+    },
+    "update": {
+        "errors": [
+            {
+                "message": "Not authorized to update Delivery objects",
+                "locations": [
+                    {
+                        "line": 8,
+                        "column": 5
+                    }
+                ],
+                "path": ["updateDelivery"]
+            }
+        ],
+        "data": {
+            "updateDelivery": null
+        }
+    },
+    "delete": {
+        "errors": [
+            {
+                "message": "Not authorized to delete Delivery objects",
+                "locations": [
+                    {
+                        "line": 14,
+                        "column": 5
+                    }
+                ],
+                "path": ["deleteDelivery"]
+            }
+        ],
+        "data": {
+            "deleteDelivery": null
+        }
+    },
+    "list": {
+        "data": {
+            "allDeliveries": [
+                {
+                    "deliveryNumber": "1000173"
+                },
+                {
+                    "deliveryNumber": "1000521"
+                },
+                {
+                    "deliveryNumber": "1000522"
+                },
+                {
+                    "deliveryNumber": "new"
+                }
+            ]
+        }
+    }
+}

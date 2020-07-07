@@ -1,0 +1,23 @@
+mutation create {
+    createDelivery(input: { deliveryNumber: "new" }) {
+        deliveryNumber
+    }
+}
+
+mutation update {
+    updateDelivery(input: { id: "@{ids/Delivery/1}", deliveryNumber: "updated" }) {
+        deliveryNumber
+    }
+}
+
+mutation delete {
+    deleteDelivery(id: "@{ids/Delivery/1}") {
+        deliveryNumber
+    }
+}
+
+query list {
+    allDeliveries(orderBy: deliveryNumber_ASC) {
+        deliveryNumber
+    }
+}
