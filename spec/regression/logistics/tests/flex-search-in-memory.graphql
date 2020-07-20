@@ -49,6 +49,15 @@ query filter_below_max {
     }
 }
 
+query meta_below_max {
+    _flexSearchDeliveriesMeta(
+        flexSearchFilter: { deliveryNumber: "1000521" }
+        filter: { description_starts_with: "description" }
+    ) {
+        count
+    }
+}
+
 query order_below_max {
     flexSearchDeliveries(flexSearchFilter: { deliveryNumber: "1000521" }, orderBy: deliveryNumber_ASC) {
         deliveryNumber
@@ -58,6 +67,12 @@ query order_below_max {
 query filter_above_max {
     flexSearchDeliveries(filter: { description_starts_with: "description" }) {
         deliveryNumber
+    }
+}
+
+query meta_above_max {
+    _flexSearchDeliveriesMeta(filter: { description_starts_with: "description" }) {
+        count
     }
 }
 
