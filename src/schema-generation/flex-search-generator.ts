@@ -76,7 +76,10 @@ export class FlexSearchGenerator {
                 return new FlexSearchQueryNode({ rootEntityType: rootEntityType });
             }
         };
-        return this.filterAugmentation.augment(this.generateFromConfig(fieldConfig, rootEntityType), rootEntityType);
+        return this.augmentWithCondition(
+            this.filterAugmentation.augment(this.generateFromConfig(fieldConfig, rootEntityType), rootEntityType),
+            rootEntityType
+        );
     }
 
     generateFromConfig(schemaField: QueryNodeField, rootEntityType: RootEntityType): QueryNodeField {

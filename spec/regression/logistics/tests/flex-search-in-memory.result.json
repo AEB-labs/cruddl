@@ -80,6 +80,13 @@
             ]
         }
     },
+    "meta_below_max": {
+        "data": {
+            "_flexSearchDeliveriesMeta": {
+                "count": 1
+            }
+        }
+    },
     "order_below_max": {
         "data": {
             "flexSearchDeliveries": [
@@ -95,7 +102,7 @@
                 "message": "Too many objects.",
                 "locations": [
                     {
-                        "line": 59,
+                        "line": 68,
                         "column": 5
                     }
                 ],
@@ -106,13 +113,28 @@
             "flexSearchDeliveries": null
         }
     },
+    "meta_above_max": {
+        "errors": [
+            {
+                "message": "Too many objects.",
+                "locations": [
+                    {
+                        "line": 74,
+                        "column": 5
+                    }
+                ],
+                "path": ["_flexSearchDeliveriesMeta"]
+            }
+        ],
+        "data": null
+    },
     "order_above_max": {
         "errors": [
             {
                 "message": "Too many objects.",
                 "locations": [
                     {
-                        "line": 65,
+                        "line": 80,
                         "column": 5
                     }
                 ],
@@ -138,7 +160,7 @@
                 "message": "Recursive filters can only be defined for 1 level of recursion.",
                 "locations": [
                     {
-                        "line": 77,
+                        "line": 92,
                         "column": 5
                     }
                 ],
