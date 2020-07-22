@@ -3,7 +3,7 @@ import { sortBy } from 'lodash';
 import memorize from 'memorize-decorator';
 import { FieldRequest } from '../graphql/query-distiller';
 import { isListTypeIgnoringNonNull } from '../graphql/schema-utils';
-import { Field, ObjectType, Type, TypeKind } from '../model';
+import { Field, ObjectType, RootEntityType, Type, TypeKind } from '../model';
 import {
     NullQueryNode,
     ObjectQueryNode,
@@ -48,9 +48,18 @@ export class OutputTypeGenerator {
 
     @memorize()
     private generateObjectType(objectType: ObjectType): QueryNodeOutputType {
+        const descriptionParts = [];
+        if (objectType.description) {
+            descriptionParts.push(objectType.description);
+        }
+        if (objectType.isRootEntityType && objectType.isBusinessObject) {
+            descriptionParts.push('This type is a business object.');
+        }
+        const description = descriptionParts.length ? descriptionParts.join('\n\n') : undefined;
+
         return {
             name: objectType.name,
-            description: objectType.description,
+            description,
             fields: () => this.getFields(objectType)
         };
     }
