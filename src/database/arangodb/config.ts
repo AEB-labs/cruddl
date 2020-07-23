@@ -33,7 +33,7 @@ export interface CreateCollectionOptions {
         readonly offset?: number;
     };
     readonly numberOfShards?: number;
-    readonly shardKeys?: readonly string[];
+    readonly shardKeys?: ReadonlyArray<string>;
     readonly distributeShardsLike?: string;
     readonly shardingStrategy?: string;
     readonly smartJoinAttribute?: string;
