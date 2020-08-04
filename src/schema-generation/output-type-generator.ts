@@ -12,7 +12,7 @@ import {
     UnaryOperationQueryNode,
     UnaryOperator
 } from '../query-tree';
-import { CURSOR_FIELD } from '../schema/constants';
+import { CURSOR_FIELD, FLEX_SEARCH_ENTITIES_FIELD_PREFIX, ORDER_BY_ARG } from '../schema/constants';
 import { getMetaFieldName } from '../schema/names';
 import { flatMap } from '../utils/utils';
 import { EnumTypeGenerator } from './enum-type-generator';
@@ -20,8 +20,9 @@ import { createFieldNode } from './field-nodes';
 import { FilterAugmentation } from './filter-augmentation';
 import { ListAugmentation } from './list-augmentation';
 import { MetaTypeGenerator } from './meta-type-generator';
-import { OrderByEnumGenerator, OrderByEnumType } from './order-by-enum-generator';
+import { OrderByEnumGenerator, OrderByEnumType, OrderByEnumValue } from './order-by-enum-generator';
 import { QueryNodeField, QueryNodeListType, QueryNodeNonNullType, QueryNodeOutputType } from './query-node-object-type';
+import { orderArgMatchesPrimarySort } from './utils/flex-search-utils';
 import { getOrderByValues } from './utils/pagination';
 
 export class OutputTypeGenerator {
@@ -109,7 +110,8 @@ export class OutputTypeGenerator {
                 this.getCursorNode(
                     source,
                     info.selectionStack[info.selectionStack.length - 2].fieldRequest,
-                    orderByType
+                    orderByType,
+                    objectType
                 )
         };
     }
@@ -117,7 +119,8 @@ export class OutputTypeGenerator {
     private getCursorNode(
         itemNode: QueryNode,
         listFieldRequest: FieldRequest | undefined,
-        orderByType: OrderByEnumType
+        orderByType: OrderByEnumType,
+        objectType: ObjectType
     ): QueryNode {
         if (!listFieldRequest || !isListTypeIgnoringNonNull(listFieldRequest.field.type)) {
             return NullQueryNode.NULL;
@@ -125,8 +128,21 @@ export class OutputTypeGenerator {
 
         // force the absolute-order-behavior we normally only have if the 'first' argument is present
         // so one can use a _cursor value from a query without orderBy as 'after' argument without orderBy.
-        const clauses = getOrderByValues(listFieldRequest.args, orderByType, { isAbsoluteOrderRequired: true });
-        const sortedClauses = sortBy(clauses, clause => clause.name);
+        // however, if this is the cursor within a flexsearch request and we can use the primary sort, do it
+        let orderByValues: ReadonlyArray<OrderByEnumValue>;
+        if (
+            objectType.isRootEntityType &&
+            listFieldRequest.fieldName.startsWith(FLEX_SEARCH_ENTITIES_FIELD_PREFIX) &&
+            orderArgMatchesPrimarySort(listFieldRequest.args[ORDER_BY_ARG], objectType.flexSearchPrimarySort)
+        ) {
+            // this would be cleaner if the primary sort was actually parsed into a ModelComponent (see e.g. the Index and IndexField classes)
+            orderByValues = objectType.flexSearchPrimarySort.map(clause =>
+                orderByType.getValueOrThrow(clause.field.replace('.', '_') + (clause.asc ? '_ASC' : '_DESC'))
+            );
+        } else {
+            orderByValues = getOrderByValues(listFieldRequest.args, orderByType, { isAbsoluteOrderRequired: true });
+        }
+        const sortedClauses = sortBy(orderByValues, clause => clause.name);
         const objectNode = new ObjectQueryNode(
             sortedClauses.map(
                 clause => new PropertySpecification(clause.underscoreSeparatedPath, clause.getValueNode(itemNode))

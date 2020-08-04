@@ -1,7 +1,7 @@
 import { GraphQLEnumType, GraphQLEnumValueConfig } from 'graphql';
 import { chain } from 'lodash';
 import memorize from 'memorize-decorator';
-import { Field, ObjectType } from '../model';
+import { Field, ObjectType, Type } from '../model';
 import { OrderClause, OrderDirection, PropertyAccessQueryNode, QueryNode } from '../query-tree';
 import { ORDER_BY_ASC_SUFFIX, ORDER_BY_DESC_SUFFIX } from '../schema/constants';
 import { getOrderByTypeName } from '../schema/names';
@@ -66,6 +66,10 @@ export class OrderByEnumValue {
             this.underscoreSeparatedPath +
             (this.direction == OrderDirection.ASCENDING ? ORDER_BY_ASC_SUFFIX : ORDER_BY_DESC_SUFFIX)
         );
+    }
+
+    get lastSegment(): Field {
+        return this.path[this.path.length - 1];
     }
 
     get deprecationReason(): string | undefined {

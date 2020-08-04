@@ -46,7 +46,7 @@ export class RootEntityType extends ObjectTypeBase {
         this.isBusinessObject = input.isBusinessObject || false;
         if (input.flexSearchIndexConfig && input.flexSearchIndexConfig.isIndexed) {
             this.isFlexSearchIndexed = true;
-            this.flexSearchPrimarySort = input.flexSearchIndexConfig.primarySort;
+            this.flexSearchPrimarySort = this.completeFlexSearchPrimarySort(input.flexSearchIndexConfig.primarySort);
         } else {
             this.isFlexSearchIndexed = false;
             this.flexSearchPrimarySort = [];
@@ -329,6 +329,24 @@ export class RootEntityType extends ObjectTypeBase {
     @memorize()
     get billingEntityConfig() {
         return this.model.billingEntityTypes.find(value => value.rootEntityType === this);
+    }
+
+    private completeFlexSearchPrimarySort(
+        clauses: ReadonlyArray<FlexSearchPrimarySortClause>
+    ): ReadonlyArray<FlexSearchPrimarySortClause> {
+        // primary sort is only used for sorting, so make sure it's unique
+        // - this makes querying more consistent
+        // - this enables us to use primary sort for cursor-based pagination (which requires an absolute sort order)
+        if (!clauses.some(clause => clause.field === this.discriminatorField.name)) {
+            return [
+                ...clauses,
+                {
+                    field: this.discriminatorField.name,
+                    asc: true
+                }
+            ];
+        }
+        return clauses;
     }
 }
 

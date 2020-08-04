@@ -1,5 +1,5 @@
 query {
-    allPapers(first: 3, filter: { isPublished: true }, orderBy: key_ASC) {
+    flexSearchPapers(first: 3, flexSearchFilter: { isPublished: true }, orderBy: key_ASC) {
         key
         _cursor
         title2: title
@@ -16,16 +16,16 @@ query {
         }
     }
 
-    noPagesLeft: allPapers(
+    noPagesLeft: flexSearchPapers(
         first: 2
         after: "{\"id\":\"@{ids/Paper/5}\",\"key\":\"Scal\"}"
-        filter: { isPublished: true }
+        flexSearchFilter: { isPublished: true }
         orderBy: key_ASC
     ) {
         key
     }
 
-    noPaginationButCursor: allPapers(filter: { id: "@{ids/Paper/1}" }) {
+    noPaginationButCursor: flexSearchPapers(filter: { id: "@{ids/Paper/1}" }) {
         _cursor
     }
 }

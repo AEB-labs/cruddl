@@ -7,12 +7,12 @@ enum Category {
 }
 
 "A scientific paper"
-type Paper @rootEntity @roles(readWrite: ["admin"]) {
-    key: String @key # need a key field for the reference
-    title: String @index # for pagination performance test
+type Paper @rootEntity(flexSearch: true, flexSearchLanguage: EN) @roles(readWrite: ["admin"]) {
+    key: String @key @flexSearch # need a key field for the reference
+    title: String @index @flexSearch # for pagination performance test
     "The date this paper has been published in a scientific journal or conference"
     publishDate: LocalDate
-    isPublished: Boolean
+    isPublished: Boolean @flexSearch
     literatureReferences: [LiteratureReference]
     tags: [String]
     #author: User @relation
