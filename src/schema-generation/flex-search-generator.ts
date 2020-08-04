@@ -190,10 +190,7 @@ export class FlexSearchGenerator {
                 if (
                     (args[FILTER_ARG] && Object.keys(args[FILTER_ARG]).length > 0) ||
                     (args[ORDER_BY_ARG] &&
-                        !this.orderArgMatchesPrimarySort(
-                            args[ORDER_BY_ARG],
-                            rootEntityType.flexSearchIndexConfig.primarySort
-                        ))
+                        !this.orderArgMatchesPrimarySort(args[ORDER_BY_ARG], rootEntityType.flexSearchPrimarySort))
                 ) {
                     return new WithPreExecutionQueryNode({
                         preExecQueries: [
@@ -217,7 +214,7 @@ export class FlexSearchGenerator {
 
     private orderArgMatchesPrimarySort(
         args: ReadonlyArray<string>,
-        primarySort: FlexSearchPrimarySortConfig[]
+        primarySort: ReadonlyArray<FlexSearchPrimarySortConfig>
     ): boolean {
         if (args.length > primarySort.length) {
             return false;

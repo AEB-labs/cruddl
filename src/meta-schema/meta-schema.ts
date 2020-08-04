@@ -484,7 +484,7 @@ export function getMetaSchema(model: Model): GraphQLSchema {
 
     function getFlexSearchPrimarySort(type: {}): { field: string; order: 'ASC' | 'DESC' }[] {
         const rootEntityType = type as RootEntityType;
-        return rootEntityType.flexSearchIndexConfig.primarySort.map(value => {
+        return rootEntityType.flexSearchPrimarySort.map(value => {
             return {
                 field: value.field,
                 order: value.asc ? 'ASC' : 'DESC'

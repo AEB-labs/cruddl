@@ -64,7 +64,7 @@ export class QueryTypeGenerator {
             this.getAllRootEntitiesField(rootEntityType),
             this.getAllRootEntitiesMetaField(rootEntityType)
         ];
-        if (rootEntityType.flexSearchIndexConfig.isIndexed) {
+        if (rootEntityType.isFlexSearchIndexed) {
             queryNodeFields.push(this.getFlexSearchEntitiesField(rootEntityType));
             queryNodeFields.push(this.getFlexSearchEntitiesFieldMeta(rootEntityType));
         }
