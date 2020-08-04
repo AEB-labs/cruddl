@@ -12,7 +12,7 @@ import {
 } from '../../schema/constants';
 import { GraphQLLocalDate } from '../../schema/scalars/local-date';
 import { compact } from '../../utils/utils';
-import { FlexSearchIndexConfig, PermissionsConfig, RootEntityTypeConfig, TypeKind } from '../config';
+import { FlexSearchPrimarySortClause, PermissionsConfig, RootEntityTypeConfig, TypeKind } from '../config';
 import { ValidationContext, ValidationMessage } from '../validation';
 import { Field, SystemFieldConfig } from './field';
 import { Index } from './indices';
@@ -35,12 +35,22 @@ export class RootEntityType extends ObjectTypeBase {
 
     readonly isBusinessObject: boolean;
 
+    readonly isFlexSearchIndexed: boolean;
+    readonly flexSearchPrimarySort: ReadonlyArray<FlexSearchPrimarySortClause>;
+
     constructor(private readonly input: RootEntityTypeConfig, model: Model) {
         super(input, model, systemFieldInputs);
         this.permissions = input.permissions || {};
         this.roles =
             input.permissions && input.permissions.roles ? new RolesSpecifier(input.permissions.roles) : undefined;
         this.isBusinessObject = input.isBusinessObject || false;
+        if (input.flexSearchIndexConfig && input.flexSearchIndexConfig.isIndexed) {
+            this.isFlexSearchIndexed = true;
+            this.flexSearchPrimarySort = input.flexSearchIndexConfig.primarySort;
+        } else {
+            this.isFlexSearchIndexed = false;
+            this.flexSearchPrimarySort = [];
+        }
     }
 
     @memorize()
@@ -79,20 +89,6 @@ export class RootEntityType extends ObjectTypeBase {
 
         // deduplicate indices
         return indices.filter((index, i1) => !indices.some((other, i2) => i1 < i2 && other.equals(index)));
-    }
-
-    @memorize()
-    get flexSearchIndexConfig(): FlexSearchIndexConfig {
-        return (
-            this.input.flexSearchIndexConfig || {
-                isIndexed: false,
-                primarySort: []
-            }
-        );
-    }
-
-    get isFlexSearchIndexed(): boolean {
-        return this.flexSearchIndexConfig.isIndexed;
     }
 
     get hasFieldsIncludedInSearch() {
@@ -284,7 +280,7 @@ export class RootEntityType extends ObjectTypeBase {
 
     private validateFlexSearch(context: ValidationContext) {
         if (
-            !this.flexSearchIndexConfig.isIndexed &&
+            !this.isFlexSearchIndexed &&
             this.fields.some(
                 value => (value.isFlexSearchIndexed || value.isFlexSearchFulltextIndexed) && !value.isSystemField
             )
@@ -297,7 +293,7 @@ export class RootEntityType extends ObjectTypeBase {
             );
         }
         // validate primarySort
-        for (const primarySortConfig of this.flexSearchIndexConfig.primarySort) {
+        for (const primarySortConfig of this.flexSearchPrimarySort) {
             const primarySortPath = primarySortConfig.field.split('.');
             const astNode = this.input
                 .astNode!.directives!.find(value => value.name.value === ROOT_ENTITY_DIRECTIVE)!

@@ -1056,7 +1056,7 @@ export class Field implements ModelComponent {
             this.declaringType.isRootEntityType &&
             this.declaringType.permissionProfile &&
             this.declaringType.permissionProfile.permissions.some(value => value.restrictToAccessGroups) &&
-            this.declaringType.flexSearchIndexConfig.isIndexed &&
+            this.declaringType.isFlexSearchIndexed &&
             !this.isFlexSearchIndexed
         ) {
             context.addMessage(

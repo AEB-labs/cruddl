@@ -16,15 +16,15 @@ export const IDENTITY_ANALYZER = 'identity';
 export const FLEX_SEARCH_VIEW_PREFIX = 'flex_view_';
 
 export interface FlexSearchPrimarySortConfig {
-    field: string;
-    asc: boolean;
+    readonly field: string;
+    readonly asc: boolean;
 }
 
 export interface ArangoSearchDefinition {
     readonly viewName: string;
     readonly collectionName: string;
     readonly fields: ReadonlyArray<Field>;
-    readonly primarySort: FlexSearchPrimarySortConfig[];
+    readonly primarySort: ReadonlyArray<FlexSearchPrimarySortConfig>;
 }
 
 interface ArangoSearchViewCollectionLink {
@@ -67,7 +67,7 @@ export interface ArangoSearchViewProperties {
 
 export function getRequiredViewsFromModel(model: Model): ReadonlyArray<ArangoSearchDefinition> {
     return model.rootEntityTypes
-        .filter(value => value.flexSearchIndexConfig.isIndexed)
+        .filter(value => value.isFlexSearchIndexed)
         .map(rootEntity => getViewForRootEntity(rootEntity));
 }
 
@@ -80,7 +80,7 @@ function getViewForRootEntity(rootEntity: RootEntityType): ArangoSearchDefinitio
         fields: rootEntity.fields.filter(value => value.isFlexSearchIndexed || value.isFlexSearchFulltextIndexed),
         viewName: getFlexSearchViewNameForRootEntity(rootEntity),
         collectionName: getCollectionNameForRootEntity(rootEntity),
-        primarySort: rootEntity.flexSearchIndexConfig.primarySort
+        primarySort: rootEntity.flexSearchPrimarySort
     };
 }
 
@@ -130,7 +130,7 @@ function getPropertiesFromDefinition(
     const properties: ArangoSearchViewPropertiesOptions = {
         links: {},
         commitIntervalMsec: configuration && configuration.commitIntervalMsec ? configuration.commitIntervalMsec : 1000,
-        primarySort: definition && definition.primarySort ? definition.primarySort : []
+        primarySort: definition && definition.primarySort ? definition.primarySort.slice() : []
     };
 
     const link: ArangoSearchViewCollectionLink = {

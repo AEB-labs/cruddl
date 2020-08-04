@@ -1,11 +1,28 @@
-import { ArgumentNode, DirectiveNode, EnumValueDefinitionNode, FieldDefinitionNode, GraphQLBoolean, GraphQLEnumType, GraphQLID, GraphQLInputObjectType, GraphQLList, GraphQLNonNull, GraphQLString, ObjectTypeDefinitionNode, ObjectValueNode, StringValueNode, TypeDefinitionNode, valueFromAST } from 'graphql';
+import {
+    ArgumentNode,
+    DirectiveNode,
+    EnumValueDefinitionNode,
+    FieldDefinitionNode,
+    GraphQLBoolean,
+    GraphQLEnumType,
+    GraphQLID,
+    GraphQLInputObjectType,
+    GraphQLList,
+    GraphQLNonNull,
+    GraphQLString,
+    ObjectTypeDefinitionNode,
+    ObjectValueNode,
+    StringValueNode,
+    TypeDefinitionNode,
+    valueFromAST
+} from 'graphql';
 import { ModelValidationOptions } from '../config/interfaces';
-import { ParsedGraphQLProjectSource,
+import {
+    ParsedGraphQLProjectSource,
     ParsedObjectProjectSource,
     ParsedProject,
     ParsedProjectSourceBaseKind
 } from '../config/parsed-project';
-import { FlexSearchPrimarySortConfig } from '../database/arangodb/schema-migration/arango-search-helpers';
 import {
     ENUM,
     ENUM_TYPE_DEFINITION,
@@ -74,6 +91,7 @@ import {
     FieldConfig,
     FlexSearchIndexConfig,
     FlexSearchLanguage,
+    FlexSearchPrimarySortClause,
     IndexDefinitionConfig,
     LocalizationConfig,
     NamespacedPermissionProfileConfigMap,
@@ -295,7 +313,7 @@ function getDefaultValue(fieldNode: FieldDefinitionNode, context: ValidationCont
     return getValueFromAST(defaultValueArg.value);
 }
 
-function getFlexSearchOrder(rootEntityDirective?: DirectiveNode): FlexSearchPrimarySortConfig[] {
+function getFlexSearchOrder(rootEntityDirective?: DirectiveNode): FlexSearchPrimarySortClause[] {
     if (!rootEntityDirective) {
         return [];
     }
@@ -828,14 +846,20 @@ function extractI18n(parsedProject: ParsedProject): ReadonlyArray<LocalizationCo
 }
 
 function extractBilling(parsedProject: ParsedProject): BillingConfig {
-    const objectSchemaParts = parsedProject.sources
-        .filter(parsedSource => parsedSource.kind === ParsedProjectSourceBaseKind.OBJECT) as ReadonlyArray<ParsedObjectProjectSource>;
-    return objectSchemaParts.map(source => parseBillingConfigs(source)).reduce((previousValue, currentValue) => {
-        return {
-            ...previousValue,
-            billingEntities: [...currentValue.billingEntities, ...previousValue.billingEntities]
-        };
-    }, {billingEntities: []});
+    const objectSchemaParts = parsedProject.sources.filter(
+        parsedSource => parsedSource.kind === ParsedProjectSourceBaseKind.OBJECT
+    ) as ReadonlyArray<ParsedObjectProjectSource>;
+    return objectSchemaParts
+        .map(source => parseBillingConfigs(source))
+        .reduce(
+            (previousValue, currentValue) => {
+                return {
+                    ...previousValue,
+                    billingEntities: [...currentValue.billingEntities, ...previousValue.billingEntities]
+                };
+            },
+            { billingEntities: [] }
+        );
 }
 
 // fake input type for index mapping
