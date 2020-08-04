@@ -1,6 +1,15 @@
 import { FlexSearchLanguage } from '../../model/config';
-import { BinaryOperationQueryNode, BinaryOperator, BinaryOperatorWithLanguage, OperatorWithLanguageQueryNode, QueryNode, FlexSearchStartsWithQueryNode, RuntimeErrorQueryNode, UnaryOperationQueryNode, UnaryOperator } from '../../query-tree';
-
+import {
+    BinaryOperationQueryNode,
+    BinaryOperator,
+    BinaryOperatorWithLanguage,
+    FlexSearchStartsWithQueryNode,
+    OperatorWithLanguageQueryNode,
+    QueryNode,
+    RuntimeErrorQueryNode,
+    UnaryOperationQueryNode,
+    UnaryOperator
+} from '../../query-tree';
 
 export const noLanguageWasSuppliedError = 'No Language was supplied';
 
@@ -39,13 +48,13 @@ export function binaryNotOpWithLanguage(op: BinaryOperatorWithLanguage) {
     };
 }
 
-export function startsWithOp(){
+export function startsWithOp() {
     return (lhs: QueryNode, rhs: QueryNode, flexSearchLanguage?: FlexSearchLanguage) => {
         return new FlexSearchStartsWithQueryNode(lhs, rhs, flexSearchLanguage);
     };
 }
 
-export function notStartsWithOp(){
+export function notStartsWithOp() {
     return (lhs: QueryNode, rhs: QueryNode, flexSearchLanguage?: FlexSearchLanguage) => {
         return not(new FlexSearchStartsWithQueryNode(lhs, rhs, flexSearchLanguage));
     };

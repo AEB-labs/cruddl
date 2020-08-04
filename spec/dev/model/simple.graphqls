@@ -3,15 +3,16 @@ type Hero @rootEntity(
     flexSearchLanguage: DE,
     flexSearchOrder: [
         { field: "name", direction: ASC },
-        { field: "age", direction: DESC }
+        { field: "age", direction: DESC },
+        { field: "id", direction: ASC }
     ],
     indices: [
         { fields: "missions.date" }
     ]
 ) {
     "The hero's screen name"
-    name: String @unique @flexSearchFulltext(includeInSearch: true language: DE)
-    age: Int @defaultValue(value: 42)
+    name: String @unique @flexSearch @flexSearchFulltext(includeInSearch: true language: DE)
+    age: Int @defaultValue(value: 42) @flexSearch
     nickNames: [String] @flexSearch
     movies: [Movie] @relation(inverseOf: "heroes")
     skills: [Skill]

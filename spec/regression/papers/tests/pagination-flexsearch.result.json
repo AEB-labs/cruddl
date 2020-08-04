@@ -1,6 +1,6 @@
 {
     "data": {
-        "allPapers": [
+        "flexSearchPapers": [
             {
                 "key": "NoSQL",
                 "_cursor": "{\"id\":\"@{ids/Paper/3}\",\"key\":\"NoSQL\"}",

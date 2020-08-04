@@ -1,5 +1,4 @@
 import { GraphQLFieldConfigArgumentMap, GraphQLString } from 'graphql';
-import { FlexSearchPrimarySortConfig } from '../database/arangodb/schema-migration/arango-search-helpers';
 import { Field, RootEntityType } from '../model/implementation';
 import {
     BinaryOperationQueryNode,
@@ -34,6 +33,7 @@ import {
     QueryNodeObjectType,
     QueryNodeResolveInfo
 } from './query-node-object-type';
+import { orderArgMatchesPrimarySort } from './utils/flex-search-utils';
 import { or } from './utils/input-types';
 
 export const DEFAULT_FLEXSEARCH_MAX_FILTERABLE_AMOUNT: number = 1000;
@@ -190,7 +190,7 @@ export class FlexSearchGenerator {
                 if (
                     (args[FILTER_ARG] && Object.keys(args[FILTER_ARG]).length > 0) ||
                     (args[ORDER_BY_ARG] &&
-                        !this.orderArgMatchesPrimarySort(args[ORDER_BY_ARG], rootEntityType.flexSearchPrimarySort))
+                        !orderArgMatchesPrimarySort(args[ORDER_BY_ARG], rootEntityType.flexSearchPrimarySort))
                 ) {
                     return new WithPreExecutionQueryNode({
                         preExecQueries: [
@@ -210,30 +210,6 @@ export class FlexSearchGenerator {
                 }
             }
         };
-    }
-
-    private orderArgMatchesPrimarySort(
-        args: ReadonlyArray<string>,
-        primarySort: ReadonlyArray<FlexSearchPrimarySortConfig>
-    ): boolean {
-        if (args.length > primarySort.length) {
-            return false;
-        }
-        let matchesPrimarySort: boolean = true;
-        args.forEach((arg, index) => {
-            if (arg.endsWith('_ASC')) {
-                const field = arg.substring(0, arg.length - 4);
-                if (primarySort[index].field !== field || !primarySort[index].asc) {
-                    matchesPrimarySort = false;
-                }
-            } else {
-                const field = arg.substring(0, arg.length - 5);
-                if (primarySort[index].field !== field || primarySort[index].asc) {
-                    matchesPrimarySort = false;
-                }
-            }
-        });
-        return matchesPrimarySort;
     }
 
     private buildFlexSearchSearchFilterNode(

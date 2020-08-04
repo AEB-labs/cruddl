@@ -1,0 +1,52 @@
+{
+    "data": {
+        "all": [
+            {
+                "title": "Brewer's conjecture and the feasibility of consistent, available, partition-tolerant web services"
+            },
+            {
+                "title": "Object-oriented modeling and design"
+            },
+            {
+                "title": "Scalable SQL and NoSQL data stores"
+            },
+            {
+                "title": "Unified modeling language reference manual, the"
+            },
+            {
+                "title": "Will NoSQL databases live up to their promise?"
+            }
+        ],
+        "skipAndFirst": [
+            {
+                "title": "Object-oriented modeling and design"
+            }
+        ],
+        "first": [
+            {
+                "title": "Brewer's conjecture and the feasibility of consistent, available, partition-tolerant web services"
+            }
+        ],
+        "after": [
+            {
+                "title": "Scalable SQL and NoSQL data stores"
+            },
+            {
+                "title": "Unified modeling language reference manual, the"
+            },
+            {
+                "title": "Will NoSQL databases live up to their promise?"
+            }
+        ],
+        "afterAndFirst": [
+            {
+                "title": "Scalable SQL and NoSQL data stores"
+            }
+        ],
+        "afterAndSkipAndFirst": [
+            {
+                "title": "Unified modeling language reference manual, the"
+            }
+        ]
+    }
+}

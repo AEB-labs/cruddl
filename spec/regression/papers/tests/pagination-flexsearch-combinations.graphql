@@ -1,0 +1,44 @@
+{
+    all: flexSearchPapers(orderBy: title_ASC) {
+        title
+    }
+    # skip without first with order is not supported in flexSearch
+    # see https://github.com/AEB-labs/cruddl/pull/171#issuecomment-669032789
+    #skip: flexSearchPapers(skip: 1, orderBy: title_ASC) {
+    #    title
+    #}
+    skipAndFirst: flexSearchPapers(skip: 1, first: 1, orderBy: title_ASC) {
+        title
+    }
+    first: flexSearchPapers(first: 1, orderBy: title_ASC) {
+        title
+    }
+    after: flexSearchPapers(
+        after: "{\"id\":\"@{ids/Paper/1}\", \"title\": \"Object-oriented modeling and design\"}"
+        orderBy: title_ASC
+    ) {
+        title
+    }
+    #afterAndSkip: flexSearchPapers(
+    #    after: "{\"id\":\"@{ids/Paper/1}\", \"title\": \"Object-oriented modeling and design\"}"
+    #    skip: 1
+    #    orderBy: title_ASC
+    #) {
+    #    title
+    #}
+    afterAndFirst: flexSearchPapers(
+        after: "{\"id\":\"@{ids/Paper/1}\", \"title\": \"Object-oriented modeling and design\"}"
+        first: 1
+        orderBy: title_ASC
+    ) {
+        title
+    }
+    afterAndSkipAndFirst: flexSearchPapers(
+        after: "{\"id\":\"@{ids/Paper/1}\", \"title\": \"Object-oriented modeling and design\"}"
+        skip: 1
+        first: 1
+        orderBy: title_ASC
+    ) {
+        title
+    }
+}

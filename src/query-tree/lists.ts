@@ -41,7 +41,7 @@ export class TransformListQueryNode extends QueryNode {
         this.itemVariable = params.itemVariable || new VariableQueryNode();
         this.listNode = params.listNode;
         this.innerNode = params.innerNode || this.itemVariable;
-        this.filterNode = params.filterNode || new ConstBoolQueryNode(true);
+        this.filterNode = params.filterNode || ConstBoolQueryNode.TRUE;
         this.orderBy = params.orderBy || new OrderSpecification([]);
         this.skip = params.skip || 0;
         this.maxCount = params.maxCount;

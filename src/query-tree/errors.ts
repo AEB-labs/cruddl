@@ -33,6 +33,7 @@ export const INVALID_CURSOR_ERROR = 'INVALID_CURSOR';
 export const NOT_FOUND_ERROR = 'NOT_FOUND';
 export const FLEX_SEARCH_TOO_MANY_OBJECTS = 'FLEX_SEARCH_TOO_MANY_OBJECTS';
 export const BILLING_KEY_FIELD_NOT_FILLED_ERROR = 'BILLING_KEY_FIELD_NOT_FILLED';
+export const NOT_SUPPORTED_ERROR = 'NOT_SUPPORTED';
 
 export const RUNTIME_ERROR_TOKEN = '__cruddl_runtime_error';
 export const RUNTIME_ERROR_CODE_PROPERTY = '__cruddl_runtime_error_code';

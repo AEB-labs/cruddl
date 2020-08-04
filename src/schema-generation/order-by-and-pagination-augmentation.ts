@@ -7,6 +7,7 @@ import {
     ConstBoolQueryNode,
     INVALID_CURSOR_ERROR,
     LiteralQueryNode,
+    NOT_SUPPORTED_ERROR,
     OrderDirection,
     OrderSpecification,
     QueryNode,
@@ -14,6 +15,7 @@ import {
     TransformListQueryNode,
     VariableQueryNode
 } from '../query-tree';
+import { FlexSearchQueryNode } from '../query-tree/flex-search';
 import {
     AFTER_ARG,
     CURSOR_FIELD,
@@ -26,6 +28,7 @@ import {
 import { decapitalize } from '../utils/utils';
 import { OrderByEnumGenerator, OrderByEnumType, OrderByEnumValue } from './order-by-enum-generator';
 import { QueryNodeField } from './query-node-object-type';
+import { orderArgMatchesPrimarySort } from './utils/flex-search-utils';
 import { and } from './utils/input-types';
 import { getOrderByValues } from './utils/pagination';
 
@@ -80,6 +83,17 @@ export class OrderByAndPaginationAugmentation {
                 let listNode = schemaField.resolve(sourceNode, args, info);
                 let itemVariable = new VariableQueryNode(decapitalize(type.name));
 
+                const maxCount: number | undefined = args[FIRST_ARG];
+                const skip = args[SKIP_ARG];
+                const afterArg = args[AFTER_ARG];
+                const isCursorRequested = info.selectionStack[
+                    info.selectionStack.length - 1
+                ].fieldRequest.selectionSet.some(sel => sel.fieldRequest.field.name === CURSOR_FIELD);
+                // we only require the absolute ordering for cursor-based pagination, which is detected via a cursor field or the "after" argument.
+                const isAbsoluteOrderRequired = isCursorRequested || !!afterArg;
+                let orderByValues: ReadonlyArray<OrderByEnumValue>;
+                let paginationFilter: QueryNode | undefined;
+
                 // if we can, just extend a given TransformListNode so that other cruddl optimizations can operate
                 // (e.g. projection indirection)
                 let filterNode: QueryNode | undefined;
@@ -96,25 +110,102 @@ export class OrderByAndPaginationAugmentation {
                     listNode = listNode.listNode;
                 }
 
-                const maxCount: number | undefined = args[FIRST_ARG];
-                const skip = args[SKIP_ARG];
-                const paginationFilter =
-                    orderByType && this.createPaginationFilterNode(args, itemVariable, orderByType);
-                const afterArg = args[AFTER_ARG];
-                const isCursorRequested = info.selectionStack[
-                    info.selectionStack.length - 1
-                ].fieldRequest.selectionSet.some(sel => sel.fieldRequest.field.name === CURSOR_FIELD);
-                // we only require the absolute ordering for cursor-based pagination, which is detected via a cursor field or the "after" argument.
-                const isAbsoluteOrderRequired = isCursorRequested || !!afterArg;
-                const orderBy = !orderByType
-                    ? OrderSpecification.UNORDERED
-                    : this.getOrderSpecification(args, orderByType, itemVariable, { isAbsoluteOrderRequired });
+                // flexsearch?
+                let leaveUnordered = false;
+                if (listNode instanceof FlexSearchQueryNode) {
+                    if (!orderByType) {
+                        throw new Error(`OrderBy type missing for flex search`);
+                    }
+                    // whenever possible, use primary sort
+                    if (orderArgMatchesPrimarySort(args[ORDER_BY_ARG], listNode.rootEntityType.flexSearchPrimarySort)) {
+                        // this would be cleaner if the primary sort was actually parsed into a ModelComponent (see e.g. the Index and IndexField classes)
+                        orderByValues = listNode.rootEntityType.flexSearchPrimarySort.map(clause =>
+                            orderByType.getValueOrThrow(
+                                clause.field.replace('.', '_') + (clause.asc ? '_ASC' : '_DESC')
+                            )
+                        );
+                        leaveUnordered = true;
+                    } else {
+                        // this will generate a SORT clause that's not covered by the flexsearch index,
+                        // but the TooManyObject check of flex-search-generator already handles this case to throw
+                        // a TooManyObjects error if needed.
+                        orderByValues = getOrderByValues(args, orderByType, { isAbsoluteOrderRequired });
+                    }
+
+                    // for now, cursor-based pagination is only allowed when we can use flexsearch filters for the
+                    // paginationFilter. This simplifies the implementation, but maybe we should support it in the
+                    // future for consistency. Then however we need to adjust the too-many-objects check
+                    // do this check also if cursor is just requested so we get this error on the first page
+                    if (isCursorRequested || !!afterArg) {
+                        const violatingClauses = orderByValues.filter(val =>
+                            val.path.some(field => !field.isFlexSearchIndexed)
+                        );
+                        if (violatingClauses.length) {
+                            return new RuntimeErrorQueryNode(
+                                `Cursor-based pagination is not supported with order clause "${violatingClauses[0].name}" because it is not flex-search indexed`,
+                                {
+                                    code: NOT_SUPPORTED_ERROR
+                                }
+                            );
+                        }
+                    }
+
+                    // TODO maybe we should use the FLEX_LESS_THAN operators etc. on string-based fields
+                    // however, it's currently only used on String and not on e.g. DateTime and no longer seems to make a difference
+                    const flexPaginationFilter = this.createPaginationFilterNode({
+                        afterArg,
+                        itemNode: listNode.itemVariable,
+                        orderByValues
+                    });
+                    listNode = new FlexSearchQueryNode({
+                        ...listNode,
+                        flexFilterNode: flexPaginationFilter
+                            ? and(listNode.flexFilterNode, flexPaginationFilter)
+                            : listNode.flexFilterNode,
+
+                        // pagination filters generate nested AND-OR structures that overwhelm the optimizer
+                        isOptimisationsDisabled: listNode.isOptimisationsDisabled || !!flexPaginationFilter
+                    });
+                } else {
+                    orderByValues = !orderByType
+                        ? []
+                        : getOrderByValues(args, orderByType, { isAbsoluteOrderRequired });
+                    paginationFilter = this.createPaginationFilterNode({
+                        afterArg,
+                        itemNode: itemVariable,
+                        orderByValues
+                    });
+                }
+
+                const orderBy =
+                    !orderByType || leaveUnordered
+                        ? OrderSpecification.UNORDERED
+                        : new OrderSpecification(orderByValues.map(value => value.getClause(itemVariable)));
 
                 if (orderBy.isUnordered() && maxCount == undefined && paginationFilter === ConstBoolQueryNode.TRUE) {
                     return originalListNode;
                 }
 
+                // There is no way to specify LIMIT with an offset but without count properly, and specifying a huge
+                // count would still trigger the constrained-heap optimization for flexsearch views which would OOM
+                // https://arangodb.atlassian.net/servicedesk/customer/portal/10/DEVSUP-625
+                // https://github.com/AEB-labs/cruddl/pull/171#issuecomment-669032789
                 if (
+                    listNode instanceof FlexSearchQueryNode &&
+                    skip &&
+                    maxCount === undefined &&
+                    !orderBy.isUnordered()
+                ) {
+                    return new RuntimeErrorQueryNode(
+                        `Using "skip" without "first" in combination with "orderBy" or cursor-based pagination is not supported on flex search queries.`,
+                        {
+                            code: NOT_SUPPORTED_ERROR
+                        }
+                    );
+                }
+
+                if (
+                    !(listNode instanceof FlexSearchQueryNode) &&
                     !skip &&
                     maxCount != undefined &&
                     orderBy.clauses.length > 1 &&
@@ -231,23 +322,15 @@ export class OrderByAndPaginationAugmentation {
         });
     }
 
-    private getOrderSpecification(
-        args: any,
-        orderByType: OrderByEnumType,
-        itemNode: QueryNode,
-        options: { readonly isAbsoluteOrderRequired: boolean }
-    ) {
-        const mappedValues = getOrderByValues(args, orderByType, options);
-        const clauses = mappedValues.map(value => value.getClause(itemNode));
-        return new OrderSpecification(clauses);
-    }
-
-    private createPaginationFilterNode(
-        args: any,
-        itemNode: QueryNode,
-        orderByType: OrderByEnumType
-    ): QueryNode | undefined {
-        const afterArg = args[AFTER_ARG];
+    private createPaginationFilterNode({
+        afterArg,
+        itemNode,
+        orderByValues
+    }: {
+        readonly afterArg: string;
+        readonly itemNode: QueryNode;
+        readonly orderByValues: ReadonlyArray<OrderByEnumValue>;
+    }): QueryNode | undefined {
         if (!afterArg) {
             return undefined;
         }
@@ -305,6 +388,6 @@ export class OrderByAndPaginationAugmentation {
             );
         }
 
-        return filterForClause(getOrderByValues(args, orderByType, { isAbsoluteOrderRequired: true }));
+        return filterForClause(orderByValues);
     }
 }
