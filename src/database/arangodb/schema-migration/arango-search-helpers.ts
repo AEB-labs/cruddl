@@ -1,8 +1,10 @@
 import { Database } from 'arangojs';
 import { ArangoSearchView, ArangoSearchViewPropertiesOptions } from 'arangojs/lib/cjs/view';
+import { fieldMapToFieldConfigMap } from 'graphql-tools/dist/stitching/schemaRecreation';
 import * as _ from 'lodash';
 import { FlexSearchLanguage } from '../../../model/config';
 import { Field, Model, RootEntityType } from '../../../model/implementation';
+import { ID_FIELD } from '../../../schema/constants';
 import { getCollectionNameForRootEntity } from '../arango-basics';
 import {
     CreateArangoSearchViewMigration,
@@ -21,9 +23,9 @@ export interface FlexSearchPrimarySortConfig {
 }
 
 export interface ArangoSearchDefinition {
+    readonly rootEntityType: RootEntityType;
     readonly viewName: string;
     readonly collectionName: string;
-    readonly fields: ReadonlyArray<Field>;
     readonly primarySort: ReadonlyArray<FlexSearchPrimarySortConfig>;
 }
 
@@ -75,12 +77,15 @@ export function getFlexSearchViewNameForRootEntity(rootEntity: RootEntityType) {
     return FLEX_SEARCH_VIEW_PREFIX + getCollectionNameForRootEntity(rootEntity);
 }
 
-function getViewForRootEntity(rootEntity: RootEntityType): ArangoSearchDefinition {
+function getViewForRootEntity(rootEntityType: RootEntityType): ArangoSearchDefinition {
     return {
-        fields: rootEntity.fields.filter(value => value.isFlexSearchIndexed || value.isFlexSearchFulltextIndexed),
-        viewName: getFlexSearchViewNameForRootEntity(rootEntity),
-        collectionName: getCollectionNameForRootEntity(rootEntity),
-        primarySort: rootEntity.flexSearchPrimarySort
+        rootEntityType,
+        viewName: getFlexSearchViewNameForRootEntity(rootEntityType),
+        collectionName: getCollectionNameForRootEntity(rootEntityType),
+        primarySort: rootEntityType.flexSearchPrimarySort.map(clause => ({
+            field: clause.field === ID_FIELD ? '_key' : clause.field,
+            asc: clause.asc
+        }))
     };
 }
 
@@ -127,64 +132,62 @@ function getPropertiesFromDefinition(
     configuration?: ArangoSearchConfiguration
 ): ArangoSearchViewPropertiesOptions {
     const recursionDepth = configuration && configuration.recursionDepth ? configuration.recursionDepth : 1;
-    const properties: ArangoSearchViewPropertiesOptions = {
-        links: {},
+    return {
+        links: {
+            [definition.collectionName]: {
+                analyzers: [IDENTITY_ANALYZER],
+                includeAllFields: false,
+                storeValues: 'id',
+                trackListPositions: false,
+                fields: fieldDefinitionsFor(definition.rootEntityType.fields)
+            }
+        },
         commitIntervalMsec: configuration && configuration.commitIntervalMsec ? configuration.commitIntervalMsec : 1000,
         primarySort: definition && definition.primarySort ? definition.primarySort.slice() : []
     };
 
-    const link: ArangoSearchViewCollectionLink = {
-        analyzers: [IDENTITY_ANALYZER],
-        includeAllFields: false,
-        storeValues: 'id',
-        trackListPositions: false,
-        fields: {}
-    };
-
-    function fieldDefinitionFor(
-        field: Field,
-        recursionDepth: number,
+    function fieldDefinitionsFor(
+        fields: ReadonlyArray<Field>,
         path: ReadonlyArray<Field> = []
-    ): ArangoSearchViewCollectionLink {
-        if (field.type.isObjectType) {
-            const fields: { [key: string]: ArangoSearchViewCollectionLink | undefined } = {};
-            field.type.fields
-                .filter(
-                    field =>
-                        (field.isFlexSearchIndexed || field.isFlexSearchFulltextIndexed) &&
-                        !path.some(
-                            value => value.name === field.name && field.declaringType.name === value.declaringType.name
-                        )
-                )
-                .forEach(value => (fields[value.name] = fieldDefinitionFor(value, recursionDepth, path.concat(field))));
-            return {
-                fields
-            };
-        } else {
-            const analyzers: string[] = [];
-            if (field.isFlexSearchFulltextIndexed && field.flexSearchLanguage) {
-                analyzers.push(getAnalyzerFromFlexSearchLanguage(field.flexSearchLanguage));
-            }
-            if (field.isFlexSearchIndexed) {
-                analyzers.push(IDENTITY_ANALYZER);
-            }
-            if (_.isEqual(analyzers, [IDENTITY_ANALYZER])) {
-                return {};
+    ): { [key: string]: ArangoSearchViewCollectionLink | undefined } {
+        const fieldDefinitions: { [key: string]: ArangoSearchViewCollectionLink | undefined } = {};
+        const fieldsToIndex = fields.filter(
+            field =>
+                (field.isFlexSearchIndexed || field.isFlexSearchFulltextIndexed) &&
+                path.filter(f => f === field).length < recursionDepth
+        );
+        for (const field of fieldsToIndex) {
+            let arangoFieldName;
+            if (field.declaringType.isRootEntityType && field.isSystemField && field.name === ID_FIELD) {
+                arangoFieldName = '_key';
             } else {
-                return {
-                    analyzers
-                };
+                arangoFieldName = field.name;
             }
+            fieldDefinitions[arangoFieldName] = fieldDefinitionFor(field, [...path, field]);
+        }
+        return fieldDefinitions;
+    }
+
+    function fieldDefinitionFor(field: Field, path: ReadonlyArray<Field> = []): ArangoSearchViewCollectionLink {
+        if (field.type.isObjectType) {
+            return {
+                fields: fieldDefinitionsFor(field.type.fields, path)
+            };
+        }
+
+        const analyzers: string[] = [];
+        if (field.isFlexSearchFulltextIndexed && field.flexSearchLanguage) {
+            analyzers.push(getAnalyzerFromFlexSearchLanguage(field.flexSearchLanguage));
+        }
+        if (field.isFlexSearchIndexed) {
+            analyzers.push(IDENTITY_ANALYZER);
+        }
+        if (_.isEqual(analyzers, [IDENTITY_ANALYZER])) {
+            return {};
+        } else {
+            return { analyzers };
         }
     }
-
-    for (const field of definition.fields) {
-        link.fields![field.name] = fieldDefinitionFor(field, recursionDepth);
-    }
-
-    properties.links![definition.collectionName] = link;
-
-    return properties;
 }
 
 function isEqualProperties(
