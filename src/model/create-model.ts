@@ -99,6 +99,7 @@ import {
     PermissionProfileConfigMap,
     PermissionsConfig,
     RolesSpecifierConfig,
+    TimeToLiveConfig,
     TypeConfig,
     TypeKind
 } from './config';
@@ -106,12 +107,14 @@ import { BillingConfig } from './config/billing';
 import { Model } from './implementation';
 import { parseBillingConfigs } from './parse-billing';
 import { parseI18nConfigs } from './parse-i18n';
+import { parseTTLConfigs } from './parse-ttl';
 import { ValidationContext, ValidationMessage } from './validation';
 
 export function createModel(parsedProject: ParsedProject, modelValidationOptions?: ModelValidationOptions): Model {
     const validationContext = new ValidationContext();
+    const ttlConfigs = extractTimeToLive(parsedProject);
     return new Model({
-        types: createTypeInputs(parsedProject, validationContext),
+        types: createTypeInputs(parsedProject, validationContext, ttlConfigs),
         permissionProfiles: extractPermissionProfiles(parsedProject),
         i18n: extractI18n(parsedProject),
         validationMessages: validationContext.validationMessages,
@@ -136,7 +139,11 @@ const VALIDATION_ERROR_MISSING_OBJECT_TYPE_DIRECTIVE = `Add one of @${ROOT_ENTIT
 const VALIDATION_ERROR_INVALID_DEFINITION_KIND =
     'This kind of definition is not allowed. Only object and enum type definitions are allowed.';
 
-function createTypeInputs(parsedProject: ParsedProject, context: ValidationContext): ReadonlyArray<TypeConfig> {
+function createTypeInputs(
+    parsedProject: ParsedProject,
+    context: ValidationContext,
+    ttlConfigs: TimeToLiveConfig[]
+): ReadonlyArray<TypeConfig> {
     const graphQLSchemaParts = parsedProject.sources.filter(
         parsedSource => parsedSource.kind === ParsedProjectSourceBaseKind.GRAPHQL
     ) as ReadonlyArray<ParsedGraphQLProjectSource>;
@@ -165,7 +172,7 @@ function createTypeInputs(parsedProject: ParsedProject, context: ValidationConte
                         };
                         return enumTypeInput;
                     case OBJECT_TYPE_DEFINITION:
-                        return createObjectTypeInput(definition, schemaPart, context);
+                        return createObjectTypeInput(definition, schemaPart, context, ttlConfigs);
                     default:
                         return undefined;
                 }
@@ -188,7 +195,8 @@ function createEnumValues(valueNodes: ReadonlyArray<EnumValueDefinitionNode>): R
 function createObjectTypeInput(
     definition: ObjectTypeDefinitionNode,
     schemaPart: ParsedGraphQLProjectSource,
-    context: ValidationContext
+    context: ValidationContext,
+    ttlConfigs: TimeToLiveConfig[]
 ): ObjectTypeConfig {
     const entityType = getKindOfObjectTypeNode(definition, context);
 
@@ -238,7 +246,8 @@ function createObjectTypeInput(
                 permissions: getPermissions(definition, context),
                 indices: createIndexDefinitionInputs(definition, context),
                 flexSearchIndexConfig: createFlexSearchDefinitionInputs(definition, context),
-                isBusinessObject: !!businessObjectDirective
+                isBusinessObject: !!businessObjectDirective,
+                timeToLiveConfigs: ttlConfigs.filter(value => value.typeName === common.name)
             };
     }
 }
@@ -860,6 +869,15 @@ function extractBilling(parsedProject: ParsedProject): BillingConfig {
             },
             { billingEntities: [] }
         );
+}
+
+function extractTimeToLive(parsedProject: ParsedProject): TimeToLiveConfig[] {
+    const objectSchemaParts = parsedProject.sources.filter(
+        parsedSource => parsedSource.kind === ParsedProjectSourceBaseKind.OBJECT
+    ) as ReadonlyArray<ParsedObjectProjectSource>;
+    return objectSchemaParts
+        .map(source => parseTTLConfigs(source))
+        .reduce((previousValue, currentValue) => previousValue.concat(currentValue), []);
 }
 
 // fake input type for index mapping

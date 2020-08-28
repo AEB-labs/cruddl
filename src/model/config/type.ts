@@ -9,6 +9,7 @@ import {
 import { FieldConfig, FlexSearchLanguage } from './field';
 import { FlexSearchIndexConfig, IndexDefinitionConfig } from './indices';
 import { PermissionsConfig } from './permissions';
+import { TimeToLiveConfig } from './time-to-live';
 
 export enum TypeKind {
     SCALAR = 'SCALAR',
@@ -41,6 +42,7 @@ export interface RootEntityTypeConfig extends ObjectTypeConfigBase {
     readonly permissions?: PermissionsConfig;
     readonly flexSearchIndexConfig?: FlexSearchIndexConfig;
     readonly isBusinessObject?: boolean;
+    readonly timeToLiveConfigs: ReadonlyArray<TimeToLiveConfig>;
 }
 
 export interface ValueObjectTypeConfig extends ObjectTypeConfigBase {

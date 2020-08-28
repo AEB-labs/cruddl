@@ -17,6 +17,7 @@ import { PermissionProfile } from './permission-profile';
 import { Relation } from './relation';
 import { RootEntityType } from './root-entity-type';
 import { ScalarType } from './scalar-type';
+import { TimeToLiveType } from './time-to-live';
 import { createType, InvalidType, ObjectType, Type } from './type';
 import { ValueObjectType } from './value-object-type';
 

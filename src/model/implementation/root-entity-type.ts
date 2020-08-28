@@ -22,6 +22,7 @@ import { PermissionProfile } from './permission-profile';
 import { Relation, RelationSide } from './relation';
 import { RolesSpecifier } from './roles-specifier';
 import { ScalarType } from './scalar-type';
+import { TimeToLiveType } from './time-to-live';
 
 export class RootEntityType extends ObjectTypeBase {
     private readonly permissions: PermissionsConfig & {};
@@ -37,6 +38,7 @@ export class RootEntityType extends ObjectTypeBase {
 
     readonly isFlexSearchIndexed: boolean;
     readonly flexSearchPrimarySort: ReadonlyArray<FlexSearchPrimarySortClause>;
+    readonly timeToLiveType?: TimeToLiveType;
 
     constructor(private readonly input: RootEntityTypeConfig, model: Model) {
         super(input, model, systemFieldInputs);
@@ -51,6 +53,10 @@ export class RootEntityType extends ObjectTypeBase {
             this.isFlexSearchIndexed = false;
             this.flexSearchPrimarySort = [];
         }
+        this.timeToLiveType =
+            this.input.timeToLiveConfigs.length > 0
+                ? new TimeToLiveType(this.input.timeToLiveConfigs[0], model)
+                : undefined;
     }
 
     @memorize()

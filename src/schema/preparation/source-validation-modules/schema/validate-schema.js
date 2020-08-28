@@ -6,12 +6,14 @@ var validate = (function() {
     var pattern1 = new RegExp('.+');
     var pattern2 = new RegExp('^[a-zA-Z0-9_-]+$');
     var pattern3 = new RegExp('^[a-zA-Z0-9_]+$');
+    var pattern4 = new RegExp('^([a-zA-Z0-9_-]|\\.)+$');
     var refVal = [];
     var refVal1 = (function() {
         var pattern0 = new RegExp('^[a-zA-Z0-9]+$');
         var pattern1 = new RegExp('.+');
         var pattern2 = new RegExp('^[a-zA-Z0-9_-]+$');
         var pattern3 = new RegExp('^[a-zA-Z0-9_]+$');
+        var pattern4 = new RegExp('^([a-zA-Z0-9_-]|\\.)+$');
         return function validate(data, dataPath, parentData, parentDataProperty, rootData) {
             'use strict';
             var vErrors = null;
@@ -553,6 +555,7 @@ var validate = (function() {
         var pattern1 = new RegExp('.+');
         var pattern2 = new RegExp('^[a-zA-Z0-9_-]+$');
         var pattern3 = new RegExp('^[a-zA-Z0-9_]+$');
+        var pattern4 = new RegExp('^([a-zA-Z0-9_-]|\\.)+$');
         return function validate(data, dataPath, parentData, parentDataProperty, rootData) {
             'use strict';
             var vErrors = null;
@@ -761,6 +764,7 @@ var validate = (function() {
         var pattern1 = new RegExp('.+');
         var pattern2 = new RegExp('^[a-zA-Z0-9_-]+$');
         var pattern3 = new RegExp('^[a-zA-Z0-9_]+$');
+        var pattern4 = new RegExp('^([a-zA-Z0-9_-]|\\.)+$');
         return function validate(data, dataPath, parentData, parentDataProperty, rootData) {
             'use strict';
             var vErrors = null;
@@ -1159,7 +1163,13 @@ var validate = (function() {
             var errs__0 = errors;
             var valid1 = true;
             for (var key0 in data) {
-                var isAdditional0 = !(false || key0 == 'permissionProfiles' || key0 == 'i18n' || key0 == 'billing');
+                var isAdditional0 = !(
+                    false ||
+                    key0 == 'permissionProfiles' ||
+                    key0 == 'i18n' ||
+                    key0 == 'billing' ||
+                    key0 == 'timeToLive'
+                );
                 if (isAdditional0) {
                     valid1 = false;
                     var err = {
@@ -1439,6 +1449,137 @@ var validate = (function() {
                 }
                 var valid1 = errors === errs_1;
             }
+            var data1 = data.timeToLive;
+            if (data1 !== undefined) {
+                var errs_1 = errors;
+                if (Array.isArray(data1)) {
+                    var errs__1 = errors;
+                    var valid1;
+                    for (var i1 = 0; i1 < data1.length; i1++) {
+                        var data2 = data1[i1];
+                        var errs_2 = errors;
+                        if (data2 && typeof data2 === 'object' && !Array.isArray(data2)) {
+                            var errs__2 = errors;
+                            var valid3 = true;
+                            var data3 = data2['typeName:'];
+                            if (data3 !== undefined) {
+                                var errs_3 = errors;
+                                if (typeof data3 === 'string') {
+                                    if (!pattern2.test(data3)) {
+                                        var err = {
+                                            keyword: 'pattern',
+                                            dataPath: (dataPath || '') + '.timeToLive[' + i1 + "]['typeName:']",
+                                            schemaPath: '#/properties/timeToLive/items/properties/typeName%3A/pattern',
+                                            params: {
+                                                pattern: '^[a-zA-Z0-9_-]+$'
+                                            },
+                                            message: 'should match pattern "^[a-zA-Z0-9_-]+$"'
+                                        };
+                                        if (vErrors === null) vErrors = [err];
+                                        else vErrors.push(err);
+                                        errors++;
+                                    }
+                                } else {
+                                    var err = {
+                                        keyword: 'type',
+                                        dataPath: (dataPath || '') + '.timeToLive[' + i1 + "]['typeName:']",
+                                        schemaPath: '#/properties/timeToLive/items/properties/typeName%3A/type',
+                                        params: {
+                                            type: 'string'
+                                        },
+                                        message: 'should be string'
+                                    };
+                                    if (vErrors === null) vErrors = [err];
+                                    else vErrors.push(err);
+                                    errors++;
+                                }
+                                var valid3 = errors === errs_3;
+                            }
+                            var data3 = data2['dataField:'];
+                            if (data3 !== undefined) {
+                                var errs_3 = errors;
+                                if (typeof data3 === 'string') {
+                                    if (!pattern4.test(data3)) {
+                                        var err = {
+                                            keyword: 'pattern',
+                                            dataPath: (dataPath || '') + '.timeToLive[' + i1 + "]['dataField:']",
+                                            schemaPath: '#/properties/timeToLive/items/properties/dataField%3A/pattern',
+                                            params: {
+                                                pattern: '^([a-zA-Z0-9_-]|\\.)+$'
+                                            },
+                                            message: 'should match pattern "^([a-zA-Z0-9_-]|\\.)+$"'
+                                        };
+                                        if (vErrors === null) vErrors = [err];
+                                        else vErrors.push(err);
+                                        errors++;
+                                    }
+                                } else {
+                                    var err = {
+                                        keyword: 'type',
+                                        dataPath: (dataPath || '') + '.timeToLive[' + i1 + "]['dataField:']",
+                                        schemaPath: '#/properties/timeToLive/items/properties/dataField%3A/type',
+                                        params: {
+                                            type: 'string'
+                                        },
+                                        message: 'should be string'
+                                    };
+                                    if (vErrors === null) vErrors = [err];
+                                    else vErrors.push(err);
+                                    errors++;
+                                }
+                                var valid3 = errors === errs_3;
+                            }
+                            var data3 = data2.expireAfterDays;
+                            if (data3 !== undefined) {
+                                var errs_3 = errors;
+                                if (typeof data3 !== 'number' || data3 % 1 || data3 !== data3) {
+                                    var err = {
+                                        keyword: 'type',
+                                        dataPath: (dataPath || '') + '.timeToLive[' + i1 + '].expireAfterDays',
+                                        schemaPath: '#/properties/timeToLive/items/properties/expireAfterDays/type',
+                                        params: {
+                                            type: 'integer'
+                                        },
+                                        message: 'should be integer'
+                                    };
+                                    if (vErrors === null) vErrors = [err];
+                                    else vErrors.push(err);
+                                    errors++;
+                                }
+                                var valid3 = errors === errs_3;
+                            }
+                        } else {
+                            var err = {
+                                keyword: 'type',
+                                dataPath: (dataPath || '') + '.timeToLive[' + i1 + ']',
+                                schemaPath: '#/properties/timeToLive/items/type',
+                                params: {
+                                    type: 'object'
+                                },
+                                message: 'should be object'
+                            };
+                            if (vErrors === null) vErrors = [err];
+                            else vErrors.push(err);
+                            errors++;
+                        }
+                        var valid2 = errors === errs_2;
+                    }
+                } else {
+                    var err = {
+                        keyword: 'type',
+                        dataPath: (dataPath || '') + '.timeToLive',
+                        schemaPath: '#/properties/timeToLive/type',
+                        params: {
+                            type: 'array'
+                        },
+                        message: 'should be array'
+                    };
+                    if (vErrors === null) vErrors = [err];
+                    else vErrors.push(err);
+                    errors++;
+                }
+                var valid1 = errors === errs_1;
+            }
         } else {
             var err = {
                 keyword: 'type',
@@ -1499,6 +1640,25 @@ validate.schema = {
                                 pattern: '^[a-zA-Z0-9_-]+$'
                             }
                         }
+                    }
+                }
+            }
+        },
+        timeToLive: {
+            type: 'array',
+            items: {
+                type: 'object',
+                properties: {
+                    'typeName:': {
+                        type: 'string',
+                        pattern: '^[a-zA-Z0-9_-]+$'
+                    },
+                    'dataField:': {
+                        type: 'string',
+                        pattern: '^([a-zA-Z0-9_-]|\\.)+$'
+                    },
+                    expireAfterDays: {
+                        type: 'integer'
                     }
                 }
             }
