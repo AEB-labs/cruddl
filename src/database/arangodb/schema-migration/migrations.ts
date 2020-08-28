@@ -1,14 +1,31 @@
 import { ArangoSearchViewPropertiesOptions } from 'arangojs/lib/cjs/view';
 import { BillingEntityType, Relation, RootEntityType } from '../../../model/implementation';
-import { describeIndex, getIndexDescriptor, IndexDefinition } from './index-helpers';
+import {
+    describeIndex,
+    describeTTLIndex,
+    getIndexDescriptor,
+    getTTLIndexDescriptor,
+    IndexDefinition,
+    TTL_INDEX_TYPE,
+    TtlIndex
+} from './index-helpers';
 
-export type SchemaMigration = CreateIndexMigration | DropIndexMigration | CreateDocumentCollectionMigration
-    | CreateEdgeCollectionMigration | CreateArangoSearchViewMigration | DropArangoSearchViewMigration
-    | UpdateArangoSearchViewMigration | RecreateArangoSearchViewMigration;
+export type SchemaMigration =
+    | CreateIndexMigration
+    | DropIndexMigration
+    | CreateDocumentCollectionMigration
+    | CreateEdgeCollectionMigration
+    | CreateArangoSearchViewMigration
+    | DropArangoSearchViewMigration
+    | UpdateArangoSearchViewMigration
+    | RecreateArangoSearchViewMigration
+    | CreateTTLIndexMigration
+    | DropTTLIndexMigration
+    | UpdateTTLIndexMigration;
 
 interface CreateIndexMigrationConfig {
-    readonly index: IndexDefinition
-    readonly collectionSize?: number
+    readonly index: IndexDefinition;
+    readonly collectionSize?: number;
 }
 
 export class CreateIndexMigration {
@@ -32,11 +49,15 @@ export class CreateIndexMigration {
     get isMandatory() {
         return false;
     }
+
+    get isCritical() {
+        return false;
+    }
 }
 
 interface DropIndexMigrationConfig {
-    readonly index: IndexDefinition
-    readonly collectionSize?: number
+    readonly index: IndexDefinition;
+    readonly collectionSize?: number;
 }
 
 export class DropIndexMigration {
@@ -60,13 +81,16 @@ export class DropIndexMigration {
     get isMandatory() {
         return false;
     }
+
+    get isCritical() {
+        return false;
+    }
 }
 
 export class CreateDocumentCollectionMigration {
     readonly type: 'createDocumentCollection' = 'createDocumentCollection';
 
-    constructor(public readonly collectionName: string) {
-    }
+    constructor(public readonly collectionName: string) {}
 
     get description() {
         return `create document collection ${this.collectionName}`;
@@ -79,13 +103,16 @@ export class CreateDocumentCollectionMigration {
     get isMandatory() {
         return true;
     }
+
+    get isCritical() {
+        return false;
+    }
 }
 
 export class CreateEdgeCollectionMigration {
     readonly type: 'createEdgeCollection' = 'createEdgeCollection';
 
-    constructor(public readonly relation: Relation, public readonly collectionName: string) {
-    }
+    constructor(public readonly relation: Relation, public readonly collectionName: string) {}
 
     get description() {
         return `create edge collection ${this.collectionName}`;
@@ -98,22 +125,23 @@ export class CreateEdgeCollectionMigration {
     get isMandatory() {
         return true;
     }
+
+    get isCritical() {
+        return false;
+    }
 }
 
 interface CreateArangoSearchViewMigrationConfig {
-
-    readonly viewName: string
-    readonly properties: ArangoSearchViewPropertiesOptions
-    readonly collectionName: string
-    readonly collectionSize?: number
+    readonly viewName: string;
+    readonly properties: ArangoSearchViewPropertiesOptions;
+    readonly collectionName: string;
+    readonly collectionSize?: number;
 }
 
-interface UpdateArangoSearchViewMigrationConfig extends CreateArangoSearchViewMigrationConfig {
-
-}
+interface UpdateArangoSearchViewMigrationConfig extends CreateArangoSearchViewMigrationConfig {}
 
 interface DropArangoSearchViewMigrationConfig {
-    readonly viewName: string
+    readonly viewName: string;
 }
 
 export class DropArangoSearchViewMigration {
@@ -137,6 +165,10 @@ export class DropArangoSearchViewMigration {
     }
 
     get isMandatory() {
+        return false;
+    }
+
+    get isCritical() {
         return false;
     }
 }
@@ -166,6 +198,10 @@ export class UpdateArangoSearchViewMigration {
     get isMandatory() {
         return false;
     }
+
+    get isCritical() {
+        return false;
+    }
 }
 
 export class CreateArangoSearchViewMigration {
@@ -191,6 +227,10 @@ export class CreateArangoSearchViewMigration {
     }
 
     get isMandatory() {
+        return false;
+    }
+
+    get isCritical() {
         return false;
     }
 }
@@ -219,5 +259,90 @@ export class RecreateArangoSearchViewMigration {
 
     get isMandatory() {
         return false;
+    }
+
+    get isCritical() {
+        return false;
+    }
+}
+
+export interface CreateTTLIndexMigrationConfig {
+    ttlIndex: TtlIndex;
+    collectionName: string;
+}
+
+export class CreateTTLIndexMigration {
+    readonly type: 'createTTLIndex' = 'createTTLIndex';
+
+    constructor(readonly config: CreateTTLIndexMigrationConfig) {}
+
+    get description() {
+        return `create ${describeTTLIndex(this.config.ttlIndex, this.config.collectionName)}`;
+    }
+
+    get id() {
+        return `createTtlIndex/${getTTLIndexDescriptor(this.config.ttlIndex, this.config.collectionName)}`;
+    }
+
+    get isMandatory() {
+        return false;
+    }
+
+    get isCritical() {
+        return true;
+    }
+}
+
+export interface DropTTLIndexMigrationConfig {
+    ttlIndex: TtlIndex;
+    collectionName: string;
+}
+
+export class DropTTLIndexMigration {
+    readonly type: 'dropTTLIndex' = 'dropTTLIndex';
+
+    constructor(readonly config: DropTTLIndexMigrationConfig) {}
+
+    get description() {
+        return `drop ${describeTTLIndex(this.config.ttlIndex, this.config.collectionName)}`;
+    }
+
+    get id() {
+        return `dropIndex/${getTTLIndexDescriptor(this.config.ttlIndex, this.config.collectionName)}`;
+    }
+
+    get isMandatory() {
+        return false;
+    }
+
+    get isCritical() {
+        return false;
+    }
+}
+
+export interface UpdateTTLIndexMigrationConfig {
+    ttlIndex: TtlIndex;
+    collectionName: string;
+}
+
+export class UpdateTTLIndexMigration {
+    readonly type: 'updateTTLIndex' = 'updateTTLIndex';
+
+    constructor(readonly config: UpdateTTLIndexMigrationConfig) {}
+
+    get description() {
+        return `update ${describeTTLIndex(this.config.ttlIndex, this.config.collectionName)}`;
+    }
+
+    get id() {
+        return `updateTtlIndex/${getTTLIndexDescriptor(this.config.ttlIndex, this.config.collectionName)}`;
+    }
+
+    get isMandatory() {
+        return false;
+    }
+
+    get isCritical() {
+        return true;
     }
 }

@@ -8,11 +8,14 @@ import {
     CreateDocumentCollectionMigration,
     CreateEdgeCollectionMigration,
     CreateIndexMigration,
+    CreateTTLIndexMigration,
     DropArangoSearchViewMigration,
     DropIndexMigration,
+    DropTTLIndexMigration,
     RecreateArangoSearchViewMigration,
     SchemaMigration,
-    UpdateArangoSearchViewMigration
+    UpdateArangoSearchViewMigration,
+    UpdateTTLIndexMigration
 } from './migrations';
 
 export class MigrationPerformer {
@@ -42,6 +45,12 @@ export class MigrationPerformer {
                 return this.dropArangoSearchView(migration);
             case 'recreateArangoSearchView':
                 return this.recreateArangoSearchView(migration);
+            case 'createTTLIndex':
+                return this.createTTLIndex(migration);
+            case 'dropTTLIndex':
+                return this.dropTTLIndex(migration);
+            case 'updateTTLIndex':
+                return this.updateTTLIndex(migration);
             default:
                 throw new Error(`Unknown migration type: ${(migration as any).type}`);
         }
@@ -109,5 +118,26 @@ export class MigrationPerformer {
             this.config.arangoSearchConfiguration &&
             this.config.arangoSearchConfiguration.skipVersionCheckForArangoSearchMigrations
         );
+    }
+
+    private async createTTLIndex(migration: CreateTTLIndexMigration) {
+        return this.db.collection(migration.config.collectionName).createIndex({
+            fields: migration.config.ttlIndex.fields,
+            type: migration.config.ttlIndex.type,
+            expireAfter: migration.config.ttlIndex.expireAfter
+        });
+    }
+
+    private async updateTTLIndex(migration: UpdateTTLIndexMigration) {
+        await this.db.collection(migration.config.collectionName).dropIndex(migration.config.ttlIndex.id!);
+        return this.db.collection(migration.config.collectionName).createIndex({
+            fields: migration.config.ttlIndex.fields,
+            type: migration.config.ttlIndex.type,
+            expireAfter: migration.config.ttlIndex.expireAfter
+        });
+    }
+
+    private async dropTTLIndex(migration: DropTTLIndexMigration) {
+        return this.db.collection(migration.config.collectionName).dropIndex(migration.config.ttlIndex.id!);
     }
 }

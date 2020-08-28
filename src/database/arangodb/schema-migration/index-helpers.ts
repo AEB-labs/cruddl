@@ -6,6 +6,7 @@ import { getCollectionNameForRootEntity } from '../arango-basics';
 import { ArangoDBVersion } from '../version-helper';
 
 const DEFAULT_INDEX_TYPE = 'persistent'; // persistent is a skiplist index
+export const TTL_INDEX_TYPE = 'ttl';
 
 export interface IndexDefinition {
     readonly id?: string;
@@ -132,4 +133,27 @@ function getArangoFieldPath(indexField: IndexField): string {
 export async function isArangoSearchSupported(versionPromise: Promise<ArangoDBVersion | undefined>) {
     const version = await versionPromise;
     return version && (version.major >= 3 && version.minor >= 4);
+}
+
+export interface TtlIndex {
+    id?: string;
+    type: 'ttl';
+    fields: ReadonlyArray<string>;
+    expireAfter: number;
+}
+
+export function describeTTLIndex(index: TtlIndex, collectionName: string) {
+    return `$${index.type} index${index.id ? ' ' + index.id : ''} with expireAfter: ${
+        index.expireAfter
+    } on collection ${collectionName} on ${index.fields.length > 1 ? 'fields' : 'field'} '${index.fields.join(',')}'`;
+}
+
+export function getTTLIndexDescriptor(index: TtlIndex, collectionName: string) {
+    return compact([
+        index.id, // contains collection and id separated by slash (may be missing)
+        `type:${index.type}`,
+        `collection:${collectionName}`,
+        `fields:${index.fields.join(',')}`,
+        `expireAfter:${index.expireAfter}`
+    ]).join('/');
 }

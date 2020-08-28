@@ -6,7 +6,6 @@ import { billingCollectionName, getCollectionNameForRelation, getCollectionNameF
 import { ArangoDBConfig, getArangoDBLogger, initDatabase } from '../config';
 import { ArangoDBVersionHelper } from '../version-helper';
 import {
-    ArangoSearchConfiguration,
     calculateRequiredArangoSearchViewCreateOperations,
     calculateRequiredArangoSearchViewDropOperations,
     calculateRequiredArangoSearchViewUpdateOperations,
@@ -17,14 +16,19 @@ import {
     calculateRequiredIndexOperations,
     getRequiredIndicesFromModel,
     IndexDefinition,
-    isArangoSearchSupported
+    isArangoSearchSupported,
+    TTL_INDEX_TYPE,
+    TtlIndex
 } from './index-helpers';
 import {
     CreateDocumentCollectionMigration,
     CreateEdgeCollectionMigration,
     CreateIndexMigration,
+    CreateTTLIndexMigration,
     DropIndexMigration,
-    SchemaMigration
+    DropTTLIndexMigration,
+    SchemaMigration,
+    UpdateTTLIndexMigration
 } from './migrations';
 
 export class SchemaAnalyzer {
@@ -43,6 +47,7 @@ export class SchemaAnalyzer {
             ...(await this.getDocumentCollectionMigrations(model)),
             ...(await this.getEdgeCollectionMigrations(model)),
             ...(await this.getIndexMigrations(model)),
+            ...(await this.getTTLMigrations(model)),
             ...(await this.getArangoSearchMigrations(model))
         ];
     }
@@ -182,4 +187,66 @@ export class SchemaAnalyzer {
 
         return [...viewsToCreate, ...viewsToDrop, ...viewsToUpdate];
     }
+
+    private async getTTLMigrations(
+        model: Model
+    ): Promise<ReadonlyArray<CreateTTLIndexMigration | DropTTLIndexMigration | UpdateTTLIndexMigration>> {
+        const requiredMigrations: Array<CreateTTLIndexMigration | DropTTLIndexMigration | UpdateTTLIndexMigration> = [];
+        for (const rootEntityType of model.rootEntityTypes) {
+            const requiredIndex = rootEntityType.timeToLiveType;
+            const collectionName = getCollectionNameForRootEntity(rootEntityType);
+            const existingIndices = (await this.db.collection(collectionName).indexes()) as any[];
+            const existingTTLIndex = existingIndices.find(index => index.type === 'ttl') as TtlIndex;
+
+            if (requiredIndex && !existingTTLIndex) {
+                requiredMigrations.push(
+                    new CreateTTLIndexMigration({
+                        ttlIndex: {
+                            type: 'ttl',
+                            fields: (requiredIndex.path && requiredIndex.path.map(field => field.name)) || [],
+                            expireAfter: daysToMs(requiredIndex.expireAfterDays)
+                        },
+                        collectionName
+                    })
+                );
+            }
+            if (
+                requiredIndex &&
+                existingTTLIndex &&
+                (requiredIndex.input.dataField !== existingTTLIndex.fields.join('.') ||
+                    daysToMs(requiredIndex.expireAfterDays) !== existingTTLIndex.expireAfter)
+            ) {
+                requiredMigrations.push(
+                    new UpdateTTLIndexMigration({
+                        ttlIndex: {
+                            id: existingTTLIndex.id,
+                            type: 'ttl',
+                            fields: (requiredIndex.path && requiredIndex.path.map(field => field.name)) || [],
+                            expireAfter: daysToMs(requiredIndex.expireAfterDays)
+                        },
+                        collectionName
+                    })
+                );
+            }
+            if (!requiredIndex && existingTTLIndex) {
+                requiredMigrations.push(
+                    new DropTTLIndexMigration({
+                        ttlIndex: {
+                            id: existingTTLIndex.id,
+                            type: 'ttl',
+                            fields: existingTTLIndex.fields,
+                            expireAfter: existingTTLIndex.expireAfter
+                        },
+                        collectionName
+                    })
+                );
+            }
+        }
+
+        return requiredMigrations;
+    }
+}
+
+function daysToMs(days: number) {
+    return days * 24 * 60 * 60 * 1000;
 }
