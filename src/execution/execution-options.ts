@@ -65,6 +65,11 @@ export interface ExecutionOptions {
      * How many steps of recursive fields are indexed and allowed in queries for FlexSearch.
      */
     readonly flexSearchRecursionDepth?: number;
+
+    /**
+     * The maximum amount of
+     */
+    readonly timeToLiveCleanupLimit?: number;
 }
 
 export interface ExecutionOptionsCallbackArgs {

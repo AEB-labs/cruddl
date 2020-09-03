@@ -14,8 +14,7 @@ export class TimeToLiveType implements ModelComponent {
     constructor(readonly input: TimeToLiveConfig, readonly model: Model) {}
 
     validate(context: ValidationContext): void {
-        // TODO: only one per rootEntity
-        // TODO: valid expireAfterDays
+        this.traversePath(mess => context.addMessage(mess));
     }
 
     @memorize()

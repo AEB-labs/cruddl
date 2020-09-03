@@ -1,13 +1,33 @@
 import { GraphQLSchema } from 'graphql';
+import { DateTimeFormatter, ZonedDateTime, ZoneId } from 'js-joda';
 import memorize from 'memorize-decorator';
 import { isArray } from 'util';
 import { ProjectOptions } from '../config/interfaces';
 import { DEFAULT_LOGGER_PROVIDER, LoggerProvider } from '../config/logging';
 import { DatabaseAdapter } from '../database/database-adapter';
+import { ExecutionOptions } from '../execution/execution-options';
 import { SchemaExecutor } from '../execution/schema-executor';
 import { getMetaSchema } from '../meta-schema/meta-schema';
 import { Model, ValidationResult } from '../model';
+import { TimeToLiveType } from '../model/implementation/time-to-live';
+import {
+    BinaryOperationQueryNode,
+    BinaryOperator,
+    ConstBoolQueryNode,
+    DeleteEntitiesQueryNode,
+    EntitiesQueryNode,
+    FieldPathQueryNode,
+    ListQueryNode,
+    LiteralQueryNode,
+    ObjectQueryNode,
+    PropertySpecification,
+    QueryNode,
+    TransformListQueryNode,
+    VariableQueryNode
+} from '../query-tree';
+import { generateDeleteAllQueryNode } from '../schema-generation/mutation-type-generator';
 import { createSchema, getModel, validateSchema } from '../schema/schema-builder';
+import { decapitalize } from '../utils/utils';
 import { ProjectSource, SourceLike, SourceType } from './source';
 
 export { ProjectOptions };
@@ -18,7 +38,7 @@ export interface ProjectConfig extends ProjectOptions {
      *
      * The name of each source identifies its type, so files ending with .yaml are interpreted as YAML files
      */
-    readonly sources: ReadonlyArray<SourceLike>
+    readonly sources: ReadonlyArray<SourceLike>;
 }
 
 export class Project {
@@ -100,5 +120,32 @@ export class Project {
     @memorize()
     createMetaSchema(): GraphQLSchema {
         return getMetaSchema(this.getModel());
+    }
+
+    async executeTTLCleanup(databaseAdapter: DatabaseAdapter, executionOptions: ExecutionOptions) {
+        const ttlTypes = this.getModel().rootEntityTypes.flatMap(rootEntityType => rootEntityType.timeToLiveTypes);
+        for (const ttlType of ttlTypes) {
+            const queryTree = this.getQueryNodeForTTLType(ttlType, executionOptions);
+            await databaseAdapter.execute(queryTree);
+        }
+    }
+
+    private getQueryNodeForTTLType(ttlType: TimeToLiveType, executionOptions: ExecutionOptions): QueryNode {
+        const deleteFrom = ZonedDateTime.now(ZoneId.UTC)
+            .minusDays(ttlType.expireAfterDays)
+            .format(DateTimeFormatter.ISO_INSTANT);
+        const listItemVar = new VariableQueryNode(decapitalize(ttlType.rootEntityType!.name));
+        const filterNode = new BinaryOperationQueryNode(
+            new FieldPathQueryNode(listItemVar, ttlType.path!),
+            BinaryOperator.LESS_THAN,
+            new LiteralQueryNode(deleteFrom)
+        );
+        const listQueryNode = new TransformListQueryNode({
+            listNode: new EntitiesQueryNode(ttlType.rootEntityType!),
+            itemVariable: listItemVar,
+            filterNode,
+            maxCount: executionOptions.timeToLiveCleanupLimit
+        });
+        return generateDeleteAllQueryNode(ttlType.rootEntityType!, listQueryNode);
     }
 }

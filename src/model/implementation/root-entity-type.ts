@@ -38,7 +38,7 @@ export class RootEntityType extends ObjectTypeBase {
 
     readonly isFlexSearchIndexed: boolean;
     readonly flexSearchPrimarySort: ReadonlyArray<FlexSearchPrimarySortClause>;
-    readonly timeToLiveType?: TimeToLiveType;
+    readonly timeToLiveTypes: ReadonlyArray<TimeToLiveType>;
 
     constructor(private readonly input: RootEntityTypeConfig, model: Model) {
         super(input, model, systemFieldInputs);
@@ -53,10 +53,7 @@ export class RootEntityType extends ObjectTypeBase {
             this.isFlexSearchIndexed = false;
             this.flexSearchPrimarySort = [];
         }
-        this.timeToLiveType =
-            this.input.timeToLiveConfigs.length > 0
-                ? new TimeToLiveType(this.input.timeToLiveConfigs[0], model)
-                : undefined;
+        this.timeToLiveTypes = this.input.timeToLiveConfigs.map(ttlType => new TimeToLiveType(ttlType, model));
     }
 
     @memorize()
@@ -70,6 +67,10 @@ export class RootEntityType extends ObjectTypeBase {
             if (!indexConfigs.some(f => f.unique === true && f.fields.length == 1 && f.fields[0] === keyField.name)) {
                 indexConfigs.push({ unique: true, fields: [keyField.name] });
             }
+        }
+
+        for (const timeToLiveType of this.timeToLiveTypes) {
+            indexConfigs.push({ unique: false, fields: timeToLiveType.input.dataField.split('.') });
         }
 
         const indices = indexConfigs.map(config => new Index(config, this));
@@ -184,6 +185,10 @@ export class RootEntityType extends ObjectTypeBase {
 
         if (this.model.forbiddenRootEntityNames.find(value => this.name.toLowerCase() === value.toLowerCase())) {
             context.addMessage(ValidationMessage.error(`RootEntities cannot be named ${this.name}.`, this.nameASTNode));
+        }
+
+        for (const timeToLiveType of this.timeToLiveTypes) {
+            timeToLiveType.validate(context);
         }
 
         this.validateKeyField(context);

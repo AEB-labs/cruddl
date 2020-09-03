@@ -73,6 +73,10 @@ export async function start() {
     await db.updateSchema(project.getModel());
     logger.info('Schema is up to date');
 
+    if (process.argv.includes('--run-ttl-cleanup')) {
+        await project.executeTTLCleanup(db, {});
+    }
+
     const server = new ApolloServer({
         schema: schema,
         context: props => props

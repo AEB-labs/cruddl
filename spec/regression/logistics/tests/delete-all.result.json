@@ -1,26 +1,35 @@
 {
-  "onlyFirst": {
-    "data": {
-      "deleteAllDeliveries": [
-        {
-          "deliveryNumber": "1000173",
-          "consignee": {
-            "city": "Port Neldahaven"
-          }
+    "onlyFirst": {
+        "data": {
+            "deleteAllDeliveries": [
+                {
+                    "deliveryNumber": "1000173",
+                    "consignee": {
+                        "city": "Port Neldahaven"
+                    }
+                }
+            ]
         }
-      ]
-    }
-  },
-  "all": {
-    "data": {
-      "deleteAllDeliveries": [
-        {
-          "deliveryNumber": "1000521",
-          "consignee": {
-            "city": "Singapore"
-          }
+    },
+    "all": {
+        "data": {
+            "deleteAllDeliveries": [
+                {
+                    "deliveryNumber": "1000521",
+                    "consignee": {
+                        "city": "Singapore"
+                    }
+                }
+            ]
         }
-      ]
+    },
+    "all_no_relations": {
+        "data": {
+            "deleteAllCountries": [
+                {
+                    "id": "3393168"
+                }
+            ]
+        }
     }
-  }
 }
