@@ -67,7 +67,7 @@ export interface ExecutionOptions {
     readonly flexSearchRecursionDepth?: number;
 
     /**
-     * The maximum amount of
+     * The maximum number of elements to delete in one ttl-cleanup
      */
     readonly timeToLiveCleanupLimit?: number;
 }

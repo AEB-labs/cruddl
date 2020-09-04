@@ -1,7 +1,6 @@
 import { GraphQLSchema } from 'graphql';
 import { DateTimeFormatter, ZonedDateTime, ZoneId } from 'js-joda';
 import memorize from 'memorize-decorator';
-import { isArray } from 'util';
 import { ProjectOptions } from '../config/interfaces';
 import { DEFAULT_LOGGER_PROVIDER, LoggerProvider } from '../config/logging';
 import { DatabaseAdapter } from '../database/database-adapter';
@@ -13,19 +12,14 @@ import { TimeToLiveType } from '../model/implementation/time-to-live';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
-    ConstBoolQueryNode,
-    DeleteEntitiesQueryNode,
     EntitiesQueryNode,
     FieldPathQueryNode,
-    ListQueryNode,
     LiteralQueryNode,
-    ObjectQueryNode,
-    PropertySpecification,
     QueryNode,
     TransformListQueryNode,
     VariableQueryNode
 } from '../query-tree';
-import { generateDeleteAllQueryNode } from '../schema-generation/mutation-type-generator';
+import { generateDeleteAllQueryNode } from '../schema-generation';
 import { createSchema, getModel, validateSchema } from '../schema/schema-builder';
 import { decapitalize } from '../utils/utils';
 import { ProjectSource, SourceLike, SourceType } from './source';
@@ -54,7 +48,7 @@ export class Project {
     readonly options: ProjectOptions;
 
     constructor(config: ProjectConfig | SourceLike[]) {
-        if (isArray(config)) {
+        if (Array.isArray(config)) {
             config = { sources: config };
         }
         this.sources = config.sources.map(config => ProjectSource.fromConfig(config));
