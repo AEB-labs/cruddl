@@ -53,7 +53,10 @@ export class RootEntityType extends ObjectTypeBase {
             this.isFlexSearchIndexed = false;
             this.flexSearchPrimarySort = [];
         }
-        this.timeToLiveTypes = this.input.timeToLiveConfigs.map(ttlType => new TimeToLiveType(ttlType, model));
+        this.timeToLiveTypes =
+            (this.input.timeToLiveConfigs &&
+                this.input.timeToLiveConfigs.map(ttlType => new TimeToLiveType(ttlType, model))) ||
+            [];
     }
 
     @memorize()

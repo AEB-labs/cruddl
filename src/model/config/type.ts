@@ -42,7 +42,7 @@ export interface RootEntityTypeConfig extends ObjectTypeConfigBase {
     readonly permissions?: PermissionsConfig;
     readonly flexSearchIndexConfig?: FlexSearchIndexConfig;
     readonly isBusinessObject?: boolean;
-    readonly timeToLiveConfigs: ReadonlyArray<TimeToLiveConfig>;
+    readonly timeToLiveConfigs?: ReadonlyArray<TimeToLiveConfig>;
 }
 
 export interface ValueObjectTypeConfig extends ObjectTypeConfigBase {

@@ -247,7 +247,7 @@ function createObjectTypeInput(
                 indices: createIndexDefinitionInputs(definition, context),
                 flexSearchIndexConfig: createFlexSearchDefinitionInputs(definition, context),
                 isBusinessObject: !!businessObjectDirective,
-                timeToLiveConfigs: ttlConfigs.filter(value => value.typeName === common.name)
+                timeToLiveConfigs: (ttlConfigs && ttlConfigs.filter(value => value.typeName === common.name)) || []
             };
     }
 }
