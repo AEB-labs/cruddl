@@ -1495,15 +1495,15 @@ var validate = (function() {
                                 }
                                 var valid3 = errors === errs_3;
                             }
-                            var data3 = data2['dataField:'];
+                            var data3 = data2['dateField:'];
                             if (data3 !== undefined) {
                                 var errs_3 = errors;
                                 if (typeof data3 === 'string') {
                                     if (!pattern4.test(data3)) {
                                         var err = {
                                             keyword: 'pattern',
-                                            dataPath: (dataPath || '') + '.timeToLive[' + i1 + "]['dataField:']",
-                                            schemaPath: '#/properties/timeToLive/items/properties/dataField%3A/pattern',
+                                            dataPath: (dataPath || '') + '.timeToLive[' + i1 + "]['dateField:']",
+                                            schemaPath: '#/properties/timeToLive/items/properties/dateField%3A/pattern',
                                             params: {
                                                 pattern: '^([a-zA-Z0-9_-]|\\.)+$'
                                             },
@@ -1516,8 +1516,8 @@ var validate = (function() {
                                 } else {
                                     var err = {
                                         keyword: 'type',
-                                        dataPath: (dataPath || '') + '.timeToLive[' + i1 + "]['dataField:']",
-                                        schemaPath: '#/properties/timeToLive/items/properties/dataField%3A/type',
+                                        dataPath: (dataPath || '') + '.timeToLive[' + i1 + "]['dateField:']",
+                                        schemaPath: '#/properties/timeToLive/items/properties/dateField%3A/type',
                                         params: {
                                             type: 'string'
                                         },
@@ -1653,7 +1653,7 @@ validate.schema = {
                         type: 'string',
                         pattern: '^[a-zA-Z0-9_-]+$'
                     },
-                    'dataField:': {
+                    'dateField:': {
                         type: 'string',
                         pattern: '^([a-zA-Z0-9_-]|\\.)+$'
                     },

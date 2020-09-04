@@ -9,7 +9,7 @@ export function parseTTLConfigs(source: ParsedObjectProjectSource): TimeToLiveCo
     return ttlConfigs.map((ttlConfig, index) => ({
         ...ttlConfig,
         typeNameLoc: source.pathLocationMap[`/timeToLive/${index}/typeName`],
-        dataFieldLoc: source.pathLocationMap[`/timeToLive/${index}/dataField`],
+        dateFieldLoc: source.pathLocationMap[`/timeToLive/${index}/dateField`],
         expireAfterDaysLoc: source.pathLocationMap[`/timeToLive/${index}/expireAfterDays`]
     }));
 }

@@ -2,7 +2,7 @@
     "timeToLive": [
         {
             "typeName": "Hero",
-            "dataField": "createdAt",
+            "dateField": "createdAt",
             "expireAfterDays": 1
         }
     ]

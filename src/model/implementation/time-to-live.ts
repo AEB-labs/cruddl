@@ -36,11 +36,11 @@ export class TimeToLiveType implements ModelComponent {
     private traversePath(
         addMessage: (mess: ValidationMessage) => void
     ): { fieldsInPath: ReadonlyArray<Field>; field: Field } | undefined {
-        if (!this.input.dataField.match(/^([\w]+\.)*[\w]+$/)) {
+        if (!this.input.dateField.match(/^([\w]+\.)*[\w]+$/)) {
             addMessage(
                 ValidationMessage.error(
                     `An index field path should be field names separated by dots.`,
-                    this.input.dataFieldLoc
+                    this.input.dateFieldLoc
                 )
             );
             return undefined;
@@ -55,18 +55,18 @@ export class TimeToLiveType implements ModelComponent {
 
         let field: Field | undefined = undefined;
         let fieldsInPath = [];
-        for (const fieldName of this.input.dataField.split('.')) {
+        for (const fieldName of this.input.dateField.split('.')) {
             if (!type.isObjectType) {
                 if (field) {
                     addMessage(
-                        ValidationMessage.error(`Field "${field.name}" is not an object`, this.input.dataFieldLoc)
+                        ValidationMessage.error(`Field "${field.name}" is not an object`, this.input.dateFieldLoc)
                     );
                 } else {
                     // this should not occur - would mean that the root is not an object type
                     addMessage(
                         ValidationMessage.error(
                             `Index defined on non-object type (this is probably an internal error).`,
-                            this.input.dataFieldLoc
+                            this.input.dateFieldLoc
                         )
                     );
                 }
@@ -78,7 +78,7 @@ export class TimeToLiveType implements ModelComponent {
                 addMessage(
                     ValidationMessage.error(
                         `Type "${type.name}" does not have a field "${fieldName}"`,
-                        this.input.dataFieldLoc
+                        this.input.dateFieldLoc
                     )
                 );
                 return undefined;
@@ -88,7 +88,7 @@ export class TimeToLiveType implements ModelComponent {
                 addMessage(
                     ValidationMessage.error(
                         `Field "${type.name}.${nextField.name}" resolves to a root entity, but time-to-live-definitions can not cross root entity boundaries.`,
-                        this.input.dataFieldLoc
+                        this.input.dateFieldLoc
                     )
                 );
                 return undefined;
@@ -110,7 +110,7 @@ export class TimeToLiveType implements ModelComponent {
             addMessage(
                 ValidationMessage.error(
                     `Time-to-live-definitions can only be defined on DateTime or Integer fields.`,
-                    this.input.dataFieldLoc
+                    this.input.dateFieldLoc
                 )
             );
             return undefined;
@@ -120,7 +120,7 @@ export class TimeToLiveType implements ModelComponent {
             addMessage(
                 ValidationMessage.error(
                     `Indices can not be defined on lists, but "${field.declaringType.name}.${field.name}" has a list type.`,
-                    this.input.dataFieldLoc
+                    this.input.dateFieldLoc
                 )
             );
             return undefined;

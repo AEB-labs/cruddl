@@ -53,7 +53,7 @@
                         "type": "string",
                         "pattern": "^[a-zA-Z0-9_-]+$"
                     },
-                    "dataField:": {
+                    "dateField:": {
                         "type": "string",
                         "pattern": "^([a-zA-Z0-9_-]|\\.)+$"
                     },
