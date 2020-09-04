@@ -25,6 +25,6 @@ mutation all {
 
 mutation all_no_relations {
     deleteAllCountries(filter: { isoCode: "DE" }) {
-        id
+        isoCode
     }
 }
