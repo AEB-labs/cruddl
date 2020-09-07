@@ -10,7 +10,7 @@ import { mapIDsToRootEntities, mapTOIDNodesUnoptimized } from './utils/map';
 import { getRemoveAllEntityEdgesStatements } from './utils/relations';
 
 export function generateDeleteAllQueryNode(rootEntityType: RootEntityType, listNode: QueryNode) {
-    if (rootEntityType.relations.length < 1) {
+    if (!rootEntityType.relations.length) {
         return new DeleteEntitiesQueryNode({
             rootEntityType,
             listNode

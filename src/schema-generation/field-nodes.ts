@@ -25,6 +25,7 @@ import {
 } from '../query-tree';
 import { ID_FIELD } from '../schema/constants';
 import { GraphQLOffsetDateTime, TIMESTAMP_PROPERTY } from '../schema/scalars/offset-date-time';
+import { getScalarFilterValueNode } from './filter-input-types/filter-fields';
 import { and } from './utils/input-types';
 
 export function createFieldNode(
@@ -62,7 +63,7 @@ export function createFieldNode(
                 items = new TransformListQueryNode({
                     listNode: items,
                     itemVariable: offsetDateTimeNode,
-                    innerNode: new PropertyAccessQueryNode(offsetDateTimeNode, TIMESTAMP_PROPERTY)
+                    innerNode: getScalarFilterValueNode(offsetDateTimeNode, field.collectPath.resultingType)
                 });
             }
 

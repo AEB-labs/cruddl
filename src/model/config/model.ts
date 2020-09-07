@@ -12,4 +12,5 @@ export interface ModelConfig {
     readonly i18n?: ReadonlyArray<LocalizationConfig>;
     readonly billing?: BillingConfig;
     readonly modelValidationOptions?: ModelValidationOptions;
+    readonly timeToLiveConfigs?: ReadonlyArray<TimeToLiveConfig>;
 }

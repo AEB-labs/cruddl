@@ -112,14 +112,14 @@ import { ValidationContext, ValidationMessage } from './validation';
 
 export function createModel(parsedProject: ParsedProject, modelValidationOptions?: ModelValidationOptions): Model {
     const validationContext = new ValidationContext();
-    const ttlConfigs = extractTimeToLive(parsedProject);
     return new Model({
-        types: createTypeInputs(parsedProject, validationContext, ttlConfigs),
+        types: createTypeInputs(parsedProject, validationContext),
         permissionProfiles: extractPermissionProfiles(parsedProject),
         i18n: extractI18n(parsedProject),
         validationMessages: validationContext.validationMessages,
         billing: extractBilling(parsedProject),
-        modelValidationOptions
+        modelValidationOptions,
+        timeToLiveConfigs: extractTimeToLive(parsedProject)
     });
 }
 
@@ -139,11 +139,7 @@ const VALIDATION_ERROR_MISSING_OBJECT_TYPE_DIRECTIVE = `Add one of @${ROOT_ENTIT
 const VALIDATION_ERROR_INVALID_DEFINITION_KIND =
     'This kind of definition is not allowed. Only object and enum type definitions are allowed.';
 
-function createTypeInputs(
-    parsedProject: ParsedProject,
-    context: ValidationContext,
-    ttlConfigs: TimeToLiveConfig[]
-): ReadonlyArray<TypeConfig> {
+function createTypeInputs(parsedProject: ParsedProject, context: ValidationContext): ReadonlyArray<TypeConfig> {
     const graphQLSchemaParts = parsedProject.sources.filter(
         parsedSource => parsedSource.kind === ParsedProjectSourceBaseKind.GRAPHQL
     ) as ReadonlyArray<ParsedGraphQLProjectSource>;
@@ -172,7 +168,7 @@ function createTypeInputs(
                         };
                         return enumTypeInput;
                     case OBJECT_TYPE_DEFINITION:
-                        return createObjectTypeInput(definition, schemaPart, context, ttlConfigs);
+                        return createObjectTypeInput(definition, schemaPart, context);
                     default:
                         return undefined;
                 }
@@ -195,8 +191,7 @@ function createEnumValues(valueNodes: ReadonlyArray<EnumValueDefinitionNode>): R
 function createObjectTypeInput(
     definition: ObjectTypeDefinitionNode,
     schemaPart: ParsedGraphQLProjectSource,
-    context: ValidationContext,
-    ttlConfigs: TimeToLiveConfig[]
+    context: ValidationContext
 ): ObjectTypeConfig {
     const entityType = getKindOfObjectTypeNode(definition, context);
 
@@ -246,8 +241,7 @@ function createObjectTypeInput(
                 permissions: getPermissions(definition, context),
                 indices: createIndexDefinitionInputs(definition, context),
                 flexSearchIndexConfig: createFlexSearchDefinitionInputs(definition, context),
-                isBusinessObject: !!businessObjectDirective,
-                timeToLiveConfigs: (ttlConfigs && ttlConfigs.filter(value => value.typeName === common.name)) || []
+                isBusinessObject: !!businessObjectDirective
             };
     }
 }

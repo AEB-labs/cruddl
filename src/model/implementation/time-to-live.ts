@@ -1,13 +1,15 @@
-import { GraphQLIncludeDirective, GraphQLInt } from 'graphql';
+import { GraphQLInt } from 'graphql';
 import memorize from 'memorize-decorator';
-import { SCALAR_JSON } from '../../schema/constants';
 import { GraphQLDateTime } from '../../schema/scalars/date-time';
+import { GraphQLLocalDate } from '../../schema/scalars/local-date';
+import { GraphQLOffsetDateTime } from '../../schema/scalars/offset-date-time';
 import { TimeToLiveConfig, TypeKind } from '../config';
 import { ValidationMessage } from '../validation';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
 import { Field } from './field';
 import { Model } from './model';
 import { RootEntityType } from './root-entity-type';
+import { ScalarType } from './scalar-type';
 import { Type } from './type';
 
 export class TimeToLiveType implements ModelComponent {
@@ -15,17 +17,32 @@ export class TimeToLiveType implements ModelComponent {
 
     validate(context: ValidationContext): void {
         this.traversePath(mess => context.addMessage(mess));
+
+        if (!this.rootEntityType) {
+            context.addMessage(
+                ValidationMessage.error(
+                    `No rootEntity with the name "${this.input.typeName}" is defined.`,
+                    this.input.typeNameLoc
+                )
+            );
+        }
     }
 
     @memorize()
     get rootEntityType(): RootEntityType | undefined {
-        return this.model.rootEntityTypes.find(rootEntityType => rootEntityType.name === this.input.typeName);
+        return this.model.getRootEntityType(this.input.typeName);
     }
 
     @memorize()
     get path(): ReadonlyArray<Field> | undefined {
         const traversedPath = this.traversePath(() => undefined);
         return traversedPath && traversedPath.fieldsInPath;
+    }
+
+    @memorize()
+    get fieldType(): ScalarType | undefined {
+        let path = this.path && this.path[this.path.length - 1];
+        return path && (path.type as ScalarType);
     }
 
     @memorize()
@@ -39,7 +56,7 @@ export class TimeToLiveType implements ModelComponent {
         if (!this.input.dateField.match(/^([\w]+\.)*[\w]+$/)) {
             addMessage(
                 ValidationMessage.error(
-                    `An index field path should be field names separated by dots.`,
+                    `The dateField should be a path, defined as field names separated by dots.`,
                     this.input.dateFieldLoc
                 )
             );
@@ -104,12 +121,16 @@ export class TimeToLiveType implements ModelComponent {
         }
 
         if (
-            field.type.kind !== TypeKind.SCALAR ||
-            (field.type.name !== GraphQLDateTime.name && field.type.name !== GraphQLInt.name)
+            field.type &&
+            !(
+                field.type.name === GraphQLLocalDate.name ||
+                field.type.name === GraphQLDateTime.name ||
+                field.type.name === GraphQLOffsetDateTime.name
+            )
         ) {
             addMessage(
                 ValidationMessage.error(
-                    `Time-to-live-definitions can only be defined on DateTime or Integer fields.`,
+                    `The dateField of time-to-live-configurations must be of type LocalDate, DateTime or OffsetDateTime.`,
                     this.input.dateFieldLoc
                 )
             );

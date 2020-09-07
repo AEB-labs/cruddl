@@ -32,6 +32,7 @@ export class Model implements ModelComponent {
     readonly permissionProfiles: ReadonlyArray<PermissionProfile>;
     readonly billingEntityTypes: ReadonlyArray<BillingEntityType>;
     readonly modelValidationOptions?: ModelValidationOptions;
+    readonly timeToLiveTypes: ReadonlyArray<TimeToLiveType>;
 
     constructor(private input: ModelConfig) {
         this.builtInTypes = createBuiltInTypes(this);
@@ -50,6 +51,9 @@ export class Model implements ModelComponent {
             ? input.billing.billingEntities.map(value => new BillingEntityType(value, this))
             : [];
         this.modelValidationOptions = input.modelValidationOptions;
+        this.timeToLiveTypes = input.timeToLiveConfigs
+            ? input.timeToLiveConfigs.map(ttlConfig => new TimeToLiveType(ttlConfig, this))
+            : [];
     }
 
     validate(context = new ValidationContext()): ValidationResult {
@@ -63,6 +67,10 @@ export class Model implements ModelComponent {
 
         for (const type of this.types) {
             type.validate(context);
+        }
+
+        for (const timeToLiveType of this.timeToLiveTypes) {
+            timeToLiveType.validate(context);
         }
 
         return new ValidationResult([...(this.input.validationMessages || []), ...context.validationMessages]);

@@ -38,7 +38,6 @@ export class RootEntityType extends ObjectTypeBase {
 
     readonly isFlexSearchIndexed: boolean;
     readonly flexSearchPrimarySort: ReadonlyArray<FlexSearchPrimarySortClause>;
-    readonly timeToLiveTypes: ReadonlyArray<TimeToLiveType>;
 
     constructor(private readonly input: RootEntityTypeConfig, model: Model) {
         super(input, model, systemFieldInputs);
@@ -53,10 +52,6 @@ export class RootEntityType extends ObjectTypeBase {
             this.isFlexSearchIndexed = false;
             this.flexSearchPrimarySort = [];
         }
-        this.timeToLiveTypes =
-            (this.input.timeToLiveConfigs &&
-                this.input.timeToLiveConfigs.map(ttlType => new TimeToLiveType(ttlType, model))) ||
-            [];
     }
 
     @memorize()
@@ -188,10 +183,6 @@ export class RootEntityType extends ObjectTypeBase {
 
         if (this.model.forbiddenRootEntityNames.find(value => this.name.toLowerCase() === value.toLowerCase())) {
             context.addMessage(ValidationMessage.error(`RootEntities cannot be named ${this.name}.`, this.nameASTNode));
-        }
-
-        for (const timeToLiveType of this.timeToLiveTypes) {
-            timeToLiveType.validate(context);
         }
 
         this.validateKeyField(context);
@@ -361,6 +352,13 @@ export class RootEntityType extends ObjectTypeBase {
             ];
         }
         return clauses;
+    }
+
+    @memorize()
+    get timeToLiveTypes(): ReadonlyArray<TimeToLiveType> {
+        return this.model.timeToLiveTypes.filter(
+            ttlType => ttlType.rootEntityType && ttlType.rootEntityType.name === this.name
+        );
     }
 }
 

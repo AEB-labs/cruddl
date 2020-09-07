@@ -58,7 +58,8 @@
                         "pattern": "^([a-zA-Z0-9_-]|\\.)+$"
                     },
                     "expireAfterDays": {
-                        "type": "integer"
+                        "type": "integer",
+                        "minimum": 0
                     }
                 }
             }
