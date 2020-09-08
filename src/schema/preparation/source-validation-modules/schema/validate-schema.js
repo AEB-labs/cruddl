@@ -1589,7 +1589,7 @@ var validate = (function() {
                                     errors++;
                                 }
                                 if (typeof data3 === 'number') {
-                                    if (data3 < 0 || data3 !== data3) {
+                                    if (data3 < 1 || data3 !== data3) {
                                         var err = {
                                             keyword: 'minimum',
                                             dataPath: (dataPath || '') + '.timeToLive[' + i1 + '].expireAfterDays',
@@ -1597,10 +1597,10 @@ var validate = (function() {
                                                 '#/properties/timeToLive/items/properties/expireAfterDays/minimum',
                                             params: {
                                                 comparison: '>=',
-                                                limit: 0,
+                                                limit: 1,
                                                 exclusive: false
                                             },
-                                            message: 'should be >= 0'
+                                            message: 'should be >= 1'
                                         };
                                         if (vErrors === null) vErrors = [err];
                                         else vErrors.push(err);
@@ -1720,7 +1720,7 @@ validate.schema = {
                     },
                     expireAfterDays: {
                         type: 'integer',
-                        minimum: 0
+                        minimum: 1
                     }
                 },
                 required: ['typeName', 'dateField', 'expireAfterDays']

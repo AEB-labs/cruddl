@@ -59,7 +59,7 @@
                     },
                     "expireAfterDays": {
                         "type": "integer",
-                        "minimum": 0
+                        "minimum": 1
                     }
                 },
                 "required": ["typeName", "dateField", "expireAfterDays"]
