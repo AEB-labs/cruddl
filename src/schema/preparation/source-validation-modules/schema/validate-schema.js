@@ -1459,6 +1459,34 @@ var validate = (function() {
                         var data2 = data1[i1];
                         var errs_2 = errors;
                         if (data2 && typeof data2 === 'object' && !Array.isArray(data2)) {
+                            if (data2.typeName === undefined) {
+                                var err = {
+                                    keyword: 'required',
+                                    dataPath: (dataPath || '') + '.timeToLive[' + i1 + ']',
+                                    schemaPath: '#/properties/timeToLive/items/required',
+                                    params: {
+                                        missingProperty: 'typeName'
+                                    },
+                                    message: "should have required property 'typeName'"
+                                };
+                                if (vErrors === null) vErrors = [err];
+                                else vErrors.push(err);
+                                errors++;
+                            }
+                            if (data2.dateField === undefined) {
+                                var err = {
+                                    keyword: 'required',
+                                    dataPath: (dataPath || '') + '.timeToLive[' + i1 + ']',
+                                    schemaPath: '#/properties/timeToLive/items/required',
+                                    params: {
+                                        missingProperty: 'dateField'
+                                    },
+                                    message: "should have required property 'dateField'"
+                                };
+                                if (vErrors === null) vErrors = [err];
+                                else vErrors.push(err);
+                                errors++;
+                            }
                             var errs__2 = errors;
                             var valid3 = true;
                             var data3 = data2['typeName:'];
@@ -1530,7 +1558,21 @@ var validate = (function() {
                                 var valid3 = errors === errs_3;
                             }
                             var data3 = data2.expireAfterDays;
-                            if (data3 !== undefined) {
+                            if (data3 === undefined) {
+                                valid3 = false;
+                                var err = {
+                                    keyword: 'required',
+                                    dataPath: (dataPath || '') + '.timeToLive[' + i1 + ']',
+                                    schemaPath: '#/properties/timeToLive/items/required',
+                                    params: {
+                                        missingProperty: 'expireAfterDays'
+                                    },
+                                    message: "should have required property 'expireAfterDays'"
+                                };
+                                if (vErrors === null) vErrors = [err];
+                                else vErrors.push(err);
+                                errors++;
+                            } else {
                                 var errs_3 = errors;
                                 if (typeof data3 !== 'number' || data3 % 1 || data3 !== data3) {
                                     var err = {
@@ -1545,6 +1587,25 @@ var validate = (function() {
                                     if (vErrors === null) vErrors = [err];
                                     else vErrors.push(err);
                                     errors++;
+                                }
+                                if (typeof data3 === 'number') {
+                                    if (data3 < 0 || data3 !== data3) {
+                                        var err = {
+                                            keyword: 'minimum',
+                                            dataPath: (dataPath || '') + '.timeToLive[' + i1 + '].expireAfterDays',
+                                            schemaPath:
+                                                '#/properties/timeToLive/items/properties/expireAfterDays/minimum',
+                                            params: {
+                                                comparison: '>=',
+                                                limit: 0,
+                                                exclusive: false
+                                            },
+                                            message: 'should be >= 0'
+                                        };
+                                        if (vErrors === null) vErrors = [err];
+                                        else vErrors.push(err);
+                                        errors++;
+                                    }
                                 }
                                 var valid3 = errors === errs_3;
                             }
@@ -1658,9 +1719,11 @@ validate.schema = {
                         pattern: '^([a-zA-Z0-9_-]|\\.)+$'
                     },
                     expireAfterDays: {
-                        type: 'integer'
+                        type: 'integer',
+                        minimum: 0
                     }
-                }
+                },
+                required: ['typeName', 'dateField', 'expireAfterDays']
             }
         }
     },
