@@ -8,12 +8,20 @@ import { VariableQueryNode } from './variables';
  * A node that creates a new entity and evaluates to that new entity object
  */
 export class CreateEntityQueryNode extends QueryNode {
-    constructor(public readonly rootEntityType: RootEntityType, public readonly objectNode: QueryNode, public readonly affectedFields: ReadonlyArray<AffectedFieldInfoQueryNode>) {
+    constructor(
+        public readonly rootEntityType: RootEntityType,
+        public readonly objectNode: QueryNode,
+        public readonly affectedFields: ReadonlyArray<AffectedFieldInfoQueryNode>
+    ) {
         super();
     }
 
     describe() {
-        return `create ${this.rootEntityType.name} entity with values ${this.objectNode.describe()} (affects fields ${this.affectedFields.map(f => f.describe()).join(', ')})`;
+        return `create ${
+            this.rootEntityType.name
+        } entity with values ${this.objectNode.describe()} (affects fields ${this.affectedFields
+            .map(f => f.describe())
+            .join(', ')})`;
     }
 }
 
@@ -45,14 +53,18 @@ export class AffectedFieldInfoQueryNode extends QueryNode {
  * WITH $updateNode
  * IN $collection(objectType)
  * OPTIONS { mergeObjects: false }
+ *
+ * A revision can be specified, but the list should only evaluated in to at most one item in this case. If specified,
+ * the transaction will be aborted if the revision is no longer up to date.
  */
 export class UpdateEntitiesQueryNode extends QueryNode {
     constructor(params: {
-        rootEntityType: RootEntityType,
-        listNode: QueryNode,
-        updates: ReadonlyArray<SetFieldQueryNode>,
-        currentEntityVariable?: VariableQueryNode,
-        affectedFields: ReadonlyArray<AffectedFieldInfoQueryNode>
+        rootEntityType: RootEntityType;
+        listNode: QueryNode;
+        updates: ReadonlyArray<SetFieldQueryNode>;
+        currentEntityVariable?: VariableQueryNode;
+        affectedFields: ReadonlyArray<AffectedFieldInfoQueryNode>;
+        revision?: string;
     }) {
         super();
         this.rootEntityType = params.rootEntityType;
@@ -60,6 +72,7 @@ export class UpdateEntitiesQueryNode extends QueryNode {
         this.updates = params.updates;
         this.currentEntityVariable = params.currentEntityVariable || new VariableQueryNode();
         this.affectedFields = params.affectedFields;
+        this.revision = params.revision;
     }
 
     public readonly rootEntityType: RootEntityType;
@@ -67,13 +80,18 @@ export class UpdateEntitiesQueryNode extends QueryNode {
     public readonly updates: ReadonlyArray<SetFieldQueryNode>;
     public readonly currentEntityVariable: VariableQueryNode;
     public readonly affectedFields: ReadonlyArray<AffectedFieldInfoQueryNode>;
+    public readonly revision?: string;
 
     describe() {
-        return `update ${this.rootEntityType.name} entities in (\n` +
-            indent(this.listNode.describe()) + '\n) ' +
+        return (
+            `update ${this.rootEntityType.name} entities in (\n` +
+            indent(this.listNode.describe()) +
+            '\n) ' +
+            (this.revision ? ` with revision check for "${JSON.stringify(this.revision)}"` : '') +
             `with values (${this.currentEntityVariable.describe()} => {\n` +
             indent(this.updates.map(p => p.describe()).join(',\n')) +
-            `\n} (affects fields ${this.affectedFields.map(f => f.describe()).join(', ')})`;
+            `\n} (affects fields ${this.affectedFields.map(f => f.describe()).join(', ')})`
+        );
     }
 }
 
@@ -81,8 +99,7 @@ export class UpdateEntitiesQueryNode extends QueryNode {
  * Specifies one property of a an ObjectQueryNode, and indicates that this will set a field of an object
  */
 export class SetFieldQueryNode extends PropertySpecification {
-    constructor(public readonly field: Field,
-                public readonly valueNode: QueryNode) {
+    constructor(public readonly field: Field, public readonly valueNode: QueryNode) {
         super(field.name, valueNode);
     }
 }
@@ -93,21 +110,24 @@ export class SetFieldQueryNode extends PropertySpecification {
  * Does not delete edges related to the entities.
  */
 export class DeleteEntitiesQueryNode extends QueryNode {
-    constructor(params: {
-        rootEntityType: RootEntityType,
-        listNode: QueryNode
-    }) {
+    constructor(params: { rootEntityType: RootEntityType; listNode: QueryNode; revision?: string }) {
         super();
         this.rootEntityType = params.rootEntityType;
         this.listNode = params.listNode;
+        this.revision = params.revision;
     }
 
     public readonly rootEntityType: RootEntityType;
     public readonly listNode: QueryNode;
+    public readonly revision?: string;
 
     describe() {
-        return `delete ${this.rootEntityType.name} entities in (\n` +
-            indent(this.listNode.describe()) + '\n)';
+        return (
+            `delete ${this.rootEntityType.name} entities in (\n` +
+            indent(this.listNode.describe()) +
+            '\n)' +
+            (this.revision ? ` with revision check for "${JSON.stringify(this.revision)}"` : '')
+        );
     }
 }
 
@@ -117,7 +137,6 @@ export class DeleteEntitiesQueryNode extends QueryNode {
  * No multiplicity constraints are checked.
  */
 export class AddEdgesQueryNode extends QueryNode {
-
     // TODO: accept one QueryNode which evaluates to the lits of edge ids somehow?
     // (currently, adding 50 edges generates 50 bound variables with the literal values)
 
@@ -126,9 +145,9 @@ export class AddEdgesQueryNode extends QueryNode {
     }
 
     describe() {
-        return `add edges to ${this.relation}: [\n` +
-            indent(this.edges.map(edge => edge.describe()).join(',\n')) +
-            `\n]`;
+        return (
+            `add edges to ${this.relation}: [\n` + indent(this.edges.map(edge => edge.describe()).join(',\n')) + `\n]`
+        );
     }
 }
 
@@ -152,7 +171,7 @@ export class RemoveEdgesQueryNode extends QueryNode {
  * No multiplicity constraints are checked.
  */
 export class SetEdgeQueryNode extends QueryNode {
-    constructor(params: { relation: Relation, existingEdge: PartialEdgeIdentifier, newEdge: EdgeIdentifier }) {
+    constructor(params: { relation: Relation; existingEdge: PartialEdgeIdentifier; newEdge: EdgeIdentifier }) {
         super();
         this.relation = params.relation;
         this.existingEdge = params.existingEdge;

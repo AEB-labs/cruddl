@@ -365,6 +365,14 @@
                     "type": {
                         "enumValues": null
                     }
+                },
+                {
+                    "name": "_revision",
+                    "isDeprecated": false,
+                    "deprecationReason": null,
+                    "type": {
+                        "enumValues": null
+                    }
                 }
             ]
         },

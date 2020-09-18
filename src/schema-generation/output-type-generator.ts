@@ -1,4 +1,4 @@
-import { GraphQLString } from 'graphql';
+import { GraphQLID, GraphQLNonNull, GraphQLString } from 'graphql';
 import { sortBy } from 'lodash';
 import memorize from 'memorize-decorator';
 import { FieldRequest } from '../graphql/query-distiller';
@@ -9,12 +9,13 @@ import {
     ObjectQueryNode,
     PropertySpecification,
     QueryNode,
+    RevisionQueryNode,
     UnaryOperationQueryNode,
     UnaryOperator
 } from '../query-tree';
-import { CURSOR_FIELD, FLEX_SEARCH_ENTITIES_FIELD_PREFIX, ORDER_BY_ARG } from '../schema/constants';
+import { CURSOR_FIELD, FLEX_SEARCH_ENTITIES_FIELD_PREFIX, ORDER_BY_ARG, REVISION_FIELD } from '../schema/constants';
 import { getMetaFieldName } from '../schema/names';
-import { flatMap } from '../utils/utils';
+import { compact, flatMap } from '../utils/utils';
 import { EnumTypeGenerator } from './enum-type-generator';
 import { createFieldNode } from './field-nodes';
 import { FilterAugmentation } from './filter-augmentation';
@@ -88,9 +89,15 @@ export class OutputTypeGenerator {
             return nodeFields;
         });
 
-        // include cursor fields in all types that could occur in lists and that can be ordered (unorderable types can't use cursor-based navigation)
-        const cursorField = this.createCursorField(objectType);
-        return [...fields, ...(cursorField ? [cursorField] : [])];
+        return [
+            ...fields,
+            ...compact([
+                // include cursor fields in all types that could occur in lists and that can be ordered (unorderable types can't use cursor-based navigation)
+                this.createCursorField(objectType),
+
+                this.createRevisionField(objectType)
+            ])
+        ];
     }
 
     private createCursorField(objectType: ObjectType): QueryNodeField | undefined {
@@ -149,6 +156,23 @@ export class OutputTypeGenerator {
             )
         );
         return new UnaryOperationQueryNode(objectNode, UnaryOperator.JSON_STRINGIFY);
+    }
+
+    private createRevisionField(objectType: ObjectType): QueryNodeField | undefined {
+        if (!objectType.isRootEntityType) {
+            return undefined;
+        }
+
+        return {
+            name: REVISION_FIELD,
+            description: `An identifier that is updated automatically on each update of this root entity (but not on relation changes)`,
+            type: GraphQLNonNull(GraphQLID),
+            resolve: source => this.getRevisionNode(source)
+        };
+    }
+
+    private getRevisionNode(itemNode: QueryNode): QueryNode {
+        return new RevisionQueryNode(itemNode);
     }
 
     private createFields(field: Field): ReadonlyArray<QueryNodeField> {

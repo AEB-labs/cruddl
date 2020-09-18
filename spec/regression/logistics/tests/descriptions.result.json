@@ -170,6 +170,10 @@
                         {
                             "name": "_cursor",
                             "description": "Provides a value that can be supplied to the `after` argument for pagination. Depends on the value of the `orderBy` argument."
+                        },
+                        {
+                            "name": "_revision",
+                            "description": "An identifier that is updated automatically on each update of this root entity (but not on relation changes)"
                         }
                     ],
                     "inputFields": null
@@ -569,6 +573,10 @@
                         {
                             "name": "_cursor",
                             "description": "Provides a value that can be supplied to the `after` argument for pagination. Depends on the value of the `orderBy` argument."
+                        },
+                        {
+                            "name": "_revision",
+                            "description": "An identifier that is updated automatically on each update of this root entity (but not on relation changes)"
                         }
                     ],
                     "inputFields": null
@@ -1157,6 +1165,10 @@
                         {
                             "name": "_cursor",
                             "description": "Provides a value that can be supplied to the `after` argument for pagination. Depends on the value of the `orderBy` argument."
+                        },
+                        {
+                            "name": "_revision",
+                            "description": "An identifier that is updated automatically on each update of this root entity (but not on relation changes)"
                         }
                     ],
                     "inputFields": null
@@ -3577,6 +3589,10 @@
                         {
                             "name": "_cursor",
                             "description": "Provides a value that can be supplied to the `after` argument for pagination. Depends on the value of the `orderBy` argument."
+                        },
+                        {
+                            "name": "_revision",
+                            "description": "An identifier that is updated automatically on each update of this root entity (but not on relation changes)"
                         }
                     ],
                     "inputFields": null
@@ -3618,6 +3634,10 @@
                         {
                             "name": "_cursor",
                             "description": "Provides a value that can be supplied to the `after` argument for pagination. Depends on the value of the `orderBy` argument."
+                        },
+                        {
+                            "name": "_revision",
+                            "description": "An identifier that is updated automatically on each update of this root entity (but not on relation changes)"
                         }
                     ],
                     "inputFields": null
@@ -4274,6 +4294,10 @@
                         {
                             "name": "_cursor",
                             "description": "Provides a value that can be supplied to the `after` argument for pagination. Depends on the value of the `orderBy` argument."
+                        },
+                        {
+                            "name": "_revision",
+                            "description": "An identifier that is updated automatically on each update of this root entity (but not on relation changes)"
                         }
                     ],
                     "inputFields": null
@@ -4569,6 +4593,10 @@
                         {
                             "name": "_cursor",
                             "description": "Provides a value that can be supplied to the `after` argument for pagination. Depends on the value of the `orderBy` argument."
+                        },
+                        {
+                            "name": "_revision",
+                            "description": "An identifier that is updated automatically on each update of this root entity (but not on relation changes)"
                         }
                     ],
                     "inputFields": null
@@ -4813,6 +4841,10 @@
                         {
                             "name": "_cursor",
                             "description": "Provides a value that can be supplied to the `after` argument for pagination. Depends on the value of the `orderBy` argument."
+                        },
+                        {
+                            "name": "_revision",
+                            "description": "An identifier that is updated automatically on each update of this root entity (but not on relation changes)"
                         }
                     ],
                     "inputFields": null
@@ -5376,6 +5408,10 @@
                         {
                             "name": "exportedAt",
                             "description": null
+                        },
+                        {
+                            "name": "_revision",
+                            "description": "Set this field to the value of \"BillingEntity._revision\" to abort the transaction if this object has been modified in the meantime"
                         }
                     ]
                 },
@@ -5407,6 +5443,10 @@
                         {
                             "name": "exportedAt",
                             "description": null
+                        },
+                        {
+                            "name": "_revision",
+                            "description": "Set this field to the value of \"BillingEntity._revision\" to abort the transaction if this object has been modified in the meantime"
                         }
                     ]
                 },
@@ -5464,6 +5504,10 @@
                         {
                             "name": "totalInvestment",
                             "description": null
+                        },
+                        {
+                            "name": "_revision",
+                            "description": "Set this field to the value of \"Country._revision\" to abort the transaction if this object has been modified in the meantime"
                         }
                     ]
                 },
@@ -5483,6 +5527,10 @@
                         {
                             "name": "totalInvestment",
                             "description": null
+                        },
+                        {
+                            "name": "_revision",
+                            "description": "Set this field to the value of \"Country._revision\" to abort the transaction if this object has been modified in the meantime"
                         }
                     ]
                 },
@@ -5930,6 +5978,10 @@
                         {
                             "name": "enumWithDeprecation",
                             "description": null
+                        },
+                        {
+                            "name": "_revision",
+                            "description": "Set this field to the value of \"Delivery._revision\" to abort the transaction if this object has been modified in the meantime"
                         }
                     ]
                 },
@@ -6134,6 +6186,10 @@
                         {
                             "name": "enumWithDeprecation",
                             "description": null
+                        },
+                        {
+                            "name": "_revision",
+                            "description": "Set this field to the value of \"Delivery._revision\" to abort the transaction if this object has been modified in the meantime"
                         }
                     ]
                 },
@@ -6161,6 +6217,10 @@
                         {
                             "name": "createDeliveries",
                             "description": "Creates new `Deliveries` and adds `deliveries` relations between them and this `Forwarder`."
+                        },
+                        {
+                            "name": "_revision",
+                            "description": "Set this field to the value of \"Forwarder._revision\" to abort the transaction if this object has been modified in the meantime"
                         }
                     ]
                 },
@@ -6172,6 +6232,10 @@
                         {
                             "name": "name",
                             "description": null
+                        },
+                        {
+                            "name": "_revision",
+                            "description": "Set this field to the value of \"Forwarder._revision\" to abort the transaction if this object has been modified in the meantime"
                         }
                     ]
                 },
@@ -6210,6 +6274,10 @@
                         {
                             "name": "createDeliveries",
                             "description": "Creates new `Deliveries` and adds `deliveries` relations between them and this `OnlyRelations`."
+                        },
+                        {
+                            "name": "_revision",
+                            "description": "Set this field to the value of \"OnlyRelations._revision\" to abort the transaction if this object has been modified in the meantime"
                         }
                     ]
                 },
@@ -6233,6 +6301,10 @@
                         {
                             "name": "createDelivery",
                             "description": "Creates a new `Delivery` and sets the `delivery` relation to the created object.\n\nIf this `HandlingUnit` already has a `delivery` relation, this relation is removed first."
+                        },
+                        {
+                            "name": "_revision",
+                            "description": "Set this field to the value of \"HandlingUnit._revision\" to abort the transaction if this object has been modified in the meantime"
                         }
                     ]
                 },
@@ -6244,6 +6316,10 @@
                         {
                             "name": "huNumber",
                             "description": null
+                        },
+                        {
+                            "name": "_revision",
+                            "description": "Set this field to the value of \"HandlingUnit._revision\" to abort the transaction if this object has been modified in the meantime"
                         }
                     ]
                 },
@@ -6286,6 +6362,10 @@
                         {
                             "name": "multiplyWith_number",
                             "description": null
+                        },
+                        {
+                            "name": "_revision",
+                            "description": "Set this field to the value of \"NumberRange._revision\" to abort the transaction if this object has been modified in the meantime"
                         }
                     ]
                 },
@@ -6309,6 +6389,10 @@
                         {
                             "name": "multiplyWith_number",
                             "description": null
+                        },
+                        {
+                            "name": "_revision",
+                            "description": "Set this field to the value of \"NumberRange._revision\" to abort the transaction if this object has been modified in the meantime"
                         }
                     ]
                 },
@@ -6343,6 +6427,10 @@
                         {
                             "name": "value",
                             "description": null
+                        },
+                        {
+                            "name": "_revision",
+                            "description": "Set this field to the value of \"SecretKey._revision\" to abort the transaction if this object has been modified in the meantime"
                         }
                     ]
                 },
@@ -6358,6 +6446,10 @@
                         {
                             "name": "value",
                             "description": null
+                        },
+                        {
+                            "name": "_revision",
+                            "description": "Set this field to the value of \"SecretKey._revision\" to abort the transaction if this object has been modified in the meantime"
                         }
                     ]
                 },
