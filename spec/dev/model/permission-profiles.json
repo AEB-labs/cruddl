@@ -3,7 +3,7 @@
         "default": {
             "permissions": [
                 {
-                    "access": ["read", "create"],
+                    "access": ["readWrite"],
                     "roles": ["allusers"]
                 }
             ]

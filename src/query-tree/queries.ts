@@ -89,6 +89,19 @@ export class RootEntityIDQueryNode extends QueryNode {
 }
 
 /**
+ * A node that evaluates to the revision identifier of a root entity
+ */
+export class RevisionQueryNode extends QueryNode {
+    constructor(readonly objectNode: QueryNode) {
+        super();
+    }
+
+    describe(): string {
+        return `revision(${this.objectNode.describe()})`;
+    }
+}
+
+/**
  * Evaluates to all root entities that are connected to a specific root entitity through a specific edge
  */
 export class FollowEdgeQueryNode extends QueryNode {

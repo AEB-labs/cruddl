@@ -26,7 +26,7 @@ import {
     VariableQueryNode,
     WithPreExecutionQueryNode
 } from '../query-tree';
-import { ID_FIELD, MUTATION_INPUT_ARG, MUTATION_TYPE } from '../schema/constants';
+import { ID_FIELD, MUTATION_INPUT_ARG, MUTATION_TYPE, REVISION_FIELD } from '../schema/constants';
 import {
     getCreateEntitiesFieldName,
     getCreateEntityFieldName,
@@ -282,6 +282,7 @@ export class MutationTypeGenerator {
         const currentEntityVariable = new VariableQueryNode('currentEntity');
         const context: UpdateInputFieldContext = { ...fieldContext, currentEntityNode: currentEntityVariable };
         const updates = inputType.getProperties(input, context);
+        const revision = inputType.getRevision(input);
         const affectedFields = inputType
             .getAffectedFields(input, context)
             .map(field => new AffectedFieldInfoQueryNode(field));
@@ -304,7 +305,8 @@ export class MutationTypeGenerator {
             affectedFields,
             updates,
             currentEntityVariable,
-            listNode
+            listNode,
+            revision
         });
         const updatedIdsVarNode = new VariableQueryNode('updatedIds');
         const updateEntityPreExec = new PreExecQueryParms({
@@ -439,7 +441,13 @@ export class MutationTypeGenerator {
         return {
             name: getDeleteEntityFieldName(rootEntityType),
             type: this.outputTypeGenerator.generate(rootEntityType),
-            args: getArgumentsForUniqueFields(rootEntityType),
+            args: {
+                ...getArgumentsForUniqueFields(rootEntityType),
+                [REVISION_FIELD]: {
+                    description: `Set this argument to the value of "${rootEntityType.name}.${REVISION_FIELD}" to abort the transaction if this object has been modified in the meantime`,
+                    type: GraphQLID
+                }
+            },
             isSerial: true,
             description,
             resolve: (source, args, info) => this.generateDeleteQueryNode(rootEntityType, args, info)
@@ -453,6 +461,7 @@ export class MutationTypeGenerator {
     ): QueryNode {
         // collect the ids before the actual delete statements so the lists won't change by the statements
         const listNode = getEntitiesByUniqueFieldQuery(rootEntityType, args, context);
+        const revision = args[REVISION_FIELD];
         const idsVariable = new VariableQueryNode('ids');
         const idsStatement = new PreExecQueryParms({
             // don't use optimizations here so we actually "see" the entities and don't just return the ids
@@ -464,7 +473,8 @@ export class MutationTypeGenerator {
 
         const deleteEntitiesNode = new DeleteEntitiesQueryNode({
             rootEntityType,
-            listNode: entitiesNode
+            listNode: entitiesNode,
+            revision
         });
 
         const removeEdgesStatements = getRemoveAllEntityEdgesStatements(rootEntityType, idsVariable);

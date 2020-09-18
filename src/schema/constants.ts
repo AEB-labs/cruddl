@@ -73,6 +73,7 @@ export const AFTER_ARG = 'after';
 export const FIRST_ARG = 'first';
 export const VALUE_ARG = 'value';
 export const KEY_FIELD_DIRECTIVE = 'key';
+export const REVISION_FIELD = '_revision';
 
 export const FILTER_FIELD_PREFIX_SEPARATOR = '_';
 export const INPUT_FIELD_EQUAL = 'equal';

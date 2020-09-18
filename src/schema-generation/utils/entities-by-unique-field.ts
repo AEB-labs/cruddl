@@ -8,7 +8,7 @@ import {
     TransformListQueryNode,
     VariableQueryNode
 } from '../../query-tree';
-import { ID_FIELD } from '../../schema/constants';
+import { ID_FIELD, REVISION_FIELD } from '../../schema/constants';
 import { decapitalize, objectEntries } from '../../utils/utils';
 import { createFieldNode } from '../field-nodes';
 import { createGraphQLError } from '../graphql-errors';
@@ -19,14 +19,39 @@ export function getEntitiesByUniqueFieldQuery(
     args: { [name: string]: any },
     context: FieldContext
 ) {
-    const nonNullArgs = objectEntries(args).filter(([key, value]) => value != undefined);
-    if (nonNullArgs.length !== 1) {
-        throw createGraphQLError(
-            `Must specify exactly one non-null argument to field "${rootEntityType.name}"`,
-            context
-        );
+    let fieldName: string;
+    let value: string;
+    if (rootEntityType.keyField && rootEntityType.keyField.name !== ID_FIELD) {
+        const id = args[ID_FIELD];
+        const key = args[rootEntityType.keyField.name];
+
+        if (id != undefined) {
+            if (key != undefined) {
+                throw createGraphQLError(
+                    `Only one of the arguments "${ID_FIELD}" and "${rootEntityType.keyField.name}" may be specified`,
+                    context
+                );
+            }
+            fieldName = ID_FIELD;
+            value = id;
+        } else {
+            if (key == undefined) {
+                throw createGraphQLError(
+                    `One of the arguments "${ID_FIELD}" and "${rootEntityType.keyField.name}" is required`,
+                    context
+                );
+            }
+            fieldName = rootEntityType.keyField.name;
+            value = key;
+        }
+    } else {
+        const id = args[ID_FIELD];
+        if (id == undefined) {
+            throw createGraphQLError(`Argument "${ID_FIELD}" is required`, context);
+        }
+        fieldName = ID_FIELD;
+        value = id;
     }
-    const [fieldName, value] = nonNullArgs[0];
 
     const entityVarNode = new VariableQueryNode(decapitalize(rootEntityType.name));
     const fieldNode = createFieldNode(rootEntityType.getFieldOrThrow(fieldName), entityVarNode);

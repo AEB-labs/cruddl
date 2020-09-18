@@ -10,13 +10,22 @@ import { FlexSearchTokenization } from '../../query-tree/flex-search';
 import { Mutable } from '../../utils/util-types';
 import { objectValues, sleep, sleepInterruptible } from '../../utils/utils';
 import { getPreciseTime, Watch } from '../../utils/watch';
-import { DatabaseAdapter, DatabaseAdapterTimings, ExecutionArgs, ExecutionPlan, ExecutionResult, FlexSearchTokenizable, TransactionStats } from '../database-adapter';
+import {
+    DatabaseAdapter,
+    DatabaseAdapterTimings,
+    ExecutionArgs,
+    ExecutionPlan,
+    ExecutionResult,
+    FlexSearchTokenizable,
+    TransactionStats
+} from '../database-adapter';
 import { AQLCompoundQuery, aqlConfig, AQLExecutableQuery } from './aql';
 import { generateTokenizationQuery, getAQLQuery } from './aql-generator';
 import { RequestInstrumentation, RequestInstrumentationPhase } from './arangojs-instrumentation/config';
 import { CancellationManager } from './cancellation-manager';
 import { ArangoDBConfig, DEFAULT_RETRY_DELAY_BASE_MS, getArangoDBLogger, initDatabase } from './config';
 import { ERROR_ARANGO_CONFLICT, ERROR_QUERY_KILLED } from './error-codes';
+import { hasRevisionAssertions } from './revision-helper';
 import { SchemaAnalyzer } from './schema-migration/analyzer';
 import { SchemaMigration } from './schema-migration/migrations';
 import { MigrationPerformer } from './schema-migration/performer';
@@ -27,17 +36,17 @@ import uuid = require('uuid');
 const requestInstrumentationBodyKey = 'cruddlRequestInstrumentation';
 
 interface ArangoExecutionOptions {
-    readonly queries: ReadonlyArray<AQLExecutableQuery>
-    readonly options: ExecutionOptions
+    readonly queries: ReadonlyArray<AQLExecutableQuery>;
+    readonly options: ExecutionOptions;
     /**
      * An ID that will be prepended to all queries in this transaction so they can be aborted on cancellation
      */
-    readonly transactionID: string
+    readonly transactionID: string;
 }
 
 interface ArangoError extends Error {
-    readonly errorNum?: number
-    readonly errorMessage?: string
+    readonly errorNum?: number;
+    readonly errorMessage?: string;
 }
 
 function isArangoError(error: Error): error is ArangoError {
@@ -53,9 +62,9 @@ interface ArangoTransactionResult {
 }
 
 interface TransactionResult {
-    readonly data?: any
-    readonly timings?: Pick<DatabaseAdapterTimings, 'database' | 'dbConnection'>
-    readonly plans?: ReadonlyArray<any>
+    readonly data?: any;
+    readonly timings?: Pick<DatabaseAdapterTimings, 'database' | 'dbConnection'>;
+    readonly plans?: ReadonlyArray<any>;
     readonly databaseError?: Error;
     readonly stats: TransactionStats;
 
@@ -63,17 +72,16 @@ interface TransactionResult {
      * True if the transactionTimeoutMs has taken effect. Does not necessarily mean that the query has been killed,
      * you should check databaseError for his.
      */
-    readonly hasTimedOut: boolean
+    readonly hasTimedOut: boolean;
 
     /**
      * True if the cancellationToken has taken effect. Does not necessarily mean that the query has been killed,
      * you should check databaseError for his.
      */
-    readonly wasCancelled: boolean
+    readonly wasCancelled: boolean;
 }
 
 export class ArangoDBAdapter implements DatabaseAdapter {
-
     private readonly db: Database;
     private readonly logger: Logger;
     private readonly analyzer: SchemaAnalyzer;
@@ -100,13 +108,12 @@ export class ArangoDBAdapter implements DatabaseAdapter {
      * @returns {string}
      */
     private buildUpArangoExecutionFunction(): string {
-
         // The following function will be translated to a string and executed (as one transaction) within the
         // ArangoDB server itself. Therefore the next comment is necessary to instruct our test coverage tool
         // (https://github.com/istanbuljs/nyc) not to instrument the code with coverage instructions.
 
         /* istanbul ignore next */
-        const arangoExecutionFunction = function ({ queries, options, transactionID }: ArangoExecutionOptions) {
+        const arangoExecutionFunction = function({ queries, options, transactionID }: ArangoExecutionOptions) {
             const db = require('@arangodb').db;
             const enableProfiling = options.recordTimings;
             const internal = enableProfiling ? require('internal') : undefined;
@@ -138,7 +145,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
 
             function rollbackWithError(error: any): never {
                 if (enableProfiling && timings) {
-                    timings.js = (getPreciseTime() - startTime) - timingsTotal;
+                    timings.js = getPreciseTime() - startTime - timingsTotal;
                 }
 
                 // the return is here to please typescript, it actually returns *never* (it throws)
@@ -250,7 +257,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             }
 
             if (enableProfiling && timings) {
-                timings.js = (getPreciseTime() - startTime) - timingsTotal;
+                timings.js = getPreciseTime() - startTime - timingsTotal;
             }
 
             const transactionResult = {
@@ -267,13 +274,13 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             return transactionResult;
         };
 
-        const validatorProviders = ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS.map(provider =>
-            `[${JSON.stringify(provider.getValidatorName())}]: ${String(provider.getValidatorFunction())}`);
+        const validatorProviders = ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS.map(
+            provider => `[${JSON.stringify(provider.getValidatorName())}]: ${String(provider.getValidatorFunction())}`
+        );
 
         const allValidatorFunctionsObjectString = `validators = {${validatorProviders.join(',\n')}}`;
 
-        return String(arangoExecutionFunction)
-            .replace('//inject_validators_here', allValidatorFunctionsObjectString);
+        return String(arangoExecutionFunction).replace('//inject_validators_here', allValidatorFunctionsObjectString);
     }
 
     async execute(queryTree: QueryNode) {
@@ -309,6 +316,17 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             this.logger.trace(`Executing AQL: ${aqlQuery.toColoredString()}`);
         }
         const aqlPreparationTime = getPreciseTime() - prepStartTime;
+
+        // if the query contains revision assertions (_revision is used in updates / deletes), CONFLICT errors are
+        // expected and retrying the mutation won't help. The caller needs to handle the conflicts then.
+        // otherwise, conflicts can still occur because of how arangodb internally works, but those can be solved
+        // by retrying the query.
+        let executionResult;
+        if (hasRevisionAssertions(queryTree)) {
+            executionResult = await this.executeTransactionOnce(executableQueries, options, aqlQuery);
+        } else {
+            executionResult = await this.executeTransactionWithRetries(executableQueries, options, aqlQuery);
+        }
         const {
             databaseError,
             timings: transactionTimings,
@@ -317,7 +335,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             stats,
             hasTimedOut,
             wasCancelled
-        } = await this.executeTransactionWithRetries(executableQueries, options, aqlQuery);
+        } = executionResult;
 
         let timings;
         if (options.recordTimings && transactionTimings) {
@@ -348,7 +366,11 @@ export class ArangoDBAdapter implements DatabaseAdapter {
 
         let error;
         if (databaseError) {
-            error = this.processDatabaseError(databaseError, { wasCancelled, hasTimedOut, transactionTimeoutMs: options.transactionTimeoutMs });
+            error = this.processDatabaseError(databaseError, {
+                wasCancelled,
+                hasTimedOut,
+                transactionTimeoutMs: options.transactionTimeoutMs
+            });
         }
 
         return {
@@ -360,7 +382,14 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         };
     }
 
-    private processDatabaseError(error: Error, { hasTimedOut, wasCancelled, transactionTimeoutMs }: { hasTimedOut: boolean, wasCancelled: boolean, transactionTimeoutMs: number | undefined }): Error {
+    private processDatabaseError(
+        error: Error,
+        {
+            hasTimedOut,
+            wasCancelled,
+            transactionTimeoutMs
+        }: { hasTimedOut: boolean; wasCancelled: boolean; transactionTimeoutMs: number | undefined }
+    ): Error {
         // might be just something like a TypeError
         if (!isArangoError(error)) {
             return new TransactionError(error.message, error);
@@ -382,8 +411,11 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         return new TransactionError(error.errorMessage || error.message, error);
     }
 
-
-    private async executeTransactionWithRetries(executableQueries: ReadonlyArray<AQLExecutableQuery>, options: ExecutionOptions, aqlQuery: AQLCompoundQuery): Promise<TransactionResult> {
+    private async executeTransactionWithRetries(
+        executableQueries: ReadonlyArray<AQLExecutableQuery>,
+        options: ExecutionOptions,
+        aqlQuery: AQLCompoundQuery
+    ): Promise<TransactionResult> {
         const maxRetries = this.config.retriesOnConflict || 0;
         let nextRetryDelay = 0;
         let tries = 0;
@@ -448,7 +480,11 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         return error.errorNum === ERROR_ARANGO_CONFLICT;
     }
 
-    private async executeTransactionOnce(executableQueries: ReadonlyArray<AQLExecutableQuery>, options: ExecutionOptions, aqlQuery: AQLCompoundQuery): Promise<TransactionResult> {
+    private async executeTransactionOnce(
+        executableQueries: ReadonlyArray<AQLExecutableQuery>,
+        options: ExecutionOptions,
+        aqlQuery: AQLCompoundQuery
+    ): Promise<TransactionResult> {
         const transactionID = uuid();
         const args: ArangoExecutionOptions = {
             queries: executableQueries,
@@ -471,16 +507,21 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             });
         }
         let requestSentCallback: (() => void) | undefined;
-        let requestSentPromise = new Promise(resolve => requestSentCallback = resolve);
+        let requestSentPromise = new Promise(resolve => (requestSentCallback = resolve));
         let timeout: any | undefined;
         if (options.transactionTimeoutMs != undefined) {
             const ms = options.transactionTimeoutMs;
             // transactionTimeout is a timeout that should only be started when the request is actually sent to ArangoDB
-            const timeoutPromise = requestSentPromise.then(() => new Promise<void>((resolve) => {
-                timeout = setTimeout(resolve, ms);
-            })).then(() => {
-                hasTimedOut = true;
-            });
+            const timeoutPromise = requestSentPromise
+                .then(
+                    () =>
+                        new Promise<void>(resolve => {
+                            timeout = setTimeout(resolve, ms);
+                        })
+                )
+                .then(() => {
+                    hasTimedOut = true;
+                });
             if (cancellationToken) {
                 cancellationToken.then(() => {
                     if (timeout) {
@@ -517,16 +558,18 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                         // - don't take the effort of finding and killing a query if it's fast anyway
                         // - the cancellation might occur before the transaction script starts the query
                         // we only really need this to cancel long-running queries
-                        cancellationToken.then(() => sleep(30)).then(() => {
-                            // don't try to kill the query if the transaction() call finished already - this would mean that it
-                            // either was faster than the delay above, or the request was removed from the request queue
-                            if (!isTransactionFinished) {
-                                this.logger.debug(`Cancelling query ${transactionID}`);
-                                this.cancellationManager.cancelQuery(transactionID).catch(e => {
-                                    this.logger.warn(`Error cancelling query ${transactionID}: ${e.stack}`);
-                                });
-                            }
-                        });
+                        cancellationToken
+                            .then(() => sleep(30))
+                            .then(() => {
+                                // don't try to kill the query if the transaction() call finished already - this would mean that it
+                                // either was faster than the delay above, or the request was removed from the request queue
+                                if (!isTransactionFinished) {
+                                    this.logger.debug(`Cancelling query ${transactionID}`);
+                                    this.cancellationManager.cancelQuery(transactionID).catch(e => {
+                                        this.logger.warn(`Error cancelling query ${transactionID}: ${e.stack}`);
+                                    });
+                                }
+                            });
                     }
                 }
             },
@@ -649,11 +692,15 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         return this.versionHelper.getArangoDBVersion();
     }
 
-    async tokenizeExpressions(tokenizations: ReadonlyArray<FlexSearchTokenizable>): Promise<ReadonlyArray<FlexSearchTokenization>> {
+    async tokenizeExpressions(
+        tokenizations: ReadonlyArray<FlexSearchTokenizable>
+    ): Promise<ReadonlyArray<FlexSearchTokenization>> {
         const tokenizationsFiltered = tokenizations.filter(
-            (value, index) => !tokenizations.some(
-                (value2, index2) => value.expression === value2.expression && value.language === value2.language && index > index2
-            )
+            (value, index) =>
+                !tokenizations.some(
+                    (value2, index2) =>
+                        value.expression === value2.expression && value.language === value2.language && index > index2
+                )
         );
 
         const cursor = await this.db.query(generateTokenizationQuery(tokenizationsFiltered));
@@ -670,8 +717,6 @@ export class ArangoDBAdapter implements DatabaseAdapter {
 
         return resultArray;
     }
-
-
 }
 
 function sumUpValues(objects: ReadonlyArray<{ readonly [key: string]: number }>): { readonly [key: string]: number } {
