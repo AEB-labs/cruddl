@@ -89,7 +89,7 @@ Entity extension can be used within root entities, child entities and other enti
 
 ### Value objects
 
-Value objects are treated as atomic values much like scalars are. They can not be partially updated but are replaced completely on updates. If you omit fields on update, they are set to `null`. This is useful for types like addresses. They can also be used within lists.
+Value objects are treated as atomic values much like scalars are. They cannot be partially updated but are replaced completely on updates. If you omit fields on update, they are set to `null`. This is useful for types like addresses. They can also be used within lists.
 
 ```graphql
 type Address @valueObject {
@@ -192,7 +192,7 @@ type Shipment @rootEntity {
 
 The field `allItems` will return all items in all orders of a shipment. It will not be available for filtering or sorting and you will not be able to set it directly in _create_ and _update_ mutations.
 
-The path can traverse an arbitrary number of fields. Only the objects of the _last_ field will be returned, and the type of that last field needs to match the traversal field type (`OrderItem` in the example). References can not yet be followed, but you can use other traversal fields in the path.
+The path can traverse an arbitrary number of fields. Only the objects of the _last_ field will be returned, and the type of that last field needs to match the traversal field type (`OrderItem` in the example). References cannot yet be followed, but you can use other traversal fields in the path.
 
 ### Flattening tree structure
 
@@ -209,17 +209,17 @@ type HandlingUnit {
 
 The field `allInnerHandlingUnits` will result in the direct children, their children, and their children (by default, in depth-first order). The first number (`1`) is the minimum depth (which can also be `0` to include the originating entity), and the second number (`3`) is the maximum depth. If you omit the maximum depth, the minimum depth will be used as maximum depth. It's not possible to entirely omit the maximum depth.
 
-The minimum and maximum depth can only be specified on directly recursive relations. It is not possible to cycle through indirectly recursive relations, and child entity don't support this feature at all.
+The minimum and maximum depth can only be specified on directly recursive relations. It is not possible to cycle through indirectly recursive relations, and child entities don't support this feature at all.
 
 ### Null values
 
 If you follow a field that can be null (e.g. a to-1 relation or a simple scalar field), the collection may include `null` values. However, it is not allowed to define a list field that could include `null` values. Therefore, you need to define an aggregation, e.g. `DISTINCT` to remove null values.
 
-If you follow a list field on an object that is be null (e.g. `order.orderItems` if `order` is be null), this null object just won't contribute any items. The resulting list will not include `null` in this case.
+If you follow a list field on an object that is null (e.g. `order.orderItems` if `order` is null), this null object just won't contribute any items. The resulting list will not include `null` in this case.
 
 ### Collecting scalar values
 
-A collect path can also end in a scalar field. This however requires the use of an aggregator (see next section). Use the aggregator `DISTINCT` if you are interested in the individual field values.
+A collect path can also end in a scalar field. This however requires the use of an aggregator (see next section). Use the aggregator `DISTINCT` if you are interested in the individual field values (see next section).
 
 ### Aggregating values
 
@@ -266,10 +266,10 @@ The following operators are supported:
 | `EVERY_TRUE`     | `true` if there are no items that are not `true` | `Boolean`                                            | ≙ `false`       | `true`               |
 | `NONE_TRUE`      | `true` if there are no items that are `true`     | `Boolean`                                            | ≙ `false`       | `true`               |
 | **Distinct**     |                                                  |                                                      |                 |                      |
-| `DISTINCT`       | all values without duplicates and `null`         | `String`, `ID`, child/root entities, and enums       | excluded        | `[]`                 |
-| `COUNT_DISTINCT` | all values without duplicates and `null`         | `String`, `ID`, child/root entities, and enums       | excluded        | `0`                  |
+| `DISTINCT`       | all non-null values without duplicates           | `String`, `ID`, child/root entities, and enums       | excluded        | `[]`                 |
+| `COUNT_DISTINCT` | number of non-null values without duplicates     | `String`, `ID`, child/root entities, and enums       | excluded        | `0`                  |
 
-Note that if a value is collected multiple times, it will be used multiple times by the aggregator (e.g. counted twice). In the future, it will be possible to a field with `DISTICNT` aggregation in another aggregation field.
+Note that if a value is collected multiple times, it will be used multiple times by the aggregator (e.g. counted twice). In the future, it will be possible to a field with `DISTINCT` aggregation in another aggregation field.
 
 ### Restrictions
 
@@ -452,4 +452,4 @@ The scalar `JSON` can hold any JSON value. In ArangoDB, it is not stored in seri
 
 ## System fields
 
-Root entities and child entities have the implicit fields `id`, `createdAt` and `updatedAt` (the latter two of type `DateTime`). They are managed by cruddl and can not be overwritten.
+Root entities and child entities have the implicit fields `id`, `createdAt` and `updatedAt` (the latter two of type `DateTime`). They are managed by cruddl and cannot be overwritten.
