@@ -111,16 +111,6 @@ export class IndexField implements ModelComponent {
             return undefined;
         }
 
-        if (field.isList) {
-            addMessage(
-                ValidationMessage.error(
-                    `Indices can not be defined on lists, but "${field.declaringType.name}.${field.name}" has a list type.`,
-                    this.astNode
-                )
-            );
-            return undefined;
-        }
-
         return { field, fieldsInPath };
     }
 }
