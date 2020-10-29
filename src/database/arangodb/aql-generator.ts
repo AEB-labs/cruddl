@@ -1015,17 +1015,23 @@ function getQuantifierFilterUsingArrayExpansion(
 
     let fields: Field[] = [];
     let currentFieldNode = conditionNode.lhs;
-    do {
+    while (currentFieldNode !== itemVariable) {
         if (!(currentFieldNode instanceof FieldQueryNode)) {
             return undefined;
         }
         fields.unshift(currentFieldNode.field); // we're traversing from back to front
         currentFieldNode = currentFieldNode.objectNode;
-    } while (currentFieldNode !== itemVariable);
+    }
 
     const valueFrag = processNode(conditionNode.rhs, context);
+
+    // special case: scalar list
+    if (!fields.length) {
+        return aql`(${valueFrag} IN ${processNode(listNode, context)})`;
+    }
+
     const fieldAccessFrag = aql.concat(fields.map(f => getPropertyAccessFragment(f.name)));
-    return aql`${valueFrag} IN ${processNode(listNode, context)}[*]${fieldAccessFrag}`;
+    return aql`(${valueFrag} IN ${processNode(listNode, context)}[*]${fieldAccessFrag})`;
 }
 
 register(EntitiesQueryNode, (node, context) => {
