@@ -1,5 +1,6 @@
 import { RootEntityType } from '../model/implementation';
 import {
+    CountQueryNode,
     DeleteEntitiesQueryNode,
     PreExecQueryParms,
     QueryNode,
@@ -11,10 +12,12 @@ import { getRemoveAllEntityEdgesStatements } from './utils/relations';
 
 export function generateDeleteAllQueryNode(rootEntityType: RootEntityType, listNode: QueryNode) {
     if (!rootEntityType.relations.length) {
-        return new DeleteEntitiesQueryNode({
-            rootEntityType,
-            listNode
-        });
+        return new CountQueryNode(
+            new DeleteEntitiesQueryNode({
+                rootEntityType,
+                listNode
+            })
+        );
     }
 
     // collect the ids before the actual delete statements so the lists won't change by the statements
@@ -32,10 +35,12 @@ export function generateDeleteAllQueryNode(rootEntityType: RootEntityType, listN
 
     // no preexec for the actual deletion here because we need to evaluate the result while the entity still exists
     // and it won't exist if already deleted in the pre-exec
-    const deleteEntitiesNode = new DeleteEntitiesQueryNode({
-        rootEntityType,
-        listNode: entitiesNode
-    });
+    const deleteEntitiesNode = new CountQueryNode(
+        new DeleteEntitiesQueryNode({
+            rootEntityType,
+            listNode: entitiesNode
+        })
+    );
 
     const removeEdgesStatements = getRemoveAllEntityEdgesStatements(rootEntityType, idsVariable);
 
