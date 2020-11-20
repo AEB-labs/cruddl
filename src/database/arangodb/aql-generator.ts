@@ -33,15 +33,18 @@ import {
     OrderSpecification,
     PartialEdgeIdentifier,
     PropertyAccessQueryNode,
+    PropertySpecification,
     QueryNode,
     QueryResultValidator,
     RemoveEdgesQueryNode,
+    RevisionQueryNode,
     RootEntityIDQueryNode,
     RUNTIME_ERROR_CODE_PROPERTY,
     RUNTIME_ERROR_TOKEN,
     RuntimeErrorQueryNode,
     SafeListQueryNode,
     SetEdgeQueryNode,
+    SetFieldQueryNode,
     TransformListQueryNode,
     TraversalQueryNode,
     TypeCheckQueryNode,
@@ -392,6 +395,10 @@ function getFieldPathAccessFragment(path: ReadonlyArray<Field>): AQLFragment {
 
 register(RootEntityIDQueryNode, (node, context) => {
     return aql`${processNode(node.objectNode, context)}._key`; // ids are stored in _key field
+});
+
+register(RevisionQueryNode, (node, context) => {
+    return aql`${processNode(node.objectNode, context)}._rev`;
 });
 
 register(FlexSearchQueryNode, (node, context) => {
@@ -1008,17 +1015,23 @@ function getQuantifierFilterUsingArrayExpansion(
 
     let fields: Field[] = [];
     let currentFieldNode = conditionNode.lhs;
-    do {
+    while (currentFieldNode !== itemVariable) {
         if (!(currentFieldNode instanceof FieldQueryNode)) {
             return undefined;
         }
         fields.unshift(currentFieldNode.field); // we're traversing from back to front
         currentFieldNode = currentFieldNode.objectNode;
-    } while (currentFieldNode !== itemVariable);
+    }
 
     const valueFrag = processNode(conditionNode.rhs, context);
+
+    // special case: scalar list
+    if (!fields.length) {
+        return aql`(${valueFrag} IN ${processNode(listNode, context)})`;
+    }
+
     const fieldAccessFrag = aql.concat(fields.map(f => getPropertyAccessFragment(f.name)));
-    return aql`${valueFrag} IN ${processNode(listNode, context)}[*]${fieldAccessFrag}`;
+    return aql`(${valueFrag} IN ${processNode(listNode, context)}[*]${fieldAccessFrag})`;
 }
 
 register(EntitiesQueryNode, (node, context) => {
@@ -1213,24 +1226,51 @@ register(CreateEntityQueryNode, (node, context) => {
 register(UpdateEntitiesQueryNode, (node, context) => {
     const newContext = context.introduceVariable(node.currentEntityVariable);
     const entityVar = newContext.getVariable(node.currentEntityVariable);
+    let entityFrag: AQLFragment;
+    let options: AQLFragment;
+    let updateFrag = processNode(new ObjectQueryNode(node.updates), newContext);
+    let additionalUpdates: ReadonlyArray<SetFieldQueryNode> = [];
+
+    if (node.revision) {
+        entityFrag = aql`MERGE(${entityVar}, { _rev: ${aql.value(node.revision)} })`;
+        options = aql`{ mergeObjects: false, ignoreRevs: false }`;
+        // to guarantee that the _rev changes, we need to set a property to a new value
+        updateFrag = aql`MERGE(${updateFrag}, { _revDummy: ${entityVar}._rev })`;
+    } else {
+        entityFrag = entityVar;
+        options = aql`{ mergeObjects: false }`;
+    }
+
     return aqlExt.parenthesizeList(
         aql`FOR ${entityVar}`,
         aql`IN ${processNode(node.listNode, context)}`,
-        aql`UPDATE ${entityVar}`,
-        aql`WITH ${processNode(new ObjectQueryNode(node.updates), newContext)}`,
+        aql`UPDATE ${entityFrag}`,
+        aql`WITH ${updateFrag}`,
         aql`IN ${getCollectionForType(node.rootEntityType, AccessType.WRITE, context)}`,
-        aql`OPTIONS { mergeObjects: false }`,
+        aql`OPTIONS ${options}`,
         aql`RETURN NEW._key`
     );
 });
 
 register(DeleteEntitiesQueryNode, (node, context) => {
     const entityVar = aql.variable(decapitalize(node.rootEntityType.name));
+    let entityFrag: AQLFragment;
+    let optionsFrag: AQLFragment;
+
+    if (node.revision) {
+        entityFrag = aql`MERGE(${entityVar}, { _rev: ${aql.value(node.revision)} })`;
+        optionsFrag = aql`OPTIONS { ignoreRevs: false }`;
+    } else {
+        entityFrag = entityVar;
+        optionsFrag = aql``;
+    }
+
     return aqlExt.parenthesizeList(
         aql`FOR ${entityVar}`,
         aql`IN ${processNode(node.listNode, context)}`,
-        aql`REMOVE ${entityVar}`,
+        aql`REMOVE ${entityFrag}`,
         aql`IN ${getCollectionForType(node.rootEntityType, AccessType.WRITE, context)}`,
+        optionsFrag,
         aql`RETURN OLD`
     );
 });

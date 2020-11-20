@@ -120,6 +120,10 @@
                 {
                     "name": "_cursor",
                     "args": []
+                },
+                {
+                    "name": "_revision",
+                    "args": []
                 }
             ]
         }

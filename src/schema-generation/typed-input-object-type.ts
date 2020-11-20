@@ -1,4 +1,10 @@
-import { GraphQLInputFieldConfig, GraphQLInputObjectType, GraphQLInputType, Thunk } from 'graphql';
+import {
+    GraphQLInputFieldConfig,
+    GraphQLInputFieldConfigMap,
+    GraphQLInputObjectType,
+    GraphQLInputType,
+    Thunk
+} from 'graphql';
 import { chain, uniqBy } from 'lodash';
 import memorize from 'memorize-decorator';
 import { Constructor } from '../utils/utils';
@@ -31,30 +37,36 @@ export class TypedInputObjectType<TField extends TypedInputFieldBase<TField>> {
             name: this.name,
             description,
             fields: () =>
-                chain(this.fields)
-                    .keyBy(field => field.name)
-                    .mapValues(
-                        (field): GraphQLInputFieldConfig => {
-                            let description = field.description;
+                this.transformFieldConfigs(
+                    chain(this.fields)
+                        .keyBy(field => field.name)
+                        .mapValues(
+                            (field): GraphQLInputFieldConfig => {
+                                let description = field.description;
 
-                            if (field.deprecationReason) {
-                                // Input fields can not yet be deprecated (see https://github.com/graphql/graphql-spec/pull/525)
-                                description = description
-                                    ? `${description}\n\n${field.deprecationReason}`
-                                    : field.deprecationReason;
+                                if (field.deprecationReason) {
+                                    // Input fields can not yet be deprecated (see https://github.com/graphql/graphql-spec/pull/525)
+                                    description = description
+                                        ? `${description}\n\n${field.deprecationReason}`
+                                        : field.deprecationReason;
+                                }
+
+                                return {
+                                    type:
+                                        field.inputType instanceof TypedInputObjectType
+                                            ? field.inputType.getInputType()
+                                            : field.inputType,
+                                    description
+                                };
                             }
-
-                            return {
-                                type:
-                                    field.inputType instanceof TypedInputObjectType
-                                        ? field.inputType.getInputType()
-                                        : field.inputType,
-                                description
-                            };
-                        }
-                    )
-                    .value()
+                        )
+                        .value()
+                )
         });
+    }
+
+    protected transformFieldConfigs(fields: GraphQLInputFieldConfigMap): GraphQLInputFieldConfigMap {
+        return fields;
     }
 
     getFieldOrThrow<T extends TField>(name: string, clazz?: Constructor<T>): T {

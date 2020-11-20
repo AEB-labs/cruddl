@@ -1,4 +1,4 @@
-import { Thunk } from 'graphql';
+import { GraphQLID, GraphQLInputFieldConfigMap, Thunk } from 'graphql';
 import { groupBy } from 'lodash';
 import { ChildEntityType, EntityExtensionType, Field, ObjectType, RootEntityType } from '../../model';
 import {
@@ -20,7 +20,7 @@ import {
     UnaryOperator,
     VariableQueryNode
 } from '../../query-tree';
-import { ENTITY_UPDATED_AT, ID_FIELD } from '../../schema/constants';
+import { ENTITY_UPDATED_AT, ID_FIELD, REVISION_FIELD } from '../../schema/constants';
 import {
     getAddChildEntitiesFieldName,
     getRemoveChildEntitiesFieldName,
@@ -230,6 +230,20 @@ export class UpdateRootEntityInputType extends UpdateObjectInputType {
             .filter(isRelationUpdateField)
             .filter(field => field.appliesToMissingFields() || field.name in input);
         return flatMap(relationFields, field => field.getStatements(input[field.name], idNode, context));
+    }
+
+    protected transformFieldConfigs(fields: GraphQLInputFieldConfigMap): GraphQLInputFieldConfigMap {
+        return {
+            ...fields,
+            [REVISION_FIELD]: {
+                type: GraphQLID,
+                description: `Set this field to the value of "${this.rootEntityType.name}.${REVISION_FIELD}" to abort the transaction if this object has been modified in the meantime`
+            }
+        };
+    }
+
+    getRevision(input: PlainObject): string | undefined {
+        return (input[REVISION_FIELD] || undefined) as string | undefined;
     }
 }
 

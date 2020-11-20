@@ -1,109 +1,101 @@
 {
-  "byID": {
-    "data": {
-      "Delivery": {
-        "deliveryNumber": "1000522"
-      }
-    }
-  },
-  "byKey": {
-    "data": {
-      "Delivery": {
-        "deliveryNumber": "1000521"
-      }
-    }
-  },
-  "notFound": {
-    "data": {
-      "Delivery": null
-    }
-  },
-  "noArgs": {
-    "errors": [
-      {
-        "message": "Must specify exactly one non-null argument to field \"Delivery\"",
-        "locations": [
-          {
-            "line": 21,
-            "column": 5
-          }
+    "byID": {
+        "data": {
+            "Delivery": {
+                "deliveryNumber": "1000522"
+            }
+        }
+    },
+    "byKey": {
+        "data": {
+            "Delivery": {
+                "deliveryNumber": "1000521"
+            }
+        }
+    },
+    "notFound": {
+        "data": {
+            "Delivery": null
+        }
+    },
+    "noArgs": {
+        "errors": [
+            {
+                "message": "One of the arguments \"id\" and \"deliveryNumber\" is required",
+                "locations": [
+                    {
+                        "line": 21,
+                        "column": 5
+                    }
+                ],
+                "path": ["Delivery"]
+            }
         ],
-        "path": [
-          "Delivery"
-        ]
-      }
-    ],
-    "data": {
-      "Delivery": null
-    }
-  },
-  "tooManyArgs": {
-    "errors": [
-      {
-        "message": "Must specify exactly one non-null argument to field \"Delivery\"",
-        "locations": [
-          {
-            "line": 28,
-            "column": 5
-          }
+        "data": {
+            "Delivery": null
+        }
+    },
+    "tooManyArgs": {
+        "errors": [
+            {
+                "message": "Only one of the arguments \"id\" and \"deliveryNumber\" may be specified",
+                "locations": [
+                    {
+                        "line": 28,
+                        "column": 5
+                    }
+                ],
+                "path": ["Delivery"]
+            }
         ],
-        "path": [
-          "Delivery"
-        ]
-      }
-    ],
-    "data": {
-      "Delivery": null
-    }
-  },
-  "nullArg": {
-    "errors": [
-      {
-        "message": "Must specify exactly one non-null argument to field \"Delivery\"",
-        "locations": [
-          {
-            "line": 36,
-            "column": 5
-          }
+        "data": {
+            "Delivery": null
+        }
+    },
+    "nullArg": {
+        "errors": [
+            {
+                "message": "One of the arguments \"id\" and \"deliveryNumber\" is required",
+                "locations": [
+                    {
+                        "line": 36,
+                        "column": 5
+                    }
+                ],
+                "path": ["Delivery"]
+            }
         ],
-        "path": [
-          "Delivery"
-        ]
-      }
-    ],
-    "data": {
-      "Delivery": null
-    }
-  },
-  "emptyArg": {
-    "data": {
-      "Delivery": null
-    }
-  },
-  "twoNullArgs": {
-    "errors": [
-      {
-        "message": "Must specify exactly one non-null argument to field \"Delivery\"",
-        "locations": [
-          {
-            "line": 49,
-            "column": 5
-          }
+        "data": {
+            "Delivery": null
+        }
+    },
+    "emptyArg": {
+        "data": {
+            "Delivery": null
+        }
+    },
+    "twoNullArgs": {
+        "errors": [
+            {
+                "message": "One of the arguments \"id\" and \"deliveryNumber\" is required",
+                "locations": [
+                    {
+                        "line": 49,
+                        "column": 5
+                    }
+                ],
+                "path": ["Delivery"]
+            }
         ],
-        "path": [
-          "Delivery"
-        ]
-      }
-    ],
-    "data": {
-      "Delivery": null
+        "data": {
+            "Delivery": null
+        }
+    },
+    "nullAndNonNullArg": {
+        "data": {
+            "Delivery": {
+                "deliveryNumber": "1000521"
+            }
+        }
     }
-  },
-  "nullAndNonNullArg": {
-    "data": {
-      "Delivery": {
-        "deliveryNumber": "1000521"
-      }
-    }
-  }
 }
