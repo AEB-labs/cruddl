@@ -4,3 +4,4 @@ export * from './field';
 export * from './indices';
 export * from './permissions';
 export * from './i18n';
+export * from './time-to-live';

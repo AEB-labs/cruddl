@@ -1,5 +1,9 @@
 mutation onlyFirst {
-    deleteAllDeliveries(filter:{OR:[{deliveryNumber: "1000173"}, {deliveryNumber: "1000521"}]}, orderBy: deliveryNumber_ASC, first: 1) {
+    deleteAllDeliveries(
+        filter: { OR: [{ deliveryNumber: "1000173" }, { deliveryNumber: "1000521" }] }
+        orderBy: deliveryNumber_ASC
+        first: 1
+    ) {
         deliveryNumber
         consignee {
             city
@@ -8,10 +12,19 @@ mutation onlyFirst {
 }
 
 mutation all {
-    deleteAllDeliveries(filter:{OR:[{deliveryNumber: "1000173"}, {deliveryNumber: "1000521"}]}, orderBy: deliveryNumber_ASC) {
+    deleteAllDeliveries(
+        filter: { OR: [{ deliveryNumber: "1000173" }, { deliveryNumber: "1000521" }] }
+        orderBy: deliveryNumber_ASC
+    ) {
         deliveryNumber
         consignee {
             city
         }
+    }
+}
+
+mutation all_no_relations {
+    deleteAllCountries(filter: { isoCode: "DE" }) {
+        isoCode
     }
 }

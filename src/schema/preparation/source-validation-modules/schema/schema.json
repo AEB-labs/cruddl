@@ -43,6 +43,27 @@
                     }
                 }
             }
+        },
+        "timeToLive": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "typeName:": {
+                        "type": "string",
+                        "pattern": "^[a-zA-Z0-9_-]+$"
+                    },
+                    "dateField:": {
+                        "type": "string",
+                        "pattern": "^([a-zA-Z0-9_-]|\\.)+$"
+                    },
+                    "expireAfterDays": {
+                        "type": "integer",
+                        "minimum": 1
+                    }
+                },
+                "required": ["typeName", "dateField", "expireAfterDays"]
+            }
         }
     },
     "definitions": {

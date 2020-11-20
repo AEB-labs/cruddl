@@ -22,6 +22,7 @@ import { PermissionProfile } from './permission-profile';
 import { Relation, RelationSide } from './relation';
 import { RolesSpecifier } from './roles-specifier';
 import { ScalarType } from './scalar-type';
+import { TimeToLiveType } from './time-to-live';
 
 export class RootEntityType extends ObjectTypeBase {
     private readonly permissions: PermissionsConfig & {};
@@ -64,6 +65,10 @@ export class RootEntityType extends ObjectTypeBase {
             if (!indexConfigs.some(f => f.unique === true && f.fields.length == 1 && f.fields[0] === keyField.name)) {
                 indexConfigs.push({ unique: true, fields: [keyField.name] });
             }
+        }
+
+        for (const timeToLiveType of this.timeToLiveTypes) {
+            indexConfigs.push({ unique: false, fields: timeToLiveType.input.dateField.split('.') });
         }
 
         const indices = indexConfigs.map(config => new Index(config, this));
@@ -347,6 +352,13 @@ export class RootEntityType extends ObjectTypeBase {
             ];
         }
         return clauses;
+    }
+
+    @memorize()
+    get timeToLiveTypes(): ReadonlyArray<TimeToLiveType> {
+        return this.model.timeToLiveTypes.filter(
+            ttlType => ttlType.rootEntityType && ttlType.rootEntityType.name === this.name
+        );
     }
 }
 

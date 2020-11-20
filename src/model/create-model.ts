@@ -99,6 +99,7 @@ import {
     PermissionProfileConfigMap,
     PermissionsConfig,
     RolesSpecifierConfig,
+    TimeToLiveConfig,
     TypeConfig,
     TypeKind
 } from './config';
@@ -106,6 +107,7 @@ import { BillingConfig } from './config/billing';
 import { Model } from './implementation';
 import { parseBillingConfigs } from './parse-billing';
 import { parseI18nConfigs } from './parse-i18n';
+import { parseTTLConfigs } from './parse-ttl';
 import { ValidationContext, ValidationMessage } from './validation';
 
 export function createModel(parsedProject: ParsedProject, modelValidationOptions?: ModelValidationOptions): Model {
@@ -116,7 +118,8 @@ export function createModel(parsedProject: ParsedProject, modelValidationOptions
         i18n: extractI18n(parsedProject),
         validationMessages: validationContext.validationMessages,
         billing: extractBilling(parsedProject),
-        modelValidationOptions
+        modelValidationOptions,
+        timeToLiveConfigs: extractTimeToLive(parsedProject)
     });
 }
 
@@ -860,6 +863,15 @@ function extractBilling(parsedProject: ParsedProject): BillingConfig {
             },
             { billingEntities: [] }
         );
+}
+
+function extractTimeToLive(parsedProject: ParsedProject): TimeToLiveConfig[] {
+    const objectSchemaParts = parsedProject.sources.filter(
+        parsedSource => parsedSource.kind === ParsedProjectSourceBaseKind.OBJECT
+    ) as ReadonlyArray<ParsedObjectProjectSource>;
+    return objectSchemaParts
+        .map(source => parseTTLConfigs(source))
+        .reduce((previousValue, currentValue) => previousValue.concat(currentValue), []);
 }
 
 // fake input type for index mapping

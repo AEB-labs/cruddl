@@ -8,6 +8,7 @@ import { getOrderByTypeName } from '../schema/names';
 import { GraphQLOffsetDateTime, TIMESTAMP_PROPERTY } from '../schema/scalars/offset-date-time';
 import { flatMap } from '../utils/utils';
 import { createFieldNode } from './field-nodes';
+import { getScalarFilterValueNode } from './filter-input-types/filter-fields';
 
 export class OrderByEnumType {
     constructor(public readonly objectType: ObjectType, public readonly values: ReadonlyArray<OrderByEnumValue>) {}
@@ -91,10 +92,7 @@ export class OrderByEnumValue {
     getValueNode(itemNode: QueryNode): QueryNode {
         const valueNode = this.path.reduce((node, field) => createFieldNode(field, node), itemNode);
         const lastField = this.path[this.path.length - 1];
-        if (lastField && lastField.type.isScalarType && lastField.type.graphQLScalarType === GraphQLOffsetDateTime) {
-            return new PropertyAccessQueryNode(valueNode, TIMESTAMP_PROPERTY);
-        }
-        return valueNode;
+        return getScalarFilterValueNode(valueNode, lastField.type);
     }
 
     getClause(itemNode: QueryNode): OrderClause {

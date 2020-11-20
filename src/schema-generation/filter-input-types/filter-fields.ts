@@ -47,7 +47,7 @@ function getDescription({
         : undefined;
 }
 
-function getScalarFilterValueNode(fieldNode: QueryNode, type: Type): QueryNode {
+export function getScalarFilterValueNode(fieldNode: QueryNode, type: Type): QueryNode {
     if (type.isScalarType && type.graphQLScalarType === GraphQLOffsetDateTime) {
         return new PropertyAccessQueryNode(fieldNode, TIMESTAMP_PROPERTY);
     }

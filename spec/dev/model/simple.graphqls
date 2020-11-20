@@ -28,6 +28,7 @@ type Hero @rootEntity(
     info: JSON
     infoObj: JSONObject
     attributes: StringMap
+    timeOfDeath: OffsetDateTime
 }
 
 "A heroic mission"

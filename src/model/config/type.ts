@@ -9,6 +9,7 @@ import {
 import { FieldConfig, FlexSearchLanguage } from './field';
 import { FlexSearchIndexConfig, IndexDefinitionConfig } from './indices';
 import { PermissionsConfig } from './permissions';
+import { TimeToLiveConfig } from './time-to-live';
 
 export enum TypeKind {
     SCALAR = 'SCALAR',
