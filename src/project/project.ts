@@ -12,6 +12,7 @@ import { TimeToLiveType } from '../model/implementation/time-to-live';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
+    CountQueryNode,
     EntitiesQueryNode,
     FieldPathQueryNode,
     LiteralQueryNode,
@@ -119,12 +120,18 @@ export class Project {
         return getMetaSchema(this.getModel());
     }
 
-    async executeTTLCleanup(databaseAdapter: DatabaseAdapter, executionOptions: ExecutionOptions) {
+    async executeTTLCleanup(
+        databaseAdapter: DatabaseAdapter,
+        executionOptions: ExecutionOptions
+    ): Promise<{ [name: string]: number }> {
         const ttlTypes = this.getModel().rootEntityTypes.flatMap(rootEntityType => rootEntityType.timeToLiveTypes);
+        const deletedObjects: { [name: string]: number } = {};
         for (const ttlType of ttlTypes) {
             const queryTree = this.getQueryNodeForTTLType(ttlType, executionOptions);
-            await databaseAdapter.execute(queryTree);
+            const result = await databaseAdapter.execute(queryTree);
+            deletedObjects[(ttlType.rootEntityType && ttlType.rootEntityType.name) || ''] = result || 0;
         }
+        return deletedObjects;
     }
 
     private getQueryNodeForTTLType(ttlType: TimeToLiveType, executionOptions: ExecutionOptions): QueryNode {
@@ -157,7 +164,7 @@ export class Project {
             filterNode: new BinaryOperationQueryNode(filterNode, BinaryOperator.AND, nullFilterNode),
             maxCount: executionOptions.timeToLiveCleanupLimit
         });
-        return generateDeleteAllQueryNode(ttlType.rootEntityType, listQueryNode);
+        return new CountQueryNode(generateDeleteAllQueryNode(ttlType.rootEntityType, listQueryNode));
     }
 
     private calcDeleteFrom(ttlType: TimeToLiveType, fieldType: ScalarType | undefined) {
