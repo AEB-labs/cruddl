@@ -12,6 +12,7 @@ import { TimeToLiveType } from '../model/implementation/time-to-live';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
+    CountQueryNode,
     EntitiesQueryNode,
     FieldPathQueryNode,
     LiteralQueryNode,
@@ -163,7 +164,7 @@ export class Project {
             filterNode: new BinaryOperationQueryNode(filterNode, BinaryOperator.AND, nullFilterNode),
             maxCount: executionOptions.timeToLiveCleanupLimit
         });
-        return generateDeleteAllQueryNode(ttlType.rootEntityType, listQueryNode);
+        return new CountQueryNode(generateDeleteAllQueryNode(ttlType.rootEntityType, listQueryNode));
     }
 
     private calcDeleteFrom(ttlType: TimeToLiveType, fieldType: ScalarType | undefined) {
