@@ -77,6 +77,10 @@ export async function start() {
         await project.executeTTLCleanup(db, {});
     }
 
+    if (process.argv.includes('--print-ttl-info')) {
+        console.log(JSON.stringify(await project.getTTLInfo(db, {}), undefined, 2));
+    }
+
     const server = new ApolloServer({
         schema: schema,
         context: props => props

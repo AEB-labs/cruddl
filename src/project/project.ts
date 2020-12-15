@@ -15,8 +15,12 @@ import {
     CountQueryNode,
     EntitiesQueryNode,
     FieldPathQueryNode,
+    ListQueryNode,
     LiteralQueryNode,
+    MergeObjectsQueryNode,
     NullQueryNode,
+    ObjectQueryNode,
+    PropertySpecification,
     QueryNode,
     TransformListQueryNode,
     VariableQueryNode
@@ -27,6 +31,7 @@ import { GraphQLLocalDate } from '../schema/scalars/local-date';
 import { createSchema, getModel, validateSchema } from '../schema/schema-builder';
 import { decapitalize } from '../utils/utils';
 import { ProjectSource, SourceLike, SourceType } from './source';
+import { getQueryNodeForTTLType, getTTLFilter, getTTLInfoQueryNode, TTLInfo } from './time-to-live';
 
 export { ProjectOptions };
 
@@ -127,57 +132,22 @@ export class Project {
         const ttlTypes = this.getModel().rootEntityTypes.flatMap(rootEntityType => rootEntityType.timeToLiveTypes);
         const deletedObjects: { [name: string]: number } = {};
         for (const ttlType of ttlTypes) {
-            const queryTree = this.getQueryNodeForTTLType(ttlType, executionOptions);
+            const queryTree = getQueryNodeForTTLType(ttlType, executionOptions);
             const result = await databaseAdapter.execute(queryTree);
             deletedObjects[(ttlType.rootEntityType && ttlType.rootEntityType.name) || ''] = result || 0;
         }
         return deletedObjects;
     }
 
-    private getQueryNodeForTTLType(ttlType: TimeToLiveType, executionOptions: ExecutionOptions): QueryNode {
-        if (!ttlType.rootEntityType) {
-            throw new Error(`The ttlType does not specify a valid rootEntityType.`);
-        }
-        if (!ttlType.path || !ttlType.path.length) {
-            throw new Error(`The ttlType does not specify a valid path.`);
-        }
-        if (!ttlType.fieldType) {
-            throw new Error(`The ttlType does not have a valid fieldType.`);
-        }
-
-        const deleteFrom = this.calcDeleteFrom(ttlType, ttlType.fieldType);
-        const listItemVar = new VariableQueryNode(decapitalize(ttlType.rootEntityType.name));
-
-        const filterNode = new BinaryOperationQueryNode(
-            getScalarFilterValueNode(new FieldPathQueryNode(listItemVar, ttlType.path), ttlType.fieldType),
-            BinaryOperator.LESS_THAN,
-            new LiteralQueryNode(deleteFrom)
+    async getTTLInfo(
+        databaseAdapter: DatabaseAdapter,
+        executionOptions: ExecutionOptions
+    ): Promise<ReadonlyArray<TTLInfo>> {
+        const ttlTypes = this.getModel().rootEntityTypes.flatMap(rootEntityType => rootEntityType.timeToLiveTypes);
+        const queryTree = new ListQueryNode(
+            ttlTypes.map(ttlType => getTTLInfoQueryNode(ttlType, executionOptions.timeToLiveOverdueDelta || 3))
         );
-        const nullFilterNode = new BinaryOperationQueryNode(
-            getScalarFilterValueNode(new FieldPathQueryNode(listItemVar, ttlType.path), ttlType.fieldType),
-            BinaryOperator.GREATER_THAN,
-            new NullQueryNode()
-        );
-        const listQueryNode = new TransformListQueryNode({
-            listNode: new EntitiesQueryNode(ttlType.rootEntityType),
-            itemVariable: listItemVar,
-            filterNode: new BinaryOperationQueryNode(filterNode, BinaryOperator.AND, nullFilterNode),
-            maxCount: executionOptions.timeToLiveCleanupLimit
-        });
-        return new CountQueryNode(generateDeleteAllQueryNode(ttlType.rootEntityType, listQueryNode));
-    }
-
-    private calcDeleteFrom(ttlType: TimeToLiveType, fieldType: ScalarType | undefined) {
-        if (!fieldType) {
-            throw new Error(`The ttl-type dateField does not have a valid type.`);
-        }
-
-        // Use westernmost timezone for LocalDate so objects are only deleted when they are expired everywhere in the world
-        const currentTime: ZonedDateTime =
-            fieldType.name === GraphQLLocalDate.name
-                ? ZonedDateTime.now(ZoneId.of('Etc/GMT+12'))
-                : ZonedDateTime.now(ZoneId.UTC);
-
-        return currentTime.minusDays(ttlType.expireAfterDays).format(DateTimeFormatter.ISO_INSTANT);
+        const result = await databaseAdapter.execute(queryTree);
+        return result;
     }
 }
