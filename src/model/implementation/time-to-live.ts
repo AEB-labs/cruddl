@@ -1,4 +1,3 @@
-import { GraphQLInt } from 'graphql';
 import memorize from 'memorize-decorator';
 import { GraphQLDateTime } from '../../schema/scalars/date-time';
 import { GraphQLLocalDate } from '../../schema/scalars/local-date';
