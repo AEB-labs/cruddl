@@ -70,6 +70,11 @@ export interface ExecutionOptions {
      * The maximum number of elements to delete in one ttl-cleanup
      */
     readonly timeToLiveCleanupLimit?: number;
+
+    /**
+     * The amount of days until an element is shown as overdue in the ttl-info
+     */
+    readonly timeToLiveOverdueDelta?: number;
 }
 
 export interface ExecutionOptionsCallbackArgs {
