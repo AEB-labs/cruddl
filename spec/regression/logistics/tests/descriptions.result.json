@@ -5848,6 +5848,10 @@
                             "description": "This field is an entity extension and thus is never 'null' - passing 'null' here does not change the field value."
                         },
                         {
+                            "name": "items",
+                            "description": "Deletes all `DeliveryItems` objects in list of `items` and replaces it with the specified objects.\n\nCannot be combined with the add/update/delete fields for the same child entity list."
+                        },
+                        {
                             "name": "addItems",
                             "description": "Adds new `DeliveryItems` to the list of `items`"
                         },
@@ -6074,6 +6078,10 @@
                         {
                             "name": "dgInfo",
                             "description": "This field is an entity extension and thus is never 'null' - passing 'null' here does not change the field value."
+                        },
+                        {
+                            "name": "items",
+                            "description": "Deletes all `DeliveryItems` objects in list of `items` and replaces it with the specified objects.\n\nCannot be combined with the add/update/delete fields for the same child entity list."
                         },
                         {
                             "name": "addItems",
