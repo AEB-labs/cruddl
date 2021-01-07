@@ -19,6 +19,7 @@ import {
     CalcMutationInputField,
     DummyUpdateInputField,
     RemoveChildEntitiesInputField,
+    ReplaceChildEntitiesInputField,
     UpdateChildEntitiesInputField,
     UpdateEntityExtensionInputField,
     UpdateFilterInputField,
@@ -216,6 +217,10 @@ export class UpdateInputTypeGenerator {
 
         if (field.type.isChildEntityType) {
             return [
+                new ReplaceChildEntitiesInputField(
+                    field,
+                    this.createInputTypeGenerator.generateForChildEntityType(field.type)
+                ),
                 new AddChildEntitiesInputField(
                     field,
                     this.createInputTypeGenerator.generateForChildEntityType(field.type)

@@ -13,6 +13,7 @@ import {
 import {
     getAddChildEntitiesFieldName,
     getRemoveChildEntitiesFieldName,
+    getReplaceChildEntitiesFieldName,
     getUpdateChildEntitiesFieldName
 } from '../../schema/names';
 import { GraphQLOffsetDateTime, serializeForStorage } from '../../schema/scalars/offset-date-time';
@@ -280,6 +281,26 @@ export abstract class AbstractChildEntityInputField implements UpdateInputField 
 
     collectAffectedFields(value: AnyValue, fields: Set<Field>, context: FieldContext) {
         fields.add(this.field);
+    }
+}
+
+export class ReplaceChildEntitiesInputField extends AbstractChildEntityInputField {
+    public readonly inputType: GraphQLInputType;
+
+    constructor(field: Field, public readonly createInputType: CreateChildEntityInputType) {
+        super(
+            field,
+            getReplaceChildEntitiesFieldName(field.name),
+            `Deletes all \`${field.type.pluralName}\` objects in list of \`${field.name}\` and replaces it with the specified objects.\n\nCannot be combined with the add/update/delete fields for the same child entity list.`
+        );
+        this.inputType = new GraphQLList(new GraphQLNonNull(createInputType.getInputType()));
+    }
+
+    collectAffectedFields(value: AnyValue, fields: Set<Field>, context: FieldContext) {
+        super.collectAffectedFields(value, fields, context);
+        if (value != undefined) {
+            this.createInputType.collectAffectedFields(value as PlainObject, fields, context);
+        }
     }
 }
 
