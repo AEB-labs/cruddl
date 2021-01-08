@@ -24,6 +24,7 @@ import { ENTITY_UPDATED_AT, ID_FIELD, REVISION_FIELD } from '../../schema/consta
 import {
     getAddChildEntitiesFieldName,
     getRemoveChildEntitiesFieldName,
+    getReplaceChildEntitiesFieldName,
     getUpdateChildEntitiesFieldName
 } from '../../schema/names';
 import { AnyValue, decapitalize, flatMap, joinWithAnd, objectEntries, PlainObject } from '../../utils/utils';
@@ -32,6 +33,7 @@ import { FieldContext } from '../query-node-object-type';
 import { TypedInputObjectType } from '../typed-input-object-type';
 import {
     AddChildEntitiesInputField,
+    ReplaceChildEntitiesInputField,
     UpdateChildEntitiesInputField,
     UpdateInputField,
     UpdateInputFieldContext
@@ -95,6 +97,26 @@ export class UpdateObjectInputType extends TypedInputObjectType<UpdateInputField
             UpdateChildEntitiesInputField
         );
         const removeField = this.getFieldOrThrow(getRemoveChildEntitiesFieldName(field.name));
+        const replaceField = this.getFieldOrThrow(
+            getReplaceChildEntitiesFieldName(field.name),
+            ReplaceChildEntitiesInputField
+        );
+
+        if (replaceField.name in objectValue) {
+            if (addField.name in objectValue || updateField.name in objectValue || removeField.name in objectValue) {
+                throw createGraphQLError(
+                    `Can't combine ${replaceField.name} in "${this.name}" with add/update/remove fields`,
+                    context
+                );
+            }
+
+            const newValues = (objectValue[replaceField.name] || []) as ReadonlyArray<AnyValue>;
+            // wrap the whole thing into a LiteralQueryNode instead of them individually so that only one bound variable is used
+            const newNode = new LiteralQueryNode(
+                newValues.map(val => replaceField.createInputType.prepareValue(val as PlainObject, context))
+            );
+            return [new SetFieldQueryNode(field, newNode)];
+        }
 
         const newValues = (objectValue[addField.name] || []) as ReadonlyArray<AnyValue>;
         const updatedValues = (objectValue[updateField.name] || []) as ReadonlyArray<AnyValue>;

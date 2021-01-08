@@ -3,7 +3,8 @@ import { capitalize } from '../utils/utils';
 import {
     ADD_CHILD_ENTITIES_FIELD_PREFIX,
     ADD_EDGES_FIELD_PREFIX,
-    ALL_ENTITIES_FIELD_PREFIX, CONFIRM_FOR_BILLING_FIELD_PREFIX,
+    ALL_ENTITIES_FIELD_PREFIX,
+    CONFIRM_FOR_BILLING_FIELD_PREFIX,
     CREATE_ENTITY_FIELD_PREFIX,
     CREATE_RELATED_ENTITY_FIELD_PREFIX,
     DELETE_ALL_ENTITIES_FIELD_PREFIX,
@@ -56,8 +57,8 @@ export function getDeleteAllEntitiesFieldName(rootEntityType: RootEntityType) {
     return DELETE_ALL_ENTITIES_FIELD_PREFIX + rootEntityType.pluralName;
 }
 
-export function getConfirmForBillingFieldName(entityName: string){
-    return CONFIRM_FOR_BILLING_FIELD_PREFIX + entityName
+export function getConfirmForBillingFieldName(entityName: string) {
+    return CONFIRM_FOR_BILLING_FIELD_PREFIX + entityName;
 }
 
 export function getMetaFieldName(field: string) {
@@ -70,6 +71,10 @@ export function getAddRelationFieldName(fieldName: string) {
 
 export function getRemoveRelationFieldName(fieldName: string) {
     return REMOVE_EDGES_FIELD_PREFIX + capitalize(fieldName);
+}
+
+export function getReplaceChildEntitiesFieldName(fieldName: string) {
+    return fieldName;
 }
 
 export function getAddChildEntitiesFieldName(fieldName: string) {
