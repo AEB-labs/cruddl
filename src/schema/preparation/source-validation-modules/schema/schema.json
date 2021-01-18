@@ -38,11 +38,40 @@
                             "keyFieldName": {
                                 "type": "string",
                                 "pattern": "^[a-zA-Z0-9_-]+$"
+                            },
+                            "quantityFieldName": {
+                                "type": "string"
+                            },
+                            "category": {
+                                "type": "string"
+                            },
+                            "categoryMapping": {
+                                "type": "object",
+                                "properties": {
+                                    "fieldName": {
+                                        "type": "string"
+                                    },
+                                    "defaultValue": {
+                                        "type": "string",
+                                        "pattern": "^[a-zA-Z0-9_-]+$"
+                                    },
+                                    "values": {
+                                        "type": "object",
+                                        "additionalProperties": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": ["fieldName", "defaultValue", "values"]
                             }
-                        }
+                        },
+                        "required": ["typeName"],
+                        "additionalProperties": false
                     }
                 }
-            }
+            },
+            "additionalProperties": false
         },
         "timeToLive": {
             "type": "array",

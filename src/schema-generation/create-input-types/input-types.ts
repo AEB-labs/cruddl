@@ -5,9 +5,12 @@ import {
     AffectedFieldInfoQueryNode,
     CreateBillingEntityQueryNode,
     CreateEntityQueryNode,
+    EntityFromIdQueryNode,
+    FirstOfListQueryNode,
     LiteralQueryNode,
     PreExecQueryParms,
     QueryNode,
+    VariableAssignmentQueryNode,
     VariableQueryNode
 } from '../../query-tree';
 import { ENTITY_CREATED_AT, ENTITY_UPDATED_AT, ID_FIELD } from '../../schema/constants';
@@ -15,6 +18,7 @@ import { getCreateInputTypeName, getValueObjectInputTypeName } from '../../schem
 import { flatMap, PlainObject } from '../../utils/utils';
 import { FieldContext } from '../query-node-object-type';
 import { TypedInputObjectType } from '../typed-input-object-type';
+import { createBillingEntityCategoryNode, createBillingEntityQuantityNode } from '../utils/billing-nodes';
 import { CreateInputField } from './input-fields';
 import { isRelationCreateField } from './relation-fields';
 import uuid = require('uuid');
@@ -93,12 +97,25 @@ export class CreateRootEntityInputType extends CreateObjectInputType {
             this.rootEntityType.billingEntityConfig.keyFieldName &&
             input[this.rootEntityType.billingEntityConfig.keyFieldName]
         ) {
+            const entityVar = new VariableQueryNode('entity');
             preExecQueryParms.push(
                 new PreExecQueryParms({
-                    query: new CreateBillingEntityQueryNode(
-                        input[this.rootEntityType.billingEntityConfig.keyFieldName] as number | string,
-                        this.rootEntityType.name
-                    )
+                    query: new VariableAssignmentQueryNode({
+                        variableValueNode: new EntityFromIdQueryNode(this.rootEntityType, newEntityIdVarNode),
+                        variableNode: entityVar,
+                        resultNode: new CreateBillingEntityQueryNode({
+                            rootEntityTypeName: this.rootEntityType.name,
+                            key: input[this.rootEntityType.billingEntityConfig.keyFieldName] as number | string,
+                            categoryNode: createBillingEntityCategoryNode(
+                                this.rootEntityType.billingEntityConfig,
+                                entityVar
+                            ),
+                            quantityNode: createBillingEntityQuantityNode(
+                                this.rootEntityType.billingEntityConfig,
+                                entityVar
+                            )
+                        })
+                    })
                 })
             );
         }

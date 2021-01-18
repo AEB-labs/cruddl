@@ -771,14 +771,16 @@ register(FlexSearchComplexOperatorQueryNode, (node, context) => {
 });
 
 function getBillingInput(
+    node: ConfirmForBillingQueryNode | CreateBillingEntityQueryNode,
     key: string | number | AQLFragment,
-    rootEntityTypeName: string,
     context: QueryContext,
     currentTimestamp: string
 ) {
     return aql`
         key: ${key},
-        type: ${rootEntityTypeName},
+        type: ${node.rootEntityTypeName},
+        category: ${processNode(node.categoryNode, context)},
+        quantity: ${processNode(node.quantityNode, context)},
         isExported: false,
         createdAt: ${currentTimestamp},
         updatedAt: ${currentTimestamp}`;
@@ -792,11 +794,13 @@ register(CreateBillingEntityQueryNode, (node, context) => {
             type: ${node.rootEntityTypeName}
         }`,
         aql`INSERT {
-            ${getBillingInput(node.key, node.rootEntityTypeName, context, currentTimestamp)},
+            ${getBillingInput(node, node.key, context, currentTimestamp)},
             isConfirmedForExport: false
          }`,
         aql`UPDATE {
-            updatedAt: ${currentTimestamp}
+            updatedAt: ${currentTimestamp},
+            category: ${processNode(node.categoryNode, context)},
+            quantity: ${processNode(node.quantityNode, context)}
         }`,
         aql`IN ${getCollectionForBilling(AccessType.WRITE, context)}`,
         aql`RETURN ${node.key}`
@@ -804,7 +808,7 @@ register(CreateBillingEntityQueryNode, (node, context) => {
 });
 
 register(ConfirmForBillingQueryNode, (node, context) => {
-    const key = processNode(node.key, context);
+    const key = processNode(node.keyNode, context);
     const currentTimestamp = new Date().toISOString();
     return aqlExt.parenthesizeList(
         aql`UPSERT {
@@ -812,14 +816,16 @@ register(ConfirmForBillingQueryNode, (node, context) => {
             type: ${node.rootEntityTypeName}
         }`,
         aql`INSERT {
-            ${getBillingInput(key, node.rootEntityTypeName, context, currentTimestamp)},
+            ${getBillingInput(node, key, context, currentTimestamp)},
             isConfirmedForExport: true,
             confirmedForExportAt: ${currentTimestamp}
          }`,
         aql`UPDATE {
             isConfirmedForExport: true,
             updatedAt: ${currentTimestamp},
-            confirmedForExportAt: ${currentTimestamp}
+            confirmedForExportAt: ${currentTimestamp},
+            category: ${processNode(node.categoryNode, context)},
+            quantity: ${processNode(node.quantityNode, context)}
         }`,
         aql`IN ${getCollectionForBilling(AccessType.WRITE, context)}`,
         aql`RETURN true`

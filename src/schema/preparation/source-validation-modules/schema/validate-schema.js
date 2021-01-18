@@ -1304,6 +1304,24 @@ var validate = (function() {
                 if (data1 && typeof data1 === 'object' && !Array.isArray(data1)) {
                     var errs__1 = errors;
                     var valid2 = true;
+                    for (var key1 in data1) {
+                        var isAdditional1 = !(false || key1 == 'billingEntities');
+                        if (isAdditional1) {
+                            valid2 = false;
+                            var err = {
+                                keyword: 'additionalProperties',
+                                dataPath: (dataPath || '') + '.billing',
+                                schemaPath: '#/properties/billing/additionalProperties',
+                                params: {
+                                    additionalProperty: '' + key1 + ''
+                                },
+                                message: 'should NOT have additional properties'
+                            };
+                            if (vErrors === null) vErrors = [err];
+                            else vErrors.push(err);
+                            errors++;
+                        }
+                    }
                     var data2 = data1.billingEntities;
                     if (data2 !== undefined) {
                         var errs_2 = errors;
@@ -1316,8 +1334,49 @@ var validate = (function() {
                                 if (data3 && typeof data3 === 'object' && !Array.isArray(data3)) {
                                     var errs__3 = errors;
                                     var valid4 = true;
+                                    for (var key3 in data3) {
+                                        var isAdditional3 = !(
+                                            false ||
+                                            key3 == 'typeName' ||
+                                            key3 == 'keyFieldName' ||
+                                            key3 == 'quantityFieldName' ||
+                                            key3 == 'category' ||
+                                            key3 == 'categoryMapping'
+                                        );
+                                        if (isAdditional3) {
+                                            valid4 = false;
+                                            var err = {
+                                                keyword: 'additionalProperties',
+                                                dataPath: (dataPath || '') + '.billing.billingEntities[' + i2 + ']',
+                                                schemaPath:
+                                                    '#/properties/billing/properties/billingEntities/items/additionalProperties',
+                                                params: {
+                                                    additionalProperty: '' + key3 + ''
+                                                },
+                                                message: 'should NOT have additional properties'
+                                            };
+                                            if (vErrors === null) vErrors = [err];
+                                            else vErrors.push(err);
+                                            errors++;
+                                        }
+                                    }
                                     var data4 = data3.typeName;
-                                    if (data4 !== undefined) {
+                                    if (data4 === undefined) {
+                                        valid4 = false;
+                                        var err = {
+                                            keyword: 'required',
+                                            dataPath: (dataPath || '') + '.billing.billingEntities[' + i2 + ']',
+                                            schemaPath:
+                                                '#/properties/billing/properties/billingEntities/items/required',
+                                            params: {
+                                                missingProperty: 'typeName'
+                                            },
+                                            message: "should have required property 'typeName'"
+                                        };
+                                        if (vErrors === null) vErrors = [err];
+                                        else vErrors.push(err);
+                                        errors++;
+                                    } else {
                                         var errs_4 = errors;
                                         if (typeof data4 === 'string') {
                                             if (!pattern2.test(data4)) {
@@ -1394,6 +1453,280 @@ var validate = (function() {
                                                     type: 'string'
                                                 },
                                                 message: 'should be string'
+                                            };
+                                            if (vErrors === null) vErrors = [err];
+                                            else vErrors.push(err);
+                                            errors++;
+                                        }
+                                        var valid4 = errors === errs_4;
+                                    }
+                                    if (data3.quantityFieldName !== undefined) {
+                                        var errs_4 = errors;
+                                        if (typeof data3.quantityFieldName !== 'string') {
+                                            var err = {
+                                                keyword: 'type',
+                                                dataPath:
+                                                    (dataPath || '') +
+                                                    '.billing.billingEntities[' +
+                                                    i2 +
+                                                    '].quantityFieldName',
+                                                schemaPath:
+                                                    '#/properties/billing/properties/billingEntities/items/properties/quantityFieldName/type',
+                                                params: {
+                                                    type: 'string'
+                                                },
+                                                message: 'should be string'
+                                            };
+                                            if (vErrors === null) vErrors = [err];
+                                            else vErrors.push(err);
+                                            errors++;
+                                        }
+                                        var valid4 = errors === errs_4;
+                                    }
+                                    if (data3.category !== undefined) {
+                                        var errs_4 = errors;
+                                        if (typeof data3.category !== 'string') {
+                                            var err = {
+                                                keyword: 'type',
+                                                dataPath:
+                                                    (dataPath || '') + '.billing.billingEntities[' + i2 + '].category',
+                                                schemaPath:
+                                                    '#/properties/billing/properties/billingEntities/items/properties/category/type',
+                                                params: {
+                                                    type: 'string'
+                                                },
+                                                message: 'should be string'
+                                            };
+                                            if (vErrors === null) vErrors = [err];
+                                            else vErrors.push(err);
+                                            errors++;
+                                        }
+                                        var valid4 = errors === errs_4;
+                                    }
+                                    var data4 = data3.categoryMapping;
+                                    if (data4 !== undefined) {
+                                        var errs_4 = errors;
+                                        if (data4 && typeof data4 === 'object' && !Array.isArray(data4)) {
+                                            var errs__4 = errors;
+                                            var valid5 = true;
+                                            for (var key4 in data4) {
+                                                var isAdditional4 = !(
+                                                    false ||
+                                                    key4 == 'fieldName' ||
+                                                    key4 == 'defaultValue' ||
+                                                    key4 == 'values'
+                                                );
+                                                if (isAdditional4) {
+                                                    valid5 = false;
+                                                    var err = {
+                                                        keyword: 'additionalProperties',
+                                                        dataPath:
+                                                            (dataPath || '') +
+                                                            '.billing.billingEntities[' +
+                                                            i2 +
+                                                            '].categoryMapping',
+                                                        schemaPath:
+                                                            '#/properties/billing/properties/billingEntities/items/properties/categoryMapping/additionalProperties',
+                                                        params: {
+                                                            additionalProperty: '' + key4 + ''
+                                                        },
+                                                        message: 'should NOT have additional properties'
+                                                    };
+                                                    if (vErrors === null) vErrors = [err];
+                                                    else vErrors.push(err);
+                                                    errors++;
+                                                }
+                                            }
+                                            if (data4.fieldName === undefined) {
+                                                valid5 = false;
+                                                var err = {
+                                                    keyword: 'required',
+                                                    dataPath:
+                                                        (dataPath || '') +
+                                                        '.billing.billingEntities[' +
+                                                        i2 +
+                                                        '].categoryMapping',
+                                                    schemaPath:
+                                                        '#/properties/billing/properties/billingEntities/items/properties/categoryMapping/required',
+                                                    params: {
+                                                        missingProperty: 'fieldName'
+                                                    },
+                                                    message: "should have required property 'fieldName'"
+                                                };
+                                                if (vErrors === null) vErrors = [err];
+                                                else vErrors.push(err);
+                                                errors++;
+                                            } else {
+                                                var errs_5 = errors;
+                                                if (typeof data4.fieldName !== 'string') {
+                                                    var err = {
+                                                        keyword: 'type',
+                                                        dataPath:
+                                                            (dataPath || '') +
+                                                            '.billing.billingEntities[' +
+                                                            i2 +
+                                                            '].categoryMapping.fieldName',
+                                                        schemaPath:
+                                                            '#/properties/billing/properties/billingEntities/items/properties/categoryMapping/properties/fieldName/type',
+                                                        params: {
+                                                            type: 'string'
+                                                        },
+                                                        message: 'should be string'
+                                                    };
+                                                    if (vErrors === null) vErrors = [err];
+                                                    else vErrors.push(err);
+                                                    errors++;
+                                                }
+                                                var valid5 = errors === errs_5;
+                                            }
+                                            var data5 = data4.defaultValue;
+                                            if (data5 === undefined) {
+                                                valid5 = false;
+                                                var err = {
+                                                    keyword: 'required',
+                                                    dataPath:
+                                                        (dataPath || '') +
+                                                        '.billing.billingEntities[' +
+                                                        i2 +
+                                                        '].categoryMapping',
+                                                    schemaPath:
+                                                        '#/properties/billing/properties/billingEntities/items/properties/categoryMapping/required',
+                                                    params: {
+                                                        missingProperty: 'defaultValue'
+                                                    },
+                                                    message: "should have required property 'defaultValue'"
+                                                };
+                                                if (vErrors === null) vErrors = [err];
+                                                else vErrors.push(err);
+                                                errors++;
+                                            } else {
+                                                var errs_5 = errors;
+                                                if (typeof data5 === 'string') {
+                                                    if (!pattern2.test(data5)) {
+                                                        var err = {
+                                                            keyword: 'pattern',
+                                                            dataPath:
+                                                                (dataPath || '') +
+                                                                '.billing.billingEntities[' +
+                                                                i2 +
+                                                                '].categoryMapping.defaultValue',
+                                                            schemaPath:
+                                                                '#/properties/billing/properties/billingEntities/items/properties/categoryMapping/properties/defaultValue/pattern',
+                                                            params: {
+                                                                pattern: '^[a-zA-Z0-9_-]+$'
+                                                            },
+                                                            message: 'should match pattern "^[a-zA-Z0-9_-]+$"'
+                                                        };
+                                                        if (vErrors === null) vErrors = [err];
+                                                        else vErrors.push(err);
+                                                        errors++;
+                                                    }
+                                                } else {
+                                                    var err = {
+                                                        keyword: 'type',
+                                                        dataPath:
+                                                            (dataPath || '') +
+                                                            '.billing.billingEntities[' +
+                                                            i2 +
+                                                            '].categoryMapping.defaultValue',
+                                                        schemaPath:
+                                                            '#/properties/billing/properties/billingEntities/items/properties/categoryMapping/properties/defaultValue/type',
+                                                        params: {
+                                                            type: 'string'
+                                                        },
+                                                        message: 'should be string'
+                                                    };
+                                                    if (vErrors === null) vErrors = [err];
+                                                    else vErrors.push(err);
+                                                    errors++;
+                                                }
+                                                var valid5 = errors === errs_5;
+                                            }
+                                            var data5 = data4.values;
+                                            if (data5 === undefined) {
+                                                valid5 = false;
+                                                var err = {
+                                                    keyword: 'required',
+                                                    dataPath:
+                                                        (dataPath || '') +
+                                                        '.billing.billingEntities[' +
+                                                        i2 +
+                                                        '].categoryMapping',
+                                                    schemaPath:
+                                                        '#/properties/billing/properties/billingEntities/items/properties/categoryMapping/required',
+                                                    params: {
+                                                        missingProperty: 'values'
+                                                    },
+                                                    message: "should have required property 'values'"
+                                                };
+                                                if (vErrors === null) vErrors = [err];
+                                                else vErrors.push(err);
+                                                errors++;
+                                            } else {
+                                                var errs_5 = errors;
+                                                if (data5 && typeof data5 === 'object' && !Array.isArray(data5)) {
+                                                    var errs__5 = errors;
+                                                    var valid6 = true;
+                                                    for (var key5 in data5) {
+                                                        var errs_6 = errors;
+                                                        if (typeof data5[key5] !== 'string') {
+                                                            var err = {
+                                                                keyword: 'type',
+                                                                dataPath:
+                                                                    (dataPath || '') +
+                                                                    '.billing.billingEntities[' +
+                                                                    i2 +
+                                                                    "].categoryMapping.values['" +
+                                                                    key5 +
+                                                                    "']",
+                                                                schemaPath:
+                                                                    '#/properties/billing/properties/billingEntities/items/properties/categoryMapping/properties/values/additionalProperties/type',
+                                                                params: {
+                                                                    type: 'string'
+                                                                },
+                                                                message: 'should be string'
+                                                            };
+                                                            if (vErrors === null) vErrors = [err];
+                                                            else vErrors.push(err);
+                                                            errors++;
+                                                        }
+                                                        var valid6 = errors === errs_6;
+                                                    }
+                                                } else {
+                                                    var err = {
+                                                        keyword: 'type',
+                                                        dataPath:
+                                                            (dataPath || '') +
+                                                            '.billing.billingEntities[' +
+                                                            i2 +
+                                                            '].categoryMapping.values',
+                                                        schemaPath:
+                                                            '#/properties/billing/properties/billingEntities/items/properties/categoryMapping/properties/values/type',
+                                                        params: {
+                                                            type: 'object'
+                                                        },
+                                                        message: 'should be object'
+                                                    };
+                                                    if (vErrors === null) vErrors = [err];
+                                                    else vErrors.push(err);
+                                                    errors++;
+                                                }
+                                                var valid5 = errors === errs_5;
+                                            }
+                                        } else {
+                                            var err = {
+                                                keyword: 'type',
+                                                dataPath:
+                                                    (dataPath || '') +
+                                                    '.billing.billingEntities[' +
+                                                    i2 +
+                                                    '].categoryMapping',
+                                                schemaPath:
+                                                    '#/properties/billing/properties/billingEntities/items/properties/categoryMapping/type',
+                                                params: {
+                                                    type: 'object'
+                                                },
+                                                message: 'should be object'
                                             };
                                             if (vErrors === null) vErrors = [err];
                                             else vErrors.push(err);
@@ -1699,11 +2032,40 @@ validate.schema = {
                             keyFieldName: {
                                 type: 'string',
                                 pattern: '^[a-zA-Z0-9_-]+$'
+                            },
+                            quantityFieldName: {
+                                type: 'string'
+                            },
+                            category: {
+                                type: 'string'
+                            },
+                            categoryMapping: {
+                                type: 'object',
+                                properties: {
+                                    fieldName: {
+                                        type: 'string'
+                                    },
+                                    defaultValue: {
+                                        type: 'string',
+                                        pattern: '^[a-zA-Z0-9_-]+$'
+                                    },
+                                    values: {
+                                        type: 'object',
+                                        additionalProperties: {
+                                            type: 'string'
+                                        }
+                                    }
+                                },
+                                additionalProperties: false,
+                                required: ['fieldName', 'defaultValue', 'values']
                             }
-                        }
+                        },
+                        required: ['typeName'],
+                        additionalProperties: false
                     }
                 }
-            }
+            },
+            additionalProperties: false
         },
         timeToLive: {
             type: 'array',
