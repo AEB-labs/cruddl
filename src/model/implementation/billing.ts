@@ -1,6 +1,7 @@
+import { GraphQLBoolean, GraphQLEnumType, GraphQLFloat, GraphQLID, GraphQLInt, GraphQLString } from 'graphql';
 import memorize from 'memorize-decorator';
+import { BillingEntityCategoryMappingConfig, BillingEntityConfig } from '../config/billing';
 import { ValidationMessage } from '../validation';
-import { BillingConfig, BillingEntityConfig } from '../config/billing';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
 import { Field } from './field';
 import { Model } from './model';
@@ -19,10 +20,7 @@ export class BillingEntityType implements ModelComponent {
             );
             return;
         }
-        if (
-            this.input.keyFieldName &&
-            !this.rootEntityType.fields.find(value => value.name === this.input.keyFieldName)
-        ) {
+        if (this.input.keyFieldName && !this.rootEntityType.getField(this.input.keyFieldName)) {
             context.addMessage(
                 ValidationMessage.error(
                     `The field "${this.input.keyFieldName}" is not defined in the type "${this.input.typeName}".`,
@@ -65,6 +63,106 @@ export class BillingEntityType implements ModelComponent {
             );
             return;
         }
+
+        this.validateQuantityField(context);
+        this.validateCategory(context);
+    }
+
+    private validateQuantityField(context: ValidationContext) {
+        if (!this.rootEntityType || this.input.quantityFieldName == undefined) {
+            return;
+        }
+        const quantityField = this.rootEntityType.getField(this.input.quantityFieldName);
+        if (!quantityField) {
+            context.addMessage(
+                ValidationMessage.error(
+                    `The field "${this.input.quantityFieldName}" is not defined in the type "${this.input.typeName}".`,
+                    this.input.quantityFieldNameLoc
+                )
+            );
+            return;
+        }
+
+        if (quantityField.isList) {
+            // lists are ok - we use the count
+            return;
+        }
+
+        if (
+            !quantityField.type.isScalarType ||
+            (quantityField.type.name !== GraphQLInt.name && quantityField.type.name !== GraphQLFloat.name)
+        ) {
+            context.addMessage(
+                ValidationMessage.error(
+                    `The quantity field must be of type "Int", "Float", or a list type, but "${quantityField.name}" is of type "${quantityField.type.name}".`,
+                    this.input.quantityFieldNameLoc
+                )
+            );
+        }
+    }
+
+    private validateCategory(context: ValidationContext) {
+        if (!this.rootEntityType) {
+            return;
+        }
+
+        if (this.input.category != undefined) {
+            if (this.input.categoryMapping != undefined) {
+                context.addMessage(
+                    ValidationMessage.error(
+                        `"category" and "categoryMapping" cannot be combined.`,
+                        this.input.categoryMappingLoc
+                    )
+                );
+                context.addMessage(
+                    ValidationMessage.error(
+                        `"category" and "categoryMapping" cannot be combined.`,
+                        this.input.categoryLoc
+                    )
+                );
+            }
+            return;
+        }
+
+        if (this.input.categoryMapping == undefined) {
+            return;
+        }
+
+        const field = this.rootEntityType.getField(this.input.categoryMapping.fieldName);
+        if (!field) {
+            context.addMessage(
+                ValidationMessage.error(
+                    `The field "${this.input.categoryMapping.fieldName}" is not defined in the type "${this.input.typeName}".`,
+                    this.input.categoryMapping.fieldNameLoc
+                )
+            );
+            return;
+        }
+
+        if (field.isList) {
+            context.addMessage(
+                ValidationMessage.error(
+                    `Field "${this.rootEntityType.name}.${this.input.categoryMapping.fieldName}" is a list and cannot be used as mapping source.`,
+                    this.input.categoryMapping.fieldNameLoc
+                )
+            );
+        }
+
+        const allowedTypes = [GraphQLString, GraphQLID, GraphQLBoolean, GraphQLInt];
+        if (!allowedTypes.some(t => t.name === field.type.name) && !field.type.isEnumType) {
+            context.addMessage(
+                ValidationMessage.error(
+                    `Only fields of type ${allowedTypes
+                        .map(t => t.name)
+                        .join(', ')} and of enum types can be used as mapping source, but "${
+                        this.rootEntityType.name
+                    }.${this.input.categoryMapping.fieldName}" is of type "${field.type.name}".`,
+                    this.input.categoryMapping.fieldNameLoc
+                )
+            );
+        }
+
+        // TODO maybe type checking of mapping keys?
     }
 
     @memorize()
@@ -94,5 +192,29 @@ export class BillingEntityType implements ModelComponent {
             this.input.keyFieldName ||
             (this.rootEntityType && this.rootEntityType.keyField ? this.rootEntityType.keyField.name : undefined)
         );
+    }
+
+    @memorize()
+    get quantityField(): Field | undefined {
+        if (!this.input.quantityFieldName || !this.rootEntityType) {
+            return undefined;
+        }
+        return this.rootEntityType.getField(this.input.quantityFieldName);
+    }
+
+    @memorize()
+    get categoryMappingField(): Field | undefined {
+        if (!this.input.categoryMapping || !this.input.categoryMapping.fieldName || !this.rootEntityType) {
+            return undefined;
+        }
+        return this.rootEntityType.getField(this.input.categoryMapping.fieldName);
+    }
+
+    get category(): string | undefined {
+        return this.input.category;
+    }
+
+    get categoryMapping(): BillingEntityCategoryMappingConfig | undefined {
+        return this.input.categoryMapping;
     }
 }
