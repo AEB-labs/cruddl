@@ -19,6 +19,7 @@ export function not(value: QueryNode): QueryNode {
 
 export const and = binaryOp(BinaryOperator.AND);
 export const or = binaryOp(BinaryOperator.OR);
+export const equal = binaryOp(BinaryOperator.EQUAL);
 
 export function binaryOp(op: BinaryOperator) {
     return (lhs: QueryNode, rhs: QueryNode) => {
