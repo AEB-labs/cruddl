@@ -876,11 +876,15 @@ register(CreateBillingEntityQueryNode, (node, context) => {
 
     return jsExt.executingFunction(
         js`
-            const entry = ${billingEntities}.find(value => (value.key === ${node.key} && value.type === ${node.rootEntityTypeName}));
+            const entry = ${billingEntities}.find(value => (value.key === ${node.key} && value.type === ${
+            node.rootEntityTypeName
+        }));
             if(!entry){
                 ${billingEntities}.push({
                     key: ${node.key},
                     type: ${node.rootEntityTypeName},
+                    category: ${processNode(node.categoryNode, context)},
+                    quantity: ${processNode(node.quantityNode, context)},
                     isExported: false,
                     isConfirmedForExport: false,
                     createdAt: ${currentTimestamp},
@@ -891,18 +895,22 @@ register(CreateBillingEntityQueryNode, (node, context) => {
 });
 
 register(ConfirmForBillingQueryNode, (node, context) => {
-    const key = processNode(node.key, context);
+    const key = processNode(node.keyNode, context);
     const currentTimestamp = new Date().toISOString();
     const billingEntities = js.collection('billingEntities');
 
     return jsExt.executingFunction(
         js`
-            const entry = ${billingEntities}.find(value => (value.key === ${key} && value.type === ${node.rootEntityTypeName}));
+            const entry = ${billingEntities}.find(value => (value.key === ${key} && value.type === ${
+            node.rootEntityTypeName
+        }));
             if(!entry){
                 ${billingEntities}.push({
                     key: ${key},
                     type: ${node.rootEntityTypeName},
                     isExported: false,
+                    category: ${processNode(node.categoryNode, context)},
+                    quantity: ${processNode(node.quantityNode, context)},
                     isConfirmedForExport: true,
                     confirmedForExportAt: ${currentTimestamp},
                     createdAt: ${currentTimestamp},

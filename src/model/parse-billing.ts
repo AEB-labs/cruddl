@@ -12,7 +12,10 @@ export function parseBillingConfigs(source: ParsedObjectProjectSource): BillingC
             return {
                 ...value,
                 typeNameLoc: source.pathLocationMap[`/billing/billingEntities/${index}/typeName`],
-                keyFieldNameLoc: source.pathLocationMap[`/billing/billingEntities/${index}/keyField`]
+                keyFieldNameLoc: source.pathLocationMap[`/billing/billingEntities/${index}/keyFieldName`],
+                quantityFieldNameLoc: source.pathLocationMap[`/billing/billingEntities/${index}/quantityFieldName`],
+                categoryLoc: source.pathLocationMap[`/billing/billingEntities/${index}/category`],
+                categoryMappingLoc: source.pathLocationMap[`/billing/billingEntities/${index}/categoryMapping`]
             };
         })
     };
