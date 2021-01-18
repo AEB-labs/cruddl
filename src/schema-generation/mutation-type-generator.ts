@@ -23,6 +23,7 @@ import {
     TransformListQueryNode,
     UnknownValueQueryNode,
     UpdateEntitiesQueryNode,
+    VariableAssignmentQueryNode,
     VariableQueryNode,
     WithPreExecutionQueryNode
 } from '../query-tree';
@@ -52,6 +53,7 @@ import {
     QueryNodeObjectType
 } from './query-node-object-type';
 import { UpdateInputFieldContext, UpdateInputTypeGenerator, UpdateRootEntityInputType } from './update-input-types';
+import { createBillingEntityCategoryNode, createBillingEntityQuantityNode } from './utils/billing-nodes';
 import { getArgumentsForUniqueFields, getEntitiesByUniqueFieldQuery } from './utils/entities-by-unique-field';
 import { getFilterNode } from './utils/filtering';
 import { mapIDsToRootEntities, mapTOIDNodesUnoptimized } from './utils/map';
@@ -326,18 +328,30 @@ export class MutationTypeGenerator {
         );
 
         const preExecQueryParms = [updateEntityPreExec, ...relationStatements];
-
         if (
             rootEntityType.billingEntityConfig &&
             rootEntityType.billingEntityConfig.keyFieldName &&
             input[rootEntityType.billingEntityConfig.keyFieldName]
         ) {
+            const entityVar = new VariableQueryNode('entity');
             preExecQueryParms.push(
                 new PreExecQueryParms({
-                    query: new CreateBillingEntityQueryNode(
-                        input[rootEntityType.billingEntityConfig.keyFieldName] as number | string,
-                        rootEntityType.name
-                    )
+                    query: new VariableAssignmentQueryNode({
+                        variableValueNode: new EntityFromIdQueryNode(
+                            rootEntityType,
+                            new FirstOfListQueryNode(updatedIdsVarNode)
+                        ),
+                        variableNode: entityVar,
+                        resultNode: new CreateBillingEntityQueryNode({
+                            rootEntityTypeName: rootEntityType.name,
+                            key: input[rootEntityType.billingEntityConfig.keyFieldName] as number | string,
+                            categoryNode: createBillingEntityCategoryNode(
+                                rootEntityType.billingEntityConfig,
+                                entityVar
+                            ),
+                            quantityNode: createBillingEntityQuantityNode(rootEntityType.billingEntityConfig, entityVar)
+                        })
+                    })
                 })
             );
         }

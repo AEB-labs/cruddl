@@ -481,10 +481,7 @@ export class Field implements ModelComponent {
 
         if (!this.collectPath.resultIsList) {
             context.addMessage(
-                ValidationMessage.error(
-                    `The path does not result in a list.`,
-                    this.input.collect.aggregationOperatorASTNode
-                )
+                ValidationMessage.error(`The path does not result in a list.`, this.input.collect.pathASTNode)
             );
             return;
         }
