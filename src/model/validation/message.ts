@@ -20,9 +20,14 @@ export class SourcePosition {
 export class MessageLocation {
     public readonly sourceName: string;
 
-    public readonly source: ProjectSource|undefined;
+    // ! - we set this as a property
+    public readonly source!: ProjectSource;
 
-    constructor(source: string|ProjectSource, readonly _start: SourcePosition | number, readonly _end: SourcePosition | number) {
+    constructor(
+        source: string | ProjectSource,
+        readonly _start: SourcePosition | number,
+        readonly _end: SourcePosition | number
+    ) {
         if (source instanceof ProjectSource) {
             Object.defineProperty(this, 'source', {
                 enumerable: false,
@@ -34,6 +39,10 @@ export class MessageLocation {
             if (!(_start instanceof SourcePosition) || !(_end instanceof SourcePosition)) {
                 throw new Error(`If no ProjectSource is given, start and end positions must be SourcePositions.`);
             }
+            Object.defineProperty(this, 'source', {
+                enumerable: false,
+                value: new ProjectSource(this.sourceName, '')
+            });
         }
     }
 
@@ -41,31 +50,32 @@ export class MessageLocation {
         return new MessageLocation(
             ProjectSource.fromGraphQLSource(loc.source) || loc.source.name,
             new SourcePosition(loc.start, loc.startToken.line, loc.startToken.column),
-            new SourcePosition(loc.end, loc.endToken.line, loc.endToken.column + loc.endToken.end - loc.endToken.start));
+            new SourcePosition(loc.end, loc.endToken.line, loc.endToken.column + loc.endToken.end - loc.endToken.start)
+        );
     }
 
     get start(): SourcePosition {
-        if(this._start instanceof  SourcePosition) {
+        if (this._start instanceof SourcePosition) {
             return this._start;
         }
-        if(!this.source){
-            throw new Error("Can not calculate start position without reference to source");
+        if (!this.source) {
+            throw new Error('Can not calculate start position without reference to source');
         }
         const lineAndColumn = getLineAndColumnFromPosition(this._start, this.source.body);
 
-        return {offset: this._start, line: lineAndColumn.line, column: lineAndColumn.column};
+        return { offset: this._start, line: lineAndColumn.line, column: lineAndColumn.column };
     }
 
     get end(): SourcePosition {
-        if(this._end instanceof  SourcePosition) {
+        if (this._end instanceof SourcePosition) {
             return this._end;
         }
-        if(!this.source){
-            throw new Error("Can not calculate end position without reference to source");
+        if (!this.source) {
+            throw new Error('Can not calculate end position without reference to source');
         }
         const lineAndColumn = getLineAndColumnFromPosition(this._end, this.source.body);
 
-        return {offset: this._end, line: lineAndColumn.line, column: lineAndColumn.column};
+        return { offset: this._end, line: lineAndColumn.line, column: lineAndColumn.column };
     }
 
     toString() {
@@ -80,14 +90,12 @@ export class MessageLocation {
     }
 }
 
-export type LocationLike = MessageLocation|Location|ASTNode;
+export type LocationLike = MessageLocation | Location | ASTNode;
 
 export class ValidationMessage {
-    public readonly location: MessageLocation|undefined;
+    public readonly location: MessageLocation | undefined;
 
-    constructor(public readonly severity: Severity,
-                public readonly message: string,
-                location?: LocationLike) {
+    constructor(public readonly severity: Severity, public readonly message: string, location?: LocationLike) {
         if (location && !(location instanceof MessageLocation)) {
             if (isASTNode(location)) {
                 location = location.loc;
@@ -99,18 +107,15 @@ export class ValidationMessage {
         this.location = location;
     }
 
-    public static error(message: string,
-                        location: LocationLike | undefined) {
+    public static error(message: string, location: LocationLike | undefined) {
         return new ValidationMessage(Severity.Error, message, location);
     }
 
-    public static warn(message: string,
-                       location: LocationLike | undefined) {
+    public static warn(message: string, location: LocationLike | undefined) {
         return new ValidationMessage(Severity.Warning, message, location);
     }
 
-    public static info(message: string,
-                       location: LocationLike | undefined) {
+    public static info(message: string, location: LocationLike | undefined) {
         return new ValidationMessage(Severity.Info, message, location);
     }
 
@@ -127,7 +132,7 @@ function severityToString(severity: Severity) {
         case Severity.Info:
             return 'Info';
         case Severity.Warning:
-            return 'Warning'
+            return 'Warning';
     }
 }
 
@@ -135,7 +140,11 @@ function isASTNode(obj: any): obj is ASTNode {
     return 'kind' in obj;
 }
 
-export function locationWithinStringArgument(node: StringValueNode, offset: number, length: number) {
+export function locationWithinStringArgument(node: StringValueNode | MessageLocation, offset: number, length: number) {
+    if (node instanceof MessageLocation) {
+        return locationWithinStringArgumentML(node, offset, length);
+    }
+
     if (!node.loc) {
         return undefined;
     }
@@ -144,5 +153,23 @@ export function locationWithinStringArgument(node: StringValueNode, offset: numb
     return new MessageLocation(
         ProjectSource.fromGraphQLSource(loc.source) || loc.source.name,
         new SourcePosition(loc.start + 1 + offset, loc.startToken.line, loc.startToken.column + 1 + offset),
-        new SourcePosition(loc.start + 1 + offset + length, loc.endToken.line, loc.startToken.column + 1 + offset + length));
+        new SourcePosition(
+            loc.start + 1 + offset + length,
+            loc.endToken.line,
+            loc.startToken.column + 1 + offset + length
+        )
+    );
+}
+
+function locationWithinStringArgumentML(loc: MessageLocation, offset: number, length: number): MessageLocation {
+    // add 1 because of "
+    return new MessageLocation(
+        loc.source,
+        new SourcePosition(loc.start.offset + 1 + offset, loc.start.line, loc.start.column + 1 + offset),
+        new SourcePosition(
+            loc.start.offset + 1 + offset + length,
+            loc.start.line,
+            loc.start.column + 1 + offset + length
+        )
+    );
 }

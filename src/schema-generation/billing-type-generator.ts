@@ -6,7 +6,9 @@ import {
     BinaryOperationQueryNode,
     BinaryOperator,
     ConfirmForBillingQueryNode,
+    CreateBillingEntityQueryNode,
     EntitiesQueryNode,
+    EntityFromIdQueryNode,
     ErrorIfNotTruthyResultValidator,
     FieldQueryNode,
     FirstOfListQueryNode,
@@ -17,6 +19,7 @@ import {
     RootEntityIDQueryNode,
     TransformListQueryNode,
     UpdateEntitiesQueryNode,
+    VariableAssignmentQueryNode,
     VariableQueryNode,
     WithPreExecutionQueryNode
 } from '../query-tree';
@@ -24,6 +27,7 @@ import { BILLING_MUTATION_INPUT_ARG } from '../schema/constants';
 import { getConfirmForBillingFieldName } from '../schema/names';
 import { OutputTypeGenerator } from './output-type-generator';
 import { QueryNodeField } from './query-node-object-type';
+import { createBillingEntityCategoryNode, createBillingEntityQuantityNode } from './utils/billing-nodes';
 
 export class BillingTypeGenerator {
     constructor(readonly outputTypeGenerator: OutputTypeGenerator) {}
@@ -51,8 +55,12 @@ export class BillingTypeGenerator {
     }
 
     private generateQueryNode(arg: number | string, rootEntityType: RootEntityType) {
+        if (!rootEntityType.billingEntityConfig) {
+            throw new Error(`Expected type "${rootEntityType.name}" to have a billing configuration`);
+        }
         const entityIdQueryNode = new LiteralQueryNode(arg);
         const keyVariableQueryNode = new VariableQueryNode();
+        const entityVar = new VariableQueryNode('entity');
         return new WithPreExecutionQueryNode({
             preExecQueries: [
                 this.getExistancePreExecQueryParms(rootEntityType, entityIdQueryNode),
@@ -61,7 +69,19 @@ export class BillingTypeGenerator {
                     query: this.getEmptyUpdateQueryNode(rootEntityType, entityIdQueryNode)
                 }),
                 new PreExecQueryParms({
-                    query: new ConfirmForBillingQueryNode(keyVariableQueryNode, rootEntityType.name)
+                    query: new VariableAssignmentQueryNode({
+                        variableValueNode: new EntityFromIdQueryNode(rootEntityType, entityIdQueryNode),
+                        variableNode: entityVar,
+                        resultNode: new ConfirmForBillingQueryNode({
+                            rootEntityTypeName: rootEntityType.name,
+                            keyNode: keyVariableQueryNode,
+                            categoryNode: createBillingEntityCategoryNode(
+                                rootEntityType.billingEntityConfig,
+                                entityVar
+                            ),
+                            quantityNode: createBillingEntityQuantityNode(rootEntityType.billingEntityConfig, entityVar)
+                        })
+                    })
                 })
             ],
             resultNode: new LiteralQueryNode(true)
