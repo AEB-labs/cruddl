@@ -17,6 +17,9 @@
                 },
                 "3.6": {
                     "ignore": true
+                },
+                "3.7": {
+                    "ignore": true
                 }
             }
         }
