@@ -72,7 +72,7 @@ export function calcDeleteFrom(expireAfterDays: number, fieldType: ScalarType | 
     // Use westernmost timezone for LocalDate so objects are only deleted when they are expired everywhere in the world
     const currentTime: ZonedDateTime =
         fieldType.name === GraphQLLocalDate.name
-            ? ZonedDateTime.now(ZoneId.of('Etc/GMT+12'))
+            ? ZonedDateTime.now(ZoneId.of('UTC+12:00'))
             : ZonedDateTime.now(ZoneId.UTC);
 
     return currentTime.minusDays(expireAfterDays).format(DateTimeFormatter.ISO_INSTANT);
