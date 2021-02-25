@@ -104,21 +104,34 @@ export class SetFieldQueryNode extends PropertySpecification {
     }
 }
 
+export enum EntitiesIdentifierKind {
+    ENTITY = 'ENTITY',
+    // only use this node if the ids are retrieved from an EntitiesQueryNode where the permission profiles for reading are already applied
+    ID = 'ID'
+}
+
 /**
  * A node that deletes existing entities and evaluates to the entities before deletion
  *
  * Does not delete edges related to the entities.
  */
 export class DeleteEntitiesQueryNode extends QueryNode {
-    constructor(params: { rootEntityType: RootEntityType; listNode: QueryNode; revision?: string }) {
+    constructor(params: {
+        rootEntityType: RootEntityType;
+        listNode: QueryNode;
+        entitiesIdentifierKind?: EntitiesIdentifierKind;
+        revision?: string;
+    }) {
         super();
         this.rootEntityType = params.rootEntityType;
         this.listNode = params.listNode;
         this.revision = params.revision;
+        this.entitiesIdentifierKind = params.entitiesIdentifierKind || EntitiesIdentifierKind.ENTITY;
     }
 
     public readonly rootEntityType: RootEntityType;
     public readonly listNode: QueryNode;
+    public readonly entitiesIdentifierKind: EntitiesIdentifierKind;
     public readonly revision?: string;
 
     describe() {

@@ -1,5 +1,4 @@
 import { GraphQLSchema } from 'graphql';
-import { DateTimeFormatter, ZonedDateTime, ZoneId } from 'js-joda';
 import memorize from 'memorize-decorator';
 import { ProjectOptions } from '../config/interfaces';
 import { DEFAULT_LOGGER_PROVIDER, LoggerProvider } from '../config/logging';
@@ -7,31 +6,11 @@ import { DatabaseAdapter } from '../database/database-adapter';
 import { ExecutionOptions } from '../execution/execution-options';
 import { SchemaExecutor } from '../execution/schema-executor';
 import { getMetaSchema } from '../meta-schema/meta-schema';
-import { Model, ScalarType, ValidationResult } from '../model';
-import { TimeToLiveType } from '../model/implementation/time-to-live';
-import {
-    BinaryOperationQueryNode,
-    BinaryOperator,
-    CountQueryNode,
-    EntitiesQueryNode,
-    FieldPathQueryNode,
-    ListQueryNode,
-    LiteralQueryNode,
-    MergeObjectsQueryNode,
-    NullQueryNode,
-    ObjectQueryNode,
-    PropertySpecification,
-    QueryNode,
-    TransformListQueryNode,
-    VariableQueryNode
-} from '../query-tree';
-import { generateDeleteAllQueryNode } from '../schema-generation';
-import { getScalarFilterValueNode } from '../schema-generation/filter-input-types/filter-fields';
-import { GraphQLLocalDate } from '../schema/scalars/local-date';
+import { Model, ValidationResult } from '../model';
+import { ListQueryNode } from '../query-tree';
 import { createSchema, getModel, validateSchema } from '../schema/schema-builder';
-import { decapitalize } from '../utils/utils';
 import { ProjectSource, SourceLike, SourceType } from './source';
-import { getQueryNodeForTTLType, getTTLFilter, getTTLInfoQueryNode, TTLInfo } from './time-to-live';
+import { getQueryNodeForTTLType, getTTLInfoQueryNode, TTLInfo } from './time-to-live';
 
 export { ProjectOptions };
 

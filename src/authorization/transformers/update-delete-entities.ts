@@ -4,6 +4,8 @@ import {
     ConstIntQueryNode,
     CountQueryNode,
     DeleteEntitiesQueryNode,
+    EntitiesIdentifierKind,
+    EntityFromIdQueryNode,
     ErrorIfNotTruthyResultValidator,
     MergeObjectsQueryNode,
     ObjectQueryNode,
@@ -60,7 +62,11 @@ function transformUpdateOrDeleteEntitiesQueryNode(
 
     // see if any entities matched by the filter are write-restricted
     const listItemVar = new VariableQueryNode(decapitalize(node.rootEntityType.name));
-    const rawWriteCondition = permissionDescriptor.getAccessCondition(authContext, operation, listItemVar);
+    let entityNode: QueryNode = listItemVar;
+    if (node instanceof DeleteEntitiesQueryNode && node.entitiesIdentifierKind === EntitiesIdentifierKind.ID) {
+        entityNode = new EntityFromIdQueryNode(node.rootEntityType, listItemVar);
+    }
+    const rawWriteCondition = permissionDescriptor.getAccessCondition(authContext, operation, entityNode);
     const canWrite = getIsTrueInEachItemQueryNode(node.listNode, listItemVar, rawWriteCondition);
     const explanation = permissionDescriptor.getExplanationForCondition(
         authContext,
