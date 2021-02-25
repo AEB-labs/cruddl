@@ -8,6 +8,7 @@ import {
     BinaryOperator,
     CreateBillingEntityQueryNode,
     DeleteEntitiesQueryNode,
+    EntitiesIdentifierKind,
     EntitiesQueryNode,
     EntityFromIdQueryNode,
     ErrorIfEmptyResultValidator,
@@ -41,6 +42,7 @@ import {
 import { compact, decapitalize, PlainObject } from '../utils/utils';
 import { BillingTypeGenerator } from './billing-type-generator';
 import { CreateInputTypeGenerator, CreateRootEntityInputType } from './create-input-types';
+import { generateDeleteAllQueryNode } from './delete-all-generator';
 import { createGraphQLError } from './graphql-errors';
 import { ListAugmentation } from './list-augmentation';
 import { OutputTypeGenerator } from './output-type-generator';
@@ -56,9 +58,8 @@ import { UpdateInputFieldContext, UpdateInputTypeGenerator, UpdateRootEntityInpu
 import { createBillingEntityCategoryNode, createBillingEntityQuantityNode } from './utils/billing-nodes';
 import { getArgumentsForUniqueFields, getEntitiesByUniqueFieldQuery } from './utils/entities-by-unique-field';
 import { getFilterNode } from './utils/filtering';
-import { mapIDsToRootEntities, mapTOIDNodesUnoptimized } from './utils/map';
+import { mapTOIDNodesUnoptimized } from './utils/map';
 import { getRemoveAllEntityEdgesStatements } from './utils/relations';
-import { generateDeleteAllQueryNode } from './delete-all-generator';
 
 export class MutationTypeGenerator {
     constructor(
@@ -484,11 +485,11 @@ export class MutationTypeGenerator {
             query: mapTOIDNodesUnoptimized(listNode),
             resultVariable: idsVariable
         });
-        const entitiesNode = mapIDsToRootEntities(idsVariable, rootEntityType);
 
         const deleteEntitiesNode = new DeleteEntitiesQueryNode({
             rootEntityType,
-            listNode: entitiesNode,
+            listNode: idsVariable,
+            entitiesIdentifierKind: EntitiesIdentifierKind.ID,
             revision
         });
 
@@ -537,11 +538,11 @@ export class MutationTypeGenerator {
             ),
             resultVariable: idsVariable
         });
-        const entitiesNode = mapIDsToRootEntities(idsVariable, rootEntityType);
 
         const deleteEntitiesNode = new DeleteEntitiesQueryNode({
             rootEntityType,
-            listNode: entitiesNode
+            listNode: idsVariable,
+            entitiesIdentifierKind: EntitiesIdentifierKind.ID
         });
 
         const removeEdgesStatements = getRemoveAllEntityEdgesStatements(rootEntityType, idsVariable);

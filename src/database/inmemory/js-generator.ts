@@ -15,6 +15,7 @@ import {
     CreateBillingEntityQueryNode,
     CreateEntityQueryNode,
     DeleteEntitiesQueryNode,
+    EntitiesIdentifierKind,
     EntitiesQueryNode,
     EntityFromIdQueryNode,
     FieldPathQueryNode,
@@ -754,22 +755,44 @@ register(UpdateEntitiesQueryNode, (node, context) => {
 });
 
 register(DeleteEntitiesQueryNode, (node, context) => {
-    const entityVar = js.variable(decapitalize(node.rootEntityType.name));
+    const itemVar = js.variable(decapitalize(node.rootEntityType.name));
     const listVar = js.variable('objectsToDelete');
     const coll = js.collection(getCollectionNameForRootEntity(node.rootEntityType));
     const idsVar = js.variable('ids');
+    const oldsVar = js.variable('olds');
+
+    let idListFrag;
+    let oldsFrag;
+    switch (node.entitiesIdentifierKind) {
+        case EntitiesIdentifierKind.ENTITY:
+            idListFrag = js`${listVar}.map(${jsExt.lambda(itemVar, js`${itemVar}.${js.identifier(ID_FIELD_NAME)}`)})`;
+            oldsFrag = listVar;
+            break;
+        case EntitiesIdentifierKind.ID:
+            idListFrag = listVar;
+            const itemVar2 = js.variable(decapitalize(node.rootEntityType.name));
+            // pretty inefficient, but it's only the js adapter, right
+            oldsFrag = js`${idListFrag}.map(${jsExt.lambda(
+                itemVar,
+                js`${coll}.find(${jsExt.lambda(
+                    itemVar2,
+                    js`${itemVar2}.${js.identifier(ID_FIELD_NAME)} === ${itemVar}`
+                )})`
+            )})`;
+            break;
+        default:
+            throw new Error(`Unexpected EntitiesIdentifierKind: ${node.entitiesIdentifierKind}`);
+    }
 
     return jsExt.executingFunction(
         js`const ${listVar} = ${processNode(node.listNode, context)}`,
-        js`const ${idsVar} = new Set(${listVar}.map(${jsExt.lambda(
-            entityVar,
-            js`${entityVar}.${js.identifier(ID_FIELD_NAME)}`
-        )}));`,
+        js`const ${idsVar} = new Set(${idListFrag});`,
+        js`const ${oldsVar} = ${oldsFrag};`,
         js`${coll} = ${coll}.filter(${jsExt.lambda(
-            entityVar,
-            js`!${idsVar}.has(${entityVar}.${js.identifier(ID_FIELD_NAME)}`
-        )}));`,
-        js`return ${listVar};`
+            itemVar,
+            js`!${idsVar}.has(${itemVar}.${js.identifier(ID_FIELD_NAME)})`
+        )});`,
+        js`return ${oldsVar};`
     );
 });
 

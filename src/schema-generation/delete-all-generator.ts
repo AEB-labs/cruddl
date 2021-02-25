@@ -1,12 +1,13 @@
-import { RootEntityType } from '../model/implementation';
+import { RootEntityType } from '../model';
 import {
     DeleteEntitiesQueryNode,
+    EntitiesIdentifierKind,
     PreExecQueryParms,
     QueryNode,
     VariableQueryNode,
     WithPreExecutionQueryNode
 } from '../query-tree';
-import { mapIDsToRootEntities, mapTOIDNodesUnoptimized } from './utils/map';
+import { mapTOIDNodesUnoptimized } from './utils/map';
 import { getRemoveAllEntityEdgesStatements } from './utils/relations';
 
 export function generateDeleteAllQueryNode(rootEntityType: RootEntityType, listNode: QueryNode) {
@@ -28,13 +29,13 @@ export function generateDeleteAllQueryNode(rootEntityType: RootEntityType, listN
         query: mapTOIDNodesUnoptimized(listNode),
         resultVariable: idsVariable
     });
-    const entitiesNode = mapIDsToRootEntities(idsVariable, rootEntityType);
 
     // no preexec for the actual deletion here because we need to evaluate the result while the entity still exists
     // and it won't exist if already deleted in the pre-exec
     const deleteEntitiesNode = new DeleteEntitiesQueryNode({
         rootEntityType,
-        listNode: entitiesNode
+        listNode: idsVariable,
+        entitiesIdentifierKind: EntitiesIdentifierKind.ID
     });
 
     const removeEdgesStatements = getRemoveAllEntityEdgesStatements(rootEntityType, idsVariable);
