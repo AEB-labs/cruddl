@@ -415,7 +415,6 @@ register(FlexSearchQueryNode, (node, context) => {
 register(TransformListQueryNode, (node, context) => {
     let itemContext = context.introduceVariable(node.itemVariable);
     const itemVar = itemContext.getVariable(node.itemVariable);
-
     // in certain conditions, it greatly reduces memory consumption if the projection part is
     // indirected via a DOCUMENT() call, see https://github.com/arangodb/arangodb/issues/7821
     const useIndirectedProjection =
@@ -434,6 +433,44 @@ register(TransformListQueryNode, (node, context) => {
         itemProjectionVar = itemProjectionContext.getVariable(node.itemVariable);
     }
 
+    // move LET statements up
+    // they often occur for value objects / entity extensions
+    // this avoids the FIRST() and the subquery which reduces load on the AQL query optimizer
+    let variableAssignments: AQLFragment[] = [];
+    let innerNode = node.innerNode;
+    const variableAssignmentNodes: VariableAssignmentQueryNode[] = [];
+    innerNode = extractVariableAssignments(innerNode, variableAssignmentNodes);
+    for (const assignmentNode of variableAssignmentNodes) {
+        itemProjectionContext = itemProjectionContext.introduceVariable(assignmentNode.variableNode);
+        const tmpVar = itemProjectionContext.getVariable(assignmentNode.variableNode);
+        variableAssignments.push(
+            aql`LET ${tmpVar} = ${processNode(assignmentNode.variableValueNode, itemProjectionContext)}`
+        );
+    }
+
+    return aqlExt.parenthesizeList(
+        aql`FOR ${itemVar}`,
+        generateInClauseWithFilterAndOrderAndLimit({ node, context, itemContext, itemVar }),
+        useIndirectedProjection ? aql`LET ${itemProjectionVar} = DOCUMENT(${itemVar}._id)` : aql``,
+        ...variableAssignments,
+        aql`RETURN ${processNode(innerNode, itemProjectionContext)}`
+    );
+});
+
+/**
+ * Generates an IN... clause for a TransformListQueryNode to be used within a query / subquery (FOR ... IN ...)
+ */
+function generateInClauseWithFilterAndOrderAndLimit({
+    node,
+    context,
+    itemVar,
+    itemContext
+}: {
+    node: TransformListQueryNode;
+    context: QueryContext;
+    itemVar: AQLVariable;
+    itemContext: QueryContext;
+}) {
     let list: AQLFragment;
     let filterDanglingEdges = aql``;
     if (node.listNode instanceof FollowEdgeQueryNode) {
@@ -457,33 +494,26 @@ register(TransformListQueryNode, (node, context) => {
         limitClause = aql``;
     }
 
-    // move LET statements up
-    // they often occur for value objects / entity extensions
-    // this avoids the FIRST() and the subquery which reduces load on the AQL query optimizer
-    let variableAssignments: AQLFragment[] = [];
-    let innerNode = node.innerNode;
-    const variableAssignmentNodes: VariableAssignmentQueryNode[] = [];
-    innerNode = extractVariableAssignments(innerNode, variableAssignmentNodes);
-    for (const assignmentNode of variableAssignmentNodes) {
-        itemProjectionContext = itemProjectionContext.introduceVariable(assignmentNode.variableNode);
-        const tmpVar = itemProjectionContext.getVariable(assignmentNode.variableNode);
-        variableAssignments.push(
-            aql`LET ${tmpVar} = ${processNode(assignmentNode.variableValueNode, itemProjectionContext)}`
-        );
-    }
-
-    return aqlExt.parenthesizeList(
-        aql`FOR ${itemVar}`,
+    return aql.lines(
         aql`IN ${list}`,
         filter instanceof ConstBoolQueryNode && filter.value ? aql`` : aql`FILTER ${processNode(filter, itemContext)}`,
         filterDanglingEdges,
         generateSortAQL(node.orderBy, itemContext),
-        limitClause,
-        useIndirectedProjection ? aql`LET ${itemProjectionVar} = DOCUMENT(${itemVar}._id)` : aql``,
-        ...variableAssignments,
-        aql`RETURN ${processNode(innerNode, itemProjectionContext)}`
+        limitClause
     );
-});
+}
+
+/**
+ * Generates an IN... clause for a list to be used within a query / subquery (FOR ... IN ...)
+ */
+function generateInClause(node: QueryNode, context: QueryContext, entityVar: AQLFragment) {
+    if (node instanceof TransformListQueryNode && node.innerNode === node.itemVariable) {
+        const itemContext = context.introduceVariableAlias(node.itemVariable, entityVar);
+        return generateInClauseWithFilterAndOrderAndLimit({ node, itemContext, itemVar: entityVar, context });
+    }
+
+    return aql`IN ${processNode(node, context)}`;
+}
 
 register(CountQueryNode, (node, context) => {
     if (node.listNode instanceof FieldQueryNode || node.listNode instanceof EntitiesQueryNode) {
@@ -1273,7 +1303,7 @@ register(DeleteEntitiesQueryNode, (node, context) => {
 
     return aqlExt.parenthesizeList(
         aql`FOR ${entityVar}`,
-        aql`IN ${processNode(node.listNode, context)}`,
+        aql`${generateInClause(node.listNode, context, entityVar)}`,
         aql`REMOVE ${entityFrag}`,
         aql`IN ${getCollectionForType(node.rootEntityType, AccessType.WRITE, context)}`,
         optionsFrag,
