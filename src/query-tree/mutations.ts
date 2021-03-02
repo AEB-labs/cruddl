@@ -110,6 +110,11 @@ export enum EntitiesIdentifierKind {
     ID = 'ID'
 }
 
+export enum DeleteEntitiesResultValue {
+    OLD_ENTITIES = 'OLD_ENTITIES',
+    COUNT = 'COUNT'
+}
+
 /**
  * A node that deletes existing entities and evaluates to the entities before deletion
  *
@@ -117,22 +122,25 @@ export enum EntitiesIdentifierKind {
  */
 export class DeleteEntitiesQueryNode extends QueryNode {
     constructor(params: {
-        rootEntityType: RootEntityType;
-        listNode: QueryNode;
-        entitiesIdentifierKind?: EntitiesIdentifierKind;
-        revision?: string;
+        readonly rootEntityType: RootEntityType;
+        readonly listNode: QueryNode;
+        readonly entitiesIdentifierKind?: EntitiesIdentifierKind;
+        readonly revision?: string;
+        readonly resultValue?: DeleteEntitiesResultValue;
     }) {
         super();
         this.rootEntityType = params.rootEntityType;
         this.listNode = params.listNode;
         this.revision = params.revision;
         this.entitiesIdentifierKind = params.entitiesIdentifierKind || EntitiesIdentifierKind.ENTITY;
+        this.resultValue = params.resultValue || DeleteEntitiesResultValue.OLD_ENTITIES;
     }
 
     public readonly rootEntityType: RootEntityType;
     public readonly listNode: QueryNode;
     public readonly entitiesIdentifierKind: EntitiesIdentifierKind;
     public readonly revision?: string;
+    public readonly resultValue: DeleteEntitiesResultValue;
 
     describe() {
         return (
