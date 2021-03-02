@@ -7,7 +7,7 @@ import { ExecutionOptions } from '../execution/execution-options';
 import { SchemaExecutor } from '../execution/schema-executor';
 import { getMetaSchema } from '../meta-schema/meta-schema';
 import { Model, ValidationResult } from '../model';
-import { ListQueryNode } from '../query-tree';
+import { ListQueryNode, QueryNode } from '../query-tree';
 import { createSchema, getModel, validateSchema } from '../schema/schema-builder';
 import { ProjectSource, SourceLike, SourceType } from './source';
 import { getQueryNodeForTTLType, getTTLInfoQueryNode, TTLInfo } from './time-to-live';
@@ -112,8 +112,8 @@ export class Project {
         const deletedObjects: { [name: string]: number } = {};
         for (const ttlType of ttlTypes) {
             const queryTree = getQueryNodeForTTLType(ttlType, executionOptions);
-            const result = await databaseAdapter.execute(queryTree);
-            deletedObjects[(ttlType.rootEntityType && ttlType.rootEntityType.name) || ''] = result || 0;
+            const data = await this.execute(databaseAdapter, queryTree, executionOptions);
+            deletedObjects[(ttlType.rootEntityType && ttlType.rootEntityType.name) || ''] = data || 0;
         }
         return deletedObjects;
     }
@@ -126,7 +126,21 @@ export class Project {
         const queryTree = new ListQueryNode(
             ttlTypes.map(ttlType => getTTLInfoQueryNode(ttlType, executionOptions.timeToLiveOverdueDelta || 3))
         );
-        const result = await databaseAdapter.execute(queryTree);
-        return result;
+        return await this.execute(databaseAdapter, queryTree, executionOptions);
+    }
+
+    private async execute(databaseAdapter: DatabaseAdapter, queryTree: QueryNode, executionOptions: ExecutionOptions) {
+        const res = databaseAdapter.executeExt
+            ? await databaseAdapter.executeExt({
+                  queryTree,
+                  ...executionOptions
+              })
+            : {
+                  data: databaseAdapter.execute(queryTree)
+              };
+        if (res.error) {
+            throw res.error;
+        }
+        return res.data;
     }
 }
