@@ -1,6 +1,7 @@
 import { RootEntityType } from '../model';
 import {
     DeleteEntitiesQueryNode,
+    DeleteEntitiesResultValue,
     EntitiesIdentifierKind,
     PreExecQueryParms,
     QueryNode,
@@ -10,11 +11,16 @@ import {
 import { mapTOIDNodesUnoptimized } from './utils/map';
 import { getRemoveAllEntityEdgesStatements } from './utils/relations';
 
-export function generateDeleteAllQueryNode(rootEntityType: RootEntityType, listNode: QueryNode) {
+export function generateDeleteAllQueryNode(
+    rootEntityType: RootEntityType,
+    listNode: QueryNode,
+    { resultValue = DeleteEntitiesResultValue.OLD_ENTITIES }: { readonly resultValue?: DeleteEntitiesResultValue } = {}
+) {
     if (!rootEntityType.relations.length) {
         return new DeleteEntitiesQueryNode({
             rootEntityType,
-            listNode
+            listNode,
+            resultValue
         });
     }
 
@@ -35,7 +41,8 @@ export function generateDeleteAllQueryNode(rootEntityType: RootEntityType, listN
     const deleteEntitiesNode = new DeleteEntitiesQueryNode({
         rootEntityType,
         listNode: idsVariable,
-        entitiesIdentifierKind: EntitiesIdentifierKind.ID
+        entitiesIdentifierKind: EntitiesIdentifierKind.ID,
+        resultValue
     });
 
     const removeEdgesStatements = getRemoveAllEntityEdgesStatements(rootEntityType, idsVariable);

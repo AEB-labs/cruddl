@@ -6,9 +6,9 @@ import {
     BinaryOperationQueryNode,
     BinaryOperator,
     CountQueryNode,
+    DeleteEntitiesResultValue,
     EntitiesQueryNode,
     FieldPathQueryNode,
-    ListQueryNode,
     LiteralQueryNode,
     NullQueryNode,
     ObjectQueryNode,
@@ -42,7 +42,9 @@ export function getQueryNodeForTTLType(ttlType: TimeToLiveType, executionOptions
         filterNode: getTTLFilter(ttlType.fieldType, ttlType.path, deleteFrom, listItemVar),
         maxCount: executionOptions.timeToLiveCleanupLimit
     });
-    return new CountQueryNode(generateDeleteAllQueryNode(ttlType.rootEntityType, listQueryNode));
+    return generateDeleteAllQueryNode(ttlType.rootEntityType, listQueryNode, {
+        resultValue: DeleteEntitiesResultValue.COUNT
+    });
 }
 
 export function getTTLFilter(

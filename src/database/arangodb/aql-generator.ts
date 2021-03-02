@@ -16,6 +16,7 @@ import {
     CreateBillingEntityQueryNode,
     CreateEntityQueryNode,
     DeleteEntitiesQueryNode,
+    DeleteEntitiesResultValue,
     EdgeIdentifier,
     EntitiesQueryNode,
     EntityFromIdQueryNode,
@@ -33,7 +34,6 @@ import {
     OrderSpecification,
     PartialEdgeIdentifier,
     PropertyAccessQueryNode,
-    PropertySpecification,
     QueryNode,
     QueryResultValidator,
     RemoveEdgesQueryNode,
@@ -1301,13 +1301,18 @@ register(DeleteEntitiesQueryNode, (node, context) => {
         optionsFrag = aql``;
     }
 
-    return aqlExt.parenthesizeList(
+    const countVar = aql.variable(`count`);
+    return aqlExt[
+        node.resultValue === DeleteEntitiesResultValue.OLD_ENTITIES ? 'parenthesizeList' : 'parenthesizeObject'
+    ](
         aql`FOR ${entityVar}`,
         aql`${generateInClause(node.listNode, context, entityVar)}`,
         aql`REMOVE ${entityFrag}`,
         aql`IN ${getCollectionForType(node.rootEntityType, AccessType.WRITE, context)}`,
         optionsFrag,
-        aql`RETURN OLD`
+        node.resultValue === DeleteEntitiesResultValue.OLD_ENTITIES
+            ? aql`RETURN OLD`
+            : aql.lines(aql`COLLECT WITH COUNT INTO ${countVar}`, aql`RETURN ${countVar}`)
     );
 });
 
