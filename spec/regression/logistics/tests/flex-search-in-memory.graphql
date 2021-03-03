@@ -16,6 +16,18 @@ query in {
     }
 }
 
+query in_null {
+    flexSearchDeliveries(flexSearchFilter: { completionDate_in: [null] }) {
+        deliveryNumber
+    }
+}
+
+query not_in_null {
+    flexSearchDeliveries(flexSearchFilter: { completionDate_not_in: [null] }) {
+        deliveryNumber
+    }
+}
+
 query gte_string {
     flexSearchDeliveries(flexSearchFilter: { deliveryNumber_gte: "1000521" }) {
         deliveryNumber

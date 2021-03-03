@@ -124,6 +124,14 @@
                     }
                 },
                 {
+                    "name": "completionDate",
+                    "isDeprecated": false,
+                    "deprecationReason": null,
+                    "type": {
+                        "enumValues": null
+                    }
+                },
+                {
                     "name": "originCountry",
                     "isDeprecated": false,
                     "deprecationReason": null,
@@ -596,6 +604,16 @@
                 },
                 {
                     "name": "destinationCountryISOCode_DESC",
+                    "isDeprecated": false,
+                    "deprecationReason": null
+                },
+                {
+                    "name": "completionDate_ASC",
+                    "isDeprecated": false,
+                    "deprecationReason": null
+                },
+                {
+                    "name": "completionDate_DESC",
                     "isDeprecated": false,
                     "deprecationReason": null
                 },

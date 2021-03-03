@@ -34,3 +34,21 @@ query filterNullEntityExtension {
         id
     }
 }
+
+query filterInNull {
+    allDeliveries(filter: { completionDate_in: [null] }) {
+        id
+    }
+}
+
+query filterInEqualsNull {
+    allDeliveries(filter: { completionDate_in: null }) {
+        id
+    }
+}
+
+query filterNotInNull {
+    allDeliveries(filter: { completionDate_not_in: [null] }) {
+        id
+    }
+}

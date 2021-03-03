@@ -29,6 +29,27 @@
             ]
         }
     },
+    "in_null": {
+        "data": {
+            "flexSearchDeliveries": [
+                {
+                    "deliveryNumber": "1000173"
+                },
+                {
+                    "deliveryNumber": "1000522"
+                }
+            ]
+        }
+    },
+    "not_in_null": {
+        "data": {
+            "flexSearchDeliveries": [
+                {
+                    "deliveryNumber": "1000521"
+                }
+            ]
+        }
+    },
     "gte_string": {
         "data": {
             "flexSearchDeliveries": [
@@ -102,7 +123,7 @@
                 "message": "Too many objects.",
                 "locations": [
                     {
-                        "line": 68,
+                        "line": 80,
                         "column": 5
                     }
                 ],
@@ -119,7 +140,7 @@
                 "message": "Too many objects.",
                 "locations": [
                     {
-                        "line": 74,
+                        "line": 86,
                         "column": 5
                     }
                 ],
@@ -134,7 +155,7 @@
                 "message": "Too many objects.",
                 "locations": [
                     {
-                        "line": 80,
+                        "line": 92,
                         "column": 5
                     }
                 ],
@@ -160,7 +181,7 @@
                 "message": "Recursive filters can only be defined for 1 level of recursion.",
                 "locations": [
                     {
-                        "line": 92,
+                        "line": 104,
                         "column": 5
                     }
                 ],

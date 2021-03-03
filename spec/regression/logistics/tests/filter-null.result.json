@@ -70,5 +70,41 @@
                 }
             ]
         }
+    },
+    "filterInNull": {
+        "data": {
+            "allDeliveries": [
+                {
+                    "id": "@{ids/Delivery/1}"
+                },
+                {
+                    "id": "@{ids/Delivery/3}"
+                }
+            ]
+        }
+    },
+    "filterInEqualsNull": {
+        "data": {
+            "allDeliveries": [
+                {
+                    "id": "@{ids/Delivery/1}"
+                },
+                {
+                    "id": "@{ids/Delivery/2}"
+                },
+                {
+                    "id": "@{ids/Delivery/3}"
+                }
+            ]
+        }
+    },
+    "filterNotInNull": {
+        "data": {
+            "allDeliveries": [
+                {
+                    "id": "@{ids/Delivery/2}"
+                }
+            ]
+        }
     }
 }

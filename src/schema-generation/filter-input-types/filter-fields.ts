@@ -21,6 +21,7 @@ import {
 import { GraphQLOffsetDateTime, TIMESTAMP_PROPERTY } from '../../schema/scalars/offset-date-time';
 import { AnyValue, decapitalize, PlainObject } from '../../utils/utils';
 import { createFieldNode } from '../field-nodes';
+import { FLEX_SEARCH_OPERATORS_WITH_LIST_OPERAND } from '../flex-search-filter-input-types/constants';
 import { TypedInputFieldBase } from '../typed-input-object-type';
 import { FILTER_DESCRIPTIONS, OPERATORS_WITH_LIST_OPERAND, Quantifier } from './constants';
 import { FilterObjectType } from './generator';
@@ -72,7 +73,7 @@ export class ScalarOrEnumFieldFilterField implements FilterField {
         baseInputType: GraphQLInputType
     ) {
         this.inputType = OPERATORS_WITH_LIST_OPERAND.includes(operatorPrefix || '')
-            ? new GraphQLList(new GraphQLNonNull(baseInputType))
+            ? new GraphQLList(baseInputType)
             : baseInputType;
         this.description = getDescription({
             operator: operatorPrefix,
@@ -92,6 +93,9 @@ export class ScalarOrEnumFieldFilterField implements FilterField {
     }
 
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
+        if (this.operatorPrefix && OPERATORS_WITH_LIST_OPERAND.includes(this.operatorPrefix) && filterValue == null) {
+            return new ConstBoolQueryNode(true);
+        }
         const valueNode = getScalarFilterValueNode(createFieldNode(this.field, sourceNode), this.field.type);
         const literalNode = new LiteralQueryNode(getScalarFilterLiteralValue(filterValue, this.field.type));
         return this.resolveOperator(valueNode, literalNode);
@@ -109,7 +113,7 @@ export class ScalarOrEnumFilterField implements FilterField {
         baseInputType: GraphQLInputType
     ) {
         this.inputType = OPERATORS_WITH_LIST_OPERAND.includes(operatorName)
-            ? new GraphQLList(new GraphQLNonNull(baseInputType))
+            ? new GraphQLList(baseInputType)
             : baseInputType;
         this.description = getDescription({ operator: operatorName, typeName: getNamedType(baseInputType).name });
     }

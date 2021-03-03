@@ -119,7 +119,8 @@
                         }
                     }
                 },
-                "aText": "foo bar"
+                "aText": "foo bar",
+                "completionDate": null
             },
             {
                 "@id": "2",
@@ -160,7 +161,8 @@
                             "name": "test_z"
                         }
                     }
-                }
+                },
+                "completionDate": "2021-01-02"
             },
             {
                 "@id": "3",

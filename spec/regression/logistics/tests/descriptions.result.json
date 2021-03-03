@@ -1071,6 +1071,10 @@
                             "description": null
                         },
                         {
+                            "name": "completionDate",
+                            "description": null
+                        },
+                        {
                             "name": "originCountry",
                             "description": "This field references a `Country` by its `isoCode` field"
                         },
@@ -1926,6 +1930,38 @@
                         {
                             "name": "destinationCountryISOCode_not_like",
                             "description": "Checks if `destinationCountryISOCode` does *not* match a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)"
+                        },
+                        {
+                            "name": "completionDate",
+                            "description": "Checks if `completionDate` equals a specified value.\n\nIf an index exists on `completionDate`, it can be used."
+                        },
+                        {
+                            "name": "completionDate_not",
+                            "description": "Checks if `completionDate` does not equal a specified value"
+                        },
+                        {
+                            "name": "completionDate_in",
+                            "description": "Checks if `completionDate` is equal to one of the specified values."
+                        },
+                        {
+                            "name": "completionDate_not_in",
+                            "description": "Checks if `completionDate` is not equal to one of the specified values."
+                        },
+                        {
+                            "name": "completionDate_lt",
+                            "description": "Checks if `completionDate` is less than a specified value."
+                        },
+                        {
+                            "name": "completionDate_lte",
+                            "description": "Checks if `completionDate` is less or equal a specified value."
+                        },
+                        {
+                            "name": "completionDate_gt",
+                            "description": "Checks if `completionDate` is greater than a specified value."
+                        },
+                        {
+                            "name": "completionDate_gte",
+                            "description": "Checks if `completionDate` is greater or equal a specified value."
                         },
                         {
                             "name": "originCountry",
@@ -3847,6 +3883,38 @@
                             "description": "Checks if `destinationCountryISOCode` does not start with a specified string, case-insensitively."
                         },
                         {
+                            "name": "completionDate",
+                            "description": "Checks if `completionDate` equals a specified value."
+                        },
+                        {
+                            "name": "completionDate_not",
+                            "description": "Checks if `completionDate` does not equal a specified value"
+                        },
+                        {
+                            "name": "completionDate_in",
+                            "description": "Checks if `completionDate` is equal to one of the specified values."
+                        },
+                        {
+                            "name": "completionDate_not_in",
+                            "description": "Checks if `completionDate` is not equal to one of the specified values."
+                        },
+                        {
+                            "name": "completionDate_lt",
+                            "description": "Checks if `completionDate` is less than a specified value."
+                        },
+                        {
+                            "name": "completionDate_lte",
+                            "description": "Checks if `completionDate` is less or equal a specified value."
+                        },
+                        {
+                            "name": "completionDate_gt",
+                            "description": "Checks if `completionDate` is greater than a specified value."
+                        },
+                        {
+                            "name": "completionDate_gte",
+                            "description": "Checks if `completionDate` is greater or equal a specified value."
+                        },
+                        {
                             "name": "description_contains_any_word",
                             "description": "Tokenizes the provided string into words, and checks if `description` contains at least one of them.\n Stemming (reduction of words on their base form) is applied."
                         },
@@ -5580,6 +5648,10 @@
                             "description": "Specify the `isoCode` of the `Country` to be referenced"
                         },
                         {
+                            "name": "completionDate",
+                            "description": null
+                        },
+                        {
                             "name": "originCountry",
                             "description": "Specify the `isoCode` of the `Country` to be referenced"
                         },
@@ -5884,6 +5956,10 @@
                             "description": "Specify the `isoCode` of the `Country` to be referenced"
                         },
                         {
+                            "name": "completionDate",
+                            "description": null
+                        },
+                        {
                             "name": "originCountry",
                             "description": "Specify the `isoCode` of the `Country` to be referenced"
                         },
@@ -6102,6 +6178,10 @@
                         {
                             "name": "destinationCountryISOCode",
                             "description": "Specify the `isoCode` of the `Country` to be referenced"
+                        },
+                        {
+                            "name": "completionDate",
+                            "description": null
                         },
                         {
                             "name": "originCountry",
