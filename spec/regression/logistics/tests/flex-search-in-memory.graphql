@@ -77,7 +77,7 @@ query meta_above_max {
 }
 
 query order_above_max {
-    flexSearchDeliveries(orderBy: deliveryNumber_ASC) {
+    flexSearchDeliveries(orderBy: deliveryNumber_DESC) {
         deliveryNumber
     }
 }

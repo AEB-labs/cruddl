@@ -17,7 +17,7 @@ export interface IndexDefinitionConfig {
     readonly astNode?: DirectiveNode | ObjectValueNode;
 }
 
-export interface FlexSearchPrimarySortClause {
+export interface FlexSearchPrimarySortClauseConfig {
     readonly field: string;
     readonly asc: boolean;
 }
@@ -25,5 +25,5 @@ export interface FlexSearchPrimarySortClause {
 export interface FlexSearchIndexConfig {
     readonly isIndexed: boolean;
     readonly directiveASTNode?: DirectiveNode;
-    readonly primarySort: ReadonlyArray<FlexSearchPrimarySortClause>;
+    readonly primarySort: ReadonlyArray<FlexSearchPrimarySortClauseConfig>;
 }

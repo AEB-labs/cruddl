@@ -1,4 +1,6 @@
 import { AggregationOperator } from '../model/config';
+export { OrderDirection } from '../model/implementation/order';
+import { OrderDirection } from '../model/implementation/order';
 import { indent } from '../utils/utils';
 import { QueryNode } from './base';
 import { ConstBoolQueryNode } from './literals';
@@ -104,11 +106,6 @@ export class OrderSpecification extends QueryNode {
         }
         return this.clauses.map(c => c.describe()).join(', ');
     }
-}
-
-export enum OrderDirection {
-    ASCENDING,
-    DESCENDING
 }
 
 /**

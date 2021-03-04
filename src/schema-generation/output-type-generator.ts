@@ -3,10 +3,11 @@ import { sortBy } from 'lodash';
 import memorize from 'memorize-decorator';
 import { FieldRequest } from '../graphql/query-distiller';
 import { isListTypeIgnoringNonNull } from '../graphql/schema-utils';
-import { Field, ObjectType, RootEntityType, Type, TypeKind } from '../model';
+import { Field, ObjectType, Type, TypeKind } from '../model';
 import {
     NullQueryNode,
     ObjectQueryNode,
+    OrderDirection,
     PropertySpecification,
     QueryNode,
     RevisionQueryNode,
@@ -144,7 +145,10 @@ export class OutputTypeGenerator {
         ) {
             // this would be cleaner if the primary sort was actually parsed into a ModelComponent (see e.g. the Index and IndexField classes)
             orderByValues = objectType.flexSearchPrimarySort.map(clause =>
-                orderByType.getValueOrThrow(clause.field.replace('.', '_') + (clause.asc ? '_ASC' : '_DESC'))
+                orderByType.getValueOrThrow(
+                    clause.field.path.replace('.', '_') +
+                        (clause.direction === OrderDirection.ASCENDING ? '_ASC' : '_DESC')
+                )
             );
         } else {
             orderByValues = getOrderByValues(listFieldRequest.args, orderByType, { isAbsoluteOrderRequired: true });

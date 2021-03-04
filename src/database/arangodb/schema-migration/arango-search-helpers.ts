@@ -1,9 +1,9 @@
 import { Database } from 'arangojs';
 import { ArangoSearchView, ArangoSearchViewPropertiesOptions } from 'arangojs/lib/cjs/view';
-import { fieldMapToFieldConfigMap } from 'graphql-tools/dist/stitching/schemaRecreation';
 import * as _ from 'lodash';
 import { FlexSearchLanguage } from '../../../model/config';
 import { Field, Model, RootEntityType } from '../../../model/implementation';
+import { OrderDirection } from '../../../model/implementation/order';
 import { ID_FIELD } from '../../../schema/constants';
 import { getCollectionNameForRootEntity } from '../arango-basics';
 import {
@@ -83,8 +83,8 @@ function getViewForRootEntity(rootEntityType: RootEntityType): ArangoSearchDefin
         viewName: getFlexSearchViewNameForRootEntity(rootEntityType),
         collectionName: getCollectionNameForRootEntity(rootEntityType),
         primarySort: rootEntityType.flexSearchPrimarySort.map(clause => ({
-            field: clause.field === ID_FIELD ? '_key' : clause.field,
-            asc: clause.asc
+            field: clause.field.path === ID_FIELD ? '_key' : clause.field.path,
+            asc: clause.direction === OrderDirection.ASCENDING
         }))
     };
 }
