@@ -31,21 +31,24 @@
     },
     "in_null": {
         "data": {
-            "flexSearchDeliveries": [
+            "flexSearchCountries": [
                 {
-                    "deliveryNumber": "1000173"
+                    "isoCode": "DE"
                 },
                 {
-                    "deliveryNumber": "1000522"
+                    "isoCode": "US"
+                },
+                {
+                    "isoCode": "CH"
                 }
             ]
         }
     },
     "not_in_null": {
         "data": {
-            "flexSearchDeliveries": [
+            "flexSearchCountries": [
                 {
-                    "deliveryNumber": "1000521"
+                    "isoCode": "DE"
                 }
             ]
         }

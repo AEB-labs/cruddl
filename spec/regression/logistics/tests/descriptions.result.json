@@ -31,6 +31,14 @@
                             "description": null
                         },
                         {
+                            "name": "flexSearchCountries",
+                            "description": "Queries for Countries using FlexSearch."
+                        },
+                        {
+                            "name": "_flexSearchCountriesMeta",
+                            "description": "Queries for Countries using FlexSearch."
+                        },
+                        {
                             "name": "Delivery",
                             "description": "Finds a Delivery by id or deliveryNumber.\n\nYou should pass a non-null value to exactly one of the arguments.\n\nA delivery"
                         },
@@ -571,6 +579,10 @@
                             "description": null
                         },
                         {
+                            "name": "someKey",
+                            "description": null
+                        },
+                        {
                             "name": "_cursor",
                             "description": "Provides a value that can be supplied to the `after` argument for pagination. Depends on the value of the `orderBy` argument."
                         },
@@ -991,6 +1003,70 @@
                             "description": "Checks if `totalInvestment` does *not* match a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)"
                         },
                         {
+                            "name": "someKey",
+                            "description": "Checks if `someKey` equals a specified string, case-sensitively.\n\nIf an index exists on `someKey`, it can be used.\n\nSee also `like` for a case-insensitive filter."
+                        },
+                        {
+                            "name": "someKey_not",
+                            "description": "Checks if `someKey` does not equal a specified string, case-sensitively."
+                        },
+                        {
+                            "name": "someKey_in",
+                            "description": "Checks if `someKey` is equal to one of the specified values."
+                        },
+                        {
+                            "name": "someKey_not_in",
+                            "description": "Checks if `someKey` is not equal to one of the specified values."
+                        },
+                        {
+                            "name": "someKey_lt",
+                            "description": "Checks if `someKey` is less than a specified value."
+                        },
+                        {
+                            "name": "someKey_lte",
+                            "description": "Checks if `someKey` is less or equal a specified value."
+                        },
+                        {
+                            "name": "someKey_gt",
+                            "description": "Checks if `someKey` is greater than a specified value."
+                        },
+                        {
+                            "name": "someKey_gte",
+                            "description": "Checks if `someKey` is greater or equal a specified value."
+                        },
+                        {
+                            "name": "someKey_contains",
+                            "description": "Checks if `someKey` contains a specified string, case-sensitively."
+                        },
+                        {
+                            "name": "someKey_not_contains",
+                            "description": "Checks if `someKey` does not contain a specified string, case-sensitively."
+                        },
+                        {
+                            "name": "someKey_starts_with",
+                            "description": "Checks if `someKey` starts with a specified string, case-sensitively.\n\nNever uses an index. Consider using `like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
+                        },
+                        {
+                            "name": "someKey_not_starts_with",
+                            "description": "Checks if `someKey` does not start with a specified string, case-sensitively.\n\nNever uses an index. Consider using `not_like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
+                        },
+                        {
+                            "name": "someKey_ends_with",
+                            "description": "Checks if `someKey` ends with a specified string, case-sensitively."
+                        },
+                        {
+                            "name": "someKey_not_ends_with",
+                            "description": "Checks if `someKey` does not end with a specified string, case-sensitively."
+                        },
+                        {
+                            "name": "someKey_like",
+                            "description": "Matches `someKey` against a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)\n\nIf an index exists on `someKey`, it can be used for the literal prefix (the part until the first placeholder)."
+                        },
+                        {
+                            "name": "someKey_not_like",
+                            "description": "Checks if `someKey` does *not* match a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)"
+                        },
+                        {
                             "name": "AND",
                             "description": "A field that checks if all filters in the list apply\n\nIf the list is empty, this filter applies to all objects."
                         },
@@ -1005,6 +1081,141 @@
                     "description": null,
                     "fields": null,
                     "inputFields": null
+                },
+                {
+                    "name": "CountryFlexSearchFilter",
+                    "description": "An aggregation contains all values of a list. Each check in this type is true if it matches any of the values in the list.",
+                    "fields": null,
+                    "inputFields": [
+                        {
+                            "name": "id",
+                            "description": "Checks if `id` equals a specified value.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
+                        },
+                        {
+                            "name": "id_not",
+                            "description": "Checks if `id` does not equal a specified value\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
+                        },
+                        {
+                            "name": "id_in",
+                            "description": "Checks if `id` is equal to one of the specified values.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
+                        },
+                        {
+                            "name": "id_not_in",
+                            "description": "Checks if `id` is not equal to one of the specified values.\n\nAn auto-generated string that identifies this root entity uniquely among others of the same type"
+                        },
+                        {
+                            "name": "createdAt",
+                            "description": "Checks if `createdAt` equals a specified value.\n\nThe instant this object has been created"
+                        },
+                        {
+                            "name": "createdAt_not",
+                            "description": "Checks if `createdAt` does not equal a specified value\n\nThe instant this object has been created"
+                        },
+                        {
+                            "name": "createdAt_in",
+                            "description": "Checks if `createdAt` is equal to one of the specified values.\n\nThe instant this object has been created"
+                        },
+                        {
+                            "name": "createdAt_not_in",
+                            "description": "Checks if `createdAt` is not equal to one of the specified values.\n\nThe instant this object has been created"
+                        },
+                        {
+                            "name": "createdAt_lt",
+                            "description": "Checks if `createdAt` is less than a specified value.\n\nThe instant this object has been created"
+                        },
+                        {
+                            "name": "createdAt_lte",
+                            "description": "Checks if `createdAt` is less or equal a specified value.\n\nThe instant this object has been created"
+                        },
+                        {
+                            "name": "createdAt_gt",
+                            "description": "Checks if `createdAt` is greater than a specified value.\n\nThe instant this object has been created"
+                        },
+                        {
+                            "name": "createdAt_gte",
+                            "description": "Checks if `createdAt` is greater or equal a specified value.\n\nThe instant this object has been created"
+                        },
+                        {
+                            "name": "updatedAt",
+                            "description": "Checks if `updatedAt` equals a specified value.\n\nThe instant this object has been updated the last time (not including relation updates)"
+                        },
+                        {
+                            "name": "updatedAt_not",
+                            "description": "Checks if `updatedAt` does not equal a specified value\n\nThe instant this object has been updated the last time (not including relation updates)"
+                        },
+                        {
+                            "name": "updatedAt_in",
+                            "description": "Checks if `updatedAt` is equal to one of the specified values.\n\nThe instant this object has been updated the last time (not including relation updates)"
+                        },
+                        {
+                            "name": "updatedAt_not_in",
+                            "description": "Checks if `updatedAt` is not equal to one of the specified values.\n\nThe instant this object has been updated the last time (not including relation updates)"
+                        },
+                        {
+                            "name": "updatedAt_lt",
+                            "description": "Checks if `updatedAt` is less than a specified value.\n\nThe instant this object has been updated the last time (not including relation updates)"
+                        },
+                        {
+                            "name": "updatedAt_lte",
+                            "description": "Checks if `updatedAt` is less or equal a specified value.\n\nThe instant this object has been updated the last time (not including relation updates)"
+                        },
+                        {
+                            "name": "updatedAt_gt",
+                            "description": "Checks if `updatedAt` is greater than a specified value.\n\nThe instant this object has been updated the last time (not including relation updates)"
+                        },
+                        {
+                            "name": "updatedAt_gte",
+                            "description": "Checks if `updatedAt` is greater or equal a specified value.\n\nThe instant this object has been updated the last time (not including relation updates)"
+                        },
+                        {
+                            "name": "someKey",
+                            "description": "Checks if `someKey` equals a specified string, case-insensitively."
+                        },
+                        {
+                            "name": "someKey_not",
+                            "description": "Checks if `someKey` does not equal a specified string, case-insensitively."
+                        },
+                        {
+                            "name": "someKey_lt",
+                            "description": "Checks if `someKey` is less than a specified value."
+                        },
+                        {
+                            "name": "someKey_lte",
+                            "description": "Checks if `someKey` is less or equal a specified value."
+                        },
+                        {
+                            "name": "someKey_gt",
+                            "description": "Checks if `someKey` is greater than a specified value."
+                        },
+                        {
+                            "name": "someKey_gte",
+                            "description": "Checks if `someKey` is greater or equal a specified value."
+                        },
+                        {
+                            "name": "someKey_in",
+                            "description": "Checks if `someKey` is equal to one of the specified values."
+                        },
+                        {
+                            "name": "someKey_not_in",
+                            "description": "Checks if `someKey` is not equal to one of the specified values."
+                        },
+                        {
+                            "name": "someKey_starts_with",
+                            "description": "Checks if `someKey` starts with a specified string, case-insensitively."
+                        },
+                        {
+                            "name": "someKey_not_starts_with",
+                            "description": "Checks if `someKey` does not start with a specified string, case-insensitively."
+                        },
+                        {
+                            "name": "AND",
+                            "description": "A field that checks if all filters in the list apply\n\nIf the list is empty, this filter applies to all objects."
+                        },
+                        {
+                            "name": "OR",
+                            "description": "A field that checks if any of the filters in the list apply.\n\nIf the list is empty, this filter applies to no objects.\n\nNote that only the items in the list *or*-combined; this complete `OR` field is *and*-combined with outer fields in the parent filter type."
+                        }
+                    ]
                 },
                 {
                     "name": "Delivery",
@@ -5534,6 +5745,10 @@
                         {
                             "name": "totalInvestment",
                             "description": null
+                        },
+                        {
+                            "name": "someKey",
+                            "description": null
                         }
                     ]
                 },
@@ -5574,6 +5789,10 @@
                             "description": null
                         },
                         {
+                            "name": "someKey",
+                            "description": null
+                        },
+                        {
                             "name": "_revision",
                             "description": "Set this field to the value of \"Country._revision\" to abort the transaction if this object has been modified in the meantime"
                         }
@@ -5594,6 +5813,10 @@
                         },
                         {
                             "name": "totalInvestment",
+                            "description": null
+                        },
+                        {
+                            "name": "someKey",
                             "description": null
                         },
                         {

@@ -3,13 +3,13 @@
         "data": {
             "allHandlingUnits": [
                 {
-                    "id": "@{ids/HandlingUnit/1}"
+                    "id": "4810444"
                 },
                 {
-                    "id": "@{ids/HandlingUnit/2}"
+                    "id": "4810447"
                 },
                 {
-                    "id": "@{ids/HandlingUnit/3}"
+                    "id": "4810450"
                 }
             ]
         }
@@ -18,10 +18,10 @@
         "data": {
             "allDeliveries": [
                 {
-                    "id": "@{ids/Delivery/1}"
+                    "id": "4810453"
                 },
                 {
-                    "id": "@{ids/Delivery/2}"
+                    "id": "4810457"
                 }
             ]
         }
@@ -30,7 +30,7 @@
         "data": {
             "allDeliveries": [
                 {
-                    "id": "@{ids/Delivery/3}"
+                    "id": "4810461"
                 }
             ]
         }
@@ -39,7 +39,7 @@
         "data": {
             "allDeliveries": [
                 {
-                    "id": "@{ids/Delivery/1}"
+                    "id": "4810453"
                 }
             ]
         }
@@ -48,10 +48,10 @@
         "data": {
             "allDeliveries": [
                 {
-                    "id": "@{ids/Delivery/2}"
+                    "id": "4810457"
                 },
                 {
-                    "id": "@{ids/Delivery/3}"
+                    "id": "4810461"
                 }
             ]
         }
@@ -60,49 +60,55 @@
         "data": {
             "allDeliveries": [
                 {
-                    "id": "@{ids/Delivery/1}"
+                    "id": "4810453"
                 },
                 {
-                    "id": "@{ids/Delivery/2}"
+                    "id": "4810457"
                 },
                 {
-                    "id": "@{ids/Delivery/3}"
+                    "id": "4810461"
                 }
             ]
         }
     },
     "filterInNull": {
         "data": {
-            "allDeliveries": [
+            "allCountries": [
                 {
-                    "id": "@{ids/Delivery/1}"
+                    "isoCode": "DE"
                 },
                 {
-                    "id": "@{ids/Delivery/3}"
+                    "isoCode": "US"
+                },
+                {
+                    "isoCode": "CH"
                 }
             ]
         }
     },
     "filterInEqualsNull": {
         "data": {
-            "allDeliveries": [
+            "allCountries": [
                 {
-                    "id": "@{ids/Delivery/1}"
+                    "isoCode": "DE"
                 },
                 {
-                    "id": "@{ids/Delivery/2}"
+                    "isoCode": "GB"
                 },
                 {
-                    "id": "@{ids/Delivery/3}"
+                    "isoCode": "US"
+                },
+                {
+                    "isoCode": "CH"
                 }
             ]
         }
     },
     "filterNotInNull": {
         "data": {
-            "allDeliveries": [
+            "allCountries": [
                 {
-                    "id": "@{ids/Delivery/2}"
+                    "isoCode": "DE"
                 }
             ]
         }

@@ -1,5 +1,6 @@
-type Country @rootEntity @roles(read: ["allusers"], readWrite: ["admin"]){
+type Country @rootEntity(flexSearch: true) @roles(read: ["allusers"], readWrite: ["admin"]){
     isoCode: String @key
     description: [Translation]
     totalInvestment: String @roles(readWrite: "accounting")
+    someKey: String @flexSearch
 }

@@ -17,14 +17,14 @@ query in {
 }
 
 query in_null {
-    flexSearchDeliveries(flexSearchFilter: { completionDate_in: [null] }) {
-        deliveryNumber
+    flexSearchCountries(flexSearchFilter: { someKey_in: [null, "1"] }, orderBy: id_ASC) {
+        isoCode
     }
 }
 
 query not_in_null {
-    flexSearchDeliveries(flexSearchFilter: { completionDate_not_in: [null] }) {
-        deliveryNumber
+    flexSearchCountries(flexSearchFilter: { someKey_not_in: [null, "2"] }, orderBy: id_ASC) {
+        isoCode
     }
 }
 
