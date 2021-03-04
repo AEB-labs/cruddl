@@ -36,19 +36,19 @@ query filterNullEntityExtension {
 }
 
 query filterInNull {
-    allDeliveries(filter: { completionDate_in: [null] }) {
+    allDeliveries(filter: { completionDate_in: [null] }, orderBy: deliveryNumber_ASC) {
         id
     }
 }
 
 query filterInEqualsNull {
-    allDeliveries(filter: { completionDate_in: null }) {
+    allDeliveries(filter: { completionDate_in: null }, orderBy: deliveryNumber_ASC) {
         id
     }
 }
 
 query filterNotInNull {
-    allDeliveries(filter: { completionDate_not_in: [null] }) {
+    allDeliveries(filter: { completionDate_not_in: [null] }, orderBy: deliveryNumber_ASC) {
         id
     }
 }
