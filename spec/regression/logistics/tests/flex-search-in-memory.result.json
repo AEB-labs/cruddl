@@ -33,13 +33,13 @@
         "data": {
             "flexSearchCountries": [
                 {
+                    "isoCode": "CH"
+                },
+                {
                     "isoCode": "DE"
                 },
                 {
                     "isoCode": "US"
-                },
-                {
-                    "isoCode": "CH"
                 }
             ]
         }

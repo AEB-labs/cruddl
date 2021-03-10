@@ -3,13 +3,13 @@
         "data": {
             "allHandlingUnits": [
                 {
-                    "id": "4810444"
+                    "id": "@{ids/HandlingUnit/1}"
                 },
                 {
-                    "id": "4810447"
+                    "id": "@{ids/HandlingUnit/2}"
                 },
                 {
-                    "id": "4810450"
+                    "id": "@{ids/HandlingUnit/3}"
                 }
             ]
         }
@@ -18,10 +18,10 @@
         "data": {
             "allDeliveries": [
                 {
-                    "id": "4810453"
+                    "id": "@{ids/Delivery/1}"
                 },
                 {
-                    "id": "4810457"
+                    "id": "@{ids/Delivery/2}"
                 }
             ]
         }
@@ -30,7 +30,7 @@
         "data": {
             "allDeliveries": [
                 {
-                    "id": "4810461"
+                    "id": "@{ids/Delivery/3}"
                 }
             ]
         }
@@ -39,7 +39,7 @@
         "data": {
             "allDeliveries": [
                 {
-                    "id": "4810453"
+                    "id": "@{ids/Delivery/1}"
                 }
             ]
         }
@@ -48,10 +48,10 @@
         "data": {
             "allDeliveries": [
                 {
-                    "id": "4810457"
+                    "id": "@{ids/Delivery/2}"
                 },
                 {
-                    "id": "4810461"
+                    "id": "@{ids/Delivery/3}"
                 }
             ]
         }
@@ -60,13 +60,13 @@
         "data": {
             "allDeliveries": [
                 {
-                    "id": "4810453"
+                    "id": "@{ids/Delivery/1}"
                 },
                 {
-                    "id": "4810457"
+                    "id": "@{ids/Delivery/2}"
                 },
                 {
-                    "id": "4810461"
+                    "id": "@{ids/Delivery/3}"
                 }
             ]
         }
@@ -75,13 +75,13 @@
         "data": {
             "allCountries": [
                 {
+                    "isoCode": "CH"
+                },
+                {
                     "isoCode": "DE"
                 },
                 {
                     "isoCode": "US"
-                },
-                {
-                    "isoCode": "CH"
                 }
             ]
         }
@@ -90,6 +90,9 @@
         "data": {
             "allCountries": [
                 {
+                    "isoCode": "CH"
+                },
+                {
                     "isoCode": "DE"
                 },
                 {
@@ -97,9 +100,6 @@
                 },
                 {
                     "isoCode": "US"
-                },
-                {
-                    "isoCode": "CH"
                 }
             ]
         }

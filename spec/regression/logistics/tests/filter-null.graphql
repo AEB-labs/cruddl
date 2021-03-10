@@ -36,19 +36,19 @@ query filterNullEntityExtension {
 }
 
 query filterInNull {
-    allCountries(filter: { someKey_in: [null, "1"] }, orderBy: id_ASC) {
+    allCountries(filter: { someKey_in: [null, "1"] }, orderBy: isoCode_ASC) {
         isoCode
     }
 }
 
 query filterInEqualsNull {
-    allCountries(filter: { someKey_in: null }, orderBy: id_ASC) {
+    allCountries(filter: { someKey_in: null }, orderBy: isoCode_ASC) {
         isoCode
     }
 }
 
 query filterNotInNull {
-    allCountries(filter: { someKey_not_in: [null, "2"] }, orderBy: id_ASC) {
+    allCountries(filter: { someKey_not_in: [null, "2"] }, orderBy: isoCode_ASC) {
         isoCode
     }
 }
