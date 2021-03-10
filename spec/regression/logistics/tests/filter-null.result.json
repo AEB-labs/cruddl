@@ -70,5 +70,47 @@
                 }
             ]
         }
+    },
+    "filterInNull": {
+        "data": {
+            "allCountries": [
+                {
+                    "isoCode": "CH"
+                },
+                {
+                    "isoCode": "DE"
+                },
+                {
+                    "isoCode": "US"
+                }
+            ]
+        }
+    },
+    "filterInEqualsNull": {
+        "data": {
+            "allCountries": [
+                {
+                    "isoCode": "CH"
+                },
+                {
+                    "isoCode": "DE"
+                },
+                {
+                    "isoCode": "GB"
+                },
+                {
+                    "isoCode": "US"
+                }
+            ]
+        }
+    },
+    "filterNotInNull": {
+        "data": {
+            "allCountries": [
+                {
+                    "isoCode": "DE"
+                }
+            ]
+        }
     }
 }

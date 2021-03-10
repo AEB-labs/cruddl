@@ -501,9 +501,9 @@ register(BinaryOperationQueryNode, (node, context) => {
         case BinaryOperator.FLEX_GREATER_THAN_OR_EQUAL:
             return compare(js`>=`);
         case BinaryOperator.CONTAINS:
-            return js`${lhsListOrString}.includes(${rhsListOrString})`;
+            return js`${lhsListOrString}.includes(${rhs})`;
         case BinaryOperator.IN:
-            return js`${rhsListOrString}.includes(${lhsListOrString})`;
+            return js`${rhsListOrString}.includes(${lhs})`;
         case BinaryOperator.STARTS_WITH:
             return js`String(${lhs}).startsWith(${rhs})`;
         case BinaryOperator.ENDS_WITH:
@@ -879,7 +879,8 @@ register(FlexSearchQueryNode, (node, context) => {
 });
 
 register(FlexSearchFieldExistsQueryNode, (node, context) => {
-    throw new FlexSearchExistsNotSupportedError();
+    const sourceNodeResult = processNode(node.sourceNode, context);
+    return js`(${sourceNodeResult} != null)`;
 });
 
 register(FieldPathQueryNode, (node, context) => {
@@ -1057,16 +1058,6 @@ export class FlexSearchOperatorWithLanguageNotSupportedError extends Error {
 export class FlexSearchAggregationNotSupportedError extends Error {
     constructor() {
         super(`FlexSearch-query was not executed, because aggregations are not supported for in-memory database.`);
-        this.name = this.constructor.name;
-    }
-}
-
-/**
- * Is thrown if a FlexSearch query containing an exists filter is performed for an in-memory database.
- */
-export class FlexSearchExistsNotSupportedError extends Error {
-    constructor() {
-        super(`FlexSearch-query was not executed, because exists filters are not supported for in-memory database.`);
         this.name = this.constructor.name;
     }
 }

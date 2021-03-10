@@ -17,12 +17,15 @@ import {
     AND_FILTER_FIELD,
     FILTER_FIELD_PREFIX_SEPARATOR,
     INPUT_FIELD_EQUAL,
+    INPUT_FIELD_IN,
     INPUT_FIELD_NOT,
+    INPUT_FIELD_NOT_IN,
     INPUT_FIELD_NOT_STARTS_WITH,
     INPUT_FIELD_STARTS_WITH,
     OR_FILTER_FIELD
 } from '../../schema/constants';
 import { AnyValue, PlainObject } from '../../utils/utils';
+import { OPERATORS_WITH_LIST_OPERAND } from '../filter-input-types/constants';
 import { QueryNodeResolveInfo } from '../query-node-object-type';
 import { TypedInputFieldBase } from '../typed-input-object-type';
 import { not } from '../utils/input-types';
@@ -79,7 +82,7 @@ export class FlexSearchScalarOrEnumFieldFilterField implements FlexSearchFilterF
         public readonly flexSearchLanguage?: FlexSearchLanguage
     ) {
         this.inputType = FLEX_SEARCH_OPERATORS_WITH_LIST_OPERAND.includes(operatorPrefix || '')
-            ? new GraphQLList(new GraphQLNonNull(baseInputType))
+            ? new GraphQLList(baseInputType)
             : baseInputType;
         this.description = getDescription({
             operator: operatorPrefix,
@@ -106,6 +109,14 @@ export class FlexSearchScalarOrEnumFieldFilterField implements FlexSearchFilterF
         path: ReadonlyArray<Field>,
         info: QueryNodeResolveInfo
     ): QueryNode {
+        if (
+            this.operatorPrefix &&
+            FLEX_SEARCH_OPERATORS_WITH_LIST_OPERAND.includes(this.operatorPrefix) &&
+            filterValue == null
+        ) {
+            return new ConstBoolQueryNode(true);
+        }
+
         const valueNode = new FieldPathQueryNode(sourceNode, path.concat(this.field));
         const literalNode = new LiteralQueryNode(filterValue);
         if ((this.operatorPrefix == undefined || this.operatorPrefix === '') && filterValue == null) {
@@ -115,7 +126,21 @@ export class FlexSearchScalarOrEnumFieldFilterField implements FlexSearchFilterF
                 not(new FlexSearchFieldExistsQueryNode(valueNode, this.flexSearchLanguage))
             );
         }
+        if (this.operatorPrefix == INPUT_FIELD_IN && Array.isArray(filterValue) && filterValue.includes(null)) {
+            return new BinaryOperationQueryNode(
+                this.resolveOperator(valueNode, literalNode, this.flexSearchLanguage),
+                BinaryOperator.OR,
+                not(new FlexSearchFieldExistsQueryNode(valueNode, this.flexSearchLanguage))
+            );
+        }
         if (this.operatorPrefix == INPUT_FIELD_NOT && filterValue == null) {
+            return new BinaryOperationQueryNode(
+                this.resolveOperator(valueNode, literalNode, this.flexSearchLanguage),
+                BinaryOperator.AND,
+                new FlexSearchFieldExistsQueryNode(valueNode, this.flexSearchLanguage)
+            );
+        }
+        if (this.operatorPrefix == INPUT_FIELD_NOT_IN && Array.isArray(filterValue) && filterValue.includes(null)) {
             return new BinaryOperationQueryNode(
                 this.resolveOperator(valueNode, literalNode, this.flexSearchLanguage),
                 BinaryOperator.AND,
@@ -155,7 +180,7 @@ export class FlexSearchScalarOrEnumFilterField implements FlexSearchFilterField 
         public readonly flexSearchLanguage?: FlexSearchLanguage
     ) {
         this.inputType = FLEX_SEARCH_OPERATORS_WITH_LIST_OPERAND.includes(operatorName)
-            ? new GraphQLList(new GraphQLNonNull(baseInputType))
+            ? new GraphQLList(baseInputType)
             : baseInputType;
         this.description = getDescription({ operator: operatorName, typeName: getNamedType(baseInputType).name });
     }

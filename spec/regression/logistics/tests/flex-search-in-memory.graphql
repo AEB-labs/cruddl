@@ -16,6 +16,18 @@ query in {
     }
 }
 
+query in_null {
+    flexSearchCountries(flexSearchFilter: { someKey_in: [null, "1"] }) {
+        isoCode
+    }
+}
+
+query not_in_null {
+    flexSearchCountries(flexSearchFilter: { someKey_not_in: [null, "2"] }) {
+        isoCode
+    }
+}
+
 query gte_string {
     flexSearchDeliveries(flexSearchFilter: { deliveryNumber_gte: "1000521" }) {
         deliveryNumber

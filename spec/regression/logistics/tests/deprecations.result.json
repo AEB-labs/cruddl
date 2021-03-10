@@ -124,6 +124,14 @@
                     }
                 },
                 {
+                    "name": "completionDate",
+                    "isDeprecated": false,
+                    "deprecationReason": null,
+                    "type": {
+                        "enumValues": null
+                    }
+                },
+                {
                     "name": "originCountry",
                     "isDeprecated": false,
                     "deprecationReason": null,
@@ -500,6 +508,16 @@
                     "deprecationReason": "OrderBy values that include relations or references are deprecated"
                 },
                 {
+                    "name": "consignee_country_someKey_ASC",
+                    "isDeprecated": true,
+                    "deprecationReason": "OrderBy values that include relations or references are deprecated"
+                },
+                {
+                    "name": "consignee_country_someKey_DESC",
+                    "isDeprecated": true,
+                    "deprecationReason": "OrderBy values that include relations or references are deprecated"
+                },
+                {
                     "name": "dgInfo_unNumber_ASC",
                     "isDeprecated": false,
                     "deprecationReason": null
@@ -590,12 +608,32 @@
                     "deprecationReason": "OrderBy values that include relations or references are deprecated"
                 },
                 {
+                    "name": "destinationCountry_someKey_ASC",
+                    "isDeprecated": true,
+                    "deprecationReason": "OrderBy values that include relations or references are deprecated"
+                },
+                {
+                    "name": "destinationCountry_someKey_DESC",
+                    "isDeprecated": true,
+                    "deprecationReason": "OrderBy values that include relations or references are deprecated"
+                },
+                {
                     "name": "destinationCountryISOCode_ASC",
                     "isDeprecated": false,
                     "deprecationReason": null
                 },
                 {
                     "name": "destinationCountryISOCode_DESC",
+                    "isDeprecated": false,
+                    "deprecationReason": null
+                },
+                {
+                    "name": "completionDate_ASC",
+                    "isDeprecated": false,
+                    "deprecationReason": null
+                },
+                {
+                    "name": "completionDate_DESC",
                     "isDeprecated": false,
                     "deprecationReason": null
                 },
@@ -646,6 +684,16 @@
                 },
                 {
                     "name": "originCountry_totalInvestment_DESC",
+                    "isDeprecated": true,
+                    "deprecationReason": "OrderBy values that include relations or references are deprecated"
+                },
+                {
+                    "name": "originCountry_someKey_ASC",
+                    "isDeprecated": true,
+                    "deprecationReason": "OrderBy values that include relations or references are deprecated"
+                },
+                {
+                    "name": "originCountry_someKey_DESC",
                     "isDeprecated": true,
                     "deprecationReason": "OrderBy values that include relations or references are deprecated"
                 },
@@ -786,6 +834,16 @@
                 },
                 {
                     "name": "destination_country_totalInvestment_DESC",
+                    "isDeprecated": true,
+                    "deprecationReason": "OrderBy values that include relations or references are deprecated"
+                },
+                {
+                    "name": "destination_country_someKey_ASC",
+                    "isDeprecated": true,
+                    "deprecationReason": "OrderBy values that include relations or references are deprecated"
+                },
+                {
+                    "name": "destination_country_someKey_DESC",
                     "isDeprecated": true,
                     "deprecationReason": "OrderBy values that include relations or references are deprecated"
                 },

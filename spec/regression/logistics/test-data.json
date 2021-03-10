@@ -15,7 +15,8 @@
                         "translation": "Germany"
                     }
                 ],
-                "totalInvestment": "EUR 50000000"
+                "totalInvestment": "EUR 50000000",
+                "someKey": "1"
             },
             {
                 "@id": "2",
@@ -30,7 +31,8 @@
                         "translation": "United Kingdom"
                     }
                 ],
-                "totalInvestment": "EUR 3000000"
+                "totalInvestment": "EUR 3000000",
+                "someKey": "2"
             },
             {
                 "@id": "3",
@@ -44,7 +46,8 @@
                         "languageIsoCode": "EN",
                         "translation": "United States"
                     }
-                ]
+                ],
+                "someKey": null
             },
             {
                 "@id": "4",
