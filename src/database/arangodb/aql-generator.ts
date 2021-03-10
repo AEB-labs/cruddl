@@ -403,9 +403,11 @@ register(RevisionQueryNode, (node, context) => {
 
 register(FlexSearchQueryNode, (node, context) => {
     let itemContext = context.introduceVariable(node.itemVariable);
+    const viewName = getFlexSearchViewNameForRootEntity(node.rootEntityType!);
+    context.addCollectionAccess(viewName, AccessType.READ);
     return aqlExt.parenthesizeList(
         aql`FOR ${itemContext.getVariable(node.itemVariable)}`,
-        aql`IN ${aql.identifier(getFlexSearchViewNameForRootEntity(node.rootEntityType!))}`,
+        aql`IN ${aql.collection(viewName)}`,
         aql`SEARCH ${processNode(node.flexFilterNode, itemContext)}`,
         node.isOptimisationsDisabled ? aql`OPTIONS { conditionOptimization: 'none' }` : aql``,
         aql`RETURN ${itemContext.getVariable(node.itemVariable)}`
