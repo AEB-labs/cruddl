@@ -91,7 +91,7 @@ import {
     FieldConfig,
     FlexSearchIndexConfig,
     FlexSearchLanguage,
-    FlexSearchPrimarySortClause,
+    FlexSearchPrimarySortClauseConfig,
     IndexDefinitionConfig,
     LocalizationConfig,
     NamespacedPermissionProfileConfigMap,
@@ -316,7 +316,7 @@ function getDefaultValue(fieldNode: FieldDefinitionNode, context: ValidationCont
     return getValueFromAST(defaultValueArg.value);
 }
 
-function getFlexSearchOrder(rootEntityDirective?: DirectiveNode): FlexSearchPrimarySortClause[] {
+function getFlexSearchOrder(rootEntityDirective?: DirectiveNode): ReadonlyArray<FlexSearchPrimarySortClauseConfig> {
     if (!rootEntityDirective) {
         return [];
     }

@@ -121,7 +121,8 @@ export class OrderByAndPaginationAugmentation {
                         // this would be cleaner if the primary sort was actually parsed into a ModelComponent (see e.g. the Index and IndexField classes)
                         orderByValues = listNode.rootEntityType.flexSearchPrimarySort.map(clause =>
                             orderByType.getValueOrThrow(
-                                clause.field.replace('.', '_') + (clause.asc ? '_ASC' : '_DESC')
+                                clause.field.path.replace('.', '_') +
+                                    (clause.direction === OrderDirection.ASCENDING ? '_ASC' : '_DESC')
                             )
                         );
                         leaveUnordered = true;

@@ -58,6 +58,7 @@ import {
     FlexSearchQueryNode
 } from '../../query-tree/flex-search';
 import { QuantifierFilterNode } from '../../query-tree/quantifiers';
+import { createFieldPathNode } from '../../schema-generation/field-path-node';
 import { not } from '../../schema-generation/utils/input-types';
 import { Constructor, decapitalize } from '../../utils/utils';
 import { likePatternToRegExp } from '../like-helpers';
@@ -859,9 +860,21 @@ register(FlexSearchQueryNode, (node, context) => {
 
     const isFiltered = !(node.flexFilterNode instanceof ConstBoolQueryNode) || node.flexFilterNode.value != true;
 
+    let orderFrag = js``;
+    if (node.rootEntityType.flexSearchPrimarySort.length) {
+        const order = new OrderSpecification(
+            node.rootEntityType.flexSearchPrimarySort.map(
+                c => new OrderClause(createFieldPathNode(c.field, node.itemVariable), c.direction)
+            )
+        );
+        const comparator = getComparatorForOrderSpecification(order, itemVar, itemContext);
+        orderFrag = js`.slice().sort(${comparator})`;
+    }
+
     return js.lines(
         getCollectionForType(node.rootEntityType, context),
-        js.indent(js.lines(isFiltered ? js`.filter(${lambda(node.flexFilterNode)})` : js``))
+        js.indent(js.lines(isFiltered ? js`.filter(${lambda(node.flexFilterNode)})` : js``)),
+        orderFrag
     );
 });
 

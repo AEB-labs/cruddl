@@ -18,7 +18,7 @@
             "*": ["./src/typings/*"]
         },
         "typeRoots": ["./src/typings"],
-        "types": ["mocha"],
+        "types": ["mocha", "node"],
         "outDir": "dist"
     },
     "exclude": ["node_modules", "dist"],

@@ -1,8 +1,9 @@
-import { FlexSearchPrimarySortConfig } from '../../database/arangodb/schema-migration/arango-search-helpers';
+import { FlexSearchPrimarySortClause } from '../../model/implementation/flex-search';
+import { OrderDirection } from '../../model/implementation/order';
 
 export function orderArgMatchesPrimarySort(
     clauses: ReadonlyArray<string> | undefined,
-    primarySort: ReadonlyArray<FlexSearchPrimarySortConfig>
+    primarySort: ReadonlyArray<FlexSearchPrimarySortClause>
 ): boolean {
     if (!clauses || !clauses.length) {
         return true;
@@ -16,12 +17,12 @@ export function orderArgMatchesPrimarySort(
         const arg = clauses[index];
         if (arg.endsWith('_ASC')) {
             const field = arg.substring(0, arg.length - '_ASC'.length);
-            if (primarySort[index].field !== field || !primarySort[index].asc) {
+            if (primarySort[index].field.path !== field || primarySort[index].direction !== OrderDirection.ASCENDING) {
                 return false;
             }
         } else {
             const field = arg.substring(0, arg.length - '_DESC'.length);
-            if (primarySort[index].field !== field || primarySort[index].asc) {
+            if (primarySort[index].field.path !== field || primarySort[index].direction !== OrderDirection.DESCENDING) {
                 return false;
             }
         }

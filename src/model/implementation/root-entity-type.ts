@@ -12,12 +12,15 @@ import {
 } from '../../schema/constants';
 import { GraphQLLocalDate } from '../../schema/scalars/local-date';
 import { compact } from '../../utils/utils';
-import { FlexSearchPrimarySortClause, PermissionsConfig, RootEntityTypeConfig, TypeKind } from '../config';
+import { FlexSearchPrimarySortClauseConfig, PermissionsConfig, RootEntityTypeConfig, TypeKind } from '../config';
 import { ValidationContext, ValidationMessage } from '../validation';
 import { Field, SystemFieldConfig } from './field';
+import { FieldPath } from './field-path';
+import { FlexSearchPrimarySortClause } from './flex-search';
 import { Index } from './indices';
 import { Model } from './model';
 import { ObjectTypeBase } from './object-type-base';
+import { OrderDirection } from './order';
 import { PermissionProfile } from './permission-profile';
 import { Relation, RelationSide } from './relation';
 import { RolesSpecifier } from './roles-specifier';
@@ -299,7 +302,7 @@ export class RootEntityType extends ObjectTypeBase {
         }
         // validate primarySort
         for (const primarySortConfig of this.flexSearchPrimarySort) {
-            const primarySortPath = primarySortConfig.field.split('.');
+            const primarySortPath = primarySortConfig.field.path.split('.');
             const astNode = this.input
                 .astNode!.directives!.find(value => value.name.value === ROOT_ENTITY_DIRECTIVE)!
                 .arguments!.find(value => value.name.value === FLEX_SEARCH_ORDER_ARGUMENT)!;
@@ -337,13 +340,13 @@ export class RootEntityType extends ObjectTypeBase {
     }
 
     private completeFlexSearchPrimarySort(
-        clauses: ReadonlyArray<FlexSearchPrimarySortClause>
+        clauses: ReadonlyArray<FlexSearchPrimarySortClauseConfig>
     ): ReadonlyArray<FlexSearchPrimarySortClause> {
         // primary sort is only used for sorting, so make sure it's unique
         // - this makes querying more consistent
         // - this enables us to use primary sort for cursor-based pagination (which requires an absolute sort order)
         if (!clauses.some(clause => clause.field === this.discriminatorField.name)) {
-            return [
+            clauses = [
                 ...clauses,
                 {
                     field: this.discriminatorField.name,
@@ -351,7 +354,13 @@ export class RootEntityType extends ObjectTypeBase {
                 }
             ];
         }
-        return clauses;
+        return clauses.map(
+            c =>
+                new FlexSearchPrimarySortClause(
+                    new FieldPath({ path: c.field, baseType: this }),
+                    c.asc ? OrderDirection.ASCENDING : OrderDirection.DESCENDING
+                )
+        );
     }
 
     @memorize()

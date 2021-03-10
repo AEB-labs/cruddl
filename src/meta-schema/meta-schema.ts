@@ -2,6 +2,7 @@ import { GraphQLSchema } from 'graphql';
 import gql from 'graphql-tag';
 import { IResolvers, makeExecutableSchema } from 'graphql-tools';
 import { EnumValue, Field, Model, RootEntityType, Type, TypeKind } from '../model';
+import { OrderDirection } from '../model/implementation/order';
 import { compact, flatMap } from '../utils/utils';
 import { I18N_GENERIC, I18N_LOCALE } from './constants';
 
@@ -486,8 +487,8 @@ export function getMetaSchema(model: Model): GraphQLSchema {
         const rootEntityType = type as RootEntityType;
         return rootEntityType.flexSearchPrimarySort.map(value => {
             return {
-                field: value.field,
-                order: value.asc ? 'ASC' : 'DESC'
+                field: value.field.path,
+                order: value.direction === OrderDirection.ASCENDING ? 'ASC' : 'DESC'
             };
         });
     }
