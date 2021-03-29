@@ -18,6 +18,7 @@ import {
     DeleteEntitiesQueryNode,
     DeleteEntitiesResultValue,
     EdgeIdentifier,
+    EntitiesIdentifierKind,
     EntitiesQueryNode,
     EntityFromIdQueryNode,
     FieldPathQueryNode,
@@ -1296,7 +1297,11 @@ register(DeleteEntitiesQueryNode, (node, context) => {
     let optionsFrag: AQLFragment;
 
     if (node.revision) {
-        entityFrag = aql`MERGE(${entityVar}, { _rev: ${aql.value(node.revision)} })`;
+        if (node.entitiesIdentifierKind === EntitiesIdentifierKind.ID) {
+            entityFrag = aql`{ _key: ${entityVar}, _rev: ${aql.value(node.revision)} }`;
+        } else {
+            entityFrag = aql`MERGE(${entityVar}, { _rev: ${aql.value(node.revision)} })`;
+        }
         optionsFrag = aql`OPTIONS { ignoreRevs: false }`;
     } else {
         entityFrag = entityVar;
