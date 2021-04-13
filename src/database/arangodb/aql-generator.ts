@@ -17,6 +17,7 @@ import {
     CreateEntityQueryNode,
     DeleteEntitiesQueryNode,
     DeleteEntitiesResultValue,
+    DynamicPropertyAccessQueryNode,
     EdgeIdentifier,
     EntitiesIdentifierKind,
     EntitiesQueryNode,
@@ -25,10 +26,12 @@ import {
     FieldQueryNode,
     FirstOfListQueryNode,
     FollowEdgeQueryNode,
+    ListItemQueryNode,
     ListQueryNode,
     LiteralQueryNode,
     MergeObjectsQueryNode,
     NullQueryNode,
+    ObjectEntriesQueryNode,
     ObjectQueryNode,
     OperatorWithLanguageQueryNode,
     OrderDirection,
@@ -372,6 +375,11 @@ register(FieldQueryNode, (node, context) => {
     return aql`${object}${getPropertyAccessFragment(node.field.name)}`;
 });
 
+register(DynamicPropertyAccessQueryNode, (node, context) => {
+    const object = processNode(node.objectNode, context);
+    return aql`${object}[${processNode(node.propertyNode, context)}]`;
+});
+
 register(FieldPathQueryNode, (node, context) => {
     const object = processNode(node.objectNode, context);
     return aql`${object}${getFieldPathAccessFragment(node.path)}`;
@@ -691,8 +699,22 @@ register(MergeObjectsQueryNode, (node, context) => {
     return aql`MERGE(${objectsFragment})`;
 });
 
+register(ObjectEntriesQueryNode, (node, context) => {
+    const objectVar = aql.variable('object');
+    const keyVar = aql.variable('key');
+    return aqlExt.parenthesizeList(
+        aql`LET ${objectVar} = ${processNode(node.objectNode, context)}`,
+        aql`FOR ${keyVar} IN ATTRIBUTES(${objectVar})`,
+        aql`RETURN [ ${keyVar}, ${objectVar}[${keyVar}] ]`
+    );
+});
+
 register(FirstOfListQueryNode, (node, context) => {
     return aql`FIRST(${processNode(node.listNode, context)})`;
+});
+
+register(ListItemQueryNode, (node, context) => {
+    return aql`(${processNode(node.listNode, context)})[${node.index}]`;
 });
 
 register(BinaryOperationQueryNode, (node, context) => {

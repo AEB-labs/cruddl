@@ -1,0 +1,23 @@
+query filterI18nString {
+    Delivery(deliveryNumber: "1000173") {
+        items(filter: { description_some: { value: "Bananas" } }) {
+            itemNumber
+        }
+    }
+}
+
+query filterI18nStringWithCorrectLanguage {
+    Delivery(deliveryNumber: "1000173") {
+        items(filter: { description_some: { language: "en", value: "Bananas" } }) {
+            itemNumber
+        }
+    }
+}
+
+query filterI18nStringWithIncorrectLanguage {
+    Delivery(deliveryNumber: "1000173") {
+        items(filter: { description_some: { language: "de", value: "Bananas" } }) {
+            itemNumber
+        }
+    }
+}

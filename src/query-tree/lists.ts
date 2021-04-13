@@ -152,6 +152,19 @@ export class FirstOfListQueryNode extends QueryNode {
     }
 }
 
+/**
+ * A node that evaluates to a specific item of a list, or NULL if the list is empty
+ */
+export class ListItemQueryNode extends QueryNode {
+    constructor(public readonly listNode: QueryNode, readonly index: number) {
+        super();
+    }
+
+    describe() {
+        return `${this.listNode.describe()}[${this.index}]`;
+    }
+}
+
 interface AggregationQueryNodeParams {
     sort?: boolean;
 }

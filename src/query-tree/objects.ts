@@ -8,7 +8,6 @@ import { indent } from '../utils/utils';
 export class ObjectQueryNode extends QueryNode {
     constructor(public readonly properties: ReadonlyArray<PropertySpecification>) {
         super();
-
     }
 
     /**
@@ -22,22 +21,19 @@ export class ObjectQueryNode extends QueryNode {
         }
         return `{\n` + indent(this.properties.map(p => p.describe()).join('\n')) + `\n}`;
     }
-
 }
 
 /**
  * Specifies one property of a an ObjectQueryNode
  */
 export class PropertySpecification extends QueryNode {
-    constructor(public readonly propertyName: string,
-                public readonly valueNode: QueryNode) {
+    constructor(public readonly propertyName: string, public readonly valueNode: QueryNode) {
         super();
     }
 
     describe(): string {
         return `${green(JSON.stringify(this.propertyName))}: ${this.valueNode.describe()}`;
     }
-
 }
 
 /**
@@ -54,8 +50,19 @@ export class MergeObjectsQueryNode extends QueryNode {
     }
 
     describe() {
-        return `{\n` +
-            indent(this.objectNodes.map(node => '...' + node.describe()).join(',\n')) +
-            '\n}';
+        return `{\n` + indent(this.objectNodes.map(node => '...' + node.describe()).join(',\n')) + '\n}';
+    }
+}
+
+/**
+ * A node that evaluates to the entries of all properties of an object (each as a two-item list with key and value)
+ */
+export class ObjectEntriesQueryNode extends QueryNode {
+    constructor(public readonly objectNode: QueryNode) {
+        super();
+    }
+
+    describe() {
+        return `entries(${this.objectNode.describe()})`;
     }
 }

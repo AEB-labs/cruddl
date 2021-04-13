@@ -6,7 +6,9 @@ import {
     BinaryOperationQueryNode,
     BinaryOperator,
     ConstBoolQueryNode,
+    ListItemQueryNode,
     LiteralQueryNode,
+    ObjectEntriesQueryNode,
     PropertyAccessQueryNode,
     QueryNode,
     VariableQueryNode
@@ -21,7 +23,6 @@ import {
 import { GraphQLOffsetDateTime, TIMESTAMP_PROPERTY } from '../../schema/scalars/offset-date-time';
 import { AnyValue, decapitalize, PlainObject } from '../../utils/utils';
 import { createFieldNode } from '../field-nodes';
-import { FLEX_SEARCH_OPERATORS_WITH_LIST_OPERAND } from '../flex-search-filter-input-types/constants';
 import { TypedInputFieldBase } from '../typed-input-object-type';
 import { FILTER_DESCRIPTIONS, OPERATORS_WITH_LIST_OPERAND, Quantifier } from './constants';
 import { FilterObjectType } from './generator';
@@ -98,6 +99,44 @@ export class ScalarOrEnumFieldFilterField implements FilterField {
         }
         const valueNode = getScalarFilterValueNode(createFieldNode(this.field, sourceNode), this.field.type);
         const literalNode = new LiteralQueryNode(getScalarFilterLiteralValue(filterValue, this.field.type));
+        return this.resolveOperator(valueNode, literalNode);
+    }
+}
+
+export class StringMapEntryFilterField implements FilterField {
+    public readonly inputType: GraphQLInputType;
+    public readonly description: string | undefined;
+
+    constructor(
+        public readonly kind: 'key' | 'value',
+        public readonly fieldName: string,
+        public readonly resolveOperator: (fieldNode: QueryNode, valueNode: QueryNode) => QueryNode,
+        public readonly operatorPrefix: string | undefined,
+        baseInputType: GraphQLInputType
+    ) {
+        this.inputType = OPERATORS_WITH_LIST_OPERAND.includes(operatorPrefix || '')
+            ? new GraphQLList(baseInputType)
+            : baseInputType;
+        this.description = getDescription({
+            operator: operatorPrefix,
+            fieldName: fieldName,
+            typeName: 'String'
+        });
+    }
+
+    get name() {
+        if (this.operatorPrefix == undefined) {
+            return this.fieldName;
+        }
+        return this.fieldName + FILTER_FIELD_PREFIX_SEPARATOR + this.operatorPrefix;
+    }
+
+    getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
+        if (this.operatorPrefix && OPERATORS_WITH_LIST_OPERAND.includes(this.operatorPrefix) && filterValue == null) {
+            return new ConstBoolQueryNode(true);
+        }
+        const valueNode = new ListItemQueryNode(sourceNode, this.kind === 'key' ? 0 : 1);
+        const literalNode = new LiteralQueryNode(filterValue);
         return this.resolveOperator(valueNode, literalNode);
     }
 }
@@ -255,5 +294,33 @@ export class OrFilterField implements FilterField {
         }
         const nodes = values.map(value => this.filterType.getFilterNode(sourceNode, value));
         return nodes.reduce((prev, node) => new BinaryOperationQueryNode(prev, BinaryOperator.OR, node));
+    }
+}
+
+export class StringMapSomeValueFilterField implements FilterField {
+    readonly name: string;
+
+    constructor(public readonly field: Field, public readonly inputType: FilterObjectType) {
+        this.name = `${this.field.name}_some`;
+    }
+
+    get description(): string | undefined {
+        return (
+            `Makes sure at least one of the entries in "${this.field.name}" has a value that matches a certain filter.\n\n` +
+            `Note that you can specify the empty object for this filter to make sure \`${this.field.name}\` has at least one item.`
+        );
+    }
+
+    getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
+        const objectNode = createFieldNode(this.field, sourceNode);
+        const itemVariable = new VariableQueryNode(decapitalize(this.field.name));
+        const filterNode = this.inputType.getFilterNode(itemVariable, filterValue);
+
+        return new QuantifierFilterNode({
+            listNode: new ObjectEntriesQueryNode(objectNode),
+            itemVariable,
+            conditionNode: filterNode,
+            quantifier: 'some'
+        });
     }
 }

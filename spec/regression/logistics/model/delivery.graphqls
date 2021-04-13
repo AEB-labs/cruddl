@@ -59,6 +59,7 @@ type DeliveryItem @childEntity {
     quantity: Int @flexSearch
     handlingUnit: HandlingUnit @reference
     dgInfo: DangerousGoodsInfo
+    description: I18nString
 }
 
 type Forwarder @rootEntity @roles(readWrite: ["logistics"]) {

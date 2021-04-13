@@ -15,6 +15,7 @@ import {
     CreateBillingEntityQueryNode,
     CreateEntityQueryNode,
     DeleteEntitiesQueryNode,
+    DynamicPropertyAccessQueryNode,
     EntitiesIdentifierKind,
     EntitiesQueryNode,
     EntityFromIdQueryNode,
@@ -23,10 +24,12 @@ import {
     FirstOfListQueryNode,
     FlexSearchStartsWithQueryNode,
     FollowEdgeQueryNode,
+    ListItemQueryNode,
     ListQueryNode,
     LiteralQueryNode,
     MergeObjectsQueryNode,
     NullQueryNode,
+    ObjectEntriesQueryNode,
     ObjectQueryNode,
     OperatorWithLanguageQueryNode,
     OrderClause,
@@ -328,6 +331,22 @@ function getPropertyAccessFrag(propertyName: string, objectFrag: JSFragment) {
     );
 }
 
+register(DynamicPropertyAccessQueryNode, (node, context) => {
+    const objectFrag = processNode(node.objectNode, context);
+    const objectVar = js.variable('object');
+    const keyFrag = processNode(node.propertyNode, context);
+    // always use [] access because we could collide with keywords
+    // avoid undefined values because they cause trouble when being compared with === to null
+    const raw = js`${keyFrag} in ${objectVar} ? ${objectVar}[${keyFrag}] : null`;
+
+    // mimick arango behavior here which propagates null
+    return jsExt.evaluatingLambda(
+        objectVar,
+        js`((typeof (${objectVar}) == 'object' && (${objectVar}) != null) ? (${raw}) : null)`,
+        objectFrag
+    );
+});
+
 register(RootEntityIDQueryNode, (node, context) => {
     return getPropertyAccessFrag('id', processNode(node.objectNode, context));
 });
@@ -454,11 +473,24 @@ register(MergeObjectsQueryNode, (node, context) => {
     return js`Object.assign({}, ${objectsFragment})`;
 });
 
+register(ObjectEntriesQueryNode, (node, context) => {
+    return js`Object.entries(${processNode(node.objectNode, context)})`;
+});
+
 register(FirstOfListQueryNode, (node, context) => {
     const listVar = js.variable('list');
     return jsExt.evaluatingLambda(
         listVar,
         js`${listVar}.length ? ${listVar}[0] : null`,
+        processNode(node.listNode, context)
+    );
+});
+
+register(ListItemQueryNode, (node, context) => {
+    const listVar = js.variable('list');
+    return jsExt.evaluatingLambda(
+        listVar,
+        js`${listVar}.length > ${node.index} ? ${listVar}[${node.index}] : null`,
         processNode(node.listNode, context)
     );
 });

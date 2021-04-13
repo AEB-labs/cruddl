@@ -101,12 +101,20 @@
                     {
                         "itemNumber": "1001",
                         "quantity": 3,
-                        "handlingUnit": "@{ids/HandlingUnit/1}"
+                        "handlingUnit": "@{ids/HandlingUnit/1}",
+                        "description": {
+                            "de": "Bananen",
+                            "en": "Bananas"
+                        }
                     },
                     {
                         "itemNumber": "1002",
                         "quantity": 8,
-                        "handlingUnit": "@{ids/HandlingUnit/2}"
+                        "handlingUnit": "@{ids/HandlingUnit/2}",
+                        "description": {
+                            "de": "Äpfel",
+                            "en": "Apples"
+                        }
                     }
                 ],
                 "totalValue": "EUR 1024.00",

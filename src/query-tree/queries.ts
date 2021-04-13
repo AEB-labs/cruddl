@@ -76,6 +76,20 @@ export class PropertyAccessQueryNode extends QueryNode {
 }
 
 /**
+ * A node that evaluates to the value of a property of an object, or NULL if it does not exist or objectNode does not
+ * evaluate to an object
+ */
+export class DynamicPropertyAccessQueryNode extends QueryNode {
+    constructor(public readonly objectNode: QueryNode, public readonly propertyNode: QueryNode) {
+        super();
+    }
+
+    public describe() {
+        return `${this.objectNode.describe()}[${this.propertyNode.describe()}]`;
+    }
+}
+
+/**
  * A node that evaluates to the id of a root entity
  */
 export class RootEntityIDQueryNode extends QueryNode {
