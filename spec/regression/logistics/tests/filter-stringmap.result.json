@@ -1,0 +1,31 @@
+{
+    "filterI18nString": {
+        "data": {
+            "Delivery": {
+                "items": [
+                    {
+                        "itemNumber": "1001"
+                    }
+                ]
+            }
+        }
+    },
+    "filterI18nStringWithCorrectLanguage": {
+        "data": {
+            "Delivery": {
+                "items": [
+                    {
+                        "itemNumber": "1001"
+                    }
+                ]
+            }
+        }
+    },
+    "filterI18nStringWithIncorrectLanguage": {
+        "data": {
+            "Delivery": {
+                "items": []
+            }
+        }
+    }
+}
