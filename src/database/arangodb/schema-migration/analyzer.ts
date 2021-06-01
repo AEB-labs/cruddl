@@ -1,4 +1,4 @@
-import { Database } from 'arangojs';
+import { CollectionType, Database } from 'arangojs';
 import { ProjectOptions } from '../../../config/interfaces';
 import { Logger } from '../../../config/logging';
 import { Model, RootEntityType } from '../../../model/implementation';
@@ -6,7 +6,6 @@ import { billingCollectionName, getCollectionNameForRelation, getCollectionNameF
 import { ArangoDBConfig, getArangoDBLogger, initDatabase } from '../config';
 import { ArangoDBVersionHelper } from '../version-helper';
 import {
-    ArangoSearchConfiguration,
     calculateRequiredArangoSearchViewCreateOperations,
     calculateRequiredArangoSearchViewDropOperations,
     calculateRequiredArangoSearchViewUpdateOperations,
@@ -49,10 +48,10 @@ export class SchemaAnalyzer {
 
     async getDocumentCollectionMigrations(model: Model): Promise<ReadonlyArray<CreateDocumentCollectionMigration>> {
         // Get existing collections in ArangoDB
-        const existingCollections = (await this.db.collections()).filter(
-            coll => (coll as any).type === 2 /* document */
+        const existingCollections = (await this.db.listCollections()).filter(
+            coll => coll.type === CollectionType.DOCUMENT_COLLECTION
         );
-        const existingCollectionNames = new Set(existingCollections.map(coll => (<any>coll).name)); // typing for name missing
+        const existingCollectionNames = new Set(existingCollections.map(coll => coll.name)); // typing for name missing
 
         const migrations: CreateDocumentCollectionMigration[] = [];
 
@@ -76,8 +75,10 @@ export class SchemaAnalyzer {
 
     async getEdgeCollectionMigrations(model: Model): Promise<ReadonlyArray<CreateEdgeCollectionMigration>> {
         // Get existing collections in ArangoDB
-        const existingCollections = (await this.db.collections()).filter(coll => (coll as any).type === 3 /* edge */);
-        const existingCollectionNames = new Set(existingCollections.map(coll => (<any>coll).name)); // typing for name missing
+        const existingCollections = (await this.db.listCollections()).filter(
+            coll => coll.type === CollectionType.EDGE_COLLECTION
+        );
+        const existingCollectionNames = new Set(existingCollections.map(coll => coll.name));
 
         const migrations: CreateEdgeCollectionMigration[] = [];
 
@@ -113,10 +114,10 @@ export class SchemaAnalyzer {
                 try {
                     let countResult = await this.db.collection(index.collectionName).count();
                     collectionSize = countResult.count;
+                    collectionSizes.set(index.collectionName, collectionSize);
                 } catch (e) {
                     // ignore
                 }
-                collectionSizes.set(index.collectionName, collectionSize);
             }
         }
 
@@ -158,7 +159,7 @@ export class SchemaAnalyzer {
         const requiredViews = getRequiredViewsFromModel(model);
         // the currently existing views
         const views = (await this.db.listViews())
-            .map(value => this.db.arangoSearchView(value.name))
+            .map(value => this.db.view(value.name))
             .filter(view =>
                 model.rootEntityTypes.some(
                     rootEntityType => view.name === getFlexSearchViewNameForRootEntity(rootEntityType)

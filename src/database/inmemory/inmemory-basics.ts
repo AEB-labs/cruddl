@@ -1,4 +1,3 @@
-import * as pluralize from 'pluralize';
 import { decapitalize } from '../../utils/utils';
 import { Relation, RootEntityType } from '../../model';
 

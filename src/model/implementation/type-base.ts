@@ -1,6 +1,6 @@
 import { NameNode, TypeDefinitionNode } from 'graphql';
 import memorize from 'memorize-decorator';
-import * as pluralize from 'pluralize';
+import pluralize from 'pluralize';
 import { FlexSearchLanguage, TypeConfig, TypeKind } from '../config';
 import { ValidationMessage } from '../validation';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
@@ -40,7 +40,9 @@ export abstract class TypeBase implements ModelComponent {
 
         // Leading underscores are reserved for internal names
         if (this.name.startsWith('_')) {
-            context.addMessage(ValidationMessage.error(`Type names cannot start with an underscore.`, this.nameASTNode));
+            context.addMessage(
+                ValidationMessage.error(`Type names cannot start with an underscore.`, this.nameASTNode)
+            );
             return;
         }
 
@@ -52,7 +54,9 @@ export abstract class TypeBase implements ModelComponent {
         }
 
         if (!this.name.match(/^[A-Z]/)) {
-            context.addMessage(ValidationMessage.warn(`Type names should start with an uppercase character.`, this.nameASTNode));
+            context.addMessage(
+                ValidationMessage.warn(`Type names should start with an uppercase character.`, this.nameASTNode)
+            );
         }
     }
 

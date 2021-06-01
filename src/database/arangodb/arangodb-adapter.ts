@@ -515,7 +515,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             });
         }
         let requestSentCallback: (() => void) | undefined;
-        let requestSentPromise = new Promise(resolve => (requestSentCallback = resolve));
+        let requestSentPromise = new Promise<void>(resolve => (requestSentCallback = resolve));
         let timeout: any | undefined;
         if (options.transactionTimeoutMs != undefined) {
             const ms = options.transactionTimeoutMs;
@@ -587,14 +587,14 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         const dbStartTime = getPreciseTime();
         let transactionResult: ArangoTransactionResult;
         try {
-            transactionResult = await this.db.transaction(
+            transactionResult = await this.db.executeTransaction(
                 {
                     read: aqlQuery.readAccessedCollections,
                     write: aqlQuery.writeAccessedCollections
                 },
                 this.arangoExecutionFunction,
-                args,
                 {
+                    params: args,
                     waitForSync: true
                 }
             );

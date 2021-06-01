@@ -1,7 +1,7 @@
 import { ApolloServer } from 'apollo-server';
-import * as bodyParser from 'body-parser';
-import * as cors from 'cors';
-import * as express from 'express';
+import bodyParser from 'body-parser';
+import cors from 'cors';
+import express from 'express';
 import * as path from 'path';
 import { ArangoDBAdapter } from '../..';
 import { globalContext } from '../../src/config/global';

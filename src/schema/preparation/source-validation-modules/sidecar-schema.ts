@@ -1,7 +1,7 @@
 import { ParsedProjectSource, ParsedProjectSourceBaseKind } from '../../../config/parsed-project';
 import { ValidationMessage } from '../../../model';
 import { ParsedSourceValidator } from '../ast-validator';
-import * as validate from './schema/validate-schema';
+import validate from './schema/validate-schema';
 
 export class SidecarSchemaValidator implements ParsedSourceValidator {
     validate(source: ParsedProjectSource): ValidationMessage[] {
@@ -17,18 +17,19 @@ export class SidecarSchemaValidator implements ParsedSourceValidator {
             return [];
         }
 
-        return validate.errors.map((err): ValidationMessage => {
-            const path = reformatPath(err.dataPath);
-            if (path in source.pathLocationMap) {
-                const loc = source.pathLocationMap[path];
-                return ValidationMessage.error(err.message!, loc);
-            } else {
-                return ValidationMessage.error(`${err.message} (at ${err.dataPath})`, undefined);
+        return validate.errors.map(
+            (err): ValidationMessage => {
+                const path = reformatPath(err.dataPath);
+                if (path in source.pathLocationMap) {
+                    const loc = source.pathLocationMap[path];
+                    return ValidationMessage.error(err.message!, loc);
+                } else {
+                    return ValidationMessage.error(`${err.message} (at ${err.dataPath})`, undefined);
+                }
             }
-        });
+        );
     }
 }
-
 
 function reformatPath(path: string) {
     return path

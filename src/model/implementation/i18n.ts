@@ -1,4 +1,3 @@
-import * as pluralize from 'pluralize';
 import { I18N_GENERIC } from '../../meta-schema/constants';
 import {
     arrayStartsWith,

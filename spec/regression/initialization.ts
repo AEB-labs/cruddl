@@ -1,4 +1,5 @@
-import { Database, DocumentCollection, EdgeCollection } from 'arangojs';
+import { Database } from 'arangojs';
+import { Collection } from 'arangojs/collection';
 import * as fs from 'fs';
 import { ExecutionResult, graphql, GraphQLSchema } from 'graphql';
 import { ArangoDBConfig } from '../../src/database/arangodb';
@@ -9,20 +10,19 @@ const DATABASE_URL = 'http://root:@localhost:8529';
 
 export async function createTempDatabase(): Promise<ArangoDBConfig> {
     const db = new Database({
-        url: DATABASE_URL,
+        url: DATABASE_URL
     });
     const dbs = await db.listDatabases();
     if (dbs.indexOf(DATABASE_NAME) >= 0) {
         db.useDatabase(DATABASE_NAME);
-        const colls = (await db.collections(true)) as (DocumentCollection | EdgeCollection)[];
+        const colls = (await db.collections(true)) as Collection[];
         await Promise.all(colls.map(coll => coll.drop()));
     } else {
         await db.createDatabase(DATABASE_NAME);
     }
     return {
         url: DATABASE_URL,
-        databaseName: DATABASE_NAME,
-
+        databaseName: DATABASE_NAME
     };
 }
 
@@ -45,7 +45,7 @@ export function getTempDatabase(): Database {
 }
 
 export interface TestDataEnvironment {
-    fillTemplateStrings: (data: any) => any
+    fillTemplateStrings: (data: any) => any;
 }
 
 export async function initTestData(path: string, schema: GraphQLSchema): Promise<TestDataEnvironment> {
@@ -90,7 +90,10 @@ export async function initTestData(path: string, schema: GraphQLSchema): Promise
             dataSet = fillTemplateStrings(dataSet);
             const dataID = dataSet['@id'];
             delete dataSet['@id'];
-            const query = `mutation($input: Create${rootEntityLocalName}Input!) { ${wrapNamespaceForQuery(`res: create${rootEntityLocalName}(input: $input) { id }`, namespace)} }`;
+            const query = `mutation($input: Create${rootEntityLocalName}Input!) { ${wrapNamespaceForQuery(
+                `res: create${rootEntityLocalName}(input: $input) { id }`,
+                namespace
+            )} }`;
             const variables = { input: dataSet };
             const result = await graphql(schema, query, {}, context, variables);
             if (result.errors) {

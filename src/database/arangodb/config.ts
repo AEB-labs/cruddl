@@ -1,5 +1,5 @@
 import { Database } from 'arangojs';
-import { LoadBalancingStrategy } from 'arangojs/lib/cjs/connection';
+import { LoadBalancingStrategy } from 'arangojs/connection';
 import { globalContext } from '../../config/global';
 import { ProjectOptions } from '../../config/interfaces';
 import { Logger } from '../../config/logging';

@@ -12,6 +12,7 @@
         "noImplicitReturns": true,
         "downlevelIteration": true,
         "experimentalDecorators": true,
+        "esModuleInterop": true,
         "lib": ["es2016", "esnext.asynciterable", "esnext.array"],
         "baseUrl": "./",
         "paths": {

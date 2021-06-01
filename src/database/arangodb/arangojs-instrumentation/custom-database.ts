@@ -1,5 +1,5 @@
 import { Database } from 'arangojs';
-import { Config } from 'arangojs/lib/async/connection';
+import { Config } from 'arangojs/connection';
 import { CustomConnection } from './custom-connection';
 
 export class CustomDatabase extends Database {

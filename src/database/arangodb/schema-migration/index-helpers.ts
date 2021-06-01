@@ -14,7 +14,7 @@ export interface IndexDefinition {
     readonly collectionName: string;
     readonly unique: boolean;
     readonly sparse: boolean;
-    readonly type: string;
+    readonly type: 'persistent';
 }
 
 export function describeIndex(index: IndexDefinition) {
@@ -131,5 +131,5 @@ function getArangoFieldPath(indexField: IndexField): string {
 
 export async function isArangoSearchSupported(versionPromise: Promise<ArangoDBVersion | undefined>) {
     const version = await versionPromise;
-    return version && (version.major >= 3 && version.minor >= 4);
+    return version && version.major >= 3 && version.minor >= 4;
 }
