@@ -9,16 +9,16 @@ const DATABASE_NAME = 'cruddl-test-temp';
 const DATABASE_URL = 'http://root:@localhost:8529';
 
 export async function createTempDatabase(): Promise<ArangoDBConfig> {
-    const db = new Database({
+    const systemDatabase = new Database({
         url: DATABASE_URL
     });
-    const dbs = await db.listDatabases();
+    const dbs = await systemDatabase.listDatabases();
     if (dbs.indexOf(DATABASE_NAME) >= 0) {
-        db.useDatabase(DATABASE_NAME);
+        const db = systemDatabase.database(DATABASE_NAME);
         const colls = (await db.collections(true)) as Collection[];
         await Promise.all(colls.map(coll => coll.drop()));
     } else {
-        await db.createDatabase(DATABASE_NAME);
+        await systemDatabase.createDatabase(DATABASE_NAME);
     }
     return {
         url: DATABASE_URL,
@@ -37,11 +37,10 @@ export async function dropTempDatabase(): Promise<void> {
 }
 
 export function getTempDatabase(): Database {
-    const db = new Database({
-        url: DATABASE_URL
+    return new Database({
+        url: DATABASE_URL,
+        databaseName: DATABASE_NAME
     });
-    db.useDatabase(DATABASE_NAME);
-    return db;
 }
 
 export interface TestDataEnvironment {

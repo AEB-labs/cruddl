@@ -4,7 +4,7 @@ import { ProjectOptions } from '../../config/interfaces';
 import { Logger } from '../../config/logging';
 import { ExecutionOptions } from '../../execution/execution-options';
 import { TransactionCancelledError, TransactionTimeoutError } from '../../execution/runtime-errors';
-import { FlexSearchLanguage, Model } from '../../model';
+import { Model } from '../../model';
 import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS, QueryNode } from '../../query-tree';
 import { FlexSearchTokenization } from '../../query-tree/flex-search';
 import { Mutable } from '../../utils/util-types';

@@ -1,8 +1,7 @@
 import { Database } from 'arangojs';
 import { ArangoSearchView, ArangoSearchViewProperties, ArangoSearchViewPropertiesOptions } from 'arangojs/view';
 import * as _ from 'lodash';
-import { FlexSearchLanguage } from '../../../model/config';
-import { Field, Model, RootEntityType } from '../../../model/implementation';
+import { Field, FlexSearchLanguage, Model, RootEntityType } from '../../../model';
 import { OrderDirection } from '../../../model/implementation/order';
 import { ID_FIELD } from '../../../schema/constants';
 import { getCollectionNameForRootEntity } from '../arango-basics';

@@ -1,57 +1,22 @@
 import { Database } from 'arangojs';
-import { LoadBalancingStrategy } from 'arangojs/connection';
+import { CreateCollectionOptions } from 'arangojs/collection';
+import { Config } from 'arangojs/connection';
 import { globalContext } from '../../config/global';
 import { ProjectOptions } from '../../config/interfaces';
 import { Logger } from '../../config/logging';
 import { CustomDatabase } from './arangojs-instrumentation/custom-database';
 import { ArangoSearchConfiguration } from './schema-migration/arango-search-helpers';
 
-export interface ArangoJSConfig {
-    readonly url?: string | ReadonlyArray<string>;
-    readonly isAbsolute?: boolean;
-    readonly arangoVersion?: number;
-    readonly loadBalancingStrategy?: LoadBalancingStrategy;
-    readonly maxRetries?: false | number;
-    readonly agent?: any;
-    readonly agentOptions?: {
-        readonly [key: string]: any;
-    };
-    readonly headers?: {
-        readonly [key: string]: string;
-    };
-}
-
-export interface CreateCollectionOptions {
-    readonly waitForSync?: boolean;
-    readonly journalSize?: number;
-    readonly isVolatile?: boolean;
-    readonly isSystem?: boolean;
-    readonly keyOptions?: {
-        readonly type?: KeyGeneratorType;
-        readonly allowUserKeys?: boolean;
-        readonly increment?: number;
-        readonly offset?: number;
-    };
-    readonly numberOfShards?: number;
-    readonly shardKeys?: ReadonlyArray<string>;
-    readonly distributeShardsLike?: string;
-    readonly shardingStrategy?: string;
-    readonly smartJoinAttribute?: string;
-    readonly replicationFactor?: number;
-    readonly minReplicationFactor?: number;
-}
-
 export declare type KeyGeneratorType = 'traditional' | 'autoincrement' | 'uuid' | 'padded';
 
 export const DEFAULT_RETRY_DELAY_BASE_MS = 100;
-
 export const RETRY_DELAY_RANDOM_FRACTION = 0.5;
 
 export interface ArangoDBConfig {
     /**
      * Additional configuration options that will be passed to the ArangoJS Database constructor
      */
-    readonly arangoJSConfig?: ArangoJSConfig;
+    readonly arangoJSConfig?: Partial<Config>;
 
     readonly url: string;
     readonly user?: string;
@@ -124,8 +89,9 @@ export interface ArangoDBConfig {
 export function initDatabase(config: ArangoDBConfig): Database {
     const db = new CustomDatabase({
         ...(config.arangoJSConfig ? config.arangoJSConfig : {}),
-        url: config.url
-    }).useDatabase(config.databaseName);
+        url: config.url,
+        databaseName: config.databaseName
+    });
     if (config.user) {
         db.useBasicAuth(config.user, config.password);
     }
