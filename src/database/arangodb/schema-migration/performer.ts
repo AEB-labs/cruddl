@@ -78,7 +78,6 @@ export class MigrationPerformer {
     private async createArangoSearchView(migration: CreateArangoSearchViewMigration) {
         if (this.isSkipVersionCheck || (await isArangoSearchSupported(this.versionHelper.getArangoDBVersion()))) {
             await this.db.createView(migration.viewName, migration.properties);
-            await this.db.view(migration.viewName).replaceProperties(migration.properties); // TODO figure out why (or if not) we need to do this
         } else {
             throw new ArangoSearchMigrationNotSupportedError();
         }
@@ -104,7 +103,6 @@ export class MigrationPerformer {
         if (this.isSkipVersionCheck || (await isArangoSearchSupported(this.versionHelper.getArangoDBVersion()))) {
             await this.db.view(migration.viewName).drop();
             await this.db.createView(migration.viewName, migration.properties);
-            await this.db.view(migration.viewName).replaceProperties(migration.properties); // TODO figure out why (or if not) we need to do this
         } else {
             throw new ArangoSearchMigrationNotSupportedError();
         }
