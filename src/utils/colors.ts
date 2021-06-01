@@ -1,4 +1,4 @@
-import * as style from 'ansi-styles';
+import style from 'ansi-styles';
 import { EscapeCode } from 'ansi-styles/escape-code';
 import CodePair = EscapeCode.CodePair;
 
@@ -11,7 +11,7 @@ namespace colors {
 export default colors;
 
 function applyColorFn(color: CodePair) {
-    return (str: string) => colors.enabled ? color.open + str + color.close : str;
+    return (str: string) => (colors.enabled ? color.open + str + color.close : str);
 }
 
 export const cyan = applyColorFn(style.color.cyan);

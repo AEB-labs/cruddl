@@ -33,7 +33,7 @@ describe('ArangoDBAdapter', () => {
             await db.collection('deliveries').create({});
 
             // add an index that completely fits
-            await db.collection('deliveries').createIndex({
+            await db.collection('deliveries').ensureIndex({
                 fields: ['itemCount'],
                 sparse: false,
                 unique: false,
@@ -41,7 +41,7 @@ describe('ArangoDBAdapter', () => {
             });
 
             // add an index that *almost* fits. Will be removed
-            await db.collection('deliveries').createIndex({
+            await db.collection('deliveries').ensureIndex({
                 fields: ['deliveryNumber'],
                 sparse: false,
                 unique: true,
@@ -50,7 +50,7 @@ describe('ArangoDBAdapter', () => {
 
             // add an index on a different collection. Will be kept.
             await db.collection('second').create({});
-            await db.collection('second').createIndex({
+            await db.collection('second').ensureIndex({
                 fields: ['test'],
                 sparse: false,
                 unique: true,
@@ -58,7 +58,7 @@ describe('ArangoDBAdapter', () => {
             });
 
             // add a non-unique index that is needed for @index, but should not satisfy the @unique index
-            await db.collection('deliveries').createIndex({
+            await db.collection('deliveries').ensureIndex({
                 fields: ['indexedTwice'],
                 sparse: false,
                 unique: false,

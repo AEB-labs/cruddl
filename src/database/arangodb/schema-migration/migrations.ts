@@ -1,14 +1,20 @@
-import { ArangoSearchViewPropertiesOptions } from 'arangojs/lib/cjs/view';
-import { BillingEntityType, Relation, RootEntityType } from '../../../model/implementation';
+import { ArangoSearchViewPropertiesOptions } from 'arangojs/view';
+import { Relation } from '../../../model/implementation';
 import { describeIndex, getIndexDescriptor, IndexDefinition } from './index-helpers';
 
-export type SchemaMigration = CreateIndexMigration | DropIndexMigration | CreateDocumentCollectionMigration
-    | CreateEdgeCollectionMigration | CreateArangoSearchViewMigration | DropArangoSearchViewMigration
-    | UpdateArangoSearchViewMigration | RecreateArangoSearchViewMigration;
+export type SchemaMigration =
+    | CreateIndexMigration
+    | DropIndexMigration
+    | CreateDocumentCollectionMigration
+    | CreateEdgeCollectionMigration
+    | CreateArangoSearchViewMigration
+    | DropArangoSearchViewMigration
+    | UpdateArangoSearchViewMigration
+    | RecreateArangoSearchViewMigration;
 
 interface CreateIndexMigrationConfig {
-    readonly index: IndexDefinition
-    readonly collectionSize?: number
+    readonly index: IndexDefinition;
+    readonly collectionSize?: number;
 }
 
 export class CreateIndexMigration {
@@ -35,8 +41,8 @@ export class CreateIndexMigration {
 }
 
 interface DropIndexMigrationConfig {
-    readonly index: IndexDefinition
-    readonly collectionSize?: number
+    readonly index: IndexDefinition;
+    readonly collectionSize?: number;
 }
 
 export class DropIndexMigration {
@@ -65,8 +71,7 @@ export class DropIndexMigration {
 export class CreateDocumentCollectionMigration {
     readonly type: 'createDocumentCollection' = 'createDocumentCollection';
 
-    constructor(public readonly collectionName: string) {
-    }
+    constructor(public readonly collectionName: string) {}
 
     get description() {
         return `create document collection ${this.collectionName}`;
@@ -84,8 +89,7 @@ export class CreateDocumentCollectionMigration {
 export class CreateEdgeCollectionMigration {
     readonly type: 'createEdgeCollection' = 'createEdgeCollection';
 
-    constructor(public readonly relation: Relation, public readonly collectionName: string) {
-    }
+    constructor(public readonly relation: Relation, public readonly collectionName: string) {}
 
     get description() {
         return `create edge collection ${this.collectionName}`;
@@ -101,19 +105,16 @@ export class CreateEdgeCollectionMigration {
 }
 
 interface CreateArangoSearchViewMigrationConfig {
-
-    readonly viewName: string
-    readonly properties: ArangoSearchViewPropertiesOptions
-    readonly collectionName: string
-    readonly collectionSize?: number
+    readonly viewName: string;
+    readonly properties: ArangoSearchViewPropertiesOptions;
+    readonly collectionName: string;
+    readonly collectionSize?: number;
 }
 
-interface UpdateArangoSearchViewMigrationConfig extends CreateArangoSearchViewMigrationConfig {
-
-}
+interface UpdateArangoSearchViewMigrationConfig extends CreateArangoSearchViewMigrationConfig {}
 
 interface DropArangoSearchViewMigrationConfig {
-    readonly viewName: string
+    readonly viewName: string;
 }
 
 export class DropArangoSearchViewMigration {

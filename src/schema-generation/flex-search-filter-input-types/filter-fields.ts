@@ -1,6 +1,4 @@
 import { getNamedType, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
-import * as pluralize from 'pluralize';
-import { isArray } from 'util';
 import { Field, FlexSearchLanguage, TypeKind } from '../../model';
 import {
     BinaryOperationQueryNode,
@@ -25,16 +23,15 @@ import {
     OR_FILTER_FIELD
 } from '../../schema/constants';
 import { AnyValue, PlainObject } from '../../utils/utils';
-import { OPERATORS_WITH_LIST_OPERAND } from '../filter-input-types/constants';
 import { QueryNodeResolveInfo } from '../query-node-object-type';
 import { TypedInputFieldBase } from '../typed-input-object-type';
 import { not } from '../utils/input-types';
-import { FlexSearchFilterObjectType } from './/generator';
 import {
     FLEX_SEARCH_FILTER_DESCRIPTIONS,
     FLEX_SEARCH_OPERATORS_WITH_LIST_OPERAND,
     STRING_TEXT_ANALYZER_FILTER_FIELDS
 } from './constants';
+import { FlexSearchFilterObjectType } from './generator';
 
 const NESTED_FIELD_SUFFIX = 'Aggregation';
 
@@ -305,7 +302,7 @@ export class FlexSearchAndFilterField implements FlexSearchFilterField {
         path: ReadonlyArray<Field>,
         info: QueryNodeResolveInfo
     ): QueryNode {
-        if (!isArray(filterValue) || !filterValue.length) {
+        if (!Array.isArray(filterValue) || !filterValue.length) {
             return new ConstBoolQueryNode(true);
         }
         const values = (filterValue || []) as ReadonlyArray<PlainObject>;
@@ -331,7 +328,7 @@ export class FlexSearchOrFilterField implements FlexSearchFilterField {
         path: ReadonlyArray<Field>,
         info: QueryNodeResolveInfo
     ): QueryNode {
-        if (!isArray(filterValue)) {
+        if (!Array.isArray(filterValue)) {
             return new ConstBoolQueryNode(true); // regard as omitted
         }
         const values = filterValue as ReadonlyArray<PlainObject>;

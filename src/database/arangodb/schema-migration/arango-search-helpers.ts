@@ -1,5 +1,5 @@
 import { Database } from 'arangojs';
-import { ArangoSearchView, ArangoSearchViewPropertiesOptions } from 'arangojs/lib/cjs/view';
+import { ArangoSearchView, ArangoSearchViewProperties, ArangoSearchViewPropertiesOptions } from 'arangojs/view';
 import * as _ from 'lodash';
 import { FlexSearchLanguage } from '../../../model/config';
 import { Field, Model, RootEntityType } from '../../../model/implementation';
@@ -43,28 +43,6 @@ export interface ArangoSearchConfiguration {
     readonly recursionDepth?: number;
     readonly commitIntervalMsec?: number;
     readonly skipVersionCheckForArangoSearchMigrations?: boolean;
-}
-
-export interface ArangoSearchViewProperties {
-    cleanupIntervalStep: number;
-    consolidationIntervalMsec: number;
-    writebufferIdle: number;
-    writebufferActive: number;
-    writebufferSizeMax: number;
-    consolidationPolicy: {
-        type: 'bytes_accum' | 'tier';
-        threshold?: number;
-        segments_min?: number;
-        segments_max?: number;
-        segments_bytes_max?: number;
-        segments_bytes_floor?: number;
-        lookahead?: number;
-    };
-    links: {
-        [key: string]: ArangoSearchViewCollectionLink | undefined;
-    };
-    primarySort?: FlexSearchPrimarySortConfig[];
-    commitIntervalMsec?: number;
 }
 
 export function getRequiredViewsFromModel(model: Model): ReadonlyArray<ArangoSearchDefinition> {
@@ -197,7 +175,10 @@ function isEqualProperties(
     return (
         _.isEqual(definitionProperties.links, viewProperties.links) &&
         _.isEqual(definitionProperties.primarySort, viewProperties.primarySort) &&
-        _.isEqual(definitionProperties.commitIntervalMsec, viewProperties.commitIntervalMsec)
+        _.isEqual(
+            definitionProperties.commitIntervalMsec,
+            (viewProperties as any).commitIntervalMsec /* somehow missing in types */
+        )
     );
 }
 

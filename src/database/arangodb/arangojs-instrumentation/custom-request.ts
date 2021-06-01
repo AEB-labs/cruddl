@@ -4,14 +4,15 @@
  * Originally licensed under Apache License 2.0
  */
 
-import { btoa } from 'arangojs/lib/async/util/btoa';
-import { joinPath } from 'arangojs/lib/async/util/joinPath';
-import { Errback } from 'arangojs/lib/async/util/types';
+import { btoa } from 'arangojs/lib/btoa';
+import { joinPath } from 'arangojs/lib/joinPath';
+import { Errback } from 'arangojs/lib/errback';
 import { Agent as HttpAgent, ClientRequest, ClientRequestArgs, IncomingMessage, request as httpRequest } from 'http';
 import { Agent as HttpsAgent, request as httpsRequest } from 'https';
 import { Socket } from 'net';
-import { parse as parseUrl, Url } from 'url';
+import { URL } from 'url';
 import { RequestInstrumentation, RequestInstrumentationPhase } from './config';
+import { RequestOptions as ArangoRequestOptions } from 'arangojs/lib/request.node';
 
 export type ArangojsResponse = IncomingMessage & {
     request: ClientRequest;
@@ -23,13 +24,8 @@ export type ArangojsError = Error & {
     request: ClientRequest;
 };
 
-export interface RequestOptions {
-    method: string;
-    url: Url;
-    headers: { [key: string]: string };
-    body: any;
-    expectBinary: boolean;
-    requestInstrumentation?: RequestInstrumentation
+export interface RequestOptions extends ArangoRequestOptions {
+    requestInstrumentation?: RequestInstrumentation;
 }
 
 export interface RequestFunction {
@@ -46,12 +42,8 @@ const knownSockets = new WeakSet<Socket>();
 
 export const isBrowser = false;
 
-export function createRequest(
-    baseUrl: string,
-    agentOptions: any,
-    agent: any
-): RequestFunction {
-    const baseUrlParts = parseUrl(baseUrl);
+export function createRequest(baseUrl: string, agentOptions: any, agent: any): RequestFunction {
+    const baseUrlParts = new URL(baseUrl);
     if (!baseUrlParts.protocol) {
         throw new Error(`Invalid URL (no protocol): ${baseUrl}`);
     }
@@ -66,10 +58,10 @@ export function createRequest(
         const i = baseUrlParts.pathname.indexOf(':');
         if (i === -1) {
             socketPath = baseUrlParts.pathname;
-            baseUrlParts.pathname = undefined;
+            baseUrlParts.pathname = '';
         } else {
             socketPath = baseUrlParts.pathname.slice(0, i);
-            baseUrlParts.pathname = baseUrlParts.pathname.slice(i + 1) || undefined;
+            baseUrlParts.pathname = baseUrlParts.pathname.slice(i + 1) || '';
         }
     }
     if (socketPath && !socketPath.replace(/\//g, '').length) {
@@ -115,7 +107,7 @@ export function createRequest(
             }
             if (!headers['authorization']) {
                 headers['authorization'] = `Basic ${btoa(
-                    baseUrlParts.auth || 'root:'
+                    (baseUrlParts.username || 'root') + ':' + (baseUrlParts.password || '')
                 )}`;
             }
             const options: ClientRequestArgs = { path, method, headers, agent };
@@ -127,25 +119,22 @@ export function createRequest(
             }
             let called = false;
             try {
-                const req = (isTls ? httpsRequest : httpRequest)(
-                    options,
-                    (res: IncomingMessage) => {
-                        notifyAboutPhaseEnd(requestInstrumentation, 'waiting');
-                        const data: Buffer[] = [];
-                        res.on('data', chunk => data.push(chunk as Buffer));
-                        res.on('end', () => {
-                            const result = res as ArangojsResponse;
-                            result.request = req;
-                            result.body = Buffer.concat(data);
-                            if (called) {
-                                return;
-                            }
-                            called = true;
-                            notifyAboutPhaseEnd(requestInstrumentation, 'receiving');
-                            callback(null, result);
-                        });
-                    }
-                );
+                const req = (isTls ? httpsRequest : httpRequest)(options, (res: IncomingMessage) => {
+                    notifyAboutPhaseEnd(requestInstrumentation, 'waiting');
+                    const data: Buffer[] = [];
+                    res.on('data', chunk => data.push(chunk as Buffer));
+                    res.on('end', () => {
+                        const result = res as ArangojsResponse;
+                        result.request = req;
+                        result.body = Buffer.concat(data);
+                        if (called) {
+                            return;
+                        }
+                        called = true;
+                        notifyAboutPhaseEnd(requestInstrumentation, 'receiving');
+                        callback(null, result);
+                    });
+                });
                 if (requestInstrumentation) {
                     req.on('socket', (socket: Socket) => {
                         notifyAboutPhaseEnd(requestInstrumentation, 'socketInit');
@@ -186,7 +175,10 @@ export function createRequest(
     );
 }
 
-function notifyAboutPhaseEnd(requestInstrumentation: RequestInstrumentation | undefined, phase: RequestInstrumentationPhase) {
+function notifyAboutPhaseEnd(
+    requestInstrumentation: RequestInstrumentation | undefined,
+    phase: RequestInstrumentationPhase
+) {
     if (!requestInstrumentation) {
         return;
     }

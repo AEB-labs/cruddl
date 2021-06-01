@@ -1,4 +1,3 @@
-import * as pluralize from 'pluralize';
 import { Relation, RootEntityType } from '../../model';
 import { decapitalize } from '../../utils/utils';
 
@@ -11,4 +10,3 @@ export function getCollectionNameForRootEntity(type: RootEntityType) {
 export function getCollectionNameForRelation(relation: Relation) {
     return getCollectionNameForRootEntity(relation.fromType) + '_' + relation.fromField.name;
 }
-

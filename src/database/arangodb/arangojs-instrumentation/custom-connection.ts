@@ -1,7 +1,7 @@
-import { Config, Connection } from 'arangojs/lib/async/connection';
-import { ArangoError, HttpError } from 'arangojs/lib/async/error';
-import { ArangojsResponse } from 'arangojs/lib/async/util/request.node';
-import { sanitizeUrl } from 'arangojs/lib/async/util/sanitizeUrl';
+import { Config, Connection } from 'arangojs/connection';
+import { ArangoError, HttpError } from 'arangojs/error';
+import { normalizeUrl } from 'arangojs/lib/normalizeUrl';
+import { ArangojsResponse } from 'arangojs/lib/request';
 import { RequestInstrumentation, requestInstrumentationBodyKey } from './config';
 import { createRequest } from './custom-request';
 
@@ -19,7 +19,7 @@ export type RequestOptions = {
     basePath?: string;
     path?: string;
     qs?: string | { [key: string]: any };
-    requestInstrumentation?: RequestInstrumentation
+    requestInstrumentation?: RequestInstrumentation;
 };
 
 export class CustomConnection extends Connection {
@@ -41,14 +41,18 @@ export class CustomConnection extends Connection {
         getter?: (res: ArangojsResponse) => T
     ): Promise<T> {
         let requestInstrumentation: RequestInstrumentation | undefined;
-        if (typeof body === 'object' && typeof body.params === 'object' && requestInstrumentationBodyKey in body.params) {
+        if (
+            typeof body === 'object' &&
+            typeof body.params === 'object' &&
+            requestInstrumentationBodyKey in body.params
+        ) {
             requestInstrumentation = body.params[requestInstrumentationBodyKey];
             delete body.params[requestInstrumentationBodyKey];
         }
 
         if (requestInstrumentation && requestInstrumentation.cancellationToken) {
             let ri = requestInstrumentation;
-            requestInstrumentation.cancellationToken.then(() => ri.isCancelled = true);
+            requestInstrumentation.cancellationToken.then(() => (ri.isCancelled = true));
         }
 
         return new Promise((resolve, reject) => {
@@ -131,13 +135,11 @@ export class CustomConnection extends Connection {
     }
 
     addToHostList(urls: string | string[]): number[] {
-        const cleanUrls = (Array.isArray(urls) ? urls : [urls]).map(url => sanitizeUrl(url));
+        const cleanUrls = (Array.isArray(urls) ? urls : [urls]).map(url => normalizeUrl(url));
         const newUrls = cleanUrls.filter(url => (this as any)._urls.indexOf(url) === -1);
         (this as any)._urls.push(...newUrls);
         (this as any)._hosts.push(
-            ...newUrls.map((url: string) =>
-                createRequest(url, (this as any)._agentOptions, (this as any)._agent)
-            )
+            ...newUrls.map((url: string) => createRequest(url, (this as any)._agentOptions, (this as any)._agent))
         );
         return cleanUrls.map(url => (this as any)._urls.indexOf(url));
     }
