@@ -45,6 +45,8 @@ export declare type KeyGeneratorType = 'traditional' | 'autoincrement' | 'uuid' 
 
 export const DEFAULT_RETRY_DELAY_BASE_MS = 100;
 
+export const RETRY_DELAY_RANDOM_FRACTION = 0.5;
+
 export interface ArangoDBConfig {
     /**
      * Additional configuration options that will be passed to the ArangoJS Database constructor

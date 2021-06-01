@@ -23,7 +23,13 @@ import { AQLCompoundQuery, aqlConfig, AQLExecutableQuery } from './aql';
 import { generateTokenizationQuery, getAQLQuery } from './aql-generator';
 import { RequestInstrumentation, RequestInstrumentationPhase } from './arangojs-instrumentation/config';
 import { CancellationManager } from './cancellation-manager';
-import { ArangoDBConfig, DEFAULT_RETRY_DELAY_BASE_MS, getArangoDBLogger, initDatabase } from './config';
+import {
+    ArangoDBConfig,
+    DEFAULT_RETRY_DELAY_BASE_MS,
+    getArangoDBLogger,
+    initDatabase,
+    RETRY_DELAY_RANDOM_FRACTION
+} from './config';
 import { ERROR_ARANGO_CONFLICT, ERROR_QUERY_KILLED } from './error-codes';
 import { hasRevisionAssertions } from './revision-helper';
 import { SchemaAnalyzer } from './schema-migration/analyzer';
@@ -445,7 +451,9 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             }
 
             const sleepStart = getPreciseTime();
-            const shouldContinue = await sleepInterruptible(nextRetryDelay, options.cancellationToken);
+            const randomFactor = 1 + RETRY_DELAY_RANDOM_FRACTION * (2 * Math.random() - 1);
+            const delayWithRandomComponent = nextRetryDelay * randomFactor;
+            const shouldContinue = await sleepInterruptible(delayWithRandomComponent, options.cancellationToken);
             if (options.recordTimings && timings) {
                 const sleepLength = getPreciseTime() - sleepStart;
                 timings = {
