@@ -17,12 +17,17 @@ const MODEL_PATH = path.resolve(__dirname, '../../regression/papers/model');
 export interface TestEnvironment {
     getDB(): Database;
 
-    exec(graphql: string, variables?: { [name: string]: any }): any
+    exec(graphql: string, variables?: { [name: string]: any }): any;
 }
 
-const schemaContext: ProjectOptions = { loggerProvider: new Log4jsLoggerProvider('warn'), getExecutionOptions: ({ context }) => ({ authRoles: context.authRoles }) };
+const schemaContext: ProjectOptions = {
+    loggerProvider: new Log4jsLoggerProvider('warn'),
+    getExecutionOptions: ({ context }) => ({ authRoles: context.authRoles })
+};
 
-export async function createTestProject(modelPath: string = MODEL_PATH): Promise<{ project: Project, schema: GraphQLSchema }> {
+export async function createTestProject(
+    modelPath: string = MODEL_PATH
+): Promise<{ project: Project; schema: GraphQLSchema }> {
     const project = await loadProjectFromDir(modelPath, schemaContext);
     const dbConfig = await createTempDatabase();
     const dbAdapter = new ArangoDBAdapter(dbConfig, schemaContext);
@@ -39,7 +44,7 @@ export async function initEnvironment(): Promise<TestEnvironment> {
 
     return {
         getDB() {
-            return new Database(dbConfig).useDatabase(dbConfig.databaseName);
+            return new Database(dbConfig);
         },
         async exec(gql, variables) {
             const res = await graphql(schema, gql, {} /* root */, { authRoles: ['admin'] }, variables);
@@ -104,7 +109,9 @@ export async function addNumberedPapersWithAQL(environment: TestEnvironment, cou
 }
 
 export async function getRandomPaperIDsWithAQL(environment: TestEnvironment, count: number): Promise<string[]> {
-    const cursor = await environment.getDB().query(aql`FOR node IN papers SORT RAND() LIMIT ${count} RETURN { id: node._key }`);
+    const cursor = await environment
+        .getDB()
+        .query(aql`FOR node IN papers SORT RAND() LIMIT ${count} RETURN { id: node._key }`);
     const docs = await cursor.all();
     return docs.map((doc: any) => doc.id);
 }

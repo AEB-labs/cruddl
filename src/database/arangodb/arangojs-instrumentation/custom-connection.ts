@@ -1,4 +1,4 @@
-import { Config, Connection } from 'arangojs/connection';
+import { Config, Connection, RequestOptions } from 'arangojs/connection';
 import { ArangoError, HttpError } from 'arangojs/error';
 import { normalizeUrl } from 'arangojs/lib/normalizeUrl';
 import { ArangojsResponse } from 'arangojs/lib/request';
@@ -6,21 +6,6 @@ import { RequestInstrumentation, requestInstrumentationBodyKey } from './config'
 import { createRequest } from './custom-request';
 
 const MIME_JSON = /\/(json|javascript)(\W|$)/;
-
-export type RequestOptions = {
-    host?: number;
-    method?: string;
-    body?: any;
-    expectBinary?: boolean;
-    isBinary?: boolean;
-    allowDirtyRead?: boolean;
-    headers?: { [key: string]: string };
-    absolutePath?: boolean;
-    basePath?: string;
-    path?: string;
-    qs?: string | { [key: string]: any };
-    requestInstrumentation?: RequestInstrumentation;
-};
 
 export class CustomConnection extends Connection {
     constructor(config?: Config) {

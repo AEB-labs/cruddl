@@ -1,7 +1,7 @@
 import { CollectionType, Database } from 'arangojs';
 import { ProjectOptions } from '../../../config/interfaces';
 import { Logger } from '../../../config/logging';
-import { Model, RootEntityType } from '../../../model/implementation';
+import { Model, RootEntityType } from '../../../model';
 import { billingCollectionName, getCollectionNameForRelation, getCollectionNameForRootEntity } from '../arango-basics';
 import { ArangoDBConfig, getArangoDBLogger, initDatabase } from '../config';
 import { ArangoDBVersionHelper } from '../version-helper';
