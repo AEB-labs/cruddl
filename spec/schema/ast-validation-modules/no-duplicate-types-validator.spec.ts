@@ -7,17 +7,18 @@ describe('no duplicate type definition validator', () => {
             type Stuff @rootEntity {
                 foo: String
             }
-            type Stuff @rootEntity {
+            type Stuff {
                 bar: String
-            }
-            type Stuff @rootEntity {
-                name: String
             }
         `);
         expect(validationResult.hasErrors()).to.be.true;
-        // we expect two errors because both types have a duplicate type error
-        expect(validationResult.messages.length).to.equal(3);
-        expect(validationResult.messages[0].message).to.equal('Duplicate type name: "Stuff".');
+        // error 1: second definition does not have @rootEntity/@childEntity etc.
+        // error 2+3: duplicate type
+        // error 4: warning about not used
+        // didn't specify @rootEntity on the second type because that would trigger a graphql error that's evaluated
+        // earlier about duplicate @rootEntity directives
+        expect(validationResult.messages.length).to.equal(4);
+        expect(validationResult.messages[1].message).to.equal('Duplicate type name: "Stuff".');
     });
 
     it('accepts unique types', () => {
@@ -26,6 +27,5 @@ describe('no duplicate type definition validator', () => {
                 foo: String
             }
         `);
-    })
-
+    });
 });
