@@ -7,10 +7,11 @@
 import { btoa } from 'arangojs/lib/btoa';
 import { joinPath } from 'arangojs/lib/joinPath';
 import { Errback } from 'arangojs/lib/errback';
+import { omit } from 'arangojs/lib/omit';
 import { Agent as HttpAgent, ClientRequest, ClientRequestArgs, IncomingMessage, request as httpRequest } from 'http';
 import { Agent as HttpsAgent, request as httpsRequest } from 'https';
 import { Socket } from 'net';
-import { URL } from 'url';
+import { parse as parseUrl, UrlWithStringQuery } from 'url';
 import { RequestInstrumentation, RequestInstrumentationPhase } from './config';
 import { RequestOptions as ArangoRequestOptions } from 'arangojs/lib/request.node';
 
@@ -43,7 +44,7 @@ const knownSockets = new WeakSet<Socket>();
 export const isBrowser = false;
 
 export function createRequest(baseUrl: string, agentOptions: any, agent: any): RequestFunction {
-    const baseUrlParts = new URL(baseUrl);
+    const baseUrlParts = parseUrl(baseUrl) as Partial<UrlWithStringQuery>;
     if (!baseUrlParts.protocol) {
         throw new Error(`Invalid URL (no protocol): ${baseUrl}`);
     }
@@ -58,25 +59,27 @@ export function createRequest(baseUrl: string, agentOptions: any, agent: any): R
         const i = baseUrlParts.pathname.indexOf(':');
         if (i === -1) {
             socketPath = baseUrlParts.pathname;
-            baseUrlParts.pathname = '';
+            delete baseUrlParts.pathname;
         } else {
             socketPath = baseUrlParts.pathname.slice(0, i);
-            baseUrlParts.pathname = baseUrlParts.pathname.slice(i + 1) || '';
+            baseUrlParts.pathname = baseUrlParts.pathname.slice(i + 1);
+            if (baseUrlParts.pathname === '') {
+                delete baseUrlParts.pathname;
+            }
         }
     }
     if (socketPath && !socketPath.replace(/\//g, '').length) {
         throw new Error(`Invalid URL (empty unix socket path): ${baseUrl}`);
     }
     if (!agent) {
-        if (isTls) {
-            agent = new HttpsAgent(agentOptions);
-        } else {
-            agent = new HttpAgent(agentOptions);
-        }
+        const opts = omit(agentOptions, ['before', 'after']);
+        if (isTls) agent = new HttpsAgent(opts);
+        else agent = new HttpAgent(opts);
     }
+
     return Object.assign(
         function request(
-            { method, url, headers, body, requestInstrumentation }: RequestOptions,
+            { method, url, headers, body, timeout, requestInstrumentation }: RequestOptions,
             callback: Errback<ArangojsResponse>
         ) {
             // this is the last change we cancel a request
@@ -89,6 +92,7 @@ export function createRequest(baseUrl: string, agentOptions: any, agent: any): R
             }
 
             notifyAboutPhaseEnd(requestInstrumentation, 'queuing');
+
             let path = baseUrlParts.pathname
                 ? url.pathname
                     ? joinPath(baseUrlParts.pathname, url.pathname)
@@ -99,16 +103,12 @@ export function createRequest(baseUrl: string, agentOptions: any, agent: any): R
                     ? `${baseUrlParts.search}&${url.search.slice(1)}`
                     : url.search
                 : baseUrlParts.search;
-            if (search) {
-                path += search;
-            }
+            if (search) path += search;
             if (body && !headers['content-length']) {
                 headers['content-length'] = String(Buffer.byteLength(body));
             }
             if (!headers['authorization']) {
-                headers['authorization'] = `Basic ${btoa(
-                    (baseUrlParts.username || 'root') + ':' + (baseUrlParts.password || '')
-                )}`;
+                headers['authorization'] = `Basic ${btoa(baseUrlParts.auth || 'root:')}`;
             }
             const options: ClientRequestArgs = { path, method, headers, agent };
             if (socketPath) {
@@ -118,21 +118,23 @@ export function createRequest(baseUrl: string, agentOptions: any, agent: any): R
                 options.port = baseUrlParts.port;
             }
             let called = false;
+
             try {
                 const req = (isTls ? httpsRequest : httpRequest)(options, (res: IncomingMessage) => {
                     notifyAboutPhaseEnd(requestInstrumentation, 'waiting');
                     const data: Buffer[] = [];
                     res.on('data', chunk => data.push(chunk as Buffer));
                     res.on('end', () => {
-                        const result = res as ArangojsResponse;
-                        result.request = req;
-                        result.body = Buffer.concat(data);
-                        if (called) {
-                            return;
-                        }
+                        const response = res as ArangojsResponse;
+                        response.request = req;
+                        response.body = Buffer.concat(data);
+                        if (called) return;
                         called = true;
+                        if (agentOptions.after) {
+                            agentOptions.after(null, response);
+                        }
                         notifyAboutPhaseEnd(requestInstrumentation, 'receiving');
-                        callback(null, result);
+                        callback(null, response);
                     });
                 });
                 if (requestInstrumentation) {
@@ -146,25 +148,33 @@ export function createRequest(baseUrl: string, agentOptions: any, agent: any): R
                         socket.on('connect', () => notifyAboutPhaseEnd(requestInstrumentation, 'connecting'));
                     });
                 }
+                if (timeout) {
+                    req.setTimeout(timeout);
+                }
+                req.on('timeout', () => {
+                    req.abort();
+                });
                 req.on('error', err => {
                     const error = err as ArangojsError;
                     error.request = req;
-                    if (called) {
-                        return;
-                    }
+                    if (called) return;
                     called = true;
-                    callback(err);
+                    if (agentOptions.after) {
+                        agentOptions.after(error);
+                    }
+                    callback(error);
                 });
-                if (body) {
-                    req.write(body);
+                if (body) req.write(body);
+                if (agentOptions.before) {
+                    agentOptions.before(req);
                 }
                 req.end();
             } catch (e) {
-                if (called) {
-                    return;
-                }
+                if (called) return;
                 called = true;
-                callback(e);
+                setTimeout(() => {
+                    callback(e);
+                }, 0);
             }
         },
         {
