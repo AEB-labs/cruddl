@@ -130,12 +130,6 @@
                     "inputFields": null
                 },
                 {
-                    "name": "ID",
-                    "description": "The `ID` scalar type represents a unique identifier, often used to refetch an object or as key for a cache. The ID type appears in a JSON response as a String; however, it is not intended to be human-readable. When expected as an input type, any string (such as `\"4\"`) or integer (such as `4`) input value will be accepted as an ID.",
-                    "fields": null,
-                    "inputFields": null
-                },
-                {
                     "name": "BillingEntity",
                     "description": null,
                     "fields": [
@@ -184,6 +178,12 @@
                             "description": "An identifier that is updated automatically on each update of this root entity (but not on relation changes)"
                         }
                     ],
+                    "inputFields": null
+                },
+                {
+                    "name": "ID",
+                    "description": "The `ID` scalar type represents a unique identifier, often used to refetch an object or as key for a cache. The ID type appears in a JSON response as a String; however, it is not intended to be human-readable. When expected as an input type, any string (such as `\"4\"`) or integer (such as `4`) input value will be accepted as an ID.",
+                    "fields": null,
                     "inputFields": null
                 },
                 {
@@ -594,6 +594,25 @@
                     "inputFields": null
                 },
                 {
+                    "name": "Translation",
+                    "description": null,
+                    "fields": [
+                        {
+                            "name": "languageIsoCode",
+                            "description": null
+                        },
+                        {
+                            "name": "translation",
+                            "description": null
+                        },
+                        {
+                            "name": "_cursor",
+                            "description": "Provides a value that can be supplied to the `after` argument for pagination. Depends on the value of the `orderBy` argument."
+                        }
+                    ],
+                    "inputFields": null
+                },
+                {
                     "name": "TranslationFilter",
                     "description": "Filter type for Translation.\n\nAll fields in this type are *and*-combined; see the `or` field for *or*-combination.",
                     "fields": null,
@@ -740,25 +759,6 @@
                     "name": "TranslationOrderBy",
                     "description": null,
                     "fields": null,
-                    "inputFields": null
-                },
-                {
-                    "name": "Translation",
-                    "description": null,
-                    "fields": [
-                        {
-                            "name": "languageIsoCode",
-                            "description": null
-                        },
-                        {
-                            "name": "translation",
-                            "description": null
-                        },
-                        {
-                            "name": "_cursor",
-                            "description": "Provides a value that can be supplied to the `after` argument for pagination. Depends on the value of the `orderBy` argument."
-                        }
-                    ],
                     "inputFields": null
                 },
                 {
@@ -1456,6 +1456,90 @@
                 {
                     "name": "LocalDate",
                     "description": "The `LocalDate` scalar type represents a date without time zone in a format specified by ISO 8601, such as 2007-12-03.",
+                    "fields": null,
+                    "inputFields": null
+                },
+                {
+                    "name": "DeliveryItem",
+                    "description": null,
+                    "fields": [
+                        {
+                            "name": "id",
+                            "description": "An auto-generated string that identifies this child entity uniquely within this collection of child entities"
+                        },
+                        {
+                            "name": "createdAt",
+                            "description": "The instant this object has been created"
+                        },
+                        {
+                            "name": "updatedAt",
+                            "description": "The instant this object has been updated the last time"
+                        },
+                        {
+                            "name": "itemNumber",
+                            "description": null
+                        },
+                        {
+                            "name": "quantity",
+                            "description": null
+                        },
+                        {
+                            "name": "handlingUnit",
+                            "description": "This field references a `HandlingUnit` by its `id` field"
+                        },
+                        {
+                            "name": "dgInfo",
+                            "description": null
+                        },
+                        {
+                            "name": "description",
+                            "description": null
+                        },
+                        {
+                            "name": "_cursor",
+                            "description": "Provides a value that can be supplied to the `after` argument for pagination. Depends on the value of the `orderBy` argument."
+                        }
+                    ],
+                    "inputFields": null
+                },
+                {
+                    "name": "HandlingUnit",
+                    "description": null,
+                    "fields": [
+                        {
+                            "name": "id",
+                            "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
+                        },
+                        {
+                            "name": "createdAt",
+                            "description": "The instant this object has been created"
+                        },
+                        {
+                            "name": "updatedAt",
+                            "description": "The instant this object has been updated the last time (not including relation updates)"
+                        },
+                        {
+                            "name": "huNumber",
+                            "description": null
+                        },
+                        {
+                            "name": "delivery",
+                            "description": null
+                        },
+                        {
+                            "name": "_cursor",
+                            "description": "Provides a value that can be supplied to the `after` argument for pagination. Depends on the value of the `orderBy` argument."
+                        },
+                        {
+                            "name": "_revision",
+                            "description": "An identifier that is updated automatically on each update of this root entity (but not on relation changes)"
+                        }
+                    ],
+                    "inputFields": null
+                },
+                {
+                    "name": "I18nString",
+                    "description": "The \"I18nString\" scalar type represents an internationalized string.\n\n    Structurally, the \"I18nString`\" type is equivalent to the \"StringMap\" type. Keys are ISO 639-1 language codes, and values are the localized strings. In the future, more specific features may be added to this type, so it is preferred over the \"StringMap\" type to represent internationalized strings.\n\n    Values are *not* additionally JSON-encoded or JSON-parsed, so e.g. pass a raw JSON object here instead of a JSON-representation of that object.",
                     "fields": null,
                     "inputFields": null
                 },
@@ -3914,90 +3998,6 @@
                 {
                     "name": "DeliveryItemOrderBy",
                     "description": null,
-                    "fields": null,
-                    "inputFields": null
-                },
-                {
-                    "name": "DeliveryItem",
-                    "description": null,
-                    "fields": [
-                        {
-                            "name": "id",
-                            "description": "An auto-generated string that identifies this child entity uniquely within this collection of child entities"
-                        },
-                        {
-                            "name": "createdAt",
-                            "description": "The instant this object has been created"
-                        },
-                        {
-                            "name": "updatedAt",
-                            "description": "The instant this object has been updated the last time"
-                        },
-                        {
-                            "name": "itemNumber",
-                            "description": null
-                        },
-                        {
-                            "name": "quantity",
-                            "description": null
-                        },
-                        {
-                            "name": "handlingUnit",
-                            "description": "This field references a `HandlingUnit` by its `id` field"
-                        },
-                        {
-                            "name": "dgInfo",
-                            "description": null
-                        },
-                        {
-                            "name": "description",
-                            "description": null
-                        },
-                        {
-                            "name": "_cursor",
-                            "description": "Provides a value that can be supplied to the `after` argument for pagination. Depends on the value of the `orderBy` argument."
-                        }
-                    ],
-                    "inputFields": null
-                },
-                {
-                    "name": "HandlingUnit",
-                    "description": null,
-                    "fields": [
-                        {
-                            "name": "id",
-                            "description": "An auto-generated string that identifies this root entity uniquely among others of the same type"
-                        },
-                        {
-                            "name": "createdAt",
-                            "description": "The instant this object has been created"
-                        },
-                        {
-                            "name": "updatedAt",
-                            "description": "The instant this object has been updated the last time (not including relation updates)"
-                        },
-                        {
-                            "name": "huNumber",
-                            "description": null
-                        },
-                        {
-                            "name": "delivery",
-                            "description": null
-                        },
-                        {
-                            "name": "_cursor",
-                            "description": "Provides a value that can be supplied to the `after` argument for pagination. Depends on the value of the `orderBy` argument."
-                        },
-                        {
-                            "name": "_revision",
-                            "description": "An identifier that is updated automatically on each update of this root entity (but not on relation changes)"
-                        }
-                    ],
-                    "inputFields": null
-                },
-                {
-                    "name": "I18nString",
-                    "description": "The \"I18nString\" scalar type represents an internationalized string.\n\n    Structurally, the \"I18nString`\" type is equivalent to the \"StringMap\" type. Keys are ISO 639-1 language codes, and values are the localized strings. In the future, more specific features may be added to this type, so it is preferred over the \"StringMap\" type to represent internationalized strings.\n\n    Values are *not* additionally JSON-encoded or JSON-parsed, so e.g. pass a raw JSON object here instead of a JSON-representation of that object.",
                     "fields": null,
                     "inputFields": null
                 },
@@ -6934,6 +6934,10 @@
                     "description": "A GraphQL Schema defines the capabilities of a GraphQL server. It exposes all available types and directives on the server, as well as the entry points for query, mutation, and subscription operations.",
                     "fields": [
                         {
+                            "name": "description",
+                            "description": null
+                        },
+                        {
                             "name": "types",
                             "description": "A list of all types supported by this server."
                         },
@@ -6958,7 +6962,7 @@
                 },
                 {
                     "name": "__Type",
-                    "description": "The fundamental unit of any GraphQL Schema is the type. There are many kinds of types in GraphQL as represented by the `__TypeKind` enum.\n\nDepending on the kind of a type, certain fields describe information about that type. Scalar types provide no information beyond a name and description, while Enum types provide their values. Object and Interface types provide the fields they describe. Abstract types, Union and Interface, provide the Object types possible at runtime. List and NonNull types compose other types.",
+                    "description": "The fundamental unit of any GraphQL Schema is the type. There are many kinds of types in GraphQL as represented by the `__TypeKind` enum.\n\nDepending on the kind of a type, certain fields describe information about that type. Scalar types provide no information beyond a name, description and optional `specifiedByUrl`, while Enum types provide their values. Object and Interface types provide the fields they describe. Abstract types, Union and Interface, provide the Object types possible at runtime. List and NonNull types compose other types.",
                     "fields": [
                         {
                             "name": "kind",
@@ -6970,6 +6974,10 @@
                         },
                         {
                             "name": "description",
+                            "description": null
+                        },
+                        {
+                            "name": "specifiedByUrl",
                             "description": null
                         },
                         {
@@ -7055,6 +7063,14 @@
                         {
                             "name": "defaultValue",
                             "description": "A GraphQL-formatted string representing the default value for this input value."
+                        },
+                        {
+                            "name": "isDeprecated",
+                            "description": null
+                        },
+                        {
+                            "name": "deprecationReason",
+                            "description": null
                         }
                     ],
                     "inputFields": null
@@ -7092,6 +7108,10 @@
                         },
                         {
                             "name": "description",
+                            "description": null
+                        },
+                        {
+                            "name": "isRepeatable",
                             "description": null
                         },
                         {
