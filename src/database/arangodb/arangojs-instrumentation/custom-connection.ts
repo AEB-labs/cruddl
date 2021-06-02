@@ -1,5 +1,5 @@
 import { Config, Connection, RequestOptions } from 'arangojs/connection';
-import { ArangoError, HttpError } from 'arangojs/error';
+import { ArangoError, HttpError, isArangoErrorResponse } from 'arangojs/error';
 import { normalizeUrl } from 'arangojs/lib/normalizeUrl';
 import { ArangojsResponse } from 'arangojs/lib/request';
 import { RequestInstrumentation, requestInstrumentationBodyKey } from './config';
@@ -23,7 +23,7 @@ export class CustomConnection extends Connection {
             headers,
             ...urlInfo
         }: RequestOptions,
-        getter?: (res: ArangojsResponse) => T
+        transform?: (res: ArangojsResponse) => T
     ): Promise<T> {
         let requestInstrumentation: RequestInstrumentation | undefined;
         if (
@@ -58,7 +58,9 @@ export class CustomConnection extends Connection {
                 'content-type': contentType,
                 'x-arango-version': String((this as any)._arangoVersion)
             };
-
+            if (this._transactionId) {
+                extraHeaders['x-arango-trx-id'] = this._transactionId;
+            }
             const task = {
                 retries: 0,
                 host,
@@ -71,6 +73,7 @@ export class CustomConnection extends Connection {
                     body,
                     requestInstrumentation
                 },
+                stack: (undefined as unknown) as () => string | undefined,
                 reject,
                 resolve: (res: ArangojsResponse) => {
                     const contentType = res.headers['content-type'];
@@ -85,6 +88,9 @@ export class CustomConnection extends Connection {
                                     parsedBody = res.body.toString('utf-8');
                                 }
                                 e.response = res;
+                                if (task.stack) {
+                                    e.stack += task.stack();
+                                }
                                 reject(e);
                                 return;
                             }
@@ -94,38 +100,70 @@ export class CustomConnection extends Connection {
                     } else {
                         parsedBody = res.body;
                     }
-                    if (
-                        parsedBody &&
-                        parsedBody.hasOwnProperty('error') &&
-                        parsedBody.hasOwnProperty('code') &&
-                        parsedBody.hasOwnProperty('errorMessage') &&
-                        parsedBody.hasOwnProperty('errorNum')
-                    ) {
+                    if (isArangoErrorResponse(parsedBody)) {
                         res.body = parsedBody;
-                        reject(new ArangoError(res));
+                        const err = new ArangoError(res);
+                        if (task.stack) {
+                            (err.stack as string) += task.stack();
+                        }
+                        reject(err);
                     } else if (res.statusCode && res.statusCode >= 400) {
                         res.body = parsedBody;
-                        reject(new HttpError(res));
-                    } else {
-                        if (!expectBinary) {
-                            res.body = parsedBody;
+                        const err = new HttpError(res);
+                        if (task.stack) {
+                            (err.stack as string) += task.stack();
                         }
-                        resolve(getter ? getter(res) : (res as any));
+                        reject(err);
+                    } else {
+                        if (!expectBinary) res.body = parsedBody;
+                        resolve(transform ? transform(res) : (res as any));
                     }
                 }
             };
-            (this as any)._queue.push(task);
-            (this as any)._runQueue();
+
+            if (this._precaptureStackTraces) {
+                if (typeof Error.captureStackTrace === 'function') {
+                    const capture = {} as { readonly stack: string };
+                    Error.captureStackTrace(capture);
+                    task.stack = () =>
+                        `\n${capture.stack
+                            .split('\n')
+                            .slice(3)
+                            .join('\n')}`;
+                } else {
+                    const capture = generateStackTrace() as { readonly stack: string };
+                    if (Object.prototype.hasOwnProperty.call(capture, 'stack')) {
+                        task.stack = () =>
+                            `\n${capture.stack
+                                .split('\n')
+                                .slice(4)
+                                .join('\n')}`;
+                    }
+                }
+            }
+
+            this._queue.push(task as any);
+            this._runQueue();
         });
     }
 
     addToHostList(urls: string | string[]): number[] {
         const cleanUrls = (Array.isArray(urls) ? urls : [urls]).map(url => normalizeUrl(url));
-        const newUrls = cleanUrls.filter(url => (this as any)._urls.indexOf(url) === -1);
-        (this as any)._urls.push(...newUrls);
-        (this as any)._hosts.push(
-            ...newUrls.map((url: string) => createRequest(url, (this as any)._agentOptions, (this as any)._agent))
-        );
-        return cleanUrls.map(url => (this as any)._urls.indexOf(url));
+        const newUrls = cleanUrls.filter(url => this._urls.indexOf(url) === -1);
+        this._urls.push(...newUrls);
+        this._hosts.push(...newUrls.map((url: string) => createRequest(url, this._agentOptions, this._agent)));
+        return cleanUrls.map(url => this._urls.indexOf(url));
     }
+}
+
+function generateStackTrace() {
+    let err = new Error();
+    if (!err.stack) {
+        try {
+            throw err;
+        } catch (e) {
+            err = e;
+        }
+    }
+    return err;
 }
