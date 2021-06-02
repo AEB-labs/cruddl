@@ -48,13 +48,15 @@ export class MigrationPerformer {
     }
 
     private async createIndex(migration: CreateIndexMigration) {
-        return this.db.collection(migration.index.collectionName).ensureIndex({
-            type: 'persistent',
-            fields: migration.index.fields.slice(),
-            unique: migration.index.unique,
-            sparse: migration.index.sparse
-            //inBackground: this.config.createIndicesInBackground
-        } as const);
+        return this.db.collection(migration.index.collectionName).ensureIndex(
+            {
+                type: 'persistent',
+                fields: migration.index.fields.slice(),
+                unique: migration.index.unique,
+                sparse: migration.index.sparse,
+                inBackground: this.config.createIndicesInBackground
+            } as any /* inBackground is not supported by the types */
+        );
     }
 
     private async dropIndex(migration: DropIndexMigration) {

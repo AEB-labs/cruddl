@@ -1,6 +1,7 @@
 import { GraphQLSchema } from 'graphql';
 import gql from 'graphql-tag';
-import { IResolvers, makeExecutableSchema } from 'graphql-tools';
+import { makeExecutableSchema } from '@graphql-tools/schema';
+import { IResolvers } from '@graphql-tools/utils';
 import { EnumValue, Field, Model, RootEntityType, Type, TypeKind } from '../model';
 import { OrderDirection } from '../model/implementation/order';
 import { compact, flatMap } from '../utils/utils';
