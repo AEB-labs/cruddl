@@ -1,6 +1,11 @@
-import { DocumentNode, FragmentDefinitionNode, GraphQLSchema, OperationDefinitionNode, VariableDefinitionNode } from 'graphql';
+import {
+    DocumentNode,
+    FragmentDefinitionNode,
+    GraphQLSchema,
+    OperationDefinitionNode,
+    VariableDefinitionNode
+} from 'graphql';
 import { getVariableValues } from 'graphql/execution/values';
-import Maybe from 'graphql/tsutils/Maybe';
 import { globalContext } from '../config/global';
 import { DatabaseAdapter } from '../database/database-adapter';
 import { extractOperation } from '../graphql/operations';
@@ -14,14 +19,15 @@ import { ExecutionOptions } from './execution-options';
 import { ExecutionResult } from './execution-result';
 import { OperationResolver } from './operation-resolver';
 
-type ValidationResult = { readonly canExecute: false, errorMessage: string } | SuccessfulValidationResult
+type ValidationResult = { readonly canExecute: false; errorMessage: string } | SuccessfulValidationResult;
+type Maybe<T> = T | undefined | null;
 
 interface SuccessfulValidationResult {
-    readonly canExecute: true,
-    readonly errorMessage: undefined,
-    readonly fragmentMap: { readonly [name: string]: FragmentDefinitionNode },
-    readonly operation: OperationDefinitionNode,
-    readonly variableValues: { [key: string]: any } | undefined
+    readonly canExecute: true;
+    readonly errorMessage: undefined;
+    readonly fragmentMap: { readonly [name: string]: FragmentDefinitionNode };
+    readonly operation: OperationDefinitionNode;
+    readonly variableValues: { [key: string]: any } | undefined;
 }
 
 export interface SchemaExecutionArgs {
@@ -33,7 +39,7 @@ export interface SchemaExecutionArgs {
     /**
      * additional information relevant for execution. If not specified, it is taken from the project's options callback
      * */
-    readonly options?: ExecutionOptions
+    readonly options?: ExecutionOptions;
 }
 
 /**
@@ -83,7 +89,7 @@ export class SchemaExecutor {
      *
      * @return the info whether it is executable, and if not, why.
      */
-    canExecute(operation: SchemaExecutionArgs): { readonly canExecute: boolean, readonly errorMessage?: string } {
+    canExecute(operation: SchemaExecutionArgs): { readonly canExecute: boolean; readonly errorMessage?: string } {
         const result = this.validate(operation);
         return {
             canExecute: result.canExecute,
@@ -103,13 +109,17 @@ export class SchemaExecutor {
         const { fragmentMap, operation, variableValues } = result;
 
         const rootType = operation.operation === 'mutation' ? this.mutationType : this.queryType;
-        return this.resolver.resolveOperation({
-            context: args.contextValue,
-            operation,
-            fragments: fragmentMap,
-            schema: this.dumbSchema,
-            variableValues: variableValues || {}
-        }, rootType, args.options);
+        return this.resolver.resolveOperation(
+            {
+                context: args.contextValue,
+                operation,
+                fragments: fragmentMap,
+                schema: this.dumbSchema,
+                variableValues: variableValues || {}
+            },
+            rootType,
+            args.options
+        );
     }
 
     private validate(args: SchemaExecutionArgs): ValidationResult {
@@ -119,11 +129,17 @@ export class SchemaExecutor {
             // contains introspection query
             return { canExecute: false, errorMessage: 'query contains introspection fields' };
         }
-        const fragments = args.document.definitions.filter(def => def.kind === 'FragmentDefinition') as ReadonlyArray<FragmentDefinitionNode>;
+        const fragments = args.document.definitions.filter(def => def.kind === 'FragmentDefinition') as ReadonlyArray<
+            FragmentDefinitionNode
+        >;
         const fragmentMap = arrayToObject(fragments, fr => fr.name.value);
 
         // this is a deep import, might want to import the function
-        const { coerced: variableValues, errors: variableErrors } = getVariableValues(this.dumbSchema, operation.variableDefinitions as VariableDefinitionNode[] || [], args.variableValues || {});
+        const { coerced: variableValues, errors: variableErrors } = getVariableValues(
+            this.dumbSchema,
+            (operation.variableDefinitions as VariableDefinitionNode[]) || [],
+            args.variableValues || {}
+        );
         if (variableErrors) {
             return { canExecute: false, errorMessage: 'variable values are invalid' };
         }

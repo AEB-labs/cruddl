@@ -10,7 +10,7 @@ describe('known object type directive validator', () => {
         `);
         expect(validationResult.hasErrors()).to.be.true;
         expect(validationResult.messages.length, validationResult.toString()).to.equal(1);
-        expect(validationResult.messages[0].message).to.equal('Unknown directive "invalid".');
+        expect(validationResult.messages[0].message).to.equal('Unknown directive "@invalid".');
     });
 
     it('accepts known object type directives', () => {
@@ -22,11 +22,13 @@ describe('known object type directive validator', () => {
     });
 
     it('rejects object types without directives', () => {
-        assertValidatorRejects(`
+        assertValidatorRejects(
+            `
             type Stuff {
                 foo: String
             }
         `,
-            'Add one of @rootEntity, @childEntity, @entityExtension or @valueObject.');
+            'Add one of @rootEntity, @childEntity, @entityExtension or @valueObject.'
+        );
     });
 });
