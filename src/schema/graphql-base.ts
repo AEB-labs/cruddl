@@ -98,6 +98,13 @@ export const DIRECTIVES: DocumentNode = gql`
         keyField: String
     ) on FIELD_DEFINITION
 
+    """
+    Declares a field of a child entity to hold the parent entity.
+
+    The value of this field cannot be set and is determined automatically. It is only available if a child entity is used in exactly one type, and the type of this field must be that type.
+    """
+    directive @parent on FIELD_DEFINITION
+
     "Declares a field as business key which is used in @reference fields"
     directive @key on FIELD_DEFINITION
 
