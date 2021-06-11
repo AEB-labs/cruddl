@@ -5,25 +5,40 @@ import { FieldRequest } from '../graphql/query-distiller';
 import { isListTypeIgnoringNonNull } from '../graphql/schema-utils';
 import { Field, ObjectType, Type, TypeKind } from '../model';
 import {
+    NOT_SUPPORTED_ERROR,
     NullQueryNode,
     ObjectQueryNode,
     OrderDirection,
     PropertySpecification,
     QueryNode,
     RevisionQueryNode,
+    RuntimeErrorQueryNode,
     UnaryOperationQueryNode,
     UnaryOperator
 } from '../query-tree';
 import { CURSOR_FIELD, FLEX_SEARCH_ENTITIES_FIELD_PREFIX, ORDER_BY_ARG, REVISION_FIELD } from '../schema/constants';
 import { getMetaFieldName } from '../schema/names';
 import { compact, flatMap } from '../utils/utils';
+import {
+    getFieldAtSelection,
+    getHierarchyStackFrame,
+    HierarchyStackFrame,
+    setFieldAtSelection,
+    setHierarchyStackFrame
+} from './entity-hierarchy';
 import { EnumTypeGenerator } from './enum-type-generator';
 import { createFieldNode } from './field-nodes';
 import { FilterAugmentation } from './filter-augmentation';
 import { ListAugmentation } from './list-augmentation';
 import { MetaTypeGenerator } from './meta-type-generator';
 import { OrderByEnumGenerator, OrderByEnumType, OrderByEnumValue } from './order-by-enum-generator';
-import { QueryNodeField, QueryNodeListType, QueryNodeNonNullType, QueryNodeOutputType } from './query-node-object-type';
+import {
+    FieldContext,
+    QueryNodeField,
+    QueryNodeListType,
+    QueryNodeNonNullType,
+    QueryNodeOutputType
+} from './query-node-object-type';
 import { orderArgMatchesPrimarySort } from './utils/flex-search-utils';
 import { getOrderByValues } from './utils/pagination';
 
@@ -194,7 +209,7 @@ export class OutputTypeGenerator {
             // fields in them, and a FieldQueryNode returns null if the source is null.
             skipNullCheck: field.type.isEntityExtensionType,
             isPure: true,
-            resolve: sourceNode => createFieldNode(field, sourceNode, { skipNullFallbackForEntityExtensions: true })
+            resolve: (sourceNode, args, info) => this.resolveField(field, sourceNode, info)
         };
 
         if (field.isList && field.type.isObjectType) {
@@ -202,6 +217,106 @@ export class OutputTypeGenerator {
         } else {
             return [schemaField];
         }
+    }
+
+    private resolveField(field: Field, sourceNode: QueryNode, fieldContext: FieldContext): QueryNode {
+        /*
+            {
+                root {
+                    // parent = null, root = null, this = root
+                    relation {
+                        // parent = null, root = null, this = relation
+                        extension {
+                            // parent = relation, root = relation, this = relation
+                            child {
+                                // parent = relation, root = relation, this = child
+                                grandchild {
+                                    // parent = child, root = relation, this = grandchild
+                                    parent {
+                                        // stack.up: => parent = relation, root = relation, this = child
+                                        parent {
+
+                                        }
+                                    }
+                                    root
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+         */
+
+        // remember the field of this layer, will be used one layer deeper
+        setFieldAtSelection(fieldContext.selectionTokenStack[fieldContext.selectionTokenStack.length - 1], field);
+        const existingHierarchyFrame = getHierarchyStackFrame(
+            fieldContext.selectionTokenStack[fieldContext.selectionTokenStack.length - 1]
+        );
+        // if this is the first time at this layer, calculate the hierarchy frame for this layer
+        let hierarchyFrame: HierarchyStackFrame;
+        if (existingHierarchyFrame) {
+            hierarchyFrame = existingHierarchyFrame;
+        } else {
+            const outerFrame = getHierarchyStackFrame(
+                fieldContext.selectionTokenStack[fieldContext.selectionTokenStack.length - 2]
+            );
+            const outerField = getFieldAtSelection(
+                fieldContext.selectionTokenStack[fieldContext.selectionTokenStack.length - 2]
+            );
+
+            // regular fields (e.g. entity extensions) just keep parent/root. Only when we navigate into child or root
+            // entities, we need to change them.
+            if (!outerField || outerField.type.isRootEntityType) {
+                // navigating into a root entity completely resets the hierarchy, you can never navigate "more up"
+                // also, if there is no outer field, we're at a root field (single or multiple)
+                hierarchyFrame = {
+                    currentEntityNode: sourceNode
+                };
+            } else if (outerField.isCollectField) {
+                // navigating collect fields can change the parent completely
+                // TODO capture root/child within the collect fields
+                hierarchyFrame = {
+                    currentEntityNode:
+                        outerField.type.isRootEntityType || outerField.type.isChildEntityType ? sourceNode : undefined
+                };
+            } else if (outerField.type.isChildEntityType) {
+                hierarchyFrame = {
+                    currentEntityNode: sourceNode,
+                    parentEntityFrame: outerFrame
+                };
+            } else {
+                // other than that, there are not any fields that cross entity boundaries
+                hierarchyFrame = outerFrame || {};
+            }
+            setHierarchyStackFrame(
+                fieldContext.selectionTokenStack[fieldContext.selectionTokenStack.length - 1],
+                hierarchyFrame
+            );
+        }
+
+        // parent fields that have root entity types are effectively root fields, and those are a bit easier to manage,
+        // so use the logic for root fields in these cases.
+        if (field.isRootField || (field.isParentField && field.type.isRootEntityType)) {
+            if (!hierarchyFrame.parentEntityFrame?.currentEntityNode) {
+                return new RuntimeErrorQueryNode(`Root entity is not available here`, { code: NOT_SUPPORTED_ERROR });
+            }
+            let rootFrame = hierarchyFrame.parentEntityFrame;
+            while (rootFrame.parentEntityFrame) {
+                rootFrame = rootFrame.parentEntityFrame;
+            }
+            if (!rootFrame.currentEntityNode) {
+                // explicit "gap" in the hierarchy (shouldn't occur currently, but we might want to do this)
+                return new RuntimeErrorQueryNode(`Root entity is not available here`, { code: NOT_SUPPORTED_ERROR });
+            }
+            return rootFrame.currentEntityNode;
+        } else if (field.isParentField) {
+            if (!hierarchyFrame.parentEntityFrame?.currentEntityNode) {
+                return new RuntimeErrorQueryNode(`Parent entity is not available here`, { code: NOT_SUPPORTED_ERROR });
+            }
+            return hierarchyFrame.parentEntityFrame.currentEntityNode;
+        }
+
+        return createFieldNode(field, sourceNode, { skipNullFallbackForEntityExtensions: true });
     }
 
     private createMetaField(field: Field): QueryNodeField {

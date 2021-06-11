@@ -45,6 +45,11 @@ export function createFieldNode(
         sourceNode = sourceNode.expr1;
     }
 
+    // we would need context for this
+    if (field.isRootField || field.isParentField) {
+        throw new Error(`Tried to createFieldNoe on root/parent field "${field.declaringType.name}.${field.name}`);
+    }
+
     if (field.collectPath) {
         if (field.aggregationOperator) {
             const { relationSegments, fieldSegments } = getEffectiveCollectSegments(field.collectPath);

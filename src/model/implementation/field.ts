@@ -16,6 +16,7 @@ import { GraphQLLocalDate } from '../../schema/scalars/local-date';
 import { GraphQLLocalTime } from '../../schema/scalars/local-time';
 import { GraphQLOffsetDateTime } from '../../schema/scalars/offset-date-time';
 import { AggregationOperator, CalcMutationsOperator, FieldConfig, FlexSearchLanguage, TypeKind } from '../config';
+import { collectEmbeddingEntityTypes, collectEmbeddingRootEntityTypes } from '../utils/emedding-entity-types';
 import { ValidationMessage } from '../validation';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
 import { CollectPath } from './collect-path';
@@ -1058,7 +1059,7 @@ export class Field implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `@${PARENT_DIRECTIVE} can only be used on fields of child entity types.`,
-                    this.input.rootDirectiveNode
+                    this.input.parentDirectiveNode
                 )
             );
             return;
@@ -1086,7 +1087,7 @@ export class Field implements ModelComponent {
 
         if (this.isList) {
             context.addMessage(
-                ValidationMessage.error(`A parent field cannot be a list.`, this.input.rootDirectiveNode)
+                ValidationMessage.error(`A parent field cannot be a list.`, this.input.parentDirectiveNode)
             );
             return;
         }
@@ -1098,49 +1099,33 @@ export class Field implements ModelComponent {
             return;
         }
 
-        const embeddingEntityTypes = new Set<Type>();
-        const otherEmbeddingTypes = new Set<Type>([]);
-        let currentTypes = new Set<Type>([this.declaringType]);
-        do {
-            const newTypes = new Set<Type>();
-            for (const type of currentTypes) {
-                const embeddingTypes: ReadonlyArray<Type> = this.model.types.filter(
-                    t =>
-                        t.isObjectType &&
-                        t.fields.some(f => f.type === type && !f.isParentField && !f.isRootField && !f.isCollectField)
-                );
-                for (const type of embeddingTypes) {
-                    if (type.isChildEntityType || type.isRootEntityType) {
-                        // this is a leaf in the execution tree - we don't go upwards on entity types
-                        embeddingEntityTypes.add(type);
-                    } else {
-                        // for other types, we continue crawl upwards. Make sure we don't process any type twice.
-                        if (!otherEmbeddingTypes.has(type)) {
-                            otherEmbeddingTypes.add(type);
-                            newTypes.add(type);
-                        }
-                    }
-                }
-            }
-            currentTypes = newTypes;
-        } while (currentTypes.size);
+        const { embeddingEntityTypes, otherEmbeddingTypes } = collectEmbeddingEntityTypes(this.declaringType);
 
         if (!embeddingEntityTypes.size) {
             context.addMessage(
                 ValidationMessage.error(
                     `Type "${this.declaringType.name}" is not used by any entity type and therefore cannot have a parent field.`,
-                    this.input.rootDirectiveNode
+                    this.input.parentDirectiveNode
                 )
             );
             return;
         }
 
         if (embeddingEntityTypes.has(this.declaringType)) {
+            let suggestion = '';
+            // maybe @parent can just be swapped out for @root?
+            if (this.type.isRootEntityType && !this.declaringType.fields.some(f => f.isRootField)) {
+                const { embeddingRootEntityTypes } = collectEmbeddingRootEntityTypes(this.declaringType);
+                if (embeddingRootEntityTypes.size === 1 && Array.from(embeddingRootEntityTypes)[0] === this.type) {
+                    suggestion = ' Use the @root directive instead.';
+                }
+            }
+
             // parent on recursive child entities just does not work because they always have two parents - make this clear
             context.addMessage(
                 ValidationMessage.error(
-                    `Type "${this.declaringType.name}" is a recursive child entity type and therefore cannot have a parent field.`,
-                    this.input.rootDirectiveNode
+                    `Type "${this.declaringType.name}" is a recursive child entity type and therefore cannot have a parent field.${suggestion}`,
+                    this.input.parentDirectiveNode
                 )
             );
             return;
@@ -1154,7 +1139,7 @@ export class Field implements ModelComponent {
                     context.addMessage(
                         ValidationMessage.error(
                             `Type "${this.declaringType.name}" is used in entity type "${otherTypes[0].name}" as well and thus cannot have a parent field.`,
-                            this.input.rootDirectiveNode
+                            this.input.parentDirectiveNode
                         )
                     );
                 } else {
@@ -1163,7 +1148,7 @@ export class Field implements ModelComponent {
                     context.addMessage(
                         ValidationMessage.error(
                             `Type "${this.declaringType.name}" is used in entity types ${nameList} as well and thus cannot have a parent field.`,
-                            this.input.rootDirectiveNode
+                            this.input.parentDirectiveNode
                         )
                     );
                 }
@@ -1173,7 +1158,7 @@ export class Field implements ModelComponent {
                 context.addMessage(
                     ValidationMessage.error(
                         `Type "${this.declaringType.name}" is used in multiple entity types (${nameList}) and thus cannot have a parent field.`,
-                        this.input.rootDirectiveNode
+                        this.input.parentDirectiveNode
                     )
                 );
             }
@@ -1186,14 +1171,14 @@ export class Field implements ModelComponent {
                 context.addMessage(
                     ValidationMessage.error(
                         `Type "${this.declaringType.name}" is used in type "${this.type.name}", but the closest entity type in the hierarchy is "${embeddingEntityType.name}", so the type of this parent field should be "${embeddingEntityType.name}".`,
-                        this.input.rootDirectiveNode
+                        this.input.parentDirectiveNode
                     )
                 );
             } else {
                 context.addMessage(
                     ValidationMessage.error(
                         `Type "${this.declaringType.name}" is used in entity type "${embeddingEntityType.name}", so the type of this parent field should be "${embeddingEntityType.name}".`,
-                        this.input.rootDirectiveNode
+                        this.input.parentDirectiveNode
                     )
                 );
             }
@@ -1217,7 +1202,7 @@ export class Field implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `@${ROOT_DIRECTIVE} can only be used on fields of child entity types.`,
-                    this.input.parentDirectiveNode
+                    this.input.rootDirectiveNode
                 )
             );
             return;
@@ -1244,9 +1229,7 @@ export class Field implements ModelComponent {
         }
 
         if (this.isList) {
-            context.addMessage(
-                ValidationMessage.error(`A root field cannot be a list.`, this.input.parentDirectiveNode)
-            );
+            context.addMessage(ValidationMessage.error(`A root field cannot be a list.`, this.input.rootDirectiveNode));
             return;
         }
 
@@ -1257,38 +1240,13 @@ export class Field implements ModelComponent {
             return;
         }
 
-        const embeddingRootEntityTypes = new Set<Type>();
-        const otherEmbeddingTypes = new Set<Type>([]);
-        let currentTypes = new Set<Type>([this.declaringType]);
-        do {
-            const newTypes = new Set<Type>();
-            for (const type of currentTypes) {
-                const embeddingTypes: ReadonlyArray<Type> = this.model.types.filter(
-                    t =>
-                        t.isObjectType &&
-                        t.fields.some(f => f.type === type && !f.isParentField && !f.isRootField && !f.isCollectField)
-                );
-                for (const type of embeddingTypes) {
-                    if (type.isRootEntityType) {
-                        // this is a leaf in the execution tree - we don't go upwards on entity types
-                        embeddingRootEntityTypes.add(type);
-                    } else {
-                        // for other types, we continue crawl upwards. Make sure we don't process any type twice.
-                        if (!otherEmbeddingTypes.has(type)) {
-                            otherEmbeddingTypes.add(type);
-                            newTypes.add(type);
-                        }
-                    }
-                }
-            }
-            currentTypes = newTypes;
-        } while (currentTypes.size);
+        const { embeddingRootEntityTypes } = collectEmbeddingRootEntityTypes(this.declaringType);
 
         if (!embeddingRootEntityTypes.size) {
             context.addMessage(
                 ValidationMessage.error(
                     `Type "${this.declaringType.name}" is not used by any root entity type and therefore cannot have a root field.`,
-                    this.input.parentDirectiveNode
+                    this.input.rootDirectiveNode
                 )
             );
             return;
@@ -1302,7 +1260,7 @@ export class Field implements ModelComponent {
                     context.addMessage(
                         ValidationMessage.error(
                             `Type "${this.declaringType.name}" is used in root entity type "${otherTypes[0].name}" as well and thus cannot have a root field.`,
-                            this.input.parentDirectiveNode
+                            this.input.rootDirectiveNode
                         )
                     );
                 } else {
@@ -1311,7 +1269,7 @@ export class Field implements ModelComponent {
                     context.addMessage(
                         ValidationMessage.error(
                             `Type "${this.declaringType.name}" is used in root entity types ${nameList} as well and thus cannot have a root field.`,
-                            this.input.parentDirectiveNode
+                            this.input.rootDirectiveNode
                         )
                     );
                 }
@@ -1321,7 +1279,7 @@ export class Field implements ModelComponent {
                 context.addMessage(
                     ValidationMessage.error(
                         `Type "${this.declaringType.name}" is used in multiple root entity types (${nameList}) and thus cannot have a root field.`,
-                        this.input.parentDirectiveNode
+                        this.input.rootDirectiveNode
                     )
                 );
             }
@@ -1333,7 +1291,7 @@ export class Field implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `Type "${this.declaringType.name}" is used in root entity type "${embeddingRootEntityType.name}", so the type of this root field should be "${embeddingRootEntityType.name}".`,
-                    this.input.parentDirectiveNode
+                    this.input.rootDirectiveNode
                 )
             );
             return;

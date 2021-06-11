@@ -8,21 +8,24 @@ import { FieldContext } from '../../src/schema-generation/query-node-object-type
 describe('CreateInputTypeGenerator', () => {
     const model = new Model({ types: [] });
 
-    const generator = new CreateInputTypeGenerator(new EnumTypeGenerator);
+    const generator = new CreateInputTypeGenerator(new EnumTypeGenerator());
 
-    const context: FieldContext = { selectionStack: [] };
+    const context: FieldContext = { selectionStack: [], selectionTokenStack: [] };
 
     describe('with simple scalar fields', () => {
-        const type = new RootEntityType({
-            kind: TypeKind.ROOT_ENTITY,
-            name: 'Hero',
-            fields: [
-                {
-                    name: 'name',
-                    typeName: 'String'
-                }
-            ]
-        }, model);
+        const type = new RootEntityType(
+            {
+                kind: TypeKind.ROOT_ENTITY,
+                name: 'Hero',
+                fields: [
+                    {
+                        name: 'name',
+                        typeName: 'String'
+                    }
+                ]
+            },
+            model
+        );
         const inputType = generator.generate(type);
 
         it('includes them in the input type', () => {
@@ -81,16 +84,19 @@ describe('CreateInputTypeGenerator', () => {
             ]
         });
 
-        const type = new RootEntityType({
-            kind: TypeKind.ROOT_ENTITY,
-            name: 'Hero',
-            fields: [
-                {
-                    name: 'morality',
-                    typeName: 'Morality'
-                }
-            ]
-        }, model);
+        const type = new RootEntityType(
+            {
+                kind: TypeKind.ROOT_ENTITY,
+                name: 'Hero',
+                fields: [
+                    {
+                        name: 'morality',
+                        typeName: 'Morality'
+                    }
+                ]
+            },
+            model
+        );
         const inputType = generator.generate(type);
 
         it('includes them in the input type', () => {
@@ -134,17 +140,20 @@ describe('CreateInputTypeGenerator', () => {
     });
 
     describe('with simple scalar fields with default value', () => {
-        const type = new RootEntityType({
-            kind: TypeKind.ROOT_ENTITY,
-            name: 'Hero',
-            fields: [
-                {
-                    name: 'name',
-                    typeName: 'String',
-                    defaultValue: 'Batman'
-                }
-            ]
-        }, model);
+        const type = new RootEntityType(
+            {
+                kind: TypeKind.ROOT_ENTITY,
+                name: 'Hero',
+                fields: [
+                    {
+                        name: 'name',
+                        typeName: 'String',
+                        defaultValue: 'Batman'
+                    }
+                ]
+            },
+            model
+        );
         const inputType = generator.generate(type);
 
         describe('prepare()', () => {
@@ -178,17 +187,20 @@ describe('CreateInputTypeGenerator', () => {
     });
 
     describe('with list scalar fields', () => {
-        const type = new RootEntityType({
-            kind: TypeKind.ROOT_ENTITY,
-            name: 'Hero',
-            fields: [
-                {
-                    name: 'nickNames',
-                    typeName: 'String',
-                    isList: true
-                }
-            ]
-        }, model);
+        const type = new RootEntityType(
+            {
+                kind: TypeKind.ROOT_ENTITY,
+                name: 'Hero',
+                fields: [
+                    {
+                        name: 'nickNames',
+                        typeName: 'String',
+                        isList: true
+                    }
+                ]
+            },
+            model
+        );
         const inputType = generator.generate(type);
 
         describe('input field', () => {
@@ -255,17 +267,20 @@ describe('CreateInputTypeGenerator', () => {
                 }
             ]
         });
-        const type = new RootEntityType({
-            kind: TypeKind.ROOT_ENTITY,
-            name: 'Hero',
-            fields: [
-                {
-                    name: 'movies',
-                    typeName: 'Movie',
-                    isList: true
-                }
-            ]
-        }, model);
+        const type = new RootEntityType(
+            {
+                kind: TypeKind.ROOT_ENTITY,
+                name: 'Hero',
+                fields: [
+                    {
+                        name: 'movies',
+                        typeName: 'Movie',
+                        isList: true
+                    }
+                ]
+            },
+            model
+        );
         const movieType = model.getChildEntityTypeOrThrow('Movie');
         const inputType = generator.generate(type);
 
@@ -285,7 +300,8 @@ describe('CreateInputTypeGenerator', () => {
             it('has correct type', () => {
                 expect(field.type).to.be.an.instanceOf(GraphQLList);
                 expect((field.type as GraphQLList<any>).ofType).to.be.an.instanceOf(GraphQLNonNull);
-                const movieInputType = (field.type as GraphQLList<GraphQLNonNull<any>>).ofType.ofType as GraphQLInputObjectType;
+                const movieInputType = (field.type as GraphQLList<GraphQLNonNull<any>>).ofType
+                    .ofType as GraphQLInputObjectType;
                 expect(movieInputType).to.be.an.instanceOf(GraphQLInputObjectType);
                 expect(movieInputType.getFields()['name']).not.to.be.undefined;
                 expect(movieInputType.getFields()['name'].type).to.equal(GraphQLString);
@@ -351,16 +367,19 @@ describe('CreateInputTypeGenerator', () => {
                 }
             ]
         });
-        const type = new RootEntityType({
-            kind: TypeKind.ROOT_ENTITY,
-            name: 'Hero',
-            fields: [
-                {
-                    name: 'suit',
-                    typeName: 'Suit'
-                }
-            ]
-        }, model);
+        const type = new RootEntityType(
+            {
+                kind: TypeKind.ROOT_ENTITY,
+                name: 'Hero',
+                fields: [
+                    {
+                        name: 'suit',
+                        typeName: 'Suit'
+                    }
+                ]
+            },
+            model
+        );
         const suitType = model.getEntityExtensionTypeOrThrow('Suit');
         const inputType = generator.generate(type);
 
@@ -429,17 +448,20 @@ describe('CreateInputTypeGenerator', () => {
             ]
         });
 
-        const type = new RootEntityType({
-            kind: TypeKind.ROOT_ENTITY,
-            name: 'Hero',
-            fields: [
-                {
-                    name: 'country',
-                    typeName: 'Country',
-                    isReference: true
-                }
-            ]
-        }, model);
+        const type = new RootEntityType(
+            {
+                kind: TypeKind.ROOT_ENTITY,
+                name: 'Hero',
+                fields: [
+                    {
+                        name: 'country',
+                        typeName: 'Country',
+                        isReference: true
+                    }
+                ]
+            },
+            model
+        );
         const inputType = generator.generate(type);
 
         it('includes it in the input type', () => {
@@ -483,17 +505,20 @@ describe('CreateInputTypeGenerator', () => {
     });
 
     describe('for root entities', () => {
-        const type = new RootEntityType({
-            kind: TypeKind.ROOT_ENTITY,
-            name: 'Hero',
-            fields: [
-                {
-                    name: 'name',
-                    typeName: 'String',
-                    defaultValue: 'Batman'
-                }
-            ]
-        }, model);
+        const type = new RootEntityType(
+            {
+                kind: TypeKind.ROOT_ENTITY,
+                name: 'Hero',
+                fields: [
+                    {
+                        name: 'name',
+                        typeName: 'String',
+                        defaultValue: 'Batman'
+                    }
+                ]
+            },
+            model
+        );
         const inputType = generator.generate(type);
 
         describe('input type', () => {
@@ -519,17 +544,20 @@ describe('CreateInputTypeGenerator', () => {
     });
 
     describe('for child entities', () => {
-        const type = new ChildEntityType({
-            kind: TypeKind.CHILD_ENTITY,
-            name: 'Hero',
-            fields: [
-                {
-                    name: 'name',
-                    typeName: 'String',
-                    defaultValue: 'Batman'
-                }
-            ]
-        }, model);
+        const type = new ChildEntityType(
+            {
+                kind: TypeKind.CHILD_ENTITY,
+                name: 'Hero',
+                fields: [
+                    {
+                        name: 'name',
+                        typeName: 'String',
+                        defaultValue: 'Batman'
+                    }
+                ]
+            },
+            model
+        );
         const inputType = generator.generate(type);
 
         describe('prepare()', () => {
@@ -582,6 +610,5 @@ describe('CreateInputTypeGenerator', () => {
             const parentField = graphqlType.getFields().parent;
             expect(parentField.type).to.equal(graphqlType);
         });
-
     });
 });

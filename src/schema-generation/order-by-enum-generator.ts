@@ -139,6 +139,10 @@ export class OrderByEnumGenerator {
             return [];
         }
 
+        if (field.isRootField || field.isParentField) {
+            return [];
+        }
+
         const newPath = [...path, field];
         if (field.type.isObjectType) {
             const newRootEntityDepth = field.type.isRootEntityType ? rootEntityDepth + 1 : rootEntityDepth;

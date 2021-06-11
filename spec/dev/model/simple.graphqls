@@ -1,17 +1,16 @@
-type Hero @rootEntity(
-    flexSearch: true,
-    flexSearchLanguage: DE,
-    flexSearchOrder: [
-        { field: "name", direction: ASC },
-        { field: "age", direction: DESC },
-        { field: "id", direction: ASC }
-    ],
-    indices: [
-        { fields: "missions.date" }
-    ]
-) {
+type Hero
+    @rootEntity(
+        flexSearch: true
+        flexSearchLanguage: DE
+        flexSearchOrder: [
+            { field: "name", direction: ASC }
+            { field: "age", direction: DESC }
+            { field: "id", direction: ASC }
+        ]
+        indices: [{ fields: "missions.date" }]
+    ) {
     "The hero's screen name"
-    name: String @unique @flexSearch @flexSearchFulltext(includeInSearch: true language: DE)
+    name: String @unique @flexSearch @flexSearchFulltext(includeInSearch: true, language: DE)
     age: Int @defaultValue(value: 42) @flexSearch
     nickNames: [String] @flexSearch
     movies: [Movie] @relation(inverseOf: "heroes")
@@ -36,6 +35,7 @@ type Mission @childEntity {
     date: OffsetDateTime
     title: String
     subMissions: [Mission]
+    hero: Hero @root
 }
 
 "A special skill of a superhero"
@@ -55,9 +55,9 @@ type Movie @rootEntity {
     director: Director @relation
     publisher: Publisher @reference
 
-    relatedMovies: [Movie] @collect(path: "heroes.movies" aggregate: DISTINCT)
-    community: [Hero] @collect(path: "heroes.friends{0,2}" aggregate: DISTINCT)
-    subMissions: [Mission] @collect(path: "heroes.friends{0,2}.missions.subMissions" aggregate: DISTINCT)
+    relatedMovies: [Movie] @collect(path: "heroes.movies", aggregate: DISTINCT)
+    community: [Hero] @collect(path: "heroes.friends{0,2}", aggregate: DISTINCT)
+    subMissions: [Mission] @collect(path: "heroes.friends{0,2}.missions.subMissions", aggregate: DISTINCT)
     skillCount: Int @collect(path: "heroes.skills", aggregate: COUNT)
     totalSkillStrength: Float @collect(path: "heroes.skills.strength", aggregate: SUM)
 }
@@ -91,4 +91,22 @@ enum Morality {
 
 type Delivery @namespace(name: "logistics.delivery") @rootEntity {
     name: String
+}
+
+type Root @rootEntity {
+    name: String @key
+    children: [Child]
+}
+
+type Child @childEntity {
+    name: String
+    children: [Grandchild]
+    parent: Root @parent
+    root: Root @root
+}
+
+type Grandchild @childEntity {
+    name: String
+    parent: Child @parent
+    root: Root @root
 }
