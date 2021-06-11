@@ -8,7 +8,8 @@ import {
     FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT,
     PARENT_DIRECTIVE,
     REFERENCE_DIRECTIVE,
-    RELATION_DIRECTIVE
+    RELATION_DIRECTIVE,
+    ROOT_DIRECTIVE
 } from '../../schema/constants';
 import { GraphQLDateTime } from '../../schema/scalars/date-time';
 import { GraphQLLocalDate } from '../../schema/scalars/local-date';
@@ -17,14 +18,12 @@ import { GraphQLOffsetDateTime } from '../../schema/scalars/offset-date-time';
 import { AggregationOperator, CalcMutationsOperator, FieldConfig, FlexSearchLanguage, TypeKind } from '../config';
 import { ValidationMessage } from '../validation';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
-import { ChildEntityType } from './child-entity-type';
 import { CollectPath } from './collect-path';
 import { FieldLocalization } from './i18n';
 import { Model } from './model';
 import { PermissionProfile } from './permission-profile';
 import { Relation, RelationSide } from './relation';
 import { RolesSpecifier } from './roles-specifier';
-import { RootEntityType } from './root-entity-type';
 import { InvalidType, ObjectType, Type } from './type';
 import { ValueObjectType } from './value-object-type';
 
@@ -48,6 +47,7 @@ export class Field implements ModelComponent {
     readonly defaultValue?: any;
     readonly calcMutationOperators: ReadonlySet<CalcMutationsOperator>;
     readonly isParentField: boolean;
+    readonly isRootField: boolean;
     readonly roles: RolesSpecifier | undefined;
     private _type: Type | undefined;
 
@@ -67,6 +67,7 @@ export class Field implements ModelComponent {
         this.isReference = input.isReference || false;
         this.isRelation = input.isRelation || false;
         this.isParentField = input.isParentField || false;
+        this.isRootField = input.isRootField || false;
         this.isCollectField = !!input.collect;
         if (input.collect) {
             this.collectPath = new CollectPath(input.collect, this.declaringType);
@@ -253,6 +254,7 @@ export class Field implements ModelComponent {
         this.validateDefaultValue(context);
         this.validateCalcMutations(context);
         this.validateParentField(context);
+        this.validateRootField(context);
         this.validateFlexSearch(context);
     }
 
@@ -304,32 +306,31 @@ export class Field implements ModelComponent {
         }
 
         // root entities are not embeddable
-        if (!this.isRelation && !this.isReference && !this.isCollectField && !this.isParentField) {
-            if (this.declaringType.kind === TypeKind.VALUE_OBJECT) {
-                context.addMessage(
-                    ValidationMessage.error(
-                        `Type "${this.type.name}" is a root entity type and cannot be embedded. Consider adding @reference.`,
-                        this.astNode
-                    )
-                );
-            } else if (
-                this.declaringType.kind === TypeKind.CHILD_ENTITY &&
-                !this.declaringType.fields.some(f => f.isParentField)
-            ) {
-                context.addMessage(
-                    ValidationMessage.error(
-                        `Type "${this.type.name}" is a root entity type and cannot be embedded. Consider adding @reference, @relation, or @parent.`,
-                        this.astNode
-                    )
-                );
-            } else {
-                context.addMessage(
-                    ValidationMessage.error(
-                        `Type "${this.type.name}" is a root entity type and cannot be embedded. Consider adding @reference or @relation.`,
-                        this.astNode
-                    )
-                );
+        if (!this.isRelation && !this.isReference && !this.isCollectField && !this.isParentField && !this.isRootField) {
+            const suggestions = [REFERENCE_DIRECTIVE];
+
+            if (this.declaringType.kind === TypeKind.ROOT_ENTITY) {
+                suggestions.push(RELATION_DIRECTIVE);
             }
+
+            if (this.declaringType.kind === TypeKind.CHILD_ENTITY) {
+                if (!this.declaringType.fields.some(f => f.isParentField)) {
+                    suggestions.push(PARENT_DIRECTIVE);
+                }
+                if (!this.declaringType.fields.some(f => f.isRootField)) {
+                    suggestions.push(PARENT_DIRECTIVE);
+                }
+            }
+
+            const names = suggestions.map(n => '@' + n);
+            const list = names.length === 1 ? names : names.slice(0, -1).join(', ') + ' or ' + names[names.length - 1];
+
+            context.addMessage(
+                ValidationMessage.error(
+                    `Type "${this.type.name}" is a root entity type and cannot be embedded. Consider adding ${list}.`,
+                    this.astNode
+                )
+            );
         }
     }
 
@@ -977,6 +978,16 @@ export class Field implements ModelComponent {
             return;
         }
 
+        if (this.isRootField) {
+            context.addMessage(
+                ValidationMessage.error(
+                    `Default values are not supported on root fields.`,
+                    this.input.defaultValueASTNode || this.astNode
+                )
+            );
+            return;
+        }
+
         if (this.isReference) {
             context.addMessage(
                 ValidationMessage.error(
@@ -1047,7 +1058,7 @@ export class Field implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `@${PARENT_DIRECTIVE} can only be used on fields of child entity types.`,
-                    this.input.parentDirectiveNode
+                    this.input.rootDirectiveNode
                 )
             );
             return;
@@ -1075,7 +1086,7 @@ export class Field implements ModelComponent {
 
         if (this.isList) {
             context.addMessage(
-                ValidationMessage.error(`A parent field cannot be a list.`, this.input.parentDirectiveNode)
+                ValidationMessage.error(`A parent field cannot be a list.`, this.input.rootDirectiveNode)
             );
             return;
         }
@@ -1094,7 +1105,9 @@ export class Field implements ModelComponent {
             const newTypes = new Set<Type>();
             for (const type of currentTypes) {
                 const embeddingTypes: ReadonlyArray<Type> = this.model.types.filter(
-                    t => t.isObjectType && t.fields.some(f => f.type === type && !f.isParentField && !f.isCollectField)
+                    t =>
+                        t.isObjectType &&
+                        t.fields.some(f => f.type === type && !f.isParentField && !f.isRootField && !f.isCollectField)
                 );
                 for (const type of embeddingTypes) {
                     if (type.isChildEntityType || type.isRootEntityType) {
@@ -1116,7 +1129,7 @@ export class Field implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `Type "${this.declaringType.name}" is not used by any entity type and therefore cannot have a parent field.`,
-                    this.input.parentDirectiveNode
+                    this.input.rootDirectiveNode
                 )
             );
             return;
@@ -1127,7 +1140,7 @@ export class Field implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `Type "${this.declaringType.name}" is a recursive child entity type and therefore cannot have a parent field.`,
-                    this.input.parentDirectiveNode
+                    this.input.rootDirectiveNode
                 )
             );
             return;
@@ -1140,8 +1153,8 @@ export class Field implements ModelComponent {
                 if (otherTypes.length === 1) {
                     context.addMessage(
                         ValidationMessage.error(
-                            `Type "${this.declaringType.name}" is used in entity "${otherTypes[0].name}" as well and thus cannot have a parent field.`,
-                            this.input.parentDirectiveNode
+                            `Type "${this.declaringType.name}" is used in entity type "${otherTypes[0].name}" as well and thus cannot have a parent field.`,
+                            this.input.rootDirectiveNode
                         )
                     );
                 } else {
@@ -1149,8 +1162,8 @@ export class Field implements ModelComponent {
                     const nameList = names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1];
                     context.addMessage(
                         ValidationMessage.error(
-                            `Type "${this.declaringType.name}" is used in entities ${nameList} as well and thus cannot have a parent field.`,
-                            this.input.parentDirectiveNode
+                            `Type "${this.declaringType.name}" is used in entity types ${nameList} as well and thus cannot have a parent field.`,
+                            this.input.rootDirectiveNode
                         )
                     );
                 }
@@ -1159,8 +1172,8 @@ export class Field implements ModelComponent {
                 const nameList = names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1];
                 context.addMessage(
                     ValidationMessage.error(
-                        `Type "${this.declaringType.name}" is used in multiple entities (${nameList}) and thus cannot have a parent field.`,
-                        this.input.parentDirectiveNode
+                        `Type "${this.declaringType.name}" is used in multiple entity types (${nameList}) and thus cannot have a parent field.`,
+                        this.input.rootDirectiveNode
                     )
                 );
             }
@@ -1173,14 +1186,14 @@ export class Field implements ModelComponent {
                 context.addMessage(
                     ValidationMessage.error(
                         `Type "${this.declaringType.name}" is used in type "${this.type.name}", but the closest entity type in the hierarchy is "${embeddingEntityType.name}", so the type of this parent field should be "${embeddingEntityType.name}".`,
-                        this.input.parentDirectiveNode
+                        this.input.rootDirectiveNode
                     )
                 );
             } else {
                 context.addMessage(
                     ValidationMessage.error(
                         `Type "${this.declaringType.name}" is used in entity type "${embeddingEntityType.name}", so the type of this parent field should be "${embeddingEntityType.name}".`,
-                        this.input.parentDirectiveNode
+                        this.input.rootDirectiveNode
                     )
                 );
             }
@@ -1188,30 +1201,178 @@ export class Field implements ModelComponent {
         }
     }
 
+    private validateRootField(context: ValidationContext) {
+        if (!this.isRootField) {
+            return;
+        }
+
+        if (this.isParentField) {
+            context.addMessage(
+                ValidationMessage.error(`@${PARENT_DIRECTIVE} and @${ROOT_DIRECTIVE} cannot be combined.`, this.astNode)
+            );
+            return;
+        }
+
+        if (this.declaringType.kind !== 'CHILD_ENTITY') {
+            context.addMessage(
+                ValidationMessage.error(
+                    `@${ROOT_DIRECTIVE} can only be used on fields of child entity types.`,
+                    this.input.parentDirectiveNode
+                )
+            );
+            return;
+        }
+
+        if (this.isReference) {
+            context.addMessage(
+                ValidationMessage.error(
+                    `@${ROOT_DIRECTIVE} and @${REFERENCE_DIRECTIVE} cannot be combined.`,
+                    this.astNode
+                )
+            );
+            return;
+        }
+
+        if (this.isCollectField) {
+            context.addMessage(
+                ValidationMessage.error(
+                    `@${ROOT_DIRECTIVE} and @${COLLECT_DIRECTIVE} cannot be combined.`,
+                    this.astNode
+                )
+            );
+            return;
+        }
+
+        if (this.isList) {
+            context.addMessage(
+                ValidationMessage.error(`A root field cannot be a list.`, this.input.parentDirectiveNode)
+            );
+            return;
+        }
+
+        if (this.declaringType.fields.some(f => f !== this && f.isRootField)) {
+            context.addMessage(
+                ValidationMessage.error(`There can only be one root field per type.`, this.input.astNode)
+            );
+            return;
+        }
+
+        const embeddingRootEntityTypes = new Set<Type>();
+        const otherEmbeddingTypes = new Set<Type>([]);
+        let currentTypes = new Set<Type>([this.declaringType]);
+        do {
+            const newTypes = new Set<Type>();
+            for (const type of currentTypes) {
+                const embeddingTypes: ReadonlyArray<Type> = this.model.types.filter(
+                    t =>
+                        t.isObjectType &&
+                        t.fields.some(f => f.type === type && !f.isParentField && !f.isRootField && !f.isCollectField)
+                );
+                for (const type of embeddingTypes) {
+                    if (type.isRootEntityType) {
+                        // this is a leaf in the execution tree - we don't go upwards on entity types
+                        embeddingRootEntityTypes.add(type);
+                    } else {
+                        // for other types, we continue crawl upwards. Make sure we don't process any type twice.
+                        if (!otherEmbeddingTypes.has(type)) {
+                            otherEmbeddingTypes.add(type);
+                            newTypes.add(type);
+                        }
+                    }
+                }
+            }
+            currentTypes = newTypes;
+        } while (currentTypes.size);
+
+        if (!embeddingRootEntityTypes.size) {
+            context.addMessage(
+                ValidationMessage.error(
+                    `Type "${this.declaringType.name}" is not used by any root entity type and therefore cannot have a root field.`,
+                    this.input.parentDirectiveNode
+                )
+            );
+            return;
+        }
+
+        if (embeddingRootEntityTypes.size > 1) {
+            // a little nicer error message
+            if (embeddingRootEntityTypes.has(this.type)) {
+                const otherTypes = Array.from(embeddingRootEntityTypes).filter(t => t !== this.type);
+                if (otherTypes.length === 1) {
+                    context.addMessage(
+                        ValidationMessage.error(
+                            `Type "${this.declaringType.name}" is used in root entity type "${otherTypes[0].name}" as well and thus cannot have a root field.`,
+                            this.input.parentDirectiveNode
+                        )
+                    );
+                } else {
+                    const names = otherTypes.map(t => `"${t.name}"`);
+                    const nameList = names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1];
+                    context.addMessage(
+                        ValidationMessage.error(
+                            `Type "${this.declaringType.name}" is used in root entity types ${nameList} as well and thus cannot have a root field.`,
+                            this.input.parentDirectiveNode
+                        )
+                    );
+                }
+            } else {
+                const names = Array.from(embeddingRootEntityTypes).map(t => `"${t.name}"`);
+                const nameList = names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1];
+                context.addMessage(
+                    ValidationMessage.error(
+                        `Type "${this.declaringType.name}" is used in multiple root entity types (${nameList}) and thus cannot have a root field.`,
+                        this.input.parentDirectiveNode
+                    )
+                );
+            }
+            return;
+        }
+
+        const embeddingRootEntityType = Array.from(embeddingRootEntityTypes)[0];
+        if (embeddingRootEntityType !== this.type) {
+            context.addMessage(
+                ValidationMessage.error(
+                    `Type "${this.declaringType.name}" is used in root entity type "${embeddingRootEntityType.name}", so the type of this root field should be "${embeddingRootEntityType.name}".`,
+                    this.input.parentDirectiveNode
+                )
+            );
+            return;
+        }
+    }
+
     private validateFlexSearch(context: ValidationContext) {
         const notSupportedOn = `@flexSearch is not supported on`;
-        if (
-            this.isFlexSearchIndexed &&
-            (this.isReference || this.isRelation || this.isCollectField || this.isParentField)
-        ) {
+        if (this.isFlexSearchIndexed) {
             if (this.isReference) {
                 context.addMessage(
                     ValidationMessage.error(`${notSupportedOn} references.`, this.input.isFlexSearchIndexedASTNode)
                 );
-            } else if (this.isRelation) {
+                return;
+            }
+            if (this.isRelation) {
                 context.addMessage(
                     ValidationMessage.error(`${notSupportedOn} relations.`, this.input.isFlexSearchIndexedASTNode)
                 );
-            } else if (this.isCollectField) {
+                return;
+            }
+            if (this.isCollectField) {
                 context.addMessage(
                     ValidationMessage.error(`${notSupportedOn} collect fields.`, this.input.isFlexSearchIndexedASTNode)
                 );
-            } else if (this.isParentField) {
+                return;
+            }
+            if (this.isParentField) {
                 context.addMessage(
                     ValidationMessage.error(`${notSupportedOn} parent fields.`, this.input.isFlexSearchIndexedASTNode)
                 );
+                return;
             }
-            return;
+            if (this.isRootField) {
+                context.addMessage(
+                    ValidationMessage.error(`${notSupportedOn} root fields.`, this.input.isFlexSearchIndexedASTNode)
+                );
+                return;
+            }
         }
         if (this.isFlexSearchFulltextIndexed && !(this.type.isScalarType && this.type.name === 'String')) {
             context.addMessage(

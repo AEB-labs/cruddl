@@ -658,6 +658,42 @@ describe('collect validation', () => {
             );
         });
 
+        it('rejects parent fields within the path', () => {
+            assertValidatorRejects(
+                `
+                type Delivery @rootEntity {
+                    this: [Delivery] @collect(path: "children.children.parent")
+                    children: [Child]
+                }
+
+                type Child @childEntity {
+                    children: [Grandchild]
+                }
+
+                type Grandchild @childEntity {
+                    parent: Child @parent
+                }
+            `,
+                `Field "Grandchild.parent" is a parent field and cannot be used in a collect path.`
+            );
+        });
+
+        it('rejects root fields within the path', () => {
+            assertValidatorRejects(
+                `
+                type Delivery @rootEntity {
+                    this: [Delivery] @collect(path: "children.parent")
+                    children: [Child]
+                }
+
+                type Child @childEntity {
+                    parent: Delivery @root
+                }
+            `,
+                `Field "Child.parent" is a root field and cannot be used in a collect path.`
+            );
+        });
+
         describe('distinct', () => {
             it('is supported on strings', () => {
                 assertValidatorAccepts(`

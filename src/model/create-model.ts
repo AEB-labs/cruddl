@@ -69,6 +69,7 @@ import {
     ROLES_DIRECTIVE,
     ROLES_READ_ARG,
     ROLES_READ_WRITE_ARG,
+    ROOT_DIRECTIVE,
     ROOT_ENTITY_DIRECTIVE,
     UNIQUE_DIRECTIVE,
     VALUE_ARG,
@@ -442,6 +443,7 @@ function createFieldInput(fieldNode: FieldDefinitionNode, context: ValidationCon
     const referenceDirectiveASTNode = findDirectiveWithName(fieldNode, REFERENCE_DIRECTIVE);
     const referenceKeyFieldASTNode = getReferenceKeyFieldASTNode(fieldNode, context);
     const parentDirectiveNode = findDirectiveWithName(fieldNode, PARENT_DIRECTIVE);
+    const rootDirectiveNode = findDirectiveWithName(fieldNode, ROOT_DIRECTIVE);
 
     return {
         name: fieldNode.name.value,
@@ -462,6 +464,8 @@ function createFieldInput(fieldNode: FieldDefinitionNode, context: ValidationCon
         isRelation: !!findDirectiveWithName(fieldNode, RELATION_DIRECTIVE),
         parentDirectiveNode,
         isParentField: !!parentDirectiveNode,
+        rootDirectiveNode,
+        isRootField: !!rootDirectiveNode,
         permissions: getPermissions(fieldNode, context),
         typeName: getTypeNameIgnoringNonNullAndList(fieldNode.type),
         typeNameAST: getNamedTypeNodeIgnoringNonNullAndList(fieldNode.type).name,

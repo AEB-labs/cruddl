@@ -1,4 +1,5 @@
 import memorize from 'memorize-decorator';
+import { TypeKind } from '../config';
 import { locationWithinStringArgument, MessageLocation, ValidationMessage } from '../validation';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
 import { Field } from './field';
@@ -92,6 +93,26 @@ export class FieldPath implements ModelComponent {
                 addMessage(
                     ValidationMessage.error(
                         `Type "${currentType.name}" does not have a field "${fieldName}".`,
+                        segmentLocation
+                    )
+                );
+                return [];
+            }
+
+            // disallow them - they don't work with a simple createFieldNode call, and they don't really make sense to be used within a path.
+            if (field.isParentField) {
+                addMessage(
+                    ValidationMessage.error(
+                        `Field "${currentType.name}.${field.name}" is a parent field and cannot be used in a field path.`,
+                        segmentLocation
+                    )
+                );
+                return [];
+            }
+            if (field.isRootField) {
+                addMessage(
+                    ValidationMessage.error(
+                        `Field "${currentType.name}.${field.name}" is a root field and cannot be used in a field path.`,
                         segmentLocation
                     )
                 );

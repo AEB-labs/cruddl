@@ -26,6 +26,8 @@ export interface FieldConfig {
 
     readonly isParentField?: boolean;
     readonly parentDirectiveNode?: DirectiveNode;
+    readonly isRootField?: boolean;
+    readonly rootDirectiveNode?: DirectiveNode;
 
     readonly astNode?: FieldDefinitionNode;
 

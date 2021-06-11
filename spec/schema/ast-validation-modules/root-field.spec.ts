@@ -1,7 +1,7 @@
 import { assertValidatorAccepts, assertValidatorRejects, validate } from './helpers';
 import { expect } from 'chai';
 
-describe('@parent directive', () => {
+describe('@root directive', () => {
     it('accepts direct embedding in root entity', () => {
         assertValidatorAccepts(`
             type Root @rootEntity {
@@ -9,7 +9,7 @@ describe('@parent directive', () => {
             }
 
             type Child @childEntity {
-                parent: Root @parent
+                root: Root @root
             }
         `);
     });
@@ -25,7 +25,7 @@ describe('@parent directive', () => {
             }
 
             type Grandchild @childEntity {
-                parent: Child @parent
+                root: Root @root
             }
         `);
     });
@@ -41,7 +41,7 @@ describe('@parent directive', () => {
             }
 
             type Child @childEntity {
-                parent: Root @parent
+                root: Root @root
             }
         `);
     });
@@ -66,17 +66,17 @@ describe('@parent directive', () => {
 
             type Child1 @childEntity {
                 children: [Child2]
-                parent: Root @parent
+                root: Root @root
             }
 
             type Child2 @childEntity {
                 children: [Child3]
-                parent: Child1 @parent
+                root: Root @root
             }
 
             type Child3 @childEntity {
                 extension: Extension4
-                parent: Child2 @parent
+                root: Root @root
             }
 
             type Extension4 @entityExtension {
@@ -84,7 +84,7 @@ describe('@parent directive', () => {
             }
 
             type Child4 @childEntity {
-                parent: Child3 @parent
+                root: Root @root
             }
         `);
     });
@@ -102,7 +102,7 @@ describe('@parent directive', () => {
             }
 
             type Child @childEntity {
-                parent: Root @parent
+                root: Root @root
             }
         `);
     });
@@ -111,15 +111,15 @@ describe('@parent directive', () => {
         assertValidatorAccepts(`
             type Root @rootEntity {
                 children: [Child]
-                grandchildren: [Grandchild] @collect(path: "children.children")
+            }
+
+            type Root2 @rootEntity {
+                roots: [Root] @relation
+                rootChildren: [Child] @collect(path: "roots.children")
             }
 
             type Child @childEntity {
-                children: [Grandchild]
-            }
-
-            type Grandchild @childEntity {
-                parent: Child @parent
+                root: Root @root
             }
         `);
     });
@@ -127,11 +127,15 @@ describe('@parent directive', () => {
     it('rejects with list', () => {
         assertValidatorRejects(
             `
+            type Root @rootEntity {
+                children: [Child]
+            }
+
             type Child @childEntity {
-                parent: [Child] @parent
+                root: [Child] @root
             }
         `,
-            `A parent field cannot be a list.`
+            `A root field cannot be a list.`
         );
     });
 
@@ -139,10 +143,10 @@ describe('@parent directive', () => {
         assertValidatorRejects(
             `
             type Root @rootEntity {
-                parent: Root @parent
+                root: Root @root
             }
         `,
-            `@parent can only be used on fields of child entity types.`
+            `@root can only be used on fields of child entity types.`
         );
     });
 
@@ -154,10 +158,10 @@ describe('@parent directive', () => {
             }
 
             type Extension @entityExtension {
-                parent: Root @parent
+                root: Root @root
             }
         `,
-            `@parent can only be used on fields of child entity types.`
+            `@root can only be used on fields of child entity types.`
         );
     });
 
@@ -169,10 +173,10 @@ describe('@parent directive', () => {
             }
 
             type ValueObject @valueObject {
-                parent: Root @parent
+                root: Root @root
             }
         `,
-            `@parent can only be used on fields of child entity types.`
+            `@root can only be used on fields of child entity types.`
         );
     });
 
@@ -185,10 +189,10 @@ describe('@parent directive', () => {
             }
 
             type Child @childEntity {
-                parent: Root @parent @reference
+                root: Root @root @reference
             }
         `,
-            `@parent and @reference cannot be combined.`
+            `@root and @reference cannot be combined.`
         );
     });
 
@@ -201,14 +205,14 @@ describe('@parent directive', () => {
 
             type Child @childEntity {
                 children: [Grandchild]
-                parent: [Grandchild] @parent @collect(path: "children")
+                root: [Grandchild] @root @collect(path: "children")
             }
 
             type Grandchild @childEntity {
                 field: String
             }
         `,
-            `@parent and @collect cannot be combined.`
+            `@root and @collect cannot be combined.`
         );
     });
 
@@ -220,10 +224,10 @@ describe('@parent directive', () => {
             }
 
             type Child @childEntity {
-                parent: Root @parent @flexSearch
+                root: Root @root @flexSearch
             }
         `,
-            `@flexSearch is not supported on parent fields.`
+            `@flexSearch is not supported on root fields.`
         );
     });
 
@@ -235,7 +239,7 @@ describe('@parent directive', () => {
             }
 
             type Child @childEntity {
-                parent: Root @parent @flexSearchFulltext
+                root: Root @root @flexSearchFulltext
             }
         `,
             `@flexSearchFulltext is not supported on type "Root".`
@@ -250,10 +254,25 @@ describe('@parent directive', () => {
             }
 
             type Child @childEntity {
-                parent: Root @parent @defaultValue(value: { })
+                root: Root @root @defaultValue(value: { })
             }
         `,
-            `Default values are not supported on parent fields.`
+            `Default values are not supported on root fields.`
+        );
+    });
+
+    it('rejects in combination with @parent', () => {
+        assertValidatorRejects(
+            `
+            type Root @rootEntity {
+                children: [Child]
+            }
+
+            type Child @childEntity {
+                root: Root @root @parent
+            }
+        `,
+            `@parent and @root cannot be combined.`
         );
     });
 
@@ -265,10 +284,10 @@ describe('@parent directive', () => {
             }
 
             type Child @childEntity {
-                parent: Root @parent
+                root: Root @root
             }
         `,
-            `Type "Child" is not used by any entity type and therefore cannot have a parent field.`
+            `Type "Child" is not used by any root entity type and therefore cannot have a root field.`
         );
     });
 
@@ -284,10 +303,10 @@ describe('@parent directive', () => {
             }
 
             type Child @childEntity {
-                parent: Root2 @parent
+                root: Root2 @root
             }
         `,
-            `Type "Child" is used in entity type "Root1", so the type of this parent field should be "Root1".`
+            `Type "Child" is used in root entity type "Root1", so the type of this root field should be "Root1".`
         );
     });
 
@@ -303,26 +322,10 @@ describe('@parent directive', () => {
             }
 
             type Child @childEntity {
-                parent: Root1 @parent
+                root: Root1 @root
             }
         `,
-            `Type "Child" is used in entity type "Root2" as well and thus cannot have a parent field.`
-        );
-    });
-
-    it('rejects for recursive child entities', () => {
-        assertValidatorRejects(
-            `
-            type Root @rootEntity {
-                children: [Child]
-            }
-
-            type Child @childEntity {
-                children: [Child]
-                parent: Root @parent
-            }
-        `,
-            `Type "Child" is a recursive child entity type and therefore cannot have a parent field.`
+            `Type "Child" is used in root entity type "Root2" as well and thus cannot have a root field.`
         );
     });
 
@@ -342,10 +345,10 @@ describe('@parent directive', () => {
             }
 
             type Child @childEntity {
-                parent: Root1 @parent
+                root: Root1 @root
             }
         `,
-            `Type "Child" is used in entity types "Root2" and "Root3" as well and thus cannot have a parent field.`
+            `Type "Child" is used in root entity types "Root2" and "Root3" as well and thus cannot have a root field.`
         );
     });
 
@@ -369,34 +372,10 @@ describe('@parent directive', () => {
             }
 
             type Child @childEntity {
-                parent: Root4 @parent
+                root: Root4 @root
             }
         `,
-            `Type "Child" is used in multiple entity types ("Root1", "Root2" and "Root3") and thus cannot have a parent field.`
-        );
-    });
-
-    it('rejects with multiple possible types through extensions', () => {
-        assertValidatorRejects(
-            `
-            type Root1 @rootEntity {
-                children: [Child]
-                extension: Extension
-            }
-
-            type Child @childEntity {
-                parent: Root1 @parent
-            }
-
-            type Extension @entityExtension {
-                children: [Child2]
-            }
-
-            type Child2 @childEntity {
-                children: [Child]
-            }
-        `,
-            `Type "Child" is used in entity type "Child2" as well and thus cannot have a parent field.`
+            `Type "Child" is used in multiple root entity types ("Root1", "Root2" and "Root3") and thus cannot have a root field.`
         );
     });
 
@@ -405,18 +384,18 @@ describe('@parent directive', () => {
             `
             type Root @rootEntity {
                 children: [Child]
-                grandchildren: [Grandchild] @collect(path: "children.children")
+            }
+
+            type Root2 @rootEntity {
+                roots: [Root] @relation
+                rootChildren: [Child] @collect(path: "roots.children")
             }
 
             type Child @childEntity {
-                children: [Grandchild]
-            }
-
-            type Grandchild @childEntity {
-                parent: Root @parent
+                root: Root2 @root
             }
         `,
-            'Type "Grandchild" is used in entity type "Child", so the type of this parent field should be "Child".'
+            'Type "Child" is used in root entity type "Root", so the type of this root field should be "Root".'
         );
     });
 
@@ -436,14 +415,14 @@ describe('@parent directive', () => {
             }
 
             type Child @childEntity {
-                parent: Extension1 @parent
+                root: Extension1 @root
             }
         `,
-            'Type "Child" is used in type "Extension1", but the closest entity type in the hierarchy is "Root", so the type of this parent field should be "Root".'
+            'Type "Child" is used in root entity type "Root", so the type of this root field should be "Root".'
         );
     });
 
-    it('rejects multiple @parent fields', () => {
+    it('rejects multiple @root fields', () => {
         const result = validate(
             `
             type Root @rootEntity {
@@ -451,15 +430,15 @@ describe('@parent directive', () => {
             }
 
             type Child @childEntity {
-                parent1: Root @parent
-                parent2: Root @parent
+                root1: Root @root
+                root2: Root @root
             }
         `
         );
         expect(result.hasErrors()).to.be.true;
         expect(result.messages.map(m => m.message)).to.deep.equal([
-            `There can only be one parent field per type.`,
-            `There can only be one parent field per type.`
+            `There can only be one root field per type.`,
+            `There can only be one root field per type.`
         ]);
     });
 });
