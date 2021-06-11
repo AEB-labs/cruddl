@@ -1,5 +1,6 @@
 import { compact } from 'lodash';
 import { AggregationOperator, Relation, RelationSide, RootEntityType } from '../../model';
+import { getEffectiveCollectSegments } from '../../model/implementation/collect-path';
 import {
     AddEdgesQueryNode,
     AggregationQueryNode,

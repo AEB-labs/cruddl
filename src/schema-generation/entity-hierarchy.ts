@@ -9,7 +9,7 @@ export interface HierarchyStackFrame {
     readonly currentEntityNode?: QueryNode;
     readonly parentEntityFrame?: HierarchyStackFrame;
     // keep root explicitly because sometimes, we might have the root entity, but not the parent entity
-    //readonly rootEntityNode?: QueryNode;
+    readonly rootEntityNode?: QueryNode;
 }
 
 export function getHierarchyStackFrame(selectionToken: SelectionToken): HierarchyStackFrame | undefined {

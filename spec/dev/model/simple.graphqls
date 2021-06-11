@@ -96,6 +96,7 @@ type Delivery @namespace(name: "logistics.delivery") @rootEntity {
 type Root @rootEntity {
     name: String @key
     children: [Child]
+    grandchildren: [Grandchild] @collect(path: "children.children")
 }
 
 type Child @childEntity {
@@ -109,4 +110,10 @@ type Grandchild @childEntity {
     name: String
     parent: Child @parent
     root: Root @root
+}
+
+type Root2 @rootEntity {
+    name: String @key
+    roots: [Root] @relation
+    rootGrandchildren: [Grandchild] @collect(path: "roots.children.children")
 }

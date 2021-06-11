@@ -111,6 +111,11 @@ export class CollectPath {
         return segments[segments.length - 1].resultMayContainDuplicateEntities;
     }
 
+    @memorize()
+    get traversesRootEntityTypes(): boolean {
+        return this.segments.some(s => s.field.type.isRootEntityType);
+    }
+
     /**
      * @return true if valid, false if invalid
      */

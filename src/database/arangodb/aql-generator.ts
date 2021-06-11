@@ -1126,6 +1126,8 @@ register(TraversalQueryNode, (node, context) => {
             // because it may allow ArangoDB to figure out that only one particular field is of interest, and e.g.
             // discard the root entities earlier
             mapFrag = nodeFrag => getFieldTraversalFragmentWithoutFlattening(node.fieldSegments, nodeFrag);
+        } else {
+            mapFrag = item => aql`({ obj: (${item}), root: (${item}) })`;
         }
 
         const frag = getRelationTraversalFragment({ segments: node.relationSegments, sourceFrag, mapFrag, context });
@@ -1262,7 +1264,17 @@ function getFieldTraversalFragmentWithoutFlattening(segments: ReadonlyArray<Fiel
         return sourceFrag;
     }
 
-    let frag = sourceFrag;
+    let currentListFrag = sourceFrag;
+    const rootItemVar = aql.variable('root');
+    return aqlExt.parenthesizeList(
+        aql`FOR ${rootItemVar} IN ${sourceFrag}`,
+        ...segments.map(segment => {
+            const itemVar = aql.variable(segment.field.name);
+            return aql`FOR ${itemVar} IN ${currentListFrag}`;
+        })
+    );
+
+    let frag = aql``;
     let flattenDepth = 0;
     for (const segment of segments) {
         frag = aql`${frag}${getPropertyAccessFragment(segment.field.name)}`;
@@ -1275,7 +1287,7 @@ function getFieldTraversalFragmentWithoutFlattening(segments: ReadonlyArray<Fiel
         }
     }
 
-    return frag;
+    return aql`({ obj: (${frag}), root: (${sourceFrag}) })`;
 }
 
 register(CreateEntityQueryNode, (node, context) => {

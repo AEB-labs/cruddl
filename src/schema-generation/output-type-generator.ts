@@ -9,6 +9,7 @@ import {
     NullQueryNode,
     ObjectQueryNode,
     OrderDirection,
+    PropertyAccessQueryNode,
     PropertySpecification,
     QueryNode,
     RevisionQueryNode,
@@ -252,15 +253,22 @@ export class OutputTypeGenerator {
         const existingHierarchyFrame = getHierarchyStackFrame(
             fieldContext.selectionTokenStack[fieldContext.selectionTokenStack.length - 1]
         );
+        const outerField = getFieldAtSelection(
+            fieldContext.selectionTokenStack[fieldContext.selectionTokenStack.length - 2]
+        );
+
+        let collectRootNode: QueryNode | undefined;
+        if (outerField && outerField.isCollectField) {
+            collectRootNode = new PropertyAccessQueryNode(sourceNode, 'root');
+            sourceNode = new PropertyAccessQueryNode(sourceNode, 'obj');
+        }
+
         // if this is the first time at this layer, calculate the hierarchy frame for this layer
         let hierarchyFrame: HierarchyStackFrame;
         if (existingHierarchyFrame) {
             hierarchyFrame = existingHierarchyFrame;
         } else {
             const outerFrame = getHierarchyStackFrame(
-                fieldContext.selectionTokenStack[fieldContext.selectionTokenStack.length - 2]
-            );
-            const outerField = getFieldAtSelection(
                 fieldContext.selectionTokenStack[fieldContext.selectionTokenStack.length - 2]
             );
 
@@ -270,19 +278,30 @@ export class OutputTypeGenerator {
                 // navigating into a root entity completely resets the hierarchy, you can never navigate "more up"
                 // also, if there is no outer field, we're at a root field (single or multiple)
                 hierarchyFrame = {
-                    currentEntityNode: sourceNode
+                    currentEntityNode: sourceNode,
+                    rootEntityNode: sourceNode
                 };
-            } else if (outerField.isCollectField) {
-                // navigating collect fields can change the parent completely
-                // TODO capture root/child within the collect fields
-                hierarchyFrame = {
-                    currentEntityNode:
-                        outerField.type.isRootEntityType || outerField.type.isChildEntityType ? sourceNode : undefined
-                };
+            } else if (outerField.collectPath) {
+                const currentEntityNode =
+                    outerField.type.isRootEntityType || outerField.type.isChildEntityType ? sourceNode : undefined;
+                if (outerField.collectPath.traversesRootEntityTypes) {
+                    // traversing root entities, so need to take new root. parent is not available.
+                    hierarchyFrame = {
+                        currentEntityNode,
+                        rootEntityNode: collectRootNode
+                    };
+                } else {
+                    // not traversing root entities just throw away the parent but keep root
+                    hierarchyFrame = {
+                        currentEntityNode,
+                        rootEntityNode: outerFrame?.rootEntityNode
+                    };
+                }
             } else if (outerField.type.isChildEntityType) {
                 hierarchyFrame = {
                     currentEntityNode: sourceNode,
-                    parentEntityFrame: outerFrame
+                    parentEntityFrame: outerFrame,
+                    rootEntityNode: outerFrame?.rootEntityNode
                 };
             } else {
                 // other than that, there are not any fields that cross entity boundaries
@@ -297,18 +316,10 @@ export class OutputTypeGenerator {
         // parent fields that have root entity types are effectively root fields, and those are a bit easier to manage,
         // so use the logic for root fields in these cases.
         if (field.isRootField || (field.isParentField && field.type.isRootEntityType)) {
-            if (!hierarchyFrame.parentEntityFrame?.currentEntityNode) {
+            if (!hierarchyFrame.rootEntityNode) {
                 return new RuntimeErrorQueryNode(`Root entity is not available here`, { code: NOT_SUPPORTED_ERROR });
             }
-            let rootFrame = hierarchyFrame.parentEntityFrame;
-            while (rootFrame.parentEntityFrame) {
-                rootFrame = rootFrame.parentEntityFrame;
-            }
-            if (!rootFrame.currentEntityNode) {
-                // explicit "gap" in the hierarchy (shouldn't occur currently, but we might want to do this)
-                return new RuntimeErrorQueryNode(`Root entity is not available here`, { code: NOT_SUPPORTED_ERROR });
-            }
-            return rootFrame.currentEntityNode;
+            return hierarchyFrame.rootEntityNode;
         } else if (field.isParentField) {
             if (!hierarchyFrame.parentEntityFrame?.currentEntityNode) {
                 return new RuntimeErrorQueryNode(`Parent entity is not available here`, { code: NOT_SUPPORTED_ERROR });
