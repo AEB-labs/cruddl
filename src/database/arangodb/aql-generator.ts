@@ -319,7 +319,12 @@ register(ListQueryNode, (node, context) => {
 
     return aql.lines(
         aql`[`,
-        aql.indent(aql.join(node.itemNodes.map(itemNode => processNode(itemNode, context)), aql`,\n`)),
+        aql.indent(
+            aql.join(
+                node.itemNodes.map(itemNode => processNode(itemNode, context)),
+                aql`,\n`
+            )
+        ),
         aql`]`
     );
 });
@@ -704,7 +709,7 @@ register(ObjectEntriesQueryNode, (node, context) => {
     const keyVar = aql.variable('key');
     return aqlExt.parenthesizeList(
         aql`LET ${objectVar} = ${processNode(node.objectNode, context)}`,
-        aql`FOR ${keyVar} IN ATTRIBUTES(${objectVar})`,
+        aql`FOR ${keyVar} IN IS_DOCUMENT(${objectVar}) ? ATTRIBUTES(${objectVar}) : []`,
         aql`RETURN [ ${keyVar}, ${objectVar}[${keyVar}] ]`
     );
 });
@@ -1349,7 +1354,10 @@ register(AddEdgesQueryNode, (node, context) => {
     const edgeVar = aql.variable('edge');
     return aqlExt.parenthesizeList(
         aql`FOR ${edgeVar}`,
-        aql`IN [ ${aql.join(node.edges.map(edge => formatEdge(node.relation, edge, context)), aql`, `)} ]`,
+        aql`IN [ ${aql.join(
+            node.edges.map(edge => formatEdge(node.relation, edge, context)),
+            aql`, `
+        )} ]`,
         aql`UPSERT { _from: ${edgeVar}._from, _to: ${edgeVar}._to }`, // need to unpack avoid dynamic property names in UPSERT example filter
         aql`INSERT ${edgeVar}`,
         aql`UPDATE {}`,
