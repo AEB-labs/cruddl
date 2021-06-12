@@ -27,5 +27,12 @@
                 "items": []
             }
         }
+    },
+    "filterI18nStringWithNullValueForI18nString": {
+        "data": {
+            "Delivery": {
+                "items": []
+            }
+        }
     }
 }

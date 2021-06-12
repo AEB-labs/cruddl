@@ -250,7 +250,12 @@ register(ListQueryNode, (node, context) => {
 
     return js.lines(
         js`[`,
-        js.indent(js.join(node.itemNodes.map(itemNode => processNode(itemNode, context)), js`,\n`)),
+        js.indent(
+            js.join(
+                node.itemNodes.map(itemNode => processNode(itemNode, context)),
+                js`,\n`
+            )
+        ),
         js`]`
     );
 });
@@ -474,7 +479,12 @@ register(MergeObjectsQueryNode, (node, context) => {
 });
 
 register(ObjectEntriesQueryNode, (node, context) => {
-    return js`Object.entries(${processNode(node.objectNode, context)})`;
+    const objVar = js.variable('object');
+    return jsExt.evaluatingLambda(
+        objVar,
+        js`(${objVar} && typeof ${objVar} === 'object') ? Object.entries(${objVar}) : []`,
+        processNode(node.objectNode, context)
+    );
 });
 
 register(FirstOfListQueryNode, (node, context) => {

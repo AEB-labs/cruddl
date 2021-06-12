@@ -55,7 +55,9 @@ export class MergeObjectsQueryNode extends QueryNode {
 }
 
 /**
- * A node that evaluates to the entries of all properties of an object (each as a two-item list with key and value)
+ * A node that evaluates to the entries of all properties of an object (each as a two-item list with key and value).
+ *
+ * For non-object values, this evaluates to the empty list
  */
 export class ObjectEntriesQueryNode extends QueryNode {
     constructor(public readonly objectNode: QueryNode) {

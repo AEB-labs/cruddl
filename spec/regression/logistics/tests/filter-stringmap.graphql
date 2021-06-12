@@ -21,3 +21,11 @@ query filterI18nStringWithIncorrectLanguage {
         }
     }
 }
+
+query filterI18nStringWithNullValueForI18nString {
+    Delivery(deliveryNumber: "1000521") {
+        items(filter: { description_some: { language: "de", value: "Bananas" } }) {
+            itemNumber
+        }
+    }
+}
