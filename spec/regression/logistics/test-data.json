@@ -223,7 +223,13 @@
         "NumberRange": [
             {
                 "@id": "1",
-                "number": 0
+                "number": 0,
+                "name": "DELIVERY"
+            },
+            {
+                "@id": "2",
+                "number": 0,
+                "name": "HANDLING_UNIT"
             }
         ]
     }

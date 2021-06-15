@@ -29,6 +29,18 @@ describe('RootEntityType', () => {
                         typeName: 'String'
                     }
                 ]
+            },
+            {
+                name: 'NumberRangeName',
+                kind: TypeKind.ENUM,
+                values: [
+                    {
+                        value: 'DELIVERY'
+                    },
+                    {
+                        value: 'HANDLING_UNIT'
+                    }
+                ]
             }
         ],
         permissionProfiles: [
@@ -116,6 +128,24 @@ describe('RootEntityType', () => {
 
             expectToBeValid(type);
         });
+        it('accepts an enum field', () => {
+            const type = new RootEntityType(
+                {
+                    kind: TypeKind.ROOT_ENTITY,
+                    name: 'NumberRange',
+                    fields: [
+                        {
+                            name: 'name',
+                            typeName: 'NumberRangeName'
+                        }
+                    ],
+                    keyFieldName: 'name'
+                },
+                model
+            );
+
+            expectToBeValid(type);
+        });
 
         it('provides it as keyField', () => {
             const type = new RootEntityType(
@@ -194,7 +224,7 @@ describe('RootEntityType', () => {
 
             expectSingleErrorToInclude(
                 type,
-                `Only fields of type "String", "Int", "ID", and "LocalDate" can be used as key field.`
+                `Only fields of type "String", "Int", "ID", "LocalDate", and enum types can be used as key field.`
             );
         });
 
