@@ -54,9 +54,10 @@ import {
     QueryNodeNonNullType,
     QueryNodeObjectType
 } from './query-node-object-type';
+import { UniqueFieldArgumentsGenerator } from './unique-field-arguments-generator';
 import { UpdateInputFieldContext, UpdateInputTypeGenerator, UpdateRootEntityInputType } from './update-input-types';
 import { createBillingEntityCategoryNode, createBillingEntityQuantityNode } from './utils/billing-nodes';
-import { getArgumentsForUniqueFields, getEntitiesByUniqueFieldQuery } from './utils/entities-by-unique-field';
+import { getEntitiesByUniqueFieldQuery } from './utils/entities-by-unique-field';
 import { getFilterNode } from './utils/filtering';
 import { mapTOIDNodesUnoptimized } from './utils/map';
 import { getRemoveAllEntityEdgesStatements } from './utils/relations';
@@ -67,7 +68,8 @@ export class MutationTypeGenerator {
         private readonly createTypeGenerator: CreateInputTypeGenerator,
         private readonly updateTypeGenerator: UpdateInputTypeGenerator,
         private readonly listAugmentation: ListAugmentation,
-        private readonly billingTypeGenerator: BillingTypeGenerator
+        private readonly billingTypeGenerator: BillingTypeGenerator,
+        private readonly uniqueFieldArgumentsGenerator: UniqueFieldArgumentsGenerator
     ) {}
 
     @memorize()
@@ -458,7 +460,7 @@ export class MutationTypeGenerator {
             name: getDeleteEntityFieldName(rootEntityType),
             type: this.outputTypeGenerator.generate(rootEntityType),
             args: {
-                ...getArgumentsForUniqueFields(rootEntityType),
+                ...this.uniqueFieldArgumentsGenerator.getArgumentsForUniqueFields(rootEntityType),
                 [REVISION_FIELD]: {
                     description: `Set this argument to the value of "${rootEntityType.name}.${REVISION_FIELD}" to abort the transaction if this object has been modified in the meantime`,
                     type: GraphQLID

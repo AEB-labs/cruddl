@@ -1,4 +1,9 @@
 type NumberRange @rootEntity @roles(readWrite: ["allusers"]) {
-    name: String
+    name: NumberRangeName @key
     number: Int @calcMutations(operators: [ADD, MULTIPLY])
+}
+
+enum NumberRangeName {
+    DELIVERY
+    HANDLING_UNIT
 }

@@ -104,7 +104,7 @@
                         },
                         {
                             "name": "NumberRange",
-                            "description": "Finds a NumberRange by id"
+                            "description": "Finds a NumberRange by id or name.\n\nYou should pass a non-null value to exactly one of the arguments."
                         },
                         {
                             "name": "allNumberRanges",
@@ -5038,6 +5038,12 @@
                     "inputFields": null
                 },
                 {
+                    "name": "NumberRangeName",
+                    "description": null,
+                    "fields": null,
+                    "inputFields": null
+                },
+                {
                     "name": "NumberRangeFilter",
                     "description": "Filter type for NumberRange.\n\nAll fields in this type are *and*-combined; see the `or` field for *or*-combination.",
                     "fields": null,
@@ -5140,11 +5146,11 @@
                         },
                         {
                             "name": "name",
-                            "description": "Checks if `name` equals a specified string, case-sensitively.\n\nIf an index exists on `name`, it can be used.\n\nSee also `like` for a case-insensitive filter."
+                            "description": "Checks if `name` equals a specified value.\n\nIf an index exists on `name`, it can be used."
                         },
                         {
                             "name": "name_not",
-                            "description": "Checks if `name` does not equal a specified string, case-sensitively."
+                            "description": "Checks if `name` does not equal a specified value"
                         },
                         {
                             "name": "name_in",
@@ -5153,54 +5159,6 @@
                         {
                             "name": "name_not_in",
                             "description": "Checks if `name` is not equal to one of the specified values."
-                        },
-                        {
-                            "name": "name_lt",
-                            "description": "Checks if `name` is less than a specified value."
-                        },
-                        {
-                            "name": "name_lte",
-                            "description": "Checks if `name` is less or equal a specified value."
-                        },
-                        {
-                            "name": "name_gt",
-                            "description": "Checks if `name` is greater than a specified value."
-                        },
-                        {
-                            "name": "name_gte",
-                            "description": "Checks if `name` is greater or equal a specified value."
-                        },
-                        {
-                            "name": "name_contains",
-                            "description": "Checks if `name` contains a specified string, case-sensitively."
-                        },
-                        {
-                            "name": "name_not_contains",
-                            "description": "Checks if `name` does not contain a specified string, case-sensitively."
-                        },
-                        {
-                            "name": "name_starts_with",
-                            "description": "Checks if `name` starts with a specified string, case-sensitively.\n\nNever uses an index. Consider using `like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
-                        },
-                        {
-                            "name": "name_not_starts_with",
-                            "description": "Checks if `name` does not start with a specified string, case-sensitively.\n\nNever uses an index. Consider using `not_like` (with the `%` placeholder) for a case-insensitive filter that can use an index."
-                        },
-                        {
-                            "name": "name_ends_with",
-                            "description": "Checks if `name` ends with a specified string, case-sensitively."
-                        },
-                        {
-                            "name": "name_not_ends_with",
-                            "description": "Checks if `name` does not end with a specified string, case-sensitively."
-                        },
-                        {
-                            "name": "name_like",
-                            "description": "Matches `name` against a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)\n\nIf an index exists on `name`, it can be used for the literal prefix (the part until the first placeholder)."
-                        },
-                        {
-                            "name": "name_not_like",
-                            "description": "Checks if `name` does *not* match a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)"
                         },
                         {
                             "name": "number",
@@ -5736,7 +5694,7 @@
                         },
                         {
                             "name": "deleteNumberRange",
-                            "description": "Deletes a NumberRange by id"
+                            "description": "Deletes a NumberRange by id or name.\n\nYou should pass a non-null value to exactly one of the arguments."
                         },
                         {
                             "name": "deleteNumberRanges",

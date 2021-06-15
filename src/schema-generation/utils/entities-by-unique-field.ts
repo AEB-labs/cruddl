@@ -65,33 +65,3 @@ export function getEntitiesByUniqueFieldQuery(
         itemVariable: entityVarNode
     });
 }
-
-export function getArgumentsForUniqueFields(rootEntityType: RootEntityType): GraphQLFieldConfigArgumentMap {
-    // theoretically, we could make the id field non-null if there is no key field. However, this would be a breaking
-    // change for everyone that specifies the id field as (non-null) variable - which are probably quite a lot of
-    // consumers. It wouldn't be consistent anyway (would not work if a key field exists)
-    // Throwing if `null` is actually passed to `id` is breaking as well, but only if there is an error anyway, so
-    // that's probably a lot less critical.
-
-    return {
-        [ID_FIELD]: {
-            type: GraphQLID,
-            description: rootEntityType.getFieldOrThrow('id').description
-        },
-        ...(rootEntityType.keyField
-            ? {
-                  [rootEntityType.keyField.name]: {
-                      type: getAsScalarTypeOrThrow(rootEntityType.keyField.type).graphQLScalarType,
-                      description: rootEntityType.keyField.description
-                  }
-              }
-            : {})
-    };
-}
-
-function getAsScalarTypeOrThrow(type: Type): ScalarType {
-    if (!type.isScalarType) {
-        throw new Error(`Expected "${type.name}" to be a scalar type, but is ${type.kind}`);
-    }
-    return type;
-}

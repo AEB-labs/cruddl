@@ -17,7 +17,8 @@ import {
     QueryNodeNonNullType,
     QueryNodeObjectType
 } from './query-node-object-type';
-import { getArgumentsForUniqueFields, getEntitiesByUniqueFieldQuery } from './utils/entities-by-unique-field';
+import { UniqueFieldArgumentsGenerator } from './unique-field-arguments-generator';
+import { getEntitiesByUniqueFieldQuery } from './utils/entities-by-unique-field';
 
 export class QueryTypeGenerator {
     constructor(
@@ -26,7 +27,8 @@ export class QueryTypeGenerator {
         private readonly filterAugmentation: FilterAugmentation,
         private readonly metaFirstAugmentation: MetaFirstAugmentation,
         private readonly metaTypeGenerator: MetaTypeGenerator,
-        private readonly flexSearchGenerator: FlexSearchGenerator
+        private readonly flexSearchGenerator: FlexSearchGenerator,
+        private readonly uniqueFieldArgumentsGenerator: UniqueFieldArgumentsGenerator
     ) {}
 
     @memorize()
@@ -85,7 +87,7 @@ export class QueryTypeGenerator {
         return {
             name: rootEntityType.name,
             type: this.outputTypeGenerator.generate(rootEntityType),
-            args: getArgumentsForUniqueFields(rootEntityType),
+            args: this.uniqueFieldArgumentsGenerator.getArgumentsForUniqueFields(rootEntityType),
             description,
             isPure: true,
             resolve: (_, args, info) => this.getSingleRootEntityNode(rootEntityType, args, info)
