@@ -1,0 +1,35 @@
+mutation createEdge {
+    updateRoot2(input: { id: "@{ids/Root2/1}", addRoots: ["@{ids/Root/1}", "@{ids/Root/2}"] }) {
+        name
+    }
+}
+
+query q {
+    allRoot2s {
+        name
+        roots {
+            grandchildren {
+                root {
+                    name
+                }
+            }
+            extensionGrandchildren {
+                root {
+                    name
+                }
+            }
+        }
+        rootGrandchildren {
+            name
+            root {
+                name
+            }
+        }
+        rootExtensionGrandchildren {
+            name
+            root {
+                name
+            }
+        }
+    }
+}

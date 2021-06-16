@@ -1,0 +1,35 @@
+query {
+    allRoots {
+        name
+        children {
+            name
+            children {
+                name
+                parent {
+                    name
+                    parent {
+                        name
+                    }
+                    children {
+                        name
+                        parent {
+                            name
+                            parent {
+                                name
+                            }
+                        }
+                    }
+                }
+                root {
+                    name
+                }
+            }
+            parent {
+                name
+            }
+            root {
+                name
+            }
+        }
+    }
+}

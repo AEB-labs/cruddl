@@ -322,7 +322,7 @@ describe('@parent directive', () => {
                 parent: Root @parent
             }
         `,
-            `Type "Child" is a recursive child entity type and therefore cannot have a parent field.`
+            `Type "Child" is a recursive child entity type and therefore cannot have a parent field. Use the @root directive instead.`
         );
     });
 

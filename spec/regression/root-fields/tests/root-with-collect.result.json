@@ -1,0 +1,134 @@
+{
+    "createEdge": {
+        "data": {
+            "updateRoot2": {
+                "id": "df9b84e3-bce1-449d-a6b7-cd23da968841"
+            }
+        }
+    },
+    "q": {
+        "data": {
+            "allRoot2s": [
+                {
+                    "name": null,
+                    "roots": [
+                        {
+                            "grandchildren": [
+                                {
+                                    "root": {
+                                        "name": "r1"
+                                    }
+                                }
+                            ],
+                            "extensionGrandchildren": []
+                        },
+                        {
+                            "grandchildren": [
+                                {
+                                    "root": {
+                                        "name": "r2"
+                                    }
+                                },
+                                {
+                                    "root": {
+                                        "name": "r2"
+                                    }
+                                },
+                                {
+                                    "root": {
+                                        "name": "r2"
+                                    }
+                                },
+                                {
+                                    "root": {
+                                        "name": "r2"
+                                    }
+                                }
+                            ],
+                            "extensionGrandchildren": [
+                                {
+                                    "root": {
+                                        "name": "r2"
+                                    }
+                                },
+                                {
+                                    "root": {
+                                        "name": "r2"
+                                    }
+                                },
+                                {
+                                    "root": {
+                                        "name": "r2"
+                                    }
+                                },
+                                {
+                                    "root": {
+                                        "name": "r2"
+                                    }
+                                }
+                            ]
+                        }
+                    ],
+                    "rootGrandchildren": [
+                        {
+                            "name": "r1c1g1",
+                            "root": {
+                                "name": "r1"
+                            }
+                        },
+                        {
+                            "name": "r2c1g1",
+                            "root": {
+                                "name": "r2"
+                            }
+                        },
+                        {
+                            "name": "r2c1g2",
+                            "root": {
+                                "name": "r2"
+                            }
+                        },
+                        {
+                            "name": "r2c2g1",
+                            "root": {
+                                "name": "r2"
+                            }
+                        },
+                        {
+                            "name": "r2c2g2",
+                            "root": {
+                                "name": "r2"
+                            }
+                        }
+                    ],
+                    "rootExtensionGrandchildren": [
+                        {
+                            "name": "r2c1eg1",
+                            "root": {
+                                "name": "r2"
+                            }
+                        },
+                        {
+                            "name": "r2c1eg2",
+                            "root": {
+                                "name": "r2"
+                            }
+                        },
+                        {
+                            "name": "r2c2eg1",
+                            "root": {
+                                "name": "r2"
+                            }
+                        },
+                        {
+                            "name": "r2c2ge2",
+                            "root": {
+                                "name": "r2"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}

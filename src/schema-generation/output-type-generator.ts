@@ -3,7 +3,7 @@ import { sortBy } from 'lodash';
 import memorize from 'memorize-decorator';
 import { FieldRequest } from '../graphql/query-distiller';
 import { isListTypeIgnoringNonNull } from '../graphql/schema-utils';
-import { Field, ObjectType, Type, TypeKind } from '../model';
+import { CollectPath, Field, ObjectType, Type, TypeKind } from '../model';
 import {
     NOT_SUPPORTED_ERROR,
     NullQueryNode,
@@ -258,7 +258,7 @@ export class OutputTypeGenerator {
         );
 
         let collectRootNode: QueryNode | undefined;
-        if (outerField && outerField.isCollectField) {
+        if (outerField && this.shouldCaptureRootEntity(outerField)) {
             collectRootNode = new PropertyAccessQueryNode(sourceNode, 'root');
             sourceNode = new PropertyAccessQueryNode(sourceNode, 'obj');
         }
@@ -327,7 +327,10 @@ export class OutputTypeGenerator {
             return hierarchyFrame.parentEntityFrame.currentEntityNode;
         }
 
-        return createFieldNode(field, sourceNode, { skipNullFallbackForEntityExtensions: true });
+        return createFieldNode(field, sourceNode, {
+            skipNullFallbackForEntityExtensions: true,
+            captureRootEntitiesOnCollectFields: this.shouldCaptureRootEntity(field)
+        });
     }
 
     private createMetaField(field: Field): QueryNodeField {
@@ -345,5 +348,53 @@ export class OutputTypeGenerator {
             resolve: sourceNode => createFieldNode(field, sourceNode)
         };
         return this.filterAugmentation.augment(plainField, field.type);
+    }
+
+    @memorize()
+    private shouldCaptureRootEntity(field: Field) {
+        if (!field.collectPath) {
+            return false;
+        }
+
+        // we will only ever need it for collect paths that cross both inter- and intra-root-entity fields
+        // (and it's not allowed to capture it in other cases anyway)
+        // we also only need it if the result is a child entity type. It can't be an entity extension (that would be a
+        // validation error), and value objects can't declare parent fields.
+        // note that isChildEntityType + traversesRootEntityTypes implies that there are field traversals as well.
+        if (!field.type.isChildEntityType || !field.collectPath.traversesRootEntityTypes) {
+            return false;
+        }
+
+        // we also only need it if a root field is reachable from the child entity
+        return this.hasReachableRootField(field.type);
+    }
+
+    /**
+     * Determines whether a @root field can be reached from anywhere within the given type
+     */
+    @memorize()
+    private hasReachableRootField(type: ObjectType): boolean {
+        const seen = new Set<ObjectType>([type]);
+        let fringe = [type];
+        do {
+            const newFringe: ObjectType[] = [];
+            for (const type of fringe) {
+                for (const field of type.fields) {
+                    if (field.isRootField) {
+                        return true;
+                    }
+                    if (
+                        field.type.isObjectType &&
+                        !seen.has(field.type) &&
+                        (field.type.isChildEntityType || field.type.isEntityExtensionType)
+                    ) {
+                        seen.add(type);
+                        newFringe.push(type);
+                    }
+                }
+            }
+            fringe = newFringe;
+        } while (fringe.length);
+        return false;
     }
 }
