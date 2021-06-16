@@ -145,6 +145,7 @@ describe('indices validator', () => {
             }
 
             type Grandchild @childEntity {
+                name: String
                 parent: Child @parent
             }
         `,
@@ -161,6 +162,7 @@ describe('indices validator', () => {
             }
 
             type Child @childEntity {
+                name: String
                 root: Root @root
             }
         `,

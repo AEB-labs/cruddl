@@ -671,6 +671,7 @@ describe('collect validation', () => {
                 }
 
                 type Grandchild @childEntity {
+                name: String
                     parent: Child @parent
                 }
             `,
@@ -687,6 +688,7 @@ describe('collect validation', () => {
                 }
 
                 type Child @childEntity {
+                name: String
                     parent: Delivery @root
                 }
             `,

@@ -380,7 +380,8 @@ export class OutputTypeGenerator {
             const newFringe: ObjectType[] = [];
             for (const type of fringe) {
                 for (const field of type.fields) {
-                    if (field.isRootField) {
+                    // parent fields of root entity types are basically root fields (and they will make use of captureRootEntity)
+                    if (field.isRootField || (field.isParentField && field.type.isRootEntityType)) {
                         return true;
                     }
                     if (

@@ -9,6 +9,7 @@ describe('@parent directive', () => {
             }
 
             type Child @childEntity {
+                name: String
                 parent: Root @parent
             }
         `);
@@ -25,6 +26,7 @@ describe('@parent directive', () => {
             }
 
             type Grandchild @childEntity {
+                name: String
                 parent: Child @parent
             }
         `);
@@ -41,6 +43,7 @@ describe('@parent directive', () => {
             }
 
             type Child @childEntity {
+                name: String
                 parent: Root @parent
             }
         `);
@@ -84,6 +87,7 @@ describe('@parent directive', () => {
             }
 
             type Child4 @childEntity {
+                name: String
                 parent: Child3 @parent
             }
         `);
@@ -102,6 +106,7 @@ describe('@parent directive', () => {
             }
 
             type Child @childEntity {
+                name: String
                 parent: Root @parent
             }
         `);
@@ -119,6 +124,7 @@ describe('@parent directive', () => {
             }
 
             type Grandchild @childEntity {
+                name: String
                 parent: Child @parent
             }
         `);
@@ -128,6 +134,7 @@ describe('@parent directive', () => {
         assertValidatorRejects(
             `
             type Child @childEntity {
+                name: String
                 parent: [Child] @parent
             }
         `,
@@ -139,6 +146,7 @@ describe('@parent directive', () => {
         assertValidatorRejects(
             `
             type Root @rootEntity {
+                name: String
                 parent: Root @parent
             }
         `,
@@ -154,6 +162,7 @@ describe('@parent directive', () => {
             }
 
             type Extension @entityExtension {
+                name: String
                 parent: Root @parent
             }
         `,
@@ -169,10 +178,27 @@ describe('@parent directive', () => {
             }
 
             type ValueObject @valueObject {
+                name: String
                 parent: Root @parent
             }
         `,
             `@parent can only be used on fields of child entity types.`
+        );
+    });
+
+    it('rejects if there is nothing but parent and root fields in a child entity', () => {
+        assertValidatorRejects(
+            `
+            type Root @rootEntity {
+                child: [Child]
+            }
+
+            type Child @childEntity {
+                parent: Root @parent
+                root: Root @root
+            }
+        `,
+            `There need to be fields other than parent and root fields in a child entity type.`
         );
     });
 
@@ -185,6 +211,7 @@ describe('@parent directive', () => {
             }
 
             type Child @childEntity {
+                name: String
                 parent: Root @parent @reference
             }
         `,
@@ -220,6 +247,7 @@ describe('@parent directive', () => {
             }
 
             type Child @childEntity {
+                name: String
                 parent: Root @parent @flexSearch
             }
         `,
@@ -235,6 +263,7 @@ describe('@parent directive', () => {
             }
 
             type Child @childEntity {
+                name: String
                 parent: Root @parent @flexSearchFulltext
             }
         `,
@@ -250,6 +279,7 @@ describe('@parent directive', () => {
             }
 
             type Child @childEntity {
+                name: String
                 parent: Root @parent @defaultValue(value: { })
             }
         `,
@@ -265,6 +295,7 @@ describe('@parent directive', () => {
             }
 
             type Child @childEntity {
+                name: String
                 parent: Root @parent
             }
         `,
@@ -284,6 +315,7 @@ describe('@parent directive', () => {
             }
 
             type Child @childEntity {
+                name: String
                 parent: Root2 @parent
             }
         `,
@@ -303,6 +335,7 @@ describe('@parent directive', () => {
             }
 
             type Child @childEntity {
+                name: String
                 parent: Root1 @parent
             }
         `,
@@ -342,6 +375,7 @@ describe('@parent directive', () => {
             }
 
             type Child @childEntity {
+                name: String
                 parent: Root1 @parent
             }
         `,
@@ -369,6 +403,7 @@ describe('@parent directive', () => {
             }
 
             type Child @childEntity {
+                name: String
                 parent: Root4 @parent
             }
         `,
@@ -385,6 +420,7 @@ describe('@parent directive', () => {
             }
 
             type Child @childEntity {
+                name: String
                 parent: Root1 @parent
             }
 
@@ -413,6 +449,7 @@ describe('@parent directive', () => {
             }
 
             type Grandchild @childEntity {
+                name: String
                 parent: Root @parent
             }
         `,
@@ -436,6 +473,7 @@ describe('@parent directive', () => {
             }
 
             type Child @childEntity {
+                name: String
                 parent: Extension1 @parent
             }
         `,
@@ -451,6 +489,7 @@ describe('@parent directive', () => {
             }
 
             type Child @childEntity {
+                name: String
                 parent1: Root @parent
                 parent2: Root @parent
             }
