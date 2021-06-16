@@ -198,10 +198,24 @@ export class OutputTypeGenerator {
     private createFields(field: Field): ReadonlyArray<QueryNodeField> {
         const type = this.generate(field.type);
         const itemType = field.isNonNull ? new QueryNodeNonNullType(type) : type;
+        let description = field.description;
+        if (field.isParentField) {
+            description +=
+                (description ? '\n\n' : '') +
+                `This field resolves to the ${field.type.name} embedding this child entity.`;
+            if (!field.type.isRootEntityType) {
+                description += ` Note that the value of this field is not available when this ${field.type.name} has been reached via a collect field.`;
+            }
+        }
+        if (field.isRootField) {
+            description +=
+                (description ? '\n\n' : '') +
+                `This field resolves to the ${field.type.name} embedding this child entity.`;
+        }
         const schemaField: QueryNodeField = {
             name: field.name,
             type: field.isList ? new QueryNodeNonNullType(new QueryNodeListType(itemType)) : itemType,
-            description: field.description,
+            description,
             deprecationReason: field.deprecationReason,
 
             // normally, entity extensions are converted to an empty object if null, and normally query field nodes have
