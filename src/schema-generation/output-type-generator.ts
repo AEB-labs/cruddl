@@ -1,7 +1,7 @@
 import { GraphQLID, GraphQLNonNull, GraphQLString } from 'graphql';
 import { sortBy } from 'lodash';
 import memorize from 'memorize-decorator';
-import { FieldRequest } from '../graphql/query-distiller';
+import { FieldRequest, FieldSelection } from '../graphql/query-distiller';
 import { isListTypeIgnoringNonNull } from '../graphql/schema-utils';
 import { CollectPath, Field, ObjectType, Type, TypeKind } from '../model';
 import {
@@ -272,7 +272,13 @@ export class OutputTypeGenerator {
         );
 
         let collectRootNode: QueryNode | undefined;
-        if (outerField && this.shouldCaptureRootEntity(outerField)) {
+        if (
+            outerField &&
+            this.shouldCaptureRootEntity(
+                outerField,
+                fieldContext.selectionStack[fieldContext.selectionStack.length - 2].fieldRequest
+            )
+        ) {
             collectRootNode = new PropertyAccessQueryNode(sourceNode, 'root');
             sourceNode = new PropertyAccessQueryNode(sourceNode, 'obj');
         }
@@ -343,7 +349,10 @@ export class OutputTypeGenerator {
 
         return createFieldNode(field, sourceNode, {
             skipNullFallbackForEntityExtensions: true,
-            captureRootEntitiesOnCollectFields: this.shouldCaptureRootEntity(field)
+            captureRootEntitiesOnCollectFields: this.shouldCaptureRootEntity(
+                field,
+                fieldContext.selectionStack[fieldContext.selectionStack.length - 1].fieldRequest
+            )
         });
     }
 
@@ -365,7 +374,7 @@ export class OutputTypeGenerator {
     }
 
     @memorize()
-    private shouldCaptureRootEntity(field: Field) {
+    private shouldCaptureRootEntity(field: Field, fieldRequest: FieldRequest) {
         if (!field.collectPath) {
             return false;
         }
@@ -379,12 +388,45 @@ export class OutputTypeGenerator {
             return false;
         }
 
-        // we also only need it if a root field is reachable from the child entity
-        return this.hasReachableRootField(field.type);
+        return this.selectsRootField(fieldRequest, field.type);
+    }
+
+    @memorize()
+    private selectsRootField(fieldRequest: FieldRequest, type: ObjectType): boolean {
+        // hasReachableRootField can be cached request-independently, so we can save the time to crawl the selections
+        // if we know there aren't any reachable root fields
+        if (!this.hasReachableRootField(type)) {
+            return false;
+        }
+
+        // assumes that parent/root fields, child entity fields and entity extension fields are always called
+        // exactly like in the model (to do this properly, using the output-type-generator itself, we would need several
+        // passes, or we would need to run the query-node-generator upfront and associate metadata with the
+        // QueryNodeFields
+
+        return fieldRequest.selectionSet.some(f => {
+            const field = type.getField(f.fieldRequest.field.name);
+            if (!field) {
+                return false;
+            }
+            if (field.isRootField || (field.isParentField && field.type.isRootEntityType)) {
+                return true;
+            }
+            // don't walk out of the current root entity, we're not interested in them (that would change the root)
+            if (
+                (field.type.isChildEntityType || field.type.isEntityExtensionType) &&
+                (!field.collectPath || !field.collectPath.traversesRootEntityTypes)
+            ) {
+                return this.selectsRootField(f.fieldRequest, field.type);
+            }
+            return false;
+        });
     }
 
     /**
-     * Determines whether a @root field can be reached from anywhere within the given type
+     * Determines whether a @root field can be reached from anywhere within the given type.
+     *
+     * Stops at root entity boundaries
      */
     @memorize()
     private hasReachableRootField(type: ObjectType): boolean {
@@ -399,9 +441,9 @@ export class OutputTypeGenerator {
                         return true;
                     }
                     if (
-                        field.type.isObjectType &&
+                        (field.type.isChildEntityType || field.type.isEntityExtensionType) &&
                         !seen.has(field.type) &&
-                        (field.type.isChildEntityType || field.type.isEntityExtensionType)
+                        (!field.collectPath || !field.collectPath.traversesRootEntityTypes)
                     ) {
                         seen.add(type);
                         newFringe.push(type);
