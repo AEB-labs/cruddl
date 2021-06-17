@@ -21,44 +21,27 @@ export class TypedInputObjectType<TField extends TypedInputFieldBase<TField>> {
     constructor(
         public readonly name: string,
         private readonly _fields: Thunk<ReadonlyArray<TField>>,
-        public readonly description?: string,
-        public readonly deprecationReason?: string
+        public readonly description?: string
     ) {}
 
     @memorize()
     getInputType(): GraphQLInputObjectType {
-        let description = this.description;
-        if (this.deprecationReason) {
-            // Input types can not be deprecated officially
-            description = description ? `${description}\n\n${this.deprecationReason}` : this.deprecationReason;
-        }
-
         return new GraphQLInputObjectType({
             name: this.name,
-            description,
+            description: this.description,
             fields: () =>
                 this.transformFieldConfigs(
                     chain(this.fields)
                         .keyBy(field => field.name)
                         .mapValues(
-                            (field): GraphQLInputFieldConfig => {
-                                let description = field.description;
-
-                                if (field.deprecationReason) {
-                                    // Input fields can not yet be deprecated (see https://github.com/graphql/graphql-spec/pull/525)
-                                    description = description
-                                        ? `${description}\n\n${field.deprecationReason}`
-                                        : field.deprecationReason;
-                                }
-
-                                return {
-                                    type:
-                                        field.inputType instanceof TypedInputObjectType
-                                            ? field.inputType.getInputType()
-                                            : field.inputType,
-                                    description
-                                };
-                            }
+                            (field): GraphQLInputFieldConfig => ({
+                                type:
+                                    field.inputType instanceof TypedInputObjectType
+                                        ? field.inputType.getInputType()
+                                        : field.inputType,
+                                description: field.description,
+                                deprecationReason: field.deprecationReason
+                            })
                         )
                         .value()
                 )
