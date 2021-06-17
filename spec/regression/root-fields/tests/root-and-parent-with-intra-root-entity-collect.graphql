@@ -1,5 +1,5 @@
 query {
-    allRoots {
+    allRoots(orderBy: name_ASC) {
         name
         grandchildren {
             name

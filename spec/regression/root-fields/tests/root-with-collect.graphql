@@ -7,7 +7,7 @@ mutation createEdge {
 query q {
     allRoot2s {
         name
-        roots {
+        roots(orderBy: name_ASC) {
             grandchildren {
                 root {
                     name
@@ -19,13 +19,13 @@ query q {
                 }
             }
         }
-        rootGrandchildren {
+        rootGrandchildren(orderBy: name_ASC) {
             name
             root {
                 name
             }
         }
-        rootExtensionGrandchildren {
+        rootExtensionGrandchildren(orderBy: name_ASC) {
             name
             root {
                 name
