@@ -25,6 +25,7 @@ import { Model } from './model';
 import { PermissionProfile } from './permission-profile';
 import { Relation, RelationSide } from './relation';
 import { RolesSpecifier } from './roles-specifier';
+import { RootEntityType } from './root-entity-type';
 import { InvalidType, ObjectType, Type } from './type';
 import { ValueObjectType } from './value-object-type';
 
@@ -1183,6 +1184,23 @@ export class Field implements ModelComponent {
                 );
             }
             return;
+        }
+
+        if (!this.type.isRootEntityType) {
+            let rootNote = '';
+            if (!this.declaringType.fields.some(f => f.isRootField)) {
+                const { embeddingRootEntityTypes } = collectEmbeddingRootEntityTypes(this.declaringType);
+                if (embeddingRootEntityTypes.size === 1) {
+                    const rootType = Array.from(embeddingRootEntityTypes)[0];
+                    rootNote = ` You could add a @root field (of type "${rootType.name}") instead.`;
+                }
+            }
+            context.addMessage(
+                ValidationMessage.warn(
+                    `Parent fields currently can't be selected within collect fields, so this field will probably be useless.${rootNote}`,
+                    this.input.parentDirectiveNode
+                )
+            );
         }
     }
 

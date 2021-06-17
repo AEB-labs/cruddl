@@ -1,4 +1,10 @@
-import { assertValidatorAccepts, assertValidatorRejects, validate } from './helpers';
+import {
+    assertValidatorAccepts,
+    assertValidatorAcceptsAndDoesNotWarn,
+    assertValidatorRejects,
+    assertValidatorWarns,
+    validate
+} from './helpers';
 import { expect } from 'chai';
 
 describe('@parent directive', () => {
@@ -500,5 +506,41 @@ describe('@parent directive', () => {
             `There can only be one parent field per type.`,
             `There can only be one parent field per type.`
         ]);
+    });
+
+    it('warns about @parent usage', () => {
+        assertValidatorWarns(
+            `
+            type Root @rootEntity {
+                children: [Child]
+            }
+
+            type Child @childEntity {
+                name: String
+                children: [Grandchild]
+            }
+
+            type Grandchild @childEntity {
+                name: String
+                parent: Child @parent
+            }
+        `,
+            'Parent fields currently can\'t be selected within collect fields, so this field will probably be useless. You could add a @root field (of type "Root") instead.'
+        );
+    });
+
+    it('does not warn about @parent usage that is essential a @root', () => {
+        assertValidatorAcceptsAndDoesNotWarn(
+            `
+            type Root @rootEntity {
+                children: [Child]
+            }
+
+            type Child @childEntity {
+                name: String
+                parent: Root @parent
+            }
+        `
+        );
     });
 });
