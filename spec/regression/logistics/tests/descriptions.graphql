@@ -6,10 +6,12 @@
             fields {
                 name
                 description
+                deprecationReason
             }
             inputFields {
                 name
                 description
+                deprecationReason
             }
         }
     }
