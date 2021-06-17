@@ -3,17 +3,6 @@
         // @collect with accessGroup is not implemented in InMemoryAdapter
         "in-memory": {
             "ignore": true
-        },
-        "arangodb": {
-            "versions": {
-                // PRUNE support has been introduced in 3.4
-                "3.2": {
-                    "ignore": true
-                },
-                "3.3": {
-                    "ignore": true
-                }
-            }
         }
     }
 }

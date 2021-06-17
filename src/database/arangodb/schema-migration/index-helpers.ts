@@ -3,9 +3,8 @@ import { ID_FIELD } from '../../../schema/constants';
 import { GraphQLOffsetDateTime, TIMESTAMP_PROPERTY } from '../../../schema/scalars/offset-date-time';
 import { compact, flatMap } from '../../../utils/utils';
 import { getCollectionNameForRootEntity } from '../arango-basics';
-import { ArangoDBVersion } from '../version-helper';
 
-const DEFAULT_INDEX_TYPE = 'persistent'; // persistent is a skiplist index
+const DEFAULT_INDEX_TYPE = 'persistent';
 
 export interface IndexDefinition {
     readonly id?: string;
@@ -127,9 +126,4 @@ function getArangoFieldPath(indexField: IndexField): string {
     }
 
     return segments.join('.');
-}
-
-export async function isArangoSearchSupported(versionPromise: Promise<ArangoDBVersion | undefined>) {
-    const version = await versionPromise;
-    return version && version.major >= 3 && version.minor >= 4;
 }
