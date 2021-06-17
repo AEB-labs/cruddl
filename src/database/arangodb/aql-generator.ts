@@ -586,7 +586,6 @@ register(AggregationQueryNode, (node, context) => {
 
         case AggregationOperator.COUNT:
             aggregationFunction = aql`COUNT`;
-            resultFragment = aql`${resultFragment} != null ? ${resultFragment} : 0`; // arangodb 3.2 returns NULL for AGGREGATE COUNT([])
             break;
         case AggregationOperator.SOME:
             aggregationFunction = aql`COUNT`;
@@ -594,8 +593,7 @@ register(AggregationQueryNode, (node, context) => {
             break;
         case AggregationOperator.NONE:
             aggregationFunction = aql`COUNT`;
-            // arangodb 3.2 returns NULL for for AGGREGATE COUNT([]); NULL < 0 < other ints
-            resultFragment = aql`${resultFragment} <= 0`;
+            resultFragment = aql`${resultFragment} == 0`;
             break;
 
         // using MAX >= true in place of SOME
@@ -625,12 +623,10 @@ register(AggregationQueryNode, (node, context) => {
         case AggregationOperator.COUNT_NULL:
             aggregationFunction = aql`COUNT`;
             filterFrag = aql`${itemVar} == null`;
-            resultFragment = aql`${resultFragment} != null ? ${resultFragment} : 0`; // arangodb 3.2 returns NULL for AGGREGATE COUNT([])
             break;
         case AggregationOperator.COUNT_NOT_NULL:
             aggregationFunction = aql`COUNT`;
             filterFrag = aql`${itemVar} != null`;
-            resultFragment = aql`${resultFragment} != null ? ${resultFragment} : 0`; // arangodb 3.2 returns NULL for AGGREGATE COUNT([])
             break;
 
         // these treat NULL like FALSE, so don't filter them away
@@ -659,12 +655,10 @@ register(AggregationQueryNode, (node, context) => {
         case AggregationOperator.COUNT_TRUE:
             aggregationFunction = aql`COUNT`;
             filterFrag = aql`${itemVar} >= true`;
-            resultFragment = aql`${resultFragment} != null ? ${resultFragment} : 0`; // arangodb 3.2 returns NULL for AGGREGATE COUNT([])
             break;
         case AggregationOperator.COUNT_NOT_TRUE:
             aggregationFunction = aql`COUNT`;
             filterFrag = aql`${itemVar} < true`;
-            resultFragment = aql`${resultFragment} != null ? ${resultFragment} : 0`; // arangodb 3.2 returns NULL for AGGREGATE COUNT([])
             break;
 
         // these should also remove NULL values by definition
@@ -679,7 +673,6 @@ register(AggregationQueryNode, (node, context) => {
         case AggregationOperator.COUNT_DISTINCT:
             aggregationFunction = aql`COUNT_DISTINCT`;
             filterFrag = aql`${itemVar} != null`;
-            resultFragment = aql`${resultFragment} != null ? ${resultFragment} : 0`; // arangodb 3.2 returns NULL for AGGREGATE COUNT([])
             break;
 
         default:

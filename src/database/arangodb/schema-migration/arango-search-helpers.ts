@@ -41,7 +41,6 @@ interface ArangoSearchViewCollectionLink {
 export interface ArangoSearchConfiguration {
     readonly recursionDepth?: number;
     readonly commitIntervalMsec?: number;
-    readonly skipVersionCheckForArangoSearchMigrations?: boolean;
 }
 
 export function getRequiredViewsFromModel(model: Model): ReadonlyArray<ArangoSearchDefinition> {

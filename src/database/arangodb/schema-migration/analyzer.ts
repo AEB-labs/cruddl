@@ -4,7 +4,6 @@ import { Logger } from '../../../config/logging';
 import { Model, RootEntityType } from '../../../model';
 import { billingCollectionName, getCollectionNameForRelation, getCollectionNameForRootEntity } from '../arango-basics';
 import { ArangoDBConfig, getArangoDBLogger, initDatabase } from '../config';
-import { ArangoDBVersionHelper } from '../version-helper';
 import {
     calculateRequiredArangoSearchViewCreateOperations,
     calculateRequiredArangoSearchViewDropOperations,
@@ -12,12 +11,7 @@ import {
     getFlexSearchViewNameForRootEntity,
     getRequiredViewsFromModel
 } from './arango-search-helpers';
-import {
-    calculateRequiredIndexOperations,
-    getRequiredIndicesFromModel,
-    IndexDefinition,
-    isArangoSearchSupported
-} from './index-helpers';
+import { calculateRequiredIndexOperations, getRequiredIndicesFromModel, IndexDefinition } from './index-helpers';
 import {
     CreateDocumentCollectionMigration,
     CreateEdgeCollectionMigration,
@@ -29,11 +23,9 @@ import {
 export class SchemaAnalyzer {
     private readonly db: Database;
     private readonly logger: Logger;
-    private readonly versionHelper: ArangoDBVersionHelper;
 
     constructor(readonly config: ArangoDBConfig, schemaContext?: ProjectOptions) {
         this.db = initDatabase(config);
-        this.versionHelper = new ArangoDBVersionHelper(this.db);
         this.logger = getArangoDBLogger(schemaContext);
     }
 
@@ -149,12 +141,6 @@ export class SchemaAnalyzer {
      * @param model
      */
     async getArangoSearchMigrations(model: Model): Promise<ReadonlyArray<SchemaMigration>> {
-        const isSkipVersionCheck =
-            this.config.arangoSearchConfiguration &&
-            this.config.arangoSearchConfiguration.skipVersionCheckForArangoSearchMigrations;
-        if (!isSkipVersionCheck && !(await isArangoSearchSupported(this.versionHelper.getArangoDBVersion()))) {
-            return [];
-        }
         // the views that match the model
         const requiredViews = getRequiredViewsFromModel(model);
         // the currently existing views

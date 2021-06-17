@@ -1,8 +1,5 @@
 import { CollectionType, Database } from 'arangojs';
 import { ArangoDBConfig, initDatabase } from '../config';
-import { ArangoDBVersionHelper } from '../version-helper';
-import { ArangoSearchMigrationNotSupportedError } from './ArangoSearchMigrationNotSupportedError';
-import { isArangoSearchSupported } from './index-helpers';
 import {
     CreateArangoSearchViewMigration,
     CreateDocumentCollectionMigration,
@@ -17,11 +14,9 @@ import {
 
 export class MigrationPerformer {
     private readonly db: Database;
-    private versionHelper: ArangoDBVersionHelper;
 
     constructor(private readonly config: ArangoDBConfig) {
         this.db = initDatabase(config);
-        this.versionHelper = new ArangoDBVersionHelper(this.db);
     }
 
     async performMigration(migration: SchemaMigration) {
@@ -55,7 +50,7 @@ export class MigrationPerformer {
                 unique: migration.index.unique,
                 sparse: migration.index.sparse,
                 inBackground: this.config.createIndicesInBackground
-            } as any /* inBackground is not supported by the types */
+            } as any /* inBackground is not included in the types, but it works */
         );
     }
 
@@ -78,42 +73,19 @@ export class MigrationPerformer {
     }
 
     private async createArangoSearchView(migration: CreateArangoSearchViewMigration) {
-        if (this.isSkipVersionCheck || (await isArangoSearchSupported(this.versionHelper.getArangoDBVersion()))) {
-            await this.db.createView(migration.viewName, migration.properties);
-        } else {
-            throw new ArangoSearchMigrationNotSupportedError();
-        }
+        await this.db.createView(migration.viewName, migration.properties);
     }
 
     private async updateArangoSearchView(migration: UpdateArangoSearchViewMigration) {
-        if (this.isSkipVersionCheck || (await isArangoSearchSupported(this.versionHelper.getArangoDBVersion()))) {
-            await this.db.view(migration.viewName).replaceProperties(migration.properties);
-        } else {
-            throw new ArangoSearchMigrationNotSupportedError();
-        }
+        await this.db.view(migration.viewName).replaceProperties(migration.properties);
     }
 
     private async dropArangoSearchView(migration: DropArangoSearchViewMigration) {
-        if (this.isSkipVersionCheck || (await isArangoSearchSupported(this.versionHelper.getArangoDBVersion()))) {
-            await this.db.view(migration.config.viewName).drop();
-        } else {
-            throw new ArangoSearchMigrationNotSupportedError();
-        }
+        await this.db.view(migration.config.viewName).drop();
     }
 
     private async recreateArangoSearchView(migration: RecreateArangoSearchViewMigration) {
-        if (this.isSkipVersionCheck || (await isArangoSearchSupported(this.versionHelper.getArangoDBVersion()))) {
-            await this.db.view(migration.viewName).drop();
-            await this.db.createView(migration.viewName, migration.properties);
-        } else {
-            throw new ArangoSearchMigrationNotSupportedError();
-        }
-    }
-
-    private get isSkipVersionCheck() {
-        return (
-            this.config.arangoSearchConfiguration &&
-            this.config.arangoSearchConfiguration.skipVersionCheckForArangoSearchMigrations
-        );
+        await this.db.view(migration.viewName).drop();
+        await this.db.createView(migration.viewName, migration.properties);
     }
 }

@@ -78,8 +78,8 @@ export interface ArangoDBConfig {
     /**
      * If set to `true`, collections will still be available for modifications during index creation.
      *
-     * Only supported from ArangoDB 3.5 onwards. Background index creation can be slower and take more memory and should
-     * still be performed during times of reduced load.
+     * Background index creation can be slower and take more memory and should still be performed during times of
+     * reduced load.
      */
     readonly createIndicesInBackground?: boolean;
 
