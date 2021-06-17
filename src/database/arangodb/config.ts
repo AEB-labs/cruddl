@@ -42,23 +42,6 @@ export interface ArangoDBConfig {
     readonly queryMemoryLimit?: number;
 
     /**
-     * If enabled, collection traversals add an indirection between the filter/order part and the projection part
-     * so that ArangoDB will do the filtering/sorting on a leaner versions of the documents, then load the full
-     * documents for the projection part.
-     *
-     * This is mainly an issue when sorting large documents and should become less of an issue with ArangoDB 3.5 where
-     * sort memory usage will be optimized drastically.
-     *
-     * See https://github.com/arangodb/arangodb/issues/7821
-     */
-    readonly enableExperimentalProjectionIndirection?: boolean;
-
-    /**
-     * If set, enableExperimentalProjectionIndirection will only apply to root entity types specified in this list.
-     */
-    readonly experimentalProjectionIndirectionTypeNames?: ReadonlyArray<string>;
-
-    /**
      * The number of times a transaction that generated an optimistic locking error (ERROR_ARANGO_CONFLICT) will be
      * retried automatically. Defaults to zero.
      */

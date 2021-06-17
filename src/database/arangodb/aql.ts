@@ -4,19 +4,13 @@ import { arrayToObject, flatMap } from '../../utils/utils';
 
 function stringify(val: any) {
     if (val === undefined) {
-        return "undefined";
+        return 'undefined';
     }
     return JSON.stringify(val);
 }
 
-export interface OptimizationConfig {
-    enableExperimentalProjectionIndirection?: boolean
-    experimentalProjectionIndirectionTypeNames?: ReadonlyArray<string>
-}
-
 export namespace aqlConfig {
     export let enableIndentationForCode = false;
-    export let optimizationConfig: OptimizationConfig = {}
 }
 
 const INDENTATION = '  ';
@@ -44,7 +38,7 @@ export class AQLCodeBuildingContext {
 
     private static DEFAULT_LABEL = 'tmp';
 
-    private static getSafeLabel(label: string|undefined): string {
+    private static getSafeLabel(label: string | undefined): string {
         if (label) {
             // avoid collisions with collection names, functions and keywords
             label = 'v_' + label;
@@ -118,8 +112,8 @@ export abstract class AQLFragment {
         return false;
     }
 
-    abstract toStringWithContext(context: AQLCodeBuildingContext): string
-    abstract toColoredStringWithContext(context: AQLCodeBuildingContext): string
+    abstract toStringWithContext(context: AQLCodeBuildingContext): string;
+    abstract toColoredStringWithContext(context: AQLCodeBuildingContext): string;
     abstract getCodeWithContext(context: AQLCodeBuildingContext): string;
 }
 
@@ -168,7 +162,6 @@ export class AQLVariable extends AQLFragment {
 }
 
 export class AQLQueryResultVariable extends AQLVariable {
-
     getCodeWithContext(context: AQLCodeBuildingContext): string {
         return '@' + super.getCodeWithContext(context);
     }
@@ -254,7 +247,10 @@ export class AQLIndentationFragment extends AQLFragment {
     }
 }
 
-export function aql(strings: ReadonlyArray<string>, ...values: (AQLFragment|string|number|boolean)[]): AQLFragment {
+export function aql(
+    strings: ReadonlyArray<string>,
+    ...values: (AQLFragment | string | number | boolean)[]
+): AQLFragment {
     let snippets = [...strings];
     let fragments: AQLFragment[] = [];
     while (snippets.length || values.length) {
@@ -270,7 +266,7 @@ export function aql(strings: ReadonlyArray<string>, ...values: (AQLFragment|stri
             } else if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
                 fragments.push(new AQLBoundValue(value));
             } else {
-                throw new Error(`aql: Received a value that is neither an AQLFragment, nor a primitive`)
+                throw new Error(`aql: Received a value that is neither an AQLFragment, nor a primitive`);
             }
         }
     }
@@ -348,7 +344,7 @@ export namespace aql {
     }
 
     export function integer(number: number): AQLFragment {
-        return code(JSON.stringify(Number(number)))
+        return code(JSON.stringify(Number(number)));
     }
 
     export function isSafeIdentifier(str: string) {
@@ -368,14 +364,14 @@ export namespace aql {
  * into AQLFragments.
  */
 export class AQLCompoundQuery extends AQLFragment {
-
     constructor(
         public readonly preExecQueries: AQLCompoundQuery[],
         public readonly aqlQuery: AQLFragment,
-        public readonly resultVar: AQLQueryResultVariable|undefined,
-        public readonly resultValidator: QueryResultValidator|undefined,
+        public readonly resultVar: AQLQueryResultVariable | undefined,
+        public readonly resultValidator: QueryResultValidator | undefined,
         public readonly readAccessedCollections: string[],
-        public readonly writeAccessedCollections: string[]){
+        public readonly writeAccessedCollections: string[]
+    ) {
         super();
     }
 
@@ -389,13 +385,16 @@ export class AQLCompoundQuery extends AQLFragment {
         return this.getExecutableQueriesRecursive(resultVarToNameMap);
     }
 
-    private getExecutableQueriesRecursive(resultVarToNameMap: Map<AQLQueryResultVariable, string>): AQLExecutableQuery[] {
+    private getExecutableQueriesRecursive(
+        resultVarToNameMap: Map<AQLQueryResultVariable, string>
+    ): AQLExecutableQuery[] {
         const executableQueries = flatMap(this.preExecQueries, aqlQuery =>
-            aqlQuery.getExecutableQueriesRecursive(resultVarToNameMap));
+            aqlQuery.getExecutableQueriesRecursive(resultVarToNameMap)
+        );
 
         const { code, boundValues, usedResultVariables } = this.aqlQuery.getCode();
 
-        const usedResultNames: {[p: string]: string} = {};
+        const usedResultNames: { [p: string]: string } = {};
         usedResultVariables.forEach((bindParamName, aqlVariable) => {
             const usedResultName = resultVarToNameMap.get(aqlVariable);
             if (!usedResultName) {
@@ -406,20 +405,25 @@ export class AQLCompoundQuery extends AQLFragment {
 
         let queryResultName = undefined;
         if (this.resultVar) {
-            queryResultName = "query_result_" + resultVarToNameMap.size;
+            queryResultName = 'query_result_' + resultVarToNameMap.size;
             resultVarToNameMap.set(this.resultVar, queryResultName);
         }
 
         let queryResultValidator = undefined;
         if (this.resultValidator) {
-            queryResultValidator = {[this.resultValidator.getValidatorName()]: this.resultValidator.getValidatorData()};
+            queryResultValidator = {
+                [this.resultValidator.getValidatorName()]: this.resultValidator.getValidatorData()
+            };
         }
 
-        const executableQuery = new AQLExecutableQuery(code, boundValues, usedResultNames, queryResultName, queryResultValidator);
-        return [
-            ...executableQueries,
-            executableQuery
-        ];
+        const executableQuery = new AQLExecutableQuery(
+            code,
+            boundValues,
+            usedResultNames,
+            queryResultName,
+            queryResultValidator
+        );
+        return [...executableQueries, executableQuery];
     }
 
     //TODO Refactor the following three methods. AQLCompoundQuery isn't a real AQLFragment.
@@ -427,25 +431,35 @@ export class AQLCompoundQuery extends AQLFragment {
     toStringWithContext(context: AQLCodeBuildingContext): string {
         let descriptions = this.preExecQueries.map(aqlQuery => aqlQuery.toStringWithContext(context));
         const varDescription = this.resultVar ? this.resultVar.toStringWithContext(context) + ' = ' : '';
-        const validatorDescription = this.resultValidator ? ' validate result ' + this.resultValidator.describe(): '';
-        const execDescription = varDescription + 'execute(\n' +
-            aql.indent(this.aqlQuery).toStringWithContext(context) + '\n)' + validatorDescription + ';';
+        const validatorDescription = this.resultValidator ? ' validate result ' + this.resultValidator.describe() : '';
+        const execDescription =
+            varDescription +
+            'execute(\n' +
+            aql.indent(this.aqlQuery).toStringWithContext(context) +
+            '\n)' +
+            validatorDescription +
+            ';';
         descriptions.push(execDescription);
-        return descriptions.join('\n')
+        return descriptions.join('\n');
     }
 
     toColoredStringWithContext(context: AQLCodeBuildingContext): string {
         let descriptions = this.preExecQueries.map(aqlQuery => aqlQuery.toColoredStringWithContext(context));
         const varDescription = this.resultVar ? this.resultVar.toColoredStringWithContext(context) + ' = ' : '';
-        const validatorDescription = this.resultValidator ? ' validate result ' + this.resultValidator.describe(): '';
-        const execDescription = varDescription + 'execute(\n' +
-            aql.indent(this.aqlQuery).toColoredStringWithContext(context) + '\n)' + validatorDescription + ';';
+        const validatorDescription = this.resultValidator ? ' validate result ' + this.resultValidator.describe() : '';
+        const execDescription =
+            varDescription +
+            'execute(\n' +
+            aql.indent(this.aqlQuery).toColoredStringWithContext(context) +
+            '\n)' +
+            validatorDescription +
+            ';';
         descriptions.push(execDescription);
-        return descriptions.join('\n')
+        return descriptions.join('\n');
     }
 
     getCodeWithContext(context: AQLCodeBuildingContext): string {
-        throw new Error('Unsupported Operation. AQLCompoundQuery can not provide a single AQL statement.')
+        throw new Error('Unsupported Operation. AQLCompoundQuery can not provide a single AQL statement.');
     }
 }
 
@@ -455,9 +469,9 @@ export class AQLCompoundQuery extends AQLFragment {
 export class AQLExecutableQuery {
     constructor(
         public readonly code: string,
-        public readonly boundValues: {[p: string]: any},
-        public readonly usedPreExecResultNames: {[p: string]: string},
+        public readonly boundValues: { [p: string]: any },
+        public readonly usedPreExecResultNames: { [p: string]: string },
         public readonly resultName?: string,
-        public readonly resultValidator?: {[name:string]:any}) {
-    }
+        public readonly resultValidator?: { [name: string]: any }
+    ) {}
 }

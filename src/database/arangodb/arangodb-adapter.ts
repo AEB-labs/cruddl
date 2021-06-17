@@ -303,12 +303,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         let executableQueries: AQLExecutableQuery[];
         let aqlQuery: AQLCompoundQuery;
         const oldEnableIndentationForCode = aqlConfig.enableIndentationForCode;
-        const oldOptimizationConfig = aqlConfig.optimizationConfig;
         aqlConfig.enableIndentationForCode = !!options.recordPlan;
-        aqlConfig.optimizationConfig = {
-            enableExperimentalProjectionIndirection: this.config.enableExperimentalProjectionIndirection,
-            experimentalProjectionIndirectionTypeNames: this.config.experimentalProjectionIndirectionTypeNames
-        };
         try {
             //TODO Execute single statement AQL queries directly without "db.transaction"?
             aqlQuery = getAQLQuery(queryTree);
@@ -316,7 +311,6 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         } finally {
             globalContext.unregisterContext();
             aqlConfig.enableIndentationForCode = oldEnableIndentationForCode;
-            aqlConfig.optimizationConfig = oldOptimizationConfig;
         }
         if (this.logger.isTraceEnabled()) {
             this.logger.trace(`Executing AQL: ${aqlQuery.toColoredString()}`);

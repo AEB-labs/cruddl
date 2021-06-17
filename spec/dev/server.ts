@@ -29,11 +29,7 @@ export async function start() {
             {
                 databaseName,
                 url: databaseURL,
-                // user: 'root',
-                // password: 'admin',
                 doNonMandatoryMigrations: true,
-                enableExperimentalProjectionIndirection: true,
-                experimentalProjectionIndirectionTypeNames: ['BusinessMessage'],
                 createIndicesInBackground: true
             },
             { loggerProvider }
