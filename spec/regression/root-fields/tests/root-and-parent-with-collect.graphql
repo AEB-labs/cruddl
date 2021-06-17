@@ -1,0 +1,48 @@
+mutation createEdge {
+    updateRoot2(input: { id: "@{ids/Root2/1}", addRoots: ["@{ids/Root/1}", "@{ids/Root/2}"] }) {
+        name
+    }
+}
+
+# does not work yet, so parent returns null and throws an error
+query q {
+    allRoot2s {
+        name
+        roots(orderBy: name_ASC) {
+            grandchildren {
+                parent {
+                    name
+                }
+                root {
+                    name
+                }
+            }
+            extensionGrandchildren {
+                parent {
+                    name
+                }
+                root {
+                    name
+                }
+            }
+        }
+        rootGrandchildren(orderBy: name_ASC) {
+            name
+            parent {
+                name
+            }
+            root {
+                name
+            }
+        }
+        rootExtensionGrandchildren(orderBy: name_ASC) {
+            name
+            parent {
+                name
+            }
+            root {
+                name
+            }
+        }
+    }
+}

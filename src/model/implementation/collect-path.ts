@@ -111,6 +111,11 @@ export class CollectPath {
         return segments[segments.length - 1].resultMayContainDuplicateEntities;
     }
 
+    @memorize()
+    get traversesRootEntityTypes(): boolean {
+        return this.segments.some(s => s.field.type.isRootEntityType);
+    }
+
     /**
      * @return true if valid, false if invalid
      */
@@ -224,6 +229,28 @@ export class CollectPath {
                     )
                 );
                 // when we support this, currentResultMayContainDuplicates should be set to true if previousResultIsList is true
+                return [];
+            }
+
+            // does not really make sense and would complicate things
+            if (field.isParentField) {
+                addMessage(
+                    ValidationMessage.error(
+                        `Field "${currentType.name}.${field.name}" is a parent field and cannot be used in a collect path.`,
+                        segmentLocation
+                    )
+                );
+                return [];
+            }
+
+            // does not really make sense and would complicate things
+            if (field.isRootField) {
+                addMessage(
+                    ValidationMessage.error(
+                        `Field "${currentType.name}.${field.name}" is a root field and cannot be used in a collect path.`,
+                        segmentLocation
+                    )
+                );
                 return [];
             }
 

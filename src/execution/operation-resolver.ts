@@ -19,7 +19,11 @@ import {
     FlexSearchTokenization
 } from '../query-tree/flex-search';
 import { evaluateQueryStatically } from '../query-tree/utils';
-import { buildConditionalObjectQueryNode, QueryNodeObjectType } from '../schema-generation/query-node-object-type';
+import {
+    buildConditionalObjectQueryNode,
+    FieldContext,
+    QueryNodeObjectType
+} from '../schema-generation/query-node-object-type';
 import { SchemaTransformationContext } from '../schema/preparation/transformation-pipeline';
 import { getPreciseTime, Watch } from '../utils/watch';
 import { ExecutionOptions } from './execution-options';
@@ -74,8 +78,9 @@ export class OperationResolver {
             }
 
             const rootQueryNode = ObjectQueryNode.EMPTY; // can't use NULL because then the whole operation would yield null
-            const fieldContext = {
+            const fieldContext: FieldContext = {
                 selectionStack: [],
+                selectionTokenStack: [],
                 flexSearchMaxFilterableAmountOverride: options.flexSearchMaxFilterableAndSortableAmount,
                 flexSearchRecursionDepth: options.flexSearchRecursionDepth
             };

@@ -62,12 +62,14 @@ import {
     NAMESPACE_NAME_ARG,
     NAMESPACE_SEPARATOR,
     OBJECT_TYPE_KIND_DIRECTIVES,
+    PARENT_DIRECTIVE,
     PERMISSION_PROFILE_ARG,
     REFERENCE_DIRECTIVE,
     RELATION_DIRECTIVE,
     ROLES_DIRECTIVE,
     ROLES_READ_ARG,
     ROLES_READ_WRITE_ARG,
+    ROOT_DIRECTIVE,
     ROOT_ENTITY_DIRECTIVE,
     UNIQUE_DIRECTIVE,
     VALUE_ARG,
@@ -440,6 +442,8 @@ function createFieldInput(fieldNode: FieldDefinitionNode, context: ValidationCon
     const inverseOfASTNode = getInverseOfASTNode(fieldNode, context);
     const referenceDirectiveASTNode = findDirectiveWithName(fieldNode, REFERENCE_DIRECTIVE);
     const referenceKeyFieldASTNode = getReferenceKeyFieldASTNode(fieldNode, context);
+    const parentDirectiveNode = findDirectiveWithName(fieldNode, PARENT_DIRECTIVE);
+    const rootDirectiveNode = findDirectiveWithName(fieldNode, ROOT_DIRECTIVE);
 
     return {
         name: fieldNode.name.value,
@@ -458,6 +462,10 @@ function createFieldInput(fieldNode: FieldDefinitionNode, context: ValidationCon
         referenceKeyField: referenceKeyFieldASTNode ? referenceKeyFieldASTNode.value : undefined,
         referenceKeyFieldASTNode,
         isRelation: !!findDirectiveWithName(fieldNode, RELATION_DIRECTIVE),
+        parentDirectiveNode,
+        isParentField: !!parentDirectiveNode,
+        rootDirectiveNode,
+        isRootField: !!rootDirectiveNode,
         permissions: getPermissions(fieldNode, context),
         typeName: getTypeNameIgnoringNonNullAndList(fieldNode.type),
         typeNameAST: getNamedTypeNodeIgnoringNonNullAndList(fieldNode.type).name,

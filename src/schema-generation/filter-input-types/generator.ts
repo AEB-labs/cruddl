@@ -97,8 +97,8 @@ export class FilterTypeGenerator {
     }
 
     private generateFieldFilterFields(field: Field): FilterField[] {
-        if (field.isCollectField || field.isCollectField) {
-            // traversal and aggregation fields can't be used to filter
+        if (field.isCollectField || field.isRootField || field.isParentField) {
+            // traversal fields can't be used to filter
             return [];
         }
         if (field.isList) {

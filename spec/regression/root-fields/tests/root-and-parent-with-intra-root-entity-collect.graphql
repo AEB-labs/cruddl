@@ -1,0 +1,53 @@
+query {
+    allRoots(orderBy: name_ASC) {
+        name
+        grandchildren {
+            name
+            parent {
+                name
+                parent {
+                    name
+                }
+                children {
+                    name
+                    parent {
+                        name
+                        parent {
+                            name
+                        }
+                    }
+                }
+            }
+            root {
+                name
+            }
+            parent {
+                name
+            }
+        }
+        extensionGrandchildren {
+            name
+            parent {
+                name
+                parent {
+                    name
+                }
+                children {
+                    name
+                    parent {
+                        name
+                        parent {
+                            name
+                        }
+                    }
+                }
+            }
+            root {
+                name
+            }
+            parent {
+                name
+            }
+        }
+    }
+}

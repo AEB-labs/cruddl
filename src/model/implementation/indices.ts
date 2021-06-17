@@ -3,7 +3,7 @@ import { RootEntityType } from './root-entity-type';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
 import { Field } from './field';
 import { Type } from './type';
-import { ValidationMessage } from '../validation';
+import { locationWithinStringArgument, ValidationMessage } from '../validation';
 import { DirectiveNode, ObjectValueNode, StringValueNode } from 'graphql';
 import { SCALAR_JSON } from '../../schema/constants';
 
@@ -68,6 +68,26 @@ export class IndexField implements ModelComponent {
             if (!nextField) {
                 addMessage(
                     ValidationMessage.error(`Type "${type.name}" does not have a field "${fieldName}"`, this.astNode)
+                );
+                return undefined;
+            }
+
+            if (nextField.isParentField) {
+                addMessage(
+                    ValidationMessage.error(
+                        `Field "${type.name}.${nextField.name}" is a parent field and cannot be used in an index.`,
+                        this.astNode
+                    )
+                );
+                return undefined;
+            }
+
+            if (nextField.isRootField) {
+                addMessage(
+                    ValidationMessage.error(
+                        `Field "${type.name}.${nextField.name}" is a root field and cannot be used in an index.`,
+                        this.astNode
+                    )
                 );
                 return undefined;
             }

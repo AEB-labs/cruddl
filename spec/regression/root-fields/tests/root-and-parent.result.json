@@ -1,0 +1,200 @@
+{
+    "data": {
+        "allRoots": [
+            {
+                "name": "r1",
+                "children": [
+                    {
+                        "name": "r1c1",
+                        "children": [
+                            {
+                                "name": "r1c1g1",
+                                "parent": {
+                                    "name": "r1c1",
+                                    "parent": {
+                                        "name": "r1"
+                                    },
+                                    "children": [
+                                        {
+                                            "name": "r1c1g1",
+                                            "parent": {
+                                                "name": "r1c1",
+                                                "parent": {
+                                                    "name": "r1"
+                                                }
+                                            }
+                                        }
+                                    ]
+                                },
+                                "root": {
+                                    "name": "r1"
+                                }
+                            }
+                        ],
+                        "parent": {
+                            "name": "r1"
+                        },
+                        "root": {
+                            "name": "r1"
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "r2",
+                "children": [
+                    {
+                        "name": "r2c1",
+                        "children": [
+                            {
+                                "name": "r2c1g1",
+                                "parent": {
+                                    "name": "r2c1",
+                                    "parent": {
+                                        "name": "r2"
+                                    },
+                                    "children": [
+                                        {
+                                            "name": "r2c1g1",
+                                            "parent": {
+                                                "name": "r2c1",
+                                                "parent": {
+                                                    "name": "r2"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "name": "r2c1g2",
+                                            "parent": {
+                                                "name": "r2c1",
+                                                "parent": {
+                                                    "name": "r2"
+                                                }
+                                            }
+                                        }
+                                    ]
+                                },
+                                "root": {
+                                    "name": "r2"
+                                }
+                            },
+                            {
+                                "name": "r2c1g2",
+                                "parent": {
+                                    "name": "r2c1",
+                                    "parent": {
+                                        "name": "r2"
+                                    },
+                                    "children": [
+                                        {
+                                            "name": "r2c1g1",
+                                            "parent": {
+                                                "name": "r2c1",
+                                                "parent": {
+                                                    "name": "r2"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "name": "r2c1g2",
+                                            "parent": {
+                                                "name": "r2c1",
+                                                "parent": {
+                                                    "name": "r2"
+                                                }
+                                            }
+                                        }
+                                    ]
+                                },
+                                "root": {
+                                    "name": "r2"
+                                }
+                            }
+                        ],
+                        "parent": {
+                            "name": "r2"
+                        },
+                        "root": {
+                            "name": "r2"
+                        }
+                    },
+                    {
+                        "name": "r2c2",
+                        "children": [
+                            {
+                                "name": "r2c2g1",
+                                "parent": {
+                                    "name": "r2c2",
+                                    "parent": {
+                                        "name": "r2"
+                                    },
+                                    "children": [
+                                        {
+                                            "name": "r2c2g1",
+                                            "parent": {
+                                                "name": "r2c2",
+                                                "parent": {
+                                                    "name": "r2"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "name": "r2c2g2",
+                                            "parent": {
+                                                "name": "r2c2",
+                                                "parent": {
+                                                    "name": "r2"
+                                                }
+                                            }
+                                        }
+                                    ]
+                                },
+                                "root": {
+                                    "name": "r2"
+                                }
+                            },
+                            {
+                                "name": "r2c2g2",
+                                "parent": {
+                                    "name": "r2c2",
+                                    "parent": {
+                                        "name": "r2"
+                                    },
+                                    "children": [
+                                        {
+                                            "name": "r2c2g1",
+                                            "parent": {
+                                                "name": "r2c2",
+                                                "parent": {
+                                                    "name": "r2"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "name": "r2c2g2",
+                                            "parent": {
+                                                "name": "r2c2",
+                                                "parent": {
+                                                    "name": "r2"
+                                                }
+                                            }
+                                        }
+                                    ]
+                                },
+                                "root": {
+                                    "name": "r2"
+                                }
+                            }
+                        ],
+                        "parent": {
+                            "name": "r2"
+                        },
+                        "root": {
+                            "name": "r2"
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+}

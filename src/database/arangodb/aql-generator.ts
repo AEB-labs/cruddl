@@ -74,6 +74,7 @@ import { analyzeLikePatternPrefix } from '../like-helpers';
 import { aql, AQLCompoundQuery, aqlConfig, AQLFragment, AQLQueryResultVariable, AQLVariable } from './aql';
 import { billingCollectionName, getCollectionNameForRelation, getCollectionNameForRootEntity } from './arango-basics';
 import { getFlexSearchViewNameForRootEntity, IDENTITY_ANALYZER } from './schema-migration/arango-search-helpers';
+import { getRequiredIndicesFromModel } from './schema-migration/index-helpers';
 
 enum AccessType {
     READ,
@@ -1121,16 +1122,62 @@ register(TraversalQueryNode, (node, context) => {
 
     if (node.relationSegments.length) {
         let mapFrag: ((itemFrag: AQLFragment) => AQLFragment) | undefined;
+
+        let remainingDepth = fieldDepth;
         if (node.fieldSegments.length) {
             // if we have both, it might be beneficial to do the field traversal within the mapping node
             // because it may allow ArangoDB to figure out that only one particular field is of interest, and e.g.
             // discard the root entities earlier
-            mapFrag = nodeFrag => getFieldTraversalFragmentWithoutFlattening(node.fieldSegments, nodeFrag);
+
+            if (node.captureRootEntity) {
+                if (fieldDepth === 0) {
+                    // fieldSegments.length && fieldDepth === 0 means we only traverse through entity extensions
+                    // actually, shouldn't really occur because a collect path can't end with an entity extension and
+                    // value objects don't capture root entities
+                    // however, we can easily implement this so let's do it
+                    mapFrag = nodeFrag =>
+                        aql`{ obj: ${getFieldTraversalFragmentWithoutFlattening(
+                            node.fieldSegments,
+                            nodeFrag
+                        )}, root: ${nodeFrag}) }`;
+                } else {
+                    // the result of getFieldTraversalFragmentWithoutFlattening() now is a list, so we need to iterate
+                    // over it. if the depth is > 1, we need to flatten the deeper ones so we can do one FOR loop over them
+                    // we still return a list, so we just reduce the depth to 1 and not to 0
+                    const entityVar = aql.variable('entity');
+                    mapFrag = rootEntityFrag =>
+                        aqlExt.parenthesizeList(
+                            aql`FOR ${entityVar} IN ${getFlattenFrag(
+                                getFieldTraversalFragmentWithoutFlattening(node.fieldSegments, rootEntityFrag),
+                                fieldDepth - 1
+                            )}`,
+                            aql`RETURN { obj: ${entityVar}, root: ${rootEntityFrag} }`
+                        );
+                    remainingDepth = 1;
+                }
+            } else {
+                mapFrag = nodeFrag => getFieldTraversalFragmentWithoutFlattening(node.fieldSegments, nodeFrag);
+            }
+        } else {
+            if (node.captureRootEntity) {
+                // doesn't make sense to capture the root entity if we're returning the root entities
+                throw new Error(`captureRootEntity without fieldSegments detected`);
+            }
         }
 
         const frag = getRelationTraversalFragment({ segments: node.relationSegments, sourceFrag, mapFrag, context });
-        // do the field flattening after the relation traversal because it needs to flatten the relations, too
-        return getFlattenFrag(frag, fieldDepth);
+        if (node.relationSegments.some(s => s.isListSegment)) {
+            // if the relation contains a list segment, getRelationTraversalFragment will return a list
+            // if we already returned lists within the mapFrag (-> current value of remainingDepth), we need to add that
+            remainingDepth++;
+        }
+        // flatten 1 less than the depth, see below
+        return getFlattenFrag(frag, remainingDepth - 1);
+    }
+
+    if (node.captureRootEntity) {
+        // doesn't make sense (and isn't possible) to capture the root entity if we're not even crossing root entities
+        throw new Error(`captureRootEntity without relationSegments detected`);
     }
 
     if (!node.fieldSegments.length) {
@@ -1138,7 +1185,11 @@ register(TraversalQueryNode, (node, context) => {
         return sourceFrag;
     }
 
-    return getFlattenFrag(getFieldTraversalFragmentWithoutFlattening(node.fieldSegments, sourceFrag), fieldDepth);
+    // flatten 1 less than the fieldDepth:
+    // - no list segments -> evaluate to the object
+    // - one list segment -> evaluate to the list, so no flattening
+    // - two list segments -> needs flattening once to get one list
+    return getFlattenFrag(getFieldTraversalFragmentWithoutFlattening(node.fieldSegments, sourceFrag), fieldDepth - 1);
 });
 
 function getRelationTraversalFragment({
@@ -1263,15 +1314,14 @@ function getFieldTraversalFragmentWithoutFlattening(segments: ReadonlyArray<Fiel
     }
 
     let frag = sourceFrag;
-    let flattenDepth = 0;
     for (const segment of segments) {
         frag = aql`${frag}${getPropertyAccessFragment(segment.field.name)}`;
         if (segment.isListSegment) {
             // the array expansion operator [*] does two useful things:
             // - it performs the next field access basically as .map(o => o.fieldName).
             // - it converts non-lists to lists (important so that if we flatten afterwards, we don't include NULL lists
+            // the latter is why we also add the [*] at the end of the expression, which might look strange in the AQL.
             frag = aql`${frag}[*]`;
-            flattenDepth++;
         }
     }
 

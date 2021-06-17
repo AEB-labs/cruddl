@@ -71,7 +71,12 @@ export function transformTraversalQueryNode(node: TraversalQueryNode, authContex
         }
     );
     if (hasAppliedFilter) {
-        return new TraversalQueryNode(node.sourceEntityNode, filteredRelationSegments, fieldSegments);
+        return new TraversalQueryNode({
+            sourceEntityNode: node.sourceEntityNode,
+            relationSegments: filteredRelationSegments,
+            fieldSegments: fieldSegments,
+            captureRootEntities: node.captureRootEntity
+        });
     }
 
     return node;

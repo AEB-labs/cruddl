@@ -31,7 +31,7 @@ import { and } from './utils/input-types';
 export function createFieldNode(
     field: Field,
     sourceNode: QueryNode,
-    options: { skipNullFallbackForEntityExtensions?: boolean } = {}
+    options: { skipNullFallbackForEntityExtensions?: boolean; captureRootEntitiesOnCollectFields?: boolean } = {}
 ): QueryNode {
     // make use of the fact that field access on non-objects is NULL, so that type checks for OBJECT are redundant
     // this e.g. reverses the effect of the isEntityExtensionType check below
@@ -45,11 +45,24 @@ export function createFieldNode(
         sourceNode = sourceNode.expr1;
     }
 
-    if (field.collectPath) {
-        if (field.aggregationOperator) {
-            const { relationSegments, fieldSegments } = getEffectiveCollectSegments(field.collectPath);
-            let items: QueryNode = new TraversalQueryNode(sourceNode, relationSegments, fieldSegments);
+    // we would need context for this
+    if (field.isRootField || field.isParentField) {
+        throw new Error(`Tried to createFieldNoe on root/parent field "${field.declaringType.name}.${field.name}`);
+    }
 
+    if (field.collectPath) {
+        const { relationSegments, fieldSegments } = getEffectiveCollectSegments(field.collectPath);
+        const traversalNode = new TraversalQueryNode({
+            sourceEntityNode: sourceNode,
+            relationSegments,
+            fieldSegments,
+            captureRootEntities: !!options.captureRootEntitiesOnCollectFields
+        });
+
+        if (!field.aggregationOperator) {
+            return traversalNode;
+        } else {
+            let items: QueryNode = traversalNode;
             if (field.aggregationOperator === AggregationOperator.COUNT) {
                 return new CountQueryNode(items);
             }
@@ -72,9 +85,6 @@ export function createFieldNode(
                 field.aggregationOperator === AggregationOperator.DISTINCT &&
                 (field.type.isScalarType || field.type.isEnumType);
             return new AggregationQueryNode(items, field.aggregationOperator, { sort });
-        } else {
-            const { relationSegments, fieldSegments } = getEffectiveCollectSegments(field.collectPath);
-            return new TraversalQueryNode(sourceNode, relationSegments, fieldSegments);
         }
     }
 

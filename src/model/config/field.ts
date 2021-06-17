@@ -2,52 +2,57 @@ import { DirectiveNode, EnumValueNode, FieldDefinitionNode, NameNode, StringValu
 import { PermissionsConfig } from './permissions';
 
 export interface FieldConfig {
-    readonly name: string
-    readonly description?: string
-    readonly deprecationReason?: string
-    readonly typeName: string
-    readonly typeNameAST?: NameNode
-    readonly isList?: boolean
+    readonly name: string;
+    readonly description?: string;
+    readonly deprecationReason?: string;
+    readonly typeName: string;
+    readonly typeNameAST?: NameNode;
+    readonly isList?: boolean;
 
-    readonly permissions?: PermissionsConfig
-    readonly defaultValue?: any
+    readonly permissions?: PermissionsConfig;
+    readonly defaultValue?: any;
     readonly defaultValueASTNode?: DirectiveNode;
-    readonly calcMutationOperators?: ReadonlyArray<CalcMutationsOperator>
+    readonly calcMutationOperators?: ReadonlyArray<CalcMutationsOperator>;
 
-    readonly isReference?: boolean
-    readonly referenceKeyField?: string
-    readonly referenceKeyFieldASTNode?: ValueNode
+    readonly isReference?: boolean;
+    readonly referenceKeyField?: string;
+    readonly referenceKeyFieldASTNode?: ValueNode;
 
-    readonly isRelation?: boolean
-    readonly inverseOfFieldName?: string
-    readonly inverseOfASTNode?: ValueNode
+    readonly isRelation?: boolean;
+    readonly inverseOfFieldName?: string;
+    readonly inverseOfASTNode?: ValueNode;
 
-    readonly collect?: CollectFieldConfig
+    readonly collect?: CollectFieldConfig;
 
-    readonly astNode?: FieldDefinitionNode
+    readonly isParentField?: boolean;
+    readonly parentDirectiveNode?: DirectiveNode;
+    readonly isRootField?: boolean;
+    readonly rootDirectiveNode?: DirectiveNode;
 
-    readonly isFlexSearchIndexed?: boolean
-    readonly isFlexSearchIndexedASTNode?: DirectiveNode
-    readonly isFlexSearchFulltextIndexed?: boolean
-    readonly isFlexSearchFulltextIndexedASTNode?: DirectiveNode
-    readonly flexSearchLanguage?: FlexSearchLanguage
+    readonly astNode?: FieldDefinitionNode;
+
+    readonly isFlexSearchIndexed?: boolean;
+    readonly isFlexSearchIndexedASTNode?: DirectiveNode;
+    readonly isFlexSearchFulltextIndexed?: boolean;
+    readonly isFlexSearchFulltextIndexedASTNode?: DirectiveNode;
+    readonly flexSearchLanguage?: FlexSearchLanguage;
 
     /**
      * Specifies if the field should be included in the expression-search of FlexSearch as a value.
      */
-    readonly isIncludedInSearch?: boolean
+    readonly isIncludedInSearch?: boolean;
     /**
      * Specifies if the field should be included in the expression-search of FlexSearch as a text.
      */
-    readonly isFulltextIncludedInSearch?: boolean
+    readonly isFulltextIncludedInSearch?: boolean;
 }
 
 export interface CollectFieldConfig {
-    readonly astNode?: DirectiveNode
-    readonly path: string
-    readonly pathASTNode?: StringValueNode
-    readonly aggregationOperator?: AggregationOperator
-    readonly aggregationOperatorASTNode?: EnumValueNode
+    readonly astNode?: DirectiveNode;
+    readonly path: string;
+    readonly pathASTNode?: StringValueNode;
+    readonly aggregationOperator?: AggregationOperator;
+    readonly aggregationOperatorASTNode?: EnumValueNode;
 }
 
 export enum AggregationOperator {
@@ -79,11 +84,10 @@ export enum AggregationOperator {
 }
 
 export interface TraversalConfig {
-    readonly astNode?: DirectiveNode
-    readonly path: string
-    readonly pathASTNode?: StringValueNode
+    readonly astNode?: DirectiveNode;
+    readonly path: string;
+    readonly pathASTNode?: StringValueNode;
 }
-
 
 export enum CalcMutationsOperator {
     MULTIPLY = 'MULTIPLY',
@@ -96,5 +100,16 @@ export enum CalcMutationsOperator {
 }
 
 export enum FlexSearchLanguage {
-    EN = 'en', DE = 'de', ES = 'es', FI = 'fi', FR = 'fr', IT = 'it', NL = 'nl', NO = 'no', PT = 'pt', RU = 'ru', SV = 'sv', ZH = 'zh'
+    EN = 'en',
+    DE = 'de',
+    ES = 'es',
+    FI = 'fi',
+    FR = 'fr',
+    IT = 'it',
+    NL = 'nl',
+    NO = 'no',
+    PT = 'pt',
+    RU = 'ru',
+    SV = 'sv',
+    ZH = 'zh'
 }

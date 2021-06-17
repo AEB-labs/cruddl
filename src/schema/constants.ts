@@ -13,6 +13,8 @@ export const VALUE_OBJECT_DIRECTIVE = 'valueObject';
 export const RELATION_DIRECTIVE = 'relation';
 export const REFERENCE_DIRECTIVE = 'reference';
 export const DEFAULT_VALUE_DIRECTIVE = 'defaultValue';
+export const PARENT_DIRECTIVE = 'parent';
+export const ROOT_DIRECTIVE = 'root';
 export const FLEX_SEARCH_INDEXED_DIRECTIVE = 'flexSearch';
 export const FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE = 'flexSearchFulltext';
 

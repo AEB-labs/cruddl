@@ -163,6 +163,10 @@ export class UpdateInputTypeGenerator {
             return [new DummyUpdateInputField(field, field.name, inputType, { deprecationReason })];
         }
 
+        if (field.isParentField || field.isRootField) {
+            return [];
+        }
+
         if (field.type.isScalarType || field.type.isEnumType) {
             const inputType = field.type.isEnumType
                 ? this.enumTypeGenerator.generate(field.type)

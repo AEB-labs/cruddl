@@ -129,23 +129,45 @@ export class FollowEdgeQueryNode extends QueryNode {
     }
 }
 
+interface TraversalQueryNodeParams {
+    readonly sourceEntityNode: QueryNode;
+    readonly relationSegments: ReadonlyArray<RelationSegment>;
+    readonly fieldSegments: ReadonlyArray<FieldSegment>;
+    readonly captureRootEntities: boolean;
+}
+
 /**
  * Traverses a path of relations and other fields
  */
 export class TraversalQueryNode extends QueryNode {
-    constructor(
-        readonly sourceEntityNode: QueryNode,
-        readonly relationSegments: ReadonlyArray<RelationSegment>,
-        readonly fieldSegments: ReadonlyArray<FieldSegment>
-    ) {
+    readonly sourceEntityNode: QueryNode;
+    readonly relationSegments: ReadonlyArray<RelationSegment>;
+    readonly fieldSegments: ReadonlyArray<FieldSegment>;
+    readonly captureRootEntity: boolean;
+
+    constructor(params: TraversalQueryNodeParams) {
         super();
+
+        if (params.captureRootEntities && (!params.relationSegments || !params.fieldSegments)) {
+            throw new Error(
+                `A TraversalQueryNode with captureRootEntity=true requires both relationSegments and fieldSegments`
+            );
+        }
+
+        this.sourceEntityNode = params.sourceEntityNode;
+        this.relationSegments = params.relationSegments;
+        this.fieldSegments = params.fieldSegments;
+        this.captureRootEntity = params.captureRootEntities;
     }
 
     describe() {
         const segments = [...this.relationSegments, ...this.fieldSegments];
-        return `traverse ${segments
-            .map(s => this.describeSegment(s))
-            .join('.')} from ${this.sourceEntityNode.describe()}`;
+        return (
+            `traverse ${segments
+                .map(s => this.describeSegment(s))
+                .join('.')} from ${this.sourceEntityNode.describe()}` +
+            (this.captureRootEntity ? ` into { obj, root }` : '')
+        );
     }
 
     private describeSegment(segment: CollectPathSegment) {

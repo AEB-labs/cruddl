@@ -1,5 +1,7 @@
 import { compact } from 'lodash';
+import { rootCertificates } from 'tls';
 import { AggregationOperator, Relation, RelationSide, RootEntityType } from '../../model';
+import { getEffectiveCollectSegments } from '../../model/implementation/collect-path';
 import {
     AddEdgesQueryNode,
     AggregationQueryNode,
@@ -733,6 +735,20 @@ register(TraversalQueryNode, (node, context) => {
         }
     }
 
+    // if we need to capture the root, do this (pseudo-code)
+    // source.rel1.flatMap(o => o.rel2).flatMap(o2 => o2.rel3).flatMap(root => { root, obj: root.field1.flatMap(o => o.field2)  })
+    // if the relations don't return a list, call the mapper directly
+
+    const relationTraversalReturnsList = isList;
+    let rootVar: JSVariable | undefined;
+    let relationFrag: JSFragment | undefined;
+    if (node.captureRootEntity) {
+        relationFrag = currentFrag;
+        rootVar = js.variable('root');
+        currentFrag = rootVar;
+        isList = false; // we're going to be within the mapper, so not in a list
+    }
+
     for (const segment of node.fieldSegments) {
         if (isList) {
             if (segment.isListSegment) {
@@ -763,7 +779,30 @@ register(TraversalQueryNode, (node, context) => {
         }
     }
 
-    return currentFrag;
+    if (relationFrag && rootVar && node.captureRootEntity) {
+        if (relationTraversalReturnsList) {
+            if (node.fieldSegments.some(f => f.isListSegment)) {
+                const accVar = js.variable('acc');
+                const objVar = js.variable('obj');
+                const mapper = js`${objVar} => ({ obj: ${objVar}, root: ${rootVar} })`;
+                const reducer = js`(${accVar}, ${rootVar}) => ${accVar}.concat((${currentFrag}).map(${mapper}))`;
+                return js`${relationFrag}.reduce(${reducer}, [])`;
+            } else {
+                const mapper = js`${rootVar} => ({ obj: ${currentFrag}, root: ${rootVar} })`;
+                return js`${relationFrag}.map(${mapper})`;
+            }
+        } else {
+            if (node.fieldSegments.some(f => f.isListSegment)) {
+                const objVar = js.variable('obj');
+                const mapper = js`${objVar} => ({ obj: ${objVar}, root: ${rootVar} })`;
+                return jsExt.evaluatingLambda(rootVar, js`(${currentFrag}).map(${mapper})`, relationFrag);
+            } else {
+                return jsExt.evaluatingLambda(rootVar, js`({ obj: ${currentFrag}, root: ${rootVar} })`, relationFrag);
+            }
+        }
+    } else {
+        return currentFrag;
+    }
 });
 
 register(CreateEntityQueryNode, (node, context) => {

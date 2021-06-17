@@ -658,6 +658,44 @@ describe('collect validation', () => {
             );
         });
 
+        it('rejects parent fields within the path', () => {
+            assertValidatorRejects(
+                `
+                type Delivery @rootEntity {
+                    this: [Delivery] @collect(path: "children.children.parent")
+                    children: [Child]
+                }
+
+                type Child @childEntity {
+                    children: [Grandchild]
+                }
+
+                type Grandchild @childEntity {
+                name: String
+                    parent: Child @parent
+                }
+            `,
+                `Field "Grandchild.parent" is a parent field and cannot be used in a collect path.`
+            );
+        });
+
+        it('rejects root fields within the path', () => {
+            assertValidatorRejects(
+                `
+                type Delivery @rootEntity {
+                    this: [Delivery] @collect(path: "children.parent")
+                    children: [Child]
+                }
+
+                type Child @childEntity {
+                name: String
+                    parent: Delivery @root
+                }
+            `,
+                `Field "Child.parent" is a root field and cannot be used in a collect path.`
+            );
+        });
+
         describe('distinct', () => {
             it('is supported on strings', () => {
                 assertValidatorAccepts(`
@@ -671,7 +709,7 @@ describe('collect validation', () => {
             it('is supported on enums', () => {
                 assertValidatorAccepts(`
                     enum Kind { OBJECT, TYPE, FIELD }
-                
+
                     type Delivery @rootEntity {
                         kinds: [Kind]
                         distinctKinds: [Kind] @collect(path: "kinds", aggregate: DISTINCT)
@@ -685,11 +723,11 @@ describe('collect validation', () => {
                     type ItemExtension @entityExtension {
                         code: String
                     }
-                    
+
                     type Item @childEntity {
                         extension: ItemExtension
                     }
-                
+
                     type Delivery @rootEntity {
                         items: [Item]
                         distinctItemExtensions: [ItemExtension] @collect(path: "items.extension", aggregate: DISTINCT)
@@ -702,12 +740,12 @@ describe('collect validation', () => {
             it('is supported on simple value objects', () => {
                 assertValidatorAccepts(`
                     enum Kind { OBJECT, TYPE, FIELD }
-                
+
                     type Identifier @valueObject {
                         kind: Kind
                         id: String
                     }
-                
+
                     type Delivery @rootEntity {
                         identifiers: [Identifier]
                         distinctIdentifiers: [Identifier] @collect(path: "identifiers", aggregate: DISTINCT)
@@ -719,12 +757,12 @@ describe('collect validation', () => {
                 assertValidatorRejects(
                     `
                     enum VolumeUnit { M3, LITER, BARRELS }
-                
+
                     type Volume @valueObject {
                         unit: VolumeUnit
                         value: Float
                     }
-                
+
                     type Delivery @rootEntity {
                         volumes: [Volume]
                         distinctVolumes: [Volume] @collect(path: "volumes", aggregate: DISTINCT)
