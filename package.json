@@ -82,6 +82,7 @@
         "memorize-decorator": "^0.2.2",
         "pluralize": "^8.0.0",
         "strip-json-comments": "^3.0.1",
+        "tslib": "^2.3.0",
         "uuid": "^3.3.3",
         "yaml-ast-parser": "0.0.43"
     },
