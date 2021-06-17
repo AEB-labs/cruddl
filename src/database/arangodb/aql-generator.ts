@@ -432,23 +432,7 @@ register(FlexSearchQueryNode, (node, context) => {
 register(TransformListQueryNode, (node, context) => {
     let itemContext = context.introduceVariable(node.itemVariable);
     const itemVar = itemContext.getVariable(node.itemVariable);
-    // in certain conditions, it greatly reduces memory consumption if the projection part is
-    // indirected via a DOCUMENT() call, see https://github.com/arangodb/arangodb/issues/7821
-    const useIndirectedProjection =
-        aqlConfig.optimizationConfig.enableExperimentalProjectionIndirection &&
-        node.listNode instanceof EntitiesQueryNode &&
-        (!aqlConfig.optimizationConfig.experimentalProjectionIndirectionTypeNames ||
-            aqlConfig.optimizationConfig.experimentalProjectionIndirectionTypeNames.includes(
-                node.listNode.rootEntityType.name
-            )) &&
-        node.innerNode !== node.itemVariable &&
-        node.maxCount !== undefined;
     let itemProjectionContext = itemContext;
-    let itemProjectionVar = itemVar;
-    if (useIndirectedProjection) {
-        itemProjectionContext = context.introduceVariable(node.itemVariable);
-        itemProjectionVar = itemProjectionContext.getVariable(node.itemVariable);
-    }
 
     // move LET statements up
     // they often occur for value objects / entity extensions
@@ -468,7 +452,6 @@ register(TransformListQueryNode, (node, context) => {
     return aqlExt.parenthesizeList(
         aql`FOR ${itemVar}`,
         generateInClauseWithFilterAndOrderAndLimit({ node, context, itemContext, itemVar }),
-        useIndirectedProjection ? aql`LET ${itemProjectionVar} = DOCUMENT(${itemVar}._id)` : aql``,
         ...variableAssignments,
         aql`RETURN ${processNode(innerNode, itemProjectionContext)}`
     );
