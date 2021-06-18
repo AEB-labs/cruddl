@@ -445,8 +445,8 @@ export class OutputTypeGenerator {
                         !seen.has(field.type) &&
                         (!field.collectPath || !field.collectPath.traversesRootEntityTypes)
                     ) {
-                        seen.add(type);
-                        newFringe.push(type);
+                        seen.add(field.type);
+                        newFringe.push(field.type);
                     }
                 }
             }
