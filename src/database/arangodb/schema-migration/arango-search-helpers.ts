@@ -166,7 +166,7 @@ function getPropertiesFromDefinition(
     }
 }
 
-function isEqualProperties(
+export function isEqualProperties(
     definitionProperties: ArangoSearchViewPropertiesOptions,
     viewProperties: ArangoSearchViewProperties
 ): boolean {
