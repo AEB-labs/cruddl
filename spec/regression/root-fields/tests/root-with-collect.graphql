@@ -33,3 +33,102 @@ query q {
         }
     }
 }
+
+query filter {
+    allRoot2s {
+        name
+        roots(orderBy: name_ASC) {
+            grandchildren(filter: { name_ends_with: "2" }) {
+                name
+                root {
+                    name
+                }
+            }
+            _grandchildrenMeta(filter: { name_ends_with: "2" }) {
+                count
+            }
+            extensionGrandchildren(filter: { name_ends_with: "2" }) {
+                root {
+                    name
+                }
+            }
+            _extensionGrandchildrenMeta(filter: { name_ends_with: "2" }) {
+                count
+            }
+        }
+        rootGrandchildren(orderBy: name_ASC, filter: { name_ends_with: "2" }) {
+            name
+            root {
+                name
+            }
+        }
+        _rootGrandchildrenMeta(filter: { name_ends_with: "2" }) {
+            count
+        }
+        rootExtensionGrandchildren(orderBy: name_ASC, filter: { name_ends_with: "2" }) {
+            name
+            root {
+                name
+            }
+        }
+        _rootExtensionGrandchildrenMeta(filter: { name_ends_with: "2" }) {
+            count
+        }
+    }
+}
+
+query order {
+    allRoot2s {
+        name
+        roots(orderBy: name_ASC) {
+            grandchildren(orderBy: name_ASC) {
+                name
+                root {
+                    name
+                }
+            }
+            grandchildrenReverse: grandchildren(orderBy: name_DESC) {
+                name
+                root {
+                    name
+                }
+            }
+            extensionGrandchildren(orderBy: name_ASC) {
+                name
+                root {
+                    name
+                }
+            }
+            extensionGrandchildrenReverse: extensionGrandchildren(orderBy: name_DESC) {
+                name
+                root {
+                    name
+                }
+            }
+        }
+        rootGrandchildren(orderBy: name_ASC) {
+            name
+            root {
+                name
+            }
+        }
+        rootGrandchildrenReverse: rootGrandchildren(orderBy: name_DESC) {
+            name
+            root {
+                name
+            }
+        }
+        rootExtensionGrandchildren(orderBy: name_ASC) {
+            name
+            root {
+                name
+            }
+        }
+        rootExtensionGrandchildrenReverse: rootExtensionGrandchildren(orderBy: name_DESC) {
+            name
+            root {
+                name
+            }
+        }
+    }
+}
