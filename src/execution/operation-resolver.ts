@@ -22,7 +22,8 @@ import { evaluateQueryStatically } from '../query-tree/utils';
 import {
     buildConditionalObjectQueryNode,
     FieldContext,
-    QueryNodeObjectType
+    QueryNodeObjectType,
+    SelectionToken
 } from '../schema-generation/query-node-object-type';
 import { SchemaTransformationContext } from '../schema/preparation/transformation-pipeline';
 import { getPreciseTime, Watch } from '../utils/watch';
@@ -81,6 +82,7 @@ export class OperationResolver {
             const fieldContext: FieldContext = {
                 selectionStack: [],
                 selectionTokenStack: [],
+                selectionToken: new SelectionToken(),
                 flexSearchMaxFilterableAmountOverride: options.flexSearchMaxFilterableAndSortableAmount,
                 flexSearchRecursionDepth: options.flexSearchRecursionDepth
             };

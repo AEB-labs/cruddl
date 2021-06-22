@@ -25,7 +25,7 @@ export function buildConditionalObjectQueryNode(
     sourceNode: QueryNode,
     type: QueryNodeObjectType,
     selectionSet: ReadonlyArray<FieldSelection>,
-    context: FieldContext = { selectionStack: [], selectionTokenStack: [] }
+    context: FieldContext = { selectionStack: [], selectionTokenStack: [], selectionToken: new SelectionToken() }
 ) {
     if (sourceNode instanceof ObjectQueryNode) {
         // shortcut, especially useful for namespace nodes where we always pass through an empty object but ignore it
@@ -94,10 +94,12 @@ function buildObjectQueryNode(
             if (!field) {
                 throw new Error(`Missing field ${fieldRequest.fieldName}`);
             }
+            const selectionToken = new SelectionToken();
             const newContext: FieldContext = {
                 ...context,
                 selectionStack: [...context.selectionStack, selections[0]],
-                selectionTokenStack: [...context.selectionTokenStack, new SelectionToken()]
+                selectionTokenStack: [...context.selectionTokenStack, selectionToken],
+                selectionToken
             };
             const fieldQueryNode = buildFieldQueryNode(sourceNode, field, fieldRequest, newContext);
             if (selections.length === 1) {

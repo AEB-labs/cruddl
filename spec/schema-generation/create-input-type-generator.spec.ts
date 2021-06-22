@@ -3,14 +3,14 @@ import { GraphQLEnumType, GraphQLInputObjectType, GraphQLList, GraphQLNonNull, G
 import { ChildEntityType, Model, RootEntityType, TypeKind } from '../../src/model';
 import { CreateInputTypeGenerator, CreateObjectInputField } from '../../src/schema-generation/create-input-types';
 import { EnumTypeGenerator } from '../../src/schema-generation/enum-type-generator';
-import { FieldContext } from '../../src/schema-generation/query-node-object-type';
+import { FieldContext, SelectionToken } from '../../src/schema-generation/query-node-object-type';
 
 describe('CreateInputTypeGenerator', () => {
     const model = new Model({ types: [] });
 
     const generator = new CreateInputTypeGenerator(new EnumTypeGenerator());
 
-    const context: FieldContext = { selectionStack: [], selectionTokenStack: [] };
+    const context: FieldContext = { selectionStack: [], selectionTokenStack: [], selectionToken: new SelectionToken() };
 
     describe('with simple scalar fields', () => {
         const type = new RootEntityType(
