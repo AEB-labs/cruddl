@@ -30,12 +30,15 @@ export class RootTypesGenerator {
     private readonly orderByEnumGenerator = new OrderByEnumGenerator({
         maxRootEntityDepth: this.options.maxOrderByRootEntityDepth
     });
-    private readonly orderByAugmentation = new OrderByAndPaginationAugmentation(this.orderByEnumGenerator);
-    private readonly filterAugmentation = new FilterAugmentation(this.filterTypeGenerator);
+    private readonly rootFieldHelper = new RootFieldHelper();
+    private readonly orderByAugmentation = new OrderByAndPaginationAugmentation(
+        this.orderByEnumGenerator,
+        this.rootFieldHelper
+    );
+    private readonly filterAugmentation = new FilterAugmentation(this.filterTypeGenerator, this.rootFieldHelper);
     private readonly listAugmentation = new ListAugmentation(this.filterAugmentation, this.orderByAugmentation);
     private readonly metaFirstAugmentation = new MetaFirstAugmentation();
     private readonly uniqueFieldArgumentsGenerator = new UniqueFieldArgumentsGenerator(this.enumTypeGenerator);
-    private readonly rootFieldHelper = new RootFieldHelper();
 
     private readonly metaTypeGenerator = new MetaTypeGenerator();
     private readonly outputTypeGenerator = new OutputTypeGenerator(

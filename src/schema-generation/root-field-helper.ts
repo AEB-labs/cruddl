@@ -144,6 +144,17 @@ export class RootFieldHelper {
         };
     }
 
+    getRealSourceNode(sourceNode: QueryNode, fieldContext: FieldContext) {
+        const parentSelectionToken =
+            fieldContext.selectionTokenStack.length >= 2
+                ? fieldContext.selectionTokenStack[fieldContext.selectionTokenStack.length - 2]
+                : new SelectionToken();
+        if (this.capturesRootEntity(parentSelectionToken)) {
+            return new PropertyAccessQueryNode(sourceNode, 'obj');
+        }
+        return sourceNode;
+    }
+
     /**
      * Determines whether a selection has been instructed (by captureRootEntitiesOnCollectFields) to capture root entities
      */

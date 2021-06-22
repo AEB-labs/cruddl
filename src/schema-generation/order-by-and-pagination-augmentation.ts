@@ -28,6 +28,7 @@ import {
 import { decapitalize } from '../utils/utils';
 import { OrderByEnumGenerator, OrderByEnumType, OrderByEnumValue } from './order-by-enum-generator';
 import { QueryNodeField } from './query-node-object-type';
+import { RootFieldHelper } from './root-field-helper';
 import { orderArgMatchesPrimarySort } from './utils/flex-search-utils';
 import { and } from './utils/input-types';
 import { getOrderByValues } from './utils/pagination';
@@ -36,7 +37,10 @@ import { getOrderByValues } from './utils/pagination';
  * Augments list fields with orderBy argument
  */
 export class OrderByAndPaginationAugmentation {
-    constructor(private readonly orderByEnumGenerator: OrderByEnumGenerator) {}
+    constructor(
+        private readonly orderByEnumGenerator: OrderByEnumGenerator,
+        private readonly rootFieldHelper: RootFieldHelper
+    ) {}
 
     augment(schemaField: QueryNodeField, type: Type): QueryNodeField {
         if (!type.isObjectType) {
@@ -80,6 +84,7 @@ export class OrderByAndPaginationAugmentation {
                 }
             },
             resolve: (sourceNode, args, info) => {
+                sourceNode = this.rootFieldHelper.getRealSourceNode(sourceNode, info);
                 let listNode = schemaField.resolve(sourceNode, args, info);
                 let itemVariable = new VariableQueryNode(decapitalize(type.name));
 
