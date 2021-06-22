@@ -6,7 +6,7 @@ import { CreateInputTypeGenerator } from './create-input-types';
 import { EnumTypeGenerator } from './enum-type-generator';
 import { FilterAugmentation } from './filter-augmentation';
 import { FilterTypeGenerator } from './filter-input-types';
-import { FlexSearchFilterTypeGenerator } from './flex-search-filter-input-types/generator';
+import { FlexSearchFilterTypeGenerator } from './flex-search-filter-input-types';
 import { FlexSearchGenerator } from './flex-search-generator';
 import { MetaFirstAugmentation } from './limit-augmentation';
 import { ListAugmentation } from './list-augmentation';
@@ -17,6 +17,7 @@ import { OrderByEnumGenerator } from './order-by-enum-generator';
 import { OutputTypeGenerator } from './output-type-generator';
 import { QueryNodeObjectType } from './query-node-object-type';
 import { QueryTypeGenerator } from './query-type-generator';
+import { RootFieldHelper } from './root-field-helper';
 import { UniqueFieldArgumentsGenerator } from './unique-field-arguments-generator';
 import { UpdateInputTypeGenerator } from './update-input-types';
 
@@ -34,6 +35,7 @@ export class RootTypesGenerator {
     private readonly listAugmentation = new ListAugmentation(this.filterAugmentation, this.orderByAugmentation);
     private readonly metaFirstAugmentation = new MetaFirstAugmentation();
     private readonly uniqueFieldArgumentsGenerator = new UniqueFieldArgumentsGenerator(this.enumTypeGenerator);
+    private readonly rootFieldHelper = new RootFieldHelper();
 
     private readonly metaTypeGenerator = new MetaTypeGenerator();
     private readonly outputTypeGenerator = new OutputTypeGenerator(
@@ -41,7 +43,8 @@ export class RootTypesGenerator {
         this.filterAugmentation,
         this.enumTypeGenerator,
         this.orderByEnumGenerator,
-        this.metaTypeGenerator
+        this.metaTypeGenerator,
+        this.rootFieldHelper
     );
     private readonly flexSearchGenerator = new FlexSearchGenerator(
         this.flexSearchFilterTypeGenerator,
