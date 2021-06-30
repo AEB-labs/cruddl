@@ -30,9 +30,14 @@ export class FilterAugmentation {
                 }
             },
             resolve: (sourceNode, args, info) => {
-                sourceNode = this.rootFieldHelper.getRealSourceNode(sourceNode, info);
                 let listNode = schemaField.resolve(sourceNode, args, info);
-                return buildFilteredListNode(listNode, args, filterType, itemType);
+                return buildFilteredListNode({
+                    listNode,
+                    args,
+                    filterType,
+                    itemType,
+                    objectNodeCallback: itemNode => this.rootFieldHelper.getRealItemNode(itemNode, info)
+                });
             }
         };
     }

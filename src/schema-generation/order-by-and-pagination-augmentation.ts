@@ -84,9 +84,9 @@ export class OrderByAndPaginationAugmentation {
                 }
             },
             resolve: (sourceNode, args, info) => {
-                sourceNode = this.rootFieldHelper.getRealSourceNode(sourceNode, info);
                 let listNode = schemaField.resolve(sourceNode, args, info);
                 let itemVariable = new VariableQueryNode(decapitalize(type.name));
+                let objectNode = this.rootFieldHelper.getRealItemNode(itemVariable, info);
 
                 const maxCount: number | undefined = args[FIRST_ARG];
                 const skip = args[SKIP_ARG];
@@ -112,10 +112,13 @@ export class OrderByAndPaginationAugmentation {
                 ) {
                     filterNode = listNode.filterNode.equals(ConstBoolQueryNode.TRUE) ? undefined : listNode.filterNode;
                     itemVariable = listNode.itemVariable;
+                    objectNode = this.rootFieldHelper.getRealItemNode(itemVariable, info);
                     listNode = listNode.listNode;
                 }
 
                 // flexsearch?
+                // we only offer cursor-based pagination if we can cover all required filters with flex search filters
+                // this means we just replace the flexsearch listNode with a flexsearch listNode that does the cursor-filtering
                 let leaveUnordered = false;
                 if (listNode instanceof FlexSearchQueryNode) {
                     if (!orderByType) {
@@ -160,7 +163,9 @@ export class OrderByAndPaginationAugmentation {
                     // however, it's currently only used on String and not on e.g. DateTime and no longer seems to make a difference
                     const flexPaginationFilter = this.createPaginationFilterNode({
                         afterArg,
-                        itemNode: listNode.itemVariable,
+                        // pagination acts on the listNode (which is a FlexSearchQueryNode) and not on the resulting
+                        // TransformListQueryNode, so we need to use listNode.itemVariable in the pagination filter
+                        itemNode: this.rootFieldHelper.getRealItemNode(listNode.itemVariable, info),
                         orderByValues
                     });
                     listNode = new FlexSearchQueryNode({
@@ -178,15 +183,16 @@ export class OrderByAndPaginationAugmentation {
                         : getOrderByValues(args, orderByType, { isAbsoluteOrderRequired });
                     paginationFilter = this.createPaginationFilterNode({
                         afterArg,
-                        itemNode: itemVariable,
+                        itemNode: objectNode,
                         orderByValues
                     });
                 }
 
+                // sorting always happens on the TransformListQueryNode and not in the FlexSearchQueryNode
                 const orderBy =
                     !orderByType || leaveUnordered
                         ? OrderSpecification.UNORDERED
-                        : new OrderSpecification(orderByValues.map(value => value.getClause(itemVariable)));
+                        : new OrderSpecification(orderByValues.map(value => value.getClause(objectNode)));
 
                 if (orderBy.isUnordered() && maxCount == undefined && paginationFilter === ConstBoolQueryNode.TRUE) {
                     return originalListNode;
@@ -227,6 +233,7 @@ export class OrderByAndPaginationAugmentation {
                     return this.getPaginatedNodeUsingMultiIndexOptimization({
                         orderBy,
                         itemVariable,
+                        objectNode,
                         orderByType,
                         listNode,
                         args,
@@ -254,6 +261,7 @@ export class OrderByAndPaginationAugmentation {
         args,
         orderByType,
         itemVariable,
+        objectNode,
         listNode,
         orderBy,
         maxCount,
@@ -262,6 +270,7 @@ export class OrderByAndPaginationAugmentation {
         args: { [name: string]: any };
         orderByType: OrderByEnumType;
         itemVariable: VariableQueryNode;
+        objectNode: QueryNode;
         listNode: QueryNode;
         orderBy: OrderSpecification;
         maxCount: number | undefined;
@@ -295,7 +304,7 @@ export class OrderByAndPaginationAugmentation {
                 );
             }
             const cursorValue = cursorObj[cursorProperty];
-            const valueNode = clause.getValueNode(itemVariable);
+            const valueNode = clause.getValueNode(objectNode);
 
             const operator =
                 clause.direction == OrderDirection.ASCENDING ? BinaryOperator.GREATER_THAN : BinaryOperator.LESS_THAN;

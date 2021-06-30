@@ -12,24 +12,28 @@ import { FILTER_ARG } from '../../schema/constants';
 import { decapitalize } from '../../utils/utils';
 import { FilterObjectType } from '../filter-input-types';
 
-export function buildFilteredListNode(
-    listNode: QueryNode,
-    args: { [name: string]: any },
-    filterType: FilterObjectType,
-    itemType: Type
-) {
-    const filterValue = args[FILTER_ARG] || {};
-    const itemVariable = new VariableQueryNode(decapitalize(itemType.name));
+interface BuildFilteredListNodeParams {
+    readonly listNode: QueryNode;
+    readonly args: { readonly [p: string]: any };
+    readonly filterType: FilterObjectType;
+    readonly itemType: Type;
+    readonly objectNodeCallback: (itemNode: QueryNode) => QueryNode;
+}
+
+export function buildFilteredListNode(params: BuildFilteredListNodeParams) {
+    const filterValue = params.args[FILTER_ARG] || {};
+    const itemVariable = new VariableQueryNode(decapitalize(params.itemType.name));
     // simplification is important for the shortcut with check for TRUE below in the case of e.g. { AND: [] }
-    const filterNode = simplifyBooleans(filterType.getFilterNode(itemVariable, filterValue));
+    const objectNode = params.objectNodeCallback(itemVariable);
+    const filterNode = simplifyBooleans(params.filterType.getFilterNode(objectNode, filterValue));
 
     // avoid unnecessary TransformLists especially for count queries, so that it can be optimized to LENGTH(collection)
     if (filterNode === ConstBoolQueryNode.TRUE) {
-        return listNode;
+        return params.listNode;
     }
 
     return new TransformListQueryNode({
-        listNode,
+        listNode: params.listNode,
         itemVariable,
         filterNode
     });
