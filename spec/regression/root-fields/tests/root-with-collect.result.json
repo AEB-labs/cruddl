@@ -182,11 +182,37 @@
                             }
                         }
                     ],
-                    "rootGrandchildren": [],
+                    "rootGrandchildren": [
+                        {
+                            "name": "r2c1g2",
+                            "root": {
+                                "name": "r2"
+                            }
+                        },
+                        {
+                            "name": "r2c2g2",
+                            "root": {
+                                "name": "r2"
+                            }
+                        }
+                    ],
                     "_rootGrandchildrenMeta": {
                         "count": 2
                     },
-                    "rootExtensionGrandchildren": [],
+                    "rootExtensionGrandchildren": [
+                        {
+                            "name": "r2c1eg2",
+                            "root": {
+                                "name": "r2"
+                            }
+                        },
+                        {
+                            "name": "r2c2ge2",
+                            "root": {
+                                "name": "r2"
+                            }
+                        }
+                    ],
                     "_rootExtensionGrandchildrenMeta": {
                         "count": 2
                     }
@@ -361,19 +387,7 @@
                     ],
                     "rootGrandchildrenReverse": [
                         {
-                            "name": "r1c1g1",
-                            "root": {
-                                "name": "r1"
-                            }
-                        },
-                        {
-                            "name": "r2c1g1",
-                            "root": {
-                                "name": "r2"
-                            }
-                        },
-                        {
-                            "name": "r2c1g2",
+                            "name": "r2c2g2",
                             "root": {
                                 "name": "r2"
                             }
@@ -385,9 +399,21 @@
                             }
                         },
                         {
-                            "name": "r2c2g2",
+                            "name": "r2c1g2",
                             "root": {
                                 "name": "r2"
+                            }
+                        },
+                        {
+                            "name": "r2c1g1",
+                            "root": {
+                                "name": "r2"
+                            }
+                        },
+                        {
+                            "name": "r1c1g1",
+                            "root": {
+                                "name": "r1"
                             }
                         }
                     ],
@@ -419,13 +445,7 @@
                     ],
                     "rootExtensionGrandchildrenReverse": [
                         {
-                            "name": "r2c1eg1",
-                            "root": {
-                                "name": "r2"
-                            }
-                        },
-                        {
-                            "name": "r2c1eg2",
+                            "name": "r2c2ge2",
                             "root": {
                                 "name": "r2"
                             }
@@ -437,7 +457,13 @@
                             }
                         },
                         {
-                            "name": "r2c2ge2",
+                            "name": "r2c1eg2",
+                            "root": {
+                                "name": "r2"
+                            }
+                        },
+                        {
+                            "name": "r2c1eg1",
                             "root": {
                                 "name": "r2"
                             }

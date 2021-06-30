@@ -144,15 +144,11 @@ export class RootFieldHelper {
         };
     }
 
-    getRealSourceNode(sourceNode: QueryNode, fieldContext: FieldContext) {
-        const parentSelectionToken =
-            fieldContext.selectionTokenStack.length >= 2
-                ? fieldContext.selectionTokenStack[fieldContext.selectionTokenStack.length - 2]
-                : new SelectionToken();
-        if (this.capturesRootEntity(parentSelectionToken)) {
-            return new PropertyAccessQueryNode(sourceNode, 'obj');
+    getRealItemNode(itemNode: QueryNode, fieldContext: FieldContext) {
+        if (this.capturesRootEntity(fieldContext.selectionToken)) {
+            return new PropertyAccessQueryNode(itemNode, 'obj');
         }
-        return sourceNode;
+        return itemNode;
     }
 
     /**
