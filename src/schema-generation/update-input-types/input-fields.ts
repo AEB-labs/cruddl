@@ -8,7 +8,9 @@ import {
     MergeObjectsQueryNode,
     ObjectQueryNode,
     QueryNode,
-    SetFieldQueryNode
+    SetFieldQueryNode,
+    UnaryOperationQueryNode,
+    UnaryOperator
 } from '../../query-tree';
 import {
     getAddChildEntitiesFieldName,
@@ -18,12 +20,7 @@ import {
 } from '../../schema/names';
 import { GraphQLOffsetDateTime, serializeForStorage } from '../../schema/scalars/offset-date-time';
 import { AnyValue, PlainObject } from '../../utils/utils';
-import {
-    CreateChildEntityInputType,
-    CreateInputField,
-    CreateObjectInputType,
-    FieldValidationContext
-} from '../create-input-types';
+import { CreateChildEntityInputType, CreateObjectInputType } from '../create-input-types';
 import { createFieldNode } from '../field-nodes';
 import { FieldContext } from '../query-node-object-type';
 import { TypedInputFieldBase, TypedInputObjectType } from '../typed-input-object-type';
@@ -152,7 +149,19 @@ export class CalcMutationInputField extends BasicUpdateInputField {
     }
 
     private getValueNode(currentNode: QueryNode, operandNode: QueryNode): QueryNode {
-        return new BinaryOperationQueryNode(currentNode, BinaryOperator[this.operator], operandNode);
+        const rawValue = new BinaryOperationQueryNode(currentNode, BinaryOperator[this.operator], operandNode);
+        if (this.field.type.isScalarType && this.field.type.fixedPointDecimalInfo) {
+            const factor = new LiteralQueryNode(10 ** this.field.type.fixedPointDecimalInfo.digits);
+            return new BinaryOperationQueryNode(
+                new UnaryOperationQueryNode(
+                    new BinaryOperationQueryNode(rawValue, BinaryOperator.MULTIPLY, factor),
+                    UnaryOperator.ROUND
+                ),
+                BinaryOperator.DIVIDE,
+                factor
+            );
+        }
+        return rawValue;
     }
 }
 

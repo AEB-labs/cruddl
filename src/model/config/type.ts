@@ -2,10 +2,12 @@ import {
     ASTNode,
     EnumTypeDefinitionNode,
     EnumValueDefinitionNode,
+    GraphQLScalarType,
     ObjectTypeDefinitionNode,
     ScalarTypeDefinitionNode,
     TypeDefinitionNode
 } from 'graphql';
+import { FixedPointDecimalInfo } from '../implementation/scalar-type';
 import { FieldConfig, FlexSearchLanguage } from './field';
 import { FlexSearchIndexConfig, IndexDefinitionConfig } from './indices';
 import { PermissionsConfig } from './permissions';
@@ -72,6 +74,14 @@ export interface EnumValueConfig {
 export interface ScalarTypeConfig extends TypeConfigBase {
     readonly kind: TypeKind.SCALAR;
     readonly astNode?: ScalarTypeDefinitionNode;
+    readonly graphQLScalarType: GraphQLScalarType;
+
+    /**
+     * If `true`, this type is considered compatible with the javascript number type
+     */
+    readonly isNumberType?: boolean;
+
+    readonly fixedPointDecimalInfo?: FixedPointDecimalInfo;
 }
 
 export type ObjectTypeConfig =

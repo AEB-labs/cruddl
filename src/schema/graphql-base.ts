@@ -273,4 +273,32 @@ export const CORE_SCALARS: DocumentNode = gql`
     Values are *not* additionally JSON-encoded or JSON-parsed, so e.g. pass a raw JSON object here instead of a JSON-representation of that object.
     """
     scalar I18nString
+
+    """
+    The Int53 scalar type represents non-fractional signed whole numeric values. Int53 can represent values between -(2^53) and 2^53 - 1.
+
+    Values of this type are serialized as numbers in GraphQL and JSON representations. The numeric range of this type corresponds to the safe integer range of an IEEE 754 double precision binary floating-point value.
+    """
+    scalar Int53
+
+    """
+    The Decimal1 scalar type represents signed numeric values with up to 1 decimal digit. Decimal1 can represent values between -1000000000.0 and 1000000000.0.
+
+    Values of this type are serialized as numbers in GraphQL and JSON representations. The value is always rounded to 1 decimal digit.
+    """
+    scalar Decimal1
+
+    """
+    The Decimal2 scalar type represents signed numeric values with up to 2 decimal digits. Decimal2 can represent values between -1000000000.00 and 1000000000.00.
+
+    Values of this type are serialized as numbers in GraphQL and JSON representations. The value is always rounded to 2 decimal digits.
+    """
+    scalar Decimal2
+
+    """
+    The Decimal3 scalar type represents signed numeric values with up to 3 decimal digits. Decimal3 can represent values between -1000000000.000 and 1000000000.000.
+
+    Values of this type are serialized as numbers in GraphQL and JSON representations. The value is always rounded to 3 decimal digits.
+    """
+    scalar Decimal3
 `;

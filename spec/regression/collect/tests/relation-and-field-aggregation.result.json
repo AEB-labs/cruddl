@@ -15,7 +15,8 @@
     "fields": {
         "data": {
             "Shipment": {
-                "totalWeightInKg": 63,
+                "totalWeightInKg": 65.08,
+                "maxPriority": 3,
                 "itemCount": 8,
                 "allDeliveriesHaveOrders": false,
                 "allDeliveriesArePayed": false,
@@ -23,7 +24,6 @@
                 "numberOfDeliveriesWithoutPayedOrder": 3,
                 "startedDispatchingAt": "2020-01-30T08:00:00Z",
                 "fullyDispatchedAt": "2020-01-30T09:00:00Z",
-                "maxPriority": 3,
                 "allOrders": [
                     {
                         "orderNumber": "O1"

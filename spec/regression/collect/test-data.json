@@ -14,12 +14,12 @@
                         "items": [
                             {
                                 "itemNumber": "DI1.1.1",
-                                "weightInKg": 1,
+                                "weightInKg": 1.2,
                                 "isDangerousGoods": true
                             },
                             {
                                 "itemNumber": "DI1.1.2",
-                                "weightInKg": 2
+                                "weightInKg": 2.2
                             }
                         ]
                     },
@@ -28,12 +28,12 @@
                         "items": [
                             {
                                 "itemNumber": "DI1.2.1",
-                                "weightInKg": 4,
+                                "weightInKg": 4.4,
                                 "isDangerousGoods": false
                             },
                             {
                                 "itemNumber": "DI1.2.2",
-                                "weightInKg": 8
+                                "weightInKg": 8.8
                             }
                         ]
                     }
@@ -51,12 +51,12 @@
                         "items": [
                             {
                                 "itemNumber": "DI2.1.1",
-                                "weightInKg": 16,
+                                "weightInKg": 16.16,
                                 "isDangerousGoods": true
                             },
                             {
                                 "itemNumber": "DI2.1.2",
-                                "weightInKg": 32,
+                                "weightInKg": 32.32,
                                 "isDangerousGoods": true
                             }
                         ]

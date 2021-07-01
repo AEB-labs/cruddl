@@ -1,4 +1,4 @@
-import { GraphQLEnumType, GraphQLString, Thunk } from 'graphql';
+import { GraphQLEnumType, GraphQLScalarType, GraphQLString, Thunk } from 'graphql';
 import { flatMap } from 'lodash';
 import memorize from 'memorize-decorator';
 import { EnumType, Field, ScalarType, Type } from '../../model/index';
@@ -17,7 +17,13 @@ import { EnumTypeGenerator } from '../enum-type-generator';
 import { resolveThunk } from '../query-node-object-type';
 import { TypedInputObjectType } from '../typed-input-object-type';
 import { and } from '../utils/input-types';
-import { ENUM_FILTER_FIELDS, FILTER_FIELDS_BY_TYPE, FILTER_OPERATORS, QUANTIFIERS } from './constants';
+import {
+    ENUM_FILTER_FIELDS,
+    FILTER_FIELDS_BY_TYPE,
+    FILTER_OPERATORS,
+    NUMERIC_FILTER_FIELDS,
+    QUANTIFIERS
+} from './constants';
 import {
     AndFilterField,
     EntityExtensionFilterField,
@@ -131,7 +137,7 @@ export class FilterTypeGenerator {
         }
 
         const inputType = field.type.graphQLScalarType;
-        const filterFields = FILTER_FIELDS_BY_TYPE[field.type.graphQLScalarType.name] || [];
+        const filterFields = this.getFilterFieldsByType(field.type);
         return filterFields.map(
             name =>
                 new ScalarOrEnumFieldFilterField(
@@ -180,7 +186,7 @@ export class FilterTypeGenerator {
     }
 
     private buildScalarFilterFields(type: ScalarType): ScalarOrEnumFilterField[] {
-        const filterFields = FILTER_FIELDS_BY_TYPE[type.name] || [];
+        const filterFields = this.getFilterFieldsByType(type);
         return filterFields.map(
             name => new ScalarOrEnumFilterField(FILTER_OPERATORS[name], name, type, type.graphQLScalarType)
         );
@@ -195,5 +201,12 @@ export class FilterTypeGenerator {
 
     private generateFilterFieldsForStringMap(field: Field) {
         return [new StringMapSomeValueFilterField(field, this.generateStringMapEntryFilterType(field.type))];
+    }
+
+    private getFilterFieldsByType(type: Type) {
+        if (type.isScalarType && type.isNumberType) {
+            return NUMERIC_FILTER_FIELDS;
+        }
+        return FILTER_FIELDS_BY_TYPE[type.name] || [];
     }
 }

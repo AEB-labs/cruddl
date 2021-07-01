@@ -1,6 +1,11 @@
 "A delivery"
-type Delivery @rootEntity(flexSearch: true, flexSearchLanguage: DE, flexSearchOrder: [ { field: "deliveryNumber", direction: ASC } ]) {
-    deliveryNumber: String @key @unique @flexSearch(includeInSearch: true)# leave this here to catch this case, too (has caused a bug)
+type Delivery
+    @rootEntity(
+        flexSearch: true
+        flexSearchLanguage: DE
+        flexSearchOrder: [{ field: "deliveryNumber", direction: ASC }]
+    ) {
+    deliveryNumber: String @key @unique @flexSearch(includeInSearch: true) # leave this here to catch this case, too (has caused a bug)
     "The list of serial numbers associated with this delivery"
     serialNumbers: [String]
     "The address of the delivery's consignee"
@@ -17,13 +22,13 @@ type Delivery @rootEntity(flexSearch: true, flexSearchLanguage: DE, flexSearchOr
     completionDate: LocalDate @flexSearch
 
     originCountry: Country @reference # no key field specified ("legacy" mode)
-
     shippedAt: DateTime
 
     totalValue: String @roles(readWrite: ["accounting"])
     forwarder: Forwarder @relation
 
-    destination: Address @defaultValue(value: {street: "Hauptstraße", city: "Stuttgart", zipCode: "70xxx", country: "DE"})
+    destination: Address
+        @defaultValue(value: { street: "Hauptstraße", city: "Stuttgart", zipCode: "70xxx", country: "DE" })
     defaultValueString: String @defaultValue(value: "foo")
     defaultValueString2: String @defaultValue(value: "bar")
     defaultValueInt: Int @defaultValue(value: 42)
@@ -50,13 +55,14 @@ type Delivery @rootEntity(flexSearch: true, flexSearchLanguage: DE, flexSearchOr
 }
 
 enum EnumWithDeprecation {
-    A,
+    A
     B @deprecated(reason: "do not use B")
 }
 
 type DeliveryItem @childEntity {
     itemNumber: String @flexSearchFulltext(language: DE)
     quantity: Int @flexSearch
+    weightInKg: Float
     handlingUnit: HandlingUnit @reference
     dgInfo: DangerousGoodsInfo
     description: I18nString
@@ -64,11 +70,11 @@ type DeliveryItem @childEntity {
 
 type Forwarder @rootEntity @roles(readWrite: ["logistics"]) {
     name: String @key
-    deliveries: [Delivery] @relation(inverseOf:"forwarder")
+    deliveries: [Delivery] @relation(inverseOf: "forwarder")
 }
 
 # this can cause problems in schema generation because some input types might be empty
-type OnlyRelations @rootEntity  @roles(readWrite: ["allusers"]) {
+type OnlyRelations @rootEntity @roles(readWrite: ["allusers"]) {
     deliveries: [Delivery] @relation
 }
 
@@ -78,7 +84,7 @@ enum Foobarit {
     Baz
 }
 
-type Recursion @valueObject{
+type Recursion @valueObject {
     recursion: Recursion @flexSearch
     name: String @flexSearch
 }

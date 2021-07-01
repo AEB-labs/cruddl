@@ -1817,6 +1817,11 @@
                             "deprecationReason": null
                         },
                         {
+                            "name": "weightInKg",
+                            "description": null,
+                            "deprecationReason": null
+                        },
+                        {
                             "name": "handlingUnit",
                             "description": "This field references a `HandlingUnit` by its `id` field",
                             "deprecationReason": null
@@ -1837,6 +1842,12 @@
                             "deprecationReason": null
                         }
                     ],
+                    "inputFields": null
+                },
+                {
+                    "name": "Float",
+                    "description": "The `Float` scalar type represents signed double-precision fractional values as specified by [IEEE 754](https://en.wikipedia.org/wiki/IEEE_floating_point).",
+                    "fields": null,
                     "inputFields": null
                 },
                 {
@@ -2130,6 +2141,46 @@
                         {
                             "name": "quantity_gte",
                             "description": "Checks if `quantity` is greater or equal a specified value.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "weightInKg",
+                            "description": "Checks if `weightInKg` equals a specified value.\n\nIf an index exists on `weightInKg`, it can be used.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "weightInKg_not",
+                            "description": "Checks if `weightInKg` does not equal a specified value",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "weightInKg_in",
+                            "description": "Checks if `weightInKg` is equal to one of the specified values.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "weightInKg_not_in",
+                            "description": "Checks if `weightInKg` is not equal to one of the specified values.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "weightInKg_lt",
+                            "description": "Checks if `weightInKg` is less than a specified value.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "weightInKg_lte",
+                            "description": "Checks if `weightInKg` is less or equal a specified value.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "weightInKg_gt",
+                            "description": "Checks if `weightInKg` is greater than a specified value.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "weightInKg_gte",
+                            "description": "Checks if `weightInKg` is greater or equal a specified value.",
                             "deprecationReason": null
                         },
                         {
@@ -4619,12 +4670,6 @@
                     ]
                 },
                 {
-                    "name": "Float",
-                    "description": "The `Float` scalar type represents signed double-precision fractional values as specified by [IEEE 754](https://en.wikipedia.org/wiki/IEEE_floating_point).",
-                    "fields": null,
-                    "inputFields": null
-                },
-                {
                     "name": "Foobarit",
                     "description": null,
                     "fields": null,
@@ -6210,6 +6255,12 @@
                     "inputFields": null
                 },
                 {
+                    "name": "Int53",
+                    "description": "The Int53 scalar type represents non-fractional signed whole numeric values. Int53 can represent values between -9007199254740991 and 9007199254740991.\n\nValues of this type are serialized as numbers in GraphQL and JSON representations. The numeric range of this type corresponds to the safe integer range of an IEEE 754 double precision binary floating-point value.",
+                    "fields": null,
+                    "inputFields": null
+                },
+                {
                     "name": "NumberRangeFilter",
                     "description": "Filter type for NumberRange.\n\nAll fields in this type are *and*-combined; see the `or` field for *or*-combination.",
                     "fields": null,
@@ -7582,6 +7633,11 @@
                             "deprecationReason": null
                         },
                         {
+                            "name": "weightInKg",
+                            "description": null,
+                            "deprecationReason": null
+                        },
+                        {
                             "name": "handlingUnit",
                             "description": "Specify the `id` of the `HandlingUnit` to be referenced",
                             "deprecationReason": null
@@ -7937,6 +7993,11 @@
                         },
                         {
                             "name": "quantity",
+                            "description": null,
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "weightInKg",
                             "description": null,
                             "deprecationReason": null
                         },

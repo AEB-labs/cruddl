@@ -1,3 +1,8 @@
+import { GraphQLInt } from 'graphql';
+import { numberTypeNames } from '../model/implementation/built-in-types';
+import { GraphQLDecimal1, GraphQLDecimal2 } from './scalars/fixed-point-decimals';
+import { GraphQLInt53 } from './scalars/int53';
+
 export const WILDCARD_CHARACTER = '*';
 
 export const ROOT_ENTITY_DIRECTIVE = 'rootEntity';
@@ -118,11 +123,11 @@ export type CalcMutationOperator = {
     supportedTypes: string[];
 };
 export const CALC_MUTATIONS_OPERATORS: CalcMutationOperator[] = [
-    { name: 'MULTIPLY', prefix: 'multiplyWith_', supportedTypes: ['Int', 'Float'] },
-    { name: 'DIVIDE', prefix: 'divideBy_', supportedTypes: ['Int', 'Float'] },
-    { name: 'ADD', prefix: 'addTo_', supportedTypes: ['Int', 'Float'] },
-    { name: 'SUBTRACT', prefix: 'subtractFrom_', supportedTypes: ['Int', 'Float'] },
-    { name: 'MODULO', prefix: 'moduloOf_', supportedTypes: ['Int', 'Float'] },
+    { name: 'MULTIPLY', prefix: 'multiplyWith_', supportedTypes: numberTypeNames },
+    { name: 'DIVIDE', prefix: 'divideBy_', supportedTypes: numberTypeNames },
+    { name: 'ADD', prefix: 'addTo_', supportedTypes: numberTypeNames },
+    { name: 'SUBTRACT', prefix: 'subtractFrom_', supportedTypes: numberTypeNames },
+    { name: 'MODULO', prefix: 'moduloOf_', supportedTypes: numberTypeNames },
     { name: 'APPEND', prefix: 'appendTo_', supportedTypes: ['String'] },
     { name: 'PREPEND', prefix: 'prependTo_', supportedTypes: ['String'] }
 ];

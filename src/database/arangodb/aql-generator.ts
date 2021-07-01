@@ -934,6 +934,8 @@ register(UnaryOperationQueryNode, (node, context) => {
             return aql`!(${processNode(node.valueNode, context)})`;
         case UnaryOperator.JSON_STRINGIFY:
             return aql`JSON_STRINGIFY(${processNode(node.valueNode, context)})`;
+        case UnaryOperator.ROUND:
+            return aql`ROUND(${processNode(node.valueNode, context)})`;
         default:
             throw new Error(`Unsupported unary operator: ${node.operator}`);
     }

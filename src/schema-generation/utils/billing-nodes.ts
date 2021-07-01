@@ -1,4 +1,4 @@
-import { GraphQLBoolean, GraphQLFloat, GraphQLInt } from 'graphql';
+import { GraphQLBoolean } from 'graphql';
 import { BillingEntityType } from '../../model';
 import {
     ConditionalQueryNode,
@@ -40,8 +40,8 @@ export function createBillingEntityCategoryNode(billingEntityConfig: BillingEnti
                 keyNode = NullQueryNode.NULL;
             }
         } else if (
-            billingEntityConfig.categoryMappingFieldPath.type.name === GraphQLInt.name ||
-            billingEntityConfig.categoryMappingFieldPath.type.name === GraphQLFloat.name
+            billingEntityConfig.categoryMappingFieldPath.type.isScalarType &&
+            billingEntityConfig.categoryMappingFieldPath.type.isNumberType
         ) {
             if (key === 'null') {
                 keyNode = NullQueryNode.NULL;

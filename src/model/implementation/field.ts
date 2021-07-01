@@ -12,6 +12,7 @@ import {
     ROOT_DIRECTIVE
 } from '../../schema/constants';
 import { GraphQLDateTime } from '../../schema/scalars/date-time';
+import { GraphQLInt53 } from '../../schema/scalars/int53';
 import { GraphQLLocalDate } from '../../schema/scalars/local-date';
 import { GraphQLLocalTime } from '../../schema/scalars/local-time';
 import { GraphQLOffsetDateTime } from '../../schema/scalars/offset-date-time';
@@ -19,6 +20,7 @@ import { AggregationOperator, CalcMutationsOperator, FieldConfig, FlexSearchLang
 import { collectEmbeddingEntityTypes, collectEmbeddingRootEntityTypes } from '../utils/emedding-entity-types';
 import { ValidationMessage } from '../validation';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
+import { numberTypeNames } from './built-in-types';
 import { CollectPath } from './collect-path';
 import { FieldLocalization } from './i18n';
 import { Model } from './model';
@@ -1493,8 +1495,7 @@ function getAggregatorTypeInfo(
         case AggregationOperator.MIN:
             return {
                 typeNames: [
-                    GraphQLInt.name,
-                    GraphQLFloat.name,
+                    ...numberTypeNames,
                     GraphQLDateTime.name,
                     GraphQLLocalDate.name,
                     GraphQLLocalTime.name,
@@ -1505,7 +1506,7 @@ function getAggregatorTypeInfo(
         case AggregationOperator.AVERAGE:
         case AggregationOperator.SUM:
             return {
-                typeNames: [GraphQLInt.name, GraphQLFloat.name]
+                typeNames: numberTypeNames
             };
 
         case AggregationOperator.COUNT_TRUE:

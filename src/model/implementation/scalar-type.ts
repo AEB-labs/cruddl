@@ -4,8 +4,11 @@ import { TypeBase } from './type-base';
 import { ScalarTypeConfig, TypeKind } from '../config';
 
 export class ScalarType extends TypeBase {
-    constructor(input: ScalarTypeConfig, model: Model, public readonly graphQLScalarType: GraphQLScalarType) {
+    constructor(input: ScalarTypeConfig, model: Model) {
         super(input, model);
+        this.graphQLScalarType = input.graphQLScalarType;
+        this.isNumberType = input.isNumberType ?? false;
+        this.fixedPointDecimalInfo = input.fixedPointDecimalInfo;
     }
 
     readonly isObjectType: false = false;
@@ -16,4 +19,16 @@ export class ScalarType extends TypeBase {
     readonly isValueObjectType: false = false;
     readonly isScalarType: true = true;
     readonly isEnumType: false = false;
+    readonly graphQLScalarType: GraphQLScalarType;
+
+    /**
+     * Specifies whether this type is considered compatible with the javascript number type
+     */
+    readonly isNumberType: boolean;
+
+    readonly fixedPointDecimalInfo?: FixedPointDecimalInfo;
+}
+
+export interface FixedPointDecimalInfo {
+    readonly digits: number;
 }

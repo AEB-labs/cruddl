@@ -54,6 +54,7 @@ type Movie @rootEntity {
     "The real superhero"
     director: Director @relation
     publisher: Publisher @reference
+    revenueInUSD: Decimal3 @calcMutations(operators: [ADD])
 
     relatedMovies: [Movie] @collect(path: "heroes.movies", aggregate: DISTINCT)
     community: [Hero] @collect(path: "heroes.friends{0,2}", aggregate: DISTINCT)
