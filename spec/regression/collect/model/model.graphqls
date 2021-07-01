@@ -9,7 +9,7 @@ type Shipment @rootEntity {
     allOrders: [Order] @collect(path: "deliveries.order", aggregate: DISTINCT)
     allDeliveryContents: [DeliveryContent] @collect(path: "deliveries.deliveryContents")
     allItems: [DeliveryItem] @collect(path: "deliveries.deliveryContents.items")
-    totalWeightInKg: Float @collect(path: "allItems.weightInKg", aggregate: SUM)
+    totalWeightInKg: Decimal3 @collect(path: "allItems.weightInKg", aggregate: SUM)
     maxPriority: Int @collect(path: "deliveries.priority", aggregate: MAX)
     itemCount: Int @collect(path: "allItems", aggregate: COUNT)
     deliveryCount: Int @collect(path: "deliveries", aggregate: COUNT)
@@ -43,10 +43,10 @@ type Delivery @rootEntity {
     allHandlingUnits1to2: [HandlingUnit] @collect(path: "handlingUnits.childHandlingUnits{1,2}")
     allHandlingUnits2to2: [HandlingUnit] @collect(path: "handlingUnits.childHandlingUnits{2,2}")
     allHandlingUnits3to3: [HandlingUnit] @collect(path: "handlingUnits.childHandlingUnits{3,3}")
-    totalWeightInKg: Float @collect(path: "allItems.weightInKg", aggregate: SUM)
-    averageWeightInKg: Float @collect(path: "allItems.weightInKg", aggregate: AVERAGE)
-    minWeightInKg: Float @collect(path: "allItems.weightInKg", aggregate: MIN)
-    maxWeightInKg: Float @collect(path: "allItems.weightInKg", aggregate: MAX)
+    totalWeightInKg: Decimal3 @collect(path: "allItems.weightInKg", aggregate: SUM)
+    averageWeightInKg: Decimal3 @collect(path: "allItems.weightInKg", aggregate: AVERAGE)
+    minWeightInKg: Decimal3 @collect(path: "allItems.weightInKg", aggregate: MIN)
+    maxWeightInKg: Decimal3 @collect(path: "allItems.weightInKg", aggregate: MAX)
     itemCount: Int @collect(path: "allItems", aggregate: COUNT)
     hasItems: Boolean @collect(path: "allItems", aggregate: SOME)
     hasNoItems: Boolean @collect(path: "allItems", aggregate: NONE)
@@ -99,7 +99,7 @@ type DeliveryContent @childEntity {
 
 type DeliveryItem @childEntity {
     itemNumber: String
-    weightInKg: Float
+    weightInKg: Decimal3
     isDangerousGoods: Boolean
 }
 

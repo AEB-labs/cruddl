@@ -13,10 +13,14 @@ export type Type = ObjectType | ScalarType | EnumType;
 
 export class InvalidType extends ScalarType {
     constructor(name: string, model: Model) {
-        super({
-            kind: TypeKind.SCALAR,
-            name
-        }, model, GraphQLString)
+        super(
+            {
+                kind: TypeKind.SCALAR,
+                name,
+                graphQLScalarType: GraphQLString
+            },
+            model
+        );
     }
 }
 
@@ -35,6 +39,6 @@ export function createType(typeInput: TypeConfig, model: Model): Type {
         case TypeKind.ENUM:
             return new EnumType(typeInput, model);
         default:
-            throw new Error(`Unknown type kind: ${(typeInput as any).kind}`)
+            throw new Error(`Unknown type kind: ${(typeInput as any).kind}`);
     }
 }

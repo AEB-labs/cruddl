@@ -10,6 +10,7 @@ import {
     SCALAR_INT,
     SCALAR_STRING
 } from '../../schema/constants';
+import { GraphQLInt53 } from '../../schema/scalars/int53';
 import { GraphQLLocalDate } from '../../schema/scalars/local-date';
 import { compact } from '../../utils/utils';
 import { FlexSearchPrimarySortClauseConfig, PermissionsConfig, RootEntityTypeConfig, TypeKind } from '../config';

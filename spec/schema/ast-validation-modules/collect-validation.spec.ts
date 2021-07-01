@@ -590,7 +590,7 @@ describe('collect validation', () => {
                     totalPackedAt: DateTime @collect(path: "handlingUnits.packedAt", aggregate: SUM)
                 }
             `,
-                `Aggregation operator "SUM" is not supported on type "DateTime" (supported types: "Int", "Float").`
+                `Aggregation operator "SUM" is not supported on type "DateTime" (supported types: "Int", "Int53", "Float", "Decimal1", "Decimal2", "Decimal3").`
             );
         });
 

@@ -343,6 +343,10 @@ describe('Meta schema API', () => {
                 { name: 'LocalDate', kind: 'SCALAR' },
                 { name: 'LocalTime', kind: 'SCALAR' },
                 { name: 'OffsetDateTime', kind: 'SCALAR' },
+                { name: 'Int53', kind: 'SCALAR' },
+                { name: 'Decimal1', kind: 'SCALAR' },
+                { name: 'Decimal2', kind: 'SCALAR' },
+                { name: 'Decimal3', kind: 'SCALAR' },
                 {
                     name: 'Address',
                     kind: 'VALUE_OBJECT',
@@ -735,7 +739,11 @@ describe('Meta schema API', () => {
                 { name: 'DateTime' },
                 { name: 'LocalDate' },
                 { name: 'LocalTime' },
-                { name: 'OffsetDateTime' }
+                { name: 'OffsetDateTime' },
+                { name: 'Int53' },
+                { name: 'Decimal1' },
+                { name: 'Decimal2' },
+                { name: 'Decimal3' }
             ],
             enumTypes: [{ name: 'TransportKind' }]
         });

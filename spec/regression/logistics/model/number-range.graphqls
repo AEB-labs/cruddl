@@ -1,6 +1,6 @@
 type NumberRange @rootEntity @roles(readWrite: ["allusers"]) {
     name: NumberRangeName @key
-    number: Int @calcMutations(operators: [ADD, MULTIPLY])
+    number: Int53 @calcMutations(operators: [ADD, MULTIPLY])
 }
 
 enum NumberRangeName {

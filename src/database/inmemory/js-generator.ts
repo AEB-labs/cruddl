@@ -1,7 +1,5 @@
 import { compact } from 'lodash';
-import { rootCertificates } from 'tls';
 import { AggregationOperator, Relation, RelationSide, RootEntityType } from '../../model';
-import { getEffectiveCollectSegments } from '../../model/implementation/collect-path';
 import {
     AddEdgesQueryNode,
     AggregationQueryNode,
@@ -573,6 +571,8 @@ register(UnaryOperationQueryNode, (node, context) => {
             return js`!(${processNode(node.valueNode, context)})`;
         case UnaryOperator.JSON_STRINGIFY:
             return js`JSON.stringify(${processNode(node.valueNode, context)})`;
+        case UnaryOperator.ROUND:
+            return js`Math.round(${processNode(node.valueNode, context)})`;
         default:
             throw new Error(`Unsupported unary operator: ${node.operator}`);
     }

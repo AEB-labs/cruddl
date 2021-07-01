@@ -1,5 +1,6 @@
-import { GraphQLBoolean, GraphQLEnumType, GraphQLFloat, GraphQLID, GraphQLInt, GraphQLString } from 'graphql';
+import { GraphQLBoolean, GraphQLID, GraphQLInt, GraphQLString } from 'graphql';
 import memorize from 'memorize-decorator';
+import { GraphQLInt53 } from '../../schema/scalars/int53';
 import { BillingEntityCategoryMappingConfig, BillingEntityConfig } from '../config/billing';
 import { ValidationMessage } from '../validation';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
@@ -69,7 +70,7 @@ export class BillingEntityType implements ModelComponent {
         ) {
             context.addMessage(
                 ValidationMessage.error(
-                    `The field "${this.input.keyFieldName}" in the type "${this.input.typeName}" is not a "String", "Int" or "ID".`,
+                    `The field "${this.input.keyFieldName}" in the type "${this.input.typeName}" is not a "String", "Int", or "ID".`,
                     this.input.keyFieldNameLoc
                 )
             );
@@ -105,13 +106,10 @@ export class BillingEntityType implements ModelComponent {
             return;
         }
 
-        if (
-            !lastField.type.isScalarType ||
-            (lastField.type.name !== GraphQLInt.name && lastField.type.name !== GraphQLFloat.name)
-        ) {
+        if (!lastField.type.isScalarType || !lastField.type.isNumberType) {
             context.addMessage(
                 ValidationMessage.error(
-                    `The quantity field must be of type "Int", "Float", or a list type, but "${lastField.type.name}.${lastField.name}" is of type "${lastField.type.name}".`,
+                    `The quantity field must be of a number or a list type, but "${lastField.type.name}.${lastField.name}" is of type "${lastField.type.name}".`,
                     this.input.quantityFieldNameLoc
                 )
             );
@@ -161,7 +159,7 @@ export class BillingEntityType implements ModelComponent {
             );
         }
 
-        const allowedTypes = [GraphQLString, GraphQLID, GraphQLBoolean, GraphQLInt];
+        const allowedTypes = [GraphQLString, GraphQLID, GraphQLBoolean, GraphQLInt, GraphQLInt53];
         if (!allowedTypes.some(t => t.name === lastField.type.name) && !lastField.type.isEnumType) {
             context.addMessage(
                 ValidationMessage.error(

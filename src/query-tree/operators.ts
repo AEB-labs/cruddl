@@ -15,6 +15,8 @@ export class UnaryOperationQueryNode extends QueryNode {
                 return `!(${this.valueNode.describe()})`;
             case UnaryOperator.JSON_STRINGIFY:
                 return `JSON_STRINGIFY(${this.valueNode.describe()})`;
+            case UnaryOperator.ROUND:
+                return `ROUND(${this.valueNode.describe()})`;
             default:
                 return '(unknown operator)';
         }
@@ -25,8 +27,9 @@ export class UnaryOperationQueryNode extends QueryNode {
  * The operator of a UnaryOperationQueryNode
  */
 export enum UnaryOperator {
-    NOT,
-    JSON_STRINGIFY
+    NOT = 'NOT',
+    JSON_STRINGIFY = 'JSON_STRINGIFY',
+    ROUND = 'ROUND'
 }
 
 /**

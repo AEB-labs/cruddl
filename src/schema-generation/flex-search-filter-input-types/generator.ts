@@ -29,7 +29,12 @@ import {
 import { getFlexSearchFilterTypeName } from '../../schema/names';
 import { AnyValue, flatMap, objectEntries } from '../../utils/utils';
 import { EnumTypeGenerator } from '../enum-type-generator';
-import { ENUM_FILTER_FIELDS, FILTER_OPERATORS } from '../filter-input-types/constants';
+import {
+    ENUM_FILTER_FIELDS,
+    FILTER_FIELDS_BY_TYPE,
+    FILTER_OPERATORS,
+    NUMERIC_FILTER_FIELDS
+} from '../filter-input-types/constants';
 import { QueryNodeResolveInfo, resolveThunk } from '../query-node-object-type';
 import { TypedInputObjectType } from '../typed-input-object-type';
 import {
@@ -156,7 +161,7 @@ export class FlexSearchFilterTypeGenerator {
             throw new Error(`Expected "${field.name}" to be a non-list scalar`);
         }
 
-        const filterFields = FLEX_SEARCH_FILTER_FIELDS_BY_TYPE[field.type.graphQLScalarType.name] || [];
+        const filterFields = this.getFilterFieldsByType(field.type);
         const inputType = field.type.graphQLScalarType;
         let scalarFields: FlexSearchFilterField[] = [];
         if (field.isFlexSearchIndexed) {
@@ -356,7 +361,7 @@ export class FlexSearchFilterTypeGenerator {
         field: Field,
         path?: ReadonlyArray<Field>
     ): FlexSearchScalarOrEnumFilterField[] {
-        const filterFields = FLEX_SEARCH_FILTER_FIELDS_BY_TYPE[type.name] || [];
+        const filterFields = this.getFilterFieldsByType(type);
 
         let scalarFields: FlexSearchScalarOrEnumFilterField[] = [];
         if (field.isFlexSearchIndexed) {
@@ -400,5 +405,12 @@ export class FlexSearchFilterTypeGenerator {
                 this.enumTypeGenerator.generate(type)
             );
         });
+    }
+
+    private getFilterFieldsByType(type: Type) {
+        if (type.isScalarType && type.isNumberType) {
+            return NUMERIC_FILTER_FIELDS;
+        }
+        return FLEX_SEARCH_FILTER_FIELDS_BY_TYPE[type.name] || [];
     }
 }
