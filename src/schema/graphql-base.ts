@@ -21,7 +21,24 @@ export const DIRECTIVES: DocumentNode = gql`
     directive @entityExtension(flexSearchLanguage: FlexSearchLanguage = EN) on OBJECT
 
     "Declares a field as a to-1 or to-n relation to another root entity"
-    directive @relation(inverseOf: String) on FIELD_DEFINITION
+    directive @relation(
+        "Specify the name of a relation field on the target type to make this the inverse direction of the same relation"
+        inverseOf: String
+
+        "Specifies what should happen if the root entity defining this relation is deleted. Can not be specified on inverse relations"
+        onDelete: RelationDeleteAction
+    ) on FIELD_DEFINITION
+
+    enum RelationDeleteAction {
+        "Specifies that only the affected edges should be deleted. This is the default behavior."
+        REMOVE_EDGES
+
+        "Specifies that the related entity or entities should be automatically deleted when this root entity is deleted (will be applied recursively)"
+        CASCADE
+
+        "Specifies that this root entity cannot be deleted while there are related entities"
+        RESTRICT
+    }
 
     "Collects values by traversing a path and optionally aggregating them"
     directive @collect(

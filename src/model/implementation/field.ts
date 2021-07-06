@@ -16,8 +16,16 @@ import { GraphQLInt53 } from '../../schema/scalars/int53';
 import { GraphQLLocalDate } from '../../schema/scalars/local-date';
 import { GraphQLLocalTime } from '../../schema/scalars/local-time';
 import { GraphQLOffsetDateTime } from '../../schema/scalars/offset-date-time';
-import { AggregationOperator, CalcMutationsOperator, FieldConfig, FlexSearchLanguage, TypeKind } from '../config';
+import {
+    AggregationOperator,
+    CalcMutationsOperator,
+    FieldConfig,
+    FlexSearchLanguage,
+    RelationDeleteAction,
+    TypeKind
+} from '../config';
 import { collectEmbeddingEntityTypes, collectEmbeddingRootEntityTypes } from '../utils/emedding-entity-types';
+import { findRecursiveCascadePath } from '../utils/recursive-cascade';
 import { ValidationMessage } from '../validation';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
 import { numberTypeNames } from './built-in-types';
@@ -27,7 +35,6 @@ import { Model } from './model';
 import { PermissionProfile } from './permission-profile';
 import { Relation, RelationSide } from './relation';
 import { RolesSpecifier } from './roles-specifier';
-import { RootEntityType } from './root-entity-type';
 import { InvalidType, ObjectType, Type } from './type';
 import { ValueObjectType } from './value-object-type';
 
@@ -209,6 +216,10 @@ export class Field implements ModelComponent {
         return this.getRelationSideOrThrow().relation;
     }
 
+    get relationDeleteAction(): RelationDeleteAction {
+        return this.input.relationDeleteAction ?? RelationDeleteAction.REMOVE_EDGES;
+    }
+
     /**
      * The field that holds the key if this is a reference
      *
@@ -343,7 +354,7 @@ export class Field implements ModelComponent {
             return;
         }
 
-        if (this.declaringType.kind !== TypeKind.ROOT_ENTITY) {
+        if (!this.declaringType.isRootEntityType) {
             context.addMessage(
                 ValidationMessage.error(
                     `Relations can only be defined on root entity types. Consider using @reference instead.`,
@@ -357,7 +368,7 @@ export class Field implements ModelComponent {
             return;
         }
 
-        if (this.type.kind !== TypeKind.ROOT_ENTITY) {
+        if (!this.type.isRootEntityType) {
             context.addMessage(
                 ValidationMessage.error(
                     `Type "${this.type.name}" cannot be used with @relation because it is not a root entity type.`,
@@ -399,6 +410,14 @@ export class Field implements ModelComponent {
                     )
                 );
             }
+            if (this.input.relationDeleteAction) {
+                context.addMessage(
+                    ValidationMessage.error(
+                        `"onDelete" cannot be specified on inverse relations.`,
+                        this.input.relationDeleteActionASTNode || this.astNode
+                    )
+                );
+            }
         } else {
             // look for @relation(inverseOf: "thisField") in the target type
             const inverseFields = this.type.fields.filter(field => field.inverseOf === this);
@@ -429,6 +448,75 @@ export class Field implements ModelComponent {
                         ValidationMessage.error(
                             `Multiple fields (${names}) declare inverseOf to "${this.declaringType.name}.${this.name}".`,
                             inverseField.astNode
+                        )
+                    );
+                }
+                return; // no more errors that depend on the inverse fields
+            }
+            const inverseField: Field | undefined = inverseFields[0];
+
+            if (this.relationDeleteAction === RelationDeleteAction.CASCADE) {
+                // recursive CASCADE is not supported. It would be pretty complicated to implement in all but the
+                // simplest cases (would result in pretty complicated traversal statements, or we would need to do
+                // a dynamic number of statements by resolving the relations imperatively).
+                // For simplicity, we also forbid it for simpler recursion (like a single self-recursive field)
+                // first, simple self-recursion check to not confuse with a complicated error message
+                if (this.type === this.declaringType) {
+                    context.addMessage(
+                        ValidationMessage.error(
+                            `"CASCADE" cannot be used on recursive fields. Use "RESTRICT" instead.`,
+                            this.input.relationDeleteActionASTNode
+                        )
+                    );
+                    return;
+                } else {
+                    const recursivePath = findRecursiveCascadePath(this);
+                    if (recursivePath) {
+                        context.addMessage(
+                            ValidationMessage.error(
+                                `The path "${recursivePath
+                                    .map(f => f.name)
+                                    .join(
+                                        '.'
+                                    )}" is a loop with "onDelete: CASCADE" on each relation, which is not supported. Break the loop by replacing "CASCADE" with "RESTRICT" on any of these relations.`,
+                                this.input.relationDeleteActionASTNode
+                            )
+                        );
+                        return;
+                    }
+                }
+
+                // cascading delete is only allowed if this is a 1-to-* relation. If we would support it for n-to-*
+                // relations, we would need to decide between two behaviors:
+                // - delete the related object as soon as one of the referencing object is deleted -> this would cause
+                //   unexpected data loss because deleting one object would clear the children of a *sibling* object. That
+                //   would be very confusing.
+                // - delete the related object once *all* of the referencing objects are deleted. This would avoid th
+                //   data loss mentioned above, but it would be pretty complicated both to implement and to understand.
+                //   better use RESTRICT and do it manually.
+                // this also means that relations without inverse relations can't be used with CASCADE. That's a good thing
+                // because the dependency that could cause an object to be deleted should be explicit.
+                if (!inverseField) {
+                    context.addMessage(
+                        ValidationMessage.error(
+                            `"CASCADE" is only supported on 1-to-n and 1-to-1 relations. Use "RESTRICT" instead or change this to a 1-to-${
+                                this.isList ? 'n' : '1'
+                            } relation by adding a field with the @relation(inverseOf: "${
+                                this.name
+                            }") directive to the target type "${this.type.name}".`,
+                            this.input.relationDeleteActionASTNode
+                        )
+                    );
+                    return;
+                } else if (inverseField.isList) {
+                    context.addMessage(
+                        ValidationMessage.error(
+                            `"CASCADE" is only supported on 1-to-n and 1-to-1 relations. Use "RESTRICT" instead or change this to a 1-to-${
+                                this.isList ? 'n' : '1'
+                            } relation by changing the type of "${this.type.name}.${inverseField.name}" to "${
+                                inverseField.type.name
+                            }".`,
+                            this.input.relationDeleteActionASTNode
                         )
                     );
                 }

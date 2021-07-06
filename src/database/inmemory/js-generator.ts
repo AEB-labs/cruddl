@@ -682,23 +682,32 @@ function getFollowEdgeFragment(
 
 register(TraversalQueryNode, (node, context) => {
     let currentFrag: JSFragment = processNode(node.sourceEntityNode, context);
-    let isList = false;
+    let isList = node.sourceIsList;
+    let isAlreadyID = node.entitiesIdentifierKind === EntitiesIdentifierKind.ID;
 
+    if (!node.relationSegments.length && node.entitiesIdentifierKind !== EntitiesIdentifierKind.ENTITY) {
+        throw new Error(`Only ENTITY identifiers supported without relationSegments`);
+    }
+
+    let segmentIndex = 0;
     for (const segment of node.relationSegments) {
         if (segment.vertexFilter) {
             throw new Error(`@collect with accessGroup restrictions is not supported by InMemoryAdapter`);
         }
 
+        const nodeVar = js.variable('node');
+        const idFrag = isAlreadyID ? nodeVar : js`${nodeVar}.${js.identifier(ID_FIELD_NAME)}`;
         if (isList) {
-            const nodeVar = js.variable('node');
             const accVar = js.variable('acc');
-            const idFrag = js`${nodeVar}.${js.identifier(ID_FIELD_NAME)}`;
             let edgeListFragment = js`${nodeVar} ? ${getFollowEdgeFragment(
                 segment.relationSide,
                 idFrag,
                 context
             )} : null`;
-            if (!segment.isListSegment) {
+            if (
+                !segment.isListSegment &&
+                (!node.alwaysProduceList || segmentIndex < node.relationSegments.length - 1)
+            ) {
                 // to-1 relations can be nullable and we need to keep the NULL values (and not just pretend the source didn't exist)
                 const edgeListVar = js.variable('edges');
                 edgeListFragment = jsExt.evaluatingLambda(
@@ -710,14 +719,9 @@ register(TraversalQueryNode, (node, context) => {
             const reducer = js`(${accVar}, ${nodeVar}) => ${accVar}.concat(${edgeListFragment})`;
             currentFrag = js`${currentFrag}.reduce(${reducer}, [])`;
         } else {
-            const nodeVar = js.variable('node');
             currentFrag = jsExt.evaluatingLambda(
                 nodeVar,
-                js`${nodeVar} ? ${getFollowEdgeFragment(
-                    segment.relationSide,
-                    js`${nodeVar}.${js.identifier(ID_FIELD_NAME)}`,
-                    context
-                )} : null`,
+                js`${nodeVar} ? ${getFollowEdgeFragment(segment.relationSide, idFrag, context)} : null`,
                 currentFrag
             );
             if (!segment.isListSegment) {
@@ -733,6 +737,7 @@ register(TraversalQueryNode, (node, context) => {
         if (segment.isListSegment) {
             isList = true;
         }
+        segmentIndex++;
     }
 
     // if we need to capture the root, do this (pseudo-code)
@@ -786,23 +791,36 @@ register(TraversalQueryNode, (node, context) => {
                 const objVar = js.variable('obj');
                 const mapper = js`${objVar} => ({ obj: ${objVar}, root: ${rootVar} })`;
                 const reducer = js`(${accVar}, ${rootVar}) => ${accVar}.concat((${currentFrag}).map(${mapper}))`;
-                return js`${relationFrag}.reduce(${reducer}, [])`;
+                currentFrag = js`${relationFrag}.reduce(${reducer}, [])`;
             } else {
                 const mapper = js`${rootVar} => ({ obj: ${currentFrag}, root: ${rootVar} })`;
-                return js`${relationFrag}.map(${mapper})`;
+                currentFrag = js`${relationFrag}.map(${mapper})`;
             }
         } else {
             if (node.fieldSegments.some(f => f.isListSegment)) {
                 const objVar = js.variable('obj');
                 const mapper = js`${objVar} => ({ obj: ${objVar}, root: ${rootVar} })`;
-                return jsExt.evaluatingLambda(rootVar, js`(${currentFrag}).map(${mapper})`, relationFrag);
+                currentFrag = jsExt.evaluatingLambda(rootVar, js`(${currentFrag}).map(${mapper})`, relationFrag);
             } else {
-                return jsExt.evaluatingLambda(rootVar, js`({ obj: ${currentFrag}, root: ${rootVar} })`, relationFrag);
+                currentFrag = jsExt.evaluatingLambda(
+                    rootVar,
+                    js`({ obj: ${currentFrag}, root: ${rootVar} })`,
+                    relationFrag
+                );
             }
         }
-    } else {
-        return currentFrag;
     }
+
+    if (node.alwaysProduceList && !isList) {
+        const resultVar = js.variable('result');
+        currentFrag = jsExt.evaluatingLambda(
+            resultVar,
+            js`${currentFrag} == null ? [] : [ ${currentFrag} ]`,
+            currentFrag
+        );
+    }
+
+    return currentFrag;
 });
 
 register(CreateEntityQueryNode, (node, context) => {

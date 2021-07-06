@@ -2,6 +2,7 @@ import { Field, RelationSide, RootEntityType } from '../model';
 import { CollectPathSegment, FieldSegment, RelationSegment } from '../model/implementation/collect-path';
 import { blue } from '../utils/colors';
 import { QueryNode } from './base';
+import { EntitiesIdentifierKind } from './mutations';
 
 export class EntityFromIdQueryNode extends QueryNode {
     constructor(public readonly rootEntityType: RootEntityType, public readonly idNode: QueryNode) {
@@ -130,7 +131,10 @@ export class FollowEdgeQueryNode extends QueryNode {
 }
 
 interface TraversalQueryNodeParams {
+    readonly entitiesIdentifierKind?: EntitiesIdentifierKind;
     readonly sourceEntityNode: QueryNode;
+    readonly sourceIsList?: boolean;
+    readonly alwaysProduceList?: boolean;
     readonly relationSegments: ReadonlyArray<RelationSegment>;
     readonly fieldSegments: ReadonlyArray<FieldSegment>;
     readonly captureRootEntities: boolean;
@@ -140,10 +144,21 @@ interface TraversalQueryNodeParams {
  * Traverses a path of relations and other fields
  */
 export class TraversalQueryNode extends QueryNode {
+    readonly entitiesIdentifierKind: EntitiesIdentifierKind;
     readonly sourceEntityNode: QueryNode;
     readonly relationSegments: ReadonlyArray<RelationSegment>;
     readonly fieldSegments: ReadonlyArray<FieldSegment>;
     readonly captureRootEntity: boolean;
+
+    /**
+     * Specifies if sourceEntityNode resolves to a list of entities instead of a single entity
+     */
+    readonly sourceIsList: boolean;
+
+    /**
+     * Specifies if the result should be a list one value if the path results in a single object instead of a list
+     */
+    readonly alwaysProduceList: boolean;
 
     constructor(params: TraversalQueryNodeParams) {
         super();
@@ -154,19 +169,27 @@ export class TraversalQueryNode extends QueryNode {
             );
         }
 
+        if (params.sourceIsList && !params.relationSegments) {
+            // only need this, so keep it simpler
+            throw new Error(`A TraversalQueryNode with sourceIsList=true requires relationSegments`);
+        }
+
         this.sourceEntityNode = params.sourceEntityNode;
         this.relationSegments = params.relationSegments;
         this.fieldSegments = params.fieldSegments;
         this.captureRootEntity = params.captureRootEntities;
+        this.sourceIsList = params.sourceIsList ?? false;
+        this.alwaysProduceList = params.alwaysProduceList ?? false;
+        this.entitiesIdentifierKind = params.entitiesIdentifierKind || EntitiesIdentifierKind.ENTITY;
     }
 
     describe() {
         const segments = [...this.relationSegments, ...this.fieldSegments];
         return (
-            `traverse ${segments
-                .map(s => this.describeSegment(s))
-                .join('.')} from ${this.sourceEntityNode.describe()}` +
-            (this.captureRootEntity ? ` into { obj, root }` : '')
+            `traverse ${segments.map(s => this.describeSegment(s)).join('.')}` +
+            `from ${this.sourceEntityNode.describe()}${this.sourceIsList ? ' (as list)' : ''}${
+                this.captureRootEntity ? ` into { obj, root }` : ''
+            }${this.alwaysProduceList ? ` as list` : ''}`
         );
     }
 

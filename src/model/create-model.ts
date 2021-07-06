@@ -62,6 +62,7 @@ import {
     NAMESPACE_NAME_ARG,
     NAMESPACE_SEPARATOR,
     OBJECT_TYPE_KIND_DIRECTIVES,
+    ON_DELETE_ARG,
     PARENT_DIRECTIVE,
     PERMISSION_PROFILE_ARG,
     REFERENCE_DIRECTIVE,
@@ -100,6 +101,7 @@ import {
     ObjectTypeConfig,
     PermissionProfileConfigMap,
     PermissionsConfig,
+    RelationDeleteAction,
     RolesSpecifierConfig,
     TimeToLiveConfig,
     TypeConfig,
@@ -440,6 +442,7 @@ function getLanguage(fieldNode: FieldDefinitionNode, context: ValidationContext)
 
 function createFieldInput(fieldNode: FieldDefinitionNode, context: ValidationContext): FieldConfig {
     const inverseOfASTNode = getInverseOfASTNode(fieldNode, context);
+    const relationDeleteActionASTNode = getRelationDeleteActionASTNode(fieldNode, context);
     const referenceDirectiveASTNode = findDirectiveWithName(fieldNode, REFERENCE_DIRECTIVE);
     const referenceKeyFieldASTNode = getReferenceKeyFieldASTNode(fieldNode, context);
     const parentDirectiveNode = findDirectiveWithName(fieldNode, PARENT_DIRECTIVE);
@@ -455,6 +458,11 @@ function createFieldInput(fieldNode: FieldDefinitionNode, context: ValidationCon
         defaultValue: getDefaultValue(fieldNode, context),
         inverseOfASTNode,
         inverseOfFieldName: inverseOfASTNode ? inverseOfASTNode.value : undefined,
+        relationDeleteActionASTNode,
+        relationDeleteAction:
+            relationDeleteActionASTNode?.value.kind === 'EnumValue'
+                ? (relationDeleteActionASTNode.value.value as RelationDeleteAction)
+                : undefined,
         isList:
             fieldNode.type.kind === LIST_TYPE ||
             (fieldNode.type.kind === NON_NULL_TYPE && fieldNode.type.type.kind === LIST_TYPE),
@@ -768,6 +776,17 @@ function getInverseOfASTNode(fieldNode: FieldDefinitionNode, context: Validation
         return undefined;
     }
     return inverseOfArg.value;
+}
+
+function getRelationDeleteActionASTNode(
+    fieldNode: FieldDefinitionNode,
+    context: ValidationContext
+): ArgumentNode | undefined {
+    const relationDirective = findDirectiveWithName(fieldNode, RELATION_DIRECTIVE);
+    if (!relationDirective) {
+        return undefined;
+    }
+    return getNodeByName(relationDirective.arguments, ON_DELETE_ARG);
 }
 
 function getReferenceKeyFieldASTNode(

@@ -8,8 +8,8 @@ import {
     VariableQueryNode,
     WithPreExecutionQueryNode
 } from '../query-tree';
-import { mapTOIDNodesUnoptimized } from './utils/map';
-import { getRemoveAllEntityEdgesStatements } from './utils/relations';
+import { mapToIDNodesUnoptimized } from './utils/map';
+import { getPreEntityRemovalStatements } from './utils/relations';
 
 export function generateDeleteAllQueryNode(
     rootEntityType: RootEntityType,
@@ -32,7 +32,7 @@ export function generateDeleteAllQueryNode(
     const idsStatement = new PreExecQueryParms({
         // don't use optimizations here so we actually "see" the entities and don't just return the ids
         // this is relevant if there are accessGroup filters
-        query: mapTOIDNodesUnoptimized(listNode),
+        query: mapToIDNodesUnoptimized(listNode),
         resultVariable: idsVariable
     });
 
@@ -45,7 +45,7 @@ export function generateDeleteAllQueryNode(
         resultValue
     });
 
-    const removeEdgesStatements = getRemoveAllEntityEdgesStatements(rootEntityType, idsVariable);
+    const removeEdgesStatements = getPreEntityRemovalStatements(rootEntityType, idsVariable);
 
     return new WithPreExecutionQueryNode({
         preExecQueries: [idsStatement, ...removeEdgesStatements],

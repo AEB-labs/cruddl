@@ -1,0 +1,33 @@
+type Main @rootEntity {
+    key: String @key
+
+    dependents: [Dependent] @relation(onDelete: CASCADE)
+    additionalDependent: Dependent @relation(onDelete: CASCADE)
+    alternativeDependents: [AlternativeDependent] @relation(onDelete: CASCADE)
+
+    blockers: [Blocker] @relation(onDelete: RESTRICT)
+}
+
+type Dependent @rootEntity {
+    key: String @key
+
+    mainViaDependents: Main @relation(inverseOf: "dependents")
+    mainViaAdditionalDependent: Main @relation(inverseOf: "additionalDependent")
+
+    alternativeDependents: [AlternativeDependent] @relation(onDelete: CASCADE)
+    blockers: [Blocker] @relation(onDelete: RESTRICT)
+}
+
+type AlternativeDependent @rootEntity {
+    key: String @key
+
+    main: Main @relation(inverseOf: "alternativeDependents")
+    dependent: Dependent @relation(inverseOf: "alternativeDependents")
+}
+
+type Blocker @rootEntity {
+    key: String @key
+
+    main: Main @relation(inverseOf: "blockers")
+    dependent: Dependent @relation(inverseOf: "blockers")
+}

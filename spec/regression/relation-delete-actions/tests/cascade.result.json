@@ -1,0 +1,41 @@
+{
+    "createEdges": {
+        "data": {
+            "updateMain": {
+                "key": "m1"
+            }
+        }
+    },
+    "delete": {
+        "data": {
+            "deleteMain": {
+                "key": "m1"
+            }
+        }
+    },
+    "everything": {
+        "data": {
+            "allMains": [
+                {
+                    "key": "m2"
+                },
+                {
+                    "key": "m3"
+                }
+            ],
+            "allDependents": [
+                {
+                    "key": "d4"
+                }
+            ],
+            "allAlternativeDependents": [
+                {
+                    "key": "a3"
+                },
+                {
+                    "key": "a4"
+                }
+            ]
+        }
+    }
+}

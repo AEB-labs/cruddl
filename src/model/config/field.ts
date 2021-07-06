@@ -1,4 +1,12 @@
-import { DirectiveNode, EnumValueNode, FieldDefinitionNode, NameNode, StringValueNode, ValueNode } from 'graphql';
+import {
+    ArgumentNode,
+    DirectiveNode,
+    EnumValueNode,
+    FieldDefinitionNode,
+    NameNode,
+    StringValueNode,
+    ValueNode
+} from 'graphql';
 import { PermissionsConfig } from './permissions';
 
 export interface FieldConfig {
@@ -21,6 +29,8 @@ export interface FieldConfig {
     readonly isRelation?: boolean;
     readonly inverseOfFieldName?: string;
     readonly inverseOfASTNode?: ValueNode;
+    readonly relationDeleteAction?: RelationDeleteAction;
+    readonly relationDeleteActionASTNode?: ArgumentNode;
 
     readonly collect?: CollectFieldConfig;
 
@@ -45,6 +55,12 @@ export interface FieldConfig {
      * Specifies if the field should be included in the expression-search of FlexSearch as a text.
      */
     readonly isFulltextIncludedInSearch?: boolean;
+}
+
+export enum RelationDeleteAction {
+    REMOVE_EDGES = 'REMOVE_EDGES',
+    CASCADE = 'CASCADE',
+    RESTRICT = 'RESTRICT'
 }
 
 export interface CollectFieldConfig {

@@ -34,6 +34,7 @@ export const COLLECT_PATH_ARG = 'path';
 export const COLLECT_AGGREGATE_ARG = 'aggregate';
 
 export const INVERSE_OF_ARG = 'inverseOf';
+export const ON_DELETE_ARG = 'onDelete';
 export const KEY_FIELD_ARG = 'keyField';
 
 export const QUERY_TYPE = 'Query';

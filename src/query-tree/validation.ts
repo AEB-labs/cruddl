@@ -1,3 +1,4 @@
+import { RelationSide, RootEntityType } from '../model';
 import { QueryNode } from './base';
 
 export interface QueryResultValidatorFunctionProvider {
@@ -34,7 +35,7 @@ export interface QueryResultValidator extends QueryNode {
     /**
      * Optional data to be passed to the validator function
      */
-    getValidatorData(): any
+    getValidatorData(): any;
 }
 
 export interface ValidatorParams {
@@ -61,7 +62,7 @@ export class ErrorIfNotTruthyResultValidator extends QueryNode implements QueryR
 
     /* istanbul ignore next */
     static getValidatorFunction() {
-        return function (validationData: any, result: any) {
+        return function(validationData: any, result: any) {
             /**
              * An error that is thrown if a validator fails
              */
@@ -92,7 +93,7 @@ export class ErrorIfNotTruthyResultValidator extends QueryNode implements QueryR
     getValidatorData() {
         return {
             errorMessage: this.errorMessage,
-            errorCode: this.errorCode,
+            errorCode: this.errorCode
         };
     }
 
@@ -120,7 +121,7 @@ export class ErrorIfEmptyResultValidator extends QueryNode implements QueryResul
 
     /* istanbul ignore next */
     static getValidatorFunction() {
-        return function (validationData: any, result: any) {
+        return function(validationData: any, result: any) {
             /**
              * An error that is thrown if a validator fails
              */
@@ -151,7 +152,7 @@ export class ErrorIfEmptyResultValidator extends QueryNode implements QueryResul
     getValidatorData() {
         return {
             errorMessage: this.errorMessage,
-            errorCode: this.errorCode,
+            errorCode: this.errorCode
         };
     }
 
@@ -160,7 +161,99 @@ export class ErrorIfEmptyResultValidator extends QueryNode implements QueryResul
     }
 }
 
+export interface NoRestrictingObjectsOnDeleteValidatorParams {
+    readonly restrictedRootEntityType: RootEntityType;
+    readonly restrictingRootEntityType: RootEntityType;
+    readonly path: ReadonlyArray<RelationSide>;
+}
+
+interface NoRestrictingObjectsOnDeleteValidatorData {
+    readonly restrictedTypeName: string;
+    readonly restrictingTypeName: string;
+    readonly path: string;
+}
+
+/**
+ * A validator that verifies that a list is empty, and if it's not, it reports them as restring a delete operation
+ */
+export class NoRestrictingObjectsOnDeleteValidator extends QueryNode implements QueryResultValidator {
+    readonly data: NoRestrictingObjectsOnDeleteValidatorData;
+
+    constructor(params: NoRestrictingObjectsOnDeleteValidatorParams) {
+        super();
+        this.data = {
+            restrictingTypeName: params.restrictingRootEntityType.name,
+            restrictedTypeName: params.restrictedRootEntityType.name,
+            path: params.path.map(s => s.getSourceFieldOrThrow().name).join('.')
+        };
+    }
+
+    // The following function will be translated to a string and executed within the ArangoDB server itself.
+    // Therefore the next comment is necessary to instruct our test coverage tool (https://github.com/istanbuljs/nyc)
+    // not to instrument the code with coverage instructions.
+
+    /* istanbul ignore next */
+    static getValidatorFunction() {
+        return function(validationData: NoRestrictingObjectsOnDeleteValidatorData, result: ReadonlyArray<string>) {
+            /**
+             * An error that is thrown if a validator fails
+             */
+            class RuntimeValidationError extends Error {
+                readonly code: string | undefined;
+
+                constructor(message: string, args: { readonly code?: string } = {}) {
+                    super(message);
+                    this.name = this.constructor.name;
+                    this.code = args.code;
+                }
+            }
+
+            if (result.length) {
+                if (result.length === 1) {
+                    throw new RuntimeValidationError(
+                        `Cannot delete ${validationData.restrictedTypeName} object because a ${validationData.restrictingTypeName} object is still referenced via ${validationData.path} (id: ${result[0]})`,
+                        {
+                            code: 'RELATION_CONSTRAINT_VIOLATION'
+                        }
+                    );
+                }
+
+                let ids = result
+                    .slice(0, 5)
+                    .map(id => id)
+                    .join(', ');
+                if (result.length > 5) {
+                    ids += ', ...';
+                }
+                throw new RuntimeValidationError(
+                    `Cannot delete ${validationData.restrictedTypeName} object because ${result.length} ${validationData.restrictingTypeName} objects are still referenced via ${validationData.path} (ids: ${ids})`,
+                    {
+                        code: 'RELATION_CONSTRAINT_VIOLATION'
+                    }
+                );
+            }
+        };
+    }
+
+    static getValidatorName() {
+        return 'NoRestrictingObjectsOnDelete';
+    }
+
+    getValidatorName() {
+        return NoRestrictingObjectsOnDeleteValidator.getValidatorName();
+    }
+
+    getValidatorData() {
+        return this.data;
+    }
+
+    describe() {
+        return 'not empty => error with ids of relation constraint violations';
+    }
+}
+
 export const ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS: ReadonlyArray<QueryResultValidatorFunctionProvider> = [
     ErrorIfNotTruthyResultValidator,
-    ErrorIfEmptyResultValidator
+    ErrorIfEmptyResultValidator,
+    NoRestrictingObjectsOnDeleteValidator
 ];
