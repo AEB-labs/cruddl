@@ -71,10 +71,9 @@ import { not } from '../../schema-generation/utils/input-types';
 import { Constructor, decapitalize } from '../../utils/utils';
 import { FlexSearchTokenizable } from '../database-adapter';
 import { analyzeLikePatternPrefix } from '../like-helpers';
-import { aql, AQLCompoundQuery, aqlConfig, AQLFragment, AQLQueryResultVariable, AQLVariable } from './aql';
+import { aql, AQLCompoundQuery, AQLFragment, AQLQueryResultVariable, AQLVariable } from './aql';
 import { billingCollectionName, getCollectionNameForRelation, getCollectionNameForRootEntity } from './arango-basics';
 import { getFlexSearchViewNameForRootEntity, IDENTITY_ANALYZER } from './schema-migration/arango-search-helpers';
-import { getRequiredIndicesFromModel } from './schema-migration/index-helpers';
 
 enum AccessType {
     READ,
@@ -1168,8 +1167,31 @@ register(TraversalQueryNode, (node, context) => {
             }
         }
 
-        const frag = getRelationTraversalFragment({ segments: node.relationSegments, sourceFrag, mapFrag, context });
-        if (node.relationSegments.some(s => s.isListSegment)) {
+        // traversal requires real ids
+        let fixedSourceFrag = sourceFrag;
+        if (node.entitiesIdentifierKind === EntitiesIdentifierKind.ID) {
+            if (node.sourceIsList) {
+                fixedSourceFrag = getFullIDFromKeysFragment(
+                    sourceFrag,
+                    node.relationSegments[0].relationSide.sourceType
+                );
+            } else {
+                fixedSourceFrag = getFullIDFromKeyFragment(
+                    sourceFrag,
+                    node.relationSegments[0].relationSide.sourceType
+                );
+            }
+        }
+
+        const frag = getRelationTraversalFragment({
+            segments: node.relationSegments,
+            sourceFrag: fixedSourceFrag,
+            sourceIsList: node.sourceIsList,
+            alwaysProduceList: node.alwaysProduceList,
+            mapFrag,
+            context
+        });
+        if (node.relationSegments.some(s => s.isListSegment) || node.sourceIsList) {
             // if the relation contains a list segment, getRelationTraversalFragment will return a list
             // if we already returned lists within the mapFrag (-> current value of remainingDepth), we need to add that
             remainingDepth++;
@@ -1181,6 +1203,20 @@ register(TraversalQueryNode, (node, context) => {
     if (node.captureRootEntity) {
         // doesn't make sense (and isn't possible) to capture the root entity if we're not even crossing root entities
         throw new Error(`captureRootEntity without relationSegments detected`);
+    }
+
+    if (node.sourceIsList) {
+        // don't need, don't bother
+        throw new Error(`sourceIsList without relationSegments detected`);
+    }
+
+    if (node.alwaysProduceList) {
+        // don't need, don't bother
+        throw new Error(`alwaysProduceList without relationSegments detected`);
+    }
+
+    if (node.entitiesIdentifierKind !== EntitiesIdentifierKind.ENTITY) {
+        throw new Error(`Only ENTITY identifiers supported without relationSegments`);
     }
 
     if (!node.fieldSegments.length) {
@@ -1198,11 +1234,15 @@ register(TraversalQueryNode, (node, context) => {
 function getRelationTraversalFragment({
     segments,
     sourceFrag,
+    sourceIsList,
+    alwaysProduceList,
     mapFrag,
     context
 }: {
     readonly segments: ReadonlyArray<RelationSegment>;
     readonly sourceFrag: AQLFragment;
+    readonly sourceIsList: boolean;
+    readonly alwaysProduceList: boolean;
     readonly mapFrag?: (itemFrag: AQLFragment) => AQLFragment;
     readonly context: QueryContext;
 }) {
@@ -1214,7 +1254,9 @@ function getRelationTraversalFragment({
     // traversal which lists all affected edge collections and prunes on the path in the future.
 
     const forFragments: AQLFragment[] = [];
-    let currentObjectFrag = sourceFrag;
+    const sourceEntityVar = aql.variable(`sourceEntity`);
+    let currentObjectFrag = sourceIsList ? sourceEntityVar : sourceFrag;
+    let segmentIndex = 0;
     for (const segment of segments) {
         const nodeVar = aql.variable(`node`);
         const edgeVar = aql.variable(`edge`);
@@ -1268,12 +1310,11 @@ function getRelationTraversalFragment({
             AccessType.READ,
             context
         )}${pruneFrag}${filterFrag}`;
-        if (segment.isListSegment) {
+        if (segment.isListSegment || (alwaysProduceList && segmentIndex === segments.length - 1)) {
             // this is simple - we can just push one FOR statement after the other
             forFragments.push(traversalFrag);
             currentObjectFrag = nodeVar;
-        }
-        if (!segment.isListSegment) {
+        } else {
             // if this is not a list, we need to preserve NULL values
             // (actually, we don't in some cases, but we need to figure out when)
             // to preserve null values, we need to use FIRST
@@ -1284,6 +1325,8 @@ function getRelationTraversalFragment({
             );
             currentObjectFrag = nullableVar;
         }
+
+        segmentIndex++;
     }
 
     const lastSegment = segments[segments.length - 1];
@@ -1294,8 +1337,10 @@ function getRelationTraversalFragment({
     }
 
     const returnFrag = mapFrag ? mapFrag(currentObjectFrag) : currentObjectFrag;
+    const returnList = lastSegment.resultIsList || sourceIsList || alwaysProduceList;
     // make sure we don't return a list with one element
-    return aqlExt[lastSegment.resultIsList ? 'parenthesizeList' : 'parenthesizeObject'](
+    return aqlExt[returnList ? 'parenthesizeList' : 'parenthesizeObject'](
+        sourceIsList ? aql`FOR ${sourceEntityVar} IN ${sourceFrag}` : aql``,
         ...forFragments,
         aql`RETURN ${returnFrag}`
     );
@@ -1498,15 +1543,16 @@ function getFullIDsFromKeysNode(
         return aql.value(ids);
     }
 
-    const idVar = aql.variable('id');
-    return aql`(FOR ${idVar} IN ${processNode(idsNode, context)} RETURN ${getFullIDFromKeyFragment(
-        idVar,
-        rootEntityType
-    )})`;
+    return getFullIDFromKeysFragment(processNode(idsNode, context), rootEntityType);
 }
 
 function getFullIDFromKeyFragment(keyFragment: AQLFragment, rootEntityType: RootEntityType): AQLFragment {
     return aql`CONCAT(${getCollectionNameForRootEntity(rootEntityType) + '/'}, ${keyFragment})`;
+}
+
+function getFullIDFromKeysFragment(keysFragment: AQLFragment, rootEntityType: RootEntityType): AQLFragment {
+    const idVar = aql.variable('id');
+    return aql`(FOR ${idVar} IN ${keysFragment} RETURN ${getFullIDFromKeyFragment(idVar, rootEntityType)})`;
 }
 
 function formatEdge(

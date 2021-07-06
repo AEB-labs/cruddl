@@ -50,7 +50,7 @@ type Skill @valueObject {
 type Movie @rootEntity {
     name: String
     "All the heroes starring in this movie"
-    heroes: [Hero] @relation
+    heroes: [Hero] @relation(onDelete: CASCADE)
     "The real superhero"
     director: Director @relation
     publisher: Publisher @reference

@@ -1,8 +1,8 @@
-import { Field, RootEntityType } from '../index';
+import { Field, RelationDeleteAction, RootEntityType } from '../index';
 
 enum RelationFieldSide {
-    FROM_SIDE,
-    TO_SIDE
+    FROM_SIDE = 'FROM_SIDE',
+    TO_SIDE = 'TO_SIDE'
 }
 
 function invertRelationFieldSide(side: RelationFieldSide) {
@@ -14,23 +14,44 @@ function invertRelationFieldSide(side: RelationFieldSide) {
     }
 }
 
+/**
+ * A view on a relation without taking the perspective of one of the types
+ */
 export class Relation {
+    /**
+     * The type declaring the forward relation
+     */
     readonly fromType: RootEntityType;
+    /**
+     * The field declaring the forward relation
+     */
     readonly fromField: Field;
+    /**
+     * The field type of the forward relation, i.e., the type potentially declaring an inverse relation
+     */
     readonly toType: RootEntityType;
+    /**
+     * The field of the toType declaring the inverse relation (if any)
+     */
     readonly toField: Field | undefined;
 
-    constructor(params: { fromType: RootEntityType, fromField: Field, toType: RootEntityType, toField?: Field }) {
+    constructor(params: { fromType: RootEntityType; fromField: Field; toType: RootEntityType; toField?: Field }) {
         this.fromType = params.fromType;
         this.fromField = params.fromField;
         this.toType = params.toType;
         this.toField = params.toField;
     }
 
+    /**
+     * Gets relation from the side of the root entity type that declares the forward relation
+     */
     get fromSide() {
         return new RelationSide(this, RelationFieldSide.FROM_SIDE);
     }
 
+    /**
+     * Gets relation from the side of the root entity type that declares the inverse relation
+     */
     get toSide() {
         return new RelationSide(this, RelationFieldSide.TO_SIDE);
     }
@@ -49,16 +70,16 @@ export class Relation {
     }
 }
 
+/**
+ * A relation from the perspective of one of the two types
+ */
 export class RelationSide {
     public readonly sourceType: RootEntityType;
-    public readonly sourceField: Field|undefined;
+    public readonly sourceField: Field | undefined;
     public readonly targetType: RootEntityType;
-    public readonly targetField: Field|undefined;
+    public readonly targetField: Field | undefined;
 
-    constructor(
-        public readonly relation: Relation,
-        private readonly side: RelationFieldSide
-    ) {
+    constructor(public readonly relation: Relation, private readonly side: RelationFieldSide) {
         switch (side) {
             case RelationFieldSide.FROM_SIDE:
                 this.sourceType = relation.fromType;
@@ -75,7 +96,7 @@ export class RelationSide {
     }
 
     get isFromSide() {
-        return this.side === RelationFieldSide.FROM_SIDE
+        return this.side === RelationFieldSide.FROM_SIDE;
     }
 
     get isToSide() {
@@ -105,9 +126,35 @@ export class RelationSide {
     get targetMultiplicity(): Multiplicity {
         return this.otherSide.sourceMultiplicity;
     }
+
+    /**
+     * Specifies the action to take regarding this relation if the source entity is to be removed
+     */
+    get deleteAction(): RelationDeleteAction {
+        // inverse relations can't specify onDelete, so they're always REMOVE_EDGES
+        if (this.isToSide) {
+            return RelationDeleteAction.REMOVE_EDGES;
+        }
+        return this.relation.fromField.relationDeleteAction;
+    }
+
+    getSourceFieldOrThrow(): Field {
+        if (!this.sourceField) {
+            throw new Error(`Expected ${this.toString()} to have a source field`);
+        }
+        return this.sourceField;
+    }
+
+    toString() {
+        const fromFieldName = this.relation.fromField ? `.${this.relation.fromField.name}` : '';
+        const toFieldName = this.relation.toField ? `.${this.relation.toField.name}` : '';
+        return `relation ${this.relation.fromType.name}${fromFieldName}${this.isFromSide ? '->' : '<-'}${
+            this.relation.toType.name
+        }${toFieldName}`;
+    }
 }
 
 export enum Multiplicity {
-    ONE,
-    MANY
+    ONE = 'ONE',
+    MANY = 'MANY'
 }

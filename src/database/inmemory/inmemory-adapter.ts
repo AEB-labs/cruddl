@@ -141,9 +141,7 @@ export class InMemoryAdapter implements DatabaseAdapter {
                 return items.reduce((acc, item) => (support.compare(item, acc) > 0 ? item : acc));
             },
 
-            getMultiComparator<T>(
-                ...valueFns: [((item: T) => string | boolean | number | null | undefined), boolean][]
-            ) {
+            getMultiComparator<T>(...valueFns: [(item: T) => string | boolean | number | null | undefined, boolean][]) {
                 if (valueFns.length == 0) {
                     return () => 0;
                 }
@@ -206,17 +204,21 @@ export class InMemoryAdapter implements DatabaseAdapter {
 
             if (query.resultName) {
                 resultHolder[query.resultName] = result;
+                if (this.logger.isTraceEnabled()) {
+                    this.logger.trace(`${query.resultName} = ${JSON.stringify(result)}`);
+                }
             }
 
             if (query.resultValidator) {
                 for (const key in query.resultValidator) {
                     const validator = validators.get(key);
-                    if (validator) {
-                        try {
-                            validator(query.resultValidator[key], result);
-                        } catch (error) {
-                            throw error;
-                        }
+                    if (!validator) {
+                        throw new Error(`Used unknown validator: ${key}`);
+                    }
+                    try {
+                        validator(query.resultValidator[key], result);
+                    } catch (error) {
+                        throw error;
                     }
                 }
             }

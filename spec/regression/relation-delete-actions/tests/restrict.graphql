@@ -1,0 +1,27 @@
+mutation createEdges {
+    updateMain(input: { id: "@{ids/Main/2}", addBlockers: ["@{ids/Blocker/2}", "@{ids/Blocker/3}"] }) {
+        key
+    }
+}
+
+mutation deleteSuccessfully {
+    deleteMain(key: "m1") {
+        key
+    }
+}
+
+mutation deleteRestricted {
+    deleteMain(key: "m2") {
+        key
+    }
+}
+
+query everything {
+    allMains(orderBy: key_ASC) {
+        key
+    }
+
+    allBlockers(orderBy: key_ASC) {
+        key
+    }
+}

@@ -1,0 +1,32 @@
+mutation createEdges {
+    updateMain(
+        input: {
+            id: "@{ids/Main/1}"
+            addDependents: ["@{ids/Dependent/1}", "@{ids/Dependent/2}"]
+            additionalDependent: "@{ids/Dependent/3}"
+            addAlternativeDependents: ["@{ids/AlternativeDependent/1}", "@{ids/AlternativeDependent/2}"]
+        }
+    ) {
+        key
+    }
+}
+
+mutation delete {
+    deleteMain(key: "m1") {
+        key
+    }
+}
+
+query everything {
+    allMains(orderBy: key_ASC) {
+        key
+    }
+
+    allDependents(orderBy: key_ASC) {
+        key
+    }
+
+    allAlternativeDependents(orderBy: key_ASC) {
+        key
+    }
+}

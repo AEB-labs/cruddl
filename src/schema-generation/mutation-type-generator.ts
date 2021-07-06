@@ -59,8 +59,8 @@ import { UpdateInputFieldContext, UpdateInputTypeGenerator, UpdateRootEntityInpu
 import { createBillingEntityCategoryNode, createBillingEntityQuantityNode } from './utils/billing-nodes';
 import { getEntitiesByUniqueFieldQuery } from './utils/entities-by-unique-field';
 import { getFilterNode } from './utils/filtering';
-import { mapTOIDNodesUnoptimized } from './utils/map';
-import { getRemoveAllEntityEdgesStatements } from './utils/relations';
+import { mapToIDNodesUnoptimized } from './utils/map';
+import { getPreEntityRemovalStatements } from './utils/relations';
 
 export class MutationTypeGenerator {
     constructor(
@@ -484,7 +484,7 @@ export class MutationTypeGenerator {
         const idsStatement = new PreExecQueryParms({
             // don't use optimizations here so we actually "see" the entities and don't just return the ids
             // this is relevant if there are accessGroup filters
-            query: mapTOIDNodesUnoptimized(listNode),
+            query: mapToIDNodesUnoptimized(listNode),
             resultVariable: idsVariable
         });
 
@@ -495,7 +495,7 @@ export class MutationTypeGenerator {
             revision
         });
 
-        const removeEdgesStatements = getRemoveAllEntityEdgesStatements(rootEntityType, idsVariable);
+        const removeEdgesStatements = getPreEntityRemovalStatements(rootEntityType, idsVariable);
 
         // no preexec for the actual deletion here because we need to evaluate the result while the entity still exists
         // and it won't exist if already deleted in the pre-exec
@@ -535,7 +535,7 @@ export class MutationTypeGenerator {
             // don't use optimizations here so we actually "see" the entities and don't just return the ids
             // this is relevant if there are accessGroup filters
             query: getFilterNode(
-                mapTOIDNodesUnoptimized(listNode),
+                mapToIDNodesUnoptimized(listNode),
                 entityVar => new BinaryOperationQueryNode(entityVar, BinaryOperator.UNEQUAL, new NullQueryNode())
             ),
             resultVariable: idsVariable
@@ -547,7 +547,7 @@ export class MutationTypeGenerator {
             entitiesIdentifierKind: EntitiesIdentifierKind.ID
         });
 
-        const removeEdgesStatements = getRemoveAllEntityEdgesStatements(rootEntityType, idsVariable);
+        const removeEdgesStatements = getPreEntityRemovalStatements(rootEntityType, idsVariable);
 
         // no preexec for the actual deletion here because we need to evaluate the result while the entity still exists
         // and it won't exist if already deleted in the pre-exec
