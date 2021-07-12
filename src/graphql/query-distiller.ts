@@ -1,4 +1,19 @@
-import { DocumentNode, FieldNode, FragmentDefinitionNode, getNamedType, GraphQLCompositeType, GraphQLField, GraphQLObjectType, GraphQLOutputType, GraphQLSchema, isCompositeType, OperationDefinitionNode, OperationTypeNode, SelectionNode } from 'graphql';
+import {
+    DocumentNode,
+    FieldNode,
+    FragmentDefinitionNode,
+    getNamedType,
+    GraphQLCompositeType,
+    GraphQLField,
+    GraphQLObjectType,
+    GraphQLOutputType,
+    GraphQLSchema,
+    isCompositeType,
+    OperationDefinitionNode,
+    OperationTypeNode,
+    SelectionNode,
+    TypeNameMetaFieldDef
+} from 'graphql';
 import { isEqual } from 'lodash';
 import { blue, cyan, green } from '../utils/colors';
 import { arrayToObject, flatMap, groupArray, indent, INDENTATION } from '../utils/utils';
@@ -9,12 +24,12 @@ import { extractOperation } from './operations';
 import { getOperationRootType } from './schema-utils';
 
 interface FieldRequestParams {
-    readonly field: GraphQLField<unknown, unknown>
-    readonly parentType: GraphQLCompositeType
-    readonly schema: GraphQLSchema
-    readonly selectionSet?: ReadonlyArray<FieldSelection>
-    readonly args?: { [argumentName: string]: unknown }
-    readonly fieldNodes?: ReadonlyArray<FieldNode>
+    readonly field: GraphQLField<unknown, unknown>;
+    readonly parentType: GraphQLCompositeType;
+    readonly schema: GraphQLSchema;
+    readonly selectionSet?: ReadonlyArray<FieldSelection>;
+    readonly args?: { [argumentName: string]: unknown };
+    readonly fieldNodes?: ReadonlyArray<FieldNode>;
 }
 
 /**
@@ -42,8 +57,13 @@ export class FieldRequest {
     }
 
     equals(other: FieldRequest) {
-        if (this.field !== other.field || this.parentType !== other.parentType || this.schema !== other.schema
-            || this.selectionSet.length !== other.selectionSet.length || !isEqual(this.args, other.args)) {
+        if (
+            this.field !== other.field ||
+            this.parentType !== other.parentType ||
+            this.schema !== other.schema ||
+            this.selectionSet.length !== other.selectionSet.length ||
+            !isEqual(this.args, other.args)
+        ) {
             return false;
         }
 
@@ -61,8 +81,10 @@ export class FieldRequest {
             .map(selection => `${green(JSON.stringify(selection.propertyName))}: ${selection.fieldRequest.describe()}`)
             .join(',\n');
         const selectionDesc = selectionItemsDesc ? ` with selections {\n${indent(selectionItemsDesc)}\n}` : '';
-        const argsDesc = (this.args && Object.getOwnPropertyNames(this.args).length) ?
-            ` with args ${cyan(JSON.stringify(this.args, null, INDENTATION))}` : '';
+        const argsDesc =
+            this.args && Object.getOwnPropertyNames(this.args).length
+                ? ` with args ${cyan(JSON.stringify(this.args, null, INDENTATION))}`
+                : '';
 
         return `field ${blue(this.fieldName)}${argsDesc}${selectionDesc}`;
     }
@@ -76,10 +98,7 @@ export class FieldSelection {
      * @param propertyName the name of the property the field request's value should be put in
      * @param fieldRequest determines the value for that property
      */
-    constructor(public readonly propertyName: string,
-                public readonly fieldRequest: FieldRequest) {
-
-    }
+    constructor(public readonly propertyName: string, public readonly fieldRequest: FieldRequest) {}
 
     equals(other: FieldSelection) {
         return this.propertyName === other.propertyName && this.fieldRequest.equals(other.fieldRequest);
@@ -90,8 +109,10 @@ export class FieldSelection {
  * A simple description of a GraphQL operation
  */
 export class DistilledOperation {
-    constructor(public readonly operation: OperationTypeNode, public readonly selectionSet: ReadonlyArray<FieldSelection>) {
-    }
+    constructor(
+        public readonly operation: OperationTypeNode,
+        public readonly selectionSet: ReadonlyArray<FieldSelection>
+    ) {}
 
     public describe(): string {
         const selectionItemsDesc = this.selectionSet
@@ -102,10 +123,11 @@ export class DistilledOperation {
 }
 
 export interface OperationDistillationParams {
-    schema: GraphQLSchema
-    operation: OperationDefinitionNode
-    variableValues: { [name: string]: any }
-    fragments: { [fragmentName: string]: FragmentDefinitionNode }
+    readonly schema: GraphQLSchema;
+    readonly operation: OperationDefinitionNode;
+    readonly variableValues: { readonly [name: string]: unknown };
+    readonly fragments: { readonly [fragmentName: string]: FragmentDefinitionNode };
+    readonly includeTypenameFields?: boolean;
 }
 
 /**
@@ -115,10 +137,11 @@ export function distillOperation(params: OperationDistillationParams): Distilled
     // needed to coerce values
     // not really sure when we should do this
     // I think it's idempotent, so won't do much harm except from performance penality
-    const context = {
+    const context: Context = {
         variableValues: params.variableValues,
         fragments: params.fragments,
-        schema: params.schema
+        schema: params.schema,
+        includeTypenameFields: params.includeTypenameFields
     };
 
     const parentType = getOperationRootType(params.schema, params.operation.operation);
@@ -132,30 +155,49 @@ export function distillOperation(params: OperationDistillationParams): Distilled
 /**
  * Creates a simplified description of an operation in a query
  */
-export function distillQuery(document: DocumentNode, schema: GraphQLSchema, variableValues: { [name: string]: any } = {}, operationName?: string): DistilledOperation {
+export function distillQuery(
+    document: DocumentNode,
+    schema: GraphQLSchema,
+    variableValues: { [name: string]: any } = {},
+    operationName?: string
+): DistilledOperation {
     return distillOperation({
         schema,
         operation: extractOperation(document, operationName),
-        fragments: arrayToObject(document.definitions.filter(def => def.kind == 'FragmentDefinition') as ReadonlyArray<FragmentDefinitionNode>, def => def.name.value),
+        fragments: arrayToObject(
+            document.definitions.filter(def => def.kind == 'FragmentDefinition') as ReadonlyArray<
+                FragmentDefinitionNode
+            >,
+            def => def.name.value
+        ),
         variableValues
     });
 }
 
 interface Context {
-    fragments: { [fragmentName: string]: FragmentDefinitionNode };
-    variableValues: { [variableName: string]: any };
-    schema: GraphQLSchema;
+    readonly fragments: { readonly [fragmentName: string]: FragmentDefinitionNode };
+    readonly variableValues: { readonly [variableName: string]: unknown };
+    readonly schema: GraphQLSchema;
+    readonly includeTypenameFields?: boolean;
 }
 
 /**
  * Creates simplified FieldSelection objects for a set of SelectionNodes
  */
-function distillSelections(selections: ReadonlyArray<SelectionNode>, parentType: GraphQLCompositeType, context: Context): ReadonlyArray<FieldSelection> {
+function distillSelections(
+    selections: ReadonlyArray<SelectionNode>,
+    parentType: GraphQLCompositeType,
+    context: Context
+): ReadonlyArray<FieldSelection> {
     const allFieldNodes: ReadonlyArray<FieldNode> = resolveSelections(selections, context);
-    const allButSystemFieldNodes = allFieldNodes.filter(node => !node.name.value.startsWith('__'));
+    const allButSystemFieldNodes = allFieldNodes.filter(
+        node => !node.name.value.startsWith('__') || (context.includeTypenameFields && node.name.value === '__typename')
+    );
     const fieldNodesByPropertyName = groupArray(allButSystemFieldNodes, selection => getAliasOrName(selection));
-    return Array.from(fieldNodesByPropertyName).map(([propertyName, fieldNodes]) =>
-        new FieldSelection(propertyName, buildFieldRequest(fieldNodes, parentType, context)));
+    return Array.from(fieldNodesByPropertyName).map(
+        ([propertyName, fieldNodes]) =>
+            new FieldSelection(propertyName, buildFieldRequest(fieldNodes, parentType, context))
+    );
 }
 
 /**
@@ -169,12 +211,25 @@ function distillSelections(selections: ReadonlyArray<SelectionNode>, parentType:
  *
  * Not supported are unions, interfaces and possibly other features.
  */
-function buildFieldRequest(fieldNodes: Array<FieldNode>, parentType: GraphQLCompositeType, context: Context): FieldRequest {
+function buildFieldRequest(
+    fieldNodes: Array<FieldNode>,
+    parentType: GraphQLCompositeType,
+    context: Context
+): FieldRequest {
     const fieldName = fieldNodes[0].name.value;
 
     if (!(parentType instanceof GraphQLObjectType)) {
         throw new Error(`Interfaces and union types are not supported yet`);
     }
+    if (fieldName === '__typename') {
+        return new FieldRequest({
+            field: TypeNameMetaFieldDef,
+            parentType,
+            schema: context.schema,
+            fieldNodes
+        });
+    }
+
     const fieldDef = parentType.getFields()[fieldName];
     if (!fieldDef) {
         throw new Error(`Field ${fieldName} is not defined in parent type ${parentType}`);
@@ -183,7 +238,7 @@ function buildFieldRequest(fieldNodes: Array<FieldNode>, parentType: GraphQLComp
     let selections: ReadonlyArray<FieldSelection> = [];
     const compositeFieldType = unwrapToCompositeType(fieldDef.type);
     if (compositeFieldType) {
-        const childFieldNodes = flatMap(fieldNodes, node => node.selectionSet ? node.selectionSet.selections : []);
+        const childFieldNodes = flatMap(fieldNodes, node => (node.selectionSet ? node.selectionSet.selections : []));
         selections = distillSelections(childFieldNodes, compositeFieldType, context);
     }
 

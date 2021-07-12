@@ -3,6 +3,7 @@ import {
     BasicType,
     ConditionalQueryNode,
     FieldQueryNode,
+    LiteralQueryNode,
     NullQueryNode,
     ObjectQueryNode,
     PreExecQueryParms,
@@ -90,6 +91,12 @@ function buildObjectQueryNode(
     let resultNode: QueryNode = new ObjectQueryNode(
         flatMap(distinctFieldRequests, selections => {
             const fieldRequest = selections[0].fieldRequest;
+            if (fieldRequest.fieldName === '__typename') {
+                return selections.map(
+                    s => new PropertySpecification(s.propertyName, new LiteralQueryNode(fieldRequest.parentType.name))
+                );
+            }
+
             const field = fieldMap.get(fieldRequest.fieldName);
             if (!field) {
                 throw new Error(`Missing field ${fieldRequest.fieldName}`);
