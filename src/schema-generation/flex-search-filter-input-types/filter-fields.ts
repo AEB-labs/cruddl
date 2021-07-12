@@ -17,7 +17,11 @@ import {
     FILTER_FIELD_PREFIX_SEPARATOR,
     ID_FIELD,
     INPUT_FIELD_EQUAL,
+    INPUT_FIELD_GT,
+    INPUT_FIELD_GTE,
     INPUT_FIELD_IN,
+    INPUT_FIELD_LT,
+    INPUT_FIELD_LTE,
     INPUT_FIELD_NOT,
     INPUT_FIELD_NOT_IN,
     INPUT_FIELD_NOT_STARTS_WITH,
@@ -126,9 +130,14 @@ export class FlexSearchScalarOrEnumFieldFilterField implements FlexSearchFilterF
             valueNode = new FieldPathQueryNode(sourceNode, path.concat(this.field));
         }
         const literalNode = new LiteralQueryNode(filterValue);
-        if ((this.operatorPrefix == undefined || this.operatorPrefix === '') && filterValue == null) {
+        if (
+            (this.operatorPrefix == undefined ||
+                this.operatorPrefix === '' ||
+                this.operatorPrefix === INPUT_FIELD_LTE) &&
+            filterValue == null
+        ) {
             return new BinaryOperationQueryNode(
-                this.resolveOperator(valueNode, literalNode, this.flexSearchLanguage),
+                new BinaryOperationQueryNode(valueNode, BinaryOperator.EQUAL, NullQueryNode.NULL),
                 BinaryOperator.OR,
                 not(new FlexSearchFieldExistsQueryNode(valueNode, this.flexSearchLanguage))
             );
@@ -140,9 +149,9 @@ export class FlexSearchScalarOrEnumFieldFilterField implements FlexSearchFilterF
                 not(new FlexSearchFieldExistsQueryNode(valueNode, this.flexSearchLanguage))
             );
         }
-        if (this.operatorPrefix == INPUT_FIELD_NOT && filterValue == null) {
+        if ((this.operatorPrefix == INPUT_FIELD_NOT || this.operatorPrefix === INPUT_FIELD_GT) && filterValue == null) {
             return new BinaryOperationQueryNode(
-                this.resolveOperator(valueNode, literalNode, this.flexSearchLanguage),
+                new BinaryOperationQueryNode(valueNode, BinaryOperator.UNEQUAL, NullQueryNode.NULL),
                 BinaryOperator.AND,
                 new FlexSearchFieldExistsQueryNode(valueNode, this.flexSearchLanguage)
             );
@@ -153,6 +162,14 @@ export class FlexSearchScalarOrEnumFieldFilterField implements FlexSearchFilterF
                 BinaryOperator.AND,
                 new FlexSearchFieldExistsQueryNode(valueNode, this.flexSearchLanguage)
             );
+        }
+
+        if (this.operatorPrefix === INPUT_FIELD_LT && filterValue === null) {
+            return ConstBoolQueryNode.FALSE;
+        }
+
+        if (this.operatorPrefix === INPUT_FIELD_GTE && filterValue === null) {
+            return ConstBoolQueryNode.TRUE;
         }
 
         if (this.operatorPrefix == INPUT_FIELD_NOT_STARTS_WITH && filterValue === '') {

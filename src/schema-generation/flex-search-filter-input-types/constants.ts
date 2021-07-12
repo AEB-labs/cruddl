@@ -62,10 +62,10 @@ export const STRING_FLEX_SEARCH_FILTER_OPERATORS: {
     ) => QueryNode;
 } = {
     ...FLEX_SEARCH_FILTER_OPERATORS,
-    [INPUT_FIELD_LT]: binaryOp(BinaryOperator.FLEX_LESS_THAN),
-    [INPUT_FIELD_LTE]: binaryOp(BinaryOperator.FLEX_LESS_THAN_OR_EQUAL),
-    [INPUT_FIELD_GT]: binaryOp(BinaryOperator.FLEX_GREATER_THAN),
-    [INPUT_FIELD_GTE]: binaryOp(BinaryOperator.FLEX_GREATER_THAN_OR_EQUAL)
+    [INPUT_FIELD_LT]: binaryOp(BinaryOperator.FLEX_STRING_LESS_THAN),
+    [INPUT_FIELD_LTE]: binaryOp(BinaryOperator.FLEX_STRING_LESS_THAN_OR_EQUAL),
+    [INPUT_FIELD_GT]: binaryOp(BinaryOperator.FLEX_STRING_GREATER_THAN),
+    [INPUT_FIELD_GTE]: binaryOp(BinaryOperator.FLEX_STRING_GREATER_THAN_OR_EQUAL)
 };
 
 export const STRING_FLEX_SEARCH_FILTER_FIELDS = [
