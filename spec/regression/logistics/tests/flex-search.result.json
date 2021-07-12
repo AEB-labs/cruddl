@@ -77,6 +77,31 @@
             ]
         }
     },
+    "expressionWithoutResults": {
+        "data": {
+            "flexSearchDeliveries": []
+        }
+    },
+    "emptyExpression": {
+        "data": {
+            "flexSearchDeliveries": [
+                {
+                    "deliveryNumber": "1000173"
+                },
+                {
+                    "deliveryNumber": "1000521"
+                },
+                {
+                    "deliveryNumber": "1000522"
+                }
+            ]
+        }
+    },
+    "expressionWithNoTokens": {
+        "data": {
+            "flexSearchDeliveries": []
+        }
+    },
     "gt_lt_number": {
         "data": {
             "flexSearchDeliveries": [

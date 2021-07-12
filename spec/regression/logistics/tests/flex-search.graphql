@@ -44,6 +44,26 @@ query expression {
     }
 }
 
+query expressionWithoutResults {
+    flexSearchDeliveries(flexSearchExpression: "thisdoesnotexist") {
+        deliveryNumber
+    }
+}
+
+# treated like it's not specified, so you can pipe through a search filed to this value
+query emptyExpression {
+    flexSearchDeliveries(flexSearchExpression: "") {
+        deliveryNumber
+    }
+}
+
+# treated like you searched for something that could no be found
+query expressionWithNoTokens {
+    flexSearchDeliveries(flexSearchExpression: "-") {
+        deliveryNumber
+    }
+}
+
 query gt_lt_number {
     flexSearchDeliveries(flexSearchFilter: { itemsAggregation: { quantity_lt: 5 } }) {
         deliveryNumber

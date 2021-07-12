@@ -134,7 +134,7 @@ export class FlexSearchGenerator {
             : undefined;
         const filterNode = simplifyBooleans(filterType.getFilterNode(itemVariable, filterValue, [], info));
         const searchFilterNode = simplifyBooleans(
-            this.buildFlexSearchSearchFilterNode(rootEntityType, itemVariable, expression)
+            this.buildFlexSearchExpressionFilterNode(rootEntityType, itemVariable, expression)
         );
         if (searchFilterNode === ConstBoolQueryNode.TRUE) {
             return filterNode;
@@ -212,13 +212,13 @@ export class FlexSearchGenerator {
         };
     }
 
-    private buildFlexSearchSearchFilterNode(
+    private buildFlexSearchExpressionFilterNode(
         rootEntityType: RootEntityType,
         itemVariable: VariableQueryNode,
         expression?: string
     ): QueryNode {
         if (!expression || expression == '') {
-            return new ConstBoolQueryNode(true);
+            return ConstBoolQueryNode.TRUE;
         }
 
         function getQueryNodeFromField(field: Field, path: Field[] = []): QueryNode {
