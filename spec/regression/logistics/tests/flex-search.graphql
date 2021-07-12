@@ -49,3 +49,9 @@ query gt_lt_number {
         deliveryNumber
     }
 }
+
+query id {
+    flexSearchDeliveries(flexSearchFilter: { id: "@{ids/Delivery/1}" }) {
+        deliveryNumber
+    }
+}
