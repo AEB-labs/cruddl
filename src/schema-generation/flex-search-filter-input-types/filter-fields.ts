@@ -8,12 +8,14 @@ import {
     LiteralQueryNode,
     NullQueryNode,
     QueryNode,
+    RootEntityIDQueryNode,
     RuntimeErrorQueryNode
 } from '../../query-tree';
 import { FlexSearchFieldExistsQueryNode } from '../../query-tree/flex-search';
 import {
     AND_FILTER_FIELD,
     FILTER_FIELD_PREFIX_SEPARATOR,
+    ID_FIELD,
     INPUT_FIELD_EQUAL,
     INPUT_FIELD_IN,
     INPUT_FIELD_NOT,
@@ -114,7 +116,15 @@ export class FlexSearchScalarOrEnumFieldFilterField implements FlexSearchFilterF
             return new ConstBoolQueryNode(true);
         }
 
-        const valueNode = new FieldPathQueryNode(sourceNode, path.concat(this.field));
+        let valueNode;
+        if (this.field.declaringType.isRootEntityType && this.field.isSystemField && this.field.name === ID_FIELD) {
+            if (path.length) {
+                throw new Error(`Tried to create cross-root-entity flexSearch filter`);
+            }
+            valueNode = new RootEntityIDQueryNode(sourceNode);
+        } else {
+            valueNode = new FieldPathQueryNode(sourceNode, path.concat(this.field));
+        }
         const literalNode = new LiteralQueryNode(filterValue);
         if ((this.operatorPrefix == undefined || this.operatorPrefix === '') && filterValue == null) {
             return new BinaryOperationQueryNode(
