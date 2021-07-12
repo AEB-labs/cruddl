@@ -801,7 +801,11 @@ register(OperatorWithLanguageQueryNode, (node, context) => {
         case BinaryOperatorWithLanguage.FLEX_SEARCH_CONTAINS_ANY_WORD:
             return aql`ANALYZER( ${lhs} IN TOKENS(${rhs}, ${analyzer}),${analyzer})`;
         case BinaryOperatorWithLanguage.FLEX_SEARCH_CONTAINS_PREFIX:
-            return aql`ANALYZER( STARTS_WITH( ${lhs}, TOKENS(${rhs},${analyzer})[0]), ${analyzer})`;
+            // can't pass NULL to STARTS_WITH (generates an error)
+            // if an expression does not have a token, nothing can contain a prefix thereof, so we don't find anything
+            // this is also good behavior in case of searching because you just find nothing if you type special chars
+            // instead of finding everything
+            return aql`(LENGTH(TOKENS(${rhs},${analyzer})) ? ANALYZER( STARTS_WITH( ${lhs}, TOKENS(${rhs},${analyzer})[0]), ${analyzer}) : false)`;
         case BinaryOperatorWithLanguage.FLEX_SEARCH_CONTAINS_PHRASE:
             return aql`ANALYZER( PHRASE( ${lhs}, ${rhs}), ${analyzer})`;
         default:
