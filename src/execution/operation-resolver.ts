@@ -70,7 +70,10 @@ export class OperationResolver {
             if (logger.isTraceEnabled()) {
                 logger.trace(`Operation: ${print(operationInfo.operation)}`);
             }
-            const operation = distillOperation(operationInfo);
+            const operation = distillOperation({
+                ...operationInfo,
+                includeTypenameFields: options?.handleTypenameFields
+            });
             if (logger.isTraceEnabled()) {
                 logger.trace(`DistilledOperation: ${operation.describe()}`);
             }

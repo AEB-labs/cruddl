@@ -8,6 +8,7 @@ import {
 import { getVariableValues } from 'graphql/execution/values';
 import { globalContext } from '../config/global';
 import { DatabaseAdapter } from '../database/database-adapter';
+import { resolveSelections } from '../graphql/field-collection';
 import { extractOperation } from '../graphql/operations';
 import { Project } from '../project/project';
 import { InvalidProjectError } from '../project/invalid-project-error';
@@ -118,21 +119,31 @@ export class SchemaExecutor {
                 variableValues: variableValues || {}
             },
             rootType,
-            args.options
+            {
+                ...args.options,
+                handleTypenameFields: true
+            }
         );
     }
 
     private validate(args: SchemaExecutionArgs): ValidationResult {
         const operation = extractOperation(args.document, args.operationName);
-        // TODO check for introspection in fragments
-        if (operation.selectionSet.selections.some(sel => sel.kind === 'Field' && sel.name.value.startsWith('__'))) {
-            // contains introspection query
-            return { canExecute: false, errorMessage: 'query contains introspection fields' };
-        }
         const fragments = args.document.definitions.filter(def => def.kind === 'FragmentDefinition') as ReadonlyArray<
             FragmentDefinitionNode
         >;
         const fragmentMap = arrayToObject(fragments, fr => fr.name.value);
+        const rootSelections = resolveSelections(operation.selectionSet.selections, {
+            fragments: fragmentMap,
+            variableValues: args.variableValues || {}
+        });
+        if (
+            rootSelections.some(
+                sel => sel.kind === 'Field' && sel.name.value.startsWith('__') && sel.name.value !== '__typename'
+            )
+        ) {
+            // contains introspection query
+            return { canExecute: false, errorMessage: 'Operation contains introspection fields' };
+        }
 
         // this is a deep import, might want to import the function
         const { coerced: variableValues, errors: variableErrors } = getVariableValues(

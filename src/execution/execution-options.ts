@@ -75,6 +75,11 @@ export interface ExecutionOptions {
      * The amount of days until an element is shown as overdue in the ttl-info
      */
     readonly timeToLiveOverdueDelta?: number;
+
+    /**
+     * If true, __typename fields will be resolved to their values. Only needed if executed outside of a regular graphql engine
+     */
+    readonly handleTypenameFields?: boolean;
 }
 
 export interface ExecutionOptionsCallbackArgs {
