@@ -86,6 +86,7 @@ class QueryContext {
     private preExecQueries: AQLCompoundQuery[] = [];
     private readAccessedCollections = new Set<string>();
     private writeAccessedCollections = new Set<string>();
+    private extensions: Map<unknown, unknown> | undefined;
 
     /**
      * Creates a new QueryContext with an independent variable map except that all query result variables of this
@@ -194,6 +195,22 @@ class QueryContext {
         }
     }
 
+    withExtension(key: unknown, value: unknown): QueryContext {
+        const newContext = new QueryContext();
+        newContext.variableMap = this.variableMap;
+        newContext.readAccessedCollections = this.readAccessedCollections;
+        newContext.writeAccessedCollections = this.writeAccessedCollections;
+        newContext.extensions = new Map([...(this.extensions ? this.extensions.entries() : []), [key, value]]);
+        return newContext;
+    }
+
+    getExtension(key: unknown): unknown {
+        if (!this.extensions) {
+            return undefined;
+        }
+        return this.extensions.get(key);
+    }
+
     /**
      * Gets an AQLFragment that evaluates to the value of a variable in the current scope
      */
@@ -252,6 +269,8 @@ function createAQLCompoundQuery(
 }
 
 type NodeProcessor<T extends QueryNode> = (node: T, context: QueryContext) => AQLFragment;
+
+const inFlexSearchFilterSymbol = Symbol('inFlexSearchFilter');
 
 namespace aqlExt {
     export function safeJSONKey(key: string): AQLFragment {
@@ -417,7 +436,7 @@ register(RevisionQueryNode, (node, context) => {
 });
 
 register(FlexSearchQueryNode, (node, context) => {
-    let itemContext = context.introduceVariable(node.itemVariable);
+    let itemContext = context.introduceVariable(node.itemVariable).withExtension(inFlexSearchFilterSymbol, true);
     const viewName = getFlexSearchViewNameForRootEntity(node.rootEntityType!);
     context.addCollectionAccess(viewName, AccessType.READ);
     return aqlExt.parenthesizeList(
@@ -703,9 +722,11 @@ register(BinaryOperationQueryNode, (node, context) => {
     const lhs = processNode(node.lhs, context);
 
     // a > NULL is equivalent to a != NULL, and it can use indices better
+    // (but don't do it in flexsearch, there > NULL is something different from != NULL
     if (
         node.operator === BinaryOperator.UNEQUAL &&
-        (node.rhs instanceof NullQueryNode || (node.rhs instanceof LiteralQueryNode && node.rhs.value == undefined))
+        (node.rhs instanceof NullQueryNode || (node.rhs instanceof LiteralQueryNode && node.rhs.value == undefined)) &&
+        !context.getExtension(inFlexSearchFilterSymbol)
     ) {
         return aql`(${lhs} > NULL)`;
     }
@@ -758,13 +779,13 @@ register(BinaryOperationQueryNode, (node, context) => {
             return aql`CONCAT(${lhs}, ${rhs})`;
         case BinaryOperator.PREPEND:
             return aql`CONCAT(${rhs}, ${lhs})`;
-        case BinaryOperator.FLEX_LESS_THAN:
+        case BinaryOperator.FLEX_STRING_LESS_THAN:
             return aql`IN_RANGE(${lhs}, ${''} , ${rhs}, true, false)`;
-        case BinaryOperator.FLEX_LESS_THAN_OR_EQUAL:
+        case BinaryOperator.FLEX_STRING_LESS_THAN_OR_EQUAL:
             return aql`IN_RANGE(${lhs}, ${''} , ${rhs}, true, true)`;
-        case BinaryOperator.FLEX_GREATER_THAN:
+        case BinaryOperator.FLEX_STRING_GREATER_THAN:
             return aql`IN_RANGE(${lhs}, ${rhs}, ${String.fromCodePoint(0x10ffff)}, false, true)`;
-        case BinaryOperator.FLEX_GREATER_THAN_OR_EQUAL:
+        case BinaryOperator.FLEX_STRING_GREATER_THAN_OR_EQUAL:
             return aql`IN_RANGE(${lhs}, ${rhs}, ${String.fromCodePoint(0x10ffff)}, true, true)`;
         default:
             throw new Error(`Unsupported binary operator: ${op}`);

@@ -1,0 +1,70 @@
+query stringEqualsNull {
+    flexSearchCountries(flexSearchFilter: { someKey: null }) {
+        isoCode
+        someKey
+    }
+}
+
+query stringNotEqualsNull {
+    flexSearchCountries(flexSearchFilter: { someKey_not: null }) {
+        isoCode
+        someKey
+    }
+}
+
+query stringGreaterThanNull {
+    flexSearchCountries(flexSearchFilter: { someKey_gt: null }) {
+        isoCode
+        someKey
+    }
+}
+
+query stringGreaterThanOrEqualNull {
+    flexSearchCountries(flexSearchFilter: { someKey_gte: null }) {
+        isoCode
+        someKey
+    }
+}
+
+query stringLessThanNull {
+    flexSearchCountries(flexSearchFilter: { someKey_lt: null }) {
+        isoCode
+        someKey
+    }
+}
+
+query stringLessThanOrEqualNull {
+    flexSearchCountries(flexSearchFilter: { someKey_lte: null }) {
+        isoCode
+        someKey
+    }
+}
+
+query stringInNull {
+    flexSearchCountries(flexSearchFilter: { someKey_in: [null, "1"] }) {
+        isoCode
+        someKey
+    }
+}
+
+query stringNotInNull {
+    flexSearchCountries(flexSearchFilter: { someKey_not_in: [null, "1"] }) {
+        isoCode
+        someKey
+    }
+}
+
+# won't do anything
+query stringStartsWithNull {
+    flexSearchCountries(flexSearchFilter: { someKey_starts_with: null }) {
+        isoCode
+        someKey
+    }
+}
+
+query stringNotStartsWithNull {
+    flexSearchCountries(flexSearchFilter: { someKey_not_starts_with: null }) {
+        isoCode
+        someKey
+    }
+}
