@@ -20,11 +20,24 @@ export class SidecarSchemaValidator implements ParsedSourceValidator {
         return validate.errors.map(
             (err): ValidationMessage => {
                 const path = reformatPath(err.dataPath);
-                if (path in source.pathLocationMap) {
-                    const loc = source.pathLocationMap[path];
-                    return ValidationMessage.error(err.message!, loc);
+
+                // we allow top-level additional properties because they indicate new features, so it might be ok to omit them
+                const isWarning =
+                    !err.dataPath.includes('.') && err.message === 'should NOT have additional properties';
+                if (isWarning) {
+                    if (path in source.pathLocationMap) {
+                        const loc = source.pathLocationMap[path];
+                        return ValidationMessage.warn(err.message!, loc);
+                    } else {
+                        return ValidationMessage.warn(`${err.message} (at ${err.dataPath})`, undefined);
+                    }
                 } else {
-                    return ValidationMessage.error(`${err.message} (at ${err.dataPath})`, undefined);
+                    if (path in source.pathLocationMap) {
+                        const loc = source.pathLocationMap[path];
+                        return ValidationMessage.error(err.message!, loc);
+                    } else {
+                        return ValidationMessage.error(`${err.message} (at ${err.dataPath})`, undefined);
+                    }
                 }
             }
         );

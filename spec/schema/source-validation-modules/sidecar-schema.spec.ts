@@ -1,4 +1,4 @@
-import { ValidationContext, ValidationMessage } from '../../../src/model/validation';
+import { Severity, ValidationContext, ValidationMessage } from '../../../src/model/validation';
 import { ProjectSource } from '../../../src/project/source';
 import { SidecarSchemaValidator } from '../../../src/schema/preparation/source-validation-modules/sidecar-schema';
 import { expect } from 'chai';
@@ -90,6 +90,15 @@ describe('sidecar-schema validator', () => {
     it('accepts valid json files', () => {
         const messages = getValidatorMessages(new ProjectSource('file.json', validValue));
         expect(messages).to.deep.equal([]);
+    });
+
+    it('warns about unsupported properties on root level', () => {
+        const messages = getValidatorMessages(
+            new ProjectSource('file.json', JSON.stringify({ unsupportedRootField: {} }))
+        );
+        expect(messages.length).to.equal(1);
+        expect(messages[0].message).to.equal('should NOT have additional properties');
+        expect(messages[0].severity).to.equal(Severity.Warning);
     });
 
     it('reports errors in files with comments', () => {
