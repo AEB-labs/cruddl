@@ -560,6 +560,9 @@ register(BinaryOperationQueryNode, (node, context) => {
             return js`String(${lhs}) + String(${rhs})`;
         case BinaryOperator.PREPEND:
             return js`String(${rhs}) + String(${lhs})`;
+        case BinaryOperator.SUBTRACT_LISTS:
+            const itemVar = js.variable('item');
+            return js`(${lhs}).filter(${itemVar} => !${rhs}.includes(${itemVar}))`;
         default:
             throw new Error(`Unsupported binary operator: ${op}`);
     }

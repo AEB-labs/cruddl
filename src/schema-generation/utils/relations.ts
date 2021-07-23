@@ -2,6 +2,8 @@ import { Field, Multiplicity, RelationDeleteAction, RelationSide, RootEntityType
 import { RelationSegment } from '../../model/implementation/collect-path';
 import {
     AddEdgesQueryNode,
+    BinaryOperationQueryNode,
+    BinaryOperator,
     DeleteEntitiesQueryNode,
     EdgeFilter,
     EdgeIdentifier,
@@ -344,9 +346,15 @@ function getPreEntityRemovalStatementsForRelationSide(
 
     switch (relationSide.deleteAction) {
         case RelationDeleteAction.RESTRICT:
+            let idsNode = mapToIDNodesWithOptimizations(collectNode);
+            // for recursive relations, make sure objects to-be-deleted don't block the deletion
+            if (relationSide.sourceType === relationSide.targetType) {
+                idsNode = new BinaryOperationQueryNode(idsNode, BinaryOperator.SUBTRACT_LISTS, sourceIDsNode);
+            }
+
             return [
                 new PreExecQueryParms({
-                    query: mapToIDNodesWithOptimizations(collectNode),
+                    query: idsNode,
                     resultValidator: new NoRestrictingObjectsOnDeleteValidator({
                         restrictedRootEntityType: context.originalRootEntityType,
                         restrictingRootEntityType: relationSide.targetType,

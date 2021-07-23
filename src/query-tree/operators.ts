@@ -94,6 +94,8 @@ export class BinaryOperationQueryNode extends QueryNode {
                 return 'APPEND';
             case BinaryOperator.PREPEND:
                 return 'PREPEND';
+            case BinaryOperator.SUBTRACT_LISTS:
+                return 'SUBTRACT_LISTS';
             default:
                 return '(unknown operator)';
         }
@@ -144,7 +146,12 @@ export enum BinaryOperator {
     DIVIDE = 'DIVIDE',
     MODULO = 'MODULO',
     APPEND = 'APPEND',
-    PREPEND = 'PREPEND'
+    PREPEND = 'PREPEND',
+
+    /**
+     * Calculates the asymmetric difference between two lists
+     */
+    SUBTRACT_LISTS = 'SUBTRACT_LISTS'
 }
 
 /**

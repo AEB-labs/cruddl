@@ -778,6 +778,8 @@ register(BinaryOperationQueryNode, (node, context) => {
             return aql`CONCAT(${lhs}, ${rhs})`;
         case BinaryOperator.PREPEND:
             return aql`CONCAT(${rhs}, ${lhs})`;
+        case BinaryOperator.SUBTRACT_LISTS:
+            return aql`MINUS(${lhs}, ${rhs})`;
         case BinaryOperator.FLEX_STRING_LESS_THAN:
             return aql`IN_RANGE(${lhs}, ${''} , ${rhs}, true, false)`;
         case BinaryOperator.FLEX_STRING_LESS_THAN_OR_EQUAL:

@@ -2,13 +2,6 @@
     "createEdges": {
         "data": {
             "updateMain": {
-                "key": "m2"
-            }
-        }
-    },
-    "deleteSuccessfully": {
-        "data": {
-            "deleteMain": {
                 "key": "m1"
             }
         }
@@ -16,23 +9,26 @@
     "deleteRestricted": {
         "errors": [
             {
-                "message": "Cannot delete Main object because 2 Blocker objects are still referenced via blockers (ids: @{ids/Blocker/2}, @{ids/Blocker/3})",
+                "message": "Cannot delete Main object because a Main object is still referenced via blockingMains (id: @{ids/Main/3})",
                 "locations": [
                     {
-                        "line": 14,
+                        "line": 8,
                         "column": 5
                     }
                 ],
-                "path": ["deleteMain"]
+                "path": ["deleteMains"]
             }
         ],
         "data": {
-            "deleteMain": null
+            "deleteMains": null
         }
     },
-    "everything": {
+    "everything1": {
         "data": {
             "allMains": [
+                {
+                    "key": "m1"
+                },
                 {
                     "key": "m2"
                 },
@@ -42,19 +38,29 @@
                 {
                     "key": "m4"
                 }
-            ],
-            "allBlockers": [
+            ]
+        }
+    },
+    "deleteSuccessfully": {
+        "data": {
+            "deleteMains": [
                 {
-                    "key": "b1"
+                    "key": "m1"
                 },
                 {
-                    "key": "b2"
+                    "key": "m2"
                 },
                 {
-                    "key": "b3"
-                },
+                    "key": "m3"
+                }
+            ]
+        }
+    },
+    "everything2": {
+        "data": {
+            "allMains": [
                 {
-                    "key": "b4"
+                    "key": "m4"
                 }
             ]
         }
