@@ -6,6 +6,9 @@ type Main @rootEntity {
     alternativeDependents: [AlternativeDependent] @relation(onDelete: CASCADE)
 
     blockers: [Blocker] @relation(onDelete: RESTRICT)
+
+    blockingMains: [Main] @relation(onDelete: RESTRICT)
+    blockedMain: Main @relation(inverseOf: "blockingMains")
 }
 
 type Dependent @rootEntity {
