@@ -128,6 +128,14 @@ The back link can be omitted. If you however only omit the `inverseOf` argument 
 
 In ArangoDB, relations are stored in an edge collection with the name `orders_customer` (the plural of the source object combined with the field name).
 
+### onDelete actions
+
+When a root entity is deleted, all related edges are deleted as well, but the related objects are left untouched. Forward relations (`@relation` without an `inverseOf` argument) can specify the `onDelete` argument to change this default behavior.
+
+If `onDelete: RESTRICT` is configured, deletion is prevented if there are still objects linked with this relation. The related objects or the relations need to be deleted before the object can be deleted. This can either be done in its own operation or as a separate mutation field in the same operation that comes before the delete mutation field. On self-recursive relations (e.g. to child objects of the same type), you can also specify the parent and child ids in one `deleteObjects` or `deleteAllObjects` mutation.
+
+If `onDelete: CASCADE` is configured, objects in this relation will be deleted alongside the object itself. If the related object has relations with `onDelete: CASCADE`, those will be deleted as well. This mode cannot be used recursively; it is a validation error in the model if a recursion is detected. It also can only be used on 1-to-n and m-to-n relations.
+
 ### References
 
 References allow to link to a root entity from any field, not only from another root entity. In contrast to relations, it is however not possible to navigate from the referenced object to the referencing object.
@@ -440,15 +448,117 @@ type Order @rootEntity {
 }
 ```
 
-## Predefined types
+### Index options (unique and sparse)
 
-## DateTime
+Aside from the field list, indices have two options: `unique` and `sparse`. The field directives only have the `sparse` option because `@unique` is its own directive.
 
-`DateTime` is a scalar that holds a ISO-8601-encoded date/time string.
+-   If `unique` is set, a unique constraint is created. This constraint ensures that there are no two root entities with the same value for this field. The index cannot be created (the creation will fail) if there are already conflicting root entities, and following creations and updates will throw an error if the constraint would be violated through this change.
 
-## JSON
+-   `sparse` determines whether `null` values will be included in the index. If the option is set to `true`, `null` values will be omitted. Regular indices are non-sparse by default, unique indices are sparse by default. Unique sparse indices allow the value `null` in at most one root entity. For non-unique indices, the `sparse` option reduces index size, but it disqualifies the index to be used in some cases. For example, a sparse index cannot be used for sorting unless there also is a filter that makes sure no `null` values can be returned (even if there are actually no `null` values currently in the database).
 
-The scalar `JSON` can hold any JSON value. In ArangoDB, it is not stored in serialized form but as its actual value.
+## Scalar types
+
+### Text types
+
+#### String
+
+The `String` scalar type represents textual data, represented as UTF-8 character sequences. The String type is most often used by GraphQL to represent free-form human-readable text.
+
+#### ID
+
+The `ID` scalar type represents a unique identifier, often used to refetch an object or as key for a cache. The ID type appears in a JSON response as a String; however, it is not intended to be human-readable. When expected as an input type, any string (such as `"4"`) or integer (such as `4`) input value will be accepted as an ID.
+
+#### I18nString
+
+The `I18nString` scalar type represents an internationalized string.
+
+Structurally, the `I18nString` type is equivalent to the `StringMap` type. Keys are ISO 639-1 language codes, and values are the localized strings. In the future, more specific features may be added to this type, so it is preferred over the "StringMap" type to represent internationalized strings.
+
+Values are _not_ additionally JSON-encoded or JSON-parsed, so e.g. pass a raw JSON object here instead of a JSON-representation of that object.
+
+### Numeric types
+
+#### Int
+
+The `Int` scalar type represents non-fractional signed whole numeric values. Int can represent values between -(2^31) and 2^31 - 1.
+
+#### Float
+
+The `Float` scalar type represents signed double-precision fractional values as specified by [IEEE 754](https://en.wikipedia.org/wiki/IEEE_floating_point).
+
+#### Int53
+
+The `Int53` scalar type represents non-fractional signed whole numeric values. `Int53` can represent values between -(2^53) and 2^53 - 1.
+
+Values of this type are serialized as numbers in GraphQL and JSON representations. The numeric range of this type corresponds to the safe integer range of an IEEE 754 double precision binary floating-point value.
+
+#### Decimal1, Decimal2, Decimal3
+
+The `Decimal1`, `Decimal2`, and `Decimal3` scalar types represent signed numeric values with up to 1, 2, or 3, respectively, decimal digits. All three types can represent values between -1000000000.0 and 1000000000.0.
+
+Values of this type are serialized as numbers in GraphQL and JSON representations. The value is always rounded to the respective amount of decimal digit.
+
+### Date / Time types
+
+#### DateTime
+
+The `DateTime` scalar type represents a point in time in UTC, in a format specified by ISO 8601, such as `2007-12-03T10:15:30Z` or `2007-12-03T10:15:30.123Z`.
+
+This scalar type rejects values without timezone specifier or with a timezone other than UTC. See also `LocalDate` and `LocalTime` for values without timezone specifier. To store Date/time values with timezones other than UTC, define a value object type with the fields you need.
+
+The _second_ part is added if not specified, e.g. `2007-12-03T12:34Z` is converted to `2007-12-03T12:34:00Z`. Second fraction digits are cut off at the nearest three-digit group, e.g. `2007-12-03T00:00:00.1234Z` is converted to `2007-12-03T00:00:00.123400Z`.
+
+Values with leap seconds are shifted back by one second, but this behavior should not be relied upon.
+
+#### LocalDate
+
+The `LocalDate` scalar type represents a date without time zone in a format specified by ISO 8601, such as 2007-12-03.
+
+#### LocalTime
+
+The `LocalTime` scalar type represents a time without time zone in a format specified by ISO 8601, such as 10:15:30 or 17:05:03.521.
+
+The valid range is between 00:00:00 and 23:59:59.999999999. 24:00 is not allowed to avoid bugs in clients that treat 24:00 as 0:00.
+
+The seconds part is cut off if it is zero, e.g. 12:34:00 is converted to 12:34. Second fraction digits are cut off at the nearest three-digit group, e.g. 00:00:00.1234 is converted to 00:00:00.123400.
+
+Leap seconds can not be specified.
+
+#### OffsetDateTime
+
+The `OffsetDateTime` scalar type represents a point in time with a timezone offset, in a format specified by ISO 8601, such as `2007-12-03T10:15:30+01:00` or `2007-12-03T10:15:30.123Z`.
+
+Only use this type for timestamps that are inherently tied to a location and the timezone offset should be calculated eagerly. To only store a point in time, use `DateTime`.
+
+The _second_ part is added if not specified, e.g. `2007-12-03T12:34Z` is converted to `2007-12-03T12:34:00Z`. Offset specifier `Z` is accepted but will be converted to `+00:00`. Leap seconds are not supported.
+
+### Other types
+
+#### Boolean
+
+The `Boolean` scalar type represents `true` or `false`.
+
+#### JSON
+
+The `JSON` scalar type represents an arbitrary JSON value. This can be a string, number, boolean, array, or object.
+
+Values are _not_ additionally JSON-encoded or JSON-parsed, so e.g. pass a raw JSON object here instead of a JSON-representation of that object.
+
+#### JSONObject
+
+The `JSONObject` scalar type represents a JSON object type with arbitrary properties.
+
+This is similar to the `JSON` scalar type but disallows arrays, strings, numbers, and booleans.
+
+Values are _not_ additionally JSON-encoded or JSON-parsed, so e.g. pass a raw JSON object here instead of a JSON-representation of that object.
+
+#### StringMap
+
+The `StringMap` scalar type consists of a JSON object with only strings as values.
+
+This type can be used for key-value mappings where fetching keys without values or values without keys does not make sense. For arbitrary maps, the "JSONObject" type can be used instead.
+
+Values are _not_ additionally JSON-encoded or JSON-parsed, so e.g. pass a raw JSON object here instead of a JSON-representation of that object.
 
 ## System fields
 
