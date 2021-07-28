@@ -11,7 +11,7 @@ describe('graphql-rules validator', () => {
     const validator = new GraphQLRulesValidator();
 
     function getParsedProjectSource(ps: ProjectSource): ParsedProjectSource {
-        const parsedProjectSource = parseProjectSource(ps, new ValidationContext());
+        const parsedProjectSource = parseProjectSource(ps, {}, new ValidationContext());
         expect(parsedProjectSource).not.to.be.undefined;
         return parsedProjectSource as ParsedProjectSource;
     }

@@ -32,6 +32,15 @@ export interface ModelValidationOptions {
     readonly forbiddenRootEntityNames?: ReadonlyArray<string>;
 }
 
+export interface ModelOptions {
+    /**
+     * Determines whether a slash in a source name indicates the target namespace for that source
+     *
+     * Defaults to true. Explicitly specify false to disable this.
+     */
+    readonly useSourceDirectoriesAsNamespaces?: boolean;
+}
+
 export interface ProjectOptions {
     readonly loggerProvider?: LoggerProvider;
     readonly profileConsumer?: (profile: RequestProfile) => void;
@@ -39,6 +48,7 @@ export interface ProjectOptions {
 
     readonly schemaOptions?: SchemaOptions;
     readonly modelValidationOptions?: ModelValidationOptions;
+    readonly modelOptions?: ModelOptions;
 
     /**
      * Should return a token object that is the same for all field resolves of one operation, but different for each
