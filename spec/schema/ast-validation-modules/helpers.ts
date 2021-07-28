@@ -75,7 +75,7 @@ export function validate(
     );
     const sourceResults = validateSource(projectSource);
     const validationContext = new ValidationContext();
-    const parsedSource = parseProjectSource(projectSource, validationContext);
+    const parsedSource = parseProjectSource(projectSource, {}, validationContext);
     let parsedSourceResults: ValidationResult | undefined;
     if (parsedSource) {
         parsedSourceResults = validateParsedProjectSource(parsedSource);

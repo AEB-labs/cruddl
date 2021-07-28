@@ -30,7 +30,7 @@ import {
     ValidationResult
 } from '../model';
 import { MessageLocation } from '../model/';
-import { Project } from '../project/project';
+import { Project, ProjectOptions } from '../project/project';
 import { ProjectSource, SourceType } from '../project/source';
 import { SchemaGenerator } from '../schema-generation';
 import { flatMap, PlainObject } from '../utils/utils';
@@ -159,12 +159,13 @@ function mergeAST(doc1: DocumentNode, doc2: DocumentNode): DocumentNode {
  */
 export function parseProject(project: Project, validationContext: ValidationContext): ParsedProject {
     return {
-        sources: compact(project.sources.map(source => parseProjectSource(source, validationContext)))
+        sources: compact(project.sources.map(source => parseProjectSource(source, project.options, validationContext)))
     };
 }
 
 function parseYAMLSource(
     projectSource: ProjectSource,
+    options: ProjectOptions,
     validationContext: ValidationContext
 ): ParsedObjectProjectSource | undefined {
     const root: YAMLNode | undefined = load(projectSource.body);
@@ -204,7 +205,10 @@ function parseYAMLSource(
 
     return {
         kind: ParsedProjectSourceBaseKind.OBJECT,
-        namespacePath: getNamespaceFromSourceName(projectSource.name),
+        namespacePath:
+            options.modelOptions?.useSourceDirectoriesAsNamespaces === false
+                ? []
+                : getNamespaceFromSourceName(projectSource.name),
         object: (yamlData as PlainObject) || {},
         pathLocationMap: pathLocationMap
     };
@@ -212,6 +216,7 @@ function parseYAMLSource(
 
 function parseJSONSource(
     projectSource: ProjectSource,
+    options: ProjectOptions,
     validationContext: ValidationContext
 ): ParsedObjectProjectSource | undefined {
     if (projectSource.body.trim() === '') {
@@ -262,7 +267,10 @@ function parseJSONSource(
 
     return {
         kind: ParsedProjectSourceBaseKind.OBJECT,
-        namespacePath: getNamespaceFromSourceName(projectSource.name),
+        namespacePath:
+            options.modelOptions?.useSourceDirectoriesAsNamespaces === false
+                ? []
+                : getNamespaceFromSourceName(projectSource.name),
         object: (data as PlainObject) || {},
         pathLocationMap: jsonPathLocationMap
     };
@@ -270,6 +278,7 @@ function parseJSONSource(
 
 function parseGraphQLsSource(
     projectSource: ProjectSource,
+    options: ProjectOptions,
     validationContext: ValidationContext
 ): ParsedGraphQLProjectSource | undefined {
     if (projectSource.body.trim() === '') {
@@ -291,22 +300,26 @@ function parseGraphQLsSource(
 
     return {
         kind: ParsedProjectSourceBaseKind.GRAPHQL,
-        namespacePath: getNamespaceFromSourceName(projectSource.name),
+        namespacePath:
+            options.modelOptions?.useSourceDirectoriesAsNamespaces === false
+                ? []
+                : getNamespaceFromSourceName(projectSource.name),
         document: document
     };
 }
 
 export function parseProjectSource(
     projectSource: ProjectSource,
+    options: ProjectOptions,
     validationContext: ValidationContext
 ): ParsedProjectSource | undefined {
     switch (projectSource.type) {
         case SourceType.YAML:
-            return parseYAMLSource(projectSource, validationContext);
+            return parseYAMLSource(projectSource, options, validationContext);
         case SourceType.JSON:
-            return parseJSONSource(projectSource, validationContext);
+            return parseJSONSource(projectSource, options, validationContext);
         case SourceType.GRAPHQLS:
-            return parseGraphQLsSource(projectSource, validationContext);
+            return parseGraphQLsSource(projectSource, options, validationContext);
         default:
             throw new Error(`Unexpected project source type: ${projectSource.type}`);
     }

@@ -2,9 +2,9 @@ import { ValidationContext, ValidationMessage } from '../../../src/model/validat
 import { ProjectSource } from '../../../src/project/source';
 import { parseProjectSource } from '../../../src/schema/schema-builder';
 
-export function getMessages(ps: ProjectSource): ValidationMessage[] {
+export function getMessages(source: ProjectSource): ValidationMessage[] {
     const validationContext = new ValidationContext();
-    parseProjectSource(ps, validationContext);
+    parseProjectSource(source, {}, validationContext);
 
     return validationContext.asResult().messages;
 }

@@ -8,7 +8,7 @@ describe('permission-profile-validator', () => {
     const validator = new PermissionProfileValidator();
 
     function getValidatorMessages(ps: ProjectSource): ReadonlyArray<ValidationMessage> {
-        const parsedSource = parseProjectSource(ps, new ValidationContext());
+        const parsedSource = parseProjectSource(ps, {}, new ValidationContext());
         if (parsedSource) {
             return validator.validate(parsedSource);
         }

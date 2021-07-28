@@ -64,7 +64,7 @@ describe('sidecar-schema validator', () => {
     const validator = new SidecarSchemaValidator();
 
     function getValidatorMessages(ps: ProjectSource): ValidationMessage[] {
-        const parsedSource = parseProjectSource(ps, new ValidationContext());
+        const parsedSource = parseProjectSource(ps, {}, new ValidationContext());
         if (parsedSource) {
             return validator.validate(parsedSource);
         }
