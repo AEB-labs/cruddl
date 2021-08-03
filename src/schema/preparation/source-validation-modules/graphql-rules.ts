@@ -1,26 +1,37 @@
-import { ParsedProjectSource, ParsedProjectSourceBaseKind } from '../../../config/parsed-project';
-import { ParsedSourceValidator } from '../ast-validator';
-import { ValidationMessage } from '../../../model';
 import {
-    buildASTSchema, DocumentNode, GraphQLError, KnownArgumentNamesRule, KnownDirectivesRule, KnownTypeNamesRule,
-    Location, ProvidedRequiredArgumentsRule, UniqueArgumentNamesRule, UniqueDirectivesPerLocationRule,
-    UniqueInputFieldNamesRule, validate, ValuesOfCorrectTypeRule, VariablesInAllowedPositionRule
+    buildASTSchema,
+    DocumentNode,
+    GraphQLError,
+    KnownDirectivesRule,
+    Location,
+    UniqueArgumentNamesRule,
+    UniqueDirectivesPerLocationRule,
+    UniqueEnumValueNamesRule,
+    validate,
+    ValuesOfCorrectTypeRule,
+    VariablesInAllowedPositionRule
 } from 'graphql';
-import { CORE_SCALARS, DIRECTIVES } from '../../graphql-base';
 import gql from 'graphql-tag';
+import { KnownArgumentNamesOnDirectivesRule } from 'graphql/validation/rules/KnownArgumentNamesRule';
+import { ProvidedRequiredArgumentsOnDirectivesRule } from 'graphql/validation/rules/ProvidedRequiredArgumentsRule';
+import { ParsedProjectSource, ParsedProjectSourceBaseKind } from '../../../config/parsed-project';
+import { ValidationMessage } from '../../../model';
+import { CORE_SCALARS, DIRECTIVES } from '../../graphql-base';
+import { ParsedSourceValidator } from '../ast-validator';
 
 // Only include rules that are relevant for schema files
-// This is not only for efficiency - specifiedRules also includes ExecutableOperationRule which disallows all type
-// definitions, but it is not exported so we can't exclude it.
+// there is a non-public export specifiedSDLRules, but we only include those relevant for us. Some rules apply to
+// stuff we don't support like extensions, and for other rules, we have our own validators (e.g. name collision is done
+// in the model and extended with collisions with system fields)
 const rules = [
     KnownDirectivesRule,
     UniqueDirectivesPerLocationRule,
-    KnownArgumentNamesRule,
+    KnownArgumentNamesOnDirectivesRule,
     UniqueArgumentNamesRule,
+    UniqueEnumValueNamesRule,
     ValuesOfCorrectTypeRule,
-    ProvidedRequiredArgumentsRule,
-    VariablesInAllowedPositionRule,
-    UniqueInputFieldNamesRule
+    ProvidedRequiredArgumentsOnDirectivesRule,
+    VariablesInAllowedPositionRule
 ];
 
 export class GraphQLRulesValidator implements ParsedSourceValidator {
@@ -31,23 +42,24 @@ export class GraphQLRulesValidator implements ParsedSourceValidator {
 
         let ast = source.document;
 
-        return validate(coreSchema, ast, rules).map(error => ValidationMessage.error(error.message, getMessageLocation(error)));
+        return validate(coreSchema, ast, rules).map(error =>
+            ValidationMessage.error(error.message, getMessageLocation(error))
+        );
     }
 }
 
-function getMessageLocation(error: GraphQLError): Location|undefined {
+function getMessageLocation(error: GraphQLError): Location | undefined {
     if (!error.nodes || !error.nodes.length) {
         return undefined;
     }
     return error.nodes[0].loc;
 }
 
-
 const schemaBase: DocumentNode = gql`
     schema {
         query: DummyQueryType___
     }
-    
+
     type DummyQueryType___ {
         field: ID
     }
@@ -55,11 +67,7 @@ const schemaBase: DocumentNode = gql`
 
 const coreSchema = buildASTSchema({
     kind: 'Document',
-    definitions: [
-        ...DIRECTIVES.definitions,
-        ...CORE_SCALARS.definitions,
-        ...schemaBase.definitions
-    ]
+    definitions: [...DIRECTIVES.definitions, ...CORE_SCALARS.definitions, ...schemaBase.definitions]
 });
 
 function getDescriptionFromSyntaxError(error: GraphQLError) {
