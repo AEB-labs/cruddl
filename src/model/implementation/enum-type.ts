@@ -55,5 +55,8 @@ export class EnumValue implements ModelComponent {
             context.addMessage(ValidationMessage.error(`Enums cannot define value "${this.value}".`, this.astNode));
             return;
         }
+        if (this.value.toUpperCase() !== this.value) {
+            context.addMessage(ValidationMessage.warn(`Enum values should be UPPER_CASE.`, this.astNode));
+        }
     }
 }
