@@ -1,5 +1,7 @@
 import { EnumValueDefinitionNode } from 'graphql';
 import { EnumTypeConfig, EnumValueConfig, TypeKind } from '../config';
+import { ValidationContext, ValidationMessage } from '../validation';
+import { ModelComponent } from '../validation/validation-context';
 import { EnumValueLocalization } from './i18n';
 import { Model } from './model';
 import { TypeBase } from './type-base';
@@ -20,9 +22,16 @@ export class EnumType extends TypeBase {
     readonly isValueObjectType: false = false;
     readonly isScalarType: false = false;
     readonly isEnumType: true = true;
+
+    validate(context: ValidationContext) {
+        super.validate(context);
+        for (const value of this.values) {
+            value.validate(context);
+        }
+    }
 }
 
-export class EnumValue {
+export class EnumValue implements ModelComponent {
     readonly value: string;
     readonly description: string | undefined;
     readonly deprecationReason: string | undefined;
@@ -37,5 +46,14 @@ export class EnumValue {
 
     public getLocalization(resolutionOrder: ReadonlyArray<string>): EnumValueLocalization {
         return this.declaringType.model.i18n.getEnumValueLocalization(this, resolutionOrder);
+    }
+
+    validate(context: ValidationContext) {
+        if (this.value === 'true' || this.value === 'false' || this.value === 'null') {
+            // this is a graphql restriction, but there is no validator for this
+            // see https://github.com/graphql/graphql-js/issues/3221
+            context.addMessage(ValidationMessage.error(`Enums cannot define value "${this.value}".`, this.astNode));
+            return;
+        }
     }
 }
