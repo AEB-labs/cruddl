@@ -1,5 +1,10 @@
 import { gql } from 'graphql-tag';
-import { assertValidatorAcceptsAndDoesNotWarn, assertValidatorRejects } from './helpers';
+import {
+    assertValidatorAccepts,
+    assertValidatorAcceptsAndDoesNotWarn,
+    assertValidatorRejects,
+    assertValidatorWarns
+} from './helpers';
 
 describe('enum declaration validation', () => {
     it('accepts regular enums', () => {
@@ -21,6 +26,18 @@ describe('enum declaration validation', () => {
                 }
             `,
             'Enums cannot define value "true".'
+        );
+    });
+
+    it('warns about lowercase enum values', () => {
+        assertValidatorWarns(
+            gql`
+                enum Color {
+                    GOOD
+                    bad
+                }
+            `,
+            'Enum values should be UPPER_CASE.'
         );
     });
 });
