@@ -371,6 +371,97 @@ const typeDefs = gql`
         "The billingEntityTypes that define the billing configuration."
         billingEntityTypes: [BillingEntityType!]!
     }
+
+    type Subscription {
+        schema: Schema
+    }
+
+    """
+    Provides meta information about types and fields
+
+    This differs from the GraphQL introspection types like \`__Schema\` in that it excludes auto-generated types and
+    fields like input types or the \`count\` field for lists, and it provides additional type information like type
+    kinds and relations.
+    """
+    type Schema {
+        "A list of all user-defined and system-provided types"
+        types: [Type!]!
+
+        "Finds a type by its name"
+        type(name: String!): Type
+
+        "A list of all root entity types in all namespaces"
+        rootEntityTypes: [RootEntityType!]!
+
+        """
+        Finds a root entity type by its name.
+
+        Returns \`null\` if the type does not exist or is not a root entity type.
+        """
+        rootEntityType(name: String!): RootEntityType
+
+        "A list of all child entity types"
+        childEntityTypes: [ChildEntityType!]!
+
+        """
+        Finds a child entity type by its name.
+
+        Returns \`null\` if the type does not exist or is not a child entity type.
+        """
+        childEntityType(name: String!): ChildEntityType
+
+        "A list of all entity extension types"
+        entityExtensionTypes: [EntityExtensionType!]!
+
+        """
+        Finds an entity extension type by its name.
+
+        Returns \`null\` if the type does not exist or is not an entity extension type.
+        """
+        entityExtensionType(name: String!): EntityExtensionType
+
+        "A list of all value object types"
+        valueObjectTypes: [ValueObjectType!]!
+
+        """
+        Finds a value object type by its name.
+
+        Returns \`null\` if the type does not exist or is not a value object type.
+        """
+        valueObjectType(name: String!): ValueObjectType
+
+        "A list of all scalar types, including predefined ones."
+        scalarTypes: [ScalarType!]!
+
+        """
+        Finds a scalar type by its name.
+
+        Returns \`null\` if the type does not exist or is not a scalar type.
+        """
+        scalarType(name: String!): ScalarType
+
+        "A list of all enum types"
+        enumTypes: [EnumType!]!
+
+        """
+        Finds an enum type by its name.
+
+        Returns \`null\` if the type does not exist or is not an enum type.
+        """
+        enumType(name: String!): EnumType
+
+        "A list of all namespaces (including nested ones)"
+        namespaces: [Namespace!]!
+
+        """Finds a namespace by its path segments"""
+        namespace("The path segments, e.g. \`[\\"logistics\\", \\"packaging\\"]\`" path: [String!]!): Namespace
+
+        "The root namespace"
+        rootNamespace: Namespace!
+
+        "The billingEntityTypes that define the billing configuration."
+        billingEntityTypes: [BillingEntityType!]!
+    }
 `;
 
 export interface I18nSchemaContextPart {
@@ -404,6 +495,36 @@ export function getMetaSchema(model: Model): GraphQLSchema {
             rootNamespace: () => model.rootNamespace,
             namespace: (_, { path }) => model.getNamespaceByPath(path),
             billingEntityTypes: () => model.billingEntityTypes
+        },
+        // to be used within the subscription type, so we don't use the "Query" type there in case we want to add something there
+        Schema: {
+            types: () => model.types,
+            type: (_, { name }) => model.getType(name),
+            rootEntityTypes: () => model.rootEntityTypes,
+            rootEntityType: (_, { name }) => model.getRootEntityType(name),
+            childEntityTypes: () => model.childEntityTypes,
+            childEntityType: (_, { name }) => model.getChildEntityType(name),
+            entityExtensionTypes: () => model.entityExtensionTypes,
+            entityExtensionType: (_, { name }) => model.getEntityExtensionType(name),
+            valueObjectTypes: () => model.valueObjectTypes,
+            valueObjectType: (_, { name }) => model.getValueObjectType(name),
+            scalarTypes: () => model.scalarTypes,
+            scalarType: (_, { name }) => model.getScalarType(name),
+            enumTypes: () => model.enumTypes,
+            enumType: (_, { name }) => model.getEnumType(name),
+            namespaces: () => model.namespaces,
+            rootNamespace: () => model.rootNamespace,
+            namespace: (_, { path }) => model.getNamespaceByPath(path),
+            billingEntityTypes: () => model.billingEntityTypes
+        },
+        Subscription: {
+            schema: {
+                resolve: a => a,
+                subscribe: async function* subscribeToSchema() {
+                    yield {};
+                    await new Promise(resolve => {}); /* never resolve */
+                }
+            }
         },
         Type: {
             __resolveType: (type: unknown) => resolveType(type as Type)
