@@ -136,7 +136,7 @@ export const DIRECTIVES: DocumentNode = gql`
     directive @index(sparse: Boolean = false) on FIELD_DEFINITION
 
     "Declares a field to be indexed with FlexSearch"
-    directive @flexSearch(includeInSearch: Boolean = false) on FIELD_DEFINITION
+    directive @flexSearch(includeInSearch: Boolean = false, caseSensitive: Boolean = true) on FIELD_DEFINITION
 
     "Declares a field to be indexed with FlexSearch with a Text Analyzer"
     directive @flexSearchFulltext(language: FlexSearchLanguage, includeInSearch: Boolean = false) on FIELD_DEFINITION

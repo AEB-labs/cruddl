@@ -44,6 +44,7 @@ import {
     COLLECT_PATH_ARG,
     DEFAULT_VALUE_DIRECTIVE,
     ENTITY_EXTENSION_DIRECTIVE,
+    FLEX_SEARCH_CASE_SENSITIVE_ARGUMENT,
     FLEX_SEARCH_DEFAULT_LANGUAGE_ARG,
     FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE,
     FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT,
@@ -367,6 +368,21 @@ function createFlexSearchDefinitionInputs(
     return config;
 }
 
+function getIsFlexSearchIndexCaseSensitive(fieldNode: FieldDefinitionNode, context: ValidationContext): boolean {
+    const directive = findDirectiveWithName(fieldNode, FLEX_SEARCH_INDEXED_DIRECTIVE);
+    if (directive) {
+        const argument = getNodeByName(directive.arguments, FLEX_SEARCH_CASE_SENSITIVE_ARGUMENT);
+        if (argument) {
+            if (argument.value.kind === 'BooleanValue') {
+                return argument.value.value;
+            } else {
+                context.addMessage(ValidationMessage.error(VALIDATION_ERROR_EXPECTED_BOOLEAN, argument.value.loc));
+            }
+        }
+    }
+    return true;
+}
+
 function getIsIncludedInSearch(fieldNode: FieldDefinitionNode, context: ValidationContext): boolean {
     const directive = findDirectiveWithName(fieldNode, FLEX_SEARCH_INDEXED_DIRECTIVE);
     if (directive) {
@@ -478,6 +494,7 @@ function createFieldInput(fieldNode: FieldDefinitionNode, context: ValidationCon
         typeName: getTypeNameIgnoringNonNullAndList(fieldNode.type),
         typeNameAST: getNamedTypeNodeIgnoringNonNullAndList(fieldNode.type).name,
         isFlexSearchIndexed: hasDirectiveWithName(fieldNode, FLEX_SEARCH_INDEXED_DIRECTIVE),
+        isFlexSearchIndexCaseSensitive: getIsFlexSearchIndexCaseSensitive(fieldNode, context),
         isFlexSearchIndexedASTNode: findDirectiveWithName(fieldNode, FLEX_SEARCH_INDEXED_DIRECTIVE),
         isFlexSearchFulltextIndexed: hasDirectiveWithName(fieldNode, FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE),
         isFlexSearchFulltextIndexedASTNode: findDirectiveWithName(fieldNode, FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE),
