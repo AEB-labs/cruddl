@@ -14,6 +14,7 @@ import {
 } from './migrations';
 
 export const IDENTITY_ANALYZER = 'identity';
+export const NORM_CI_ANALYZER = 'norm_ci';
 export const FLEX_SEARCH_VIEW_PREFIX = 'flex_view_';
 
 export interface FlexSearchPrimarySortConfig {
@@ -155,8 +156,11 @@ function getPropertiesFromDefinition(
         if (field.isFlexSearchFulltextIndexed && field.flexSearchLanguage) {
             analyzers.push(getAnalyzerFromFlexSearchLanguage(field.flexSearchLanguage));
         }
-        if (field.isFlexSearchIndexed) {
+        if (field.isFlexSearchIndexed && field.isFlexSearchIndexCaseSensitive) {
             analyzers.push(IDENTITY_ANALYZER);
+        }
+        if (field.isFlexSearchIndexed && !field.isFlexSearchIndexCaseSensitive) {
+            analyzers.push(NORM_CI_ANALYZER);
         }
         if (_.isEqual(analyzers, [IDENTITY_ANALYZER])) {
             return {};

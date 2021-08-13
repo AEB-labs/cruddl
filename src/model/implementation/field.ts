@@ -1513,6 +1513,10 @@ export class Field implements ModelComponent {
         return !!this.input.isFlexSearchIndexed;
     }
 
+    get isFlexSearchIndexCaseSensitive(): boolean {
+        return this.input.isFlexSearchIndexCaseSensitive ?? true;
+    }
+
     get isFlexSearchFulltextIndexed(): boolean {
         return !!this.input.isFlexSearchFulltextIndexed;
     }

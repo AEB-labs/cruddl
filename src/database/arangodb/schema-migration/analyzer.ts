@@ -1,4 +1,5 @@
 import { CollectionType, Database } from 'arangojs';
+import deepEqual from 'deep-equal';
 import { ProjectOptions } from '../../../config/interfaces';
 import { Logger } from '../../../config/logging';
 import { Model, RootEntityType } from '../../../model';
@@ -9,15 +10,19 @@ import {
     calculateRequiredArangoSearchViewDropOperations,
     calculateRequiredArangoSearchViewUpdateOperations,
     getFlexSearchViewNameForRootEntity,
-    getRequiredViewsFromModel
+    getRequiredViewsFromModel,
+    NORM_CI_ANALYZER
 } from './arango-search-helpers';
 import { calculateRequiredIndexOperations, getRequiredIndicesFromModel, IndexDefinition } from './index-helpers';
 import {
+    CreateArangoSearchAnalyzerMigration,
+    CreateArangoSearchAnalyzerMigrationConfig,
     CreateDocumentCollectionMigration,
     CreateEdgeCollectionMigration,
     CreateIndexMigration,
     DropIndexMigration,
-    SchemaMigration
+    SchemaMigration,
+    UpdateArangoSearchAnalyzerMigration
 } from './migrations';
 
 export class SchemaAnalyzer {
@@ -141,6 +146,23 @@ export class SchemaAnalyzer {
      * @param model
      */
     async getArangoSearchMigrations(model: Model): Promise<ReadonlyArray<SchemaMigration>> {
+        const requiredAnalyzers = this.getRequiredAnalyzers();
+        const analyzerUpdates: SchemaMigration[] = [];
+        for (const requiredAnalyzer of requiredAnalyzers) {
+            const analyzer = this.db.analyzer(requiredAnalyzer.name);
+            if (await analyzer.exists()) {
+                const existingAnalyzer = await analyzer.get();
+                if (
+                    existingAnalyzer.type !== requiredAnalyzer.options.type ||
+                    !deepEqual(existingAnalyzer.properties, requiredAnalyzer.options.properties)
+                ) {
+                    analyzerUpdates.push(new UpdateArangoSearchAnalyzerMigration(requiredAnalyzer));
+                }
+            } else {
+                analyzerUpdates.push(new CreateArangoSearchAnalyzerMigration(requiredAnalyzer));
+            }
+        }
+
         // the views that match the model
         const requiredViews = getRequiredViewsFromModel(model);
         // the currently existing views
@@ -167,6 +189,22 @@ export class SchemaAnalyzer {
             configuration
         );
 
-        return [...viewsToCreate, ...viewsToDrop, ...viewsToUpdate];
+        return [...analyzerUpdates, ...viewsToCreate, ...viewsToDrop, ...viewsToUpdate];
+    }
+
+    private getRequiredAnalyzers(): ReadonlyArray<CreateArangoSearchAnalyzerMigrationConfig> {
+        return [
+            {
+                name: NORM_CI_ANALYZER,
+                options: {
+                    type: 'norm',
+                    properties: {
+                        locale: 'en',
+                        case: 'lower',
+                        accent: false
+                    }
+                }
+            }
+        ];
     }
 }
