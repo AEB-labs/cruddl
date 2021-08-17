@@ -1,0 +1,20 @@
+{
+    "m": {
+        "data": {
+            "createValues": [
+                {
+                    "limit": 10
+                }
+            ]
+        }
+    },
+    "q": {
+        "data": {
+            "allValues": [
+                {
+                    "limit": 10
+                }
+            ]
+        }
+    }
+}

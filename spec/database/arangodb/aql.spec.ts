@@ -32,11 +32,7 @@ describe('aql', () => {
     });
 
     it('can join lines', () => {
-        const fragment = aql.lines(
-            aql`{`,
-            aql`  flag: ${true}`,
-            aql`}`
-        );
+        const fragment = aql.lines(aql`{`, aql`  flag: ${true}`, aql`}`);
         expect(fragment.getCode().code).to.equal('{\n  flag: @var1\n}');
         expect(fragment.toString()).to.equal('{\n  flag: true\n}');
         console.log(fragment.toColoredString());
@@ -44,10 +40,7 @@ describe('aql', () => {
 
     it('can indent lines', () => {
         const items = [123, 456, 42].map(number => aql`2 * ${number}`);
-        const fragment = aql.lines(
-            aql`[`,
-            aql.indent(aql.join(items, aql`,\n`)),
-            aql`]`);
+        const fragment = aql.lines(aql`[`, aql.indent(aql.join(items, aql`,\n`)), aql`]`);
         const oldValue = aqlConfig.enableIndentationForCode;
         aqlConfig.enableIndentationForCode = true;
         expect(fragment.getCode().code).to.equal('[\n  2 * @var1,\n  2 * @var2,\n  2 * @var3\n]');
@@ -78,12 +71,14 @@ describe('aql', () => {
         const tmp1 = new AQLVariable('label');
         const tmp2 = new AQLVariable('label');
         const fragment = aql`LET ${tmp1} = [ 1, 2, 3] FOR ${tmp2} IN ${tmp1} RETURN ${tmp2} * 2`;
-        expect(fragment.getCode().code).to.equal(`LET v_label1 = [ 1, 2, 3] FOR v_label2 IN v_label1 RETURN v_label2 * 2`);
+        expect(fragment.getCode().code).to.equal(
+            `LET v_label1 = [ 1, 2, 3] FOR v_label2 IN v_label1 RETURN v_label2 * 2`
+        );
     });
 
     describe('collection', () => {
         it('accepts normal names', () => {
-            expect(aql.collection('deliveries').getCode().code).to.equal('deliveries');
+            expect(aql.collection('deliveries').getCode().code).to.equal('@@deliveries');
         });
 
         it('rejects strange collection names', () => {

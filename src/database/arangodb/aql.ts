@@ -1,4 +1,4 @@
-import { cyan, magenta } from '../../utils/colors';
+import { blue, cyan, magenta } from '../../utils/colors';
 import { QueryResultValidator } from '../../query-tree';
 import { arrayToObject, flatMap } from '../../utils/utils';
 
@@ -26,7 +26,8 @@ function indentLineBreaks(val: string, level: number) {
 }
 
 export class AQLCodeBuildingContext {
-    private boundValues: any[] = [];
+    private readonly boundValues: any[] = [];
+    private readonly boundCollectionNames = new Set<string>();
     private variableBindings = new Map<AQLVariable, string>();
     private preExecInjectedVariablesMap = new Map<AQLQueryResultVariable, string>();
     private nextIndexPerLabel = new Map<string, number>();
@@ -41,12 +42,14 @@ export class AQLCodeBuildingContext {
     private static getSafeLabel(label: string | undefined): string {
         if (label) {
             // avoid collisions with collection names, functions and keywords
+            // (v_ will never collide with a collection name because collection names are pluralized and v is not a plural)
             label = 'v_' + label;
         }
         if (!label || !aql.isSafeIdentifier(label)) {
             // bail out
             label = AQLCodeBuildingContext.DEFAULT_LABEL;
         }
+        // we prefixed with v_, so we can't collide with a keyword -> no need for ``
         return label;
     }
 
@@ -62,6 +65,11 @@ export class AQLCodeBuildingContext {
         }
         this.boundValues.push(value);
         return AQLCodeBuildingContext.getBoundValueName(index);
+    }
+
+    bindCollectionName(collectionName: string): string {
+        this.boundCollectionNames.add(collectionName);
+        return '@@' + collectionName;
     }
 
     getOrAddVariable(token: AQLVariable): string {
@@ -81,7 +89,15 @@ export class AQLCodeBuildingContext {
     }
 
     getBoundValueMap() {
-        return arrayToObject(this.boundValues, (_, index) => AQLCodeBuildingContext.getBoundValueName(index));
+        let result: { [key: string]: unknown } = {};
+        for (let i = 0; i < this.boundValues.length; i++) {
+            const name = AQLCodeBuildingContext.getBoundValueName(i);
+            result[name] = this.boundValues[i];
+        }
+        for (const collectionName of this.boundCollectionNames) {
+            result['@' + collectionName] = collectionName;
+        }
+        return result;
     }
 
     getPreExecInjectedVariablesMap(): Map<AQLQueryResultVariable, string> {
@@ -182,6 +198,41 @@ export class AQLBoundValue extends AQLFragment {
 
     getCodeWithContext(context: AQLCodeBuildingContext): string {
         return '@' + context.bindValue(this.value);
+    }
+}
+
+export class AQLCollection extends AQLFragment {
+    constructor(public readonly collectionName: string) {
+        super();
+        if (typeof collectionName !== 'string') {
+            throw new Error(
+                `Tried to create AQLCollection with a parameter that is not a string but ${typeof collectionName}`
+            );
+        }
+        // test this here so we are sure we can use it safely as bind parameter name
+        if (!collectionName.match(/^[a-zA-Z0-9_]+$/)) {
+            throw new Error(`Collection name does not follow conventions: ${JSON.stringify(collectionName)}`);
+        }
+        // no need for these, so be safe
+        if (collectionName.startsWith('_')) {
+            throw new Error(`Tried to create AQLCollection with system collection (starts with _): ${collectionName}`);
+        }
+        if (collectionName.startsWith('v_')) {
+            // catch this early - shouldn't happen (v is not a plural), and could cause collisions with variables
+            throw new Error(`Collections can't start with v_`);
+        }
+    }
+
+    toStringWithContext(context: AQLCodeBuildingContext): string {
+        return this.collectionName;
+    }
+
+    toColoredStringWithContext(): string {
+        return blue(this.collectionName);
+    }
+
+    getCodeWithContext(context: AQLCodeBuildingContext): string {
+        return context.bindCollectionName(this.collectionName);
     }
 }
 
@@ -320,18 +371,15 @@ export namespace aql {
     }
 
     export function collection(name: string): AQLFragment {
-        if (!isSafeIdentifier(name)) {
-            throw new Error(`Possibly invalid/unsafe collection name: ${name}`);
-        }
-        // TODO make sure this does not collide with a variable, maybe use bound vars?
-        return code(name);
+        return new AQLCollection(name);
     }
 
     export function identifier(name: string): AQLFragment {
         if (!isSafeIdentifier(name)) {
             throw new Error(`Possibly invalid/unsafe identifier in AQL: ${name}`);
         }
-        return code(name);
+        // could always collide with a (future) keyword, so wrap in ``
+        return code('`' + name + '`');
     }
 
     /**
@@ -347,9 +395,10 @@ export namespace aql {
         return code(JSON.stringify(Number(number)));
     }
 
+    /**
+     * Caution: should only use in .identifier() and NOT .code() because it does not account for keywords
+     */
     export function isSafeIdentifier(str: string) {
-        // being pessimistic for security reasons
-        // TODO collisions with collection names / keywords?
         return typeof str == 'string' && str.match(/^[a-zA-Z0-9_]+$/);
     }
 }
