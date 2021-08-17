@@ -12,7 +12,7 @@ type Hero
     "The hero's screen name"
     name: String @unique @flexSearch @flexSearchFulltext(includeInSearch: true, language: DE)
     age: Int @defaultValue(value: 42) @flexSearch
-    nickNames: [String] @flexSearch
+    nickNames: [String] @flexSearch(caseSensitive: false)
     movies: [Movie] @relation(inverseOf: "heroes")
     skills: [Skill]
     suit: Suit @flexSearch

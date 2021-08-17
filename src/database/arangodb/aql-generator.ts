@@ -817,9 +817,10 @@ register(OperatorWithLanguageQueryNode, (node, context) => {
 register(FlexSearchStartsWithQueryNode, (node, context) => {
     const lhs = processNode(node.lhs, context);
     const rhs = processNode(node.rhs, context);
-    const analyzer = node.flexSearchLanguage ? `text_${node.flexSearchLanguage.toLowerCase()}` : IDENTITY_ANALYZER;
 
-    return aql`ANALYZER(STARTS_WITH(${lhs}, ${rhs}), ${analyzer})`;
+    const analyzer = node.analyzer || IDENTITY_ANALYZER;
+    // use TOKENS to apply the analyzer to rhs
+    return aql`ANALYZER(STARTS_WITH(${lhs}, TOKENS(${rhs},${analyzer})[0]), ${analyzer})`;
 });
 
 register(FlexSearchFieldExistsQueryNode, (node, context) => {

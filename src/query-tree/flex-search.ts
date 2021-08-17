@@ -1,3 +1,4 @@
+import { IDENTITY_ANALYZER } from '../database/arangodb/schema-migration/arango-search-helpers';
 import { FlexSearchLanguage } from '../model/config';
 import { RootEntityType } from '../model/implementation';
 import { binaryOp } from '../schema-generation/utils/input-types';
@@ -108,17 +109,11 @@ export class FlexSearchFieldExistsQueryNode extends QueryNode {
  * A node that performs a FlexSearch STARTS_WITH Operation
  */
 export class FlexSearchStartsWithQueryNode extends QueryNode {
-    constructor(
-        public readonly lhs: QueryNode,
-        public readonly rhs: QueryNode,
-        public readonly flexSearchLanguage?: FlexSearchLanguage
-    ) {
+    constructor(public readonly lhs: QueryNode, public readonly rhs: QueryNode, public readonly analyzer?: string) {
         super();
     }
 
     describe() {
-        return `STARTS_WITH(${this.lhs.describe()},${this.rhs.describe()}, ${
-            this.flexSearchLanguage ? this.flexSearchLanguage.toString() : 'identity'
-        })`;
+        return `STARTS_WITH(${this.lhs.describe()},${this.rhs.describe()}, ${this.analyzer || IDENTITY_ANALYZER})`;
     }
 }

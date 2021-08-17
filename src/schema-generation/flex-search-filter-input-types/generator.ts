@@ -1,5 +1,6 @@
 import { GraphQLEnumType, Thunk } from 'graphql';
 import memorize from 'memorize-decorator';
+import { IDENTITY_ANALYZER, NORM_CI_ANALYZER } from '../../database/arangodb/schema-migration/arango-search-helpers';
 import { FlexSearchLanguage } from '../../model/config';
 import { EnumType, Field, ObjectType, ScalarType, Type } from '../../model/implementation';
 import {
@@ -190,7 +191,8 @@ export class FlexSearchFilterTypeGenerator {
                             this.getComplexFilterOperatorByName(name),
                             name,
                             inputType,
-                            field.flexSearchLanguage
+                            field.flexSearchLanguage,
+                            `text_${field.flexSearchLanguage}`
                         )
                 )
             );
@@ -204,6 +206,7 @@ export class FlexSearchFilterTypeGenerator {
         fieldNode: QueryNode,
         valueNode: QueryNode,
         flexSearchLanguage?: FlexSearchLanguage,
+        analyzer?: string,
         path?: ReadonlyArray<Field>
     ) => QueryNode {
         switch (name) {
@@ -334,7 +337,12 @@ export class FlexSearchFilterTypeGenerator {
                     FILTER_OPERATORS[name],
                     name === INPUT_FIELD_EQUAL ? undefined : name,
                     graphQLEnumType,
-                    field.isFlexSearchIndexed ? field.flexSearchLanguage : undefined
+                    field.isFlexSearchIndexed ? field.flexSearchLanguage : undefined,
+                    field.isFlexSearchIndexed
+                        ? field.flexSearchLanguage
+                        : field.isFlexSearchIndexCaseSensitive
+                        ? IDENTITY_ANALYZER
+                        : NORM_CI_ANALYZER
                 )
         );
     }
@@ -372,7 +380,9 @@ export class FlexSearchFilterTypeGenerator {
                             field,
                             FLEX_SEARCH_FILTER_OPERATORS[name],
                             name,
-                            type.graphQLScalarType
+                            type.graphQLScalarType,
+                            undefined,
+                            field.isFlexSearchIndexCaseSensitive ? IDENTITY_ANALYZER : NORM_CI_ANALYZER
                         )
                 )
             );

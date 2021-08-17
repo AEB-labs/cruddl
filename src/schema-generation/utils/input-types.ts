@@ -50,13 +50,13 @@ export function binaryNotOpWithLanguage(op: BinaryOperatorWithLanguage) {
 }
 
 export function startsWithOp() {
-    return (lhs: QueryNode, rhs: QueryNode, flexSearchLanguage?: FlexSearchLanguage) => {
-        return new FlexSearchStartsWithQueryNode(lhs, rhs, flexSearchLanguage);
+    return (lhs: QueryNode, rhs: QueryNode, flexSearchLanguage?: FlexSearchLanguage, analyzer?: string) => {
+        return new FlexSearchStartsWithQueryNode(lhs, rhs, analyzer);
     };
 }
 
 export function notStartsWithOp() {
-    return (lhs: QueryNode, rhs: QueryNode, flexSearchLanguage?: FlexSearchLanguage) => {
-        return not(new FlexSearchStartsWithQueryNode(lhs, rhs, flexSearchLanguage));
+    return (lhs: QueryNode, rhs: QueryNode, flexSearchLanguage?: FlexSearchLanguage, analyzer?: string) => {
+        return not(new FlexSearchStartsWithQueryNode(lhs, rhs, analyzer));
     };
 }
