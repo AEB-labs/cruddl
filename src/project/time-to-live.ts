@@ -22,7 +22,7 @@ import { getScalarFilterValueNode } from '../schema-generation/filter-input-type
 import { GraphQLLocalDate } from '../schema/scalars/local-date';
 import { decapitalize } from '../utils/utils';
 
-export function getQueryNodeForTTLType(ttlType: TimeToLiveType, executionOptions: ExecutionOptions): QueryNode {
+export function getQueryNodeForTTLType(ttlType: TimeToLiveType, maxCount: number | undefined): QueryNode {
     if (!ttlType.rootEntityType) {
         throw new Error(`The ttlType does not specify a valid rootEntityType.`);
     }
@@ -40,7 +40,7 @@ export function getQueryNodeForTTLType(ttlType: TimeToLiveType, executionOptions
         listNode: new EntitiesQueryNode(ttlType.rootEntityType),
         itemVariable: listItemVar,
         filterNode: getTTLFilter(ttlType.fieldType, ttlType.path, deleteFrom, listItemVar),
-        maxCount: executionOptions.timeToLiveCleanupLimit
+        maxCount
     });
     return generateDeleteAllQueryNode(ttlType.rootEntityType, listQueryNode, {
         resultValue: DeleteEntitiesResultValue.COUNT
