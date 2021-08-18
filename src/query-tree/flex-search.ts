@@ -5,7 +5,7 @@ import { binaryOp } from '../schema-generation/utils/input-types';
 import { decapitalize, indent } from '../utils/utils';
 import { QueryNode } from './base';
 import { ConstBoolQueryNode, LiteralQueryNode } from './literals';
-import { BinaryOperator, BinaryOperatorWithLanguage, OperatorWithLanguageQueryNode } from './operators';
+import { BinaryOperator, BinaryOperatorWithAnalyzer, OperatorWithAnalyzerQueryNode } from './operators';
 import { simplifyBooleans } from './utils';
 import { VariableQueryNode } from './variables';
 
@@ -49,7 +49,7 @@ export class FlexSearchQueryNode extends QueryNode {
 export class FlexSearchComplexOperatorQueryNode extends QueryNode {
     constructor(
         readonly expression: string,
-        readonly comparisonOperator: BinaryOperatorWithLanguage,
+        readonly comparisonOperator: BinaryOperatorWithAnalyzer,
         readonly logicalOperator: BinaryOperator,
         private readonly fieldNode: QueryNode,
         readonly flexSearchLanguage: FlexSearchLanguage
@@ -72,11 +72,11 @@ export class FlexSearchComplexOperatorQueryNode extends QueryNode {
             tokens
                 .map(
                     value =>
-                        new OperatorWithLanguageQueryNode(
+                        new OperatorWithAnalyzerQueryNode(
                             this.fieldNode,
                             this.comparisonOperator,
                             new LiteralQueryNode(value),
-                            this.flexSearchLanguage
+                            `text_${this.flexSearchLanguage!}`
                         ) as QueryNode
                 )
                 .reduce(binaryOp(this.logicalOperator), neutralOperand)
@@ -94,14 +94,12 @@ export interface FlexSearchTokenization {
  * A node that performs an EXISTS Check
  */
 export class FlexSearchFieldExistsQueryNode extends QueryNode {
-    constructor(public readonly sourceNode: QueryNode, public readonly flexSearchLanguage?: FlexSearchLanguage) {
+    constructor(public readonly sourceNode: QueryNode, public readonly analyzer?: string) {
         super();
     }
 
     describe() {
-        return `EXISTS(${this.sourceNode.describe()}, ${
-            this.flexSearchLanguage ? this.flexSearchLanguage.toString() : 'identity'
-        })`;
+        return `EXISTS(${this.sourceNode.describe()}, ${this.analyzer ? this.analyzer.toString() : 'identity'})`;
     }
 }
 

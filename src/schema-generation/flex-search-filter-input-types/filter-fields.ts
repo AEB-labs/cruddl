@@ -1,4 +1,5 @@
 import { getNamedType, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
+import { IDENTITY_ANALYZER, NORM_CI_ANALYZER } from '../../database/arangodb/schema-migration/arango-search-helpers';
 import { Field, FlexSearchLanguage, TypeKind } from '../../model';
 import {
     BinaryOperationQueryNode,
@@ -141,28 +142,28 @@ export class FlexSearchScalarOrEnumFieldFilterField implements FlexSearchFilterF
             return new BinaryOperationQueryNode(
                 new BinaryOperationQueryNode(valueNode, BinaryOperator.EQUAL, NullQueryNode.NULL),
                 BinaryOperator.OR,
-                not(new FlexSearchFieldExistsQueryNode(valueNode, this.flexSearchLanguage))
+                not(new FlexSearchFieldExistsQueryNode(valueNode, this.analyzer))
             );
         }
         if (this.operatorPrefix == INPUT_FIELD_IN && Array.isArray(filterValue) && filterValue.includes(null)) {
             return new BinaryOperationQueryNode(
                 this.resolveOperator(valueNode, literalNode, this.flexSearchLanguage, this.analyzer),
                 BinaryOperator.OR,
-                not(new FlexSearchFieldExistsQueryNode(valueNode, this.flexSearchLanguage))
+                not(new FlexSearchFieldExistsQueryNode(valueNode, this.analyzer))
             );
         }
         if ((this.operatorPrefix == INPUT_FIELD_NOT || this.operatorPrefix === INPUT_FIELD_GT) && filterValue == null) {
             return new BinaryOperationQueryNode(
                 new BinaryOperationQueryNode(valueNode, BinaryOperator.UNEQUAL, NullQueryNode.NULL),
                 BinaryOperator.AND,
-                new FlexSearchFieldExistsQueryNode(valueNode, this.flexSearchLanguage)
+                new FlexSearchFieldExistsQueryNode(valueNode, this.analyzer)
             );
         }
         if (this.operatorPrefix == INPUT_FIELD_NOT_IN && Array.isArray(filterValue) && filterValue.includes(null)) {
             return new BinaryOperationQueryNode(
                 this.resolveOperator(valueNode, literalNode, this.flexSearchLanguage, this.analyzer),
                 BinaryOperator.AND,
-                new FlexSearchFieldExistsQueryNode(valueNode, this.flexSearchLanguage)
+                new FlexSearchFieldExistsQueryNode(valueNode, this.analyzer)
             );
         }
 
@@ -276,13 +277,21 @@ export class FlexSearchNestedObjectFilterField implements FlexSearchFilterField 
             const node = new BinaryOperationQueryNode(
                 new BinaryOperationQueryNode(valueNode, BinaryOperator.EQUAL, literalNode),
                 BinaryOperator.OR,
-                not(new FlexSearchFieldExistsQueryNode(valueNode))
+                not(
+                    new FlexSearchFieldExistsQueryNode(
+                        valueNode,
+                        this.field.isFlexSearchIndexCaseSensitive ? IDENTITY_ANALYZER : NORM_CI_ANALYZER
+                    )
+                )
             );
             if (path.length > 0) {
                 return new BinaryOperationQueryNode(
                     node,
                     BinaryOperator.AND,
-                    new FlexSearchFieldExistsQueryNode(new FieldPathQueryNode(sourceNode, path))
+                    new FlexSearchFieldExistsQueryNode(
+                        new FieldPathQueryNode(sourceNode, path),
+                        this.field.isFlexSearchIndexCaseSensitive ? IDENTITY_ANALYZER : NORM_CI_ANALYZER
+                    )
                 );
             } else {
                 return node;

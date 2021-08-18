@@ -6,7 +6,7 @@ import {
     BasicType,
     BinaryOperationQueryNode,
     BinaryOperator,
-    BinaryOperatorWithLanguage,
+    BinaryOperatorWithAnalyzer,
     ConcatListsQueryNode,
     ConditionalQueryNode,
     ConfirmForBillingQueryNode,
@@ -33,7 +33,7 @@ import {
     NullQueryNode,
     ObjectEntriesQueryNode,
     ObjectQueryNode,
-    OperatorWithLanguageQueryNode,
+    OperatorWithAnalyzerQueryNode,
     OrderDirection,
     OrderSpecification,
     PartialEdgeIdentifier,
@@ -793,21 +793,21 @@ register(BinaryOperationQueryNode, (node, context) => {
     }
 });
 
-register(OperatorWithLanguageQueryNode, (node, context) => {
+register(OperatorWithAnalyzerQueryNode, (node, context) => {
     const lhs = processNode(node.lhs, context);
     const rhs = processNode(node.rhs, context);
-    const analyzer = `text_${node.flexSearchLanguage.toLowerCase()}`;
+    const analyzer = node.analyzer;
 
     switch (node.operator) {
-        case BinaryOperatorWithLanguage.FLEX_SEARCH_CONTAINS_ANY_WORD:
+        case BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_ANY_WORD:
             return aql`ANALYZER( ${lhs} IN TOKENS(${rhs}, ${analyzer}),${analyzer})`;
-        case BinaryOperatorWithLanguage.FLEX_SEARCH_CONTAINS_PREFIX:
+        case BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_PREFIX:
             // can't pass NULL to STARTS_WITH (generates an error)
             // if an expression does not have a token, nothing can contain a prefix thereof, so we don't find anything
             // this is also good behavior in case of searching because you just find nothing if you type special chars
             // instead of finding everything
             return aql`(LENGTH(TOKENS(${rhs},${analyzer})) ? ANALYZER( STARTS_WITH( ${lhs}, TOKENS(${rhs},${analyzer})[0]), ${analyzer}) : false)`;
-        case BinaryOperatorWithLanguage.FLEX_SEARCH_CONTAINS_PHRASE:
+        case BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_PHRASE:
             return aql`ANALYZER( PHRASE( ${lhs}, ${rhs}), ${analyzer})`;
         default:
             throw new Error(`Unsupported operator: ${node.operator}`);
@@ -825,7 +825,7 @@ register(FlexSearchStartsWithQueryNode, (node, context) => {
 
 register(FlexSearchFieldExistsQueryNode, (node, context) => {
     const sourceNode = processNode(node.sourceNode, context);
-    const analyzer = node.flexSearchLanguage ? `text_${node.flexSearchLanguage.toLowerCase()}` : IDENTITY_ANALYZER;
+    const analyzer = node.analyzer ? node.analyzer : IDENTITY_ANALYZER;
 
     return aql`EXISTS(${sourceNode}, "analyzer", ${analyzer})`;
 });

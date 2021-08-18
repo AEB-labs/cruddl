@@ -31,7 +31,7 @@ import {
     NullQueryNode,
     ObjectEntriesQueryNode,
     ObjectQueryNode,
-    OperatorWithLanguageQueryNode,
+    OperatorWithAnalyzerQueryNode,
     OrderClause,
     OrderDirection,
     OrderSpecification,
@@ -948,7 +948,7 @@ register(RemoveEdgesQueryNode, (node, context) => {
     return jsExt.executingFunction(js`${coll} = ${coll}.filter(${jsExt.lambda(edgeVar, edgeShouldStay)});`);
 });
 
-register(OperatorWithLanguageQueryNode, (node, context) => {
+register(OperatorWithAnalyzerQueryNode, (node, context) => {
     throw new FlexSearchOperatorWithLanguageNotSupportedError();
 });
 

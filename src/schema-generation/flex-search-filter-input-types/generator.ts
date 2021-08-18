@@ -6,7 +6,7 @@ import { EnumType, Field, ObjectType, ScalarType, Type } from '../../model/imple
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
-    BinaryOperatorWithLanguage,
+    BinaryOperatorWithAnalyzer,
     ConstBoolQueryNode,
     LiteralQueryNode,
     NullQueryNode,
@@ -211,16 +211,16 @@ export class FlexSearchFilterTypeGenerator {
     ) => QueryNode {
         switch (name) {
             case INPUT_FIELD_CONTAINS_ANY_WORD:
-                return binaryOpWithLanguage(BinaryOperatorWithLanguage.FLEX_SEARCH_CONTAINS_ANY_WORD);
+                return binaryOpWithLanguage(BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_ANY_WORD);
             case INPUT_FIELD_NOT_CONTAINS_ANY_WORD:
-                return binaryNotOpWithLanguage(BinaryOperatorWithLanguage.FLEX_SEARCH_CONTAINS_ANY_WORD);
+                return binaryNotOpWithLanguage(BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_ANY_WORD);
             case INPUT_FIELD_CONTAINS_ALL_WORDS:
                 return (fieldNode: QueryNode, valueNode: QueryNode, flexSearchLanguage?: FlexSearchLanguage) => {
                     if (!flexSearchLanguage) {
                         return new RuntimeErrorQueryNode(noLanguageWasSuppliedError);
                     }
                     return this.generateComplexFilterOperator(
-                        BinaryOperatorWithLanguage.FLEX_SEARCH_CONTAINS_ANY_WORD,
+                        BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_ANY_WORD,
                         BinaryOperator.AND,
                         fieldNode,
                         valueNode,
@@ -234,7 +234,7 @@ export class FlexSearchFilterTypeGenerator {
                     }
                     return not(
                         this.generateComplexFilterOperator(
-                            BinaryOperatorWithLanguage.FLEX_SEARCH_CONTAINS_ANY_WORD,
+                            BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_ANY_WORD,
                             BinaryOperator.AND,
                             fieldNode,
                             valueNode,
@@ -248,7 +248,7 @@ export class FlexSearchFilterTypeGenerator {
                         return new RuntimeErrorQueryNode(noLanguageWasSuppliedError);
                     }
                     return this.generateComplexFilterOperator(
-                        BinaryOperatorWithLanguage.FLEX_SEARCH_CONTAINS_PREFIX,
+                        BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_PREFIX,
                         BinaryOperator.OR,
                         fieldNode,
                         valueNode,
@@ -262,7 +262,7 @@ export class FlexSearchFilterTypeGenerator {
                     }
                     return not(
                         this.generateComplexFilterOperator(
-                            BinaryOperatorWithLanguage.FLEX_SEARCH_CONTAINS_PREFIX,
+                            BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_PREFIX,
                             BinaryOperator.OR,
                             fieldNode,
                             valueNode,
@@ -276,7 +276,7 @@ export class FlexSearchFilterTypeGenerator {
                         return new RuntimeErrorQueryNode(noLanguageWasSuppliedError);
                     }
                     return this.generateComplexFilterOperator(
-                        BinaryOperatorWithLanguage.FLEX_SEARCH_CONTAINS_PREFIX,
+                        BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_PREFIX,
                         BinaryOperator.AND,
                         fieldNode,
                         valueNode,
@@ -290,7 +290,7 @@ export class FlexSearchFilterTypeGenerator {
                     }
                     return not(
                         this.generateComplexFilterOperator(
-                            BinaryOperatorWithLanguage.FLEX_SEARCH_CONTAINS_PREFIX,
+                            BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_PREFIX,
                             BinaryOperator.AND,
                             fieldNode,
                             valueNode,
@@ -299,16 +299,16 @@ export class FlexSearchFilterTypeGenerator {
                     );
                 };
             case INPUT_FIELD_CONTAINS_PHRASE:
-                return binaryOpWithLanguage(BinaryOperatorWithLanguage.FLEX_SEARCH_CONTAINS_PHRASE);
+                return binaryOpWithLanguage(BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_PHRASE);
             case INPUT_FIELD_NOT_CONTAINS_PHRASE:
-                return binaryNotOpWithLanguage(BinaryOperatorWithLanguage.FLEX_SEARCH_CONTAINS_PHRASE);
+                return binaryNotOpWithLanguage(BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_PHRASE);
             default:
                 throw new Error(`Complex Filter for '${name}' is not defined.`);
         }
     }
 
     private generateComplexFilterOperator(
-        comparisonOperator: BinaryOperatorWithLanguage,
+        comparisonOperator: BinaryOperatorWithAnalyzer,
         logicalOperator: BinaryOperator,
         fieldNode: QueryNode,
         valueNode: QueryNode,
