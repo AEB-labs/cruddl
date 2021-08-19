@@ -1458,14 +1458,6 @@ export class Field implements ModelComponent {
             );
             return;
         }
-        if (this.isFlexSearchFulltextIndexed && !this.flexSearchLanguage) {
-            context.addMessage(
-                ValidationMessage.error(
-                    `@flexSearchFulltext requires either a "language" parameter, or a "flexSearchLanguage" must be set in the defining type.`,
-                    this.input.isFlexSearchFulltextIndexedASTNode
-                )
-            );
-        }
         if (
             this.isFlexSearchIndexed &&
             (this.type.isEntityExtensionType || this.type.isValueObjectType) &&
