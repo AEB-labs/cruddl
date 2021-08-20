@@ -236,7 +236,7 @@ export class FlexSearchGenerator {
                 new FieldPathQueryNode(itemVariable, path.concat(field)),
                 BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_PREFIX,
                 new LiteralQueryNode(expression),
-                `text_${field.flexSearchLanguage!}`
+                `text_${field.flexSearchLanguage!.toLowerCase()}`
             );
 
             return new BinaryOperationQueryNode(

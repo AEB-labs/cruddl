@@ -193,7 +193,7 @@ export class FlexSearchFilterTypeGenerator {
                             name,
                             inputType,
                             field.flexSearchLanguage,
-                            `text_${field.flexSearchLanguage}`
+                            `text_${field.flexSearchLanguage!.toLowerCase()}`
                         )
                 )
             );

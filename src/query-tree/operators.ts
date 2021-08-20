@@ -189,7 +189,18 @@ export enum BinaryOperatorWithAnalyzer {
     FLEX_STRING_LESS_THAN = 'FLEX_STRING_LESS_THAN',
     FLEX_STRING_LESS_THAN_OR_EQUAL = 'FLEX_STRING_LESS_THAN_OR_EQUAL',
     FLEX_STRING_GREATER_THAN = 'FLEX_STRING_GREATER_THAN',
-    FLEX_STRING_GREATER_THAN_OR_EQUAL = 'FLEX_STRING_GREATER_THAN_OR_EQUAL'
+    FLEX_STRING_GREATER_THAN_OR_EQUAL = 'FLEX_STRING_GREATER_THAN_OR_EQUAL',
+
+    /**
+     * Strict equality (values of different types are considered unequal)
+     */
+    EQUAL = 'EQUAL',
+
+    /**
+     * Strict inequality (values of different types are considered unequal)
+     */
+    UNEQUAL = 'UNEQUAL',
+    IN = 'IN'
 }
 
 export class ConditionalQueryNode extends QueryNode {
