@@ -76,12 +76,7 @@ export class FlexSearchScalarOrEnumFieldFilterField implements FlexSearchFilterF
 
     constructor(
         public readonly field: Field,
-        public readonly resolveOperator: (
-            fieldNode: QueryNode,
-            valueNode: QueryNode,
-            flexSearchLanguage?: FlexSearchLanguage,
-            analyzer?: string
-        ) => QueryNode,
+        public readonly resolveOperator: (fieldNode: QueryNode, valueNode: QueryNode, analyzer?: string) => QueryNode,
         public readonly operatorPrefix: string | undefined,
         baseInputType: GraphQLInputType,
         public readonly flexSearchLanguage?: FlexSearchLanguage,
@@ -147,7 +142,7 @@ export class FlexSearchScalarOrEnumFieldFilterField implements FlexSearchFilterF
         }
         if (this.operatorPrefix == INPUT_FIELD_IN && Array.isArray(filterValue) && filterValue.includes(null)) {
             return new BinaryOperationQueryNode(
-                this.resolveOperator(valueNode, literalNode, this.flexSearchLanguage, this.analyzer),
+                this.resolveOperator(valueNode, literalNode, this.analyzer),
                 BinaryOperator.OR,
                 not(new FlexSearchFieldExistsQueryNode(valueNode, this.analyzer))
             );
@@ -161,7 +156,7 @@ export class FlexSearchScalarOrEnumFieldFilterField implements FlexSearchFilterF
         }
         if (this.operatorPrefix == INPUT_FIELD_NOT_IN && Array.isArray(filterValue) && filterValue.includes(null)) {
             return new BinaryOperationQueryNode(
-                this.resolveOperator(valueNode, literalNode, this.flexSearchLanguage, this.analyzer),
+                this.resolveOperator(valueNode, literalNode, this.analyzer),
                 BinaryOperator.AND,
                 new FlexSearchFieldExistsQueryNode(valueNode, this.analyzer)
             );
@@ -187,7 +182,7 @@ export class FlexSearchScalarOrEnumFieldFilterField implements FlexSearchFilterF
             return new ConstBoolQueryNode(true);
         }
 
-        return this.resolveOperator(valueNode, literalNode, this.flexSearchLanguage, this.analyzer);
+        return this.resolveOperator(valueNode, literalNode, this.analyzer);
     }
 }
 
@@ -197,12 +192,7 @@ export class FlexSearchScalarOrEnumFilterField implements FlexSearchFilterField 
 
     constructor(
         public readonly field: Field,
-        public readonly resolveOperator: (
-            fieldNode: QueryNode,
-            valueNode: QueryNode,
-            flexSearchLanguage?: FlexSearchLanguage,
-            analyzer?: string
-        ) => QueryNode,
+        public readonly resolveOperator: (fieldNode: QueryNode, valueNode: QueryNode, analyzer?: string) => QueryNode,
         public readonly operatorName: string,
         baseInputType: GraphQLInputType,
         public readonly flexSearchLanguage?: FlexSearchLanguage,
@@ -235,7 +225,7 @@ export class FlexSearchScalarOrEnumFilterField implements FlexSearchFilterField 
     ): QueryNode {
         const valueNode = new FieldPathQueryNode(sourceNode, path.concat(this.field));
         const literalNode = new LiteralQueryNode(filterValue);
-        return this.resolveOperator(valueNode, literalNode, this.flexSearchLanguage, this.analyzer);
+        return this.resolveOperator(valueNode, literalNode, this.analyzer);
     }
 }
 

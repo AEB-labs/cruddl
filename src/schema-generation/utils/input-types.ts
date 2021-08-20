@@ -12,7 +12,6 @@ import {
     UnaryOperator
 } from '../../query-tree';
 
-export const noLanguageWasSuppliedError = 'No Language was supplied';
 export const noAnalyzerWasSuppliedError = 'No Analyzer was supplied';
 
 export function not(value: QueryNode): QueryNode {
@@ -34,7 +33,7 @@ export function binaryNotOp(op: BinaryOperator) {
 }
 
 export function binaryOpWithAnaylzer(op: BinaryOperatorWithAnalyzer) {
-    return (lhs: QueryNode, rhs: QueryNode, flexSearchLanguage?: FlexSearchLanguage, analyzer?: string) => {
+    return (lhs: QueryNode, rhs: QueryNode, analyzer?: string) => {
         if (!analyzer) {
             return new RuntimeErrorQueryNode(noAnalyzerWasSuppliedError);
         }
@@ -43,7 +42,7 @@ export function binaryOpWithAnaylzer(op: BinaryOperatorWithAnalyzer) {
 }
 
 export function binaryNotOpWithAnalyzer(op: BinaryOperatorWithAnalyzer) {
-    return (lhs: QueryNode, rhs: QueryNode, flexSearchLanguage?: FlexSearchLanguage, analyzer?: string) => {
+    return (lhs: QueryNode, rhs: QueryNode, analyzer?: string) => {
         if (!analyzer) {
             return new RuntimeErrorQueryNode(noAnalyzerWasSuppliedError);
         }
@@ -52,13 +51,13 @@ export function binaryNotOpWithAnalyzer(op: BinaryOperatorWithAnalyzer) {
 }
 
 export function startsWithOp() {
-    return (lhs: QueryNode, rhs: QueryNode, flexSearchLanguage?: FlexSearchLanguage, analyzer?: string) => {
+    return (lhs: QueryNode, rhs: QueryNode, analyzer?: string) => {
         return new FlexSearchStartsWithQueryNode(lhs, rhs, analyzer);
     };
 }
 
 export function notStartsWithOp() {
-    return (lhs: QueryNode, rhs: QueryNode, flexSearchLanguage?: FlexSearchLanguage, analyzer?: string) => {
+    return (lhs: QueryNode, rhs: QueryNode, analyzer?: string) => {
         return not(new FlexSearchStartsWithQueryNode(lhs, rhs, analyzer));
     };
 }

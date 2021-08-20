@@ -42,7 +42,7 @@ import {
     and,
     binaryNotOpWithAnalyzer,
     binaryOpWithAnaylzer,
-    noLanguageWasSuppliedError,
+    noAnalyzerWasSuppliedError,
     not
 } from '../utils/input-types';
 import {
@@ -203,35 +203,29 @@ export class FlexSearchFilterTypeGenerator {
 
     private getComplexFilterOperatorByName(
         name: string
-    ): (
-        fieldNode: QueryNode,
-        valueNode: QueryNode,
-        flexSearchLanguage?: FlexSearchLanguage,
-        analyzer?: string,
-        path?: ReadonlyArray<Field>
-    ) => QueryNode {
+    ): (fieldNode: QueryNode, valueNode: QueryNode, analyzer?: string, path?: ReadonlyArray<Field>) => QueryNode {
         switch (name) {
             case INPUT_FIELD_CONTAINS_ANY_WORD:
                 return binaryOpWithAnaylzer(BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_ANY_WORD);
             case INPUT_FIELD_NOT_CONTAINS_ANY_WORD:
                 return binaryNotOpWithAnalyzer(BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_ANY_WORD);
             case INPUT_FIELD_CONTAINS_ALL_WORDS:
-                return (fieldNode: QueryNode, valueNode: QueryNode, flexSearchLanguage?: FlexSearchLanguage) => {
-                    if (!flexSearchLanguage) {
-                        return new RuntimeErrorQueryNode(noLanguageWasSuppliedError);
+                return (fieldNode: QueryNode, valueNode: QueryNode, analyzer?: string) => {
+                    if (!analyzer) {
+                        return new RuntimeErrorQueryNode(noAnalyzerWasSuppliedError);
                     }
                     return this.generateComplexFilterOperator(
                         BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_ANY_WORD,
                         BinaryOperator.AND,
                         fieldNode,
                         valueNode,
-                        flexSearchLanguage
+                        analyzer
                     );
                 };
             case INPUT_FIELD_NOT_CONTAINS_ALL_WORDS:
-                return (fieldNode: QueryNode, valueNode: QueryNode, flexSearchLanguage?: FlexSearchLanguage) => {
-                    if (!flexSearchLanguage) {
-                        return new RuntimeErrorQueryNode(noLanguageWasSuppliedError);
+                return (fieldNode: QueryNode, valueNode: QueryNode, analyzer?: string) => {
+                    if (!analyzer) {
+                        return new RuntimeErrorQueryNode(noAnalyzerWasSuppliedError);
                     }
                     return not(
                         this.generateComplexFilterOperator(
@@ -239,27 +233,27 @@ export class FlexSearchFilterTypeGenerator {
                             BinaryOperator.AND,
                             fieldNode,
                             valueNode,
-                            flexSearchLanguage
+                            analyzer
                         )
                     );
                 };
             case INPUT_FIELD_CONTAINS_ANY_PREFIX:
-                return (fieldNode: QueryNode, valueNode: QueryNode, flexSearchLanguage?: FlexSearchLanguage) => {
-                    if (!flexSearchLanguage) {
-                        return new RuntimeErrorQueryNode(noLanguageWasSuppliedError);
+                return (fieldNode: QueryNode, valueNode: QueryNode, analyzer?: string) => {
+                    if (!analyzer) {
+                        return new RuntimeErrorQueryNode(noAnalyzerWasSuppliedError);
                     }
                     return this.generateComplexFilterOperator(
                         BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_PREFIX,
                         BinaryOperator.OR,
                         fieldNode,
                         valueNode,
-                        flexSearchLanguage
+                        analyzer
                     );
                 };
             case INPUT_FIELD_NOT_CONTAINS_ANY_PREFIX:
-                return (fieldNode: QueryNode, valueNode: QueryNode, flexSearchLanguage?: FlexSearchLanguage) => {
-                    if (!flexSearchLanguage) {
-                        return new RuntimeErrorQueryNode(noLanguageWasSuppliedError);
+                return (fieldNode: QueryNode, valueNode: QueryNode, analyzer?: string) => {
+                    if (!analyzer) {
+                        return new RuntimeErrorQueryNode(noAnalyzerWasSuppliedError);
                     }
                     return not(
                         this.generateComplexFilterOperator(
@@ -267,27 +261,27 @@ export class FlexSearchFilterTypeGenerator {
                             BinaryOperator.OR,
                             fieldNode,
                             valueNode,
-                            flexSearchLanguage
+                            analyzer
                         )
                     );
                 };
             case INPUT_FIELD_CONTAINS_ALL_PREFIXES:
-                return (fieldNode: QueryNode, valueNode: QueryNode, flexSearchLanguage?: FlexSearchLanguage) => {
-                    if (!flexSearchLanguage) {
-                        return new RuntimeErrorQueryNode(noLanguageWasSuppliedError);
+                return (fieldNode: QueryNode, valueNode: QueryNode, analyzer?: string) => {
+                    if (!analyzer) {
+                        return new RuntimeErrorQueryNode(noAnalyzerWasSuppliedError);
                     }
                     return this.generateComplexFilterOperator(
                         BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_PREFIX,
                         BinaryOperator.AND,
                         fieldNode,
                         valueNode,
-                        flexSearchLanguage
+                        analyzer
                     );
                 };
             case INPUT_FIELD_NOT_CONTAINS_ALL_PREFIXES:
-                return (fieldNode: QueryNode, valueNode: QueryNode, flexSearchLanguage?: FlexSearchLanguage) => {
-                    if (!flexSearchLanguage) {
-                        return new RuntimeErrorQueryNode(noLanguageWasSuppliedError);
+                return (fieldNode: QueryNode, valueNode: QueryNode, analyzer?: string) => {
+                    if (!analyzer) {
+                        return new RuntimeErrorQueryNode(noAnalyzerWasSuppliedError);
                     }
                     return not(
                         this.generateComplexFilterOperator(
@@ -295,7 +289,7 @@ export class FlexSearchFilterTypeGenerator {
                             BinaryOperator.AND,
                             fieldNode,
                             valueNode,
-                            flexSearchLanguage
+                            analyzer
                         )
                     );
                 };
@@ -313,7 +307,7 @@ export class FlexSearchFilterTypeGenerator {
         logicalOperator: BinaryOperator,
         fieldNode: QueryNode,
         valueNode: QueryNode,
-        flexSearchLanguage: FlexSearchLanguage
+        analyzer: string
     ): QueryNode {
         if (!(valueNode instanceof LiteralQueryNode) || typeof valueNode.value !== 'string') {
             throw new Error('FlexSearchComplexFilters requires a LiteralQueryNode with a string-value, as valueNode');
@@ -323,7 +317,7 @@ export class FlexSearchFilterTypeGenerator {
             comparisonOperator,
             logicalOperator,
             fieldNode,
-            flexSearchLanguage
+            analyzer
         );
     }
 

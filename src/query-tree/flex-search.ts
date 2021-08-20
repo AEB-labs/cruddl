@@ -52,18 +52,18 @@ export class FlexSearchComplexOperatorQueryNode extends QueryNode {
         readonly comparisonOperator: BinaryOperatorWithAnalyzer,
         readonly logicalOperator: BinaryOperator,
         private readonly fieldNode: QueryNode,
-        readonly flexSearchLanguage: FlexSearchLanguage
+        readonly analyzer: string
     ) {
         super();
     }
 
     describe(): string {
-        return `COMPLEX_OPERATOR(${this.comparisonOperator}, ${this.expression}, ${this.flexSearchLanguage})`;
+        return `COMPLEX_OPERATOR(${this.comparisonOperator}, ${this.expression}, ${this.analyzer})`;
     }
 
     expand(tokenizations: ReadonlyArray<FlexSearchTokenization>): QueryNode {
         const tokenization = tokenizations.find(
-            value => value.expression === this.expression && value.language === this.flexSearchLanguage
+            value => value.expression === this.expression && value.analyzer === this.analyzer
         );
         const tokens = tokenization ? tokenization.tokens : [];
         const neutralOperand =
@@ -76,7 +76,7 @@ export class FlexSearchComplexOperatorQueryNode extends QueryNode {
                             this.fieldNode,
                             this.comparisonOperator,
                             new LiteralQueryNode(value),
-                            `text_${this.flexSearchLanguage!.toLowerCase()}`
+                            this.analyzer!
                         ) as QueryNode
                 )
                 .reduce(binaryOp(this.logicalOperator), neutralOperand)
@@ -86,7 +86,7 @@ export class FlexSearchComplexOperatorQueryNode extends QueryNode {
 
 export interface FlexSearchTokenization {
     expression: string;
-    language: FlexSearchLanguage;
+    analyzer: string;
     tokens: ReadonlyArray<string>;
 }
 

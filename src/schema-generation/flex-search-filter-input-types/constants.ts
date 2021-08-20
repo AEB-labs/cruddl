@@ -41,11 +41,7 @@ import {
 export const SOME_PREFIX = 'some';
 
 export const FLEX_SEARCH_FILTER_OPERATORS: {
-    [suffix: string]: (
-        fieldNode: QueryNode,
-        valueNode: QueryNode,
-        flexSearchLanguage?: FlexSearchLanguage
-    ) => QueryNode;
+    [suffix: string]: (fieldNode: QueryNode, valueNode: QueryNode) => QueryNode;
 } = {
     [INPUT_FIELD_EQUAL]: binaryOp(BinaryOperator.EQUAL),
     [INPUT_FIELD_NOT]: binaryOp(BinaryOperator.UNEQUAL),
@@ -58,12 +54,7 @@ export const FLEX_SEARCH_FILTER_OPERATORS: {
 };
 
 export const STRING_FLEX_SEARCH_FILTER_OPERATORS: {
-    [suffix: string]: (
-        fieldNode: QueryNode,
-        valueNode: QueryNode,
-        flexSearchLanguage?: FlexSearchLanguage,
-        analyzer?: string
-    ) => QueryNode;
+    [suffix: string]: (fieldNode: QueryNode, valueNode: QueryNode, analyzer?: string) => QueryNode;
 } = {
     [INPUT_FIELD_LT]: binaryOpWithAnaylzer(BinaryOperatorWithAnalyzer.FLEX_STRING_LESS_THAN),
     [INPUT_FIELD_LTE]: binaryOpWithAnaylzer(BinaryOperatorWithAnalyzer.FLEX_STRING_LESS_THAN_OR_EQUAL),

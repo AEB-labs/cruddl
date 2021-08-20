@@ -1690,7 +1690,7 @@ export function generateTokenizationQuery(tokensFiltered: ReadonlyArray<FlexSear
     const fragments: string[] = [];
     for (let i = 0; i < tokensFiltered.length; i++) {
         const value = tokensFiltered[i];
-        fragments.push(`token_${i}: TOKENS("${value.expression}", "text_${value.language.toLowerCase()}")`);
+        fragments.push(`token_${i}: TOKENS("${value.expression}", "${value.analyzer}")`);
     }
     const query = `RETURN { ${fragments.join(',\n')} }`;
     return query;

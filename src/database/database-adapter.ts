@@ -26,7 +26,7 @@ export interface DatabaseAdapterTimings {
          * Additional, database-adapter-specific profiling times
          */
         readonly [key: string]: number;
-    }
+    };
 
     readonly database: {
         /**
@@ -38,7 +38,7 @@ export interface DatabaseAdapterTimings {
          * Additional, database-adapter-specific profiling times
          */
         readonly [key: string]: number;
-    }
+    };
 }
 
 export interface ExecutionResult {
@@ -58,41 +58,41 @@ export interface ExecutionResult {
     /**
      * Times (in seconds) spent on specific parts of execution. Only included if recordTimings is set to true.
      */
-    readonly timings?: DatabaseAdapterTimings
+    readonly timings?: DatabaseAdapterTimings;
 
-    readonly plan?: ExecutionPlan
+    readonly plan?: ExecutionPlan;
 
-    readonly stats?: TransactionStats
+    readonly stats?: TransactionStats;
 }
 
 export interface ExecutionPlan {
-    readonly queryTree: QueryNode
+    readonly queryTree: QueryNode;
 
-    readonly transactionSteps: ReadonlyArray<ExecutionPlanTransactionStep>
+    readonly transactionSteps: ReadonlyArray<ExecutionPlanTransactionStep>;
 }
 
 interface Plan {
     nodes: ReadonlyArray<{
-        type: string,
-        dependencies: ReadonlyArray<number>
-        id: number,
-        estimatedCost: number,
-        estimatedNrItems: number,
-        [key: string]: any
-    }>
-    rules: ReadonlyArray<any>,
+        type: string;
+        dependencies: ReadonlyArray<number>;
+        id: number;
+        estimatedCost: number;
+        estimatedNrItems: number;
+        [key: string]: any;
+    }>;
+    rules: ReadonlyArray<any>;
     collections: ReadonlyArray<{
-        name: string,
-        type: string
-    }>,
+        name: string;
+        type: string;
+    }>;
     variables: ReadonlyArray<{
-        id: number,
-        name: string
-    }>,
-    estimatedCost: number,
-    estimatedNrItems: number,
-    initialize: boolean,
-    isModificationQuery: boolean
+        id: number;
+        name: string;
+    }>;
+    estimatedCost: number;
+    estimatedNrItems: number;
+    initialize: boolean;
+    isModificationQuery: boolean;
 }
 
 export interface TransactionStats {
@@ -101,37 +101,37 @@ export interface TransactionStats {
 }
 
 export interface ExecutionPlanTransactionStep {
-    readonly query: string
-    readonly boundValues: { [p: string]: any }
+    readonly query: string;
+    readonly boundValues: { [p: string]: any };
 
     readonly plan?: Plan;
     readonly discardedPlans?: ReadonlyArray<Plan>;
 
     readonly stats?: {
         readonly nodes?: ReadonlyArray<{
-            id: number,
-            calls: number,
-            items: number,
-            runtime: number
-        }>,
-        writesExecuted: number,
-        writesIgnored: number,
-        scannedFul: number,
-        scannedIndex: number,
-        filtered: number,
-        httpRequests: 0,
-        executionTime: number
-        peakMemoryUsage?: number
-    }
+            id: number;
+            calls: number;
+            items: number;
+            runtime: number;
+        }>;
+        writesExecuted: number;
+        writesIgnored: number;
+        scannedFul: number;
+        scannedIndex: number;
+        filtered: number;
+        httpRequests: 0;
+        executionTime: number;
+        peakMemoryUsage?: number;
+    };
 
     readonly warnings?: ReadonlyArray<{
-        code: string,
-        message: string
-    }>
+        code: string;
+        message: string;
+    }>;
 
-    readonly profile?: { [key: string]: number }
+    readonly profile?: { [key: string]: number };
 
-    readonly peakMemoryUsage?: number
+    readonly peakMemoryUsage?: number;
 }
 
 export interface ExecutionArgs extends ExecutionOptions {
@@ -161,11 +161,12 @@ export interface DatabaseAdapter {
     /**
      * Tokenizes a List of expressions
      */
-    tokenizeExpressions(tokenizations: ReadonlyArray<FlexSearchTokenizable>): Promise<ReadonlyArray<FlexSearchTokenization>>;
-
+    tokenizeExpressions(
+        tokenizations: ReadonlyArray<FlexSearchTokenizable>
+    ): Promise<ReadonlyArray<FlexSearchTokenization>>;
 }
 
 export interface FlexSearchTokenizable {
-    expression: string,
-    language: FlexSearchLanguage
+    expression: string;
+    analyzer: string;
 }

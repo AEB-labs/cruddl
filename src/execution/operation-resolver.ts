@@ -194,7 +194,7 @@ export class OperationResolver {
         async function collectTokenizations(queryNode: QueryNode): Promise<ReadonlyArray<FlexSearchTokenizable>> {
             let tokens: FlexSearchTokenizable[] = [];
             if (queryNode instanceof FlexSearchComplexOperatorQueryNode) {
-                tokens.push({ expression: queryNode.expression, language: queryNode.flexSearchLanguage });
+                tokens.push({ expression: queryNode.expression, analyzer: queryNode.analyzer });
             }
             if (queryNode instanceof ObjectQueryNode) {
                 const specs: PropertySpecification[] = [];
