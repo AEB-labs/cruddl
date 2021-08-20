@@ -531,16 +531,12 @@ register(BinaryOperationQueryNode, (node, context) => {
 
     switch (node.operator) {
         case BinaryOperator.LESS_THAN:
-        case BinaryOperator.FLEX_STRING_LESS_THAN:
             return compare(js`<`);
         case BinaryOperator.LESS_THAN_OR_EQUAL:
-        case BinaryOperator.FLEX_STRING_LESS_THAN_OR_EQUAL:
             return compare(js`<=`);
         case BinaryOperator.GREATER_THAN:
-        case BinaryOperator.FLEX_STRING_GREATER_THAN:
             return compare(js`>`);
         case BinaryOperator.GREATER_THAN_OR_EQUAL:
-        case BinaryOperator.FLEX_STRING_GREATER_THAN_OR_EQUAL:
             return compare(js`>=`);
         case BinaryOperator.CONTAINS:
             return js`${lhsListOrString}.includes(${rhs})`;
@@ -949,7 +945,7 @@ register(RemoveEdgesQueryNode, (node, context) => {
 });
 
 register(OperatorWithAnalyzerQueryNode, (node, context) => {
-    throw new FlexSearchOperatorWithLanguageNotSupportedError();
+    throw new FlexSearchOperatorWithAnaylzerNotSupportedError();
 });
 
 register(FlexSearchQueryNode, (node, context) => {
@@ -1147,9 +1143,11 @@ function getCollectionForRelation(relation: Relation, context: QueryContext) {
 /**
  * Is thrown if a FlexSearch query containing fulltext-filters is performed for an in-memory database.
  */
-export class FlexSearchOperatorWithLanguageNotSupportedError extends Error {
+export class FlexSearchOperatorWithAnaylzerNotSupportedError extends Error {
     constructor() {
-        super(`FlexSearch-query was not executed, because fulltext-filters are not supported for in-memory database.`);
+        super(
+            `FlexSearch-query was not executed, because filters with analyzers are not supported for in-memory database.`
+        );
         this.name = this.constructor.name;
     }
 }

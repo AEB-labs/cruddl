@@ -40,8 +40,8 @@ import { QueryNodeResolveInfo, resolveThunk } from '../query-node-object-type';
 import { TypedInputObjectType } from '../typed-input-object-type';
 import {
     and,
-    binaryNotOpWithLanguage,
-    binaryOpWithLanguage,
+    binaryNotOpWithAnalyzer,
+    binaryOpWithAnaylzer,
     noLanguageWasSuppliedError,
     not
 } from '../utils/input-types';
@@ -176,7 +176,8 @@ export class FlexSearchFilterTypeGenerator {
                                 : FLEX_SEARCH_FILTER_OPERATORS[name],
                             name === INPUT_FIELD_EQUAL ? undefined : name,
                             inputType,
-                            undefined
+                            undefined,
+                            field.isFlexSearchIndexCaseSensitive ? IDENTITY_ANALYZER : NORM_CI_ANALYZER
                         )
                 )
             );
@@ -211,9 +212,9 @@ export class FlexSearchFilterTypeGenerator {
     ) => QueryNode {
         switch (name) {
             case INPUT_FIELD_CONTAINS_ANY_WORD:
-                return binaryOpWithLanguage(BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_ANY_WORD);
+                return binaryOpWithAnaylzer(BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_ANY_WORD);
             case INPUT_FIELD_NOT_CONTAINS_ANY_WORD:
-                return binaryNotOpWithLanguage(BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_ANY_WORD);
+                return binaryNotOpWithAnalyzer(BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_ANY_WORD);
             case INPUT_FIELD_CONTAINS_ALL_WORDS:
                 return (fieldNode: QueryNode, valueNode: QueryNode, flexSearchLanguage?: FlexSearchLanguage) => {
                     if (!flexSearchLanguage) {
@@ -299,9 +300,9 @@ export class FlexSearchFilterTypeGenerator {
                     );
                 };
             case INPUT_FIELD_CONTAINS_PHRASE:
-                return binaryOpWithLanguage(BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_PHRASE);
+                return binaryOpWithAnaylzer(BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_PHRASE);
             case INPUT_FIELD_NOT_CONTAINS_PHRASE:
-                return binaryNotOpWithLanguage(BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_PHRASE);
+                return binaryNotOpWithAnalyzer(BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_PHRASE);
             default:
                 throw new Error(`Complex Filter for '${name}' is not defined.`);
         }

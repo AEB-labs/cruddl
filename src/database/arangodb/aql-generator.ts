@@ -780,14 +780,6 @@ register(BinaryOperationQueryNode, (node, context) => {
             return aql`CONCAT(${rhs}, ${lhs})`;
         case BinaryOperator.SUBTRACT_LISTS:
             return aql`MINUS(${lhs}, ${rhs})`;
-        case BinaryOperator.FLEX_STRING_LESS_THAN:
-            return aql`IN_RANGE(${lhs}, ${''} , ${rhs}, true, false)`;
-        case BinaryOperator.FLEX_STRING_LESS_THAN_OR_EQUAL:
-            return aql`IN_RANGE(${lhs}, ${''} , ${rhs}, true, true)`;
-        case BinaryOperator.FLEX_STRING_GREATER_THAN:
-            return aql`IN_RANGE(${lhs}, ${rhs}, ${String.fromCodePoint(0x10ffff)}, false, true)`;
-        case BinaryOperator.FLEX_STRING_GREATER_THAN_OR_EQUAL:
-            return aql`IN_RANGE(${lhs}, ${rhs}, ${String.fromCodePoint(0x10ffff)}, true, true)`;
         default:
             throw new Error(`Unsupported binary operator: ${op}`);
     }
@@ -809,6 +801,18 @@ register(OperatorWithAnalyzerQueryNode, (node, context) => {
             return aql`(LENGTH(TOKENS(${rhs},${analyzer})) ? ANALYZER( STARTS_WITH( ${lhs}, TOKENS(${rhs},${analyzer})[0]), ${analyzer}) : false)`;
         case BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_PHRASE:
             return aql`ANALYZER( PHRASE( ${lhs}, ${rhs}), ${analyzer})`;
+        case BinaryOperatorWithAnalyzer.FLEX_STRING_LESS_THAN:
+            return aql`ANALYZER( IN_RANGE(${lhs}, ${''} , TOKENS(${rhs}, ${analyzer})[0], true, false), ${analyzer})`;
+        case BinaryOperatorWithAnalyzer.FLEX_STRING_LESS_THAN_OR_EQUAL:
+            return aql`ANALYZER( IN_RANGE(${lhs}, ${''} , TOKENS(${rhs}, ${analyzer})[0], true, true), ${analyzer})`;
+        case BinaryOperatorWithAnalyzer.FLEX_STRING_GREATER_THAN:
+            return aql`ANALYZER( IN_RANGE(${lhs}, TOKENS(${rhs}, ${analyzer})[0], ${String.fromCodePoint(
+                0x10ffff
+            )}, false, true), ${analyzer})`;
+        case BinaryOperatorWithAnalyzer.FLEX_STRING_GREATER_THAN_OR_EQUAL:
+            return aql`ANALYZER( IN_RANGE(${lhs}, TOKENS(${rhs}, ${analyzer})[0], ${String.fromCodePoint(
+                0x10ffff
+            )}, true, true), ${analyzer})`;
         default:
             throw new Error(`Unsupported operator: ${node.operator}`);
     }

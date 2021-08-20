@@ -1,6 +1,6 @@
 import { GraphQLBoolean, GraphQLFloat, GraphQLID, GraphQLInt, GraphQLString } from 'graphql';
 import { FlexSearchLanguage } from '../../model/config';
-import { BinaryOperator, QueryNode } from '../../query-tree';
+import { BinaryOperator, BinaryOperatorWithAnalyzer, QueryNode } from '../../query-tree';
 import {
     INPUT_FIELD_CONTAINS_ALL_PREFIXES,
     INPUT_FIELD_CONTAINS_ALL_WORDS,
@@ -29,7 +29,7 @@ import { GraphQLDateTime } from '../../schema/scalars/date-time';
 import { GraphQLLocalDate } from '../../schema/scalars/local-date';
 import { GraphQLLocalTime } from '../../schema/scalars/local-time';
 import { NUMERIC_FILTER_FIELDS } from '../filter-input-types/constants';
-import { binaryNotOp, binaryOp, notStartsWithOp, startsWithOp } from '../utils/input-types';
+import { binaryNotOp, binaryOp, binaryOpWithAnaylzer, notStartsWithOp, startsWithOp } from '../utils/input-types';
 
 export const SOME_PREFIX = 'some';
 
@@ -58,14 +58,15 @@ export const STRING_FLEX_SEARCH_FILTER_OPERATORS: {
     [suffix: string]: (
         fieldNode: QueryNode,
         valueNode: QueryNode,
-        flexSearchLanguage?: FlexSearchLanguage
+        flexSearchLanguage?: FlexSearchLanguage,
+        analyzer?: string
     ) => QueryNode;
 } = {
     ...FLEX_SEARCH_FILTER_OPERATORS,
-    [INPUT_FIELD_LT]: binaryOp(BinaryOperator.FLEX_STRING_LESS_THAN),
-    [INPUT_FIELD_LTE]: binaryOp(BinaryOperator.FLEX_STRING_LESS_THAN_OR_EQUAL),
-    [INPUT_FIELD_GT]: binaryOp(BinaryOperator.FLEX_STRING_GREATER_THAN),
-    [INPUT_FIELD_GTE]: binaryOp(BinaryOperator.FLEX_STRING_GREATER_THAN_OR_EQUAL)
+    [INPUT_FIELD_LT]: binaryOpWithAnaylzer(BinaryOperatorWithAnalyzer.FLEX_STRING_LESS_THAN),
+    [INPUT_FIELD_LTE]: binaryOpWithAnaylzer(BinaryOperatorWithAnalyzer.FLEX_STRING_LESS_THAN_OR_EQUAL),
+    [INPUT_FIELD_GT]: binaryOpWithAnaylzer(BinaryOperatorWithAnalyzer.FLEX_STRING_GREATER_THAN),
+    [INPUT_FIELD_GTE]: binaryOpWithAnaylzer(BinaryOperatorWithAnalyzer.FLEX_STRING_GREATER_THAN_OR_EQUAL)
 };
 
 export const STRING_FLEX_SEARCH_FILTER_FIELDS = [

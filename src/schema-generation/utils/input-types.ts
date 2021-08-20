@@ -33,7 +33,7 @@ export function binaryNotOp(op: BinaryOperator) {
     return (lhs: QueryNode, rhs: QueryNode) => not(new BinaryOperationQueryNode(lhs, op, rhs));
 }
 
-export function binaryOpWithLanguage(op: BinaryOperatorWithAnalyzer) {
+export function binaryOpWithAnaylzer(op: BinaryOperatorWithAnalyzer) {
     return (lhs: QueryNode, rhs: QueryNode, flexSearchLanguage?: FlexSearchLanguage, analyzer?: string) => {
         if (!analyzer) {
             return new RuntimeErrorQueryNode(noAnalyzerWasSuppliedError);
@@ -42,7 +42,7 @@ export function binaryOpWithLanguage(op: BinaryOperatorWithAnalyzer) {
     };
 }
 
-export function binaryNotOpWithLanguage(op: BinaryOperatorWithAnalyzer) {
+export function binaryNotOpWithAnalyzer(op: BinaryOperatorWithAnalyzer) {
     return (lhs: QueryNode, rhs: QueryNode, flexSearchLanguage?: FlexSearchLanguage, analyzer?: string) => {
         if (!analyzer) {
             return new RuntimeErrorQueryNode(noAnalyzerWasSuppliedError);

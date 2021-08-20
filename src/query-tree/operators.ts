@@ -59,16 +59,12 @@ export class BinaryOperationQueryNode extends QueryNode {
             case BinaryOperator.UNEQUAL:
                 return '!=';
             case BinaryOperator.GREATER_THAN:
-            case BinaryOperator.FLEX_STRING_GREATER_THAN:
                 return '>';
             case BinaryOperator.GREATER_THAN_OR_EQUAL:
-            case BinaryOperator.FLEX_STRING_GREATER_THAN_OR_EQUAL:
                 return '>=';
             case BinaryOperator.LESS_THAN:
-            case BinaryOperator.FLEX_STRING_LESS_THAN:
                 return '<';
             case BinaryOperator.LESS_THAN_OR_EQUAL:
-            case BinaryOperator.FLEX_STRING_LESS_THAN_OR_EQUAL:
                 return '<=';
             case BinaryOperator.IN:
                 return 'IN';
@@ -123,12 +119,6 @@ export enum BinaryOperator {
     LESS_THAN_OR_EQUAL = 'LESS_THAN_OR_EQUAL',
     GREATER_THAN = 'GREATER_THAN',
     GREATER_THAN_OR_EQUAL = 'GREATER_THAN_OR_EQUAL',
-
-    // these don't support NULL - both operands need to be of the same type.
-    FLEX_STRING_LESS_THAN = 'FLEX_STRING_LESS_THAN',
-    FLEX_STRING_LESS_THAN_OR_EQUAL = 'FLEX_STRING_LESS_THAN_OR_EQUAL',
-    FLEX_STRING_GREATER_THAN = 'FLEX_STRING_GREATER_THAN',
-    FLEX_STRING_GREATER_THAN_OR_EQUAL = 'FLEX_STRING_GREATER_THAN_OR_EQUAL',
 
     IN = 'IN',
     CONTAINS = 'CONTAINS',
@@ -193,7 +183,13 @@ export class OperatorWithAnalyzerQueryNode extends QueryNode {
 export enum BinaryOperatorWithAnalyzer {
     FLEX_SEARCH_CONTAINS_ANY_WORD = 'FLEX_SEARCH_CONTAINS_ANY_WORD',
     FLEX_SEARCH_CONTAINS_PREFIX = 'FLEX_SEARCH_CONTAINS_PREFIX',
-    FLEX_SEARCH_CONTAINS_PHRASE = 'FLEX_SEARCH_CONTAINS_PHRASE'
+    FLEX_SEARCH_CONTAINS_PHRASE = 'FLEX_SEARCH_CONTAINS_PHRASE',
+
+    // these don't support NULL - both operands need to be of the same type.
+    FLEX_STRING_LESS_THAN = 'FLEX_STRING_LESS_THAN',
+    FLEX_STRING_LESS_THAN_OR_EQUAL = 'FLEX_STRING_LESS_THAN_OR_EQUAL',
+    FLEX_STRING_GREATER_THAN = 'FLEX_STRING_GREATER_THAN',
+    FLEX_STRING_GREATER_THAN_OR_EQUAL = 'FLEX_STRING_GREATER_THAN_OR_EQUAL'
 }
 
 export class ConditionalQueryNode extends QueryNode {
