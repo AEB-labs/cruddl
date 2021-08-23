@@ -69,13 +69,6 @@ query stringNotStartsWithNull {
     }
 }
 
-query nullIsLessThanString {
-    flexSearchDeliveries(flexSearchFilter: { sometimesNull_lte: "1" }) {
-        deliveryNumber
-        sometimesNull
-    }
-}
-
 query nothingIsLessThanNull {
     flexSearchDeliveries(flexSearchFilter: { sometimesNull_lt: null }) {
         deliveryNumber
