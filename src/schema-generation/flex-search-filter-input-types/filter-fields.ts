@@ -77,19 +77,19 @@ export class FlexSearchScalarOrEnumFieldFilterField implements FlexSearchFilterF
     constructor(
         public readonly field: Field,
         public readonly resolveOperator: (fieldNode: QueryNode, valueNode: QueryNode, analyzer?: string) => QueryNode,
-        public readonly operatorPrefix: string | undefined,
+        public readonly operatorName: string | undefined,
         baseInputType: GraphQLInputType,
         public readonly flexSearchLanguage?: FlexSearchLanguage,
         public readonly analyzer?: string
     ) {
-        this.inputType = FLEX_SEARCH_OPERATORS_WITH_LIST_OPERAND.includes(operatorPrefix || '')
+        this.inputType = FLEX_SEARCH_OPERATORS_WITH_LIST_OPERAND.includes(operatorName || '')
             ? new GraphQLList(baseInputType)
             : baseInputType;
         this.description = getDescription({
-            operator: operatorPrefix,
+            operator: operatorName,
             fieldName: field.name,
             typeName: field.type.name,
-            isAggregation: this.operatorPrefix != undefined
+            isAggregation: this.operatorName != undefined
         });
 
         if (this.field.description) {
@@ -98,10 +98,10 @@ export class FlexSearchScalarOrEnumFieldFilterField implements FlexSearchFilterF
     }
 
     get name() {
-        if (this.operatorPrefix == undefined) {
+        if (this.operatorName == undefined) {
             return this.field.name;
         }
-        return this.field.name + FILTER_FIELD_PREFIX_SEPARATOR + this.operatorPrefix;
+        return this.field.name + FILTER_FIELD_PREFIX_SEPARATOR + this.operatorName;
     }
 
     getFilterNode(
@@ -110,79 +110,7 @@ export class FlexSearchScalarOrEnumFieldFilterField implements FlexSearchFilterF
         path: ReadonlyArray<Field>,
         info: QueryNodeResolveInfo
     ): QueryNode {
-        if (
-            this.operatorPrefix &&
-            FLEX_SEARCH_OPERATORS_WITH_LIST_OPERAND.includes(this.operatorPrefix) &&
-            filterValue == null
-        ) {
-            return new ConstBoolQueryNode(true);
-        }
-
-        let valueNode;
-        if (this.field.declaringType.isRootEntityType && this.field.isSystemField && this.field.name === ID_FIELD) {
-            if (path.length) {
-                throw new Error(`Tried to create cross-root-entity flexSearch filter`);
-            }
-            valueNode = new RootEntityIDQueryNode(sourceNode);
-        } else {
-            valueNode = new FieldPathQueryNode(sourceNode, path.concat(this.field));
-        }
-        const literalNode = new LiteralQueryNode(filterValue);
-        if (
-            (this.operatorPrefix == undefined ||
-                this.operatorPrefix === '' ||
-                this.operatorPrefix === INPUT_FIELD_LTE) &&
-            filterValue == null
-        ) {
-            return new BinaryOperationQueryNode(
-                new BinaryOperationQueryNode(valueNode, BinaryOperator.EQUAL, NullQueryNode.NULL),
-                BinaryOperator.OR,
-                not(new FlexSearchFieldExistsQueryNode(valueNode, this.analyzer))
-            );
-        }
-        if (this.operatorPrefix == INPUT_FIELD_IN && Array.isArray(filterValue) && filterValue.includes(null)) {
-            return new BinaryOperationQueryNode(
-                this.resolveOperator(valueNode, literalNode, this.analyzer),
-                BinaryOperator.OR,
-                not(new FlexSearchFieldExistsQueryNode(valueNode, this.analyzer))
-            );
-        }
-        if ((this.operatorPrefix == INPUT_FIELD_NOT || this.operatorPrefix === INPUT_FIELD_GT) && filterValue == null) {
-            return new BinaryOperationQueryNode(
-                new BinaryOperationQueryNode(valueNode, BinaryOperator.UNEQUAL, NullQueryNode.NULL),
-                BinaryOperator.AND,
-                new FlexSearchFieldExistsQueryNode(valueNode, this.analyzer)
-            );
-        }
-        if (this.operatorPrefix == INPUT_FIELD_NOT_IN && Array.isArray(filterValue) && filterValue.includes(null)) {
-            return new BinaryOperationQueryNode(
-                this.resolveOperator(valueNode, literalNode, this.analyzer),
-                BinaryOperator.AND,
-                new FlexSearchFieldExistsQueryNode(valueNode, this.analyzer)
-            );
-        }
-
-        if (this.operatorPrefix === INPUT_FIELD_LT && filterValue === null) {
-            return ConstBoolQueryNode.FALSE;
-        }
-
-        if (this.operatorPrefix === INPUT_FIELD_GTE && filterValue === null) {
-            return ConstBoolQueryNode.TRUE;
-        }
-
-        if (this.operatorPrefix == INPUT_FIELD_NOT_STARTS_WITH && filterValue === '') {
-            return new ConstBoolQueryNode(false);
-        }
-        if (
-            (this.operatorPrefix == INPUT_FIELD_STARTS_WITH ||
-                this.operatorPrefix == INPUT_FIELD_NOT_STARTS_WITH ||
-                STRING_TEXT_ANALYZER_FILTER_FIELDS.some(value => this.operatorPrefix === value)) &&
-            (filterValue == null || filterValue === '')
-        ) {
-            return new ConstBoolQueryNode(true);
-        }
-
-        return this.resolveOperator(valueNode, literalNode, this.analyzer);
+        return resolveFilterField(this, sourceNode, filterValue, path, info);
     }
 }
 
@@ -223,9 +151,7 @@ export class FlexSearchScalarOrEnumFilterField implements FlexSearchFilterField 
         path: ReadonlyArray<Field>,
         info: QueryNodeResolveInfo
     ): QueryNode {
-        const valueNode = new FieldPathQueryNode(sourceNode, path.concat(this.field));
-        const literalNode = new LiteralQueryNode(filterValue);
-        return this.resolveOperator(valueNode, literalNode, this.analyzer);
+        return resolveFilterField(this, sourceNode, filterValue, path, info);
     }
 }
 
@@ -368,4 +294,94 @@ export class FlexSearchOrFilterField implements FlexSearchFilterField {
         const nodes = values.map(value => this.filterType.getFilterNode(sourceNode, value, path, info));
         return nodes.reduce((prev, node) => new BinaryOperationQueryNode(prev, BinaryOperator.OR, node));
     }
+}
+
+export function resolveFilterField(
+    filterField: FlexSearchScalarOrEnumFilterField | FlexSearchScalarOrEnumFieldFilterField,
+    sourceNode: QueryNode,
+    filterValue: AnyValue,
+    path: ReadonlyArray<Field>,
+    info: QueryNodeResolveInfo
+): QueryNode {
+    if (
+        filterField.operatorName &&
+        FLEX_SEARCH_OPERATORS_WITH_LIST_OPERAND.includes(filterField.operatorName) &&
+        filterValue == null
+    ) {
+        return new ConstBoolQueryNode(true);
+    }
+
+    let valueNode;
+    if (
+        filterField.field.declaringType.isRootEntityType &&
+        filterField.field.isSystemField &&
+        filterField.field.name === ID_FIELD
+    ) {
+        if (path.length) {
+            throw new Error(`Tried to create cross-root-entity flexSearch filter`);
+        }
+        valueNode = new RootEntityIDQueryNode(sourceNode);
+    } else {
+        valueNode = new FieldPathQueryNode(sourceNode, path.concat(filterField.field));
+    }
+
+    const literalNode = new LiteralQueryNode(filterValue);
+    if (
+        (filterField.operatorName == undefined ||
+            filterField.operatorName === '' ||
+            filterField.operatorName === INPUT_FIELD_LTE) &&
+        filterValue == null
+    ) {
+        return new BinaryOperationQueryNode(
+            new BinaryOperationQueryNode(valueNode, BinaryOperator.EQUAL, NullQueryNode.NULL),
+            BinaryOperator.OR,
+            not(new FlexSearchFieldExistsQueryNode(valueNode, filterField.analyzer))
+        );
+    }
+    if (filterField.operatorName == INPUT_FIELD_IN && Array.isArray(filterValue) && filterValue.includes(null)) {
+        return new BinaryOperationQueryNode(
+            filterField.resolveOperator(valueNode, literalNode, filterField.analyzer),
+            BinaryOperator.OR,
+            not(new FlexSearchFieldExistsQueryNode(valueNode, filterField.analyzer))
+        );
+    }
+    if (
+        (filterField.operatorName == INPUT_FIELD_NOT || filterField.operatorName === INPUT_FIELD_GT) &&
+        filterValue == null
+    ) {
+        return new BinaryOperationQueryNode(
+            new BinaryOperationQueryNode(valueNode, BinaryOperator.UNEQUAL, NullQueryNode.NULL),
+            BinaryOperator.AND,
+            new FlexSearchFieldExistsQueryNode(valueNode, filterField.analyzer)
+        );
+    }
+    if (filterField.operatorName == INPUT_FIELD_NOT_IN && Array.isArray(filterValue) && filterValue.includes(null)) {
+        return new BinaryOperationQueryNode(
+            filterField.resolveOperator(valueNode, literalNode, filterField.analyzer),
+            BinaryOperator.AND,
+            new FlexSearchFieldExistsQueryNode(valueNode, filterField.analyzer)
+        );
+    }
+
+    if (filterField.operatorName === INPUT_FIELD_LT && filterValue === null) {
+        return ConstBoolQueryNode.FALSE;
+    }
+
+    if (filterField.operatorName === INPUT_FIELD_GTE && filterValue === null) {
+        return ConstBoolQueryNode.TRUE;
+    }
+
+    if (filterField.operatorName == INPUT_FIELD_NOT_STARTS_WITH && filterValue === '') {
+        return new ConstBoolQueryNode(false);
+    }
+    if (
+        (filterField.operatorName == INPUT_FIELD_STARTS_WITH ||
+            filterField.operatorName == INPUT_FIELD_NOT_STARTS_WITH ||
+            STRING_TEXT_ANALYZER_FILTER_FIELDS.some(value => filterField.operatorName === value)) &&
+        (filterValue == null || filterValue === '')
+    ) {
+        return new ConstBoolQueryNode(true);
+    }
+
+    return filterField.resolveOperator(valueNode, literalNode, filterField.analyzer);
 }
