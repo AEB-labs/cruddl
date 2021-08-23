@@ -1693,6 +1693,11 @@
                             "deprecationReason": null
                         },
                         {
+                            "name": "sometimesNull",
+                            "description": null,
+                            "deprecationReason": null
+                        },
+                        {
                             "name": "_cursor",
                             "description": "Provides a value that can be supplied to the `after` argument for pagination. Depends on the value of the `orderBy` argument.",
                             "deprecationReason": null
@@ -3733,6 +3738,86 @@
                             "deprecationReason": null
                         },
                         {
+                            "name": "sometimesNull",
+                            "description": "Checks if `sometimesNull` equals a specified string, case-sensitively.\n\nIf an index exists on `sometimesNull`, it can be used.\n\nSee also `like` for a case-insensitive filter.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "sometimesNull_not",
+                            "description": "Checks if `sometimesNull` does not equal a specified string, case-sensitively.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "sometimesNull_in",
+                            "description": "Checks if `sometimesNull` is equal to one of the specified values.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "sometimesNull_not_in",
+                            "description": "Checks if `sometimesNull` is not equal to one of the specified values.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "sometimesNull_lt",
+                            "description": "Checks if `sometimesNull` is less than a specified value.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "sometimesNull_lte",
+                            "description": "Checks if `sometimesNull` is less or equal a specified value.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "sometimesNull_gt",
+                            "description": "Checks if `sometimesNull` is greater than a specified value.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "sometimesNull_gte",
+                            "description": "Checks if `sometimesNull` is greater or equal a specified value.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "sometimesNull_contains",
+                            "description": "Checks if `sometimesNull` contains a specified string, case-sensitively.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "sometimesNull_not_contains",
+                            "description": "Checks if `sometimesNull` does not contain a specified string, case-sensitively.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "sometimesNull_starts_with",
+                            "description": "Checks if `sometimesNull` starts with a specified string, case-sensitively.\n\nNever uses an index. Consider using `like` (with the `%` placeholder) for a case-insensitive filter that can use an index.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "sometimesNull_not_starts_with",
+                            "description": "Checks if `sometimesNull` does not start with a specified string, case-sensitively.\n\nNever uses an index. Consider using `not_like` (with the `%` placeholder) for a case-insensitive filter that can use an index.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "sometimesNull_ends_with",
+                            "description": "Checks if `sometimesNull` ends with a specified string, case-sensitively.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "sometimesNull_not_ends_with",
+                            "description": "Checks if `sometimesNull` does not end with a specified string, case-sensitively.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "sometimesNull_like",
+                            "description": "Matches `sometimesNull` against a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)\n\nIf an index exists on `sometimesNull`, it can be used for the literal prefix (the part until the first placeholder).",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "sometimesNull_not_like",
+                            "description": "Checks if `sometimesNull` does *not* match a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)",
+                            "deprecationReason": null
+                        },
+                        {
                             "name": "AND",
                             "description": "A field that checks if all filters in the list apply\n\nIf the list is empty, this filter applies to all objects.",
                             "deprecationReason": null
@@ -5483,6 +5568,56 @@
                         {
                             "name": "recursion",
                             "description": "Checks if `recursion` is not null, and allows to filter based on its fields.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "sometimesNull",
+                            "description": "Checks if `sometimesNull` equals a specified string, case-insensitively.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "sometimesNull_not",
+                            "description": "Checks if `sometimesNull` does not equal a specified string, case-insensitively.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "sometimesNull_lt",
+                            "description": "Checks if `sometimesNull` is less than a specified value.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "sometimesNull_lte",
+                            "description": "Checks if `sometimesNull` is less or equal a specified value.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "sometimesNull_gt",
+                            "description": "Checks if `sometimesNull` is greater than a specified value.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "sometimesNull_gte",
+                            "description": "Checks if `sometimesNull` is greater or equal a specified value.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "sometimesNull_in",
+                            "description": "Checks if `sometimesNull` is equal to one of the specified values.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "sometimesNull_not_in",
+                            "description": "Checks if `sometimesNull` is not equal to one of the specified values.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "sometimesNull_starts_with",
+                            "description": "Checks if `sometimesNull` starts with a specified string, case-insensitively.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "sometimesNull_not_starts_with",
+                            "description": "Checks if `sometimesNull` does not start with a specified string, case-insensitively.",
                             "deprecationReason": null
                         },
                         {
@@ -7543,6 +7678,11 @@
                             "name": "enumWithDeprecation",
                             "description": null,
                             "deprecationReason": null
+                        },
+                        {
+                            "name": "sometimesNull",
+                            "description": null,
+                            "deprecationReason": null
                         }
                     ]
                 },
@@ -7926,6 +8066,11 @@
                             "deprecationReason": null
                         },
                         {
+                            "name": "sometimesNull",
+                            "description": null,
+                            "deprecationReason": null
+                        },
+                        {
                             "name": "_revision",
                             "description": "Set this field to the value of \"Delivery._revision\" to abort the transaction if this object has been modified in the meantime",
                             "deprecationReason": null
@@ -8195,6 +8340,11 @@
                         },
                         {
                             "name": "enumWithDeprecation",
+                            "description": null,
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "sometimesNull",
                             "description": null,
                             "deprecationReason": null
                         },

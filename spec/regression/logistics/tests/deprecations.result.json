@@ -367,6 +367,14 @@
                     }
                 },
                 {
+                    "name": "sometimesNull",
+                    "isDeprecated": false,
+                    "deprecationReason": null,
+                    "type": {
+                        "enumValues": null
+                    }
+                },
+                {
                     "name": "_cursor",
                     "isDeprecated": false,
                     "deprecationReason": null,
@@ -1044,6 +1052,16 @@
                 },
                 {
                     "name": "enumWithDeprecation_DESC",
+                    "isDeprecated": false,
+                    "deprecationReason": null
+                },
+                {
+                    "name": "sometimesNull_ASC",
+                    "isDeprecated": false,
+                    "deprecationReason": null
+                },
+                {
+                    "name": "sometimesNull_DESC",
                     "isDeprecated": false,
                     "deprecationReason": null
                 }

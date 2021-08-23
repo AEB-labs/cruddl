@@ -130,7 +130,8 @@
                         }
                     }
                 },
-                "aText": "foo bar"
+                "aText": "foo bar",
+                "sometimesNull": "1"
             },
             {
                 "@id": "2",
@@ -171,7 +172,8 @@
                             "name": "test_z"
                         }
                     }
-                }
+                },
+                "sometimesNull": "2"
             },
             {
                 "@id": "3",
@@ -203,7 +205,8 @@
                             "name": "test_3"
                         }
                     }
-                }
+                },
+                "sometimesNull": null
             }
         ],
         "Forwarder": [

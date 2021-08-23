@@ -68,3 +68,24 @@ query stringNotStartsWithNull {
         someKey
     }
 }
+
+query nullIsLessThanString {
+    flexSearchDeliveries(flexSearchFilter: { sometimesNull_lte: "1" }) {
+        deliveryNumber
+        sometimesNull
+    }
+}
+
+query nothingIsLessThanNull {
+    flexSearchDeliveries(flexSearchFilter: { sometimesNull_lt: null }) {
+        deliveryNumber
+        sometimesNull
+    }
+}
+
+query everythingIsGreaterThanNull {
+    flexSearchDeliveries(flexSearchFilter: { sometimesNull_gte: null }) {
+        deliveryNumber
+        sometimesNull
+    }
+}
