@@ -132,16 +132,13 @@
         "data": {
             "flexSearchDeliveries": [
                 {
-                    "deliveryNumber": "1000173",
-                    "sometimesNull": "1"
+                    "deliveryNumber": "1000173"
                 },
                 {
-                    "deliveryNumber": "1000521",
-                    "sometimesNull": "2"
+                    "deliveryNumber": "1000521"
                 },
                 {
-                    "deliveryNumber": "1000522",
-                    "sometimesNull": [null]
+                    "deliveryNumber": "1000522"
                 }
             ]
         }

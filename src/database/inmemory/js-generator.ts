@@ -943,7 +943,7 @@ register(RemoveEdgesQueryNode, (node, context) => {
 });
 
 register(OperatorWithAnalyzerQueryNode, (node, context) => {
-    if (node.analyzer !== NORM_CI_ANALYZER && node.analyzer !== IDENTITY_ANALYZER) {
+    if (node.analyzer !== NORM_CI_ANALYZER && node.analyzer !== IDENTITY_ANALYZER && node.analyzer !== null) {
         throw new FlexSearchAnalyzerNotSupportedError(node.analyzer);
     }
 

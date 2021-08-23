@@ -836,9 +836,11 @@ register(FlexSearchStartsWithQueryNode, (node, context) => {
 
 register(FlexSearchFieldExistsQueryNode, (node, context) => {
     const sourceNode = processNode(node.sourceNode, context);
-    const analyzer = node.analyzer ? node.analyzer : IDENTITY_ANALYZER;
-
-    return aql`EXISTS(${sourceNode}, "analyzer", ${analyzer})`;
+    if (node.analyzer) {
+        return aql`EXISTS(${sourceNode}, "analyzer", ${node.analyzer})`;
+    } else {
+        return aql`EXISTS(${sourceNode})`;
+    }
 });
 
 register(FlexSearchComplexOperatorQueryNode, (node, context) => {

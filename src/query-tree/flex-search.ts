@@ -99,7 +99,7 @@ export class FlexSearchFieldExistsQueryNode extends QueryNode {
     }
 
     describe() {
-        return `EXISTS(${this.sourceNode.describe()}, ${this.analyzer ? this.analyzer.toString() : 'identity'})`;
+        return `EXISTS(${this.sourceNode.describe()}${this.analyzer ? ', ' + this.analyzer.toString() : ''})`;
     }
 }
 

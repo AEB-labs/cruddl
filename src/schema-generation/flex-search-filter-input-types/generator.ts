@@ -176,8 +176,7 @@ export class FlexSearchFilterTypeGenerator {
                                 : FLEX_SEARCH_FILTER_OPERATORS[name],
                             name === INPUT_FIELD_EQUAL ? undefined : name,
                             inputType,
-                            undefined,
-                            field.isFlexSearchIndexCaseSensitive ? IDENTITY_ANALYZER : NORM_CI_ANALYZER
+                            field.flexSearchAnalyzer
                         )
                 )
             );
@@ -192,7 +191,6 @@ export class FlexSearchFilterTypeGenerator {
                             this.getComplexFilterOperatorByName(name),
                             name,
                             inputType,
-                            field.flexSearchLanguage,
                             `text_${field.flexSearchLanguage!.toLowerCase()}`
                         )
                 )
@@ -332,12 +330,7 @@ export class FlexSearchFilterTypeGenerator {
                     FILTER_OPERATORS[name],
                     name === INPUT_FIELD_EQUAL ? undefined : name,
                     graphQLEnumType,
-                    field.isFlexSearchIndexed ? field.flexSearchLanguage : undefined,
-                    field.isFlexSearchIndexed
-                        ? field.flexSearchLanguage
-                        : field.isFlexSearchIndexCaseSensitive
-                        ? IDENTITY_ANALYZER
-                        : NORM_CI_ANALYZER
+                    field.flexSearchAnalyzer
                 )
         );
     }
@@ -376,8 +369,7 @@ export class FlexSearchFilterTypeGenerator {
                             FLEX_SEARCH_FILTER_OPERATORS[name],
                             name,
                             type.graphQLScalarType,
-                            undefined,
-                            field.isFlexSearchIndexCaseSensitive ? IDENTITY_ANALYZER : NORM_CI_ANALYZER
+                            field.flexSearchAnalyzer
                         )
                 )
             );
@@ -392,7 +384,7 @@ export class FlexSearchFilterTypeGenerator {
                             this.getComplexFilterOperatorByName(name),
                             name,
                             type.graphQLScalarType,
-                            field.flexSearchLanguage
+                            `text_${field.flexSearchLanguage?.toLowerCase()}`
                         )
                 )
             );

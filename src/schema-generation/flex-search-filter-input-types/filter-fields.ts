@@ -79,7 +79,6 @@ export class FlexSearchScalarOrEnumFieldFilterField implements FlexSearchFilterF
         public readonly resolveOperator: (fieldNode: QueryNode, valueNode: QueryNode, analyzer?: string) => QueryNode,
         public readonly operatorName: string | undefined,
         baseInputType: GraphQLInputType,
-        public readonly flexSearchLanguage?: FlexSearchLanguage,
         public readonly analyzer?: string
     ) {
         this.inputType = FLEX_SEARCH_OPERATORS_WITH_LIST_OPERAND.includes(operatorName || '')
@@ -123,7 +122,6 @@ export class FlexSearchScalarOrEnumFilterField implements FlexSearchFilterField 
         public readonly resolveOperator: (fieldNode: QueryNode, valueNode: QueryNode, analyzer?: string) => QueryNode,
         public readonly operatorName: string,
         baseInputType: GraphQLInputType,
-        public readonly flexSearchLanguage?: FlexSearchLanguage,
         public readonly analyzer?: string
     ) {
         this.inputType = FLEX_SEARCH_OPERATORS_WITH_LIST_OPERAND.includes(operatorName)
@@ -193,12 +191,7 @@ export class FlexSearchNestedObjectFilterField implements FlexSearchFilterField 
             const node = new BinaryOperationQueryNode(
                 new BinaryOperationQueryNode(valueNode, BinaryOperator.EQUAL, literalNode),
                 BinaryOperator.OR,
-                not(
-                    new FlexSearchFieldExistsQueryNode(
-                        valueNode,
-                        this.field.isFlexSearchIndexCaseSensitive ? IDENTITY_ANALYZER : NORM_CI_ANALYZER
-                    )
-                )
+                not(new FlexSearchFieldExistsQueryNode(valueNode, this.field.flexSearchAnalyzer))
             );
             if (path.length > 0) {
                 return new BinaryOperationQueryNode(
@@ -206,7 +199,7 @@ export class FlexSearchNestedObjectFilterField implements FlexSearchFilterField 
                     BinaryOperator.AND,
                     new FlexSearchFieldExistsQueryNode(
                         new FieldPathQueryNode(sourceNode, path),
-                        this.field.isFlexSearchIndexCaseSensitive ? IDENTITY_ANALYZER : NORM_CI_ANALYZER
+                        this.field.flexSearchAnalyzer
                     )
                 );
             } else {

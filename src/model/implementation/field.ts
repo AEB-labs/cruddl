@@ -1,5 +1,6 @@
 import { FieldDefinitionNode, GraphQLBoolean, GraphQLFloat, GraphQLID, GraphQLInt, GraphQLString } from 'graphql';
 import memorize from 'memorize-decorator';
+import { IDENTITY_ANALYZER, NORM_CI_ANALYZER } from '../../database/arangodb/schema-migration/arango-search-helpers';
 import {
     ACCESS_GROUP_FIELD,
     CALC_MUTATIONS_OPERATORS,
@@ -36,6 +37,7 @@ import { Model } from './model';
 import { PermissionProfile } from './permission-profile';
 import { Relation, RelationSide } from './relation';
 import { RolesSpecifier } from './roles-specifier';
+import { ScalarType } from './scalar-type';
 import { InvalidType, ObjectType, Type } from './type';
 import { ValueObjectType } from './value-object-type';
 
@@ -1525,6 +1527,16 @@ export class Field implements ModelComponent {
 
     get isFlexSearchIndexCaseSensitive(): boolean {
         return this.input.isFlexSearchIndexCaseSensitive ?? true;
+    }
+
+    get flexSearchAnalyzer(): string | undefined {
+        if (!this.isFlexSearchIndexed) {
+            return undefined;
+        }
+        if (!(this.type.isScalarType && this.type.name === 'String')) {
+            return undefined;
+        }
+        return this.isFlexSearchIndexCaseSensitive ? IDENTITY_ANALYZER : NORM_CI_ANALYZER;
     }
 
     get isFlexSearchFulltextIndexed(): boolean {

@@ -79,13 +79,11 @@ query id {
 query nothingIsLessThanNullInAggregation {
     flexSearchDeliveries(flexSearchFilter: { itemsAggregation: { quantity_lt: null } }) {
         deliveryNumber
-        sometimesNull
     }
 }
 
 query everythingIsGreaterThanNullInAggregation {
     flexSearchDeliveries(flexSearchFilter: { itemsAggregation: { quantity_gt: null } }) {
         deliveryNumber
-        sometimesNull
     }
 }
