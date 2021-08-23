@@ -1698,6 +1698,11 @@
                             "deprecationReason": null
                         },
                         {
+                            "name": "caseInsensitiveField",
+                            "description": null,
+                            "deprecationReason": null
+                        },
+                        {
                             "name": "_cursor",
                             "description": "Provides a value that can be supplied to the `after` argument for pagination. Depends on the value of the `orderBy` argument.",
                             "deprecationReason": null
@@ -3818,6 +3823,86 @@
                             "deprecationReason": null
                         },
                         {
+                            "name": "caseInsensitiveField",
+                            "description": "Checks if `caseInsensitiveField` equals a specified string, case-sensitively.\n\nIf an index exists on `caseInsensitiveField`, it can be used.\n\nSee also `like` for a case-insensitive filter.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "caseInsensitiveField_not",
+                            "description": "Checks if `caseInsensitiveField` does not equal a specified string, case-sensitively.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "caseInsensitiveField_in",
+                            "description": "Checks if `caseInsensitiveField` is equal to one of the specified values.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "caseInsensitiveField_not_in",
+                            "description": "Checks if `caseInsensitiveField` is not equal to one of the specified values.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "caseInsensitiveField_lt",
+                            "description": "Checks if `caseInsensitiveField` is less than a specified value.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "caseInsensitiveField_lte",
+                            "description": "Checks if `caseInsensitiveField` is less or equal a specified value.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "caseInsensitiveField_gt",
+                            "description": "Checks if `caseInsensitiveField` is greater than a specified value.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "caseInsensitiveField_gte",
+                            "description": "Checks if `caseInsensitiveField` is greater or equal a specified value.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "caseInsensitiveField_contains",
+                            "description": "Checks if `caseInsensitiveField` contains a specified string, case-sensitively.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "caseInsensitiveField_not_contains",
+                            "description": "Checks if `caseInsensitiveField` does not contain a specified string, case-sensitively.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "caseInsensitiveField_starts_with",
+                            "description": "Checks if `caseInsensitiveField` starts with a specified string, case-sensitively.\n\nNever uses an index. Consider using `like` (with the `%` placeholder) for a case-insensitive filter that can use an index.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "caseInsensitiveField_not_starts_with",
+                            "description": "Checks if `caseInsensitiveField` does not start with a specified string, case-sensitively.\n\nNever uses an index. Consider using `not_like` (with the `%` placeholder) for a case-insensitive filter that can use an index.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "caseInsensitiveField_ends_with",
+                            "description": "Checks if `caseInsensitiveField` ends with a specified string, case-sensitively.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "caseInsensitiveField_not_ends_with",
+                            "description": "Checks if `caseInsensitiveField` does not end with a specified string, case-sensitively.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "caseInsensitiveField_like",
+                            "description": "Matches `caseInsensitiveField` against a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)\n\nIf an index exists on `caseInsensitiveField`, it can be used for the literal prefix (the part until the first placeholder).",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "caseInsensitiveField_not_like",
+                            "description": "Checks if `caseInsensitiveField` does *not* match a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)",
+                            "deprecationReason": null
+                        },
+                        {
                             "name": "AND",
                             "description": "A field that checks if all filters in the list apply\n\nIf the list is empty, this filter applies to all objects.",
                             "deprecationReason": null
@@ -5618,6 +5703,56 @@
                         {
                             "name": "sometimesNull_not_starts_with",
                             "description": "Checks if `sometimesNull` does not start with a specified string, case-insensitively.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "caseInsensitiveField",
+                            "description": "Checks if `caseInsensitiveField` equals a specified string, case-insensitively.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "caseInsensitiveField_not",
+                            "description": "Checks if `caseInsensitiveField` does not equal a specified string, case-insensitively.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "caseInsensitiveField_lt",
+                            "description": "Checks if `caseInsensitiveField` is less than a specified value.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "caseInsensitiveField_lte",
+                            "description": "Checks if `caseInsensitiveField` is less or equal a specified value.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "caseInsensitiveField_gt",
+                            "description": "Checks if `caseInsensitiveField` is greater than a specified value.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "caseInsensitiveField_gte",
+                            "description": "Checks if `caseInsensitiveField` is greater or equal a specified value.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "caseInsensitiveField_in",
+                            "description": "Checks if `caseInsensitiveField` is equal to one of the specified values.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "caseInsensitiveField_not_in",
+                            "description": "Checks if `caseInsensitiveField` is not equal to one of the specified values.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "caseInsensitiveField_starts_with",
+                            "description": "Checks if `caseInsensitiveField` starts with a specified string, case-insensitively.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "caseInsensitiveField_not_starts_with",
+                            "description": "Checks if `caseInsensitiveField` does not start with a specified string, case-insensitively.",
                             "deprecationReason": null
                         },
                         {
@@ -7683,6 +7818,11 @@
                             "name": "sometimesNull",
                             "description": null,
                             "deprecationReason": null
+                        },
+                        {
+                            "name": "caseInsensitiveField",
+                            "description": null,
+                            "deprecationReason": null
                         }
                     ]
                 },
@@ -8071,6 +8211,11 @@
                             "deprecationReason": null
                         },
                         {
+                            "name": "caseInsensitiveField",
+                            "description": null,
+                            "deprecationReason": null
+                        },
+                        {
                             "name": "_revision",
                             "description": "Set this field to the value of \"Delivery._revision\" to abort the transaction if this object has been modified in the meantime",
                             "deprecationReason": null
@@ -8345,6 +8490,11 @@
                         },
                         {
                             "name": "sometimesNull",
+                            "description": null,
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "caseInsensitiveField",
                             "description": null,
                             "deprecationReason": null
                         },

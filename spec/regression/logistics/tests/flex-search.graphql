@@ -87,3 +87,31 @@ query everythingIsGreaterThanNullInAggregation {
         deliveryNumber
     }
 }
+
+query caseInsensitive_equals {
+    flexSearchDeliveries(flexSearchFilter: { caseInsensitiveField: "a TeXt" }) {
+        deliveryNumber
+        caseInsensitiveField
+    }
+}
+
+query caseInsensitive_gte {
+    flexSearchDeliveries(flexSearchFilter: { caseInsensitiveField_gte: "A" }) {
+        deliveryNumber
+        caseInsensitiveField
+    }
+}
+
+query caseInsensitive_in {
+    flexSearchDeliveries(flexSearchFilter: { caseInsensitiveField_in: ["a TeXt", "another TEXT"] }) {
+        deliveryNumber
+        caseInsensitiveField
+    }
+}
+
+query caseInsensitive_starts_with {
+    flexSearchDeliveries(flexSearchFilter: { caseInsensitiveField_starts_with: "A t" }) {
+        deliveryNumber
+        caseInsensitiveField
+    }
+}

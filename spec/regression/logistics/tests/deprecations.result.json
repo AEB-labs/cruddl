@@ -375,6 +375,14 @@
                     }
                 },
                 {
+                    "name": "caseInsensitiveField",
+                    "isDeprecated": false,
+                    "deprecationReason": null,
+                    "type": {
+                        "enumValues": null
+                    }
+                },
+                {
                     "name": "_cursor",
                     "isDeprecated": false,
                     "deprecationReason": null,
@@ -1062,6 +1070,16 @@
                 },
                 {
                     "name": "sometimesNull_DESC",
+                    "isDeprecated": false,
+                    "deprecationReason": null
+                },
+                {
+                    "name": "caseInsensitiveField_ASC",
+                    "isDeprecated": false,
+                    "deprecationReason": null
+                },
+                {
+                    "name": "caseInsensitiveField_DESC",
                     "isDeprecated": false,
                     "deprecationReason": null
                 }

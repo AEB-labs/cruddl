@@ -131,7 +131,8 @@
                     }
                 },
                 "aText": "foo bar",
-                "sometimesNull": "1"
+                "sometimesNull": "1",
+                "caseInsensitiveField": "A TEXT"
             },
             {
                 "@id": "2",
@@ -173,7 +174,8 @@
                         }
                     }
                 },
-                "sometimesNull": "2"
+                "sometimesNull": "2",
+                "caseInsensitiveField": "a text"
             },
             {
                 "@id": "3",
@@ -206,7 +208,8 @@
                         }
                     }
                 },
-                "sometimesNull": null
+                "sometimesNull": null,
+                "caseInsensitiveField": "another text"
             }
         ],
         "Forwarder": [

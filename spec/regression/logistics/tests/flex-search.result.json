@@ -142,5 +142,69 @@
                 }
             ]
         }
+    },
+    "caseInsensitive_equals": {
+        "data": {
+            "flexSearchDeliveries": [
+                {
+                    "deliveryNumber": "1000173",
+                    "caseInsensitiveField": "A TEXT"
+                },
+                {
+                    "deliveryNumber": "1000521",
+                    "caseInsensitiveField": "a text"
+                }
+            ]
+        }
+    },
+    "caseInsensitive_gte": {
+        "data": {
+            "flexSearchDeliveries": [
+                {
+                    "deliveryNumber": "1000173",
+                    "caseInsensitiveField": "A TEXT"
+                },
+                {
+                    "deliveryNumber": "1000521",
+                    "caseInsensitiveField": "a text"
+                },
+                {
+                    "deliveryNumber": "1000522",
+                    "caseInsensitiveField": "another text"
+                }
+            ]
+        }
+    },
+    "caseInsensitive_in": {
+        "data": {
+            "flexSearchDeliveries": [
+                {
+                    "deliveryNumber": "1000173",
+                    "caseInsensitiveField": "A TEXT"
+                },
+                {
+                    "deliveryNumber": "1000521",
+                    "caseInsensitiveField": "a text"
+                },
+                {
+                    "deliveryNumber": "1000522",
+                    "caseInsensitiveField": "another text"
+                }
+            ]
+        }
+    },
+    "caseInsensitive_starts_with": {
+        "data": {
+            "flexSearchDeliveries": [
+                {
+                    "deliveryNumber": "1000173",
+                    "caseInsensitiveField": "A TEXT"
+                },
+                {
+                    "deliveryNumber": "1000521",
+                    "caseInsensitiveField": "a text"
+                }
+            ]
+        }
     }
 }
