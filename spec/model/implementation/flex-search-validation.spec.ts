@@ -1,5 +1,8 @@
 import { Model, RootEntityType, TypeKind } from '../../../core-exports';
-import { FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT } from '../../../src/schema/constants';
+import {
+    FLEX_SEARCH_CASE_SENSITIVE_ARGUMENT,
+    FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT
+} from '../../../src/schema/constants';
 import { assertValidatorAccepts, assertValidatorRejects } from '../../schema/ast-validation-modules/helpers';
 import { expectSingleErrorToInclude } from './validation-utils';
 
@@ -8,7 +11,7 @@ describe('FlexSearch', () => {
         assertValidatorRejects(
             `
             type HandlingUnit @rootEntity(flexSearch: true) {
-                otherHandlingUnit: HandlingUnit @relation @flexSearch 
+                otherHandlingUnit: HandlingUnit @relation @flexSearch
             }
         `,
             `@flexSearch is not supported on relations.`
@@ -19,7 +22,7 @@ describe('FlexSearch', () => {
             `
             type HandlingUnit @rootEntity(flexSearch: true) {
                 key: String @key
-                otherHandlingUnit: HandlingUnit @reference @flexSearch 
+                otherHandlingUnit: HandlingUnit @reference @flexSearch
             }
         `,
             `@flexSearch is not supported on references.`
@@ -88,6 +91,17 @@ describe('FlexSearch', () => {
             }
         `,
             `"${FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT}: true" is only supported on the types "String", "[String]" and object types.`
+        );
+    });
+
+    it('rejects flexSearch caseSensitive:false for Integers', () => {
+        assertValidatorRejects(
+            `
+            type HandlingUnit @rootEntity(flexSearch: true) {
+                someInt: Int @flexSearch(caseSensitive: false)
+            }
+        `,
+            `"${FLEX_SEARCH_CASE_SENSITIVE_ARGUMENT}: false" is only supported on the types "String" and "[String]".`
         );
     });
     it('accepts flexSearch includeInSearch for string arrays', () => {

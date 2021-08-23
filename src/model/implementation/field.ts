@@ -5,6 +5,7 @@ import {
     CALC_MUTATIONS_OPERATORS,
     COLLECT_AGGREGATE_ARG,
     COLLECT_DIRECTIVE,
+    FLEX_SEARCH_CASE_SENSITIVE_ARGUMENT,
     FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT,
     PARENT_DIRECTIVE,
     REFERENCE_DIRECTIVE,
@@ -1502,6 +1503,15 @@ export class Field implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `"${FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT}: true" is only supported on the types "String", "[String]" and object types.`,
+                    this.input.isFlexSearchIndexedASTNode
+                )
+            );
+            return;
+        }
+        if (!this.isFlexSearchIndexCaseSensitive && !(this.type.isScalarType && this.type.name === 'String')) {
+            context.addMessage(
+                ValidationMessage.error(
+                    `"${FLEX_SEARCH_CASE_SENSITIVE_ARGUMENT}: false" is only supported on the types "String" and "[String]".`,
                     this.input.isFlexSearchIndexedASTNode
                 )
             );
