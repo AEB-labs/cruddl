@@ -954,15 +954,13 @@ register(OperatorWithAnalyzerQueryNode, (node, context) => {
 
     if (isCaseInsensitive) {
         lhs = js`${lhs}.toLowerCase()`;
-        rhs = js`${rhs}.toLowerCase()`;
+        const rhsVar = js.variable('rhs');
+        rhs = jsExt.evaluatingLambda(
+            rhsVar,
+            js`(Array.isArray(${rhsVar}) ? ${rhsVar}.map(value => value.toLowerCase()) : ${rhsVar}.toLowerCase())`,
+            rhs
+        );
     }
-
-    const rhsVar = js.variable('rhs');
-    const rhsListOrString = jsExt.evaluatingLambda(
-        rhsVar,
-        js`(Array.isArray(${rhsVar}) ? ${rhsVar} : String(${rhsVar}))`,
-        rhs
-    );
 
     switch (node.operator) {
         case BinaryOperatorWithAnalyzer.EQUAL:
@@ -978,7 +976,7 @@ register(OperatorWithAnalyzerQueryNode, (node, context) => {
         case BinaryOperatorWithAnalyzer.FLEX_STRING_GREATER_THAN_OR_EQUAL:
             return compare(js`>=`, lhs, rhs);
         case BinaryOperatorWithAnalyzer.IN:
-            return js`${rhsListOrString}.includes(${lhs})`;
+            return js`${rhs}.includes(${lhs})`;
         case BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_ANY_WORD:
         case BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_PREFIX:
         case BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_PHRASE:
