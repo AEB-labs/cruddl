@@ -797,7 +797,7 @@ register(OperatorWithAnalyzerQueryNode, (node, context) => {
             return aql`ANALYZER( ${lhs} != TOKENS(${rhs}, ${analyzer})[0],${analyzer})`;
         case BinaryOperatorWithAnalyzer.IN:
             const loopVar = aql.variable(`token`);
-            return aql`ANALYZER( ${lhs} IN ( FOR ${loopVar} IN ${rhs} RETURN TOKENS(${loopVar} , ${analyzer})[0]), ${analyzer} )`;
+            return aql`ANALYZER( ${lhs} IN ( FOR ${loopVar} IN TOKENS(${rhs} , ${analyzer}) RETURN ${loopVar}[0] ), ${analyzer} )`;
         case BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_ANY_WORD:
             return aql`ANALYZER( ${lhs} IN TOKENS(${rhs}, ${analyzer}),${analyzer})`;
         case BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_PREFIX:
