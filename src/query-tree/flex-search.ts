@@ -76,7 +76,7 @@ export class FlexSearchComplexOperatorQueryNode extends QueryNode {
                             this.fieldNode,
                             this.comparisonOperator,
                             new LiteralQueryNode(value),
-                            this.analyzer!
+                            this.analyzer
                         ) as QueryNode
                 )
                 .reduce(binaryOp(this.logicalOperator), neutralOperand)

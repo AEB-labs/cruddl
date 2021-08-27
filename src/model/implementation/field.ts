@@ -1539,6 +1539,23 @@ export class Field implements ModelComponent {
         return this.isFlexSearchIndexCaseSensitive ? IDENTITY_ANALYZER : NORM_CI_ANALYZER;
     }
 
+    get flexSearchFulltextAnalyzer(): string | undefined {
+        if (!this.flexSearchLanguage) {
+            return undefined;
+        }
+        return 'text_' + this.flexSearchLanguage.toLocaleLowerCase();
+    }
+
+    getFlexSearchFulltextAnalyzerOrThrow(): string {
+        const analyzer = this.flexSearchFulltextAnalyzer;
+        if (!analyzer) {
+            throw new Error(
+                `Expected field ${this.declaringType.name}.${this.name} to have a flexSearch fulltext language, but it does not`
+            );
+        }
+        return analyzer;
+    }
+
     get isFlexSearchFulltextIndexed(): boolean {
         return !!this.input.isFlexSearchFulltextIndexed;
     }

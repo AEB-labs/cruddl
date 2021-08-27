@@ -191,7 +191,7 @@ export class FlexSearchFilterTypeGenerator {
                             this.getComplexFilterOperatorByName(name),
                             name,
                             inputType,
-                            `text_${field.flexSearchLanguage!.toLowerCase()}`
+                            field.getFlexSearchFulltextAnalyzerOrThrow()
                         )
                 )
             );
