@@ -368,19 +368,20 @@ function createFlexSearchDefinitionInputs(
     return config;
 }
 
-function getIsFlexSearchIndexCaseSensitive(fieldNode: FieldDefinitionNode, context: ValidationContext): boolean {
+function getFlexSearchIndexCaseSensitiveNode(
+    fieldNode: FieldDefinitionNode,
+    context: ValidationContext
+): ArgumentNode | undefined {
     const directive = findDirectiveWithName(fieldNode, FLEX_SEARCH_INDEXED_DIRECTIVE);
     if (directive) {
         const argument = getNodeByName(directive.arguments, FLEX_SEARCH_CASE_SENSITIVE_ARGUMENT);
         if (argument) {
             if (argument.value.kind === 'BooleanValue') {
-                return argument.value.value;
-            } else {
-                context.addMessage(ValidationMessage.error(VALIDATION_ERROR_EXPECTED_BOOLEAN, argument.value.loc));
+                return argument;
             }
         }
     }
-    return true;
+    return undefined;
 }
 
 function getIsIncludedInSearch(fieldNode: FieldDefinitionNode, context: ValidationContext): boolean {
@@ -463,6 +464,7 @@ function createFieldInput(fieldNode: FieldDefinitionNode, context: ValidationCon
     const referenceKeyFieldASTNode = getReferenceKeyFieldASTNode(fieldNode, context);
     const parentDirectiveNode = findDirectiveWithName(fieldNode, PARENT_DIRECTIVE);
     const rootDirectiveNode = findDirectiveWithName(fieldNode, ROOT_DIRECTIVE);
+    const flexSearchIndexCaseSensitiveNode = getFlexSearchIndexCaseSensitiveNode(fieldNode, context);
 
     return {
         name: fieldNode.name.value,
@@ -494,7 +496,11 @@ function createFieldInput(fieldNode: FieldDefinitionNode, context: ValidationCon
         typeName: getTypeNameIgnoringNonNullAndList(fieldNode.type),
         typeNameAST: getNamedTypeNodeIgnoringNonNullAndList(fieldNode.type).name,
         isFlexSearchIndexed: hasDirectiveWithName(fieldNode, FLEX_SEARCH_INDEXED_DIRECTIVE),
-        isFlexSearchIndexCaseSensitive: getIsFlexSearchIndexCaseSensitive(fieldNode, context),
+        flexSearchIndexCaseSensitiveASTNode: flexSearchIndexCaseSensitiveNode,
+        isFlexSearchIndexCaseSensitive:
+            flexSearchIndexCaseSensitiveNode?.value.kind === 'BooleanValue'
+                ? flexSearchIndexCaseSensitiveNode.value.value
+                : undefined,
         isFlexSearchIndexedASTNode: findDirectiveWithName(fieldNode, FLEX_SEARCH_INDEXED_DIRECTIVE),
         isFlexSearchFulltextIndexed: hasDirectiveWithName(fieldNode, FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE),
         isFlexSearchFulltextIndexedASTNode: findDirectiveWithName(fieldNode, FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE),

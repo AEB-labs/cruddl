@@ -1510,11 +1510,14 @@ export class Field implements ModelComponent {
             );
             return;
         }
-        if (!this.isFlexSearchIndexCaseSensitive && !(this.type.isScalarType && this.type.name === 'String')) {
+        if (
+            this.input.isFlexSearchIndexCaseSensitive !== undefined &&
+            !(this.type.isScalarType && this.type.name === 'String')
+        ) {
             context.addMessage(
                 ValidationMessage.error(
-                    `"${FLEX_SEARCH_CASE_SENSITIVE_ARGUMENT}: false" is only supported on the types "String" and "[String]".`,
-                    this.input.isFlexSearchIndexedASTNode
+                    `"${FLEX_SEARCH_CASE_SENSITIVE_ARGUMENT}" is only supported on the types "String" and "[String]".`,
+                    this.input.flexSearchIndexCaseSensitiveASTNode
                 )
             );
             return;

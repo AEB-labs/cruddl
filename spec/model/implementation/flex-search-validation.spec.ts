@@ -101,7 +101,7 @@ describe('FlexSearch', () => {
                 someInt: Int @flexSearch(caseSensitive: false)
             }
         `,
-            `"${FLEX_SEARCH_CASE_SENSITIVE_ARGUMENT}: false" is only supported on the types "String" and "[String]".`
+            `"${FLEX_SEARCH_CASE_SENSITIVE_ARGUMENT}" is only supported on the types "String" and "[String]".`
         );
     });
     it('accepts flexSearch includeInSearch for string arrays', () => {
