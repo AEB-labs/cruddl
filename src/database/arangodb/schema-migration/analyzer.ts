@@ -199,7 +199,7 @@ export class SchemaAnalyzer {
                 options: {
                     type: 'norm',
                     properties: {
-                        locale: 'en',
+                        locale: 'en.utf-8',
                         case: 'lower',
                         accent: false
                     }

@@ -183,8 +183,13 @@ export class MigrationPerformer {
 
     private async updateArangoSearchAnalyzer(migration: UpdateArangoSearchAnalyzerMigration) {
         try {
-            await this.db.analyzer(migration.name).drop(true);
+            await this.db.analyzer(migration.name).drop(false);
         } catch (e) {
+            if (e.code === 409) {
+                throw new Error(
+                    `Failed to drop arangoSearch analyzer because it is still in use. Drop arangoSearch views and run the migration again. ${e.message}`
+                );
+            }
             if (e.code !== 404) {
                 throw e;
             }
