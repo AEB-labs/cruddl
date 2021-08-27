@@ -19,12 +19,20 @@ import {
 } from '../query-tree';
 import { FlexSearchQueryNode, FlexSearchStartsWithQueryNode } from '../query-tree/flex-search';
 import { simplifyBooleans } from '../query-tree/utils';
-import { FILTER_ARG, FLEX_SEARCH_EXPRESSION_ARG, FLEX_SEARCH_FILTER_ARG, ORDER_BY_ARG } from '../schema/constants';
+import {
+    FILTER_ARG,
+    FLEX_SEARCH_EXPRESSION_ARG,
+    FLEX_SEARCH_FILTER_ARG,
+    ORDER_BY_ARG,
+    POST_FILTER_ARG
+} from '../schema/constants';
 import { getFlexSearchEntitiesFieldName, getMetaFieldName } from '../schema/names';
 import { decapitalize } from '../utils/utils';
 import { FilterAugmentation } from './filter-augmentation';
+import { FlexSearchFilterAugmentation } from './flex-search-filter-augmentation';
 import { FlexSearchFilterObjectType, FlexSearchFilterTypeGenerator } from './flex-search-filter-input-types';
 import { ListAugmentation } from './list-augmentation';
+import { OrderByAndPaginationAugmentation } from './order-by-and-pagination-augmentation';
 import { OutputTypeGenerator } from './output-type-generator';
 import {
     QueryNodeField,
@@ -46,8 +54,8 @@ export class FlexSearchGenerator {
     constructor(
         private readonly flexSearchTypeGenerator: FlexSearchFilterTypeGenerator,
         private readonly outputTypeGenerator: OutputTypeGenerator,
-        private readonly listAugmentation: ListAugmentation,
-        private readonly filterAugmentation: FilterAugmentation
+        private readonly flexSearchFilterAugmentation: FlexSearchFilterAugmentation,
+        private readonly orderByAugmentation: OrderByAndPaginationAugmentation
     ) {}
 
     generate(rootEntityType: RootEntityType): QueryNodeField {
@@ -57,8 +65,12 @@ export class FlexSearchGenerator {
             description: `Queries for ${rootEntityType.pluralName} using FlexSearch.`,
             resolve: () => new FlexSearchQueryNode({ rootEntityType: rootEntityType })
         };
+        const withOrderBy = this.augmentWithCondition(
+            this.orderByAugmentation.augment(this.generateFromConfig(fieldConfig, rootEntityType), rootEntityType),
+            rootEntityType
+        );
         return this.augmentWithCondition(
-            this.listAugmentation.augment(this.generateFromConfig(fieldConfig, rootEntityType), rootEntityType),
+            this.flexSearchFilterAugmentation.augment(withOrderBy, rootEntityType),
             rootEntityType
         );
     }
@@ -77,7 +89,10 @@ export class FlexSearchGenerator {
             }
         };
         return this.augmentWithCondition(
-            this.filterAugmentation.augment(this.generateFromConfig(fieldConfig, rootEntityType), rootEntityType),
+            this.flexSearchFilterAugmentation.augment(
+                this.generateFromConfig(fieldConfig, rootEntityType),
+                rootEntityType
+            ),
             rootEntityType
         );
     }
@@ -187,8 +202,9 @@ export class FlexSearchGenerator {
                 const assertionVariable = new VariableQueryNode();
                 // If a filter or an order_by is specified, a pre-execution query node is added that throws a TOO_MANY_OBJECTS_ERROR if the amount of objects the filter or order_by is
                 // used on is to large
+                const filterArg = args[POST_FILTER_ARG] || args[FILTER_ARG];
                 if (
-                    (args[FILTER_ARG] && Object.keys(args[FILTER_ARG]).length > 0) ||
+                    (filterArg && Object.keys(filterArg).length > 0) ||
                     (args[ORDER_BY_ARG] &&
                         !orderArgMatchesPrimarySort(args[ORDER_BY_ARG], rootEntityType.flexSearchPrimarySort))
                 ) {
