@@ -6,9 +6,9 @@ import { RootFieldHelper } from './root-field-helper';
 import { buildFilteredListNode } from './utils/filtering';
 
 /**
- * Augments list fields with filter features
+ * Augments list fields with postFilter features
  */
-export class FlexSearchFilterAugmentation {
+export class FlexSearchPostFilterAugmentation {
     constructor(
         private readonly filterTypeGenerator: FilterTypeGenerator,
         private readonly rootFieldHelper: RootFieldHelper
@@ -26,11 +26,11 @@ export class FlexSearchFilterAugmentation {
             args: {
                 ...schemaField.args,
                 [FILTER_ARG]: {
-                    description: `hello there`,
                     deprecationReason: `Renamed to postFilter. Use postFilter instead.`,
                     type: filterType.getInputType()
                 },
                 [POST_FILTER_ARG]: {
+                    description: `Filters that will be applied in memory after the flexSearchFilter.\n\nThis will not use any indices and will only work if applied on less than 10 000 objects.`,
                     type: filterType.getInputType()
                 }
             },
@@ -38,7 +38,6 @@ export class FlexSearchFilterAugmentation {
                 let listNode = schemaField.resolve(sourceNode, args, info);
                 return buildFilteredListNode({
                     listNode,
-                    args,
                     filterValue: args[POST_FILTER_ARG],
                     filterType,
                     itemType,

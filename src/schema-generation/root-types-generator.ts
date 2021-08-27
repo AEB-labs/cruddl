@@ -6,7 +6,7 @@ import { CreateInputTypeGenerator } from './create-input-types';
 import { EnumTypeGenerator } from './enum-type-generator';
 import { FilterAugmentation } from './filter-augmentation';
 import { FilterTypeGenerator } from './filter-input-types';
-import { FlexSearchFilterAugmentation } from './flex-search-filter-augmentation';
+import { FlexSearchPostFilterAugmentation } from './flex-search-post-filter-augmentation';
 import { FlexSearchFilterTypeGenerator } from './flex-search-filter-input-types';
 import { FlexSearchGenerator } from './flex-search-generator';
 import { MetaFirstAugmentation } from './limit-augmentation';
@@ -37,7 +37,7 @@ export class RootTypesGenerator {
         this.rootFieldHelper
     );
     private readonly filterAugmentation = new FilterAugmentation(this.filterTypeGenerator, this.rootFieldHelper);
-    private readonly flexSearchFilterAugmentation = new FlexSearchFilterAugmentation(
+    private readonly flexSearchFilterAugmentation = new FlexSearchPostFilterAugmentation(
         this.filterTypeGenerator,
         this.rootFieldHelper
     );

@@ -28,10 +28,8 @@ import {
 } from '../schema/constants';
 import { getFlexSearchEntitiesFieldName, getMetaFieldName } from '../schema/names';
 import { decapitalize } from '../utils/utils';
-import { FilterAugmentation } from './filter-augmentation';
-import { FlexSearchFilterAugmentation } from './flex-search-filter-augmentation';
 import { FlexSearchFilterObjectType, FlexSearchFilterTypeGenerator } from './flex-search-filter-input-types';
-import { ListAugmentation } from './list-augmentation';
+import { FlexSearchPostFilterAugmentation } from './flex-search-post-filter-augmentation';
 import { OrderByAndPaginationAugmentation } from './order-by-and-pagination-augmentation';
 import { OutputTypeGenerator } from './output-type-generator';
 import {
@@ -54,7 +52,7 @@ export class FlexSearchGenerator {
     constructor(
         private readonly flexSearchTypeGenerator: FlexSearchFilterTypeGenerator,
         private readonly outputTypeGenerator: OutputTypeGenerator,
-        private readonly flexSearchFilterAugmentation: FlexSearchFilterAugmentation,
+        private readonly flexSearchFilterAugmentation: FlexSearchPostFilterAugmentation,
         private readonly orderByAugmentation: OrderByAndPaginationAugmentation
     ) {}
 

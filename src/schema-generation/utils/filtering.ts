@@ -14,7 +14,6 @@ import { FilterObjectType } from '../filter-input-types';
 
 interface BuildFilteredListNodeParams {
     readonly listNode: QueryNode;
-    readonly args: { readonly [p: string]: any };
     readonly filterValue: any;
     readonly filterType: FilterObjectType;
     readonly itemType: Type;
