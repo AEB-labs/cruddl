@@ -3,12 +3,12 @@
         types {
             name
             description
-            fields {
+            fields(includeDeprecated: true) {
                 name
                 description
                 deprecationReason
             }
-            inputFields {
+            inputFields(includeDeprecated: true) {
                 name
                 description
                 deprecationReason

@@ -1688,6 +1688,11 @@
                             "deprecationReason": null
                         },
                         {
+                            "name": "deprecatedField",
+                            "description": null,
+                            "deprecationReason": "do not use"
+                        },
+                        {
                             "name": "enumWithDeprecation",
                             "description": null,
                             "deprecationReason": null
@@ -7407,7 +7412,7 @@
                         {
                             "name": "destinationCountry",
                             "description": "Specify the `isoCode` of the `Country` to be referenced",
-                            "deprecationReason": null
+                            "deprecationReason": "Use \"destinationCountryISOCode\" instead."
                         },
                         {
                             "name": "destinationCountryISOCode",
@@ -7788,7 +7793,7 @@
                         {
                             "name": "destinationCountry",
                             "description": "Specify the `isoCode` of the `Country` to be referenced",
-                            "deprecationReason": null
+                            "deprecationReason": "Use \"destinationCountryISOCode\" instead."
                         },
                         {
                             "name": "destinationCountryISOCode",
@@ -8071,7 +8076,7 @@
                         {
                             "name": "destinationCountry",
                             "description": "Specify the `isoCode` of the `Country` to be referenced",
-                            "deprecationReason": null
+                            "deprecationReason": "Use \"destinationCountryISOCode\" instead."
                         },
                         {
                             "name": "destinationCountryISOCode",
