@@ -790,12 +790,19 @@ register(OperatorWithAnalyzerQueryNode, (node, context) => {
     const rhs = processNode(node.rhs, context);
     const analyzer = node.analyzer;
 
+    const isIdentityAnalyzer = !node.analyzer || node.analyzer === IDENTITY_ANALYZER;
+    // some operators support case-converting analyzers (like norm_ci) which only generate one token
+    const normalizedRhs = isIdentityAnalyzer ? rhs : aql`TOKENS(${rhs}, ${analyzer})[0]`;
+
     switch (node.operator) {
         case BinaryOperatorWithAnalyzer.EQUAL:
-            return aql`ANALYZER( ${lhs} == TOKENS(${rhs}, ${analyzer})[0],${analyzer})`;
+            return aql`ANALYZER( ${lhs} == ${normalizedRhs},${analyzer})`;
         case BinaryOperatorWithAnalyzer.UNEQUAL:
-            return aql`ANALYZER( ${lhs} != TOKENS(${rhs}, ${analyzer})[0],${analyzer})`;
+            return aql`ANALYZER( ${lhs} != ${normalizedRhs},${analyzer})`;
         case BinaryOperatorWithAnalyzer.IN:
+            if (isIdentityAnalyzer) {
+                return aql`(${lhs} IN ${rhs})`;
+            }
             const loopVar = aql.variable(`token`);
             return aql`ANALYZER( ${lhs} IN ( FOR ${loopVar} IN TOKENS(${rhs} , ${analyzer}) RETURN ${loopVar}[0] ), ${analyzer} )`;
         case BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_ANY_WORD:
@@ -809,15 +816,15 @@ register(OperatorWithAnalyzerQueryNode, (node, context) => {
         case BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_PHRASE:
             return aql`ANALYZER( PHRASE( ${lhs}, ${rhs}), ${analyzer})`;
         case BinaryOperatorWithAnalyzer.FLEX_STRING_LESS_THAN:
-            return aql`ANALYZER( IN_RANGE(${lhs}, ${''} , TOKENS(${rhs}, ${analyzer})[0], true, false), ${analyzer})`;
+            return aql`ANALYZER( IN_RANGE(${lhs}, ${''} , ${normalizedRhs}, true, false), ${analyzer})`;
         case BinaryOperatorWithAnalyzer.FLEX_STRING_LESS_THAN_OR_EQUAL:
-            return aql`ANALYZER( IN_RANGE(${lhs}, ${''} , TOKENS(${rhs}, ${analyzer})[0], true, true), ${analyzer})`;
+            return aql`ANALYZER( IN_RANGE(${lhs}, ${''} , ${normalizedRhs}, true, true), ${analyzer})`;
         case BinaryOperatorWithAnalyzer.FLEX_STRING_GREATER_THAN:
-            return aql`ANALYZER( IN_RANGE(${lhs}, TOKENS(${rhs}, ${analyzer})[0], ${String.fromCodePoint(
+            return aql`ANALYZER( IN_RANGE(${lhs}, ${normalizedRhs}, ${String.fromCodePoint(
                 0x10ffff
             )}, false, true), ${analyzer})`;
         case BinaryOperatorWithAnalyzer.FLEX_STRING_GREATER_THAN_OR_EQUAL:
-            return aql`ANALYZER( IN_RANGE(${lhs}, TOKENS(${rhs}, ${analyzer})[0], ${String.fromCodePoint(
+            return aql`ANALYZER( IN_RANGE(${lhs}, ${normalizedRhs}, ${String.fromCodePoint(
                 0x10ffff
             )}, true, true), ${analyzer})`;
         default:
@@ -829,11 +836,14 @@ register(FlexSearchStartsWithQueryNode, (node, context) => {
     const lhs = processNode(node.lhs, context);
     const rhs = processNode(node.rhs, context);
 
-    const analyzer = node.analyzer || IDENTITY_ANALYZER;
+    if (!node.analyzer || node.analyzer === IDENTITY_ANALYZER) {
+        return aql`STARTS_WITH(${lhs}, ${rhs})`;
+    }
+
     // This query node can be used with simple case-converting analyzers
     // These case-converting analyzers will only ever result in one token, so we can use the first one, which
     // is the input value case-converted.
-    return aql`ANALYZER(STARTS_WITH(${lhs}, TOKENS(${rhs},${analyzer})[0]), ${analyzer})`;
+    return aql`ANALYZER(STARTS_WITH(${lhs}, TOKENS(${rhs},${node.analyzer})[0]), ${node.analyzer})`;
 });
 
 register(FlexSearchFieldExistsQueryNode, (node, context) => {
