@@ -105,6 +105,10 @@ export class FlexSearchFieldExistsQueryNode extends QueryNode {
 
 /**
  * A node that performs a FlexSearch STARTS_WITH Operation
+ *
+ * By default, this uses the identity analyzer. If an analyzer is specified, the right-hand side will be tokenized
+ * using this analyzer, but only the first token will be used for the starts-with operation, so only analyzers that
+ * do not do tokenization should be used (e.g. case-converting analyzers are ok).
  */
 export class FlexSearchStartsWithQueryNode extends QueryNode {
     constructor(public readonly lhs: QueryNode, public readonly rhs: QueryNode, public readonly analyzer?: string) {
