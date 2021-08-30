@@ -830,7 +830,9 @@ register(FlexSearchStartsWithQueryNode, (node, context) => {
     const rhs = processNode(node.rhs, context);
 
     const analyzer = node.analyzer || IDENTITY_ANALYZER;
-    // use TOKENS to apply the analyzer to rhs
+    // This query node can be used with simple case-converting analyzers
+    // These case-converting analyzers will only ever result in one token, so we can use the first one, which
+    // is the input value case-converted.
     return aql`ANALYZER(STARTS_WITH(${lhs}, TOKENS(${rhs},${analyzer})[0]), ${analyzer})`;
 });
 
