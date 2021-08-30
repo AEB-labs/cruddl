@@ -42,6 +42,8 @@ export interface FieldConfig {
     readonly astNode?: FieldDefinitionNode;
 
     readonly isFlexSearchIndexed?: boolean;
+    readonly isFlexSearchIndexCaseSensitive?: boolean;
+    readonly flexSearchIndexCaseSensitiveASTNode?: ArgumentNode;
     readonly isFlexSearchIndexedASTNode?: DirectiveNode;
     readonly isFlexSearchFulltextIndexed?: boolean;
     readonly isFlexSearchFulltextIndexedASTNode?: DirectiveNode;

@@ -59,16 +59,12 @@ export class BinaryOperationQueryNode extends QueryNode {
             case BinaryOperator.UNEQUAL:
                 return '!=';
             case BinaryOperator.GREATER_THAN:
-            case BinaryOperator.FLEX_STRING_GREATER_THAN:
                 return '>';
             case BinaryOperator.GREATER_THAN_OR_EQUAL:
-            case BinaryOperator.FLEX_STRING_GREATER_THAN_OR_EQUAL:
                 return '>=';
             case BinaryOperator.LESS_THAN:
-            case BinaryOperator.FLEX_STRING_LESS_THAN:
                 return '<';
             case BinaryOperator.LESS_THAN_OR_EQUAL:
-            case BinaryOperator.FLEX_STRING_LESS_THAN_OR_EQUAL:
                 return '<=';
             case BinaryOperator.IN:
                 return 'IN';
@@ -124,12 +120,6 @@ export enum BinaryOperator {
     GREATER_THAN = 'GREATER_THAN',
     GREATER_THAN_OR_EQUAL = 'GREATER_THAN_OR_EQUAL',
 
-    // these don't support NULL - both operands need to be of the same type.
-    FLEX_STRING_LESS_THAN = 'FLEX_STRING_LESS_THAN',
-    FLEX_STRING_LESS_THAN_OR_EQUAL = 'FLEX_STRING_LESS_THAN_OR_EQUAL',
-    FLEX_STRING_GREATER_THAN = 'FLEX_STRING_GREATER_THAN',
-    FLEX_STRING_GREATER_THAN_OR_EQUAL = 'FLEX_STRING_GREATER_THAN_OR_EQUAL',
-
     IN = 'IN',
     CONTAINS = 'CONTAINS',
     STARTS_WITH = 'STARTS_WITH',
@@ -155,14 +145,14 @@ export enum BinaryOperator {
 }
 
 /**
- * A node that performs an operation with two operands and a FlexSearch Language
+ * A node that performs an operation with two operands and a FlexSearch Analyzer
  */
-export class OperatorWithLanguageQueryNode extends QueryNode {
+export class OperatorWithAnalyzerQueryNode extends QueryNode {
     constructor(
         public readonly lhs: QueryNode,
-        public readonly operator: BinaryOperatorWithLanguage,
+        public readonly operator: BinaryOperatorWithAnalyzer,
         public readonly rhs: QueryNode,
-        public readonly flexSearchLanguage: FlexSearchLanguage
+        public readonly analyzer: string
     ) {
         super();
     }
@@ -170,38 +160,47 @@ export class OperatorWithLanguageQueryNode extends QueryNode {
     describe() {
         return `(${this.lhs.describe()} ${this.describeOperator(
             this.operator
-        )} ${this.rhs.describe()}${this.getParamString()})`;
+        )} ${this.rhs.describe()} with analyzer: "${this.analyzer}")`;
     }
 
-    private describeOperator(op: BinaryOperatorWithLanguage) {
+    private describeOperator(op: BinaryOperatorWithAnalyzer) {
         switch (op) {
-            case BinaryOperatorWithLanguage.FLEX_SEARCH_CONTAINS_ANY_WORD:
+            case BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_ANY_WORD:
                 return 'IN TOKENS';
-            case BinaryOperatorWithLanguage.FLEX_SEARCH_CONTAINS_PHRASE:
+            case BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_PHRASE:
                 return 'CONTAINS_PHRASE';
-            case BinaryOperatorWithLanguage.FLEX_SEARCH_CONTAINS_PREFIX:
+            case BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_PREFIX:
                 return 'CONTAINS_PREFIX';
             default:
                 return '(unknown operator)';
         }
     }
-
-    private getParamString() {
-        if (this.flexSearchLanguage) {
-            return ` with analyzer: "${this.flexSearchLanguage.toString()}"`;
-        } else {
-            return ``;
-        }
-    }
 }
 
 /**
- * The operator of a OperatorWithLanguageQueryNode
+ * The operator of a OperatorWithAnalyzerQueryNode
  */
-export enum BinaryOperatorWithLanguage {
+export enum BinaryOperatorWithAnalyzer {
     FLEX_SEARCH_CONTAINS_ANY_WORD = 'FLEX_SEARCH_CONTAINS_ANY_WORD',
     FLEX_SEARCH_CONTAINS_PREFIX = 'FLEX_SEARCH_CONTAINS_PREFIX',
-    FLEX_SEARCH_CONTAINS_PHRASE = 'FLEX_SEARCH_CONTAINS_PHRASE'
+    FLEX_SEARCH_CONTAINS_PHRASE = 'FLEX_SEARCH_CONTAINS_PHRASE',
+
+    // these don't support NULL - both operands need to be of the same type.
+    FLEX_STRING_LESS_THAN = 'FLEX_STRING_LESS_THAN',
+    FLEX_STRING_LESS_THAN_OR_EQUAL = 'FLEX_STRING_LESS_THAN_OR_EQUAL',
+    FLEX_STRING_GREATER_THAN = 'FLEX_STRING_GREATER_THAN',
+    FLEX_STRING_GREATER_THAN_OR_EQUAL = 'FLEX_STRING_GREATER_THAN_OR_EQUAL',
+
+    /**
+     * Strict equality (values of different types are considered unequal)
+     */
+    EQUAL = 'EQUAL',
+
+    /**
+     * Strict inequality (values of different types are considered unequal)
+     */
+    UNEQUAL = 'UNEQUAL',
+    IN = 'IN'
 }
 
 export class ConditionalQueryNode extends QueryNode {

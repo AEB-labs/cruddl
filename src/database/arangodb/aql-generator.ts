@@ -6,7 +6,7 @@ import {
     BasicType,
     BinaryOperationQueryNode,
     BinaryOperator,
-    BinaryOperatorWithLanguage,
+    BinaryOperatorWithAnalyzer,
     ConcatListsQueryNode,
     ConditionalQueryNode,
     ConfirmForBillingQueryNode,
@@ -33,7 +33,7 @@ import {
     NullQueryNode,
     ObjectEntriesQueryNode,
     ObjectQueryNode,
-    OperatorWithLanguageQueryNode,
+    OperatorWithAnalyzerQueryNode,
     OrderDirection,
     OrderSpecification,
     PartialEdgeIdentifier,
@@ -782,35 +782,53 @@ register(BinaryOperationQueryNode, (node, context) => {
             return aql`CONCAT(${rhs}, ${lhs})`;
         case BinaryOperator.SUBTRACT_LISTS:
             return aql`MINUS(${lhs}, ${rhs})`;
-        case BinaryOperator.FLEX_STRING_LESS_THAN:
-            return aql`IN_RANGE(${lhs}, ${''} , ${rhs}, true, false)`;
-        case BinaryOperator.FLEX_STRING_LESS_THAN_OR_EQUAL:
-            return aql`IN_RANGE(${lhs}, ${''} , ${rhs}, true, true)`;
-        case BinaryOperator.FLEX_STRING_GREATER_THAN:
-            return aql`IN_RANGE(${lhs}, ${rhs}, ${String.fromCodePoint(0x10ffff)}, false, true)`;
-        case BinaryOperator.FLEX_STRING_GREATER_THAN_OR_EQUAL:
-            return aql`IN_RANGE(${lhs}, ${rhs}, ${String.fromCodePoint(0x10ffff)}, true, true)`;
         default:
             throw new Error(`Unsupported binary operator: ${op}`);
     }
 });
 
-register(OperatorWithLanguageQueryNode, (node, context) => {
+register(OperatorWithAnalyzerQueryNode, (node, context) => {
     const lhs = processNode(node.lhs, context);
     const rhs = processNode(node.rhs, context);
-    const analyzer = `text_${node.flexSearchLanguage.toLowerCase()}`;
+    const analyzer = node.analyzer;
+
+    const isIdentityAnalyzer = !node.analyzer || node.analyzer === IDENTITY_ANALYZER;
+    // some operators support case-converting analyzers (like norm_ci) which only generate one token
+    const normalizedRhs = isIdentityAnalyzer ? rhs : aql`TOKENS(${rhs}, ${analyzer})[0]`;
 
     switch (node.operator) {
-        case BinaryOperatorWithLanguage.FLEX_SEARCH_CONTAINS_ANY_WORD:
+        case BinaryOperatorWithAnalyzer.EQUAL:
+            return aql`ANALYZER( ${lhs} == ${normalizedRhs},${analyzer})`;
+        case BinaryOperatorWithAnalyzer.UNEQUAL:
+            return aql`ANALYZER( ${lhs} != ${normalizedRhs},${analyzer})`;
+        case BinaryOperatorWithAnalyzer.IN:
+            if (isIdentityAnalyzer) {
+                return aql`(${lhs} IN ${rhs})`;
+            }
+            const loopVar = aql.variable(`token`);
+            return aql`ANALYZER( ${lhs} IN ( FOR ${loopVar} IN TOKENS(${rhs} , ${analyzer}) RETURN ${loopVar}[0] ), ${analyzer} )`;
+        case BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_ANY_WORD:
             return aql`ANALYZER( ${lhs} IN TOKENS(${rhs}, ${analyzer}),${analyzer})`;
-        case BinaryOperatorWithLanguage.FLEX_SEARCH_CONTAINS_PREFIX:
+        case BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_PREFIX:
             // can't pass NULL to STARTS_WITH (generates an error)
             // if an expression does not have a token, nothing can contain a prefix thereof, so we don't find anything
             // this is also good behavior in case of searching because you just find nothing if you type special chars
             // instead of finding everything
             return aql`(LENGTH(TOKENS(${rhs},${analyzer})) ? ANALYZER( STARTS_WITH( ${lhs}, TOKENS(${rhs},${analyzer})[0]), ${analyzer}) : false)`;
-        case BinaryOperatorWithLanguage.FLEX_SEARCH_CONTAINS_PHRASE:
+        case BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_PHRASE:
             return aql`ANALYZER( PHRASE( ${lhs}, ${rhs}), ${analyzer})`;
+        case BinaryOperatorWithAnalyzer.FLEX_STRING_LESS_THAN:
+            return aql`ANALYZER( IN_RANGE(${lhs}, ${''} , ${normalizedRhs}, true, false), ${analyzer})`;
+        case BinaryOperatorWithAnalyzer.FLEX_STRING_LESS_THAN_OR_EQUAL:
+            return aql`ANALYZER( IN_RANGE(${lhs}, ${''} , ${normalizedRhs}, true, true), ${analyzer})`;
+        case BinaryOperatorWithAnalyzer.FLEX_STRING_GREATER_THAN:
+            return aql`ANALYZER( IN_RANGE(${lhs}, ${normalizedRhs}, ${String.fromCodePoint(
+                0x10ffff
+            )}, false, true), ${analyzer})`;
+        case BinaryOperatorWithAnalyzer.FLEX_STRING_GREATER_THAN_OR_EQUAL:
+            return aql`ANALYZER( IN_RANGE(${lhs}, ${normalizedRhs}, ${String.fromCodePoint(
+                0x10ffff
+            )}, true, true), ${analyzer})`;
         default:
             throw new Error(`Unsupported operator: ${node.operator}`);
     }
@@ -819,16 +837,24 @@ register(OperatorWithLanguageQueryNode, (node, context) => {
 register(FlexSearchStartsWithQueryNode, (node, context) => {
     const lhs = processNode(node.lhs, context);
     const rhs = processNode(node.rhs, context);
-    const analyzer = node.flexSearchLanguage ? `text_${node.flexSearchLanguage.toLowerCase()}` : IDENTITY_ANALYZER;
 
-    return aql`ANALYZER(STARTS_WITH(${lhs}, ${rhs}), ${analyzer})`;
+    if (!node.analyzer || node.analyzer === IDENTITY_ANALYZER) {
+        return aql`STARTS_WITH(${lhs}, ${rhs})`;
+    }
+
+    // This query node can be used with simple case-converting analyzers
+    // These case-converting analyzers will only ever result in one token, so we can use the first one, which
+    // is the input value case-converted.
+    return aql`ANALYZER(STARTS_WITH(${lhs}, TOKENS(${rhs},${node.analyzer})[0]), ${node.analyzer})`;
 });
 
 register(FlexSearchFieldExistsQueryNode, (node, context) => {
     const sourceNode = processNode(node.sourceNode, context);
-    const analyzer = node.flexSearchLanguage ? `text_${node.flexSearchLanguage.toLowerCase()}` : IDENTITY_ANALYZER;
-
-    return aql`EXISTS(${sourceNode}, "analyzer", ${analyzer})`;
+    if (node.analyzer) {
+        return aql`EXISTS(${sourceNode}, "analyzer", ${node.analyzer})`;
+    } else {
+        return aql`EXISTS(${sourceNode})`;
+    }
 });
 
 register(FlexSearchComplexOperatorQueryNode, (node, context) => {
@@ -1680,7 +1706,7 @@ export function generateTokenizationQuery(tokensFiltered: ReadonlyArray<FlexSear
     const fragments: string[] = [];
     for (let i = 0; i < tokensFiltered.length; i++) {
         const value = tokensFiltered[i];
-        fragments.push(`token_${i}: TOKENS("${value.expression}", "text_${value.language.toLowerCase()}")`);
+        fragments.push(`token_${i}: TOKENS("${value.expression}", "${value.analyzer}")`);
     }
     const query = `RETURN { ${fragments.join(',\n')} }`;
     return query;

@@ -1,10 +1,11 @@
+import { IDENTITY_ANALYZER } from '../database/arangodb/schema-migration/arango-search-helpers';
 import { FlexSearchLanguage } from '../model/config';
 import { RootEntityType } from '../model/implementation';
 import { binaryOp } from '../schema-generation/utils/input-types';
 import { decapitalize, indent } from '../utils/utils';
 import { QueryNode } from './base';
 import { ConstBoolQueryNode, LiteralQueryNode } from './literals';
-import { BinaryOperator, BinaryOperatorWithLanguage, OperatorWithLanguageQueryNode } from './operators';
+import { BinaryOperator, BinaryOperatorWithAnalyzer, OperatorWithAnalyzerQueryNode } from './operators';
 import { simplifyBooleans } from './utils';
 import { VariableQueryNode } from './variables';
 
@@ -48,21 +49,21 @@ export class FlexSearchQueryNode extends QueryNode {
 export class FlexSearchComplexOperatorQueryNode extends QueryNode {
     constructor(
         readonly expression: string,
-        readonly comparisonOperator: BinaryOperatorWithLanguage,
+        readonly comparisonOperator: BinaryOperatorWithAnalyzer,
         readonly logicalOperator: BinaryOperator,
         private readonly fieldNode: QueryNode,
-        readonly flexSearchLanguage: FlexSearchLanguage
+        readonly analyzer: string
     ) {
         super();
     }
 
     describe(): string {
-        return `COMPLEX_OPERATOR(${this.comparisonOperator}, ${this.expression}, ${this.flexSearchLanguage})`;
+        return `COMPLEX_OPERATOR(${this.comparisonOperator}, ${this.expression}, ${this.analyzer})`;
     }
 
     expand(tokenizations: ReadonlyArray<FlexSearchTokenization>): QueryNode {
         const tokenization = tokenizations.find(
-            value => value.expression === this.expression && value.language === this.flexSearchLanguage
+            value => value.expression === this.expression && value.analyzer === this.analyzer
         );
         const tokens = tokenization ? tokenization.tokens : [];
         const neutralOperand =
@@ -71,11 +72,11 @@ export class FlexSearchComplexOperatorQueryNode extends QueryNode {
             tokens
                 .map(
                     value =>
-                        new OperatorWithLanguageQueryNode(
+                        new OperatorWithAnalyzerQueryNode(
                             this.fieldNode,
                             this.comparisonOperator,
                             new LiteralQueryNode(value),
-                            this.flexSearchLanguage
+                            this.analyzer
                         ) as QueryNode
                 )
                 .reduce(binaryOp(this.logicalOperator), neutralOperand)
@@ -85,7 +86,7 @@ export class FlexSearchComplexOperatorQueryNode extends QueryNode {
 
 export interface FlexSearchTokenization {
     expression: string;
-    language: FlexSearchLanguage;
+    analyzer: string;
     tokens: ReadonlyArray<string>;
 }
 
@@ -93,32 +94,28 @@ export interface FlexSearchTokenization {
  * A node that performs an EXISTS Check
  */
 export class FlexSearchFieldExistsQueryNode extends QueryNode {
-    constructor(public readonly sourceNode: QueryNode, public readonly flexSearchLanguage?: FlexSearchLanguage) {
+    constructor(public readonly sourceNode: QueryNode, public readonly analyzer?: string) {
         super();
     }
 
     describe() {
-        return `EXISTS(${this.sourceNode.describe()}, ${
-            this.flexSearchLanguage ? this.flexSearchLanguage.toString() : 'identity'
-        })`;
+        return `EXISTS(${this.sourceNode.describe()}${this.analyzer ? ', ' + this.analyzer.toString() : ''})`;
     }
 }
 
 /**
  * A node that performs a FlexSearch STARTS_WITH Operation
+ *
+ * By default, this uses the identity analyzer. If an analyzer is specified, the right-hand side will be tokenized
+ * using this analyzer, but only the first token will be used for the starts-with operation, so only analyzers that
+ * do not do tokenization should be used (e.g. case-converting analyzers are ok).
  */
 export class FlexSearchStartsWithQueryNode extends QueryNode {
-    constructor(
-        public readonly lhs: QueryNode,
-        public readonly rhs: QueryNode,
-        public readonly flexSearchLanguage?: FlexSearchLanguage
-    ) {
+    constructor(public readonly lhs: QueryNode, public readonly rhs: QueryNode, public readonly analyzer?: string) {
         super();
     }
 
     describe() {
-        return `STARTS_WITH(${this.lhs.describe()},${this.rhs.describe()}, ${
-            this.flexSearchLanguage ? this.flexSearchLanguage.toString() : 'identity'
-        })`;
+        return `STARTS_WITH(${this.lhs.describe()},${this.rhs.describe()}, ${this.analyzer || IDENTITY_ANALYZER})`;
     }
 }

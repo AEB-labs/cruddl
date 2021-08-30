@@ -14,6 +14,7 @@ import {
 } from './migrations';
 
 export const IDENTITY_ANALYZER = 'identity';
+export const NORM_CI_ANALYZER = 'norm_ci';
 export const FLEX_SEARCH_VIEW_PREFIX = 'flex_view_';
 
 export interface FlexSearchPrimarySortConfig {
@@ -100,10 +101,6 @@ export function calculateRequiredArangoSearchViewDropOperations(
     return viewsToDrop.map(value => new DropArangoSearchViewMigration({ viewName: value.name }));
 }
 
-export function getAnalyzerFromFlexSearchLanguage(flexSearchLanguage?: FlexSearchLanguage): string {
-    return flexSearchLanguage ? 'text_' + flexSearchLanguage.toLowerCase() : 'identity';
-}
-
 function getPropertiesFromDefinition(
     definition: ArangoSearchDefinition,
     configuration?: ArangoSearchConfiguration
@@ -120,7 +117,9 @@ function getPropertiesFromDefinition(
             }
         },
         commitIntervalMsec: configuration?.commitIntervalMsec ? configuration.commitIntervalMsec : 1000,
-        consolidationIntervalMsec: configuration?.consolidationIntervalMsec ? configuration.consolidationIntervalMsec : 1000,
+        consolidationIntervalMsec: configuration?.consolidationIntervalMsec
+            ? configuration.consolidationIntervalMsec
+            : 1000,
         primarySort: definition?.primarySort ? definition.primarySort.slice() : []
     };
 
@@ -155,10 +154,13 @@ function getPropertiesFromDefinition(
 
         const analyzers: string[] = [];
         if (field.isFlexSearchFulltextIndexed && field.flexSearchLanguage) {
-            analyzers.push(getAnalyzerFromFlexSearchLanguage(field.flexSearchLanguage));
+            analyzers.push(field.getFlexSearchFulltextAnalyzerOrThrow());
         }
-        if (field.isFlexSearchIndexed) {
+        if (field.isFlexSearchIndexed && field.isFlexSearchIndexCaseSensitive) {
             analyzers.push(IDENTITY_ANALYZER);
+        }
+        if (field.isFlexSearchIndexed && !field.isFlexSearchIndexCaseSensitive) {
+            analyzers.push(NORM_CI_ANALYZER);
         }
         if (_.isEqual(analyzers, [IDENTITY_ANALYZER])) {
             return {};

@@ -1,13 +1,17 @@
 import { CollectionType, Database } from 'arangojs';
+import deepEqual from 'deep-equal';
 import { ArangoDBConfig, initDatabase } from '../config';
 import {
     ERROR_ARANGO_DATA_SOURCE_NOT_FOUND,
+    ERROR_ARANGO_DOCUMENT_NOT_FOUND,
     ERROR_ARANGO_DUPLICATE_NAME,
     ERROR_ARANGO_INDEX_NOT_FOUND,
+    ERROR_BAD_PARAMETER,
     ERROR_FILE_EXISTS
 } from '../error-codes';
 import { isEqualProperties } from './arango-search-helpers';
 import {
+    CreateArangoSearchAnalyzerMigration,
     CreateArangoSearchViewMigration,
     CreateDocumentCollectionMigration,
     CreateEdgeCollectionMigration,
@@ -16,6 +20,7 @@ import {
     DropIndexMigration,
     RecreateArangoSearchViewMigration,
     SchemaMigration,
+    UpdateArangoSearchAnalyzerMigration,
     UpdateArangoSearchViewMigration
 } from './migrations';
 
@@ -44,6 +49,10 @@ export class MigrationPerformer {
                 return this.dropArangoSearchView(migration);
             case 'recreateArangoSearchView':
                 return this.recreateArangoSearchView(migration);
+            case 'createArangoSearchAnalyzer':
+                return this.createArangoSearchAnalyzer(migration);
+            case 'updateArangoSearchAnalyzer':
+                return this.updateArangoSearchAnalyzer(migration);
             default:
                 throw new Error(`Unknown migration type: ${(migration as any).type}`);
         }
@@ -164,5 +173,28 @@ export class MigrationPerformer {
             }
             throw e;
         }
+    }
+
+    private async createArangoSearchAnalyzer(
+        migration: CreateArangoSearchAnalyzerMigration | UpdateArangoSearchAnalyzerMigration
+    ) {
+        await this.db.createAnalyzer(migration.name, migration.options);
+    }
+
+    private async updateArangoSearchAnalyzer(migration: UpdateArangoSearchAnalyzerMigration) {
+        try {
+            await this.db.analyzer(migration.name).drop(false);
+        } catch (e) {
+            if (e.code === 409) {
+                throw new Error(
+                    `Failed to drop arangoSearch analyzer because it is still in use. Drop arangoSearch views and run the migration again. ${e.message}`
+                );
+            }
+            if (e.code !== 404) {
+                throw e;
+            }
+        }
+
+        await this.createArangoSearchAnalyzer(migration);
     }
 }

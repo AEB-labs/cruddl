@@ -130,7 +130,9 @@
                         }
                     }
                 },
-                "aText": "foo bar"
+                "aText": "foo bar",
+                "sometimesNull": "1",
+                "caseInsensitiveField": "Ä TEXT"
             },
             {
                 "@id": "2",
@@ -171,7 +173,9 @@
                             "name": "test_z"
                         }
                     }
-                }
+                },
+                "sometimesNull": "2",
+                "caseInsensitiveField": "ä text"
             },
             {
                 "@id": "3",
@@ -203,7 +207,9 @@
                             "name": "test_3"
                         }
                     }
-                }
+                },
+                "sometimesNull": null,
+                "caseInsensitiveField": "änother text"
             }
         ],
         "Forwarder": [

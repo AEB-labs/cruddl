@@ -14,18 +14,17 @@ class FakeDBAdatper implements DatabaseAdapter {
         return { allTests: [{ name: 'Test' }] };
     }
 
-    async updateSchema(model: Model): Promise<void> {
+    async updateSchema(model: Model): Promise<void> {}
 
-    }
-
-    async tokenizeExpressions(tokenizations: ReadonlyArray<FlexSearchTokenizable>): Promise<ReadonlyArray<FlexSearchTokenization>> {
+    async tokenizeExpressions(
+        tokenizations: ReadonlyArray<FlexSearchTokenizable>
+    ): Promise<ReadonlyArray<FlexSearchTokenization>> {
         return tokenizations.map(value => {
             return {
                 expression: value.expression,
-                language: value.language,
+                analyzer: value.analyzer,
                 tokens: value.expression.split('-')
             };
-
         });
     }
 }
@@ -42,7 +41,12 @@ describe('project', () => {
             const loggerProvider: LoggerProvider = {
                 getLogger(categoryName: string): Logger {
                     return {
-                        debug: log, error: log, warn: log, info: log, fatal: log, trace: log,
+                        debug: log,
+                        error: log,
+                        warn: log,
+                        info: log,
+                        fatal: log,
+                        trace: log,
                         level: 'trace',
                         isErrorEnabled: () => true,
                         isLevelEnabled: () => true,
@@ -56,14 +60,30 @@ describe('project', () => {
             };
 
             const project = new Project({
-                sources: [new ProjectSource('main.graphqls', `type Test @rootEntity @roles(readWrite: ["admin"]) { name: String }`)],
+                sources: [
+                    new ProjectSource(
+                        'main.graphqls',
+                        `type Test @rootEntity @roles(readWrite: ["admin"]) { name: String }`
+                    )
+                ],
                 loggerProvider
             });
             const dbAdapter = new FakeDBAdatper();
             const execSchema = project.createSchema(dbAdapter);
 
             logs = [];
-            const result = await graphql(execSchema, `{ allTests { name } }`, undefined, { authRoles: ['admin'] });
+            const result = await graphql(
+                execSchema,
+                `
+                    {
+                        allTests {
+                            name
+                        }
+                    }
+                `,
+                undefined,
+                { authRoles: ['admin'] }
+            );
             expect(logs.length).to.be.greaterThan(0);
         });
     });

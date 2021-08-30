@@ -3,14 +3,14 @@ import { Field, RootEntityType } from '../model/implementation';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
-    BinaryOperatorWithLanguage,
+    BinaryOperatorWithAnalyzer,
     ConditionalQueryNode,
     ConstBoolQueryNode,
     CountQueryNode,
     FieldPathQueryNode,
     FLEX_SEARCH_TOO_MANY_OBJECTS,
     LiteralQueryNode,
-    OperatorWithLanguageQueryNode,
+    OperatorWithAnalyzerQueryNode,
     PreExecQueryParms,
     QueryNode,
     RuntimeErrorQueryNode,
@@ -232,11 +232,11 @@ export class FlexSearchGenerator {
                 new FieldPathQueryNode(itemVariable, path.concat(field)),
                 new LiteralQueryNode(expression)
             );
-            const operatorWithLanguageNode = new OperatorWithLanguageQueryNode(
+            const operatorWithLanguageNode = new OperatorWithAnalyzerQueryNode(
                 new FieldPathQueryNode(itemVariable, path.concat(field)),
-                BinaryOperatorWithLanguage.FLEX_SEARCH_CONTAINS_PREFIX,
+                BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_PREFIX,
                 new LiteralQueryNode(expression),
-                field.flexSearchLanguage!
+                field.getFlexSearchFulltextAnalyzerOrThrow()
             );
 
             return new BinaryOperationQueryNode(

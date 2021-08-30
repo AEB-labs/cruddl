@@ -1,10 +1,12 @@
 import { FieldDefinitionNode, GraphQLBoolean, GraphQLFloat, GraphQLID, GraphQLInt, GraphQLString } from 'graphql';
 import memorize from 'memorize-decorator';
+import { IDENTITY_ANALYZER, NORM_CI_ANALYZER } from '../../database/arangodb/schema-migration/arango-search-helpers';
 import {
     ACCESS_GROUP_FIELD,
     CALC_MUTATIONS_OPERATORS,
     COLLECT_AGGREGATE_ARG,
     COLLECT_DIRECTIVE,
+    FLEX_SEARCH_CASE_SENSITIVE_ARGUMENT,
     FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT,
     PARENT_DIRECTIVE,
     REFERENCE_DIRECTIVE,
@@ -35,6 +37,7 @@ import { Model } from './model';
 import { PermissionProfile } from './permission-profile';
 import { Relation, RelationSide } from './relation';
 import { RolesSpecifier } from './roles-specifier';
+import { ScalarType } from './scalar-type';
 import { InvalidType, ObjectType, Type } from './type';
 import { ValueObjectType } from './value-object-type';
 
@@ -1499,10 +1502,53 @@ export class Field implements ModelComponent {
             );
             return;
         }
+        if (
+            this.input.isFlexSearchIndexCaseSensitive !== undefined &&
+            !(this.type.isScalarType && this.type.name === 'String')
+        ) {
+            context.addMessage(
+                ValidationMessage.error(
+                    `"${FLEX_SEARCH_CASE_SENSITIVE_ARGUMENT}" is only supported on the types "String" and "[String]".`,
+                    this.input.flexSearchIndexCaseSensitiveASTNode
+                )
+            );
+            return;
+        }
     }
 
     get isFlexSearchIndexed(): boolean {
         return !!this.input.isFlexSearchIndexed;
+    }
+
+    get isFlexSearchIndexCaseSensitive(): boolean {
+        return this.input.isFlexSearchIndexCaseSensitive ?? true;
+    }
+
+    get flexSearchAnalyzer(): string | undefined {
+        if (!this.isFlexSearchIndexed) {
+            return undefined;
+        }
+        if (!(this.type.isScalarType && this.type.name === 'String')) {
+            return undefined;
+        }
+        return this.isFlexSearchIndexCaseSensitive ? IDENTITY_ANALYZER : NORM_CI_ANALYZER;
+    }
+
+    get flexSearchFulltextAnalyzer(): string | undefined {
+        if (!this.flexSearchLanguage) {
+            return undefined;
+        }
+        return 'text_' + this.flexSearchLanguage.toLocaleLowerCase();
+    }
+
+    getFlexSearchFulltextAnalyzerOrThrow(): string {
+        const analyzer = this.flexSearchFulltextAnalyzer;
+        if (!analyzer) {
+            throw new Error(
+                `Expected field ${this.declaringType.name}.${this.name} to have a flexSearch fulltext language, but it does not`
+            );
+        }
+        return analyzer;
     }
 
     get isFlexSearchFulltextIndexed(): boolean {

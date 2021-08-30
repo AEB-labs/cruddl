@@ -3,7 +3,10 @@ import { DocumentNode } from 'graphql';
 import gql from 'graphql-tag';
 import { Model, RootEntityType, TypeKind } from '../../../core-exports';
 import { FlexSearchLanguage } from '../../../src/model';
-import { FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT } from '../../../src/schema/constants';
+import {
+    FLEX_SEARCH_CASE_SENSITIVE_ARGUMENT,
+    FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT
+} from '../../../src/schema/constants';
 import { assertValidatorAccepts, assertValidatorRejects } from '../../schema/ast-validation-modules/helpers';
 import { createSimpleModel } from '../model-spec.helper';
 import { expectSingleErrorToInclude } from './validation-utils';
@@ -83,6 +86,17 @@ describe('FlexSearch', () => {
             }
         `,
             `"${FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT}: true" is only supported on the types "String", "[String]" and object types.`
+        );
+    });
+
+    it('rejects flexSearch caseSensitive:false for Integers', () => {
+        assertValidatorRejects(
+            `
+            type HandlingUnit @rootEntity(flexSearch: true) {
+                someInt: Int @flexSearch(caseSensitive: false)
+            }
+        `,
+            `"${FLEX_SEARCH_CASE_SENSITIVE_ARGUMENT}" is only supported on the types "String" and "[String]".`
         );
     });
     it('accepts flexSearch includeInSearch for string arrays', () => {

@@ -6,6 +6,7 @@ import {
     BasicType,
     BinaryOperationQueryNode,
     BinaryOperator,
+    BinaryOperatorWithAnalyzer,
     ConcatListsQueryNode,
     ConditionalQueryNode,
     ConfirmForBillingQueryNode,
@@ -31,7 +32,7 @@ import {
     NullQueryNode,
     ObjectEntriesQueryNode,
     ObjectQueryNode,
-    OperatorWithLanguageQueryNode,
+    OperatorWithAnalyzerQueryNode,
     OrderClause,
     OrderDirection,
     OrderSpecification,
@@ -64,6 +65,7 @@ import { QuantifierFilterNode } from '../../query-tree/quantifiers';
 import { createFieldPathNode } from '../../schema-generation/field-path-node';
 import { not } from '../../schema-generation/utils/input-types';
 import { Constructor, decapitalize } from '../../utils/utils';
+import { IDENTITY_ANALYZER, NORM_CI_ANALYZER } from '../arangodb/schema-migration/arango-search-helpers';
 import { likePatternToRegExp } from '../like-helpers';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './inmemory-basics';
 import { js, JSCompoundQuery, JSFragment, JSQueryResultVariable, JSVariable } from './js';
@@ -525,23 +527,15 @@ register(BinaryOperationQueryNode, (node, context) => {
         return js`(${lhs} ${op} ${rhs})`;
     }
 
-    function compare(comp: JSFragment) {
-        return js.lines(js`support.compare(`, js.indent(js.lines(js`${lhs},`, js`${rhs}`)), js`) ${comp} 0`);
-    }
-
     switch (node.operator) {
         case BinaryOperator.LESS_THAN:
-        case BinaryOperator.FLEX_STRING_LESS_THAN:
-            return compare(js`<`);
+            return compare(js`<`, lhs, rhs);
         case BinaryOperator.LESS_THAN_OR_EQUAL:
-        case BinaryOperator.FLEX_STRING_LESS_THAN_OR_EQUAL:
-            return compare(js`<=`);
+            return compare(js`<=`, lhs, rhs);
         case BinaryOperator.GREATER_THAN:
-        case BinaryOperator.FLEX_STRING_GREATER_THAN:
-            return compare(js`>`);
+            return compare(js`>`, lhs, rhs);
         case BinaryOperator.GREATER_THAN_OR_EQUAL:
-        case BinaryOperator.FLEX_STRING_GREATER_THAN_OR_EQUAL:
-            return compare(js`>=`);
+            return compare(js`>=`, lhs, rhs);
         case BinaryOperator.CONTAINS:
             return js`${lhsListOrString}.includes(${rhs})`;
         case BinaryOperator.IN:
@@ -948,8 +942,47 @@ register(RemoveEdgesQueryNode, (node, context) => {
     return jsExt.executingFunction(js`${coll} = ${coll}.filter(${jsExt.lambda(edgeVar, edgeShouldStay)});`);
 });
 
-register(OperatorWithLanguageQueryNode, (node, context) => {
-    throw new FlexSearchOperatorWithLanguageNotSupportedError();
+register(OperatorWithAnalyzerQueryNode, (node, context) => {
+    if (node.analyzer !== NORM_CI_ANALYZER && node.analyzer !== IDENTITY_ANALYZER && node.analyzer !== null) {
+        throw new FlexSearchAnalyzerNotSupportedError(node.analyzer);
+    }
+
+    const isCaseInsensitive = node.analyzer === NORM_CI_ANALYZER;
+
+    let lhs = processNode(node.lhs, context);
+    let rhs = processNode(node.rhs, context);
+
+    if (isCaseInsensitive) {
+        lhs = js`${lhs}.toLowerCase()`;
+        const rhsVar = js.variable('rhs');
+        rhs = jsExt.evaluatingLambda(
+            rhsVar,
+            js`(Array.isArray(${rhsVar}) ? ${rhsVar}.map(value => value.toLowerCase()) : ${rhsVar}.toLowerCase())`,
+            rhs
+        );
+    }
+
+    switch (node.operator) {
+        case BinaryOperatorWithAnalyzer.EQUAL:
+            return js`(${lhs} === ${rhs})`;
+        case BinaryOperatorWithAnalyzer.UNEQUAL:
+            return js`(${lhs} !== ${rhs})`;
+        case BinaryOperatorWithAnalyzer.FLEX_STRING_LESS_THAN:
+            return compare(js`<`, lhs, rhs);
+        case BinaryOperatorWithAnalyzer.FLEX_STRING_LESS_THAN_OR_EQUAL:
+            return compare(js`<=`, lhs, rhs);
+        case BinaryOperatorWithAnalyzer.FLEX_STRING_GREATER_THAN:
+            return compare(js`>`, lhs, rhs);
+        case BinaryOperatorWithAnalyzer.FLEX_STRING_GREATER_THAN_OR_EQUAL:
+            return compare(js`>=`, lhs, rhs);
+        case BinaryOperatorWithAnalyzer.IN:
+            return js`${rhs}.includes(${lhs})`;
+        case BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_ANY_WORD:
+        case BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_PREFIX:
+        case BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_PHRASE:
+        default:
+            throw new Error(`Unsupported binary operator with analyzer: ${node.operator}`);
+    }
 });
 
 register(FlexSearchQueryNode, (node, context) => {
@@ -1144,12 +1177,18 @@ function getCollectionForRelation(relation: Relation, context: QueryContext) {
     return js.collection(name);
 }
 
+function compare(comp: JSFragment, lhs: JSFragment, rhs: JSFragment) {
+    return js.lines(js`support.compare(`, js.indent(js.lines(js`${lhs},`, js`${rhs}`)), js`) ${comp} 0`);
+}
+
 /**
  * Is thrown if a FlexSearch query containing fulltext-filters is performed for an in-memory database.
  */
-export class FlexSearchOperatorWithLanguageNotSupportedError extends Error {
-    constructor() {
-        super(`FlexSearch-query was not executed, because fulltext-filters are not supported for in-memory database.`);
+export class FlexSearchAnalyzerNotSupportedError extends Error {
+    constructor(analyzer: string) {
+        super(
+            `FlexSearch-query was not executed, because filters with analyzer "${analyzer}" are not supported for in-memory database.`
+        );
         this.name = this.constructor.name;
     }
 }

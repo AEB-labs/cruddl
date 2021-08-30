@@ -52,6 +52,9 @@ type Delivery
 
     deprecatedField: String @deprecated(reason: "do not use")
     enumWithDeprecation: EnumWithDeprecation
+
+    sometimesNull: String @flexSearch
+    caseInsensitiveField: String @flexSearch(caseSensitive: false)
 }
 
 enum EnumWithDeprecation {

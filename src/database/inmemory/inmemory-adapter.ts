@@ -271,7 +271,7 @@ export class InMemoryAdapter implements DatabaseAdapter {
         return tokenizations.map(value => {
             return {
                 expression: value.expression,
-                language: value.language,
+                analyzer: value.analyzer,
                 tokens: value.expression.split('-')
             };
         });
