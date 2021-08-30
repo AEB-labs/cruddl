@@ -1,3 +1,4 @@
+import { RuntimeErrorQueryNode } from '../query-tree';
 import { Type } from '../model';
 import { FILTER_ARG, POST_FILTER_ARG } from '../schema/constants';
 import { FilterTypeGenerator } from './filter-input-types';
@@ -35,10 +36,18 @@ export class FlexSearchPostFilterAugmentation {
                 }
             },
             resolve: (sourceNode, args, info) => {
+                const filterValue = args[POST_FILTER_ARG];
+                const legacyFilterValue = args[FILTER_ARG];
+                if (filterValue && legacyFilterValue) {
+                    return new RuntimeErrorQueryNode(
+                        `Cannot combine ${FILTER_ARG} and ${POST_FILTER_ARG}. Use only ${POST_FILTER_ARG}.`
+                    );
+                }
+
                 let listNode = schemaField.resolve(sourceNode, args, info);
                 return buildFilteredListNode({
                     listNode,
-                    filterValue: args[POST_FILTER_ARG],
+                    filterValue: filterValue || legacyFilterValue,
                     filterType,
                     itemType,
                     objectNodeCallback: itemNode => this.rootFieldHelper.getRealItemNode(itemNode, info)
