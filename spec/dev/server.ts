@@ -38,7 +38,7 @@ export async function start() {
 
     const project = await loadProjectFromDir(path.resolve(__dirname, './model'), {
         profileConsumer: profile => {
-            console.log(
+            logger.info(
                 `${profile.operation.operation} ${
                     profile.operation.name ? profile.operation.name.value : '<anonymous>'
                 }: ${JSON.stringify(profile.timings, undefined, '  ')}`
@@ -70,11 +70,24 @@ export async function start() {
     logger.info('Schema is up to date');
 
     if (process.argv.includes('--run-ttl-cleanup')) {
-        await project.executeTTLCleanup(db, {});
+        const result = await project.executeTTLCleanupExt(db, {
+            timeToLiveOptions: { cleanupLimit: 100, reduceLimitOnResourceLimits: true }
+        });
+        for (const type of result.types) {
+            if (type.error) {
+                logger.info(`${type.type.rootEntityType?.name || ''}: ${type.error.stack}`);
+            } else {
+                logger.info(
+                    `${type.type.rootEntityType?.name || ''}: ${type.deletedObjectsCount} / ${
+                        type.deletedObjectsCount
+                    }${type.hasReducedLimit ? ' (reduced)' : ''}${type.isComplete ? ' (complete)' : ''}`
+                );
+            }
+        }
     }
 
     if (process.argv.includes('--print-ttl-info')) {
-        console.log(JSON.stringify(await project.getTTLInfo(db, {}), undefined, 2));
+        logger.info(JSON.stringify(await project.getTTLInfo(db, {}), undefined, 2));
     }
 
     const server = new ApolloServer({

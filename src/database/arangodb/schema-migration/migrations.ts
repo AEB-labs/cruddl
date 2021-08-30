@@ -1,3 +1,4 @@
+import { CreateAnalyzerOptions } from 'arangojs/analyzer';
 import { ArangoSearchViewPropertiesOptions } from 'arangojs/view';
 import { Relation } from '../../../model/implementation';
 import { describeIndex, getIndexDescriptor, IndexDefinition } from './index-helpers';
@@ -10,7 +11,9 @@ export type SchemaMigration =
     | CreateArangoSearchViewMigration
     | DropArangoSearchViewMigration
     | UpdateArangoSearchViewMigration
-    | RecreateArangoSearchViewMigration;
+    | RecreateArangoSearchViewMigration
+    | CreateArangoSearchAnalyzerMigration
+    | UpdateArangoSearchAnalyzerMigration;
 
 interface CreateIndexMigrationConfig {
     readonly index: IndexDefinition;
@@ -221,4 +224,60 @@ export class RecreateArangoSearchViewMigration {
     get isMandatory() {
         return false;
     }
+}
+
+export class CreateArangoSearchAnalyzerMigration {
+    readonly type: 'createArangoSearchAnalyzer' = 'createArangoSearchAnalyzer';
+    readonly name: string;
+    readonly options: CreateAnalyzerOptions;
+
+    constructor(config: CreateArangoSearchAnalyzerMigrationConfig) {
+        this.name = config.name;
+        this.options = config.options;
+    }
+
+    get description() {
+        return `Create the ArangoSearchAnalyzer ${this.name}`;
+    }
+
+    get id() {
+        return `createArangoSearchAnalyzer/${this.name}`;
+    }
+
+    get isMandatory() {
+        return true;
+    }
+}
+
+export interface CreateArangoSearchAnalyzerMigrationConfig {
+    readonly name: string;
+    readonly options: CreateAnalyzerOptions;
+}
+
+export class UpdateArangoSearchAnalyzerMigration {
+    readonly type: 'updateArangoSearchAnalyzer' = 'updateArangoSearchAnalyzer';
+    readonly name: string;
+    readonly options: CreateAnalyzerOptions;
+
+    constructor(config: UpdateArangoSearchAnalyzerMigrationConfig) {
+        this.name = config.name;
+        this.options = config.options;
+    }
+
+    get description() {
+        return `Update the ArangoSearchAnalyzer ${this.name}`;
+    }
+
+    get id() {
+        return `updateArangoSearchAnalyzer/${this.name}`;
+    }
+
+    get isMandatory() {
+        return true;
+    }
+}
+
+export interface UpdateArangoSearchAnalyzerMigrationConfig {
+    readonly name: string;
+    readonly options: CreateAnalyzerOptions;
 }

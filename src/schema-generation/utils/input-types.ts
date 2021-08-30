@@ -1,17 +1,18 @@
+import { IDENTITY_ANALYZER } from '../../database/arangodb/schema-migration/arango-search-helpers';
 import { FlexSearchLanguage } from '../../model/config';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
-    BinaryOperatorWithLanguage,
+    BinaryOperatorWithAnalyzer,
     FlexSearchStartsWithQueryNode,
-    OperatorWithLanguageQueryNode,
+    OperatorWithAnalyzerQueryNode,
     QueryNode,
     RuntimeErrorQueryNode,
     UnaryOperationQueryNode,
     UnaryOperator
 } from '../../query-tree';
 
-export const noLanguageWasSuppliedError = 'No Language was supplied';
+export const noAnalyzerWasSuppliedError = 'No Analyzer was supplied';
 
 export function not(value: QueryNode): QueryNode {
     return new UnaryOperationQueryNode(value, UnaryOperator.NOT);
@@ -31,32 +32,32 @@ export function binaryNotOp(op: BinaryOperator) {
     return (lhs: QueryNode, rhs: QueryNode) => not(new BinaryOperationQueryNode(lhs, op, rhs));
 }
 
-export function binaryOpWithLanguage(op: BinaryOperatorWithLanguage) {
-    return (lhs: QueryNode, rhs: QueryNode, flexSearchLanguage?: FlexSearchLanguage) => {
-        if (!flexSearchLanguage) {
-            return new RuntimeErrorQueryNode(noLanguageWasSuppliedError);
+export function binaryOpWithAnaylzer(op: BinaryOperatorWithAnalyzer) {
+    return (lhs: QueryNode, rhs: QueryNode, analyzer?: string) => {
+        if (!analyzer) {
+            return new RuntimeErrorQueryNode(noAnalyzerWasSuppliedError);
         }
-        return new OperatorWithLanguageQueryNode(lhs, op, rhs, flexSearchLanguage);
+        return new OperatorWithAnalyzerQueryNode(lhs, op, rhs, analyzer);
     };
 }
 
-export function binaryNotOpWithLanguage(op: BinaryOperatorWithLanguage) {
-    return (lhs: QueryNode, rhs: QueryNode, flexSearchLanguage?: FlexSearchLanguage) => {
-        if (!flexSearchLanguage) {
-            return new RuntimeErrorQueryNode(noLanguageWasSuppliedError);
+export function binaryNotOpWithAnalyzer(op: BinaryOperatorWithAnalyzer) {
+    return (lhs: QueryNode, rhs: QueryNode, analyzer?: string) => {
+        if (!analyzer) {
+            return new RuntimeErrorQueryNode(noAnalyzerWasSuppliedError);
         }
-        return not(new OperatorWithLanguageQueryNode(lhs, op, rhs, flexSearchLanguage));
+        return not(new OperatorWithAnalyzerQueryNode(lhs, op, rhs, analyzer));
     };
 }
 
 export function startsWithOp() {
-    return (lhs: QueryNode, rhs: QueryNode, flexSearchLanguage?: FlexSearchLanguage) => {
-        return new FlexSearchStartsWithQueryNode(lhs, rhs, flexSearchLanguage);
+    return (lhs: QueryNode, rhs: QueryNode, analyzer?: string) => {
+        return new FlexSearchStartsWithQueryNode(lhs, rhs, analyzer);
     };
 }
 
 export function notStartsWithOp() {
-    return (lhs: QueryNode, rhs: QueryNode, flexSearchLanguage?: FlexSearchLanguage) => {
-        return not(new FlexSearchStartsWithQueryNode(lhs, rhs, flexSearchLanguage));
+    return (lhs: QueryNode, rhs: QueryNode, analyzer?: string) => {
+        return not(new FlexSearchStartsWithQueryNode(lhs, rhs, analyzer));
     };
 }

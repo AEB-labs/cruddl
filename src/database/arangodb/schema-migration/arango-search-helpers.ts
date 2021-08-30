@@ -14,6 +14,7 @@ import {
 } from './migrations';
 
 export const IDENTITY_ANALYZER = 'identity';
+export const NORM_CI_ANALYZER = 'norm_ci';
 export const FLEX_SEARCH_VIEW_PREFIX = 'flex_view_';
 
 export interface FlexSearchPrimarySortConfig {
@@ -41,6 +42,7 @@ interface ArangoSearchViewCollectionLink {
 export interface ArangoSearchConfiguration {
     readonly recursionDepth?: number;
     readonly commitIntervalMsec?: number;
+    readonly consolidationIntervalMsec?: number;
 }
 
 export function getRequiredViewsFromModel(model: Model): ReadonlyArray<ArangoSearchDefinition> {
@@ -99,10 +101,6 @@ export function calculateRequiredArangoSearchViewDropOperations(
     return viewsToDrop.map(value => new DropArangoSearchViewMigration({ viewName: value.name }));
 }
 
-export function getAnalyzerFromFlexSearchLanguage(flexSearchLanguage?: FlexSearchLanguage): string {
-    return flexSearchLanguage ? 'text_' + flexSearchLanguage.toLowerCase() : 'identity';
-}
-
 function getPropertiesFromDefinition(
     definition: ArangoSearchDefinition,
     configuration?: ArangoSearchConfiguration
@@ -118,8 +116,11 @@ function getPropertiesFromDefinition(
                 fields: fieldDefinitionsFor(definition.rootEntityType.fields)
             }
         },
-        commitIntervalMsec: configuration && configuration.commitIntervalMsec ? configuration.commitIntervalMsec : 1000,
-        primarySort: definition && definition.primarySort ? definition.primarySort.slice() : []
+        commitIntervalMsec: configuration?.commitIntervalMsec ? configuration.commitIntervalMsec : 1000,
+        consolidationIntervalMsec: configuration?.consolidationIntervalMsec
+            ? configuration.consolidationIntervalMsec
+            : 1000,
+        primarySort: definition?.primarySort ? definition.primarySort.slice() : []
     };
 
     function fieldDefinitionsFor(
@@ -153,10 +154,13 @@ function getPropertiesFromDefinition(
 
         const analyzers: string[] = [];
         if (field.isFlexSearchFulltextIndexed && field.flexSearchLanguage) {
-            analyzers.push(getAnalyzerFromFlexSearchLanguage(field.flexSearchLanguage));
+            analyzers.push(field.getFlexSearchFulltextAnalyzerOrThrow());
         }
-        if (field.isFlexSearchIndexed) {
+        if (field.isFlexSearchIndexed && field.isFlexSearchIndexCaseSensitive) {
             analyzers.push(IDENTITY_ANALYZER);
+        }
+        if (field.isFlexSearchIndexed && !field.isFlexSearchIndexCaseSensitive) {
+            analyzers.push(NORM_CI_ANALYZER);
         }
         if (_.isEqual(analyzers, [IDENTITY_ANALYZER])) {
             return {};

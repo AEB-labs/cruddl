@@ -701,7 +701,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             (value, index) =>
                 !tokenizations.some(
                     (value2, index2) =>
-                        value.expression === value2.expression && value.language === value2.language && index > index2
+                        value.expression === value2.expression && value.analyzer === value2.analyzer && index > index2
                 )
         );
 
@@ -712,7 +712,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         for (let i = 0; i < tokenizationsFiltered.length; i++) {
             resultArray.push({
                 expression: tokenizationsFiltered[i].expression,
-                language: tokenizationsFiltered[i].language,
+                analyzer: tokenizationsFiltered[i].analyzer,
                 tokens: result['token_' + i]
             });
         }

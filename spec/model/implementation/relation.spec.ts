@@ -9,21 +9,19 @@ class FakeDBAdatper implements DatabaseAdapter {
         return { allTypeAS: [{ relB: { id: 5 } }], allTypeBS: [{ relA: { id: 2 } }] };
     }
 
-    async updateSchema(schema: Model): Promise<void> {
+    async updateSchema(schema: Model): Promise<void> {}
 
-    }
-
-    async tokenizeExpressions(tokenizations: ReadonlyArray<FlexSearchTokenizable>): Promise<ReadonlyArray<FlexSearchTokenization>> {
+    async tokenizeExpressions(
+        tokenizations: ReadonlyArray<FlexSearchTokenizable>
+    ): Promise<ReadonlyArray<FlexSearchTokenization>> {
         return tokenizations.map(value => {
             return {
                 expression: value.expression,
-                language: value.language,
+                analyzer: value.analyzer,
                 tokens: value.expression.split('-')
             };
-
         });
     }
-
 }
 
 describe('Relation', () => {

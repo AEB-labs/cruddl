@@ -64,6 +64,7 @@ const typeDefs = gql`
         ): FieldLocalization
 
         isFlexSearchIndexed: Boolean!
+        isFlexSearchIndexCaseSensitive: Boolean!
         isIncludedInSearch: Boolean!
         isFlexSearchFulltextIndexed: Boolean!
         isFulltextIncludedInSearch: Boolean!

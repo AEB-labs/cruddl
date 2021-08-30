@@ -66,20 +66,44 @@ export interface ExecutionOptions {
      */
     readonly flexSearchRecursionDepth?: number;
 
-    /**
-     * The maximum number of elements to delete in one ttl-cleanup
-     */
-    readonly timeToLiveCleanupLimit?: number;
-
-    /**
-     * The amount of days until an element is shown as overdue in the ttl-info
-     */
-    readonly timeToLiveOverdueDelta?: number;
+    readonly timeToLiveOptions?: TimeToLiveExecutionOptions;
 
     /**
      * If true, __typename fields will be resolved to their values. Only needed if executed outside of a regular graphql engine
      */
     readonly handleTypenameFields?: boolean;
+
+    /**
+     * The maximum number of elements to delete in one ttl-cleanup
+     * @deprecated use timeToLiveOptions
+     */
+    readonly timeToLiveCleanupLimit?: number;
+
+    /**
+     * The amount of days until an element is shown as overdue in the ttl-info
+     * @deprecated use timeToLiveOptions
+     */
+    readonly timeToLiveOverdueDelta?: number;
+}
+
+export interface TimeToLiveExecutionOptions {
+    /**
+     * The maximum number of elements to delete in one ttl-cleanup
+     */
+    readonly cleanupLimit?: number;
+
+    /**
+     * If set to true, a cleanup query will automatically be retried with a lower cleanupLimit when the previous one
+     * failed due to a time or memory limit
+     *
+     * The limit will continuously be halved until it is 1, then the error will be thrown. One execution will still
+     */
+    readonly reduceLimitOnResourceLimits?: boolean;
+
+    /**
+     * The amount of days until an element is shown as overdue in the ttl-info
+     */
+    readonly overdueDelta?: number;
 }
 
 export interface ExecutionOptionsCallbackArgs {

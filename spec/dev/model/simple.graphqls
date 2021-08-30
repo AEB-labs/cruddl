@@ -9,9 +9,9 @@ type Hero
         indices: [{ fields: "missions.date" }]
     ) {
     "The hero's screen name"
-    name: String @unique @flexSearch @flexSearchFulltext(includeInSearch: true)
+    name: String @unique @flexSearch(caseSensitive: false) @flexSearchFulltext(includeInSearch: true)
     age: Int @defaultValue(value: 42) @flexSearch
-    nickNames: [String] @flexSearch
+    nickNames: [String] @flexSearch(caseSensitive: false)
     movies: [Movie] @relation(inverseOf: "heroes")
     skills: [Skill]
     suit: Suit @flexSearch

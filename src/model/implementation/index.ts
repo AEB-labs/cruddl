@@ -12,6 +12,7 @@ export { Index, IndexField } from './indices';
 export { RolesSpecifier } from './roles-specifier';
 export { PermissionProfile, Permission, RoleSpecifier } from './permission-profile';
 export { Relation, RelationSide, Multiplicity } from './relation';
-export { ModelI18n, NamespaceLocalization, TypeLocalization, FieldLocalization }from './i18n';
+export { ModelI18n, NamespaceLocalization, TypeLocalization, FieldLocalization } from './i18n';
 export { CollectPath, CollectPathSegment } from './collect-path';
 export { BillingEntityType } from './billing';
+export { TimeToLiveType } from './time-to-live';

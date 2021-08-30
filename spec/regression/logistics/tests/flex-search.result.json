@@ -122,5 +122,89 @@
                 }
             ]
         }
+    },
+    "nothingIsLessThanNullInAggregation": {
+        "data": {
+            "flexSearchDeliveries": []
+        }
+    },
+    "everythingIsGreaterThanNullInAggregation": {
+        "data": {
+            "flexSearchDeliveries": [
+                {
+                    "deliveryNumber": "1000173"
+                },
+                {
+                    "deliveryNumber": "1000521"
+                },
+                {
+                    "deliveryNumber": "1000522"
+                }
+            ]
+        }
+    },
+    "caseInsensitive_equals": {
+        "data": {
+            "flexSearchDeliveries": [
+                {
+                    "deliveryNumber": "1000173",
+                    "caseInsensitiveField": "Ä TEXT"
+                },
+                {
+                    "deliveryNumber": "1000521",
+                    "caseInsensitiveField": "ä text"
+                }
+            ]
+        }
+    },
+    "caseInsensitive_gte": {
+        "data": {
+            "flexSearchDeliveries": [
+                {
+                    "deliveryNumber": "1000173",
+                    "caseInsensitiveField": "Ä TEXT"
+                },
+                {
+                    "deliveryNumber": "1000521",
+                    "caseInsensitiveField": "ä text"
+                },
+                {
+                    "deliveryNumber": "1000522",
+                    "caseInsensitiveField": "änother text"
+                }
+            ]
+        }
+    },
+    "caseInsensitive_in": {
+        "data": {
+            "flexSearchDeliveries": [
+                {
+                    "deliveryNumber": "1000173",
+                    "caseInsensitiveField": "Ä TEXT"
+                },
+                {
+                    "deliveryNumber": "1000521",
+                    "caseInsensitiveField": "ä text"
+                },
+                {
+                    "deliveryNumber": "1000522",
+                    "caseInsensitiveField": "änother text"
+                }
+            ]
+        }
+    },
+    "caseInsensitive_starts_with": {
+        "data": {
+            "flexSearchDeliveries": [
+                {
+                    "deliveryNumber": "1000173",
+                    "caseInsensitiveField": "Ä TEXT"
+                },
+                {
+                    "deliveryNumber": "1000521",
+                    "caseInsensitiveField": "ä text"
+                }
+            ]
+        }
     }
 }
