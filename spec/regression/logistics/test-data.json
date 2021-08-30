@@ -132,7 +132,7 @@
                 },
                 "aText": "foo bar",
                 "sometimesNull": "1",
-                "caseInsensitiveField": "A TEXT"
+                "caseInsensitiveField": "Ä TEXT"
             },
             {
                 "@id": "2",
@@ -175,7 +175,7 @@
                     }
                 },
                 "sometimesNull": "2",
-                "caseInsensitiveField": "a text"
+                "caseInsensitiveField": "ä text"
             },
             {
                 "@id": "3",
@@ -209,7 +209,7 @@
                     }
                 },
                 "sometimesNull": null,
-                "caseInsensitiveField": "another text"
+                "caseInsensitiveField": "änother text"
             }
         ],
         "Forwarder": [

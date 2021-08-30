@@ -148,11 +148,11 @@
             "flexSearchDeliveries": [
                 {
                     "deliveryNumber": "1000173",
-                    "caseInsensitiveField": "A TEXT"
+                    "caseInsensitiveField": "Ä TEXT"
                 },
                 {
                     "deliveryNumber": "1000521",
-                    "caseInsensitiveField": "a text"
+                    "caseInsensitiveField": "ä text"
                 }
             ]
         }
@@ -162,15 +162,15 @@
             "flexSearchDeliveries": [
                 {
                     "deliveryNumber": "1000173",
-                    "caseInsensitiveField": "A TEXT"
+                    "caseInsensitiveField": "Ä TEXT"
                 },
                 {
                     "deliveryNumber": "1000521",
-                    "caseInsensitiveField": "a text"
+                    "caseInsensitiveField": "ä text"
                 },
                 {
                     "deliveryNumber": "1000522",
-                    "caseInsensitiveField": "another text"
+                    "caseInsensitiveField": "änother text"
                 }
             ]
         }
@@ -180,15 +180,15 @@
             "flexSearchDeliveries": [
                 {
                     "deliveryNumber": "1000173",
-                    "caseInsensitiveField": "A TEXT"
+                    "caseInsensitiveField": "Ä TEXT"
                 },
                 {
                     "deliveryNumber": "1000521",
-                    "caseInsensitiveField": "a text"
+                    "caseInsensitiveField": "ä text"
                 },
                 {
                     "deliveryNumber": "1000522",
-                    "caseInsensitiveField": "another text"
+                    "caseInsensitiveField": "änother text"
                 }
             ]
         }
@@ -198,11 +198,11 @@
             "flexSearchDeliveries": [
                 {
                     "deliveryNumber": "1000173",
-                    "caseInsensitiveField": "A TEXT"
+                    "caseInsensitiveField": "Ä TEXT"
                 },
                 {
                     "deliveryNumber": "1000521",
-                    "caseInsensitiveField": "a text"
+                    "caseInsensitiveField": "ä text"
                 }
             ]
         }
