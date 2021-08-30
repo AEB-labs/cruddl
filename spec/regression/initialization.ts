@@ -48,6 +48,12 @@ export interface TestDataEnvironment {
 }
 
 export async function initTestData(path: string, schema: GraphQLSchema): Promise<TestDataEnvironment> {
+    if (!fs.existsSync(path)) {
+        return {
+            fillTemplateStrings: a => a
+        };
+    }
+
     const testData = JSON.parse(stripJsonComments(fs.readFileSync(path, 'utf-8')));
     const ids = new Map<string, string>();
 

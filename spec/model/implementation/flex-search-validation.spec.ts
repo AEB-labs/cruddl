@@ -1,9 +1,14 @@
+import { expect } from 'chai';
+import { DocumentNode } from 'graphql';
+import gql from 'graphql-tag';
 import { Model, RootEntityType, TypeKind } from '../../../core-exports';
+import { FlexSearchLanguage } from '../../../src/model';
 import {
     FLEX_SEARCH_CASE_SENSITIVE_ARGUMENT,
     FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT
 } from '../../../src/schema/constants';
 import { assertValidatorAccepts, assertValidatorRejects } from '../../schema/ast-validation-modules/helpers';
+import { createSimpleModel } from '../model-spec.helper';
 import { expectSingleErrorToInclude } from './validation-utils';
 
 describe('FlexSearch', () => {
@@ -58,16 +63,6 @@ describe('FlexSearch', () => {
             }
         `,
             `@flexSearch is not supported on collect fields.`
-        );
-    });
-    it('rejects flexSearchFulltext without language', () => {
-        assertValidatorRejects(
-            `
-            type HandlingUnit @rootEntity(flexSearch: true) {
-                someString: String @flexSearchFulltext
-            }
-        `,
-            `@flexSearchFulltext requires either a "language" parameter, or a "flexSearchLanguage" must be set in the defining type.`
         );
     });
     it('rejects flexSearch on child without indexed field', () => {
@@ -167,5 +162,17 @@ describe('FlexSearch', () => {
         `,
             `At least one field on type "HandlingUnitInfo" must be annotated with @flexSearch or @flexSearchFulltext if @flexSearch is specified on the type declaration.`
         );
+    });
+    it('uses EN as default language for flexSearchFulltext', () => {
+        const document: DocumentNode = gql`
+            type HandlingUnit @rootEntity(flexSearch: true) {
+                someString: String @flexSearchFulltext
+            }
+        `;
+        const model = createSimpleModel(document);
+        expect(model.validate().getErrors(), model.validate().toString()).to.deep.equal([]);
+        const type = model.rootEntityTypes.find(value => value.name === 'HandlingUnit');
+        const field = type?.fields.find(value => value.name === 'someString');
+        expect(field?.flexSearchLanguage).to.equal(FlexSearchLanguage.EN);
     });
 });

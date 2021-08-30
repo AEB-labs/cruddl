@@ -274,7 +274,9 @@ const inFlexSearchFilterSymbol = Symbol('inFlexSearchFilter');
 namespace aqlExt {
     export function safeJSONKey(key: string): AQLFragment {
         if (aql.isSafeIdentifier(key)) {
-            return aql`${aql.string(key)}`; // if safe, use "name" approach
+            // we could always collide with a (future) keyword, so use "name" syntax instead of identifier
+            // ("" looks more natural than `` in json keys)
+            return aql`${aql.string(key)}`;
         } else {
             return aql`${key}`; // fall back to bound values
         }

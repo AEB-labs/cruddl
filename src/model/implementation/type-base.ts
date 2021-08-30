@@ -25,7 +25,7 @@ export abstract class TypeBase implements ModelComponent {
         this.namespacePath = input.namespacePath || [];
         this.description = input.description;
         this.pluralName = pluralize(this.name);
-        this.flexSearchLanguage = input.flexSearchLanguage;
+        this.flexSearchLanguage = input.flexSearchLanguage || FlexSearchLanguage.EN;
     }
 
     validate(context: ValidationContext) {

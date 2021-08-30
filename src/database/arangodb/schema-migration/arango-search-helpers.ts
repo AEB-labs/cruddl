@@ -42,6 +42,7 @@ interface ArangoSearchViewCollectionLink {
 export interface ArangoSearchConfiguration {
     readonly recursionDepth?: number;
     readonly commitIntervalMsec?: number;
+    readonly consolidationIntervalMsec?: number;
 }
 
 export function getRequiredViewsFromModel(model: Model): ReadonlyArray<ArangoSearchDefinition> {
@@ -115,8 +116,11 @@ function getPropertiesFromDefinition(
                 fields: fieldDefinitionsFor(definition.rootEntityType.fields)
             }
         },
-        commitIntervalMsec: configuration && configuration.commitIntervalMsec ? configuration.commitIntervalMsec : 1000,
-        primarySort: definition && definition.primarySort ? definition.primarySort.slice() : []
+        commitIntervalMsec: configuration?.commitIntervalMsec ? configuration.commitIntervalMsec : 1000,
+        consolidationIntervalMsec: configuration?.consolidationIntervalMsec
+            ? configuration.consolidationIntervalMsec
+            : 1000,
+        primarySort: definition?.primarySort ? definition.primarySort.slice() : []
     };
 
     function fieldDefinitionsFor(

@@ -1,0 +1,11 @@
+mutation m {
+    createValues(input: { limit: 10 }) {
+        limit
+    }
+}
+
+query q {
+    allValues(filter: { limit: 10 }, orderBy: limit_ASC) {
+        limit
+    }
+}
