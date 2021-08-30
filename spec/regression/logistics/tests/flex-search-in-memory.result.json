@@ -95,11 +95,37 @@
             ]
         }
     },
-    "filter_below_max": {
+    "post_filter_below_max": {
         "data": {
             "flexSearchDeliveries": [
                 {
                     "deliveryNumber": "1000521"
+                }
+            ]
+        }
+    },
+    "post_and_legacy_filter_throws": {
+        "errors": [
+            {
+                "message": "Cannot combine filter and postFilter. Use only postFilter.",
+                "locations": [
+                    {
+                        "line": 65,
+                        "column": 5
+                    }
+                ],
+                "path": ["flexSearchDeliveries"]
+            }
+        ],
+        "data": {
+            "flexSearchDeliveries": null
+        }
+    },
+    "legacy_filter_below_max": {
+        "data": {
+            "flexSearchDeliveries": [
+                {
+                    "deliveryNumber": "1000173"
                 }
             ]
         }
@@ -120,13 +146,30 @@
             ]
         }
     },
-    "filter_above_max": {
+    "post_filter_above_max": {
         "errors": [
             {
                 "message": "Too many objects.",
                 "locations": [
                     {
-                        "line": 80,
+                        "line": 99,
+                        "column": 5
+                    }
+                ],
+                "path": ["flexSearchDeliveries"]
+            }
+        ],
+        "data": {
+            "flexSearchDeliveries": null
+        }
+    },
+    "legacy_filter_above_max": {
+        "errors": [
+            {
+                "message": "Too many objects.",
+                "locations": [
+                    {
+                        "line": 105,
                         "column": 5
                     }
                 ],
@@ -143,7 +186,7 @@
                 "message": "Too many objects.",
                 "locations": [
                     {
-                        "line": 86,
+                        "line": 111,
                         "column": 5
                     }
                 ],
@@ -158,7 +201,7 @@
                 "message": "Too many objects.",
                 "locations": [
                     {
-                        "line": 92,
+                        "line": 117,
                         "column": 5
                     }
                 ],
@@ -184,7 +227,7 @@
                 "message": "Recursive filters can only be defined for 1 level of recursion.",
                 "locations": [
                     {
-                        "line": 104,
+                        "line": 129,
                         "column": 5
                     }
                 ],

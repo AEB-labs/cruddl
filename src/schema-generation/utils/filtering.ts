@@ -14,14 +14,14 @@ import { FilterObjectType } from '../filter-input-types';
 
 interface BuildFilteredListNodeParams {
     readonly listNode: QueryNode;
-    readonly args: { readonly [p: string]: any };
+    readonly filterValue: any;
     readonly filterType: FilterObjectType;
     readonly itemType: Type;
     readonly objectNodeCallback: (itemNode: QueryNode) => QueryNode;
 }
 
 export function buildFilteredListNode(params: BuildFilteredListNodeParams) {
-    const filterValue = params.args[FILTER_ARG] || {};
+    const filterValue = params.filterValue || {};
     const itemVariable = new VariableQueryNode(decapitalize(params.itemType.name));
     // simplification is important for the shortcut with check for TRUE below in the case of e.g. { AND: [] }
     const objectNode = params.objectNodeCallback(itemVariable);

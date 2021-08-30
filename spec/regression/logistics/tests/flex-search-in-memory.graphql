@@ -52,10 +52,29 @@ query valueObject {
     }
 }
 
-query filter_below_max {
+query post_filter_below_max {
     flexSearchDeliveries(
         flexSearchFilter: { deliveryNumber: "1000521" }
-        filter: { description_starts_with: "description" }
+        postFilter: { description_starts_with: "description" }
+    ) {
+        deliveryNumber
+    }
+}
+
+query post_and_legacy_filter_throws {
+    flexSearchDeliveries(
+        flexSearchFilter: { deliveryNumber_in: ["1000521", "1000173"] }
+        postFilter: { description: "description with anyword phrase a all" }
+        filter: { description: "description with anyword phrase a all" }
+    ) {
+        deliveryNumber
+    }
+}
+
+query legacy_filter_below_max {
+    flexSearchDeliveries(
+        flexSearchFilter: { deliveryNumber_in: ["1000521", "1000173"] }
+        filter: { description: "description with anyword phrase a all" }
     ) {
         deliveryNumber
     }
@@ -64,7 +83,7 @@ query filter_below_max {
 query meta_below_max {
     _flexSearchDeliveriesMeta(
         flexSearchFilter: { deliveryNumber: "1000521" }
-        filter: { description_starts_with: "description" }
+        postFilter: { description_starts_with: "description" }
     ) {
         count
     }
@@ -76,14 +95,20 @@ query order_below_max {
     }
 }
 
-query filter_above_max {
+query post_filter_above_max {
+    flexSearchDeliveries(postFilter: { description_starts_with: "description" }) {
+        deliveryNumber
+    }
+}
+
+query legacy_filter_above_max {
     flexSearchDeliveries(filter: { description_starts_with: "description" }) {
         deliveryNumber
     }
 }
 
 query meta_above_max {
-    _flexSearchDeliveriesMeta(filter: { description_starts_with: "description" }) {
+    _flexSearchDeliveriesMeta(postFilter: { description_starts_with: "description" }) {
         count
     }
 }

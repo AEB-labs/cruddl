@@ -25,7 +25,7 @@ query {
         key
     }
 
-    noPaginationButCursor: flexSearchPapers(filter: { id: "@{ids/Paper/1}" }) {
+    noPaginationButCursor: flexSearchPapers(postFilter: { id: "@{ids/Paper/1}" }) {
         _cursor
     }
 }

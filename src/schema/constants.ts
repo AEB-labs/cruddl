@@ -71,6 +71,7 @@ export const ORDER_BY_ASC_SUFFIX = '_ASC';
 export const ORDER_BY_DESC_SUFFIX = '_DESC';
 
 export const FILTER_ARG = 'filter';
+export const POST_FILTER_ARG = 'postFilter';
 export const ORDER_BY_ARG = 'orderBy';
 
 export const FLEX_SEARCH_FILTER_ARG = 'flexSearchFilter';
