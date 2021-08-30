@@ -100,10 +100,6 @@ export function calculateRequiredArangoSearchViewDropOperations(
     return viewsToDrop.map(value => new DropArangoSearchViewMigration({ viewName: value.name }));
 }
 
-export function getAnalyzerFromFlexSearchLanguage(flexSearchLanguage?: FlexSearchLanguage): string {
-    return flexSearchLanguage ? 'text_' + flexSearchLanguage.toLowerCase() : 'identity';
-}
-
 function getPropertiesFromDefinition(
     definition: ArangoSearchDefinition,
     configuration?: ArangoSearchConfiguration
@@ -154,7 +150,7 @@ function getPropertiesFromDefinition(
 
         const analyzers: string[] = [];
         if (field.isFlexSearchFulltextIndexed && field.flexSearchLanguage) {
-            analyzers.push(getAnalyzerFromFlexSearchLanguage(field.flexSearchLanguage));
+            analyzers.push(field.getFlexSearchFulltextAnalyzerOrThrow());
         }
         if (field.isFlexSearchIndexed && field.isFlexSearchIndexCaseSensitive) {
             analyzers.push(IDENTITY_ANALYZER);

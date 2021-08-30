@@ -384,7 +384,7 @@ export class FlexSearchFilterTypeGenerator {
                             this.getComplexFilterOperatorByName(name),
                             name,
                             type.graphQLScalarType,
-                            `text_${field.flexSearchLanguage?.toLowerCase()}`
+                            field.flexSearchFulltextAnalyzer
                         )
                 )
             );
