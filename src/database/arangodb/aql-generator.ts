@@ -888,11 +888,11 @@ register(CreateBillingEntityQueryNode, (node, context) => {
             ${getBillingInput(node, node.key, context, currentTimestamp)},
             isConfirmedForExport: false
          }`,
-        aql`UPDATE {
+        aql`UPDATE (OLD.isConfirmedForExport ? {} : {
             updatedAt: ${currentTimestamp},
             category: ${processNode(node.categoryNode, context)},
             quantity: ${processNode(node.quantityNode, context)}
-        }`,
+        })`,
         aql`IN ${getCollectionForBilling(AccessType.WRITE, context)}`,
         aql`RETURN ${node.key}`
     );
@@ -911,13 +911,13 @@ register(ConfirmForBillingQueryNode, (node, context) => {
             isConfirmedForExport: true,
             confirmedForExportAt: ${currentTimestamp}
          }`,
-        aql`UPDATE {
+        aql`UPDATE (OLD.isConfirmedForExport ? {} : {
             isConfirmedForExport: true,
             updatedAt: ${currentTimestamp},
-            confirmedForExportAt: ${currentTimestamp},
+            confirmedForExportAt: OLD.isConfirmedForExport ? ${currentTimestamp},
             category: ${processNode(node.categoryNode, context)},
             quantity: ${processNode(node.quantityNode, context)}
-        }`,
+        })`,
         aql`IN ${getCollectionForBilling(AccessType.WRITE, context)}`,
         aql`RETURN true`
     );
