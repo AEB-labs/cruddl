@@ -191,7 +191,7 @@ export class OperationResolver {
         queryTree: QueryNode,
         databaseAdapter: DatabaseAdapter
     ): Promise<ReadonlyArray<FlexSearchTokenization>> {
-        async function collectTokenizations(queryNode: QueryNode): Promise<ReadonlyArray<FlexSearchTokenizable>> {
+        function collectTokenizations(queryNode: QueryNode): ReadonlyArray<FlexSearchTokenizable> {
             let tokens: FlexSearchTokenizable[] = [];
             if (queryNode instanceof FlexSearchComplexOperatorQueryNode) {
                 tokens.push({ expression: queryNode.expression, analyzer: queryNode.analyzer });
@@ -199,20 +199,23 @@ export class OperationResolver {
             if (queryNode instanceof ObjectQueryNode) {
                 const specs: PropertySpecification[] = [];
                 for (const property of queryNode.properties) {
-                    tokens = tokens.concat(await collectTokenizations(property.valueNode));
+                    tokens = tokens.concat(collectTokenizations(property.valueNode));
                 }
             }
 
             for (const field of Object.keys(queryNode)) {
                 const childNode = (queryNode as any)[field];
                 if (childNode instanceof QueryNode) {
-                    tokens = tokens.concat(await collectTokenizations(childNode));
+                    tokens = tokens.concat(collectTokenizations(childNode));
                 }
             }
             return tokens;
         }
 
-        const tokenizations = await collectTokenizations(queryTree);
+        const tokenizations = collectTokenizations(queryTree);
+        if (!tokenizations.length) {
+            return [];
+        }
         return databaseAdapter.tokenizeExpressions(tokenizations);
     }
 
