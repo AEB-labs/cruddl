@@ -914,7 +914,7 @@ register(ConfirmForBillingQueryNode, (node, context) => {
         aql`UPDATE (OLD.isConfirmedForExport ? {} : {
             isConfirmedForExport: true,
             updatedAt: ${currentTimestamp},
-            confirmedForExportAt: OLD.isConfirmedForExport ? ${currentTimestamp},
+            confirmedForExportAt: ${currentTimestamp},
             category: ${processNode(node.categoryNode, context)},
             quantity: ${processNode(node.quantityNode, context)}
         })`,
