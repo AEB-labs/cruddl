@@ -1,32 +1,113 @@
 {
-  "some": {
-    "data": {
-      "allDeliveries": [
-        {
-          "deliveryNumber": "1000521"
-        },
-        {
-          "deliveryNumber": "1000522"
+    "some": {
+        "data": {
+            "allDeliveries": [
+                {
+                    "deliveryNumber": "1000521"
+                },
+                {
+                    "deliveryNumber": "1000522"
+                }
+            ]
         }
-      ]
-    }
-  },
-  "every": {
-    "data": {
-      "allDeliveries": [
-        {
-          "deliveryNumber": "1000521"
+    },
+    "every": {
+        "data": {
+            "allDeliveries": [
+                {
+                    "deliveryNumber": "1000521"
+                }
+            ]
         }
-      ]
-    }
-  },
-  "none": {
-    "data": {
-      "allDeliveries": [
-        {
-          "deliveryNumber": "1000173"
+    },
+    "none": {
+        "data": {
+            "allDeliveries": [
+                {
+                    "deliveryNumber": "1000173"
+                }
+            ]
         }
-      ]
+    },
+    "some_equals": {
+        "data": {
+            "allDeliveries": [
+                {
+                    "deliveryNumber": "1000521"
+                }
+            ]
+        }
+    },
+    "every_equals": {
+        "data": {
+            "allDeliveries": []
+        }
+    },
+    "some_like_simple": {
+        "data": {
+            "allDeliveries": [
+                {
+                    "deliveryNumber": "1000173"
+                }
+            ]
+        }
+    },
+    "some_like_complicated": {
+        "data": {
+            "allDeliveries": [
+                {
+                    "deliveryNumber": "1000521"
+                }
+            ]
+        }
+    },
+    "some_multiple": {
+        "data": {
+            "allDeliveries": [
+                {
+                    "deliveryNumber": "1000173"
+                },
+                {
+                    "deliveryNumber": "1000521"
+                }
+            ]
+        }
+    },
+    "null_list": {
+        "data": {
+            "allDeliveries": [
+                {
+                    "deliveryNumber": "1000173"
+                },
+                {
+                    "deliveryNumber": "1000521"
+                },
+                {
+                    "deliveryNumber": "1000522"
+                }
+            ]
+        }
+    },
+    "set_empty_list": {
+        "data": {
+            "updateDelivery": {
+                "deliveryNumber": "1000173"
+            }
+        }
+    },
+    "empty_list": {
+        "data": {
+            "allDeliveries": [
+                {
+                    "deliveryNumber": "1000173"
+                },
+                {
+                    "deliveryNumber": "1000521"
+                },
+                {
+                    "deliveryNumber": "1000522"
+                }
+            ]
+        }
     }
-  }
 }

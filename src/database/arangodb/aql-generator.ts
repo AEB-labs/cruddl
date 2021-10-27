@@ -1030,7 +1030,7 @@ register(QuantifierFilterNode, (node, context) => {
     let { quantifier, conditionNode, listNode, itemVariable } = node;
     conditionNode = simplifyBooleans(conditionNode);
 
-    const fastFragment = getQuantifierFilterUsingArrayExpansion(
+    const fastFragment = getQuantifierFilterUsingArrayComparisonOperator(
         { quantifier, conditionNode, listNode, itemVariable },
         context
     );
@@ -1061,7 +1061,7 @@ register(QuantifierFilterNode, (node, context) => {
 // uses the array expansion operator (https://docs.arangodb.com/3.0/AQL/Advanced/ArrayOperators.html#array-expansion)
 // that can utilize an index like "items[*].itemNumber" if possible
 // (specifically for something like items_some: {itemNumber: "abc"})
-function getQuantifierFilterUsingArrayExpansion(
+function getQuantifierFilterUsingArrayComparisonOperator(
     {
         quantifier,
         conditionNode,
@@ -1075,13 +1075,17 @@ function getQuantifierFilterUsingArrayExpansion(
     },
     context: QueryContext
 ): AQLFragment | undefined {
-    if (quantifier !== 'some') {
-        return undefined;
-    }
+    // ArangoDB supports array comparison operators (e.g. field ALL > 5)
+    // https://www.arangodb.com/docs/stable/aql/operators.html#array-comparison-operators
+    // it can be combined with the array expansion operator (e.g. items[*].field)
+    // https://docs.arangodb.com/3.0/AQL/Advanced/ArrayOperators.html#array-expansion
+    // quantifier filters with exactly one filter field that uses a comparison operator can be optimized with this
+    // this simplifies the AQL expression a lot (no filtering-then-checking-length), and also enables early pruning
 
-    // only possible on lists that are field accesses,
-    // but "safe lists" are ok because the IN operator implicitly ignores NULL values
+    // only possible on lists that are field accesses (but we can handle safe lists below)
+    let isSafeList = false;
     if (listNode instanceof SafeListQueryNode) {
+        isSafeList = true;
         listNode = listNode.sourceNode;
     }
     if (!(listNode instanceof FieldQueryNode)) {
@@ -1092,10 +1096,18 @@ function getQuantifierFilterUsingArrayExpansion(
         return undefined;
     }
 
+    let operator: BinaryOperator;
     switch (conditionNode.operator) {
         case BinaryOperator.EQUAL:
-            // works
+        case BinaryOperator.IN:
+        case BinaryOperator.UNEQUAL:
+        case BinaryOperator.LESS_THAN:
+        case BinaryOperator.LESS_THAN_OR_EQUAL:
+        case BinaryOperator.GREATER_THAN:
+        case BinaryOperator.GREATER_THAN_OR_EQUAL:
+            operator = conditionNode.operator;
             break;
+
         case BinaryOperator.LIKE:
             // see if this really is a equals search so we can optimize it (only possible as long as it does not contain any case-specific characters)
             if (!(conditionNode.rhs instanceof LiteralQueryNode) || typeof conditionNode.rhs.value !== 'string') {
@@ -1106,8 +1118,9 @@ function getQuantifierFilterUsingArrayExpansion(
             if (!isLiteralPattern || !isStringCaseInsensitive(likePattern)) {
                 return undefined;
             }
-            // works
+            operator = BinaryOperator.EQUAL;
             break;
+
         default:
             return undefined;
     }
@@ -1124,13 +1137,49 @@ function getQuantifierFilterUsingArrayExpansion(
 
     const valueFrag = processNode(conditionNode.rhs, context);
 
-    // special case: scalar list
-    if (!fields.length) {
-        return aql`(${valueFrag} IN ${processNode(listNode, context)})`;
+    let fieldValueFrag: AQLFragment;
+    if (fields.length) {
+        const fieldAccessFrag = aql.concat(fields.map(f => getPropertyAccessFragment(f.name)));
+        fieldValueFrag = aql`${processNode(listNode, context)}[*]${fieldAccessFrag}`;
+        // no need to use the SafeListQueryNode here because [*] already expands NULL to []
+    } else {
+        // special case: scalar list - no array expansion
+        if (isSafeList) {
+            // re-wrap in SafeListQueryNode to support generic case at the bottom
+            // "something" ANY IN NULL would not work (yields false instead of true)
+            // the shortcut with EQUAL / some would work though as "something" IN NULL is false
+            fieldValueFrag = processNode(new SafeListQueryNode(listNode), context);
+        } else {
+            fieldValueFrag = processNode(listNode, context);
+        }
     }
 
-    const fieldAccessFrag = aql.concat(fields.map(f => getPropertyAccessFragment(f.name)));
-    return aql`(${valueFrag} IN ${processNode(listNode, context)}[*]${fieldAccessFrag})`;
+    // The case of "field ANY == value" can further be optimized into "value IN field" which can use an array index
+    // https://www.arangodb.com/docs/stable/indexing-index-basics.html#indexing-array-values
+    if (operator === BinaryOperator.EQUAL && quantifier === 'some') {
+        return aql`(${valueFrag} IN ${fieldValueFrag})`;
+    }
+
+    let quantifierFrag: AQLFragment;
+    switch (quantifier) {
+        case 'some':
+            quantifierFrag = aql`ANY`;
+            break;
+        case 'every':
+            quantifierFrag = aql`ALL`;
+            break;
+        case 'none':
+            quantifierFrag = aql`NONE`;
+            break;
+        default:
+            throw new Error(`Unexpected quantifier: ${quantifier}`);
+    }
+
+    const operatorFrag = getAQLOperator(operator);
+    if (!operatorFrag) {
+        throw new Error(`Unable to get AQL fragment for operator ${operator}`);
+    }
+    return aql`(${fieldValueFrag} ${quantifierFrag} ${operatorFrag} ${valueFrag})`;
 }
 
 register(EntitiesQueryNode, (node, context) => {
