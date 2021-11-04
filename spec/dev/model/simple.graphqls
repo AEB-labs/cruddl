@@ -46,12 +46,12 @@ type Skill @valueObject {
 }
 
 "A superhero movie"
-type Movie @rootEntity {
+type Movie @rootEntity @roles(read: ["logistics-reader"]) {
     name: String
     "All the heroes starring in this movie"
     heroes: [Hero] @relation
     "The real superhero"
-    director: Director @relation
+    director: Director @relation @roles(read: [])
     publisher: Publisher @reference
     revenueInUSD: Decimal3 @calcMutations(operators: [ADD])
 
@@ -79,7 +79,7 @@ type Country @rootEntity {
     name: String
 }
 
-type Publisher @rootEntity {
+type Publisher @rootEntity @roles(read: ["logistics-reader"]) {
     identCode: String @key
     name: String
 }

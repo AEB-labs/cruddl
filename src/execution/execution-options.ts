@@ -15,6 +15,8 @@ export interface ExecutionOptions {
      */
     readonly authRoles?: ReadonlyArray<string>;
 
+    readonly locale?: LocaleInfo;
+
     /**
      * Specifies if mutations will be executed ('normal'), will cause an error ('disallowed'), or will be executed in
      * a protected transaction which will be instantly rolled back ('rollback').
@@ -116,4 +118,11 @@ export interface ExecutionOptionsCallbackArgs {
      * The AST node of the operation being executed
      */
     readonly operationDefinition: OperationDefinitionNode;
+}
+
+export interface LocaleInfo {
+    /**
+     * An array of languages or languages with region (e.g. de-DE) in order of decreasing priority
+     */
+    readonly acceptLanguages?: ReadonlyArray<string>;
 }
