@@ -1,9 +1,17 @@
-import { GraphQLSchema } from 'graphql';
-import gql from 'graphql-tag';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import { IResolvers } from '@graphql-tools/utils';
-import { EnumValue, Field, Model, RootEntityType, Type, TypeKind } from '../model';
+import { GraphQLResolveInfo, GraphQLSchema } from 'graphql';
+import gql from 'graphql-tag';
+import { AccessOperation, AuthContext } from '../authorization/auth-basics';
+import { PermissionResult } from '../authorization/permission-descriptors';
+import {
+    getPermissionDescriptorOfField,
+    getPermissionDescriptorOfRootEntityType
+} from '../authorization/permission-descriptors-in-model';
+import { ExecutionOptionsCallbackArgs } from '../execution/execution-options';
+import { EnumValue, Field, RootEntityType, Type, TypeKind } from '../model';
 import { OrderDirection } from '../model/implementation/order';
+import { Project } from '../project/project';
 import { compact, flatMap } from '../utils/utils';
 import { I18N_GENERIC, I18N_LOCALE } from './constants';
 
@@ -49,6 +57,8 @@ const typeDefs = gql`
         "Relation information, if \`isRelation\` is \`true\`, \`null\` otherwise"
         relation: Relation
 
+        relationDeleteAction: RelationDeleteAction
+
         "Information about the @collect field configuration, if \`isCollectField\` is \`true\`, \`null\` otherwise"
         collectFieldConfig: CollectFieldConfig
 
@@ -58,6 +68,12 @@ const typeDefs = gql`
         If this is a reference without a dedicated key value field, this is the reference field itself.
         """
         referenceKeyField: Field
+
+        "If \`true\`, this field represents the enclosing child or root entity and cannot be set directly."
+        isParentField: Boolean!
+
+        "If \`true\`, this field represents the enclosing root entity and cannot be set directly."
+        isRootField: Boolean!
 
         localization(
             ${resolutionOrderDescription} resolutionOrder: [String]
@@ -69,11 +85,14 @@ const typeDefs = gql`
         isFlexSearchFulltextIndexed: Boolean!
         isFulltextIncludedInSearch: Boolean!
         flexSearchLanguage: FlexSearchLanguage
+
+        permissions: FieldPermissions
     }
 
     type Index {
         id: String
         unique: Boolean!
+        sparse: Boolean!
         fields: [IndexField!]!
     }
 
@@ -88,6 +107,13 @@ const typeDefs = gql`
         toType: RootEntityType!
         toField: Field
     }
+
+    enum RelationDeleteAction {
+        REMOVE_EDGES,
+        CASCADE,
+        RESTRICT
+    }
+
 
     type CollectFieldConfig {
         fieldsInPath: [Field!]!
@@ -162,6 +188,8 @@ const typeDefs = gql`
 
         isFlexSearchIndexed: Boolean!
         flexSearchPrimarySort: [OrderClause!]!
+        "If \`true\`, objects of this type can be searched with flexSearchExpression"
+        hasFieldsIncludedInSearch: Boolean!
 
         """
         All relations between this type and other types
@@ -175,6 +203,8 @@ const typeDefs = gql`
 
         "Indicates if this root entity type is one of the core objects of business transactions"
         isBusinessObject: Boolean
+
+        permissions: RootEntityTypePermissions
     }
 
     type ChildEntityType implements ObjectType & Type {
@@ -284,6 +314,24 @@ const typeDefs = gql`
     "The available languages for FlexSearch Analyzers"
     enum FlexSearchLanguage {
         EN, DE, ES, FI, FR, IT, NL, NO, PT, RU, SV, ZH
+    }
+
+    type FieldPermissions {
+        "Simplified view on read permissions (might sometimes be true even if the user cannot read)"
+        canRead: Boolean
+        "Simplified view on set/update permissions (might sometimes be true even if the user cannot write)"
+        canWrite: Boolean
+    }
+
+    type RootEntityTypePermissions {
+        "Simplified view on read permissions (might sometimes be true even if the user cannot read)"
+        canRead: Boolean
+        "Simplified view on create permissions (might sometimes be true even if the user cannot or can only conditionally create)"
+        canCreate: Boolean
+        "Simplified view on update permissions (might sometimes be true even if the user cannot or can only conditionally update)"
+        canUpdate: Boolean
+        "Simplified view on delete permissions (might sometimes be true even if the user cannot or can only conditionally delete)"
+        canDelete: Boolean
     }
 
     """
@@ -465,17 +513,12 @@ const typeDefs = gql`
     }
 `;
 
-export interface I18nSchemaContextPart {
-    locale: string | ReadonlyArray<string>;
-}
-
 /**
  * Returns an executable GraphQLSchema which allows to query the meta schema of the given model.
  * Allows to query the different kinds of types and entities, their fields, indices, uniqueness, ...
- * @param {Model} model the model holding the information which the the GraphQLSchema will operate on
- * @returns {GraphQLSchema} an executable GraphQLSchema which allows to query the meat schema.
  */
-export function getMetaSchema(model: Model): GraphQLSchema {
+export function getMetaSchema(project: Project): GraphQLSchema {
+    const model = project.getModel();
     const resolvers: IResolvers<{}, { locale: string }> = {
         Query: {
             types: () => model.types,
@@ -535,7 +578,8 @@ export function getMetaSchema(model: Model): GraphQLSchema {
         },
         RootEntityType: {
             localization: localizeType,
-            flexSearchPrimarySort: getFlexSearchPrimarySort
+            flexSearchPrimarySort: getFlexSearchPrimarySort,
+            permissions: getRootEntityTypePermissions
         },
         ChildEntityType: {
             localization: localizeType
@@ -563,46 +607,59 @@ export function getMetaSchema(model: Model): GraphQLSchema {
                     fieldsInPath: field.collectPath.segments.map(s => s.field),
                     aggregationOperator: field.aggregationOperator
                 };
-            }
+            },
+            permissions: getFieldPermissions
         },
         EnumValue: {
             localization: localizeEnumValue
         }
     };
 
-    function getResolutionOrder(resolutionOrder: ReadonlyArray<string> | undefined, context: I18nSchemaContextPart) {
+    function getResolutionOrder(
+        resolutionOrder: ReadonlyArray<string> | undefined,
+        contextArgs: ExecutionOptionsCallbackArgs
+    ) {
         // default resolutionOrder
         if (!resolutionOrder) {
             resolutionOrder = [I18N_LOCALE, I18N_GENERIC];
         }
         // replace _LOCALE
-        return compact(flatMap(resolutionOrder, l => (l === I18N_LOCALE ? getLocaleFromContext(context) : [l])));
+        return compact(flatMap(resolutionOrder, l => (l === I18N_LOCALE ? getLocaleFromContext(contextArgs) : [l])));
     }
 
     function localizeType(
         type: {},
         { resolutionOrder }: { resolutionOrder?: ReadonlyArray<string> },
-        context: I18nSchemaContextPart
+        context: unknown,
+        info: GraphQLResolveInfo
     ) {
-        return model.i18n.getTypeLocalization(type as Type, getResolutionOrder(resolutionOrder, context));
+        return model.i18n.getTypeLocalization(
+            type as Type,
+            getResolutionOrder(resolutionOrder, { context, operationDefinition: info.operation })
+        );
     }
 
     function localizeField(
         field: {},
         { resolutionOrder }: { resolutionOrder?: ReadonlyArray<string> },
-        context: I18nSchemaContextPart
+        context: unknown,
+        info: GraphQLResolveInfo
     ) {
-        return model.i18n.getFieldLocalization(field as Field, getResolutionOrder(resolutionOrder, context));
+        return model.i18n.getFieldLocalization(
+            field as Field,
+            getResolutionOrder(resolutionOrder, { context, operationDefinition: info.operation })
+        );
     }
 
     function localizeEnumValue(
         enumValue: {},
         { resolutionOrder }: { resolutionOrder?: ReadonlyArray<string> },
-        context: I18nSchemaContextPart
+        context: unknown,
+        info: GraphQLResolveInfo
     ) {
         return model.i18n.getEnumValueLocalization(
             enumValue as EnumValue,
-            getResolutionOrder(resolutionOrder, context)
+            getResolutionOrder(resolutionOrder, { context, operationDefinition: info.operation })
         );
     }
 
@@ -616,26 +673,82 @@ export function getMetaSchema(model: Model): GraphQLSchema {
         });
     }
 
+    function getLocaleFromContext(contextArgs: ExecutionOptionsCallbackArgs): ReadonlyArray<string> {
+        if (!project.options.getExecutionOptions) {
+            return [];
+        }
+        const executionOptions = project.options.getExecutionOptions(contextArgs);
+        return executionOptions?.locale?.acceptLanguages ?? [];
+    }
+
+    function getFieldPermissions(field: Field, args: unknown, context: unknown, info: GraphQLResolveInfo) {
+        const options = project.options.getExecutionOptions?.({ context, operationDefinition: info.operation });
+        if (!options) {
+            return null;
+        }
+        if (options.disableAuthorization) {
+            return {
+                canRead: true,
+                canWrite: true
+            };
+        }
+
+        // one additional check that is normally done indirectly
+        if (field.type.isRootEntityType && field.type !== field.declaringType) {
+            const descriptor = getPermissionDescriptorOfRootEntityType(field.type);
+            // be optimistic on CONDITIONAL types
+            if (
+                descriptor.canAccess({ authRoles: options.authRoles ?? [] }, AccessOperation.READ) ===
+                PermissionResult.DENIED
+            ) {
+                return {
+                    canRead: false,
+                    canWrite: false
+                };
+            }
+        }
+
+        const descriptor = getPermissionDescriptorOfField(field);
+        const authContext: AuthContext = { authRoles: options.authRoles ?? [] };
+        return {
+            canRead: descriptor.canAccess(authContext, AccessOperation.READ) === PermissionResult.GRANTED,
+            canWrite: descriptor.canAccess(authContext, AccessOperation.UPDATE) === PermissionResult.GRANTED
+        };
+    }
+
+    function getRootEntityTypePermissions(
+        rootEntityType: RootEntityType,
+        args: unknown,
+        context: unknown,
+        info: GraphQLResolveInfo
+    ) {
+        const options = project.options.getExecutionOptions?.({ context, operationDefinition: info.operation });
+        if (!options) {
+            return null;
+        }
+        if (options.disableAuthorization) {
+            return {
+                canRead: true,
+                canCreate: true,
+                canUpdate: true,
+                canDelete: true
+            };
+        }
+
+        const descriptor = getPermissionDescriptorOfRootEntityType(rootEntityType);
+        const authContext: AuthContext = { authRoles: options.authRoles ?? [] };
+        return {
+            canRead: descriptor.canAccess(authContext, AccessOperation.READ) === PermissionResult.GRANTED,
+            canCreate: descriptor.canAccess(authContext, AccessOperation.CREATE) === PermissionResult.GRANTED,
+            canUpdate: descriptor.canAccess(authContext, AccessOperation.UPDATE) === PermissionResult.GRANTED,
+            canDelete: descriptor.canAccess(authContext, AccessOperation.DELETE) === PermissionResult.GRANTED
+        };
+    }
+
     return makeExecutableSchema({
         typeDefs,
         resolvers
     });
-}
-
-function getLocaleFromContext(context: I18nSchemaContextPart): ReadonlyArray<string> {
-    if (!context) {
-        return [];
-    }
-    if (!context.locale) {
-        return [];
-    }
-    if (typeof context.locale === 'string') {
-        return [context.locale];
-    }
-    if (Array.isArray(context.locale)) {
-        return context.locale;
-    }
-    throw new Error(`Unexpected value provided as "locale" property on context: is ${typeof context.locale}`);
 }
 
 function resolveType(type: Type): string {

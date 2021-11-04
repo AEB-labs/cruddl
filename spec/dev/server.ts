@@ -3,7 +3,7 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import express from 'express';
 import * as path from 'path';
-import { ArangoDBAdapter } from '../..';
+import { ArangoDBAdapter, Project } from '../..';
 import { globalContext } from '../../src/config/global';
 import { InMemoryAdapter } from '../../src/database/inmemory';
 import { getMetaSchema } from '../../src/meta-schema/meta-schema';
@@ -47,7 +47,7 @@ export async function start() {
         getOperationIdentifier: ({ context }) => context as object, // each operation is executed with an unique context object
         getExecutionOptions: ({ context }: { context: any }) => {
             return {
-                authRoles: ['allusers', 'logistics-reader', 'system'],
+                authRoles: ['logistics-reader'],
                 recordTimings: true,
                 recordPlan: true,
                 mutationMode: 'normal',
@@ -104,22 +104,21 @@ export async function start() {
     await server.listen({ port });
     logger.info(`Server started on http://localhost:${port}`);
 
-    await startMetaServer(project.getModel());
+    await startMetaServer(project);
 }
 
 let expressServerReference: any;
 
 /**
  * starts an active GraphQL endpoint for testing and debugging the meta server API
- * @param {Model} model the meta schema model used for the endpoint
  * @returns {Promise<void>} returns promise so that Mocha will wait till server was started
  */
-export async function startMetaServer(model: Model) {
+export async function startMetaServer(project: Project) {
     const logger = globalContext.loggerProvider.getLogger('server');
 
     const metaSchemaPort = port + 1;
     const metaSchemaServer = new ApolloServer({
-        schema: getMetaSchema(model),
+        schema: getMetaSchema(project),
         context: { locale: 'en' }
     });
     expressServerReference = await metaSchemaServer.listen({ port: metaSchemaPort });

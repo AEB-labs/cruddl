@@ -170,7 +170,7 @@ export class Project {
      */
     @memorize()
     createMetaSchema(): GraphQLSchema {
-        return getMetaSchema(this.getModel());
+        return getMetaSchema(this);
     }
 
     async executeTTLCleanup(

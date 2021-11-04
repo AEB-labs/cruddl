@@ -1,8 +1,10 @@
 import { expect } from 'chai';
 import { DocumentNode, graphql, print } from 'graphql';
 import gql from 'graphql-tag';
+import { ExecutionOptions, ExecutionOptionsCallbackArgs } from '../../src/execution/execution-options';
 import { getMetaSchema } from '../../src/meta-schema/meta-schema';
 import { AggregationOperator, Model, TypeKind } from '../../src/model';
+import { Project } from '../../src/project/project';
 import { stopMetaServer } from '../dev/server';
 
 describe('Meta schema API', () => {
@@ -137,6 +139,26 @@ describe('Meta schema API', () => {
         }
     `;
 
+    const permissionsQuery = gql`
+        {
+            rootEntityType(name: "Shipment") {
+                permissions {
+                    canRead
+                    canCreate
+                    canUpdate
+                    canDelete
+                }
+                fields {
+                    name
+                    permissions {
+                        canRead
+                        canWrite
+                    }
+                }
+            }
+        }
+    `;
+
     const model = new Model({
         types: [
             {
@@ -165,6 +187,12 @@ describe('Meta schema API', () => {
                 name: 'Shipment',
                 kind: TypeKind.ROOT_ENTITY,
                 isBusinessObject: true,
+                permissions: {
+                    roles: {
+                        read: ['user', 'admin'],
+                        readWrite: ['admin']
+                    }
+                },
                 fields: [
                     {
                         name: 'deliveries',
@@ -195,7 +223,12 @@ describe('Meta schema API', () => {
                     },
                     {
                         name: 'transportKind',
-                        typeName: 'TransportKind'
+                        typeName: 'TransportKind',
+                        permissions: {
+                            roles: {
+                                read: ['admin']
+                            }
+                        }
                     },
                     {
                         name: 'totalWeightInKg',
@@ -316,7 +349,19 @@ describe('Meta schema API', () => {
         ]
     });
 
-    const metaSchema = getMetaSchema(model);
+    const project = ({
+        getModel: () => model,
+        options: {
+            getExecutionOptions: ({ context }: ExecutionOptionsCallbackArgs): ExecutionOptions => ({
+                locale: {
+                    acceptLanguages: context?.locale
+                },
+                authRoles: context?.authRoles
+            })
+        }
+    } as any) as Project;
+
+    const metaSchema = getMetaSchema(project);
 
     async function execute(doc: DocumentNode, context?: any) {
         const { data, errors } = await graphql(metaSchema, print(doc), {}, context);
@@ -868,6 +913,26 @@ describe('Meta schema API', () => {
         expect(streetField.localization).to.deep.equal({
             label: 'Straße',
             hint: 'The street and number'
+        });
+    });
+
+    it('can query permissions', async () => {
+        const result = await execute(permissionsQuery, { authRoles: ['user'] });
+        expect(result!.rootEntityType).to.deep.equal({
+            permissions: { canRead: true, canCreate: false, canUpdate: false, canDelete: false },
+            fields: [
+                { name: 'id', permissions: { canRead: true, canWrite: true } },
+                { name: 'createdAt', permissions: { canRead: true, canWrite: true } },
+                { name: 'updatedAt', permissions: { canRead: true, canWrite: true } },
+                { name: 'deliveries', permissions: { canRead: false, canWrite: false } },
+                { name: 'delivery', permissions: { canRead: false, canWrite: false } },
+                { name: 'deliveryNonRelation', permissions: { canRead: false, canWrite: false } },
+                { name: 'deliveryWithInverseOf', permissions: { canRead: false, canWrite: false } },
+                { name: 'handlingUnits', permissions: { canRead: false, canWrite: false } },
+                { name: 'transportKind', permissions: { canRead: false, canWrite: false } },
+                { name: 'totalWeightInKg', permissions: { canRead: true, canWrite: true } },
+                { name: 'destinationCountry', permissions: { canRead: false, canWrite: false } }
+            ]
         });
     });
 
