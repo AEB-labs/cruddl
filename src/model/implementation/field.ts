@@ -844,7 +844,7 @@ export class Field implements ModelComponent {
                         if (firstAmbiguousSegment.relationSide.targetField) {
                             reason = ` (because "${firstAmbiguousSegment.relationSide.targetType.name}.${firstAmbiguousSegment.relationSide.targetField.name}", which is the inverse relation field to "${firstAmgiguousSegment.field.declaringType.name}.${firstAmbiguousSegment.field.name}", is declared as a list)`;
                         } else {
-                            reason = ` (because the relation target type "${firstAmbiguousSegment.relationSide.targetType.name}" does not declare a inverse relation field to "${firstAmgiguousSegment.field.declaringType.name}.${firstAmbiguousSegment.field.name}")`;
+                            reason = ` (because the relation target type "${firstAmbiguousSegment.relationSide.targetType.name}" does not declare an inverse relation field to "${firstAmgiguousSegment.field.declaringType.name}.${firstAmbiguousSegment.field.name}")`;
                         }
                     }
                     context.addMessage(

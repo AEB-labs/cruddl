@@ -35,7 +35,7 @@ describe('collect validation', () => {
                     allHandlingUnits: [HandlingUnit] @collect(path: "deliveries.handlingUnits")
                 }
             `,
-                `The path can produce duplicate HandlingUnit entities (because the relation target type "HandlingUnit" does not declare a inverse relation field to "Delivery.handlingUnits"). Please set argument "aggregate" to "DISTINCT" to filter out duplicates and null items if you don't want any other aggregation.`
+                `The path can produce duplicate HandlingUnit entities (because the relation target type "HandlingUnit" does not declare an inverse relation field to "Delivery.handlingUnits"). Please set argument "aggregate" to "DISTINCT" to filter out duplicates and null items if you don't want any other aggregation.`
             );
         });
 
