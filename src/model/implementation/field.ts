@@ -821,7 +821,7 @@ export class Field implements ModelComponent {
                     const minimumAmbiguousPathEndIndex = this.collectPath.segments.findIndex(
                         s => s.resultMayContainDuplicateEntities
                     );
-                    const firstAmgiguousSegment = this.collectPath.segments[minimumAmbiguousPathEndIndex];
+                    const firstAmbiguousSegment = this.collectPath.segments[minimumAmbiguousPathEndIndex];
                     const minimumAmbiguousPathPrefix =
                         minimumAmbiguousPathEndIndex >= 0
                             ? this.collectPath.path
@@ -829,22 +829,19 @@ export class Field implements ModelComponent {
                                   .slice(0, minimumAmbiguousPathEndIndex + 1)
                                   .join('.')
                             : '';
-                    const firstAmbiguousSegment = this.collectPath.segments.find(
-                        s => s.resultMayContainDuplicateEntities
-                    );
                     const path =
                         minimumAmbiguousPathPrefix && minimumAmbiguousPathPrefix !== this.collectPath.path
                             ? `path prefix "${minimumAmbiguousPathPrefix}"`
                             : 'path';
-                    const entityType = firstAmgiguousSegment
-                        ? `${firstAmgiguousSegment.field.type.name} entities`
+                    const entityType = firstAmbiguousSegment
+                        ? `${firstAmbiguousSegment.field.type.name} entities`
                         : `entities`;
                     let reason = '';
                     if (firstAmbiguousSegment && firstAmbiguousSegment.kind === 'relation') {
                         if (firstAmbiguousSegment.relationSide.targetField) {
-                            reason = ` (because "${firstAmbiguousSegment.relationSide.targetType.name}.${firstAmbiguousSegment.relationSide.targetField.name}", which is the inverse relation field to "${firstAmgiguousSegment.field.declaringType.name}.${firstAmbiguousSegment.field.name}", is declared as a list)`;
+                            reason = ` (because "${firstAmbiguousSegment.relationSide.targetType.name}.${firstAmbiguousSegment.relationSide.targetField.name}", which is the inverse relation field to "${firstAmbiguousSegment.field.declaringType.name}.${firstAmbiguousSegment.field.name}", is declared as a list)`;
                         } else {
-                            reason = ` (because the relation target type "${firstAmbiguousSegment.relationSide.targetType.name}" does not declare an inverse relation field to "${firstAmgiguousSegment.field.declaringType.name}.${firstAmbiguousSegment.field.name}")`;
+                            reason = ` (because the relation target type "${firstAmbiguousSegment.relationSide.targetType.name}" does not declare an inverse relation field to "${firstAmbiguousSegment.field.declaringType.name}.${firstAmbiguousSegment.field.name}")`;
                         }
                     }
                     context.addMessage(
