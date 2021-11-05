@@ -6,6 +6,7 @@ import { TransactionError } from '../database/arangodb';
 import { ERROR_RESOURCE_LIMIT } from '../database/arangodb/error-codes';
 import { DatabaseAdapter } from '../database/database-adapter';
 import { ExecutionOptions } from '../execution/execution-options';
+import { TransactionTimeoutError } from '../execution/runtime-errors';
 import { SchemaExecutor } from '../execution/schema-executor';
 import { getMetaSchema } from '../meta-schema/meta-schema';
 import { Model, ValidationResult } from '../model';
@@ -235,7 +236,10 @@ export class Project {
                     limit !== undefined &&
                     limit > 1
                 ) {
-                    if (error instanceof TransactionError && (error.cause as any).errorNum === ERROR_RESOURCE_LIMIT) {
+                    const isResourceLimitError =
+                        error instanceof TransactionTimeoutError ||
+                        (error instanceof TransactionError && (error.cause as any).errorNum === ERROR_RESOURCE_LIMIT);
+                    if (isResourceLimitError) {
                         limit = Math.floor(limit / 2);
                         hasReducedLimit = true;
                         lastLimitReductionCause = error;
