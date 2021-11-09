@@ -27,7 +27,7 @@ export class FlexSearchPostFilterAugmentation {
             args: {
                 ...schemaField.args,
                 [FILTER_ARG]: {
-                    deprecationReason: `Renamed to postFilter. Use postFilter instead.`,
+                    description: `Renamed to postFilter. Use postFilter instead.`,
                     type: filterType.getInputType()
                 },
                 [POST_FILTER_ARG]: {
