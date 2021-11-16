@@ -68,7 +68,7 @@ type DeliveryItem @childEntity {
     weightInKg: Float
     handlingUnit: HandlingUnit @reference
     dgInfo: DangerousGoodsInfo
-    description: I18nString
+    description: I18nString @flexSearch @flexSearchFulltext
 }
 
 type Forwarder @rootEntity @roles(readWrite: ["logistics"]) {

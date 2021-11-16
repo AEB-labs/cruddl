@@ -1,13 +1,10 @@
-import { GraphQLEnumType, Thunk } from 'graphql';
+import { GraphQLEnumType, GraphQLString, Thunk } from 'graphql';
 import memorize from 'memorize-decorator';
 import { EnumType, Field, ObjectType, ScalarType, Type } from '../../model';
 import {
-    BinaryOperationQueryNode,
     BinaryOperator,
     BinaryOperatorWithAnalyzer,
-    ConstBoolQueryNode,
     LiteralQueryNode,
-    NullQueryNode,
     QueryNode,
     RuntimeErrorQueryNode
 } from '../../query-tree';
@@ -26,21 +23,16 @@ import {
     INPUT_FIELD_NOT_CONTAINS_PHRASE
 } from '../../schema/constants';
 import { getFlexSearchFilterTypeName } from '../../schema/names';
-import { AnyValue, flatMap, objectEntries } from '../../utils/utils';
+import { GraphQLI18nString } from '../../schema/scalars/string-map';
+import { flatMap } from '../../utils/utils';
 import { EnumTypeGenerator } from '../enum-type-generator';
 import { ENUM_FILTER_FIELDS, FILTER_OPERATORS, NUMERIC_FILTER_FIELDS } from '../filter-input-types/constants';
-import { QueryNodeResolveInfo, resolveThunk } from '../query-node-object-type';
-import { TypedInputObjectType } from '../typed-input-object-type';
-import {
-    and,
-    binaryNotOpWithAnalyzer,
-    binaryOpWithAnaylzer,
-    noAnalyzerWasSuppliedError,
-    not
-} from '../utils/input-types';
+import { resolveThunk } from '../query-node-object-type';
+import { binaryNotOpWithAnalyzer, binaryOpWithAnaylzer, noAnalyzerWasSuppliedError, not } from '../utils/input-types';
 import {
     FLEX_SEARCH_FILTER_FIELDS_BY_TYPE,
     FLEX_SEARCH_FILTER_OPERATORS,
+    STRING_FLEX_SEARCH_FILTER_FIELDS,
     STRING_FLEX_SEARCH_FILTER_OPERATORS,
     STRING_TEXT_ANALYZER_FILTER_FIELDS
 } from './constants';
@@ -48,43 +40,14 @@ import {
     FlexSearchAndFilterField,
     FlexSearchEntityExtensionFilterField,
     FlexSearchFilterField,
+    FlexSearchI18nStringLocalizedFilterField,
     FlexSearchNestedObjectFilterField,
     FlexSearchOrFilterField,
     FlexSearchScalarOrEnumFieldFilterField,
-    FlexSearchScalarOrEnumFilterField
+    FlexSearchScalarOrEnumFilterField,
+    I18nStringLocalizedFilterLanguageField
 } from './filter-fields';
-
-export class FlexSearchFilterObjectType extends TypedInputObjectType<FlexSearchFilterField> {
-    constructor(
-        type: Type,
-        fields: Thunk<ReadonlyArray<FlexSearchFilterField>>,
-        public readonly isAggregration: boolean
-    ) {
-        super(
-            getFlexSearchFilterTypeName(type.name, isAggregration),
-            fields,
-            `FlexSearchFilter type for \`${type.name}\`.\n\nAll fields in this type are *and*-combined; see the \`or\` field for *or*-combination.\n` +
-                isAggregration
-                ? `An aggregation contains all values of a list. Each check in this type is true if it matches any of the values in the list.`
-                : `Large queries in conjunctive normal form (e.g. (a OR b) AND (c OR d)... ) and should be avoided.`
-        );
-    }
-
-    getFilterNode(
-        sourceNode: QueryNode,
-        filterValue: AnyValue,
-        path: ReadonlyArray<Field>,
-        info: QueryNodeResolveInfo
-    ): QueryNode {
-        if (typeof filterValue !== 'object' || filterValue === null) {
-            return new BinaryOperationQueryNode(sourceNode, BinaryOperator.EQUAL, NullQueryNode.NULL);
-        }
-        const filterNodes = objectEntries(filterValue as any).map(([name, value]) =>
-            this.getFieldOrThrow(name).getFilterNode(sourceNode, value, path, info)
-        );
-        return filterNodes.reduce(and, ConstBoolQueryNode.TRUE);
-    }
-}
+import { FlexSearchFilterObjectType } from './filter-types';
 
 export class FlexSearchFilterTypeGenerator {
     constructor(private enumTypeGenerator: EnumTypeGenerator) {}
@@ -121,7 +84,14 @@ export class FlexSearchFilterTypeGenerator {
             }
         }
 
-        const filterType = new FlexSearchFilterObjectType(type, getFields, isAggregation);
+        const filterType = new FlexSearchFilterObjectType(
+            getFlexSearchFilterTypeName(type.name, isAggregation),
+            getFields,
+            `FlexSearchFilter type for \`${type.name}\`.\n\nAll fields in this type are *and*-combined; see the \`or\` field for *or*-combination.\n` +
+            isAggregation
+                ? `An aggregation contains all values of a list. Each check in this type is true if it matches any of the values in the list.`
+                : `Large queries in conjunctive normal form (e.g. (a OR b) AND (c OR d)... ) and should be avoided.`
+        );
         return filterType;
     }
 
@@ -133,6 +103,9 @@ export class FlexSearchFilterTypeGenerator {
             return this.generateListFieldFilterFields(field);
         }
         if (field.type.isScalarType) {
+            if (field.type.name === GraphQLI18nString.name) {
+                return this.generateFilterFieldsForI18nString(field);
+            }
             return this.generateFilterFieldsForNonListScalar(field);
         }
         if (field.type.isObjectType) {
@@ -145,7 +118,7 @@ export class FlexSearchFilterTypeGenerator {
         }
         if (field.type.isEnumType) {
             const graphQLEnumType = this.enumTypeGenerator.generate(field.type);
-            return this.generateFilterFieldsForEnumField(field, graphQLEnumType);
+            return this.generateFilterFieldsForNonListEnumField(field, graphQLEnumType);
         }
         return [];
     }
@@ -312,7 +285,10 @@ export class FlexSearchFilterTypeGenerator {
         );
     }
 
-    private generateFilterFieldsForEnumField(field: Field, graphQLEnumType: GraphQLEnumType): FlexSearchFilterField[] {
+    private generateFilterFieldsForNonListEnumField(
+        field: Field,
+        graphQLEnumType: GraphQLEnumType
+    ): FlexSearchFilterField[] {
         if (field.isList || !field.type.isEnumType) {
             throw new Error(`Expected "${field.name}" to be a non-list enum`);
         }
@@ -332,9 +308,9 @@ export class FlexSearchFilterTypeGenerator {
     private generateListFieldFilterFields(field: Field, path?: ReadonlyArray<Field>): FlexSearchFilterField[] {
         const pathParam = path ? path : [];
         if (field.type instanceof ScalarType) {
-            return this.buildScalarFilterFields(field.type, field, pathParam);
+            return this.buildFilterFieldsForListScalar(field.type, field, pathParam);
         } else if (field.type instanceof EnumType) {
-            return this.buildEnumFilterFields(field.type, field, pathParam);
+            return this.buildFilterFieldsForListEnum(field.type, field, pathParam);
         } else {
             const inputType = this.generate(field.type, true);
             if (field.type.isEntityExtensionType) {
@@ -345,24 +321,27 @@ export class FlexSearchFilterTypeGenerator {
         }
     }
 
-    private buildScalarFilterFields(
+    private buildFilterFieldsForListScalar(
         type: ScalarType,
         field: Field,
         path?: ReadonlyArray<Field>
-    ): FlexSearchScalarOrEnumFilterField[] {
+    ): FlexSearchScalarOrEnumFieldFilterField[] {
         const filterFields = this.getFilterFieldsByType(type);
 
-        let scalarFields: FlexSearchScalarOrEnumFilterField[] = [];
+        let scalarFields: FlexSearchScalarOrEnumFieldFilterField[] = [];
         if (field.isFlexSearchIndexed) {
             scalarFields = scalarFields.concat(
                 filterFields.map(
                     name =>
-                        new FlexSearchScalarOrEnumFilterField(
+                        new FlexSearchScalarOrEnumFieldFilterField(
                             field,
-                            FLEX_SEARCH_FILTER_OPERATORS[name],
+                            type.name === 'String'
+                                ? STRING_FLEX_SEARCH_FILTER_OPERATORS[name]
+                                : FLEX_SEARCH_FILTER_OPERATORS[name],
                             name,
                             type.graphQLScalarType,
-                            field.flexSearchAnalyzer
+                            field.flexSearchAnalyzer,
+                            true
                         )
                 )
             );
@@ -372,7 +351,7 @@ export class FlexSearchFilterTypeGenerator {
             scalarFields = scalarFields.concat(
                 STRING_TEXT_ANALYZER_FILTER_FIELDS.map(
                     name =>
-                        new FlexSearchScalarOrEnumFilterField(
+                        new FlexSearchScalarOrEnumFieldFilterField(
                             field,
                             this.getComplexFilterOperatorByName(name),
                             name,
@@ -386,21 +365,89 @@ export class FlexSearchFilterTypeGenerator {
         return scalarFields;
     }
 
-    private buildEnumFilterFields(type: EnumType, field: Field, path?: ReadonlyArray<Field>) {
+    private buildFilterFieldsForListEnum(type: EnumType, field: Field, path?: ReadonlyArray<Field>) {
         return ENUM_FILTER_FIELDS.map(name => {
-            return new FlexSearchScalarOrEnumFilterField(
+            return new FlexSearchScalarOrEnumFieldFilterField(
                 field,
                 FLEX_SEARCH_FILTER_OPERATORS[name],
                 name,
-                this.enumTypeGenerator.generate(type)
+                this.enumTypeGenerator.generate(type),
+                undefined,
+                true
             );
         });
     }
 
-    private getFilterFieldsByType(type: Type) {
+    private getFilterFieldsByType(type: Type): ReadonlyArray<string> {
         if (type.isScalarType && type.isNumberType) {
             return NUMERIC_FILTER_FIELDS;
         }
         return FLEX_SEARCH_FILTER_FIELDS_BY_TYPE[type.name] || [];
+    }
+
+    private generateFilterFieldsForI18nString(field: Field) {
+        return [
+            new FlexSearchI18nStringLocalizedFilterField(
+                field,
+                this.generateI18nStringLocalizedFilterObjectType(
+                    field.isFlexSearchIndexed,
+                    field.isFlexSearchFulltextIndexed
+                )
+            )
+        ];
+    }
+
+    @memorize()
+    private generateI18nStringLocalizedFilterObjectType(
+        withIdentityIndex: boolean,
+        withFullTextIndex: boolean
+    ): FlexSearchFilterObjectType {
+        const fields: FlexSearchFilterField[] = [new I18nStringLocalizedFilterLanguageField()];
+        if (withIdentityIndex) {
+            fields.push(
+                ...STRING_FLEX_SEARCH_FILTER_FIELDS.map(
+                    operatorName =>
+                        new FlexSearchScalarOrEnumFilterField(
+                            STRING_FLEX_SEARCH_FILTER_OPERATORS[operatorName],
+                            operatorName,
+                            GraphQLString,
+                            false
+                        )
+                )
+            );
+        }
+        if (withFullTextIndex) {
+            fields.push(
+                ...STRING_TEXT_ANALYZER_FILTER_FIELDS.map(
+                    operatorName =>
+                        new FlexSearchScalarOrEnumFilterField(
+                            this.getComplexFilterOperatorByName(operatorName),
+                            operatorName,
+                            GraphQLString,
+                            true
+                        )
+                )
+            );
+        }
+
+        let namePart: string;
+        if (withIdentityIndex) {
+            if (withFullTextIndex) {
+                namePart = 'RegularAndFulltext';
+            } else {
+                namePart = 'Regular';
+            }
+        } else if (withFullTextIndex) {
+            namePart = 'Fulltext';
+        } else {
+            throw new Error(`Can't both omit identity and fulltext filter fields`);
+        }
+
+        return new FlexSearchFilterObjectType(
+            `I18nStringLocalized${namePart}Filter`,
+            fields,
+            `Allows to on a specific localization of an \`I18nString\`\n\n` +
+                `The language should be provided in the special \`language\` field. All other fields are *and*-combined. There are no fallback rules for string localization; if there is no localization for the given language, the filter acts as if the field was \`null\`.`
+        );
     }
 }

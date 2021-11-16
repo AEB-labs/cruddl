@@ -56,12 +56,12 @@ export const FLEX_SEARCH_FILTER_OPERATORS: {
 export const STRING_FLEX_SEARCH_FILTER_OPERATORS: {
     [suffix: string]: (fieldNode: QueryNode, valueNode: QueryNode, analyzer?: string) => QueryNode;
 } = {
+    [INPUT_FIELD_EQUAL]: binaryOpWithAnaylzer(BinaryOperatorWithAnalyzer.EQUAL),
+    [INPUT_FIELD_NOT]: binaryNotOpWithAnalyzer(BinaryOperatorWithAnalyzer.UNEQUAL),
     [INPUT_FIELD_LT]: binaryOpWithAnaylzer(BinaryOperatorWithAnalyzer.FLEX_STRING_LESS_THAN),
     [INPUT_FIELD_LTE]: binaryOpWithAnaylzer(BinaryOperatorWithAnalyzer.FLEX_STRING_LESS_THAN_OR_EQUAL),
     [INPUT_FIELD_GT]: binaryOpWithAnaylzer(BinaryOperatorWithAnalyzer.FLEX_STRING_GREATER_THAN),
     [INPUT_FIELD_GTE]: binaryOpWithAnaylzer(BinaryOperatorWithAnalyzer.FLEX_STRING_GREATER_THAN_OR_EQUAL),
-    [INPUT_FIELD_EQUAL]: binaryOpWithAnaylzer(BinaryOperatorWithAnalyzer.EQUAL),
-    [INPUT_FIELD_NOT]: binaryNotOpWithAnalyzer(BinaryOperatorWithAnalyzer.UNEQUAL),
     [INPUT_FIELD_IN]: binaryOpWithAnaylzer(BinaryOperatorWithAnalyzer.IN),
     [INPUT_FIELD_NOT_IN]: binaryNotOpWithAnalyzer(BinaryOperatorWithAnalyzer.IN),
     [INPUT_FIELD_STARTS_WITH]: startsWithOp(),

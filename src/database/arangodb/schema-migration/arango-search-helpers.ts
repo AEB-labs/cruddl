@@ -5,6 +5,7 @@ import { Field, Model, RootEntityType } from '../../../model';
 import { IDENTITY_ANALYZER, NORM_CI_ANALYZER } from '../../../model/implementation/flex-search';
 import { OrderDirection } from '../../../model/implementation/order';
 import { ID_FIELD } from '../../../schema/constants';
+import { GraphQLI18nString } from '../../../schema/scalars/string-map';
 import { getCollectionNameForRootEntity } from '../arango-basics';
 import {
     CreateArangoSearchViewMigration,
@@ -151,21 +152,30 @@ function getPropertiesFromDefinition(
             };
         }
 
-        const analyzers: string[] = [];
+        const analyzers = new Set<string>();
         if (field.isFlexSearchFulltextIndexed && field.flexSearchLanguage) {
-            analyzers.push(field.getFlexSearchFulltextAnalyzerOrThrow());
+            analyzers.add(field.getFlexSearchFulltextAnalyzerOrThrow());
         }
         if (field.isFlexSearchIndexed && field.isFlexSearchIndexCaseSensitive) {
-            analyzers.push(IDENTITY_ANALYZER);
+            analyzers.add(IDENTITY_ANALYZER);
         }
         if (field.isFlexSearchIndexed && !field.isFlexSearchIndexCaseSensitive) {
-            analyzers.push(NORM_CI_ANALYZER);
+            analyzers.add(NORM_CI_ANALYZER);
         }
-        if (_.isEqual(analyzers, [IDENTITY_ANALYZER])) {
-            return {};
-        } else {
-            return { analyzers };
+
+        const link: ArangoSearchViewCollectionLink = {};
+        // only set this property if it's not the default (["identity"])
+        if (analyzers.size !== 1 || !analyzers.has(IDENTITY_ANALYZER)) {
+            link.analyzers = Array.from(analyzers);
         }
+
+        if (field.type.isScalarType && field.type.name === GraphQLI18nString.name) {
+            // an I18nString is an object with language->valueInLanguage mappings
+            // we simply analyze all fields (i.e. all languages). They will inherit the analyzers of the main link.
+            link.includeAllFields = true;
+        }
+
+        return link;
     }
 }
 

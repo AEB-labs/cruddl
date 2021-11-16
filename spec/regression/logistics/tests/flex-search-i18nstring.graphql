@@ -1,0 +1,17 @@
+query identityInList {
+    flexSearchDeliveries(
+        flexSearchFilter: { itemsAggregation: { description_localized: { language: "de", equal: "Bananen" } } }
+    ) {
+        deliveryNumber
+    }
+}
+
+query fulltextInList {
+    flexSearchDeliveries(
+        flexSearchFilter: {
+            itemsAggregation: { description_localized: { language: "en", contains_any_prefix: "Äpf" } }
+        }
+    ) {
+        deliveryNumber
+    }
+}

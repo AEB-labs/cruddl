@@ -194,6 +194,24 @@
                     {
                         "itemNumber": "3002",
                         "quantity": 18
+                    },
+                    {
+                        "itemNumber": "1001",
+                        "quantity": 3,
+                        "handlingUnit": "@{ids/HandlingUnit/1}",
+                        "description": {
+                            "en": "Bananen",
+                            "de": "Bananas"
+                        }
+                    },
+                    {
+                        "itemNumber": "1002",
+                        "quantity": 8,
+                        "handlingUnit": "@{ids/HandlingUnit/2}",
+                        "description": {
+                            "en": "Äpfel",
+                            "de": "Apples"
+                        }
                     }
                 ],
                 "destinationCountryISOCode": "US",
