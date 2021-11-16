@@ -28,7 +28,8 @@ import {
 } from '../schema/constants';
 import { getFlexSearchEntitiesFieldName, getMetaFieldName } from '../schema/names';
 import { decapitalize } from '../utils/utils';
-import { FlexSearchFilterObjectType, FlexSearchFilterTypeGenerator } from './flex-search-filter-input-types';
+import { FlexSearchFilterTypeGenerator } from './flex-search-filter-input-types';
+import { FlexSearchFilterObjectType } from './flex-search-filter-input-types/filter-types';
 import { FlexSearchPostFilterAugmentation } from './flex-search-post-filter-augmentation';
 import { OrderByAndPaginationAugmentation } from './order-by-and-pagination-augmentation';
 import { OutputTypeGenerator } from './output-type-generator';

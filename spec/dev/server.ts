@@ -51,6 +51,7 @@ export async function start() {
                 recordTimings: true,
                 recordPlan: true,
                 mutationMode: 'normal',
+                disableAuthorization: true,
 
                 //queryMemoryLimit: 1000000,
                 cancellationToken: new Promise(resolve => context.req.on('aborted', resolve))

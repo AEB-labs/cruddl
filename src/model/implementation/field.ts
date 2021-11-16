@@ -16,6 +16,7 @@ import { GraphQLDateTime } from '../../schema/scalars/date-time';
 import { GraphQLLocalDate } from '../../schema/scalars/local-date';
 import { GraphQLLocalTime } from '../../schema/scalars/local-time';
 import { GraphQLOffsetDateTime } from '../../schema/scalars/offset-date-time';
+import { GraphQLI18nString } from '../../schema/scalars/string-map';
 import {
     AggregationOperator,
     CalcMutationsOperator,
@@ -1439,7 +1440,11 @@ export class Field implements ModelComponent {
                 return;
             }
         }
-        if (this.isFlexSearchFulltextIndexed && !(this.type.isScalarType && this.type.name === 'String')) {
+        const supportedFullTextTypeNames = [GraphQLString.name, GraphQLI18nString.name];
+        if (
+            this.isFlexSearchFulltextIndexed &&
+            !(this.type.isScalarType && supportedFullTextTypeNames.includes(this.type.name))
+        ) {
             context.addMessage(
                 ValidationMessage.error(
                     `@flexSearchFulltext is not supported on type "${this.type.name}".`,
@@ -1524,7 +1529,7 @@ export class Field implements ModelComponent {
         if (!this.isFlexSearchIndexed) {
             return undefined;
         }
-        if (!(this.type.isScalarType && this.type.name === 'String')) {
+        if (!(this.type.isScalarType && [GraphQLString.name, GraphQLI18nString.name].includes(this.type.name))) {
             return undefined;
         }
         return this.isFlexSearchIndexCaseSensitive ? IDENTITY_ANALYZER : NORM_CI_ANALYZER;

@@ -6033,6 +6033,123 @@
                             "name": "quantity_gte",
                             "description": "Checks if `quantity` is greater or equal a specified value.",
                             "deprecationReason": null
+                        },
+                        {
+                            "name": "description_localized",
+                            "description": "Makes sure at least one of the entries in \"description\" has a value that matches a certain filter.\n\nNote that you can specify the empty object for this filter to make sure `description` has at least one item.",
+                            "deprecationReason": null
+                        }
+                    ]
+                },
+                {
+                    "name": "I18nStringLocalizedRegularAndFulltextFilter",
+                    "description": "Allows to on a specific localization of an `I18nString`\n\nThe language should be provided in the special `language` field. All other fields are *and*-combined. There are no fallback rules for string localization; if there is no localization for the given language, the filter acts as if the field was `null`.",
+                    "fields": null,
+                    "inputFields": [
+                        {
+                            "name": "language",
+                            "description": "Sets the language to be used for the filters in this object",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "equal",
+                            "description": "Checks if the value equals a specified string, case-insensitively.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "not",
+                            "description": "Checks if the value does not equal a specified string, case-insensitively.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "lt",
+                            "description": "Checks if the value is less than a specified value.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "lte",
+                            "description": "Checks if the value is less or equal a specified value.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "gt",
+                            "description": "Checks if the value is greater than a specified value.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "gte",
+                            "description": "Checks if the value is greater or equal a specified value.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "in",
+                            "description": "Checks if the value is equal to one of the specified values.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "not_in",
+                            "description": "Checks if the value is not equal to one of the specified values.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "starts_with",
+                            "description": "Checks if the value starts with a specified string, case-insensitively.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "not_starts_with",
+                            "description": "Checks if the value does not start with a specified string, case-insensitively.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "contains_any_word",
+                            "description": "Tokenizes the provided string into words, and checks if the value contains at least one of them.\n Stemming (reduction of words on their base form) is applied.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "not_contains_any_word",
+                            "description": "Tokenizes the provided string into words, and checks if the value contains none of them.\n Stemming (reduction of words on their base form) is applied.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "contains_all_words",
+                            "description": "Tokenizes the provided string into words, and checks if the value contains all of them.\n Stemming (reduction of words on their base form) is applied.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "not_contains_all_words",
+                            "description": "Tokenizes the provided string into words, and checks if at least one word is not contained in the value.\n Stemming (reduction of words on their base form) is applied.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "contains_any_prefix",
+                            "description": "Tokenizes the provided string into prefixes, and checks if the value contains any word that starts with one of these prefixes.\n Stemming (reduction of words on their base form) is applied.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "not_contains_any_prefix",
+                            "description": "Tokenizes the provided string into prefixes, and checks if the value does not contain any word that starts with one of these prefixes.\n Stemming (reduction of words on their base form) is applied.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "contains_all_prefixes",
+                            "description": "Tokenizes the provided string into prefixes, and checks if all prefixes appears in the value.\n Stemming (reduction of words on their base form) is applied.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "not_contains_all_prefixes",
+                            "description": "Tokenizes the provided prefixes into words, and checks if there is at least one prefix that does not appear in the value.\n Stemming (reduction of words on their base form) is applied.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "contains_phrase",
+                            "description": "Tokenizes the provided string into words, and checks if that exact phrase (those words in excactly this order) is included in the value.\n Stemming (reduction of words on their base form) is applied.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "not_contains_phrase",
+                            "description": "Tokenizes the provided string into words, and checks if that exact phrase (those words in excactly this order) is not included in the value.\n Stemming (reduction of words on their base form) is applied.",
+                            "deprecationReason": null
                         }
                     ]
                 },

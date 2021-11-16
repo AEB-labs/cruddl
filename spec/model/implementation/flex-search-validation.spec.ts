@@ -44,6 +44,26 @@ describe('FlexSearch', () => {
             `@flexSearch is not supported on collect fields.`
         );
     });
+    it('accepts flexSearch flexSearchFulltext on strings', () => {
+        // currently we allow pretty much every type on @flexSearch (which is a bug),
+        // but when we change this, we should not break e.g. Strings
+        assertValidatorAccepts(
+            `
+            type HandlingUnit @rootEntity(flexSearch: true) {
+                handlingUnitNumber: String @flexSearchFulltext @flexSearch
+            }
+        `
+        );
+    });
+    it('accepts flexSearch and flexSearchFulltext on I18nString', () => {
+        assertValidatorAccepts(
+            `
+            type HandlingUnit @rootEntity(flexSearch: true) {
+                handlingUnitNumber: I18nString @flexSearchFulltext @flexSearch
+            }
+        `
+        );
+    });
     it('rejects flexSearchFulltext on numbers', () => {
         assertValidatorRejects(
             `
