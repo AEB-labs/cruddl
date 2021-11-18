@@ -1,5 +1,3 @@
-import { IDENTITY_ANALYZER } from '../../database/arangodb/schema-migration/arango-search-helpers';
-import { FlexSearchLanguage } from '../../model/config';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,

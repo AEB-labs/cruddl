@@ -14,3 +14,4 @@ export { TransactionCancelledError, TransactionTimeoutError } from './src/execut
 export * from './src/model/implementation';
 export { TypeKind } from './src/model/config';
 export { NoOperationIdentifierError } from './src/graphql/operation-based-resolvers';
+export { TransactionError } from './src/execution/transaction-error';

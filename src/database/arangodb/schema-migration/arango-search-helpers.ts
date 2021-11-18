@@ -1,7 +1,8 @@
 import { Database } from 'arangojs';
 import { ArangoSearchView, ArangoSearchViewProperties, ArangoSearchViewPropertiesOptions } from 'arangojs/view';
 import * as _ from 'lodash';
-import { Field, FlexSearchLanguage, Model, RootEntityType } from '../../../model';
+import { Field, Model, RootEntityType } from '../../../model';
+import { IDENTITY_ANALYZER, NORM_CI_ANALYZER } from '../../../model/implementation/flex-search';
 import { OrderDirection } from '../../../model/implementation/order';
 import { ID_FIELD } from '../../../schema/constants';
 import { getCollectionNameForRootEntity } from '../arango-basics';
@@ -13,8 +14,6 @@ import {
     UpdateArangoSearchViewMigration
 } from './migrations';
 
-export const IDENTITY_ANALYZER = 'identity';
-export const NORM_CI_ANALYZER = 'norm_ci';
 export const FLEX_SEARCH_VIEW_PREFIX = 'flex_view_';
 
 export interface FlexSearchPrimarySortConfig {

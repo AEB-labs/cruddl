@@ -1,8 +1,6 @@
 import { GraphQLEnumType, Thunk } from 'graphql';
 import memorize from 'memorize-decorator';
-import { IDENTITY_ANALYZER, NORM_CI_ANALYZER } from '../../database/arangodb/schema-migration/arango-search-helpers';
-import { FlexSearchLanguage } from '../../model/config';
-import { EnumType, Field, ObjectType, ScalarType, Type } from '../../model/implementation';
+import { EnumType, Field, ObjectType, ScalarType, Type } from '../../model';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
@@ -30,12 +28,7 @@ import {
 import { getFlexSearchFilterTypeName } from '../../schema/names';
 import { AnyValue, flatMap, objectEntries } from '../../utils/utils';
 import { EnumTypeGenerator } from '../enum-type-generator';
-import {
-    ENUM_FILTER_FIELDS,
-    FILTER_FIELDS_BY_TYPE,
-    FILTER_OPERATORS,
-    NUMERIC_FILTER_FIELDS
-} from '../filter-input-types/constants';
+import { ENUM_FILTER_FIELDS, FILTER_OPERATORS, NUMERIC_FILTER_FIELDS } from '../filter-input-types/constants';
 import { QueryNodeResolveInfo, resolveThunk } from '../query-node-object-type';
 import { TypedInputObjectType } from '../typed-input-object-type';
 import {

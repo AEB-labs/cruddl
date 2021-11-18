@@ -1,5 +1,6 @@
 import { AggregationOperator, Field, Relation, RootEntityType } from '../../model';
 import { FieldSegment, RelationSegment } from '../../model/implementation/collect-path';
+import { IDENTITY_ANALYZER } from '../../model/implementation/flex-search';
 import {
     AddEdgesQueryNode,
     AggregationQueryNode,
@@ -73,7 +74,7 @@ import { FlexSearchTokenizable } from '../database-adapter';
 import { analyzeLikePatternPrefix } from '../like-helpers';
 import { aql, AQLCompoundQuery, AQLFragment, AQLQueryResultVariable, AQLVariable } from './aql';
 import { billingCollectionName, getCollectionNameForRelation, getCollectionNameForRootEntity } from './arango-basics';
-import { getFlexSearchViewNameForRootEntity, IDENTITY_ANALYZER } from './schema-migration/arango-search-helpers';
+import { getFlexSearchViewNameForRootEntity } from './schema-migration/arango-search-helpers';
 
 enum AccessType {
     READ,

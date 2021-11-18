@@ -35,7 +35,7 @@ import { hasRevisionAssertions } from './revision-helper';
 import { SchemaAnalyzer } from './schema-migration/analyzer';
 import { SchemaMigration } from './schema-migration/migrations';
 import { MigrationPerformer } from './schema-migration/performer';
-import { TransactionError } from './transaction-error';
+import { TransactionError } from '../../execution/transaction-error';
 import { ArangoDBVersion, ArangoDBVersionHelper } from './version-helper';
 import uuid = require('uuid');
 

@@ -2,21 +2,22 @@ import { GraphQLSchema } from 'graphql';
 import memorize from 'memorize-decorator';
 import { ProjectOptions } from '../config/interfaces';
 import { DEFAULT_LOGGER_PROVIDER, LoggerProvider } from '../config/logging';
-import { TransactionError } from '../database/arangodb';
-import { ERROR_RESOURCE_LIMIT } from '../database/arangodb/error-codes';
 import { DatabaseAdapter } from '../database/database-adapter';
 import { ExecutionOptions } from '../execution/execution-options';
 import { TransactionTimeoutError } from '../execution/runtime-errors';
 import { SchemaExecutor } from '../execution/schema-executor';
+import { TransactionError } from '../execution/transaction-error';
 import { getMetaSchema } from '../meta-schema/meta-schema';
-import { Model, ValidationResult } from '../model';
-import { TimeToLiveType } from '../model/implementation/time-to-live';
+import { Model, TimeToLiveType, ValidationResult } from '../model';
 import { ListQueryNode, QueryNode } from '../query-tree';
 import { createSchema, getModel, validateSchema } from '../schema/schema-builder';
 import { ProjectSource, SourceLike, SourceType } from './source';
 import { getQueryNodeForTTLType, getTTLInfoQueryNode, TTLInfo } from './time-to-live';
 
 export { ProjectOptions };
+
+// do not import ArangoDB. Code smell however.
+const ERROR_RESOURCE_LIMIT = 32;
 
 export interface ProjectConfig extends ProjectOptions {
     /**

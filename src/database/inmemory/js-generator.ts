@@ -1,4 +1,5 @@
 import { compact } from 'lodash';
+import { IDENTITY_ANALYZER, NORM_CI_ANALYZER } from '../../model/implementation/flex-search';
 import { AggregationOperator, Relation, RelationSide, RootEntityType } from '../../model';
 import {
     AddEdgesQueryNode,
@@ -65,7 +66,6 @@ import { QuantifierFilterNode } from '../../query-tree/quantifiers';
 import { createFieldPathNode } from '../../schema-generation/field-path-node';
 import { not } from '../../schema-generation/utils/input-types';
 import { Constructor, decapitalize } from '../../utils/utils';
-import { IDENTITY_ANALYZER, NORM_CI_ANALYZER } from '../arangodb/schema-migration/arango-search-helpers';
 import { likePatternToRegExp } from '../like-helpers';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './inmemory-basics';
 import { js, JSCompoundQuery, JSFragment, JSQueryResultVariable, JSVariable } from './js';

@@ -1,5 +1,6 @@
 import { CollectionType, Database } from 'arangojs';
 import deepEqual from 'deep-equal';
+import { NORM_CI_ANALYZER } from '../../../model/implementation/flex-search';
 import { ProjectOptions } from '../../../config/interfaces';
 import { Logger } from '../../../config/logging';
 import { Model, RootEntityType } from '../../../model';
@@ -10,8 +11,7 @@ import {
     calculateRequiredArangoSearchViewDropOperations,
     calculateRequiredArangoSearchViewUpdateOperations,
     getFlexSearchViewNameForRootEntity,
-    getRequiredViewsFromModel,
-    NORM_CI_ANALYZER
+    getRequiredViewsFromModel
 } from './arango-search-helpers';
 import { calculateRequiredIndexOperations, getRequiredIndicesFromModel, IndexDefinition } from './index-helpers';
 import {

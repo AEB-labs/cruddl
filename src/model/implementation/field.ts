@@ -1,6 +1,5 @@
-import { FieldDefinitionNode, GraphQLBoolean, GraphQLFloat, GraphQLID, GraphQLInt, GraphQLString } from 'graphql';
+import { FieldDefinitionNode, GraphQLBoolean, GraphQLID, GraphQLInt, GraphQLString } from 'graphql';
 import memorize from 'memorize-decorator';
-import { IDENTITY_ANALYZER, NORM_CI_ANALYZER } from '../../database/arangodb/schema-migration/arango-search-helpers';
 import {
     ACCESS_GROUP_FIELD,
     CALC_MUTATIONS_OPERATORS,
@@ -14,7 +13,6 @@ import {
     ROOT_DIRECTIVE
 } from '../../schema/constants';
 import { GraphQLDateTime } from '../../schema/scalars/date-time';
-import { GraphQLInt53 } from '../../schema/scalars/int53';
 import { GraphQLLocalDate } from '../../schema/scalars/local-date';
 import { GraphQLLocalTime } from '../../schema/scalars/local-time';
 import { GraphQLOffsetDateTime } from '../../schema/scalars/offset-date-time';
@@ -32,12 +30,13 @@ import { ValidationMessage } from '../validation';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
 import { numberTypeNames } from './built-in-types';
 import { CollectPath } from './collect-path';
+import { NORM_CI_ANALYZER } from './flex-search';
+import { IDENTITY_ANALYZER } from './flex-search';
 import { FieldLocalization } from './i18n';
 import { Model } from './model';
 import { PermissionProfile } from './permission-profile';
 import { Relation, RelationSide } from './relation';
 import { RolesSpecifier } from './roles-specifier';
-import { ScalarType } from './scalar-type';
 import { InvalidType, ObjectType, Type } from './type';
 import { ValueObjectType } from './value-object-type';
 

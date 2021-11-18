@@ -1,6 +1,5 @@
 import { getNamedType, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
-import { IDENTITY_ANALYZER, NORM_CI_ANALYZER } from '../../database/arangodb/schema-migration/arango-search-helpers';
-import { Field, FlexSearchLanguage, TypeKind } from '../../model';
+import { Field, TypeKind } from '../../model';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,

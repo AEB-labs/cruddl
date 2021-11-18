@@ -1,6 +1,5 @@
-import { IDENTITY_ANALYZER } from '../database/arangodb/schema-migration/arango-search-helpers';
-import { FlexSearchLanguage } from '../model/config';
-import { RootEntityType } from '../model/implementation';
+import { RootEntityType } from '../model';
+import { IDENTITY_ANALYZER } from '../model/implementation/flex-search';
 import { binaryOp } from '../schema-generation/utils/input-types';
 import { decapitalize, indent } from '../utils/utils';
 import { QueryNode } from './base';

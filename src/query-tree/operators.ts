@@ -1,4 +1,3 @@
-import { FlexSearchLanguage } from '../model/config';
 import { QueryNode } from './base';
 
 /**
