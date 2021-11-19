@@ -2,6 +2,9 @@ import { DirectiveNode, ObjectValueNode, StringValueNode } from 'graphql';
 
 export interface IndexDefinitionConfig {
     readonly id?: string;
+    /**
+     * A list of dot-separated fields that make up this index
+     */
     readonly fields: ReadonlyArray<string>;
     readonly fieldASTNodes?: ReadonlyArray<StringValueNode | DirectiveNode | undefined>;
     readonly unique?: boolean;
