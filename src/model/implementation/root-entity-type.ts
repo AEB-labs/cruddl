@@ -72,7 +72,7 @@ export class RootEntityType extends ObjectTypeBase {
         }
 
         for (const timeToLiveType of this.timeToLiveTypes) {
-            indexConfigs.push({ unique: false, fields: timeToLiveType.input.dateField.split('.') });
+            indexConfigs.push({ unique: false, fields: [timeToLiveType.input.dateField] });
         }
 
         const indices = indexConfigs.map(config => new Index(config, this));
