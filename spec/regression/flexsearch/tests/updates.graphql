@@ -1,0 +1,63 @@
+fragment Status on Query {
+    all: flexSearchDocuments {
+        key
+        value
+    }
+    a: flexSearchDocuments(flexSearchFilter: { key: "a" }) {
+        key
+        value
+    }
+}
+
+query initial {
+    ...Status
+}
+
+mutation updateUnrelatedValue {
+    updateDocument(input: { id: "@{ids/Document/2}", value: "Second Updated" }) {
+        key
+        value
+    }
+}
+
+query afterUpdateUnrelated {
+    ...Status
+}
+
+mutation updateValueWithoutFlexsearch {
+    updateDocument(input: { id: "@{ids/Document/1}", valueWithoutFlexsearch: "Something" }) {
+        key
+        value
+    }
+}
+
+query afterUpdateValueWithoutFlexsearch {
+    ...Status
+}
+
+mutation updateValue {
+    updateDocument(input: { id: "@{ids/Document/1}", value: "First Updated" }) {
+        key
+        value
+    }
+}
+
+query afterUpdateValue {
+    ...Status
+}
+
+mutation updateKey {
+    updateDocument(input: { id: "@{ids/Document/1}", key: "a2" }) {
+        key
+        value
+    }
+}
+
+query afterUpdateKey {
+    ...Status
+
+    a2: flexSearchDocuments(flexSearchFilter: { key: "a2" }) {
+        key
+        value
+    }
+}

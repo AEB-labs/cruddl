@@ -1,0 +1,112 @@
+{
+    "initial": {
+        "data": {
+            "all": [
+                {
+                    "key": "a",
+                    "value": "First"
+                },
+                {
+                    "key": "b",
+                    "value": "Second"
+                },
+                {
+                    "key": "c",
+                    "value": "Third"
+                }
+            ],
+            "a": [
+                {
+                    "key": "a",
+                    "value": "First"
+                }
+            ]
+        }
+    },
+    "updateUnrelatedValue": {
+        "data": {
+            "updateDocument": {
+                "key": "b",
+                "value": "Second Updated"
+            }
+        }
+    },
+    "afterUpdateUnrelated": {
+        "data": {
+            "all": [
+                {
+                    "key": "a",
+                    "value": "First"
+                },
+                {
+                    "key": "c",
+                    "value": "Third"
+                }
+            ],
+            "a": [
+                {
+                    "key": "a",
+                    "value": "First"
+                }
+            ]
+        }
+    },
+    "updateValueWithoutFlexsearch": {
+        "data": {
+            "updateDocument": {
+                "key": "a",
+                "value": "First"
+            }
+        }
+    },
+    "afterUpdateValueWithoutFlexsearch": {
+        "data": {
+            "all": [
+                {
+                    "key": "c",
+                    "value": "Third"
+                }
+            ],
+            "a": []
+        }
+    },
+    "updateValue": {
+        "data": {
+            "updateDocument": {
+                "key": "a",
+                "value": "First Updated"
+            }
+        }
+    },
+    "afterUpdateValue": {
+        "data": {
+            "all": [
+                {
+                    "key": "c",
+                    "value": "Third"
+                }
+            ],
+            "a": []
+        }
+    },
+    "updateKey": {
+        "data": {
+            "updateDocument": {
+                "key": "a2",
+                "value": "First Updated"
+            }
+        }
+    },
+    "afterUpdateKey": {
+        "data": {
+            "all": [
+                {
+                    "key": "c",
+                    "value": "Third"
+                }
+            ],
+            "a": [],
+            "a2": []
+        }
+    }
+}

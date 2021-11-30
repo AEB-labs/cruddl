@@ -1,0 +1,4 @@
+{
+    "authRoles": ["users"],
+    "flexSearchMaxFilterableAndSortableAmount": 2
+}

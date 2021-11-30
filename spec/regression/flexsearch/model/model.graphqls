@@ -1,0 +1,5 @@
+type Document @rootEntity(flexSearch: true, flexSearchOrder: [{ field: "key", direction: ASC }]) {
+    key: String @key @flexSearch
+    value: String @flexSearch
+    valueWithoutFlexsearch: String
+}

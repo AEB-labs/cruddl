@@ -1,0 +1,22 @@
+{
+    "roles": ["users"],
+    "rootEntities": {
+        "Document": [
+            {
+                "@id": "1",
+                "key": "a",
+                "value": "First"
+            },
+            {
+                "@id": "2",
+                "key": "b",
+                "value": "Second"
+            },
+            {
+                "@id": "3",
+                "key": "c",
+                "value": "Third"
+            }
+        ]
+    }
+}
