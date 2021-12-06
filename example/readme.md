@@ -6,7 +6,7 @@
 6. `npm start`
 7. open a browser to http://localhost:4000 and use some of the queries below
 
-After a few seconds, you should see the following on the console
+After a few seconds, you should see the following on the console:
 
 ```
 Server is running on http://localhost:4000/
@@ -23,7 +23,7 @@ ArangoDBAdapter: Performing migration "create persistent index on collection cou
 ArangoDBAdapter: Successfully performed migration "create persistent index on collection countries on field '_key'"
 ```
 
-Run the following query multiple times, now how the **id** is always the same
+Run the following query multiple times, note how the **id** is always the same:
 
 ```
 mutation {
