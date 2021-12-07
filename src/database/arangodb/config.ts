@@ -67,6 +67,13 @@ export interface ArangoDBConfig {
     readonly createIndicesInBackground?: boolean;
 
     readonly createCollectionOptions?: CreateCollectionOptions;
+
+    /**
+     * A regular expression that matches index ids that should not be deleted with migrations
+     *
+     * Indices without ID will never be ignored.
+     */
+    readonly ignoredIndexIDsPattern?: RegExp;
 }
 
 export function initDatabase(config: ArangoDBConfig): Database {
