@@ -3,6 +3,7 @@ import { ID_FIELD } from '../../../schema/constants';
 import { GraphQLOffsetDateTime, TIMESTAMP_PROPERTY } from '../../../schema/scalars/offset-date-time';
 import { compact, flatMap } from '../../../utils/utils';
 import { getCollectionNameForRootEntity } from '../arango-basics';
+import { ArangoDBConfig } from '../config';
 
 const DEFAULT_INDEX_TYPE = 'persistent';
 
@@ -85,7 +86,8 @@ function indexStartsWith(index: IndexDefinition, prefix: IndexDefinition) {
 
 export function calculateRequiredIndexOperations(
     existingIndices: ReadonlyArray<IndexDefinition>,
-    requiredIndices: ReadonlyArray<IndexDefinition>
+    requiredIndices: ReadonlyArray<IndexDefinition>,
+    config: ArangoDBConfig
 ): {
     indicesToDelete: ReadonlyArray<IndexDefinition>;
     indicesToCreate: ReadonlyArray<IndexDefinition>;
@@ -101,7 +103,9 @@ export function calculateRequiredIndexOperations(
             return requiredIndex;
         })
     );
-    indicesToDelete = indicesToDelete.filter(index => index.type === DEFAULT_INDEX_TYPE); // only remove indexes of types that we also add
+    indicesToDelete = indicesToDelete
+        .filter(index => index.type === DEFAULT_INDEX_TYPE) // only remove indexes of types that we also add
+        .filter(index => !index.id || !config.ignoredIndexIDsPattern || !index.id.match(config.ignoredIndexIDsPattern));
     return { indicesToDelete, indicesToCreate };
 }
 

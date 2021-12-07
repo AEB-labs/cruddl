@@ -100,7 +100,11 @@ export class SchemaAnalyzer {
         await Promise.all(existingIndicesPromises).then(promiseResults =>
             promiseResults.forEach(indices => indices.forEach(index => existingIndices.push(index)))
         );
-        const { indicesToDelete, indicesToCreate } = calculateRequiredIndexOperations(existingIndices, requiredIndices);
+        const { indicesToDelete, indicesToCreate } = calculateRequiredIndexOperations(
+            existingIndices,
+            requiredIndices,
+            this.config
+        );
 
         // this is useful to show a warning on large collections which would take a while to create an index
         // (or even automatically defer large indices)
