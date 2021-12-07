@@ -90,7 +90,8 @@ const typeDefs = gql`
     }
 
     type Index {
-        id: String
+        id: String @deprecated(reason: "has no effect, do not use")
+
         unique: Boolean!
         sparse: Boolean!
         fields: [IndexField!]!

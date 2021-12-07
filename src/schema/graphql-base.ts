@@ -204,6 +204,7 @@ export const DIRECTIVES: DocumentNode = gql`
     directive @defaultValue(value: JSON!) on FIELD_DEFINITION
 
     input IndexDefinition {
+        "Deprecated, has no effect. Do not use."
         id: String
         fields: [String!]!
         unique: Boolean = false
