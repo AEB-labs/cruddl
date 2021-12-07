@@ -136,14 +136,22 @@ export class IndexField implements ModelComponent {
 }
 
 export class Index implements ModelComponent {
-    readonly id?: string;
+    readonly name?: string;
     readonly unique: boolean;
     readonly sparse: boolean;
     readonly fields: ReadonlyArray<IndexField>;
     readonly astNode?: DirectiveNode | ObjectValueNode;
+    readonly nameASTNode?: StringValueNode;
+
+    /**
+     * @deprecated has no effect, do not use
+     */
+    get id() {
+        return undefined;
+    }
 
     constructor(private input: IndexDefinitionConfig, public readonly declaringType: RootEntityType) {
-        this.id = input.id;
+        this.name = input.name;
         this.unique = input.unique || false;
         this.sparse = input.sparse != undefined ? input.sparse : this.unique;
         this.fields = (input.fields || []).map(
@@ -151,10 +159,16 @@ export class Index implements ModelComponent {
                 new IndexField(fieldPath, declaringType, (input.fieldASTNodes || [])[index] || input.astNode)
         );
         this.astNode = input.astNode;
+        this.nameASTNode = input.nameASTNode;
     }
 
     equals(other: Index) {
-        if (this.id !== other.id || this.unique !== other.unique || this.fields.length !== other.fields.length) {
+        if (
+            this.name !== other.name ||
+            this.sparse !== other.sparse ||
+            this.unique !== other.unique ||
+            this.fields.length !== other.fields.length
+        ) {
             return false;
         }
         for (let i = 0; i < this.fields.length; i++) {
@@ -168,6 +182,15 @@ export class Index implements ModelComponent {
     validate(context: ValidationContext) {
         if (!this.fields.length) {
             context.addMessage(ValidationMessage.error(`An index must specify at least one field.`, this.astNode));
+        }
+
+        if (this.name && !this.name.match(/^[a-zA-Z0-9]+/)) {
+            context.addMessage(
+                ValidationMessage.error(
+                    `An index name must only consist of alphanumeric characters.`,
+                    this.nameASTNode ?? this.astNode
+                )
+            );
         }
 
         for (const field of this.fields) {

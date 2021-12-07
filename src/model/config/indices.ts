@@ -1,7 +1,8 @@
 import { DirectiveNode, ObjectValueNode, StringValueNode } from 'graphql';
 
 export interface IndexDefinitionConfig {
-    readonly id?: string;
+    readonly name?: string;
+    readonly nameASTNode?: StringValueNode;
     /**
      * A list of dot-separated fields that make up this index
      */

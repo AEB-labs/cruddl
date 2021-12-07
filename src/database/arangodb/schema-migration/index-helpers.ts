@@ -9,6 +9,7 @@ const DEFAULT_INDEX_TYPE = 'persistent';
 
 export interface IndexDefinition {
     readonly id?: string;
+    readonly name?: string;
     readonly rootEntity: RootEntityType;
     readonly fields: ReadonlyArray<string>;
     readonly collectionName: string;
@@ -18,8 +19,8 @@ export interface IndexDefinition {
 }
 
 export function describeIndex(index: IndexDefinition) {
-    return `${index.unique ? 'unique ' : ''}${index.sparse ? 'sparse ' : ''}${index.type} index${
-        index.id ? ' ' + index.id : ''
+    return `${index.unique ? 'unique ' : ''}${index.sparse ? 'sparse ' : ''}index${
+        index.name ? ` "${index.name}"` : index.id ? ' ' + index.id : ''
     } on collection ${index.collectionName} on ${index.fields.length > 1 ? 'fields' : 'field'} '${index.fields.join(
         ','
     )}'`;
@@ -27,7 +28,8 @@ export function describeIndex(index: IndexDefinition) {
 
 export function getIndexDescriptor(index: IndexDefinition) {
     return compact([
-        index.id, // contains collection and id separated by slash (may be missing)
+        index.id, // contains collection and id separated by slash (missing for indices to be created)
+        index.name, // name as specified by user
         `type:${index.type}`,
         index.unique ? 'unique' : undefined,
         index.sparse ? 'sparse' : undefined,
@@ -38,11 +40,12 @@ export function getIndexDescriptor(index: IndexDefinition) {
 
 function indexDefinitionsEqual(a: IndexDefinition, b: IndexDefinition) {
     return (
+        a.name === b.name,
         a.rootEntity === b.rootEntity &&
-        a.fields.join('|') === b.fields.join('|') &&
-        a.unique === b.unique &&
-        a.sparse === b.sparse &&
-        a.type === b.type
+            a.fields.join('|') === b.fields.join('|') &&
+            a.unique === b.unique &&
+            a.sparse === b.sparse &&
+            a.type === b.type
     );
 }
 
@@ -51,37 +54,15 @@ export function getRequiredIndicesFromModel(model: Model): ReadonlyArray<IndexDe
 }
 
 function getIndicesForRootEntity(rootEntity: RootEntityType): ReadonlyArray<IndexDefinition> {
-    const indices: IndexDefinition[] = rootEntity.indices.map(index => ({
+    return rootEntity.indices.map(index => ({
         rootEntity,
         collectionName: getCollectionNameForRootEntity(rootEntity),
-        id: index.id,
+        name: index.name,
         fields: index.fields.map(getArangoFieldPath),
         unique: index.unique,
         type: DEFAULT_INDEX_TYPE,
         sparse: index.sparse
     }));
-
-    return indices;
-}
-
-function indexStartsWith(index: IndexDefinition, prefix: IndexDefinition) {
-    if (
-        index.sparse !== prefix.sparse ||
-        index.unique !== prefix.unique ||
-        index.rootEntity !== prefix.rootEntity ||
-        index.type !== prefix.type
-    ) {
-        return false;
-    }
-    if (index.fields.length < prefix.fields.length) {
-        return false;
-    }
-    for (let i = 0; i < prefix.fields.length; i++) {
-        if (index.fields[i] !== prefix.fields[i]) {
-            return false;
-        }
-    }
-    return true;
 }
 
 export function calculateRequiredIndexOperations(
@@ -105,7 +86,12 @@ export function calculateRequiredIndexOperations(
     );
     indicesToDelete = indicesToDelete
         .filter(index => index.type === DEFAULT_INDEX_TYPE) // only remove indexes of types that we also add
-        .filter(index => !index.id || !config.ignoredIndexIDsPattern || !index.id.match(config.ignoredIndexIDsPattern));
+        .filter(
+            index =>
+                !index.name ||
+                !config.nonManagedIndexNamesPattern ||
+                !index.name.match(config.nonManagedIndexNamesPattern)
+        );
     return { indicesToDelete, indicesToCreate };
 }
 

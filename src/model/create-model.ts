@@ -640,11 +640,14 @@ function buildIndexDefinitionFromObjectValue(indexDefinitionNode: ObjectValueNod
 }
 
 function mapIndexDefinition(index: ObjectValueNode): IndexDefinitionConfig {
-    const value = valueFromAST(index, indexDefinitionInputObjectType);
+    const { id, name, ...value } = valueFromAST(index, indexDefinitionInputObjectType);
     const fieldsField = index.fields.find(f => f.name.value === 'fields');
     const fieldASTNodes = fieldsField && fieldsField.value.kind === 'ListValue' ? fieldsField.value.values : undefined;
+    const nameASTNode = index.fields.find(f => f.name.value === 'name');
     return {
         ...value,
+        name,
+        nameASTNode,
         fieldASTNodes
     };
 }
