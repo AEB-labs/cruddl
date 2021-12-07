@@ -224,7 +224,7 @@ describe('RootEntityType', () => {
 
             expectSingleErrorToInclude(
                 type,
-                `Only fields of type "String", "Int", "ID", "LocalDate", and enum types can be used as key field.`
+                `Only fields of type "String", "Int", "Int53", "ID", "LocalDate", and enum types can be used as key field.`
             );
         });
 

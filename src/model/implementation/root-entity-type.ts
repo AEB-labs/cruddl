@@ -217,11 +217,13 @@ export class RootEntityType extends ObjectTypeBase {
         const isSupported =
             field.type.kind === TypeKind.ENUM ||
             (field.type.kind === TypeKind.SCALAR &&
-                [SCALAR_INT, SCALAR_STRING, GraphQLID.name, GraphQLLocalDate.name].includes(field.type.name));
+                [SCALAR_INT, SCALAR_STRING, GraphQLInt53.name, GraphQLID.name, GraphQLLocalDate.name].includes(
+                    field.type.name
+                ));
         if (!isSupported) {
             context.addMessage(
                 ValidationMessage.error(
-                    `Only fields of type "String", "Int", "ID", "LocalDate", and enum types can be used as key field.`,
+                    `Only fields of type "String", "Int", "Int53", "ID", "LocalDate", and enum types can be used as key field.`,
                     astNode
                 )
             );

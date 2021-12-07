@@ -33,7 +33,7 @@ describe('key field validator', () => {
                 count: Int
             }
         `,
-            `Only fields of type "String", "Int", "ID", "LocalDate", and enum types can be used as key field.`
+            `Only fields of type "String", "Int", "Int53", "ID", "LocalDate", and enum types can be used as key field.`
         );
     });
 
@@ -77,7 +77,7 @@ describe('key field validator', () => {
                 bar: JSON @key
             }
         `,
-            'Only fields of type "String", "Int", "ID", "LocalDate", and enum types can be used as key field.'
+            'Only fields of type "String", "Int", "Int53", "ID", "LocalDate", and enum types can be used as key field.'
         );
     });
 
@@ -85,6 +85,14 @@ describe('key field validator', () => {
         assertValidatorAccepts(`
             type Stuff @rootEntity {
                 foo: String @key
+            }
+        `);
+    });
+
+    it('accepts Int53 type', () => {
+        assertValidatorAccepts(`
+            type Stuff @rootEntity {
+                foo: Int53 @key
             }
         `);
     });
