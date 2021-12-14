@@ -4,9 +4,12 @@ import { ChildEntityType, EntityExtensionType, Field, ObjectType, RootEntityType
 import {
     AffectedFieldInfoQueryNode,
     CreateBillingEntityQueryNode,
+    CreateEntitiesQueryNode,
     CreateEntityQueryNode,
     EntityFromIdQueryNode,
     FirstOfListQueryNode,
+    ListItemQueryNode,
+    ListQueryNode,
     LiteralQueryNode,
     PreExecQueryParms,
     QueryNode,
@@ -77,50 +80,50 @@ export class CreateRootEntityInputType extends CreateObjectInputType {
     }
 
     getCreateStatements(input: PlainObject, newEntityIdVarNode: VariableQueryNode, context: FieldContext) {
-        // Create new entity
-        const objectNode = new LiteralQueryNode(this.prepareValue(input, context));
-        const affectedFields = this.getAffectedFields(input, context).map(
-            field => new AffectedFieldInfoQueryNode(field)
+        const createEntityNode = this.getCreateEntityNode(input, context);
+        const createEntityStatement = new PreExecQueryParms({
+            query: createEntityNode,
+            resultVariable: newEntityIdVarNode
+        });
+
+        return [
+            createEntityStatement,
+
+            // Note: these statements contain validators which should arguably be moved to the front
+            // works with transactional DB adapters, but e.g. not with JavaScript
+            ...this.getRelationStatements(input, newEntityIdVarNode, context),
+
+            ...this.getBillingStatements(input, newEntityIdVarNode)
+        ];
+    }
+
+    getMultiCreateStatements(
+        inputs: ReadonlyArray<PlainObject>,
+        newEntityIdsVarNode: VariableQueryNode,
+        context: FieldContext
+    ) {
+        const createEntitiesNode = this.getCreateEntitiesNode(inputs, context);
+        const createEntitiesStatement = new PreExecQueryParms({
+            query: createEntitiesNode,
+            resultVariable: newEntityIdsVarNode
+        });
+
+        const relationStatements = inputs.flatMap((input, index) =>
+            this.getRelationStatements(input, new ListItemQueryNode(newEntityIdsVarNode, index), context)
         );
-        const createEntityNode = new CreateEntityQueryNode(this.rootEntityType, objectNode, affectedFields);
-        const newEntityPreExec = new PreExecQueryParms({ query: createEntityNode, resultVariable: newEntityIdVarNode });
+        const billingStatements = inputs.flatMap((input, index) =>
+            this.getBillingStatements(input, new ListItemQueryNode(newEntityIdsVarNode, index))
+        );
 
-        // Add relations if needed
-        const relationStatements = this.getRelationStatements(input, newEntityIdVarNode, context);
-        // Note: these statements contain validators which should arguably be moved to the front
-        // works with transactional DB adapters, but e.g. not with JavaScript
+        return [
+            createEntitiesStatement,
 
-        const preExecQueryParms = [newEntityPreExec, ...relationStatements];
+            // Note: these statements contain validators which should arguably be moved to the front
+            // works with transactional DB adapters, but e.g. not with JavaScript
+            ...relationStatements,
 
-        if (
-            this.rootEntityType.billingEntityConfig &&
-            this.rootEntityType.billingEntityConfig.keyFieldName &&
-            input[this.rootEntityType.billingEntityConfig.keyFieldName]
-        ) {
-            const entityVar = new VariableQueryNode('entity');
-            preExecQueryParms.push(
-                new PreExecQueryParms({
-                    query: new VariableAssignmentQueryNode({
-                        variableValueNode: new EntityFromIdQueryNode(this.rootEntityType, newEntityIdVarNode),
-                        variableNode: entityVar,
-                        resultNode: new CreateBillingEntityQueryNode({
-                            rootEntityTypeName: this.rootEntityType.name,
-                            key: input[this.rootEntityType.billingEntityConfig.keyFieldName] as number | string,
-                            categoryNode: createBillingEntityCategoryNode(
-                                this.rootEntityType.billingEntityConfig,
-                                entityVar
-                            ),
-                            quantityNode: createBillingEntityQuantityNode(
-                                this.rootEntityType.billingEntityConfig,
-                                entityVar
-                            )
-                        })
-                    })
-                })
-            );
-        }
-
-        return preExecQueryParms;
+            ...billingStatements
+        ];
     }
 
     getAdditionalProperties() {
@@ -140,6 +143,46 @@ export class CreateRootEntityInputType extends CreateObjectInputType {
             .filter(isRelationCreateField)
             .filter(field => field.appliesToMissingFields() || field.name in input);
         return flatMap(relationFields, field => field.getStatements(input[field.name], idNode, context));
+    }
+
+    private getBillingStatements(input: PlainObject, idNode: QueryNode) {
+        const config = this.rootEntityType.billingEntityConfig;
+        if (!config || !config.keyFieldName || !input[config.keyFieldName]) {
+            return [];
+        }
+
+        const entityVar = new VariableQueryNode('entity');
+        return [
+            new PreExecQueryParms({
+                query: new VariableAssignmentQueryNode({
+                    variableValueNode: new EntityFromIdQueryNode(this.rootEntityType, idNode),
+                    variableNode: entityVar,
+                    resultNode: new CreateBillingEntityQueryNode({
+                        rootEntityTypeName: this.rootEntityType.name,
+                        key: input[config.keyFieldName] as number | string,
+                        categoryNode: createBillingEntityCategoryNode(config, entityVar),
+                        quantityNode: createBillingEntityQuantityNode(config, entityVar)
+                    })
+                })
+            })
+        ];
+    }
+
+    private getCreateEntityNode(input: PlainObject, context: FieldContext) {
+        const objectNode = new LiteralQueryNode(this.prepareValue(input, context));
+        const affectedFields = this.getAffectedFields(input, context).map(
+            field => new AffectedFieldInfoQueryNode(field)
+        );
+        return new CreateEntityQueryNode(this.rootEntityType, objectNode, affectedFields);
+    }
+
+    private getCreateEntitiesNode(inputs: ReadonlyArray<PlainObject>, context: FieldContext) {
+        const objectsNode = new LiteralQueryNode(inputs.map(input => this.prepareValue(input, context)));
+        const affectedFields = inputs.flatMap(input => this.getAffectedFields(input, context));
+        const affectedFieldInfos = Array.from(new Set(affectedFields)).map(
+            field => new AffectedFieldInfoQueryNode(field)
+        );
+        return new CreateEntitiesQueryNode(this.rootEntityType, objectsNode, affectedFieldInfos);
     }
 }
 

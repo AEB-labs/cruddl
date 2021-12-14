@@ -10,6 +10,7 @@ import {
     EntitiesIdentifierKind,
     EntityFromIdQueryNode,
     ErrorIfNotTruthyResultValidator,
+    ListItemQueryNode,
     ListQueryNode,
     LiteralQueryNode,
     NoRestrictingObjectsOnDeleteValidator,
@@ -19,6 +20,7 @@ import {
     QueryNode,
     RemoveEdgesQueryNode,
     SetEdgeQueryNode,
+    TransformListQueryNode,
     TraversalQueryNode,
     VariableQueryNode
 } from '../../query-tree';
@@ -166,33 +168,26 @@ export function getCreateAndAddEdgesStatements(
 ) {
     const relationSide = sourceField.getRelationSideOrThrow();
 
-    const variableQueryNodes: VariableQueryNode[] = [];
-    let statements: PreExecQueryParms[] = [];
+    const newEntityIdsVarNode = new VariableQueryNode('newEntityIds');
+    const createStatements = createRootEntityInputType.getMultiCreateStatements(
+        createInputs,
+        newEntityIdsVarNode,
+        context
+    );
 
-    createInputs.forEach(createInput => {
-        const newEntityIdVarNode = new VariableQueryNode('newEntityId');
-        const createStatements = createRootEntityInputType.getCreateStatements(
-            createInput,
-            newEntityIdVarNode,
-            context
-        );
-        variableQueryNodes.push(newEntityIdVarNode);
-        statements = [...statements, ...createStatements];
-    });
-
-    const edges = variableQueryNodes.map(id =>
+    // we need an actual array here for AddEdgesQueryNode#edges, so we can't use a TransformListQueryNode
+    const edges = createInputs.map((_, index) =>
         getEdgeIdentifier({
             relationSide,
             sourceIDNode,
-            targetIDNode: id
+            targetIDNode: new ListItemQueryNode(newEntityIdsVarNode, index)
         })
     );
-
     const addEdgesStatement = new PreExecQueryParms({
         query: new AddEdgesQueryNode(relationSide.relation, edges)
     });
 
-    return [...statements, addEdgesStatement];
+    return [...createStatements, addEdgesStatement];
 }
 
 export function getCreateAndSetEdgeStatements(

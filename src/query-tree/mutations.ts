@@ -26,6 +26,27 @@ export class CreateEntityQueryNode extends QueryNode {
 }
 
 /**
+ * A node that creates multiple new entities of the same type and evaluates to the list of these new entity objects
+ */
+export class CreateEntitiesQueryNode extends QueryNode {
+    constructor(
+        public readonly rootEntityType: RootEntityType,
+        public readonly objectsNode: QueryNode,
+        public readonly affectedFields: ReadonlyArray<AffectedFieldInfoQueryNode>
+    ) {
+        super();
+    }
+
+    describe() {
+        return `create ${
+            this.rootEntityType.name
+        } entities with values ${this.objectsNode.describe()} (affects fields ${this.affectedFields
+            .map(f => f.describe())
+            .join(', ')})`;
+    }
+}
+
+/**
  * A node that indicates that a field of a node is set, without being evaluated
  */
 export class AffectedFieldInfoQueryNode extends QueryNode {
