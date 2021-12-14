@@ -15,6 +15,7 @@ import {
     ConstIntQueryNode,
     CountQueryNode,
     CreateBillingEntityQueryNode,
+    CreateEntitiesQueryNode,
     CreateEntityQueryNode,
     DeleteEntitiesQueryNode,
     DeleteEntitiesResultValue,
@@ -1463,6 +1464,15 @@ register(CreateEntityQueryNode, (node, context) => {
             AccessType.WRITE,
             context
         )}`,
+        aql`RETURN NEW._key`
+    );
+});
+
+register(CreateEntitiesQueryNode, (node, context) => {
+    const entityVar = aql.variable('entity');
+    return aqlExt.parenthesizeList(
+        aql`FOR ${entityVar} IN ${processNode(node.objectsNode, context)}`,
+        aql`INSERT ${entityVar} IN ${getCollectionForType(node.rootEntityType, AccessType.WRITE, context)}`,
         aql`RETURN NEW._key`
     );
 });

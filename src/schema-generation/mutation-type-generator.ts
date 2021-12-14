@@ -170,16 +170,15 @@ export class MutationTypeGenerator {
         inputType: CreateRootEntityInputType,
         context: FieldContext
     ): QueryNode {
-        const idNodes: VariableQueryNode[] = [];
-        const statements: PreExecQueryParms[] = [];
-        for (const input of inputs) {
-            const newEntityIdVarNode = new VariableQueryNode('newEntityId');
-            const createStatements = inputType.getCreateStatements(input, newEntityIdVarNode, context);
-            statements.push(...createStatements);
-            idNodes.push(newEntityIdVarNode);
-        }
+        const idsVar = new VariableQueryNode('newEntityIds');
+        const statements = inputType.getMultiCreateStatements(inputs, idsVar, context);
 
-        const resultNode = new ListQueryNode(idNodes.map(idNode => new EntityFromIdQueryNode(rootEntityType, idNode)));
+        const idVar = new VariableQueryNode('id');
+        const resultNode = new TransformListQueryNode({
+            listNode: idsVar,
+            itemVariable: idVar,
+            innerNode: new EntityFromIdQueryNode(rootEntityType, idVar)
+        });
 
         return new WithPreExecutionQueryNode({
             resultNode,

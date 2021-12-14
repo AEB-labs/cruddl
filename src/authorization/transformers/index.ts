@@ -1,7 +1,21 @@
-import { AffectedFieldInfoQueryNode, CreateEntityQueryNode, DeleteEntitiesQueryNode, EntitiesQueryNode, EntityFromIdQueryNode, FieldPathQueryNode, FieldQueryNode, FollowEdgeQueryNode, QueryNode, TraversalQueryNode, UpdateEntitiesQueryNode } from '../../query-tree';
+import {
+    AffectedFieldInfoQueryNode,
+    CreateEntitiesQueryNode,
+    CreateEntityQueryNode,
+    DeleteEntitiesQueryNode,
+    EntitiesQueryNode,
+    EntityFromIdQueryNode,
+    FieldPathQueryNode,
+    FieldQueryNode,
+    FollowEdgeQueryNode,
+    QueryNode,
+    TraversalQueryNode,
+    UpdateEntitiesQueryNode
+} from '../../query-tree';
 import { FlexSearchQueryNode } from '../../query-tree/flex-search';
 import { AuthContext } from '../auth-basics';
 import { transformAffectedFieldInfoQueryNode } from './affected-field-info';
+import { transformCreateEntitiesQueryNode } from './create-entities';
 import { transformCreateEntityQueryNode } from './create-entity';
 import { transformEntitiesQueryNode, transformEntityFromIdQueryNode, transformFlexSearchQueryNode } from './entities';
 import { transformFieldPathQueryNode, transformFieldQueryNode } from './field';
@@ -13,7 +27,7 @@ type TransformFunction<T extends QueryNode> = (node: T, authContext: AuthContext
 
 const map = new Map<Function, TransformFunction<any>>();
 
-function addTransformer<T extends QueryNode>(clazz: { new(...a: any[]): T }, fn: TransformFunction<T>) {
+function addTransformer<T extends QueryNode>(clazz: { new (...a: any[]): T }, fn: TransformFunction<T>) {
     map.set(clazz, fn);
 }
 
@@ -23,6 +37,7 @@ addTransformer(EntitiesQueryNode, transformEntitiesQueryNode);
 addTransformer(FollowEdgeQueryNode, transformFollowEdgeQueryNode);
 addTransformer(TraversalQueryNode, transformTraversalQueryNode);
 addTransformer(CreateEntityQueryNode, transformCreateEntityQueryNode);
+addTransformer(CreateEntitiesQueryNode, transformCreateEntitiesQueryNode);
 addTransformer(UpdateEntitiesQueryNode, transformUpdateEntitiesQueryNode);
 addTransformer(DeleteEntitiesQueryNode, transformDeleteEntitiesQueryNode);
 addTransformer(AffectedFieldInfoQueryNode, transformAffectedFieldInfoQueryNode);

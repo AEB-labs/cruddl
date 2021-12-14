@@ -15,6 +15,7 @@ import {
     ConstIntQueryNode,
     CountQueryNode,
     CreateBillingEntityQueryNode,
+    CreateEntitiesQueryNode,
     CreateEntityQueryNode,
     DeleteEntitiesQueryNode,
     DynamicPropertyAccessQueryNode,
@@ -830,6 +831,16 @@ register(CreateEntityQueryNode, (node, context) => {
         js`${js.collection(getCollectionNameForRootEntity(node.rootEntityType))}.push(${objVar});`,
         js`return ${idVar};`
     );
+});
+
+register(CreateEntitiesQueryNode, (node, context) => {
+    const objectVar = new VariableQueryNode('object');
+    const transformedNode = new TransformListQueryNode({
+        listNode: node.objectsNode,
+        itemVariable: objectVar,
+        innerNode: new CreateEntityQueryNode(node.rootEntityType, objectVar, node.affectedFields)
+    });
+    return processNode(transformedNode, context);
 });
 
 register(UpdateEntitiesQueryNode, (node, context) => {
