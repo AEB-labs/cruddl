@@ -1,5 +1,10 @@
 import { Database } from 'arangojs';
-import { ArangoSearchView, ArangoSearchViewProperties, ArangoSearchViewPropertiesOptions } from 'arangojs/view';
+import {
+    ArangoSearchView,
+    ArangoSearchViewLink,
+    ArangoSearchViewProperties,
+    ArangoSearchViewPropertiesOptions
+} from 'arangojs/view';
 import * as _ from 'lodash';
 import { Field, Model, RootEntityType } from '../../../model';
 import { IDENTITY_ANALYZER, NORM_CI_ANALYZER } from '../../../model/implementation/flex-search';
@@ -113,8 +118,12 @@ function getPropertiesFromDefinition(
                 includeAllFields: false,
                 storeValues: 'id',
                 trackListPositions: false,
-                fields: fieldDefinitionsFor(definition.rootEntityType.fields)
-            }
+                fields: fieldDefinitionsFor(definition.rootEntityType.fields),
+
+                // missing in types, see https://github.com/arangodb/arangojs/issues/759
+                // if this is not set, creating the view would acquire an exclusive lock on the collections
+                inBackground: true
+            } as ArangoSearchViewLink
         },
         commitIntervalMsec: configuration?.commitIntervalMsec ? configuration.commitIntervalMsec : 1000,
         consolidationIntervalMsec: configuration?.consolidationIntervalMsec
