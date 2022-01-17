@@ -1,6 +1,8 @@
 /**
  * Is thrown if the transactionTimeoutMs is exceeded
  */
+import { ErrorWithCause } from '../utils/error-with-cause';
+
 export class TransactionTimeoutError extends Error {
     readonly timeoutMs: number | undefined;
 
@@ -18,5 +20,15 @@ export class TransactionCancelledError extends Error {
     constructor() {
         super(`Transaction was cancelled and has been rolled back`);
         this.name = this.constructor.name;
+    }
+}
+
+export class ConflictRetriesExhaustedError extends ErrorWithCause {
+    static readonly CODE = 'CONFLICT_RETRIES_EXHAUSTED';
+
+    readonly code = ConflictRetriesExhaustedError.CODE;
+
+    constructor({ causedBy, retries }: { causedBy: unknown; retries: number }) {
+        super(`Operation detected conflicts and was aborted after ${retries} retries`, { causedBy });
     }
 }

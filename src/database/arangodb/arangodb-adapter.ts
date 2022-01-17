@@ -3,7 +3,11 @@ import { globalContext } from '../../config/global';
 import { ProjectOptions } from '../../config/interfaces';
 import { Logger } from '../../config/logging';
 import { ExecutionOptions } from '../../execution/execution-options';
-import { TransactionCancelledError, TransactionTimeoutError } from '../../execution/runtime-errors';
+import {
+    ConflictRetriesExhaustedError,
+    TransactionCancelledError,
+    TransactionTimeoutError
+} from '../../execution/runtime-errors';
 import { Model } from '../../model';
 import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS, QueryNode } from '../../query-tree';
 import { FlexSearchTokenization } from '../../query-tree/flex-search';
@@ -418,7 +422,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
     ): Promise<TransactionResult> {
         const maxRetries = this.config.retriesOnConflict || 0;
         let nextRetryDelay = 0;
-        let tries = 0;
+        let retries = 0;
         let result;
         // timings need to be added up
         let timings: TransactionResult['timings'] | undefined;
@@ -433,14 +437,26 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                 } as TransactionResult['timings'];
             }
 
-            if (tries >= maxRetries || !result.databaseError || !this.isRetryableError(result.databaseError)) {
+            const stats = {
+                ...result.stats,
+                retries
+            };
+
+            if (!result.databaseError || !this.isRetryableError(result.databaseError) || !maxRetries) {
                 return {
                     ...result,
                     timings,
-                    stats: {
-                        ...result.stats,
-                        retries: tries
-                    }
+                    stats
+                };
+            }
+
+            if (retries >= maxRetries) {
+                // retries exhausted
+                return {
+                    ...result,
+                    timings,
+                    stats,
+                    databaseError: new ConflictRetriesExhaustedError({ causedBy: result.databaseError, retries })
                 };
             }
 
@@ -462,10 +478,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                 return {
                     ...result,
                     timings,
-                    stats: {
-                        ...result.stats,
-                        retries: tries
-                    }
+                    stats
                 };
             }
 
@@ -474,7 +487,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             } else {
                 nextRetryDelay = this.config.retryDelayBaseMs || DEFAULT_RETRY_DELAY_BASE_MS;
             }
-            tries++;
+            retries++;
         }
     }
 
