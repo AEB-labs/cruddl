@@ -9,7 +9,7 @@ import {
     ERROR_BAD_PARAMETER,
     ERROR_FILE_EXISTS
 } from '../error-codes';
-import { isEqualProperties } from './arango-search-helpers';
+import { configureForBackgroundCreation, isEqualProperties } from './arango-search-helpers';
 import {
     CreateArangoSearchAnalyzerMigration,
     CreateArangoSearchViewMigration,
@@ -120,7 +120,7 @@ export class MigrationPerformer {
 
     private async createArangoSearchView(migration: CreateArangoSearchViewMigration) {
         try {
-            await this.db.createView(migration.viewName, migration.properties);
+            await this.db.createView(migration.viewName, configureForBackgroundCreation(migration.properties));
         } catch (e) {
             // maybe the collection has been created in the meantime
             if (e.errorNum === ERROR_ARANGO_DUPLICATE_NAME) {
@@ -135,7 +135,7 @@ export class MigrationPerformer {
     }
 
     private async updateArangoSearchView(migration: UpdateArangoSearchViewMigration) {
-        await this.db.view(migration.viewName).replaceProperties(migration.properties);
+        await this.db.view(migration.viewName).replaceProperties(configureForBackgroundCreation(migration.properties));
     }
 
     private async dropArangoSearchView(migration: DropArangoSearchViewMigration) {
@@ -161,7 +161,7 @@ export class MigrationPerformer {
         }
 
         try {
-            await this.db.createView(migration.viewName, migration.properties);
+            await this.db.createView(migration.viewName, configureForBackgroundCreation(migration.properties));
         } catch (e) {
             // maybe the collection has been created in the meantime
             if (e.errorNum === ERROR_ARANGO_DUPLICATE_NAME) {

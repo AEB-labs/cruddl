@@ -106,6 +106,33 @@ export function calculateRequiredArangoSearchViewDropOperations(
     return viewsToDrop.map(value => new DropArangoSearchViewMigration({ viewName: value.name }));
 }
 
+/**
+ * Configures the inBackground flag
+ *
+ * We don'd to this initially because it won't be present in the actual view definition, and we would always see a
+ * pending change in the migration analyzer (because it would want to add inBackground).
+ */
+export function configureForBackgroundCreation(
+    definition: ArangoSearchViewPropertiesOptions
+): ArangoSearchViewPropertiesOptions {
+    return {
+        ...definition,
+        links: definition.links
+            ? Object.fromEntries(
+                  Object.entries(definition.links).map(([key, value]) => [
+                      key,
+                      {
+                          ...value,
+                          // missing in types, see https://github.com/arangodb/arangojs/issues/759
+                          // if this is not set, creating the view would acquire an exclusive lock on the collections
+                          inBackground: true
+                      }
+                  ])
+              )
+            : definition.links
+    };
+}
+
 function getPropertiesFromDefinition(
     definition: ArangoSearchDefinition,
     configuration?: ArangoSearchConfiguration
@@ -118,11 +145,7 @@ function getPropertiesFromDefinition(
                 includeAllFields: false,
                 storeValues: 'id',
                 trackListPositions: false,
-                fields: fieldDefinitionsFor(definition.rootEntityType.fields),
-
-                // missing in types, see https://github.com/arangodb/arangojs/issues/759
-                // if this is not set, creating the view would acquire an exclusive lock on the collections
-                inBackground: true
+                fields: fieldDefinitionsFor(definition.rootEntityType.fields)
             } as ArangoSearchViewLink
         },
         commitIntervalMsec: configuration?.commitIntervalMsec ? configuration.commitIntervalMsec : 1000,
