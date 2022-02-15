@@ -1,5 +1,4 @@
 import { GraphQLError, GraphQLScalarType, Kind, print, ValueNode } from 'graphql';
-import { inspect } from 'util';
 
 function createFixedPointDecimalType(decimals: number) {
     const typeName = `Decimal${decimals}`;
@@ -12,18 +11,18 @@ function createFixedPointDecimalType(decimals: number) {
     function coerceFixedPointDecimal(value: unknown) {
         // same logic like Float
         if (typeof value !== 'number' || !isFinite(value)) {
-            throw new GraphQLError(`${typeName} cannot represent non numeric value: `.concat(inspect(value)));
+            throw new GraphQLError(`${typeName} cannot represent non numeric value: `.concat(JSON.stringify(value)));
         }
 
         const num = Number(value.toFixed(decimals));
         if (num > maxValue) {
             throw new GraphQLError(
-                `${typeName} cannot represent value larger than ${maxValueStr}: `.concat(inspect(value))
+                `${typeName} cannot represent value larger than ${maxValueStr}: `.concat(JSON.stringify(value))
             );
         }
         if (num < minValue) {
             throw new GraphQLError(
-                `${typeName} cannot represent value smaller than ${minValueStr}: `.concat(inspect(value))
+                `${typeName} cannot represent value smaller than ${minValueStr}: `.concat(JSON.stringify(value))
             );
         }
 
@@ -42,12 +41,12 @@ function createFixedPointDecimalType(decimals: number) {
         const num = Number(value.toFixed(decimals));
         if (num > maxValue) {
             throw new GraphQLError(
-                `${typeName} cannot represent value larger than ${maxValueStr}: `.concat(inspect(value))
+                `${typeName} cannot represent value larger than ${maxValueStr}: `.concat(JSON.stringify(value))
             );
         }
         if (num < minValue) {
             throw new GraphQLError(
-                `${typeName} cannot represent value smaller than ${minValueStr}: `.concat(inspect(value))
+                `${typeName} cannot represent value smaller than ${minValueStr}: `.concat(JSON.stringify(value))
             );
         }
 

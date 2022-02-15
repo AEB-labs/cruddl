@@ -1,6 +1,5 @@
 import { getNamedType, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
 import { ZonedDateTime } from 'js-joda';
-import { isArray } from 'util';
 import { EnumType, Field, ScalarType, Type, TypeKind } from '../../model';
 import {
     BinaryOperationQueryNode,
@@ -264,7 +263,7 @@ export class AndFilterField implements FilterField {
     }
 
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
-        if (!isArray(filterValue) || !filterValue.length) {
+        if (!Array.isArray(filterValue) || !filterValue.length) {
             return new ConstBoolQueryNode(true);
         }
         const values = (filterValue || []) as ReadonlyArray<PlainObject>;
@@ -285,7 +284,7 @@ export class OrFilterField implements FilterField {
     }
 
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
-        if (!isArray(filterValue)) {
+        if (!Array.isArray(filterValue)) {
             return new ConstBoolQueryNode(true); // regard as omitted
         }
         const values = filterValue as ReadonlyArray<PlainObject>;
