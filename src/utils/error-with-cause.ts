@@ -1,5 +1,3 @@
-import { inspect } from 'util';
-
 /**
  * ErrorWithCause extends the default node Error to support causes.
  * Each error can have one cause. The stack of the causing error is appended
@@ -26,5 +24,5 @@ function extractMessage(message: string, cause?: Error | unknown): string {
     if (cause instanceof Error) {
         return `${message}: ${cause.message}`;
     }
-    return `${message}: NonError: ${inspect(cause)}`;
+    return `${message}: NonError: ${cause}`;
 }
