@@ -1522,7 +1522,7 @@ export class Field implements ModelComponent {
     }
 
     get isFlexSearchIndexCaseSensitive(): boolean {
-        return this.input.isFlexSearchIndexCaseSensitive ?? true;
+        return this.input.isFlexSearchIndexCaseSensitive ?? false;
     }
 
     get flexSearchAnalyzer(): string | undefined {
