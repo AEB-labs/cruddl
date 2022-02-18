@@ -6,8 +6,11 @@ enum Category {
     Programming
 }
 
+# need to specify flexSearchOrder with an id field so createdAt does not included (which we cannot test because it changes)
 "A scientific paper"
-type Paper @rootEntity(flexSearch: true, flexSearchLanguage: EN) @roles(readWrite: ["admin"]) {
+type Paper
+    @rootEntity(flexSearch: true, flexSearchLanguage: EN, flexSearchOrder: [{ field: "id", direction: ASC }])
+    @roles(readWrite: ["admin"]) {
     key: String @key @flexSearch # need a key field for the reference
     title: String @index @flexSearch # for pagination performance test
     "The date this paper has been published in a scientific journal or conference"

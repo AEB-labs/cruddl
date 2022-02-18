@@ -5,6 +5,7 @@ export function orderArgMatchesPrimarySort(
     clauses: ReadonlyArray<string> | undefined,
     primarySort: ReadonlyArray<FlexSearchPrimarySortClause>
 ): boolean {
+    // TODO what about sort clauses that are added automatically because the user used cursor-based pagination?
     if (!clauses || !clauses.length) {
         return true;
     }
