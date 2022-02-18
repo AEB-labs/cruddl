@@ -81,7 +81,7 @@ export function validateAndPrepareSchema(project: Project): { validationResult: 
 
     const preparedProject = executePreMergeTransformationPipeline({ sources: validParsedSources });
 
-    const model = createModel(preparedProject, project.options.modelValidationOptions);
+    const model = createModel(preparedProject, project.options.modelOptions);
 
     const mergedSchema: DocumentNode = mergeSchemaDefinition(preparedProject);
 

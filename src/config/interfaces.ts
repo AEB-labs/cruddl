@@ -25,13 +25,6 @@ export interface SchemaOptions {
     readonly maxOrderByRootEntityDepth?: number;
 }
 
-export interface ModelValidationOptions {
-    /**
-     * A list of root entity names that are not allowed.
-     */
-    readonly forbiddenRootEntityNames?: ReadonlyArray<string>;
-}
-
 export interface ModelOptions {
     /**
      * Determines whether a slash in a source name indicates the target namespace for that source
@@ -39,6 +32,18 @@ export interface ModelOptions {
      * Defaults to true. Explicitly specify false to disable this.
      */
     readonly useSourceDirectoriesAsNamespaces?: boolean;
+
+    /**
+     * Specifies the default for case-sensitiveness of flexSearch fields (can be overridden with the decorator)
+     *
+     * Default is false
+     */
+    readonly isFlexSearchIndexCaseSensitiveByDefault?: boolean;
+
+    /**
+     * A list of root entity names that are not allowed.
+     */
+    readonly forbiddenRootEntityNames?: ReadonlyArray<string>;
 }
 
 export interface ProjectOptions {
@@ -47,7 +52,7 @@ export interface ProjectOptions {
     readonly getExecutionOptions?: (args: ExecutionOptionsCallbackArgs) => ExecutionOptions;
 
     readonly schemaOptions?: SchemaOptions;
-    readonly modelValidationOptions?: ModelValidationOptions;
+
     readonly modelOptions?: ModelOptions;
 
     /**
