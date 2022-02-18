@@ -964,11 +964,11 @@ register(OperatorWithAnalyzerQueryNode, (node, context) => {
     let rhs = processNode(node.rhs, context);
 
     if (isCaseInsensitive) {
-        lhs = js`${lhs}.toLowerCase()`;
+        lhs = js`(${lhs})?.toLowerCase()`;
         const rhsVar = js.variable('rhs');
         rhs = jsExt.evaluatingLambda(
             rhsVar,
-            js`(Array.isArray(${rhsVar}) ? ${rhsVar}.map(value => value.toLowerCase()) : ${rhsVar}.toLowerCase())`,
+            js`(Array.isArray(${rhsVar}) ? ${rhsVar}.map(value => value?.toLowerCase()) : (${rhsVar})?.toLowerCase())`,
             rhs
         );
     }
