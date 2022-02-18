@@ -110,6 +110,7 @@ import {
 } from './config';
 import { BillingConfig } from './config/billing';
 import { Model } from './implementation';
+import { OrderDirection } from './implementation/order';
 import { parseBillingConfigs } from './parse-billing';
 import { parseI18nConfigs } from './parse-i18n';
 import { parseTTLConfigs } from './parse-ttl';
@@ -342,7 +343,7 @@ function getFlexSearchOrder(rootEntityDirective?: DirectiveNode): ReadonlyArray<
             .map((value: any) => {
                 return {
                     field: value.field,
-                    asc: value.direction === 'ASC' ? true : false
+                    direction: value.direction === 'DESC' ? OrderDirection.DESCENDING : OrderDirection.ASCENDING
                 };
             });
     }
