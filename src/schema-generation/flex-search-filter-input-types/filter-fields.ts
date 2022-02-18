@@ -390,6 +390,22 @@ export function resolveFilterField(
             not(new FlexSearchFieldExistsQueryNode(valueNode, analyzer))
         );
     }
+    // field < x and field <= x should also find NULL values, because that's how it behaves in non-flexsearch case
+    if (
+        (filterField.operatorName === INPUT_FIELD_LT || filterField.operatorName === INPUT_FIELD_LTE) &&
+        filterValue != null
+    ) {
+        const isNull = new BinaryOperationQueryNode(
+            new BinaryOperationQueryNode(valueNode, BinaryOperator.EQUAL, NullQueryNode.NULL),
+            BinaryOperator.OR,
+            not(new FlexSearchFieldExistsQueryNode(valueNode, analyzer))
+        );
+        return new BinaryOperationQueryNode(
+            isNull,
+            BinaryOperator.OR,
+            filterField.resolveOperator(valueNode, literalNode, analyzer)
+        );
+    }
     if (filterField.operatorName == INPUT_FIELD_IN && Array.isArray(filterValue) && filterValue.includes(null)) {
         return new BinaryOperationQueryNode(
             filterField.resolveOperator(valueNode, literalNode, analyzer),
