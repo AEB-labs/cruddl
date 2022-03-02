@@ -10,14 +10,17 @@ import {
     FieldPathQueryNode,
     FLEX_SEARCH_TOO_MANY_OBJECTS,
     LiteralQueryNode,
-    OperatorWithAnalyzerQueryNode,
     PreExecQueryParms,
     QueryNode,
     RuntimeErrorQueryNode,
     VariableQueryNode,
     WithPreExecutionQueryNode
 } from '../query-tree';
-import { FlexSearchQueryNode, FlexSearchStartsWithQueryNode } from '../query-tree/flex-search';
+import {
+    FlexSearchComplexOperatorQueryNode,
+    FlexSearchQueryNode,
+    FlexSearchStartsWithQueryNode
+} from '../query-tree/flex-search';
 import { simplifyBooleans } from '../query-tree/utils';
 import {
     FILTER_ARG,
@@ -230,11 +233,13 @@ export class FlexSearchGenerator {
     private buildFlexSearchExpressionFilterNode(
         rootEntityType: RootEntityType,
         itemVariable: VariableQueryNode,
-        expression?: string
+        expressionParam?: string
     ): QueryNode {
-        if (!expression || expression == '') {
+        if (!expressionParam || !expressionParam.trim()) {
             return ConstBoolQueryNode.TRUE;
         }
+
+        const expression = expressionParam;
 
         function getQueryNodeFromField(field: Field, path: Field[] = []): QueryNode {
             if (field.type.isObjectType) {
@@ -247,18 +252,20 @@ export class FlexSearchGenerator {
                 new FieldPathQueryNode(itemVariable, path.concat(field)),
                 new LiteralQueryNode(expression)
             );
-            const operatorWithLanguageNode = new OperatorWithAnalyzerQueryNode(
-                new FieldPathQueryNode(itemVariable, path.concat(field)),
+            const fullTextQueryNode = new FlexSearchComplexOperatorQueryNode(
+                expression,
                 BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_PREFIX,
-                new LiteralQueryNode(expression),
-                field.getFlexSearchFulltextAnalyzerOrThrow()
+                BinaryOperator.AND,
+                new FieldPathQueryNode(itemVariable, path.concat(field)),
+                field.getFlexSearchFulltextAnalyzerOrThrow(),
+                true
             );
 
             return new BinaryOperationQueryNode(
                 field.isFlexSearchIndexed && field.isIncludedInSearch ? identityNode : ConstBoolQueryNode.FALSE,
                 BinaryOperator.OR,
                 field.isFlexSearchFulltextIndexed && field.isFulltextIncludedInSearch && field.flexSearchLanguage
-                    ? operatorWithLanguageNode
+                    ? fullTextQueryNode
                     : ConstBoolQueryNode.FALSE
             );
         }

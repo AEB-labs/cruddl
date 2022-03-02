@@ -50,7 +50,13 @@ query expressionWithoutResults {
     }
 }
 
-# treated like it's not specified, so you can pipe through a search filed to this value
+query expressionWithMultipleWords {
+    flexSearchDeliveries(flexSearchExpression: "with all") {
+        deliveryNumber
+    }
+}
+
+# treated like it's not specified, so you can pipe through a search field to this value
 query emptyExpression {
     flexSearchDeliveries(flexSearchExpression: "") {
         deliveryNumber
