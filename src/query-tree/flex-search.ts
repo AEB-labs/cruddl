@@ -51,7 +51,8 @@ export class FlexSearchComplexOperatorQueryNode extends QueryNode {
         readonly comparisonOperator: BinaryOperatorWithAnalyzer,
         readonly logicalOperator: BinaryOperator,
         private readonly fieldNode: QueryNode,
-        readonly analyzer: string
+        readonly analyzer: string,
+        readonly returnFalseForNoTokens: boolean
     ) {
         super();
     }
@@ -65,6 +66,12 @@ export class FlexSearchComplexOperatorQueryNode extends QueryNode {
             value => value.expression === this.expression && value.analyzer === this.analyzer
         );
         const tokens = tokenization ? tokenization.tokens : [];
+
+        // because we want something like '-' to find nothing
+        if (this.returnFalseForNoTokens && !tokens.length) {
+            return new ConstBoolQueryNode(false);
+        }
+
         const neutralOperand =
             this.logicalOperator === BinaryOperator.AND ? ConstBoolQueryNode.TRUE : ConstBoolQueryNode.FALSE;
         return simplifyBooleans(

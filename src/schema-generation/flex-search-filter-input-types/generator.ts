@@ -281,7 +281,8 @@ export class FlexSearchFilterTypeGenerator {
             comparisonOperator,
             logicalOperator,
             fieldNode,
-            analyzer
+            analyzer,
+            true
         );
     }
 
