@@ -118,7 +118,6 @@ export class Project {
             getOperationIdentifier: config.getOperationIdentifier,
             processError: config.processError,
             schemaOptions: config.schemaOptions,
-            modelValidationOptions: config.modelValidationOptions,
             modelOptions: config.modelOptions
         };
     }

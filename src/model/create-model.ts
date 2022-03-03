@@ -16,7 +16,7 @@ import {
     TypeDefinitionNode,
     valueFromAST
 } from 'graphql';
-import { ModelValidationOptions } from '../config/interfaces';
+import { ModelOptions } from '../config/interfaces';
 import {
     ParsedGraphQLProjectSource,
     ParsedObjectProjectSource,
@@ -110,21 +110,22 @@ import {
 } from './config';
 import { BillingConfig } from './config/billing';
 import { Model } from './implementation';
+import { OrderDirection } from './implementation/order';
 import { parseBillingConfigs } from './parse-billing';
 import { parseI18nConfigs } from './parse-i18n';
 import { parseTTLConfigs } from './parse-ttl';
 import { ValidationContext, ValidationMessage } from './validation';
 
-export function createModel(parsedProject: ParsedProject, modelValidationOptions?: ModelValidationOptions): Model {
+export function createModel(parsedProject: ParsedProject, options?: ModelOptions): Model {
     const validationContext = new ValidationContext();
     return new Model({
-        types: createTypeInputs(parsedProject, validationContext),
+        types: createTypeInputs(parsedProject, validationContext, options ?? {}),
         permissionProfiles: extractPermissionProfiles(parsedProject),
         i18n: extractI18n(parsedProject),
         validationMessages: validationContext.validationMessages,
         billing: extractBilling(parsedProject),
-        modelValidationOptions,
-        timeToLiveConfigs: extractTimeToLive(parsedProject)
+        timeToLiveConfigs: extractTimeToLive(parsedProject),
+        options
     });
 }
 
@@ -144,7 +145,11 @@ const VALIDATION_ERROR_MISSING_OBJECT_TYPE_DIRECTIVE = `Add one of @${ROOT_ENTIT
 const VALIDATION_ERROR_INVALID_DEFINITION_KIND =
     'This kind of definition is not allowed. Only object and enum type definitions are allowed.';
 
-function createTypeInputs(parsedProject: ParsedProject, context: ValidationContext): ReadonlyArray<TypeConfig> {
+function createTypeInputs(
+    parsedProject: ParsedProject,
+    context: ValidationContext,
+    options: ModelOptions
+): ReadonlyArray<TypeConfig> {
     const graphQLSchemaParts = parsedProject.sources.filter(
         parsedSource => parsedSource.kind === ParsedProjectSourceBaseKind.GRAPHQL
     ) as ReadonlyArray<ParsedGraphQLProjectSource>;
@@ -173,7 +178,7 @@ function createTypeInputs(parsedProject: ParsedProject, context: ValidationConte
                         };
                         return enumTypeInput;
                     case OBJECT_TYPE_DEFINITION:
-                        return createObjectTypeInput(definition, schemaPart, context);
+                        return createObjectTypeInput(definition, schemaPart, context, options);
                     default:
                         return undefined;
                 }
@@ -196,7 +201,8 @@ function createEnumValues(valueNodes: ReadonlyArray<EnumValueDefinitionNode>): R
 function createObjectTypeInput(
     definition: ObjectTypeDefinitionNode,
     schemaPart: ParsedGraphQLProjectSource,
-    context: ValidationContext
+    context: ValidationContext,
+    options: ModelOptions
 ): ObjectTypeConfig {
     const entityType = getKindOfObjectTypeNode(definition, context);
 
@@ -204,7 +210,7 @@ function createObjectTypeInput(
         name: definition.name.value,
         description: definition.description ? definition.description.value : undefined,
         astNode: definition,
-        fields: (definition.fields || []).map(field => createFieldInput(field, context)),
+        fields: (definition.fields || []).map(field => createFieldInput(field, context, options)),
         namespacePath: getNamespacePath(definition, schemaPart.namespacePath),
         flexSearchLanguage: getDefaultLanguage(definition, context)
     };
@@ -337,7 +343,7 @@ function getFlexSearchOrder(rootEntityDirective?: DirectiveNode): ReadonlyArray<
             .map((value: any) => {
                 return {
                     field: value.field,
-                    asc: value.direction === 'ASC' ? true : false
+                    direction: value.direction === 'DESC' ? OrderDirection.DESCENDING : OrderDirection.ASCENDING
                 };
             });
     }
@@ -457,7 +463,11 @@ function getLanguage(fieldNode: FieldDefinitionNode, context: ValidationContext)
     }
 }
 
-function createFieldInput(fieldNode: FieldDefinitionNode, context: ValidationContext): FieldConfig {
+function createFieldInput(
+    fieldNode: FieldDefinitionNode,
+    context: ValidationContext,
+    options: ModelOptions
+): FieldConfig {
     const inverseOfASTNode = getInverseOfASTNode(fieldNode, context);
     const relationDeleteActionASTNode = getRelationDeleteActionASTNode(fieldNode, context);
     const referenceDirectiveASTNode = findDirectiveWithName(fieldNode, REFERENCE_DIRECTIVE);
@@ -500,7 +510,7 @@ function createFieldInput(fieldNode: FieldDefinitionNode, context: ValidationCon
         isFlexSearchIndexCaseSensitive:
             flexSearchIndexCaseSensitiveNode?.value.kind === 'BooleanValue'
                 ? flexSearchIndexCaseSensitiveNode.value.value
-                : undefined,
+                : options.isFlexSearchIndexCaseSensitiveByDefault,
         isFlexSearchIndexedASTNode: findDirectiveWithName(fieldNode, FLEX_SEARCH_INDEXED_DIRECTIVE),
         isFlexSearchFulltextIndexed: hasDirectiveWithName(fieldNode, FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE),
         isFlexSearchFulltextIndexedASTNode: findDirectiveWithName(fieldNode, FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE),

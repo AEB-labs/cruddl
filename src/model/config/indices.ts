@@ -1,4 +1,5 @@
 import { DirectiveNode, ObjectValueNode, StringValueNode } from 'graphql';
+import { OrderDirection } from '../implementation/order';
 
 export interface IndexDefinitionConfig {
     readonly name?: string;
@@ -23,7 +24,7 @@ export interface IndexDefinitionConfig {
 
 export interface FlexSearchPrimarySortClauseConfig {
     readonly field: string;
-    readonly asc: boolean;
+    readonly direction: OrderDirection;
 }
 
 export interface FlexSearchIndexConfig {

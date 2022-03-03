@@ -119,33 +119,24 @@ export class OrderByAndPaginationAugmentation {
                 // flexsearch?
                 // we only offer cursor-based pagination if we can cover all required filters with flex search filters
                 // this means we just replace the flexsearch listNode with a flexsearch listNode that does the cursor-filtering
-                let leaveUnordered = false;
                 if (listNode instanceof FlexSearchQueryNode) {
                     if (!orderByType) {
                         throw new Error(`OrderBy type missing for flex search`);
                     }
-                    // whenever possible, use primary sort
-                    if (orderArgMatchesPrimarySort(args[ORDER_BY_ARG], listNode.rootEntityType.flexSearchPrimarySort)) {
-                        // this would be cleaner if the primary sort was actually parsed into a ModelComponent (see e.g. the Index and IndexField classes)
-                        orderByValues = listNode.rootEntityType.flexSearchPrimarySort.map(clause =>
-                            orderByType.getValueOrThrow(
-                                clause.field.path.replace('.', '_') +
-                                    (clause.direction === OrderDirection.ASCENDING ? '_ASC' : '_DESC')
-                            )
-                        );
-                        leaveUnordered = true;
-                    } else {
-                        // this will generate a SORT clause that's not covered by the flexsearch index,
-                        // but the TooManyObject check of flex-search-generator already handles this case to throw
-                        // a TooManyObjects error if needed.
-                        orderByValues = getOrderByValues(args, orderByType, { isAbsoluteOrderRequired });
-                    }
+                    // we used to remove the sort clause if it matched the primary sort, but it turned out this is not
+                    // ok. If the sorting matches the primary sort, sorting is efficient, but you still need to specify
+                    // it, otherwise, sometimes the order can be wrong (after inserting or updating documents).
+
+                    // this may generate a SORT clause that is not covered by the flexsearch index,
+                    // but the TooManyObject check of flex-search-generator already handles this case to throw
+                    // a TooManyObjects error if needed.
+                    orderByValues = getOrderByValues(args, orderByType, { isAbsoluteOrderRequired });
 
                     // for now, cursor-based pagination is only allowed when we can use flexsearch filters for the
                     // paginationFilter. This simplifies the implementation, but maybe we should support it in the
                     // future for consistency. Then however we need to adjust the too-many-objects check
                     // do this check also if cursor is just requested so we get this error on the first page
-                    if (isCursorRequested || !!afterArg) {
+                    if (isCursorRequested || afterArg) {
                         const violatingClauses = orderByValues.filter(val =>
                             val.path.some(field => !field.isFlexSearchIndexed)
                         );
@@ -189,10 +180,9 @@ export class OrderByAndPaginationAugmentation {
                 }
 
                 // sorting always happens on the TransformListQueryNode and not in the FlexSearchQueryNode
-                const orderBy =
-                    !orderByType || leaveUnordered
-                        ? OrderSpecification.UNORDERED
-                        : new OrderSpecification(orderByValues.map(value => value.getClause(objectNode)));
+                const orderBy = !orderByType
+                    ? OrderSpecification.UNORDERED
+                    : new OrderSpecification(orderByValues.map(value => value.getClause(objectNode)));
 
                 if (orderBy.isUnordered() && maxCount == undefined && paginationFilter === ConstBoolQueryNode.TRUE) {
                     return originalListNode;

@@ -2,6 +2,7 @@ import { GraphQLID, GraphQLString } from 'graphql';
 import memorize from 'memorize-decorator';
 import {
     ACCESS_GROUP_FIELD,
+    ENTITY_CREATED_AT,
     FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE,
     FLEX_SEARCH_INDEXED_DIRECTIVE,
     FLEX_SEARCH_ORDER_ARGUMENT,
@@ -349,21 +350,29 @@ export class RootEntityType extends ObjectTypeBase {
         // primary sort is only used for sorting, so make sure it's unique
         // - this makes querying more consistent
         // - this enables us to use primary sort for cursor-based pagination (which requires an absolute sort order)
+        // the default primary sort should be createdAt_DESC, because this is useful most of the time. to avoid
+        // surprises when you do specify a primary sort, always add this default at the end (as long as it's not already
+        // included in the index)
+        if (!clauses.some(clause => clause.field === ENTITY_CREATED_AT)) {
+            clauses = [
+                ...clauses,
+                {
+                    field: ENTITY_CREATED_AT,
+                    direction: OrderDirection.DESCENDING
+                }
+            ];
+        }
         if (!clauses.some(clause => clause.field === this.discriminatorField.name)) {
             clauses = [
                 ...clauses,
                 {
                     field: this.discriminatorField.name,
-                    asc: true
+                    direction: OrderDirection.DESCENDING
                 }
             ];
         }
         return clauses.map(
-            c =>
-                new FlexSearchPrimarySortClause(
-                    new FieldPath({ path: c.field, baseType: this }),
-                    c.asc ? OrderDirection.ASCENDING : OrderDirection.DESCENDING
-                )
+            c => new FlexSearchPrimarySortClause(new FieldPath({ path: c.field, baseType: this }), c.direction)
         );
     }
 
