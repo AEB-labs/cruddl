@@ -170,6 +170,7 @@ export class OperatorWithAnalyzerQueryNode extends QueryNode {
                 return 'CONTAINS_PHRASE';
             case BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_PREFIX:
                 return 'CONTAINS_PREFIX';
+            // TODO: add remaining Operators
             default:
                 return '(unknown operator)';
         }

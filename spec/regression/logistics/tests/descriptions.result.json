@@ -1668,6 +1668,11 @@
                             "deprecationReason": null
                         },
                         {
+                            "name": "colorData",
+                            "description": null,
+                            "deprecationReason": null
+                        },
+                        {
                             "name": "enumFlexSearch",
                             "description": null,
                             "deprecationReason": null
@@ -3503,6 +3508,11 @@
                             "deprecationReason": null
                         },
                         {
+                            "name": "colorData",
+                            "description": "Allows to filter on the fields of `colorData`.\n\nNote that `colorData` is an entity extension and thus can never be `null`, so specifying `null` to this filter field has no effect.",
+                            "deprecationReason": null
+                        },
+                        {
                             "name": "enumFlexSearch",
                             "description": "Checks if `enumFlexSearch` equals a specified value.\n\nIf an index exists on `enumFlexSearch`, it can be used.",
                             "deprecationReason": null
@@ -4863,6 +4873,103 @@
                     "inputFields": null
                 },
                 {
+                    "name": "ColorDataFilter",
+                    "description": "Filter type for ColorData.\n\nAll fields in this type are *and*-combined; see the `or` field for *or*-combination.",
+                    "fields": null,
+                    "inputFields": [
+                        {
+                            "name": "packageColor",
+                            "description": "Checks if `packageColor` equals a specified string, case-sensitively.\n\nIf an index exists on `packageColor`, it can be used.\n\nSee also `like` for a case-insensitive filter.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "packageColor_not",
+                            "description": "Checks if `packageColor` does not equal a specified string, case-sensitively.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "packageColor_in",
+                            "description": "Checks if `packageColor` is equal to one of the specified values.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "packageColor_not_in",
+                            "description": "Checks if `packageColor` is not equal to one of the specified values.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "packageColor_lt",
+                            "description": "Checks if `packageColor` is less than a specified value.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "packageColor_lte",
+                            "description": "Checks if `packageColor` is less or equal a specified value.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "packageColor_gt",
+                            "description": "Checks if `packageColor` is greater than a specified value.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "packageColor_gte",
+                            "description": "Checks if `packageColor` is greater or equal a specified value.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "packageColor_contains",
+                            "description": "Checks if `packageColor` contains a specified string, case-sensitively.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "packageColor_not_contains",
+                            "description": "Checks if `packageColor` does not contain a specified string, case-sensitively.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "packageColor_starts_with",
+                            "description": "Checks if `packageColor` starts with a specified string, case-sensitively.\n\nNever uses an index. Consider using `like` (with the `%` placeholder) for a case-insensitive filter that can use an index.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "packageColor_not_starts_with",
+                            "description": "Checks if `packageColor` does not start with a specified string, case-sensitively.\n\nNever uses an index. Consider using `not_like` (with the `%` placeholder) for a case-insensitive filter that can use an index.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "packageColor_ends_with",
+                            "description": "Checks if `packageColor` ends with a specified string, case-sensitively.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "packageColor_not_ends_with",
+                            "description": "Checks if `packageColor` does not end with a specified string, case-sensitively.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "packageColor_like",
+                            "description": "Matches `packageColor` against a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)\n\nIf an index exists on `packageColor`, it can be used for the literal prefix (the part until the first placeholder).",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "packageColor_not_like",
+                            "description": "Checks if `packageColor` does *not* match a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "AND",
+                            "description": "A field that checks if all filters in the list apply\n\nIf the list is empty, this filter applies to all objects.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "OR",
+                            "description": "A field that checks if any of the filters in the list apply.\n\nIf the list is empty, this filter applies to no objects.\n\nNote that only the items in the list *or*-combined; this complete `OR` field is *and*-combined with outer fields in the parent filter type.",
+                            "deprecationReason": null
+                        }
+                    ]
+                },
+                {
                     "name": "RecursionFilter",
                     "description": "Filter type for Recursion.\n\nAll fields in this type are *and*-combined; see the `or` field for *or*-combination.",
                     "fields": null,
@@ -5219,6 +5326,18 @@
                     "inputFields": null
                 },
                 {
+                    "name": "ColorData",
+                    "description": null,
+                    "fields": [
+                        {
+                            "name": "packageColor",
+                            "description": null,
+                            "deprecationReason": null
+                        }
+                    ],
+                    "inputFields": null
+                },
+                {
                     "name": "Recursion",
                     "description": null,
                     "fields": [
@@ -5543,6 +5662,11 @@
                         {
                             "name": "description_not_contains_phrase",
                             "description": "Tokenizes the provided string into words, and checks if that exact phrase (those words in excactly this order) is not included in `description`.\n Stemming (reduction of words on their base form) is applied.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "colorData",
+                            "description": "Allows to filter on the fields of `colorData`.\n\nNote that `colorData` is an entity extension and thus can never be `null`, so specifying `null` to this filter field has no effect.",
                             "deprecationReason": null
                         },
                         {
@@ -6149,6 +6273,73 @@
                         {
                             "name": "not_contains_phrase",
                             "description": "Tokenizes the provided string into words, and checks if that exact phrase (those words in excactly this order) is not included in the value.\n Stemming (reduction of words on their base form) is applied.",
+                            "deprecationReason": null
+                        }
+                    ]
+                },
+                {
+                    "name": "ColorDataFlexSearchFilter",
+                    "description": "An aggregation contains all values of a list. Each check in this type is true if it matches any of the values in the list.",
+                    "fields": null,
+                    "inputFields": [
+                        {
+                            "name": "packageColor",
+                            "description": "Checks if `packageColor` equals a specified string, case-insensitively.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "packageColor_not",
+                            "description": "Checks if `packageColor` does not equal a specified string, case-insensitively.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "packageColor_lt",
+                            "description": "Checks if `packageColor` is less than a specified value.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "packageColor_lte",
+                            "description": "Checks if `packageColor` is less or equal a specified value.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "packageColor_gt",
+                            "description": "Checks if `packageColor` is greater than a specified value.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "packageColor_gte",
+                            "description": "Checks if `packageColor` is greater or equal a specified value.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "packageColor_in",
+                            "description": "Checks if `packageColor` is equal to one of the specified values.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "packageColor_not_in",
+                            "description": "Checks if `packageColor` is not equal to one of the specified values.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "packageColor_starts_with",
+                            "description": "Checks if `packageColor` starts with a specified string, case-insensitively.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "packageColor_not_starts_with",
+                            "description": "Checks if `packageColor` does not start with a specified string, case-insensitively.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "AND",
+                            "description": "A field that checks if all filters in the list apply\n\nIf the list is empty, this filter applies to all objects.",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "OR",
+                            "description": "A field that checks if any of the filters in the list apply.\n\nIf the list is empty, this filter applies to no objects.\n\nNote that only the items in the list *or*-combined; this complete `OR` field is *and*-combined with outer fields in the parent filter type.",
                             "deprecationReason": null
                         }
                     ]
@@ -7907,6 +8098,11 @@
                             "deprecationReason": null
                         },
                         {
+                            "name": "colorData",
+                            "description": null,
+                            "deprecationReason": null
+                        },
+                        {
                             "name": "enumFlexSearch",
                             "description": null,
                             "deprecationReason": null
@@ -8096,6 +8292,18 @@
                         {
                             "name": "createDeliveries",
                             "description": "Creates new `Deliveries` and adds `deliveries` relations between them and the new `Forwarder`.",
+                            "deprecationReason": null
+                        }
+                    ]
+                },
+                {
+                    "name": "CreateColorDataInput",
+                    "description": "The create type for the entity extension type `ColorData`.",
+                    "fields": null,
+                    "inputFields": [
+                        {
+                            "name": "packageColor",
+                            "description": null,
                             "deprecationReason": null
                         }
                     ]
@@ -8298,6 +8506,11 @@
                             "deprecationReason": null
                         },
                         {
+                            "name": "colorData",
+                            "description": "This field is an entity extension and thus is never 'null' - passing 'null' here does not change the field value.",
+                            "deprecationReason": null
+                        },
+                        {
                             "name": "enumFlexSearch",
                             "description": null,
                             "deprecationReason": null
@@ -8425,6 +8638,18 @@
                         },
                         {
                             "name": "description",
+                            "description": null,
+                            "deprecationReason": null
+                        }
+                    ]
+                },
+                {
+                    "name": "UpdateColorDataInput",
+                    "description": "The update type for the entity extension type `ColorData`.\n\nIf fields are omitted, their value is left unchanged. Explicitly set fields to `null` to clear their value.",
+                    "fields": null,
+                    "inputFields": [
+                        {
+                            "name": "packageColor",
                             "description": null,
                             "deprecationReason": null
                         }
@@ -8578,6 +8803,11 @@
                         {
                             "name": "description",
                             "description": null,
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "colorData",
+                            "description": "This field is an entity extension and thus is never 'null' - passing 'null' here does not change the field value.",
                             "deprecationReason": null
                         },
                         {

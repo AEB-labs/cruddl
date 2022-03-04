@@ -52,6 +52,12 @@ query valueObject {
     }
 }
 
+query entityExtension {
+    flexSearchDeliveries(flexSearchFilter: { colorData: { packageColor: "red" } }) {
+        deliveryNumber
+    }
+}
+
 query post_filter_below_max {
     flexSearchDeliveries(
         flexSearchFilter: { deliveryNumber: "1000521" }

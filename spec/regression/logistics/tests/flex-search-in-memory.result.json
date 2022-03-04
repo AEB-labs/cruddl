@@ -95,6 +95,15 @@
             ]
         }
     },
+    "entityExtension": {
+        "data": {
+            "flexSearchDeliveries": [
+                {
+                    "deliveryNumber": "1000173"
+                }
+            ]
+        }
+    },
     "post_filter_below_max": {
         "data": {
             "flexSearchDeliveries": [
@@ -110,7 +119,7 @@
                 "message": "Cannot combine filter and postFilter. Use only postFilter.",
                 "locations": [
                     {
-                        "line": 65,
+                        "line": 71,
                         "column": 5
                     }
                 ],
@@ -152,7 +161,7 @@
                 "message": "Too many objects.",
                 "locations": [
                     {
-                        "line": 99,
+                        "line": 105,
                         "column": 5
                     }
                 ],
@@ -169,7 +178,7 @@
                 "message": "Too many objects.",
                 "locations": [
                     {
-                        "line": 105,
+                        "line": 111,
                         "column": 5
                     }
                 ],
@@ -186,7 +195,7 @@
                 "message": "Too many objects.",
                 "locations": [
                     {
-                        "line": 111,
+                        "line": 117,
                         "column": 5
                     }
                 ],
@@ -201,7 +210,7 @@
                 "message": "Too many objects.",
                 "locations": [
                     {
-                        "line": 117,
+                        "line": 123,
                         "column": 5
                     }
                 ],
@@ -227,7 +236,7 @@
                 "message": "Recursive filters can only be defined for 1 level of recursion.",
                 "locations": [
                     {
-                        "line": 129,
+                        "line": 135,
                         "column": 5
                     }
                 ],
