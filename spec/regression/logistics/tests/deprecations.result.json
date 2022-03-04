@@ -292,6 +292,14 @@
                     }
                 },
                 {
+                    "name": "colorData",
+                    "isDeprecated": false,
+                    "deprecationReason": null,
+                    "type": {
+                        "enumValues": null
+                    }
+                },
+                {
                     "name": "enumFlexSearch",
                     "isDeprecated": false,
                     "deprecationReason": null,
@@ -990,6 +998,16 @@
                 },
                 {
                     "name": "description_DESC",
+                    "isDeprecated": false,
+                    "deprecationReason": null
+                },
+                {
+                    "name": "colorData_packageColor_ASC",
+                    "isDeprecated": false,
+                    "deprecationReason": null
+                },
+                {
+                    "name": "colorData_packageColor_DESC",
                     "isDeprecated": false,
                     "deprecationReason": null
                 },

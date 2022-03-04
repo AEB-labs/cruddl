@@ -257,7 +257,8 @@ export class FlexSearchEntityExtensionFilterField implements FlexSearchFilterFie
             // entity extensions can't ever be null, and null is always coerced to {}, so this filter just shouldn't have any effect
             return ConstBoolQueryNode.TRUE;
         }
-        return this.inputType.getFilterNode(sourceNode, filterValue, path.concat(this.field), info);
+        const valueNode = new FieldQueryNode(sourceNode, this.field);
+        return this.inputType.getFilterNode(valueNode, filterValue, path.concat(this.field), info);
     }
 }
 

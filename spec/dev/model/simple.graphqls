@@ -28,6 +28,7 @@ type Hero
     infoObj: JSONObject
     attributes: StringMap
     timeOfDeath: OffsetDateTime
+    recursion: Recursion @flexSearch
 }
 
 "A heroic mission"
@@ -42,7 +43,7 @@ type Mission @childEntity {
 type Skill @valueObject {
     description: I18nString @flexSearchFulltext
     "A value between 0 and 11"
-    strength: Float
+    strength: Float @flexSearch
     skills: [Skill]
 }
 
@@ -117,4 +118,9 @@ type Root2 @rootEntity {
     name: String @key
     roots: [Root] @relation
     rootGrandchildren: [Grandchild] @collect(path: "roots.children.children")
+}
+
+type Recursion @valueObject {
+    recursion: Recursion @flexSearch
+    name: String @flexSearch
 }

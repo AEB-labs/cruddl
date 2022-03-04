@@ -45,6 +45,7 @@ type Delivery
     dynamicData: JSON
 
     description: String @flexSearchFulltext(includeInSearch: true)
+    colorData: ColorData @flexSearch
     enumFlexSearch: Foobarit @flexSearch
     aText: String @flexSearch #sometimes null in testdata
     aNumber: Int @flexSearch
@@ -69,6 +70,10 @@ type DeliveryItem @childEntity {
     handlingUnit: HandlingUnit @reference
     dgInfo: DangerousGoodsInfo
     description: I18nString @flexSearch @flexSearchFulltext
+}
+
+type ColorData @entityExtension {
+    packageColor: String @flexSearch
 }
 
 type Forwarder @rootEntity @roles(readWrite: ["logistics"]) {

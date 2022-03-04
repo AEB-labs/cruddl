@@ -132,7 +132,8 @@
                 },
                 "aText": "foo bar",
                 "sometimesNull": "1",
-                "caseInsensitiveField": "Ä TEXT"
+                "caseInsensitiveField": "Ä TEXT",
+                "colorData": { "packageColor": "red" }
             },
             {
                 "@id": "2",
@@ -175,7 +176,8 @@
                     }
                 },
                 "sometimesNull": "2",
-                "caseInsensitiveField": "ä text"
+                "caseInsensitiveField": "ä text",
+                "colorData": { "packageColor": "blue" }
             },
             {
                 "@id": "3",
@@ -227,7 +229,8 @@
                     }
                 },
                 "sometimesNull": null,
-                "caseInsensitiveField": "änother text"
+                "caseInsensitiveField": "änother text",
+                "colorData": { "packageColor": "green" }
             }
         ],
         "Forwarder": [
