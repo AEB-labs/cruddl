@@ -1529,10 +1529,12 @@ export class Field implements ModelComponent {
         if (!this.isFlexSearchIndexed) {
             return undefined;
         }
-        if (!(this.type.isScalarType && [GraphQLString.name, GraphQLI18nString.name].includes(this.type.name))) {
-            return undefined;
+        if (this.type.isScalarType && [GraphQLString.name, GraphQLI18nString.name].includes(this.type.name)) {
+            // only consider case-sensitivity for string fields
+            // (we don't validate isFlexSearchIndexCaseSensitive type-dependent)
+            return this.isFlexSearchIndexCaseSensitive ? IDENTITY_ANALYZER : NORM_CI_ANALYZER;
         }
-        return this.isFlexSearchIndexCaseSensitive ? IDENTITY_ANALYZER : NORM_CI_ANALYZER;
+        return IDENTITY_ANALYZER;
     }
 
     get flexSearchFulltextAnalyzer(): string | undefined {

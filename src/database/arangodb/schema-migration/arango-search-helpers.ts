@@ -188,11 +188,8 @@ function getPropertiesFromDefinition(
         if (field.isFlexSearchFulltextIndexed && field.flexSearchLanguage) {
             analyzers.add(field.getFlexSearchFulltextAnalyzerOrThrow());
         }
-        if (field.isFlexSearchIndexed && field.isFlexSearchIndexCaseSensitive) {
-            analyzers.add(IDENTITY_ANALYZER);
-        }
-        if (field.isFlexSearchIndexed && !field.isFlexSearchIndexCaseSensitive) {
-            analyzers.add(NORM_CI_ANALYZER);
+        if (field.flexSearchAnalyzer) {
+            analyzers.add(field.flexSearchAnalyzer);
         }
 
         const link: ArangoSearchViewCollectionLink = {};

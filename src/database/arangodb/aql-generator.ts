@@ -852,7 +852,12 @@ register(FlexSearchStartsWithQueryNode, (node, context) => {
 
 register(FlexSearchFieldExistsQueryNode, (node, context) => {
     const sourceNode = processNode(node.sourceNode, context);
-    if (node.analyzer) {
+    // the EXISTS operand seems to return false for identity-indexed fields that are not strings
+    // might be a bug, didn't find anything related in the documentation
+    // not sure what exactly the consequences are of just omitting the analyzer (would mean we consider fields that
+    // are both identity-indexed and full-text-indexed as existing if they only exist in the fulltext analyzer, but
+    // that would never occur because it does not make sense)
+    if (node.analyzer && node.analyzer !== IDENTITY_ANALYZER) {
         return aql`EXISTS(${sourceNode}, "analyzer", ${node.analyzer})`;
     } else {
         return aql`EXISTS(${sourceNode})`;

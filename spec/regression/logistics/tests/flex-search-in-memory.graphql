@@ -46,6 +46,12 @@ query equals_enum {
     }
 }
 
+query equals_id {
+    flexSearchDeliveries(flexSearchFilter: { id: "@{ids/Delivery/1}" }) {
+        deliveryNumber
+    }
+}
+
 query valueObject {
     flexSearchDeliveries(flexSearchFilter: { consignee: { city: "Singapore" } }) {
         deliveryNumber
