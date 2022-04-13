@@ -52,7 +52,7 @@ export class BinaryOperationQueryNode extends QueryNode {
             case BinaryOperator.AND:
                 return '&&';
             case BinaryOperator.OR:
-                return '&&';
+                return '||';
             case BinaryOperator.EQUAL:
                 return '==';
             case BinaryOperator.UNEQUAL:
