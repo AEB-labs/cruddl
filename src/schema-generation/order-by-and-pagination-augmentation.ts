@@ -3,6 +3,7 @@ import { Type } from '../model';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
+    BinaryOperatorWithAnalyzer,
     ConcatListsQueryNode,
     ConstBoolQueryNode,
     INVALID_CURSOR_ERROR,
@@ -21,16 +22,20 @@ import {
     CURSOR_FIELD,
     FIRST_ARG,
     ID_FIELD,
+    INPUT_FIELD_EQUAL,
+    INPUT_FIELD_GT,
+    INPUT_FIELD_LT,
     ORDER_BY_ARG,
     ORDER_BY_ASC_SUFFIX,
     SKIP_ARG
 } from '../schema/constants';
 import { decapitalize } from '../utils/utils';
+import { FlexSearchScalarOrEnumFilterField, resolveFilterField } from './flex-search-filter-input-types/filter-fields';
 import { OrderByEnumGenerator, OrderByEnumType, OrderByEnumValue } from './order-by-enum-generator';
 import { QueryNodeField } from './query-node-object-type';
 import { RootFieldHelper } from './root-field-helper';
 import { orderArgMatchesPrimarySort } from './utils/flex-search-utils';
-import { and } from './utils/input-types';
+import { and, binaryOp, binaryOpWithAnaylzer } from './utils/input-types';
 import { getOrderByValues } from './utils/pagination';
 
 /**
@@ -166,7 +171,8 @@ export class OrderByAndPaginationAugmentation {
                         // pagination acts on the listNode (which is a FlexSearchQueryNode) and not on the resulting
                         // TransformListQueryNode, so we need to use listNode.itemVariable in the pagination filter
                         itemNode: this.rootFieldHelper.getRealItemNode(listNode.itemVariable, info),
-                        orderByValues
+                        orderByValues,
+                        isFlexSearch: true
                     });
                     listNode = new FlexSearchQueryNode({
                         ...listNode,
@@ -178,13 +184,15 @@ export class OrderByAndPaginationAugmentation {
                         isOptimisationsDisabled: listNode.isOptimisationsDisabled || !!flexPaginationFilter
                     });
                 } else {
+                    // not flex search
                     orderByValues = !orderByType
                         ? []
                         : getOrderByValues(args, orderByType, { isAbsoluteOrderRequired });
                     paginationFilter = this.createPaginationFilterNode({
                         afterArg,
                         itemNode: objectNode,
-                        orderByValues
+                        orderByValues,
+                        isFlexSearch: false
                     });
                 }
 
@@ -340,11 +348,13 @@ export class OrderByAndPaginationAugmentation {
     private createPaginationFilterNode({
         afterArg,
         itemNode,
-        orderByValues
+        orderByValues,
+        isFlexSearch
     }: {
         readonly afterArg: string;
         readonly itemNode: QueryNode;
         readonly orderByValues: ReadonlyArray<OrderByEnumValue>;
+        readonly isFlexSearch: boolean;
     }): QueryNode | undefined {
         if (!afterArg) {
             return undefined;
@@ -390,16 +400,53 @@ export class OrderByAndPaginationAugmentation {
             const cursorValue = cursorObj[cursorProperty];
             const valueNode = clause.getValueNode(itemNode);
 
-            const operator =
-                clause.direction == OrderDirection.ASCENDING ? BinaryOperator.GREATER_THAN : BinaryOperator.LESS_THAN;
+            function getComparisonNode(
+                operator: BinaryOperator,
+                stringOperator: BinaryOperatorWithAnalyzer,
+                name: string
+            ) {
+                if (isFlexSearch) {
+                    const op = clause.lastSegment.isFlexSearchStringBased
+                        ? binaryOpWithAnaylzer(stringOperator)
+                        : binaryOp(operator);
+                    const pseudoFilterField = new FlexSearchScalarOrEnumFilterField(op, name, GraphQLString, false);
+                    return resolveFilterField(
+                        pseudoFilterField,
+                        valueNode,
+                        cursorValue,
+                        clause.lastSegment.flexSearchAnalyzer
+                    );
+                } else {
+                    return new BinaryOperationQueryNode(valueNode, operator, new LiteralQueryNode(cursorValue));
+                }
+            }
+
+            // we actually just want a > b and a == b, but with our own interpretation of value order
+            // it would arguably be better to move this logic into the ArangoDBAdapter and just use regular binary
+            // operators here, but that would be a larger refactoring, so we just re-use the filter field logic here.
+            let comparisonNode;
+            if (clause.direction === OrderDirection.ASCENDING) {
+                comparisonNode = getComparisonNode(
+                    BinaryOperator.GREATER_THAN,
+                    BinaryOperatorWithAnalyzer.FLEX_STRING_GREATER_THAN,
+                    INPUT_FIELD_GT
+                );
+            } else {
+                comparisonNode = getComparisonNode(
+                    BinaryOperator.LESS_THAN,
+                    BinaryOperatorWithAnalyzer.FLEX_STRING_LESS_THAN,
+                    INPUT_FIELD_LT
+                );
+            }
+            const equalsNode: QueryNode = getComparisonNode(
+                BinaryOperator.EQUAL,
+                BinaryOperatorWithAnalyzer.EQUAL,
+                INPUT_FIELD_EQUAL
+            );
             return new BinaryOperationQueryNode(
-                new BinaryOperationQueryNode(valueNode, operator, new LiteralQueryNode(cursorValue)),
+                comparisonNode,
                 BinaryOperator.OR,
-                new BinaryOperationQueryNode(
-                    new BinaryOperationQueryNode(valueNode, BinaryOperator.EQUAL, new LiteralQueryNode(cursorValue)),
-                    BinaryOperator.AND,
-                    filterForClause(clauses.slice(1))
-                )
+                new BinaryOperationQueryNode(equalsNode, BinaryOperator.AND, filterForClause(clauses.slice(1)))
             );
         }
 
