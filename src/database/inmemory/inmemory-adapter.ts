@@ -183,7 +183,14 @@ export class InMemoryAdapter implements DatabaseAdapter {
                 };
             },
 
-            likePatternToRegExp
+            likePatternToRegExp,
+
+            ensureArray: (arg: unknown) => {
+                if (Array.isArray(arg)) {
+                    return arg;
+                }
+                return [arg];
+            }
         };
 
         let resultHolder: { [p: string]: any } = {};

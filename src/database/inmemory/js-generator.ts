@@ -963,8 +963,14 @@ register(OperatorWithAnalyzerQueryNode, (node, context) => {
     let lhs = processNode(node.lhs, context);
     let rhs = processNode(node.rhs, context);
 
+    // imitating flexSearch here. All fields can be arrays, flexsearch/arangosearch would flatten them
+    // easiest way is to always convert lhs to an array
+    const lhsArray = js`support.ensureArray(${lhs})`;
+    const itemVar = js.variable('i');
+    let itemFrag = itemVar;
+
     if (isCaseInsensitive) {
-        lhs = js`(${lhs})?.toLowerCase()`;
+        itemFrag = js`(${itemFrag})?.toLowerCase()`;
         const rhsVar = js.variable('rhs');
         rhs = jsExt.evaluatingLambda(
             rhsVar,
@@ -973,27 +979,37 @@ register(OperatorWithAnalyzerQueryNode, (node, context) => {
         );
     }
 
+    let opFrag: JSFragment;
     switch (node.operator) {
         case BinaryOperatorWithAnalyzer.EQUAL:
-            return js`(${lhs} === ${rhs})`;
+            opFrag = js`(${itemFrag} === ${rhs})`;
+            break;
         case BinaryOperatorWithAnalyzer.UNEQUAL:
-            return js`(${lhs} !== ${rhs})`;
+            opFrag = js`(${itemFrag} !== ${rhs})`;
+            break;
         case BinaryOperatorWithAnalyzer.FLEX_STRING_LESS_THAN:
-            return compare(js`<`, lhs, rhs);
+            opFrag = compare(js`<`, itemFrag, rhs);
+            break;
         case BinaryOperatorWithAnalyzer.FLEX_STRING_LESS_THAN_OR_EQUAL:
-            return compare(js`<=`, lhs, rhs);
+            opFrag = compare(js`<=`, itemFrag, rhs);
+            break;
         case BinaryOperatorWithAnalyzer.FLEX_STRING_GREATER_THAN:
-            return compare(js`>`, lhs, rhs);
+            opFrag = compare(js`>`, itemFrag, rhs);
+            break;
         case BinaryOperatorWithAnalyzer.FLEX_STRING_GREATER_THAN_OR_EQUAL:
-            return compare(js`>=`, lhs, rhs);
+            opFrag = compare(js`>=`, itemFrag, rhs);
+            break;
         case BinaryOperatorWithAnalyzer.IN:
-            return js`${rhs}.includes(${lhs})`;
+            opFrag = js`${rhs}.includes(${itemFrag})`;
+            break;
         case BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_ANY_WORD:
         case BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_PREFIX:
         case BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_PHRASE:
         default:
             throw new Error(`Unsupported binary operator with analyzer: ${node.operator}`);
     }
+
+    return js`${lhsArray}.some(${itemVar} => ${opFrag})`;
 });
 
 register(FlexSearchQueryNode, (node, context) => {

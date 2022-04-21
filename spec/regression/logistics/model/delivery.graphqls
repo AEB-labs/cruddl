@@ -7,7 +7,7 @@ type Delivery
     ) {
     deliveryNumber: String @key @unique @flexSearch(includeInSearch: true) # leave this here to catch this case, too (has caused a bug)
     "The list of serial numbers associated with this delivery"
-    serialNumbers: [String]
+    serialNumbers: [String] @flexSearch
     "The address of the delivery's consignee"
     consignee: Address @flexSearch
     contentInfo: [Translation]

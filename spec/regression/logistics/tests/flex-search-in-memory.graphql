@@ -177,3 +177,10 @@ query null_starts_with {
         deliveryNumber
     }
 }
+
+query string_aggregation {
+    flexSearchDeliveries(flexSearchFilter: { serialNumbers_aggregation_equal: "12345" }) {
+        deliveryNumber
+        serialNumbers
+    }
+}

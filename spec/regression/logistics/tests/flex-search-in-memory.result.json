@@ -318,5 +318,15 @@
                 }
             ]
         }
+    },
+    "string_aggregation": {
+        "data": {
+            "flexSearchDeliveries": [
+                {
+                    "deliveryNumber": "1000173",
+                    "serialNumbers": ["12345", "67890"]
+                }
+            ]
+        }
     }
 }

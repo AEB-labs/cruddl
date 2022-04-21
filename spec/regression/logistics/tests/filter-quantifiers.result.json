@@ -83,12 +83,6 @@
         "data": {
             "allDeliveries": [
                 {
-                    "deliveryNumber": "1000173"
-                },
-                {
-                    "deliveryNumber": "1000521"
-                },
-                {
                     "deliveryNumber": "1000522"
                 }
             ]
@@ -106,9 +100,6 @@
             "allDeliveries": [
                 {
                     "deliveryNumber": "1000173"
-                },
-                {
-                    "deliveryNumber": "1000521"
                 },
                 {
                     "deliveryNumber": "1000522"

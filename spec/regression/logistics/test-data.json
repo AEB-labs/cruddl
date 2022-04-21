@@ -133,7 +133,8 @@
                 "aText": "foo bar",
                 "sometimesNull": "1",
                 "caseInsensitiveField": "Ä TEXT",
-                "colorData": { "packageColor": "red" }
+                "colorData": { "packageColor": "red" },
+                "serialNumbers": ["12345", "67890"]
             },
             {
                 "@id": "2",
@@ -177,7 +178,8 @@
                 },
                 "sometimesNull": "2",
                 "caseInsensitiveField": "ä text",
-                "colorData": { "packageColor": "blue" }
+                "colorData": { "packageColor": "blue" },
+                "serialNumbers": ["54321"]
             },
             {
                 "@id": "3",
