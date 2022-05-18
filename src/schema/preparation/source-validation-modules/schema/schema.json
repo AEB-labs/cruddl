@@ -267,7 +267,9 @@
       }
     },
     "FieldLocalization": {
-      "properties": {
+      "type": "object",
+            "additionalProperties": false,
+            "properties": {
         "label": {
           "type": "string"
         },
@@ -277,6 +279,8 @@
       }
     },
     "EnumValueLocalization": {
+            "type": "object",
+            "additionalProperties": false,
       "properties": {
         "label": {
           "type": "string"
