@@ -1,9 +1,9 @@
 import { Database } from 'arangojs';
 import { Collection } from 'arangojs/collection';
-import * as fs from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { ExecutionResult, graphql, GraphQLSchema } from 'graphql';
+import stripJsonComments from 'strip-json-comments';
 import { ArangoDBConfig } from '../../src/database/arangodb';
-import stripJsonComments = require('strip-json-comments');
 
 const DATABASE_NAME = 'cruddl-test-temp';
 const DATABASE_URL = 'http://root:@localhost:8529';
@@ -51,13 +51,13 @@ export async function initTestData(
     path: string,
     schema: GraphQLSchema,
 ): Promise<TestDataEnvironment> {
-    if (!fs.existsSync(path)) {
+    if (!existsSync(path)) {
         return {
             fillTemplateStrings: (a) => a,
         };
     }
 
-    const testData = JSON.parse(stripJsonComments(fs.readFileSync(path, 'utf-8')));
+    const testData = JSON.parse(stripJsonComments(readFileSync(path, 'utf-8')));
     const ids = new Map<string, string>();
 
     function fillTemplateStrings(data: any): any {

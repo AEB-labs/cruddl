@@ -82,7 +82,7 @@ export class CustomConnection extends Connection {
                         try {
                             parsedBody = res.body;
                             parsedBody = JSON.parse(parsedBody);
-                        } catch (e) {
+                        } catch (e: any) {
                             if (!expectBinary) {
                                 if (typeof parsedBody !== 'string') {
                                     parsedBody = res.body.toString('utf-8');
@@ -155,7 +155,7 @@ function generateStackTrace() {
     if (!err.stack) {
         try {
             throw err;
-        } catch (e) {
+        } catch (e: any) {
             err = e;
         }
     }

@@ -7,7 +7,7 @@ import {
     ResolverStyle,
     ZonedDateTime,
     ZoneOffset,
-} from 'js-joda';
+} from '@js-joda/core';
 
 /**
  * The representation of an OffsetDateTime in the database
@@ -56,7 +56,7 @@ function parseOffsetDateTime(value: string): ZonedDateTime {
     let zonedDateTime: ZonedDateTime;
     try {
         zonedDateTime = ZonedDateTime.parse(value);
-    } catch (e) {
+    } catch (e: any) {
         if (e.name === 'DateTimeParseException') {
             // see if no offset is specified for a better error message
             if (tryParseLocalDateTime(value) !== undefined) {
@@ -90,7 +90,7 @@ function printOffsetDateTime(value: ZonedDateTime | StoredOffsetDateTime) {
 function tryParseLocalDateTime(str: string): LocalDateTime | undefined {
     try {
         return LocalDateTime.parse(str);
-    } catch (e) {
+    } catch (e: any) {
         if (e.name === 'DateTimeParseException') {
             return undefined;
         }

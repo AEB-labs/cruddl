@@ -240,7 +240,7 @@ export class Project {
                     limit,
                     isComplete: limit === undefined || deletedObjectsCount < limit,
                 };
-            } catch (error) {
+            } catch (error: any) {
                 if (
                     executionOptions.timeToLiveOptions?.reduceLimitOnResourceLimits &&
                     limit !== undefined &&

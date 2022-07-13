@@ -73,7 +73,7 @@ export class MigrationPerformer {
     private async dropIndex(migration: DropIndexMigration) {
         try {
             await this.db.collection(migration.index.collectionName).dropIndex(migration.index.id!);
-        } catch (e) {
+        } catch (e: any) {
             // maybe the index has been dropped in the meantime
             if (e.errorNum === ERROR_ARANGO_INDEX_NOT_FOUND) {
                 return;
@@ -88,7 +88,7 @@ export class MigrationPerformer {
                 ...(this.config.createCollectionOptions as any),
                 type: CollectionType.DOCUMENT_COLLECTION,
             });
-        } catch (e) {
+        } catch (e: any) {
             // maybe the collection has been created in the meantime
             if (e.errorNum === ERROR_ARANGO_DUPLICATE_NAME) {
                 const collection = await this.db.collection(migration.collectionName).get();
@@ -106,7 +106,7 @@ export class MigrationPerformer {
                 ...(this.config.createCollectionOptions as any),
                 type: CollectionType.EDGE_COLLECTION,
             });
-        } catch (e) {
+        } catch (e: any) {
             // maybe the collection has been created in the meantime
             if (e.errorNum === ERROR_ARANGO_DUPLICATE_NAME) {
                 const collection = await this.db.collection(migration.collectionName).get();
@@ -124,7 +124,7 @@ export class MigrationPerformer {
                 migration.viewName,
                 configureForBackgroundCreation(migration.properties),
             );
-        } catch (e) {
+        } catch (e: any) {
             // maybe the collection has been created in the meantime
             if (e.errorNum === ERROR_ARANGO_DUPLICATE_NAME) {
                 const existingProperties = await this.db.view(migration.viewName).properties();
@@ -146,7 +146,7 @@ export class MigrationPerformer {
     private async dropArangoSearchView(migration: DropArangoSearchViewMigration) {
         try {
             await this.db.view(migration.config.viewName).drop();
-        } catch (e) {
+        } catch (e: any) {
             // maybe the view has been dropped in the meantime
             if (e.errorNum === ERROR_ARANGO_DATA_SOURCE_NOT_FOUND) {
                 return;
@@ -158,7 +158,7 @@ export class MigrationPerformer {
     private async recreateArangoSearchView(migration: RecreateArangoSearchViewMigration) {
         try {
             await this.db.view(migration.viewName).drop();
-        } catch (e) {
+        } catch (e: any) {
             // maybe the view has been dropped in the meantime
             if (e.errorNum !== ERROR_ARANGO_DATA_SOURCE_NOT_FOUND) {
                 throw e;
@@ -170,7 +170,7 @@ export class MigrationPerformer {
                 migration.viewName,
                 configureForBackgroundCreation(migration.properties),
             );
-        } catch (e) {
+        } catch (e: any) {
             // maybe the collection has been created in the meantime
             if (e.errorNum === ERROR_ARANGO_DUPLICATE_NAME) {
                 const existingProperties = await this.db.view(migration.viewName).properties();
@@ -192,7 +192,7 @@ export class MigrationPerformer {
     private async updateArangoSearchAnalyzer(migration: UpdateArangoSearchAnalyzerMigration) {
         try {
             await this.db.analyzer(migration.name).drop(false);
-        } catch (e) {
+        } catch (e: any) {
             if (e.code === 409) {
                 throw new Error(
                     `Failed to drop arangoSearch analyzer because it is still in use. Drop arangoSearch views and run the migration again. ${e.message}`,

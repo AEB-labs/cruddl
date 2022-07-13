@@ -1,5 +1,6 @@
 import { Thunk } from 'graphql';
 import { fromPairs, toPairs } from 'lodash';
+import { v4 as uuid } from 'uuid';
 import {
     ChildEntityType,
     EntityExtensionType,
@@ -14,9 +15,7 @@ import {
     CreateEntitiesQueryNode,
     CreateEntityQueryNode,
     EntityFromIdQueryNode,
-    FirstOfListQueryNode,
     ListItemQueryNode,
-    ListQueryNode,
     LiteralQueryNode,
     PreExecQueryParms,
     QueryNode,
@@ -34,7 +33,6 @@ import {
 } from '../utils/billing-nodes';
 import { CreateInputField } from './input-fields';
 import { isRelationCreateField } from './relation-fields';
-import uuid = require('uuid');
 
 function getCurrentISODate() {
     return new Date().toISOString();

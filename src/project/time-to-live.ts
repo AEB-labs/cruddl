@@ -1,4 +1,4 @@
-import { DateTimeFormatter, ZonedDateTime, ZoneId } from 'js-joda';
+import { DateTimeFormatter, ZonedDateTime, ZoneId } from '@js-joda/core';
 import { ExecutionOptions } from '../execution/execution-options';
 import { Field, ScalarType } from '../model';
 import { TimeToLiveType } from '../model/implementation/time-to-live';

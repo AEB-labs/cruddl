@@ -1,6 +1,6 @@
 import { Database } from 'arangojs';
 import { graphql, GraphQLSchema } from 'graphql';
-import * as path from 'path';
+import { resolve } from 'path';
 import { ProjectOptions } from '../../../src/config/interfaces';
 import { ArangoDBAdapter } from '../../../src/database/arangodb';
 import { Project } from '../../../src/project/project';
@@ -12,7 +12,7 @@ import { createTempDatabase } from '../../regression/initialization';
 // arangojs typings for this are completely broken
 export const aql: (template: TemplateStringsArray, ...args: any[]) => any = require('arangojs').aql;
 
-const MODEL_PATH = path.resolve(__dirname, '../../regression/papers/model');
+const MODEL_PATH = resolve(__dirname, '../../regression/papers/model');
 
 export interface TestEnvironment {
     getDB(): Database;

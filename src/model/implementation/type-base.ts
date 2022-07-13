@@ -41,7 +41,10 @@ export abstract class TypeBase implements ModelComponent {
         // Leading underscores are reserved for internal names
         if (this.name.startsWith('_')) {
             context.addMessage(
-                ValidationMessage.error(`Type names cannot start with an underscore.`, this.nameASTNode)
+                ValidationMessage.error(
+                    `Type names cannot start with an underscore.`,
+                    this.nameASTNode,
+                ),
             );
             return;
         }
@@ -49,13 +52,21 @@ export abstract class TypeBase implements ModelComponent {
         // some naming convention rules
 
         if (this.name.includes('_')) {
-            context.addMessage(ValidationMessage.warn(`Type names should not include underscores.`, this.nameASTNode));
+            context.addMessage(
+                ValidationMessage.warn(
+                    `Type names should not include underscores.`,
+                    this.nameASTNode,
+                ),
+            );
             return;
         }
 
         if (!this.name.match(/^[A-Z]/)) {
             context.addMessage(
-                ValidationMessage.warn(`Type names should start with an uppercase character.`, this.nameASTNode)
+                ValidationMessage.warn(
+                    `Type names should start with an uppercase character.`,
+                    this.nameASTNode,
+                ),
             );
         }
     }
@@ -69,11 +80,11 @@ export abstract class TypeBase implements ModelComponent {
         return this.model.getNamespaceByPathOrThrow(this.namespacePath);
     }
 
-    abstract readonly isObjectType: boolean = false;
-    abstract readonly isRootEntityType: boolean = false;
-    abstract readonly isChildEntityType: boolean = false;
-    abstract readonly isEntityExtensionType: boolean = false;
-    abstract readonly isValueObjectType: boolean = false;
-    abstract readonly isScalarType: boolean = false;
-    abstract readonly isEnumType: boolean = false;
+    abstract readonly isObjectType: boolean;
+    abstract readonly isRootEntityType: boolean;
+    abstract readonly isChildEntityType: boolean;
+    abstract readonly isEntityExtensionType: boolean;
+    abstract readonly isValueObjectType: boolean;
+    abstract readonly isScalarType: boolean;
+    abstract readonly isEnumType: boolean;
 }

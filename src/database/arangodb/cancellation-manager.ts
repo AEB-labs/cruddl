@@ -20,7 +20,7 @@ export class CancellationManager {
         }
         try {
             await this.database.killQuery(query.id);
-        } catch (e) {
+        } catch (e: any) {
             if (e.errorNum === ERROR_QUERY_NOT_FOUND) {
                 // error has finished in the meantime, so ignore
                 return;

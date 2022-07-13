@@ -44,7 +44,7 @@ import { SchemaMigration } from './schema-migration/migrations';
 import { MigrationPerformer } from './schema-migration/performer';
 import { TransactionError } from '../../execution/transaction-error';
 import { ArangoDBVersion, ArangoDBVersionHelper } from './version-helper';
-import uuid = require('uuid');
+import { v4 as uuid } from 'uuid';
 
 const requestInstrumentationBodyKey = 'cruddlRequestInstrumentation';
 
@@ -262,7 +262,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                             }
                         }
                     }
-                } catch (e) {
+                } catch (e: any) {
                     rollbackWithError({
                         message: e.message,
                         code: e.code,
@@ -661,7 +661,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                     waitForSync: true,
                 },
             );
-        } catch (e) {
+        } catch (e: any) {
             isTransactionFinished = true;
             if (e.message.startsWith('RolledBackTransactionError: ')) {
                 const valStr = e.message.substr('RolledBackTransactionError: '.length);
@@ -769,7 +769,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                 this.logger.info(`Performing migration "${migration.description}"`);
                 await this.performMigration(migration);
                 this.logger.info(`Successfully performed migration "${migration.description}"`);
-            } catch (e) {
+            } catch (e: any) {
                 this.logger.error(
                     `Error performing migration "${migration.description}": ${e.stack}`,
                 );
