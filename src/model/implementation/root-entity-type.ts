@@ -1,6 +1,7 @@
 import { GraphQLID, GraphQLString } from 'graphql';
 import memorize from 'memorize-decorator';
 import {
+    ACCESS_FIELD_DIRECTIVE,
     ACCESS_GROUP_FIELD,
     FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE,
     FLEX_SEARCH_INDEXED_DIRECTIVE,
@@ -8,13 +9,13 @@ import {
     ID_FIELD,
     ROOT_ENTITY_DIRECTIVE,
     SCALAR_INT,
-    SCALAR_STRING
+    SCALAR_STRING,
 } from '../../schema/constants';
 import { GraphQLInt53 } from '../../schema/scalars/int53';
 import { GraphQLLocalDate } from '../../schema/scalars/local-date';
 import { compact } from '../../utils/utils';
 import { FlexSearchPrimarySortClauseConfig, PermissionsConfig, RootEntityTypeConfig, TypeKind } from '../config';
-import { ValidationContext, ValidationMessage } from '../validation';
+import { Severity, ValidationContext, ValidationMessage } from '../validation';
 import { Field, SystemFieldConfig } from './field';
 import { FieldPath } from './field-path';
 import { FlexSearchPrimarySortClause } from './flex-search';
@@ -66,7 +67,7 @@ export class RootEntityType extends ObjectTypeBase {
         // (do this to the inputs so that addIdentifyingSuffixIfNeeded is called on these, too)
         if (this.keyField) {
             const keyField = this.keyField;
-            if (!indexConfigs.some(f => f.unique === true && f.fields.length == 1 && f.fields[0] === keyField.name)) {
+            if (!indexConfigs.some((f) => f.unique === true && f.fields.length == 1 && f.fields[0] === keyField.name)) {
                 indexConfigs.push({ unique: true, fields: [keyField.name] });
             }
         }
@@ -75,11 +76,11 @@ export class RootEntityType extends ObjectTypeBase {
             indexConfigs.push({ unique: false, fields: [timeToLiveType.input.dateField] });
         }
 
-        const indices = indexConfigs.map(config => new Index(config, this));
+        const indices = indexConfigs.map((config) => new Index(config, this));
 
         if (this.discriminatorField !== this.keyField) {
             if (
-                !indices.some(index => index.fields.length === 1 && index.fields[0].field === this.discriminatorField)
+                !indices.some((index) => index.fields.length === 1 && index.fields[0].field === this.discriminatorField)
             ) {
                 // make sure there is an index on the discriminator field that can be used for sorting
                 // arangodb already has an index on 'id', but it's a hash index which is unusable for sorting
@@ -88,7 +89,7 @@ export class RootEntityType extends ObjectTypeBase {
                 indices.push(
                     new Index(
                         {
-                            fields: [this.discriminatorField.name]
+                            fields: [this.discriminatorField.name],
                         },
                         this
                     )
@@ -102,8 +103,8 @@ export class RootEntityType extends ObjectTypeBase {
 
     get hasFieldsIncludedInSearch() {
         return (
-            this.fields.some(value => value.isIncludedInSearch) ||
-            this.fields.some(value => value.isFulltextIncludedInSearch)
+            this.fields.some((value) => value.isIncludedInSearch) ||
+            this.fields.some((value) => value.isFulltextIncludedInSearch)
         );
     }
 
@@ -160,7 +161,7 @@ export class RootEntityType extends ObjectTypeBase {
      * (as opposed to the relation only existing because a different type has a relation field to this root entity)
      */
     get explicitRelations(): ReadonlyArray<Relation> {
-        return compact(this.fields.map(field => field.relation));
+        return compact(this.fields.map((field) => field.relation));
     }
 
     /**
@@ -168,7 +169,7 @@ export class RootEntityType extends ObjectTypeBase {
      */
     @memorize()
     get relations(): ReadonlyArray<Relation> {
-        return this.model.relations.filter(rel => rel.fromType === this || rel.toType === this);
+        return this.model.relations.filter((rel) => rel.fromType === this || rel.toType === this);
     }
 
     /**
@@ -177,15 +178,15 @@ export class RootEntityType extends ObjectTypeBase {
     @memorize()
     get relationSides(): ReadonlyArray<RelationSide> {
         return [
-            ...this.model.relations.filter(rel => rel.fromType === this).map(rel => rel.fromSide),
-            ...this.model.relations.filter(rel => rel.toType === this).map(rel => rel.toSide)
+            ...this.model.relations.filter((rel) => rel.fromType === this).map((rel) => rel.fromSide),
+            ...this.model.relations.filter((rel) => rel.toType === this).map((rel) => rel.toSide),
         ];
     }
 
     validate(context: ValidationContext) {
         super.validate(context);
 
-        if (this.model.forbiddenRootEntityNames.find(value => this.name.toLowerCase() === value.toLowerCase())) {
+        if (this.model.forbiddenRootEntityNames.find((value) => this.name.toLowerCase() === value.toLowerCase())) {
             context.addMessage(ValidationMessage.error(`RootEntities cannot be named ${this.name}.`, this.nameASTNode));
         }
 
@@ -260,24 +261,98 @@ export class RootEntityType extends ObjectTypeBase {
             this.roles.validate(context);
         }
 
+        this.validatePermissionProfileAccessGroup(context);
+        this.validatePermissionProfileRestrictions(context);
+    }
+
+    private validatePermissionProfileAccessGroup(context: ValidationContext) {
         const usesAccessGroup =
-            this.permissionProfile && this.permissionProfile.permissions.some(per => !!per.restrictToAccessGroups);
+            this.permissionProfile && this.permissionProfile.permissions.some((per) => !!per.restrictToAccessGroups);
         if (usesAccessGroup) {
             const accessGroupField = this.getField(ACCESS_GROUP_FIELD);
             if (!accessGroupField) {
                 context.addMessage(
                     ValidationMessage.error(
-                        `The permission profile "${permissions.permissionProfileName}" uses "restrictToAccessGroups", but this root entity does not have a "${ACCESS_GROUP_FIELD}" field.`,
-                        permissions.permissionProfileNameAstNode || this.nameASTNode
+                        `The permission profile "${this.permissions.permissionProfileName}" uses "restrictToAccessGroups", but this root entity does not have a "${ACCESS_GROUP_FIELD}" field.`,
+                        this.permissions.permissionProfileNameAstNode || this.nameASTNode
                     )
                 );
             } else if (!accessGroupField.type.isEnumType && accessGroupField.type.name !== GraphQLString.name) {
                 context.addMessage(
                     ValidationMessage.error(
-                        `This field must be of String or enum type to be used as "accessGroup" with the permission profile "${permissions.permissionProfileName}".`,
+                        `This field must be of String or enum type to be used as "accessGroup" with the permission profile "${this.permissions.permissionProfileName}".`,
                         accessGroupField.astNode || this.nameASTNode
                     )
                 );
+            }
+        }
+    }
+
+    private validatePermissionProfileRestrictions(context: ValidationContext) {
+        if (!this.permissionProfile) {
+            return;
+        }
+        for (const permission of this.permissionProfile.permissions) {
+            for (const restriction of permission.restrictions) {
+                const nestedContext = new ValidationContext();
+
+                const fieldPath = new FieldPath({
+                    path: restriction.field,
+                    baseType: this,
+                    location: restriction.fieldValueLoc,
+                    canUseCollectFields: false,
+                    canTraverseRootEntities: false,
+                });
+                fieldPath.validate(nestedContext);
+
+                const lastField = fieldPath.lastField;
+                if (lastField) {
+                    if (lastField.type.kind !== TypeKind.SCALAR && lastField.type.kind !== TypeKind.ENUM) {
+                        nestedContext.addMessage(
+                            ValidationMessage.error(
+                                `Field "${lastField.declaringType.name}.${lastField.name}" is of type "${lastField.type.name}", but only scalar and enum types fields can be used for field restrictions.`,
+                                this.astNode
+                            )
+                        );
+                    }
+                }
+                if (fieldPath.fields) {
+                    for (const field of fieldPath.fields) {
+                        if (!field.isAccessField) {
+                            nestedContext.addMessage(
+                                ValidationMessage.error(
+                                    `Field "${field.declaringType.name}.${field.name}" needs the @${ACCESS_FIELD_DIRECTIVE} directive to be used in a permission restriction.`,
+                                    this.astNode
+                                )
+                            );
+                        }
+                        if (this.isFlexSearchIndexed && !field.isFlexSearchIndexed) {
+                            nestedContext.addMessage(
+                                ValidationMessage.error(
+                                    `Field "${field.declaringType.name}.${field.name}" needs the @${FLEX_SEARCH_INDEXED_DIRECTIVE} directive because type "${this.name}" is marked with "flexSearch: true".`,
+                                    this.astNode
+                                )
+                            );
+                        }
+                    }
+                }
+
+                // if there are validation errors in the field, show them at the usage and at the definition
+                for (const message of nestedContext.validationMessages) {
+                    context.addMessage(
+                        new ValidationMessage(
+                            message.severity,
+                            `Permission profile "${this.permissionProfile.name}" defines restrictions that cannot be applied to type "${this.name}": ${message.message}`
+                        )
+                    );
+                    context.addMessage(
+                        new ValidationMessage(
+                            message.severity,
+                            `Cannot be applied to type "${this.name}": ${message.message}`,
+                            message.location
+                        )
+                    );
+                }
             }
         }
     }
@@ -294,7 +369,7 @@ export class RootEntityType extends ObjectTypeBase {
         if (
             !this.isFlexSearchIndexed &&
             this.fields.some(
-                value => (value.isFlexSearchIndexed || value.isFlexSearchFulltextIndexed) && !value.isSystemField
+                (value) => (value.isFlexSearchIndexed || value.isFlexSearchFulltextIndexed) && !value.isSystemField
             )
         ) {
             context.addMessage(
@@ -308,12 +383,12 @@ export class RootEntityType extends ObjectTypeBase {
         for (const primarySortConfig of this.flexSearchPrimarySort) {
             const primarySortPath = primarySortConfig.field.path.split('.');
             const astNode = this.input
-                .astNode!.directives!.find(value => value.name.value === ROOT_ENTITY_DIRECTIVE)!
-                .arguments!.find(value => value.name.value === FLEX_SEARCH_ORDER_ARGUMENT)!;
+                .astNode!.directives!.find((value) => value.name.value === ROOT_ENTITY_DIRECTIVE)!
+                .arguments!.find((value) => value.name.value === FLEX_SEARCH_ORDER_ARGUMENT)!;
 
             function isValidPath(fields: ReadonlyArray<Field>, path: ReadonlyArray<string>): boolean {
                 const [head, ...tail] = path;
-                const field = fields.find(value => value.name === head);
+                const field = fields.find((value) => value.name === head);
                 if (field) {
                     if (field.type.isScalarType || (field.type.isEnumType && tail.length == 0)) {
                         return true;
@@ -340,7 +415,7 @@ export class RootEntityType extends ObjectTypeBase {
 
     @memorize()
     get billingEntityConfig() {
-        return this.model.billingEntityTypes.find(value => value.rootEntityType === this);
+        return this.model.billingEntityTypes.find((value) => value.rootEntityType === this);
     }
 
     private completeFlexSearchPrimarySort(
@@ -349,17 +424,17 @@ export class RootEntityType extends ObjectTypeBase {
         // primary sort is only used for sorting, so make sure it's unique
         // - this makes querying more consistent
         // - this enables us to use primary sort for cursor-based pagination (which requires an absolute sort order)
-        if (!clauses.some(clause => clause.field === this.discriminatorField.name)) {
+        if (!clauses.some((clause) => clause.field === this.discriminatorField.name)) {
             clauses = [
                 ...clauses,
                 {
                     field: this.discriminatorField.name,
-                    asc: true
-                }
+                    asc: true,
+                },
             ];
         }
         return clauses.map(
-            c =>
+            (c) =>
                 new FlexSearchPrimarySortClause(
                     new FieldPath({ path: c.field, baseType: this }),
                     c.asc ? OrderDirection.ASCENDING : OrderDirection.DESCENDING
@@ -370,7 +445,7 @@ export class RootEntityType extends ObjectTypeBase {
     @memorize()
     get timeToLiveTypes(): ReadonlyArray<TimeToLiveType> {
         return this.model.timeToLiveTypes.filter(
-            ttlType => ttlType.rootEntityType && ttlType.rootEntityType.name === this.name
+            (ttlType) => ttlType.rootEntityType && ttlType.rootEntityType.name === this.name
         );
     }
 }
@@ -383,7 +458,7 @@ const systemFieldInputs: ReadonlyArray<SystemFieldConfig> = [
         description: 'An auto-generated string that identifies this root entity uniquely among others of the same type',
         isFlexSearchIndexed: true,
         isFlexSearchFulltextIndexed: false,
-        isIncludedInSearch: false
+        isIncludedInSearch: false,
     },
     {
         name: 'createdAt',
@@ -392,7 +467,7 @@ const systemFieldInputs: ReadonlyArray<SystemFieldConfig> = [
         description: 'The instant this object has been created',
         isFlexSearchIndexed: true,
         isFlexSearchFulltextIndexed: false,
-        isIncludedInSearch: false
+        isIncludedInSearch: false,
     },
     {
         name: 'updatedAt',
@@ -401,6 +476,6 @@ const systemFieldInputs: ReadonlyArray<SystemFieldConfig> = [
         description: 'The instant this object has been updated the last time (not including relation updates)',
         isFlexSearchIndexed: true,
         isFlexSearchFulltextIndexed: false,
-        isIncludedInSearch: false
-    }
+        isIncludedInSearch: false,
+    },
 ];

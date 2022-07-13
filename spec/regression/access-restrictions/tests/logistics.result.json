@@ -1,0 +1,87 @@
+{
+    "q": {
+        "data": {
+            "allFiles": [
+                {
+                    "name": "logistics"
+                },
+                {
+                    "name": "public"
+                }
+            ]
+        }
+    },
+    "updateToAccessGroupWithPermissions": {
+        "data": {
+            "updateFile": {
+                "name": "public"
+            }
+        }
+    },
+    "updateAllToAccessGroupWithPermissions": {
+        "data": {
+            "updateAllFiles": [
+                {
+                    "name": "public"
+                }
+            ]
+        }
+    },
+    "updateManyToAccessGroupWithPermissions": {
+        "data": {
+            "updateFiles": [
+                {
+                    "name": "public"
+                }
+            ]
+        }
+    },
+    "createWithAccessGroupWithoutPermissions": {
+        "errors": [
+            {
+                "message": "Not authorized to set File.accessGroup to this value",
+                "locations": [
+                    {
+                        "line": 30,
+                        "column": 5
+                    }
+                ],
+                "path": ["createFile"]
+            }
+        ],
+        "data": null
+    },
+    "createManyWithAccessGroupWithoutPermissions": {
+        "errors": [
+            {
+                "message": "Not authorized to set File.accessGroup to this value",
+                "locations": [
+                    {
+                        "line": 37,
+                        "column": 5
+                    }
+                ],
+                "path": ["createFiles"]
+            }
+        ],
+        "data": {
+            "createFiles": null
+        }
+    },
+    "createWithAccessGroupWithPermissions": {
+        "data": {
+            "createFile": {
+                "name": "test"
+            }
+        }
+    },
+    "createManyWithAccessGroupWithPermissions": {
+        "data": {
+            "createFiles": [
+                {
+                    "name": "test"
+                }
+            ]
+        }
+    }
+}

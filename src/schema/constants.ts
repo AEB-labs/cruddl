@@ -20,6 +20,7 @@ export const REFERENCE_DIRECTIVE = 'reference';
 export const DEFAULT_VALUE_DIRECTIVE = 'defaultValue';
 export const PARENT_DIRECTIVE = 'parent';
 export const ROOT_DIRECTIVE = 'root';
+export const ACCESS_FIELD_DIRECTIVE = 'accessField';
 export const FLEX_SEARCH_INDEXED_DIRECTIVE = 'flexSearch';
 export const FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE = 'flexSearchFulltext';
 
@@ -132,7 +133,7 @@ export const CALC_MUTATIONS_OPERATORS: CalcMutationOperator[] = [
     { name: 'SUBTRACT', prefix: 'subtractFrom_', supportedTypes: numberTypeNames },
     { name: 'MODULO', prefix: 'moduloOf_', supportedTypes: numberTypeNames },
     { name: 'APPEND', prefix: 'appendTo_', supportedTypes: ['String'] },
-    { name: 'PREPEND', prefix: 'prependTo_', supportedTypes: ['String'] }
+    { name: 'PREPEND', prefix: 'prependTo_', supportedTypes: ['String'] },
 ];
 
 export const COUNT_META_FIELD = 'count';
@@ -151,7 +152,7 @@ export const OBJECT_TYPE_KIND_DIRECTIVES = [
     ROOT_ENTITY_DIRECTIVE,
     CHILD_ENTITY_DIRECTIVE,
     ENTITY_EXTENSION_DIRECTIVE,
-    VALUE_OBJECT_DIRECTIVE
+    VALUE_OBJECT_DIRECTIVE,
 ];
 
 export const NAMESPACE_DIRECTIVE = 'namespace';

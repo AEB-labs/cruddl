@@ -9,6 +9,8 @@ export interface FieldPathConfig {
     readonly path: string;
     readonly location?: MessageLocation;
     readonly baseType: ObjectType;
+    readonly canTraverseRootEntities?: boolean;
+    readonly canUseCollectFields?: boolean;
 }
 
 /**
@@ -117,6 +119,30 @@ export class FieldPath implements ModelComponent {
                     )
                 );
                 return [];
+            }
+
+            if (this.config.canUseCollectFields === false && field.isCollectField) {
+                addMessage(
+                    ValidationMessage.error(
+                        `Field "${currentType.name}.${field.name}" is a collect field, but collect fields cannot be used in this path.`,
+                        segmentLocation
+                    )
+                );
+            }
+
+            if (this.config.canTraverseRootEntities === false) {
+                if (
+                    field.type.isRootEntityType ||
+                    (field.isCollectField && field.collectPath?.traversesRootEntityTypes)
+                ) {
+                    addMessage(
+                        ValidationMessage.error(
+                            `Field "${currentType.name}.${field.name}" resolves to a different root entity, but this path cannot traverse root entity boundaries.`,
+                            segmentLocation
+                        )
+                    );
+                    return [];
+                }
             }
 
             segments.push(field);

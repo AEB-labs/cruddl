@@ -31,12 +31,36 @@ export interface PermissionConfig {
     /**
      * Roles this permission is granted to. May use wildcards
      */
-    roles: ReadonlyArray<string>;
+    readonly roles: ReadonlyArray<string>;
 
-    access: PermissionAccessKind | ReadonlyArray<PermissionAccessKind>;
+    readonly access: PermissionAccessKind | ReadonlyArray<PermissionAccessKind>;
 
     /**
      * If specified, the permission is only granted for objects with certain access groups
      */
-    restrictToAccessGroups?: ReadonlyArray<string>;
+    readonly restrictToAccessGroups?: ReadonlyArray<string>;
+
+    readonly restrictions?: ReadonlyArray<PermissionRestrictionConfig>;
+
+    readonly loc?: MessageLocation;
+}
+
+export interface PermissionRestrictionConfig {
+    /**
+     * Dot-separated field path
+     */
+    readonly field: string;
+
+    /**
+     * Literal value that must match exactly
+     */
+    readonly value?: unknown;
+
+    /**
+     * A string that can use capture groups of the role regex
+     */
+    readonly valueTemplate?: string;
+
+    readonly loc?: MessageLocation;
+    readonly fieldValueLoc?: MessageLocation;
 }

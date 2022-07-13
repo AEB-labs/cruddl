@@ -219,6 +219,9 @@ export const DIRECTIVES: DocumentNode = gql`
 
     "Declares a root entity type to be one of the core objects of business transactions"
     directive @businessObject on OBJECT
+
+    "Annotates a field so it can be used within restrictions of a permission profile"
+    directive @accessField on FIELD_DEFINITION
 `;
 
 export const CORE_SCALARS: DocumentNode = gql`

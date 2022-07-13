@@ -1,9 +1,18 @@
+import { emit } from 'cluster';
 import { AccessOperation, AuthContext } from '../../authorization/auth-basics';
 import { WILDCARD_CHARACTER } from '../../schema/constants';
 import { escapeRegExp } from '../../utils/utils';
-import { MessageLocation, PermissionAccessKind, PermissionConfig, PermissionProfileConfig } from '../index';
+import {
+    MessageLocation,
+    PermissionAccessKind,
+    PermissionConfig,
+    PermissionProfileConfig,
+    PermissionRestrictionConfig,
+    ValidationMessage,
+} from '../index';
+import { ModelComponent, ValidationContext } from '../validation/validation-context';
 
-export class PermissionProfile {
+export class PermissionProfile implements ModelComponent {
     readonly permissions: ReadonlyArray<Permission>;
     readonly loc: MessageLocation | undefined;
 
@@ -12,27 +21,35 @@ export class PermissionProfile {
         public readonly namespacePath: ReadonlyArray<string>,
         config: PermissionProfileConfig
     ) {
-        this.permissions = (config.permissions || []).map(permissionConfig => new Permission(permissionConfig));
+        this.permissions = (config.permissions || []).map((permissionConfig) => new Permission(permissionConfig));
         this.loc = config.loc;
+    }
+
+    validate(context: ValidationContext) {
+        for (const permission of this.permissions) {
+            permission.validate(context);
+        }
     }
 }
 
-export class Permission {
+export class Permission implements ModelComponent {
     readonly roles: RoleSpecifier;
     readonly access: ReadonlyArray<PermissionAccessKind>;
     readonly restrictToAccessGroups?: ReadonlyArray<string>;
     readonly hasDynamicAccessGroups: boolean;
+    readonly restrictions: ReadonlyArray<PermissionRestriction>;
 
     constructor(config: PermissionConfig) {
         this.roles = new RoleSpecifier(config.roles);
         this.access = Array.isArray(config.access) ? config.access : [config.access];
         this.restrictToAccessGroups = config.restrictToAccessGroups;
         this.hasDynamicAccessGroups =
-            !!this.restrictToAccessGroups && this.restrictToAccessGroups.some(group => group.includes('$'));
+            !!this.restrictToAccessGroups && this.restrictToAccessGroups.some((group) => group.includes('$'));
+        this.restrictions = config.restrictions ? config.restrictions.map((c) => new PermissionRestriction(c)) : [];
     }
 
     appliesToAuthContext(authContext: AuthContext) {
-        return authContext.authRoles.some(role => this.roles.includesRole(role));
+        return authContext.authRoles.some((role) => this.roles.includesRole(role));
     }
 
     allowsOperation(operation: AccessOperation) {
@@ -61,21 +78,37 @@ export class Permission {
 
         const accessGroups = new Set<string>();
         for (const accessGroupExpression of this.restrictToAccessGroups) {
-            if (!accessGroupExpression.includes('$')) {
-                // literal access group
-                accessGroups.add(accessGroupExpression);
-            } else {
-                for (const specifier of this.roles.entries) {
-                    for (const role of authContext.authRoles) {
-                        const accessGroup = specifier.getReplacementForRole(role, accessGroupExpression);
-                        if (accessGroup) {
-                            accessGroups.add(accessGroup);
-                        }
-                    }
-                }
+            const accessGroupsInExpression = this.evaluateTemplate(accessGroupExpression, authContext);
+            for (const accessGroup of accessGroupsInExpression) {
+                accessGroups.add(accessGroup);
             }
         }
         return Array.from(accessGroups);
+    }
+
+    /**
+     * Replaces placeholders like $1 with the capture groups of the roles regex
+     */
+    evaluateTemplate(template: string, authContext: AuthContext): ReadonlyArray<string> {
+        if (!template.includes('$')) {
+            return [template];
+        }
+        const values = new Set<string>();
+        for (const specifier of this.roles.entries) {
+            for (const role of authContext.authRoles) {
+                const value = specifier.getReplacementForRole(role, template);
+                if (value !== undefined) {
+                    values.add(value);
+                }
+            }
+        }
+        return Array.from(values);
+    }
+
+    validate(context: ValidationContext) {
+        for (const restriction of this.restrictions) {
+            restriction.validate(context);
+        }
     }
 }
 
@@ -83,11 +116,11 @@ export class RoleSpecifier {
     readonly entries: ReadonlyArray<RoleSpecifierEntry>;
 
     constructor(roles: ReadonlyArray<string>) {
-        this.entries = roles.map(specifier => createRoleSpecifierEntry(specifier));
+        this.entries = roles.map((specifier) => createRoleSpecifierEntry(specifier));
     }
 
     includesRole(role: string): boolean {
-        return this.entries.some(e => e.matchesRole(role));
+        return this.entries.some((e) => e.matchesRole(role));
     }
 }
 
@@ -184,5 +217,29 @@ export class LiteralRoleSpecifierEntry implements RoleSpecifierEntry {
 
     getReplacementForRole(role: string, replacementExpression: string): string | undefined {
         return undefined;
+    }
+}
+
+export class PermissionRestriction implements ModelComponent {
+    readonly field: string;
+    readonly value?: unknown;
+    readonly valueTemplate?: string;
+    readonly loc?: MessageLocation;
+    readonly fieldValueLoc?: MessageLocation;
+
+    constructor(config: PermissionRestrictionConfig) {
+        this.field = config.field;
+        this.value = config.value;
+        this.valueTemplate = config.valueTemplate;
+        this.loc = config.loc;
+        this.fieldValueLoc = config.fieldValueLoc;
+    }
+
+    validate(context: ValidationContext) {
+        if (this.valueTemplate !== undefined && this.value !== undefined) {
+            context.addMessage(
+                ValidationMessage.error(`"value" and "valueTemplate" cannot be both specified.`, this.loc)
+            );
+        }
     }
 }

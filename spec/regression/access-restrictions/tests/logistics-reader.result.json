@@ -1,0 +1,174 @@
+{
+    "q": {
+        "data": {
+            "allFiles": [
+                {
+                    "name": "logistics"
+                },
+                {
+                    "name": "public"
+                }
+            ]
+        }
+    },
+    "updatePublic": {
+        "data": {
+            "updateFile": {
+                "name": "public2"
+            }
+        }
+    },
+    "updateToAccessGroupWithoutReadPermissions": {
+        "errors": [
+            {
+                "message": "Not authorized to set File.accessGroup to this value",
+                "locations": [
+                    {
+                        "line": 15,
+                        "column": 5
+                    }
+                ],
+                "path": ["updateFile"]
+            }
+        ],
+        "data": {
+            "updateFile": null
+        }
+    },
+    "updateToAccessGroupWithoutWritePermissions": {
+        "errors": [
+            {
+                "message": "Not authorized to set File.accessGroup to this value",
+                "locations": [
+                    {
+                        "line": 22,
+                        "column": 5
+                    }
+                ],
+                "path": ["updateFile"]
+            }
+        ],
+        "data": {
+            "updateFile": null
+        }
+    },
+    "createWithAccessGroupWithWritePermissions": {
+        "data": {
+            "createFile": {
+                "name": "test"
+            }
+        }
+    },
+    "createWithAccessGroupWithoutWritePermissions": {
+        "errors": [
+            {
+                "message": "Not authorized to set File.accessGroup to this value",
+                "locations": [
+                    {
+                        "line": 36,
+                        "column": 5
+                    }
+                ],
+                "path": ["createFile"]
+            }
+        ],
+        "data": null
+    },
+    "updateWriteRestricted": {
+        "errors": [
+            {
+                "message": "Not authorized to update this File object",
+                "locations": [
+                    {
+                        "line": 42,
+                        "column": 5
+                    }
+                ],
+                "path": ["updateFile"]
+            }
+        ],
+        "data": {
+            "updateFile": null
+        }
+    },
+    "updateWriteRestrictedToAccessGroupWithoutWritePermissions": {
+        "errors": [
+            {
+                "message": "Not authorized to update this File object",
+                "locations": [
+                    {
+                        "line": 49,
+                        "column": 5
+                    }
+                ],
+                "path": ["updateFile"]
+            }
+        ],
+        "data": {
+            "updateFile": null
+        }
+    },
+    "updateReadRestricted": {
+        "errors": [
+            {
+                "message": "File with id '@{ids/File/1}' could not be found.",
+                "locations": [
+                    {
+                        "line": 55,
+                        "column": 5
+                    }
+                ],
+                "path": ["updateFile"]
+            }
+        ],
+        "data": {
+            "updateFile": null
+        }
+    },
+    "updateReadRestrictedToAccessGroupWithoutWritePermissions": {
+        "errors": [
+            {
+                "message": "File with id '@{ids/File/1}' could not be found.",
+                "locations": [
+                    {
+                        "line": 62,
+                        "column": 5
+                    }
+                ],
+                "path": ["updateFile"]
+            }
+        ],
+        "data": {
+            "updateFile": null
+        }
+    },
+    "deletePublic": {
+        "data": {
+            "deleteFile": {
+                "name": "public2"
+            }
+        }
+    },
+    "deleteWriteRestricted": {
+        "errors": [
+            {
+                "message": "Not authorized to delete this File object",
+                "locations": [
+                    {
+                        "line": 74,
+                        "column": 5
+                    }
+                ],
+                "path": ["deleteFile"]
+            }
+        ],
+        "data": {
+            "deleteFile": null
+        }
+    },
+    "deleteReadRestricted": {
+        "data": {
+            "deleteFile": null
+        }
+    }
+}

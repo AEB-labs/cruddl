@@ -30,14 +30,14 @@ export async function start() {
                 databaseName,
                 url: databaseURL,
                 doNonMandatoryMigrations: true,
-                createIndicesInBackground: true
+                createIndicesInBackground: true,
             },
             { loggerProvider }
         );
     }
 
     const project = await loadProjectFromDir(path.resolve(__dirname, './model'), {
-        profileConsumer: profile => {
+        profileConsumer: (profile) => {
             logger.info(
                 `${profile.operation.operation} ${
                     profile.operation.name ? profile.operation.name.value : '<anonymous>'
@@ -47,21 +47,21 @@ export async function start() {
         getOperationIdentifier: ({ context }) => context as object, // each operation is executed with an unique context object
         getExecutionOptions: ({ context }: { context: any }) => {
             return {
-                authRoles: ['logistics-reader'],
+                authRoles: ['allusers'],
                 recordTimings: true,
                 recordPlan: true,
                 mutationMode: 'normal',
-                disableAuthorization: true,
+                disableAuthorization: false,
 
                 //queryMemoryLimit: 1000000,
-                cancellationToken: new Promise(resolve => context.req.on('aborted', resolve))
+                cancellationToken: new Promise((resolve) => context.req.on('aborted', resolve)),
             };
         },
         /*processError(error: Error) {
             console.error(`Internal error: ${error.stack}`);
             return new Error(`Internal error`);
         },*/
-        loggerProvider
+        loggerProvider,
     });
     const schema = project.createSchema(db);
 
@@ -72,7 +72,7 @@ export async function start() {
 
     if (process.argv.includes('--run-ttl-cleanup')) {
         const result = await project.executeTTLCleanupExt(db, {
-            timeToLiveOptions: { cleanupLimit: 100, reduceLimitOnResourceLimits: true }
+            timeToLiveOptions: { cleanupLimit: 100, reduceLimitOnResourceLimits: true },
         });
         for (const type of result.types) {
             if (type.error) {
@@ -93,7 +93,7 @@ export async function start() {
 
     const server = new ApolloServer({
         schema: schema,
-        context: props => props
+        context: (props) => props,
     });
 
     const fastServer = express();
@@ -120,7 +120,7 @@ export async function startMetaServer(project: Project) {
     const metaSchemaPort = port + 1;
     const metaSchemaServer = new ApolloServer({
         schema: getMetaSchema(project),
-        context: { locale: 'en' }
+        context: { locale: 'en' },
     });
     expressServerReference = await metaSchemaServer.listen({ port: metaSchemaPort });
     logger.info(`Meta-Schema-Server started on http://localhost:${metaSchemaPort}`);

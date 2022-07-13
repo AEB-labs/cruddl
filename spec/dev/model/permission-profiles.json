@@ -7,6 +7,25 @@
                     "roles": ["allusers"]
                 }
             ]
+        },
+        "restricted": {
+            "permissions": [
+                {
+                    "access": ["read"],
+                    "roles": ["allusers"],
+                    "restrictions": []
+                },
+                {
+                    "access": ["readWrite"],
+                    "roles": ["allusers"],
+                    "restrictions": [
+                        {
+                            "field": "name",
+                            "value": "a"
+                        }
+                    ]
+                }
+            ]
         }
     }
 }

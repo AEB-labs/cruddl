@@ -10,7 +10,7 @@ import {
     PARENT_DIRECTIVE,
     REFERENCE_DIRECTIVE,
     RELATION_DIRECTIVE,
-    ROOT_DIRECTIVE
+    ROOT_DIRECTIVE,
 } from '../../schema/constants';
 import { GraphQLDateTime } from '../../schema/scalars/date-time';
 import { GraphQLLocalDate } from '../../schema/scalars/local-date';
@@ -23,7 +23,7 @@ import {
     FieldConfig,
     FlexSearchLanguage,
     RelationDeleteAction,
-    TypeKind
+    TypeKind,
 } from '../config';
 import { collectEmbeddingEntityTypes, collectEmbeddingRootEntityTypes } from '../utils/emedding-entity-types';
 import { findRecursiveCascadePath } from '../utils/recursive-cascade';
@@ -66,6 +66,13 @@ export class Field implements ModelComponent {
     private _type: Type | undefined;
 
     /**
+     * Specifies if this field can be used within restrictions of a permission profile
+     *
+     * The field does not need to be used within restrictions if this is true.
+     */
+    readonly isAccessField: boolean;
+
+    /**
      * Indicates if this is an inherent field of the declaring type that will be maintained by the system and thus can
      * only be queried
      */
@@ -94,6 +101,7 @@ export class Field implements ModelComponent {
         this.roles =
             input.permissions && input.permissions.roles ? new RolesSpecifier(input.permissions.roles) : undefined;
         this.isSystemField = input.isSystemField || false;
+        this.isAccessField = input.isAccessField ?? false;
     }
 
     /**
@@ -143,6 +151,7 @@ export class Field implements ModelComponent {
         return this.defaultValue !== undefined;
     }
 
+    @memorize()
     public get permissionProfile(): PermissionProfile | undefined {
         if (!this.input.permissions || this.input.permissions.permissionProfileName == undefined) {
             return undefined;
@@ -162,7 +171,7 @@ export class Field implements ModelComponent {
     }
 
     public get inverseField(): Field | undefined {
-        return this.type.isObjectType ? this.type.fields.find(field => field.inverseOf === this) : undefined;
+        return this.type.isObjectType ? this.type.fields.find((field) => field.inverseOf === this) : undefined;
     }
 
     public get relation(): Relation | undefined {
@@ -184,7 +193,7 @@ export class Field implements ModelComponent {
                 fromType: this.type,
                 fromField: this.inverseOf,
                 toType: this.declaringType,
-                toField: this
+                toField: this,
             }).toSide;
         } else {
             // this is the from side
@@ -192,7 +201,7 @@ export class Field implements ModelComponent {
                 fromType: this.declaringType,
                 fromField: this,
                 toType: this.type,
-                toField: this.inverseField
+                toField: this.inverseField,
             }).fromSide;
         }
     }
@@ -252,7 +261,7 @@ export class Field implements ModelComponent {
      */
     @memorize()
     get referenceField(): Field | undefined {
-        return this.declaringType.fields.filter(f => f.referenceKeyField === this)[0];
+        return this.declaringType.fields.filter((f) => f.referenceKeyField === this)[0];
     }
 
     public getLocalization(resolutionOrder: ReadonlyArray<string>): FieldLocalization {
@@ -274,6 +283,7 @@ export class Field implements ModelComponent {
         this.validateParentField(context);
         this.validateRootField(context);
         this.validateFlexSearch(context);
+        this.validateAccessField(context);
     }
 
     private validateName(context: ValidationContext) {
@@ -332,15 +342,15 @@ export class Field implements ModelComponent {
             }
 
             if (this.declaringType.kind === TypeKind.CHILD_ENTITY) {
-                if (!this.declaringType.fields.some(f => f.isParentField)) {
+                if (!this.declaringType.fields.some((f) => f.isParentField)) {
                     suggestions.push(PARENT_DIRECTIVE);
                 }
-                if (!this.declaringType.fields.some(f => f.isRootField)) {
+                if (!this.declaringType.fields.some((f) => f.isRootField)) {
                     suggestions.push(PARENT_DIRECTIVE);
                 }
             }
 
-            const names = suggestions.map(n => '@' + n);
+            const names = suggestions.map((n) => '@' + n);
             const list = names.length === 1 ? names : names.slice(0, -1).join(', ') + ' or ' + names[names.length - 1];
 
             context.addMessage(
@@ -423,12 +433,12 @@ export class Field implements ModelComponent {
             }
         } else {
             // look for @relation(inverseOf: "thisField") in the target type
-            const inverseFields = this.type.fields.filter(field => field.inverseOf === this);
+            const inverseFields = this.type.fields.filter((field) => field.inverseOf === this);
             if (inverseFields.length === 0) {
                 // no @relation(inverseOf: "thisField") - should be ok, but is suspicious if there is a matching @relation back to this type
                 // (look for inverseOfFieldName instead of inverseOf so that we don't emit this warning if the inverseOf config is invalid)
                 const matchingRelation = this.type.fields.find(
-                    field =>
+                    (field) =>
                         field !== this &&
                         field.isRelation &&
                         field.type === this.declaringType &&
@@ -443,7 +453,7 @@ export class Field implements ModelComponent {
                     );
                 }
             } else if (inverseFields.length > 1) {
-                const names = inverseFields.map(f => `"${this.type.name}.${f.name}"`).join(', ');
+                const names = inverseFields.map((f) => `"${this.type.name}.${f.name}"`).join(', ');
                 // found multiple inverse fields - this is an error
                 // check this here and not in the inverse fields so we don't report stuff twice
                 for (const inverseField of inverseFields) {
@@ -478,7 +488,7 @@ export class Field implements ModelComponent {
                         context.addMessage(
                             ValidationMessage.error(
                                 `The path "${recursivePath
-                                    .map(f => f.name)
+                                    .map((f) => f.name)
                                     .join(
                                         '.'
                                     )}" is a loop with "onDelete: CASCADE" on each relation, which is not supported. Break the loop by replacing "CASCADE" with "RESTRICT" on any of these relations.`,
@@ -622,8 +632,9 @@ export class Field implements ModelComponent {
                                     this.aggregationOperator
                                 }" is only allowed if the last path segment is a list field. "${
                                     lastSegment.field.name
-                                }" is of type "Boolean", so you may want to use "${this.aggregationOperator +
-                                    '_TRUE'}".`,
+                                }" is of type "Boolean", so you may want to use "${
+                                    this.aggregationOperator + '_TRUE'
+                                }".`,
                                 this.input.collect.aggregationOperatorASTNode
                             )
                         );
@@ -658,8 +669,9 @@ export class Field implements ModelComponent {
                         ValidationMessage.warn(
                             `Aggregation operator "${this.aggregationOperator}" only checks the number of items. "${
                                 lastSegment.field.name
-                            }" is of type "Boolean", so you may want to use the operator "${this.aggregationOperator +
-                                '_TRUE'}" instead which specifically checks for boolean "true".`,
+                            }" is of type "Boolean", so you may want to use the operator "${
+                                this.aggregationOperator + '_TRUE'
+                            }" instead which specifically checks for boolean "true".`,
                             this.input.collect.aggregationOperatorASTNode
                         )
                     );
@@ -685,7 +697,7 @@ export class Field implements ModelComponent {
                     ValidationMessage.error(
                         `Aggregation operator "${this.aggregationOperator}" is not supported on type "${
                             resultingType.name
-                        }" (supported types: ${typeInfo.typeNames.map(t => `"${t}"`).join(', ')}).`,
+                        }" (supported types: ${typeInfo.typeNames.map((t) => `"${t}"`).join(', ')}).`,
                         this.input.collect.aggregationOperatorASTNode
                     )
                 );
@@ -697,7 +709,7 @@ export class Field implements ModelComponent {
                     let typeHint;
                     if (resultingType.isValueObjectType) {
                         const offendingFields = getOffendingValueObjectFieldsForDistinctAggregation(resultingType);
-                        const offendingFieldNames = offendingFields.map(f => `"${f.name}"`).join(', ');
+                        const offendingFieldNames = offendingFields.map((f) => `"${f.name}"`).join(', ');
                         typeHint = `value object type "${resultingType.name}" because its field${
                             offendingFields.length !== 1 ? 's' : ''
                         } ${offendingFieldNames} has a type that does not support this operator`;
@@ -707,7 +719,7 @@ export class Field implements ModelComponent {
                         typeHint = `type "${
                             resultingType.name
                         }" (supported scalar types: ${scalarTypesThatSupportDistinctAggregation
-                            .map(t => `"${t}"`)
+                            .map((t) => `"${t}"`)
                             .join(', ')})`;
                     }
                     context.addMessage(
@@ -819,7 +831,7 @@ export class Field implements ModelComponent {
                 }
                 if (this.collectPath.resultMayContainDuplicateEntities) {
                     const minimumAmbiguousPathEndIndex = this.collectPath.segments.findIndex(
-                        s => s.resultMayContainDuplicateEntities
+                        (s) => s.resultMayContainDuplicateEntities
                     );
                     const firstAmbiguousSegment = this.collectPath.segments[minimumAmbiguousPathEndIndex];
                     const minimumAmbiguousPathPrefix =
@@ -854,7 +866,9 @@ export class Field implements ModelComponent {
                 }
                 if (this.collectPath.resultIsNullable) {
                     let fieldHint = '';
-                    const lastNullableSegment = [...this.collectPath.segments].reverse().find(s => s.isNullableSegment);
+                    const lastNullableSegment = [...this.collectPath.segments]
+                        .reverse()
+                        .find((s) => s.isNullableSegment);
                     if (lastNullableSegment) {
                         fieldHint = ` because "${lastNullableSegment.field.declaringType.name}.${lastNullableSegment.field.name}" can be null`;
                     }
@@ -936,7 +950,7 @@ export class Field implements ModelComponent {
 
         // there can only be one reference for each key field
         // each reference just reports an error on itself so that all fields are highlighted
-        if (this.declaringType.fields.some(f => f !== this && f.referenceKeyField === keyField)) {
+        if (this.declaringType.fields.some((f) => f !== this && f.referenceKeyField === keyField)) {
             context.addMessage(
                 ValidationMessage.error(
                     `There are multiple references declared for keyField "${this.input.referenceKeyField}".`,
@@ -1030,6 +1044,22 @@ export class Field implements ModelComponent {
             );
         }
 
+        const permissionProfile = this.permissionProfile;
+        if (permissionProfile) {
+            if (permissionProfile.permissions.some((p) => p.restrictToAccessGroups)) {
+                ValidationMessage.error(
+                    `Permission profile "${permissions.permissionProfileName}" uses restrictToAccessGroup and therefore cannot be used on fields.`,
+                    permissions.permissionProfileNameAstNode || this.input.astNode
+                );
+            }
+            if (permissionProfile.permissions.some((p) => p.restrictToAccessGroups)) {
+                ValidationMessage.error(
+                    `Permission profile "${permissions.permissionProfileName}" uses restrictions and therefore cannot be used on fields.`,
+                    permissions.permissionProfileNameAstNode || this.input.astNode
+                );
+            }
+        }
+
         if (this.roles) {
             this.roles.validate(context);
         }
@@ -1110,8 +1140,8 @@ export class Field implements ModelComponent {
             return;
         }
 
-        const supportedOperators = CALC_MUTATIONS_OPERATORS.filter(op => op.supportedTypes.includes(this.type.name));
-        const supportedOperatorsDesc = supportedOperators.map(op => '"' + op.name + '"').join(', ');
+        const supportedOperators = CALC_MUTATIONS_OPERATORS.filter((op) => op.supportedTypes.includes(this.type.name));
+        const supportedOperatorsDesc = supportedOperators.map((op) => '"' + op.name + '"').join(', ');
 
         if (this.calcMutationOperators.size > 0 && !supportedOperators.length) {
             context.addMessage(
@@ -1124,7 +1154,7 @@ export class Field implements ModelComponent {
         }
 
         for (const operator of this.calcMutationOperators) {
-            const desc = CALC_MUTATIONS_OPERATORS.find(op => op.name == operator);
+            const desc = CALC_MUTATIONS_OPERATORS.find((op) => op.name == operator);
             if (!desc) {
                 // this is caught in the graphql-rules validator
                 continue;
@@ -1183,7 +1213,7 @@ export class Field implements ModelComponent {
             return;
         }
 
-        if (this.declaringType.fields.some(f => f !== this && f.isParentField)) {
+        if (this.declaringType.fields.some((f) => f !== this && f.isParentField)) {
             context.addMessage(
                 ValidationMessage.error(`There can only be one parent field per type.`, this.input.astNode)
             );
@@ -1205,7 +1235,7 @@ export class Field implements ModelComponent {
         if (embeddingEntityTypes.has(this.declaringType)) {
             let suggestion = '';
             // maybe @parent can just be swapped out for @root?
-            if (this.type.isRootEntityType && !this.declaringType.fields.some(f => f.isRootField)) {
+            if (this.type.isRootEntityType && !this.declaringType.fields.some((f) => f.isRootField)) {
                 const { embeddingRootEntityTypes } = collectEmbeddingRootEntityTypes(this.declaringType);
                 if (embeddingRootEntityTypes.size === 1 && Array.from(embeddingRootEntityTypes)[0] === this.type) {
                     suggestion = ' Use the @root directive instead.';
@@ -1225,7 +1255,7 @@ export class Field implements ModelComponent {
         if (embeddingEntityTypes.size > 1) {
             // a little nicer error message
             if (embeddingEntityTypes.has(this.type)) {
-                const otherTypes = Array.from(embeddingEntityTypes).filter(t => t !== this.type);
+                const otherTypes = Array.from(embeddingEntityTypes).filter((t) => t !== this.type);
                 if (otherTypes.length === 1) {
                     context.addMessage(
                         ValidationMessage.error(
@@ -1234,7 +1264,7 @@ export class Field implements ModelComponent {
                         )
                     );
                 } else {
-                    const names = otherTypes.map(t => `"${t.name}"`);
+                    const names = otherTypes.map((t) => `"${t.name}"`);
                     const nameList = names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1];
                     context.addMessage(
                         ValidationMessage.error(
@@ -1244,7 +1274,7 @@ export class Field implements ModelComponent {
                     );
                 }
             } else {
-                const names = Array.from(embeddingEntityTypes).map(t => `"${t.name}"`);
+                const names = Array.from(embeddingEntityTypes).map((t) => `"${t.name}"`);
                 const nameList = names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1];
                 context.addMessage(
                     ValidationMessage.error(
@@ -1278,7 +1308,7 @@ export class Field implements ModelComponent {
 
         if (!this.type.isRootEntityType) {
             let rootNote = '';
-            if (!this.declaringType.fields.some(f => f.isRootField)) {
+            if (!this.declaringType.fields.some((f) => f.isRootField)) {
                 const { embeddingRootEntityTypes } = collectEmbeddingRootEntityTypes(this.declaringType);
                 if (embeddingRootEntityTypes.size === 1) {
                     const rootType = Array.from(embeddingRootEntityTypes)[0];
@@ -1341,7 +1371,7 @@ export class Field implements ModelComponent {
             return;
         }
 
-        if (this.declaringType.fields.some(f => f !== this && f.isRootField)) {
+        if (this.declaringType.fields.some((f) => f !== this && f.isRootField)) {
             context.addMessage(
                 ValidationMessage.error(`There can only be one root field per type.`, this.input.astNode)
             );
@@ -1363,7 +1393,7 @@ export class Field implements ModelComponent {
         if (embeddingRootEntityTypes.size > 1) {
             // a little nicer error message
             if (embeddingRootEntityTypes.has(this.type)) {
-                const otherTypes = Array.from(embeddingRootEntityTypes).filter(t => t !== this.type);
+                const otherTypes = Array.from(embeddingRootEntityTypes).filter((t) => t !== this.type);
                 if (otherTypes.length === 1) {
                     context.addMessage(
                         ValidationMessage.error(
@@ -1372,7 +1402,7 @@ export class Field implements ModelComponent {
                         )
                     );
                 } else {
-                    const names = otherTypes.map(t => `"${t.name}"`);
+                    const names = otherTypes.map((t) => `"${t.name}"`);
                     const nameList = names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1];
                     context.addMessage(
                         ValidationMessage.error(
@@ -1382,7 +1412,7 @@ export class Field implements ModelComponent {
                     );
                 }
             } else {
-                const names = Array.from(embeddingRootEntityTypes).map(t => `"${t.name}"`);
+                const names = Array.from(embeddingRootEntityTypes).map((t) => `"${t.name}"`);
                 const nameList = names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1];
                 context.addMessage(
                     ValidationMessage.error(
@@ -1465,7 +1495,7 @@ export class Field implements ModelComponent {
         if (
             this.isFlexSearchIndexed &&
             (this.type.isEntityExtensionType || this.type.isValueObjectType) &&
-            !this.type.fields.some(value => value.isFlexSearchIndexed || value.isFlexSearchFulltextIndexed)
+            !this.type.fields.some((value) => value.isFlexSearchIndexed || value.isFlexSearchFulltextIndexed)
         ) {
             context.addMessage(
                 ValidationMessage.error(
@@ -1478,7 +1508,7 @@ export class Field implements ModelComponent {
             this.name === ACCESS_GROUP_FIELD &&
             this.declaringType.isRootEntityType &&
             this.declaringType.permissionProfile &&
-            this.declaringType.permissionProfile.permissions.some(value => value.restrictToAccessGroups) &&
+            this.declaringType.permissionProfile.permissions.some((value) => value.restrictToAccessGroups) &&
             this.declaringType.isFlexSearchIndexed &&
             !this.isFlexSearchIndexed
         ) {
@@ -1514,6 +1544,38 @@ export class Field implements ModelComponent {
                 )
             );
             return;
+        }
+    }
+
+    private validateAccessField(context: ValidationContext) {
+        if (!this.isAccessField) {
+            return;
+        }
+        if (this.isCollectField) {
+            context.addMessage(
+                ValidationMessage.error(
+                    `Collect fields cannot be access fields`,
+                    this.input.accessFieldDirectiveASTNode
+                )
+            );
+        }
+        if (this.isRootField) {
+            context.addMessage(
+                ValidationMessage.error(`Root fields cannot be access fields`, this.input.accessFieldDirectiveASTNode)
+            );
+        }
+        if (this.isParentField) {
+            context.addMessage(
+                ValidationMessage.error(`Parent fields cannot be access fields`, this.input.accessFieldDirectiveASTNode)
+            );
+        }
+        if (this.type.isRootEntityType) {
+            context.addMessage(
+                ValidationMessage.error(
+                    `Fields to other root entities cannot be access fields`,
+                    this.input.accessFieldDirectiveASTNode
+                )
+            );
         }
     }
 
@@ -1580,9 +1642,7 @@ function getAggregatorWithoutDistinct(aggregator: AggregationOperator): Aggregat
     }
 }
 
-function getAggregatorTypeInfo(
-    aggregator: AggregationOperator
-): {
+function getAggregatorTypeInfo(aggregator: AggregationOperator): {
     readonly typeNames?: ReadonlyArray<string> | undefined;
     readonly lastSegmentShouldBeList?: boolean;
     readonly shouldBeNullable?: boolean;
@@ -1594,20 +1654,20 @@ function getAggregatorTypeInfo(
         case AggregationOperator.COUNT:
             return {
                 lastSegmentShouldBeList: true,
-                resultTypeName: GraphQLInt.name
+                resultTypeName: GraphQLInt.name,
             };
         case AggregationOperator.SOME:
         case AggregationOperator.NONE:
             return {
                 lastSegmentShouldBeList: true,
-                resultTypeName: GraphQLBoolean.name
+                resultTypeName: GraphQLBoolean.name,
             };
 
         case AggregationOperator.COUNT_NULL:
         case AggregationOperator.COUNT_NOT_NULL:
             return {
                 shouldBeNullable: true,
-                resultTypeName: GraphQLInt.name
+                resultTypeName: GraphQLInt.name,
             };
         case AggregationOperator.SOME_NULL:
         case AggregationOperator.SOME_NOT_NULL:
@@ -1615,7 +1675,7 @@ function getAggregatorTypeInfo(
         case AggregationOperator.NONE_NULL:
             return {
                 shouldBeNullable: true,
-                resultTypeName: GraphQLBoolean.name
+                resultTypeName: GraphQLBoolean.name,
             };
 
         case AggregationOperator.MAX:
@@ -1626,21 +1686,22 @@ function getAggregatorTypeInfo(
                     GraphQLDateTime.name,
                     GraphQLLocalDate.name,
                     GraphQLLocalTime.name,
-                    GraphQLOffsetDateTime.name
+                    GraphQLOffsetDateTime.name,
                 ],
-                resultTypeName: typeName => (typeName === GraphQLOffsetDateTime.name ? GraphQLDateTime.name : typeName)
+                resultTypeName: (typeName) =>
+                    typeName === GraphQLOffsetDateTime.name ? GraphQLDateTime.name : typeName,
             };
         case AggregationOperator.AVERAGE:
         case AggregationOperator.SUM:
             return {
-                typeNames: numberTypeNames
+                typeNames: numberTypeNames,
             };
 
         case AggregationOperator.COUNT_TRUE:
         case AggregationOperator.COUNT_NOT_TRUE:
             return {
                 typeNames: [GraphQLBoolean.name],
-                resultTypeName: GraphQLInt.name
+                resultTypeName: GraphQLInt.name,
             };
 
         case AggregationOperator.SOME_TRUE:
@@ -1649,17 +1710,17 @@ function getAggregatorTypeInfo(
         case AggregationOperator.NONE_TRUE:
             return {
                 typeNames: [GraphQLBoolean.name],
-                resultTypeName: GraphQLBoolean.name
+                resultTypeName: GraphQLBoolean.name,
             };
         case AggregationOperator.DISTINCT:
             return {
                 usesDistinct: true,
-                resultIsList: true
+                resultIsList: true,
             };
         case AggregationOperator.COUNT_DISTINCT:
             return {
                 usesDistinct: true,
-                resultTypeName: GraphQLInt.name
+                resultTypeName: GraphQLInt.name,
             };
         default:
             // this is caught in the graphql-rules validator
@@ -1683,7 +1744,7 @@ const scalarTypesThatSupportDistinctAggregation: ReadonlyArray<string> = [
     GraphQLID.name,
     GraphQLBoolean.name,
     GraphQLInt.name,
-    GraphQLLocalDate.name
+    GraphQLLocalDate.name,
 ];
 
 function isDistinctAggregationSupported(type: Type) {
@@ -1702,7 +1763,7 @@ function isDistinctAggregationSupported(type: Type) {
 
 function getOffendingValueObjectFieldsForDistinctAggregation(type: ValueObjectType) {
     return type.fields.filter(
-        field =>
+        (field) =>
             !field.type.isEnumType &&
             !field.type.isRootEntityType &&
             !scalarTypesThatSupportDistinctAggregation.includes(field.type.name)
