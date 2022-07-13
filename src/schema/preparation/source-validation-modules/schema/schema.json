@@ -144,6 +144,43 @@
                         "type": "string",
                         "pattern": ".+"
                     }
+                },
+                "restrictions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/PermissionRestriction"
+                    }
+                }
+            }
+        },
+        "PermissionRestriction": {
+            "type": "object",
+            "required": ["field"],
+            "properties": {
+                "field": {
+                    "type": "string"
+                }
+            },
+            "oneOf": [
+                {
+                    "$ref": "#/definitions/PermissionRestrictionWithValue"
+                },
+                {
+                    "$ref": "#/definitions/PermissionRestrictionWithValueTemplate"
+                }
+            ]
+        },
+        "PermissionRestrictionWithValue": {
+            "required": ["value"],
+            "properties": {
+                "value": {}
+            }
+        },
+        "PermissionRestrictionWithValueTemplate": {
+            "required": ["valueTemplate"],
+            "properties": {
+                "valueTemplate": {
+                    "type": "string"
                 }
             }
         },

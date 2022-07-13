@@ -36,23 +36,23 @@ export class Model implements ModelComponent {
 
     constructor(private input: ModelConfig) {
         this.builtInTypes = createBuiltInTypes(this);
-        this.types = [...this.builtInTypes, ...input.types.map(typeInput => createType(typeInput, this))];
+        this.types = [...this.builtInTypes, ...input.types.map((typeInput) => createType(typeInput, this))];
         this.permissionProfiles = flatMap(input.permissionProfiles || [], createPermissionProfiles);
         this.rootNamespace = new Namespace({
             parent: undefined,
             path: [],
             allTypes: this.types,
-            allPermissionProfiles: this.permissionProfiles
+            allPermissionProfiles: this.permissionProfiles,
         });
         this.namespaces = [this.rootNamespace, ...this.rootNamespace.descendantNamespaces];
         this.typeMap = new Map(this.types.map((type): [string, Type] => [type.name, type]));
         this.i18n = new ModelI18n(input.i18n || [], this);
         this.billingEntityTypes = input.billing
-            ? input.billing.billingEntities.map(value => new BillingEntityType(value, this))
+            ? input.billing.billingEntities.map((value) => new BillingEntityType(value, this))
             : [];
         this.modelValidationOptions = input.modelValidationOptions;
         this.timeToLiveTypes = input.timeToLiveConfigs
-            ? input.timeToLiveConfigs.map(ttlConfig => new TimeToLiveType(ttlConfig, this))
+            ? input.timeToLiveConfigs.map((ttlConfig) => new TimeToLiveType(ttlConfig, this))
             : [];
     }
 
@@ -73,11 +73,17 @@ export class Model implements ModelComponent {
             timeToLiveType.validate(context);
         }
 
+        for (const permissionProfile of this.permissionProfiles) {
+            permissionProfile.validate(context);
+        }
+
         return new ValidationResult([...(this.input.validationMessages || []), ...context.validationMessages]);
     }
 
     private validateDuplicateTypes(context: ValidationContext) {
-        const duplicateTypes = objectValues(groupBy(this.types, type => type.name)).filter(types => types.length > 1);
+        const duplicateTypes = objectValues(groupBy(this.types, (type) => type.name)).filter(
+            (types) => types.length > 1
+        );
         for (const types of duplicateTypes) {
             for (const type of types) {
                 if (this.builtInTypes.includes(type)) {
@@ -119,27 +125,27 @@ export class Model implements ModelComponent {
     }
 
     get rootEntityTypes(): ReadonlyArray<RootEntityType> {
-        return this.types.filter(t => t.kind === TypeKind.ROOT_ENTITY) as ReadonlyArray<RootEntityType>;
+        return this.types.filter((t) => t.kind === TypeKind.ROOT_ENTITY) as ReadonlyArray<RootEntityType>;
     }
 
     get childEntityTypes(): ReadonlyArray<ChildEntityType> {
-        return this.types.filter(t => t.kind === TypeKind.CHILD_ENTITY) as ReadonlyArray<ChildEntityType>;
+        return this.types.filter((t) => t.kind === TypeKind.CHILD_ENTITY) as ReadonlyArray<ChildEntityType>;
     }
 
     get entityExtensionTypes(): ReadonlyArray<EntityExtensionType> {
-        return this.types.filter(t => t.kind === TypeKind.ENTITY_EXTENSION) as ReadonlyArray<EntityExtensionType>;
+        return this.types.filter((t) => t.kind === TypeKind.ENTITY_EXTENSION) as ReadonlyArray<EntityExtensionType>;
     }
 
     get valueObjectTypes(): ReadonlyArray<ValueObjectType> {
-        return this.types.filter(t => t.kind === TypeKind.VALUE_OBJECT) as ReadonlyArray<ValueObjectType>;
+        return this.types.filter((t) => t.kind === TypeKind.VALUE_OBJECT) as ReadonlyArray<ValueObjectType>;
     }
 
     get scalarTypes(): ReadonlyArray<ScalarType> {
-        return this.types.filter(t => t.kind === TypeKind.SCALAR) as ReadonlyArray<ScalarType>;
+        return this.types.filter((t) => t.kind === TypeKind.SCALAR) as ReadonlyArray<ScalarType>;
     }
 
     get enumTypes(): ReadonlyArray<EnumType> {
-        return this.types.filter(t => t.kind === TypeKind.ENUM) as ReadonlyArray<EnumType>;
+        return this.types.filter((t) => t.kind === TypeKind.ENUM) as ReadonlyArray<EnumType>;
     }
 
     getObjectTypeOrThrow(name: string): ObjectType {
@@ -238,8 +244,8 @@ export class Model implements ModelComponent {
      */
     @memorize()
     get relations(): ReadonlyArray<Relation> {
-        const withDuplicates = flatMap(this.rootEntityTypes, entity => entity.explicitRelations);
-        return uniqBy(withDuplicates, rel => rel.identifier);
+        const withDuplicates = flatMap(this.rootEntityTypes, (entity) => entity.explicitRelations);
+        return uniqBy(withDuplicates, (rel) => rel.identifier);
     }
 
     get forbiddenRootEntityNames(): ReadonlyArray<string> {

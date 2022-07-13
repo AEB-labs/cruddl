@@ -1,0 +1,14 @@
+{
+    "flexAuth": {
+        "data": {
+            "flexSearchFiles": [
+                {
+                    "name": "accounting"
+                },
+                {
+                    "name": "public"
+                }
+            ]
+        }
+    }
+}

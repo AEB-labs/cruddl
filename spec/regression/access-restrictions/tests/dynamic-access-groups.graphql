@@ -1,0 +1,26 @@
+mutation wrongAccessGroup {
+    createFile(input: { accessGroup: "forwarder-oops" }) {
+        accessGroup
+    }
+}
+
+mutation correctAccessGroups {
+    f1: createFile(input: { name: "forwarded-by-quick", accessGroup: "forwarded-by-quick" }) {
+        accessGroup
+    }
+
+    f2: createFile(input: { name: "forwarded-by-fast", accessGroup: "forwarded-by-fast" }) {
+        accessGroup
+    }
+
+    f3: createFile(input: { name: "forwarded-by-anyone", accessGroup: "forwarded-by-anyone" }) {
+        accessGroup
+    }
+}
+
+query list {
+    allFiles(orderBy: name_ASC) {
+        name
+        accessGroup
+    }
+}

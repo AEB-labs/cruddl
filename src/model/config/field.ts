@@ -5,7 +5,7 @@ import {
     FieldDefinitionNode,
     NameNode,
     StringValueNode,
-    ValueNode
+    ValueNode,
 } from 'graphql';
 import { PermissionsConfig } from './permissions';
 
@@ -57,12 +57,21 @@ export interface FieldConfig {
      * Specifies if the field should be included in the expression-search of FlexSearch as a text.
      */
     readonly isFulltextIncludedInSearch?: boolean;
+
+    /**
+     * Specifies if this field can be used within restrictions of a permission profile
+     *
+     * The field does not need to be used within restrictions if this is true.
+     */
+    readonly isAccessField?: boolean;
+
+    readonly accessFieldDirectiveASTNode?: DirectiveNode;
 }
 
 export enum RelationDeleteAction {
     REMOVE_EDGES = 'REMOVE_EDGES',
     CASCADE = 'CASCADE',
-    RESTRICT = 'RESTRICT'
+    RESTRICT = 'RESTRICT',
 }
 
 export interface CollectFieldConfig {
@@ -98,7 +107,7 @@ export enum AggregationOperator {
     NONE_TRUE = 'NONE_TRUE',
 
     DISTINCT = 'DISTINCT',
-    COUNT_DISTINCT = 'COUNT_DISTINCT'
+    COUNT_DISTINCT = 'COUNT_DISTINCT',
 }
 
 export interface TraversalConfig {
@@ -114,7 +123,7 @@ export enum CalcMutationsOperator {
     SUBTRACT = 'SUBTRACT',
     MODULO = 'MODULO',
     APPEND = 'APPEND',
-    PREPEND = 'PREPEND'
+    PREPEND = 'PREPEND',
 }
 
 export enum FlexSearchLanguage {
@@ -129,5 +138,5 @@ export enum FlexSearchLanguage {
     PT = 'pt',
     RU = 'ru',
     SV = 'sv',
-    ZH = 'zh'
+    ZH = 'zh',
 }

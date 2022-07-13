@@ -1,0 +1,5 @@
+query flexAuth {
+    flexSearchFiles(orderBy: name_ASC) {
+        name
+    }
+}

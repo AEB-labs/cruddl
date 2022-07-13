@@ -1,14 +1,14 @@
 'use strict';
 var ucs2length = require('ajv/lib/compile/ucs2length');
 var equal = require('ajv/lib/compile/equal');
-var validate = (function() {
+var validate = (function () {
     var pattern0 = new RegExp('^[a-zA-Z0-9]+$');
     var pattern1 = new RegExp('.+');
     var pattern2 = new RegExp('^[a-zA-Z0-9_-]+$');
     var pattern3 = new RegExp('^[a-zA-Z0-9_]+$');
     var pattern4 = new RegExp('^([a-zA-Z0-9_-]|\\.)+$');
     var refVal = [];
-    var refVal1 = (function() {
+    var refVal1 = (function () {
         var pattern0 = new RegExp('^[a-zA-Z0-9]+$');
         var pattern1 = new RegExp('.+');
         var pattern2 = new RegExp('^[a-zA-Z0-9_-]+$');
@@ -18,6 +18,7 @@ var validate = (function() {
             'use strict';
             var vErrors = null;
             var errors = 0;
+            if (rootData === undefined) rootData = data;
             if (data && typeof data === 'object' && !Array.isArray(data)) {
                 var errs__0 = errors;
                 var valid1 = true;
@@ -30,9 +31,9 @@ var validate = (function() {
                             dataPath: (dataPath || '') + '',
                             schemaPath: '#/additionalProperties',
                             params: {
-                                additionalProperty: '' + key0 + ''
+                                additionalProperty: '' + key0 + '',
                             },
-                            message: 'should NOT have additional properties'
+                            message: 'should NOT have additional properties',
                         };
                         if (vErrors === null) vErrors = [err];
                         else vErrors.push(err);
@@ -46,420 +47,14 @@ var validate = (function() {
                         var errs__1 = errors;
                         var valid1;
                         for (var i1 = 0; i1 < data1.length; i1++) {
-                            var data2 = data1[i1];
                             var errs_2 = errors;
-                            var errs_3 = errors;
-                            if (data2 && typeof data2 === 'object' && !Array.isArray(data2)) {
-                                var errs__3 = errors;
-                                var valid4 = true;
-                                for (var key3 in data2) {
-                                    var isAdditional3 = !(
-                                        false ||
-                                        key3 == 'roles' ||
-                                        key3 == 'access' ||
-                                        key3 == 'restrictToAccessGroups'
-                                    );
-                                    if (isAdditional3) {
-                                        valid4 = false;
-                                        var err = {
-                                            keyword: 'additionalProperties',
-                                            dataPath: (dataPath || '') + '.permissions[' + i1 + ']',
-                                            schemaPath: '#/definitions/Permission/additionalProperties',
-                                            params: {
-                                                additionalProperty: '' + key3 + ''
-                                            },
-                                            message: 'should NOT have additional properties'
-                                        };
-                                        if (vErrors === null) vErrors = [err];
-                                        else vErrors.push(err);
-                                        errors++;
-                                    }
-                                }
-                                var data3 = data2.roles;
-                                if (data3 === undefined) {
-                                    valid4 = false;
-                                    var err = {
-                                        keyword: 'required',
-                                        dataPath: (dataPath || '') + '.permissions[' + i1 + ']',
-                                        schemaPath: '#/definitions/Permission/required',
-                                        params: {
-                                            missingProperty: 'roles'
-                                        },
-                                        message: "should have required property 'roles'"
-                                    };
-                                    if (vErrors === null) vErrors = [err];
-                                    else vErrors.push(err);
-                                    errors++;
-                                } else {
-                                    var errs_4 = errors;
-                                    if (typeof data3 === 'string') {
-                                        if (ucs2length(data3) < 1) {
-                                            var err = {
-                                                keyword: 'minLength',
-                                                dataPath: (dataPath || '') + '.permissions[' + i1 + '].roles',
-                                                schemaPath: '#/definitions/Permission/properties/roles/minLength',
-                                                params: {
-                                                    limit: 1
-                                                },
-                                                message: 'should NOT be shorter than 1 characters'
-                                            };
-                                            if (vErrors === null) vErrors = [err];
-                                            else vErrors.push(err);
-                                            errors++;
-                                        }
-                                    }
-                                    if (Array.isArray(data3)) {
-                                        var errs__4 = errors;
-                                        var valid4;
-                                        for (var i4 = 0; i4 < data3.length; i4++) {
-                                            var data4 = data3[i4];
-                                            var errs_5 = errors;
-                                            if (typeof data4 === 'string') {
-                                                if (!pattern1.test(data4)) {
-                                                    var err = {
-                                                        keyword: 'pattern',
-                                                        dataPath:
-                                                            (dataPath || '') +
-                                                            '.permissions[' +
-                                                            i1 +
-                                                            '].roles[' +
-                                                            i4 +
-                                                            ']',
-                                                        schemaPath:
-                                                            '#/definitions/Permission/properties/roles/items/pattern',
-                                                        params: {
-                                                            pattern: '.+'
-                                                        },
-                                                        message: 'should match pattern ".+"'
-                                                    };
-                                                    if (vErrors === null) vErrors = [err];
-                                                    else vErrors.push(err);
-                                                    errors++;
-                                                }
-                                            } else {
-                                                var err = {
-                                                    keyword: 'type',
-                                                    dataPath:
-                                                        (dataPath || '') + '.permissions[' + i1 + '].roles[' + i4 + ']',
-                                                    schemaPath: '#/definitions/Permission/properties/roles/items/type',
-                                                    params: {
-                                                        type: 'string'
-                                                    },
-                                                    message: 'should be string'
-                                                };
-                                                if (vErrors === null) vErrors = [err];
-                                                else vErrors.push(err);
-                                                errors++;
-                                            }
-                                            var valid5 = errors === errs_5;
-                                        }
-                                    } else {
-                                        var err = {
-                                            keyword: 'type',
-                                            dataPath: (dataPath || '') + '.permissions[' + i1 + '].roles',
-                                            schemaPath: '#/definitions/Permission/properties/roles/type',
-                                            params: {
-                                                type: 'array'
-                                            },
-                                            message: 'should be array'
-                                        };
-                                        if (vErrors === null) vErrors = [err];
-                                        else vErrors.push(err);
-                                        errors++;
-                                    }
-                                    var valid4 = errors === errs_4;
-                                }
-                                var data3 = data2.access;
-                                if (data3 === undefined) {
-                                    valid4 = false;
-                                    var err = {
-                                        keyword: 'required',
-                                        dataPath: (dataPath || '') + '.permissions[' + i1 + ']',
-                                        schemaPath: '#/definitions/Permission/required',
-                                        params: {
-                                            missingProperty: 'access'
-                                        },
-                                        message: "should have required property 'access'"
-                                    };
-                                    if (vErrors === null) vErrors = [err];
-                                    else vErrors.push(err);
-                                    errors++;
-                                } else {
-                                    var errs_4 = errors;
-                                    var errs__4 = errors,
-                                        prevValid4 = false,
-                                        valid4 = false,
-                                        passingSchemas4 = null;
-                                    var errs_5 = errors;
-                                    if (typeof data3 !== 'string') {
-                                        var err = {
-                                            keyword: 'type',
-                                            dataPath: (dataPath || '') + '.permissions[' + i1 + '].access',
-                                            schemaPath: '#/definitions/Permission/properties/access/oneOf/0/type',
-                                            params: {
-                                                type: 'string'
-                                            },
-                                            message: 'should be string'
-                                        };
-                                        if (vErrors === null) vErrors = [err];
-                                        else vErrors.push(err);
-                                        errors++;
-                                    }
-                                    var schema5 = refVal2.properties.access.oneOf[0].enum;
-                                    var valid5;
-                                    valid5 = false;
-                                    for (var i5 = 0; i5 < schema5.length; i5++)
-                                        if (equal(data3, schema5[i5])) {
-                                            valid5 = true;
-                                            break;
-                                        }
-                                    if (!valid5) {
-                                        var err = {
-                                            keyword: 'enum',
-                                            dataPath: (dataPath || '') + '.permissions[' + i1 + '].access',
-                                            schemaPath: '#/definitions/Permission/properties/access/oneOf/0/enum',
-                                            params: {
-                                                allowedValues: schema5
-                                            },
-                                            message: 'should be equal to one of the allowed values'
-                                        };
-                                        if (vErrors === null) vErrors = [err];
-                                        else vErrors.push(err);
-                                        errors++;
-                                    }
-                                    var valid5 = errors === errs_5;
-                                    if (valid5) {
-                                        valid4 = prevValid4 = true;
-                                        passingSchemas4 = 0;
-                                    }
-                                    var errs_5 = errors;
-                                    if (Array.isArray(data3)) {
-                                        if (data3.length < 1) {
-                                            var err = {
-                                                keyword: 'minItems',
-                                                dataPath: (dataPath || '') + '.permissions[' + i1 + '].access',
-                                                schemaPath:
-                                                    '#/definitions/Permission/properties/access/oneOf/1/minItems',
-                                                params: {
-                                                    limit: 1
-                                                },
-                                                message: 'should NOT have fewer than 1 items'
-                                            };
-                                            if (vErrors === null) vErrors = [err];
-                                            else vErrors.push(err);
-                                            errors++;
-                                        }
-                                        var errs__5 = errors;
-                                        var valid5;
-                                        for (var i5 = 0; i5 < data3.length; i5++) {
-                                            var data4 = data3[i5];
-                                            var errs_6 = errors;
-                                            if (typeof data4 !== 'string') {
-                                                var err = {
-                                                    keyword: 'type',
-                                                    dataPath:
-                                                        (dataPath || '') +
-                                                        '.permissions[' +
-                                                        i1 +
-                                                        '].access[' +
-                                                        i5 +
-                                                        ']',
-                                                    schemaPath:
-                                                        '#/definitions/Permission/properties/access/oneOf/1/items/type',
-                                                    params: {
-                                                        type: 'string'
-                                                    },
-                                                    message: 'should be string'
-                                                };
-                                                if (vErrors === null) vErrors = [err];
-                                                else vErrors.push(err);
-                                                errors++;
-                                            }
-                                            var schema6 = refVal2.properties.access.oneOf[1].items.enum;
-                                            var valid6;
-                                            valid6 = false;
-                                            for (var i6 = 0; i6 < schema6.length; i6++)
-                                                if (equal(data4, schema6[i6])) {
-                                                    valid6 = true;
-                                                    break;
-                                                }
-                                            if (!valid6) {
-                                                var err = {
-                                                    keyword: 'enum',
-                                                    dataPath:
-                                                        (dataPath || '') +
-                                                        '.permissions[' +
-                                                        i1 +
-                                                        '].access[' +
-                                                        i5 +
-                                                        ']',
-                                                    schemaPath:
-                                                        '#/definitions/Permission/properties/access/oneOf/1/items/enum',
-                                                    params: {
-                                                        allowedValues: schema6
-                                                    },
-                                                    message: 'should be equal to one of the allowed values'
-                                                };
-                                                if (vErrors === null) vErrors = [err];
-                                                else vErrors.push(err);
-                                                errors++;
-                                            }
-                                            var valid6 = errors === errs_6;
-                                        }
-                                    } else {
-                                        var err = {
-                                            keyword: 'type',
-                                            dataPath: (dataPath || '') + '.permissions[' + i1 + '].access',
-                                            schemaPath: '#/definitions/Permission/properties/access/oneOf/1/type',
-                                            params: {
-                                                type: 'array'
-                                            },
-                                            message: 'should be array'
-                                        };
-                                        if (vErrors === null) vErrors = [err];
-                                        else vErrors.push(err);
-                                        errors++;
-                                    }
-                                    var valid5 = errors === errs_5;
-                                    if (valid5 && prevValid4) {
-                                        valid4 = false;
-                                        passingSchemas4 = [passingSchemas4, 1];
-                                    } else {
-                                        if (valid5) {
-                                            valid4 = prevValid4 = true;
-                                            passingSchemas4 = 1;
-                                        }
-                                    }
-                                    if (!valid4) {
-                                        var err = {
-                                            keyword: 'oneOf',
-                                            dataPath: (dataPath || '') + '.permissions[' + i1 + '].access',
-                                            schemaPath: '#/definitions/Permission/properties/access/oneOf',
-                                            params: {
-                                                passingSchemas: passingSchemas4
-                                            },
-                                            message: 'should match exactly one schema in oneOf'
-                                        };
-                                        if (vErrors === null) vErrors = [err];
-                                        else vErrors.push(err);
-                                        errors++;
-                                    } else {
-                                        errors = errs__4;
-                                        if (vErrors !== null) {
-                                            if (errs__4) vErrors.length = errs__4;
-                                            else vErrors = null;
-                                        }
-                                    }
-                                    var valid4 = errors === errs_4;
-                                }
-                                var data3 = data2.restrictToAccessGroups;
-                                if (data3 !== undefined) {
-                                    var errs_4 = errors;
-                                    if (typeof data3 === 'string') {
-                                        if (ucs2length(data3) < 1) {
-                                            var err = {
-                                                keyword: 'minLength',
-                                                dataPath:
-                                                    (dataPath || '') +
-                                                    '.permissions[' +
-                                                    i1 +
-                                                    '].restrictToAccessGroups',
-                                                schemaPath:
-                                                    '#/definitions/Permission/properties/restrictToAccessGroups/minLength',
-                                                params: {
-                                                    limit: 1
-                                                },
-                                                message: 'should NOT be shorter than 1 characters'
-                                            };
-                                            if (vErrors === null) vErrors = [err];
-                                            else vErrors.push(err);
-                                            errors++;
-                                        }
-                                    }
-                                    if (Array.isArray(data3)) {
-                                        var errs__4 = errors;
-                                        var valid4;
-                                        for (var i4 = 0; i4 < data3.length; i4++) {
-                                            var data4 = data3[i4];
-                                            var errs_5 = errors;
-                                            if (typeof data4 === 'string') {
-                                                if (!pattern1.test(data4)) {
-                                                    var err = {
-                                                        keyword: 'pattern',
-                                                        dataPath:
-                                                            (dataPath || '') +
-                                                            '.permissions[' +
-                                                            i1 +
-                                                            '].restrictToAccessGroups[' +
-                                                            i4 +
-                                                            ']',
-                                                        schemaPath:
-                                                            '#/definitions/Permission/properties/restrictToAccessGroups/items/pattern',
-                                                        params: {
-                                                            pattern: '.+'
-                                                        },
-                                                        message: 'should match pattern ".+"'
-                                                    };
-                                                    if (vErrors === null) vErrors = [err];
-                                                    else vErrors.push(err);
-                                                    errors++;
-                                                }
-                                            } else {
-                                                var err = {
-                                                    keyword: 'type',
-                                                    dataPath:
-                                                        (dataPath || '') +
-                                                        '.permissions[' +
-                                                        i1 +
-                                                        '].restrictToAccessGroups[' +
-                                                        i4 +
-                                                        ']',
-                                                    schemaPath:
-                                                        '#/definitions/Permission/properties/restrictToAccessGroups/items/type',
-                                                    params: {
-                                                        type: 'string'
-                                                    },
-                                                    message: 'should be string'
-                                                };
-                                                if (vErrors === null) vErrors = [err];
-                                                else vErrors.push(err);
-                                                errors++;
-                                            }
-                                            var valid5 = errors === errs_5;
-                                        }
-                                    } else {
-                                        var err = {
-                                            keyword: 'type',
-                                            dataPath:
-                                                (dataPath || '') + '.permissions[' + i1 + '].restrictToAccessGroups',
-                                            schemaPath:
-                                                '#/definitions/Permission/properties/restrictToAccessGroups/type',
-                                            params: {
-                                                type: 'array'
-                                            },
-                                            message: 'should be array'
-                                        };
-                                        if (vErrors === null) vErrors = [err];
-                                        else vErrors.push(err);
-                                        errors++;
-                                    }
-                                    var valid4 = errors === errs_4;
-                                }
-                            } else {
-                                var err = {
-                                    keyword: 'type',
-                                    dataPath: (dataPath || '') + '.permissions[' + i1 + ']',
-                                    schemaPath: '#/definitions/Permission/type',
-                                    params: {
-                                        type: 'object'
-                                    },
-                                    message: 'should be object'
-                                };
-                                if (vErrors === null) vErrors = [err];
-                                else vErrors.push(err);
-                                errors++;
+                            if (
+                                !refVal2(data1[i1], (dataPath || '') + '.permissions[' + i1 + ']', data1, i1, rootData)
+                            ) {
+                                if (vErrors === null) vErrors = refVal2.errors;
+                                else vErrors = vErrors.concat(refVal2.errors);
+                                errors = vErrors.length;
                             }
-                            var valid3 = errors === errs_3;
                             var valid2 = errors === errs_2;
                         }
                     } else {
@@ -468,9 +63,9 @@ var validate = (function() {
                             dataPath: (dataPath || '') + '.permissions',
                             schemaPath: '#/properties/permissions/type',
                             params: {
-                                type: 'array'
+                                type: 'array',
                             },
-                            message: 'should be array'
+                            message: 'should be array',
                         };
                         if (vErrors === null) vErrors = [err];
                         else vErrors.push(err);
@@ -484,9 +79,9 @@ var validate = (function() {
                     dataPath: (dataPath || '') + '',
                     schemaPath: '#/type',
                     params: {
-                        type: 'object'
+                        type: 'object',
                     },
-                    message: 'should be object'
+                    message: 'should be object',
                 };
                 if (vErrors === null) vErrors = [err];
                 else vErrors.push(err);
@@ -503,14 +98,429 @@ var validate = (function() {
             permissions: {
                 type: 'array',
                 items: {
-                    $ref: '#/definitions/Permission'
-                }
-            }
-        }
+                    $ref: '#/definitions/Permission',
+                },
+            },
+        },
     };
     refVal1.errors = null;
     refVal[1] = refVal1;
-    var refVal2 = {
+    var refVal2 = (function () {
+        var pattern0 = new RegExp('^[a-zA-Z0-9]+$');
+        var pattern1 = new RegExp('.+');
+        var pattern2 = new RegExp('^[a-zA-Z0-9_-]+$');
+        var pattern3 = new RegExp('^[a-zA-Z0-9_]+$');
+        var pattern4 = new RegExp('^([a-zA-Z0-9_-]|\\.)+$');
+        return function validate(data, dataPath, parentData, parentDataProperty, rootData) {
+            'use strict';
+            var vErrors = null;
+            var errors = 0;
+            if (rootData === undefined) rootData = data;
+            if (data && typeof data === 'object' && !Array.isArray(data)) {
+                var errs__0 = errors;
+                var valid1 = true;
+                for (var key0 in data) {
+                    var isAdditional0 = !(
+                        false ||
+                        key0 == 'roles' ||
+                        key0 == 'access' ||
+                        key0 == 'restrictToAccessGroups' ||
+                        key0 == 'restrictions'
+                    );
+                    if (isAdditional0) {
+                        valid1 = false;
+                        var err = {
+                            keyword: 'additionalProperties',
+                            dataPath: (dataPath || '') + '',
+                            schemaPath: '#/additionalProperties',
+                            params: {
+                                additionalProperty: '' + key0 + '',
+                            },
+                            message: 'should NOT have additional properties',
+                        };
+                        if (vErrors === null) vErrors = [err];
+                        else vErrors.push(err);
+                        errors++;
+                    }
+                }
+                var data1 = data.roles;
+                if (data1 === undefined) {
+                    valid1 = false;
+                    var err = {
+                        keyword: 'required',
+                        dataPath: (dataPath || '') + '',
+                        schemaPath: '#/required',
+                        params: {
+                            missingProperty: 'roles',
+                        },
+                        message: "should have required property 'roles'",
+                    };
+                    if (vErrors === null) vErrors = [err];
+                    else vErrors.push(err);
+                    errors++;
+                } else {
+                    var errs_1 = errors;
+                    if (typeof data1 === 'string') {
+                        if (ucs2length(data1) < 1) {
+                            var err = {
+                                keyword: 'minLength',
+                                dataPath: (dataPath || '') + '.roles',
+                                schemaPath: '#/properties/roles/minLength',
+                                params: {
+                                    limit: 1,
+                                },
+                                message: 'should NOT be shorter than 1 characters',
+                            };
+                            if (vErrors === null) vErrors = [err];
+                            else vErrors.push(err);
+                            errors++;
+                        }
+                    }
+                    if (Array.isArray(data1)) {
+                        var errs__1 = errors;
+                        var valid1;
+                        for (var i1 = 0; i1 < data1.length; i1++) {
+                            var data2 = data1[i1];
+                            var errs_2 = errors;
+                            if (typeof data2 === 'string') {
+                                if (!pattern1.test(data2)) {
+                                    var err = {
+                                        keyword: 'pattern',
+                                        dataPath: (dataPath || '') + '.roles[' + i1 + ']',
+                                        schemaPath: '#/properties/roles/items/pattern',
+                                        params: {
+                                            pattern: '.+',
+                                        },
+                                        message: 'should match pattern ".+"',
+                                    };
+                                    if (vErrors === null) vErrors = [err];
+                                    else vErrors.push(err);
+                                    errors++;
+                                }
+                            } else {
+                                var err = {
+                                    keyword: 'type',
+                                    dataPath: (dataPath || '') + '.roles[' + i1 + ']',
+                                    schemaPath: '#/properties/roles/items/type',
+                                    params: {
+                                        type: 'string',
+                                    },
+                                    message: 'should be string',
+                                };
+                                if (vErrors === null) vErrors = [err];
+                                else vErrors.push(err);
+                                errors++;
+                            }
+                            var valid2 = errors === errs_2;
+                        }
+                    } else {
+                        var err = {
+                            keyword: 'type',
+                            dataPath: (dataPath || '') + '.roles',
+                            schemaPath: '#/properties/roles/type',
+                            params: {
+                                type: 'array',
+                            },
+                            message: 'should be array',
+                        };
+                        if (vErrors === null) vErrors = [err];
+                        else vErrors.push(err);
+                        errors++;
+                    }
+                    var valid1 = errors === errs_1;
+                }
+                var data1 = data.access;
+                if (data1 === undefined) {
+                    valid1 = false;
+                    var err = {
+                        keyword: 'required',
+                        dataPath: (dataPath || '') + '',
+                        schemaPath: '#/required',
+                        params: {
+                            missingProperty: 'access',
+                        },
+                        message: "should have required property 'access'",
+                    };
+                    if (vErrors === null) vErrors = [err];
+                    else vErrors.push(err);
+                    errors++;
+                } else {
+                    var errs_1 = errors;
+                    var errs__1 = errors,
+                        prevValid1 = false,
+                        valid1 = false,
+                        passingSchemas1 = null;
+                    var errs_2 = errors;
+                    if (typeof data1 !== 'string') {
+                        var err = {
+                            keyword: 'type',
+                            dataPath: (dataPath || '') + '.access',
+                            schemaPath: '#/properties/access/oneOf/0/type',
+                            params: {
+                                type: 'string',
+                            },
+                            message: 'should be string',
+                        };
+                        if (vErrors === null) vErrors = [err];
+                        else vErrors.push(err);
+                        errors++;
+                    }
+                    var schema2 = validate.schema.properties.access.oneOf[0].enum;
+                    var valid2;
+                    valid2 = false;
+                    for (var i2 = 0; i2 < schema2.length; i2++)
+                        if (equal(data1, schema2[i2])) {
+                            valid2 = true;
+                            break;
+                        }
+                    if (!valid2) {
+                        var err = {
+                            keyword: 'enum',
+                            dataPath: (dataPath || '') + '.access',
+                            schemaPath: '#/properties/access/oneOf/0/enum',
+                            params: {
+                                allowedValues: schema2,
+                            },
+                            message: 'should be equal to one of the allowed values',
+                        };
+                        if (vErrors === null) vErrors = [err];
+                        else vErrors.push(err);
+                        errors++;
+                    }
+                    var valid2 = errors === errs_2;
+                    if (valid2) {
+                        valid1 = prevValid1 = true;
+                        passingSchemas1 = 0;
+                    }
+                    var errs_2 = errors;
+                    if (Array.isArray(data1)) {
+                        if (data1.length < 1) {
+                            var err = {
+                                keyword: 'minItems',
+                                dataPath: (dataPath || '') + '.access',
+                                schemaPath: '#/properties/access/oneOf/1/minItems',
+                                params: {
+                                    limit: 1,
+                                },
+                                message: 'should NOT have fewer than 1 items',
+                            };
+                            if (vErrors === null) vErrors = [err];
+                            else vErrors.push(err);
+                            errors++;
+                        }
+                        var errs__2 = errors;
+                        var valid2;
+                        for (var i2 = 0; i2 < data1.length; i2++) {
+                            var data2 = data1[i2];
+                            var errs_3 = errors;
+                            if (typeof data2 !== 'string') {
+                                var err = {
+                                    keyword: 'type',
+                                    dataPath: (dataPath || '') + '.access[' + i2 + ']',
+                                    schemaPath: '#/properties/access/oneOf/1/items/type',
+                                    params: {
+                                        type: 'string',
+                                    },
+                                    message: 'should be string',
+                                };
+                                if (vErrors === null) vErrors = [err];
+                                else vErrors.push(err);
+                                errors++;
+                            }
+                            var schema3 = validate.schema.properties.access.oneOf[1].items.enum;
+                            var valid3;
+                            valid3 = false;
+                            for (var i3 = 0; i3 < schema3.length; i3++)
+                                if (equal(data2, schema3[i3])) {
+                                    valid3 = true;
+                                    break;
+                                }
+                            if (!valid3) {
+                                var err = {
+                                    keyword: 'enum',
+                                    dataPath: (dataPath || '') + '.access[' + i2 + ']',
+                                    schemaPath: '#/properties/access/oneOf/1/items/enum',
+                                    params: {
+                                        allowedValues: schema3,
+                                    },
+                                    message: 'should be equal to one of the allowed values',
+                                };
+                                if (vErrors === null) vErrors = [err];
+                                else vErrors.push(err);
+                                errors++;
+                            }
+                            var valid3 = errors === errs_3;
+                        }
+                    } else {
+                        var err = {
+                            keyword: 'type',
+                            dataPath: (dataPath || '') + '.access',
+                            schemaPath: '#/properties/access/oneOf/1/type',
+                            params: {
+                                type: 'array',
+                            },
+                            message: 'should be array',
+                        };
+                        if (vErrors === null) vErrors = [err];
+                        else vErrors.push(err);
+                        errors++;
+                    }
+                    var valid2 = errors === errs_2;
+                    if (valid2 && prevValid1) {
+                        valid1 = false;
+                        passingSchemas1 = [passingSchemas1, 1];
+                    } else {
+                        if (valid2) {
+                            valid1 = prevValid1 = true;
+                            passingSchemas1 = 1;
+                        }
+                    }
+                    if (!valid1) {
+                        var err = {
+                            keyword: 'oneOf',
+                            dataPath: (dataPath || '') + '.access',
+                            schemaPath: '#/properties/access/oneOf',
+                            params: {
+                                passingSchemas: passingSchemas1,
+                            },
+                            message: 'should match exactly one schema in oneOf',
+                        };
+                        if (vErrors === null) vErrors = [err];
+                        else vErrors.push(err);
+                        errors++;
+                    } else {
+                        errors = errs__1;
+                        if (vErrors !== null) {
+                            if (errs__1) vErrors.length = errs__1;
+                            else vErrors = null;
+                        }
+                    }
+                    var valid1 = errors === errs_1;
+                }
+                var data1 = data.restrictToAccessGroups;
+                if (data1 !== undefined) {
+                    var errs_1 = errors;
+                    if (typeof data1 === 'string') {
+                        if (ucs2length(data1) < 1) {
+                            var err = {
+                                keyword: 'minLength',
+                                dataPath: (dataPath || '') + '.restrictToAccessGroups',
+                                schemaPath: '#/properties/restrictToAccessGroups/minLength',
+                                params: {
+                                    limit: 1,
+                                },
+                                message: 'should NOT be shorter than 1 characters',
+                            };
+                            if (vErrors === null) vErrors = [err];
+                            else vErrors.push(err);
+                            errors++;
+                        }
+                    }
+                    if (Array.isArray(data1)) {
+                        var errs__1 = errors;
+                        var valid1;
+                        for (var i1 = 0; i1 < data1.length; i1++) {
+                            var data2 = data1[i1];
+                            var errs_2 = errors;
+                            if (typeof data2 === 'string') {
+                                if (!pattern1.test(data2)) {
+                                    var err = {
+                                        keyword: 'pattern',
+                                        dataPath: (dataPath || '') + '.restrictToAccessGroups[' + i1 + ']',
+                                        schemaPath: '#/properties/restrictToAccessGroups/items/pattern',
+                                        params: {
+                                            pattern: '.+',
+                                        },
+                                        message: 'should match pattern ".+"',
+                                    };
+                                    if (vErrors === null) vErrors = [err];
+                                    else vErrors.push(err);
+                                    errors++;
+                                }
+                            } else {
+                                var err = {
+                                    keyword: 'type',
+                                    dataPath: (dataPath || '') + '.restrictToAccessGroups[' + i1 + ']',
+                                    schemaPath: '#/properties/restrictToAccessGroups/items/type',
+                                    params: {
+                                        type: 'string',
+                                    },
+                                    message: 'should be string',
+                                };
+                                if (vErrors === null) vErrors = [err];
+                                else vErrors.push(err);
+                                errors++;
+                            }
+                            var valid2 = errors === errs_2;
+                        }
+                    } else {
+                        var err = {
+                            keyword: 'type',
+                            dataPath: (dataPath || '') + '.restrictToAccessGroups',
+                            schemaPath: '#/properties/restrictToAccessGroups/type',
+                            params: {
+                                type: 'array',
+                            },
+                            message: 'should be array',
+                        };
+                        if (vErrors === null) vErrors = [err];
+                        else vErrors.push(err);
+                        errors++;
+                    }
+                    var valid1 = errors === errs_1;
+                }
+                var data1 = data.restrictions;
+                if (data1 !== undefined) {
+                    var errs_1 = errors;
+                    if (Array.isArray(data1)) {
+                        var errs__1 = errors;
+                        var valid1;
+                        for (var i1 = 0; i1 < data1.length; i1++) {
+                            var errs_2 = errors;
+                            if (
+                                !refVal3(data1[i1], (dataPath || '') + '.restrictions[' + i1 + ']', data1, i1, rootData)
+                            ) {
+                                if (vErrors === null) vErrors = refVal3.errors;
+                                else vErrors = vErrors.concat(refVal3.errors);
+                                errors = vErrors.length;
+                            }
+                            var valid2 = errors === errs_2;
+                        }
+                    } else {
+                        var err = {
+                            keyword: 'type',
+                            dataPath: (dataPath || '') + '.restrictions',
+                            schemaPath: '#/properties/restrictions/type',
+                            params: {
+                                type: 'array',
+                            },
+                            message: 'should be array',
+                        };
+                        if (vErrors === null) vErrors = [err];
+                        else vErrors.push(err);
+                        errors++;
+                    }
+                    var valid1 = errors === errs_1;
+                }
+            } else {
+                var err = {
+                    keyword: 'type',
+                    dataPath: (dataPath || '') + '',
+                    schemaPath: '#/type',
+                    params: {
+                        type: 'object',
+                    },
+                    message: 'should be object',
+                };
+                if (vErrors === null) vErrors = [err];
+                else vErrors.push(err);
+                errors++;
+            }
+            validate.errors = vErrors;
+            return errors === 0;
+        };
+    })();
+    refVal2.schema = {
         type: 'object',
         required: ['roles', 'access'],
         additionalProperties: false,
@@ -520,37 +530,243 @@ var validate = (function() {
                 minLength: 1,
                 items: {
                     type: 'string',
-                    pattern: '.+'
-                }
+                    pattern: '.+',
+                },
             },
             access: {
                 oneOf: [
                     {
                         type: 'string',
-                        enum: ['read', 'readWrite', 'create', 'update', 'delete']
+                        enum: ['read', 'readWrite', 'create', 'update', 'delete'],
                     },
                     {
                         type: 'array',
                         items: {
                             type: 'string',
-                            enum: ['read', 'readWrite', 'create', 'update', 'delete']
+                            enum: ['read', 'readWrite', 'create', 'update', 'delete'],
                         },
-                        minItems: 1
-                    }
-                ]
+                        minItems: 1,
+                    },
+                ],
             },
             restrictToAccessGroups: {
                 type: 'array',
                 minLength: 1,
                 items: {
                     type: 'string',
-                    pattern: '.+'
+                    pattern: '.+',
+                },
+            },
+            restrictions: {
+                type: 'array',
+                items: {
+                    $ref: '#/definitions/PermissionRestriction',
+                },
+            },
+        },
+    };
+    refVal2.errors = null;
+    refVal[2] = refVal2;
+    var refVal3 = (function () {
+        var pattern0 = new RegExp('^[a-zA-Z0-9]+$');
+        var pattern1 = new RegExp('.+');
+        var pattern2 = new RegExp('^[a-zA-Z0-9_-]+$');
+        var pattern3 = new RegExp('^[a-zA-Z0-9_]+$');
+        var pattern4 = new RegExp('^([a-zA-Z0-9_-]|\\.)+$');
+        return function validate(data, dataPath, parentData, parentDataProperty, rootData) {
+            'use strict';
+            var vErrors = null;
+            var errors = 0;
+            if (rootData === undefined) rootData = data;
+            if (data && typeof data === 'object' && !Array.isArray(data)) {
+                var errs__0 = errors;
+                var valid1 = true;
+                if (data.field === undefined) {
+                    valid1 = false;
+                    var err = {
+                        keyword: 'required',
+                        dataPath: (dataPath || '') + '',
+                        schemaPath: '#/required',
+                        params: {
+                            missingProperty: 'field',
+                        },
+                        message: "should have required property 'field'",
+                    };
+                    if (vErrors === null) vErrors = [err];
+                    else vErrors.push(err);
+                    errors++;
+                } else {
+                    var errs_1 = errors;
+                    if (typeof data.field !== 'string') {
+                        var err = {
+                            keyword: 'type',
+                            dataPath: (dataPath || '') + '.field',
+                            schemaPath: '#/properties/field/type',
+                            params: {
+                                type: 'string',
+                            },
+                            message: 'should be string',
+                        };
+                        if (vErrors === null) vErrors = [err];
+                        else vErrors.push(err);
+                        errors++;
+                    }
+                    var valid1 = errors === errs_1;
+                }
+            } else {
+                var err = {
+                    keyword: 'type',
+                    dataPath: (dataPath || '') + '',
+                    schemaPath: '#/type',
+                    params: {
+                        type: 'object',
+                    },
+                    message: 'should be object',
+                };
+                if (vErrors === null) vErrors = [err];
+                else vErrors.push(err);
+                errors++;
+            }
+            var errs__0 = errors,
+                prevValid0 = false,
+                valid0 = false,
+                passingSchemas0 = null;
+            var errs_1 = errors;
+            var errs_2 = errors;
+            if (data && typeof data === 'object' && !Array.isArray(data)) {
+                if (data.value === undefined) {
+                    var err = {
+                        keyword: 'required',
+                        dataPath: (dataPath || '') + '',
+                        schemaPath: '#/definitions/PermissionRestrictionWithValue/required',
+                        params: {
+                            missingProperty: 'value',
+                        },
+                        message: "should have required property 'value'",
+                    };
+                    if (vErrors === null) vErrors = [err];
+                    else vErrors.push(err);
+                    errors++;
+                }
+                var errs__2 = errors;
+                var valid3 = true;
+            }
+            var valid2 = errors === errs_2;
+            var valid1 = errors === errs_1;
+            if (valid1) {
+                valid0 = prevValid0 = true;
+                passingSchemas0 = 0;
+            }
+            var errs_1 = errors;
+            var errs_2 = errors;
+            if (data && typeof data === 'object' && !Array.isArray(data)) {
+                var errs__2 = errors;
+                var valid3 = true;
+                if (data.valueTemplate === undefined) {
+                    valid3 = false;
+                    var err = {
+                        keyword: 'required',
+                        dataPath: (dataPath || '') + '',
+                        schemaPath: '#/definitions/PermissionRestrictionWithValueTemplate/required',
+                        params: {
+                            missingProperty: 'valueTemplate',
+                        },
+                        message: "should have required property 'valueTemplate'",
+                    };
+                    if (vErrors === null) vErrors = [err];
+                    else vErrors.push(err);
+                    errors++;
+                } else {
+                    var errs_3 = errors;
+                    if (typeof data.valueTemplate !== 'string') {
+                        var err = {
+                            keyword: 'type',
+                            dataPath: (dataPath || '') + '.valueTemplate',
+                            schemaPath:
+                                '#/definitions/PermissionRestrictionWithValueTemplate/properties/valueTemplate/type',
+                            params: {
+                                type: 'string',
+                            },
+                            message: 'should be string',
+                        };
+                        if (vErrors === null) vErrors = [err];
+                        else vErrors.push(err);
+                        errors++;
+                    }
+                    var valid3 = errors === errs_3;
                 }
             }
-        }
+            var valid2 = errors === errs_2;
+            var valid1 = errors === errs_1;
+            if (valid1 && prevValid0) {
+                valid0 = false;
+                passingSchemas0 = [passingSchemas0, 1];
+            } else {
+                if (valid1) {
+                    valid0 = prevValid0 = true;
+                    passingSchemas0 = 1;
+                }
+            }
+            if (!valid0) {
+                var err = {
+                    keyword: 'oneOf',
+                    dataPath: (dataPath || '') + '',
+                    schemaPath: '#/oneOf',
+                    params: {
+                        passingSchemas: passingSchemas0,
+                    },
+                    message: 'should match exactly one schema in oneOf',
+                };
+                if (vErrors === null) vErrors = [err];
+                else vErrors.push(err);
+                errors++;
+            } else {
+                errors = errs__0;
+                if (vErrors !== null) {
+                    if (errs__0) vErrors.length = errs__0;
+                    else vErrors = null;
+                }
+            }
+            validate.errors = vErrors;
+            return errors === 0;
+        };
+    })();
+    refVal3.schema = {
+        type: 'object',
+        required: ['field'],
+        properties: {
+            field: {
+                type: 'string',
+            },
+        },
+        oneOf: [
+            {
+                $ref: '#/definitions/PermissionRestrictionWithValue',
+            },
+            {
+                $ref: '#/definitions/PermissionRestrictionWithValueTemplate',
+            },
+        ],
     };
-    refVal[2] = refVal2;
-    var refVal3 = (function() {
+    refVal3.errors = null;
+    refVal[3] = refVal3;
+    var refVal4 = {
+        required: ['value'],
+        properties: {
+            value: {},
+        },
+    };
+    refVal[4] = refVal4;
+    var refVal5 = {
+        required: ['valueTemplate'],
+        properties: {
+            valueTemplate: {
+                type: 'string',
+            },
+        },
+    };
+    refVal[5] = refVal5;
+    var refVal6 = (function () {
         var pattern0 = new RegExp('^[a-zA-Z0-9]+$');
         var pattern1 = new RegExp('.+');
         var pattern2 = new RegExp('^[a-zA-Z0-9_-]+$');
@@ -573,9 +789,9 @@ var validate = (function() {
                             dataPath: (dataPath || '') + '',
                             schemaPath: '#/additionalProperties',
                             params: {
-                                additionalProperty: '' + key0 + ''
+                                additionalProperty: '' + key0 + '',
                             },
-                            message: 'should NOT have additional properties'
+                            message: 'should NOT have additional properties',
                         };
                         if (vErrors === null) vErrors = [err];
                         else vErrors.push(err);
@@ -592,7 +808,7 @@ var validate = (function() {
                             if (pattern3.test(key1)) {
                                 var errs_2 = errors;
                                 if (
-                                    !refVal4(
+                                    !refVal7(
                                         data1[key1],
                                         (dataPath || '') + ".types['" + key1 + "']",
                                         data1,
@@ -600,8 +816,8 @@ var validate = (function() {
                                         rootData
                                     )
                                 ) {
-                                    if (vErrors === null) vErrors = refVal4.errors;
-                                    else vErrors = vErrors.concat(refVal4.errors);
+                                    if (vErrors === null) vErrors = refVal7.errors;
+                                    else vErrors = vErrors.concat(refVal7.errors);
                                     errors = vErrors.length;
                                 }
                                 var valid2 = errors === errs_2;
@@ -635,9 +851,9 @@ var validate = (function() {
                                                 dataPath: (dataPath || '') + ".fields['" + key1 + "'].label",
                                                 schemaPath: '#/definitions/FieldLocalization/properties/label/type',
                                                 params: {
-                                                    type: 'string'
+                                                    type: 'string',
                                                 },
-                                                message: 'should be string'
+                                                message: 'should be string',
                                             };
                                             if (vErrors === null) vErrors = [err];
                                             else vErrors.push(err);
@@ -653,9 +869,9 @@ var validate = (function() {
                                                 dataPath: (dataPath || '') + ".fields['" + key1 + "'].hint",
                                                 schemaPath: '#/definitions/FieldLocalization/properties/hint/type',
                                                 params: {
-                                                    type: 'string'
+                                                    type: 'string',
                                                 },
-                                                message: 'should be string'
+                                                message: 'should be string',
                                             };
                                             if (vErrors === null) vErrors = [err];
                                             else vErrors.push(err);
@@ -676,9 +892,9 @@ var validate = (function() {
                                             schemaPath:
                                                 '#/properties/fields/patternProperties/%5E%5Ba-zA-Z0-9_%5D%2B%24/anyOf/1/type',
                                             params: {
-                                                type: 'string'
+                                                type: 'string',
                                             },
-                                            message: 'should be string'
+                                            message: 'should be string',
                                         };
                                         if (vErrors === null) vErrors = [err];
                                         else vErrors.push(err);
@@ -686,6 +902,8 @@ var validate = (function() {
                                     }
                                     var valid3 = errors === errs_3;
                                     valid2 = valid2 || valid3;
+                                    if (!valid2) {
+                                    }
                                 }
                                 if (!valid2) {
                                     var err = {
@@ -694,7 +912,7 @@ var validate = (function() {
                                         schemaPath:
                                             '#/properties/fields/patternProperties/%5E%5Ba-zA-Z0-9_%5D%2B%24/anyOf',
                                         params: {},
-                                        message: 'should match some schema in anyOf'
+                                        message: 'should match some schema in anyOf',
                                     };
                                     if (vErrors === null) vErrors = [err];
                                     else vErrors.push(err);
@@ -718,9 +936,9 @@ var validate = (function() {
                     dataPath: (dataPath || '') + '',
                     schemaPath: '#/type',
                     params: {
-                        type: 'object'
+                        type: 'object',
                     },
-                    message: 'should be object'
+                    message: 'should be object',
                 };
                 if (vErrors === null) vErrors = [err];
                 else vErrors.push(err);
@@ -730,36 +948,36 @@ var validate = (function() {
             return errors === 0;
         };
     })();
-    refVal3.schema = {
+    refVal6.schema = {
         type: 'object',
         additionalProperties: false,
         properties: {
             types: {
                 patternProperties: {
                     '^[a-zA-Z0-9_]+$': {
-                        $ref: '#/definitions/TypeLocalization'
-                    }
-                }
+                        $ref: '#/definitions/TypeLocalization',
+                    },
+                },
             },
             fields: {
                 patternProperties: {
                     '^[a-zA-Z0-9_]+$': {
                         anyOf: [
                             {
-                                $ref: '#/definitions/FieldLocalization'
+                                $ref: '#/definitions/FieldLocalization',
                             },
                             {
-                                type: 'string'
-                            }
-                        ]
-                    }
-                }
-            }
-        }
+                                type: 'string',
+                            },
+                        ],
+                    },
+                },
+            },
+        },
     };
-    refVal3.errors = null;
-    refVal[3] = refVal3;
-    var refVal4 = (function() {
+    refVal6.errors = null;
+    refVal[6] = refVal6;
+    var refVal7 = (function () {
         var pattern0 = new RegExp('^[a-zA-Z0-9]+$');
         var pattern1 = new RegExp('.+');
         var pattern2 = new RegExp('^[a-zA-Z0-9_-]+$');
@@ -769,6 +987,7 @@ var validate = (function() {
             'use strict';
             var vErrors = null;
             var errors = 0;
+            if (rootData === undefined) rootData = data;
             if (data && typeof data === 'object' && !Array.isArray(data)) {
                 var errs__0 = errors;
                 var valid1 = true;
@@ -788,9 +1007,9 @@ var validate = (function() {
                             dataPath: (dataPath || '') + '',
                             schemaPath: '#/additionalProperties',
                             params: {
-                                additionalProperty: '' + key0 + ''
+                                additionalProperty: '' + key0 + '',
                             },
-                            message: 'should NOT have additional properties'
+                            message: 'should NOT have additional properties',
                         };
                         if (vErrors === null) vErrors = [err];
                         else vErrors.push(err);
@@ -822,9 +1041,9 @@ var validate = (function() {
                                                 dataPath: (dataPath || '') + ".fields['" + key1 + "'].label",
                                                 schemaPath: '#/definitions/FieldLocalization/properties/label/type',
                                                 params: {
-                                                    type: 'string'
+                                                    type: 'string',
                                                 },
-                                                message: 'should be string'
+                                                message: 'should be string',
                                             };
                                             if (vErrors === null) vErrors = [err];
                                             else vErrors.push(err);
@@ -840,9 +1059,9 @@ var validate = (function() {
                                                 dataPath: (dataPath || '') + ".fields['" + key1 + "'].hint",
                                                 schemaPath: '#/definitions/FieldLocalization/properties/hint/type',
                                                 params: {
-                                                    type: 'string'
+                                                    type: 'string',
                                                 },
-                                                message: 'should be string'
+                                                message: 'should be string',
                                             };
                                             if (vErrors === null) vErrors = [err];
                                             else vErrors.push(err);
@@ -863,9 +1082,9 @@ var validate = (function() {
                                             schemaPath:
                                                 '#/properties/fields/patternProperties/%5E%5Ba-zA-Z0-9_%5D%2B%24/anyOf/1/type',
                                             params: {
-                                                type: 'string'
+                                                type: 'string',
                                             },
-                                            message: 'should be string'
+                                            message: 'should be string',
                                         };
                                         if (vErrors === null) vErrors = [err];
                                         else vErrors.push(err);
@@ -873,6 +1092,8 @@ var validate = (function() {
                                     }
                                     var valid3 = errors === errs_3;
                                     valid2 = valid2 || valid3;
+                                    if (!valid2) {
+                                    }
                                 }
                                 if (!valid2) {
                                     var err = {
@@ -881,7 +1102,7 @@ var validate = (function() {
                                         schemaPath:
                                             '#/properties/fields/patternProperties/%5E%5Ba-zA-Z0-9_%5D%2B%24/anyOf',
                                         params: {},
-                                        message: 'should match some schema in anyOf'
+                                        message: 'should match some schema in anyOf',
                                     };
                                     if (vErrors === null) vErrors = [err];
                                     else vErrors.push(err);
@@ -924,9 +1145,9 @@ var validate = (function() {
                                                 dataPath: (dataPath || '') + ".values['" + key1 + "'].label",
                                                 schemaPath: '#/definitions/EnumValueLocalization/properties/label/type',
                                                 params: {
-                                                    type: 'string'
+                                                    type: 'string',
                                                 },
-                                                message: 'should be string'
+                                                message: 'should be string',
                                             };
                                             if (vErrors === null) vErrors = [err];
                                             else vErrors.push(err);
@@ -942,9 +1163,9 @@ var validate = (function() {
                                                 dataPath: (dataPath || '') + ".values['" + key1 + "'].hint",
                                                 schemaPath: '#/definitions/EnumValueLocalization/properties/hint/type',
                                                 params: {
-                                                    type: 'string'
+                                                    type: 'string',
                                                 },
-                                                message: 'should be string'
+                                                message: 'should be string',
                                             };
                                             if (vErrors === null) vErrors = [err];
                                             else vErrors.push(err);
@@ -965,9 +1186,9 @@ var validate = (function() {
                                             schemaPath:
                                                 '#/properties/values/patternProperties/%5E%5Ba-zA-Z0-9_%5D%2B%24/anyOf/1/type',
                                             params: {
-                                                type: 'string'
+                                                type: 'string',
                                             },
-                                            message: 'should be string'
+                                            message: 'should be string',
                                         };
                                         if (vErrors === null) vErrors = [err];
                                         else vErrors.push(err);
@@ -975,6 +1196,8 @@ var validate = (function() {
                                     }
                                     var valid3 = errors === errs_3;
                                     valid2 = valid2 || valid3;
+                                    if (!valid2) {
+                                    }
                                 }
                                 if (!valid2) {
                                     var err = {
@@ -983,7 +1206,7 @@ var validate = (function() {
                                         schemaPath:
                                             '#/properties/values/patternProperties/%5E%5Ba-zA-Z0-9_%5D%2B%24/anyOf',
                                         params: {},
-                                        message: 'should match some schema in anyOf'
+                                        message: 'should match some schema in anyOf',
                                     };
                                     if (vErrors === null) vErrors = [err];
                                     else vErrors.push(err);
@@ -1009,9 +1232,9 @@ var validate = (function() {
                             dataPath: (dataPath || '') + '.label',
                             schemaPath: '#/properties/label/type',
                             params: {
-                                type: 'string'
+                                type: 'string',
                             },
-                            message: 'should be string'
+                            message: 'should be string',
                         };
                         if (vErrors === null) vErrors = [err];
                         else vErrors.push(err);
@@ -1027,9 +1250,9 @@ var validate = (function() {
                             dataPath: (dataPath || '') + '.labelPlural',
                             schemaPath: '#/properties/labelPlural/type',
                             params: {
-                                type: 'string'
+                                type: 'string',
                             },
-                            message: 'should be string'
+                            message: 'should be string',
                         };
                         if (vErrors === null) vErrors = [err];
                         else vErrors.push(err);
@@ -1045,9 +1268,9 @@ var validate = (function() {
                             dataPath: (dataPath || '') + '.hint',
                             schemaPath: '#/properties/hint/type',
                             params: {
-                                type: 'string'
+                                type: 'string',
                             },
-                            message: 'should be string'
+                            message: 'should be string',
                         };
                         if (vErrors === null) vErrors = [err];
                         else vErrors.push(err);
@@ -1061,9 +1284,9 @@ var validate = (function() {
                     dataPath: (dataPath || '') + '',
                     schemaPath: '#/type',
                     params: {
-                        type: 'object'
+                        type: 'object',
                     },
-                    message: 'should be object'
+                    message: 'should be object',
                 };
                 if (vErrors === null) vErrors = [err];
                 else vErrors.push(err);
@@ -1073,7 +1296,7 @@ var validate = (function() {
             return errors === 0;
         };
     })();
-    refVal4.schema = {
+    refVal7.schema = {
         type: 'object',
         additionalProperties: false,
         properties: {
@@ -1082,64 +1305,64 @@ var validate = (function() {
                     '^[a-zA-Z0-9_]+$': {
                         anyOf: [
                             {
-                                $ref: '#/definitions/FieldLocalization'
+                                $ref: '#/definitions/FieldLocalization',
                             },
                             {
-                                type: 'string'
-                            }
-                        ]
-                    }
-                }
+                                type: 'string',
+                            },
+                        ],
+                    },
+                },
             },
             values: {
                 patternProperties: {
                     '^[a-zA-Z0-9_]+$': {
                         anyOf: [
                             {
-                                $ref: '#/definitions/EnumValueLocalization'
+                                $ref: '#/definitions/EnumValueLocalization',
                             },
                             {
-                                type: 'string'
-                            }
-                        ]
-                    }
-                }
+                                type: 'string',
+                            },
+                        ],
+                    },
+                },
             },
             label: {
-                type: 'string'
+                type: 'string',
             },
             labelPlural: {
-                type: 'string'
+                type: 'string',
             },
             hint: {
-                type: 'string'
-            }
-        }
+                type: 'string',
+            },
+        },
     };
-    refVal4.errors = null;
-    refVal[4] = refVal4;
-    var refVal5 = {
+    refVal7.errors = null;
+    refVal[7] = refVal7;
+    var refVal8 = {
         properties: {
             label: {
-                type: 'string'
+                type: 'string',
             },
             hint: {
-                type: 'string'
-            }
-        }
+                type: 'string',
+            },
+        },
     };
-    refVal[5] = refVal5;
-    var refVal6 = {
+    refVal[8] = refVal8;
+    var refVal9 = {
         properties: {
             label: {
-                type: 'string'
+                type: 'string',
             },
             hint: {
-                type: 'string'
-            }
-        }
+                type: 'string',
+            },
+        },
     };
-    refVal[6] = refVal6;
+    refVal[9] = refVal9;
     return function validate(data, dataPath, parentData, parentDataProperty, rootData) {
         'use strict';
         var vErrors = null;
@@ -1152,9 +1375,9 @@ var validate = (function() {
                     dataPath: (dataPath || '') + '',
                     schemaPath: '#/minProperties',
                     params: {
-                        limit: 1
+                        limit: 1,
                     },
-                    message: 'should NOT have fewer than 1 properties'
+                    message: 'should NOT have fewer than 1 properties',
                 };
                 if (vErrors === null) vErrors = [err];
                 else vErrors.push(err);
@@ -1177,9 +1400,9 @@ var validate = (function() {
                         dataPath: (dataPath || '') + '',
                         schemaPath: '#/additionalProperties',
                         params: {
-                            additionalProperty: '' + key0 + ''
+                            additionalProperty: '' + key0 + '',
                         },
-                        message: 'should NOT have additional properties'
+                        message: 'should NOT have additional properties',
                     };
                     if (vErrors === null) vErrors = [err];
                     else vErrors.push(err);
@@ -1201,9 +1424,9 @@ var validate = (function() {
                                 dataPath: (dataPath || '') + '.permissionProfiles',
                                 schemaPath: '#/properties/permissionProfiles/additionalProperties',
                                 params: {
-                                    additionalProperty: '' + key1 + ''
+                                    additionalProperty: '' + key1 + '',
                                 },
-                                message: 'should NOT have additional properties'
+                                message: 'should NOT have additional properties',
                             };
                             if (vErrors === null) vErrors = [err];
                             else vErrors.push(err);
@@ -1235,9 +1458,9 @@ var validate = (function() {
                         dataPath: (dataPath || '') + '.permissionProfiles',
                         schemaPath: '#/properties/permissionProfiles/type',
                         params: {
-                            type: 'object'
+                            type: 'object',
                         },
-                        message: 'should be object'
+                        message: 'should be object',
                     };
                     if (vErrors === null) vErrors = [err];
                     else vErrors.push(err);
@@ -1260,9 +1483,9 @@ var validate = (function() {
                                 dataPath: (dataPath || '') + '.i18n',
                                 schemaPath: '#/properties/i18n/additionalProperties',
                                 params: {
-                                    additionalProperty: '' + key1 + ''
+                                    additionalProperty: '' + key1 + '',
                                 },
-                                message: 'should NOT have additional properties'
+                                message: 'should NOT have additional properties',
                             };
                             if (vErrors === null) vErrors = [err];
                             else vErrors.push(err);
@@ -1273,10 +1496,10 @@ var validate = (function() {
                         if (pattern2.test(key1)) {
                             var errs_2 = errors;
                             if (
-                                !refVal3(data1[key1], (dataPath || '') + ".i18n['" + key1 + "']", data1, key1, rootData)
+                                !refVal6(data1[key1], (dataPath || '') + ".i18n['" + key1 + "']", data1, key1, rootData)
                             ) {
-                                if (vErrors === null) vErrors = refVal3.errors;
-                                else vErrors = vErrors.concat(refVal3.errors);
+                                if (vErrors === null) vErrors = refVal6.errors;
+                                else vErrors = vErrors.concat(refVal6.errors);
                                 errors = vErrors.length;
                             }
                             var valid2 = errors === errs_2;
@@ -1288,9 +1511,9 @@ var validate = (function() {
                         dataPath: (dataPath || '') + '.i18n',
                         schemaPath: '#/properties/i18n/type',
                         params: {
-                            type: 'object'
+                            type: 'object',
                         },
-                        message: 'should be object'
+                        message: 'should be object',
                     };
                     if (vErrors === null) vErrors = [err];
                     else vErrors.push(err);
@@ -1313,9 +1536,9 @@ var validate = (function() {
                                 dataPath: (dataPath || '') + '.billing',
                                 schemaPath: '#/properties/billing/additionalProperties',
                                 params: {
-                                    additionalProperty: '' + key1 + ''
+                                    additionalProperty: '' + key1 + '',
                                 },
-                                message: 'should NOT have additional properties'
+                                message: 'should NOT have additional properties',
                             };
                             if (vErrors === null) vErrors = [err];
                             else vErrors.push(err);
@@ -1351,9 +1574,9 @@ var validate = (function() {
                                                 schemaPath:
                                                     '#/properties/billing/properties/billingEntities/items/additionalProperties',
                                                 params: {
-                                                    additionalProperty: '' + key3 + ''
+                                                    additionalProperty: '' + key3 + '',
                                                 },
-                                                message: 'should NOT have additional properties'
+                                                message: 'should NOT have additional properties',
                                             };
                                             if (vErrors === null) vErrors = [err];
                                             else vErrors.push(err);
@@ -1369,9 +1592,9 @@ var validate = (function() {
                                             schemaPath:
                                                 '#/properties/billing/properties/billingEntities/items/required',
                                             params: {
-                                                missingProperty: 'typeName'
+                                                missingProperty: 'typeName',
                                             },
-                                            message: "should have required property 'typeName'"
+                                            message: "should have required property 'typeName'",
                                         };
                                         if (vErrors === null) vErrors = [err];
                                         else vErrors.push(err);
@@ -1390,9 +1613,9 @@ var validate = (function() {
                                                     schemaPath:
                                                         '#/properties/billing/properties/billingEntities/items/properties/typeName/pattern',
                                                     params: {
-                                                        pattern: '^[a-zA-Z0-9_-]+$'
+                                                        pattern: '^[a-zA-Z0-9_-]+$',
                                                     },
-                                                    message: 'should match pattern "^[a-zA-Z0-9_-]+$"'
+                                                    message: 'should match pattern "^[a-zA-Z0-9_-]+$"',
                                                 };
                                                 if (vErrors === null) vErrors = [err];
                                                 else vErrors.push(err);
@@ -1406,9 +1629,9 @@ var validate = (function() {
                                                 schemaPath:
                                                     '#/properties/billing/properties/billingEntities/items/properties/typeName/type',
                                                 params: {
-                                                    type: 'string'
+                                                    type: 'string',
                                                 },
-                                                message: 'should be string'
+                                                message: 'should be string',
                                             };
                                             if (vErrors === null) vErrors = [err];
                                             else vErrors.push(err);
@@ -1431,9 +1654,9 @@ var validate = (function() {
                                                     schemaPath:
                                                         '#/properties/billing/properties/billingEntities/items/properties/keyFieldName/pattern',
                                                     params: {
-                                                        pattern: '^[a-zA-Z0-9_-]+$'
+                                                        pattern: '^[a-zA-Z0-9_-]+$',
                                                     },
-                                                    message: 'should match pattern "^[a-zA-Z0-9_-]+$"'
+                                                    message: 'should match pattern "^[a-zA-Z0-9_-]+$"',
                                                 };
                                                 if (vErrors === null) vErrors = [err];
                                                 else vErrors.push(err);
@@ -1450,9 +1673,9 @@ var validate = (function() {
                                                 schemaPath:
                                                     '#/properties/billing/properties/billingEntities/items/properties/keyFieldName/type',
                                                 params: {
-                                                    type: 'string'
+                                                    type: 'string',
                                                 },
-                                                message: 'should be string'
+                                                message: 'should be string',
                                             };
                                             if (vErrors === null) vErrors = [err];
                                             else vErrors.push(err);
@@ -1473,9 +1696,9 @@ var validate = (function() {
                                                 schemaPath:
                                                     '#/properties/billing/properties/billingEntities/items/properties/quantityFieldName/type',
                                                 params: {
-                                                    type: 'string'
+                                                    type: 'string',
                                                 },
-                                                message: 'should be string'
+                                                message: 'should be string',
                                             };
                                             if (vErrors === null) vErrors = [err];
                                             else vErrors.push(err);
@@ -1493,9 +1716,9 @@ var validate = (function() {
                                                 schemaPath:
                                                     '#/properties/billing/properties/billingEntities/items/properties/category/type',
                                                 params: {
-                                                    type: 'string'
+                                                    type: 'string',
                                                 },
-                                                message: 'should be string'
+                                                message: 'should be string',
                                             };
                                             if (vErrors === null) vErrors = [err];
                                             else vErrors.push(err);
@@ -1528,9 +1751,9 @@ var validate = (function() {
                                                         schemaPath:
                                                             '#/properties/billing/properties/billingEntities/items/properties/categoryMapping/additionalProperties',
                                                         params: {
-                                                            additionalProperty: '' + key4 + ''
+                                                            additionalProperty: '' + key4 + '',
                                                         },
-                                                        message: 'should NOT have additional properties'
+                                                        message: 'should NOT have additional properties',
                                                     };
                                                     if (vErrors === null) vErrors = [err];
                                                     else vErrors.push(err);
@@ -1549,9 +1772,9 @@ var validate = (function() {
                                                     schemaPath:
                                                         '#/properties/billing/properties/billingEntities/items/properties/categoryMapping/required',
                                                     params: {
-                                                        missingProperty: 'fieldName'
+                                                        missingProperty: 'fieldName',
                                                     },
-                                                    message: "should have required property 'fieldName'"
+                                                    message: "should have required property 'fieldName'",
                                                 };
                                                 if (vErrors === null) vErrors = [err];
                                                 else vErrors.push(err);
@@ -1569,9 +1792,9 @@ var validate = (function() {
                                                         schemaPath:
                                                             '#/properties/billing/properties/billingEntities/items/properties/categoryMapping/properties/fieldName/type',
                                                         params: {
-                                                            type: 'string'
+                                                            type: 'string',
                                                         },
-                                                        message: 'should be string'
+                                                        message: 'should be string',
                                                     };
                                                     if (vErrors === null) vErrors = [err];
                                                     else vErrors.push(err);
@@ -1592,9 +1815,9 @@ var validate = (function() {
                                                     schemaPath:
                                                         '#/properties/billing/properties/billingEntities/items/properties/categoryMapping/required',
                                                     params: {
-                                                        missingProperty: 'defaultValue'
+                                                        missingProperty: 'defaultValue',
                                                     },
-                                                    message: "should have required property 'defaultValue'"
+                                                    message: "should have required property 'defaultValue'",
                                                 };
                                                 if (vErrors === null) vErrors = [err];
                                                 else vErrors.push(err);
@@ -1613,9 +1836,9 @@ var validate = (function() {
                                                             schemaPath:
                                                                 '#/properties/billing/properties/billingEntities/items/properties/categoryMapping/properties/defaultValue/pattern',
                                                             params: {
-                                                                pattern: '^[a-zA-Z0-9_-]+$'
+                                                                pattern: '^[a-zA-Z0-9_-]+$',
                                                             },
-                                                            message: 'should match pattern "^[a-zA-Z0-9_-]+$"'
+                                                            message: 'should match pattern "^[a-zA-Z0-9_-]+$"',
                                                         };
                                                         if (vErrors === null) vErrors = [err];
                                                         else vErrors.push(err);
@@ -1632,9 +1855,9 @@ var validate = (function() {
                                                         schemaPath:
                                                             '#/properties/billing/properties/billingEntities/items/properties/categoryMapping/properties/defaultValue/type',
                                                         params: {
-                                                            type: 'string'
+                                                            type: 'string',
                                                         },
-                                                        message: 'should be string'
+                                                        message: 'should be string',
                                                     };
                                                     if (vErrors === null) vErrors = [err];
                                                     else vErrors.push(err);
@@ -1655,9 +1878,9 @@ var validate = (function() {
                                                     schemaPath:
                                                         '#/properties/billing/properties/billingEntities/items/properties/categoryMapping/required',
                                                     params: {
-                                                        missingProperty: 'values'
+                                                        missingProperty: 'values',
                                                     },
-                                                    message: "should have required property 'values'"
+                                                    message: "should have required property 'values'",
                                                 };
                                                 if (vErrors === null) vErrors = [err];
                                                 else vErrors.push(err);
@@ -1682,9 +1905,9 @@ var validate = (function() {
                                                                 schemaPath:
                                                                     '#/properties/billing/properties/billingEntities/items/properties/categoryMapping/properties/values/additionalProperties/type',
                                                                 params: {
-                                                                    type: 'string'
+                                                                    type: 'string',
                                                                 },
-                                                                message: 'should be string'
+                                                                message: 'should be string',
                                                             };
                                                             if (vErrors === null) vErrors = [err];
                                                             else vErrors.push(err);
@@ -1703,9 +1926,9 @@ var validate = (function() {
                                                         schemaPath:
                                                             '#/properties/billing/properties/billingEntities/items/properties/categoryMapping/properties/values/type',
                                                         params: {
-                                                            type: 'object'
+                                                            type: 'object',
                                                         },
-                                                        message: 'should be object'
+                                                        message: 'should be object',
                                                     };
                                                     if (vErrors === null) vErrors = [err];
                                                     else vErrors.push(err);
@@ -1724,9 +1947,9 @@ var validate = (function() {
                                                 schemaPath:
                                                     '#/properties/billing/properties/billingEntities/items/properties/categoryMapping/type',
                                                 params: {
-                                                    type: 'object'
+                                                    type: 'object',
                                                 },
-                                                message: 'should be object'
+                                                message: 'should be object',
                                             };
                                             if (vErrors === null) vErrors = [err];
                                             else vErrors.push(err);
@@ -1740,9 +1963,9 @@ var validate = (function() {
                                         dataPath: (dataPath || '') + '.billing.billingEntities[' + i2 + ']',
                                         schemaPath: '#/properties/billing/properties/billingEntities/items/type',
                                         params: {
-                                            type: 'object'
+                                            type: 'object',
                                         },
-                                        message: 'should be object'
+                                        message: 'should be object',
                                     };
                                     if (vErrors === null) vErrors = [err];
                                     else vErrors.push(err);
@@ -1756,9 +1979,9 @@ var validate = (function() {
                                 dataPath: (dataPath || '') + '.billing.billingEntities',
                                 schemaPath: '#/properties/billing/properties/billingEntities/type',
                                 params: {
-                                    type: 'array'
+                                    type: 'array',
                                 },
-                                message: 'should be array'
+                                message: 'should be array',
                             };
                             if (vErrors === null) vErrors = [err];
                             else vErrors.push(err);
@@ -1772,9 +1995,9 @@ var validate = (function() {
                         dataPath: (dataPath || '') + '.billing',
                         schemaPath: '#/properties/billing/type',
                         params: {
-                            type: 'object'
+                            type: 'object',
                         },
-                        message: 'should be object'
+                        message: 'should be object',
                     };
                     if (vErrors === null) vErrors = [err];
                     else vErrors.push(err);
@@ -1798,9 +2021,9 @@ var validate = (function() {
                                     dataPath: (dataPath || '') + '.timeToLive[' + i1 + ']',
                                     schemaPath: '#/properties/timeToLive/items/required',
                                     params: {
-                                        missingProperty: 'typeName'
+                                        missingProperty: 'typeName',
                                     },
-                                    message: "should have required property 'typeName'"
+                                    message: "should have required property 'typeName'",
                                 };
                                 if (vErrors === null) vErrors = [err];
                                 else vErrors.push(err);
@@ -1812,9 +2035,9 @@ var validate = (function() {
                                     dataPath: (dataPath || '') + '.timeToLive[' + i1 + ']',
                                     schemaPath: '#/properties/timeToLive/items/required',
                                     params: {
-                                        missingProperty: 'dateField'
+                                        missingProperty: 'dateField',
                                     },
-                                    message: "should have required property 'dateField'"
+                                    message: "should have required property 'dateField'",
                                 };
                                 if (vErrors === null) vErrors = [err];
                                 else vErrors.push(err);
@@ -1832,9 +2055,9 @@ var validate = (function() {
                                             dataPath: (dataPath || '') + '.timeToLive[' + i1 + "]['typeName:']",
                                             schemaPath: '#/properties/timeToLive/items/properties/typeName%3A/pattern',
                                             params: {
-                                                pattern: '^[a-zA-Z0-9_-]+$'
+                                                pattern: '^[a-zA-Z0-9_-]+$',
                                             },
-                                            message: 'should match pattern "^[a-zA-Z0-9_-]+$"'
+                                            message: 'should match pattern "^[a-zA-Z0-9_-]+$"',
                                         };
                                         if (vErrors === null) vErrors = [err];
                                         else vErrors.push(err);
@@ -1846,9 +2069,9 @@ var validate = (function() {
                                         dataPath: (dataPath || '') + '.timeToLive[' + i1 + "]['typeName:']",
                                         schemaPath: '#/properties/timeToLive/items/properties/typeName%3A/type',
                                         params: {
-                                            type: 'string'
+                                            type: 'string',
                                         },
-                                        message: 'should be string'
+                                        message: 'should be string',
                                     };
                                     if (vErrors === null) vErrors = [err];
                                     else vErrors.push(err);
@@ -1866,9 +2089,9 @@ var validate = (function() {
                                             dataPath: (dataPath || '') + '.timeToLive[' + i1 + "]['dateField:']",
                                             schemaPath: '#/properties/timeToLive/items/properties/dateField%3A/pattern',
                                             params: {
-                                                pattern: '^([a-zA-Z0-9_-]|\\.)+$'
+                                                pattern: '^([a-zA-Z0-9_-]|\\.)+$',
                                             },
-                                            message: 'should match pattern "^([a-zA-Z0-9_-]|\\.)+$"'
+                                            message: 'should match pattern "^([a-zA-Z0-9_-]|\\.)+$"',
                                         };
                                         if (vErrors === null) vErrors = [err];
                                         else vErrors.push(err);
@@ -1880,9 +2103,9 @@ var validate = (function() {
                                         dataPath: (dataPath || '') + '.timeToLive[' + i1 + "]['dateField:']",
                                         schemaPath: '#/properties/timeToLive/items/properties/dateField%3A/type',
                                         params: {
-                                            type: 'string'
+                                            type: 'string',
                                         },
-                                        message: 'should be string'
+                                        message: 'should be string',
                                     };
                                     if (vErrors === null) vErrors = [err];
                                     else vErrors.push(err);
@@ -1898,9 +2121,9 @@ var validate = (function() {
                                     dataPath: (dataPath || '') + '.timeToLive[' + i1 + ']',
                                     schemaPath: '#/properties/timeToLive/items/required',
                                     params: {
-                                        missingProperty: 'expireAfterDays'
+                                        missingProperty: 'expireAfterDays',
                                     },
-                                    message: "should have required property 'expireAfterDays'"
+                                    message: "should have required property 'expireAfterDays'",
                                 };
                                 if (vErrors === null) vErrors = [err];
                                 else vErrors.push(err);
@@ -1913,9 +2136,9 @@ var validate = (function() {
                                         dataPath: (dataPath || '') + '.timeToLive[' + i1 + '].expireAfterDays',
                                         schemaPath: '#/properties/timeToLive/items/properties/expireAfterDays/type',
                                         params: {
-                                            type: 'integer'
+                                            type: 'integer',
                                         },
-                                        message: 'should be integer'
+                                        message: 'should be integer',
                                     };
                                     if (vErrors === null) vErrors = [err];
                                     else vErrors.push(err);
@@ -1931,9 +2154,9 @@ var validate = (function() {
                                             params: {
                                                 comparison: '>=',
                                                 limit: 1,
-                                                exclusive: false
+                                                exclusive: false,
                                             },
-                                            message: 'should be >= 1'
+                                            message: 'should be >= 1',
                                         };
                                         if (vErrors === null) vErrors = [err];
                                         else vErrors.push(err);
@@ -1948,9 +2171,9 @@ var validate = (function() {
                                 dataPath: (dataPath || '') + '.timeToLive[' + i1 + ']',
                                 schemaPath: '#/properties/timeToLive/items/type',
                                 params: {
-                                    type: 'object'
+                                    type: 'object',
                                 },
-                                message: 'should be object'
+                                message: 'should be object',
                             };
                             if (vErrors === null) vErrors = [err];
                             else vErrors.push(err);
@@ -1964,9 +2187,9 @@ var validate = (function() {
                         dataPath: (dataPath || '') + '.timeToLive',
                         schemaPath: '#/properties/timeToLive/type',
                         params: {
-                            type: 'array'
+                            type: 'array',
                         },
-                        message: 'should be array'
+                        message: 'should be array',
                     };
                     if (vErrors === null) vErrors = [err];
                     else vErrors.push(err);
@@ -1980,9 +2203,9 @@ var validate = (function() {
                 dataPath: (dataPath || '') + '',
                 schemaPath: '#/type',
                 params: {
-                    type: 'object'
+                    type: 'object',
                 },
-                message: 'should be object'
+                message: 'should be object',
             };
             if (vErrors === null) vErrors = [err];
             else vErrors.push(err);
@@ -2004,18 +2227,18 @@ validate.schema = {
             additionalProperties: false,
             patternProperties: {
                 '^[a-zA-Z0-9]+$': {
-                    $ref: '#/definitions/PermissionProfile'
-                }
-            }
+                    $ref: '#/definitions/PermissionProfile',
+                },
+            },
         },
         i18n: {
             type: 'object',
             additionalProperties: false,
             patternProperties: {
                 '^[a-zA-Z0-9_-]+$': {
-                    $ref: '#/definitions/NamespaceLocalization'
-                }
-            }
+                    $ref: '#/definitions/NamespaceLocalization',
+                },
+            },
         },
         billing: {
             type: 'object',
@@ -2027,45 +2250,45 @@ validate.schema = {
                         properties: {
                             typeName: {
                                 type: 'string',
-                                pattern: '^[a-zA-Z0-9_-]+$'
+                                pattern: '^[a-zA-Z0-9_-]+$',
                             },
                             keyFieldName: {
                                 type: 'string',
-                                pattern: '^[a-zA-Z0-9_-]+$'
+                                pattern: '^[a-zA-Z0-9_-]+$',
                             },
                             quantityFieldName: {
-                                type: 'string'
+                                type: 'string',
                             },
                             category: {
-                                type: 'string'
+                                type: 'string',
                             },
                             categoryMapping: {
                                 type: 'object',
                                 properties: {
                                     fieldName: {
-                                        type: 'string'
+                                        type: 'string',
                                     },
                                     defaultValue: {
                                         type: 'string',
-                                        pattern: '^[a-zA-Z0-9_-]+$'
+                                        pattern: '^[a-zA-Z0-9_-]+$',
                                     },
                                     values: {
                                         type: 'object',
                                         additionalProperties: {
-                                            type: 'string'
-                                        }
-                                    }
+                                            type: 'string',
+                                        },
+                                    },
                                 },
                                 additionalProperties: false,
-                                required: ['fieldName', 'defaultValue', 'values']
-                            }
+                                required: ['fieldName', 'defaultValue', 'values'],
+                            },
                         },
                         required: ['typeName'],
-                        additionalProperties: false
-                    }
-                }
+                        additionalProperties: false,
+                    },
+                },
             },
-            additionalProperties: false
+            additionalProperties: false,
         },
         timeToLive: {
             type: 'array',
@@ -2074,20 +2297,20 @@ validate.schema = {
                 properties: {
                     'typeName:': {
                         type: 'string',
-                        pattern: '^[a-zA-Z0-9_-]+$'
+                        pattern: '^[a-zA-Z0-9_-]+$',
                     },
                     'dateField:': {
                         type: 'string',
-                        pattern: '^([a-zA-Z0-9_-]|\\.)+$'
+                        pattern: '^([a-zA-Z0-9_-]|\\.)+$',
                     },
                     expireAfterDays: {
                         type: 'integer',
-                        minimum: 1
-                    }
+                        minimum: 1,
+                    },
                 },
-                required: ['typeName', 'dateField', 'expireAfterDays']
-            }
-        }
+                required: ['typeName', 'dateField', 'expireAfterDays'],
+            },
+        },
     },
     definitions: {
         PermissionProfile: {
@@ -2097,10 +2320,10 @@ validate.schema = {
                 permissions: {
                     type: 'array',
                     items: {
-                        $ref: '#/definitions/Permission'
-                    }
-                }
-            }
+                        $ref: '#/definitions/Permission',
+                    },
+                },
+            },
         },
         Permission: {
             type: 'object',
@@ -2112,34 +2335,71 @@ validate.schema = {
                     minLength: 1,
                     items: {
                         type: 'string',
-                        pattern: '.+'
-                    }
+                        pattern: '.+',
+                    },
                 },
                 access: {
                     oneOf: [
                         {
                             type: 'string',
-                            enum: ['read', 'readWrite', 'create', 'update', 'delete']
+                            enum: ['read', 'readWrite', 'create', 'update', 'delete'],
                         },
                         {
                             type: 'array',
                             items: {
                                 type: 'string',
-                                enum: ['read', 'readWrite', 'create', 'update', 'delete']
+                                enum: ['read', 'readWrite', 'create', 'update', 'delete'],
                             },
-                            minItems: 1
-                        }
-                    ]
+                            minItems: 1,
+                        },
+                    ],
                 },
                 restrictToAccessGroups: {
                     type: 'array',
                     minLength: 1,
                     items: {
                         type: 'string',
-                        pattern: '.+'
-                    }
-                }
-            }
+                        pattern: '.+',
+                    },
+                },
+                restrictions: {
+                    type: 'array',
+                    items: {
+                        $ref: '#/definitions/PermissionRestriction',
+                    },
+                },
+            },
+        },
+        PermissionRestriction: {
+            type: 'object',
+            required: ['field'],
+            properties: {
+                field: {
+                    type: 'string',
+                },
+            },
+            oneOf: [
+                {
+                    $ref: '#/definitions/PermissionRestrictionWithValue',
+                },
+                {
+                    $ref: '#/definitions/PermissionRestrictionWithValueTemplate',
+                },
+            ],
+        },
+        PermissionRestrictionWithValue: {
+            required: ['value'],
+            properties: {
+                value: {},
+            },
+        },
+        PermissionRestrictionWithValueTemplate: {
+            required: ['valueTemplate'],
+            properties: {
+                valueTemplate: {
+                    type: 'string',
+                },
+            },
         },
         NamespaceLocalization: {
             type: 'object',
@@ -2148,25 +2408,25 @@ validate.schema = {
                 types: {
                     patternProperties: {
                         '^[a-zA-Z0-9_]+$': {
-                            $ref: '#/definitions/TypeLocalization'
-                        }
-                    }
+                            $ref: '#/definitions/TypeLocalization',
+                        },
+                    },
                 },
                 fields: {
                     patternProperties: {
                         '^[a-zA-Z0-9_]+$': {
                             anyOf: [
                                 {
-                                    $ref: '#/definitions/FieldLocalization'
+                                    $ref: '#/definitions/FieldLocalization',
                                 },
                                 {
-                                    type: 'string'
-                                }
-                            ]
-                        }
-                    }
-                }
-            }
+                                    type: 'string',
+                                },
+                            ],
+                        },
+                    },
+                },
+            },
         },
         TypeLocalization: {
             type: 'object',
@@ -2177,61 +2437,61 @@ validate.schema = {
                         '^[a-zA-Z0-9_]+$': {
                             anyOf: [
                                 {
-                                    $ref: '#/definitions/FieldLocalization'
+                                    $ref: '#/definitions/FieldLocalization',
                                 },
                                 {
-                                    type: 'string'
-                                }
-                            ]
-                        }
-                    }
+                                    type: 'string',
+                                },
+                            ],
+                        },
+                    },
                 },
                 values: {
                     patternProperties: {
                         '^[a-zA-Z0-9_]+$': {
                             anyOf: [
                                 {
-                                    $ref: '#/definitions/EnumValueLocalization'
+                                    $ref: '#/definitions/EnumValueLocalization',
                                 },
                                 {
-                                    type: 'string'
-                                }
-                            ]
-                        }
-                    }
+                                    type: 'string',
+                                },
+                            ],
+                        },
+                    },
                 },
                 label: {
-                    type: 'string'
+                    type: 'string',
                 },
                 labelPlural: {
-                    type: 'string'
+                    type: 'string',
                 },
                 hint: {
-                    type: 'string'
-                }
-            }
+                    type: 'string',
+                },
+            },
         },
         FieldLocalization: {
             properties: {
                 label: {
-                    type: 'string'
+                    type: 'string',
                 },
                 hint: {
-                    type: 'string'
-                }
-            }
+                    type: 'string',
+                },
+            },
         },
         EnumValueLocalization: {
             properties: {
                 label: {
-                    type: 'string'
+                    type: 'string',
                 },
                 hint: {
-                    type: 'string'
-                }
-            }
-        }
-    }
+                    type: 'string',
+                },
+            },
+        },
+    },
 };
 validate.errors = null;
 module.exports = validate;

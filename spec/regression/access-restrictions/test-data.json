@@ -1,0 +1,22 @@
+{
+    "roles": ["admin"],
+    "rootEntities": {
+        "File": [
+            {
+                "@id": "1",
+                "name": "accounting",
+                "accessGroup": "accounting"
+            },
+            {
+                "@id": "2",
+                "name": "logistics",
+                "accessGroup": "logistics"
+            },
+            {
+                "@id": "3",
+                "name": "public",
+                "accessGroup": "public"
+            }
+        ]
+    }
+}

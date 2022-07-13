@@ -14,14 +14,14 @@ import {
     ObjectValueNode,
     StringValueNode,
     TypeDefinitionNode,
-    valueFromAST
+    valueFromAST,
 } from 'graphql';
 import { ModelValidationOptions } from '../config/interfaces';
 import {
     ParsedGraphQLProjectSource,
     ParsedObjectProjectSource,
     ParsedProject,
-    ParsedProjectSourceBaseKind
+    ParsedProjectSourceBaseKind,
 } from '../config/parsed-project';
 import {
     ENUM,
@@ -31,10 +31,11 @@ import {
     NON_NULL_TYPE,
     OBJECT,
     OBJECT_TYPE_DEFINITION,
-    STRING
+    STRING,
 } from '../graphql/kinds';
 import { getValueFromAST } from '../graphql/value-from-ast';
 import {
+    ACCESS_FIELD_DIRECTIVE,
     BUSINESS_OBJECT_DIRECTIVE,
     CALC_MUTATIONS_DIRECTIVE,
     CALC_MUTATIONS_OPERATORS_ARG,
@@ -75,7 +76,7 @@ import {
     ROOT_ENTITY_DIRECTIVE,
     UNIQUE_DIRECTIVE,
     VALUE_ARG,
-    VALUE_OBJECT_DIRECTIVE
+    VALUE_OBJECT_DIRECTIVE,
 } from '../schema/constants';
 import {
     findDirectiveWithName,
@@ -83,7 +84,7 @@ import {
     getNamedTypeNodeIgnoringNonNullAndList,
     getNodeByName,
     getTypeNameIgnoringNonNullAndList,
-    hasDirectiveWithName
+    hasDirectiveWithName,
 } from '../schema/schema-utils';
 import { compact, flatMap, mapValues } from '../utils/utils';
 import {
@@ -106,7 +107,7 @@ import {
     RolesSpecifierConfig,
     TimeToLiveConfig,
     TypeConfig,
-    TypeKind
+    TypeKind,
 } from './config';
 import { BillingConfig } from './config/billing';
 import { Model } from './implementation';
@@ -124,7 +125,7 @@ export function createModel(parsedProject: ParsedProject, modelValidationOptions
         validationMessages: validationContext.validationMessages,
         billing: extractBilling(parsedProject),
         modelValidationOptions,
-        timeToLiveConfigs: extractTimeToLive(parsedProject)
+        timeToLiveConfigs: extractTimeToLive(parsedProject),
     });
 }
 
@@ -146,11 +147,11 @@ const VALIDATION_ERROR_INVALID_DEFINITION_KIND =
 
 function createTypeInputs(parsedProject: ParsedProject, context: ValidationContext): ReadonlyArray<TypeConfig> {
     const graphQLSchemaParts = parsedProject.sources.filter(
-        parsedSource => parsedSource.kind === ParsedProjectSourceBaseKind.GRAPHQL
+        (parsedSource) => parsedSource.kind === ParsedProjectSourceBaseKind.GRAPHQL
     ) as ReadonlyArray<ParsedGraphQLProjectSource>;
-    return flatMap(graphQLSchemaParts, schemaPart =>
+    return flatMap(graphQLSchemaParts, (schemaPart) =>
         compact(
-            schemaPart.document.definitions.map(definition => {
+            schemaPart.document.definitions.map((definition) => {
                 // Only look at object types and enums (scalars are not supported yet, they need to be implemented somehow, e.g. via regex check)
                 if (definition.kind != OBJECT_TYPE_DEFINITION && definition.kind !== ENUM_TYPE_DEFINITION) {
                     context.addMessage(ValidationMessage.error(VALIDATION_ERROR_INVALID_DEFINITION_KIND, definition));
@@ -159,7 +160,7 @@ function createTypeInputs(parsedProject: ParsedProject, context: ValidationConte
 
                 const common = {
                     description: definition.description ? definition.description.value : undefined,
-                    name: definition.name.value
+                    name: definition.name.value,
                 };
 
                 switch (definition.kind) {
@@ -169,7 +170,7 @@ function createTypeInputs(parsedProject: ParsedProject, context: ValidationConte
                             namespacePath: getNamespacePath(definition, schemaPart.namespacePath),
                             astNode: definition,
                             kind: TypeKind.ENUM,
-                            values: createEnumValues(definition.values || [])
+                            values: createEnumValues(definition.values || []),
                         };
                         return enumTypeInput;
                     case OBJECT_TYPE_DEFINITION:
@@ -188,7 +189,7 @@ function createEnumValues(valueNodes: ReadonlyArray<EnumValueDefinitionNode>): R
             value: valNode.name.value,
             description: valNode.description && valNode.description.value,
             deprecationReason: getDeprecationReason(valNode),
-            astNode: valNode
+            astNode: valNode,
         })
     );
 }
@@ -204,9 +205,9 @@ function createObjectTypeInput(
         name: definition.name.value,
         description: definition.description ? definition.description.value : undefined,
         astNode: definition,
-        fields: (definition.fields || []).map(field => createFieldInput(field, context)),
+        fields: (definition.fields || []).map((field) => createFieldInput(field, context)),
         namespacePath: getNamespacePath(definition, schemaPart.namespacePath),
-        flexSearchLanguage: getDefaultLanguage(definition, context)
+        flexSearchLanguage: getDefaultLanguage(definition, context),
     };
 
     const businessObjectDirective = findDirectiveWithName(definition, BUSINESS_OBJECT_DIRECTIVE);
@@ -223,17 +224,17 @@ function createObjectTypeInput(
         case CHILD_ENTITY_DIRECTIVE:
             return {
                 kind: TypeKind.CHILD_ENTITY,
-                ...common
+                ...common,
             };
         case ENTITY_EXTENSION_DIRECTIVE:
             return {
                 kind: TypeKind.ENTITY_EXTENSION,
-                ...common
+                ...common,
             };
         case VALUE_OBJECT_DIRECTIVE:
             return {
                 kind: TypeKind.VALUE_OBJECT,
-                ...common
+                ...common,
             };
         default:
             // interpret unknown kinds as root entity because they are least likely to cause unnecessary errors
@@ -246,7 +247,7 @@ function createObjectTypeInput(
                 permissions: getPermissions(definition, context),
                 indices: createIndexDefinitionInputs(definition, context),
                 flexSearchIndexConfig: createFlexSearchDefinitionInputs(definition, context),
-                isBusinessObject: !!businessObjectDirective
+                isBusinessObject: !!businessObjectDirective,
             };
     }
 }
@@ -264,9 +265,9 @@ function processKeyField(
 ) {
     let keyFieldASTNode: FieldDefinitionNode | undefined = getKeyFieldASTNode(definition, context);
     let keyFieldName: string | undefined = keyFieldASTNode ? keyFieldASTNode.name.value : undefined;
-    const underscoreKeyField = fields.find(field => field.name == '_key');
+    const underscoreKeyField = fields.find((field) => field.name == '_key');
     if (underscoreKeyField) {
-        fields = fields.filter(f => f !== underscoreKeyField);
+        fields = fields.filter((f) => f !== underscoreKeyField);
         if (keyFieldASTNode && keyFieldASTNode.name.value === underscoreKeyField.name) {
             keyFieldASTNode = underscoreKeyField.astNode;
             keyFieldName = ID_FIELD;
@@ -285,9 +286,9 @@ function processKeyField(
             );
         }
     }
-    const idField = fields.find(field => field.name == ID_FIELD);
+    const idField = fields.find((field) => field.name == ID_FIELD);
     if (idField) {
-        fields = fields.filter(f => f !== idField);
+        fields = fields.filter((f) => f !== idField);
         if (keyFieldASTNode && keyFieldASTNode.name.value === idField.name) {
             keyFieldASTNode = idField.astNode;
             keyFieldName = ID_FIELD;
@@ -331,13 +332,13 @@ function getFlexSearchOrder(rootEntityDirective?: DirectiveNode): ReadonlyArray<
     );
     if (argumentFlexSearchOrder && argumentFlexSearchOrder.value.kind === 'ListValue') {
         return argumentFlexSearchOrder.value.values
-            .map(orderArgument => {
+            .map((orderArgument) => {
                 return valueFromAST(orderArgument, flexSearchOrderInputObjectType);
             })
             .map((value: any) => {
                 return {
                     field: value.field,
-                    asc: value.direction === 'ASC' ? true : false
+                    asc: value.direction === 'ASC' ? true : false,
                 };
             });
     }
@@ -352,7 +353,7 @@ function createFlexSearchDefinitionInputs(
     let config = {
         isIndexed: false,
         directiveASTNode: directive,
-        primarySort: getFlexSearchOrder(directive)
+        primarySort: getFlexSearchOrder(directive),
     };
     if (directive) {
         const argumentIndexed: ArgumentNode | undefined = getNodeByName(
@@ -465,6 +466,7 @@ function createFieldInput(fieldNode: FieldDefinitionNode, context: ValidationCon
     const parentDirectiveNode = findDirectiveWithName(fieldNode, PARENT_DIRECTIVE);
     const rootDirectiveNode = findDirectiveWithName(fieldNode, ROOT_DIRECTIVE);
     const flexSearchIndexCaseSensitiveNode = getFlexSearchIndexCaseSensitiveNode(fieldNode, context);
+    const accessFieldDirectiveASTNode = findDirectiveWithName(fieldNode, ACCESS_FIELD_DIRECTIVE);
 
     return {
         name: fieldNode.name.value,
@@ -507,7 +509,9 @@ function createFieldInput(fieldNode: FieldDefinitionNode, context: ValidationCon
         isIncludedInSearch: getIsIncludedInSearch(fieldNode, context),
         isFulltextIncludedInSearch: getIsFulltextIncludedInSearch(fieldNode, context),
         flexSearchLanguage: getLanguage(fieldNode, context),
-        collect: getCollectConfig(fieldNode, context)
+        collect: getCollectConfig(fieldNode, context),
+        isAccessField: !!accessFieldDirectiveASTNode,
+        accessFieldDirectiveASTNode,
     };
 }
 
@@ -530,7 +534,7 @@ function getCalcMutationOperators(
         return [calcMutationsArg.value.value as CalcMutationsOperator];
     } else if (calcMutationsArg.value.kind === LIST) {
         return compact(
-            calcMutationsArg.value.values.map(val => {
+            calcMutationsArg.value.values.map((val) => {
                 if (val.kind !== ENUM) {
                     context.addMessage(
                         ValidationMessage.error(VALIDATION_ERROR_EXPECTED_ENUM_OR_LIST_OF_ENUMS, val.loc)
@@ -556,7 +560,7 @@ function createIndexDefinitionInputs(
     return [
         ...createRootEntityBasedIndices(definition, context),
         ...createFieldBasedIndices(definition, context, false),
-        ...createFieldBasedIndices(definition, context, true)
+        ...createFieldBasedIndices(definition, context, true),
     ];
 }
 
@@ -576,7 +580,7 @@ function createRootEntityBasedIndices(
         return [buildIndexDefinitionFromObjectValue(indicesArg.value)];
     } else if (indicesArg.value.kind === LIST) {
         return compact(
-            indicesArg.value.values.map(val => {
+            indicesArg.value.values.map((val) => {
                 if (val.kind !== OBJECT) {
                     context.addMessage(ValidationMessage.error(VALIDATION_ERROR_INVALID_ARGUMENT_TYPE, val.loc));
                     return undefined;
@@ -602,7 +606,7 @@ function createFieldBasedIndices(
                 return undefined;
             }
             let sparseArg =
-                indexDirective.arguments && indexDirective.arguments.find(arg => arg.name.value === 'sparse');
+                indexDirective.arguments && indexDirective.arguments.find((arg) => arg.name.value === 'sparse');
             let sparse: boolean | undefined;
             if (sparseArg) {
                 switch (sparseArg.value.kind) {
@@ -626,7 +630,7 @@ function createFieldBasedIndices(
                 fields: [field.name.value],
                 unique,
                 sparse,
-                fieldASTNodes: [indexDirective]
+                fieldASTNodes: [indexDirective],
             };
         })
     );
@@ -635,20 +639,20 @@ function createFieldBasedIndices(
 function buildIndexDefinitionFromObjectValue(indexDefinitionNode: ObjectValueNode): IndexDefinitionConfig {
     return {
         ...mapIndexDefinition(indexDefinitionNode),
-        astNode: indexDefinitionNode
+        astNode: indexDefinitionNode,
     };
 }
 
 function mapIndexDefinition(index: ObjectValueNode): IndexDefinitionConfig {
     const { id, name, ...value } = valueFromAST(index, indexDefinitionInputObjectType);
-    const fieldsField = index.fields.find(f => f.name.value === 'fields');
+    const fieldsField = index.fields.find((f) => f.name.value === 'fields');
     const fieldASTNodes = fieldsField && fieldsField.value.kind === 'ListValue' ? fieldsField.value.values : undefined;
-    const nameASTNode = index.fields.find(f => f.name.value === 'name');
+    const nameASTNode = index.fields.find((f) => f.name.value === 'name');
     return {
         ...value,
         name,
         nameASTNode,
-        fieldASTNodes
+        fieldASTNodes,
     };
 }
 
@@ -656,7 +660,7 @@ function getKindOfObjectTypeNode(
     definition: ObjectTypeDefinitionNode,
     context?: ValidationContext
 ): string | undefined {
-    const kindDirectives = (definition.directives || []).filter(dir =>
+    const kindDirectives = (definition.directives || []).filter((dir) =>
         OBJECT_TYPE_KIND_DIRECTIVES.includes(dir.name.value)
     );
     if (kindDirectives.length !== 1) {
@@ -694,12 +698,12 @@ function getNamespacePath(
 }
 
 function getKeyFieldASTNode(definition: ObjectTypeDefinitionNode, context: ValidationContext) {
-    const keyFields = (definition.fields || []).filter(field => findDirectiveWithName(field, KEY_FIELD_DIRECTIVE));
+    const keyFields = (definition.fields || []).filter((field) => findDirectiveWithName(field, KEY_FIELD_DIRECTIVE));
     if (keyFields.length == 0) {
         return undefined;
     }
     if (keyFields.length > 1) {
-        keyFields.forEach(f =>
+        keyFields.forEach((f) =>
             context.addMessage(
                 ValidationMessage.error(
                     VALIDATION_ERROR_DUPLICATE_KEY_FIELD,
@@ -729,13 +733,13 @@ function getPermissions(
         ? {
               read: getRolesOfArg(getNodeByName(rolesDirective.arguments, ROLES_READ_ARG), context),
               readWrite: getRolesOfArg(getNodeByName(rolesDirective.arguments, ROLES_READ_WRITE_ARG), context),
-              astNode: rolesDirective
+              astNode: rolesDirective,
           }
         : undefined;
     return {
         permissionProfileName: permissionProfileNameAstNode ? permissionProfileNameAstNode.value : undefined,
         permissionProfileNameAstNode,
-        roles
+        roles,
     };
 }
 
@@ -747,7 +751,7 @@ function getRolesOfArg(rolesArg: ArgumentNode | undefined, context: ValidationCo
     if (rolesArg) {
         if (rolesArg.value.kind === LIST) {
             roles = compact(
-                rolesArg.value.values.map(val => {
+                rolesArg.value.values.map((val) => {
                     if (val.kind !== STRING) {
                         context.addMessage(
                             ValidationMessage.error(VALIDATION_ERROR_EXPECTED_STRING_OR_LIST_OF_STRINGS, val.loc)
@@ -868,7 +872,7 @@ function getCollectConfig(fieldNode: FieldDefinitionNode, context: ValidationCon
         path: pathArg.value.value,
         pathASTNode: pathArg.value,
         aggregationOperator: aggregateValueNode && (aggregateValueNode.value as AggregationOperator),
-        aggregationOperatorASTNode: aggregateValueNode
+        aggregationOperatorASTNode: aggregateValueNode,
     };
 }
 
@@ -884,11 +888,25 @@ function extractPermissionProfiles(parsedProject: ParsedProject): ReadonlyArray<
             const profilesWithoutLocs = source.object.permissionProfiles as PermissionProfileConfigMap;
             const profiles: PermissionProfileConfigMap = mapValues(profilesWithoutLocs, (profile, name) => ({
                 ...profile,
-                loc: source.pathLocationMap['permissionProfiles.' + name]
+                permissions: profile.permissions?.map((permission, permissionIndex) => ({
+                    ...permission,
+                    restrictions: permission.restrictions?.map((restriction, restrictionIndex) => ({
+                        ...restriction,
+                        fieldValueLoc:
+                            source.pathLocationMap[
+                                `/permissionProfiles/${name}.permissions/${permissionIndex}/restrictions/${restrictionIndex}/field`
+                            ],
+                        loc: source.pathLocationMap[
+                            `/permissionProfiles/${name}.permissions/${permissionIndex}/restrictions/${restrictionIndex}`
+                        ],
+                    })),
+                    loc: source.pathLocationMap[`/permissionProfiles/${name}/permissions/${permissionIndex}`],
+                })),
+                loc: source.pathLocationMap[`/permissionProfiles/${name}`],
             }));
             return {
                 namespacePath: source.namespacePath,
-                profiles
+                profiles,
             };
         })
     );
@@ -896,22 +914,22 @@ function extractPermissionProfiles(parsedProject: ParsedProject): ReadonlyArray<
 
 function extractI18n(parsedProject: ParsedProject): ReadonlyArray<LocalizationConfig> {
     const objectSchemaParts = parsedProject.sources.filter(
-        parsedSource => parsedSource.kind === ParsedProjectSourceBaseKind.OBJECT
+        (parsedSource) => parsedSource.kind === ParsedProjectSourceBaseKind.OBJECT
     ) as ReadonlyArray<ParsedObjectProjectSource>;
-    return flatMap(objectSchemaParts, source => parseI18nConfigs(source));
+    return flatMap(objectSchemaParts, (source) => parseI18nConfigs(source));
 }
 
 function extractBilling(parsedProject: ParsedProject): BillingConfig {
     const objectSchemaParts = parsedProject.sources.filter(
-        parsedSource => parsedSource.kind === ParsedProjectSourceBaseKind.OBJECT
+        (parsedSource) => parsedSource.kind === ParsedProjectSourceBaseKind.OBJECT
     ) as ReadonlyArray<ParsedObjectProjectSource>;
     return objectSchemaParts
-        .map(source => parseBillingConfigs(source))
+        .map((source) => parseBillingConfigs(source))
         .reduce(
             (previousValue, currentValue) => {
                 return {
                     ...previousValue,
-                    billingEntities: [...currentValue.billingEntities, ...previousValue.billingEntities]
+                    billingEntities: [...currentValue.billingEntities, ...previousValue.billingEntities],
                 };
             },
             { billingEntities: [] }
@@ -920,10 +938,10 @@ function extractBilling(parsedProject: ParsedProject): BillingConfig {
 
 function extractTimeToLive(parsedProject: ParsedProject): TimeToLiveConfig[] {
     const objectSchemaParts = parsedProject.sources.filter(
-        parsedSource => parsedSource.kind === ParsedProjectSourceBaseKind.OBJECT
+        (parsedSource) => parsedSource.kind === ParsedProjectSourceBaseKind.OBJECT
     ) as ReadonlyArray<ParsedObjectProjectSource>;
     return objectSchemaParts
-        .map(source => parseTTLConfigs(source))
+        .map((source) => parseTTLConfigs(source))
         .reduce((previousValue, currentValue) => previousValue.concat(currentValue), []);
 }
 
@@ -933,9 +951,9 @@ const indexDefinitionInputObjectType: GraphQLInputObjectType = new GraphQLInputO
         id: { type: GraphQLString },
         fields: { type: new GraphQLNonNull(new GraphQLList(GraphQLString)) },
         unique: { type: GraphQLBoolean, defaultValue: false },
-        sparse: { type: GraphQLBoolean }
+        sparse: { type: GraphQLBoolean },
     },
-    name: INDEX_DEFINITION_INPUT_TYPE
+    name: INDEX_DEFINITION_INPUT_TYPE,
 });
 
 const flexSearchOrderInputObjectType: GraphQLInputObjectType = new GraphQLInputObjectType({
@@ -945,8 +963,8 @@ const flexSearchOrderInputObjectType: GraphQLInputObjectType = new GraphQLInputO
         direction: {
             type: new GraphQLEnumType({
                 name: 'OrderDirection',
-                values: { ASC: { value: 'ASC' }, DESC: { value: 'DESC' } }
-            })
-        }
-    }
+                values: { ASC: { value: 'ASC' }, DESC: { value: 'DESC' } },
+            }),
+        },
+    },
 });

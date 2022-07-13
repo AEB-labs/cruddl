@@ -496,6 +496,64 @@ example:
 A user with roles `forwarder-fast` and `forwarder-quick` is granted access to objects with `accessGroup`
 `forwarded-by-fast`, and `forwarded-by-quick`, and `forwarded-by-anyone`.
 
+### Data-dependent permissions using multiple fields
+
+If you need to restrict access depending on multiple fields, or you want to use a custom field instead of `accessGroup`,
+you can alternatively use the following more flexible feature.
+
+```json
+{
+    "permissionProfiles": {
+        "restricted": {
+            "permissions": [
+                {
+                    "roles": ["support"],
+                    "access": "readWrite",
+                    "restrictions": [
+                        {
+                            "field": "isTopSecret",
+                            "value": false
+                        }
+                    ]
+                },
+                {
+                    "roles": ["/^seller-(.+)$/"],
+                    "access": "readWrite",
+                    "restrictions": [
+                        {
+                            "field": "seller",
+                            "valueTemplate": "$1"
+                        }
+                    ]
+                },
+                {
+                    "roles": ["/^buyer-(.+)$/"],
+                    "access": "readWrite",
+                    "restrictions": [
+                        {
+                            "field": "buyer",
+                            "valueTemplate": "$1"
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}
+```
+
+Without `restrictions` or with an empty array, the role grants access to all root entities covered by the permission
+profile. Each item in the `restrictions` array applies a further restriction on the value of a field. Only if all
+restrictions are met in a root entity, the access will be granted. If you need an OR combination, use multiple
+`permissions` items with identical roles.
+
+Each restriction applies to a single field. You can specify a dot-separated path to nested fields, but root entity
+boundaries cannot be crossed. In general, the restrictions of index field paths apply, too.
+
+The simplest kind of restriction requires a specific field value (`"value": "theValue"`). If you used a regular
+expression for matching the roles, you can also spedify `valueTemplate` and use the capture groups, e.g.
+`"valueTemplate": "value-$1"`.
+
 ## Indices
 
 cruddl supports index handling. During start up they are extracted from the schema and created or removed from the
