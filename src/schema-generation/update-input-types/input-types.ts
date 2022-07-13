@@ -1,5 +1,5 @@
 import { GraphQLID, GraphQLInputFieldConfigMap, Thunk } from 'graphql';
-import { groupBy } from 'lodash';
+import { groupBy } from 'lodash-es';
 import { ChildEntityType, EntityExtensionType, Field, ObjectType, RootEntityType } from '../../model';
 import {
     BinaryOperationQueryNode,
@@ -18,14 +18,14 @@ import {
     TransformListQueryNode,
     UnaryOperationQueryNode,
     UnaryOperator,
-    VariableQueryNode
+    VariableQueryNode,
 } from '../../query-tree';
 import { ENTITY_UPDATED_AT, ID_FIELD, REVISION_FIELD } from '../../schema/constants';
 import {
     getAddChildEntitiesFieldName,
     getRemoveChildEntitiesFieldName,
     getReplaceChildEntitiesFieldName,
-    getUpdateChildEntitiesFieldName
+    getUpdateChildEntitiesFieldName,
 } from '../../schema/names';
 import { AnyValue, decapitalize, flatMap, joinWithAnd, objectEntries, PlainObject } from '../../utils/utils';
 import { createGraphQLError } from '../graphql-errors';
@@ -36,7 +36,7 @@ import {
     ReplaceChildEntitiesInputField,
     UpdateChildEntitiesInputField,
     UpdateInputField,
-    UpdateInputFieldContext
+    UpdateInputFieldContext,
 } from './input-fields';
 import { isRelationUpdateField } from './relation-fields';
 
@@ -57,28 +57,28 @@ export class UpdateObjectInputType extends TypedInputObjectType<UpdateInputField
         fields: Thunk<ReadonlyArray<UpdateInputField>>
     ) {
         super(name, fields);
-        this.childEntityFields = this.objectType.fields.filter(f => f.type.isChildEntityType && !f.isCollectField);
+        this.childEntityFields = this.objectType.fields.filter((f) => f.type.isChildEntityType && !f.isCollectField);
     }
 
     getProperties(value: PlainObject, context: UpdateInputFieldContext): ReadonlyArray<SetFieldQueryNode> {
         const applicableFields = this.getApplicableInputFields(value);
         const regularProperties = [
-            ...flatMap(applicableFields, field => field.getProperties(value[field.name], context)),
-            ...flatMap(this.childEntityFields, field => this.getChildEntityProperties(value, field, context))
+            ...flatMap(applicableFields, (field) => field.getProperties(value[field.name], context)),
+            ...flatMap(this.childEntityFields, (field) => this.getChildEntityProperties(value, field, context)),
         ];
         return [...regularProperties, ...this.getAdditionalProperties(value, { ...context, regularProperties })];
     }
 
     check(value: PlainObject, context: FieldContext): RuntimeErrorQueryNode | undefined {
         const applicableFields = this.getApplicableInputFields(value);
-        const fields = applicableFields.filter(f => f.field.type.isScalarType);
-        const groups = objectEntries(groupBy(fields, f => f.field.name));
+        const fields = applicableFields.filter((f) => f.field.type.isScalarType);
+        const groups = objectEntries(groupBy(fields, (f) => f.field.name));
         const duplicateGroups = groups.filter(([key, value]) => value.length > 1);
         const firstDuplicateGroup: [string, ReadonlyArray<UpdateInputField>] = duplicateGroups[0];
         if (!firstDuplicateGroup) {
             return undefined;
         }
-        const fieldNames = firstDuplicateGroup[1].map(inputField => `"${inputField.name}"`);
+        const fieldNames = firstDuplicateGroup[1].map((inputField) => `"${inputField.name}"`);
         throw createGraphQLError(`Can't combine ${joinWithAnd(fieldNames)} in "${this.name}"`, context);
     }
 
@@ -113,7 +113,7 @@ export class UpdateObjectInputType extends TypedInputObjectType<UpdateInputField
             const newValues = (objectValue[replaceField.name] || []) as ReadonlyArray<AnyValue>;
             // wrap the whole thing into a LiteralQueryNode instead of them individually so that only one bound variable is used
             const newNode = new LiteralQueryNode(
-                newValues.map(val => replaceField.createInputType.prepareValue(val as PlainObject, context))
+                newValues.map((val) => replaceField.createInputType.prepareValue(val as PlainObject, context))
             );
             return [new SetFieldQueryNode(field, newNode)];
         }
@@ -142,7 +142,7 @@ export class UpdateObjectInputType extends TypedInputObjectType<UpdateInputField
         if (newValues.length) {
             // wrap the whole thing into a LiteralQueryNode instead of them individually so that only one bound variable is used
             const newNode = new LiteralQueryNode(
-                newValues.map(val => addField.createInputType.prepareValue(val as PlainObject, context))
+                newValues.map((val) => addField.createInputType.prepareValue(val as PlainObject, context))
             );
             currentNode = new ConcatListsQueryNode([currentNode, newNode]);
         }
@@ -177,7 +177,7 @@ export class UpdateObjectInputType extends TypedInputObjectType<UpdateInputField
                 );
                 const updates = updateField.updateInputType.getProperties(value as PlainObject, {
                     ...context,
-                    currentEntityNode: childEntityVarNode
+                    currentEntityNode: childEntityVarNode,
                 });
                 const updateNode = new MergeObjectsQueryNode([childEntityVarNode, new ObjectQueryNode(updates)]);
                 updateMapNode = new ConditionalQueryNode(filterNode, updateNode, updateMapNode);
@@ -189,7 +189,7 @@ export class UpdateObjectInputType extends TypedInputObjectType<UpdateInputField
                 listNode: currentNode,
                 filterNode: removalFilterNode,
                 innerNode: updateMapNode,
-                itemVariable: childEntityVarNode
+                itemVariable: childEntityVarNode,
             });
         }
 
@@ -204,7 +204,7 @@ export class UpdateObjectInputType extends TypedInputObjectType<UpdateInputField
     }
 
     collectAffectedFields(value: PlainObject, fields: Set<Field>, context: FieldContext) {
-        this.getApplicableInputFields(value).forEach(field =>
+        this.getApplicableInputFields(value).forEach((field) =>
             field.collectAffectedFields(value[field.name], fields, context)
         );
     }
@@ -216,7 +216,7 @@ export class UpdateObjectInputType extends TypedInputObjectType<UpdateInputField
     }
 
     private getApplicableInputFields(value: PlainObject): ReadonlyArray<UpdateInputField> {
-        return this.fields.filter(field => field.name in value || field.appliesToMissingFields());
+        return this.fields.filter((field) => field.name in value || field.appliesToMissingFields());
     }
 }
 
@@ -250,8 +250,8 @@ export class UpdateRootEntityInputType extends UpdateObjectInputType {
     ): ReadonlyArray<PreExecQueryParms> {
         const relationFields = this.fields
             .filter(isRelationUpdateField)
-            .filter(field => field.appliesToMissingFields() || field.name in input);
-        return flatMap(relationFields, field => field.getStatements(input[field.name], idNode, context));
+            .filter((field) => field.appliesToMissingFields() || field.name in input);
+        return flatMap(relationFields, (field) => field.getStatements(input[field.name], idNode, context));
     }
 
     protected transformFieldConfigs(fields: GraphQLInputFieldConfigMap): GraphQLInputFieldConfigMap {
@@ -259,8 +259,8 @@ export class UpdateRootEntityInputType extends UpdateObjectInputType {
             ...fields,
             [REVISION_FIELD]: {
                 type: GraphQLID,
-                description: `Set this field to the value of "${this.rootEntityType.name}.${REVISION_FIELD}" to abort the transaction if this object has been modified in the meantime`
-            }
+                description: `Set this field to the value of "${this.rootEntityType.name}.${REVISION_FIELD}" to abort the transaction if this object has been modified in the meantime`,
+            },
         };
     }
 

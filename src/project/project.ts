@@ -109,7 +109,7 @@ export class Project {
         if (Array.isArray(config)) {
             config = { sources: config };
         }
-        this.sources = config.sources.map(config => ProjectSource.fromConfig(config));
+        this.sources = config.sources.map((config) => ProjectSource.fromConfig(config));
         this.loggerProvider = config.loggerProvider || DEFAULT_LOGGER_PROVIDER;
         this.options = {
             loggerProvider: config.loggerProvider,
@@ -119,12 +119,12 @@ export class Project {
             processError: config.processError,
             schemaOptions: config.schemaOptions,
             modelValidationOptions: config.modelValidationOptions,
-            modelOptions: config.modelOptions
+            modelOptions: config.modelOptions,
         };
     }
 
     getSourcesOfType(type: SourceType): ProjectSource[] {
-        return this.sources.filter(source => source.type == type);
+        return this.sources.filter((source) => source.type == type);
     }
 
     /**
@@ -197,15 +197,15 @@ export class Project {
         databaseAdapter: DatabaseAdapter,
         executionOptions: ExecutionOptions
     ): Promise<TTLCleanupResult> {
-        const ttlTypes = this.getModel().rootEntityTypes.flatMap(rootEntityType => rootEntityType.timeToLiveTypes);
+        const ttlTypes = this.getModel().rootEntityTypes.flatMap((rootEntityType) => rootEntityType.timeToLiveTypes);
         const resultTypes: TTLCleanupTypeResult[] = [];
         for (const ttlType of ttlTypes) {
             resultTypes.push(await this.executeTTLCleanupForType(ttlType, databaseAdapter, executionOptions));
         }
         return {
             types: resultTypes,
-            isComplete: resultTypes.every(t => t.isComplete),
-            hasErrors: resultTypes.some(t => t.hasError)
+            isComplete: resultTypes.every((t) => t.isComplete),
+            hasErrors: resultTypes.some((t) => t.hasError),
         };
     }
 
@@ -229,9 +229,9 @@ export class Project {
                     hasError: false,
                     error: undefined,
                     limit,
-                    isComplete: limit === undefined || deletedObjectsCount < limit
+                    isComplete: limit === undefined || deletedObjectsCount < limit,
                 };
-            } catch (error) {
+            } catch (error: any) {
                 if (
                     executionOptions.timeToLiveOptions?.reduceLimitOnResourceLimits &&
                     limit !== undefined &&
@@ -255,7 +255,7 @@ export class Project {
                     hasError: true,
                     error,
                     limit,
-                    isComplete: false
+                    isComplete: false,
                 };
             }
         }
@@ -265,9 +265,9 @@ export class Project {
         databaseAdapter: DatabaseAdapter,
         executionOptions: ExecutionOptions
     ): Promise<ReadonlyArray<TTLInfo>> {
-        const ttlTypes = this.getModel().rootEntityTypes.flatMap(rootEntityType => rootEntityType.timeToLiveTypes);
+        const ttlTypes = this.getModel().rootEntityTypes.flatMap((rootEntityType) => rootEntityType.timeToLiveTypes);
         const queryTree = new ListQueryNode(
-            ttlTypes.map(ttlType =>
+            ttlTypes.map((ttlType) =>
                 getTTLInfoQueryNode(
                     ttlType,
                     executionOptions.timeToLiveOptions?.overdueDelta || executionOptions.timeToLiveOverdueDelta || 3
@@ -281,10 +281,10 @@ export class Project {
         const res = databaseAdapter.executeExt
             ? await databaseAdapter.executeExt({
                   queryTree,
-                  ...executionOptions
+                  ...executionOptions,
               })
             : {
-                  data: databaseAdapter.execute(queryTree)
+                  data: databaseAdapter.execute(queryTree),
               };
         if (res.error) {
             throw res.error;

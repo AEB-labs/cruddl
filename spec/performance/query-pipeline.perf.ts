@@ -1,5 +1,5 @@
 import { DocumentNode, GraphQLSchema, parse, validate } from 'graphql';
-import * as path from 'path';
+import { resolve } from 'path';
 import { applyAuthorizationToQueryTree } from '../../src/authorization/execution';
 import { getAQLQuery } from '../../src/database/arangodb/aql-generator';
 import { DistilledOperation, distillQuery } from '../../src/graphql/query-distiller';
@@ -80,7 +80,7 @@ mutation m {
     }
   }
 }
-`
+`,
 ];
 
 interface PreparedQuery {
@@ -93,7 +93,15 @@ interface PreparedQuery {
     authorizedQueryTree: QueryNode;
 }
 
-function buildQueryTree({distilledOperation, queryType, mutationType}: { distilledOperation: DistilledOperation, queryType: QueryNodeObjectType, mutationType: QueryNodeObjectType }): QueryNode {
+function buildQueryTree({
+    distilledOperation,
+    queryType,
+    mutationType,
+}: {
+    distilledOperation: DistilledOperation;
+    queryType: QueryNodeObjectType;
+    mutationType: QueryNodeObjectType;
+}): QueryNode {
     if (distilledOperation.operation == 'mutation') {
         return buildConditionalObjectQueryNode(ObjectQueryNode.EMPTY, mutationType, distilledOperation.selectionSet);
     } else {
@@ -107,8 +115,8 @@ function prepareQuery(gql: string, schema: GraphQLSchema, model: Model): Prepare
     const distilledOperation = distillQuery(document, schema, {});
     const queryType = new RootTypesGenerator().generateQueryType(model);
     const mutationType = new RootTypesGenerator().generateMutationType(model);
-    const queryTree = buildQueryTree({queryType, mutationType, distilledOperation});
-    const authorizedQueryTree = applyAuthorizationToQueryTree(queryTree, {authRoles: []});
+    const queryTree = buildQueryTree({ queryType, mutationType, distilledOperation });
+    const authorizedQueryTree = applyAuthorizationToQueryTree(queryTree, { authRoles: [] });
     return {
         gql,
         document,
@@ -116,17 +124,23 @@ function prepareQuery(gql: string, schema: GraphQLSchema, model: Model): Prepare
         queryType,
         mutationType,
         queryTree,
-        authorizedQueryTree
+        authorizedQueryTree,
     };
 }
 
-function testQueryPipeline(params: { parser: boolean, queryDistiller: boolean, queryTree: boolean, auth: boolean, aql: boolean }): BenchmarkConfig {
+function testQueryPipeline(params: {
+    parser: boolean;
+    queryDistiller: boolean;
+    queryTree: boolean;
+    auth: boolean;
+    aql: boolean;
+}): BenchmarkConfig {
     const optionsStr = compact([
         params.parser ? 'parser' : undefined,
         params.queryDistiller ? 'query-distiller' : undefined,
         params.queryTree ? 'query-tree' : undefined,
         params.aql ? 'aql' : undefined,
-        params.auth ? 'auth' : undefined
+        params.auth ? 'auth' : undefined,
     ]).join(', ');
 
     let schema: GraphQLSchema;
@@ -138,10 +152,10 @@ function testQueryPipeline(params: { parser: boolean, queryDistiller: boolean, q
         isSync: true,
         initialCount: params.aql ? 10000 : 100000,
         async beforeAll() {
-            const res = await createTestProject(path.resolve(__dirname, '../regression/logistics/model'));
+            const res = await createTestProject(resolve(__dirname, '../regression/logistics/model'));
             schema = res.schema;
             model = res.project.getModel();
-            preparedQueries = QUERIES.map(gql => prepareQuery(gql, schema, model));
+            preparedQueries = QUERIES.map((gql) => prepareQuery(gql, schema, model));
         },
         fn() {
             const preparedQuery = preparedQueries[Math.floor(Math.random() * preparedQueries.length)];
@@ -155,23 +169,23 @@ function testQueryPipeline(params: { parser: boolean, queryDistiller: boolean, q
                 buildQueryTree(preparedQuery);
             }
             if (params.auth) {
-                applyAuthorizationToQueryTree(preparedQuery.queryTree, {authRoles: []});
+                applyAuthorizationToQueryTree(preparedQuery.queryTree, { authRoles: [] });
             }
             if (params.aql) {
                 const transaction = getAQLQuery(preparedQuery.authorizedQueryTree);
                 transaction.getExecutableQueries();
             }
-        }
+        },
     };
 }
 
 const benchmarks: BenchmarkFactories = [
-    () => testQueryPipeline({parser: true, queryDistiller: false, queryTree: false, auth: false, aql: false}),
-    () => testQueryPipeline({parser: false, queryDistiller: true, queryTree: false, auth: false, aql: false}),
-    () => testQueryPipeline({parser: false, queryDistiller: false, queryTree: true, auth: false, aql: false}),
-    () => testQueryPipeline({parser: false, queryDistiller: false, queryTree: true, auth: true, aql: false}),
-    () => testQueryPipeline({parser: false, queryDistiller: false, queryTree: false, auth: false, aql: true}),
-    () => testQueryPipeline({parser: true, queryDistiller: true, queryTree: true, auth: true, aql: true})
+    () => testQueryPipeline({ parser: true, queryDistiller: false, queryTree: false, auth: false, aql: false }),
+    () => testQueryPipeline({ parser: false, queryDistiller: true, queryTree: false, auth: false, aql: false }),
+    () => testQueryPipeline({ parser: false, queryDistiller: false, queryTree: true, auth: false, aql: false }),
+    () => testQueryPipeline({ parser: false, queryDistiller: false, queryTree: true, auth: true, aql: false }),
+    () => testQueryPipeline({ parser: false, queryDistiller: false, queryTree: false, auth: false, aql: true }),
+    () => testQueryPipeline({ parser: true, queryDistiller: true, queryTree: true, auth: true, aql: true }),
 ];
 
 export default benchmarks;

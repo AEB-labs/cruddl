@@ -1,5 +1,5 @@
 import { getNamedType, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
-import { ZonedDateTime } from 'js-joda';
+import { ZonedDateTime } from '@js-joda/core';
 import { EnumType, Field, ScalarType, Type, TypeKind } from '../../model';
 import {
     BinaryOperationQueryNode,
@@ -10,14 +10,14 @@ import {
     ObjectEntriesQueryNode,
     PropertyAccessQueryNode,
     QueryNode,
-    VariableQueryNode
+    VariableQueryNode,
 } from '../../query-tree';
 import { QuantifierFilterNode } from '../../query-tree/quantifiers';
 import {
     AND_FILTER_FIELD,
     FILTER_FIELD_PREFIX_SEPARATOR,
     INPUT_FIELD_EQUAL,
-    OR_FILTER_FIELD
+    OR_FILTER_FIELD,
 } from '../../schema/constants';
 import { GraphQLOffsetDateTime, TIMESTAMP_PROPERTY } from '../../schema/scalars/offset-date-time';
 import { AnyValue, decapitalize, PlainObject } from '../../utils/utils';
@@ -33,7 +33,7 @@ export interface FilterField extends TypedInputFieldBase<FilterField> {
 function getDescription({
     operator,
     typeName,
-    fieldName
+    fieldName,
 }: {
     operator: string | undefined;
     typeName: string;
@@ -78,7 +78,7 @@ export class ScalarOrEnumFieldFilterField implements FilterField {
         this.description = getDescription({
             operator: operatorPrefix,
             fieldName: field.name,
-            typeName: field.type.name
+            typeName: field.type.name,
         });
         if (this.field.description) {
             this.description = (this.description ? this.description + '\n\n' : '') + this.field.description;
@@ -119,7 +119,7 @@ export class StringMapEntryFilterField implements FilterField {
         this.description = getDescription({
             operator: operatorPrefix,
             fieldName: fieldName,
-            typeName: 'String'
+            typeName: 'String',
         });
     }
 
@@ -204,7 +204,7 @@ export class QuantifierFilterField implements FilterField {
             listNode,
             itemVariable,
             quantifier: this.quantifierName,
-            conditionNode: filterNode
+            conditionNode: filterNode,
         });
     }
 }
@@ -267,7 +267,7 @@ export class AndFilterField implements FilterField {
             return new ConstBoolQueryNode(true);
         }
         const values = (filterValue || []) as ReadonlyArray<PlainObject>;
-        const nodes = values.map(value => this.filterType.getFilterNode(sourceNode, value));
+        const nodes = values.map((value) => this.filterType.getFilterNode(sourceNode, value));
         return nodes.reduce((prev, node) => new BinaryOperationQueryNode(prev, BinaryOperator.AND, node));
     }
 }
@@ -291,7 +291,7 @@ export class OrFilterField implements FilterField {
         if (!values.length) {
             return ConstBoolQueryNode.FALSE; // neutral element of OR
         }
-        const nodes = values.map(value => this.filterType.getFilterNode(sourceNode, value));
+        const nodes = values.map((value) => this.filterType.getFilterNode(sourceNode, value));
         return nodes.reduce((prev, node) => new BinaryOperationQueryNode(prev, BinaryOperator.OR, node));
     }
 }
@@ -319,7 +319,7 @@ export class StringMapSomeValueFilterField implements FilterField {
             listNode: new ObjectEntriesQueryNode(objectNode),
             itemVariable,
             conditionNode: filterNode,
-            quantifier: 'some'
+            quantifier: 'some',
         });
     }
 }

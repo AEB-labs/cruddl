@@ -1,5 +1,5 @@
 import { GraphQLEnumType, GraphQLScalarType, GraphQLString, Thunk } from 'graphql';
-import { flatMap } from 'lodash';
+import { flatMap } from 'lodash-es';
 import memorize from 'memorize-decorator';
 import { EnumType, Field, ScalarType, Type } from '../../model/index';
 import {
@@ -7,7 +7,7 @@ import {
     BinaryOperator,
     ConstBoolQueryNode,
     NullQueryNode,
-    QueryNode
+    QueryNode,
 } from '../../query-tree';
 import { INPUT_FIELD_EQUAL } from '../../schema/constants';
 import { getFilterTypeName } from '../../schema/names';
@@ -22,7 +22,7 @@ import {
     FILTER_FIELDS_BY_TYPE,
     FILTER_OPERATORS,
     NUMERIC_FILTER_FIELDS,
-    QUANTIFIERS
+    QUANTIFIERS,
 } from './constants';
 import {
     AndFilterField,
@@ -35,7 +35,7 @@ import {
     ScalarOrEnumFieldFilterField,
     ScalarOrEnumFilterField,
     StringMapEntryFilterField,
-    StringMapSomeValueFilterField
+    StringMapSomeValueFilterField,
 } from './filter-fields';
 
 export class FilterObjectType extends TypedInputObjectType<FilterField> {
@@ -43,8 +43,9 @@ export class FilterObjectType extends TypedInputObjectType<FilterField> {
         super(
             getFilterTypeName(typeName),
             fields,
-            `${description ||
-                `Filter type for ${typeName}`}.\n\nAll fields in this type are *and*-combined; see the \`or\` field for *or*-combination.`
+            `${
+                description || `Filter type for ${typeName}`
+            }.\n\nAll fields in this type are *and*-combined; see the \`or\` field for *or*-combination.`
         );
     }
 
@@ -83,7 +84,7 @@ export class FilterTypeGenerator {
             type.name + 'Entry',
             () => [
                 ...this.generateFilterFieldsForStringMapEntry('key', keyName),
-                ...this.generateFilterFieldsForStringMapEntry('value', 'value')
+                ...this.generateFilterFieldsForStringMapEntry('value', 'value'),
             ],
             `Filter type for entries in a ${type.name}`
         );
@@ -139,7 +140,7 @@ export class FilterTypeGenerator {
         const inputType = field.type.graphQLScalarType;
         const filterFields = this.getFilterFieldsByType(field.type);
         return filterFields.map(
-            name =>
+            (name) =>
                 new ScalarOrEnumFieldFilterField(
                     field,
                     FILTER_OPERATORS[name],
@@ -153,7 +154,7 @@ export class FilterTypeGenerator {
         const inputType = GraphQLString;
         const filterFields = FILTER_FIELDS_BY_TYPE[inputType.name] || [];
         return filterFields.map(
-            name =>
+            (name) =>
                 new StringMapEntryFilterField(
                     kind,
                     fieldName,
@@ -170,7 +171,7 @@ export class FilterTypeGenerator {
         }
 
         return ENUM_FILTER_FIELDS.map(
-            name =>
+            (name) =>
                 new ScalarOrEnumFieldFilterField(
                     field,
                     FILTER_OPERATORS[name],
@@ -182,19 +183,19 @@ export class FilterTypeGenerator {
 
     private generateListFieldFilterFields(field: Field): ListFilterField[] {
         const inputType = this.generate(field.type);
-        return QUANTIFIERS.map(quantifierName => new QuantifierFilterField(field, quantifierName, inputType));
+        return QUANTIFIERS.map((quantifierName) => new QuantifierFilterField(field, quantifierName, inputType));
     }
 
     private buildScalarFilterFields(type: ScalarType): ScalarOrEnumFilterField[] {
         const filterFields = this.getFilterFieldsByType(type);
         return filterFields.map(
-            name => new ScalarOrEnumFilterField(FILTER_OPERATORS[name], name, type, type.graphQLScalarType)
+            (name) => new ScalarOrEnumFilterField(FILTER_OPERATORS[name], name, type, type.graphQLScalarType)
         );
     }
 
     private buildEnumFilterFields(type: EnumType) {
         return ENUM_FILTER_FIELDS.map(
-            name =>
+            (name) =>
                 new ScalarOrEnumFilterField(FILTER_OPERATORS[name], name, type, this.enumTypeGenerator.generate(type))
         );
     }

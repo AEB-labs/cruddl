@@ -1,5 +1,5 @@
 import { GraphQLID, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
-import { ZonedDateTime } from 'js-joda';
+import { ZonedDateTime } from '@js-joda/core';
 import { CalcMutationsOperator, Field } from '../../model';
 import {
     BinaryOperationQueryNode,
@@ -10,13 +10,13 @@ import {
     QueryNode,
     SetFieldQueryNode,
     UnaryOperationQueryNode,
-    UnaryOperator
+    UnaryOperator,
 } from '../../query-tree';
 import {
     getAddChildEntitiesFieldName,
     getRemoveChildEntitiesFieldName,
     getReplaceChildEntitiesFieldName,
-    getUpdateChildEntitiesFieldName
+    getUpdateChildEntitiesFieldName,
 } from '../../schema/names';
 import { GraphQLOffsetDateTime, serializeForStorage } from '../../schema/scalars/offset-date-time';
 import { AnyValue, PlainObject } from '../../utils/utils';
@@ -127,7 +127,7 @@ export class BasicListUpdateInputField extends BasicUpdateInputField {
         // null is not a valid list value - if the user specified it, coerce it to [] to not have a mix of [] and
         // null in the database
         let listValue = Array.isArray(value) ? value : [];
-        return listValue.map(itemValue => super.coerceValue(itemValue, context));
+        return listValue.map((itemValue) => super.coerceValue(itemValue, context));
     }
 }
 
@@ -206,7 +206,7 @@ export class UpdateValueObjectListInputField extends BasicUpdateInputField {
         if (!Array.isArray(value)) {
             throw new Error(`Expected value for "${this.name}" to be an array, but is "${typeof value}"`);
         }
-        return value.map(value => this.objectInputType.prepareValue(value, context));
+        return value.map((value) => this.objectInputType.prepareValue(value, context));
     }
 
     collectAffectedFields(value: AnyValue, fields: Set<Field>, context: FieldContext) {
@@ -218,7 +218,7 @@ export class UpdateValueObjectListInputField extends BasicUpdateInputField {
             throw new Error(`Expected value for "${this.name}" to be an array, but is "${typeof value}"`);
         }
 
-        value.forEach(value => this.objectInputType.collectAffectedFields(value, fields, context));
+        value.forEach((value) => this.objectInputType.collectAffectedFields(value, fields, context));
     }
 }
 
@@ -253,7 +253,7 @@ export class UpdateEntityExtensionInputField implements UpdateInputField {
             currentValueNode,
             new ObjectQueryNode(
                 this.objectInputType.getProperties(value, { ...context, currentEntityNode: currentValueNode })
-            )
+            ),
         ]);
     }
 

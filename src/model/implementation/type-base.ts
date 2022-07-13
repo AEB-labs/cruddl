@@ -69,11 +69,11 @@ export abstract class TypeBase implements ModelComponent {
         return this.model.getNamespaceByPathOrThrow(this.namespacePath);
     }
 
-    abstract readonly isObjectType: boolean = false;
-    abstract readonly isRootEntityType: boolean = false;
-    abstract readonly isChildEntityType: boolean = false;
-    abstract readonly isEntityExtensionType: boolean = false;
-    abstract readonly isValueObjectType: boolean = false;
-    abstract readonly isScalarType: boolean = false;
-    abstract readonly isEnumType: boolean = false;
+    abstract readonly isObjectType: boolean;
+    abstract readonly isRootEntityType: boolean;
+    abstract readonly isChildEntityType: boolean;
+    abstract readonly isEntityExtensionType: boolean;
+    abstract readonly isValueObjectType: boolean;
+    abstract readonly isScalarType: boolean;
+    abstract readonly isEnumType: boolean;
 }

@@ -1,4 +1,4 @@
-import { DateTimeFormatter, ZonedDateTime, ZoneId } from 'js-joda';
+import { DateTimeFormatter, ZonedDateTime, ZoneId } from '@js-joda/core';
 import { ExecutionOptions } from '../execution/execution-options';
 import { Field, ScalarType } from '../model';
 import { TimeToLiveType } from '../model/implementation/time-to-live';
@@ -15,7 +15,7 @@ import {
     PropertySpecification,
     QueryNode,
     TransformListQueryNode,
-    VariableQueryNode
+    VariableQueryNode,
 } from '../query-tree';
 import { generateDeleteAllQueryNode } from '../schema-generation';
 import { getScalarFilterValueNode } from '../schema-generation/filter-input-types/filter-fields';
@@ -40,10 +40,10 @@ export function getQueryNodeForTTLType(ttlType: TimeToLiveType, maxCount: number
         listNode: new EntitiesQueryNode(ttlType.rootEntityType),
         itemVariable: listItemVar,
         filterNode: getTTLFilter(ttlType.fieldType, ttlType.path, deleteFrom, listItemVar),
-        maxCount
+        maxCount,
     });
     return generateDeleteAllQueryNode(ttlType.rootEntityType, listQueryNode, {
-        resultValue: DeleteEntitiesResultValue.COUNT
+        resultValue: DeleteEntitiesResultValue.COUNT,
     });
 }
 
@@ -107,7 +107,7 @@ export function getTTLInfoQueryNode(ttlType: TimeToLiveType, overdueDelta: numbe
                         ttlType.path,
                         calcDeleteFrom(ttlType.expireAfterDays, ttlType.fieldType),
                         expiredVariableNode
-                    )
+                    ),
                 })
             )
         ),
@@ -122,10 +122,10 @@ export function getTTLInfoQueryNode(ttlType: TimeToLiveType, overdueDelta: numbe
                         ttlType.path,
                         calcDeleteFrom(ttlType.expireAfterDays + overdueDelta, ttlType.fieldType),
                         overdueVariableNode
-                    )
+                    ),
                 })
             )
-        )
+        ),
     ]);
 }
 

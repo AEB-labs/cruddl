@@ -1,6 +1,6 @@
-import * as fs from 'fs';
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'fs';
 import { graphql, GraphQLSchema, OperationDefinitionNode, parse } from 'graphql';
-import * as path from 'path';
+import { resolve } from 'path';
 import stripJsonComments from 'strip-json-comments';
 import { ArangoDBAdapter } from '../../src/database/arangodb';
 import { DatabaseAdapter } from '../../src/database/database-adapter';
@@ -52,50 +52,50 @@ export class RegressionSuite {
     }
 
     private get testsPath() {
-        return path.resolve(this.path, 'tests');
+        return resolve(this.path, 'tests');
     }
 
     private async setUp() {
-        const optionsPath = path.resolve(this.path, 'options.json');
-        const options = fs.existsSync(optionsPath)
-            ? JSON.parse(stripJsonComments(fs.readFileSync(optionsPath, 'utf-8')))
+        const optionsPath = resolve(this.path, 'options.json');
+        const options = existsSync(optionsPath)
+            ? JSON.parse(stripJsonComments(readFileSync(optionsPath, 'utf-8')))
             : {};
 
         this.inMemoryDB = new InMemoryDB();
         const generalOptions: ProjectOptions = {
-            processError: e => {
+            processError: (e) => {
                 console.error(e.stack);
                 return e;
             },
             getExecutionOptions: ({ context }) => ({
                 authRoles: context.authRoles,
-                flexSearchMaxFilterableAndSortableAmount: context.flexSearchMaxFilterableAndSortableAmount
+                flexSearchMaxFilterableAndSortableAmount: context.flexSearchMaxFilterableAndSortableAmount,
             }),
             modelValidationOptions: {
-                forbiddenRootEntityNames: []
+                forbiddenRootEntityNames: [],
             },
             ...options,
-            getOperationIdentifier: ({ info }) => info.operation
+            getOperationIdentifier: ({ info }) => info.operation,
         };
         const warnLevelOptions = { ...generalOptions, loggerProvider: new Log4jsLoggerProvider('warn') };
         const debugLevelOptions = {
             ...generalOptions,
             loggerProvider: new Log4jsLoggerProvider(this.options.trace ? 'trace' : 'warn', {
-                'schema-builder': 'warn'
-            })
+                'schema-builder': 'warn',
+            }),
         };
 
         // use a schema that logs less for initTestData and for schema migrations
-        const silentProject = await loadProjectFromDir(path.resolve(this.path, 'model'), warnLevelOptions);
+        const silentProject = await loadProjectFromDir(resolve(this.path, 'model'), warnLevelOptions);
         const silentAdapter = await this.createAdapter(warnLevelOptions);
         const silentSchema = silentProject.createSchema(silentAdapter);
 
-        const project = await loadProjectFromDir(path.resolve(this.path, 'model'), debugLevelOptions);
+        const project = await loadProjectFromDir(resolve(this.path, 'model'), debugLevelOptions);
         const adapter = await this.createAdapter(debugLevelOptions);
         this.schema = project.createSchema(adapter);
 
         await silentAdapter.updateSchema(silentProject.getModel());
-        this.testDataEnvironment = await initTestData(path.resolve(this.path, 'test-data.json'), silentSchema);
+        this.testDataEnvironment = await initTestData(resolve(this.path, 'test-data.json'), silentSchema);
 
         if (this.databaseSpecifier === 'arangodb') {
             const version = await (adapter as ArangoDBAdapter).getArangoDBVersion();
@@ -120,19 +120,18 @@ export class RegressionSuite {
     }
 
     getTestNames() {
-        return fs
-            .readdirSync(path.resolve(this.path, 'tests'))
-            .filter(name => name.endsWith('.graphql'))
-            .map(name => name.substr(0, name.length - '.graphql'.length));
+        return readdirSync(resolve(this.path, 'tests'))
+            .filter((name) => name.endsWith('.graphql'))
+            .map((name) => name.substring(0, name.length - '.graphql'.length));
     }
 
     async shouldIgnoreTest(name: string) {
         if (!this._isSetUpClean) {
             await this.setUp();
         }
-        const metaPath = path.resolve(this.testsPath, name + '.meta.json');
-        const meta: MetaOptions | undefined = fs.existsSync(metaPath)
-            ? JSON.parse(stripJsonComments(fs.readFileSync(metaPath, 'utf-8')))
+        const metaPath = resolve(this.testsPath, name + '.meta.json');
+        const meta: MetaOptions | undefined = existsSync(metaPath)
+            ? JSON.parse(stripJsonComments(readFileSync(metaPath, 'utf-8')))
             : undefined;
         if (meta && meta.databases && meta.databases[this.databaseSpecifier]) {
             if (meta.databases[this.databaseSpecifier].ignore) {
@@ -159,41 +158,41 @@ export class RegressionSuite {
             throw new Error(`Regression suite not set up correctly`);
         }
 
-        const gqlPath = path.resolve(this.testsPath, name + '.graphql');
-        const resultPath = path.resolve(this.testsPath, name + '.result.json');
-        const variablesPath = path.resolve(this.testsPath, name + '.vars.json');
-        let contextPath = path.resolve(this.testsPath, name + '.context.json');
-        const metaPath = path.resolve(this.testsPath, name + '.meta.json');
-        if (!fs.existsSync(contextPath)) {
-            contextPath = path.resolve(this.path, 'default-context.json');
+        const gqlPath = resolve(this.testsPath, name + '.graphql');
+        const resultPath = resolve(this.testsPath, name + '.result.json');
+        const variablesPath = resolve(this.testsPath, name + '.vars.json');
+        let contextPath = resolve(this.testsPath, name + '.context.json');
+        const metaPath = resolve(this.testsPath, name + '.meta.json');
+        if (!existsSync(contextPath)) {
+            contextPath = resolve(this.path, 'default-context.json');
         }
 
-        const gqlTemplate = fs.readFileSync(gqlPath, 'utf-8');
+        const gqlTemplate = readFileSync(gqlPath, 'utf-8');
         const gqlSource = this.testDataEnvironment.fillTemplateStrings(gqlTemplate);
 
         const operations = parse(gqlSource).definitions.filter(
-            def => def.kind == 'OperationDefinition'
+            (def) => def.kind == 'OperationDefinition'
         ) as OperationDefinitionNode[];
-        this._isSetUpClean = this._isSetUpClean && !operations.some(op => op.operation == 'mutation');
+        this._isSetUpClean = this._isSetUpClean && !operations.some((op) => op.operation == 'mutation');
         const hasNamedOperations = operations.length && operations[0].name;
 
-        const expectedResultTemplate = JSON.parse(stripJsonComments(fs.readFileSync(resultPath, 'utf-8')));
+        const expectedResultTemplate = JSON.parse(stripJsonComments(readFileSync(resultPath, 'utf-8')));
         const expectedResult = this.testDataEnvironment.fillTemplateStrings(expectedResultTemplate);
-        const variableValues = fs.existsSync(variablesPath)
-            ? JSON.parse(stripJsonComments(fs.readFileSync(variablesPath, 'utf-8')))
+        const variableValues = existsSync(variablesPath)
+            ? JSON.parse(stripJsonComments(readFileSync(variablesPath, 'utf-8')))
             : {};
-        const context = fs.existsSync(contextPath)
-            ? JSON.parse(stripJsonComments(fs.readFileSync(contextPath, 'utf-8')))
+        const context = existsSync(contextPath)
+            ? JSON.parse(stripJsonComments(readFileSync(contextPath, 'utf-8')))
             : {};
-        const meta = fs.existsSync(metaPath) ? JSON.parse(stripJsonComments(fs.readFileSync(metaPath, 'utf-8'))) : {};
+        const meta = existsSync(metaPath) ? JSON.parse(stripJsonComments(readFileSync(metaPath, 'utf-8'))) : {};
 
         if (meta.waitForArangoSearch && this.databaseSpecifier === 'arangodb') {
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await new Promise((resolve) => setTimeout(resolve, 1000));
         }
 
         let actualResult: any;
         if (hasNamedOperations) {
-            const operationNames = operations.map(def => def.name!.value);
+            const operationNames = operations.map((def) => def.name!.value);
             actualResult = {};
             for (const operationName of operationNames) {
                 let operationContext = context;
@@ -217,12 +216,12 @@ export class RegressionSuite {
         }
 
         if (this.options.saveActualAsExpected && !deepEqual(actualResult, expectedResult)) {
-            fs.writeFileSync(resultPath, JSON.stringify(actualResult, undefined, '  '), 'utf-8');
+            writeFileSync(resultPath, JSON.stringify(actualResult, undefined, '  '), 'utf-8');
         }
 
         return {
             actualResult,
-            expectedResult
+            expectedResult,
         };
     }
 }

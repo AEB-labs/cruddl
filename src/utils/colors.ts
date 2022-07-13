@@ -1,6 +1,4 @@
-import style from 'ansi-styles';
-import { EscapeCode } from 'ansi-styles/escape-code';
-import CodePair = EscapeCode.CodePair;
+import style, { CSPair } from 'ansi-styles';
 
 // we can neither use colors nor chalk because they import node-specific modules which would not work in a pure
 // webpack environment
@@ -10,7 +8,7 @@ namespace colors {
 }
 export default colors;
 
-function applyColorFn(color: CodePair) {
+function applyColorFn(color: CSPair) {
     return (str: string) => (colors.enabled ? color.open + str + color.close : str);
 }
 

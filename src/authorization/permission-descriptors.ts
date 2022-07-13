@@ -5,17 +5,17 @@ import {
     FieldQueryNode,
     LiteralQueryNode,
     QueryNode,
-    UnknownValueQueryNode
+    UnknownValueQueryNode,
 } from '../query-tree';
 import { simplifyBooleans } from '../query-tree/utils';
 import { Field, Permission, PermissionProfile, RootEntityType } from '../model';
-import { flatMap } from 'lodash';
+import { flatMap } from 'lodash-es';
 import { AccessOperation, AuthContext } from './auth-basics';
 import { ACCESS_GROUP_FIELD } from '../schema/constants';
 
 export enum ConditionExplanationContext {
     BEFORE_WRITE,
-    SET
+    SET,
 }
 
 /**
@@ -74,7 +74,7 @@ export enum PermissionResult {
     /**
      * Access is denied for all instances
      */
-    DENIED
+    DENIED,
 }
 
 export class AlwaysGrantPermissionDescriptor extends PermissionDescriptor {
@@ -141,7 +141,7 @@ export class StaticPermissionDescriptor extends PermissionDescriptor {
             case AccessOperation.DELETE:
                 roles = this.readWriteRoles;
         }
-        const allowed = roles.some(allowedRole => authContext.authRoles.includes(allowedRole));
+        const allowed = roles.some((allowedRole) => authContext.authRoles.includes(allowedRole));
         return new ConstBoolQueryNode(allowed);
     }
 }
@@ -161,7 +161,7 @@ export class ProfileBasedPermissionDescriptor extends PermissionDescriptor {
             return ConstBoolQueryNode.FALSE;
         }
 
-        if (applicablePermissions.some(permission => !permission.restrictToAccessGroups)) {
+        if (applicablePermissions.some((permission) => !permission.restrictToAccessGroups)) {
             return ConstBoolQueryNode.TRUE;
         }
 
@@ -185,12 +185,12 @@ export class ProfileBasedPermissionDescriptor extends PermissionDescriptor {
 
     private getApplicablePermissions(authContext: AuthContext, operation: AccessOperation): ReadonlyArray<Permission> {
         return this.profile.permissions.filter(
-            permission => permission.allowsOperation(operation) && permission.appliesToAuthContext(authContext)
+            (permission) => permission.allowsOperation(operation) && permission.appliesToAuthContext(authContext)
         );
     }
 
     private getAllowedAccessGroups(applicablePermissions: ReadonlyArray<Permission>, authContext: AuthContext) {
-        return flatMap(applicablePermissions, permission => permission.getAllowedAccessGroups(authContext)!);
+        return flatMap(applicablePermissions, (permission) => permission.getAllowedAccessGroups(authContext)!);
     }
 
     getExplanationForCondition(
@@ -201,7 +201,7 @@ export class ProfileBasedPermissionDescriptor extends PermissionDescriptor {
         const applicablePermissions = this.getApplicablePermissions(authContext, operation);
 
         // if we don't have accessGroup restrictions, there is nothing to explain
-        if (applicablePermissions.every(permission => !permission.restrictToAccessGroups)) {
+        if (applicablePermissions.every((permission) => !permission.restrictToAccessGroups)) {
             return undefined;
         }
 

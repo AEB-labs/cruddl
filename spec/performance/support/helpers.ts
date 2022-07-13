@@ -1,6 +1,6 @@
 import { Database } from 'arangojs';
 import { graphql, GraphQLSchema } from 'graphql';
-import * as path from 'path';
+import { resolve } from 'path';
 import { ProjectOptions } from '../../../src/config/interfaces';
 import { ArangoDBAdapter } from '../../../src/database/arangodb';
 import { Project } from '../../../src/project/project';
@@ -12,7 +12,7 @@ import { createTempDatabase } from '../../regression/initialization';
 // arangojs typings for this are completely broken
 export const aql: (template: TemplateStringsArray, ...args: any[]) => any = require('arangojs').aql;
 
-const MODEL_PATH = path.resolve(__dirname, '../../regression/papers/model');
+const MODEL_PATH = resolve(__dirname, '../../regression/papers/model');
 
 export interface TestEnvironment {
     getDB(): Database;
@@ -22,7 +22,7 @@ export interface TestEnvironment {
 
 const schemaContext: ProjectOptions = {
     loggerProvider: new Log4jsLoggerProvider('warn'),
-    getExecutionOptions: ({ context }) => ({ authRoles: context.authRoles })
+    getExecutionOptions: ({ context }) => ({ authRoles: context.authRoles }),
 };
 
 export async function createTestProject(
@@ -52,18 +52,18 @@ export async function initEnvironment(): Promise<TestEnvironment> {
                 throw new Error(JSON.stringify(res.errors));
             }
             return res.data;
-        }
+        },
     };
 }
 
 function createLiteratureReference(sizeFactor: number) {
     return {
         title: 'A referenced paper',
-        authors: range(sizeFactor).map(index => `Author ${index}`),
+        authors: range(sizeFactor).map((index) => `Author ${index}`),
         pages: {
             startPage: 5,
-            endPage: 10
-        }
+            endPage: 10,
+        },
     };
 }
 
@@ -72,7 +72,7 @@ export function createLargePaper(sizeFactor: number): any {
     return {
         title: 'A paper',
         literatureReferences: range(sizeSqrt).map(() => createLiteratureReference(sizeSqrt)),
-        tags: range(sizeFactor).map(index => `Tag ${index}`)
+        tags: range(sizeFactor).map((index) => `Tag ${index}`),
     };
 }
 
@@ -80,7 +80,7 @@ export function createUser() {
     return {
         firstName: 'Max',
         lastName: 'Mustermann',
-        email: 'max.mustermann@example.com'
+        email: 'max.mustermann@example.com',
     };
 }
 
@@ -91,7 +91,7 @@ export function getSizeFactorForJSONLength(jsonLength: number) {
 
 export async function addPaper(environment: TestEnvironment, paperData: any): Promise<number> {
     const res = await environment.exec(`mutation($input: CreatePaperInput!) { createPaper(input: $input) { id } }`, {
-        input: paperData
+        input: paperData,
     });
     return res.createPaper.id;
 }

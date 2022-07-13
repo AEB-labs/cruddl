@@ -1,4 +1,4 @@
-import { GraphQLError, GraphQLSchema } from 'graphql';
+import { GraphQLSchema } from 'graphql';
 import { OperationResolver } from '../execution/operation-resolver';
 import { addOperationBasedResolvers, AddOperationBasedResolversParams } from '../graphql/operation-based-resolvers';
 import { Model } from '../model';
@@ -11,9 +11,7 @@ export class SchemaGenerator {
     private readonly queryNodeObjectTypeConverter = new QueryNodeObjectTypeConverter();
     private readonly operationResolver: OperationResolver;
 
-    constructor(
-        private context: SchemaTransformationContext
-    ) {
+    constructor(private context: SchemaTransformationContext) {
         this.operationResolver = new OperationResolver(context);
     }
 
@@ -23,7 +21,7 @@ export class SchemaGenerator {
         const options: AddOperationBasedResolversParams = {
             schema: dumbSchema,
             getOperationIdentifier: this.context.getOperationIdentifier,
-            operationResolver: async op => {
+            operationResolver: async (op) => {
                 const rootType = op.operation.operation === 'mutation' ? mutationType : queryType;
                 let error: Error;
                 try {
@@ -37,7 +35,7 @@ export class SchemaGenerator {
                     } else {
                         return res.data;
                     }
-                } catch (e) {
+                } catch (e: any) {
                     error = e;
                 }
 
@@ -45,7 +43,7 @@ export class SchemaGenerator {
                     throw this.context.processError(error, op);
                 }
                 throw error;
-            }
+            },
         };
         return addOperationBasedResolvers(options);
     }
@@ -55,11 +53,12 @@ export class SchemaGenerator {
         const mutationType = this.rootTypesGenerator.generateMutationType(model);
         const dumbSchema = new GraphQLSchema({
             query: this.queryNodeObjectTypeConverter.convertToGraphQLObjectType(queryType),
-            mutation: this.queryNodeObjectTypeConverter.convertToGraphQLObjectType(mutationType)
+            mutation: this.queryNodeObjectTypeConverter.convertToGraphQLObjectType(mutationType),
         });
         return {
-            queryType, mutationType, dumbSchema
+            queryType,
+            mutationType,
+            dumbSchema,
         };
     }
-
 }

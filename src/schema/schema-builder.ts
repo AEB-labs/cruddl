@@ -1,6 +1,6 @@
 import { DocumentNode, getLocation, GraphQLError, GraphQLSchema, parse } from 'graphql';
 import { parse as JSONparse } from 'json-source-map';
-import { compact } from 'lodash';
+import { compact } from 'lodash-es';
 import {
     Kind,
     load,
@@ -9,7 +9,7 @@ import {
     YAMLMapping,
     YAMLNode,
     YAMLScalar,
-    YAMLSequence
+    YAMLSequence,
 } from 'yaml-ast-parser';
 import { globalContext } from '../config/global';
 import {
@@ -17,7 +17,7 @@ import {
     ParsedObjectProjectSource,
     ParsedProject,
     ParsedProjectSource,
-    ParsedProjectSourceBaseKind
+    ParsedProjectSourceBaseKind,
 } from '../config/parsed-project';
 import { DatabaseAdapter } from '../database/database-adapter';
 import {
@@ -27,7 +27,7 @@ import {
     SourcePosition,
     ValidationContext,
     ValidationMessage,
-    ValidationResult
+    ValidationResult,
 } from '../model';
 import { MessageLocation } from '../model/';
 import { Project, ProjectOptions } from '../project/project';
@@ -38,7 +38,7 @@ import { validateParsedProjectSource, validatePostMerge, validateSource } from '
 import {
     executePreMergeTransformationPipeline,
     executeSchemaTransformationPipeline,
-    SchemaTransformationContext
+    SchemaTransformationContext,
 } from './preparation/transformation-pipeline';
 import { getLineEndPosition } from './schema-utils';
 import jsonLint = require('json-lint');
@@ -59,7 +59,7 @@ export function validateSchema(project: Project): ValidationResult {
 export function validateAndPrepareSchema(project: Project): { validationResult: ValidationResult; model: Model } {
     const validationContext: ValidationContext = new ValidationContext();
 
-    const sources = flatMap(project.sources, source => {
+    const sources = flatMap(project.sources, (source) => {
         const sourceResult = validateSource(source);
         validationContext.addMessage(...sourceResult.messages);
         if (sourceResult.hasErrors()) {
@@ -70,7 +70,7 @@ export function validateAndPrepareSchema(project: Project): { validationResult: 
 
     const { sources: parsedSources } = parseProject(new Project({ ...project.options, sources }), validationContext);
 
-    const validParsedSources = flatMap(parsedSources, parsedSource => {
+    const validParsedSources = flatMap(parsedSources, (parsedSource) => {
         const sourceResult = validateParsedProjectSource(parsedSource);
         validationContext.addMessage(...sourceResult.messages);
         if (sourceResult.hasErrors()) {
@@ -108,7 +108,7 @@ export function createSchema(project: Project, databaseAdapter: DatabaseAdapter)
 
         const schemaContext: SchemaTransformationContext = {
             ...project.options,
-            databaseAdapter
+            databaseAdapter,
         };
 
         const generator = new SchemaGenerator(schemaContext);
@@ -131,7 +131,7 @@ export function getModel(project: Project): Model {
 
 function mergeSchemaDefinition(parsedProject: ParsedProject): DocumentNode {
     const emptyDocument: DocumentNode = { kind: 'Document', definitions: [] };
-    const graphqlDocuments = parsedProject.sources.map(s => {
+    const graphqlDocuments = parsedProject.sources.map((s) => {
         if (s.kind === ParsedProjectSourceBaseKind.GRAPHQL) {
             return s.document;
         } else {
@@ -150,7 +150,7 @@ function mergeSchemaDefinition(parsedProject: ParsedProject): DocumentNode {
 function mergeAST(doc1: DocumentNode, doc2: DocumentNode): DocumentNode {
     return {
         kind: 'Document',
-        definitions: [...doc1.definitions, ...doc2.definitions]
+        definitions: [...doc1.definitions, ...doc2.definitions],
     };
 }
 
@@ -159,7 +159,9 @@ function mergeAST(doc1: DocumentNode, doc2: DocumentNode): DocumentNode {
  */
 export function parseProject(project: Project, validationContext: ValidationContext): ParsedProject {
     return {
-        sources: compact(project.sources.map(source => parseProjectSource(source, project.options, validationContext)))
+        sources: compact(
+            project.sources.map((source) => parseProjectSource(source, project.options, validationContext))
+        ),
     };
 }
 
@@ -174,7 +176,7 @@ function parseYAMLSource(
         return undefined;
     }
 
-    root.errors.forEach(error => {
+    root.errors.forEach((error) => {
         const severity = error.isWarning ? Severity.Warning : Severity.Error;
         const endPos = getLineEndPosition(error.mark.line + 1, projectSource);
         validationContext.addMessage(
@@ -190,7 +192,7 @@ function parseYAMLSource(
         );
     });
 
-    if (root.errors.some(error => !error.isWarning)) {
+    if (root.errors.some((error) => !error.isWarning)) {
         // returning undefined will lead to ignoring this source file in future steps
         return undefined;
     }
@@ -210,7 +212,7 @@ function parseYAMLSource(
                 ? []
                 : getNamespaceFromSourceName(projectSource.name),
         object: (yamlData as PlainObject) || {},
-        pathLocationMap: pathLocationMap
+        pathLocationMap: pathLocationMap,
     };
 }
 
@@ -272,7 +274,7 @@ function parseJSONSource(
                 ? []
                 : getNamespaceFromSourceName(projectSource.name),
         object: (data as PlainObject) || {},
-        pathLocationMap: jsonPathLocationMap
+        pathLocationMap: jsonPathLocationMap,
     };
 }
 
@@ -304,7 +306,7 @@ function parseGraphQLsSource(
             options.modelOptions?.useSourceDirectoriesAsNamespaces === false
                 ? []
                 : getNamespaceFromSourceName(projectSource.name),
-        document: document
+        document: document,
     };
 }
 
@@ -327,10 +329,7 @@ export function parseProjectSource(
 
 function getNamespaceFromSourceName(name: string): ReadonlyArray<string> {
     if (name.includes('/')) {
-        return name
-            .substr(0, name.lastIndexOf('/'))
-            .replace(/\//g, '.')
-            .split('.');
+        return name.substr(0, name.lastIndexOf('/')).replace(/\//g, '.').split('.');
     }
     return []; // default namespace
 }
@@ -344,7 +343,7 @@ function extractMessageLocationsFromYAML(root: YAMLNode, source: ProjectSource):
     const result = extractAllPaths(root, [] as ReadonlyArray<string | number>);
     let messageLocations: { [path: string]: MessageLocation } = {};
     result.forEach(
-        val =>
+        (val) =>
             (messageLocations['/' + val.path.join('/')] = new MessageLocation(
                 source,
                 val.node.startPosition,
@@ -369,7 +368,7 @@ function extractAllPaths(
         case Kind.MAP:
             const mapNode = node as YamlMap;
             const mergedMap = ([] as { path: ReadonlyArray<string | number>; node: YAMLNode }[]).concat(
-                ...mapNode.mappings.map(childNode => extractAllPaths(childNode, [...curPath]))
+                ...mapNode.mappings.map((childNode) => extractAllPaths(childNode, [...curPath]))
             );
             return [...mergedMap];
         case Kind.MAPPING:
@@ -377,7 +376,7 @@ function extractAllPaths(
             if (mappingNode.value) {
                 return [
                     { path: [...curPath, mappingNode.key.value], node: mappingNode },
-                    ...extractAllPaths(mappingNode.value, [...curPath, mappingNode.key.value])
+                    ...extractAllPaths(mappingNode.value, [...curPath, mappingNode.key.value]),
                 ];
             }
             break;
@@ -444,7 +443,7 @@ function recursiveObjectExtraction(
     switch (node.kind) {
         case Kind.MAP:
             const mapNode = node as YamlMap;
-            mapNode.mappings.forEach(val => {
+            mapNode.mappings.forEach((val) => {
                 object[val.key.value] = recursiveObjectExtraction(val.value, {}, validationContext, source);
             });
             return object;
@@ -460,7 +459,7 @@ function recursiveObjectExtraction(
             }
         case Kind.SEQ:
             const seqNode = node as YAMLSequence;
-            return seqNode.items.map(val => recursiveObjectExtraction(val, {}, validationContext, source));
+            return seqNode.items.map((val) => recursiveObjectExtraction(val, {}, validationContext, source));
         case Kind.INCLUDE_REF:
             validationContext.addMessage(
                 ValidationMessage.error(

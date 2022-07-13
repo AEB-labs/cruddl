@@ -9,7 +9,7 @@ import { likePatternToRegExp } from '../like-helpers';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './inmemory-basics';
 import { JSCompoundQuery, JSExecutableQuery } from './js';
 import { getJSQuery } from './js-generator';
-import uuid = require('uuid');
+import { v4 as uuid } from 'uuid';
 
 export class InMemoryDB {
     collections: { [name: string]: any[] } = {};
@@ -43,7 +43,7 @@ export class InMemoryAdapter implements DatabaseAdapter {
         const validators = new Map(
             ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS.map((provider): [string, Function] => [
                 provider.getValidatorName(),
-                provider.getValidatorFunction()
+                provider.getValidatorFunction(),
             ])
         );
 
@@ -183,7 +183,7 @@ export class InMemoryAdapter implements DatabaseAdapter {
                 };
             },
 
-            likePatternToRegExp
+            likePatternToRegExp,
         };
 
         let resultHolder: { [p: string]: any } = {};
@@ -254,8 +254,8 @@ export class InMemoryAdapter implements DatabaseAdapter {
         const rootEntities = model.rootEntityTypes;
         const requiredEdgeCollections = Array.from(new Set(model.relations.map(getCollectionNameForRelation)));
 
-        const requiredCollections = rootEntities.map(entity => getCollectionNameForRootEntity(entity));
-        if (!requiredCollections.some(value => value === 'billingEntities')) {
+        const requiredCollections = rootEntities.map((entity) => getCollectionNameForRootEntity(entity));
+        if (!requiredCollections.some((value) => value === 'billingEntities')) {
             requiredCollections.push('billingEntities');
         }
         for (const coll of [...requiredCollections, ...requiredEdgeCollections]) {
@@ -268,11 +268,11 @@ export class InMemoryAdapter implements DatabaseAdapter {
     async tokenizeExpressions(
         tokenizations: ReadonlyArray<FlexSearchTokenizable>
     ): Promise<ReadonlyArray<FlexSearchTokenization>> {
-        return tokenizations.map(value => {
+        return tokenizations.map((value) => {
             return {
                 expression: value.expression,
                 analyzer: value.analyzer,
-                tokens: value.expression.split('-')
+                tokens: value.expression.split('-'),
             };
         });
     }

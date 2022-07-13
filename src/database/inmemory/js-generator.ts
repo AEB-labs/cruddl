@@ -1,4 +1,4 @@
-import { compact } from 'lodash';
+import { compact } from 'lodash-es';
 import { IDENTITY_ANALYZER, NORM_CI_ANALYZER } from '../../model/implementation/flex-search';
 import { AggregationOperator, Relation, RelationSide, RootEntityType } from '../../model';
 import {
@@ -56,12 +56,12 @@ import {
     UpdateEntitiesQueryNode,
     VariableAssignmentQueryNode,
     VariableQueryNode,
-    WithPreExecutionQueryNode
+    WithPreExecutionQueryNode,
 } from '../../query-tree';
 import {
     FlexSearchComplexOperatorQueryNode,
     FlexSearchFieldExistsQueryNode,
-    FlexSearchQueryNode
+    FlexSearchQueryNode,
 } from '../../query-tree/flex-search';
 import { QuantifierFilterNode } from '../../query-tree/quantifiers';
 import { createFieldPathNode } from '../../schema-generation/field-path-node';
@@ -210,7 +210,7 @@ function register<T extends QueryNode>(type: Constructor<T>, processor: NodeProc
     processors.set(type, processor as NodeProcessor<QueryNode>); // probably some bivariancy issue
 }
 
-register(LiteralQueryNode, node => {
+register(LiteralQueryNode, (node) => {
     return js.value(node.value);
 });
 
@@ -218,7 +218,7 @@ register(NullQueryNode, () => {
     return js`null`;
 });
 
-register(RuntimeErrorQueryNode, node => {
+register(RuntimeErrorQueryNode, (node) => {
     const runtimeErrorToken = js.code(RUNTIME_ERROR_TOKEN);
     if (node.code) {
         const codeProp = js.code(RUNTIME_ERROR_CODE_PROPERTY);
@@ -227,11 +227,11 @@ register(RuntimeErrorQueryNode, node => {
     return js`{ ${runtimeErrorToken}: ${node.message} }`;
 });
 
-register(ConstBoolQueryNode, node => {
+register(ConstBoolQueryNode, (node) => {
     return node.value ? js`true` : js`false`;
 });
 
-register(ConstIntQueryNode, node => {
+register(ConstIntQueryNode, (node) => {
     return js.integer(node.value);
 });
 
@@ -241,7 +241,7 @@ register(ObjectQueryNode, (node, context) => {
     }
 
     const properties = node.properties.map(
-        p => js`${jsExt.safeJSONKey(p.propertyName)}: ${processNode(p.valueNode, context)}`
+        (p) => js`${jsExt.safeJSONKey(p.propertyName)}: ${processNode(p.valueNode, context)}`
     );
     return js.lines(js`{`, js.indent(js.join(properties, js`,\n`)), js`}`);
 });
@@ -255,7 +255,7 @@ register(ListQueryNode, (node, context) => {
         js`[`,
         js.indent(
             js.join(
-                node.itemNodes.map(itemNode => processNode(itemNode, context)),
+                node.itemNodes.map((itemNode) => processNode(itemNode, context)),
                 js`,\n`
             )
         ),
@@ -264,7 +264,7 @@ register(ListQueryNode, (node, context) => {
 });
 
 register(ConcatListsQueryNode, (node, context) => {
-    const listNodes = node.listNodes.map(node => js`...${processNode(node, context)}`);
+    const listNodes = node.listNodes.map((node) => js`...${processNode(node, context)}`);
     const listNodeStr = js.join(listNodes, js`, `);
     return js`[${listNodeStr}]`;
 });
@@ -307,7 +307,7 @@ register(EntityFromIdQueryNode, (node, context) => {
                     new RootEntityIDQueryNode(itemVariable),
                     BinaryOperator.EQUAL,
                     node.idNode
-                )
+                ),
             })
         ),
         context
@@ -476,7 +476,7 @@ register(AggregationQueryNode, (node, context) => {
 });
 
 register(MergeObjectsQueryNode, (node, context) => {
-    const objectList = node.objectNodes.map(node => processNode(node, context));
+    const objectList = node.objectNodes.map((node) => processNode(node, context));
     const objectsFragment = js.join(objectList, js`, `);
     return js`Object.assign({}, ${objectsFragment})`;
 });
@@ -628,7 +628,7 @@ register(QuantifierFilterNode, (node, context) => {
     const filteredListNode = new TransformListQueryNode({
         listNode,
         filterNode: conditionNode,
-        itemVariable
+        itemVariable,
     });
 
     const finalNode = new BinaryOperationQueryNode(
@@ -784,7 +784,7 @@ register(TraversalQueryNode, (node, context) => {
 
     if (relationFrag && rootVar && node.captureRootEntity) {
         if (relationTraversalReturnsList) {
-            if (node.fieldSegments.some(f => f.isListSegment)) {
+            if (node.fieldSegments.some((f) => f.isListSegment)) {
                 const accVar = js.variable('acc');
                 const objVar = js.variable('obj');
                 const mapper = js`${objVar} => ({ obj: ${objVar}, root: ${rootVar} })`;
@@ -795,7 +795,7 @@ register(TraversalQueryNode, (node, context) => {
                 currentFrag = js`${relationFrag}.map(${mapper})`;
             }
         } else {
-            if (node.fieldSegments.some(f => f.isListSegment)) {
+            if (node.fieldSegments.some((f) => f.isListSegment)) {
                 const objVar = js.variable('obj');
                 const mapper = js`${objVar} => ({ obj: ${objVar}, root: ${rootVar} })`;
                 currentFrag = jsExt.evaluatingLambda(rootVar, js`(${currentFrag}).map(${mapper})`, relationFrag);
@@ -838,7 +838,7 @@ register(CreateEntitiesQueryNode, (node, context) => {
     const transformedNode = new TransformListQueryNode({
         listNode: node.objectsNode,
         itemVariable: objectVar,
-        innerNode: new CreateEntityQueryNode(node.rootEntityType, objectVar, node.affectedFields)
+        innerNode: new CreateEntityQueryNode(node.rootEntityType, objectVar, node.affectedFields),
     });
     return processNode(transformedNode, context);
 });
@@ -912,7 +912,7 @@ register(AddEdgesQueryNode, (node, context) => {
         js.indent(
             js.join(
                 node.edges.map(
-                    edge =>
+                    (edge) =>
                         js`{ _from: ${processNode(edge.fromIDNode, context)}, _to: ${processNode(
                             edge.toIDNode,
                             context
@@ -946,7 +946,7 @@ register(RemoveEdgesQueryNode, (node, context) => {
     const toIDs = node.edgeFilter.toIDsNode ? processNode(node.edgeFilter.toIDsNode, context) : undefined;
     const edgeRemovalCriteria = compact([
         fromIDs ? js`${fromIDs}.includes(${edgeVar}._from)` : undefined,
-        toIDs ? js`${toIDs}.includes(${edgeVar}._to)` : undefined
+        toIDs ? js`${toIDs}.includes(${edgeVar}._to)` : undefined,
     ]);
     const edgeShouldStay = js`!(${js.join(edgeRemovalCriteria, js` && `)})`;
 
@@ -1010,7 +1010,7 @@ register(FlexSearchQueryNode, (node, context) => {
     if (node.rootEntityType.flexSearchPrimarySort.length) {
         const order = new OrderSpecification(
             node.rootEntityType.flexSearchPrimarySort.map(
-                c => new OrderClause(createFieldPathNode(c.field, node.itemVariable), c.direction)
+                (c) => new OrderClause(createFieldPathNode(c.field, node.itemVariable), c.direction)
             )
         );
         const comparator = getComparatorForOrderSpecification(order, itemVar, itemContext);
@@ -1115,7 +1115,7 @@ register(SetEdgeQueryNode, (node, context) => {
             : undefined,
         node.existingEdge.toIDNode
             ? js`${edgeVar}._to == ${processNode(node.existingEdge.toIDNode, context)}`
-            : undefined
+            : undefined,
     ]);
     const edgeShouldStay = js`!(${js.join(edgeRemovalCriteria, js` && `)})`;
 
@@ -1159,7 +1159,7 @@ function getComparatorForOrderSpecification(orderBy: OrderSpecification, itemVar
         return js`[${valueLambda}, ${clause.direction == OrderDirection.DESCENDING ? js`true` : js`false`}]`;
     }
 
-    const args = orderBy.clauses.map(clause => getClauseFnAndInvert(clause));
+    const args = orderBy.clauses.map((clause) => getClauseFnAndInvert(clause));
 
     return js`support.getMultiComparator(${js.join(args, js`, `)})`;
 }

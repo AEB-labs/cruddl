@@ -1,5 +1,5 @@
 import { GraphQLID, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
-import { flatMap } from 'lodash';
+import { flatMap } from 'lodash-es';
 import memorize from 'memorize-decorator';
 import { CalcMutationsOperator, ChildEntityType, EntityExtensionType, Field, RootEntityType } from '../../model';
 import { CALC_MUTATIONS_OPERATORS, CalcMutationOperator, ID_FIELD } from '../../schema/constants';
@@ -8,7 +8,7 @@ import {
     getRemoveChildEntitiesFieldName,
     getUpdateAllInputTypeName,
     getUpdateChildEntitiesFieldName,
-    getUpdateInputTypeName
+    getUpdateInputTypeName,
 } from '../../schema/names';
 import { CreateInputTypeGenerator } from '../create-input-types';
 import { EnumTypeGenerator } from '../enum-type-generator';
@@ -25,20 +25,20 @@ import {
     UpdateFilterInputField,
     UpdateInputField,
     UpdateValueObjectInputField,
-    UpdateValueObjectListInputField
+    UpdateValueObjectListInputField,
 } from './input-fields';
 import {
     UpdateChildEntityInputType,
     UpdateEntityExtensionInputType,
     UpdateObjectInputType,
-    UpdateRootEntityInputType
+    UpdateRootEntityInputType,
 } from './input-types';
 import {
     AddEdgesInputField,
     CreateAndAddEdgesInputField,
     CreateAndSetEdgeInputField,
     RemoveEdgesInputField,
-    SetEdgeInputField
+    SetEdgeInputField,
 } from './relation-fields';
 
 export class UpdateInputTypeGenerator {
@@ -74,7 +74,7 @@ export class UpdateInputTypeGenerator {
             flatMap(type.fields, (field: Field) =>
                 this.generateFields(field, {
                     skipID: true,
-                    skipRelations: true // can't do this properly at the moment because it would need a dynamic number of pre-execs
+                    skipRelations: true, // can't do this properly at the moment because it would need a dynamic number of pre-execs
                 })
             )
         );
@@ -143,7 +143,7 @@ export class UpdateInputTypeGenerator {
                         getRemoveChildEntitiesFieldName(field.name),
                         new GraphQLList(new GraphQLNonNull(GraphQLID)),
                         { deprecationReason }
-                    )
+                    ),
                 ];
             }
 
@@ -189,14 +189,14 @@ export class UpdateInputTypeGenerator {
                               field.referenceField.type.name +
                               '` to be referenced'
                             : undefined
-                    )
+                    ),
                 ];
             } else {
                 const calcMutationOperators = Array.from(field.calcMutationOperators).map(
                     getCalcMutationOperatorOrThrow
                 );
                 const calcMutationFields = calcMutationOperators.map(
-                    op => new CalcMutationInputField(field, inputType, op.operator, op.prefix)
+                    (op) => new CalcMutationInputField(field, inputType, op.operator, op.prefix)
                 );
                 // TODO this implementation does not work with multiple calcMutations or them mixed with a regular set, which worked before
                 // Either support this or at least throw an error in this case
@@ -230,7 +230,7 @@ export class UpdateInputTypeGenerator {
                     this.createInputTypeGenerator.generateForChildEntityType(field.type)
                 ),
                 new UpdateChildEntitiesInputField(field, this.generateForChildEntityType(field.type)),
-                new RemoveChildEntitiesInputField(field)
+                new RemoveChildEntitiesInputField(field),
             ];
         }
 
@@ -262,7 +262,7 @@ export class UpdateInputTypeGenerator {
                         field.name,
                         description,
                         `Use "${referenceKeyField.name}" instead.`
-                    )
+                    ),
                 ];
             }
         }
@@ -277,7 +277,7 @@ export class UpdateInputTypeGenerator {
                 return [
                     new AddEdgesInputField(field),
                     new RemoveEdgesInputField(field),
-                    new CreateAndAddEdgesInputField(field, inputType)
+                    new CreateAndAddEdgesInputField(field, inputType),
                 ];
             } else {
                 return [new SetEdgeInputField(field), new CreateAndSetEdgeInputField(field, inputType)];
@@ -291,12 +291,12 @@ export class UpdateInputTypeGenerator {
 function getCalcMutationOperatorOrThrow(
     operator: CalcMutationsOperator
 ): CalcMutationOperator & { operator: CalcMutationsOperator } {
-    const value = CALC_MUTATIONS_OPERATORS.find(op => op.name == operator);
+    const value = CALC_MUTATIONS_OPERATORS.find((op) => op.name == operator);
     if (!value) {
         throw new Error(`Calc mutation operator "${operator}" is not defined`);
     }
     return {
         ...value,
-        operator
+        operator,
     };
 }

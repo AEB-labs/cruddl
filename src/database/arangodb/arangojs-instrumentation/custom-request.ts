@@ -123,7 +123,7 @@ export function createRequest(baseUrl: string, agentOptions: any, agent: any): R
                 const req = (isTls ? httpsRequest : httpRequest)(options, (res: IncomingMessage) => {
                     notifyAboutPhaseEnd(requestInstrumentation, 'waiting');
                     const data: Buffer[] = [];
-                    res.on('data', chunk => data.push(chunk as Buffer));
+                    res.on('data', (chunk) => data.push(chunk as Buffer));
                     res.on('end', () => {
                         const response = res as ArangojsResponse;
                         response.request = req;
@@ -154,7 +154,7 @@ export function createRequest(baseUrl: string, agentOptions: any, agent: any): R
                 req.on('timeout', () => {
                     req.abort();
                 });
-                req.on('error', err => {
+                req.on('error', (err) => {
                     const error = err as ArangojsError;
                     error.request = req;
                     if (called) return;
@@ -169,7 +169,7 @@ export function createRequest(baseUrl: string, agentOptions: any, agent: any): R
                     agentOptions.before(req);
                 }
                 req.end();
-            } catch (e) {
+            } catch (e: any) {
                 if (called) return;
                 called = true;
                 setTimeout(() => {
@@ -180,7 +180,7 @@ export function createRequest(baseUrl: string, agentOptions: any, agent: any): R
         {
             close() {
                 agent.destroy();
-            }
+            },
         }
     );
 }

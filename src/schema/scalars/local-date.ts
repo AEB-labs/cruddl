@@ -1,5 +1,5 @@
 import { GraphQLScalarType } from 'graphql';
-import { LocalDate } from 'js-joda';
+import { LocalDate } from '@js-joda/core';
 
 function parseLocalDate(value: any): LocalDate {
     if (typeof value !== 'string') {
@@ -7,9 +7,9 @@ function parseLocalDate(value: any): LocalDate {
     }
     try {
         return LocalDate.parse(value);
-    } catch (e) {
+    } catch (e: any) {
         if (e.name === 'DateTimeParseException') {
-            throw new Error(`Invalid ISO 8601 LocalDate: ${value}`)
+            throw new Error(`Invalid ISO 8601 LocalDate: ${value}`);
         }
         throw e;
     }
@@ -21,7 +21,8 @@ function coerceLocalDate(value: string): string {
 
 export const GraphQLLocalDate = new GraphQLScalarType({
     name: 'LocalDate',
-    description: 'The `LocalDate` scalar type represents a date without time zone in a format specified by ISO 8601, such as 2007-12-03.',
+    description:
+        'The `LocalDate` scalar type represents a date without time zone in a format specified by ISO 8601, such as 2007-12-03.',
     serialize: coerceLocalDate,
     parseValue: coerceLocalDate,
     parseLiteral(ast) {
@@ -29,5 +30,5 @@ export const GraphQLLocalDate = new GraphQLScalarType({
             throw new Error('LocalDate must be specified as String value');
         }
         return coerceLocalDate(ast.value);
-    }
+    },
 });

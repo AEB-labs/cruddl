@@ -1,5 +1,5 @@
 import { GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
-import { flatMap } from 'lodash';
+import { flatMap } from 'lodash-es';
 import memorize from 'memorize-decorator';
 import { ChildEntityType, EntityExtensionType, Field, ObjectType, RootEntityType, ValueObjectType } from '../../model';
 import { EnumTypeGenerator } from '../enum-type-generator';
@@ -11,20 +11,20 @@ import {
     CreateObjectInputField,
     CreateReferenceInputField,
     DummyCreateInputField,
-    ObjectListCreateInputField
+    ObjectListCreateInputField,
 } from './input-fields';
 import {
     CreateChildEntityInputType,
     CreateEntityExtensionInputType,
     CreateObjectInputType,
     CreateRootEntityInputType,
-    ValueObjectInputType
+    ValueObjectInputType,
 } from './input-types';
 import {
     AddEdgesCreateInputField,
     CreateAndAddEdgesCreateInputField,
     CreateAndSetEdgeCreateInputField,
-    SetEdgeCreateInputField
+    SetEdgeCreateInputField,
 } from './relation-fields';
 
 export class CreateInputTypeGenerator {
@@ -109,7 +109,7 @@ export class CreateInputTypeGenerator {
             if (field.isList) {
                 // don't allow null values in lists
                 return [
-                    new BasicListCreateInputField(field, undefined, new GraphQLList(new GraphQLNonNull(inputType)))
+                    new BasicListCreateInputField(field, undefined, new GraphQLList(new GraphQLNonNull(inputType))),
                 ];
             } else if (field.referenceField) {
                 // this is the key field to a reference field - add some comments
@@ -125,7 +125,7 @@ export class CreateInputTypeGenerator {
                               '` to be referenced'
                             : undefined,
                         inputType
-                    )
+                    ),
                 ];
             } else {
                 return [new BasicCreateInputField(field, undefined, inputType)];
@@ -138,7 +138,7 @@ export class CreateInputTypeGenerator {
                 if (field.isList) {
                     return [
                         new AddEdgesCreateInputField(field),
-                        new CreateAndAddEdgesCreateInputField(field, inputType)
+                        new CreateAndAddEdgesCreateInputField(field, inputType),
                     ];
                 } else {
                     return [new SetEdgeCreateInputField(field), new CreateAndSetEdgeCreateInputField(field, inputType)];
@@ -170,7 +170,7 @@ export class CreateInputTypeGenerator {
                             description,
                             scalarType,
                             `Use "${referenceKeyField.name}" instead.`
-                        )
+                        ),
                     ];
                 }
             }

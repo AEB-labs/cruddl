@@ -14,9 +14,11 @@ export function createFastApp(project: Project, databaseAdapter: DatabaseAdapter
         const document = parse(query);
         const validationErrors = validate(slowSchema, document);
         if (validationErrors.length) {
-            res.end(JSON.stringify({
-                errors: validationErrors.map(e => formatError(e))
-            }));
+            res.end(
+                JSON.stringify({
+                    errors: validationErrors.map((e) => formatError(e)),
+                })
+            );
         }
         const fastPromise = executor.tryExecute({
             document,
@@ -28,8 +30,8 @@ export function createFastApp(project: Project, databaseAdapter: DatabaseAdapter
                 recordTimings: true,
                 mutationMode: 'rollback',
                 queryMemoryLimit: 5000000,
-                authRoles: contextValue.authRoles
-            }
+                authRoles: contextValue.authRoles,
+            },
         });
         if (!fastPromise) {
             const { data, errors } = await execute({
@@ -37,7 +39,7 @@ export function createFastApp(project: Project, databaseAdapter: DatabaseAdapter
                 contextValue,
                 operationName,
                 rootValue: {},
-                document
+                document,
             });
             res.end(JSON.stringify({ data, errors }));
             return;
@@ -45,16 +47,31 @@ export function createFastApp(project: Project, databaseAdapter: DatabaseAdapter
 
         try {
             const result = await fastPromise;
-            res.end(JSON.stringify({
-                data: result.data,
-                errors: result.error ? [formatError(new GraphQLError(result.error.message, undefined, undefined, undefined, undefined, result.error))] : undefined
-            }));
+            res.end(
+                JSON.stringify({
+                    data: result.data,
+                    errors: result.error
+                        ? [
+                              formatError(
+                                  new GraphQLError(
+                                      result.error.message,
+                                      undefined,
+                                      undefined,
+                                      undefined,
+                                      undefined,
+                                      result.error
+                                  )
+                              ),
+                          ]
+                        : undefined,
+                })
+            );
         } catch (e) {
-            res.end(JSON.stringify({
-                errors: [
-                    formatError(new GraphQLError(e.stack))
-                ]
-            }));
+            res.end(
+                JSON.stringify({
+                    errors: [formatError(new GraphQLError((e as any).stack))],
+                })
+            );
         }
     };
 }

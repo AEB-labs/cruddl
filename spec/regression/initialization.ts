@@ -1,34 +1,34 @@
 import { Database } from 'arangojs';
 import { Collection } from 'arangojs/collection';
-import * as fs from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { ExecutionResult, graphql, GraphQLSchema } from 'graphql';
+import stripJsonComments from 'strip-json-comments';
 import { ArangoDBConfig } from '../../src/database/arangodb';
-import stripJsonComments = require('strip-json-comments');
 
 const DATABASE_NAME = 'cruddl-test-temp';
 const DATABASE_URL = 'http://root:@localhost:8529';
 
 export async function createTempDatabase(): Promise<ArangoDBConfig> {
     const systemDatabase = new Database({
-        url: DATABASE_URL
+        url: DATABASE_URL,
     });
     const dbs = await systemDatabase.listDatabases();
     if (dbs.indexOf(DATABASE_NAME) >= 0) {
         const db = systemDatabase.database(DATABASE_NAME);
         const colls = (await db.collections(true)) as Collection[];
-        await Promise.all(colls.map(coll => coll.drop()));
+        await Promise.all(colls.map((coll) => coll.drop()));
     } else {
         await systemDatabase.createDatabase(DATABASE_NAME);
     }
     return {
         url: DATABASE_URL,
-        databaseName: DATABASE_NAME
+        databaseName: DATABASE_NAME,
     };
 }
 
 export async function dropTempDatabase(): Promise<void> {
     const db = new Database({
-        url: DATABASE_URL
+        url: DATABASE_URL,
     });
     const dbs = await db.listDatabases();
     if (dbs.indexOf(DATABASE_NAME) >= 0) {
@@ -39,7 +39,7 @@ export async function dropTempDatabase(): Promise<void> {
 export function getTempDatabase(): Database {
     return new Database({
         url: DATABASE_URL,
-        databaseName: DATABASE_NAME
+        databaseName: DATABASE_NAME,
     });
 }
 
@@ -48,13 +48,13 @@ export interface TestDataEnvironment {
 }
 
 export async function initTestData(path: string, schema: GraphQLSchema): Promise<TestDataEnvironment> {
-    if (!fs.existsSync(path)) {
+    if (!existsSync(path)) {
         return {
-            fillTemplateStrings: a => a
+            fillTemplateStrings: (a) => a,
         };
     }
 
-    const testData = JSON.parse(stripJsonComments(fs.readFileSync(path, 'utf-8')));
+    const testData = JSON.parse(stripJsonComments(readFileSync(path, 'utf-8')));
     const ids = new Map<string, string>();
 
     function fillTemplateStrings(data: any): any {
@@ -74,7 +74,7 @@ export async function initTestData(path: string, schema: GraphQLSchema): Promise
         }
         if (data && typeof data == 'object') {
             if (data instanceof Array) {
-                return data.map(item => fillTemplateStrings(item));
+                return data.map((item) => fillTemplateStrings(item));
             }
             for (const key of Object.keys(data)) {
                 data[key] = fillTemplateStrings(data[key]);
@@ -85,7 +85,7 @@ export async function initTestData(path: string, schema: GraphQLSchema): Promise
     }
 
     const context = {
-        authRoles: testData.roles || []
+        authRoles: testData.roles || [],
     };
     for (const rootEntityName in testData.rootEntities) {
         const namespace = rootEntityName.split('.');

@@ -1,5 +1,5 @@
 import { GraphQLScalarType } from 'graphql';
-import { Instant, LocalDateTime, ZonedDateTime, ZoneOffset } from 'js-joda';
+import { Instant, LocalDateTime, ZonedDateTime, ZoneOffset } from '@js-joda/core';
 
 function parseDateTime(value: string): Instant {
     if (typeof value !== 'string') {
@@ -7,17 +7,12 @@ function parseDateTime(value: string): Instant {
     }
     try {
         return Instant.parse(value);
-    } catch (e) {
+    } catch (e: any) {
         if (e.name === 'DateTimeParseException') {
             // allow +00:00 and the like (normalized() returns a ZoneOffsets for fixed zones
             const zonedDateTime = tryParseZonedDateTime(value);
             if (zonedDateTime) {
-                if (
-                    zonedDateTime
-                        .zone()
-                        .normalized()
-                        .equals(ZoneOffset.UTC)
-                ) {
+                if (zonedDateTime.zone().normalized().equals(ZoneOffset.UTC)) {
                     return zonedDateTime.toInstant();
                 }
                 throw new Error(`DateTime should be in UTC: ${value}`);
@@ -42,7 +37,7 @@ function coerceDateTime(value: any): string {
 function tryParseZonedDateTime(str: string): ZonedDateTime | undefined {
     try {
         return ZonedDateTime.parse(str);
-    } catch (e) {
+    } catch (e: any) {
         if (e.name === 'DateTimeParseException') {
             return undefined;
         }
@@ -53,7 +48,7 @@ function tryParseZonedDateTime(str: string): ZonedDateTime | undefined {
 function tryParseLocalDateTime(str: string): LocalDateTime | undefined {
     try {
         return LocalDateTime.parse(str);
-    } catch (e) {
+    } catch (e: any) {
         if (e.name === 'DateTimeParseException') {
             return undefined;
         }
@@ -72,5 +67,5 @@ export const GraphQLDateTime = new GraphQLScalarType({
             throw new Error('DateTime must be specified as String value');
         }
         return coerceDateTime(ast.value);
-    }
+    },
 });

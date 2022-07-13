@@ -1,5 +1,5 @@
 import { GraphQLEnumType, GraphQLEnumValueConfig } from 'graphql';
-import { chain } from 'lodash';
+import { chain } from 'lodash-es';
 import memorize from 'memorize-decorator';
 import { Field, ObjectType, Type } from '../model';
 import { OrderClause, OrderDirection, PropertyAccessQueryNode, QueryNode } from '../query-tree';
@@ -39,14 +39,14 @@ export class OrderByEnumType {
         return new GraphQLEnumType({
             name: this.name,
             values: chain(this.values)
-                .keyBy(value => value.name)
+                .keyBy((value) => value.name)
                 .mapValues(
                     (value): GraphQLEnumValueConfig => ({
                         value: value.name,
-                        deprecationReason: value.deprecationReason
+                        deprecationReason: value.deprecationReason,
                     })
                 )
-                .value()
+                .value(),
         });
     }
 }
@@ -59,7 +59,7 @@ export class OrderByEnumValue {
     ) {}
 
     get underscoreSeparatedPath(): string {
-        return this.path.map(field => field.name).join('_');
+        return this.path.map((field) => field.name).join('_');
     }
 
     get name() {
@@ -81,8 +81,8 @@ export class OrderByEnumValue {
             return this.path[0].deprecationReason;
         }
         const deprecations = this.path
-            .filter(f => f.deprecationReason)
-            .map(f => `${f.declaringType.name}.${f.name}: ${f.deprecationReason}`);
+            .filter((f) => f.deprecationReason)
+            .map((f) => `${f.declaringType.name}.${f.name}: ${f.deprecationReason}`);
         if (deprecations.length) {
             return deprecations.join(', ');
         }
@@ -125,7 +125,7 @@ export class OrderByEnumGenerator {
     }
 
     private getValues(type: ObjectType, options?: RecursionOptions): ReadonlyArray<OrderByEnumValue> {
-        return flatMap(type.fields, field => this.getValuesForField(field, options));
+        return flatMap(type.fields, (field) => this.getValuesForField(field, options));
     }
 
     private getValuesForField(field: Field, { path = [], rootEntityDepth = 0 }: RecursionOptions = {}) {
@@ -155,7 +155,7 @@ export class OrderByEnumGenerator {
         // currently, all scalars and enums are ordered types
         return [
             new OrderByEnumValue(newPath, OrderDirection.ASCENDING, rootEntityDepth),
-            new OrderByEnumValue(newPath, OrderDirection.DESCENDING, rootEntityDepth)
+            new OrderByEnumValue(newPath, OrderDirection.DESCENDING, rootEntityDepth),
         ];
     }
 }

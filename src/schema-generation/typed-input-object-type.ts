@@ -3,9 +3,9 @@ import {
     GraphQLInputFieldConfigMap,
     GraphQLInputObjectType,
     GraphQLInputType,
-    Thunk
+    Thunk,
 } from 'graphql';
-import { chain, uniqBy } from 'lodash';
+import { chain, uniqBy } from 'lodash-es';
 import memorize from 'memorize-decorator';
 import { Constructor } from '../utils/utils';
 import { resolveThunk } from './query-node-object-type';
@@ -32,7 +32,7 @@ export class TypedInputObjectType<TField extends TypedInputFieldBase<TField>> {
             fields: () =>
                 this.transformFieldConfigs(
                     chain(this.fields)
-                        .keyBy(field => field.name)
+                        .keyBy((field) => field.name)
                         .mapValues(
                             (field): GraphQLInputFieldConfig => ({
                                 type:
@@ -40,11 +40,11 @@ export class TypedInputObjectType<TField extends TypedInputFieldBase<TField>> {
                                         ? field.inputType.getInputType()
                                         : field.inputType,
                                 description: field.description,
-                                deprecationReason: field.deprecationReason
+                                deprecationReason: field.deprecationReason,
                             })
                         )
                         .value()
-                )
+                ),
         });
     }
 
@@ -81,9 +81,9 @@ function resolveAndCheckFields<TField extends TypedInputFieldBase<TField>>(
     typeName: string
 ): ReadonlyArray<TField> {
     const fields = resolveThunk(thunk);
-    if (uniqBy(fields, field => field.name).length !== fields.length) {
+    if (uniqBy(fields, (field) => field.name).length !== fields.length) {
         throw new Error(
-            `Input type "${typeName}" has duplicate fields (fields: ${fields.map(f => f.name).join(', ')})`
+            `Input type "${typeName}" has duplicate fields (fields: ${fields.map((f) => f.name).join(', ')})`
         );
     }
     return fields;

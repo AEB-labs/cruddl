@@ -1,4 +1,4 @@
-import { groupBy } from 'lodash';
+import { groupBy } from 'lodash-es';
 import memorize from 'memorize-decorator';
 import { DEFAULT_PERMISSION_PROFILE } from '../../schema/constants';
 import { capitalize, objectValues } from '../../utils/utils';
@@ -19,42 +19,52 @@ export class Namespace implements ModelComponent {
     public readonly parent: Namespace | undefined;
     public readonly permissionProfiles: ReadonlyArray<PermissionProfile>;
 
-    constructor(config: { parent?: Namespace, path: ReadonlyArray<string>, allTypes: ReadonlyArray<Type>, allPermissionProfiles: ReadonlyArray<PermissionProfile> }) {
+    constructor(config: {
+        parent?: Namespace;
+        path: ReadonlyArray<string>;
+        allTypes: ReadonlyArray<Type>;
+        allPermissionProfiles: ReadonlyArray<PermissionProfile>;
+    }) {
         this.allTypes = config.allTypes;
         this.path = config.path;
         this.parent = config.parent;
-        this.permissionProfiles = config.allPermissionProfiles.filter(profile => this.pathEquals(profile.namespacePath));
+        this.permissionProfiles = config.allPermissionProfiles.filter((profile) =>
+            this.pathEquals(profile.namespacePath)
+        );
 
         // find the root entities that do not declare additional path segments
-        this.types = this.allTypes.filter(type => this.pathEquals(type.namespacePath));
-        this.typeMap = new Map(this.types.map((type): [string, Type] => [
-            type.name, type
-        ]));
+        this.types = this.allTypes.filter((type) => this.pathEquals(type.namespacePath));
+        this.typeMap = new Map(this.types.map((type): [string, Type] => [type.name, type]));
 
         // now find all direct additional path segments
         const allPaths = [
-            ...this.allTypes.map(t => t.namespacePath), ...config.allPermissionProfiles.map(p => p.namespacePath)
+            ...this.allTypes.map((t) => t.namespacePath),
+            ...config.allPermissionProfiles.map((p) => p.namespacePath),
         ];
-        const childNamespaceNames = new Set(allPaths
-            .map(path => path[this.path.length]) // extract next segment
-            .filter(name => name != undefined));
+        const childNamespaceNames = new Set(
+            allPaths
+                .map((path) => path[this.path.length]) // extract next segment
+                .filter((name) => name != undefined)
+        );
         const childNamespaceMap = new Map<string, Namespace>();
         for (const childName of childNamespaceNames.values()) {
-            childNamespaceMap.set(childName, new Namespace({
-                parent: this,
-                path: [...this.path, childName],
-                allTypes: this.getTypesOfSegment(childName),
-                allPermissionProfiles: config.allPermissionProfiles
-            }));
+            childNamespaceMap.set(
+                childName,
+                new Namespace({
+                    parent: this,
+                    path: [...this.path, childName],
+                    allTypes: this.getTypesOfSegment(childName),
+                    allPermissionProfiles: config.allPermissionProfiles,
+                })
+            );
         }
         this.childNamespaceMap = childNamespaceMap;
         this.childNamespaces = Array.from(this.childNamespaceMap.values());
 
         // recursively collect child namespaces, their child namespaces, and so on
-        this.descendantNamespaces = ([] as ReadonlyArray<Namespace>).concat(...this.childNamespaces.map(n => [
-            n,
-            ...n.descendantNamespaces
-        ]));
+        this.descendantNamespaces = ([] as ReadonlyArray<Namespace>).concat(
+            ...this.childNamespaces.map((n) => [n, ...n.descendantNamespaces])
+        );
     }
 
     public get dotSeparatedPath(): string {
@@ -62,7 +72,7 @@ export class Namespace implements ModelComponent {
     }
 
     public get pascalCasePath(): string {
-        return this.path.map(segment => capitalize(segment)).join('');
+        return this.path.map((segment) => capitalize(segment)).join('');
     }
 
     public get name(): string | undefined {
@@ -83,12 +93,12 @@ export class Namespace implements ModelComponent {
 
     @memorize()
     get allRootEntityTypes(): ReadonlyArray<RootEntityType> {
-        return this.allTypes.filter(t => t.isRootEntityType) as ReadonlyArray<RootEntityType>;
+        return this.allTypes.filter((t) => t.isRootEntityType) as ReadonlyArray<RootEntityType>;
     }
 
     @memorize()
     get rootEntityTypes(): ReadonlyArray<RootEntityType> {
-        return this.types.filter(t => t.isRootEntityType) as ReadonlyArray<RootEntityType>;
+        return this.types.filter((t) => t.isRootEntityType) as ReadonlyArray<RootEntityType>;
     }
 
     getType(name: string): Type | undefined {
@@ -129,7 +139,7 @@ export class Namespace implements ModelComponent {
     }
 
     private getTypesOfSegment(name: string) {
-        return this.allTypes.filter(type => this.extractNextSegment(type) === name);
+        return this.allTypes.filter((type) => this.extractNextSegment(type) === name);
     }
 
     get defaultPermissionProfile(): PermissionProfile | undefined {
@@ -199,10 +209,14 @@ export class Namespace implements ModelComponent {
     }
 
     validate(context: ValidationContext) {
-        const duplicateProfiles = objectValues(groupBy(this.permissionProfiles, type => type.name)).filter(types => types.length > 1);
+        const duplicateProfiles = objectValues(groupBy(this.permissionProfiles, (type) => type.name)).filter(
+            (types) => types.length > 1
+        );
         for (const profiles of duplicateProfiles) {
             for (const profile of profiles) {
-                context.addMessage(ValidationMessage.error(`Duplicate permission profile name: "${profile.name}".`, profile.loc));
+                context.addMessage(
+                    ValidationMessage.error(`Duplicate permission profile name: "${profile.name}".`, profile.loc)
+                );
             }
         }
         // shadowing
@@ -211,7 +225,16 @@ export class Namespace implements ModelComponent {
                 if (profile.name !== DEFAULT_PERMISSION_PROFILE) {
                     const shadowed = this.parent.getPermissionProfile(profile.name);
                     if (shadowed) {
-                        context.addMessage(ValidationMessage.warn(`Permission profile: "${profile.name}" shadows the profile in namespace "${shadowed.namespacePath.join('.')}" with the same name.`, profile.loc));
+                        context.addMessage(
+                            ValidationMessage.warn(
+                                `Permission profile: "${
+                                    profile.name
+                                }" shadows the profile in namespace "${shadowed.namespacePath.join(
+                                    '.'
+                                )}" with the same name.`,
+                                profile.loc
+                            )
+                        );
                     }
                 }
             }

@@ -6,8 +6,8 @@ import {
     LocalDateTime,
     ResolverStyle,
     ZonedDateTime,
-    ZoneOffset
-} from 'js-joda';
+    ZoneOffset,
+} from '@js-joda/core';
 
 /**
  * The representation of an OffsetDateTime in the database
@@ -31,7 +31,7 @@ export const GraphQLOffsetDateTime = new GraphQLScalarType({
             throw new Error('OffsetDateTime must be specified as String value');
         }
         return parseOffsetDateTime(ast.value);
-    }
+    },
 });
 
 export function serializeForStorage(value: ZonedDateTime): StoredOffsetDateTime {
@@ -39,7 +39,7 @@ export function serializeForStorage(value: ZonedDateTime): StoredOffsetDateTime 
     return {
         // use the constants here so typescript complains if the interface and constants are inconsistent
         [TIMESTAMP_PROPERTY]: value.toInstant().toString(),
-        [OFFSET_PROPERTY]: offset === 'Z' ? '+00:00' : offset
+        [OFFSET_PROPERTY]: offset === 'Z' ? '+00:00' : offset,
     };
 }
 
@@ -56,7 +56,7 @@ function parseOffsetDateTime(value: string): ZonedDateTime {
     let zonedDateTime: ZonedDateTime;
     try {
         zonedDateTime = ZonedDateTime.parse(value);
-    } catch (e) {
+    } catch (e: any) {
         if (e.name === 'DateTimeParseException') {
             // see if no offset is specified for a better error message
             if (tryParseLocalDateTime(value) !== undefined) {
@@ -90,7 +90,7 @@ function printOffsetDateTime(value: ZonedDateTime | StoredOffsetDateTime) {
 function tryParseLocalDateTime(str: string): LocalDateTime | undefined {
     try {
         return LocalDateTime.parse(str);
-    } catch (e) {
+    } catch (e: any) {
         if (e.name === 'DateTimeParseException') {
             return undefined;
         }
