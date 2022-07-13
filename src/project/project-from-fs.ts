@@ -1,14 +1,8 @@
+import { readdir, readFile, stat } from 'fs/promises';
+import { resolve } from 'path';
+import { flatten } from '../utils/utils';
 import { Project, ProjectOptions } from './project';
 import { ProjectSource } from './source';
-import * as fs from 'fs';
-import * as path from 'path';
-import { PathLike, Stats } from 'fs';
-import * as util from 'util';
-import { flatten } from '../utils/utils';
-
-const readdir = util.promisify<PathLike, string[]>(fs.readdir);
-const stat = util.promisify<PathLike, Stats>(fs.stat);
-const readFile = util.promisify<PathLike, string, string>(fs.readFile);
 
 /**
  * Creates a Project by loading source files from a directory
@@ -33,7 +27,7 @@ async function loadSourcesFromDir(
 
     async function processFile(fileName: string): Promise<ProjectSource[]> {
         const sourcePath = concatSourcePaths(parentSourcePath, fileName);
-        const filePath = path.resolve(dirPath, fileName);
+        const filePath = resolve(dirPath, fileName);
         const stats = await stat(filePath);
         if (stats.isDirectory()) {
             return await loadSourcesFromDir(filePath, sourcePath);

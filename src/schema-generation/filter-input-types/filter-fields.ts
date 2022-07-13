@@ -1,5 +1,5 @@
 import { getNamedType, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
-import { ZonedDateTime } from 'js-joda';
+import { ZonedDateTime } from '@js-joda/core';
 import { EnumType, Field, ScalarType, Type, TypeKind } from '../../model';
 import {
     BinaryOperationQueryNode,

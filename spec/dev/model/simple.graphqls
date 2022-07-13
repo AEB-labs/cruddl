@@ -10,11 +10,7 @@ type Hero
         indices: [{ fields: "missions.date" }]
     ) {
     "The hero's screen name"
-    name: String
-        @unique
-        @flexSearch(caseSensitive: false)
-        @flexSearchFulltext(includeInSearch: true)
-        @accessField
+    name: String @unique @flexSearch @flexSearchFulltext(includeInSearch: true) @accessField
     knownName: I18nString @flexSearch @flexSearchFulltext
     age: Int @defaultValue(value: 42) @flexSearch
     nickNames: [String] @flexSearch(caseSensitive: false)

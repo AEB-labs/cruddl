@@ -1,5 +1,5 @@
 import { DocumentNode, GraphQLSchema, parse, validate } from 'graphql';
-import * as path from 'path';
+import { resolve } from 'path';
 import { applyAuthorizationToQueryTree } from '../../src/authorization/execution';
 import { getAQLQuery } from '../../src/database/arangodb/aql-generator';
 import { DistilledOperation, distillQuery } from '../../src/graphql/query-distiller';
@@ -165,7 +165,7 @@ function testQueryPipeline(params: {
         initialCount: params.aql ? 10000 : 100000,
         async beforeAll() {
             const res = await createTestProject(
-                path.resolve(__dirname, '../regression/logistics/model'),
+                resolve(__dirname, '../regression/logistics/model'),
             );
             schema = res.schema;
             model = res.project.getModel();

@@ -1,6 +1,6 @@
 import { expect } from 'chai';
-import * as fs from 'fs';
-import * as path from 'path';
+import { readdirSync, statSync } from 'fs';
+import { resolve } from 'path';
 import { likePatternToRegExp } from '../../src/database/like-helpers';
 import { RegressionSuite, RegressionSuiteOptions } from './regression-suite';
 
@@ -10,9 +10,8 @@ const regressionRootDir = __dirname;
 const only: string[] = [];
 
 describe('regression tests', async () => {
-    const dirs = fs
-        .readdirSync(regressionRootDir)
-        .filter((name) => fs.statSync(path.resolve(regressionRootDir, name)).isDirectory())
+    const dirs = readdirSync(regressionRootDir)
+        .filter((name) => statSync(resolve(regressionRootDir, name)).isDirectory())
         .filter((dir) => only.length === 0 || only.includes(dir));
 
     const databases: ('in-memory' | 'arangodb')[] = process.argv.includes('--db=in-memory')
@@ -32,7 +31,7 @@ describe('regression tests', async () => {
     for (const database of databases) {
         describe(`for ${database}`, async () => {
             for (const suiteName of dirs) {
-                const suitePath = path.resolve(regressionRootDir, suiteName);
+                const suitePath = resolve(regressionRootDir, suiteName);
                 // run npm test -- --save-actual-as-expected to replace the .result file with the actual contents
                 // (first npm test run still marked as failure, subsequent runs will pass)
                 const options: RegressionSuiteOptions = {

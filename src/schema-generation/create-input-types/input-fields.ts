@@ -1,5 +1,5 @@
 import { GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
-import { ZonedDateTime } from 'js-joda';
+import { ZonedDateTime } from '@js-joda/core';
 import { Field } from '../../model';
 import { GraphQLOffsetDateTime, serializeForStorage } from '../../schema/scalars/offset-date-time';
 import { AnyValue, PlainObject } from '../../utils/utils';

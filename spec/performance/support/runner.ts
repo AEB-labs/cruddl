@@ -56,7 +56,7 @@ async function runAsync(factories: BenchmarkFactories): Promise<BenchmarkSuiteRe
                     result.cycles
                 } cycles`,
             );
-        } catch (err) {
+        } catch (err: any) {
             console.error(err.message, err.stack);
             erroredCount++;
         }

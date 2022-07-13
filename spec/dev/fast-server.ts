@@ -65,7 +65,7 @@ export function createFastApp(project: Project, databaseAdapter: DatabaseAdapter
         } catch (e) {
             res.end(
                 JSON.stringify({
-                    errors: [formatError(new GraphQLError(e.stack))],
+                    errors: [formatError(new GraphQLError((e as any).stack))],
                 }),
             );
         }

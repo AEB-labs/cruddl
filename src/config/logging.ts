@@ -7,7 +7,7 @@ export interface LoggerProvider {
 }
 
 export interface Logger {
-    level: string;
+    level: unknown;
 
     isLevelEnabled(level?: string): boolean;
 

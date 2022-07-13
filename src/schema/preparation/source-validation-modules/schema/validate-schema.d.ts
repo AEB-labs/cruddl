@@ -1,4 +1,4 @@
-import * as ajv from 'ajv';
+import ajv from 'ajv';
 
 declare const validate: ajv.ValidateFunction;
 

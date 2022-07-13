@@ -1,4 +1,4 @@
-import { GraphQLError, GraphQLSchema } from 'graphql';
+import { GraphQLSchema } from 'graphql';
 import { OperationResolver } from '../execution/operation-resolver';
 import {
     addOperationBasedResolvers,
@@ -38,7 +38,7 @@ export class SchemaGenerator {
                     } else {
                         return res.data;
                     }
-                } catch (e) {
+                } catch (e: any) {
                     error = e;
                 }
 

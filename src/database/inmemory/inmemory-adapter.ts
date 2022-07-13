@@ -9,7 +9,7 @@ import { likePatternToRegExp } from '../like-helpers';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './inmemory-basics';
 import { JSCompoundQuery, JSExecutableQuery } from './js';
 import { getJSQuery } from './js-generator';
-import uuid = require('uuid');
+import { v4 as uuid } from 'uuid';
 
 export class InMemoryDB {
     collections: { [name: string]: any[] } = {};

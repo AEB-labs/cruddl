@@ -1,4 +1,3 @@
-import { emit } from 'cluster';
 import { AccessOperation, AuthContext } from '../../authorization/auth-basics';
 import { WILDCARD_CHARACTER } from '../../schema/constants';
 import { escapeRegExp } from '../../utils/utils';

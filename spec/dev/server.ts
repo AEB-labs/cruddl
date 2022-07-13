@@ -2,7 +2,7 @@ import { ApolloServer } from 'apollo-server';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import express from 'express';
-import * as path from 'path';
+import { resolve } from 'path';
 import { ArangoDBAdapter, Project } from '../..';
 import { globalContext } from '../../src/config/global';
 import { InMemoryAdapter } from '../../src/database/inmemory';
@@ -36,7 +36,7 @@ export async function start() {
         );
     }
 
-    const project = await loadProjectFromDir(path.resolve(__dirname, './model'), {
+    const project = await loadProjectFromDir(resolve(__dirname, './model'), {
         profileConsumer: (profile) => {
             logger.info(
                 `${profile.operation.operation} ${

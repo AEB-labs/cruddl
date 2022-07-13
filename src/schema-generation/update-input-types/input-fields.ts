@@ -1,5 +1,5 @@
 import { GraphQLID, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
-import { ZonedDateTime } from 'js-joda';
+import { ZonedDateTime } from '@js-joda/core';
 import { CalcMutationsOperator, Field } from '../../model';
 import {
     BinaryOperationQueryNode,

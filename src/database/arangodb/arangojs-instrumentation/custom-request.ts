@@ -184,7 +184,7 @@ export function createRequest(baseUrl: string, agentOptions: any, agent: any): R
                     agentOptions.before(req);
                 }
                 req.end();
-            } catch (e) {
+            } catch (e: any) {
                 if (called) return;
                 called = true;
                 setTimeout(() => {

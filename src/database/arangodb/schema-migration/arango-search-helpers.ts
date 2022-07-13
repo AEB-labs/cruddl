@@ -7,7 +7,7 @@ import {
     ArangoSearchViewPropertiesOptions,
 } from 'arangojs/view';
 import deepEqual from 'deep-equal';
-import * as _ from 'lodash';
+import { isEqual } from 'lodash';
 import { Field, Model, RootEntityType } from '../../../model';
 import { IDENTITY_ANALYZER, NORM_CI_ANALYZER } from '../../../model/implementation/flex-search';
 import { OrderDirection } from '../../../model/implementation/order';
@@ -231,9 +231,9 @@ export function isEqualProperties(
     viewProperties: ArangoSearchViewProperties,
 ): boolean {
     return (
-        _.isEqual(definitionProperties.links, viewProperties.links) &&
-        _.isEqual(definitionProperties.primarySort, viewProperties.primarySort) &&
-        _.isEqual(
+        isEqual(definitionProperties.links, viewProperties.links) &&
+        isEqual(definitionProperties.primarySort, viewProperties.primarySort) &&
+        isEqual(
             definitionProperties.commitIntervalMsec,
             (viewProperties as any).commitIntervalMsec /* somehow missing in types */,
         )
@@ -244,7 +244,7 @@ function isRecreateRequired(
     definitionProperties: ArangoSearchViewPropertiesOptions,
     viewProperties: ArangoSearchViewProperties,
 ): boolean {
-    return !_.isEqual(definitionProperties.primarySort, viewProperties.primarySort);
+    return !isEqual(definitionProperties.primarySort, viewProperties.primarySort);
 }
 
 export async function calculateRequiredArangoSearchViewUpdateOperations(

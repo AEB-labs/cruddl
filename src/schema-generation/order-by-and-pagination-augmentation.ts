@@ -302,7 +302,7 @@ export class OrderByAndPaginationAugmentation {
                     },
                 );
             }
-        } catch (e) {
+        } catch (e: any) {
             return new RuntimeErrorQueryNode(
                 `Invalid cursor ${JSON.stringify(afterArg)} supplied to "after": ${e.message}`,
                 { code: INVALID_CURSOR_ERROR },
@@ -390,7 +390,7 @@ export class OrderByAndPaginationAugmentation {
                     },
                 );
             }
-        } catch (e) {
+        } catch (e: any) {
             return new RuntimeErrorQueryNode(
                 `Invalid cursor ${JSON.stringify(afterArg)} supplied to "after": ${e.message}`,
                 { code: INVALID_CURSOR_ERROR },

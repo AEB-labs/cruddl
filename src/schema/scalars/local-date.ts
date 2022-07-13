@@ -1,5 +1,5 @@
 import { GraphQLScalarType } from 'graphql';
-import { LocalDate } from 'js-joda';
+import { LocalDate } from '@js-joda/core';
 
 function parseLocalDate(value: any): LocalDate {
     if (typeof value !== 'string') {
@@ -7,7 +7,7 @@ function parseLocalDate(value: any): LocalDate {
     }
     try {
         return LocalDate.parse(value);
-    } catch (e) {
+    } catch (e: any) {
         if (e.name === 'DateTimeParseException') {
             throw new Error(`Invalid ISO 8601 LocalDate: ${value}`);
         }
