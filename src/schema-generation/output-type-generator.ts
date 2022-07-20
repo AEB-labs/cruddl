@@ -178,7 +178,7 @@ export class OutputTypeGenerator {
         return {
             name: REVISION_FIELD,
             description: `An identifier that is updated automatically on each update of this root entity (but not on relation changes)`,
-            type: GraphQLNonNull(GraphQLID),
+            type: new GraphQLNonNull(GraphQLID),
             resolve: source => this.getRevisionNode(source)
         };
     }
