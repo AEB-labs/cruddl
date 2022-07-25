@@ -56,7 +56,7 @@
         "graphql": "^15.5.1",
         "graphql-request": "^3.4.0",
         "husky": "^3.0.9",
-        "log4js": "^5.3.0",
+        "log4js": "^6.4.0",
         "mocha": "^7.2.0",
         "nyc": "^14.1.1",
         "prettier": "^2.7.1",
