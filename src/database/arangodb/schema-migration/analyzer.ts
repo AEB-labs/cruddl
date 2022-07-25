@@ -7,11 +7,12 @@ import { Model, RootEntityType } from '../../../model';
 import { billingCollectionName, getCollectionNameForRelation, getCollectionNameForRootEntity } from '../arango-basics';
 import { ArangoDBConfig, getArangoDBLogger, initDatabase } from '../config';
 import {
+    areAnalyzersEqual,
     calculateRequiredArangoSearchViewCreateOperations,
     calculateRequiredArangoSearchViewDropOperations,
     calculateRequiredArangoSearchViewUpdateOperations,
     getFlexSearchViewNameForRootEntity,
-    getRequiredViewsFromModel
+    getRequiredViewsFromModel,
 } from './arango-search-helpers';
 import { calculateRequiredIndexOperations, getRequiredIndicesFromModel, IndexDefinition } from './index-helpers';
 import {
@@ -22,7 +23,7 @@ import {
     CreateIndexMigration,
     DropIndexMigration,
     SchemaMigration,
-    UpdateArangoSearchAnalyzerMigration
+    UpdateArangoSearchAnalyzerMigration,
 } from './migrations';
 
 export class SchemaAnalyzer {
@@ -39,16 +40,16 @@ export class SchemaAnalyzer {
             ...(await this.getDocumentCollectionMigrations(model)),
             ...(await this.getEdgeCollectionMigrations(model)),
             ...(await this.getIndexMigrations(model)),
-            ...(await this.getArangoSearchMigrations(model))
+            ...(await this.getArangoSearchMigrations(model)),
         ];
     }
 
     async getDocumentCollectionMigrations(model: Model): Promise<ReadonlyArray<CreateDocumentCollectionMigration>> {
         // Get existing collections in ArangoDB
         const existingCollections = (await this.db.listCollections()).filter(
-            coll => coll.type === CollectionType.DOCUMENT_COLLECTION
+            (coll) => coll.type === CollectionType.DOCUMENT_COLLECTION
         );
-        const existingCollectionNames = new Set(existingCollections.map(coll => coll.name)); // typing for name missing
+        const existingCollectionNames = new Set(existingCollections.map((coll) => coll.name)); // typing for name missing
 
         const migrations: CreateDocumentCollectionMigration[] = [];
 
@@ -62,7 +63,7 @@ export class SchemaAnalyzer {
 
         if (
             !existingCollectionNames.has(billingCollectionName) &&
-            !migrations.some(value => value.collectionName === billingCollectionName)
+            !migrations.some((value) => value.collectionName === billingCollectionName)
         ) {
             migrations.push(new CreateDocumentCollectionMigration(billingCollectionName));
         }
@@ -73,9 +74,9 @@ export class SchemaAnalyzer {
     async getEdgeCollectionMigrations(model: Model): Promise<ReadonlyArray<CreateEdgeCollectionMigration>> {
         // Get existing collections in ArangoDB
         const existingCollections = (await this.db.listCollections()).filter(
-            coll => coll.type === CollectionType.EDGE_COLLECTION
+            (coll) => coll.type === CollectionType.EDGE_COLLECTION
         );
-        const existingCollectionNames = new Set(existingCollections.map(coll => coll.name));
+        const existingCollectionNames = new Set(existingCollections.map((coll) => coll.name));
 
         const migrations: CreateEdgeCollectionMigration[] = [];
 
@@ -93,12 +94,12 @@ export class SchemaAnalyzer {
     async getIndexMigrations(model: Model): Promise<ReadonlyArray<CreateIndexMigration | DropIndexMigration>> {
         // update indices
         const requiredIndices = getRequiredIndicesFromModel(model);
-        const existingIndicesPromises = model.rootEntityTypes.map(rootEntityType =>
+        const existingIndicesPromises = model.rootEntityTypes.map((rootEntityType) =>
             this.getPersistentCollectionIndices(rootEntityType)
         );
         let existingIndices: IndexDefinition[] = [];
-        await Promise.all(existingIndicesPromises).then(promiseResults =>
-            promiseResults.forEach(indices => indices.forEach(index => existingIndices.push(index)))
+        await Promise.all(existingIndicesPromises).then((promiseResults) =>
+            promiseResults.forEach((indices) => indices.forEach((index) => existingIndices.push(index)))
         );
         const { indicesToDelete, indicesToCreate } = calculateRequiredIndexOperations(
             existingIndices,
@@ -124,11 +125,12 @@ export class SchemaAnalyzer {
 
         return [
             ...indicesToCreate.map(
-                index => new CreateIndexMigration({ index, collectionSize: collectionSizes.get(index.collectionName) })
+                (index) =>
+                    new CreateIndexMigration({ index, collectionSize: collectionSizes.get(index.collectionName) })
             ),
             ...indicesToDelete.map(
-                index => new DropIndexMigration({ index, collectionSize: collectionSizes.get(index.collectionName) })
-            )
+                (index) => new DropIndexMigration({ index, collectionSize: collectionSizes.get(index.collectionName) })
+            ),
         ];
     }
 
@@ -140,14 +142,14 @@ export class SchemaAnalyzer {
         }
 
         const result = await this.db.collection(collectionName).indexes();
-        return result.flatMap(index =>
+        return result.flatMap((index) =>
             index.type === 'persistent'
                 ? [
                       {
                           ...index,
                           rootEntity: rootEntityType,
-                          collectionName
-                      }
+                          collectionName,
+                      },
                   ]
                 : []
         );
@@ -166,7 +168,7 @@ export class SchemaAnalyzer {
                 const existingAnalyzer = await analyzer.get();
                 if (
                     existingAnalyzer.type !== requiredAnalyzer.options.type ||
-                    !deepEqual(existingAnalyzer.properties, requiredAnalyzer.options.properties)
+                    !areAnalyzersEqual(existingAnalyzer, requiredAnalyzer.options)
                 ) {
                     analyzerUpdates.push(new UpdateArangoSearchAnalyzerMigration(requiredAnalyzer));
                 }
@@ -179,10 +181,10 @@ export class SchemaAnalyzer {
         const requiredViews = getRequiredViewsFromModel(model);
         // the currently existing views
         const views = (await this.db.listViews())
-            .map(value => this.db.view(value.name))
-            .filter(view =>
+            .map((value) => this.db.view(value.name))
+            .filter((view) =>
                 model.rootEntityTypes.some(
-                    rootEntityType => view.name === getFlexSearchViewNameForRootEntity(rootEntityType)
+                    (rootEntityType) => view.name === getFlexSearchViewNameForRootEntity(rootEntityType)
                 )
             );
 
@@ -213,10 +215,10 @@ export class SchemaAnalyzer {
                     properties: {
                         locale: 'en.utf-8',
                         case: 'lower',
-                        accent: false
-                    }
-                }
-            }
+                        accent: false,
+                    },
+                },
+            },
         ];
     }
 }
