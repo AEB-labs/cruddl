@@ -16,3 +16,4 @@ export { TypeKind } from './src/model/config';
 export { NoOperationIdentifierError } from './src/graphql/operation-based-resolvers';
 export { TransactionError } from './src/execution/transaction-error';
 export { ConflictRetriesExhaustedError } from './src/execution/runtime-errors';
+export { AuthContext } from './src/authorization/auth-basics';
