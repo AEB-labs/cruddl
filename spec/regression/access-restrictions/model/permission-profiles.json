@@ -82,7 +82,7 @@
                     "restrictions": [
                         {
                             "field": "customerName",
-                            "customClaim": "customerName"
+                            "claim": "customerName"
                         }
                     ]
                 }

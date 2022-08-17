@@ -68,7 +68,7 @@ export class RegressionSuite {
                 return e;
             },
             getExecutionOptions: ({ context }) => ({
-                authContext: { authRoles: context.authRoles, customClaims: context.customClaims },
+                authContext: { authRoles: context.authRoles, claims: context.claims },
                 flexSearchMaxFilterableAndSortableAmount: context.flexSearchMaxFilterableAndSortableAmount,
             }),
             modelOptions: {
