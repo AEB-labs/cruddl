@@ -1545,6 +1545,18 @@ export class Field implements ModelComponent {
             );
             return;
         }
+        if (
+            this.input.isFlexSearchIndexCaseSensitive === false &&
+            (this.isAccessField || this.name === ACCESS_GROUP_FIELD)
+        ) {
+            context.addMessage(
+                ValidationMessage.error(
+                    `"${FLEX_SEARCH_CASE_SENSITIVE_ARGUMENT}" cannot be set to false on accessGroup and @accessField-annotated fields (and it is always implicitly true)`,
+                    this.input.flexSearchIndexCaseSensitiveASTNode
+                )
+            );
+            return;
+        }
     }
 
     private validateAccessField(context: ValidationContext) {
@@ -1584,6 +1596,12 @@ export class Field implements ModelComponent {
     }
 
     get isFlexSearchIndexCaseSensitive(): boolean {
+        // for security reasons, always treat access-relevant as case-sensitive
+        // (flexsearch is also used to apply permission restrictions)
+        if (this.isAccessField || this.name === ACCESS_GROUP_FIELD) {
+            return true;
+        }
+
         return this.input.isFlexSearchIndexCaseSensitive ?? false;
     }
 

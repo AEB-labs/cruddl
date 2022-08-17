@@ -1,0 +1,17 @@
+{
+    "flexAuth": {
+        "data": {
+            "flexSearchFiles": [
+                {
+                    "name": "Customer1"
+                },
+                {
+                    "name": "Customer2"
+                },
+                {
+                    "name": "public customer"
+                }
+            ]
+        }
+    }
+}
