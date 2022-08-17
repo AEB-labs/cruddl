@@ -706,6 +706,73 @@ var validate = (function () {
                     valid0 = prevValid0 = true;
                     passingSchemas0 = 1;
                 }
+                var errs_1 = errors;
+                var errs_2 = errors;
+                if (data && typeof data === 'object' && !Array.isArray(data)) {
+                    var errs__2 = errors;
+                    var valid3 = true;
+                    var data1 = data.customClaim;
+                    if (data1 === undefined) {
+                        valid3 = false;
+                        var err = {
+                            keyword: 'required',
+                            dataPath: (dataPath || '') + '',
+                            schemaPath: '#/definitions/PermissionRestrictionWithCustomClaim/required',
+                            params: {
+                                missingProperty: 'customClaim',
+                            },
+                            message: "should have required property 'customClaim'",
+                        };
+                        if (vErrors === null) vErrors = [err];
+                        else vErrors.push(err);
+                        errors++;
+                    } else {
+                        var errs_3 = errors;
+                        if (typeof data1 === 'string') {
+                            if (ucs2length(data1) < 1) {
+                                var err = {
+                                    keyword: 'minLength',
+                                    dataPath: (dataPath || '') + '.customClaim',
+                                    schemaPath:
+                                        '#/definitions/PermissionRestrictionWithCustomClaim/properties/customClaim/minLength',
+                                    params: {
+                                        limit: 1,
+                                    },
+                                    message: 'should NOT be shorter than 1 characters',
+                                };
+                                if (vErrors === null) vErrors = [err];
+                                else vErrors.push(err);
+                                errors++;
+                            }
+                        } else {
+                            var err = {
+                                keyword: 'type',
+                                dataPath: (dataPath || '') + '.customClaim',
+                                schemaPath:
+                                    '#/definitions/PermissionRestrictionWithCustomClaim/properties/customClaim/type',
+                                params: {
+                                    type: 'string',
+                                },
+                                message: 'should be string',
+                            };
+                            if (vErrors === null) vErrors = [err];
+                            else vErrors.push(err);
+                            errors++;
+                        }
+                        var valid3 = errors === errs_3;
+                    }
+                }
+                var valid2 = errors === errs_2;
+                var valid1 = errors === errs_1;
+                if (valid1 && prevValid0) {
+                    valid0 = false;
+                    passingSchemas0 = [passingSchemas0, 2];
+                } else {
+                    if (valid1) {
+                        valid0 = prevValid0 = true;
+                        passingSchemas0 = 2;
+                    }
+                }
             }
             if (!valid0) {
                 var err = {
@@ -746,6 +813,9 @@ var validate = (function () {
             {
                 $ref: '#/definitions/PermissionRestrictionWithValueTemplate',
             },
+            {
+                $ref: '#/definitions/PermissionRestrictionWithCustomClaim',
+            },
         ],
     };
     refVal3.errors = null;
@@ -766,7 +836,17 @@ var validate = (function () {
         },
     };
     refVal[5] = refVal5;
-    var refVal6 = (function () {
+    var refVal6 = {
+        required: ['customClaim'],
+        properties: {
+            customClaim: {
+                type: 'string',
+                minLength: 1,
+            },
+        },
+    };
+    refVal[6] = refVal6;
+    var refVal7 = (function () {
         var pattern0 = new RegExp('^[a-zA-Z0-9]+$');
         var pattern1 = new RegExp('.+');
         var pattern2 = new RegExp('^[a-zA-Z0-9_-]+$');
@@ -808,7 +888,7 @@ var validate = (function () {
                             if (pattern3.test(key1)) {
                                 var errs_2 = errors;
                                 if (
-                                    !refVal7(
+                                    !refVal8(
                                         data1[key1],
                                         (dataPath || '') + ".types['" + key1 + "']",
                                         data1,
@@ -816,8 +896,8 @@ var validate = (function () {
                                         rootData
                                     )
                                 ) {
-                                    if (vErrors === null) vErrors = refVal7.errors;
-                                    else vErrors = vErrors.concat(refVal7.errors);
+                                    if (vErrors === null) vErrors = refVal8.errors;
+                                    else vErrors = vErrors.concat(refVal8.errors);
                                     errors = vErrors.length;
                                 }
                                 var valid2 = errors === errs_2;
@@ -948,7 +1028,7 @@ var validate = (function () {
             return errors === 0;
         };
     })();
-    refVal6.schema = {
+    refVal7.schema = {
         type: 'object',
         additionalProperties: false,
         properties: {
@@ -975,9 +1055,9 @@ var validate = (function () {
             },
         },
     };
-    refVal6.errors = null;
-    refVal[6] = refVal6;
-    var refVal7 = (function () {
+    refVal7.errors = null;
+    refVal[7] = refVal7;
+    var refVal8 = (function () {
         var pattern0 = new RegExp('^[a-zA-Z0-9]+$');
         var pattern1 = new RegExp('.+');
         var pattern2 = new RegExp('^[a-zA-Z0-9_-]+$');
@@ -1296,7 +1376,7 @@ var validate = (function () {
             return errors === 0;
         };
     })();
-    refVal7.schema = {
+    refVal8.schema = {
         type: 'object',
         additionalProperties: false,
         properties: {
@@ -1339,18 +1419,7 @@ var validate = (function () {
             },
         },
     };
-    refVal7.errors = null;
-    refVal[7] = refVal7;
-    var refVal8 = {
-        properties: {
-            label: {
-                type: 'string',
-            },
-            hint: {
-                type: 'string',
-            },
-        },
-    };
+    refVal8.errors = null;
     refVal[8] = refVal8;
     var refVal9 = {
         properties: {
@@ -1363,6 +1432,17 @@ var validate = (function () {
         },
     };
     refVal[9] = refVal9;
+    var refVal10 = {
+        properties: {
+            label: {
+                type: 'string',
+            },
+            hint: {
+                type: 'string',
+            },
+        },
+    };
+    refVal[10] = refVal10;
     return function validate(data, dataPath, parentData, parentDataProperty, rootData) {
         'use strict';
         var vErrors = null;
@@ -1496,10 +1576,10 @@ var validate = (function () {
                         if (pattern2.test(key1)) {
                             var errs_2 = errors;
                             if (
-                                !refVal6(data1[key1], (dataPath || '') + ".i18n['" + key1 + "']", data1, key1, rootData)
+                                !refVal7(data1[key1], (dataPath || '') + ".i18n['" + key1 + "']", data1, key1, rootData)
                             ) {
-                                if (vErrors === null) vErrors = refVal6.errors;
-                                else vErrors = vErrors.concat(refVal6.errors);
+                                if (vErrors === null) vErrors = refVal7.errors;
+                                else vErrors = vErrors.concat(refVal7.errors);
                                 errors = vErrors.length;
                             }
                             var valid2 = errors === errs_2;
@@ -2385,6 +2465,9 @@ validate.schema = {
                 {
                     $ref: '#/definitions/PermissionRestrictionWithValueTemplate',
                 },
+                {
+                    $ref: '#/definitions/PermissionRestrictionWithCustomClaim',
+                },
             ],
         },
         PermissionRestrictionWithValue: {
@@ -2398,6 +2481,15 @@ validate.schema = {
             properties: {
                 valueTemplate: {
                     type: 'string',
+                },
+            },
+        },
+        PermissionRestrictionWithCustomClaim: {
+            required: ['customClaim'],
+            properties: {
+                customClaim: {
+                    type: 'string',
+                    minLength: 1,
                 },
             },
         },

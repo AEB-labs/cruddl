@@ -47,7 +47,7 @@ export async function start() {
         getOperationIdentifier: ({ context }) => context as object, // each operation is executed with an unique context object
         getExecutionOptions: ({ context }: { context: any }) => {
             return {
-                authRoles: ['allusers'],
+                authContext: { authRoles: ['allusers'] },
                 recordTimings: true,
                 recordPlan: true,
                 mutationMode: 'normal',

@@ -61,6 +61,12 @@ export interface PermissionRestrictionConfig {
      */
     readonly valueTemplate?: string;
 
+    /**
+     * The name of a custom claim on the user's token that needs to match exactly or which needs to be an array where
+     * one item matches the field exactly
+     */
+    readonly customClaim?: string;
+
     readonly loc?: MessageLocation;
     readonly fieldValueLoc?: MessageLocation;
 }

@@ -6,7 +6,7 @@ import { AccessOperation, AuthContext } from '../authorization/auth-basics';
 import { PermissionResult } from '../authorization/permission-descriptors';
 import {
     getPermissionDescriptorOfField,
-    getPermissionDescriptorOfRootEntityType
+    getPermissionDescriptorOfRootEntityType,
 } from '../authorization/permission-descriptors-in-model';
 import { ExecutionOptionsCallbackArgs } from '../execution/execution-options';
 import { EnumValue, Field, RootEntityType, Type, TypeKind } from '../model';
@@ -539,7 +539,7 @@ export function getMetaSchema(project: Project): GraphQLSchema {
             namespaces: () => model.namespaces,
             rootNamespace: () => model.rootNamespace,
             namespace: (_, { path }) => model.getNamespaceByPath(path),
-            billingEntityTypes: () => model.billingEntityTypes
+            billingEntityTypes: () => model.billingEntityTypes,
         },
         // to be used within the subscription type, so we don't use the "Query" type there in case we want to add something there
         Schema: {
@@ -560,42 +560,42 @@ export function getMetaSchema(project: Project): GraphQLSchema {
             namespaces: () => model.namespaces,
             rootNamespace: () => model.rootNamespace,
             namespace: (_, { path }) => model.getNamespaceByPath(path),
-            billingEntityTypes: () => model.billingEntityTypes
+            billingEntityTypes: () => model.billingEntityTypes,
         },
         Subscription: {
             schema: {
-                resolve: a => a,
+                resolve: (a) => a,
                 subscribe: async function* subscribeToSchema() {
                     yield {};
-                    await new Promise(resolve => {}); /* never resolve */
-                }
-            }
+                    await new Promise((resolve) => {}); /* never resolve */
+                },
+            },
         },
         Type: {
-            __resolveType: (type: unknown) => resolveType(type as Type)
+            __resolveType: (type: unknown) => resolveType(type as Type),
         },
         ObjectType: {
-            __resolveType: (type: unknown) => resolveType(type as Type)
+            __resolveType: (type: unknown) => resolveType(type as Type),
         },
         RootEntityType: {
             localization: localizeType,
             flexSearchPrimarySort: getFlexSearchPrimarySort,
-            permissions: getRootEntityTypePermissions
+            permissions: getRootEntityTypePermissions,
         },
         ChildEntityType: {
-            localization: localizeType
+            localization: localizeType,
         },
         EntityExtensionType: {
-            localization: localizeType
+            localization: localizeType,
         },
         ValueObjectType: {
-            localization: localizeType
+            localization: localizeType,
         },
         ScalarType: {
-            localization: localizeType
+            localization: localizeType,
         },
         EnumType: {
-            localization: localizeType
+            localization: localizeType,
         },
         Field: {
             localization: localizeField,
@@ -604,16 +604,16 @@ export function getMetaSchema(project: Project): GraphQLSchema {
                     return undefined;
                 }
                 return {
-                    path: field.collectPath.segments.map(s => s.field.name),
-                    fieldsInPath: field.collectPath.segments.map(s => s.field),
-                    aggregationOperator: field.aggregationOperator
+                    path: field.collectPath.segments.map((s) => s.field.name),
+                    fieldsInPath: field.collectPath.segments.map((s) => s.field),
+                    aggregationOperator: field.aggregationOperator,
                 };
             },
-            permissions: getFieldPermissions
+            permissions: getFieldPermissions,
         },
         EnumValue: {
-            localization: localizeEnumValue
-        }
+            localization: localizeEnumValue,
+        },
     };
 
     function getResolutionOrder(
@@ -625,7 +625,7 @@ export function getMetaSchema(project: Project): GraphQLSchema {
             resolutionOrder = [I18N_LOCALE, I18N_GENERIC];
         }
         // replace _LOCALE
-        return compact(flatMap(resolutionOrder, l => (l === I18N_LOCALE ? getLocaleFromContext(contextArgs) : [l])));
+        return compact(flatMap(resolutionOrder, (l) => (l === I18N_LOCALE ? getLocaleFromContext(contextArgs) : [l])));
     }
 
     function localizeType(
@@ -666,10 +666,10 @@ export function getMetaSchema(project: Project): GraphQLSchema {
 
     function getFlexSearchPrimarySort(type: {}): { field: string; order: 'ASC' | 'DESC' }[] {
         const rootEntityType = type as RootEntityType;
-        return rootEntityType.flexSearchPrimarySort.map(value => {
+        return rootEntityType.flexSearchPrimarySort.map((value) => {
             return {
                 field: value.field.path,
-                order: value.direction === OrderDirection.ASCENDING ? 'ASC' : 'DESC'
+                order: value.direction === OrderDirection.ASCENDING ? 'ASC' : 'DESC',
             };
         });
     }
@@ -690,7 +690,7 @@ export function getMetaSchema(project: Project): GraphQLSchema {
         if (options.disableAuthorization) {
             return {
                 canRead: true,
-                canWrite: true
+                canWrite: true,
             };
         }
 
@@ -698,22 +698,19 @@ export function getMetaSchema(project: Project): GraphQLSchema {
         if (field.type.isRootEntityType && field.type !== field.declaringType) {
             const descriptor = getPermissionDescriptorOfRootEntityType(field.type);
             // be optimistic on CONDITIONAL types
-            if (
-                descriptor.canAccess({ authRoles: options.authRoles ?? [] }, AccessOperation.READ) ===
-                PermissionResult.DENIED
-            ) {
+            if (descriptor.canAccess(options.authContext ?? {}, AccessOperation.READ) === PermissionResult.DENIED) {
                 return {
                     canRead: false,
-                    canWrite: false
+                    canWrite: false,
                 };
             }
         }
 
         const descriptor = getPermissionDescriptorOfField(field);
-        const authContext: AuthContext = { authRoles: options.authRoles ?? [] };
+        const authContext = options.authContext ?? {};
         return {
-            canRead: descriptor.canAccess(authContext, AccessOperation.READ) === PermissionResult.GRANTED,
-            canWrite: descriptor.canAccess(authContext, AccessOperation.UPDATE) === PermissionResult.GRANTED
+            canRead: descriptor.canAccess(options.authContext ?? {}, AccessOperation.READ) === PermissionResult.GRANTED,
+            canWrite: descriptor.canAccess(authContext, AccessOperation.UPDATE) === PermissionResult.GRANTED,
         };
     }
 
@@ -732,23 +729,23 @@ export function getMetaSchema(project: Project): GraphQLSchema {
                 canRead: true,
                 canCreate: true,
                 canUpdate: true,
-                canDelete: true
+                canDelete: true,
             };
         }
 
         const descriptor = getPermissionDescriptorOfRootEntityType(rootEntityType);
-        const authContext: AuthContext = { authRoles: options.authRoles ?? [] };
+        const authContext = options.authContext ?? {};
         return {
             canRead: descriptor.canAccess(authContext, AccessOperation.READ) === PermissionResult.GRANTED,
             canCreate: descriptor.canAccess(authContext, AccessOperation.CREATE) === PermissionResult.GRANTED,
             canUpdate: descriptor.canAccess(authContext, AccessOperation.UPDATE) === PermissionResult.GRANTED,
-            canDelete: descriptor.canAccess(authContext, AccessOperation.DELETE) === PermissionResult.GRANTED
+            canDelete: descriptor.canAccess(authContext, AccessOperation.DELETE) === PermissionResult.GRANTED,
         };
     }
 
     return makeExecutableSchema({
         typeDefs,
-        resolvers
+        resolvers,
     });
 }
 

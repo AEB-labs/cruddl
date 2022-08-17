@@ -143,7 +143,7 @@ export class StaticPermissionDescriptor extends PermissionDescriptor {
             case AccessOperation.DELETE:
                 roles = this.readWriteRoles;
         }
-        const allowed = roles.some((allowedRole) => authContext.authRoles.includes(allowedRole));
+        const allowed = roles.some((allowedRole) => (authContext.authRoles ?? []).includes(allowedRole));
         return new ConstBoolQueryNode(allowed);
     }
 }
@@ -219,6 +219,20 @@ export class ProfileBasedPermissionDescriptor extends PermissionDescriptor {
             if (restriction.valueTemplate !== undefined) {
                 const values = permission.evaluateTemplate(restriction.valueTemplate, authContext);
                 return new BinaryOperationQueryNode(fieldNode, BinaryOperator.IN, new LiteralQueryNode(values));
+            }
+
+            if (restriction.customClaim !== undefined) {
+                const claimValue = authContext.customClaims?.[restriction.customClaim];
+                const claimValues = Array.isArray(claimValue) ? claimValue : [claimValue];
+                const sanitizedClaimValues = claimValues.filter((v) => !!v && typeof v === 'string');
+                if (!sanitizedClaimValues.length) {
+                    return ConstBoolQueryNode.FALSE;
+                }
+                return new BinaryOperationQueryNode(
+                    fieldNode,
+                    BinaryOperator.IN,
+                    new LiteralQueryNode(sanitizedClaimValues)
+                );
             }
 
             throw new Error(`Invalid permission restriction (field: ${restriction.field})`);

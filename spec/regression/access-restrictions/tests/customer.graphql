@@ -1,0 +1,59 @@
+query q {
+    allFiles(orderBy: name_ASC) {
+        name
+    }
+}
+
+mutation updateOwn {
+    updateFile(input: { id: "@{ids/File/4}", name: "new" }) {
+        name
+    }
+}
+
+# should fail
+mutation updateToValueWithoutReadPermissions {
+    updateFile(input: { id: "@{ids/File/4}", customerName: "something-else" }) {
+        name
+    }
+}
+
+# should fail
+mutation updateToValueWithoutWritePermissions {
+    updateFile(input: { id: "@{ids/File/4}", customerName: "public" }) {
+        name
+    }
+}
+
+# should pass
+mutation createWithValueWithWritePermissions {
+    createFile(input: { name: "test", customerName: "Customer1" }) {
+        name
+    }
+}
+
+# should fail
+mutation createWithValueWithoutWritePermissions {
+    createFile(input: { name: "test", customerName: "something-else" }) {
+        name
+    }
+}
+
+# should fail with first error (write restriction vs. setting the value)
+mutation updateWriteRestrictedToAccessGroupWithoutWritePermissions {
+    updateFile(input: { id: "@{ids/File/6}", customerName: "something-else" }) {
+        name
+    }
+}
+
+# should not find this and not report that the accessGroup can not be set
+mutation updateReadRestrictedToValueWithoutWritePermissions {
+    updateFile(input: { id: "@{ids/File/5}", accessGroup: "something-else" }) {
+        name
+    }
+}
+
+mutation deleteOwn {
+    deleteFile(id: "@{ids/File/3}") {
+        name
+    }
+}

@@ -16,6 +16,21 @@
                 "@id": "3",
                 "name": "public",
                 "accessGroup": "public"
+            },
+            {
+                "@id": "4",
+                "name": "Customer1",
+                "customerName": "Customer1"
+            },
+            {
+                "@id": "5",
+                "name": "Customer2",
+                "customerName": "Customer2"
+            },
+            {
+                "@id": "6",
+                "name": "public customer",
+                "customerName": "public"
             }
         ]
     }

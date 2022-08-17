@@ -1,4 +1,5 @@
 import { OperationDefinitionNode } from 'graphql';
+import { AuthContext } from '../authorization/auth-basics';
 
 export type MutationMode = 'normal' | 'disallowed' | 'rollback';
 
@@ -9,11 +10,9 @@ export interface ExecutionOptions {
     readonly disableAuthorization?: boolean;
 
     /**
-     * Role identifiers that apply to the user executing the query. Will be matched against roles in permission profiles.
-     *
-     * If undefined, defaults to empty array.
+     * Authorization information that should be used for applying restrictions
      */
-    readonly authRoles?: ReadonlyArray<string>;
+    readonly authContext?: AuthContext;
 
     readonly locale?: LocaleInfo;
 

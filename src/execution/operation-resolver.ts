@@ -11,19 +11,19 @@ import {
     PreExecQueryParms,
     PropertySpecification,
     QueryNode,
-    WithPreExecutionQueryNode
+    WithPreExecutionQueryNode,
 } from '../query-tree';
 import {
     FlexSearchComplexOperatorQueryNode,
     FlexSearchQueryNode,
-    FlexSearchTokenization
+    FlexSearchTokenization,
 } from '../query-tree/flex-search';
 import { evaluateQueryStatically } from '../query-tree/utils';
 import {
     buildConditionalObjectQueryNode,
     FieldContext,
     QueryNodeObjectType,
-    SelectionToken
+    SelectionToken,
 } from '../schema-generation/query-node-object-type';
 import { SchemaTransformationContext } from '../schema/preparation/transformation-pipeline';
 import { getPreciseTime, Watch } from '../utils/watch';
@@ -46,7 +46,7 @@ export class OperationResolver {
             options = this.context.getExecutionOptions
                 ? this.context.getExecutionOptions({
                       context: operationInfo.context,
-                      operationDefinition: operationInfo.operation
+                      operationDefinition: operationInfo.operation,
                   })
                 : {};
         }
@@ -65,14 +65,13 @@ export class OperationResolver {
 
         let queryTree: QueryNode;
         try {
-            const requestRoles = options.authRoles || [];
-            logger.debug(`Executing ${operationDesc} with roles ${requestRoles.join(', ')}`);
+            logger.debug(`Executing ${operationDesc} with roles ${options.authContext?.authRoles || [].join(', ')}`);
             if (logger.isTraceEnabled()) {
                 logger.trace(`Operation: ${print(operationInfo.operation)}`);
             }
             const operation = distillOperation({
                 ...operationInfo,
-                includeTypenameFields: options?.handleTypenameFields
+                includeTypenameFields: options?.handleTypenameFields,
             });
             if (logger.isTraceEnabled()) {
                 logger.trace(`DistilledOperation: ${operation.describe()}`);
@@ -87,7 +86,7 @@ export class OperationResolver {
                 selectionTokenStack: [],
                 selectionToken: new SelectionToken(),
                 flexSearchMaxFilterableAmountOverride: options.flexSearchMaxFilterableAndSortableAmount,
-                flexSearchRecursionDepth: options.flexSearchRecursionDepth
+                flexSearchRecursionDepth: options.flexSearchRecursionDepth,
             };
             queryTree = buildConditionalObjectQueryNode(rootQueryNode, rootType, operation.selectionSet, fieldContext);
             if (logger.isTraceEnabled()) {
@@ -105,7 +104,7 @@ export class OperationResolver {
                 watch.stop('queryTree');
             }
             if (!options.disableAuthorization) {
-                queryTree = applyAuthorizationToQueryTree(queryTree, { authRoles: requestRoles });
+                queryTree = applyAuthorizationToQueryTree(queryTree, options.authContext ?? {});
                 if (logger.isTraceEnabled()) {
                     logger.trace('After authorization: ' + queryTree.describe());
                 }
@@ -129,10 +128,10 @@ export class OperationResolver {
             const res = this.context.databaseAdapter.executeExt
                 ? await this.context.databaseAdapter.executeExt({
                       queryTree,
-                      ...options
+                      ...options,
                   })
                 : {
-                      data: this.context.databaseAdapter.execute(queryTree)
+                      data: this.context.databaseAdapter.execute(queryTree),
                   };
             if (topLevelWatch) {
                 topLevelWatch.stop('database');
@@ -161,13 +160,13 @@ export class OperationResolver {
             const preparation = {
                 ...(dbAdapterTimings ? dbAdapterTimings.preparation : {}),
                 ...watch.timings,
-                total: topLevelWatch.timings.preparation
+                total: topLevelWatch.timings.preparation,
             };
             const timings = {
                 database: dbAdapterTimings ? dbAdapterTimings.database : { total: watch.timings.database },
                 dbConnection: dbAdapterTimings ? dbAdapterTimings.dbConnection : { total: 0 },
                 preparation,
-                total: getPreciseTime() - start
+                total: getPreciseTime() - start,
             };
             profile = {
                 timings,
@@ -177,13 +176,13 @@ export class OperationResolver {
                 operation: operationInfo.operation,
                 variableValues: operationInfo.variableValues,
                 fragments: operationInfo.fragments,
-                schema: operationInfo.schema
+                schema: operationInfo.schema,
             };
         }
         return {
             data,
             error,
-            profile
+            profile,
         };
     }
 
@@ -226,7 +225,7 @@ export class OperationResolver {
         if (queryNode instanceof FlexSearchComplexOperatorQueryNode) {
             return {
                 node: queryNode.expand(tokenizations),
-                containsComplexOR: queryNode.logicalOperator === BinaryOperator.OR
+                containsComplexOR: queryNode.logicalOperator === BinaryOperator.OR,
             };
         }
 
@@ -237,9 +236,9 @@ export class OperationResolver {
                     rootEntityType: queryNode.rootEntityType,
                     itemVariable: queryNode.itemVariable,
                     flexFilterNode: expandedFilter.node,
-                    isOptimisationsDisabled: expandedFilter.containsComplexOR
+                    isOptimisationsDisabled: expandedFilter.containsComplexOR,
                 }),
-                containsComplexOR: expandedFilter.containsComplexOR
+                containsComplexOR: expandedFilter.containsComplexOR,
             };
         }
 
@@ -255,7 +254,7 @@ export class OperationResolver {
             }
             return {
                 node: new ObjectQueryNode(specs),
-                containsComplexOR: containsComplexOR
+                containsComplexOR: containsComplexOR,
             };
         }
 
@@ -268,7 +267,7 @@ export class OperationResolver {
                     new PreExecQueryParms({
                         query: expandedValue.node,
                         resultValidator: preExecQueryParms.resultValidator,
-                        resultVariable: preExecQueryParms.resultVariable
+                        resultVariable: preExecQueryParms.resultVariable,
                     })
                 );
                 if (expandedValue.containsComplexOR) {
@@ -282,9 +281,9 @@ export class OperationResolver {
             return {
                 node: new WithPreExecutionQueryNode({
                     resultNode: expandedResultNode.node,
-                    preExecQueries: newParms
+                    preExecQueries: newParms,
                 }),
-                containsComplexOR
+                containsComplexOR,
             };
         }
 
@@ -307,14 +306,14 @@ export class OperationResolver {
         if (!hasChanged) {
             return {
                 node: queryNode,
-                containsComplexOR: false
+                containsComplexOR: false,
             };
         }
         const newObj = Object.create(Object.getPrototypeOf(queryNode));
         Object.assign(newObj, queryNode, newFieldValues);
         return {
             node: newObj,
-            containsComplexOR: containsComplexOR
+            containsComplexOR: containsComplexOR,
         };
     }
 }
