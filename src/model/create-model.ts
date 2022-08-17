@@ -904,10 +904,10 @@ function extractPermissionProfiles(parsedProject: ParsedProject): ReadonlyArray<
                         ...restriction,
                         fieldValueLoc:
                             source.pathLocationMap[
-                                `/permissionProfiles/${name}.permissions/${permissionIndex}/restrictions/${restrictionIndex}/field`
+                                `/permissionProfiles/${name}/permissions/${permissionIndex}/restrictions/${restrictionIndex}/field`
                             ],
                         loc: source.pathLocationMap[
-                            `/permissionProfiles/${name}.permissions/${permissionIndex}/restrictions/${restrictionIndex}`
+                            `/permissionProfiles/${name}/permissions/${permissionIndex}/restrictions/${restrictionIndex}`
                         ],
                     })),
                     loc: source.pathLocationMap[`/permissionProfiles/${name}/permissions/${permissionIndex}`],

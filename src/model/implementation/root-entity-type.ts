@@ -312,7 +312,7 @@ export class RootEntityType extends ObjectTypeBase {
                         nestedContext.addMessage(
                             ValidationMessage.error(
                                 `Field "${lastField.declaringType.name}.${lastField.name}" is of type "${lastField.type.name}", but only scalar and enum types fields can be used for field restrictions.`,
-                                this.astNode
+                                restriction.fieldValueLoc
                             )
                         );
                     }
@@ -323,7 +323,7 @@ export class RootEntityType extends ObjectTypeBase {
                             nestedContext.addMessage(
                                 ValidationMessage.error(
                                     `Field "${field.declaringType.name}.${field.name}" needs the @${ACCESS_FIELD_DIRECTIVE} directive to be used in a permission restriction.`,
-                                    this.astNode
+                                    restriction.fieldValueLoc
                                 )
                             );
                         }
@@ -331,7 +331,7 @@ export class RootEntityType extends ObjectTypeBase {
                             nestedContext.addMessage(
                                 ValidationMessage.error(
                                     `Field "${field.declaringType.name}.${field.name}" needs the @${FLEX_SEARCH_INDEXED_DIRECTIVE} directive because type "${this.name}" is marked with "flexSearch: true".`,
-                                    this.astNode
+                                    restriction.fieldValueLoc
                                 )
                             );
                         }
@@ -339,11 +339,13 @@ export class RootEntityType extends ObjectTypeBase {
                 }
 
                 // if there are validation errors in the field, show them at the usage and at the definition
+                // (definition is useful because it shows the exact path within the field that is wrong)
                 for (const message of nestedContext.validationMessages) {
                     context.addMessage(
                         new ValidationMessage(
                             message.severity,
-                            `Permission profile "${this.permissionProfile.name}" defines restrictions that cannot be applied to type "${this.name}": ${message.message}`
+                            `Permission profile "${this.permissionProfile.name}" defines restrictions that cannot be applied to type "${this.name}": ${message.message}`,
+                            this.input.permissions?.permissionProfileNameAstNode
                         )
                     );
                     context.addMessage(
