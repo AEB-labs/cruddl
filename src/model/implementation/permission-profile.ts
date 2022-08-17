@@ -224,7 +224,7 @@ export class PermissionRestriction implements ModelComponent {
     readonly field: string;
     readonly value?: unknown;
     readonly valueTemplate?: string;
-    readonly customClaim?: string;
+    readonly claim?: string;
     readonly loc?: MessageLocation;
     readonly fieldValueLoc?: MessageLocation;
 
@@ -232,17 +232,17 @@ export class PermissionRestriction implements ModelComponent {
         this.field = config.field;
         this.value = config.value;
         this.valueTemplate = config.valueTemplate;
-        this.customClaim = config.customClaim;
+        this.claim = config.claim;
         this.loc = config.loc;
         this.fieldValueLoc = config.fieldValueLoc;
     }
 
     validate(context: ValidationContext) {
-        const number = [this.valueTemplate, this.value, this.customClaim].filter((v) => v !== undefined).length;
+        const number = [this.valueTemplate, this.value, this.claim].filter((v) => v !== undefined).length;
         if (number !== 1) {
             context.addMessage(
                 ValidationMessage.error(
-                    `Exactly one of "value", "valueTemplate", and "customClaim" must be specified.`,
+                    `Exactly one of "value", "valueTemplate", and "claim" must be specified.`,
                     this.loc
                 )
             );

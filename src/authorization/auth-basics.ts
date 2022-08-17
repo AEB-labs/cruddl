@@ -18,5 +18,5 @@ export interface AuthContext {
      *
      * Currently, only strings and string arrays are supported
      */
-    readonly customClaims?: { readonly [claimNam: string]: string | ReadonlyArray<string> };
+    readonly claims?: { readonly [claimName: string]: string | ReadonlyArray<string> };
 }

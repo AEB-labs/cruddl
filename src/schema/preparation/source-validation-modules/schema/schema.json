@@ -169,7 +169,7 @@
                     "$ref": "#/definitions/PermissionRestrictionWithValueTemplate"
                 },
                 {
-                    "$ref": "#/definitions/PermissionRestrictionWithCustomClaim"
+                    "$ref": "#/definitions/PermissionRestrictionWithClaim"
                 }
             ]
         },
@@ -187,10 +187,10 @@
                 }
             }
         },
-        "PermissionRestrictionWithCustomClaim": {
-            "required": ["customClaim"],
+        "PermissionRestrictionWithClaim": {
+            "required": ["claim"],
             "properties": {
-                "customClaim": {
+                "claim": {
                     "type": "string",
                     "minLength": 1
                 }

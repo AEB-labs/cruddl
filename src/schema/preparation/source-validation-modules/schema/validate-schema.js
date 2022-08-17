@@ -711,17 +711,17 @@ var validate = (function () {
                 if (data && typeof data === 'object' && !Array.isArray(data)) {
                     var errs__2 = errors;
                     var valid3 = true;
-                    var data1 = data.customClaim;
+                    var data1 = data.claim;
                     if (data1 === undefined) {
                         valid3 = false;
                         var err = {
                             keyword: 'required',
                             dataPath: (dataPath || '') + '',
-                            schemaPath: '#/definitions/PermissionRestrictionWithCustomClaim/required',
+                            schemaPath: '#/definitions/PermissionRestrictionWithClaim/required',
                             params: {
-                                missingProperty: 'customClaim',
+                                missingProperty: 'claim',
                             },
-                            message: "should have required property 'customClaim'",
+                            message: "should have required property 'claim'",
                         };
                         if (vErrors === null) vErrors = [err];
                         else vErrors.push(err);
@@ -732,9 +732,9 @@ var validate = (function () {
                             if (ucs2length(data1) < 1) {
                                 var err = {
                                     keyword: 'minLength',
-                                    dataPath: (dataPath || '') + '.customClaim',
+                                    dataPath: (dataPath || '') + '.claim',
                                     schemaPath:
-                                        '#/definitions/PermissionRestrictionWithCustomClaim/properties/customClaim/minLength',
+                                        '#/definitions/PermissionRestrictionWithClaim/properties/claim/minLength',
                                     params: {
                                         limit: 1,
                                     },
@@ -747,9 +747,8 @@ var validate = (function () {
                         } else {
                             var err = {
                                 keyword: 'type',
-                                dataPath: (dataPath || '') + '.customClaim',
-                                schemaPath:
-                                    '#/definitions/PermissionRestrictionWithCustomClaim/properties/customClaim/type',
+                                dataPath: (dataPath || '') + '.claim',
+                                schemaPath: '#/definitions/PermissionRestrictionWithClaim/properties/claim/type',
                                 params: {
                                     type: 'string',
                                 },
@@ -814,7 +813,7 @@ var validate = (function () {
                 $ref: '#/definitions/PermissionRestrictionWithValueTemplate',
             },
             {
-                $ref: '#/definitions/PermissionRestrictionWithCustomClaim',
+                $ref: '#/definitions/PermissionRestrictionWithClaim',
             },
         ],
     };
@@ -837,9 +836,9 @@ var validate = (function () {
     };
     refVal[5] = refVal5;
     var refVal6 = {
-        required: ['customClaim'],
+        required: ['claim'],
         properties: {
-            customClaim: {
+            claim: {
                 type: 'string',
                 minLength: 1,
             },
@@ -2466,7 +2465,7 @@ validate.schema = {
                     $ref: '#/definitions/PermissionRestrictionWithValueTemplate',
                 },
                 {
-                    $ref: '#/definitions/PermissionRestrictionWithCustomClaim',
+                    $ref: '#/definitions/PermissionRestrictionWithClaim',
                 },
             ],
         },
@@ -2484,10 +2483,10 @@ validate.schema = {
                 },
             },
         },
-        PermissionRestrictionWithCustomClaim: {
-            required: ['customClaim'],
+        PermissionRestrictionWithClaim: {
+            required: ['claim'],
             properties: {
-                customClaim: {
+                claim: {
                     type: 'string',
                     minLength: 1,
                 },

@@ -221,8 +221,8 @@ export class ProfileBasedPermissionDescriptor extends PermissionDescriptor {
                 return new BinaryOperationQueryNode(fieldNode, BinaryOperator.IN, new LiteralQueryNode(values));
             }
 
-            if (restriction.customClaim !== undefined) {
-                const claimValue = authContext.customClaims?.[restriction.customClaim];
+            if (restriction.claim !== undefined) {
+                const claimValue = authContext.claims?.[restriction.claim];
                 const claimValues = Array.isArray(claimValue) ? claimValue : [claimValue];
                 const sanitizedClaimValues = claimValues.filter((v) => !!v && typeof v === 'string');
                 if (!sanitizedClaimValues.length) {
