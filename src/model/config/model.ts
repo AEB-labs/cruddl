@@ -1,4 +1,4 @@
-import { ModelValidationOptions } from '../../config/interfaces';
+import { ModelOptions } from '../../config/interfaces';
 import { ValidationMessage } from '../validation';
 import { BillingConfig } from './billing';
 import { LocalizationConfig } from './i18n';
@@ -11,6 +11,6 @@ export interface ModelConfig {
     readonly validationMessages?: ReadonlyArray<ValidationMessage>;
     readonly i18n?: ReadonlyArray<LocalizationConfig>;
     readonly billing?: BillingConfig;
-    readonly modelValidationOptions?: ModelValidationOptions;
     readonly timeToLiveConfigs?: ReadonlyArray<TimeToLiveConfig>;
+    readonly options?: ModelOptions;
 }

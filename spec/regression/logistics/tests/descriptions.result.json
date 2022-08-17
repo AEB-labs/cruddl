@@ -5515,6 +5515,56 @@
                             "deprecationReason": null
                         },
                         {
+                            "name": "serialNumbers_aggregation_equal",
+                            "description": "Checks if `serialNumbers` equals a specified string, case-insensitively.\n\nThe list of serial numbers associated with this delivery",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "serialNumbers_aggregation_not",
+                            "description": "Checks if `serialNumbers` does not equal a specified string, case-insensitively.\n\nThe list of serial numbers associated with this delivery",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "serialNumbers_aggregation_lt",
+                            "description": "Checks if `serialNumbers` is less than a specified value.\n\nThe list of serial numbers associated with this delivery",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "serialNumbers_aggregation_lte",
+                            "description": "Checks if `serialNumbers` is less or equal a specified value.\n\nThe list of serial numbers associated with this delivery",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "serialNumbers_aggregation_gt",
+                            "description": "Checks if `serialNumbers` is greater than a specified value.\n\nThe list of serial numbers associated with this delivery",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "serialNumbers_aggregation_gte",
+                            "description": "Checks if `serialNumbers` is greater or equal a specified value.\n\nThe list of serial numbers associated with this delivery",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "serialNumbers_aggregation_in",
+                            "description": "Checks if `serialNumbers` is equal to one of the specified values.\n\nThe list of serial numbers associated with this delivery",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "serialNumbers_aggregation_not_in",
+                            "description": "Checks if `serialNumbers` is not equal to one of the specified values.\n\nThe list of serial numbers associated with this delivery",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "serialNumbers_aggregation_starts_with",
+                            "description": "Checks if `serialNumbers` starts with a specified string, case-insensitively.\n\nThe list of serial numbers associated with this delivery",
+                            "deprecationReason": null
+                        },
+                        {
+                            "name": "serialNumbers_aggregation_not_starts_with",
+                            "description": "Checks if `serialNumbers` does not start with a specified string, case-insensitively.\n\nThe list of serial numbers associated with this delivery",
+                            "deprecationReason": null
+                        },
+                        {
                             "name": "consignee",
                             "description": "Checks if `consignee` is not null, and allows to filter based on its fields.",
                             "deprecationReason": null

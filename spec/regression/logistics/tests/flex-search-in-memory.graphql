@@ -40,8 +40,37 @@ query lte_string {
     }
 }
 
+# everything is < null (specially handled in flexsearch)
+query lt_includes_null {
+    flexSearchCountries(flexSearchFilter: { someKey_lt: "1" }) {
+        isoCode
+        someKey
+    }
+}
+
+query lte_includes_null {
+    flexSearchCountries(flexSearchFilter: { someKey_lte: "1" }) {
+        isoCode
+        someKey
+    }
+}
+
+# just to be sure...
+query eq_does_not_include_null {
+    flexSearchCountries(flexSearchFilter: { someKey: "1" }) {
+        isoCode
+        someKey
+    }
+}
+
 query equals_enum {
     flexSearchDeliveries(flexSearchFilter: { enumFlexSearch: Foo }) {
+        deliveryNumber
+    }
+}
+
+query equals_id {
+    flexSearchDeliveries(flexSearchFilter: { id: "@{ids/Delivery/1}" }) {
         deliveryNumber
     }
 }
@@ -146,5 +175,12 @@ query starts_with {
 query null_starts_with {
     flexSearchDeliveries(flexSearchFilter: { aText_starts_with: "foo" }) {
         deliveryNumber
+    }
+}
+
+query string_aggregation {
+    flexSearchDeliveries(flexSearchFilter: { serialNumbers_aggregation_equal: "12345" }) {
+        deliveryNumber
+        serialNumbers
     }
 }

@@ -18,7 +18,8 @@ describe('arango-search-helper', () => {
             const view = views[0];
             expect(view.primarySort).to.deep.equal([
                 { field: 'deliveryNumber', asc: false },
-                { field: '_key', asc: true }
+                { field: 'createdAt', asc: false },
+                { field: '_key', asc: false },
             ]);
         });
 
@@ -38,7 +39,7 @@ describe('arango-search-helper', () => {
             const view = views[0];
             expect(view.primarySort).to.deep.equal([
                 { field: '_key', asc: false },
-                { field: 'deliveryNumber', asc: true }
+                { field: 'deliveryNumber', asc: true },
             ]);
         });
 
@@ -59,7 +60,8 @@ describe('arango-search-helper', () => {
             const view = views[0];
             expect(view.primarySort).to.deep.equal([
                 { field: 'value.id', asc: false },
-                { field: '_key', asc: true }
+                { field: 'createdAt', asc: false },
+                { field: '_key', asc: false },
             ]);
         });
     });

@@ -1,4 +1,4 @@
-export { RequestProfile, ProjectOptions, RequestContext, ModelValidationOptions } from './src/config/interfaces';
+export { RequestProfile, ProjectOptions, RequestContext, ModelOptions } from './src/config/interfaces';
 export { FieldResolverParameters } from './src/graphql/operation-based-resolvers';
 export { Project, ProjectConfig } from './src/project/project';
 export { InvalidProjectError } from './src/project/invalid-project-error';

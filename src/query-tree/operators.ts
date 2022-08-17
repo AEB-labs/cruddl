@@ -28,7 +28,7 @@ export class UnaryOperationQueryNode extends QueryNode {
 export enum UnaryOperator {
     NOT = 'NOT',
     JSON_STRINGIFY = 'JSON_STRINGIFY',
-    ROUND = 'ROUND'
+    ROUND = 'ROUND',
 }
 
 /**
@@ -52,7 +52,7 @@ export class BinaryOperationQueryNode extends QueryNode {
             case BinaryOperator.AND:
                 return '&&';
             case BinaryOperator.OR:
-                return '&&';
+                return '||';
             case BinaryOperator.EQUAL:
                 return '==';
             case BinaryOperator.UNEQUAL:
@@ -140,7 +140,7 @@ export enum BinaryOperator {
     /**
      * Calculates the asymmetric difference between two lists
      */
-    SUBTRACT_LISTS = 'SUBTRACT_LISTS'
+    SUBTRACT_LISTS = 'SUBTRACT_LISTS',
 }
 
 /**
@@ -200,7 +200,7 @@ export enum BinaryOperatorWithAnalyzer {
      * Strict inequality (values of different types are considered unequal)
      */
     UNEQUAL = 'UNEQUAL',
-    IN = 'IN'
+    IN = 'IN',
 }
 
 export class ConditionalQueryNode extends QueryNode {

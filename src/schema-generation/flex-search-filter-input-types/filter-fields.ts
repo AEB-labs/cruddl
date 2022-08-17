@@ -10,7 +10,7 @@ import {
     PropertyAccessQueryNode,
     QueryNode,
     RootEntityIDQueryNode,
-    RuntimeErrorQueryNode
+    RuntimeErrorQueryNode,
 } from '../../query-tree';
 import { FlexSearchFieldExistsQueryNode } from '../../query-tree/flex-search';
 import {
@@ -27,7 +27,7 @@ import {
     INPUT_FIELD_NOT_IN,
     INPUT_FIELD_NOT_STARTS_WITH,
     INPUT_FIELD_STARTS_WITH,
-    OR_FILTER_FIELD
+    OR_FILTER_FIELD,
 } from '../../schema/constants';
 import { AnyValue, PlainObject } from '../../utils/utils';
 import { FilterField } from '../filter-input-types/filter-fields';
@@ -37,7 +37,7 @@ import { not } from '../utils/input-types';
 import {
     FLEX_SEARCH_FILTER_DESCRIPTIONS,
     FLEX_SEARCH_OPERATORS_WITH_LIST_OPERAND,
-    STRING_TEXT_ANALYZER_FILTER_FIELDS
+    STRING_TEXT_ANALYZER_FILTER_FIELDS,
 } from './constants';
 import { FlexSearchFilterObjectType } from './filter-types';
 
@@ -55,7 +55,7 @@ export interface FlexSearchFilterField extends TypedInputFieldBase<FlexSearchFil
 function getDescription({
     operator,
     typeName,
-    fieldName
+    fieldName,
 }: {
     operator: string | undefined;
     typeName: string;
@@ -96,7 +96,7 @@ export class FlexSearchScalarOrEnumFieldFilterField implements FlexSearchFilterF
             operator: operatorSuffix,
             fieldName: field.name,
             typeName: field.type.name,
-            isAggregation: this.operatorSuffix != undefined
+            isAggregation: this.operatorSuffix != undefined,
         });
 
         if (this.field.description) {
@@ -202,8 +202,9 @@ export class FlexSearchNestedObjectFilterField implements FlexSearchFilterField 
         const recursionDepth = info.flexSearchRecursionDepth ? info.flexSearchRecursionDepth : 1;
         if (
             path.some(
-                value =>
-                    path.filter(value1 => value.type.isObjectType && value.type == value1.type).length > recursionDepth
+                (value) =>
+                    path.filter((value1) => value.type.isObjectType && value.type == value1.type).length >
+                    recursionDepth
             )
         ) {
             return new RuntimeErrorQueryNode(
@@ -283,7 +284,7 @@ export class FlexSearchAndFilterField implements FlexSearchFilterField {
             return new ConstBoolQueryNode(true);
         }
         const values = (filterValue || []) as ReadonlyArray<PlainObject>;
-        const nodes = values.map(value => this.filterType.getFilterNode(sourceNode, value, path, info));
+        const nodes = values.map((value) => this.filterType.getFilterNode(sourceNode, value, path, info));
         return nodes.reduce((prev, node) => new BinaryOperationQueryNode(prev, BinaryOperator.AND, node));
     }
 }
@@ -312,7 +313,7 @@ export class FlexSearchOrFilterField implements FlexSearchFilterField {
         if (!values.length) {
             return ConstBoolQueryNode.FALSE; // neutral element of OR
         }
-        const nodes = values.map(value => this.filterType.getFilterNode(sourceNode, value, path, info));
+        const nodes = values.map((value) => this.filterType.getFilterNode(sourceNode, value, path, info));
         return nodes.reduce((prev, node) => new BinaryOperationQueryNode(prev, BinaryOperator.OR, node));
     }
 }
@@ -390,6 +391,22 @@ export function resolveFilterField(
             not(new FlexSearchFieldExistsQueryNode(valueNode, analyzer))
         );
     }
+    // field < x and field <= x should also find NULL values, because that's how it behaves in non-flexsearch case
+    if (
+        (filterField.operatorName === INPUT_FIELD_LT || filterField.operatorName === INPUT_FIELD_LTE) &&
+        filterValue != null
+    ) {
+        const isNull = new BinaryOperationQueryNode(
+            new BinaryOperationQueryNode(valueNode, BinaryOperator.EQUAL, NullQueryNode.NULL),
+            BinaryOperator.OR,
+            not(new FlexSearchFieldExistsQueryNode(valueNode, analyzer))
+        );
+        return new BinaryOperationQueryNode(
+            isNull,
+            BinaryOperator.OR,
+            filterField.resolveOperator(valueNode, literalNode, analyzer)
+        );
+    }
     if (filterField.operatorName == INPUT_FIELD_IN && Array.isArray(filterValue) && filterValue.includes(null)) {
         return new BinaryOperationQueryNode(
             filterField.resolveOperator(valueNode, literalNode, analyzer),
@@ -429,7 +446,7 @@ export function resolveFilterField(
     if (
         (filterField.operatorName == INPUT_FIELD_STARTS_WITH ||
             filterField.operatorName == INPUT_FIELD_NOT_STARTS_WITH ||
-            STRING_TEXT_ANALYZER_FILTER_FIELDS.some(value => filterField.operatorName === value)) &&
+            STRING_TEXT_ANALYZER_FILTER_FIELDS.some((value) => filterField.operatorName === value)) &&
         (filterValue == null || filterValue === '')
     ) {
         return new ConstBoolQueryNode(true);

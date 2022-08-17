@@ -59,13 +59,13 @@ import {
     UpdateEntitiesQueryNode,
     VariableAssignmentQueryNode,
     VariableQueryNode,
-    WithPreExecutionQueryNode
+    WithPreExecutionQueryNode,
 } from '../../query-tree';
 import {
     FlexSearchComplexOperatorQueryNode,
     FlexSearchFieldExistsQueryNode,
     FlexSearchQueryNode,
-    FlexSearchStartsWithQueryNode
+    FlexSearchStartsWithQueryNode,
 } from '../../query-tree/flex-search';
 import { Quantifier, QuantifierFilterNode } from '../../query-tree/quantifiers';
 import { extractVariableAssignments, simplifyBooleans } from '../../query-tree/utils';
@@ -79,7 +79,7 @@ import { getFlexSearchViewNameForRootEntity } from './schema-migration/arango-se
 
 enum AccessType {
     READ,
-    WRITE
+    WRITE,
 }
 
 class QueryContext {
@@ -299,7 +299,7 @@ function register<T extends QueryNode>(type: Constructor<T>, processor: NodeProc
     processors.set(type, processor as NodeProcessor<QueryNode>); // probably some bivariancy issue
 }
 
-register(LiteralQueryNode, node => {
+register(LiteralQueryNode, (node) => {
     return aql.value(node.value);
 });
 
@@ -307,7 +307,7 @@ register(NullQueryNode, () => {
     return aql`null`;
 });
 
-register(RuntimeErrorQueryNode, node => {
+register(RuntimeErrorQueryNode, (node) => {
     const runtimeErrorToken = aql.code(RUNTIME_ERROR_TOKEN);
     if (node.code) {
         const codeProp = aql.code(RUNTIME_ERROR_CODE_PROPERTY);
@@ -316,11 +316,11 @@ register(RuntimeErrorQueryNode, node => {
     return aql`{ ${runtimeErrorToken}: ${node.message} }`;
 });
 
-register(ConstBoolQueryNode, node => {
+register(ConstBoolQueryNode, (node) => {
     return node.value ? aql`true` : aql`false`;
 });
 
-register(ConstIntQueryNode, node => {
+register(ConstIntQueryNode, (node) => {
     return aql.integer(node.value);
 });
 
@@ -330,7 +330,7 @@ register(ObjectQueryNode, (node, context) => {
     }
 
     const properties = node.properties.map(
-        p => aql`${aqlExt.safeJSONKey(p.propertyName)}: ${processNode(p.valueNode, context)}`
+        (p) => aql`${aqlExt.safeJSONKey(p.propertyName)}: ${processNode(p.valueNode, context)}`
     );
     return aql.lines(aql`{`, aql.indent(aql.join(properties, aql`,\n`)), aql`}`);
 });
@@ -344,7 +344,7 @@ register(ListQueryNode, (node, context) => {
         aql`[`,
         aql.indent(
             aql.join(
-                node.itemNodes.map(itemNode => processNode(itemNode, context)),
+                node.itemNodes.map((itemNode) => processNode(itemNode, context)),
                 aql`,\n`
             )
         ),
@@ -353,7 +353,7 @@ register(ListQueryNode, (node, context) => {
 });
 
 register(ConcatListsQueryNode, (node, context) => {
-    const listNodes = node.listNodes.map(node => processNode(node, context));
+    const listNodes = node.listNodes.map((node) => processNode(node, context));
     const listNodeStr = aql.join(listNodes, aql`, `);
     // note: UNION just appends, there is a special UNION_DISTINCT to filter out duplicates
     return aql`UNION(${listNodeStr})`;
@@ -486,7 +486,7 @@ function generateInClauseWithFilterAndOrderAndLimit({
     node,
     context,
     itemVar,
-    itemContext
+    itemContext,
 }: {
     node: TransformListQueryNode;
     context: QueryContext;
@@ -698,7 +698,7 @@ register(AggregationQueryNode, (node, context) => {
 });
 
 register(MergeObjectsQueryNode, (node, context) => {
-    const objectList = node.objectNodes.map(node => processNode(node, context));
+    const objectList = node.objectNodes.map((node) => processNode(node, context));
     const objectsFragment = aql.join(objectList, aql`, `);
     return aql`MERGE(${objectsFragment})`;
 });
@@ -852,7 +852,12 @@ register(FlexSearchStartsWithQueryNode, (node, context) => {
 
 register(FlexSearchFieldExistsQueryNode, (node, context) => {
     const sourceNode = processNode(node.sourceNode, context);
-    if (node.analyzer) {
+    // the EXISTS operand seems to return false for identity-indexed fields that are not strings
+    // might be a bug, didn't find anything related in the documentation
+    // not sure what exactly the consequences are of just omitting the analyzer (would mean we consider fields that
+    // are both identity-indexed and full-text-indexed as existing if they only exist in the fulltext analyzer, but
+    // that would never occur because it does not make sense)
+    if (node.analyzer && node.analyzer !== IDENTITY_ANALYZER) {
         return aql`EXISTS(${sourceNode}, "analyzer", ${node.analyzer})`;
     } else {
         return aql`EXISTS(${sourceNode})`;
@@ -1049,7 +1054,7 @@ register(QuantifierFilterNode, (node, context) => {
     const filteredListNode = new TransformListQueryNode({
         listNode,
         filterNode: conditionNode,
-        itemVariable
+        itemVariable,
     });
 
     const finalNode = new BinaryOperationQueryNode(
@@ -1068,7 +1073,7 @@ function getQuantifierFilterUsingArrayComparisonOperator(
         quantifier,
         conditionNode,
         listNode,
-        itemVariable
+        itemVariable,
     }: {
         quantifier: Quantifier;
         conditionNode: QueryNode;
@@ -1141,7 +1146,7 @@ function getQuantifierFilterUsingArrayComparisonOperator(
 
     let fieldValueFrag: AQLFragment;
     if (fields.length) {
-        const fieldAccessFrag = aql.concat(fields.map(f => getPropertyAccessFragment(f.name)));
+        const fieldAccessFrag = aql.concat(fields.map((f) => getPropertyAccessFragment(f.name)));
         fieldValueFrag = aql`${processNode(listNode, context)}[*]${fieldAccessFrag}`;
         // no need to use the SafeListQueryNode here because [*] already expands NULL to []
     } else {
@@ -1201,7 +1206,7 @@ register(FollowEdgeQueryNode, (node, context) => {
 
 register(TraversalQueryNode, (node, context) => {
     const sourceFrag = processNode(node.sourceEntityNode, context);
-    const fieldDepth = node.fieldSegments.filter(s => s.isListSegment).length;
+    const fieldDepth = node.fieldSegments.filter((s) => s.isListSegment).length;
 
     if (node.relationSegments.length) {
         let mapFrag: ((itemFrag: AQLFragment) => AQLFragment) | undefined;
@@ -1218,7 +1223,7 @@ register(TraversalQueryNode, (node, context) => {
                     // actually, shouldn't really occur because a collect path can't end with an entity extension and
                     // value objects don't capture root entities
                     // however, we can easily implement this so let's do it
-                    mapFrag = nodeFrag =>
+                    mapFrag = (nodeFrag) =>
                         aql`{ obj: ${getFieldTraversalFragmentWithoutFlattening(
                             node.fieldSegments,
                             nodeFrag
@@ -1228,7 +1233,7 @@ register(TraversalQueryNode, (node, context) => {
                     // over it. if the depth is > 1, we need to flatten the deeper ones so we can do one FOR loop over them
                     // we still return a list, so we just reduce the depth to 1 and not to 0
                     const entityVar = aql.variable('entity');
-                    mapFrag = rootEntityFrag =>
+                    mapFrag = (rootEntityFrag) =>
                         aqlExt.parenthesizeList(
                             aql`FOR ${entityVar} IN ${getFlattenFrag(
                                 getFieldTraversalFragmentWithoutFlattening(node.fieldSegments, rootEntityFrag),
@@ -1239,7 +1244,7 @@ register(TraversalQueryNode, (node, context) => {
                     remainingDepth = 1;
                 }
             } else {
-                mapFrag = nodeFrag => getFieldTraversalFragmentWithoutFlattening(node.fieldSegments, nodeFrag);
+                mapFrag = (nodeFrag) => getFieldTraversalFragmentWithoutFlattening(node.fieldSegments, nodeFrag);
             }
         } else {
             if (node.captureRootEntity) {
@@ -1270,9 +1275,9 @@ register(TraversalQueryNode, (node, context) => {
             sourceIsList: node.sourceIsList,
             alwaysProduceList: node.alwaysProduceList,
             mapFrag,
-            context
+            context,
         });
-        if (node.relationSegments.some(s => s.isListSegment) || node.sourceIsList) {
+        if (node.relationSegments.some((s) => s.isListSegment) || node.sourceIsList) {
             // if the relation contains a list segment, getRelationTraversalFragment will return a list
             // if we already returned lists within the mapFrag (-> current value of remainingDepth), we need to add that
             remainingDepth++;
@@ -1318,7 +1323,7 @@ function getRelationTraversalFragment({
     sourceIsList,
     alwaysProduceList,
     mapFrag,
-    context
+    context,
 }: {
     readonly segments: ReadonlyArray<RelationSegment>;
     readonly sourceFrag: AQLFragment;
@@ -1543,7 +1548,7 @@ register(AddEdgesQueryNode, (node, context) => {
     return aqlExt.parenthesizeList(
         aql`FOR ${edgeVar}`,
         aql`IN [ ${aql.join(
-            node.edges.map(edge => formatEdge(node.relation, edge, context)),
+            node.edges.map((edge) => formatEdge(node.relation, edge, context)),
             aql`, `
         )} ]`,
         aql`UPSERT { _from: ${edgeVar}._from, _to: ${edgeVar}._to }`, // need to unpack avoid dynamic property names in UPSERT example filter
@@ -1620,16 +1625,16 @@ function getFullIDsFromKeysNode(
 ): AQLFragment {
     if (idsNode instanceof ListQueryNode) {
         // this probably generates cleaner AQL without dynamic concat
-        const idFragments = idsNode.itemNodes.map(idNode => getFullIDFromKeyNode(idNode, rootEntityType, context));
+        const idFragments = idsNode.itemNodes.map((idNode) => getFullIDFromKeyNode(idNode, rootEntityType, context));
         return aql`[${aql.join(idFragments, aql`, `)}]`;
     }
     if (
         idsNode instanceof LiteralQueryNode &&
         Array.isArray(idsNode.value) &&
-        idsNode.value.every(v => typeof v === 'string')
+        idsNode.value.every((v) => typeof v === 'string')
     ) {
         const collName = getCollectionNameForRootEntity(rootEntityType);
-        const ids = idsNode.value.map(val => collName + '/' + val);
+        const ids = idsNode.value.map((val) => collName + '/' + val);
         return aql.value(ids);
     }
 
@@ -1708,7 +1713,7 @@ function generateSortAQL(orderBy: OrderSpecification, context: QueryContext): AQ
         return aql``;
     }
 
-    const clauses = orderBy.clauses.map(cl => aql`(${processNode(cl.valueNode, context)}) ${dirAQL(cl.direction)}`);
+    const clauses = orderBy.clauses.map((cl) => aql`(${processNode(cl.valueNode, context)}) ${dirAQL(cl.direction)}`);
 
     return aql`SORT ${aql.join(clauses, aql`, `)}`;
 }

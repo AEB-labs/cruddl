@@ -140,7 +140,7 @@
                         "unNumber": "1863",
                         "notices": ["No special treatment necessary."]
                     },
-                    "serialNumbers": [],
+                    "serialNumbers": ["12345", "67890"],
                     "items": [
                         {
                             "itemNumber": "1001"

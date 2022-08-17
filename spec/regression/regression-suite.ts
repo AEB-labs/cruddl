@@ -71,7 +71,7 @@ export class RegressionSuite {
                 authContext: { authRoles: context.authRoles, customClaims: context.customClaims },
                 flexSearchMaxFilterableAndSortableAmount: context.flexSearchMaxFilterableAndSortableAmount,
             }),
-            modelValidationOptions: {
+            modelOptions: {
                 forbiddenRootEntityNames: [],
             },
             ...options,

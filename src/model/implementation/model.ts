@@ -1,6 +1,6 @@
 import { groupBy, uniqBy } from 'lodash';
 import memorize from 'memorize-decorator';
-import { ModelValidationOptions } from '../../config/interfaces';
+import { ModelOptions } from '../../config/interfaces';
 import { flatMap, objectEntries, objectValues } from '../../utils/utils';
 import { ModelConfig, TypeKind } from '../config';
 import { NamespacedPermissionProfileConfigMap } from '../index';
@@ -31,7 +31,11 @@ export class Model implements ModelComponent {
     readonly i18n: ModelI18n;
     readonly permissionProfiles: ReadonlyArray<PermissionProfile>;
     readonly billingEntityTypes: ReadonlyArray<BillingEntityType>;
-    readonly modelValidationOptions?: ModelValidationOptions;
+    /**
+     * @deprecated use options
+     */
+    readonly modelValidationOptions?: ModelOptions;
+    readonly options?: ModelOptions;
     readonly timeToLiveTypes: ReadonlyArray<TimeToLiveType>;
 
     constructor(private input: ModelConfig) {
@@ -50,7 +54,8 @@ export class Model implements ModelComponent {
         this.billingEntityTypes = input.billing
             ? input.billing.billingEntities.map((value) => new BillingEntityType(value, this))
             : [];
-        this.modelValidationOptions = input.modelValidationOptions;
+        this.options = input.options;
+        this.modelValidationOptions = input.options;
         this.timeToLiveTypes = input.timeToLiveConfigs
             ? input.timeToLiveConfigs.map((ttlConfig) => new TimeToLiveType(ttlConfig, this))
             : [];
@@ -249,10 +254,10 @@ export class Model implements ModelComponent {
     }
 
     get forbiddenRootEntityNames(): ReadonlyArray<string> {
-        if (!this.modelValidationOptions || !this.modelValidationOptions.forbiddenRootEntityNames) {
+        if (!this.options || !this.options.forbiddenRootEntityNames) {
             return ['BillingEntity'];
         }
-        return this.modelValidationOptions!.forbiddenRootEntityNames;
+        return this.options!.forbiddenRootEntityNames;
     }
 }
 

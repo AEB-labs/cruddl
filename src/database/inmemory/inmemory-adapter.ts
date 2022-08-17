@@ -43,7 +43,7 @@ export class InMemoryAdapter implements DatabaseAdapter {
         const validators = new Map(
             ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS.map((provider): [string, Function] => [
                 provider.getValidatorName(),
-                provider.getValidatorFunction()
+                provider.getValidatorFunction(),
             ])
         );
 
@@ -183,7 +183,14 @@ export class InMemoryAdapter implements DatabaseAdapter {
                 };
             },
 
-            likePatternToRegExp
+            likePatternToRegExp,
+
+            ensureArray: (arg: unknown) => {
+                if (Array.isArray(arg)) {
+                    return arg;
+                }
+                return [arg];
+            },
         };
 
         let resultHolder: { [p: string]: any } = {};
@@ -254,8 +261,8 @@ export class InMemoryAdapter implements DatabaseAdapter {
         const rootEntities = model.rootEntityTypes;
         const requiredEdgeCollections = Array.from(new Set(model.relations.map(getCollectionNameForRelation)));
 
-        const requiredCollections = rootEntities.map(entity => getCollectionNameForRootEntity(entity));
-        if (!requiredCollections.some(value => value === 'billingEntities')) {
+        const requiredCollections = rootEntities.map((entity) => getCollectionNameForRootEntity(entity));
+        if (!requiredCollections.some((value) => value === 'billingEntities')) {
             requiredCollections.push('billingEntities');
         }
         for (const coll of [...requiredCollections, ...requiredEdgeCollections]) {
@@ -268,11 +275,11 @@ export class InMemoryAdapter implements DatabaseAdapter {
     async tokenizeExpressions(
         tokenizations: ReadonlyArray<FlexSearchTokenizable>
     ): Promise<ReadonlyArray<FlexSearchTokenization>> {
-        return tokenizations.map(value => {
+        return tokenizations.map((value) => {
             return {
                 expression: value.expression,
                 analyzer: value.analyzer,
-                tokens: value.expression.split('-')
+                tokens: value.expression.split('-'),
             };
         });
     }

@@ -6,7 +6,7 @@ jobs:
         strategy:
             matrix:
                 arango-image: ['arangodb:3.6', 'arangodb:3.7', 'arangodb:3.8', 'arangodb:3.9']
-                node-version: [12.x, 14.x, 16.x]
+                node-version: [14.x, 16.x]
         steps:
             - uses: actions/checkout@v2
             - name: Use Node.js ${{ matrix.node-version }}
