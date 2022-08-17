@@ -1,0 +1,116 @@
+{
+    "q": {
+        "data": {
+            "allFiles": [
+                {
+                    "name": "Customer1"
+                },
+                {
+                    "name": "public customer"
+                }
+            ]
+        }
+    },
+    "updateOwn": {
+        "data": {
+            "updateFile": {
+                "name": "new"
+            }
+        }
+    },
+    "updateToValueWithoutReadPermissions": {
+        "errors": [
+            {
+                "message": "Not authorized to set File.customerName to this value",
+                "locations": [
+                    {
+                        "line": 15,
+                        "column": 5
+                    }
+                ],
+                "path": ["updateFile"]
+            }
+        ],
+        "data": {
+            "updateFile": null
+        }
+    },
+    "updateToValueWithoutWritePermissions": {
+        "errors": [
+            {
+                "message": "Not authorized to set File.customerName to this value",
+                "locations": [
+                    {
+                        "line": 22,
+                        "column": 5
+                    }
+                ],
+                "path": ["updateFile"]
+            }
+        ],
+        "data": {
+            "updateFile": null
+        }
+    },
+    "createWithValueWithWritePermissions": {
+        "data": {
+            "createFile": {
+                "name": "test"
+            }
+        }
+    },
+    "createWithValueWithoutWritePermissions": {
+        "errors": [
+            {
+                "message": "Not authorized to set File.customerName to this value",
+                "locations": [
+                    {
+                        "line": 36,
+                        "column": 5
+                    }
+                ],
+                "path": ["createFile"]
+            }
+        ],
+        "data": null
+    },
+    "updateWriteRestrictedToAccessGroupWithoutWritePermissions": {
+        "errors": [
+            {
+                "message": "Not authorized to update this File object",
+                "locations": [
+                    {
+                        "line": 43,
+                        "column": 5
+                    }
+                ],
+                "path": ["updateFile"]
+            }
+        ],
+        "data": {
+            "updateFile": null
+        }
+    },
+    "updateReadRestrictedToValueWithoutWritePermissions": {
+        "errors": [
+            {
+                "message": "File with id '@{ids/File/5}' could not be found.",
+                "locations": [
+                    {
+                        "line": 50,
+                        "column": 5
+                    }
+                ],
+                "path": ["updateFile"]
+            }
+        ],
+        "data": {
+            "updateFile": null
+        }
+    },
+    "deleteOwn": {
+        "data": {
+            "deleteFile": null
+        }
+    }
+}

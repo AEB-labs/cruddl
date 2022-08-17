@@ -554,6 +554,9 @@ The simplest kind of restriction requires a specific field value (`"value": "the
 expression for matching the roles, you can also spedify `valueTemplate` and use the capture groups, e.g.
 `"valueTemplate": "value-$1"`.
 
+If users have custom claim fields, you can also restrict access to objects where the field's value equals this claim
+value (or any of the claim values, if the claim is an array), with `"customClaim": "claimName"`.
+
 ## Indices
 
 cruddl supports index handling. During start up they are extracted from the schema and created or removed from the

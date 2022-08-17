@@ -22,7 +22,7 @@ export interface TestEnvironment {
 
 const schemaContext: ProjectOptions = {
     loggerProvider: new Log4jsLoggerProvider('warn'),
-    getExecutionOptions: ({ context }) => ({ authRoles: context.authRoles })
+    getExecutionOptions: ({}) => ({ authContext: { authRoles: ['admin'] } }),
 };
 
 export async function createTestProject(
@@ -47,23 +47,23 @@ export async function initEnvironment(): Promise<TestEnvironment> {
             return new Database(dbConfig);
         },
         async exec(gql, variables) {
-            const res = await graphql(schema, gql, {} /* root */, { authRoles: ['admin'] }, variables);
+            const res = await graphql(schema, gql, {} /* root */, {}, variables);
             if (res.errors) {
                 throw new Error(JSON.stringify(res.errors));
             }
             return res.data;
-        }
+        },
     };
 }
 
 function createLiteratureReference(sizeFactor: number) {
     return {
         title: 'A referenced paper',
-        authors: range(sizeFactor).map(index => `Author ${index}`),
+        authors: range(sizeFactor).map((index) => `Author ${index}`),
         pages: {
             startPage: 5,
-            endPage: 10
-        }
+            endPage: 10,
+        },
     };
 }
 
@@ -72,7 +72,7 @@ export function createLargePaper(sizeFactor: number): any {
     return {
         title: 'A paper',
         literatureReferences: range(sizeSqrt).map(() => createLiteratureReference(sizeSqrt)),
-        tags: range(sizeFactor).map(index => `Tag ${index}`)
+        tags: range(sizeFactor).map((index) => `Tag ${index}`),
     };
 }
 
@@ -80,7 +80,7 @@ export function createUser() {
     return {
         firstName: 'Max',
         lastName: 'Mustermann',
-        email: 'max.mustermann@example.com'
+        email: 'max.mustermann@example.com',
     };
 }
 
@@ -91,7 +91,7 @@ export function getSizeFactorForJSONLength(jsonLength: number) {
 
 export async function addPaper(environment: TestEnvironment, paperData: any): Promise<number> {
     const res = await environment.exec(`mutation($input: CreatePaperInput!) { createPaper(input: $input) { id } }`, {
-        input: paperData
+        input: paperData,
     });
     return res.createPaper.id;
 }

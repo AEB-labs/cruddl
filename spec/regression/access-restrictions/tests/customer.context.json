@@ -1,0 +1,6 @@
+{
+    "authRoles": ["customer"],
+    "customClaims": {
+        "customerName": ["Customer1"]
+    }
+}

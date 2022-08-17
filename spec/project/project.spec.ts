@@ -19,11 +19,11 @@ class FakeDBAdatper implements DatabaseAdapter {
     async tokenizeExpressions(
         tokenizations: ReadonlyArray<FlexSearchTokenizable>
     ): Promise<ReadonlyArray<FlexSearchTokenization>> {
-        return tokenizations.map(value => {
+        return tokenizations.map((value) => {
             return {
                 expression: value.expression,
                 analyzer: value.analyzer,
-                tokens: value.expression.split('-')
+                tokens: value.expression.split('-'),
             };
         });
     }
@@ -54,9 +54,9 @@ describe('project', () => {
                         isFatalEnabled: () => true,
                         isInfoEnabled: () => true,
                         isTraceEnabled: () => true,
-                        isWarnEnabled: () => true
+                        isWarnEnabled: () => true,
                     };
-                }
+                },
             };
 
             const project = new Project({
@@ -64,9 +64,9 @@ describe('project', () => {
                     new ProjectSource(
                         'main.graphqls',
                         `type Test @rootEntity @roles(readWrite: ["admin"]) { name: String }`
-                    )
+                    ),
                 ],
-                loggerProvider
+                loggerProvider,
             });
             const dbAdapter = new FakeDBAdatper();
             const execSchema = project.createSchema(dbAdapter);
@@ -80,9 +80,7 @@ describe('project', () => {
                             name
                         }
                     }
-                `,
-                undefined,
-                { authRoles: ['admin'] }
+                `
             );
             expect(logs.length).to.be.greaterThan(0);
         });

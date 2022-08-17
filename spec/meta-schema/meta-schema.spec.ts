@@ -167,9 +167,9 @@ describe('Meta schema API', () => {
                 fields: [
                     {
                         name: 'street',
-                        typeName: 'String'
-                    }
-                ]
+                        typeName: 'String',
+                    },
+                ],
             },
             {
                 name: 'Country',
@@ -178,10 +178,10 @@ describe('Meta schema API', () => {
                 fields: [
                     {
                         name: 'isoCode',
-                        typeName: 'String'
-                    }
+                        typeName: 'String',
+                    },
                 ],
-                namespacePath: ['generic']
+                namespacePath: ['generic'],
             },
             {
                 name: 'Shipment',
@@ -190,61 +190,61 @@ describe('Meta schema API', () => {
                 permissions: {
                     roles: {
                         read: ['user', 'admin'],
-                        readWrite: ['admin']
-                    }
+                        readWrite: ['admin'],
+                    },
                 },
                 fields: [
                     {
                         name: 'deliveries',
                         typeName: 'Delivery',
                         isList: true,
-                        isRelation: true
+                        isRelation: true,
                     },
                     {
                         name: 'delivery',
                         typeName: 'Delivery',
-                        isRelation: true
+                        isRelation: true,
                     },
                     {
                         name: 'deliveryNonRelation',
-                        typeName: 'Delivery'
+                        typeName: 'Delivery',
                     },
                     {
                         name: 'deliveryWithInverseOf',
                         typeName: 'Delivery',
                         isRelation: true,
-                        inverseOfFieldName: 'shipment'
+                        inverseOfFieldName: 'shipment',
                     },
                     {
                         name: 'handlingUnits',
                         typeName: 'HandlingUnit',
                         isRelation: true,
-                        isList: true
+                        isList: true,
                     },
                     {
                         name: 'transportKind',
                         typeName: 'TransportKind',
                         permissions: {
                             roles: {
-                                read: ['admin']
-                            }
-                        }
+                                read: ['admin'],
+                            },
+                        },
                     },
                     {
                         name: 'totalWeightInKg',
                         typeName: 'Int',
                         collect: {
                             path: 'deliveries.weightInKg',
-                            aggregationOperator: AggregationOperator.SUM
-                        }
+                            aggregationOperator: AggregationOperator.SUM,
+                        },
                     },
                     {
                         name: 'destinationCountry',
                         typeName: 'Country',
-                        isReference: true
-                    }
+                        isReference: true,
+                    },
                 ],
-                namespacePath: ['logistics', 'shipments']
+                namespacePath: ['logistics', 'shipments'],
             },
             {
                 name: 'Delivery',
@@ -254,45 +254,45 @@ describe('Meta schema API', () => {
                     {
                         name: 'shipment',
                         typeName: 'Shipment',
-                        isRelation: true
+                        isRelation: true,
                     },
                     {
                         name: 'weightInKg',
-                        typeName: 'Int'
+                        typeName: 'Int',
                     },
                     {
                         name: 'countryOfOriginIsoCode',
-                        typeName: 'String'
+                        typeName: 'String',
                     },
                     {
                         name: 'countryOfOrigin',
                         typeName: 'Country',
                         isReference: true,
-                        referenceKeyField: 'countryOfOriginIsoCode'
-                    }
+                        referenceKeyField: 'countryOfOriginIsoCode',
+                    },
                 ],
-                namespacePath: ['logistics']
+                namespacePath: ['logistics'],
             },
             {
                 name: 'HandlingUnit',
                 kind: TypeKind.ROOT_ENTITY,
-                fields: []
+                fields: [],
             },
             {
                 name: 'Item',
                 kind: TypeKind.CHILD_ENTITY,
-                fields: []
+                fields: [],
             },
             {
                 name: 'DangerousGoodsInfo',
                 kind: TypeKind.ENTITY_EXTENSION,
-                fields: []
+                fields: [],
             },
             {
                 name: 'TransportKind',
                 kind: TypeKind.ENUM,
-                values: [{ value: 'AIR' }, { value: 'ROAD' }, { value: 'SEA' }]
-            }
+                values: [{ value: 'AIR' }, { value: 'ROAD' }, { value: 'SEA' }],
+            },
         ],
         permissionProfiles: [
             {
@@ -301,20 +301,20 @@ describe('Meta schema API', () => {
                         permissions: [
                             {
                                 roles: ['accounting'],
-                                access: 'readWrite'
-                            }
-                        ]
+                                access: 'readWrite',
+                            },
+                        ],
                     },
                     accounting: {
                         permissions: [
                             {
                                 roles: ['accounting'],
-                                access: 'readWrite'
-                            }
-                        ]
-                    }
-                }
-            }
+                                access: 'readWrite',
+                            },
+                        ],
+                    },
+                },
+            },
         ],
         i18n: [
             {
@@ -327,11 +327,11 @@ describe('Meta schema API', () => {
                         hint: 'Eine Adresse',
                         fields: {
                             street: {
-                                label: 'Straße'
-                            }
-                        }
-                    }
-                }
+                                label: 'Straße',
+                            },
+                        },
+                    },
+                },
             },
             {
                 language: 'en',
@@ -340,26 +340,26 @@ describe('Meta schema API', () => {
                     Address: {
                         fields: {
                             street: {
-                                hint: 'The street and number'
-                            }
-                        }
-                    }
-                }
-            }
-        ]
+                                hint: 'The street and number',
+                            },
+                        },
+                    },
+                },
+            },
+        ],
     });
 
-    const project = ({
+    const project = {
         getModel: () => model,
         options: {
             getExecutionOptions: ({ context }: ExecutionOptionsCallbackArgs): ExecutionOptions => ({
                 locale: {
-                    acceptLanguages: context?.locale
+                    acceptLanguages: context?.locale,
                 },
-                authRoles: context?.authRoles
-            })
-        }
-    } as any) as Project;
+                authContext: { authRoles: context?.authRoles },
+            }),
+        },
+    } as any as Project;
 
     const metaSchema = getMetaSchema(project);
 
@@ -404,9 +404,9 @@ describe('Meta schema API', () => {
                             isRelation: false,
                             isCollectField: false,
                             collectFieldConfig: null,
-                            type: { __typename: 'ScalarType' }
-                        }
-                    ]
+                            type: { __typename: 'ScalarType' },
+                        },
+                    ],
                 },
                 {
                     name: 'Country',
@@ -423,7 +423,7 @@ describe('Meta schema API', () => {
                             isRelation: false,
                             isCollectField: false,
                             collectFieldConfig: null,
-                            type: { __typename: 'ScalarType' }
+                            type: { __typename: 'ScalarType' },
                         },
                         {
                             name: 'createdAt',
@@ -433,7 +433,7 @@ describe('Meta schema API', () => {
                             isRelation: false,
                             isCollectField: false,
                             collectFieldConfig: null,
-                            type: { __typename: 'ScalarType' }
+                            type: { __typename: 'ScalarType' },
                         },
                         {
                             name: 'updatedAt',
@@ -443,7 +443,7 @@ describe('Meta schema API', () => {
                             isRelation: false,
                             isCollectField: false,
                             collectFieldConfig: null,
-                            type: { __typename: 'ScalarType' }
+                            type: { __typename: 'ScalarType' },
                         },
                         {
                             name: 'isoCode',
@@ -453,9 +453,9 @@ describe('Meta schema API', () => {
                             isRelation: false,
                             isCollectField: false,
                             collectFieldConfig: null,
-                            type: { __typename: 'ScalarType' }
-                        }
-                    ]
+                            type: { __typename: 'ScalarType' },
+                        },
+                    ],
                 },
                 {
                     name: 'Shipment',
@@ -472,7 +472,7 @@ describe('Meta schema API', () => {
                             isRelation: false,
                             isCollectField: false,
                             collectFieldConfig: null,
-                            type: { __typename: 'ScalarType' }
+                            type: { __typename: 'ScalarType' },
                         },
                         {
                             name: 'createdAt',
@@ -482,7 +482,7 @@ describe('Meta schema API', () => {
                             isRelation: false,
                             isCollectField: false,
                             collectFieldConfig: null,
-                            type: { __typename: 'ScalarType' }
+                            type: { __typename: 'ScalarType' },
                         },
                         {
                             name: 'updatedAt',
@@ -492,7 +492,7 @@ describe('Meta schema API', () => {
                             isRelation: false,
                             isCollectField: false,
                             collectFieldConfig: null,
-                            type: { __typename: 'ScalarType' }
+                            type: { __typename: 'ScalarType' },
                         },
                         {
                             name: 'deliveries',
@@ -502,7 +502,7 @@ describe('Meta schema API', () => {
                             isRelation: true,
                             isCollectField: false,
                             collectFieldConfig: null,
-                            type: { __typename: 'RootEntityType' }
+                            type: { __typename: 'RootEntityType' },
                         },
                         {
                             name: 'delivery',
@@ -512,7 +512,7 @@ describe('Meta schema API', () => {
                             isRelation: true,
                             isCollectField: false,
                             collectFieldConfig: null,
-                            type: { __typename: 'RootEntityType' }
+                            type: { __typename: 'RootEntityType' },
                         },
                         {
                             name: 'deliveryNonRelation',
@@ -522,7 +522,7 @@ describe('Meta schema API', () => {
                             isRelation: false,
                             isCollectField: false,
                             collectFieldConfig: null,
-                            type: { __typename: 'RootEntityType' }
+                            type: { __typename: 'RootEntityType' },
                         },
                         {
                             name: 'deliveryWithInverseOf',
@@ -532,7 +532,7 @@ describe('Meta schema API', () => {
                             isRelation: true,
                             isCollectField: false,
                             collectFieldConfig: null,
-                            type: { __typename: 'RootEntityType' }
+                            type: { __typename: 'RootEntityType' },
                         },
                         {
                             name: 'handlingUnits',
@@ -542,7 +542,7 @@ describe('Meta schema API', () => {
                             isRelation: true,
                             isCollectField: false,
                             collectFieldConfig: null,
-                            type: { __typename: 'RootEntityType' }
+                            type: { __typename: 'RootEntityType' },
                         },
                         {
                             isList: false,
@@ -552,7 +552,7 @@ describe('Meta schema API', () => {
                             isCollectField: false,
                             collectFieldConfig: null,
                             name: 'transportKind',
-                            type: { __typename: 'EnumType' }
+                            type: { __typename: 'EnumType' },
                         },
                         {
                             name: 'totalWeightInKg',
@@ -560,9 +560,9 @@ describe('Meta schema API', () => {
                                 aggregationOperator: 'SUM',
                                 fieldsInPath: [
                                     { declaringType: { name: 'Shipment' }, name: 'deliveries' },
-                                    { declaringType: { name: 'Delivery' }, name: 'weightInKg' }
+                                    { declaringType: { name: 'Delivery' }, name: 'weightInKg' },
                                 ],
-                                path: ['deliveries', 'weightInKg']
+                                path: ['deliveries', 'weightInKg'],
                             },
                             isCollectField: true,
                             isList: false,
@@ -570,8 +570,8 @@ describe('Meta schema API', () => {
                             referenceKeyField: null,
                             isRelation: false,
                             type: {
-                                __typename: 'ScalarType'
-                            }
+                                __typename: 'ScalarType',
+                            },
                         },
                         {
                             name: 'destinationCountry',
@@ -581,13 +581,13 @@ describe('Meta schema API', () => {
                             isReference: true,
                             isRelation: false,
                             referenceKeyField: {
-                                name: 'destinationCountry'
+                                name: 'destinationCountry',
                             },
                             type: {
-                                __typename: 'RootEntityType'
-                            }
-                        }
-                    ]
+                                __typename: 'RootEntityType',
+                            },
+                        },
+                    ],
                 },
                 {
                     name: 'Delivery',
@@ -604,7 +604,7 @@ describe('Meta schema API', () => {
                             isRelation: false,
                             isCollectField: false,
                             collectFieldConfig: null,
-                            type: { __typename: 'ScalarType' }
+                            type: { __typename: 'ScalarType' },
                         },
                         {
                             name: 'createdAt',
@@ -614,7 +614,7 @@ describe('Meta schema API', () => {
                             isRelation: false,
                             isCollectField: false,
                             collectFieldConfig: null,
-                            type: { __typename: 'ScalarType' }
+                            type: { __typename: 'ScalarType' },
                         },
                         {
                             name: 'updatedAt',
@@ -624,7 +624,7 @@ describe('Meta schema API', () => {
                             isRelation: false,
                             isCollectField: false,
                             collectFieldConfig: null,
-                            type: { __typename: 'ScalarType' }
+                            type: { __typename: 'ScalarType' },
                         },
                         {
                             name: 'shipment',
@@ -634,7 +634,7 @@ describe('Meta schema API', () => {
                             isRelation: true,
                             isCollectField: false,
                             collectFieldConfig: null,
-                            type: { __typename: 'RootEntityType' }
+                            type: { __typename: 'RootEntityType' },
                         },
                         {
                             name: 'weightInKg',
@@ -644,7 +644,7 @@ describe('Meta schema API', () => {
                             isRelation: false,
                             isCollectField: false,
                             collectFieldConfig: null,
-                            type: { __typename: 'ScalarType' }
+                            type: { __typename: 'ScalarType' },
                         },
                         {
                             name: 'countryOfOriginIsoCode',
@@ -655,8 +655,8 @@ describe('Meta schema API', () => {
                             isRelation: false,
                             referenceKeyField: null,
                             type: {
-                                __typename: 'ScalarType'
-                            }
+                                __typename: 'ScalarType',
+                            },
                         },
                         {
                             collectFieldConfig: null,
@@ -666,13 +666,13 @@ describe('Meta schema API', () => {
                             isRelation: false,
                             name: 'countryOfOrigin',
                             referenceKeyField: {
-                                name: 'countryOfOriginIsoCode'
+                                name: 'countryOfOriginIsoCode',
                             },
                             type: {
-                                __typename: 'RootEntityType'
-                            }
-                        }
-                    ]
+                                __typename: 'RootEntityType',
+                            },
+                        },
+                    ],
                 },
                 {
                     name: 'HandlingUnit',
@@ -689,7 +689,7 @@ describe('Meta schema API', () => {
                             isRelation: false,
                             isCollectField: false,
                             collectFieldConfig: null,
-                            type: { __typename: 'ScalarType' }
+                            type: { __typename: 'ScalarType' },
                         },
                         {
                             name: 'createdAt',
@@ -699,7 +699,7 @@ describe('Meta schema API', () => {
                             isRelation: false,
                             isCollectField: false,
                             collectFieldConfig: null,
-                            type: { __typename: 'ScalarType' }
+                            type: { __typename: 'ScalarType' },
                         },
                         {
                             name: 'updatedAt',
@@ -709,9 +709,9 @@ describe('Meta schema API', () => {
                             isRelation: false,
                             isCollectField: false,
                             collectFieldConfig: null,
-                            type: { __typename: 'ScalarType' }
-                        }
-                    ]
+                            type: { __typename: 'ScalarType' },
+                        },
+                    ],
                 },
                 {
                     name: 'Item',
@@ -725,7 +725,7 @@ describe('Meta schema API', () => {
                             isRelation: false,
                             isCollectField: false,
                             collectFieldConfig: null,
-                            type: { __typename: 'ScalarType' }
+                            type: { __typename: 'ScalarType' },
                         },
                         {
                             name: 'createdAt',
@@ -735,7 +735,7 @@ describe('Meta schema API', () => {
                             isRelation: false,
                             isCollectField: false,
                             collectFieldConfig: null,
-                            type: { __typename: 'ScalarType' }
+                            type: { __typename: 'ScalarType' },
                         },
                         {
                             name: 'updatedAt',
@@ -745,17 +745,17 @@ describe('Meta schema API', () => {
                             isRelation: false,
                             isCollectField: false,
                             collectFieldConfig: null,
-                            type: { __typename: 'ScalarType' }
-                        }
-                    ]
+                            type: { __typename: 'ScalarType' },
+                        },
+                    ],
                 },
                 { name: 'DangerousGoodsInfo', kind: 'ENTITY_EXTENSION', fields: [] },
                 {
                     name: 'TransportKind',
                     kind: 'ENUM',
-                    values: [{ value: 'AIR' }, { value: 'ROAD' }, { value: 'SEA' }]
-                }
-            ]
+                    values: [{ value: 'AIR' }, { value: 'ROAD' }, { value: 'SEA' }],
+                },
+            ],
         });
     });
 
@@ -766,7 +766,7 @@ describe('Meta schema API', () => {
                 { name: 'Country' },
                 { name: 'Shipment' },
                 { name: 'Delivery' },
-                { name: 'HandlingUnit' }
+                { name: 'HandlingUnit' },
             ],
             childEntityTypes: [{ name: 'Item' }],
             entityExtensionTypes: [{ name: 'DangerousGoodsInfo' }],
@@ -788,9 +788,9 @@ describe('Meta schema API', () => {
                 { name: 'Int53' },
                 { name: 'Decimal1' },
                 { name: 'Decimal2' },
-                { name: 'Decimal3' }
+                { name: 'Decimal3' },
             ],
-            enumTypes: [{ name: 'TransportKind' }]
+            enumTypes: [{ name: 'TransportKind' }],
         });
     });
 
@@ -804,22 +804,22 @@ describe('Meta schema API', () => {
                         fromField: { name: 'deliveries' },
                         fromType: { name: 'Shipment' },
                         toField: null,
-                        toType: { name: 'Delivery' }
+                        toType: { name: 'Delivery' },
                     },
                     {
                         fromField: { name: 'delivery' },
                         fromType: { name: 'Shipment' },
                         toField: null,
-                        toType: { name: 'Delivery' }
+                        toType: { name: 'Delivery' },
                     },
                     {
                         fromField: { name: 'shipment' },
                         fromType: { name: 'Delivery' },
                         toField: { name: 'deliveryWithInverseOf' },
-                        toType: { name: 'Shipment' }
-                    }
-                ]
-            }
+                        toType: { name: 'Shipment' },
+                    },
+                ],
+            },
         });
     });
 
@@ -840,8 +840,8 @@ describe('Meta schema API', () => {
                 { name: null, path: [], isRoot: true },
                 { name: 'generic', path: ['generic'], isRoot: false },
                 { name: 'logistics', path: ['logistics'], isRoot: false },
-                { name: 'shipments', path: ['logistics', 'shipments'], isRoot: false }
-            ]
+                { name: 'shipments', path: ['logistics', 'shipments'], isRoot: false },
+            ],
         });
     });
 
@@ -862,7 +862,7 @@ describe('Meta schema API', () => {
         );
         expect(result).to.deep.equal({
             logistics: { name: 'logistics', path: ['logistics'] },
-            root: { name: null, path: [] }
+            root: { name: null, path: [] },
         });
     });
 
@@ -873,16 +873,16 @@ describe('Meta schema API', () => {
                 name: 'TransportKind',
                 values: [
                     {
-                        value: 'AIR'
+                        value: 'AIR',
                     },
                     {
-                        value: 'ROAD'
+                        value: 'ROAD',
                     },
                     {
-                        value: 'SEA'
-                    }
-                ]
-            }
+                        value: 'SEA',
+                    },
+                ],
+            },
         });
     });
 
@@ -892,12 +892,12 @@ describe('Meta schema API', () => {
         expect(addressType.localization).to.deep.equal({
             label: 'Address',
             labelPlural: 'Addresses',
-            hint: null
+            hint: null,
         });
         const streetField = addressType.fields.find((f: any) => f.name === 'street');
         expect(streetField.localization).to.deep.equal({
             label: 'Street',
-            hint: null
+            hint: null,
         });
     });
 
@@ -907,12 +907,12 @@ describe('Meta schema API', () => {
         expect(addressType.localization).to.deep.equal({
             label: 'Adresse',
             labelPlural: 'Adressen',
-            hint: 'Eine Adresse'
+            hint: 'Eine Adresse',
         });
         const streetField = addressType.fields.find((f: any) => f.name === 'street');
         expect(streetField.localization).to.deep.equal({
             label: 'Straße',
-            hint: 'The street and number'
+            hint: 'The street and number',
         });
     });
 
@@ -931,12 +931,12 @@ describe('Meta schema API', () => {
                 { name: 'handlingUnits', permissions: { canRead: false, canWrite: false } },
                 { name: 'transportKind', permissions: { canRead: false, canWrite: false } },
                 { name: 'totalWeightInKg', permissions: { canRead: true, canWrite: true } },
-                { name: 'destinationCountry', permissions: { canRead: false, canWrite: false } }
-            ]
+                { name: 'destinationCountry', permissions: { canRead: false, canWrite: false } },
+            ],
         });
     });
 
-    after(function() {
+    after(function () {
         return stopMetaServer();
     });
 });

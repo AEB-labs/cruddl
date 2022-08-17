@@ -63,26 +63,26 @@ export class RegressionSuite {
 
         this.inMemoryDB = new InMemoryDB();
         const generalOptions: ProjectOptions = {
-            processError: e => {
+            processError: (e) => {
                 console.error(e.stack);
                 return e;
             },
             getExecutionOptions: ({ context }) => ({
-                authRoles: context.authRoles,
-                flexSearchMaxFilterableAndSortableAmount: context.flexSearchMaxFilterableAndSortableAmount
+                authContext: { authRoles: context.authRoles, customClaims: context.customClaims },
+                flexSearchMaxFilterableAndSortableAmount: context.flexSearchMaxFilterableAndSortableAmount,
             }),
             modelValidationOptions: {
-                forbiddenRootEntityNames: []
+                forbiddenRootEntityNames: [],
             },
             ...options,
-            getOperationIdentifier: ({ info }) => info.operation
+            getOperationIdentifier: ({ info }) => info.operation,
         };
         const warnLevelOptions = { ...generalOptions, loggerProvider: new Log4jsLoggerProvider('warn') };
         const debugLevelOptions = {
             ...generalOptions,
             loggerProvider: new Log4jsLoggerProvider(this.options.trace ? 'trace' : 'warn', {
-                'schema-builder': 'warn'
-            })
+                'schema-builder': 'warn',
+            }),
         };
 
         // use a schema that logs less for initTestData and for schema migrations
@@ -122,8 +122,8 @@ export class RegressionSuite {
     getTestNames() {
         return fs
             .readdirSync(path.resolve(this.path, 'tests'))
-            .filter(name => name.endsWith('.graphql'))
-            .map(name => name.substr(0, name.length - '.graphql'.length));
+            .filter((name) => name.endsWith('.graphql'))
+            .map((name) => name.substr(0, name.length - '.graphql'.length));
     }
 
     async shouldIgnoreTest(name: string) {
@@ -172,9 +172,9 @@ export class RegressionSuite {
         const gqlSource = this.testDataEnvironment.fillTemplateStrings(gqlTemplate);
 
         const operations = parse(gqlSource).definitions.filter(
-            def => def.kind == 'OperationDefinition'
+            (def) => def.kind == 'OperationDefinition'
         ) as OperationDefinitionNode[];
-        this._isSetUpClean = this._isSetUpClean && !operations.some(op => op.operation == 'mutation');
+        this._isSetUpClean = this._isSetUpClean && !operations.some((op) => op.operation == 'mutation');
         const hasNamedOperations = operations.length && operations[0].name;
 
         const expectedResultTemplate = JSON.parse(stripJsonComments(fs.readFileSync(resultPath, 'utf-8')));
@@ -188,12 +188,12 @@ export class RegressionSuite {
         const meta = fs.existsSync(metaPath) ? JSON.parse(stripJsonComments(fs.readFileSync(metaPath, 'utf-8'))) : {};
 
         if (meta.waitForArangoSearch && this.databaseSpecifier === 'arangodb') {
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await new Promise((resolve) => setTimeout(resolve, 1000));
         }
 
         let actualResult: any;
         if (hasNamedOperations) {
-            const operationNames = operations.map(def => def.name!.value);
+            const operationNames = operations.map((def) => def.name!.value);
             actualResult = {};
             for (const operationName of operationNames) {
                 let operationContext = context;
@@ -222,7 +222,7 @@ export class RegressionSuite {
 
         return {
             actualResult,
-            expectedResult
+            expectedResult,
         };
     }
 }

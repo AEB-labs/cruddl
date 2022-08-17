@@ -65,6 +65,26 @@
                             "value": "forwarded-by-anyone"
                         }
                     ]
+                },
+                {
+                    "roles": ["customer"],
+                    "access": "read",
+                    "restrictions": [
+                        {
+                            "field": "customerName",
+                            "value": "public"
+                        }
+                    ]
+                },
+                {
+                    "roles": ["customer"],
+                    "access": "readWrite",
+                    "restrictions": [
+                        {
+                            "field": "customerName",
+                            "customClaim": "customerName"
+                        }
+                    ]
                 }
             ]
         }

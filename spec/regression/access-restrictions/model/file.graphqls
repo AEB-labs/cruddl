@@ -1,4 +1,5 @@
 type File @rootEntity(flexSearch: true, permissionProfile: "restricted") {
     name: String @flexSearch
     accessGroup: String @flexSearch @accessField
+    customerName: String @flexSearch @accessField
 }

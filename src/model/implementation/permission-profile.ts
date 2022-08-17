@@ -49,7 +49,7 @@ export class Permission implements ModelComponent {
     }
 
     appliesToAuthContext(authContext: AuthContext) {
-        return authContext.authRoles.some((role) => this.roles.includesRole(role));
+        return authContext.authRoles && authContext.authRoles.some((role) => this.roles.includesRole(role));
     }
 
     allowsOperation(operation: AccessOperation) {
@@ -95,7 +95,7 @@ export class Permission implements ModelComponent {
         }
         const values = new Set<string>();
         for (const specifier of this.roles.entries) {
-            for (const role of authContext.authRoles) {
+            for (const role of authContext.authRoles ?? []) {
                 const value = specifier.getReplacementForRole(role, template);
                 if (value !== undefined) {
                     values.add(value);
@@ -224,6 +224,7 @@ export class PermissionRestriction implements ModelComponent {
     readonly field: string;
     readonly value?: unknown;
     readonly valueTemplate?: string;
+    readonly customClaim?: string;
     readonly loc?: MessageLocation;
     readonly fieldValueLoc?: MessageLocation;
 
@@ -231,14 +232,19 @@ export class PermissionRestriction implements ModelComponent {
         this.field = config.field;
         this.value = config.value;
         this.valueTemplate = config.valueTemplate;
+        this.customClaim = config.customClaim;
         this.loc = config.loc;
         this.fieldValueLoc = config.fieldValueLoc;
     }
 
     validate(context: ValidationContext) {
-        if (this.valueTemplate !== undefined && this.value !== undefined) {
+        const number = [this.valueTemplate, this.value, this.customClaim].filter((v) => v !== undefined).length;
+        if (number !== 1) {
             context.addMessage(
-                ValidationMessage.error(`"value" and "valueTemplate" cannot be both specified.`, this.loc)
+                ValidationMessage.error(
+                    `Exactly one of "value", "valueTemplate", and "customClaim" must be specified.`,
+                    this.loc
+                )
             );
         }
     }

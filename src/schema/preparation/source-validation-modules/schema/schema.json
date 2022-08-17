@@ -167,6 +167,9 @@
                 },
                 {
                     "$ref": "#/definitions/PermissionRestrictionWithValueTemplate"
+                },
+                {
+                    "$ref": "#/definitions/PermissionRestrictionWithCustomClaim"
                 }
             ]
         },
@@ -181,6 +184,15 @@
             "properties": {
                 "valueTemplate": {
                     "type": "string"
+                }
+            }
+        },
+        "PermissionRestrictionWithCustomClaim": {
+            "required": ["customClaim"],
+            "properties": {
+                "customClaim": {
+                    "type": "string",
+                    "minLength": 1
                 }
             }
         },
