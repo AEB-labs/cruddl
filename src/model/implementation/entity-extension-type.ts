@@ -16,7 +16,6 @@ export class EntityExtensionType extends ObjectTypeBase {
     readonly isEntityExtensionType: true = true;
     readonly isValueObjectType: false = false;
 
-
     validate(context: ValidationContext) {
         super.validate(context);
 
@@ -30,7 +29,7 @@ export class EntityExtensionType extends ObjectTypeBase {
             if (field.type.name === thisType.name && field.type.namespace === thisType.namespace) {
                 return true;
             } else if (field.type.isEntityExtensionType) {
-                return field.type.fields.some(value => fieldContainsRecursion(value));
+                return field.type.fields.some((value) => fieldContainsRecursion(value));
             } else {
                 return false;
             }
@@ -38,10 +37,13 @@ export class EntityExtensionType extends ObjectTypeBase {
 
         const recursiveFields = this.fields.filter(fieldContainsRecursion);
 
-        recursiveFields.forEach(value => {
-            context.addMessage(ValidationMessage.error(`EntityTypes cannot recursively contain an EntityType of their own type.`, value.astNode));
+        recursiveFields.forEach((value) => {
+            context.addMessage(
+                ValidationMessage.error(
+                    `EntityTypes cannot recursively contain an EntityType of their own type.`,
+                    value.astNode,
+                ),
+            );
         });
-
     }
-
 }

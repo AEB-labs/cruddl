@@ -6,7 +6,7 @@ import {
     EntitiesQueryNode,
     LiteralQueryNode,
     TransformListQueryNode,
-    VariableQueryNode
+    VariableQueryNode,
 } from '../../query-tree';
 import { ID_FIELD, REVISION_FIELD } from '../../schema/constants';
 import { decapitalize, objectEntries } from '../../utils/utils';
@@ -17,7 +17,7 @@ import { FieldContext } from '../query-node-object-type';
 export function getEntitiesByUniqueFieldQuery(
     rootEntityType: RootEntityType,
     args: { [name: string]: any },
-    context: FieldContext
+    context: FieldContext,
 ) {
     let fieldName: string;
     let value: string;
@@ -29,7 +29,7 @@ export function getEntitiesByUniqueFieldQuery(
             if (key != undefined) {
                 throw createGraphQLError(
                     `Only one of the arguments "${ID_FIELD}" and "${rootEntityType.keyField.name}" may be specified`,
-                    context
+                    context,
                 );
             }
             fieldName = ID_FIELD;
@@ -38,7 +38,7 @@ export function getEntitiesByUniqueFieldQuery(
             if (key == undefined) {
                 throw createGraphQLError(
                     `One of the arguments "${ID_FIELD}" and "${rootEntityType.keyField.name}" is required`,
-                    context
+                    context,
                 );
             }
             fieldName = rootEntityType.keyField.name;
@@ -55,13 +55,17 @@ export function getEntitiesByUniqueFieldQuery(
 
     const entityVarNode = new VariableQueryNode(decapitalize(rootEntityType.name));
     const fieldNode = createFieldNode(rootEntityType.getFieldOrThrow(fieldName), entityVarNode);
-    const filterNode = new BinaryOperationQueryNode(fieldNode, BinaryOperator.EQUAL, new LiteralQueryNode(value));
+    const filterNode = new BinaryOperationQueryNode(
+        fieldNode,
+        BinaryOperator.EQUAL,
+        new LiteralQueryNode(value),
+    );
     const listNode = new EntitiesQueryNode(rootEntityType);
 
     return new TransformListQueryNode({
         listNode,
         filterNode,
         maxCount: 1,
-        itemVariable: entityVarNode
+        itemVariable: entityVarNode,
     });
 }

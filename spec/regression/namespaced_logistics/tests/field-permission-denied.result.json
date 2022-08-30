@@ -16,7 +16,7 @@
         "message": "Not authorized to read Delivery.totalValue",
         "locations": [
           {
-            "line": 16,
+            "line": 21,
             "column": 17
           }
         ],
@@ -31,7 +31,7 @@
         "message": "Not authorized to read Forwarder objects (in Delivery.forwarder)",
         "locations": [
           {
-            "line": 17,
+            "line": 22,
             "column": 17
           }
         ],
@@ -46,7 +46,7 @@
         "message": "Not authorized to read Delivery.totalValue",
         "locations": [
           {
-            "line": 24,
+            "line": 29,
             "column": 17
           }
         ],
@@ -62,7 +62,7 @@
         "message": "Not authorized to read Delivery.totalValue",
         "locations": [
           {
-            "line": 30,
+            "line": 35,
             "column": 21
           }
         ],
@@ -78,7 +78,7 @@
         "message": "Not authorized to read Country.totalInvestment",
         "locations": [
           {
-            "line": 38,
+            "line": 43,
             "column": 13
           }
         ],
@@ -125,7 +125,7 @@
         "message": "Not authorized to read Forwarder objects",
         "locations": [
           {
-            "line": 48,
+            "line": 52,
             "column": 9
           }
         ],
@@ -138,7 +138,7 @@
         "message": "Not authorized to read Forwarder objects",
         "locations": [
           {
-            "line": 53,
+            "line": 57,
             "column": 13
           }
         ],
@@ -164,7 +164,7 @@
         "message": "Not authorized to read Delivery.totalValue",
         "locations": [
           {
-            "line": 61,
+            "line": 65,
             "column": 13
           }
         ],
@@ -178,7 +178,7 @@
         "message": "Not authorized to read Delivery.totalValue",
         "locations": [
           {
-            "line": 65,
+            "line": 71,
             "column": 13
           }
         ],
@@ -192,7 +192,7 @@
         "message": "Not authorized to read Delivery.totalValue",
         "locations": [
           {
-            "line": 69,
+            "line": 80,
             "column": 13
           }
         ],
@@ -206,7 +206,7 @@
         "message": "Not authorized to read Forwarder objects (in Delivery.forwarder)",
         "locations": [
           {
-            "line": 73,
+            "line": 89,
             "column": 13
           }
         ],
@@ -220,7 +220,7 @@
         "message": "Not authorized to read SecretKey.key",
         "locations": [
           {
-            "line": 79,
+            "line": 97,
             "column": 9
           }
         ],
@@ -250,7 +250,7 @@
         "message": "Not authorized to read Delivery.totalValue",
         "locations": [
           {
-            "line": 89,
+            "line": 106,
             "column": 13
           }
         ],
@@ -264,7 +264,7 @@
         "message": "Not authorized to read Delivery.totalValue",
         "locations": [
           {
-            "line": 93,
+            "line": 113,
             "column": 13
           }
         ],
@@ -290,7 +290,7 @@
         "message": "Not authorized to set Delivery.totalValue",
         "locations": [
           {
-            "line": 103,
+            "line": 126,
             "column": 13
           }
         ],
@@ -304,7 +304,7 @@
         "message": "Not authorized to create Forwarder objects, Not authorized to read Forwarder objects",
         "locations": [
           {
-            "line": 107,
+            "line": 130,
             "column": 9
           }
         ],
@@ -324,7 +324,7 @@
         "message": "Not authorized to set Delivery.totalValue",
         "locations": [
           {
-            "line": 116,
+            "line": 139,
             "column": 13
           }
         ],
@@ -338,7 +338,7 @@
         "message": "Skipped because other mutations reported errors",
         "locations": [
           {
-            "line": 121,
+            "line": 146,
             "column": 13
           }
         ],
@@ -352,7 +352,7 @@
         "message": "Not authorized to update Forwarder objects, Not authorized to read Forwarder objects",
         "locations": [
           {
-            "line": 125,
+            "line": 152,
             "column": 9
           }
         ],
@@ -378,7 +378,7 @@
         "message": "Not authorized to read Forwarder objects, Not authorized to delete Forwarder objects",
         "locations": [
           {
-            "line": 133,
+            "line": 160,
             "column": 9
           }
         ],

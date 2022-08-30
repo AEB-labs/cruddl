@@ -1,5 +1,5 @@
 query allPapersHavingLiteraturReferences {
-    allPapers(filter:{literatureReferences_some:{}}, orderBy: key_ASC) {
+    allPapers(filter: { literatureReferences_some: {} }, orderBy: key_ASC) {
         key
         literatureReferences(orderBy: [title_ASC, pages_startPage_ASC]) {
             title
@@ -8,7 +8,7 @@ query allPapersHavingLiteraturReferences {
 }
 
 query allPapersWihoutLiteraturReferences {
-    allPapers(filter:{literatureReferences_none:{}}, orderBy: key_ASC) {
+    allPapers(filter: { literatureReferences_none: {} }, orderBy: key_ASC) {
         key
         literatureReferences(orderBy: [title_ASC, pages_startPage_ASC]) {
             title
@@ -17,7 +17,12 @@ query allPapersWihoutLiteraturReferences {
 }
 
 query allPapersHavingACertainLiteraturReferences {
-    allPapers(filter:{literatureReferences_some:{ title: "Achievable cases in an asynchronous environment" }}, orderBy: key_ASC) {
+    allPapers(
+        filter: {
+            literatureReferences_some: { title: "Achievable cases in an asynchronous environment" }
+        }
+        orderBy: key_ASC
+    ) {
         key
         literatureReferences(orderBy: [title_ASC, pages_startPage_ASC]) {
             title
@@ -26,7 +31,10 @@ query allPapersHavingACertainLiteraturReferences {
 }
 
 query allPapersHavingLiteraturReferencesLike {
-    allPapers(filter:{literatureReferences_some:{ title_starts_with: "Achievable" }}, orderBy: key_ASC) {
+    allPapers(
+        filter: { literatureReferences_some: { title_starts_with: "Achievable" } }
+        orderBy: key_ASC
+    ) {
         key
         literatureReferences(orderBy: [title_ASC, pages_startPage_ASC]) {
             title
@@ -35,21 +43,27 @@ query allPapersHavingLiteraturReferencesLike {
 }
 
 query allPapersOfSomeCategories {
-    allPapers(filter:{categories_some:{in:[ITScience, Telecommunications]}}, orderBy: key_ASC) {
+    allPapers(
+        filter: { categories_some: { in: [ITScience, Telecommunications] } }
+        orderBy: key_ASC
+    ) {
         key
         categories
     }
 }
 
 query allPapersWhichHaveOnlyOneOfTheseCategories {
-    allPapers(filter:{categories_every:{in:[ITScience, Telecommunications]}}, orderBy: key_ASC) {
+    allPapers(
+        filter: { categories_every: { in: [ITScience, Telecommunications] } }
+        orderBy: key_ASC
+    ) {
         key
         categories
     }
 }
 
 query allPapersNotInOneOfTheseCategories {
-    allPapers(filter:{categories_none:{equal:ITScience}}, orderBy: key_ASC) {
+    allPapers(filter: { categories_none: { equal: ITScience } }, orderBy: key_ASC) {
         key
         categories
     }

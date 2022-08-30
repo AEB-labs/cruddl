@@ -11,11 +11,11 @@ describe('RootEntityType', () => {
                 fields: [
                     {
                         name: 'name',
-                        typeName: 'String'
-                    }
-                ]
-            }
-        ]
+                        typeName: 'String',
+                    },
+                ],
+            },
+        ],
     });
 
     const model = new Model({
@@ -26,22 +26,22 @@ describe('RootEntityType', () => {
                 fields: [
                     {
                         name: 'name',
-                        typeName: 'String'
-                    }
-                ]
+                        typeName: 'String',
+                    },
+                ],
             },
             {
                 name: 'NumberRangeName',
                 kind: TypeKind.ENUM,
                 values: [
                     {
-                        value: 'DELIVERY'
+                        value: 'DELIVERY',
                     },
                     {
-                        value: 'HANDLING_UNIT'
-                    }
-                ]
-            }
+                        value: 'HANDLING_UNIT',
+                    },
+                ],
+            },
         ],
         permissionProfiles: [
             {
@@ -50,27 +50,27 @@ describe('RootEntityType', () => {
                         permissions: [
                             {
                                 roles: ['everyone'],
-                                access: 'read'
-                            }
-                        ]
+                                access: 'read',
+                            },
+                        ],
                     },
                     accounting: {
                         permissions: [
                             {
                                 roles: ['accounting'],
-                                access: 'read'
-                            }
-                        ]
+                                access: 'read',
+                            },
+                        ],
                     },
                     test: {
                         permissions: [
                             {
                                 roles: ['test'],
-                                access: 'read'
-                            }
-                        ]
-                    }
-                }
+                                access: 'read',
+                            },
+                        ],
+                    },
+                },
             },
             {
                 namespacePath: ['a'],
@@ -79,11 +79,11 @@ describe('RootEntityType', () => {
                         permissions: [
                             {
                                 roles: ['everyone'],
-                                access: 'readWrite'
-                            }
-                        ]
-                    }
-                }
+                                access: 'readWrite',
+                            },
+                        ],
+                    },
+                },
             },
             {
                 namespacePath: ['b'],
@@ -92,21 +92,21 @@ describe('RootEntityType', () => {
                         permissions: [
                             {
                                 roles: ['everyone'],
-                                access: 'read'
-                            }
-                        ]
+                                access: 'read',
+                            },
+                        ],
                     },
                     default: {
                         permissions: [
                             {
                                 roles: ['everyone'],
-                                access: 'read'
-                            }
-                        ]
-                    }
-                }
-            }
-        ]
+                                access: 'read',
+                            },
+                        ],
+                    },
+                },
+            },
+        ],
     });
 
     describe('with key field', () => {
@@ -118,12 +118,12 @@ describe('RootEntityType', () => {
                     fields: [
                         {
                             name: 'deliveryNumber',
-                            typeName: 'String'
-                        }
+                            typeName: 'String',
+                        },
                     ],
-                    keyFieldName: 'deliveryNumber'
+                    keyFieldName: 'deliveryNumber',
                 },
-                model
+                model,
             );
 
             expectToBeValid(type);
@@ -136,12 +136,12 @@ describe('RootEntityType', () => {
                     fields: [
                         {
                             name: 'name',
-                            typeName: 'NumberRangeName'
-                        }
+                            typeName: 'NumberRangeName',
+                        },
                     ],
-                    keyFieldName: 'name'
+                    keyFieldName: 'name',
                 },
-                model
+                model,
             );
 
             expectToBeValid(type);
@@ -155,12 +155,12 @@ describe('RootEntityType', () => {
                     fields: [
                         {
                             name: 'deliveryNumber',
-                            typeName: 'String'
-                        }
+                            typeName: 'String',
+                        },
                     ],
-                    keyFieldName: 'deliveryNumber'
+                    keyFieldName: 'deliveryNumber',
                 },
-                model
+                model,
             );
 
             expect(type.keyField).to.equal(type.getFieldOrThrow('deliveryNumber'));
@@ -175,15 +175,18 @@ describe('RootEntityType', () => {
                         {
                             name: 'barCodes',
                             typeName: 'String',
-                            isList: true
-                        }
+                            isList: true,
+                        },
                     ],
-                    keyFieldName: 'undefined'
+                    keyFieldName: 'undefined',
                 },
-                model
+                model,
             );
 
-            expectSingleErrorToInclude(type, `Field "undefined" does not exist on type "Delivery".`);
+            expectSingleErrorToInclude(
+                type,
+                `Field "undefined" does not exist on type "Delivery".`,
+            );
         });
 
         it('rejects a list field', () => {
@@ -195,12 +198,12 @@ describe('RootEntityType', () => {
                         {
                             name: 'barCodes',
                             typeName: 'String',
-                            isList: true
-                        }
+                            isList: true,
+                        },
                     ],
-                    keyFieldName: 'barCodes'
+                    keyFieldName: 'barCodes',
                 },
-                model
+                model,
             );
 
             expectSingleErrorToInclude(type, `List fields cannot be used as key field.`);
@@ -214,17 +217,17 @@ describe('RootEntityType', () => {
                     fields: [
                         {
                             name: 'address',
-                            typeName: 'Address'
-                        }
+                            typeName: 'Address',
+                        },
                     ],
-                    keyFieldName: 'address'
+                    keyFieldName: 'address',
                 },
-                model
+                model,
             );
 
             expectSingleErrorToInclude(
                 type,
-                `Only fields of type "String", "Int", "Int53", "ID", "LocalDate", and enum types can be used as key field.`
+                `Only fields of type "String", "Int", "Int53", "ID", "LocalDate", and enum types can be used as key field.`,
             );
         });
 
@@ -236,29 +239,33 @@ describe('RootEntityType', () => {
                     fields: [
                         {
                             name: 'deliveryNumber',
-                            typeName: 'String'
+                            typeName: 'String',
                         },
                         {
                             name: 'isShipped',
-                            typeName: 'Boolean'
-                        }
+                            typeName: 'Boolean',
+                        },
                     ],
                     keyFieldName: 'deliveryNumber',
                     indices: [
                         {
-                            fields: ['isShipped']
-                        }
-                    ]
+                            fields: ['isShipped'],
+                        },
+                    ],
                 },
-                model
+                model,
             );
 
             expect(type.indices).to.have.lengthOf(3);
-            expect(type.indices[0].fields.map(f => f.dotSeparatedPath)).to.deep.equal(['isShipped']);
+            expect(type.indices[0].fields.map((f) => f.dotSeparatedPath)).to.deep.equal([
+                'isShipped',
+            ]);
             expect(type.indices[0].unique).to.equal(false);
-            expect(type.indices[1].fields.map(f => f.dotSeparatedPath)).to.deep.equal(['deliveryNumber']);
+            expect(type.indices[1].fields.map((f) => f.dotSeparatedPath)).to.deep.equal([
+                'deliveryNumber',
+            ]);
             expect(type.indices[1].unique).to.equal(true);
-            expect(type.indices[2].fields.map(f => f.dotSeparatedPath)).to.deep.equal(['id']);
+            expect(type.indices[2].fields.map((f) => f.dotSeparatedPath)).to.deep.equal(['id']);
             expect(type.indices[2].unique).to.equal(false);
         });
 
@@ -270,24 +277,26 @@ describe('RootEntityType', () => {
                     fields: [
                         {
                             name: 'deliveryNumber',
-                            typeName: 'String'
-                        }
+                            typeName: 'String',
+                        },
                     ],
                     keyFieldName: 'deliveryNumber',
                     indices: [
                         {
                             fields: ['deliveryNumber'],
-                            unique: true
-                        }
-                    ]
+                            unique: true,
+                        },
+                    ],
                 },
-                model
+                model,
             );
 
             expect(type.indices).to.have.lengthOf(2);
-            expect(type.indices[0].fields.map(f => f.dotSeparatedPath)).to.deep.equal(['deliveryNumber']);
+            expect(type.indices[0].fields.map((f) => f.dotSeparatedPath)).to.deep.equal([
+                'deliveryNumber',
+            ]);
             expect(type.indices[0].unique).to.equal(true);
-            expect(type.indices[1].fields.map(f => f.dotSeparatedPath)).to.deep.equal(['id']);
+            expect(type.indices[1].fields.map((f) => f.dotSeparatedPath)).to.deep.equal(['id']);
             expect(type.indices[1].unique).to.equal(false);
         });
 
@@ -299,25 +308,29 @@ describe('RootEntityType', () => {
                     fields: [
                         {
                             name: 'deliveryNumber',
-                            typeName: 'String'
-                        }
+                            typeName: 'String',
+                        },
                     ],
                     keyFieldName: 'deliveryNumber',
                     indices: [
                         {
-                            fields: ['deliveryNumber']
-                        }
-                    ]
+                            fields: ['deliveryNumber'],
+                        },
+                    ],
                 },
-                model
+                model,
             );
 
             expect(type.indices).to.have.lengthOf(3);
-            expect(type.indices[0].fields.map(f => f.dotSeparatedPath)).to.deep.equal(['deliveryNumber']);
+            expect(type.indices[0].fields.map((f) => f.dotSeparatedPath)).to.deep.equal([
+                'deliveryNumber',
+            ]);
             expect(type.indices[0].unique).to.equal(false);
-            expect(type.indices[1].fields.map(f => f.dotSeparatedPath)).to.deep.equal(['deliveryNumber']);
+            expect(type.indices[1].fields.map((f) => f.dotSeparatedPath)).to.deep.equal([
+                'deliveryNumber',
+            ]);
             expect(type.indices[1].unique).to.equal(true);
-            expect(type.indices[2].fields.map(f => f.dotSeparatedPath)).to.deep.equal(['id']);
+            expect(type.indices[2].fields.map((f) => f.dotSeparatedPath)).to.deep.equal(['id']);
             expect(type.indices[2].unique).to.equal(false);
         });
     });
@@ -331,18 +344,20 @@ describe('RootEntityType', () => {
                     fields: [
                         {
                             name: 'deliveryNumber',
-                            typeName: 'String'
-                        }
+                            typeName: 'String',
+                        },
                     ],
                     permissions: {
-                        permissionProfileName: 'accounting'
-                    }
+                        permissionProfileName: 'accounting',
+                    },
                 },
-                model
+                model,
             );
 
             expectToBeValid(type);
-            expect(type.permissionProfile).to.equal(model.rootNamespace.getPermissionProfileOrThrow('accounting'));
+            expect(type.permissionProfile).to.equal(
+                model.rootNamespace.getPermissionProfileOrThrow('accounting'),
+            );
         });
 
         it('resolves profile in its own namespace', () => {
@@ -354,19 +369,19 @@ describe('RootEntityType', () => {
                     fields: [
                         {
                             name: 'deliveryNumber',
-                            typeName: 'String'
-                        }
+                            typeName: 'String',
+                        },
                     ],
                     permissions: {
-                        permissionProfileName: 'accounting'
-                    }
+                        permissionProfileName: 'accounting',
+                    },
                 },
-                model
+                model,
             );
 
             expectToBeValid(type);
             expect(type.permissionProfile).to.equal(
-                model.getNamespaceByPathOrThrow(['b']).getPermissionProfileOrThrow('accounting')
+                model.getNamespaceByPathOrThrow(['b']).getPermissionProfileOrThrow('accounting'),
             );
         });
 
@@ -379,18 +394,20 @@ describe('RootEntityType', () => {
                     fields: [
                         {
                             name: 'deliveryNumber',
-                            typeName: 'String'
-                        }
+                            typeName: 'String',
+                        },
                     ],
                     permissions: {
-                        permissionProfileName: 'test'
-                    }
+                        permissionProfileName: 'test',
+                    },
                 },
-                model
+                model,
             );
 
             expectToBeValid(type);
-            expect(type.permissionProfile).to.equal(model.rootNamespace.getPermissionProfileOrThrow('test'));
+            expect(type.permissionProfile).to.equal(
+                model.rootNamespace.getPermissionProfileOrThrow('test'),
+            );
         });
 
         it('accepts direct role specifier', () => {
@@ -401,16 +418,16 @@ describe('RootEntityType', () => {
                     fields: [
                         {
                             name: 'deliveryNumber',
-                            typeName: 'String'
-                        }
+                            typeName: 'String',
+                        },
                     ],
                     permissions: {
                         roles: {
-                            read: ['accounting']
-                        }
-                    }
+                            read: ['accounting'],
+                        },
+                    },
                 },
-                model
+                model,
             );
 
             expectToBeValid(type);
@@ -424,24 +441,26 @@ describe('RootEntityType', () => {
                     fields: [
                         {
                             name: 'deliveryNumber',
-                            typeName: 'String'
-                        }
+                            typeName: 'String',
+                        },
                     ],
                     permissions: {
                         roles: {
-                            read: ['accounting']
+                            read: ['accounting'],
                         },
-                        permissionProfileName: 'accounting'
-                    }
+                        permissionProfileName: 'accounting',
+                    },
                 },
-                model
+                model,
             );
 
             const result = validate(type);
             expect(result.messages.length, result.toString()).to.equal(2);
             for (const message of result.messages) {
                 expect(message.severity).to.equal(Severity.Error);
-                expect(message.message).to.equal(`Permission profile and explicit role specifiers cannot be combined.`);
+                expect(message.message).to.equal(
+                    `Permission profile and explicit role specifiers cannot be combined.`,
+                );
             }
         });
 
@@ -453,14 +472,14 @@ describe('RootEntityType', () => {
                     fields: [
                         {
                             name: 'deliveryNumber',
-                            typeName: 'String'
-                        }
+                            typeName: 'String',
+                        },
                     ],
                     permissions: {
-                        permissionProfileName: 'undefined'
-                    }
+                        permissionProfileName: 'undefined',
+                    },
                 },
-                model
+                model,
             );
 
             expectSingleErrorToInclude(type, `Permission profile "undefined" not found`);
@@ -474,11 +493,11 @@ describe('RootEntityType', () => {
                     fields: [
                         {
                             name: 'deliveryNumber',
-                            typeName: 'String'
-                        }
-                    ]
+                            typeName: 'String',
+                        },
+                    ],
                 },
-                modelWithoutDefaultProfile
+                modelWithoutDefaultProfile,
             );
 
             expectToBeValid(type);
@@ -492,11 +511,11 @@ describe('RootEntityType', () => {
                     fields: [
                         {
                             name: 'deliveryNumber',
-                            typeName: 'String'
-                        }
-                    ]
+                            typeName: 'String',
+                        },
+                    ],
                 },
-                model
+                model,
             );
 
             expectToBeValid(type);
@@ -510,14 +529,16 @@ describe('RootEntityType', () => {
                     fields: [
                         {
                             name: 'deliveryNumber',
-                            typeName: 'String'
-                        }
-                    ]
+                            typeName: 'String',
+                        },
+                    ],
                 },
-                model
+                model,
             );
 
-            expect(type.permissionProfile).to.equal(model.rootNamespace.getPermissionProfileOrThrow('default'));
+            expect(type.permissionProfile).to.equal(
+                model.rootNamespace.getPermissionProfileOrThrow('default'),
+            );
         });
 
         it('uses default profile of its own namespace', () => {
@@ -529,15 +550,15 @@ describe('RootEntityType', () => {
                     fields: [
                         {
                             name: 'deliveryNumber',
-                            typeName: 'String'
-                        }
-                    ]
+                            typeName: 'String',
+                        },
+                    ],
                 },
-                model
+                model,
             );
 
             expect(type.permissionProfile).to.equal(
-                model.getNamespaceByPathOrThrow(['b']).getPermissionProfileOrThrow('default')
+                model.getNamespaceByPathOrThrow(['b']).getPermissionProfileOrThrow('default'),
             );
         });
 
@@ -549,14 +570,14 @@ describe('RootEntityType', () => {
                     fields: [
                         {
                             name: 'deliveryNumber',
-                            typeName: 'String'
-                        }
+                            typeName: 'String',
+                        },
                     ],
                     permissions: {
-                        roles: {}
-                    }
+                        roles: {},
+                    },
                 },
-                model
+                model,
             );
 
             expect(type.permissionProfile).to.be.undefined;

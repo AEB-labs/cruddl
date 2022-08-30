@@ -34,7 +34,7 @@ export enum BasicType {
     /**
      * The single NULL type (note that there is nothing like undefined - missing properties should evaluate to NULL)
      */
-    NULL
+    NULL,
 }
 
 /**
@@ -48,6 +48,6 @@ export class SafeListQueryNode extends QueryNode {
     }
 
     describe(): string {
-        return `(${this.sourceNode.describe()} or [] if not a list)`
+        return `(${this.sourceNode.describe()} or [] if not a list)`;
     }
 }

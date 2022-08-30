@@ -1,12 +1,17 @@
 import { expect } from 'chai';
 import { DocumentNode, parse, print, Source } from 'graphql';
 import { ParsedProjectSourceBaseKind } from '../../../src/config/parsed-project';
-import { createModel, PermissionProfileConfigMap, ValidationContext, ValidationResult } from '../../../src/model';
+import {
+    createModel,
+    PermissionProfileConfigMap,
+    ValidationContext,
+    ValidationResult,
+} from '../../../src/model';
 import { ProjectSource } from '../../../src/project/source';
 import {
     validateParsedProjectSource,
     validatePostMerge,
-    validateSource
+    validateSource,
 } from '../../../src/schema/preparation/ast-validator';
 import { parseProjectSource } from '../../../src/schema/schema-builder';
 
@@ -21,8 +26,8 @@ export function assertValidatorWarns(source: string | DocumentNode, msg: string)
     const validationResult = validate(source);
     expect(validationResult.hasWarnings()).to.be.true;
     expect(
-        validationResult.messages.find(validatedMsg => validatedMsg.message === msg),
-        validationResult.toString()
+        validationResult.messages.find((validatedMsg) => validatedMsg.message === msg),
+        validationResult.toString(),
     ).to.not.be.undefined;
 }
 
@@ -39,7 +44,7 @@ export function assertValidatorAcceptsAndDoesNotWarn(source: string | DocumentNo
 
 export function validate(
     source: string | DocumentNode,
-    options: { permissionProfiles?: PermissionProfileConfigMap } = {}
+    options: { permissionProfiles?: PermissionProfileConfigMap } = {},
 ): ValidationResult {
     const ast = typeof source === 'string' ? parse(new Source(source, 'schema.graphqls')) : source;
     const model = createModel({
@@ -47,7 +52,7 @@ export function validate(
             {
                 kind: ParsedProjectSourceBaseKind.GRAPHQL,
                 document: ast,
-                namespacePath: []
+                namespacePath: [],
             },
             {
                 kind: ParsedProjectSourceBaseKind.OBJECT,
@@ -57,21 +62,21 @@ export function validate(
                             permissions: [
                                 {
                                     roles: ['admin'],
-                                    access: 'readWrite'
-                                }
-                            ]
-                        }
-                    }
+                                    access: 'readWrite',
+                                },
+                            ],
+                        },
+                    },
                 },
                 namespacePath: [],
-                pathLocationMap: {}
-            }
-        ]
+                pathLocationMap: {},
+            },
+        ],
     });
     const astResults = validatePostMerge(ast, model);
     const projectSource = new ProjectSource(
         'schema.graphqls',
-        typeof source === 'string' ? source : source.loc?.source?.body ?? print(source)
+        typeof source === 'string' ? source : source.loc?.source?.body ?? print(source),
     );
     const sourceResults = validateSource(projectSource);
     const validationContext = new ValidationContext();
@@ -85,7 +90,7 @@ export function validate(
         ...sourceResults.messages,
         ...astResults.messages,
         ...validationContext.asResult().messages,
-        ...(parsedSourceResults ? parsedSourceResults.messages : [])
+        ...(parsedSourceResults ? parsedSourceResults.messages : []),
     ]);
     if (intermediateResult.hasErrors()) {
         return intermediateResult;

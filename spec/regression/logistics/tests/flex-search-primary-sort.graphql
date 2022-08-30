@@ -1,15 +1,11 @@
 query order_above_max {
-    flexSearchHandlingUnits(
-        orderBy: id_ASC
-    ){
+    flexSearchHandlingUnits(orderBy: id_ASC) {
         huNumber
     }
 }
 
 query order_above_max_primary_sort {
-    flexSearchHandlingUnits(
-        orderBy: huNumber_DESC
-    ){
+    flexSearchHandlingUnits(orderBy: huNumber_DESC) {
         huNumber
     }
 }

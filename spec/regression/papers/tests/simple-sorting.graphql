@@ -1,5 +1,5 @@
 {
     allPapers(orderBy: title_ASC) {
-            title
+        title
     }
 }

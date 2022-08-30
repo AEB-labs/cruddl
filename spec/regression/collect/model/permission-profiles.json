@@ -1,27 +1,27 @@
 {
-    "permissionProfiles": {
-        "default": {
-            "permissions": [
-                {
-                    "roles": ["users"],
-                    "access": "readWrite"
-                },
-                {
-                    "roles": ["d1s1"],
-                    "access": "readWrite",
-                    "restrictToAccessGroups": ["D1", "S1"]
-                },
-                {
-                    "roles": ["s1d2d3h1h3h4o2o3"],
-                    "access": "readWrite",
-                    "restrictToAccessGroups": ["S1", "D2", "D3", "H1", "H3", "H4", "O2", "O3"]
-                },
-                {
-                    "roles": ["h1h2"],
-                    "access": "readWrite",
-                    "restrictToAccessGroups": ["D1", "S1", "H1", "H2"]
-                }
-            ]
+  "permissionProfiles": {
+    "default": {
+      "permissions": [
+        {
+          "roles": ["users"],
+          "access": "readWrite"
+        },
+        {
+          "roles": ["d1s1"],
+          "access": "readWrite",
+          "restrictToAccessGroups": ["D1", "S1"]
+        },
+        {
+          "roles": ["s1d2d3h1h3h4o2o3"],
+          "access": "readWrite",
+          "restrictToAccessGroups": ["S1", "D2", "D3", "H1", "H3", "H4", "O2", "O3"]
+        },
+        {
+          "roles": ["h1h2"],
+          "access": "readWrite",
+          "restrictToAccessGroups": ["D1", "S1", "H1", "H2"]
         }
+      ]
     }
+  }
 }

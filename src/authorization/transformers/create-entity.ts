@@ -5,13 +5,16 @@ import {
     PreExecQueryParms,
     QueryNode,
     RuntimeErrorQueryNode,
-    WithPreExecutionQueryNode
+    WithPreExecutionQueryNode,
 } from '../../query-tree';
 import { AccessOperation, AuthContext } from '../auth-basics';
 import { ConditionExplanationContext, PermissionResult } from '../permission-descriptors';
 import { getPermissionDescriptorOfRootEntityType } from '../permission-descriptors-in-model';
 
-export function transformCreateEntityQueryNode(node: CreateEntityQueryNode, authContext: AuthContext): QueryNode {
+export function transformCreateEntityQueryNode(
+    node: CreateEntityQueryNode,
+    authContext: AuthContext,
+): QueryNode {
     const permissionDescriptor = getPermissionDescriptorOfRootEntityType(node.rootEntityType);
     const access = permissionDescriptor.canAccess(authContext, AccessOperation.CREATE);
 
@@ -19,19 +22,22 @@ export function transformCreateEntityQueryNode(node: CreateEntityQueryNode, auth
         case PermissionResult.GRANTED:
             return node;
         case PermissionResult.DENIED:
-            return new RuntimeErrorQueryNode(`Not authorized to create ${node.rootEntityType.name} objects`, {
-                code: PERMISSION_DENIED_ERROR
-            });
+            return new RuntimeErrorQueryNode(
+                `Not authorized to create ${node.rootEntityType.name} objects`,
+                {
+                    code: PERMISSION_DENIED_ERROR,
+                },
+            );
         default:
             const condition = permissionDescriptor.getAccessCondition(
                 authContext,
                 AccessOperation.CREATE,
-                node.objectNode
+                node.objectNode,
             );
             const explanation = permissionDescriptor.getExplanationForCondition(
                 authContext,
                 AccessOperation.CREATE,
-                ConditionExplanationContext.SET
+                ConditionExplanationContext.SET,
             );
             return new WithPreExecutionQueryNode({
                 resultNode: node,
@@ -40,10 +46,10 @@ export function transformCreateEntityQueryNode(node: CreateEntityQueryNode, auth
                         query: condition,
                         resultValidator: new ErrorIfNotTruthyResultValidator({
                             errorCode: PERMISSION_DENIED_ERROR,
-                            errorMessage: `Not authorized to ${explanation}`
-                        })
-                    })
-                ]
+                            errorMessage: `Not authorized to ${explanation}`,
+                        }),
+                    }),
+                ],
             });
     }
 }

@@ -15,7 +15,7 @@ describe('createModel', () => {
         const model = createSimpleModel(document);
         expect(model.validate().getErrors(), model.validate().toString()).to.deep.equal([]);
         const testType = model.getRootEntityTypeOrThrow('Test');
-        expect(testType.fields.filter(f => !f.isSystemField)).to.have.lengthOf(1); // only test should be a non-system field
+        expect(testType.fields.filter((f) => !f.isSystemField)).to.have.lengthOf(1); // only test should be a non-system field
         expect(testType.getField('_key')).to.be.undefined;
         expect(testType.getKeyFieldOrThrow().name).to.equal('id');
     });
@@ -30,7 +30,7 @@ describe('createModel', () => {
         const model = createSimpleModel(document);
         expect(model.validate().getErrors(), model.validate().toString()).to.deep.equal([]);
         const testType = model.getRootEntityTypeOrThrow('Test');
-        expect(testType.fields.filter(f => !f.isSystemField)).to.have.lengthOf(1); // only test should be a non-system field
+        expect(testType.fields.filter((f) => !f.isSystemField)).to.have.lengthOf(1); // only test should be a non-system field
         expect(testType.getField('_key')).to.be.undefined;
         expect(testType.getFieldOrThrow('id').isSystemField).to.be.true;
         expect(testType.getKeyFieldOrThrow().name).to.equal('id');
@@ -55,19 +55,19 @@ describe('createModel', () => {
 
         const indexA = testType.indices[0];
         expect(indexA).not.to.be.undefined;
-        expect(indexA!.fields.map(f => f.path).join(',')).to.equal('test');
+        expect(indexA!.fields.map((f) => f.path).join(',')).to.equal('test');
         expect(indexA!.unique).to.equal(false);
         expect(indexA!.sparse).to.equal(false);
 
         const indexB = testType.indices[1];
         expect(indexB).not.to.be.undefined;
-        expect(indexB!.fields.map(f => f.path).join(',')).to.equal('test,id');
+        expect(indexB!.fields.map((f) => f.path).join(',')).to.equal('test,id');
         expect(indexB!.unique).to.equal(true);
         expect(indexB!.sparse).to.equal(true);
 
         const indexC = testType.indices[2];
         expect(indexC).not.to.be.undefined;
-        expect(indexC!.fields.map(f => f.path).join(',')).to.equal('test,id');
+        expect(indexC!.fields.map((f) => f.path).join(',')).to.equal('test,id');
         expect(indexC!.unique).to.equal(true);
         expect(indexC!.sparse).to.equal(false);
     });
@@ -84,17 +84,23 @@ describe('createModel', () => {
         expect(model.validate().getErrors(), model.validate().toString()).to.deep.equal([]);
         const testType = model.getRootEntityTypeOrThrow('Test');
 
-        const indexA = testType.indices.find(index => index.fields.map(f => f.dotSeparatedPath).join(',') === 'testA');
+        const indexA = testType.indices.find(
+            (index) => index.fields.map((f) => f.dotSeparatedPath).join(',') === 'testA',
+        );
         expect(indexA).not.to.be.undefined;
         expect(indexA!.unique).to.equal(false);
         expect(indexA!.sparse).to.equal(false);
 
-        const indexB = testType.indices.find(index => index.fields.map(f => f.dotSeparatedPath).join(',') === 'testB');
+        const indexB = testType.indices.find(
+            (index) => index.fields.map((f) => f.dotSeparatedPath).join(',') === 'testB',
+        );
         expect(indexB).not.to.be.undefined;
         expect(indexB!.unique).to.equal(true);
         expect(indexB!.sparse).to.equal(true);
 
-        const indexC = testType.indices.find(index => index.fields.map(f => f.dotSeparatedPath).join(',') === 'testC');
+        const indexC = testType.indices.find(
+            (index) => index.fields.map((f) => f.dotSeparatedPath).join(',') === 'testC',
+        );
         expect(indexC).not.to.be.undefined;
         expect(indexC!.unique).to.equal(true);
         expect(indexC!.sparse).to.equal(false);
@@ -113,7 +119,9 @@ describe('createModel', () => {
         expect(model.validate().getErrors(), model.validate().toString()).to.deep.equal([]);
         const testType = model.getRootEntityTypeOrThrow('Test');
 
-        const indices = testType.indices.filter(i => i.fields.length === 1 && i.fields[0].dotSeparatedPath === 'test');
+        const indices = testType.indices.filter(
+            (i) => i.fields.length === 1 && i.fields[0].dotSeparatedPath === 'test',
+        );
         expect(indices.length).to.equal(2);
         const [indexA, indexB] = indices;
 

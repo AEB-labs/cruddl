@@ -17,7 +17,12 @@ query before {
 }
 
 mutation update {
-    updateDelivery(input: { id: "@{ids/Delivery/2}", dgInfo: { unNumber: "1234" details: { expiryDate: "2020-02-14" } } }) {
+    updateDelivery(
+        input: {
+            id: "@{ids/Delivery/2}"
+            dgInfo: { unNumber: "1234", details: { expiryDate: "2020-02-14" } }
+        }
+    ) {
         dgInfo {
             unNumber
             notices
@@ -47,7 +52,9 @@ mutation updateWithNull {
 
 mutation updateNested {
     # this should NOT clear expiryDate (used to be a bug)
-    updateDelivery(input: { id: "@{ids/Delivery/2}", dgInfo: { details: { comment: "some comment" } } }) {
+    updateDelivery(
+        input: { id: "@{ids/Delivery/2}", dgInfo: { details: { comment: "some comment" } } }
+    ) {
         dgInfo {
             unNumber
             details {
@@ -68,7 +75,7 @@ mutation createWithNull {
 }
 
 mutation createWithValue {
-    createDelivery(input: {deliveryNumber: "Test", dgInfo: { unNumber: "1234" } }) {
+    createDelivery(input: { deliveryNumber: "Test", dgInfo: { unNumber: "1234" } }) {
         dgInfo {
             unNumber
             notices

@@ -78,15 +78,19 @@ export async function calculateRequiredArangoSearchViewCreateOperations(
     existingViews: ArangoSearchView[],
     requiredViews: ReadonlyArray<ArangoSearchDefinition>,
     db: Database,
-    configuration?: ArangoSearchConfiguration
+    configuration?: ArangoSearchConfiguration,
 ): Promise<ReadonlyArray<SchemaMigration>> {
     let viewsToCreate = requiredViews.filter(
-        (value) => !existingViews.some((value1) => value1.name === value.viewName)
+        (value) => !existingViews.some((value1) => value1.name === value.viewName),
     );
 
-    async function mapToMigration(value: ArangoSearchDefinition): Promise<CreateArangoSearchViewMigration> {
+    async function mapToMigration(
+        value: ArangoSearchDefinition,
+    ): Promise<CreateArangoSearchViewMigration> {
         const colExists = await db.collection(value.collectionName).exists();
-        const count: number = colExists ? (await db.collection(value.collectionName).count()).count : 0;
+        const count: number = colExists
+            ? (await db.collection(value.collectionName).count()).count
+            : 0;
         return new CreateArangoSearchViewMigration({
             collectionSize: count,
             collectionName: value.collectionName,
@@ -100,12 +104,12 @@ export async function calculateRequiredArangoSearchViewCreateOperations(
 
 export function calculateRequiredArangoSearchViewDropOperations(
     views: ArangoSearchView[],
-    definitions: ReadonlyArray<ArangoSearchDefinition>
+    definitions: ReadonlyArray<ArangoSearchDefinition>,
 ): ReadonlyArray<SchemaMigration> {
     const viewsToDrop = views.filter(
         (value) =>
             !definitions.some((value1) => value1.viewName === value.name) &&
-            value.name.startsWith(FLEX_SEARCH_VIEW_PREFIX)
+            value.name.startsWith(FLEX_SEARCH_VIEW_PREFIX),
     );
     return viewsToDrop.map((value) => new DropArangoSearchViewMigration({ viewName: value.name }));
 }
@@ -117,7 +121,7 @@ export function calculateRequiredArangoSearchViewDropOperations(
  * pending change in the migration analyzer (because it would want to add inBackground).
  */
 export function configureForBackgroundCreation(
-    definition: ArangoSearchViewPropertiesOptions
+    definition: ArangoSearchViewPropertiesOptions,
 ): ArangoSearchViewPropertiesOptions {
     return {
         ...definition,
@@ -131,7 +135,7 @@ export function configureForBackgroundCreation(
                           // if this is not set, creating the view would acquire an exclusive lock on the collections
                           inBackground: true,
                       },
-                  ])
+                  ]),
               )
             : definition.links,
     };
@@ -139,9 +143,10 @@ export function configureForBackgroundCreation(
 
 function getPropertiesFromDefinition(
     definition: ArangoSearchDefinition,
-    configuration?: ArangoSearchConfiguration
+    configuration?: ArangoSearchConfiguration,
 ): ArangoSearchViewPropertiesOptions {
-    const recursionDepth = configuration && configuration.recursionDepth ? configuration.recursionDepth : 1;
+    const recursionDepth =
+        configuration && configuration.recursionDepth ? configuration.recursionDepth : 1;
     return {
         links: {
             [definition.collectionName]: {
@@ -152,7 +157,9 @@ function getPropertiesFromDefinition(
                 fields: fieldDefinitionsFor(definition.rootEntityType.fields),
             } as ArangoSearchViewLink,
         },
-        commitIntervalMsec: configuration?.commitIntervalMsec ? configuration.commitIntervalMsec : 1000,
+        commitIntervalMsec: configuration?.commitIntervalMsec
+            ? configuration.commitIntervalMsec
+            : 1000,
         consolidationIntervalMsec: configuration?.consolidationIntervalMsec
             ? configuration.consolidationIntervalMsec
             : 1000,
@@ -161,17 +168,21 @@ function getPropertiesFromDefinition(
 
     function fieldDefinitionsFor(
         fields: ReadonlyArray<Field>,
-        path: ReadonlyArray<Field> = []
+        path: ReadonlyArray<Field> = [],
     ): { [key: string]: ArangoSearchViewCollectionLink | undefined } {
         const fieldDefinitions: { [key: string]: ArangoSearchViewCollectionLink | undefined } = {};
         const fieldsToIndex = fields.filter(
             (field) =>
                 (field.isFlexSearchIndexed || field.isFlexSearchFulltextIndexed) &&
-                path.filter((f) => f === field).length < recursionDepth
+                path.filter((f) => f === field).length < recursionDepth,
         );
         for (const field of fieldsToIndex) {
             let arangoFieldName;
-            if (field.declaringType.isRootEntityType && field.isSystemField && field.name === ID_FIELD) {
+            if (
+                field.declaringType.isRootEntityType &&
+                field.isSystemField &&
+                field.name === ID_FIELD
+            ) {
                 arangoFieldName = '_key';
             } else {
                 arangoFieldName = field.name;
@@ -181,7 +192,10 @@ function getPropertiesFromDefinition(
         return fieldDefinitions;
     }
 
-    function fieldDefinitionFor(field: Field, path: ReadonlyArray<Field> = []): ArangoSearchViewCollectionLink {
+    function fieldDefinitionFor(
+        field: Field,
+        path: ReadonlyArray<Field> = [],
+    ): ArangoSearchViewCollectionLink {
         if (field.type.isObjectType) {
             return {
                 fields: fieldDefinitionsFor(field.type.fields, path),
@@ -214,21 +228,21 @@ function getPropertiesFromDefinition(
 
 export function isEqualProperties(
     definitionProperties: ArangoSearchViewPropertiesOptions,
-    viewProperties: ArangoSearchViewProperties
+    viewProperties: ArangoSearchViewProperties,
 ): boolean {
     return (
         _.isEqual(definitionProperties.links, viewProperties.links) &&
         _.isEqual(definitionProperties.primarySort, viewProperties.primarySort) &&
         _.isEqual(
             definitionProperties.commitIntervalMsec,
-            (viewProperties as any).commitIntervalMsec /* somehow missing in types */
+            (viewProperties as any).commitIntervalMsec /* somehow missing in types */,
         )
     );
 }
 
 function isRecreateRequired(
     definitionProperties: ArangoSearchViewPropertiesOptions,
-    viewProperties: ArangoSearchViewProperties
+    viewProperties: ArangoSearchViewProperties,
 ): boolean {
     return !_.isEqual(definitionProperties.primarySort, viewProperties.primarySort);
 }
@@ -237,9 +251,12 @@ export async function calculateRequiredArangoSearchViewUpdateOperations(
     views: ArangoSearchView[],
     definitions: ReadonlyArray<ArangoSearchDefinition>,
     db: Database,
-    configuration?: ArangoSearchConfiguration
+    configuration?: ArangoSearchConfiguration,
 ): Promise<ReadonlyArray<SchemaMigration>> {
-    const viewsWithUpdateRequired: (UpdateArangoSearchViewMigration | RecreateArangoSearchViewMigration)[] = [];
+    const viewsWithUpdateRequired: (
+        | UpdateArangoSearchViewMigration
+        | RecreateArangoSearchViewMigration
+    )[] = [];
     for (const view of views) {
         const definition = definitions.find((value) => value.viewName === view.name);
         if (!definition) {
@@ -250,7 +267,9 @@ export async function calculateRequiredArangoSearchViewUpdateOperations(
         const definitionProperties = getPropertiesFromDefinition(definition, configuration);
         if (!isEqualProperties(definitionProperties, viewProperties)) {
             const colExists = await db.collection(definition.collectionName).exists();
-            const count: number = colExists ? (await db.collection(definition.collectionName).count()).count : 0;
+            const count: number = colExists
+                ? (await db.collection(definition.collectionName).count()).count
+                : 0;
             if (isRecreateRequired(definitionProperties, viewProperties)) {
                 viewsWithUpdateRequired.push(
                     new RecreateArangoSearchViewMigration({
@@ -258,7 +277,7 @@ export async function calculateRequiredArangoSearchViewUpdateOperations(
                         collectionName: definition.collectionName,
                         collectionSize: count,
                         properties: definitionProperties,
-                    })
+                    }),
                 );
             } else {
                 viewsWithUpdateRequired.push(
@@ -267,7 +286,7 @@ export async function calculateRequiredArangoSearchViewUpdateOperations(
                         collectionName: definition.collectionName,
                         collectionSize: count,
                         properties: definitionProperties,
-                    })
+                    }),
                 );
             }
         }

@@ -1,5 +1,5 @@
-import { expect } from "chai";
-import {  Source } from 'graphql';
+import { expect } from 'chai';
+import { Source } from 'graphql';
 import { createModel, ValidationContext } from '../../../src/model';
 import { Project } from '../../../src/project/project';
 import { validateParsedProjectSource } from '../../../src/schema/preparation/ast-validator';
@@ -56,7 +56,14 @@ i18n:
 describe('I18n validation', () => {
     it('reports no warnings and errors for a valid model', () => {
         const validationContext = new ValidationContext();
-        const parsedProject = parseProject(new Project([new Source(permissionProfiles, 'perm.json'), new Source(graphql, 'graphql.graphql'), new Source(i18n1, 'i18n.yaml')]), new ValidationContext());
+        const parsedProject = parseProject(
+            new Project([
+                new Source(permissionProfiles, 'perm.json'),
+                new Source(graphql, 'graphql.graphql'),
+                new Source(i18n1, 'i18n.yaml'),
+            ]),
+            new ValidationContext(),
+        );
         const model = createModel(parsedProject);
 
         model.i18n.validate(validationContext);
@@ -66,7 +73,15 @@ describe('I18n validation', () => {
 
     it('reports double definitions of fields', () => {
         const validationContext = new ValidationContext();
-        const parsedProject = parseProject(new Project([new Source(permissionProfiles, 'perm.json'), new Source(graphql, 'graphql.graphql'), new Source(i18n1, 'i18n.yaml'), new Source(i18n1, 'i18n.yaml')]), new ValidationContext());
+        const parsedProject = parseProject(
+            new Project([
+                new Source(permissionProfiles, 'perm.json'),
+                new Source(graphql, 'graphql.graphql'),
+                new Source(i18n1, 'i18n.yaml'),
+                new Source(i18n1, 'i18n.yaml'),
+            ]),
+            new ValidationContext(),
+        );
         const model = createModel(parsedProject);
 
         model.i18n.validate(validationContext);
@@ -75,7 +90,7 @@ describe('I18n validation', () => {
         expect(validationContext.asResult().hasErrors()).is.true;
     });
 
-    it('reports wrong usage of fields on non-object-types', ()=>{
+    it('reports wrong usage of fields on non-object-types', () => {
         const wrongBody = `
 i18n:
   en:
@@ -86,18 +101,27 @@ i18n:
         `;
 
         const validationContext = new ValidationContext();
-        const parsedProject = parseProject(new Project([new Source(permissionProfiles, 'perm.json'), new Source(graphql, 'graphql.graphql'), new Source(i18n1, 'i18n.yaml'), new Source(wrongBody, 'i18n2.yaml')]), new ValidationContext());
+        const parsedProject = parseProject(
+            new Project([
+                new Source(permissionProfiles, 'perm.json'),
+                new Source(graphql, 'graphql.graphql'),
+                new Source(i18n1, 'i18n.yaml'),
+                new Source(wrongBody, 'i18n2.yaml'),
+            ]),
+            new ValidationContext(),
+        );
         const model = createModel(parsedProject);
 
         model.i18n.validate(validationContext);
 
         expect(validationContext.asResult().hasMessages()).is.true;
         expect(validationContext.asResult().getErrors().length).to.eq(1);
-        expect(validationContext.asResult().getErrors()[0].message).to.contain("The type \"Importance\" is a non-object-type.");
-
+        expect(validationContext.asResult().getErrors()[0].message).to.contain(
+            'The type "Importance" is a non-object-type.',
+        );
     });
 
-    it('reports wrong usage of values on object-types', ()=>{
+    it('reports wrong usage of values on object-types', () => {
         const wrongBody = `
 i18n:
   en:
@@ -108,18 +132,27 @@ i18n:
         `;
 
         const validationContext = new ValidationContext();
-        const parsedProject = parseProject(new Project([new Source(permissionProfiles, 'perm.json'), new Source(graphql, 'graphql.graphql'), new Source(i18n1, 'i18n.yaml'), new Source(wrongBody, 'i18n2.yaml')]), new ValidationContext());
+        const parsedProject = parseProject(
+            new Project([
+                new Source(permissionProfiles, 'perm.json'),
+                new Source(graphql, 'graphql.graphql'),
+                new Source(i18n1, 'i18n.yaml'),
+                new Source(wrongBody, 'i18n2.yaml'),
+            ]),
+            new ValidationContext(),
+        );
         const model = createModel(parsedProject);
 
         model.i18n.validate(validationContext);
 
         expect(validationContext.asResult().hasMessages()).is.true;
         expect(validationContext.asResult().getErrors().length).to.eq(1);
-        expect(validationContext.asResult().getErrors()[0].message).to.contain("The type \"Skill\" is not an enum type. It does not have \"values\" attribute. Did you mean to use \"fields\" instead?");
-
+        expect(validationContext.asResult().getErrors()[0].message).to.contain(
+            'The type "Skill" is not an enum type. It does not have "values" attribute. Did you mean to use "fields" instead?',
+        );
     });
 
-    it('reports translations for non existing fields', ()=>{
+    it('reports translations for non existing fields', () => {
         const wrongBody = `
 i18n:
   en:
@@ -130,7 +163,14 @@ i18n:
         `;
 
         const validationContext = new ValidationContext();
-        const parsedProject = parseProject(new Project([new Source(permissionProfiles, 'perm.json'), new Source(graphql, 'graphql.graphql'), new Source(wrongBody, 'i18n2.yaml')]), new ValidationContext());
+        const parsedProject = parseProject(
+            new Project([
+                new Source(permissionProfiles, 'perm.json'),
+                new Source(graphql, 'graphql.graphql'),
+                new Source(wrongBody, 'i18n2.yaml'),
+            ]),
+            new ValidationContext(),
+        );
         const model = createModel(parsedProject);
 
         model.i18n.validate(validationContext);
@@ -138,7 +178,9 @@ i18n:
         expect(validationContext.asResult().hasMessages()).is.true;
         expect(validationContext.asResult().hasErrors()).is.false;
         expect(validationContext.asResult().getWarnings().length).to.eq(1);
-        expect(validationContext.asResult().getWarnings()[0].message).to.contain('The type "Skill" has no field "foo". This might be a spelling error.');
+        expect(validationContext.asResult().getWarnings()[0].message).to.contain(
+            'The type "Skill" has no field "foo". This might be a spelling error.',
+        );
     });
 
     it('reports translations for non existing values', () => {
@@ -152,10 +194,14 @@ i18n:
         `;
 
         const validationContext = new ValidationContext();
-        const parsedProject = parseProject(new Project([
-            new Source(permissionProfiles, 'perm.json'), new Source(graphql, 'graphql.graphql'),
-            new Source(wrongBody, 'i18n2.yaml')
-        ]), new ValidationContext());
+        const parsedProject = parseProject(
+            new Project([
+                new Source(permissionProfiles, 'perm.json'),
+                new Source(graphql, 'graphql.graphql'),
+                new Source(wrongBody, 'i18n2.yaml'),
+            ]),
+            new ValidationContext(),
+        );
         const model = createModel(parsedProject);
 
         model.i18n.validate(validationContext);
@@ -163,7 +209,9 @@ i18n:
         expect(validationContext.asResult().hasMessages()).is.true;
         expect(validationContext.asResult().hasErrors()).is.false;
         expect(validationContext.asResult().getWarnings().length).to.eq(1);
-        expect(validationContext.asResult().getWarnings()[0].message).to.contain('The enum type "Importance" has no value "foo". This might be a spelling error.');
+        expect(validationContext.asResult().getWarnings()[0].message).to.contain(
+            'The enum type "Importance" has no value "foo". This might be a spelling error.',
+        );
     });
 
     it('reports translations for non existing types as warnings', () => {
@@ -176,10 +224,14 @@ i18n:
         `;
 
         const validationContext = new ValidationContext();
-        const parsedProject = parseProject(new Project([
-            new Source(permissionProfiles, 'perm.json'), new Source(graphql, 'graphql.graphql'),
-            new Source(wrongBody, 'i18n2.yaml')
-        ]), new ValidationContext());
+        const parsedProject = parseProject(
+            new Project([
+                new Source(permissionProfiles, 'perm.json'),
+                new Source(graphql, 'graphql.graphql'),
+                new Source(wrongBody, 'i18n2.yaml'),
+            ]),
+            new ValidationContext(),
+        );
         const model = createModel(parsedProject);
 
         model.i18n.validate(validationContext);
@@ -187,10 +239,12 @@ i18n:
         expect(validationContext.asResult().hasMessages()).is.true;
         expect(validationContext.asResult().hasErrors()).is.false;
         expect(validationContext.asResult().getWarnings().length).to.eq(1);
-        expect(validationContext.asResult().getWarnings()[0].message).to.contain('There is no type "Foo" in the model specification. This might be a spelling error.');
+        expect(validationContext.asResult().getWarnings()[0].message).to.contain(
+            'There is no type "Foo" in the model specification. This might be a spelling error.',
+        );
     });
 
-    it('reports schema-violations of i18n files', ()=>{
+    it('reports schema-violations of i18n files', () => {
         const wrongBody = `
 i18n:
   en:
@@ -201,9 +255,19 @@ i18n:
         `;
 
         const validationContext = new ValidationContext();
-        const parsedProject = parseProject(new Project([new Source(permissionProfiles, 'perm.json'), new Source(graphql, 'graphql.graphql'), new Source(i18n1, 'i18n.yaml'), new Source(wrongBody, 'i18n2.yaml')]), validationContext);
+        const parsedProject = parseProject(
+            new Project([
+                new Source(permissionProfiles, 'perm.json'),
+                new Source(graphql, 'graphql.graphql'),
+                new Source(i18n1, 'i18n.yaml'),
+                new Source(wrongBody, 'i18n2.yaml'),
+            ]),
+            validationContext,
+        );
 
-        parsedProject.sources.forEach(s => validationContext.addMessage(...validateParsedProjectSource(s).messages));
+        parsedProject.sources.forEach((s) =>
+            validationContext.addMessage(...validateParsedProjectSource(s).messages),
+        );
 
         expect(validationContext.asResult().hasMessages()).is.true;
         expect(validationContext.asResult().getErrors().length).to.eq(1);

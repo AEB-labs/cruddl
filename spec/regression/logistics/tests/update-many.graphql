@@ -43,7 +43,11 @@ mutation create {
                     { languageIsoCode: "en", translation: "for you" }
                 ]
                 destinationCountry: "GB"
-                dgInfo: { flashpoint: "37 °C", unNumber: "123", notices: ["handle with care", "do not throw"] }
+                dgInfo: {
+                    flashpoint: "37 °C"
+                    unNumber: "123"
+                    notices: ["handle with care", "do not throw"]
+                }
                 serialNumbers: ["456", "424242"]
                 addItems: [{ itemNumber: "44" }, { itemNumber: "45" }]
                 addHandlingUnits: ["@{ids/HandlingUnit/1}", "@{ids/HandlingUnit/2}"]
@@ -57,7 +61,11 @@ mutation create {
                     { languageIsoCode: "en", translation: "for you" }
                 ]
                 destinationCountry: "GB"
-                dgInfo: { flashpoint: "37 °C", unNumber: "123", notices: ["do not care", "throw with handle"] }
+                dgInfo: {
+                    flashpoint: "37 °C"
+                    unNumber: "123"
+                    notices: ["do not care", "throw with handle"]
+                }
                 serialNumbers: ["456", "424242"]
                 addItems: [{ itemNumber: "44" }, { itemNumber: "45" }]
                 addHandlingUnits: ["@{ids/HandlingUnit/1}", "@{ids/HandlingUnit/3}"]

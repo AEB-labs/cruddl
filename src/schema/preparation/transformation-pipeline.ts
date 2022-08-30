@@ -6,20 +6,16 @@ import { Model } from '../../model';
 import { AddNamespacesToTypesTransformer } from './pre-merge-ast-transformation-modules/add-namespaces-to-types-transformer';
 import { AddRuntimeErrorResolversTransformer } from './schema-transformation-modules/add-runtime-error-resolvers';
 
-const preMergePipeline: ASTTransformer[] = [
-    new AddNamespacesToTypesTransformer()
-];
+const preMergePipeline: ASTTransformer[] = [new AddNamespacesToTypesTransformer()];
 
-const schemaPipeline: SchemaTransformer[] = [
-    new AddRuntimeErrorResolversTransformer()
-];
+const schemaPipeline: SchemaTransformer[] = [new AddRuntimeErrorResolversTransformer()];
 
 export function executePreMergeTransformationPipeline(parsedProject: ParsedProject): ParsedProject {
     return {
         sources: parsedProject.sources.map((source) => {
             // don't transform object sources
             if (source.kind !== ParsedProjectSourceBaseKind.GRAPHQL) {
-                return source
+                return source;
             }
             let document = source.document;
             for (const transformer of preMergePipeline) {
@@ -27,22 +23,29 @@ export function executePreMergeTransformationPipeline(parsedProject: ParsedProje
             }
             return {
                 ...source,
-                document
+                document,
             };
-        })
+        }),
     };
 }
 
-export function executeSchemaTransformationPipeline(schema: GraphQLSchema, context: SchemaTransformationContext, model: Model): GraphQLSchema {
-    return schemaPipeline.reduce((s, transformer) => transformer.transform(s, context, model), schema);
+export function executeSchemaTransformationPipeline(
+    schema: GraphQLSchema,
+    context: SchemaTransformationContext,
+    model: Model,
+): GraphQLSchema {
+    return schemaPipeline.reduce(
+        (s, transformer) => transformer.transform(s, context, model),
+        schema,
+    );
 }
 
 export interface ASTTransformationContext {
-    namespacePath: ReadonlyArray<string>
+    namespacePath: ReadonlyArray<string>;
 }
 
 export interface SchemaTransformationContext extends ProjectOptions {
-    databaseAdapter: DatabaseAdapter
+    databaseAdapter: DatabaseAdapter;
 }
 
 export interface ASTTransformer {
@@ -50,5 +53,9 @@ export interface ASTTransformer {
 }
 
 export interface SchemaTransformer {
-    transform(schema: GraphQLSchema, context: SchemaTransformationContext, model: Model): GraphQLSchema;
+    transform(
+        schema: GraphQLSchema,
+        context: SchemaTransformationContext,
+        model: Model,
+    ): GraphQLSchema;
 }

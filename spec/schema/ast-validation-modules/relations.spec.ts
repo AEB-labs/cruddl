@@ -45,7 +45,7 @@ describe('@relation', () => {
                 parent: Parent @relation(inverseOf: "children", onDelete: CASCADE)
             }
         `,
-            '"onDelete" cannot be specified on inverse relations.'
+            '"onDelete" cannot be specified on inverse relations.',
         );
     });
 
@@ -60,7 +60,7 @@ describe('@relation', () => {
                 parent: Parent @relation(inverseOf: "children", onDelete: REMOVE_EDGES)
             }
         `,
-            '"onDelete" cannot be specified on inverse relations.'
+            '"onDelete" cannot be specified on inverse relations.',
         );
     });
 
@@ -74,7 +74,7 @@ describe('@relation', () => {
                 name: String
             }
         `,
-            '"CASCADE" is only supported on 1-to-n and 1-to-1 relations. Use "RESTRICT" instead or change this to a 1-to-n relation by adding a field with the @relation(inverseOf: "children") directive to the target type "Child".'
+            '"CASCADE" is only supported on 1-to-n and 1-to-1 relations. Use "RESTRICT" instead or change this to a 1-to-n relation by adding a field with the @relation(inverseOf: "children") directive to the target type "Child".',
         );
     });
 
@@ -88,7 +88,7 @@ describe('@relation', () => {
                 name: String
             }
         `,
-            '"CASCADE" is only supported on 1-to-n and 1-to-1 relations. Use "RESTRICT" instead or change this to a 1-to-1 relation by adding a field with the @relation(inverseOf: "child") directive to the target type "Child".'
+            '"CASCADE" is only supported on 1-to-n and 1-to-1 relations. Use "RESTRICT" instead or change this to a 1-to-1 relation by adding a field with the @relation(inverseOf: "child") directive to the target type "Child".',
         );
     });
 
@@ -102,7 +102,7 @@ describe('@relation', () => {
                 parents: [Parent] @relation(inverseOf: "children")
             }
         `,
-            '"CASCADE" is only supported on 1-to-n and 1-to-1 relations. Use "RESTRICT" instead or change this to a 1-to-n relation by changing the type of "Child.parents" to "Parent".'
+            '"CASCADE" is only supported on 1-to-n and 1-to-1 relations. Use "RESTRICT" instead or change this to a 1-to-n relation by changing the type of "Child.parents" to "Parent".',
         );
     });
 
@@ -116,7 +116,7 @@ describe('@relation', () => {
                 parents: [Parent] @relation(inverseOf: "child")
             }
         `,
-            '"CASCADE" is only supported on 1-to-n and 1-to-1 relations. Use "RESTRICT" instead or change this to a 1-to-1 relation by changing the type of "Child.parents" to "Parent".'
+            '"CASCADE" is only supported on 1-to-n and 1-to-1 relations. Use "RESTRICT" instead or change this to a 1-to-1 relation by changing the type of "Child.parents" to "Parent".',
         );
     });
 
@@ -138,7 +138,7 @@ describe('@relation', () => {
                 objects: [Object] @relation(onDelete: CASCADE)
             }
         `,
-            '"CASCADE" cannot be used on recursive fields. Use "RESTRICT" instead.'
+            '"CASCADE" cannot be used on recursive fields. Use "RESTRICT" instead.',
         );
     });
 
@@ -154,12 +154,12 @@ describe('@relation', () => {
                 reds: [Red] @relation(onDelete: CASCADE)
                 parentRed: Red @relation(inverseOf: "blues")
             }
-        `
+        `,
         ).getErrors();
         expect(errors).to.have.length(2);
-        expect(errors.map(e => e.message)).to.deep.equal([
+        expect(errors.map((e) => e.message)).to.deep.equal([
             'The path "blues.reds" is a loop with "onDelete: CASCADE" on each relation, which is not supported. Break the loop by replacing "CASCADE" with "RESTRICT" on any of these relations.',
-            'The path "reds.blues" is a loop with "onDelete: CASCADE" on each relation, which is not supported. Break the loop by replacing "CASCADE" with "RESTRICT" on any of these relations.'
+            'The path "reds.blues" is a loop with "onDelete: CASCADE" on each relation, which is not supported. Break the loop by replacing "CASCADE" with "RESTRICT" on any of these relations.',
         ]);
     });
 

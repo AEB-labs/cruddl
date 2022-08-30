@@ -1,7 +1,7 @@
 {
     logistics {
         delivery {
-           aDelivery: Delivery(id: "@{ids/logistics.delivery.Delivery/1}") {
+            aDelivery: Delivery(id: "@{ids/logistics.delivery.Delivery/1}") {
                 nr: deliveryNumber
                 oneItem: items(filter: { itemNumber: "1001" }) {
                     itemNumber

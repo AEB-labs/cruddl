@@ -1,11 +1,12 @@
 # FlexSearch Guide
 
-Cruddl allows the usage of [ArangoSearch](https://www.arangodb.com/arangodb-training-center/search/) to create
-fulltext-indices on your data.
+Cruddl allows the usage of [ArangoSearch](https://www.arangodb.com/arangodb-training-center/search/)
+to create fulltext-indices on your data.
 
 ## Schema
 
-To create an index for a rootEntity add the `flexSearch: true` argument to the `@rootEntity` annotation.
+To create an index for a rootEntity add the `flexSearch: true` argument to the `@rootEntity`
+annotation.
 
 ```graphql
 type Order @rootEntity(flexSearch: true) {
@@ -14,14 +15,16 @@ type Order @rootEntity(flexSearch: true) {
 }
 ```
 
-This also means that the system fields (`id`, `createdAt` and `updatedAt`) are automatically indexed.
+This also means that the system fields (`id`, `createdAt` and `updatedAt`) are automatically
+indexed.
 
-To add additional fields to the index, the `@flexSearch` or the `@flexSearchFulltext` annotation needs to be added to
-the field.
+To add additional fields to the index, the `@flexSearch` or the `@flexSearchFulltext` annotation
+needs to be added to the field.
 
-The annotation `@flexSearch` is used to index a field as a value. Values are fields that do not contain a Text in a
-specific language. For example an orderNumber might be indexed as a value. Also all numeric, boolean or DateTime values
-can only be indexed as Values. Value comparisons in FlexSearch are case-sensitive.
+The annotation `@flexSearch` is used to index a field as a value. Values are fields that do not
+contain a Text in a specific language. For example an orderNumber might be indexed as a value. Also
+all numeric, boolean or DateTime values can only be indexed as Values. Value comparisons in
+FlexSearch are case-sensitive.
 
 ```graphql
 type Order @rootEntity(flexSearch: true) {
@@ -29,12 +32,12 @@ type Order @rootEntity(flexSearch: true) {
 }
 ```
 
-The annotation `@flexSearchFulltext` is used to index Strings that contain text in a specific language. For example a
-description that contains a human-readable text in english.
+The annotation `@flexSearchFulltext` is used to index Strings that contain text in a specific
+language. For example a description that contains a human-readable text in english.
 
-When using `@flexSearchFulltext` a language needs to be specified, either by adding the `language` argument, or by
-setting a default language for the whole entity by specifying the `flexSearchLanguage` argument to the `rootEntity`
-annotation.
+When using `@flexSearchFulltext` a language needs to be specified, either by adding the `language`
+argument, or by setting a default language for the whole entity by specifying the
+`flexSearchLanguage` argument to the `rootEntity` annotation.
 
 ```graphql
 type Order @rootEntity(flexSearch: true, flexSearchLanguage: EN) {
@@ -47,8 +50,9 @@ The following languages are currently available: EN, DE, ES, FI, FR, IT, NL, NO,
 
 Fields can also be indexed as both value and text.
 
-Cruddl also allows to predefine specific fields that will be included in a general search. To do this, the argument
-`includeInSearch` needs to be added to the `@flexSearch` or `@flexSearchFulltext` annotation.
+Cruddl also allows to predefine specific fields that will be included in a general search. To do
+this, the argument `includeInSearch` needs to be added to the `@flexSearch` or `@flexSearchFulltext`
+annotation.
 
 ```graphql
 type Order @rootEntity(flexSearch: true, flexSearchLanguage: EN) {
@@ -58,23 +62,23 @@ type Order @rootEntity(flexSearch: true, flexSearchLanguage: EN) {
 }
 ```
 
-In this example an "expression search" would search in the fields `orderNumber` and `descriptionEN` but not the field
-`descriptionDE`.
+In this example an "expression search" would search in the fields `orderNumber` and `descriptionEN`
+but not the field `descriptionDE`.
 
 ### FlexSearch Order
 
-A rootEntity that is marked with `flexSearch: true` can also define a `flexSearchOrder`. This will define the order in
-which the elements are saved in the index.
+A rootEntity that is marked with `flexSearch: true` can also define a `flexSearchOrder`. This will
+define the order in which the elements are saved in the index.
 
 This will be the default order in which the elements of a flexSearch-query are returned.
 
-If a query matches the default order, or a "prefix" of the default order, the elements can simply be read from the
-index, and no sorting is necessary.
+If a query matches the default order, or a "prefix" of the default order, the elements can simply be
+read from the index, and no sorting is necessary.
 
 Inverted sorting directions are not supported by the index.
 
-So in the following example either `[orderNumber_ASC]` or `[orderNumber_ASC, createdAt_DESC]` will skip the sorting,
-while `[orderNumber_DESC]` or `[createdAt_DESC]` will not.
+So in the following example either `[orderNumber_ASC]` or `[orderNumber_ASC, createdAt_DESC]` will
+skip the sorting, while `[orderNumber_DESC]` or `[createdAt_DESC]` will not.
 
 ```graphql
 type Order @rootEntity(
@@ -91,11 +95,11 @@ type Order @rootEntity(
 
 ## API
 
-For each `rootEntity` that is marked with `flexSearch: true` a new query is available that allows to query for objects
-using ArangoSearch. The queries are prefixed with "flexSearch".
+For each `rootEntity` that is marked with `flexSearch: true` a new query is available that allows to
+query for objects using ArangoSearch. The queries are prefixed with "flexSearch".
 
-This query also accepts a string argument that provides an expression that should be searched for in all fields that
-were marked with `includeInSearch: true` in the schema.
+This query also accepts a string argument that provides an expression that should be searched for in
+all fields that were marked with `includeInSearch: true` in the schema.
 
 ```graphql
 query {
@@ -105,7 +109,8 @@ query {
 }
 ```
 
-The query also accepts a special `flexSearchFilter` that works similar to a normal filter but contains different fields.
+The query also accepts a special `flexSearchFilter` that works similar to a normal filter but
+contains different fields.
 
 ```graphql
 query {
@@ -115,9 +120,10 @@ query {
 }
 ```
 
-The query also accepts the pagination arguments `first`, `skip` and `after`, the sorting argument `orderBy` and the
-regular filtering argument `filter`. Because the ArangoSearch-index cannot be used for sorting and regular filtering,
-these can be very slow for large amounts of data. To prevent slow queries, cruddl returns an error in these cases.
+The query also accepts the pagination arguments `first`, `skip` and `after`, the sorting argument
+`orderBy` and the regular filtering argument `filter`. Because the ArangoSearch-index cannot be used
+for sorting and regular filtering, these can be very slow for large amounts of data. To prevent slow
+queries, cruddl returns an error in these cases.
 
 ### Filter
 
@@ -143,5 +149,5 @@ The following filter-fields are available for fields that are annotated with `@f
 -   `contains_phrase`
 -   `not_contains_phrase`
 
-When using `flexSearchExpression: "..."` the `starts_with` field is used for values and the `contains_all_prefixes`
-field for texts.
+When using `flexSearchExpression: "..."` the `starts_with` field is used for values and the
+`contains_all_prefixes` field for texts.

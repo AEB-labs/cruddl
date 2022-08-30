@@ -1,5 +1,11 @@
-type HandlingUnit @rootEntity(flexSearch: true, flexSearchLanguage: DE, flexSearchOrder: [{field: "huNumber", direction: DESC}]) @roles(readWrite: ["allusers"]) {
+type HandlingUnit
+    @rootEntity(
+        flexSearch: true
+        flexSearchLanguage: DE
+        flexSearchOrder: [{ field: "huNumber", direction: DESC }]
+    )
+    @roles(readWrite: ["allusers"]) {
     id: ID @key
     huNumber: String @flexSearch
-    delivery: Delivery @relation(inverseOf:"handlingUnits")
+    delivery: Delivery @relation(inverseOf: "handlingUnits")
 }

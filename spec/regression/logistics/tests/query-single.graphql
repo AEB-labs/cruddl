@@ -5,13 +5,13 @@ query byID {
 }
 
 query byKey {
-    Delivery (deliveryNumber: "1000521") {
+    Delivery(deliveryNumber: "1000521") {
         deliveryNumber
     }
 }
 
 query notFound {
-    Delivery (deliveryNumber: "does-not-exist") {
+    Delivery(deliveryNumber: "does-not-exist") {
         deliveryNumber
     }
 }

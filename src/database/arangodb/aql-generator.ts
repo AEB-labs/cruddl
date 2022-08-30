@@ -74,7 +74,11 @@ import { Constructor, decapitalize } from '../../utils/utils';
 import { FlexSearchTokenizable } from '../database-adapter';
 import { analyzeLikePatternPrefix } from '../like-helpers';
 import { aql, AQLCompoundQuery, AQLFragment, AQLQueryResultVariable, AQLVariable } from './aql';
-import { billingCollectionName, getCollectionNameForRelation, getCollectionNameForRootEntity } from './arango-basics';
+import {
+    billingCollectionName,
+    getCollectionNameForRelation,
+    getCollectionNameForRootEntity,
+} from './arango-basics';
 import { getFlexSearchViewNameForRootEntity } from './schema-migration/arango-search-helpers';
 
 enum AccessType {
@@ -112,7 +116,7 @@ class QueryContext {
      */
     private newNestedContextWithVariableMapping(
         variableNode: VariableQueryNode,
-        aqlVariable: AQLFragment
+        aqlVariable: AQLFragment,
     ): QueryContext {
         const newContext = new QueryContext();
         newContext.variableMap = new Map(this.variableMap);
@@ -146,7 +150,10 @@ class QueryContext {
      * @param existingVariable a variable that has been previously introduced with introduceVariable() and fetched by getVariable
      * @returns {QueryContext} the nested context
      */
-    introduceVariableAlias(variableNode: VariableQueryNode, existingVariable: AQLFragment): QueryContext {
+    introduceVariableAlias(
+        variableNode: VariableQueryNode,
+        existingVariable: AQLFragment,
+    ): QueryContext {
         return this.newNestedContextWithVariableMapping(variableNode, existingVariable);
     }
 
@@ -164,7 +171,7 @@ class QueryContext {
     addPreExecuteQuery(
         preExecQuery: QueryNode,
         resultVariable?: VariableQueryNode,
-        resultValidator?: QueryResultValidator
+        resultValidator?: QueryResultValidator,
     ): QueryContext {
         let resultVar: AQLQueryResultVariable | undefined;
         let newContext: QueryContext;
@@ -176,7 +183,12 @@ class QueryContext {
             newContext = this;
         }
 
-        const aqlQuery = createAQLCompoundQuery(preExecQuery, resultVar, resultValidator, this.newPreExecContext());
+        const aqlQuery = createAQLCompoundQuery(
+            preExecQuery,
+            resultVar,
+            resultValidator,
+            this.newPreExecContext(),
+        );
 
         this.preExecQueries.push(aqlQuery);
         return newContext;
@@ -201,7 +213,10 @@ class QueryContext {
         newContext.variableMap = this.variableMap;
         newContext.readAccessedCollections = this.readAccessedCollections;
         newContext.writeAccessedCollections = this.writeAccessedCollections;
-        newContext.extensions = new Map([...(this.extensions ? this.extensions.entries() : []), [key, value]]);
+        newContext.extensions = new Map([
+            ...(this.extensions ? this.extensions.entries() : []),
+            [key, value],
+        ]);
         return newContext;
     }
 
@@ -240,7 +255,7 @@ function createAQLCompoundQuery(
     node: QueryNode,
     resultVariable: AQLQueryResultVariable | undefined,
     resultValidator: QueryResultValidator | undefined,
-    context: QueryContext
+    context: QueryContext,
 ): AQLCompoundQuery {
     // move LET statements up
     // they often occur for value objects / entity extensions
@@ -251,7 +266,9 @@ function createAQLCompoundQuery(
     for (const assignmentNode of variableAssignmentNodes) {
         context = context.introduceVariable(assignmentNode.variableNode);
         const tmpVar = context.getVariable(assignmentNode.variableNode);
-        variableAssignments.push(aql`LET ${tmpVar} = ${processNode(assignmentNode.variableValueNode, context)}`);
+        variableAssignments.push(
+            aql`LET ${tmpVar} = ${processNode(assignmentNode.variableValueNode, context)}`,
+        );
     }
 
     const aqlQuery = aql.lines(...variableAssignments, aql`RETURN ${processNode(node, context)}`);
@@ -265,7 +282,7 @@ function createAQLCompoundQuery(
         resultVariable,
         resultValidator,
         readAccessedCollections,
-        writeAccessedCollections
+        writeAccessedCollections,
     );
 }
 
@@ -330,7 +347,7 @@ register(ObjectQueryNode, (node, context) => {
     }
 
     const properties = node.properties.map(
-        (p) => aql`${aqlExt.safeJSONKey(p.propertyName)}: ${processNode(p.valueNode, context)}`
+        (p) => aql`${aqlExt.safeJSONKey(p.propertyName)}: ${processNode(p.valueNode, context)}`,
     );
     return aql.lines(aql`{`, aql.indent(aql.join(properties, aql`,\n`)), aql`}`);
 });
@@ -345,10 +362,10 @@ register(ListQueryNode, (node, context) => {
         aql.indent(
             aql.join(
                 node.itemNodes.map((itemNode) => processNode(itemNode, context)),
-                aql`,\n`
-            )
+                aql`,\n`,
+            ),
         ),
-        aql`]`
+        aql`]`,
     );
 });
 
@@ -371,7 +388,7 @@ register(VariableAssignmentQueryNode, (node, context) => {
     // assuming object here because lists are not needed currently
     return aqlExt.parenthesizeObject(
         aql`LET ${tmpVar} = ${processNode(node.variableValueNode, newContext)}`,
-        aql`RETURN ${processNode(node.resultNode, newContext)}`
+        aql`RETURN ${processNode(node.resultNode, newContext)}`,
     );
 });
 
@@ -381,7 +398,7 @@ register(WithPreExecutionQueryNode, (node, context) => {
         currentContext = currentContext.addPreExecuteQuery(
             preExecParm.query,
             preExecParm.resultVariable,
-            preExecParm.resultValidator
+            preExecParm.resultValidator,
         );
     }
 
@@ -439,7 +456,9 @@ register(RevisionQueryNode, (node, context) => {
 });
 
 register(FlexSearchQueryNode, (node, context) => {
-    let itemContext = context.introduceVariable(node.itemVariable).withExtension(inFlexSearchFilterSymbol, true);
+    let itemContext = context
+        .introduceVariable(node.itemVariable)
+        .withExtension(inFlexSearchFilterSymbol, true);
     const viewName = getFlexSearchViewNameForRootEntity(node.rootEntityType!);
     context.addCollectionAccess(viewName, AccessType.READ);
     return aqlExt.parenthesizeList(
@@ -447,7 +466,7 @@ register(FlexSearchQueryNode, (node, context) => {
         aql`IN ${aql.collection(viewName)}`,
         aql`SEARCH ${processNode(node.flexFilterNode, itemContext)}`,
         node.isOptimisationsDisabled ? aql`OPTIONS { conditionOptimization: 'none' }` : aql``,
-        aql`RETURN ${itemContext.getVariable(node.itemVariable)}`
+        aql`RETURN ${itemContext.getVariable(node.itemVariable)}`,
     );
 });
 
@@ -464,10 +483,15 @@ register(TransformListQueryNode, (node, context) => {
     const variableAssignmentNodes: VariableAssignmentQueryNode[] = [];
     innerNode = extractVariableAssignments(innerNode, variableAssignmentNodes);
     for (const assignmentNode of variableAssignmentNodes) {
-        itemProjectionContext = itemProjectionContext.introduceVariable(assignmentNode.variableNode);
+        itemProjectionContext = itemProjectionContext.introduceVariable(
+            assignmentNode.variableNode,
+        );
         const tmpVar = itemProjectionContext.getVariable(assignmentNode.variableNode);
         variableAssignments.push(
-            aql`LET ${tmpVar} = ${processNode(assignmentNode.variableValueNode, itemProjectionContext)}`
+            aql`LET ${tmpVar} = ${processNode(
+                assignmentNode.variableValueNode,
+                itemProjectionContext,
+            )}`,
         );
     }
 
@@ -475,7 +499,7 @@ register(TransformListQueryNode, (node, context) => {
         aql`FOR ${itemVar}`,
         generateInClauseWithFilterAndOrderAndLimit({ node, context, itemContext, itemVar }),
         ...variableAssignments,
-        aql`RETURN ${processNode(innerNode, itemProjectionContext)}`
+        aql`RETURN ${processNode(innerNode, itemProjectionContext)}`,
     );
 });
 
@@ -518,10 +542,12 @@ function generateInClauseWithFilterAndOrderAndLimit({
 
     return aql.lines(
         aql`IN ${list}`,
-        filter instanceof ConstBoolQueryNode && filter.value ? aql`` : aql`FILTER ${processNode(filter, itemContext)}`,
+        filter instanceof ConstBoolQueryNode && filter.value
+            ? aql``
+            : aql`FILTER ${processNode(filter, itemContext)}`,
         filterDanglingEdges,
         generateSortAQL(node.orderBy, itemContext),
-        limitClause
+        limitClause,
     );
 }
 
@@ -531,7 +557,12 @@ function generateInClauseWithFilterAndOrderAndLimit({
 function generateInClause(node: QueryNode, context: QueryContext, entityVar: AQLFragment) {
     if (node instanceof TransformListQueryNode && node.innerNode === node.itemVariable) {
         const itemContext = context.introduceVariableAlias(node.itemVariable, entityVar);
-        return generateInClauseWithFilterAndOrderAndLimit({ node, itemContext, itemVar: entityVar, context });
+        return generateInClauseWithFilterAndOrderAndLimit({
+            node,
+            itemContext,
+            itemVar: entityVar,
+            context,
+        });
     }
 
     return aql`IN ${processNode(node, context)}`;
@@ -556,7 +587,7 @@ register(CountQueryNode, (node, context) => {
         aql`FOR ${itemVar}`,
         aql`IN ${processNode(node.listNode, context)}`,
         aql`COLLECT WITH COUNT INTO ${countVar}`,
-        aql`RETURN ${countVar}`
+        aql`RETURN ${countVar}`,
     );
 });
 
@@ -693,7 +724,7 @@ register(AggregationQueryNode, (node, context) => {
             : distinct
             ? aql`COLLECT ${aggregationVar} = ${itemFrag}`
             : aql``,
-        aql`RETURN ${resultFragment}`
+        aql`RETURN ${resultFragment}`,
     );
 });
 
@@ -709,7 +740,7 @@ register(ObjectEntriesQueryNode, (node, context) => {
     return aqlExt.parenthesizeList(
         aql`LET ${objectVar} = ${processNode(node.objectNode, context)}`,
         aql`FOR ${keyVar} IN IS_DOCUMENT(${objectVar}) ? ATTRIBUTES(${objectVar}) : []`,
-        aql`RETURN [ ${keyVar}, ${objectVar}[${keyVar}] ]`
+        aql`RETURN [ ${keyVar}, ${objectVar}[${keyVar}] ]`,
     );
 });
 
@@ -728,7 +759,8 @@ register(BinaryOperationQueryNode, (node, context) => {
     // (but don't do it in flexsearch, there > NULL is something different from != NULL
     if (
         node.operator === BinaryOperator.UNEQUAL &&
-        (node.rhs instanceof NullQueryNode || (node.rhs instanceof LiteralQueryNode && node.rhs.value == undefined)) &&
+        (node.rhs instanceof NullQueryNode ||
+            (node.rhs instanceof LiteralQueryNode && node.rhs.value == undefined)) &&
         !context.getExtension(inFlexSearchFilterSymbol)
     ) {
         return aql`(${lhs} > NULL)`;
@@ -757,9 +789,8 @@ register(BinaryOperationQueryNode, (node, context) => {
         case BinaryOperator.LIKE:
             const slowLikeFrag = aql`LIKE(${lhs}, ${rhs}, true)`; // true: caseInsensitive
             if (node.rhs instanceof LiteralQueryNode && typeof node.rhs.value === 'string') {
-                const { literalPrefix, isSimplePrefixPattern, isLiteralPattern } = analyzeLikePatternPrefix(
-                    node.rhs.value
-                );
+                const { literalPrefix, isSimplePrefixPattern, isLiteralPattern } =
+                    analyzeLikePatternPrefix(node.rhs.value);
 
                 if (isLiteralPattern) {
                     return getEqualsIgnoreCaseQuery(lhs, literalPrefix);
@@ -825,11 +856,11 @@ register(OperatorWithAnalyzerQueryNode, (node, context) => {
             return aql`ANALYZER( IN_RANGE(${lhs}, ${''} , ${normalizedRhs}, true, true), ${analyzer})`;
         case BinaryOperatorWithAnalyzer.FLEX_STRING_GREATER_THAN:
             return aql`ANALYZER( IN_RANGE(${lhs}, ${normalizedRhs}, ${String.fromCodePoint(
-                0x10ffff
+                0x10ffff,
             )}, false, true), ${analyzer})`;
         case BinaryOperatorWithAnalyzer.FLEX_STRING_GREATER_THAN_OR_EQUAL:
             return aql`ANALYZER( IN_RANGE(${lhs}, ${normalizedRhs}, ${String.fromCodePoint(
-                0x10ffff
+                0x10ffff,
             )}, true, true), ${analyzer})`;
         default:
             throw new Error(`Unsupported operator: ${node.operator}`);
@@ -865,14 +896,16 @@ register(FlexSearchFieldExistsQueryNode, (node, context) => {
 });
 
 register(FlexSearchComplexOperatorQueryNode, (node, context) => {
-    throw new Error(`Internal Error: FlexSearchComplexOperatorQueryNode must be expanded before generating the query.`);
+    throw new Error(
+        `Internal Error: FlexSearchComplexOperatorQueryNode must be expanded before generating the query.`,
+    );
 });
 
 function getBillingInput(
     node: ConfirmForBillingQueryNode | CreateBillingEntityQueryNode,
     key: string | number | AQLFragment,
     context: QueryContext,
-    currentTimestamp: string
+    currentTimestamp: string,
 ) {
     return aql`
         key: ${key},
@@ -901,7 +934,7 @@ register(CreateBillingEntityQueryNode, (node, context) => {
             quantity: ${processNode(node.quantityNode, context)}
         })`,
         aql`IN ${getCollectionForBilling(AccessType.WRITE, context)}`,
-        aql`RETURN ${node.key}`
+        aql`RETURN ${node.key}`,
     );
 });
 
@@ -926,7 +959,7 @@ register(ConfirmForBillingQueryNode, (node, context) => {
             quantity: ${processNode(node.quantityNode, context)}
         })`,
         aql`IN ${getCollectionForBilling(AccessType.WRITE, context)}`,
-        aql`RETURN true`
+        aql`RETURN true`,
     );
 });
 
@@ -1028,7 +1061,7 @@ register(SafeListQueryNode, (node, context) => {
     const reducedNode = new ConditionalQueryNode(
         new TypeCheckQueryNode(node.sourceNode, BasicType.LIST),
         node.sourceNode,
-        ListQueryNode.EMPTY
+        ListQueryNode.EMPTY,
     );
     return processNode(reducedNode, context);
 });
@@ -1039,7 +1072,7 @@ register(QuantifierFilterNode, (node, context) => {
 
     const fastFragment = getQuantifierFilterUsingArrayComparisonOperator(
         { quantifier, conditionNode, listNode, itemVariable },
-        context
+        context,
     );
     if (fastFragment) {
         return fastFragment;
@@ -1060,7 +1093,7 @@ register(QuantifierFilterNode, (node, context) => {
     const finalNode = new BinaryOperationQueryNode(
         new CountQueryNode(filteredListNode),
         quantifier === 'none' ? BinaryOperator.EQUAL : BinaryOperator.GREATER_THAN,
-        new LiteralQueryNode(0)
+        new LiteralQueryNode(0),
     );
     return processNode(finalNode, context);
 });
@@ -1080,7 +1113,7 @@ function getQuantifierFilterUsingArrayComparisonOperator(
         listNode: QueryNode;
         itemVariable: VariableQueryNode;
     },
-    context: QueryContext
+    context: QueryContext,
 ): AQLFragment | undefined {
     // ArangoDB supports array comparison operators (e.g. field ALL > 5)
     // https://www.arangodb.com/docs/stable/aql/operators.html#array-comparison-operators
@@ -1117,7 +1150,10 @@ function getQuantifierFilterUsingArrayComparisonOperator(
 
         case BinaryOperator.LIKE:
             // see if this really is a equals search so we can optimize it (only possible as long as it does not contain any case-specific characters)
-            if (!(conditionNode.rhs instanceof LiteralQueryNode) || typeof conditionNode.rhs.value !== 'string') {
+            if (
+                !(conditionNode.rhs instanceof LiteralQueryNode) ||
+                typeof conditionNode.rhs.value !== 'string'
+            ) {
                 return undefined;
             }
             const likePattern: string = conditionNode.rhs.value;
@@ -1200,7 +1236,7 @@ register(FollowEdgeQueryNode, (node, context) => {
         aql`FOR ${tmpVar}`,
         aql`IN ${getSimpleFollowEdgeFragment(node, context)}`,
         aql`FILTER ${tmpVar} != null`,
-        aql`RETURN ${tmpVar}`
+        aql`RETURN ${tmpVar}`,
     );
 });
 
@@ -1226,7 +1262,7 @@ register(TraversalQueryNode, (node, context) => {
                     mapFrag = (nodeFrag) =>
                         aql`{ obj: ${getFieldTraversalFragmentWithoutFlattening(
                             node.fieldSegments,
-                            nodeFrag
+                            nodeFrag,
                         )}, root: ${nodeFrag}) }`;
                 } else {
                     // the result of getFieldTraversalFragmentWithoutFlattening() now is a list, so we need to iterate
@@ -1236,15 +1272,19 @@ register(TraversalQueryNode, (node, context) => {
                     mapFrag = (rootEntityFrag) =>
                         aqlExt.parenthesizeList(
                             aql`FOR ${entityVar} IN ${getFlattenFrag(
-                                getFieldTraversalFragmentWithoutFlattening(node.fieldSegments, rootEntityFrag),
-                                fieldDepth - 1
+                                getFieldTraversalFragmentWithoutFlattening(
+                                    node.fieldSegments,
+                                    rootEntityFrag,
+                                ),
+                                fieldDepth - 1,
                             )}`,
-                            aql`RETURN { obj: ${entityVar}, root: ${rootEntityFrag} }`
+                            aql`RETURN { obj: ${entityVar}, root: ${rootEntityFrag} }`,
                         );
                     remainingDepth = 1;
                 }
             } else {
-                mapFrag = (nodeFrag) => getFieldTraversalFragmentWithoutFlattening(node.fieldSegments, nodeFrag);
+                mapFrag = (nodeFrag) =>
+                    getFieldTraversalFragmentWithoutFlattening(node.fieldSegments, nodeFrag);
             }
         } else {
             if (node.captureRootEntity) {
@@ -1259,12 +1299,12 @@ register(TraversalQueryNode, (node, context) => {
             if (node.sourceIsList) {
                 fixedSourceFrag = getFullIDFromKeysFragment(
                     sourceFrag,
-                    node.relationSegments[0].relationSide.sourceType
+                    node.relationSegments[0].relationSide.sourceType,
                 );
             } else {
                 fixedSourceFrag = getFullIDFromKeyFragment(
                     sourceFrag,
-                    node.relationSegments[0].relationSide.sourceType
+                    node.relationSegments[0].relationSide.sourceType,
                 );
             }
         }
@@ -1314,7 +1354,10 @@ register(TraversalQueryNode, (node, context) => {
     // - no list segments -> evaluate to the object
     // - one list segment -> evaluate to the list, so no flattening
     // - two list segments -> needs flattening once to get one list
-    return getFlattenFrag(getFieldTraversalFragmentWithoutFlattening(node.fieldSegments, sourceFrag), fieldDepth - 1);
+    return getFlattenFrag(
+        getFieldTraversalFragmentWithoutFlattening(node.fieldSegments, sourceFrag),
+        fieldDepth - 1,
+    );
 });
 
 function getRelationTraversalFragment({
@@ -1354,7 +1397,10 @@ function getRelationTraversalFragment({
             if (!segment.vertexFilterVariable) {
                 throw new Error(`vertexFilter is set, but vertexFilterVariable is not`);
             }
-            const filterContext = context.introduceVariableAlias(segment.vertexFilterVariable, nodeVar);
+            const filterContext = context.introduceVariableAlias(
+                segment.vertexFilterVariable,
+                nodeVar,
+            );
             // PRUNE to stop on a node that has to be filtered out (only necessary for traversals > 1 path length)
             // however, PRUNE only seems to be a performance feature and is not reliably evaluated
             // (e.g. it's not when using COLLECT with distinct for some reason), so we need to add a path filter
@@ -1371,7 +1417,7 @@ function getRelationTraversalFragment({
                 const vertexInPathFrag = aql`${pathVar}.vertices[*]`;
                 const pathFilterContext = context.introduceVariableAlias(
                     segment.vertexFilterVariable,
-                    vertexInPathFrag
+                    vertexInPathFrag,
                 );
                 const lhsFrag = processNode(segment.vertexFilter.lhs, pathFilterContext);
                 const opFrag = getAQLOperator(segment.vertexFilter.operator);
@@ -1380,7 +1426,7 @@ function getRelationTraversalFragment({
                 }
                 const pathFilterFrag = aql`${lhsFrag} ALL ${opFrag} ${processNode(
                     segment.vertexFilter.rhs,
-                    pathFilterContext
+                    pathFilterContext,
                 )}`;
                 filterFrag = aql`\nFILTER ${pathFilterFrag}`;
                 pruneFrag = aql`\nPRUNE !(${processNode(segment.vertexFilter, filterContext)})`;
@@ -1394,7 +1440,7 @@ function getRelationTraversalFragment({
         } ${dir} ${currentObjectFrag} ${getCollectionForRelation(
             segment.relationSide.relation,
             AccessType.READ,
-            context
+            context,
         )}${pruneFrag}${filterFrag}`;
         if (segment.isListSegment || (alwaysProduceList && segmentIndex === segments.length - 1)) {
             // this is simple - we can just push one FOR statement after the other
@@ -1407,7 +1453,7 @@ function getRelationTraversalFragment({
             // to ignore dangling edges, add a FILTER though (if there was one dangling edge and one real edge collected, we should use the real one)
             const nullableVar = aql.variable(`nullableNode`);
             forFragments.push(
-                aql`LET ${nullableVar} = FIRST(${traversalFrag} FILTER ${nodeVar} != null RETURN ${nodeVar})`
+                aql`LET ${nullableVar} = FIRST(${traversalFrag} FILTER ${nodeVar} != null RETURN ${nodeVar})`,
             );
             currentObjectFrag = nullableVar;
         }
@@ -1428,7 +1474,7 @@ function getRelationTraversalFragment({
     return aqlExt[returnList ? 'parenthesizeList' : 'parenthesizeObject'](
         sourceIsList ? aql`FOR ${sourceEntityVar} IN ${sourceFrag}` : aql``,
         ...forFragments,
-        aql`RETURN ${returnFrag}`
+        aql`RETURN ${returnFrag}`,
     );
 }
 
@@ -1442,7 +1488,10 @@ function getFlattenFrag(listFrag: AQLFragment, depth: number) {
     return aql`FLATTEN(${listFrag}, ${aql.integer(depth)})`;
 }
 
-function getFieldTraversalFragmentWithoutFlattening(segments: ReadonlyArray<FieldSegment>, sourceFrag: AQLFragment) {
+function getFieldTraversalFragmentWithoutFlattening(
+    segments: ReadonlyArray<FieldSegment>,
+    sourceFrag: AQLFragment,
+) {
     if (!segments.length) {
         return sourceFrag;
     }
@@ -1467,9 +1516,9 @@ register(CreateEntityQueryNode, (node, context) => {
         aql`INSERT ${processNode(node.objectNode, context)} IN ${getCollectionForType(
             node.rootEntityType,
             AccessType.WRITE,
-            context
+            context,
         )}`,
-        aql`RETURN NEW._key`
+        aql`RETURN NEW._key`,
     );
 });
 
@@ -1477,8 +1526,12 @@ register(CreateEntitiesQueryNode, (node, context) => {
     const entityVar = aql.variable('entity');
     return aqlExt.parenthesizeList(
         aql`FOR ${entityVar} IN ${processNode(node.objectsNode, context)}`,
-        aql`INSERT ${entityVar} IN ${getCollectionForType(node.rootEntityType, AccessType.WRITE, context)}`,
-        aql`RETURN NEW._key`
+        aql`INSERT ${entityVar} IN ${getCollectionForType(
+            node.rootEntityType,
+            AccessType.WRITE,
+            context,
+        )}`,
+        aql`RETURN NEW._key`,
     );
 });
 
@@ -1507,7 +1560,7 @@ register(UpdateEntitiesQueryNode, (node, context) => {
         aql`WITH ${updateFrag}`,
         aql`IN ${getCollectionForType(node.rootEntityType, AccessType.WRITE, context)}`,
         aql`OPTIONS ${options}`,
-        aql`RETURN NEW._key`
+        aql`RETURN NEW._key`,
     );
 });
 
@@ -1530,7 +1583,9 @@ register(DeleteEntitiesQueryNode, (node, context) => {
 
     const countVar = aql.variable(`count`);
     return aqlExt[
-        node.resultValue === DeleteEntitiesResultValue.OLD_ENTITIES ? 'parenthesizeList' : 'parenthesizeObject'
+        node.resultValue === DeleteEntitiesResultValue.OLD_ENTITIES
+            ? 'parenthesizeList'
+            : 'parenthesizeObject'
     ](
         aql`FOR ${entityVar}`,
         aql`${generateInClause(node.listNode, context, entityVar)}`,
@@ -1539,7 +1594,7 @@ register(DeleteEntitiesQueryNode, (node, context) => {
         optionsFrag,
         node.resultValue === DeleteEntitiesResultValue.OLD_ENTITIES
             ? aql`RETURN OLD`
-            : aql.lines(aql`COLLECT WITH COUNT INTO ${countVar}`, aql`RETURN ${countVar}`)
+            : aql.lines(aql`COLLECT WITH COUNT INTO ${countVar}`, aql`RETURN ${countVar}`),
     );
 });
 
@@ -1549,12 +1604,12 @@ register(AddEdgesQueryNode, (node, context) => {
         aql`FOR ${edgeVar}`,
         aql`IN [ ${aql.join(
             node.edges.map((edge) => formatEdge(node.relation, edge, context)),
-            aql`, `
+            aql`, `,
         )} ]`,
         aql`UPSERT { _from: ${edgeVar}._from, _to: ${edgeVar}._to }`, // need to unpack avoid dynamic property names in UPSERT example filter
         aql`INSERT ${edgeVar}`,
         aql`UPDATE {}`,
-        aql`IN ${getCollectionForRelation(node.relation, AccessType.WRITE, context)}`
+        aql`IN ${getCollectionForRelation(node.relation, AccessType.WRITE, context)}`,
     );
 });
 
@@ -1577,15 +1632,23 @@ register(RemoveEdgesQueryNode, (node, context) => {
             ? aql`FOR ${fromVar} IN ${getFullIDsFromKeysNode(
                   node.edgeFilter.fromIDsNode!,
                   node.relation.fromType,
-                  context
+                  context,
               )}`
             : aql``,
         node.edgeFilter.toIDsNode
-            ? aql`FOR ${toVar} IN ${getFullIDsFromKeysNode(node.edgeFilter.toIDsNode!, node.relation.toType, context)}`
+            ? aql`FOR ${toVar} IN ${getFullIDsFromKeysNode(
+                  node.edgeFilter.toIDsNode!,
+                  node.relation.toType,
+                  context,
+              )}`
             : aql``,
         aql`FOR ${edgeVar} IN ${getCollectionForRelation(node.relation, AccessType.READ, context)}`,
         edgeFilter,
-        aql`REMOVE ${edgeVar} IN ${getCollectionForRelation(node.relation, AccessType.WRITE, context)}`
+        aql`REMOVE ${edgeVar} IN ${getCollectionForRelation(
+            node.relation,
+            AccessType.WRITE,
+            context,
+        )}`,
     );
 });
 
@@ -1595,7 +1658,7 @@ register(SetEdgeQueryNode, (node, context) => {
         aql`UPSERT ${formatEdge(node.relation, node.existingEdge, context)}`,
         aql`INSERT ${formatEdge(node.relation, node.newEdge, context)}`,
         aql`UPDATE ${formatEdge(node.relation, node.newEdge, context)}`,
-        aql`IN ${getCollectionForRelation(node.relation, AccessType.WRITE, context)}`
+        aql`IN ${getCollectionForRelation(node.relation, AccessType.WRITE, context)}`,
     );
 });
 
@@ -1603,7 +1666,11 @@ register(SetEdgeQueryNode, (node, context) => {
  * Gets an aql fragment that evaluates to a string of the format "collectionName/objectKey", given a query node that
  * evaluates to the "object id", which is, in arango terms, the _key.
  */
-function getFullIDFromKeyNode(node: QueryNode, rootEntityType: RootEntityType, context: QueryContext): AQLFragment {
+function getFullIDFromKeyNode(
+    node: QueryNode,
+    rootEntityType: RootEntityType,
+    context: QueryContext,
+): AQLFragment {
     // special handling to avoid concat if possible - do not alter the behavior
     if (node instanceof LiteralQueryNode && typeof node.value == 'string') {
         // just append the node to the literal key in JavaScript and bind it as a string
@@ -1621,11 +1688,13 @@ function getFullIDFromKeyNode(node: QueryNode, rootEntityType: RootEntityType, c
 function getFullIDsFromKeysNode(
     idsNode: QueryNode,
     rootEntityType: RootEntityType,
-    context: QueryContext
+    context: QueryContext,
 ): AQLFragment {
     if (idsNode instanceof ListQueryNode) {
         // this probably generates cleaner AQL without dynamic concat
-        const idFragments = idsNode.itemNodes.map((idNode) => getFullIDFromKeyNode(idNode, rootEntityType, context));
+        const idFragments = idsNode.itemNodes.map((idNode) =>
+            getFullIDFromKeyNode(idNode, rootEntityType, context),
+        );
         return aql`[${aql.join(idFragments, aql`, `)}]`;
     }
     if (
@@ -1641,23 +1710,34 @@ function getFullIDsFromKeysNode(
     return getFullIDFromKeysFragment(processNode(idsNode, context), rootEntityType);
 }
 
-function getFullIDFromKeyFragment(keyFragment: AQLFragment, rootEntityType: RootEntityType): AQLFragment {
+function getFullIDFromKeyFragment(
+    keyFragment: AQLFragment,
+    rootEntityType: RootEntityType,
+): AQLFragment {
     return aql`CONCAT(${getCollectionNameForRootEntity(rootEntityType) + '/'}, ${keyFragment})`;
 }
 
-function getFullIDFromKeysFragment(keysFragment: AQLFragment, rootEntityType: RootEntityType): AQLFragment {
+function getFullIDFromKeysFragment(
+    keysFragment: AQLFragment,
+    rootEntityType: RootEntityType,
+): AQLFragment {
     const idVar = aql.variable('id');
-    return aql`(FOR ${idVar} IN ${keysFragment} RETURN ${getFullIDFromKeyFragment(idVar, rootEntityType)})`;
+    return aql`(FOR ${idVar} IN ${keysFragment} RETURN ${getFullIDFromKeyFragment(
+        idVar,
+        rootEntityType,
+    )})`;
 }
 
 function formatEdge(
     relation: Relation,
     edge: PartialEdgeIdentifier | EdgeIdentifier,
-    context: QueryContext
+    context: QueryContext,
 ): AQLFragment {
     const conditions = [];
     if (edge.fromIDNode) {
-        conditions.push(aql`_from: ${getFullIDFromKeyNode(edge.fromIDNode, relation.fromType, context)}`);
+        conditions.push(
+            aql`_from: ${getFullIDFromKeyNode(edge.fromIDNode, relation.fromType, context)}`,
+        );
     }
     if (edge.toIDNode) {
         conditions.push(aql`_to: ${getFullIDFromKeyNode(edge.toIDNode, relation.toType, context)}`);
@@ -1713,7 +1793,9 @@ function generateSortAQL(orderBy: OrderSpecification, context: QueryContext): AQ
         return aql``;
     }
 
-    const clauses = orderBy.clauses.map((cl) => aql`(${processNode(cl.valueNode, context)}) ${dirAQL(cl.direction)}`);
+    const clauses = orderBy.clauses.map(
+        (cl) => aql`(${processNode(cl.valueNode, context)}) ${dirAQL(cl.direction)}`,
+    );
 
     return aql`SORT ${aql.join(clauses, aql`, `)}`;
 }
@@ -1729,7 +1811,12 @@ function processNode(node: QueryNode, context: QueryContext): AQLFragment {
 // TODO I think AQLCompoundQuery (AQL transaction node) should not be the exported type
 // we should rather export AQLExecutableQuery[] (as AQL transaction) directly.
 export function getAQLQuery(node: QueryNode): AQLCompoundQuery {
-    return createAQLCompoundQuery(node, aql.queryResultVariable('result'), undefined, new QueryContext());
+    return createAQLCompoundQuery(
+        node,
+        aql.queryResultVariable('result'),
+        undefined,
+        new QueryContext(),
+    );
 }
 
 function getCollectionForBilling(accessType: AccessType, context: QueryContext) {
@@ -1744,7 +1831,11 @@ function getCollectionForType(type: RootEntityType, accessType: AccessType, cont
     return aql.collection(name);
 }
 
-function getCollectionForRelation(relation: Relation, accessType: AccessType, context: QueryContext) {
+function getCollectionForRelation(
+    relation: Relation,
+    accessType: AccessType,
+    context: QueryContext,
+) {
     const name = getCollectionNameForRelation(relation);
     context.addCollectionAccess(name, accessType);
     return aql.collection(name);
@@ -1754,12 +1845,15 @@ function getCollectionForRelation(relation: Relation, accessType: AccessType, co
  * Processes a FollowEdgeQueryNode into a fragment to be used within `IN ...` (as opposed to be used in a general
  * expression context)
  */
-function getSimpleFollowEdgeFragment(node: FollowEdgeQueryNode, context: QueryContext): AQLFragment {
+function getSimpleFollowEdgeFragment(
+    node: FollowEdgeQueryNode,
+    context: QueryContext,
+): AQLFragment {
     const dir = node.relationSide.isFromSide ? aql`OUTBOUND` : aql`INBOUND`;
     return aql`${dir} ${processNode(node.sourceEntityNode, context)} ${getCollectionForRelation(
         node.relationSide.relation,
         AccessType.READ,
-        context
+        context,
     )}`;
 }
 

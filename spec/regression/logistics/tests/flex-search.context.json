@@ -1,6 +1,4 @@
 {
-  "authRoles": [
-    "allusers"
-  ],
+  "authRoles": ["allusers"],
   "flexSearchMaxFilterableAndSortableAmount": 2
 }

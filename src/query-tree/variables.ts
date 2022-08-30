@@ -50,19 +50,27 @@ export class VariableQueryNode extends QueryNode {
  * })()
  */
 export class VariableAssignmentQueryNode extends QueryNode {
-    constructor(params: { variableValueNode: QueryNode, resultNode: QueryNode, variableNode: VariableQueryNode }) {
+    constructor(params: {
+        variableValueNode: QueryNode;
+        resultNode: QueryNode;
+        variableNode: VariableQueryNode;
+    }) {
         super();
         this.variableNode = params.variableNode;
         this.variableValueNode = params.variableValueNode;
         this.resultNode = params.resultNode;
     }
 
-    static create(valueNode: QueryNode, resultNodeFn: (variableNode: QueryNode) => QueryNode, varLabel?: string) {
+    static create(
+        valueNode: QueryNode,
+        resultNodeFn: (variableNode: QueryNode) => QueryNode,
+        varLabel?: string,
+    ) {
         const variableNode = new VariableQueryNode(varLabel);
         return new VariableAssignmentQueryNode({
             variableNode,
             variableValueNode: valueNode,
-            resultNode: resultNodeFn(variableNode)
+            resultNode: resultNodeFn(variableNode),
         });
     }
 
@@ -71,6 +79,8 @@ export class VariableAssignmentQueryNode extends QueryNode {
     public readonly variableNode: VariableQueryNode;
 
     public describe() {
-        return `let ${this.variableNode.describe()} = (\n${indent(this.variableValueNode.describe())}\n) in (\n${indent(this.resultNode.describe())}\n)`;
+        return `let ${this.variableNode.describe()} = (\n${indent(
+            this.variableValueNode.describe(),
+        )}\n) in (\n${indent(this.resultNode.describe())}\n)`;
     }
 }

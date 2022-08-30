@@ -1,15 +1,15 @@
 declare module 'json-lint' {
     interface JSONLintOptions {
-        comments?: boolean
+        comments?: boolean;
     }
 
     interface JSONLintResult {
-        error?: string
+        error?: string;
 
         /**
          * one-based line number of the error
          */
-        line?: number
+        line?: number;
 
         /**
          * zero-based character offset of the error
@@ -22,7 +22,7 @@ declare module 'json-lint' {
         character?: number;
     }
 
-    function jsonlint(json: string, options?: JSONLintOptions): JSONLintResult
+    function jsonlint(json: string, options?: JSONLintOptions): JSONLintResult;
 
     export = jsonlint;
 }

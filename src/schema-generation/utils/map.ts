@@ -8,7 +8,7 @@ import {
     QueryNode,
     RootEntityIDQueryNode,
     TransformListQueryNode,
-    VariableQueryNode
+    VariableQueryNode,
 } from '../../query-tree';
 
 export function getMapNode(listNode: QueryNode, projection: (itemNode: QueryNode) => QueryNode) {
@@ -24,7 +24,7 @@ export function getMapNode(listNode: QueryNode, projection: (itemNode: QueryNode
     if (listNode instanceof TransformListQueryNode) {
         return new TransformListQueryNode({
             ...listNode,
-            innerNode: projection(listNode.innerNode)
+            innerNode: projection(listNode.innerNode),
         });
     }
 
@@ -33,7 +33,7 @@ export function getMapNode(listNode: QueryNode, projection: (itemNode: QueryNode
     return new TransformListQueryNode({
         listNode,
         itemVariable,
-        innerNode
+        innerNode,
     });
 }
 
@@ -51,7 +51,10 @@ export function mapToIDNodesWithOptimizations(listNode: QueryNode): QueryNode {
                 filterNode.lhs instanceof RootEntityIDQueryNode &&
                 filterNode.lhs.objectNode === listNode.itemVariable
             ) {
-                if (filterNode.operator === BinaryOperator.EQUAL && filterNode.rhs instanceof LiteralQueryNode) {
+                if (
+                    filterNode.operator === BinaryOperator.EQUAL &&
+                    filterNode.rhs instanceof LiteralQueryNode
+                ) {
                     // maxCount is not inspected because ids are always unique
                     return new ListQueryNode([filterNode.rhs]);
                 }
@@ -63,7 +66,9 @@ export function mapToIDNodesWithOptimizations(listNode: QueryNode): QueryNode {
                     if (listNode.maxCount == undefined) {
                         return filterNode.rhs;
                     } else if (listNode.orderBy.isUnordered()) {
-                        return new LiteralQueryNode(filterNode.rhs.value.slice(0, listNode.maxCount));
+                        return new LiteralQueryNode(
+                            filterNode.rhs.value.slice(0, listNode.maxCount),
+                        );
                     }
                 }
             }
@@ -74,14 +79,17 @@ export function mapToIDNodesWithOptimizations(listNode: QueryNode): QueryNode {
 }
 
 export function mapToIDNodesUnoptimized(listNode: QueryNode): QueryNode {
-    return getMapNode(listNode, itemNode => new RootEntityIDQueryNode(itemNode));
+    return getMapNode(listNode, (itemNode) => new RootEntityIDQueryNode(itemNode));
 }
 
-export function mapIDsToRootEntities(idsNode: QueryNode, rootEntityType: RootEntityType): QueryNode {
+export function mapIDsToRootEntities(
+    idsNode: QueryNode,
+    rootEntityType: RootEntityType,
+): QueryNode {
     const idVar = new VariableQueryNode('id');
     return new TransformListQueryNode({
         listNode: idsNode,
         itemVariable: idVar,
-        innerNode: new EntityFromIdQueryNode(rootEntityType, idVar)
+        innerNode: new EntityFromIdQueryNode(rootEntityType, idVar),
     });
 }

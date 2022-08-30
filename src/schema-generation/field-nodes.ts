@@ -21,7 +21,7 @@ import {
     TransformListQueryNode,
     TraversalQueryNode,
     TypeCheckQueryNode,
-    VariableQueryNode
+    VariableQueryNode,
 } from '../query-tree';
 import { ID_FIELD } from '../schema/constants';
 import { GraphQLOffsetDateTime, TIMESTAMP_PROPERTY } from '../schema/scalars/offset-date-time';
@@ -31,7 +31,10 @@ import { and } from './utils/input-types';
 export function createFieldNode(
     field: Field,
     sourceNode: QueryNode,
-    options: { skipNullFallbackForEntityExtensions?: boolean; captureRootEntitiesOnCollectFields?: boolean } = {}
+    options: {
+        skipNullFallbackForEntityExtensions?: boolean;
+        captureRootEntitiesOnCollectFields?: boolean;
+    } = {},
 ): QueryNode {
     // make use of the fact that field access on non-objects is NULL, so that type checks for OBJECT are redundant
     // this e.g. reverses the effect of the isEntityExtensionType check below
@@ -47,7 +50,9 @@ export function createFieldNode(
 
     // we would need context for this
     if (field.isRootField || field.isParentField) {
-        throw new Error(`Tried to createFieldNoe on root/parent field "${field.declaringType.name}.${field.name}`);
+        throw new Error(
+            `Tried to createFieldNoe on root/parent field "${field.declaringType.name}.${field.name}`,
+        );
     }
 
     if (field.collectPath) {
@@ -56,7 +61,7 @@ export function createFieldNode(
             sourceEntityNode: sourceNode,
             relationSegments,
             fieldSegments,
-            captureRootEntities: !!options.captureRootEntitiesOnCollectFields
+            captureRootEntities: !!options.captureRootEntitiesOnCollectFields,
         });
 
         if (!field.aggregationOperator) {
@@ -76,7 +81,10 @@ export function createFieldNode(
                 items = new TransformListQueryNode({
                     listNode: items,
                     itemVariable: offsetDateTimeNode,
-                    innerNode: getScalarFilterValueNode(offsetDateTimeNode, field.collectPath.resultingType)
+                    innerNode: getScalarFilterValueNode(
+                        offsetDateTimeNode,
+                        field.collectPath.resultingType,
+                    ),
                 });
             }
 
@@ -115,7 +123,7 @@ export function createFieldNode(
         return new ConditionalQueryNode(
             new TypeCheckQueryNode(fieldNode, BasicType.OBJECT),
             fieldNode,
-            ObjectQueryNode.EMPTY
+            ObjectQueryNode.EMPTY,
         );
     }
 
@@ -129,11 +137,19 @@ function createTo1ReferenceNode(field: Field, sourceNode: QueryNode): QueryNode 
     const referenceKeyNode = new FieldQueryNode(sourceNode, field.getReferenceKeyFieldOrThrow());
     const listItemVar = new VariableQueryNode(field.name);
     const itemKeyNode = createFieldNode(keyFieldInReferencedEntity, listItemVar);
-    const equalFilterNode = new BinaryOperationQueryNode(itemKeyNode, BinaryOperator.EQUAL, referenceKeyNode);
+    const equalFilterNode = new BinaryOperationQueryNode(
+        itemKeyNode,
+        BinaryOperator.EQUAL,
+        referenceKeyNode,
+    );
     // this is a hint for the database that we're not interested in items where the key is null so it can use sparse
     // indices. this is used by arangodb >= 3.4. It would be preferable to implement this in the ArangoDBAdapter, but
     // then we would need a way to convey non-nullness somehow.
-    const nonNullFilterNode = new BinaryOperationQueryNode(itemKeyNode, BinaryOperator.UNEQUAL, NullQueryNode.NULL);
+    const nonNullFilterNode = new BinaryOperationQueryNode(
+        itemKeyNode,
+        BinaryOperator.UNEQUAL,
+        NullQueryNode.NULL,
+    );
     const filterNode = and(nonNullFilterNode, equalFilterNode);
 
     const listNode = new EntitiesQueryNode(referencedEntityType);
@@ -141,13 +157,13 @@ function createTo1ReferenceNode(field: Field, sourceNode: QueryNode): QueryNode 
         listNode,
         filterNode,
         maxCount: 1,
-        itemVariable: listItemVar
+        itemVariable: listItemVar,
     });
     const rawNode = new FirstOfListQueryNode(filteredListNode);
     return new ConditionalQueryNode(
         new TypeCheckQueryNode(referenceKeyNode, BasicType.NULL),
         NullQueryNode.NULL,
-        rawNode
+        rawNode,
     );
 }
 

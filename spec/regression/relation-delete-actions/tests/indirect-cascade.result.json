@@ -1,52 +1,52 @@
 {
-    "createEdges": {
-        "data": {
-            "updateMain": {
-                "key": "m1"
-            },
-            "updateDependents": [
-                {
-                    "key": "d1"
-                },
-                {
-                    "key": "d2"
-                }
-            ]
+  "createEdges": {
+    "data": {
+      "updateMain": {
+        "key": "m1"
+      },
+      "updateDependents": [
+        {
+          "key": "d1"
+        },
+        {
+          "key": "d2"
         }
-    },
-    "delete": {
-        "data": {
-            "deleteMain": {
-                "key": "m1"
-            }
-        }
-    },
-    "everything": {
-        "data": {
-            "allMains": [
-                {
-                    "key": "m2"
-                },
-                {
-                    "key": "m3"
-                },
-                {
-                    "key": "m4"
-                }
-            ],
-            "allDependents": [
-                {
-                    "key": "d3"
-                },
-                {
-                    "key": "d4"
-                }
-            ],
-            "allAlternativeDependents": [
-                {
-                    "key": "a4"
-                }
-            ]
-        }
+      ]
     }
+  },
+  "delete": {
+    "data": {
+      "deleteMain": {
+        "key": "m1"
+      }
+    }
+  },
+  "everything": {
+    "data": {
+      "allMains": [
+        {
+          "key": "m2"
+        },
+        {
+          "key": "m3"
+        },
+        {
+          "key": "m4"
+        }
+      ],
+      "allDependents": [
+        {
+          "key": "d3"
+        },
+        {
+          "key": "d4"
+        }
+      ],
+      "allAlternativeDependents": [
+        {
+          "key": "a4"
+        }
+      ]
+    }
+  }
 }

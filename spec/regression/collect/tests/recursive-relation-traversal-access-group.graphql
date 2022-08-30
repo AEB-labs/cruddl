@@ -1,13 +1,23 @@
 mutation createEdges {
-    updateShipment(input: { id: "@{ids/Shipment/1}", addDeliveries: ["@{ids/Delivery/1}", "@{ids/Delivery/2}"] }) {
+    updateShipment(
+        input: {
+            id: "@{ids/Shipment/1}"
+            addDeliveries: ["@{ids/Delivery/1}", "@{ids/Delivery/2}"]
+        }
+    ) {
         shipmentNumber
     }
     d1: updateDelivery(
-        input: { id: "@{ids/Delivery/1}", addHandlingUnits: ["@{ids/HandlingUnit/1}", "@{ids/HandlingUnit/2}"] }
+        input: {
+            id: "@{ids/Delivery/1}"
+            addHandlingUnits: ["@{ids/HandlingUnit/1}", "@{ids/HandlingUnit/2}"]
+        }
     ) {
         deliveryNumber
     }
-    d2: updateDelivery(input: { id: "@{ids/Delivery/2}", addHandlingUnits: ["@{ids/HandlingUnit/3}"] }) {
+    d2: updateDelivery(
+        input: { id: "@{ids/Delivery/2}", addHandlingUnits: ["@{ids/HandlingUnit/3}"] }
+    ) {
         deliveryNumber
     }
     h1: updateHandlingUnit(
@@ -42,7 +52,9 @@ mutation createEdges {
                 {
                     handlingUnitNumber: "H2.1"
                     accessGroup: "H2"
-                    createChildHandlingUnits: [{ handlingUnitNumber: "H2.1.1", accessGroup: "restricted" }]
+                    createChildHandlingUnits: [
+                        { handlingUnitNumber: "H2.1.1", accessGroup: "restricted" }
+                    ]
                 }
                 { handlingUnitNumber: "H2.2", accessGroup: "H2" }
             ]

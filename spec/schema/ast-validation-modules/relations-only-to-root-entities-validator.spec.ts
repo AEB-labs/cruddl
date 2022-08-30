@@ -1,9 +1,9 @@
 import { assertValidatorAccepts, assertValidatorRejects } from './helpers';
 
 describe('relations only on root entities validator', () => {
-
     it('rejects @relation to non-@rootEntity', () => {
-        assertValidatorRejects(`
+        assertValidatorRejects(
+            `
             type Stuff @childEntity {
                 foo: String
             }
@@ -11,7 +11,8 @@ describe('relations only on root entities validator', () => {
                 stuff: [Stuff] @relation
             }
         `,
-            'Type "Stuff" cannot be used with @relation because it is not a root entity type.');
+            'Type "Stuff" cannot be used with @relation because it is not a root entity type.',
+        );
     });
 
     it('accepts @relation to @rootEntity', () => {
@@ -23,6 +24,5 @@ describe('relations only on root entities validator', () => {
                 stuff: [Stuff] @relation
             }
         `);
-    })
-
+    });
 });

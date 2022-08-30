@@ -15,14 +15,14 @@ export class TimeToLiveType implements ModelComponent {
     constructor(readonly input: TimeToLiveConfig, readonly model: Model) {}
 
     validate(context: ValidationContext): void {
-        this.traversePath(mess => context.addMessage(mess));
+        this.traversePath((mess) => context.addMessage(mess));
 
         if (!this.rootEntityType) {
             context.addMessage(
                 ValidationMessage.error(
                     `No rootEntity with the name "${this.input.typeName}" is defined.`,
-                    this.input.typeNameLoc
-                )
+                    this.input.typeNameLoc,
+                ),
             );
         }
     }
@@ -50,20 +50,23 @@ export class TimeToLiveType implements ModelComponent {
     }
 
     private traversePath(
-        addMessage: (mess: ValidationMessage) => void
+        addMessage: (mess: ValidationMessage) => void,
     ): { fieldsInPath: ReadonlyArray<Field>; field: Field } | undefined {
         if (!this.input.dateField.match(/^([\w]+\.)*[\w]+$/)) {
             addMessage(
                 ValidationMessage.error(
                     `The dateField should be a path, defined as field names separated by dots.`,
-                    this.input.dateFieldLoc
-                )
+                    this.input.dateFieldLoc,
+                ),
             );
             return undefined;
         }
 
         if (!this.rootEntityType) {
-            ValidationMessage.error(`"${this.input.typeName}" does not specify a rootEntity.`, this.input.typeNameLoc);
+            ValidationMessage.error(
+                `"${this.input.typeName}" does not specify a rootEntity.`,
+                this.input.typeNameLoc,
+            );
             return undefined;
         }
 
@@ -75,15 +78,18 @@ export class TimeToLiveType implements ModelComponent {
             if (!type.isObjectType) {
                 if (field) {
                     addMessage(
-                        ValidationMessage.error(`Field "${field.name}" is not an object`, this.input.dateFieldLoc)
+                        ValidationMessage.error(
+                            `Field "${field.name}" is not an object`,
+                            this.input.dateFieldLoc,
+                        ),
                     );
                 } else {
                     // this should not occur - would mean that the root is not an object type
                     addMessage(
                         ValidationMessage.error(
                             `Index defined on non-object type (this is probably an internal error).`,
-                            this.input.dateFieldLoc
-                        )
+                            this.input.dateFieldLoc,
+                        ),
                     );
                 }
                 return undefined;
@@ -94,8 +100,8 @@ export class TimeToLiveType implements ModelComponent {
                 addMessage(
                     ValidationMessage.error(
                         `Type "${type.name}" does not have a field "${fieldName}"`,
-                        this.input.dateFieldLoc
-                    )
+                        this.input.dateFieldLoc,
+                    ),
                 );
                 return undefined;
             }
@@ -104,8 +110,8 @@ export class TimeToLiveType implements ModelComponent {
                 addMessage(
                     ValidationMessage.error(
                         `Field "${type.name}.${nextField.name}" resolves to a root entity, but time-to-live-definitions can not cross root entity boundaries.`,
-                        this.input.dateFieldLoc
-                    )
+                        this.input.dateFieldLoc,
+                    ),
                 );
                 return undefined;
             }
@@ -130,8 +136,8 @@ export class TimeToLiveType implements ModelComponent {
             addMessage(
                 ValidationMessage.error(
                     `The dateField of time-to-live-configurations must be of type LocalDate, DateTime or OffsetDateTime.`,
-                    this.input.dateFieldLoc
-                )
+                    this.input.dateFieldLoc,
+                ),
             );
             return undefined;
         }
@@ -140,8 +146,8 @@ export class TimeToLiveType implements ModelComponent {
             addMessage(
                 ValidationMessage.error(
                     `Indices can not be defined on lists, but "${field.declaringType.name}.${field.name}" has a list type.`,
-                    this.input.dateFieldLoc
-                )
+                    this.input.dateFieldLoc,
+                ),
             );
             return undefined;
         }

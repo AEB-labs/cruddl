@@ -28,9 +28,7 @@
             "column": 5
           }
         ],
-        "path": [
-          "updateFile"
-        ]
+        "path": ["updateFile"]
       }
     ],
     "data": {
@@ -47,9 +45,7 @@
             "column": 5
           }
         ],
-        "path": [
-          "updateFile"
-        ]
+        "path": ["updateFile"]
       }
     ],
     "data": {
@@ -73,9 +69,7 @@
             "column": 5
           }
         ],
-        "path": [
-          "createFile"
-        ]
+        "path": ["createFile"]
       }
     ],
     "data": null
@@ -90,9 +84,7 @@
             "column": 5
           }
         ],
-        "path": [
-          "updateFile"
-        ]
+        "path": ["updateFile"]
       }
     ],
     "data": {
@@ -109,9 +101,7 @@
             "column": 5
           }
         ],
-        "path": [
-          "updateFile"
-        ]
+        "path": ["updateFile"]
       }
     ],
     "data": {
@@ -128,9 +118,7 @@
             "column": 5
           }
         ],
-        "path": [
-          "updateFile"
-        ]
+        "path": ["updateFile"]
       }
     ],
     "data": {
@@ -147,9 +135,7 @@
             "column": 5
           }
         ],
-        "path": [
-          "updateFile"
-        ]
+        "path": ["updateFile"]
       }
     ],
     "data": {
@@ -173,9 +159,7 @@
             "column": 5
           }
         ],
-        "path": [
-          "deleteFile"
-        ]
+        "path": ["deleteFile"]
       }
     ],
     "data": {

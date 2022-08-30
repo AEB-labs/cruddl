@@ -13,15 +13,21 @@ const readFile = util.promisify<PathLike, string, string>(fs.readFile);
 /**
  * Creates a Project by loading source files from a directory
  */
-export async function loadProjectFromDir(path: string, options: ProjectOptions = {}): Promise<Project> {
+export async function loadProjectFromDir(
+    path: string,
+    options: ProjectOptions = {},
+): Promise<Project> {
     const sources = await loadSourcesFromDir(path);
     return new Project({
         ...options,
-        sources
+        sources,
     });
 }
 
-async function loadSourcesFromDir(dirPath: string, parentSourcePath: string = ''): Promise<ProjectSource[]> {
+async function loadSourcesFromDir(
+    dirPath: string,
+    parentSourcePath: string = '',
+): Promise<ProjectSource[]> {
     const fileNames: string[] = await readdir(dirPath);
     return flatten(await Promise.all(fileNames.map(processFile)));
 
@@ -33,7 +39,7 @@ async function loadSourcesFromDir(dirPath: string, parentSourcePath: string = ''
             return await loadSourcesFromDir(filePath, sourcePath);
         }
         const body = await readFile(filePath, 'utf-8');
-        return [ new ProjectSource(sourcePath, body, filePath) ];
+        return [new ProjectSource(sourcePath, body, filePath)];
     }
 }
 
@@ -45,5 +51,5 @@ function concatSourcePaths(path1: string, path2: string) {
         return path1;
     }
     // Always use slashes here because we don't want OS directories but logical source paths
-    return `${path1}/${path2}`
+    return `${path1}/${path2}`;
 }

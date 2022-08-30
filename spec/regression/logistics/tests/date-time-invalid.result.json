@@ -1,15 +1,15 @@
 {
-    "invalidFormat": {
-        "errors": [
-            {
-                "message": "Expected value of type \"DateTime\", found \"this-is-not-a-date-time\"; Invalid ISO 8601 DateTime: this-is-not-a-date-time",
-                "locations": [
-                    {
-                        "line": 2,
-                        "column": 40
-                    }
-                ]
-            }
+  "invalidFormat": {
+    "errors": [
+      {
+        "message": "Expected value of type \"DateTime\", found \"this-is-not-a-date-time\"; Invalid ISO 8601 DateTime: this-is-not-a-date-time",
+        "locations": [
+          {
+            "line": 2,
+            "column": 40
+          }
         ]
-    }
+      }
+    ]
+  }
 }

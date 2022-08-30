@@ -19,7 +19,7 @@ import {
     INPUT_FIELD_NOT_LIKE,
     INPUT_FIELD_NOT_STARTS_WITH,
     INPUT_FIELD_SOME,
-    INPUT_FIELD_STARTS_WITH
+    INPUT_FIELD_STARTS_WITH,
 } from '../../schema/constants';
 import { GraphQLDateTime } from '../../schema/scalars/date-time';
 import { GraphQLLocalDate } from '../../schema/scalars/local-date';
@@ -27,7 +27,9 @@ import { GraphQLLocalTime } from '../../schema/scalars/local-time';
 import { binaryNotOp, binaryOp } from '../utils/input-types';
 import { GraphQLOffsetDateTime } from '../../schema/scalars/offset-date-time';
 
-export const FILTER_OPERATORS: { [suffix: string]: (fieldNode: QueryNode, valueNode: QueryNode) => QueryNode } = {
+export const FILTER_OPERATORS: {
+    [suffix: string]: (fieldNode: QueryNode, valueNode: QueryNode) => QueryNode;
+} = {
     [INPUT_FIELD_EQUAL]: binaryOp(BinaryOperator.EQUAL),
     [INPUT_FIELD_NOT]: binaryOp(BinaryOperator.UNEQUAL),
     [INPUT_FIELD_LT]: binaryOp(BinaryOperator.LESS_THAN),
@@ -43,7 +45,7 @@ export const FILTER_OPERATORS: { [suffix: string]: (fieldNode: QueryNode, valueN
     [INPUT_FIELD_ENDS_WITH]: binaryOp(BinaryOperator.ENDS_WITH),
     [INPUT_FIELD_NOT_ENDS_WITH]: binaryNotOp(BinaryOperator.ENDS_WITH),
     [INPUT_FIELD_LIKE]: binaryOp(BinaryOperator.LIKE),
-    [INPUT_FIELD_NOT_LIKE]: binaryNotOp(BinaryOperator.LIKE)
+    [INPUT_FIELD_NOT_LIKE]: binaryNotOp(BinaryOperator.LIKE),
 };
 
 export const NUMERIC_FILTER_FIELDS = [
@@ -54,7 +56,7 @@ export const NUMERIC_FILTER_FIELDS = [
     INPUT_FIELD_LT,
     INPUT_FIELD_LTE,
     INPUT_FIELD_GT,
-    INPUT_FIELD_GTE
+    INPUT_FIELD_GTE,
 ];
 
 export const STRING_FILTER_FIELDS = [
@@ -73,10 +75,15 @@ export const STRING_FILTER_FIELDS = [
     INPUT_FIELD_ENDS_WITH,
     INPUT_FIELD_NOT_ENDS_WITH,
     INPUT_FIELD_LIKE,
-    INPUT_FIELD_NOT_LIKE
+    INPUT_FIELD_NOT_LIKE,
 ];
 
-export const ENUM_FILTER_FIELDS = [INPUT_FIELD_EQUAL, INPUT_FIELD_NOT, INPUT_FIELD_IN, INPUT_FIELD_NOT_IN];
+export const ENUM_FILTER_FIELDS = [
+    INPUT_FIELD_EQUAL,
+    INPUT_FIELD_NOT,
+    INPUT_FIELD_IN,
+    INPUT_FIELD_NOT_IN,
+];
 
 export const FILTER_DESCRIPTIONS: { [name: string]: string | { [typeName: string]: string } } = {
     [INPUT_FIELD_EQUAL]: {
@@ -85,13 +92,16 @@ export const FILTER_DESCRIPTIONS: { [name: string]: string | { [typeName: string
             'If an index exists on $field, it can be used.\n\n' +
             'See also `like` for a case-insensitive filter.',
 
-        ['']: 'Checks if $field equals a specified value.\n\n' + 'If an index exists on $field, it can be used.'
+        ['']:
+            'Checks if $field equals a specified value.\n\n' +
+            'If an index exists on $field, it can be used.',
     },
 
     [INPUT_FIELD_NOT]: {
-        [GraphQLString.name]: 'Checks if $field does not equal a specified string, case-sensitively.',
+        [GraphQLString.name]:
+            'Checks if $field does not equal a specified string, case-sensitively.',
 
-        ['']: 'Checks if $field does not equal a specified value'
+        ['']: 'Checks if $field does not equal a specified value',
     },
 
     [INPUT_FIELD_STARTS_WITH]:
@@ -102,10 +112,12 @@ export const FILTER_DESCRIPTIONS: { [name: string]: string | { [typeName: string
         'Never uses an index. Consider using `not_like` (with the `%` placeholder) for a case-insensitive filter that can use an index.',
 
     [INPUT_FIELD_ENDS_WITH]: 'Checks if $field ends with a specified string, case-sensitively.',
-    [INPUT_FIELD_NOT_ENDS_WITH]: 'Checks if $field does not end with a specified string, case-sensitively.',
+    [INPUT_FIELD_NOT_ENDS_WITH]:
+        'Checks if $field does not end with a specified string, case-sensitively.',
 
     [INPUT_FIELD_CONTAINS]: 'Checks if $field contains a specified string, case-sensitively.',
-    [INPUT_FIELD_NOT_CONTAINS]: 'Checks if $field does not contain a specified string, case-sensitively.',
+    [INPUT_FIELD_NOT_CONTAINS]:
+        'Checks if $field does not contain a specified string, case-sensitively.',
 
     [INPUT_FIELD_LIKE]:
         'Matches $field against a pattern case-insensitively with the following placeholders:\n\n' +
@@ -125,7 +137,7 @@ export const FILTER_DESCRIPTIONS: { [name: string]: string | { [typeName: string
     [INPUT_FIELD_LT]: 'Checks if $field is less than a specified value.',
     [INPUT_FIELD_LTE]: 'Checks if $field is less or equal a specified value.',
     [INPUT_FIELD_GT]: 'Checks if $field is greater than a specified value.',
-    [INPUT_FIELD_GTE]: 'Checks if $field is greater or equal a specified value.'
+    [INPUT_FIELD_GTE]: 'Checks if $field is greater or equal a specified value.',
 };
 
 export const OPERATORS_WITH_LIST_OPERAND = [INPUT_FIELD_IN, INPUT_FIELD_NOT_IN];
@@ -137,8 +149,12 @@ export const FILTER_FIELDS_BY_TYPE: { [name: string]: string[] } = {
     [GraphQLOffsetDateTime.name]: NUMERIC_FILTER_FIELDS,
     [GraphQLLocalDate.name]: NUMERIC_FILTER_FIELDS,
     [GraphQLLocalTime.name]: NUMERIC_FILTER_FIELDS,
-    [GraphQLBoolean.name]: [INPUT_FIELD_EQUAL, INPUT_FIELD_NOT]
+    [GraphQLBoolean.name]: [INPUT_FIELD_EQUAL, INPUT_FIELD_NOT],
 };
 
 export type Quantifier = 'some' | 'every' | 'none';
-export const QUANTIFIERS: ReadonlyArray<Quantifier> = [INPUT_FIELD_SOME, INPUT_FIELD_EVERY, INPUT_FIELD_NONE];
+export const QUANTIFIERS: ReadonlyArray<Quantifier> = [
+    INPUT_FIELD_SOME,
+    INPUT_FIELD_EVERY,
+    INPUT_FIELD_NONE,
+];

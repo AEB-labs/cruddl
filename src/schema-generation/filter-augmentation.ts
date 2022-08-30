@@ -11,7 +11,7 @@ import { buildFilteredListNode } from './utils/filtering';
 export class FilterAugmentation {
     constructor(
         private readonly filterTypeGenerator: FilterTypeGenerator,
-        private readonly rootFieldHelper: RootFieldHelper
+        private readonly rootFieldHelper: RootFieldHelper,
     ) {}
 
     augment(schemaField: QueryNodeField, itemType: Type): QueryNodeField {
@@ -26,8 +26,8 @@ export class FilterAugmentation {
             args: {
                 ...schemaField.args,
                 [FILTER_ARG]: {
-                    type: filterType.getInputType()
-                }
+                    type: filterType.getInputType(),
+                },
             },
             resolve: (sourceNode, args, info) => {
                 let listNode = schemaField.resolve(sourceNode, args, info);
@@ -36,9 +36,10 @@ export class FilterAugmentation {
                     filterValue: args[FILTER_ARG],
                     filterType,
                     itemType,
-                    objectNodeCallback: itemNode => this.rootFieldHelper.getRealItemNode(itemNode, info)
+                    objectNodeCallback: (itemNode) =>
+                        this.rootFieldHelper.getRealItemNode(itemNode, info),
                 });
-            }
+            },
         };
     }
 }

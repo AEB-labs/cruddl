@@ -27,17 +27,17 @@ describe('permission-profile-validator', () => {
                             permissions: [
                                 {
                                     roles: ['/invalid-regex'],
-                                    access: 'readWrite'
-                                }
-                            ]
-                        }
-                    }
-                })
-            )
+                                    access: 'readWrite',
+                                },
+                            ],
+                        },
+                    },
+                }),
+            ),
         );
         expect(messages.length).to.equal(1);
         expect(messages[0].message).to.equal(
-            'Role specifier starts with a slash (/), but is not a valid regular expression: /invalid-regex'
+            'Role specifier starts with a slash (/), but is not a valid regular expression: /invalid-regex',
         );
     });
 
@@ -52,17 +52,17 @@ describe('permission-profile-validator', () => {
                                 {
                                     roles: ['/^role-(.*)$/', 'static-role'],
                                     access: 'readWrite',
-                                    restrictToAccessGroups: ['static-group', 'dynamic-$1']
-                                }
-                            ]
-                        }
-                    }
-                })
-            )
+                                    restrictToAccessGroups: ['static-group', 'dynamic-$1'],
+                                },
+                            ],
+                        },
+                    },
+                }),
+            ),
         );
         expect(messages.length).to.equal(1);
         expect(messages[0].message).to.equal(
-            'Can only use placeholders (like $1) in restrictToAccessGroups when all role expressions are regular expressions with capturing groups'
+            'Can only use placeholders (like $1) in restrictToAccessGroups when all role expressions are regular expressions with capturing groups',
         );
     });
 
@@ -77,13 +77,13 @@ describe('permission-profile-validator', () => {
                                 {
                                     roles: ['/^role-(.*)$/', '/^role2-(.*)$/'],
                                     access: 'readWrite',
-                                    restrictToAccessGroups: ['static-group', 'dynamic-$1']
-                                }
-                            ]
-                        }
-                    }
-                })
-            )
+                                    restrictToAccessGroups: ['static-group', 'dynamic-$1'],
+                                },
+                            ],
+                        },
+                    },
+                }),
+            ),
         );
         expect(messages.length).to.equal(0);
     });
@@ -99,13 +99,13 @@ describe('permission-profile-validator', () => {
                                 {
                                     roles: ['/^role-(.*)$/', 'static-role'],
                                     access: 'readWrite',
-                                    restrictToAccessGroups: ['static-group', 'static-2']
-                                }
-                            ]
-                        }
-                    }
-                })
-            )
+                                    restrictToAccessGroups: ['static-group', 'static-2'],
+                                },
+                            ],
+                        },
+                    },
+                }),
+            ),
         );
         expect(messages.length).to.equal(0);
     });
@@ -120,13 +120,13 @@ describe('permission-profile-validator', () => {
                             permissions: [
                                 {
                                     roles: ['/^role-(.*)$/', 'static-role'],
-                                    access: 'readWrite'
-                                }
-                            ]
-                        }
-                    }
-                })
-            )
+                                    access: 'readWrite',
+                                },
+                            ],
+                        },
+                    },
+                }),
+            ),
         );
         expect(messages.length).to.equal(0);
     });

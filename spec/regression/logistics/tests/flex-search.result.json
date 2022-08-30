@@ -1,222 +1,222 @@
 {
-    "containsAnyWord": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000173"
-                }
-            ]
+  "containsAnyWord": {
+    "data": {
+      "flexSearchDeliveries": [
+        {
+          "deliveryNumber": "1000173"
         }
-    },
-    "containsAllWords": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000521"
-                }
-            ]
-        }
-    },
-    "containsAllPrefixes": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000521"
-                }
-            ]
-        }
-    },
-    "containsAllPrefixesWithEmptyFilter": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000521"
-                }
-            ]
-        }
-    },
-    "containsAnyPrefix": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000173"
-                },
-                {
-                    "deliveryNumber": "1000521"
-                }
-            ]
-        }
-    },
-    "containsPhrase": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000522"
-                }
-            ]
-        }
-    },
-    "equals_null": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000173"
-                }
-            ]
-        }
-    },
-    "expression": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000173"
-                },
-                {
-                    "deliveryNumber": "1000521"
-                }
-            ]
-        }
-    },
-    "expressionWithMultipleWords": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000173"
-                },
-                {
-                    "deliveryNumber": "1000521"
-                }
-            ]
-        }
-    },
-    "expressionWithoutResults": {
-        "data": {
-            "flexSearchDeliveries": []
-        }
-    },
-    "emptyExpression": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000173"
-                },
-                {
-                    "deliveryNumber": "1000521"
-                },
-                {
-                    "deliveryNumber": "1000522"
-                }
-            ]
-        }
-    },
-    "expressionWithNoTokens": {
-        "data": {
-            "flexSearchDeliveries": []
-        }
-    },
-    "gt_lt_number": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000173"
-                },
-                {
-                    "deliveryNumber": "1000522"
-                }
-            ]
-        }
-    },
-    "id": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000173"
-                }
-            ]
-        }
-    },
-    "nothingIsLessThanNullInAggregation": {
-        "data": {
-            "flexSearchDeliveries": []
-        }
-    },
-    "everythingIsGreaterThanNullInAggregation": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000173"
-                },
-                {
-                    "deliveryNumber": "1000521"
-                },
-                {
-                    "deliveryNumber": "1000522"
-                }
-            ]
-        }
-    },
-    "caseInsensitive_equals": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000173",
-                    "caseInsensitiveField": "Ä TEXT"
-                },
-                {
-                    "deliveryNumber": "1000521",
-                    "caseInsensitiveField": "ä text"
-                }
-            ]
-        }
-    },
-    "caseInsensitive_gte": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000173",
-                    "caseInsensitiveField": "Ä TEXT"
-                },
-                {
-                    "deliveryNumber": "1000521",
-                    "caseInsensitiveField": "ä text"
-                },
-                {
-                    "deliveryNumber": "1000522",
-                    "caseInsensitiveField": "änother text"
-                }
-            ]
-        }
-    },
-    "caseInsensitive_in": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000173",
-                    "caseInsensitiveField": "Ä TEXT"
-                },
-                {
-                    "deliveryNumber": "1000521",
-                    "caseInsensitiveField": "ä text"
-                },
-                {
-                    "deliveryNumber": "1000522",
-                    "caseInsensitiveField": "änother text"
-                }
-            ]
-        }
-    },
-    "caseInsensitive_starts_with": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000173",
-                    "caseInsensitiveField": "Ä TEXT"
-                },
-                {
-                    "deliveryNumber": "1000521",
-                    "caseInsensitiveField": "ä text"
-                }
-            ]
-        }
+      ]
     }
+  },
+  "containsAllWords": {
+    "data": {
+      "flexSearchDeliveries": [
+        {
+          "deliveryNumber": "1000521"
+        }
+      ]
+    }
+  },
+  "containsAllPrefixes": {
+    "data": {
+      "flexSearchDeliveries": [
+        {
+          "deliveryNumber": "1000521"
+        }
+      ]
+    }
+  },
+  "containsAllPrefixesWithEmptyFilter": {
+    "data": {
+      "flexSearchDeliveries": [
+        {
+          "deliveryNumber": "1000521"
+        }
+      ]
+    }
+  },
+  "containsAnyPrefix": {
+    "data": {
+      "flexSearchDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        },
+        {
+          "deliveryNumber": "1000521"
+        }
+      ]
+    }
+  },
+  "containsPhrase": {
+    "data": {
+      "flexSearchDeliveries": [
+        {
+          "deliveryNumber": "1000522"
+        }
+      ]
+    }
+  },
+  "equals_null": {
+    "data": {
+      "flexSearchDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        }
+      ]
+    }
+  },
+  "expression": {
+    "data": {
+      "flexSearchDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        },
+        {
+          "deliveryNumber": "1000521"
+        }
+      ]
+    }
+  },
+  "expressionWithMultipleWords": {
+    "data": {
+      "flexSearchDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        },
+        {
+          "deliveryNumber": "1000521"
+        }
+      ]
+    }
+  },
+  "expressionWithoutResults": {
+    "data": {
+      "flexSearchDeliveries": []
+    }
+  },
+  "emptyExpression": {
+    "data": {
+      "flexSearchDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        },
+        {
+          "deliveryNumber": "1000521"
+        },
+        {
+          "deliveryNumber": "1000522"
+        }
+      ]
+    }
+  },
+  "expressionWithNoTokens": {
+    "data": {
+      "flexSearchDeliveries": []
+    }
+  },
+  "gt_lt_number": {
+    "data": {
+      "flexSearchDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        },
+        {
+          "deliveryNumber": "1000522"
+        }
+      ]
+    }
+  },
+  "id": {
+    "data": {
+      "flexSearchDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        }
+      ]
+    }
+  },
+  "nothingIsLessThanNullInAggregation": {
+    "data": {
+      "flexSearchDeliveries": []
+    }
+  },
+  "everythingIsGreaterThanNullInAggregation": {
+    "data": {
+      "flexSearchDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        },
+        {
+          "deliveryNumber": "1000521"
+        },
+        {
+          "deliveryNumber": "1000522"
+        }
+      ]
+    }
+  },
+  "caseInsensitive_equals": {
+    "data": {
+      "flexSearchDeliveries": [
+        {
+          "deliveryNumber": "1000173",
+          "caseInsensitiveField": "Ä TEXT"
+        },
+        {
+          "deliveryNumber": "1000521",
+          "caseInsensitiveField": "ä text"
+        }
+      ]
+    }
+  },
+  "caseInsensitive_gte": {
+    "data": {
+      "flexSearchDeliveries": [
+        {
+          "deliveryNumber": "1000173",
+          "caseInsensitiveField": "Ä TEXT"
+        },
+        {
+          "deliveryNumber": "1000521",
+          "caseInsensitiveField": "ä text"
+        },
+        {
+          "deliveryNumber": "1000522",
+          "caseInsensitiveField": "änother text"
+        }
+      ]
+    }
+  },
+  "caseInsensitive_in": {
+    "data": {
+      "flexSearchDeliveries": [
+        {
+          "deliveryNumber": "1000173",
+          "caseInsensitiveField": "Ä TEXT"
+        },
+        {
+          "deliveryNumber": "1000521",
+          "caseInsensitiveField": "ä text"
+        },
+        {
+          "deliveryNumber": "1000522",
+          "caseInsensitiveField": "änother text"
+        }
+      ]
+    }
+  },
+  "caseInsensitive_starts_with": {
+    "data": {
+      "flexSearchDeliveries": [
+        {
+          "deliveryNumber": "1000173",
+          "caseInsensitiveField": "Ä TEXT"
+        },
+        {
+          "deliveryNumber": "1000521",
+          "caseInsensitiveField": "ä text"
+        }
+      ]
+    }
+  }
 }

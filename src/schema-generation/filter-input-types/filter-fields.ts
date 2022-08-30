@@ -10,14 +10,14 @@ import {
     ObjectEntriesQueryNode,
     PropertyAccessQueryNode,
     QueryNode,
-    VariableQueryNode
+    VariableQueryNode,
 } from '../../query-tree';
 import { QuantifierFilterNode } from '../../query-tree/quantifiers';
 import {
     AND_FILTER_FIELD,
     FILTER_FIELD_PREFIX_SEPARATOR,
     INPUT_FIELD_EQUAL,
-    OR_FILTER_FIELD
+    OR_FILTER_FIELD,
 } from '../../schema/constants';
 import { GraphQLOffsetDateTime, TIMESTAMP_PROPERTY } from '../../schema/scalars/offset-date-time';
 import { AnyValue, decapitalize, PlainObject } from '../../utils/utils';
@@ -33,7 +33,7 @@ export interface FilterField extends TypedInputFieldBase<FilterField> {
 function getDescription({
     operator,
     typeName,
-    fieldName
+    fieldName,
 }: {
     operator: string | undefined;
     typeName: string;
@@ -56,7 +56,11 @@ export function getScalarFilterValueNode(fieldNode: QueryNode, type: Type): Quer
 }
 
 function getScalarFilterLiteralValue(value: unknown, type: Type): unknown {
-    if (type.isScalarType && type.graphQLScalarType === GraphQLOffsetDateTime && value instanceof ZonedDateTime) {
+    if (
+        type.isScalarType &&
+        type.graphQLScalarType === GraphQLOffsetDateTime &&
+        value instanceof ZonedDateTime
+    ) {
         return value.toInstant().toString();
     }
     return value;
@@ -70,7 +74,7 @@ export class ScalarOrEnumFieldFilterField implements FilterField {
         public readonly field: Field,
         public readonly resolveOperator: (fieldNode: QueryNode, valueNode: QueryNode) => QueryNode,
         public readonly operatorPrefix: string | undefined,
-        baseInputType: GraphQLInputType
+        baseInputType: GraphQLInputType,
     ) {
         this.inputType = OPERATORS_WITH_LIST_OPERAND.includes(operatorPrefix || '')
             ? new GraphQLList(baseInputType)
@@ -78,10 +82,11 @@ export class ScalarOrEnumFieldFilterField implements FilterField {
         this.description = getDescription({
             operator: operatorPrefix,
             fieldName: field.name,
-            typeName: field.type.name
+            typeName: field.type.name,
         });
         if (this.field.description) {
-            this.description = (this.description ? this.description + '\n\n' : '') + this.field.description;
+            this.description =
+                (this.description ? this.description + '\n\n' : '') + this.field.description;
         }
     }
 
@@ -93,11 +98,20 @@ export class ScalarOrEnumFieldFilterField implements FilterField {
     }
 
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
-        if (this.operatorPrefix && OPERATORS_WITH_LIST_OPERAND.includes(this.operatorPrefix) && filterValue == null) {
+        if (
+            this.operatorPrefix &&
+            OPERATORS_WITH_LIST_OPERAND.includes(this.operatorPrefix) &&
+            filterValue == null
+        ) {
             return new ConstBoolQueryNode(true);
         }
-        const valueNode = getScalarFilterValueNode(createFieldNode(this.field, sourceNode), this.field.type);
-        const literalNode = new LiteralQueryNode(getScalarFilterLiteralValue(filterValue, this.field.type));
+        const valueNode = getScalarFilterValueNode(
+            createFieldNode(this.field, sourceNode),
+            this.field.type,
+        );
+        const literalNode = new LiteralQueryNode(
+            getScalarFilterLiteralValue(filterValue, this.field.type),
+        );
         return this.resolveOperator(valueNode, literalNode);
     }
 }
@@ -111,7 +125,7 @@ export class StringMapEntryFilterField implements FilterField {
         public readonly fieldName: string,
         public readonly resolveOperator: (fieldNode: QueryNode, valueNode: QueryNode) => QueryNode,
         public readonly operatorPrefix: string | undefined,
-        baseInputType: GraphQLInputType
+        baseInputType: GraphQLInputType,
     ) {
         this.inputType = OPERATORS_WITH_LIST_OPERAND.includes(operatorPrefix || '')
             ? new GraphQLList(baseInputType)
@@ -119,7 +133,7 @@ export class StringMapEntryFilterField implements FilterField {
         this.description = getDescription({
             operator: operatorPrefix,
             fieldName: fieldName,
-            typeName: 'String'
+            typeName: 'String',
         });
     }
 
@@ -131,7 +145,11 @@ export class StringMapEntryFilterField implements FilterField {
     }
 
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
-        if (this.operatorPrefix && OPERATORS_WITH_LIST_OPERAND.includes(this.operatorPrefix) && filterValue == null) {
+        if (
+            this.operatorPrefix &&
+            OPERATORS_WITH_LIST_OPERAND.includes(this.operatorPrefix) &&
+            filterValue == null
+        ) {
             return new ConstBoolQueryNode(true);
         }
         const valueNode = new ListItemQueryNode(sourceNode, this.kind === 'key' ? 0 : 1);
@@ -148,12 +166,15 @@ export class ScalarOrEnumFilterField implements FilterField {
         public readonly resolveOperator: (fieldNode: QueryNode, valueNode: QueryNode) => QueryNode,
         public readonly operatorName: string,
         private readonly baseType: ScalarType | EnumType,
-        baseInputType: GraphQLInputType
+        baseInputType: GraphQLInputType,
     ) {
         this.inputType = OPERATORS_WITH_LIST_OPERAND.includes(operatorName)
             ? new GraphQLList(baseInputType)
             : baseInputType;
-        this.description = getDescription({ operator: operatorName, typeName: getNamedType(baseInputType).name });
+        this.description = getDescription({
+            operator: operatorName,
+            typeName: getNamedType(baseInputType).name,
+        });
     }
 
     get name() {
@@ -161,8 +182,13 @@ export class ScalarOrEnumFilterField implements FilterField {
     }
 
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
-        const literalNode = new LiteralQueryNode(getScalarFilterLiteralValue(filterValue, this.baseType));
-        return this.resolveOperator(getScalarFilterValueNode(sourceNode, this.baseType), literalNode);
+        const literalNode = new LiteralQueryNode(
+            getScalarFilterLiteralValue(filterValue, this.baseType),
+        );
+        return this.resolveOperator(
+            getScalarFilterValueNode(sourceNode, this.baseType),
+            literalNode,
+        );
     }
 }
 
@@ -172,7 +198,7 @@ export class QuantifierFilterField implements FilterField {
     constructor(
         public readonly field: Field,
         public readonly quantifierName: Quantifier,
-        public readonly inputType: FilterObjectType
+        public readonly inputType: FilterObjectType,
     ) {
         this.name = `${this.field.name}_${this.quantifierName}`;
     }
@@ -204,7 +230,7 @@ export class QuantifierFilterField implements FilterField {
             listNode,
             itemVariable,
             quantifier: this.quantifierName,
-            conditionNode: filterNode
+            conditionNode: filterNode,
         });
     }
 }
@@ -216,7 +242,11 @@ export class NestedObjectFilterField implements FilterField {
     constructor(public readonly field: Field, public readonly inputType: FilterObjectType) {
         this.name = this.field.name;
         this.description = `Checks if \`${this.field.name}\` is not null, and allows to filter based on its fields.`;
-        if (this.field.isReference && this.field.type.kind == TypeKind.ROOT_ENTITY && this.field.type.keyField) {
+        if (
+            this.field.isReference &&
+            this.field.type.kind == TypeKind.ROOT_ENTITY &&
+            this.field.type.keyField
+        ) {
             this.description =
                 `Filters the through \`${this.field.type.keyField.name}\` referenced ${this.field.type.pluralName} that fulfills the given requirements.\n\n ` +
                 this.description;
@@ -267,8 +297,10 @@ export class AndFilterField implements FilterField {
             return new ConstBoolQueryNode(true);
         }
         const values = (filterValue || []) as ReadonlyArray<PlainObject>;
-        const nodes = values.map(value => this.filterType.getFilterNode(sourceNode, value));
-        return nodes.reduce((prev, node) => new BinaryOperationQueryNode(prev, BinaryOperator.AND, node));
+        const nodes = values.map((value) => this.filterType.getFilterNode(sourceNode, value));
+        return nodes.reduce(
+            (prev, node) => new BinaryOperationQueryNode(prev, BinaryOperator.AND, node),
+        );
     }
 }
 
@@ -291,8 +323,10 @@ export class OrFilterField implements FilterField {
         if (!values.length) {
             return ConstBoolQueryNode.FALSE; // neutral element of OR
         }
-        const nodes = values.map(value => this.filterType.getFilterNode(sourceNode, value));
-        return nodes.reduce((prev, node) => new BinaryOperationQueryNode(prev, BinaryOperator.OR, node));
+        const nodes = values.map((value) => this.filterType.getFilterNode(sourceNode, value));
+        return nodes.reduce(
+            (prev, node) => new BinaryOperationQueryNode(prev, BinaryOperator.OR, node),
+        );
     }
 }
 
@@ -319,7 +353,7 @@ export class StringMapSomeValueFilterField implements FilterField {
             listNode: new ObjectEntriesQueryNode(objectNode),
             itemVariable,
             conditionNode: filterNode,
-            quantifier: 'some'
+            quantifier: 'some',
         });
     }
 }

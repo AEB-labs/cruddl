@@ -4,7 +4,11 @@ import { NORM_CI_ANALYZER } from '../../../model/implementation/flex-search';
 import { ProjectOptions } from '../../../config/interfaces';
 import { Logger } from '../../../config/logging';
 import { Model, RootEntityType } from '../../../model';
-import { billingCollectionName, getCollectionNameForRelation, getCollectionNameForRootEntity } from '../arango-basics';
+import {
+    billingCollectionName,
+    getCollectionNameForRelation,
+    getCollectionNameForRootEntity,
+} from '../arango-basics';
 import { ArangoDBConfig, getArangoDBLogger, initDatabase } from '../config';
 import {
     areAnalyzersEqual,
@@ -14,7 +18,11 @@ import {
     getFlexSearchViewNameForRootEntity,
     getRequiredViewsFromModel,
 } from './arango-search-helpers';
-import { calculateRequiredIndexOperations, getRequiredIndicesFromModel, IndexDefinition } from './index-helpers';
+import {
+    calculateRequiredIndexOperations,
+    getRequiredIndicesFromModel,
+    IndexDefinition,
+} from './index-helpers';
 import {
     CreateArangoSearchAnalyzerMigration,
     CreateArangoSearchAnalyzerMigrationConfig,
@@ -44,10 +52,12 @@ export class SchemaAnalyzer {
         ];
     }
 
-    async getDocumentCollectionMigrations(model: Model): Promise<ReadonlyArray<CreateDocumentCollectionMigration>> {
+    async getDocumentCollectionMigrations(
+        model: Model,
+    ): Promise<ReadonlyArray<CreateDocumentCollectionMigration>> {
         // Get existing collections in ArangoDB
         const existingCollections = (await this.db.listCollections()).filter(
-            (coll) => coll.type === CollectionType.DOCUMENT_COLLECTION
+            (coll) => coll.type === CollectionType.DOCUMENT_COLLECTION,
         );
         const existingCollectionNames = new Set(existingCollections.map((coll) => coll.name)); // typing for name missing
 
@@ -71,10 +81,12 @@ export class SchemaAnalyzer {
         return migrations;
     }
 
-    async getEdgeCollectionMigrations(model: Model): Promise<ReadonlyArray<CreateEdgeCollectionMigration>> {
+    async getEdgeCollectionMigrations(
+        model: Model,
+    ): Promise<ReadonlyArray<CreateEdgeCollectionMigration>> {
         // Get existing collections in ArangoDB
         const existingCollections = (await this.db.listCollections()).filter(
-            (coll) => coll.type === CollectionType.EDGE_COLLECTION
+            (coll) => coll.type === CollectionType.EDGE_COLLECTION,
         );
         const existingCollectionNames = new Set(existingCollections.map((coll) => coll.name));
 
@@ -91,20 +103,24 @@ export class SchemaAnalyzer {
         return migrations;
     }
 
-    async getIndexMigrations(model: Model): Promise<ReadonlyArray<CreateIndexMigration | DropIndexMigration>> {
+    async getIndexMigrations(
+        model: Model,
+    ): Promise<ReadonlyArray<CreateIndexMigration | DropIndexMigration>> {
         // update indices
         const requiredIndices = getRequiredIndicesFromModel(model);
         const existingIndicesPromises = model.rootEntityTypes.map((rootEntityType) =>
-            this.getPersistentCollectionIndices(rootEntityType)
+            this.getPersistentCollectionIndices(rootEntityType),
         );
         let existingIndices: IndexDefinition[] = [];
         await Promise.all(existingIndicesPromises).then((promiseResults) =>
-            promiseResults.forEach((indices) => indices.forEach((index) => existingIndices.push(index)))
+            promiseResults.forEach((indices) =>
+                indices.forEach((index) => existingIndices.push(index)),
+            ),
         );
         const { indicesToDelete, indicesToCreate } = calculateRequiredIndexOperations(
             existingIndices,
             requiredIndices,
-            this.config
+            this.config,
         );
 
         // this is useful to show a warning on large collections which would take a while to create an index
@@ -126,15 +142,24 @@ export class SchemaAnalyzer {
         return [
             ...indicesToCreate.map(
                 (index) =>
-                    new CreateIndexMigration({ index, collectionSize: collectionSizes.get(index.collectionName) })
+                    new CreateIndexMigration({
+                        index,
+                        collectionSize: collectionSizes.get(index.collectionName),
+                    }),
             ),
             ...indicesToDelete.map(
-                (index) => new DropIndexMigration({ index, collectionSize: collectionSizes.get(index.collectionName) })
+                (index) =>
+                    new DropIndexMigration({
+                        index,
+                        collectionSize: collectionSizes.get(index.collectionName),
+                    }),
             ),
         ];
     }
 
-    async getPersistentCollectionIndices(rootEntityType: RootEntityType): Promise<ReadonlyArray<IndexDefinition>> {
+    async getPersistentCollectionIndices(
+        rootEntityType: RootEntityType,
+    ): Promise<ReadonlyArray<IndexDefinition>> {
         const collectionName = getCollectionNameForRootEntity(rootEntityType);
         const coll = this.db.collection(collectionName);
         if (!(await coll.exists())) {
@@ -151,7 +176,7 @@ export class SchemaAnalyzer {
                           collectionName,
                       },
                   ]
-                : []
+                : [],
         );
     }
 
@@ -184,8 +209,9 @@ export class SchemaAnalyzer {
             .map((value) => this.db.view(value.name))
             .filter((view) =>
                 model.rootEntityTypes.some(
-                    (rootEntityType) => view.name === getFlexSearchViewNameForRootEntity(rootEntityType)
-                )
+                    (rootEntityType) =>
+                        view.name === getFlexSearchViewNameForRootEntity(rootEntityType),
+                ),
             );
 
         const configuration = this.config.arangoSearchConfiguration;
@@ -193,14 +219,14 @@ export class SchemaAnalyzer {
             views,
             requiredViews,
             this.db,
-            configuration
+            configuration,
         );
         const viewsToDrop = calculateRequiredArangoSearchViewDropOperations(views, requiredViews);
         const viewsToUpdate = await calculateRequiredArangoSearchViewUpdateOperations(
             views,
             requiredViews,
             this.db,
-            configuration
+            configuration,
         );
 
         return [...analyzerUpdates, ...viewsToCreate, ...viewsToDrop, ...viewsToUpdate];

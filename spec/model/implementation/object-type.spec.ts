@@ -6,41 +6,49 @@ import { expect } from 'chai';
 // has system fields.
 describe('ObjectType', () => {
     const model = new Model({
-        types: []
+        types: [],
     });
 
     it('accepts simple type', () => {
-        const type = new ChildEntityType({
-            kind: TypeKind.CHILD_ENTITY,
-            name: 'Delivery',
-            fields: [
-                {
-                    name: 'deliveryNumber',
-                    typeName: 'String'
-                }, {
-                    name: 'shipmentNumber',
-                    typeName: 'String'
-                }
-            ]
-        }, model);
+        const type = new ChildEntityType(
+            {
+                kind: TypeKind.CHILD_ENTITY,
+                name: 'Delivery',
+                fields: [
+                    {
+                        name: 'deliveryNumber',
+                        typeName: 'String',
+                    },
+                    {
+                        name: 'shipmentNumber',
+                        typeName: 'String',
+                    },
+                ],
+            },
+            model,
+        );
 
         expectToBeValid(type);
     });
 
     it('rejects type with duplicate field names', () => {
-        const type = new ChildEntityType({
-            kind: TypeKind.CHILD_ENTITY,
-            name: 'Delivery',
-            fields: [
-                {
-                    name: 'deliveryNumber',
-                    typeName: 'String'
-                }, {
-                    name: 'deliveryNumber',
-                    typeName: 'String'
-                }
-            ]
-        }, model);
+        const type = new ChildEntityType(
+            {
+                kind: TypeKind.CHILD_ENTITY,
+                name: 'Delivery',
+                fields: [
+                    {
+                        name: 'deliveryNumber',
+                        typeName: 'String',
+                    },
+                    {
+                        name: 'deliveryNumber',
+                        typeName: 'String',
+                    },
+                ],
+            },
+            model,
+        );
 
         const result = validate(type);
         expect(result.messages.length).to.equal(2);
@@ -51,16 +59,19 @@ describe('ObjectType', () => {
     });
 
     it('rejects type with reserved field names', () => {
-        const type = new ChildEntityType({
-            kind: TypeKind.CHILD_ENTITY,
-            name: 'Delivery',
-            fields: [
-                {
-                    name: 'updatedAt',
-                    typeName: 'String'
-                }
-            ]
-        }, model);
+        const type = new ChildEntityType(
+            {
+                kind: TypeKind.CHILD_ENTITY,
+                name: 'Delivery',
+                fields: [
+                    {
+                        name: 'updatedAt',
+                        typeName: 'String',
+                    },
+                ],
+            },
+            model,
+        );
 
         expectSingleErrorToInclude(type, `Field name "updatedAt" is reserved by a system field.`);
     });

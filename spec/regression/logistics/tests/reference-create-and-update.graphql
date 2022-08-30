@@ -40,7 +40,13 @@ mutation updateWithReferenceField {
 
 mutation updateWithBoth {
     # fails
-    updateDelivery(input: { id: "@{ids/Delivery/1}", destinationCountry: "DE", destinationCountryISOCode: "DE" }) {
+    updateDelivery(
+        input: {
+            id: "@{ids/Delivery/1}"
+            destinationCountry: "DE"
+            destinationCountryISOCode: "DE"
+        }
+    ) {
         destinationCountryISOCode
     }
 }

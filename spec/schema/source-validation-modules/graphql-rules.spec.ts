@@ -26,10 +26,10 @@ describe('graphql-rules validator', () => {
                             type Test @unknownDirective {
                                 field: String
                             }
-                        `
-                    )
-                )
-            )
+                        `,
+                    ),
+                ),
+            ),
         );
         expect(messages.length).to.equal(1);
         expect(messages[0].message).to.equal('Unknown directive "@unknownDirective".');
@@ -45,13 +45,15 @@ describe('graphql-rules validator', () => {
                             type Test @rootEntity(indices: true) {
                                 field: String
                             }
-                        `
-                    )
-                )
-            )
+                        `,
+                    ),
+                ),
+            ),
         );
         expect(messages.length).to.equal(1);
-        expect(messages[0].message).to.equal('Expected value of type "[IndexDefinition!]", found true.');
+        expect(messages[0].message).to.equal(
+            'Expected value of type "[IndexDefinition!]", found true.',
+        );
     });
 
     it('reports missing directive arguments', () => {
@@ -64,14 +66,14 @@ describe('graphql-rules validator', () => {
                             type Test @namespace {
                                 field: String
                             }
-                        `
-                    )
-                )
-            )
+                        `,
+                    ),
+                ),
+            ),
         );
         expect(messages.length).to.equal(1);
         expect(messages[0].message).to.equal(
-            `Directive "@namespace" argument "name" of type "String!" is required, but it was not provided.`
+            `Directive "@namespace" argument "name" of type "String!" is required, but it was not provided.`,
         );
     });
 
@@ -85,13 +87,15 @@ describe('graphql-rules validator', () => {
                             type Test @rootEntity(nonExistant: true) {
                                 field: String
                             }
-                        `
-                    )
-                )
-            )
+                        `,
+                    ),
+                ),
+            ),
         );
         expect(messages.length).to.equal(1);
-        expect(messages[0].message).to.equal('Unknown argument "nonExistant" on directive "@rootEntity".');
+        expect(messages[0].message).to.equal(
+            'Unknown argument "nonExistant" on directive "@rootEntity".',
+        );
     });
 
     it('reports missing input fields', () => {
@@ -104,14 +108,14 @@ describe('graphql-rules validator', () => {
                             type Test @rootEntity(indices: [{ unique: true }]) {
                                 field: String
                             }
-                        `
-                    )
-                )
-            )
+                        `,
+                    ),
+                ),
+            ),
         );
         expect(messages.length).to.equal(1);
         expect(messages[0].message).to.equal(
-            'Field "IndexDefinition.fields" of required type "[String!]!" was not provided.'
+            'Field "IndexDefinition.fields" of required type "[String!]!" was not provided.',
         );
     });
 
@@ -125,13 +129,15 @@ describe('graphql-rules validator', () => {
                             type Test @rootEntity(indices: [{ fields: [], nonExistant: true }]) {
                                 field: String
                             }
-                        `
-                    )
-                )
-            )
+                        `,
+                    ),
+                ),
+            ),
         );
         expect(messages.length).to.equal(1);
-        expect(messages[0].message).to.equal('Field "nonExistant" is not defined by type "IndexDefinition".');
+        expect(messages[0].message).to.equal(
+            'Field "nonExistant" is not defined by type "IndexDefinition".',
+        );
     });
 
     it('accepts valid GraphQL', () => {
@@ -144,10 +150,10 @@ describe('graphql-rules validator', () => {
                             type Test @rootEntity {
                                 field: String
                             }
-                        `
-                    )
-                )
-            )
+                        `,
+                    ),
+                ),
+            ),
         );
         expect(messages).to.deep.equal([]);
     });
@@ -162,10 +168,10 @@ describe('graphql-rules validator', () => {
                             type Test @rootEntity {
                                 field: String @roles(read: "role")
                             }
-                        `
-                    )
-                )
-            )
+                        `,
+                    ),
+                ),
+            ),
         );
         expect(messages).to.deep.equal([]);
     });

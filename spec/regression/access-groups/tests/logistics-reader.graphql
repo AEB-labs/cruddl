@@ -5,21 +5,21 @@ query q {
 }
 
 mutation updatePublic {
-    updateFile(input: {id: "@{ids/File/3}", name: "public2"}) {
+    updateFile(input: { id: "@{ids/File/3}", name: "public2" }) {
         name
     }
 }
 
 # should fail
 mutation updateToAccessGroupWithoutReadPermissions {
-    updateFile(input: {id: "@{ids/File/3}", accessGroup: "accounting"}) {
+    updateFile(input: { id: "@{ids/File/3}", accessGroup: "accounting" }) {
         name
     }
 }
 
 # should fail
 mutation updateToAccessGroupWithoutWritePermissions {
-    updateFile(input: {id: "@{ids/File/3}", accessGroup: "logistics"}) {
+    updateFile(input: { id: "@{ids/File/3}", accessGroup: "logistics" }) {
         name
     }
 }
@@ -39,27 +39,27 @@ mutation createWithAccessGroupWithoutWritePermissions {
 }
 
 mutation updateWriteRestricted {
-    updateFile(input: {id: "@{ids/File/2}", name: "logistics2"}) {
+    updateFile(input: { id: "@{ids/File/2}", name: "logistics2" }) {
         name
     }
 }
 
 # should fail with first error (write restriction vs. setting the value)
 mutation updateWriteRestrictedToAccessGroupWithoutWritePermissions {
-    updateFile(input: {id: "@{ids/File/2}", accessGroup: "logistics"}) {
+    updateFile(input: { id: "@{ids/File/2}", accessGroup: "logistics" }) {
         name
     }
 }
 
 mutation updateReadRestricted {
-    updateFile(input: {id: "@{ids/File/1}", name: "accounting"}) {
+    updateFile(input: { id: "@{ids/File/1}", name: "accounting" }) {
         name
     }
 }
 
 # should not find this and not report that the accessGroup can not be set
 mutation updateReadRestrictedToAccessGroupWithoutWritePermissions {
-    updateFile(input: {id: "@{ids/File/1}", accessGroup: "logistics"}) {
+    updateFile(input: { id: "@{ids/File/1}", accessGroup: "logistics" }) {
         name
     }
 }

@@ -10,7 +10,9 @@ mutation set {
         dispatchDate
     }
 
-    d2: updateDelivery(input: { id: "@{ids/Delivery/2}", dispatchDate: "2000-01-02T04:00:00+01:00" }) {
+    d2: updateDelivery(
+        input: { id: "@{ids/Delivery/2}", dispatchDate: "2000-01-02T04:00:00+01:00" }
+    ) {
         dispatchDate
     }
 

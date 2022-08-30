@@ -30,7 +30,10 @@ import {
     SKIP_ARG,
 } from '../schema/constants';
 import { decapitalize } from '../utils/utils';
-import { FlexSearchScalarOrEnumFilterField, resolveFilterField } from './flex-search-filter-input-types/filter-fields';
+import {
+    FlexSearchScalarOrEnumFilterField,
+    resolveFilterField,
+} from './flex-search-filter-input-types/filter-fields';
 import { OrderByEnumGenerator, OrderByEnumType, OrderByEnumValue } from './order-by-enum-generator';
 import { QueryNodeField } from './query-node-object-type';
 import { RootFieldHelper } from './root-field-helper';
@@ -44,7 +47,7 @@ import { getOrderByValues } from './utils/pagination';
 export class OrderByAndPaginationAugmentation {
     constructor(
         private readonly orderByEnumGenerator: OrderByEnumGenerator,
-        private readonly rootFieldHelper: RootFieldHelper
+        private readonly rootFieldHelper: RootFieldHelper,
     ) {}
 
     augment(schemaField: QueryNodeField, type: Type): QueryNodeField {
@@ -98,7 +101,9 @@ export class OrderByAndPaginationAugmentation {
                 const afterArg = args[AFTER_ARG];
                 const isCursorRequested = info.selectionStack[
                     info.selectionStack.length - 1
-                ].fieldRequest.selectionSet.some((sel) => sel.fieldRequest.field.name === CURSOR_FIELD);
+                ].fieldRequest.selectionSet.some(
+                    (sel) => sel.fieldRequest.field.name === CURSOR_FIELD,
+                );
                 // we only require the absolute ordering for cursor-based pagination, which is detected via a cursor field or the "after" argument.
                 const isAbsoluteOrderRequired = isCursorRequested || !!afterArg;
                 let orderByValues: ReadonlyArray<OrderByEnumValue>;
@@ -115,7 +120,9 @@ export class OrderByAndPaginationAugmentation {
                     listNode.maxCount == undefined &&
                     listNode.innerNode === listNode.itemVariable
                 ) {
-                    filterNode = listNode.filterNode.equals(ConstBoolQueryNode.TRUE) ? undefined : listNode.filterNode;
+                    filterNode = listNode.filterNode.equals(ConstBoolQueryNode.TRUE)
+                        ? undefined
+                        : listNode.filterNode;
                     itemVariable = listNode.itemVariable;
                     objectNode = this.rootFieldHelper.getRealItemNode(itemVariable, info);
                     listNode = listNode.listNode;
@@ -135,7 +142,9 @@ export class OrderByAndPaginationAugmentation {
                     // this may generate a SORT clause that is not covered by the flexsearch index,
                     // but the TooManyObject check of flex-search-generator already handles this case to throw
                     // a TooManyObjects error if needed.
-                    orderByValues = getOrderByValues(args, orderByType, { isAbsoluteOrderRequired });
+                    orderByValues = getOrderByValues(args, orderByType, {
+                        isAbsoluteOrderRequired,
+                    });
 
                     // for now, cursor-based pagination is only allowed when we can use flexsearch filters for the
                     // paginationFilter. This simplifies the implementation, but maybe we should support it in the
@@ -143,14 +152,14 @@ export class OrderByAndPaginationAugmentation {
                     // do this check also if cursor is just requested so we get this error on the first page
                     if (isCursorRequested || afterArg) {
                         const violatingClauses = orderByValues.filter((val) =>
-                            val.path.some((field) => !field.isFlexSearchIndexed)
+                            val.path.some((field) => !field.isFlexSearchIndexed),
                         );
                         if (violatingClauses.length) {
                             return new RuntimeErrorQueryNode(
                                 `Cursor-based pagination is not supported with order clause "${violatingClauses[0].name}" because it is not flex-search indexed`,
                                 {
                                     code: NOT_SUPPORTED_ERROR,
-                                }
+                                },
                             );
                         }
                     }
@@ -172,7 +181,8 @@ export class OrderByAndPaginationAugmentation {
                             : listNode.flexFilterNode,
 
                         // pagination filters generate nested AND-OR structures that overwhelm the optimizer
-                        isOptimisationsDisabled: listNode.isOptimisationsDisabled || !!flexPaginationFilter,
+                        isOptimisationsDisabled:
+                            listNode.isOptimisationsDisabled || !!flexPaginationFilter,
                     });
                 } else {
                     // not flex search
@@ -190,9 +200,15 @@ export class OrderByAndPaginationAugmentation {
                 // sorting always happens on the TransformListQueryNode and not in the FlexSearchQueryNode
                 const orderBy = !orderByType
                     ? OrderSpecification.UNORDERED
-                    : new OrderSpecification(orderByValues.map((value) => value.getClause(objectNode)));
+                    : new OrderSpecification(
+                          orderByValues.map((value) => value.getClause(objectNode)),
+                      );
 
-                if (orderBy.isUnordered() && maxCount == undefined && paginationFilter === ConstBoolQueryNode.TRUE) {
+                if (
+                    orderBy.isUnordered() &&
+                    maxCount == undefined &&
+                    paginationFilter === ConstBoolQueryNode.TRUE
+                ) {
                     return originalListNode;
                 }
 
@@ -210,7 +226,7 @@ export class OrderByAndPaginationAugmentation {
                         `Using "skip" without "first" in combination with "orderBy" or cursor-based pagination is not supported on flex search queries.`,
                         {
                             code: NOT_SUPPORTED_ERROR,
-                        }
+                        },
                     );
                 }
 
@@ -279,39 +295,52 @@ export class OrderByAndPaginationAugmentation {
         try {
             cursorObj = JSON.parse(afterArg);
             if (typeof cursorObj != 'object' || cursorObj === null) {
-                return new RuntimeErrorQueryNode('The JSON value provided as "after" argument is not an object', {
-                    code: INVALID_CURSOR_ERROR,
-                });
+                return new RuntimeErrorQueryNode(
+                    'The JSON value provided as "after" argument is not an object',
+                    {
+                        code: INVALID_CURSOR_ERROR,
+                    },
+                );
             }
         } catch (e) {
             return new RuntimeErrorQueryNode(
                 `Invalid cursor ${JSON.stringify(afterArg)} supplied to "after": ${e.message}`,
-                { code: INVALID_CURSOR_ERROR }
+                { code: INVALID_CURSOR_ERROR },
             );
         }
 
         let currentEqualityChain: QueryNode | undefined = filterNode;
-        const orderByValues = getOrderByValues(args, orderByType, { isAbsoluteOrderRequired: true });
+        const orderByValues = getOrderByValues(args, orderByType, {
+            isAbsoluteOrderRequired: true,
+        });
         const partLists: TransformListQueryNode[] = [];
         for (const clause of orderByValues) {
             const cursorProperty = clause.underscoreSeparatedPath;
             if (!(cursorProperty in cursorObj)) {
                 return new RuntimeErrorQueryNode(
                     `Invalid cursor supplied to "after": Property "${cursorProperty}" missing. Make sure this cursor has been obtained with the same orderBy clause.`,
-                    { code: INVALID_CURSOR_ERROR }
+                    { code: INVALID_CURSOR_ERROR },
                 );
             }
             const cursorValue = cursorObj[cursorProperty];
             const valueNode = clause.getValueNode(objectNode);
 
             const operator =
-                clause.direction == OrderDirection.ASCENDING ? BinaryOperator.GREATER_THAN : BinaryOperator.LESS_THAN;
-            const unequalityNode = new BinaryOperationQueryNode(valueNode, operator, new LiteralQueryNode(cursorValue));
-            const filterNode = currentEqualityChain ? and(currentEqualityChain, unequalityNode) : unequalityNode;
+                clause.direction == OrderDirection.ASCENDING
+                    ? BinaryOperator.GREATER_THAN
+                    : BinaryOperator.LESS_THAN;
+            const unequalityNode = new BinaryOperationQueryNode(
+                valueNode,
+                operator,
+                new LiteralQueryNode(cursorValue),
+            );
+            const filterNode = currentEqualityChain
+                ? and(currentEqualityChain, unequalityNode)
+                : unequalityNode;
             const nextEqualityNode = new BinaryOperationQueryNode(
                 valueNode,
                 BinaryOperator.EQUAL,
-                new LiteralQueryNode(cursorValue)
+                new LiteralQueryNode(cursorValue),
             );
             currentEqualityChain = currentEqualityChain
                 ? and(currentEqualityChain, nextEqualityNode)
@@ -354,14 +383,17 @@ export class OrderByAndPaginationAugmentation {
         try {
             cursorObj = JSON.parse(afterArg);
             if (typeof cursorObj != 'object' || cursorObj === null) {
-                return new RuntimeErrorQueryNode('The JSON value provided as "after" argument is not an object', {
-                    code: INVALID_CURSOR_ERROR,
-                });
+                return new RuntimeErrorQueryNode(
+                    'The JSON value provided as "after" argument is not an object',
+                    {
+                        code: INVALID_CURSOR_ERROR,
+                    },
+                );
             }
         } catch (e) {
             return new RuntimeErrorQueryNode(
                 `Invalid cursor ${JSON.stringify(afterArg)} supplied to "after": ${e.message}`,
-                { code: INVALID_CURSOR_ERROR }
+                { code: INVALID_CURSOR_ERROR },
             );
         }
 
@@ -384,7 +416,7 @@ export class OrderByAndPaginationAugmentation {
             if (!(cursorProperty in cursorObj)) {
                 return new RuntimeErrorQueryNode(
                     `Invalid cursor supplied to "after": Property "${cursorProperty}" missing. Make sure this cursor has been obtained with the same orderBy clause.`,
-                    { code: INVALID_CURSOR_ERROR }
+                    { code: INVALID_CURSOR_ERROR },
                 );
             }
             const cursorValue = cursorObj[cursorProperty];
@@ -393,21 +425,30 @@ export class OrderByAndPaginationAugmentation {
             function getComparisonNode(
                 operator: BinaryOperator,
                 stringOperator: BinaryOperatorWithAnalyzer,
-                name: string
+                name: string,
             ) {
                 if (isFlexSearch) {
                     const op = clause.lastSegment.isFlexSearchStringBased
                         ? binaryOpWithAnaylzer(stringOperator)
                         : binaryOp(operator);
-                    const pseudoFilterField = new FlexSearchScalarOrEnumFilterField(op, name, GraphQLString, false);
+                    const pseudoFilterField = new FlexSearchScalarOrEnumFilterField(
+                        op,
+                        name,
+                        GraphQLString,
+                        false,
+                    );
                     return resolveFilterField(
                         pseudoFilterField,
                         valueNode,
                         cursorValue,
-                        clause.lastSegment.flexSearchAnalyzer
+                        clause.lastSegment.flexSearchAnalyzer,
                     );
                 } else {
-                    return new BinaryOperationQueryNode(valueNode, operator, new LiteralQueryNode(cursorValue));
+                    return new BinaryOperationQueryNode(
+                        valueNode,
+                        operator,
+                        new LiteralQueryNode(cursorValue),
+                    );
                 }
             }
 
@@ -419,24 +460,28 @@ export class OrderByAndPaginationAugmentation {
                 comparisonNode = getComparisonNode(
                     BinaryOperator.GREATER_THAN,
                     BinaryOperatorWithAnalyzer.FLEX_STRING_GREATER_THAN,
-                    INPUT_FIELD_GT
+                    INPUT_FIELD_GT,
                 );
             } else {
                 comparisonNode = getComparisonNode(
                     BinaryOperator.LESS_THAN,
                     BinaryOperatorWithAnalyzer.FLEX_STRING_LESS_THAN,
-                    INPUT_FIELD_LT
+                    INPUT_FIELD_LT,
                 );
             }
             const equalsNode: QueryNode = getComparisonNode(
                 BinaryOperator.EQUAL,
                 BinaryOperatorWithAnalyzer.EQUAL,
-                INPUT_FIELD_EQUAL
+                INPUT_FIELD_EQUAL,
             );
             return new BinaryOperationQueryNode(
                 comparisonNode,
                 BinaryOperator.OR,
-                new BinaryOperationQueryNode(equalsNode, BinaryOperator.AND, filterForClause(clauses.slice(1)))
+                new BinaryOperationQueryNode(
+                    equalsNode,
+                    BinaryOperator.AND,
+                    filterForClause(clauses.slice(1)),
+                ),
             );
         }
 

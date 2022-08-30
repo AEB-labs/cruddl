@@ -1,8 +1,8 @@
 {
-    "databases": {
-        // @collect with accessGroup is not implemented in InMemoryAdapter
-        "in-memory": {
-            "ignore": true
-        }
+  "databases": {
+    // @collect with accessGroup is not implemented in InMemoryAdapter
+    "in-memory": {
+      "ignore": true
     }
+  }
 }

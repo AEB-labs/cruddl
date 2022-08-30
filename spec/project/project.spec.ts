@@ -17,7 +17,7 @@ class FakeDBAdatper implements DatabaseAdapter {
     async updateSchema(model: Model): Promise<void> {}
 
     async tokenizeExpressions(
-        tokenizations: ReadonlyArray<FlexSearchTokenizable>
+        tokenizations: ReadonlyArray<FlexSearchTokenizable>,
     ): Promise<ReadonlyArray<FlexSearchTokenization>> {
         return tokenizations.map((value) => {
             return {
@@ -63,7 +63,7 @@ describe('project', () => {
                 sources: [
                     new ProjectSource(
                         'main.graphqls',
-                        `type Test @rootEntity @roles(readWrite: ["admin"]) { name: String }`
+                        `type Test @rootEntity @roles(readWrite: ["admin"]) { name: String }`,
                     ),
                 ],
                 loggerProvider,
@@ -80,7 +80,7 @@ describe('project', () => {
                             name
                         }
                     }
-                `
+                `,
             );
             expect(logs.length).to.be.greaterThan(0);
         });

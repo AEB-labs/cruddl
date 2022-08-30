@@ -5,7 +5,7 @@ import {
     ConstBoolQueryNode,
     QueryNode,
     TransformListQueryNode,
-    VariableQueryNode
+    VariableQueryNode,
 } from '../../query-tree';
 import { simplifyBooleans } from '../../query-tree/utils';
 import { FILTER_ARG } from '../../schema/constants';
@@ -35,7 +35,7 @@ export function buildFilteredListNode(params: BuildFilteredListNodeParams) {
     return new TransformListQueryNode({
         listNode: params.listNode,
         itemVariable,
-        filterNode
+        filterNode,
     });
 }
 
@@ -46,8 +46,8 @@ export function getFilterNode(listNode: QueryNode, predicate: (itemNode: QueryNo
             filterNode: new BinaryOperationQueryNode(
                 listNode.filterNode,
                 BinaryOperator.AND,
-                predicate(listNode.itemVariable)
-            )
+                predicate(listNode.itemVariable),
+            ),
         });
     }
 
@@ -56,6 +56,6 @@ export function getFilterNode(listNode: QueryNode, predicate: (itemNode: QueryNo
     return new TransformListQueryNode({
         listNode,
         itemVariable,
-        filterNode
+        filterNode,
     });
 }

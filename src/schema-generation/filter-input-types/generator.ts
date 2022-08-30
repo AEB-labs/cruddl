@@ -7,7 +7,7 @@ import {
     BinaryOperator,
     ConstBoolQueryNode,
     NullQueryNode,
-    QueryNode
+    QueryNode,
 } from '../../query-tree';
 import { INPUT_FIELD_EQUAL } from '../../schema/constants';
 import { getFilterTypeName } from '../../schema/names';
@@ -22,7 +22,7 @@ import {
     FILTER_FIELDS_BY_TYPE,
     FILTER_OPERATORS,
     NUMERIC_FILTER_FIELDS,
-    QUANTIFIERS
+    QUANTIFIERS,
 } from './constants';
 import {
     AndFilterField,
@@ -35,7 +35,7 @@ import {
     ScalarOrEnumFieldFilterField,
     ScalarOrEnumFilterField,
     StringMapEntryFilterField,
-    StringMapSomeValueFilterField
+    StringMapSomeValueFilterField,
 } from './filter-fields';
 
 export class FilterObjectType extends TypedInputObjectType<FilterField> {
@@ -43,17 +43,22 @@ export class FilterObjectType extends TypedInputObjectType<FilterField> {
         super(
             getFilterTypeName(typeName),
             fields,
-            `${description ||
-                `Filter type for ${typeName}`}.\n\nAll fields in this type are *and*-combined; see the \`or\` field for *or*-combination.`
+            `${
+                description || `Filter type for ${typeName}`
+            }.\n\nAll fields in this type are *and*-combined; see the \`or\` field for *or*-combination.`,
         );
     }
 
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
         if (typeof filterValue !== 'object' || filterValue === null) {
-            return new BinaryOperationQueryNode(sourceNode, BinaryOperator.EQUAL, NullQueryNode.NULL);
+            return new BinaryOperationQueryNode(
+                sourceNode,
+                BinaryOperator.EQUAL,
+                NullQueryNode.NULL,
+            );
         }
         const filterNodes = objectEntries(filterValue as any).map(([name, value]) =>
-            this.getFieldOrThrow(name).getFilterNode(sourceNode, value)
+            this.getFieldOrThrow(name).getFilterNode(sourceNode, value),
         );
         return filterNodes.reduce(and, ConstBoolQueryNode.TRUE);
     }
@@ -71,7 +76,7 @@ export class FilterTypeGenerator {
             return this.generateFilterType(type.name, this.buildEnumFilterFields(type));
         }
         return this.generateFilterType(type.name, () =>
-            flatMap(type.fields, (field: Field) => this.generateFieldFilterFields(field))
+            flatMap(type.fields, (field: Field) => this.generateFieldFilterFields(field)),
         );
     }
 
@@ -83,19 +88,23 @@ export class FilterTypeGenerator {
             type.name + 'Entry',
             () => [
                 ...this.generateFilterFieldsForStringMapEntry('key', keyName),
-                ...this.generateFilterFieldsForStringMapEntry('value', 'value')
+                ...this.generateFilterFieldsForStringMapEntry('value', 'value'),
             ],
-            `Filter type for entries in a ${type.name}`
+            `Filter type for entries in a ${type.name}`,
         );
     }
 
     private generateFilterType(
         typeName: string,
         fields: Thunk<ReadonlyArray<FilterField>>,
-        description?: string
+        description?: string,
     ): FilterObjectType {
         function getFields(): ReadonlyArray<FilterField> {
-            return [...resolveThunk(fields), new AndFilterField(filterType), new OrFilterField(filterType)];
+            return [
+                ...resolveThunk(fields),
+                new AndFilterField(filterType),
+                new OrFilterField(filterType),
+            ];
         }
 
         const filterType = new FilterObjectType(typeName, getFields, description);
@@ -111,7 +120,10 @@ export class FilterTypeGenerator {
             return this.generateListFieldFilterFields(field);
         }
         if (field.type.isScalarType) {
-            if (field.type.name == GraphQLStringMap.name || field.type.name === GraphQLI18nString.name) {
+            if (
+                field.type.name == GraphQLStringMap.name ||
+                field.type.name === GraphQLI18nString.name
+            ) {
                 return this.generateFilterFieldsForStringMap(field);
             }
             return this.generateFilterFieldsForNonListScalar(field);
@@ -139,13 +151,13 @@ export class FilterTypeGenerator {
         const inputType = field.type.graphQLScalarType;
         const filterFields = this.getFilterFieldsByType(field.type);
         return filterFields.map(
-            name =>
+            (name) =>
                 new ScalarOrEnumFieldFilterField(
                     field,
                     FILTER_OPERATORS[name],
                     name === INPUT_FIELD_EQUAL ? undefined : name,
-                    inputType
-                )
+                    inputType,
+                ),
         );
     }
 
@@ -153,54 +165,75 @@ export class FilterTypeGenerator {
         const inputType = GraphQLString;
         const filterFields = FILTER_FIELDS_BY_TYPE[inputType.name] || [];
         return filterFields.map(
-            name =>
+            (name) =>
                 new StringMapEntryFilterField(
                     kind,
                     fieldName,
                     FILTER_OPERATORS[name],
                     name === INPUT_FIELD_EQUAL ? undefined : name,
-                    inputType
-                )
+                    inputType,
+                ),
         );
     }
 
-    private generateFilterFieldsForEnumField(field: Field, graphQLEnumType: GraphQLEnumType): FilterField[] {
+    private generateFilterFieldsForEnumField(
+        field: Field,
+        graphQLEnumType: GraphQLEnumType,
+    ): FilterField[] {
         if (field.isList || !field.type.isEnumType) {
             throw new Error(`Expected "${field.name}" to be a non-list enum`);
         }
 
         return ENUM_FILTER_FIELDS.map(
-            name =>
+            (name) =>
                 new ScalarOrEnumFieldFilterField(
                     field,
                     FILTER_OPERATORS[name],
                     name === INPUT_FIELD_EQUAL ? undefined : name,
-                    graphQLEnumType
-                )
+                    graphQLEnumType,
+                ),
         );
     }
 
     private generateListFieldFilterFields(field: Field): ListFilterField[] {
         const inputType = this.generate(field.type);
-        return QUANTIFIERS.map(quantifierName => new QuantifierFilterField(field, quantifierName, inputType));
+        return QUANTIFIERS.map(
+            (quantifierName) => new QuantifierFilterField(field, quantifierName, inputType),
+        );
     }
 
     private buildScalarFilterFields(type: ScalarType): ScalarOrEnumFilterField[] {
         const filterFields = this.getFilterFieldsByType(type);
         return filterFields.map(
-            name => new ScalarOrEnumFilterField(FILTER_OPERATORS[name], name, type, type.graphQLScalarType)
+            (name) =>
+                new ScalarOrEnumFilterField(
+                    FILTER_OPERATORS[name],
+                    name,
+                    type,
+                    type.graphQLScalarType,
+                ),
         );
     }
 
     private buildEnumFilterFields(type: EnumType) {
         return ENUM_FILTER_FIELDS.map(
-            name =>
-                new ScalarOrEnumFilterField(FILTER_OPERATORS[name], name, type, this.enumTypeGenerator.generate(type))
+            (name) =>
+                new ScalarOrEnumFilterField(
+                    FILTER_OPERATORS[name],
+                    name,
+                    type,
+                    this.enumTypeGenerator.generate(type),
+                ),
         );
     }
 
     private generateFilterFieldsForStringMap(field: Field) {
-        return [new StringMapSomeValueFilterField(field, this.generateStringMapEntryFilterType(field.type))];
+        return [
+            new StringMapSomeValueFilterField(
+                field,
+                this.generateStringMapEntryFilterType(field.type),
+            ),
+        ];
     }
 
     private getFilterFieldsByType(type: Type) {

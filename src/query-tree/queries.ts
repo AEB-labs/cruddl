@@ -1,5 +1,9 @@
 import { Field, RelationSide, RootEntityType } from '../model';
-import { CollectPathSegment, FieldSegment, RelationSegment } from '../model/implementation/collect-path';
+import {
+    CollectPathSegment,
+    FieldSegment,
+    RelationSegment,
+} from '../model/implementation/collect-path';
 import { blue } from '../utils/colors';
 import { QueryNode } from './base';
 import { EntitiesIdentifierKind } from './mutations';
@@ -55,7 +59,9 @@ export class FieldPathQueryNode extends QueryNode {
     }
 
     public describe() {
-        return `${this.objectNode.describe()}.${blue(this.path.map(value => value.name).join('.'))}`;
+        return `${this.objectNode.describe()}.${blue(
+            this.path.map((value) => value.name).join('.'),
+        )}`;
     }
 }
 
@@ -126,7 +132,9 @@ export class FollowEdgeQueryNode extends QueryNode {
 
     describe() {
         const dir = this.relationSide.isFromSide ? 'forward' : 'backward';
-        return `follow ${dir} ${blue(this.relationSide.relation.toString())} of ${this.sourceEntityNode.describe()}`;
+        return `follow ${dir} ${blue(
+            this.relationSide.relation.toString(),
+        )} of ${this.sourceEntityNode.describe()}`;
     }
 }
 
@@ -165,13 +173,15 @@ export class TraversalQueryNode extends QueryNode {
 
         if (params.captureRootEntities && (!params.relationSegments || !params.fieldSegments)) {
             throw new Error(
-                `A TraversalQueryNode with captureRootEntity=true requires both relationSegments and fieldSegments`
+                `A TraversalQueryNode with captureRootEntity=true requires both relationSegments and fieldSegments`,
             );
         }
 
         if (params.sourceIsList && !params.relationSegments) {
             // only need this, so keep it simpler
-            throw new Error(`A TraversalQueryNode with sourceIsList=true requires relationSegments`);
+            throw new Error(
+                `A TraversalQueryNode with sourceIsList=true requires relationSegments`,
+            );
         }
 
         this.sourceEntityNode = params.sourceEntityNode;
@@ -180,13 +190,14 @@ export class TraversalQueryNode extends QueryNode {
         this.captureRootEntity = params.captureRootEntities;
         this.sourceIsList = params.sourceIsList ?? false;
         this.alwaysProduceList = params.alwaysProduceList ?? false;
-        this.entitiesIdentifierKind = params.entitiesIdentifierKind || EntitiesIdentifierKind.ENTITY;
+        this.entitiesIdentifierKind =
+            params.entitiesIdentifierKind || EntitiesIdentifierKind.ENTITY;
     }
 
     describe() {
         const segments = [...this.relationSegments, ...this.fieldSegments];
         return (
-            `traverse ${segments.map(s => this.describeSegment(s)).join('.')}` +
+            `traverse ${segments.map((s) => this.describeSegment(s)).join('.')}` +
             `from ${this.sourceEntityNode.describe()}${this.sourceIsList ? ' (as list)' : ''}${
                 this.captureRootEntity ? ` into { obj, root }` : ''
             }${this.alwaysProduceList ? ` as list` : ''}`

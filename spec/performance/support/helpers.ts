@@ -26,7 +26,7 @@ const schemaContext: ProjectOptions = {
 };
 
 export async function createTestProject(
-    modelPath: string = MODEL_PATH
+    modelPath: string = MODEL_PATH,
 ): Promise<{ project: Project; schema: GraphQLSchema }> {
     const project = await loadProjectFromDir(modelPath, schemaContext);
     const dbConfig = await createTempDatabase();
@@ -90,25 +90,41 @@ export function getSizeFactorForJSONLength(jsonLength: number) {
 }
 
 export async function addPaper(environment: TestEnvironment, paperData: any): Promise<number> {
-    const res = await environment.exec(`mutation($input: CreatePaperInput!) { createPaper(input: $input) { id } }`, {
-        input: paperData,
-    });
+    const res = await environment.exec(
+        `mutation($input: CreatePaperInput!) { createPaper(input: $input) { id } }`,
+        {
+            input: paperData,
+        },
+    );
     return res.createPaper.id;
 }
 
-export async function addManyPapersWithAQL(environment: TestEnvironment, count: number, paperData: any) {
+export async function addManyPapersWithAQL(
+    environment: TestEnvironment,
+    count: number,
+    paperData: any,
+) {
     await environment.getDB().query(aql`FOR i IN 1..${count} INSERT ${paperData} IN papers`);
 }
 
-export async function addManyUsersWithAQL(environment: TestEnvironment, count: number, userData: any) {
+export async function addManyUsersWithAQL(
+    environment: TestEnvironment,
+    count: number,
+    userData: any,
+) {
     await environment.getDB().query(aql`FOR i IN 1..${count} INSERT ${userData} IN users`);
 }
 
 export async function addNumberedPapersWithAQL(environment: TestEnvironment, count: number) {
-    await environment.getDB().query(aql`FOR i IN 1..${count} INSERT {title: CONCAT("Paper ", i)} IN papers`);
+    await environment
+        .getDB()
+        .query(aql`FOR i IN 1..${count} INSERT {title: CONCAT("Paper ", i)} IN papers`);
 }
 
-export async function getRandomPaperIDsWithAQL(environment: TestEnvironment, count: number): Promise<string[]> {
+export async function getRandomPaperIDsWithAQL(
+    environment: TestEnvironment,
+    count: number,
+): Promise<string[]> {
     const cursor = await environment
         .getDB()
         .query(aql`FOR node IN papers SORT RAND() LIMIT ${count} RETURN { id: node._key }`);

@@ -3,7 +3,7 @@ import {
     assertValidatorAcceptsAndDoesNotWarn,
     assertValidatorRejects,
     assertValidatorWarns,
-    validate
+    validate,
 } from './helpers';
 import { expect } from 'chai';
 
@@ -144,7 +144,7 @@ describe('@parent directive', () => {
                 parent: [Child] @parent
             }
         `,
-            `A parent field cannot be a list.`
+            `A parent field cannot be a list.`,
         );
     });
 
@@ -156,7 +156,7 @@ describe('@parent directive', () => {
                 parent: Root @parent
             }
         `,
-            `@parent can only be used on fields of child entity types.`
+            `@parent can only be used on fields of child entity types.`,
         );
     });
 
@@ -172,7 +172,7 @@ describe('@parent directive', () => {
                 parent: Root @parent
             }
         `,
-            `@parent can only be used on fields of child entity types.`
+            `@parent can only be used on fields of child entity types.`,
         );
     });
 
@@ -188,7 +188,7 @@ describe('@parent directive', () => {
                 parent: Root @parent
             }
         `,
-            `@parent can only be used on fields of child entity types.`
+            `@parent can only be used on fields of child entity types.`,
         );
     });
 
@@ -204,7 +204,7 @@ describe('@parent directive', () => {
                 root: Root @root
             }
         `,
-            `There need to be fields other than parent and root fields in a child entity type.`
+            `There need to be fields other than parent and root fields in a child entity type.`,
         );
     });
 
@@ -221,7 +221,7 @@ describe('@parent directive', () => {
                 parent: Root @parent @reference
             }
         `,
-            `@parent and @reference cannot be combined.`
+            `@parent and @reference cannot be combined.`,
         );
     });
 
@@ -241,7 +241,7 @@ describe('@parent directive', () => {
                 field: String
             }
         `,
-            `@parent and @collect cannot be combined.`
+            `@parent and @collect cannot be combined.`,
         );
     });
 
@@ -257,7 +257,7 @@ describe('@parent directive', () => {
                 parent: Root @parent @flexSearch
             }
         `,
-            `@flexSearch is not supported on parent fields.`
+            `@flexSearch is not supported on parent fields.`,
         );
     });
 
@@ -273,7 +273,7 @@ describe('@parent directive', () => {
                 parent: Root @parent @flexSearchFulltext
             }
         `,
-            `@flexSearchFulltext is not supported on type "Root".`
+            `@flexSearchFulltext is not supported on type "Root".`,
         );
     });
 
@@ -289,7 +289,7 @@ describe('@parent directive', () => {
                 parent: Root @parent @defaultValue(value: { })
             }
         `,
-            `Default values are not supported on parent fields.`
+            `Default values are not supported on parent fields.`,
         );
     });
 
@@ -305,7 +305,7 @@ describe('@parent directive', () => {
                 parent: Root @parent
             }
         `,
-            `Type "Child" is not used by any entity type and therefore cannot have a parent field.`
+            `Type "Child" is not used by any entity type and therefore cannot have a parent field.`,
         );
     });
 
@@ -325,7 +325,7 @@ describe('@parent directive', () => {
                 parent: Root2 @parent
             }
         `,
-            `Type "Child" is used in entity type "Root1", so the type of this parent field should be "Root1".`
+            `Type "Child" is used in entity type "Root1", so the type of this parent field should be "Root1".`,
         );
     });
 
@@ -345,7 +345,7 @@ describe('@parent directive', () => {
                 parent: Root1 @parent
             }
         `,
-            `Type "Child" is used in entity type "Root2" as well and thus cannot have a parent field.`
+            `Type "Child" is used in entity type "Root2" as well and thus cannot have a parent field.`,
         );
     });
 
@@ -361,7 +361,7 @@ describe('@parent directive', () => {
                 parent: Root @parent
             }
         `,
-            `Type "Child" is a recursive child entity type and therefore cannot have a parent field. Use the @root directive instead.`
+            `Type "Child" is a recursive child entity type and therefore cannot have a parent field. Use the @root directive instead.`,
         );
     });
 
@@ -385,7 +385,7 @@ describe('@parent directive', () => {
                 parent: Root1 @parent
             }
         `,
-            `Type "Child" is used in entity types "Root2" and "Root3" as well and thus cannot have a parent field.`
+            `Type "Child" is used in entity types "Root2" and "Root3" as well and thus cannot have a parent field.`,
         );
     });
 
@@ -413,7 +413,7 @@ describe('@parent directive', () => {
                 parent: Root4 @parent
             }
         `,
-            `Type "Child" is used in multiple entity types ("Root1", "Root2" and "Root3") and thus cannot have a parent field.`
+            `Type "Child" is used in multiple entity types ("Root1", "Root2" and "Root3") and thus cannot have a parent field.`,
         );
     });
 
@@ -438,7 +438,7 @@ describe('@parent directive', () => {
                 children: [Child]
             }
         `,
-            `Type "Child" is used in entity type "Child2" as well and thus cannot have a parent field.`
+            `Type "Child" is used in entity type "Child2" as well and thus cannot have a parent field.`,
         );
     });
 
@@ -459,7 +459,7 @@ describe('@parent directive', () => {
                 parent: Root @parent
             }
         `,
-            'Type "Grandchild" is used in entity type "Child", so the type of this parent field should be "Child".'
+            'Type "Grandchild" is used in entity type "Child", so the type of this parent field should be "Child".',
         );
     });
 
@@ -483,7 +483,7 @@ describe('@parent directive', () => {
                 parent: Extension1 @parent
             }
         `,
-            'Type "Child" is used in type "Extension1", but the closest entity type in the hierarchy is "Root", so the type of this parent field should be "Root".'
+            'Type "Child" is used in type "Extension1", but the closest entity type in the hierarchy is "Root", so the type of this parent field should be "Root".',
         );
     });
 
@@ -499,12 +499,12 @@ describe('@parent directive', () => {
                 parent1: Root @parent
                 parent2: Root @parent
             }
-        `
+        `,
         );
         expect(result.hasErrors()).to.be.true;
-        expect(result.messages.map(m => m.message)).to.deep.equal([
+        expect(result.messages.map((m) => m.message)).to.deep.equal([
             `There can only be one parent field per type.`,
-            `There can only be one parent field per type.`
+            `There can only be one parent field per type.`,
         ]);
     });
 
@@ -525,7 +525,7 @@ describe('@parent directive', () => {
                 parent: Child @parent
             }
         `,
-            'Parent fields currently can\'t be selected within collect fields, so this field will probably be useless. You could add a @root field (of type "Root") instead.'
+            'Parent fields currently can\'t be selected within collect fields, so this field will probably be useless. You could add a @root field (of type "Root") instead.',
         );
     });
 
@@ -540,7 +540,7 @@ describe('@parent directive', () => {
                 name: String
                 parent: Root @parent
             }
-        `
+        `,
         );
     });
 });

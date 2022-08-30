@@ -1,28 +1,22 @@
 mutation addRelations {
-    hu1: updateHandlingUnit(input: {
-        id: "@{ids/HandlingUnit/1}",
-        delivery: "@{ids/Delivery/1}"
-    }) {
+    hu1: updateHandlingUnit(input: { id: "@{ids/HandlingUnit/1}", delivery: "@{ids/Delivery/1}" }) {
         huNumber
     }
 
-    hu2: updateHandlingUnit(input: {
-        id: "@{ids/HandlingUnit/2}",
-        delivery: "@{ids/Delivery/1}"
-    }) {
+    hu2: updateHandlingUnit(input: { id: "@{ids/HandlingUnit/2}", delivery: "@{ids/Delivery/1}" }) {
         huNumber
     }
 
-    hu3: updateHandlingUnit(input: {
-        id: "@{ids/HandlingUnit/3}",
-        delivery: "@{ids/Delivery/2}"
-    }) {
+    hu3: updateHandlingUnit(input: { id: "@{ids/HandlingUnit/3}", delivery: "@{ids/Delivery/2}" }) {
         huNumber
     }
 }
 
 mutation deleteByDelivery {
-    deleteAllHandlingUnits(filter: {delivery: { id: "@{ids/Delivery/1}" } } orderBy: huNumber_ASC) {
+    deleteAllHandlingUnits(
+        filter: { delivery: { id: "@{ids/Delivery/1}" } }
+        orderBy: huNumber_ASC
+    ) {
         huNumber
     }
 }

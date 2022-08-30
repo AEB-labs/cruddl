@@ -21,20 +21,26 @@ import {
     UpdateEntitiesQueryNode,
     VariableAssignmentQueryNode,
     VariableQueryNode,
-    WithPreExecutionQueryNode
+    WithPreExecutionQueryNode,
 } from '../query-tree';
 import { BILLING_MUTATION_INPUT_ARG } from '../schema/constants';
 import { getConfirmForBillingFieldName } from '../schema/names';
 import { OutputTypeGenerator } from './output-type-generator';
 import { QueryNodeField } from './query-node-object-type';
-import { createBillingEntityCategoryNode, createBillingEntityQuantityNode } from './utils/billing-nodes';
+import {
+    createBillingEntityCategoryNode,
+    createBillingEntityQuantityNode,
+} from './utils/billing-nodes';
 
 export class BillingTypeGenerator {
     constructor(readonly outputTypeGenerator: OutputTypeGenerator) {}
 
     @memorize()
     getMutationField(rootEntityType: RootEntityType): QueryNodeField | undefined {
-        if (!rootEntityType.billingEntityConfig || !rootEntityType.billingEntityConfig.billingKeyField) {
+        if (
+            !rootEntityType.billingEntityConfig ||
+            !rootEntityType.billingEntityConfig.billingKeyField
+        ) {
             return undefined;
         }
         if (!rootEntityType.billingEntityConfig.billingKeyField.type.isScalarType) {
@@ -45,18 +51,21 @@ export class BillingTypeGenerator {
             type: GraphQLBoolean,
             args: {
                 [BILLING_MUTATION_INPUT_ARG]: {
-                    type: GraphQLID
-                }
+                    type: GraphQLID,
+                },
             },
             isSerial: true,
             description: `Confirms a ${rootEntityType.name} to be exported to billing.`,
-            resolve: (_, args, info) => this.generateQueryNode(args[BILLING_MUTATION_INPUT_ARG], rootEntityType)
+            resolve: (_, args, info) =>
+                this.generateQueryNode(args[BILLING_MUTATION_INPUT_ARG], rootEntityType),
         };
     }
 
     private generateQueryNode(arg: number | string, rootEntityType: RootEntityType) {
         if (!rootEntityType.billingEntityConfig) {
-            throw new Error(`Expected type "${rootEntityType.name}" to have a billing configuration`);
+            throw new Error(
+                `Expected type "${rootEntityType.name}" to have a billing configuration`,
+            );
         }
         const entityIdQueryNode = new LiteralQueryNode(arg);
         const keyVariableQueryNode = new VariableQueryNode();
@@ -64,31 +73,44 @@ export class BillingTypeGenerator {
         return new WithPreExecutionQueryNode({
             preExecQueries: [
                 this.getExistancePreExecQueryParms(rootEntityType, entityIdQueryNode),
-                this.getKeyPreExecQueryParms(rootEntityType, entityIdQueryNode, keyVariableQueryNode),
+                this.getKeyPreExecQueryParms(
+                    rootEntityType,
+                    entityIdQueryNode,
+                    keyVariableQueryNode,
+                ),
                 new PreExecQueryParms({
-                    query: this.getEmptyUpdateQueryNode(rootEntityType, entityIdQueryNode)
+                    query: this.getEmptyUpdateQueryNode(rootEntityType, entityIdQueryNode),
                 }),
                 new PreExecQueryParms({
                     query: new VariableAssignmentQueryNode({
-                        variableValueNode: new EntityFromIdQueryNode(rootEntityType, entityIdQueryNode),
+                        variableValueNode: new EntityFromIdQueryNode(
+                            rootEntityType,
+                            entityIdQueryNode,
+                        ),
                         variableNode: entityVar,
                         resultNode: new ConfirmForBillingQueryNode({
                             rootEntityTypeName: rootEntityType.name,
                             keyNode: keyVariableQueryNode,
                             categoryNode: createBillingEntityCategoryNode(
                                 rootEntityType.billingEntityConfig,
-                                entityVar
+                                entityVar,
                             ),
-                            quantityNode: createBillingEntityQuantityNode(rootEntityType.billingEntityConfig, entityVar)
-                        })
-                    })
-                })
+                            quantityNode: createBillingEntityQuantityNode(
+                                rootEntityType.billingEntityConfig,
+                                entityVar,
+                            ),
+                        }),
+                    }),
+                }),
             ],
-            resultNode: new LiteralQueryNode(true)
+            resultNode: new LiteralQueryNode(true),
         });
     }
 
-    private getEmptyUpdateQueryNode(rootEntityType: RootEntityType, entityIdQueryNode: LiteralQueryNode) {
+    private getEmptyUpdateQueryNode(
+        rootEntityType: RootEntityType,
+        entityIdQueryNode: LiteralQueryNode,
+    ) {
         const itemVariableNode = new VariableQueryNode();
         return new UpdateEntitiesQueryNode({
             rootEntityType,
@@ -98,79 +120,94 @@ export class BillingTypeGenerator {
                 filterNode: new BinaryOperationQueryNode(
                     new RootEntityIDQueryNode(itemVariableNode),
                     BinaryOperator.EQUAL,
-                    entityIdQueryNode
+                    entityIdQueryNode,
                 ),
-                itemVariable: itemVariableNode
+                itemVariable: itemVariableNode,
             }),
-            affectedFields: []
+            affectedFields: [],
         });
     }
 
     private getKeyPreExecQueryParms(
         rootEntityType: RootEntityType,
         entityIdQueryNode: LiteralQueryNode,
-        keyVariableQueryNode: VariableQueryNode
+        keyVariableQueryNode: VariableQueryNode,
     ) {
-        if (!rootEntityType.billingEntityConfig || !rootEntityType.billingEntityConfig.billingKeyField) {
+        if (
+            !rootEntityType.billingEntityConfig ||
+            !rootEntityType.billingEntityConfig.billingKeyField
+        ) {
             throw this.getKeyNotFilledError(rootEntityType);
         }
         const itemVariableNode = new VariableQueryNode();
         return new PreExecQueryParms({
             query: new FieldQueryNode(
                 this.getRootEntityQueryNode(itemVariableNode, entityIdQueryNode, rootEntityType),
-                rootEntityType.billingEntityConfig.billingKeyField
+                rootEntityType.billingEntityConfig.billingKeyField,
             ),
             resultVariable: keyVariableQueryNode,
             resultValidator: new ErrorIfNotTruthyResultValidator({
                 errorCode: BILLING_KEY_FIELD_NOT_FILLED_ERROR,
-                errorMessage: `The key ${rootEntityType.billingEntityConfig.billingKeyField.name} is not filled for ${rootEntityType.name} with id ${entityIdQueryNode.value}.`
-            })
+                errorMessage: `The key ${rootEntityType.billingEntityConfig.billingKeyField.name} is not filled for ${rootEntityType.name} with id ${entityIdQueryNode.value}.`,
+            }),
         });
     }
 
-    private getExistancePreExecQueryParms(rootEntityType: RootEntityType, entityIdQueryNode: LiteralQueryNode) {
+    private getExistancePreExecQueryParms(
+        rootEntityType: RootEntityType,
+        entityIdQueryNode: LiteralQueryNode,
+    ) {
         const itemVariableNode = new VariableQueryNode();
         return new PreExecQueryParms({
             query: this.getRootEntityQueryNode(itemVariableNode, entityIdQueryNode, rootEntityType),
             resultValidator: new ErrorIfNotTruthyResultValidator({
                 errorCode: NOT_FOUND_ERROR,
-                errorMessage: `No ${rootEntityType.name} with id ${entityIdQueryNode.value} found.`
-            })
+                errorMessage: `No ${rootEntityType.name} with id ${entityIdQueryNode.value} found.`,
+            }),
         });
     }
 
     private getKeyNotFilledError(rootEntityType: RootEntityType) {
-        return new Error(`The RootEntityType "${rootEntityType.name}" does not have a billing-keyField.`);
+        return new Error(
+            `The RootEntityType "${rootEntityType.name}" does not have a billing-keyField.`,
+        );
     }
 
     private getRootEntityQueryNode(
         itemVariableNode: VariableQueryNode,
         entityIdQueryNode: LiteralQueryNode,
-        rootEntityType: RootEntityType
+        rootEntityType: RootEntityType,
     ) {
         return new FirstOfListQueryNode(
             new TransformListQueryNode({
                 maxCount: 1,
                 itemVariable: itemVariableNode,
-                filterNode: this.getExistanceConditionQueryNode(entityIdQueryNode, rootEntityType, itemVariableNode),
-                listNode: new EntitiesQueryNode(rootEntityType)
-            })
+                filterNode: this.getExistanceConditionQueryNode(
+                    entityIdQueryNode,
+                    rootEntityType,
+                    itemVariableNode,
+                ),
+                listNode: new EntitiesQueryNode(rootEntityType),
+            }),
         );
     }
 
     private getExistanceConditionQueryNode(
         entityIdQueryNode: LiteralQueryNode,
         rootEntityType: RootEntityType,
-        variable: VariableQueryNode
+        variable: VariableQueryNode,
     ): QueryNode {
-        if (!rootEntityType.billingEntityConfig || !rootEntityType.billingEntityConfig.billingKeyField) {
+        if (
+            !rootEntityType.billingEntityConfig ||
+            !rootEntityType.billingEntityConfig.billingKeyField
+        ) {
             throw this.getKeyNotFilledError(rootEntityType);
         }
 
         return new BinaryOperationQueryNode(
             new RootEntityIDQueryNode(variable),
             BinaryOperator.EQUAL,
-            entityIdQueryNode
+            entityIdQueryNode,
         );
     }
 }

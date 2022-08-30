@@ -1,9 +1,9 @@
 {
-    "EnumKey": {
-        "data": {
-            "NumberRange": {
-                "name": "DELIVERY"
-            }
-        }
+  "EnumKey": {
+    "data": {
+      "NumberRange": {
+        "name": "DELIVERY"
+      }
     }
+  }
 }

@@ -9,8 +9,8 @@ const INCLUDE_INITIAL_SETUP_IN_MAX_TIME = false; // makes million-docs-tests fea
 export interface BenchmarkConfig {
     readonly name: string;
     readonly isSync?: boolean;
-    readonly fn: () => Promise<any>|any;
-    readonly before?: (info: {count: number}) => Promise<any>;
+    readonly fn: () => Promise<any> | any;
+    readonly before?: (info: { count: number }) => Promise<any>;
     readonly beforeAll?: () => Promise<any>;
     readonly maxTime?: number;
     readonly initialCount?: number;
@@ -65,7 +65,13 @@ export class BenchmarkCycleDetails {
      */
     public readonly timingsSoFar: Timings;
 
-    constructor(config: {index: number, iterationCount: number, elapsedTime: number, setUpTime: number, timingsSoFar: Timings}) {
+    constructor(config: {
+        index: number;
+        iterationCount: number;
+        elapsedTime: number;
+        setUpTime: number;
+        timingsSoFar: Timings;
+    }) {
         this.index = config.index;
         this.iterationCount = config.iterationCount;
         this.elapsedTime = config.elapsedTime;
@@ -132,7 +138,9 @@ export class BenchmarkResult {
     }
 
     toString() {
-        return `${(this.meanTime * 1000).toFixed(3)} ms per iteration (±${(this.relativeMarginOfError * 100).toFixed(2)}%)`;
+        return `${(this.meanTime * 1000).toFixed(3)} ms per iteration (±${(
+            this.relativeMarginOfError * 100
+        ).toFixed(2)}%)`;
     }
 }
 
@@ -140,12 +148,15 @@ export interface BenchmarkExecutionCallbacks {
     readonly onCycleDone?: (cycleDetails: BenchmarkCycleDetails) => void;
 }
 
-const stats = require("stats-lite");
+const stats = require('stats-lite');
 
-export async function benchmark(config: BenchmarkConfig, callbacks?: BenchmarkExecutionCallbacks): Promise<BenchmarkResult> {
-    async function cycle(count: number): Promise<{times: number[], netTime: number}> {
+export async function benchmark(
+    config: BenchmarkConfig,
+    callbacks?: BenchmarkExecutionCallbacks,
+): Promise<BenchmarkResult> {
+    async function cycle(count: number): Promise<{ times: number[]; netTime: number }> {
         if (config.before) {
-            await config.before({count});
+            await config.before({ count });
         }
 
         const timeBefore = time();
@@ -155,14 +166,14 @@ export async function benchmark(config: BenchmarkConfig, callbacks?: BenchmarkEx
         const timeAfter = time();
 
         return {
-            times: [ (timeAfter - timeBefore) / count ],
-            netTime: timeAfter - timeBefore
+            times: [(timeAfter - timeBefore) / count],
+            netTime: timeAfter - timeBefore,
         };
     }
 
-    async function cycleSync(count: number): Promise<{times: number[], netTime: number}> {
+    async function cycleSync(count: number): Promise<{ times: number[]; netTime: number }> {
         if (config.before) {
-            await config.before({count});
+            await config.before({ count });
         }
 
         const timeBefore = time();
@@ -172,14 +183,14 @@ export async function benchmark(config: BenchmarkConfig, callbacks?: BenchmarkEx
         const timeAfter = time();
 
         return {
-            times: [ (timeAfter - timeBefore) / count ],
-            netTime: timeAfter - timeBefore
+            times: [(timeAfter - timeBefore) / count],
+            netTime: timeAfter - timeBefore,
         };
     }
 
-    async function cycleDetailed(count: number): Promise<{times: number[], netTime: number}> {
+    async function cycleDetailed(count: number): Promise<{ times: number[]; netTime: number }> {
         if (config.before) {
-            await config.before({count});
+            await config.before({ count });
         }
         const times = Array(count);
         for (let i = 0; i < count; i++) {
@@ -191,7 +202,7 @@ export async function benchmark(config: BenchmarkConfig, callbacks?: BenchmarkEx
 
         return {
             times,
-            netTime: stats.sum(times)
+            netTime: stats.sum(times),
         };
     }
 
@@ -210,7 +221,7 @@ export async function benchmark(config: BenchmarkConfig, callbacks?: BenchmarkEx
         cycles: 0,
         iterationCount: 0,
         config: config,
-        timings: getTimings(times)
+        timings: getTimings(times),
     };
 
     while (true) {
@@ -222,7 +233,7 @@ export async function benchmark(config: BenchmarkConfig, callbacks?: BenchmarkEx
         }
 
         // Run cycle
-        const {netTime, times: cycleTimes} = await cycleFn(iterationCount);
+        const { netTime, times: cycleTimes } = await cycleFn(iterationCount);
 
         // Calculate next state
         times.push(...cycleTimes);
@@ -233,17 +244,19 @@ export async function benchmark(config: BenchmarkConfig, callbacks?: BenchmarkEx
             iterationCount: state.iterationCount + iterationCount,
             elapsedTime: time() - startTime,
             elapsedNetTime: state.elapsedNetTime + netTime,
-            elapsedTimeForInitialSetUp: state.elapsedTimeForInitialSetUp
+            elapsedTimeForInitialSetUp: state.elapsedTimeForInitialSetUp,
         };
 
         // Report status
-        cycleDetails.push(new BenchmarkCycleDetails({
-            index: state.cycles - 1,
-            elapsedTime: state.elapsedTime,
-            setUpTime: state.elapsedTime - state.elapsedNetTime,
-            iterationCount,
-            timingsSoFar: state.timings
-        }));
+        cycleDetails.push(
+            new BenchmarkCycleDetails({
+                index: state.cycles - 1,
+                elapsedTime: state.elapsedTime,
+                setUpTime: state.elapsedTime - state.elapsedNetTime,
+                iterationCount,
+                timingsSoFar: state.timings,
+            }),
+        );
 
         if (callbacks && callbacks.onCycleDone) {
             callbacks.onCycleDone(cycleDetails[cycleDetails.length - 1]);
@@ -256,7 +269,7 @@ export async function benchmark(config: BenchmarkConfig, callbacks?: BenchmarkEx
         iterationCount: state.iterationCount,
         elapsedTime: state.elapsedTime,
         setUpTime: state.elapsedTime - state.elapsedNetTime,
-        cycleDetails
+        cycleDetails,
     });
 }
 
@@ -287,7 +300,9 @@ function nextIterationCount(state: BenchmarkState): number {
     const errorFactor = Math.min(state.timings.relativeMarginOfError + 1, 10);
 
     // Do we still have time for setup?
-    const meanSetUpTime = (state.elapsedTime - state.elapsedNetTime - state.elapsedTimeForInitialSetUp) / state.cycles;
+    const meanSetUpTime =
+        (state.elapsedTime - state.elapsedNetTime - state.elapsedTimeForInitialSetUp) /
+        state.cycles;
     if (remainingTime < meanSetUpTime) {
         return 0;
     }
@@ -310,13 +325,38 @@ export function time() {
  * T-Distribution two-tailed critical values for 95% confidence.
  * For more info see http://www.itl.nist.gov/div898/handbook/eda/section3/eda3672.htm.
  */
-const tTable: {[key: string]: number} = {
-    '1': 12.706, '2': 4.303, '3': 3.182, '4': 2.776, '5': 2.571, '6': 2.447,
-    '7': 2.365, '8': 2.306, '9': 2.262, '10': 2.228, '11': 2.201, '12': 2.179,
-    '13': 2.16, '14': 2.145, '15': 2.131, '16': 2.12, '17': 2.11, '18': 2.101,
-    '19': 2.093, '20': 2.086, '21': 2.08, '22': 2.074, '23': 2.069, '24': 2.064,
-    '25': 2.06, '26': 2.056, '27': 2.052, '28': 2.048, '29': 2.045, '30': 2.042,
-    'infinity': 1.96
+const tTable: { [key: string]: number } = {
+    '1': 12.706,
+    '2': 4.303,
+    '3': 3.182,
+    '4': 2.776,
+    '5': 2.571,
+    '6': 2.447,
+    '7': 2.365,
+    '8': 2.306,
+    '9': 2.262,
+    '10': 2.228,
+    '11': 2.201,
+    '12': 2.179,
+    '13': 2.16,
+    '14': 2.145,
+    '15': 2.131,
+    '16': 2.12,
+    '17': 2.11,
+    '18': 2.101,
+    '19': 2.093,
+    '20': 2.086,
+    '21': 2.08,
+    '22': 2.074,
+    '23': 2.069,
+    '24': 2.064,
+    '25': 2.06,
+    '26': 2.056,
+    '27': 2.052,
+    '28': 2.048,
+    '29': 2.045,
+    '30': 2.042,
+    infinity: 1.96,
 };
 
 function getTimings(times: number[]): Timings {
@@ -332,11 +372,11 @@ function getTimings(times: number[]): Timings {
     // Compute the margin of error.
     const moe = sem * critical;
     // Compute the relative margin of error.
-    const rme = (moe / mean) || Infinity;
+    const rme = moe / mean || Infinity;
 
     return {
         relativeMarginOfError: rme,
         meanTime: mean,
-        sampleCount: times.length
-    }
+        sampleCount: times.length,
+    };
 }

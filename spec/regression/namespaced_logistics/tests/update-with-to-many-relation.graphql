@@ -1,10 +1,12 @@
 mutation add {
     logistics {
         delivery {
-            updateDelivery(input: {
-                id: "@{ids/logistics.delivery.Delivery/1}",
-                addHandlingUnits:["@{ids/logistics.delivery.HandlingUnit/1}"]
-            }) {
+            updateDelivery(
+                input: {
+                    id: "@{ids/logistics.delivery.Delivery/1}"
+                    addHandlingUnits: ["@{ids/logistics.delivery.HandlingUnit/1}"]
+                }
+            ) {
                 deliveryNumber
             }
         }
@@ -30,16 +32,17 @@ query check1 {
 mutation add2 {
     logistics {
         delivery {
-            updateDelivery(input: {
-                id: "@{ids/logistics.delivery.Delivery/1}",
-                addHandlingUnits:["@{ids/logistics.delivery.HandlingUnit/2}"]
-            }) {
+            updateDelivery(
+                input: {
+                    id: "@{ids/logistics.delivery.Delivery/1}"
+                    addHandlingUnits: ["@{ids/logistics.delivery.HandlingUnit/2}"]
+                }
+            ) {
                 deliveryNumber
             }
         }
     }
 }
-
 
 query check2 {
     logistics {
@@ -60,10 +63,12 @@ query check2 {
 mutation remove {
     logistics {
         delivery {
-            updateDelivery(input: {
-                id: "@{ids/logistics.delivery.Delivery/1}",
-                removeHandlingUnits:["@{ids/logistics.delivery.HandlingUnit/1}"]
-            }) {
+            updateDelivery(
+                input: {
+                    id: "@{ids/logistics.delivery.Delivery/1}"
+                    removeHandlingUnits: ["@{ids/logistics.delivery.HandlingUnit/1}"]
+                }
+            ) {
                 deliveryNumber
             }
         }
@@ -89,10 +94,12 @@ query check3 {
 mutation remove2 {
     logistics {
         delivery {
-            updateDelivery(input: {
-                id: "@{ids/logistics.delivery.Delivery/1}",
-                removeHandlingUnits:["@{ids/logistics.delivery.HandlingUnit/2}"]
-            }) {
+            updateDelivery(
+                input: {
+                    id: "@{ids/logistics.delivery.Delivery/1}"
+                    removeHandlingUnits: ["@{ids/logistics.delivery.HandlingUnit/2}"]
+                }
+            ) {
                 deliveryNumber
             }
         }

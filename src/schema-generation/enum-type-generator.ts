@@ -10,13 +10,15 @@ export class EnumTypeGenerator {
             name: enumType.name,
             description: enumType.description,
             values: chain(enumType.values)
-                .keyBy(value => value.value)
-                .mapValues((value): GraphQLEnumValueConfig => ({
-                    value: value.value,
-                    description: value.description,
-                    deprecationReason: value.deprecationReason
-                }))
-                .value()
+                .keyBy((value) => value.value)
+                .mapValues(
+                    (value): GraphQLEnumValueConfig => ({
+                        value: value.value,
+                        description: value.description,
+                        deprecationReason: value.deprecationReason,
+                    }),
+                )
+                .value(),
         });
     }
 }

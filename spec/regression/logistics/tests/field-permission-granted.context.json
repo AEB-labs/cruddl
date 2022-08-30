@@ -1,3 +1,3 @@
 {
-    "authRoles": [ "allusers", "accounting", "logistics" ]
+  "authRoles": ["allusers", "accounting", "logistics"]
 }

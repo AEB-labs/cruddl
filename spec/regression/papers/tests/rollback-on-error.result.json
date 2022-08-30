@@ -24,9 +24,7 @@
             "column": 5
           }
         ],
-        "path": [
-          "updatePaper"
-        ]
+        "path": ["updatePaper"]
       },
       {
         "message": "Paper with id 'nonexisting' could not be found.",
@@ -36,9 +34,7 @@
             "column": 5
           }
         ],
-        "path": [
-          "createPaper"
-        ]
+        "path": ["createPaper"]
       }
     ],
     "data": null

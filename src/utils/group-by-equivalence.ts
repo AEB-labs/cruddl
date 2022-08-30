@@ -3,7 +3,10 @@
  *
  * The time complexity is O(n*m), where n is the number of items and n is the number of equivalence classes
  */
-export function groupByEquivalence<T>(items: ReadonlyArray<T>, equals: (a: T, b: T) => boolean): ReadonlyArray<ReadonlyArray<T>> {
+export function groupByEquivalence<T>(
+    items: ReadonlyArray<T>,
+    equals: (a: T, b: T) => boolean,
+): ReadonlyArray<ReadonlyArray<T>> {
     // credits for the algorithm to https://stackoverflow.com/questions/48177538/is-there-a-subquadratic-algorithm-to-partition-items-into-equivalence-classes
     const groups: T[][] = [];
     for (const item of items) {

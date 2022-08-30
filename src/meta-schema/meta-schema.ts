@@ -16,7 +16,7 @@ import { compact, flatMap } from '../utils/utils';
 import { I18N_GENERIC, I18N_LOCALE } from './constants';
 
 const resolutionOrderDescription = JSON.stringify(
-    'The order in which languages and other localization providers are queried for a localization. You can specify languages as defined in the schema as well as the following special identifiers:\n\n- `_LOCALE`: The language defined by the GraphQL request (might be a list of languages, e.g. ["de_DE", "de", "en"])\n- `_GENERIC`: is auto-generated localization from field and type names (e. G. `orderDate` => `Order date`)\n\nThe default `resolutionOrder` is `["_LOCALE", "_GENERIC"]` (if not specified).'
+    'The order in which languages and other localization providers are queried for a localization. You can specify languages as defined in the schema as well as the following special identifiers:\n\n- `_LOCALE`: The language defined by the GraphQL request (might be a list of languages, e.g. ["de_DE", "de", "en"])\n- `_GENERIC`: is auto-generated localization from field and type names (e. G. `orderDate` => `Order date`)\n\nThe default `resolutionOrder` is `["_LOCALE", "_GENERIC"]` (if not specified).',
 );
 
 const typeDefs = gql`
@@ -618,25 +618,29 @@ export function getMetaSchema(project: Project): GraphQLSchema {
 
     function getResolutionOrder(
         resolutionOrder: ReadonlyArray<string> | undefined,
-        contextArgs: ExecutionOptionsCallbackArgs
+        contextArgs: ExecutionOptionsCallbackArgs,
     ) {
         // default resolutionOrder
         if (!resolutionOrder) {
             resolutionOrder = [I18N_LOCALE, I18N_GENERIC];
         }
         // replace _LOCALE
-        return compact(flatMap(resolutionOrder, (l) => (l === I18N_LOCALE ? getLocaleFromContext(contextArgs) : [l])));
+        return compact(
+            flatMap(resolutionOrder, (l) =>
+                l === I18N_LOCALE ? getLocaleFromContext(contextArgs) : [l],
+            ),
+        );
     }
 
     function localizeType(
         type: {},
         { resolutionOrder }: { resolutionOrder?: ReadonlyArray<string> },
         context: unknown,
-        info: GraphQLResolveInfo
+        info: GraphQLResolveInfo,
     ) {
         return model.i18n.getTypeLocalization(
             type as Type,
-            getResolutionOrder(resolutionOrder, { context, operationDefinition: info.operation })
+            getResolutionOrder(resolutionOrder, { context, operationDefinition: info.operation }),
         );
     }
 
@@ -644,11 +648,11 @@ export function getMetaSchema(project: Project): GraphQLSchema {
         field: {},
         { resolutionOrder }: { resolutionOrder?: ReadonlyArray<string> },
         context: unknown,
-        info: GraphQLResolveInfo
+        info: GraphQLResolveInfo,
     ) {
         return model.i18n.getFieldLocalization(
             field as Field,
-            getResolutionOrder(resolutionOrder, { context, operationDefinition: info.operation })
+            getResolutionOrder(resolutionOrder, { context, operationDefinition: info.operation }),
         );
     }
 
@@ -656,11 +660,11 @@ export function getMetaSchema(project: Project): GraphQLSchema {
         enumValue: {},
         { resolutionOrder }: { resolutionOrder?: ReadonlyArray<string> },
         context: unknown,
-        info: GraphQLResolveInfo
+        info: GraphQLResolveInfo,
     ) {
         return model.i18n.getEnumValueLocalization(
             enumValue as EnumValue,
-            getResolutionOrder(resolutionOrder, { context, operationDefinition: info.operation })
+            getResolutionOrder(resolutionOrder, { context, operationDefinition: info.operation }),
         );
     }
 
@@ -674,7 +678,9 @@ export function getMetaSchema(project: Project): GraphQLSchema {
         });
     }
 
-    function getLocaleFromContext(contextArgs: ExecutionOptionsCallbackArgs): ReadonlyArray<string> {
+    function getLocaleFromContext(
+        contextArgs: ExecutionOptionsCallbackArgs,
+    ): ReadonlyArray<string> {
         if (!project.options.getExecutionOptions) {
             return [];
         }
@@ -682,8 +688,16 @@ export function getMetaSchema(project: Project): GraphQLSchema {
         return executionOptions?.locale?.acceptLanguages ?? [];
     }
 
-    function getFieldPermissions(field: Field, args: unknown, context: unknown, info: GraphQLResolveInfo) {
-        const options = project.options.getExecutionOptions?.({ context, operationDefinition: info.operation });
+    function getFieldPermissions(
+        field: Field,
+        args: unknown,
+        context: unknown,
+        info: GraphQLResolveInfo,
+    ) {
+        const options = project.options.getExecutionOptions?.({
+            context,
+            operationDefinition: info.operation,
+        });
         if (!options) {
             return null;
         }
@@ -698,7 +712,10 @@ export function getMetaSchema(project: Project): GraphQLSchema {
         if (field.type.isRootEntityType && field.type !== field.declaringType) {
             const descriptor = getPermissionDescriptorOfRootEntityType(field.type);
             // be optimistic on CONDITIONAL types
-            if (descriptor.canAccess(options.authContext ?? {}, AccessOperation.READ) === PermissionResult.DENIED) {
+            if (
+                descriptor.canAccess(options.authContext ?? {}, AccessOperation.READ) ===
+                PermissionResult.DENIED
+            ) {
                 return {
                     canRead: false,
                     canWrite: false,
@@ -709,8 +726,12 @@ export function getMetaSchema(project: Project): GraphQLSchema {
         const descriptor = getPermissionDescriptorOfField(field);
         const authContext = options.authContext ?? {};
         return {
-            canRead: descriptor.canAccess(options.authContext ?? {}, AccessOperation.READ) === PermissionResult.GRANTED,
-            canWrite: descriptor.canAccess(authContext, AccessOperation.UPDATE) === PermissionResult.GRANTED,
+            canRead:
+                descriptor.canAccess(options.authContext ?? {}, AccessOperation.READ) ===
+                PermissionResult.GRANTED,
+            canWrite:
+                descriptor.canAccess(authContext, AccessOperation.UPDATE) ===
+                PermissionResult.GRANTED,
         };
     }
 
@@ -718,9 +739,12 @@ export function getMetaSchema(project: Project): GraphQLSchema {
         rootEntityType: RootEntityType,
         args: unknown,
         context: unknown,
-        info: GraphQLResolveInfo
+        info: GraphQLResolveInfo,
     ) {
-        const options = project.options.getExecutionOptions?.({ context, operationDefinition: info.operation });
+        const options = project.options.getExecutionOptions?.({
+            context,
+            operationDefinition: info.operation,
+        });
         if (!options) {
             return null;
         }
@@ -736,10 +760,18 @@ export function getMetaSchema(project: Project): GraphQLSchema {
         const descriptor = getPermissionDescriptorOfRootEntityType(rootEntityType);
         const authContext = options.authContext ?? {};
         return {
-            canRead: descriptor.canAccess(authContext, AccessOperation.READ) === PermissionResult.GRANTED,
-            canCreate: descriptor.canAccess(authContext, AccessOperation.CREATE) === PermissionResult.GRANTED,
-            canUpdate: descriptor.canAccess(authContext, AccessOperation.UPDATE) === PermissionResult.GRANTED,
-            canDelete: descriptor.canAccess(authContext, AccessOperation.DELETE) === PermissionResult.GRANTED,
+            canRead:
+                descriptor.canAccess(authContext, AccessOperation.READ) ===
+                PermissionResult.GRANTED,
+            canCreate:
+                descriptor.canAccess(authContext, AccessOperation.CREATE) ===
+                PermissionResult.GRANTED,
+            canUpdate:
+                descriptor.canAccess(authContext, AccessOperation.UPDATE) ===
+                PermissionResult.GRANTED,
+            canDelete:
+                descriptor.canAccess(authContext, AccessOperation.DELETE) ===
+                PermissionResult.GRANTED,
         };
     }
 

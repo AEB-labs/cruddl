@@ -1,20 +1,20 @@
 {
-    "identityInList": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000173"
-                }
-            ]
+  "identityInList": {
+    "data": {
+      "flexSearchDeliveries": [
+        {
+          "deliveryNumber": "1000173"
         }
-    },
-    "fulltextInList": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000522"
-                }
-            ]
-        }
+      ]
     }
+  },
+  "fulltextInList": {
+    "data": {
+      "flexSearchDeliveries": [
+        {
+          "deliveryNumber": "1000522"
+        }
+      ]
+    }
+  }
 }

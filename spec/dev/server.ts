@@ -32,7 +32,7 @@ export async function start() {
                 doNonMandatoryMigrations: true,
                 createIndicesInBackground: true,
             },
-            { loggerProvider }
+            { loggerProvider },
         );
     }
 
@@ -41,7 +41,7 @@ export async function start() {
             logger.info(
                 `${profile.operation.operation} ${
                     profile.operation.name ? profile.operation.name.value : '<anonymous>'
-                }: ${JSON.stringify(profile.timings, undefined, '  ')}`
+                }: ${JSON.stringify(profile.timings, undefined, '  ')}`,
             );
         },
         getOperationIdentifier: ({ context }) => context as object, // each operation is executed with an unique context object
@@ -81,7 +81,9 @@ export async function start() {
                 logger.info(
                     `${type.type.rootEntityType?.name || ''}: ${type.deletedObjectsCount} / ${
                         type.deletedObjectsCount
-                    }${type.hasReducedLimit ? ' (reduced)' : ''}${type.isComplete ? ' (complete)' : ''}`
+                    }${type.hasReducedLimit ? ' (reduced)' : ''}${
+                        type.isComplete ? ' (complete)' : ''
+                    }`,
                 );
             }
         }

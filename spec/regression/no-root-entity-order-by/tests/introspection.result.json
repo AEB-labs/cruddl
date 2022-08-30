@@ -1,131 +1,131 @@
 {
-    "data": {
-        "shipmentDataOrderByType": null,
-        "shipmentOrderByType": {
-            "name": "ShipmentOrderBy"
+  "data": {
+    "shipmentDataOrderByType": null,
+    "shipmentOrderByType": {
+      "name": "ShipmentOrderBy"
+    },
+    "deliveryType": {
+      "fields": [
+        {
+          "name": "id",
+          "args": []
         },
-        "deliveryType": {
-            "fields": [
-                {
-                    "name": "id",
-                    "args": []
-                },
-                {
-                    "name": "createdAt",
-                    "args": []
-                },
-                {
-                    "name": "updatedAt",
-                    "args": []
-                },
-                {
-                    "name": "deliveryNumber",
-                    "args": []
-                },
-                {
-                    "name": "orderDatas",
-                    "args": [
-                        {
-                            "name": "filter",
-                            "type": {
-                                "name": "ShipmentDataFilter",
-                                "ofType": null
-                            }
-                        },
-                        {
-                            "name": "skip",
-                            "type": {
-                                "name": "Int",
-                                "ofType": null
-                            }
-                        },
-                        {
-                            "name": "first",
-                            "type": {
-                                "name": "Int",
-                                "ofType": null
-                            }
-                        }
-                    ]
-                },
-                {
-                    "name": "_orderDatasMeta",
-                    "args": [
-                        {
-                            "name": "filter",
-                            "type": {
-                                "name": "ShipmentDataFilter",
-                                "ofType": null
-                            }
-                        }
-                    ]
-                },
-                {
-                    "name": "orders",
-                    "args": [
-                        {
-                            "name": "filter",
-                            "type": {
-                                "name": "ShipmentFilter",
-                                "ofType": null
-                            }
-                        },
-                        {
-                            "name": "orderBy",
-                            "type": {
-                                "name": null,
-                                "ofType": {
-                                    "name": null,
-                                    "ofType": {
-                                        "name": "ShipmentOrderBy"
-                                    }
-                                }
-                            }
-                        },
-                        {
-                            "name": "after",
-                            "type": {
-                                "name": "String",
-                                "ofType": null
-                            }
-                        },
-                        {
-                            "name": "skip",
-                            "type": {
-                                "name": "Int",
-                                "ofType": null
-                            }
-                        },
-                        {
-                            "name": "first",
-                            "type": {
-                                "name": "Int",
-                                "ofType": null
-                            }
-                        }
-                    ]
-                },
-                {
-                    "name": "_ordersMeta",
-                    "args": [
-                        {
-                            "name": "filter",
-                            "type": {
-                                "name": "ShipmentFilter",
-                                "ofType": null
-                            }
-                        }
-                    ]
-                },
-                {
-                    "name": "_cursor",
-                    "args": []
-                },
-                {
-                    "name": "_revision",
-                    "args": []
+        {
+          "name": "createdAt",
+          "args": []
+        },
+        {
+          "name": "updatedAt",
+          "args": []
+        },
+        {
+          "name": "deliveryNumber",
+          "args": []
+        },
+        {
+          "name": "orderDatas",
+          "args": [
+            {
+              "name": "filter",
+              "type": {
+                "name": "ShipmentDataFilter",
+                "ofType": null
+              }
+            },
+            {
+              "name": "skip",
+              "type": {
+                "name": "Int",
+                "ofType": null
+              }
+            },
+            {
+              "name": "first",
+              "type": {
+                "name": "Int",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "_orderDatasMeta",
+          "args": [
+            {
+              "name": "filter",
+              "type": {
+                "name": "ShipmentDataFilter",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "orders",
+          "args": [
+            {
+              "name": "filter",
+              "type": {
+                "name": "ShipmentFilter",
+                "ofType": null
+              }
+            },
+            {
+              "name": "orderBy",
+              "type": {
+                "name": null,
+                "ofType": {
+                  "name": null,
+                  "ofType": {
+                    "name": "ShipmentOrderBy"
+                  }
                 }
-            ]
+              }
+            },
+            {
+              "name": "after",
+              "type": {
+                "name": "String",
+                "ofType": null
+              }
+            },
+            {
+              "name": "skip",
+              "type": {
+                "name": "Int",
+                "ofType": null
+              }
+            },
+            {
+              "name": "first",
+              "type": {
+                "name": "Int",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "_ordersMeta",
+          "args": [
+            {
+              "name": "filter",
+              "type": {
+                "name": "ShipmentFilter",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "_cursor",
+          "args": []
+        },
+        {
+          "name": "_revision",
+          "args": []
         }
+      ]
     }
+  }
 }

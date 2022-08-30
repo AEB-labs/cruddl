@@ -1,7 +1,12 @@
 import memorize from 'memorize-decorator';
 import { FieldRequest } from '../graphql/query-distiller';
 import { Field, ObjectType } from '../model';
-import { NOT_SUPPORTED_ERROR, PropertyAccessQueryNode, QueryNode, RuntimeErrorQueryNode } from '../query-tree';
+import {
+    NOT_SUPPORTED_ERROR,
+    PropertyAccessQueryNode,
+    QueryNode,
+    RuntimeErrorQueryNode,
+} from '../query-tree';
 import { FieldContext, SelectionToken } from './query-node-object-type';
 
 export interface ProcessFieldResult {
@@ -31,14 +36,21 @@ interface HierarchyStackFrame {
 }
 
 export class RootFieldHelper {
-    private readonly hierarchyStackFramesBySelection = new WeakMap<SelectionToken, HierarchyStackFrame>();
+    private readonly hierarchyStackFramesBySelection = new WeakMap<
+        SelectionToken,
+        HierarchyStackFrame
+    >();
     private readonly fieldsBySelection = new WeakMap<SelectionToken, Field>();
     private readonly selectionsThatCaptureRootEntities = new WeakSet<SelectionToken>();
 
     /**
      * Should be called whenever a field is resolved. Will maintain a hierarchy structure, and may produce a value node
      */
-    processField(field: Field, sourceNode: QueryNode, fieldContext: FieldContext): ProcessFieldResult {
+    processField(
+        field: Field,
+        sourceNode: QueryNode,
+        fieldContext: FieldContext,
+    ): ProcessFieldResult {
         const parentSelectionToken =
             fieldContext.selectionTokenStack.length >= 2
                 ? fieldContext.selectionTokenStack[fieldContext.selectionTokenStack.length - 2]
@@ -97,29 +109,31 @@ export class RootFieldHelper {
                 // also, if there is no outer field, we're at a root field (single or multiple)
                 hierarchyFrame = {
                     currentEntityNode: sourceNode,
-                    rootEntityNode: sourceNode
+                    rootEntityNode: sourceNode,
                 };
             } else if (outerField.collectPath) {
                 const currentEntityNode =
-                    outerField.type.isRootEntityType || outerField.type.isChildEntityType ? sourceNode : undefined;
+                    outerField.type.isRootEntityType || outerField.type.isChildEntityType
+                        ? sourceNode
+                        : undefined;
                 if (outerField.collectPath.traversesRootEntityTypes) {
                     // traversing root entities, so need to take new root. parent is not available.
                     hierarchyFrame = {
                         currentEntityNode,
-                        rootEntityNode: collectRootNode
+                        rootEntityNode: collectRootNode,
                     };
                 } else {
                     // not traversing root entities just throw away the parent but keep root
                     hierarchyFrame = {
                         currentEntityNode,
-                        rootEntityNode: outerFrame?.rootEntityNode
+                        rootEntityNode: outerFrame?.rootEntityNode,
                     };
                 }
             } else if (outerField.type.isChildEntityType) {
                 hierarchyFrame = {
                     currentEntityNode: sourceNode,
                     parentEntityFrame: outerFrame,
-                    rootEntityNode: outerFrame?.rootEntityNode
+                    rootEntityNode: outerFrame?.rootEntityNode,
                 };
             } else {
                 // other than that, there are not any fields that cross entity boundaries
@@ -130,7 +144,7 @@ export class RootFieldHelper {
 
         const captureRootEntitiesOnCollectFields = this.shouldCaptureRootEntity(
             field,
-            fieldContext.selectionStack[fieldContext.selectionStack.length - 1].fieldRequest
+            fieldContext.selectionStack[fieldContext.selectionStack.length - 1].fieldRequest,
         );
 
         if (captureRootEntitiesOnCollectFields) {
@@ -140,7 +154,7 @@ export class RootFieldHelper {
         return {
             sourceNode,
             resultNode: this.tryResolveField(field, hierarchyFrame),
-            captureRootEntitiesOnCollectFields
+            captureRootEntitiesOnCollectFields,
         };
     }
 
@@ -158,19 +172,26 @@ export class RootFieldHelper {
         return this.selectionsThatCaptureRootEntities.has(selectionToken);
     }
 
-    private tryResolveField(field: Field, hierarchyFrame: HierarchyStackFrame): QueryNode | undefined {
+    private tryResolveField(
+        field: Field,
+        hierarchyFrame: HierarchyStackFrame,
+    ): QueryNode | undefined {
         let resultNode: QueryNode | undefined;
         // parent fields that have root entity types are effectively root fields, and those are a bit easier to manage,
         // so use the logic for root fields in these cases.
         if (field.isRootField || (field.isParentField && field.type.isRootEntityType)) {
             if (!hierarchyFrame.rootEntityNode) {
-                return new RuntimeErrorQueryNode(`Root entity is not available here`, { code: NOT_SUPPORTED_ERROR });
+                return new RuntimeErrorQueryNode(`Root entity is not available here`, {
+                    code: NOT_SUPPORTED_ERROR,
+                });
             } else {
                 return hierarchyFrame.rootEntityNode;
             }
         } else if (field.isParentField) {
             if (!hierarchyFrame.parentEntityFrame?.currentEntityNode) {
-                return new RuntimeErrorQueryNode(`Parent entity is not available here`, { code: NOT_SUPPORTED_ERROR });
+                return new RuntimeErrorQueryNode(`Parent entity is not available here`, {
+                    code: NOT_SUPPORTED_ERROR,
+                });
             }
             return hierarchyFrame.parentEntityFrame.currentEntityNode;
         }
@@ -209,7 +230,7 @@ export class RootFieldHelper {
         // passes, or we would need to run the query-node-generator upfront and associate metadata with the
         // QueryNodeFields
 
-        return fieldRequest.selectionSet.some(f => {
+        return fieldRequest.selectionSet.some((f) => {
             const field = type.getField(f.fieldRequest.field.name);
             if (!field) {
                 return false;
@@ -260,11 +281,16 @@ export class RootFieldHelper {
         return false;
     }
 
-    private getHierarchyStackFrame(selectionToken: SelectionToken): HierarchyStackFrame | undefined {
+    private getHierarchyStackFrame(
+        selectionToken: SelectionToken,
+    ): HierarchyStackFrame | undefined {
         return this.hierarchyStackFramesBySelection.get(selectionToken);
     }
 
-    private setHierarchyStackFrame(selectionToken: SelectionToken, stackFrame: HierarchyStackFrame) {
+    private setHierarchyStackFrame(
+        selectionToken: SelectionToken,
+        stackFrame: HierarchyStackFrame,
+    ) {
         if (this.hierarchyStackFramesBySelection.has(selectionToken)) {
             throw new Error(`HierarchyStackFrame for this token already exists`);
         }

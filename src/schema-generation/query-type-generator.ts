@@ -15,7 +15,7 @@ import {
     QueryNodeField,
     QueryNodeListType,
     QueryNodeNonNullType,
-    QueryNodeObjectType
+    QueryNodeObjectType,
 } from './query-node-object-type';
 import { UniqueFieldArgumentsGenerator } from './unique-field-arguments-generator';
 import { getEntitiesByUniqueFieldQuery } from './utils/entities-by-unique-field';
@@ -28,7 +28,7 @@ export class QueryTypeGenerator {
         private readonly metaFirstAugmentation: MetaFirstAugmentation,
         private readonly metaTypeGenerator: MetaTypeGenerator,
         private readonly flexSearchGenerator: FlexSearchGenerator,
-        private readonly uniqueFieldArgumentsGenerator: UniqueFieldArgumentsGenerator
+        private readonly uniqueFieldArgumentsGenerator: UniqueFieldArgumentsGenerator,
     ) {}
 
     @memorize()
@@ -38,15 +38,18 @@ export class QueryTypeGenerator {
             : `the namespace \`${namespace.dotSeparatedPath}\``;
 
         const namespaceFields = namespace.childNamespaces
-            .filter(namespace => namespace.allRootEntityTypes.length > 0)
-            .map(namespace => this.getNamespaceField(namespace));
+            .filter((namespace) => namespace.allRootEntityTypes.length > 0)
+            .map((namespace) => this.getNamespaceField(namespace));
 
-        const fields = [...namespaceFields, ...flatMap(namespace.rootEntityTypes, type => this.getFields(type))];
+        const fields = [
+            ...namespaceFields,
+            ...flatMap(namespace.rootEntityTypes, (type) => this.getFields(type)),
+        ];
 
         return {
             name: namespace.pascalCasePath + QUERY_TYPE,
             description: `The Query type for ${namespaceDesc}`,
-            fields: fields
+            fields: fields,
         };
     }
 
@@ -56,7 +59,7 @@ export class QueryTypeGenerator {
             type: new QueryNodeNonNullType(this.generate(namespace)),
             description: `The Query type for the namespace "${namespace.dotSeparatedPath}"`,
             isPure: true,
-            resolve: () => new ObjectQueryNode([])
+            resolve: () => new ObjectQueryNode([]),
         };
     }
 
@@ -64,7 +67,7 @@ export class QueryTypeGenerator {
         const queryNodeFields = [
             this.getSingleRootEntityField(rootEntityType),
             this.getAllRootEntitiesField(rootEntityType),
-            this.getAllRootEntitiesMetaField(rootEntityType)
+            this.getAllRootEntitiesMetaField(rootEntityType),
         ];
         if (rootEntityType.isFlexSearchIndexed) {
             queryNodeFields.push(this.getFlexSearchEntitiesField(rootEntityType));
@@ -90,25 +93,29 @@ export class QueryTypeGenerator {
             args: this.uniqueFieldArgumentsGenerator.getArgumentsForUniqueFields(rootEntityType),
             description,
             isPure: true,
-            resolve: (_, args, info) => this.getSingleRootEntityNode(rootEntityType, args, info)
+            resolve: (_, args, info) => this.getSingleRootEntityNode(rootEntityType, args, info),
         };
     }
 
     private getSingleRootEntityNode(
         rootEntityType: RootEntityType,
         args: { [name: string]: any },
-        context: FieldContext
+        context: FieldContext,
     ): QueryNode {
-        return new FirstOfListQueryNode(getEntitiesByUniqueFieldQuery(rootEntityType, args, context));
+        return new FirstOfListQueryNode(
+            getEntitiesByUniqueFieldQuery(rootEntityType, args, context),
+        );
     }
 
     private getAllRootEntitiesField(rootEntityType: RootEntityType): QueryNodeField {
         const fieldConfig = {
             name: getAllEntitiesFieldName(rootEntityType),
-            type: new QueryNodeListType(new QueryNodeNonNullType(this.outputTypeGenerator.generate(rootEntityType))),
+            type: new QueryNodeListType(
+                new QueryNodeNonNullType(this.outputTypeGenerator.generate(rootEntityType)),
+            ),
             description: rootEntityType.description,
             isPure: true,
-            resolve: () => this.getAllRootEntitiesNode(rootEntityType)
+            resolve: () => this.getAllRootEntitiesNode(rootEntityType),
         };
         return this.listAugmentation.augment(fieldConfig, rootEntityType);
     }
@@ -128,9 +135,11 @@ export class QueryTypeGenerator {
             // a collection against NULL which is deadly (v8 evaluation)
             skipNullCheck: true,
             isPure: true,
-            resolve: () => this.getAllRootEntitiesNode(rootEntityType)
+            resolve: () => this.getAllRootEntitiesNode(rootEntityType),
         };
-        return this.metaFirstAugmentation.augment(this.filterAugmentation.augment(fieldConfig, rootEntityType));
+        return this.metaFirstAugmentation.augment(
+            this.filterAugmentation.augment(fieldConfig, rootEntityType),
+        );
     }
 
     private getFlexSearchEntitiesField(rootEntityType: RootEntityType): QueryNodeField {

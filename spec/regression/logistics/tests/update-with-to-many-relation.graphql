@@ -1,8 +1,7 @@
 mutation add {
-    updateDelivery(input: {
-        id: "@{ids/Delivery/1}",
-        addHandlingUnits:["@{ids/HandlingUnit/1}"]
-    }) {
+    updateDelivery(
+        input: { id: "@{ids/Delivery/1}", addHandlingUnits: ["@{ids/HandlingUnit/1}"] }
+    ) {
         deliveryNumber
     }
 }
@@ -20,10 +19,9 @@ query check1 {
 }
 
 mutation add2 {
-    updateDelivery(input: {
-        id: "@{ids/Delivery/1}",
-        addHandlingUnits:["@{ids/HandlingUnit/2}"]
-    }) {
+    updateDelivery(
+        input: { id: "@{ids/Delivery/1}", addHandlingUnits: ["@{ids/HandlingUnit/2}"] }
+    ) {
         deliveryNumber
     }
 }
@@ -41,10 +39,9 @@ query check2 {
 }
 
 mutation remove {
-    updateDelivery(input: {
-        id: "@{ids/Delivery/1}",
-        removeHandlingUnits:["@{ids/HandlingUnit/1}"]
-    }) {
+    updateDelivery(
+        input: { id: "@{ids/Delivery/1}", removeHandlingUnits: ["@{ids/HandlingUnit/1}"] }
+    ) {
         deliveryNumber
     }
 }
@@ -62,10 +59,9 @@ query check3 {
 }
 
 mutation remove2 {
-    updateDelivery(input: {
-        id: "@{ids/Delivery/1}",
-        removeHandlingUnits:["@{ids/HandlingUnit/2}"]
-    }) {
+    updateDelivery(
+        input: { id: "@{ids/Delivery/1}", removeHandlingUnits: ["@{ids/HandlingUnit/2}"] }
+    ) {
         deliveryNumber
     }
 }

@@ -1,29 +1,49 @@
 import { expect } from 'chai';
 import { moveErrorsToOutputNodes } from '../../src/authorization/move-errors-to-output-nodes';
-import { ConditionalQueryNode, ConstBoolQueryNode, ListQueryNode, ObjectQueryNode, PreExecQueryParms, PropertySpecification, FLEX_SEARCH_TOO_MANY_OBJECTS, RuntimeErrorQueryNode, TransformListQueryNode, WithPreExecutionQueryNode } from '../../src/query-tree';
+import {
+    ConditionalQueryNode,
+    ConstBoolQueryNode,
+    ListQueryNode,
+    ObjectQueryNode,
+    PreExecQueryParms,
+    PropertySpecification,
+    FLEX_SEARCH_TOO_MANY_OBJECTS,
+    RuntimeErrorQueryNode,
+    TransformListQueryNode,
+    WithPreExecutionQueryNode,
+} from '../../src/query-tree';
 import { TOO_MANY_OBJECTS_ERROR } from '../../src/schema-generation/flex-search-generator';
 
 describe('move-errors-to-output-nodes', () => {
     it('moves errors in filter up', () => {
         const tree = new ObjectQueryNode([
-            new PropertySpecification('prop1', new TransformListQueryNode({
-                listNode: new ListQueryNode([]),
-                filterNode: new RuntimeErrorQueryNode('filter error')
-            }))
+            new PropertySpecification(
+                'prop1',
+                new TransformListQueryNode({
+                    listNode: new ListQueryNode([]),
+                    filterNode: new RuntimeErrorQueryNode('filter error'),
+                }),
+            ),
         ]);
         const newTree = moveErrorsToOutputNodes(tree);
-        expect((newTree as ObjectQueryNode).properties[0].valueNode.constructor.name).to.equal(RuntimeErrorQueryNode.name);
+        expect((newTree as ObjectQueryNode).properties[0].valueNode.constructor.name).to.equal(
+            RuntimeErrorQueryNode.name,
+        );
     });
 
     it('keeps errors in innerNode', () => {
         const tree = new ObjectQueryNode([
-            new PropertySpecification('prop1', new TransformListQueryNode({
-                listNode: new ListQueryNode([]),
-                innerNode: new RuntimeErrorQueryNode('filter error')
-            }))
+            new PropertySpecification(
+                'prop1',
+                new TransformListQueryNode({
+                    listNode: new ListQueryNode([]),
+                    innerNode: new RuntimeErrorQueryNode('filter error'),
+                }),
+            ),
         ]);
         const newTree = moveErrorsToOutputNodes(tree);
-        const transformList = (newTree as ObjectQueryNode).properties[0].valueNode as TransformListQueryNode;
+        const transformList = (newTree as ObjectQueryNode).properties[0]
+            .valueNode as TransformListQueryNode;
         expect(transformList.constructor.name).to.equal(TransformListQueryNode.name);
         expect(transformList.innerNode.constructor.name).to.equal(RuntimeErrorQueryNode.name);
     });
@@ -35,12 +55,15 @@ describe('move-errors-to-output-nodes', () => {
                 new ConditionalQueryNode(
                     new RuntimeErrorQueryNode('condition error'),
                     new TransformListQueryNode({ listNode: new ListQueryNode([]) }),
-                    new TransformListQueryNode({ listNode: new ListQueryNode([]) })))
+                    new TransformListQueryNode({ listNode: new ListQueryNode([]) }),
+                ),
+            ),
         ]);
         const newTree = moveErrorsToOutputNodes(tree);
-        expect((newTree as ObjectQueryNode).properties[0].valueNode.constructor.name).to.equal(RuntimeErrorQueryNode.name);
+        expect((newTree as ObjectQueryNode).properties[0].valueNode.constructor.name).to.equal(
+            RuntimeErrorQueryNode.name,
+        );
     });
-
 
     it('ConditionalQueryNode keeps errors in expression', () => {
         const tree = new ObjectQueryNode([
@@ -49,14 +72,16 @@ describe('move-errors-to-output-nodes', () => {
                 new ConditionalQueryNode(
                     new ConstBoolQueryNode(true),
                     new TransformListQueryNode({ listNode: new ListQueryNode([]) }),
-                    new RuntimeErrorQueryNode('expression error')))
+                    new RuntimeErrorQueryNode('expression error'),
+                ),
+            ),
         ]);
         const newTree = moveErrorsToOutputNodes(tree);
-        const conditionalQueryNode = (newTree as ObjectQueryNode).properties[0].valueNode as ConditionalQueryNode;
+        const conditionalQueryNode = (newTree as ObjectQueryNode).properties[0]
+            .valueNode as ConditionalQueryNode;
         expect(conditionalQueryNode.constructor.name).to.equal(ConditionalQueryNode.name);
         expect(conditionalQueryNode.expr2.constructor.name).to.equal(RuntimeErrorQueryNode.name);
     });
-
 
     it('WithPreExecutionQueryNode moves errors in condition up', () => {
         const tree = new ObjectQueryNode([
@@ -66,13 +91,16 @@ describe('move-errors-to-output-nodes', () => {
                     resultNode: new TransformListQueryNode({ listNode: new ListQueryNode([]) }),
                     preExecQueries: [
                         new PreExecQueryParms({
-                            query: new RuntimeErrorQueryNode('condition error')
-                        })
-                    ]
-                }))
+                            query: new RuntimeErrorQueryNode('condition error'),
+                        }),
+                    ],
+                }),
+            ),
         ]);
         const newTree = moveErrorsToOutputNodes(tree);
-        expect((newTree as ObjectQueryNode).properties[0].valueNode.constructor.name).to.equal(RuntimeErrorQueryNode.name);
+        expect((newTree as ObjectQueryNode).properties[0].valueNode.constructor.name).to.equal(
+            RuntimeErrorQueryNode.name,
+        );
     });
 
     it('moves errors in result node up', () => {
@@ -83,13 +111,16 @@ describe('move-errors-to-output-nodes', () => {
                     resultNode: new RuntimeErrorQueryNode('resultNode error'),
                     preExecQueries: [
                         new PreExecQueryParms({
-                            query: new TransformListQueryNode({ listNode: new ListQueryNode([]) })
-                        })
-                    ]
-                }))
+                            query: new TransformListQueryNode({ listNode: new ListQueryNode([]) }),
+                        }),
+                    ],
+                }),
+            ),
         ]);
         const newTree = moveErrorsToOutputNodes(tree);
-        expect((newTree as ObjectQueryNode).properties[0].valueNode.constructor.name).to.equal(RuntimeErrorQueryNode.name);
+        expect((newTree as ObjectQueryNode).properties[0].valueNode.constructor.name).to.equal(
+            RuntimeErrorQueryNode.name,
+        );
     });
 
     it('do move up necessary error message', () => {
@@ -100,14 +131,19 @@ describe('move-errors-to-output-nodes', () => {
                     resultNode: new RuntimeErrorQueryNode('resultNode error'),
                     preExecQueries: [
                         new PreExecQueryParms({
-                            query: new RuntimeErrorQueryNode('query error')
-                        })
-                    ]
-                }))
+                            query: new RuntimeErrorQueryNode('query error'),
+                        }),
+                    ],
+                }),
+            ),
         ]);
         const newTree = moveErrorsToOutputNodes(tree);
-        expect((newTree as ObjectQueryNode).properties[0].valueNode.constructor.name).to.equal(RuntimeErrorQueryNode.name);
-        expect((<RuntimeErrorQueryNode>(newTree as ObjectQueryNode).properties[0].valueNode).message).to.equal('query error, resultNode error');
+        expect((newTree as ObjectQueryNode).properties[0].valueNode.constructor.name).to.equal(
+            RuntimeErrorQueryNode.name,
+        );
+        expect(
+            (<RuntimeErrorQueryNode>(newTree as ObjectQueryNode).properties[0].valueNode).message,
+        ).to.equal('query error, resultNode error');
     });
 
     it('does not unnecessarily move up error message', () => {
@@ -117,19 +153,27 @@ describe('move-errors-to-output-nodes', () => {
                 new WithPreExecutionQueryNode({
                     resultNode: new ConditionalQueryNode(
                         new ConstBoolQueryNode(true),
-                        new RuntimeErrorQueryNode(TOO_MANY_OBJECTS_ERROR, { code: FLEX_SEARCH_TOO_MANY_OBJECTS }),
-                        new RuntimeErrorQueryNode(TOO_MANY_OBJECTS_ERROR, { code: FLEX_SEARCH_TOO_MANY_OBJECTS })
+                        new RuntimeErrorQueryNode(TOO_MANY_OBJECTS_ERROR, {
+                            code: FLEX_SEARCH_TOO_MANY_OBJECTS,
+                        }),
+                        new RuntimeErrorQueryNode(TOO_MANY_OBJECTS_ERROR, {
+                            code: FLEX_SEARCH_TOO_MANY_OBJECTS,
+                        }),
                     ),
                     preExecQueries: [
                         new PreExecQueryParms({
-                            query: new RuntimeErrorQueryNode('query error')
-                        })
-                    ]
-                }))
+                            query: new RuntimeErrorQueryNode('query error'),
+                        }),
+                    ],
+                }),
+            ),
         ]);
         const newTree = moveErrorsToOutputNodes(tree);
-        expect((newTree as ObjectQueryNode).properties[0].valueNode.constructor.name).to.equal(RuntimeErrorQueryNode.name);
-        expect((<RuntimeErrorQueryNode>(newTree as ObjectQueryNode).properties[0].valueNode).message).to.equal('query error');
+        expect((newTree as ObjectQueryNode).properties[0].valueNode.constructor.name).to.equal(
+            RuntimeErrorQueryNode.name,
+        );
+        expect(
+            (<RuntimeErrorQueryNode>(newTree as ObjectQueryNode).properties[0].valueNode).message,
+        ).to.equal('query error');
     });
-
 });

@@ -1,31 +1,31 @@
 {
-    "compilerOptions": {
-        "target": "es2019",
-        "module": "commonjs",
-        "moduleResolution": "node",
-        "importHelpers": true,
-        "sourceMap": true,
-        "declaration": true,
-        "removeComments": false,
-        "strict": true,
-        "forceConsistentCasingInFileNames": true,
-        "noFallthroughCasesInSwitch": true,
-        "noImplicitReturns": true,
-        "downlevelIteration": true,
-        "experimentalDecorators": true,
-        "esModuleInterop": true,
-        "lib": ["es2020"],
-        "baseUrl": "./",
-        "paths": {
-            "*": ["./src/typings/*"]
-        },
-        "typeRoots": ["./src/typings"],
-        "types": ["mocha", "node"],
-        "outDir": "dist"
+  "compilerOptions": {
+    "target": "es2019",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "importHelpers": true,
+    "sourceMap": true,
+    "declaration": true,
+    "removeComments": false,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "downlevelIteration": true,
+    "experimentalDecorators": true,
+    "esModuleInterop": true,
+    "lib": ["es2020"],
+    "baseUrl": "./",
+    "paths": {
+      "*": ["./src/typings/*"]
     },
-    "exclude": ["node_modules", "dist"],
-    "include": ["index.ts", "src/**/*", "spec/**/*"],
-    "compileOnSave": false,
-    "buildOnSave": false,
-    "atom": { "rewriteTsconfig": false }
+    "typeRoots": ["./src/typings"],
+    "types": ["mocha", "node"],
+    "outDir": "dist"
+  },
+  "exclude": ["node_modules", "dist"],
+  "include": ["index.ts", "src/**/*", "spec/**/*"],
+  "compileOnSave": false,
+  "buildOnSave": false,
+  "atom": { "rewriteTsconfig": false }
 }

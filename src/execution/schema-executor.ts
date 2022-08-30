@@ -3,7 +3,7 @@ import {
     FragmentDefinitionNode,
     GraphQLSchema,
     OperationDefinitionNode,
-    VariableDefinitionNode
+    VariableDefinitionNode,
 } from 'graphql';
 import { getVariableValues } from 'graphql/execution/values';
 import { globalContext } from '../config/global';
@@ -20,7 +20,9 @@ import { ExecutionOptions } from './execution-options';
 import { ExecutionResult } from './execution-result';
 import { OperationResolver } from './operation-resolver';
 
-type ValidationResult = { readonly canExecute: false; errorMessage: string } | SuccessfulValidationResult;
+type ValidationResult =
+    | { readonly canExecute: false; errorMessage: string }
+    | SuccessfulValidationResult;
 type Maybe<T> = T | undefined | null;
 
 interface SuccessfulValidationResult {
@@ -52,11 +54,14 @@ export class SchemaExecutor {
     private readonly dumbSchema: GraphQLSchema;
     private readonly resolver: OperationResolver;
 
-    constructor(private readonly project: Project, private readonly databaseAdapter: DatabaseAdapter) {
+    constructor(
+        private readonly project: Project,
+        private readonly databaseAdapter: DatabaseAdapter,
+    ) {
         const context: SchemaTransformationContext = {
             loggerProvider: project.loggerProvider,
             databaseAdapter: databaseAdapter,
-            getExecutionOptions: project.options.getExecutionOptions
+            getExecutionOptions: project.options.getExecutionOptions,
         };
 
         globalContext.registerContext(context);
@@ -70,11 +75,12 @@ export class SchemaExecutor {
 
             const schemaContext: SchemaTransformationContext = {
                 ...project.options,
-                databaseAdapter
+                databaseAdapter,
             };
 
             const generator = new SchemaGenerator(schemaContext);
-            const { dumbSchema, queryType, mutationType } = generator.generateTypesAndDumbSchema(model);
+            const { dumbSchema, queryType, mutationType } =
+                generator.generateTypesAndDumbSchema(model);
 
             this.resolver = new OperationResolver(context);
             this.queryType = queryType;
@@ -90,11 +96,14 @@ export class SchemaExecutor {
      *
      * @return the info whether it is executable, and if not, why.
      */
-    canExecute(operation: SchemaExecutionArgs): { readonly canExecute: boolean; readonly errorMessage?: string } {
+    canExecute(operation: SchemaExecutionArgs): {
+        readonly canExecute: boolean;
+        readonly errorMessage?: string;
+    } {
         const result = this.validate(operation);
         return {
             canExecute: result.canExecute,
-            errorMessage: result.errorMessage
+            errorMessage: result.errorMessage,
         };
     }
 
@@ -116,29 +125,32 @@ export class SchemaExecutor {
                 operation,
                 fragments: fragmentMap,
                 schema: this.dumbSchema,
-                variableValues: variableValues || {}
+                variableValues: variableValues || {},
             },
             rootType,
             {
                 ...args.options,
-                handleTypenameFields: true
-            }
+                handleTypenameFields: true,
+            },
         );
     }
 
     private validate(args: SchemaExecutionArgs): ValidationResult {
         const operation = extractOperation(args.document, args.operationName);
-        const fragments = args.document.definitions.filter(def => def.kind === 'FragmentDefinition') as ReadonlyArray<
-            FragmentDefinitionNode
-        >;
-        const fragmentMap = arrayToObject(fragments, fr => fr.name.value);
+        const fragments = args.document.definitions.filter(
+            (def) => def.kind === 'FragmentDefinition',
+        ) as ReadonlyArray<FragmentDefinitionNode>;
+        const fragmentMap = arrayToObject(fragments, (fr) => fr.name.value);
         const rootSelections = resolveSelections(operation.selectionSet.selections, {
             fragments: fragmentMap,
-            variableValues: args.variableValues || {}
+            variableValues: args.variableValues || {},
         });
         if (
             rootSelections.some(
-                sel => sel.kind === 'Field' && sel.name.value.startsWith('__') && sel.name.value !== '__typename'
+                (sel) =>
+                    sel.kind === 'Field' &&
+                    sel.name.value.startsWith('__') &&
+                    sel.name.value !== '__typename',
             )
         ) {
             // contains introspection query
@@ -149,12 +161,18 @@ export class SchemaExecutor {
         const { coerced: variableValues, errors: variableErrors } = getVariableValues(
             this.dumbSchema,
             (operation.variableDefinitions as VariableDefinitionNode[]) || [],
-            args.variableValues || {}
+            args.variableValues || {},
         );
         if (variableErrors) {
             return { canExecute: false, errorMessage: 'variable values are invalid' };
         }
 
-        return { canExecute: true, errorMessage: undefined, fragmentMap, operation, variableValues };
+        return {
+            canExecute: true,
+            errorMessage: undefined,
+            fragmentMap,
+            operation,
+            variableValues,
+        };
     }
 }

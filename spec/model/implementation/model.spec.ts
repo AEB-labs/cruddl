@@ -1,5 +1,10 @@
 import { expect } from 'chai';
-import { Model, NamespacedPermissionProfileConfigMap, Severity, TypeKind } from '../../../src/model';
+import {
+    Model,
+    NamespacedPermissionProfileConfigMap,
+    Severity,
+    TypeKind,
+} from '../../../src/model';
 import { expectSingleErrorToInclude, expectToBeValid, validate } from './validation-utils';
 
 describe('Model', () => {
@@ -10,12 +15,12 @@ describe('Model', () => {
                     permissions: [
                         {
                             access: 'read',
-                            roles: ['admin']
-                        }
-                    ]
-                }
-            }
-        }
+                            roles: ['admin'],
+                        },
+                    ],
+                },
+            },
+        },
     ];
 
     it('accepts simple model', () => {
@@ -27,21 +32,22 @@ describe('Model', () => {
                     fields: [
                         {
                             name: 'deliveryNumber',
-                            typeName: 'String'
-                        }
-                    ]
-                }, {
+                            typeName: 'String',
+                        },
+                    ],
+                },
+                {
                     name: 'Shipment',
                     kind: TypeKind.ROOT_ENTITY,
                     fields: [
                         {
                             name: 'shipmentNumber',
-                            typeName: 'String'
-                        }
-                    ]
-                }
+                            typeName: 'String',
+                        },
+                    ],
+                },
             ],
-            permissionProfiles
+            permissionProfiles,
         });
 
         expectToBeValid(model);
@@ -56,21 +62,22 @@ describe('Model', () => {
                     fields: [
                         {
                             name: 'deliveryNumber',
-                            typeName: 'String'
-                        }
-                    ]
-                }, {
+                            typeName: 'String',
+                        },
+                    ],
+                },
+                {
                     name: 'Delivery',
                     kind: TypeKind.ROOT_ENTITY,
                     fields: [
                         {
                             name: 'deliveryNumber',
-                            typeName: 'String'
-                        }
-                    ]
-                }
+                            typeName: 'String',
+                        },
+                    ],
+                },
             ],
-            permissionProfiles
+            permissionProfiles,
         });
 
         const result = validate(model);
@@ -90,12 +97,12 @@ describe('Model', () => {
                     fields: [
                         {
                             name: 'deliveryNumber',
-                            typeName: 'String'
-                        }
-                    ]
-                }
+                            typeName: 'String',
+                        },
+                    ],
+                },
             ],
-            permissionProfiles
+            permissionProfiles,
         });
 
         expectSingleErrorToInclude(model, `Type name "Int" is reserved by a built-in type.`);

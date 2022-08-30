@@ -1,5 +1,5 @@
 type DangerousGoodsInfo @entityExtension @namespace(name: "logistics") {
     unNumber: String
     flashpoint: String
-    notices: [ String ]
+    notices: [String]
 }

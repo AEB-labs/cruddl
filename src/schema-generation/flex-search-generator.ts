@@ -14,12 +14,12 @@ import {
     QueryNode,
     RuntimeErrorQueryNode,
     VariableQueryNode,
-    WithPreExecutionQueryNode
+    WithPreExecutionQueryNode,
 } from '../query-tree';
 import {
     FlexSearchComplexOperatorQueryNode,
     FlexSearchQueryNode,
-    FlexSearchStartsWithQueryNode
+    FlexSearchStartsWithQueryNode,
 } from '../query-tree/flex-search';
 import { simplifyBooleans } from '../query-tree/utils';
 import {
@@ -27,7 +27,7 @@ import {
     FLEX_SEARCH_EXPRESSION_ARG,
     FLEX_SEARCH_FILTER_ARG,
     ORDER_BY_ARG,
-    POST_FILTER_ARG
+    POST_FILTER_ARG,
 } from '../schema/constants';
 import { getFlexSearchEntitiesFieldName, getMetaFieldName } from '../schema/names';
 import { decapitalize } from '../utils/utils';
@@ -41,7 +41,7 @@ import {
     QueryNodeListType,
     QueryNodeNonNullType,
     QueryNodeObjectType,
-    QueryNodeResolveInfo
+    QueryNodeResolveInfo,
 } from './query-node-object-type';
 import { orderArgMatchesPrimarySort } from './utils/flex-search-utils';
 import { or } from './utils/input-types';
@@ -57,23 +57,28 @@ export class FlexSearchGenerator {
         private readonly flexSearchTypeGenerator: FlexSearchFilterTypeGenerator,
         private readonly outputTypeGenerator: OutputTypeGenerator,
         private readonly flexSearchFilterAugmentation: FlexSearchPostFilterAugmentation,
-        private readonly orderByAugmentation: OrderByAndPaginationAugmentation
+        private readonly orderByAugmentation: OrderByAndPaginationAugmentation,
     ) {}
 
     generate(rootEntityType: RootEntityType): QueryNodeField {
         const fieldConfig = {
             name: getFlexSearchEntitiesFieldName(rootEntityType),
-            type: new QueryNodeListType(new QueryNodeNonNullType(this.outputTypeGenerator.generate(rootEntityType))),
+            type: new QueryNodeListType(
+                new QueryNodeNonNullType(this.outputTypeGenerator.generate(rootEntityType)),
+            ),
             description: `Queries for ${rootEntityType.pluralName} using FlexSearch.`,
-            resolve: () => new FlexSearchQueryNode({ rootEntityType: rootEntityType })
+            resolve: () => new FlexSearchQueryNode({ rootEntityType: rootEntityType }),
         };
         const withOrderBy = this.augmentWithCondition(
-            this.orderByAugmentation.augment(this.generateFromConfig(fieldConfig, rootEntityType), rootEntityType),
-            rootEntityType
+            this.orderByAugmentation.augment(
+                this.generateFromConfig(fieldConfig, rootEntityType),
+                rootEntityType,
+            ),
+            rootEntityType,
         );
         return this.augmentWithCondition(
             this.flexSearchFilterAugmentation.augment(withOrderBy, rootEntityType),
-            rootEntityType
+            rootEntityType,
         );
     }
 
@@ -88,18 +93,21 @@ export class FlexSearchGenerator {
             skipNullCheck: true,
             resolve: () => {
                 return new FlexSearchQueryNode({ rootEntityType: rootEntityType });
-            }
+            },
         };
         return this.augmentWithCondition(
             this.flexSearchFilterAugmentation.augment(
                 this.generateFromConfig(fieldConfig, rootEntityType),
-                rootEntityType
+                rootEntityType,
             ),
-            rootEntityType
+            rootEntityType,
         );
     }
 
-    generateFromConfig(schemaField: QueryNodeField, rootEntityType: RootEntityType): QueryNodeField {
+    generateFromConfig(
+        schemaField: QueryNodeField,
+        rootEntityType: RootEntityType,
+    ): QueryNodeField {
         if (!rootEntityType.isObjectType) {
             return schemaField;
         }
@@ -108,17 +116,17 @@ export class FlexSearchGenerator {
         const newArgs: GraphQLFieldConfigArgumentMap = rootEntityType.hasFieldsIncludedInSearch
             ? {
                   [FLEX_SEARCH_FILTER_ARG]: { type: flexSearchType.getInputType() },
-                  [FLEX_SEARCH_EXPRESSION_ARG]: { type: GraphQLString }
+                  [FLEX_SEARCH_EXPRESSION_ARG]: { type: GraphQLString },
               }
             : {
-                  [FLEX_SEARCH_FILTER_ARG]: { type: flexSearchType.getInputType() }
+                  [FLEX_SEARCH_FILTER_ARG]: { type: flexSearchType.getInputType() },
               };
 
         return {
             ...schemaField,
             args: {
                 ...schemaField.args,
-                ...newArgs
+                ...newArgs,
             },
             resolve: (sourceNode, args, info) => {
                 const itemVariable = new VariableQueryNode(decapitalize(rootEntityType.name));
@@ -127,14 +135,14 @@ export class FlexSearchGenerator {
                     flexSearchType,
                     itemVariable,
                     rootEntityType,
-                    info
+                    info,
                 );
                 return new FlexSearchQueryNode({
                     rootEntityType: rootEntityType,
                     flexFilterNode: flexFilterNode,
-                    itemVariable: itemVariable
+                    itemVariable: itemVariable,
                 });
-            }
+            },
         };
     }
 
@@ -143,20 +151,24 @@ export class FlexSearchGenerator {
         filterType: FlexSearchFilterObjectType,
         itemVariable: VariableQueryNode,
         rootEntityType: RootEntityType,
-        info: QueryNodeResolveInfo
+        info: QueryNodeResolveInfo,
     ) {
         const filterValue = args[FLEX_SEARCH_FILTER_ARG] || {};
         const expression = rootEntityType.hasFieldsIncludedInSearch
             ? (args[FLEX_SEARCH_EXPRESSION_ARG] as string)
             : undefined;
-        const filterNode = simplifyBooleans(filterType.getFilterNode(itemVariable, filterValue, [], info));
+        const filterNode = simplifyBooleans(
+            filterType.getFilterNode(itemVariable, filterValue, [], info),
+        );
         const searchFilterNode = simplifyBooleans(
-            this.buildFlexSearchExpressionFilterNode(rootEntityType, itemVariable, expression)
+            this.buildFlexSearchExpressionFilterNode(rootEntityType, itemVariable, expression),
         );
         if (searchFilterNode === ConstBoolQueryNode.TRUE) {
             return filterNode;
         } else {
-            return simplifyBooleans(new BinaryOperationQueryNode(filterNode, BinaryOperator.AND, searchFilterNode));
+            return simplifyBooleans(
+                new BinaryOperationQueryNode(filterNode, BinaryOperator.AND, searchFilterNode),
+            );
         }
     }
 
@@ -169,7 +181,7 @@ export class FlexSearchGenerator {
     private getPreExecQueryNode(
         rootEntityType: RootEntityType,
         args: { [p: string]: any },
-        context: QueryNodeResolveInfo
+        context: QueryNodeResolveInfo,
     ): QueryNode {
         const itemVariable = new VariableQueryNode(decapitalize(rootEntityType.name));
         const flexSearchType = this.flexSearchTypeGenerator.generate(rootEntityType, false);
@@ -178,26 +190,29 @@ export class FlexSearchGenerator {
             flexSearchType,
             itemVariable,
             rootEntityType,
-            context
+            context,
         );
         return new BinaryOperationQueryNode(
             new CountQueryNode(
                 new FlexSearchQueryNode({
                     rootEntityType: rootEntityType,
                     flexFilterNode: flexFilterNode,
-                    itemVariable: itemVariable
-                })
+                    itemVariable: itemVariable,
+                }),
             ),
             BinaryOperator.GREATER_THAN,
             new LiteralQueryNode(
                 context.flexSearchMaxFilterableAmountOverride
                     ? context.flexSearchMaxFilterableAmountOverride
-                    : DEFAULT_FLEXSEARCH_MAX_FILTERABLE_AMOUNT
-            )
+                    : DEFAULT_FLEXSEARCH_MAX_FILTERABLE_AMOUNT,
+            ),
         );
     }
 
-    private augmentWithCondition(schemaField: QueryNodeField, rootEntityType: RootEntityType): QueryNodeField {
+    private augmentWithCondition(
+        schemaField: QueryNodeField,
+        rootEntityType: RootEntityType,
+    ): QueryNodeField {
         return {
             ...schemaField,
             transform: (sourceNode, args, context) => {
@@ -208,32 +223,37 @@ export class FlexSearchGenerator {
                 if (
                     (filterArg && Object.keys(filterArg).length > 0) ||
                     (args[ORDER_BY_ARG] &&
-                        !orderArgMatchesPrimarySort(args[ORDER_BY_ARG], rootEntityType.flexSearchPrimarySort))
+                        !orderArgMatchesPrimarySort(
+                            args[ORDER_BY_ARG],
+                            rootEntityType.flexSearchPrimarySort,
+                        ))
                 ) {
                     return new WithPreExecutionQueryNode({
                         preExecQueries: [
                             new PreExecQueryParms({
                                 resultVariable: assertionVariable,
-                                query: this.getPreExecQueryNode(rootEntityType, args, context)
-                            })
+                                query: this.getPreExecQueryNode(rootEntityType, args, context),
+                            }),
                         ],
                         resultNode: new ConditionalQueryNode(
                             assertionVariable,
-                            new RuntimeErrorQueryNode(TOO_MANY_OBJECTS_ERROR, { code: FLEX_SEARCH_TOO_MANY_OBJECTS }),
-                            sourceNode
-                        )
+                            new RuntimeErrorQueryNode(TOO_MANY_OBJECTS_ERROR, {
+                                code: FLEX_SEARCH_TOO_MANY_OBJECTS,
+                            }),
+                            sourceNode,
+                        ),
                     });
                 } else {
                     return sourceNode;
                 }
-            }
+            },
         };
     }
 
     private buildFlexSearchExpressionFilterNode(
         rootEntityType: RootEntityType,
         itemVariable: VariableQueryNode,
-        expressionParam?: string
+        expressionParam?: string,
     ): QueryNode {
         if (!expressionParam || !expressionParam.trim()) {
             return ConstBoolQueryNode.TRUE;
@@ -244,13 +264,13 @@ export class FlexSearchGenerator {
         function getQueryNodeFromField(field: Field, path: Field[] = []): QueryNode {
             if (field.type.isObjectType) {
                 return field.type.fields
-                    .map(value => getQueryNodeFromField(value, path.concat(field)))
+                    .map((value) => getQueryNodeFromField(value, path.concat(field)))
                     .reduce(or, ConstBoolQueryNode.FALSE);
             }
 
             const identityNode = new FlexSearchStartsWithQueryNode(
                 new FieldPathQueryNode(itemVariable, path.concat(field)),
-                new LiteralQueryNode(expression)
+                new LiteralQueryNode(expression),
             );
             const fullTextQueryNode = new FlexSearchComplexOperatorQueryNode(
                 expression,
@@ -258,21 +278,25 @@ export class FlexSearchGenerator {
                 BinaryOperator.AND,
                 new FieldPathQueryNode(itemVariable, path.concat(field)),
                 field.getFlexSearchFulltextAnalyzerOrThrow(),
-                true
+                true,
             );
 
             return new BinaryOperationQueryNode(
-                field.isFlexSearchIndexed && field.isIncludedInSearch ? identityNode : ConstBoolQueryNode.FALSE,
+                field.isFlexSearchIndexed && field.isIncludedInSearch
+                    ? identityNode
+                    : ConstBoolQueryNode.FALSE,
                 BinaryOperator.OR,
-                field.isFlexSearchFulltextIndexed && field.isFulltextIncludedInSearch && field.flexSearchLanguage
+                field.isFlexSearchFulltextIndexed &&
+                field.isFulltextIncludedInSearch &&
+                field.flexSearchLanguage
                     ? fullTextQueryNode
-                    : ConstBoolQueryNode.FALSE
+                    : ConstBoolQueryNode.FALSE,
             );
         }
 
         return rootEntityType.fields
-            .filter(value => value.isIncludedInSearch || value.isFulltextIncludedInSearch)
-            .map(value => getQueryNodeFromField(value))
+            .filter((value) => value.isIncludedInSearch || value.isFulltextIncludedInSearch)
+            .map((value) => getQueryNodeFromField(value))
             .reduce(or, ConstBoolQueryNode.FALSE);
     }
 }

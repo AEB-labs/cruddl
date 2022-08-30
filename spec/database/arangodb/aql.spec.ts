@@ -39,7 +39,7 @@ describe('aql', () => {
     });
 
     it('can indent lines', () => {
-        const items = [123, 456, 42].map(number => aql`2 * ${number}`);
+        const items = [123, 456, 42].map((number) => aql`2 * ${number}`);
         const fragment = aql.lines(aql`[`, aql.indent(aql.join(items, aql`,\n`)), aql`]`);
         const oldValue = aqlConfig.enableIndentationForCode;
         aqlConfig.enableIndentationForCode = true;
@@ -58,7 +58,9 @@ describe('aql', () => {
         const tmp1 = aql.variable();
         const tmp2 = aql.variable();
         const fragment = aql`LET ${tmp1} = [ 1, 2, 3] FOR ${tmp2} IN ${tmp1} RETURN ${tmp2} * 2`;
-        expect(fragment.getCode().code).to.equal(`LET tmp1 = [ 1, 2, 3] FOR tmp2 IN tmp1 RETURN tmp2 * 2`);
+        expect(fragment.getCode().code).to.equal(
+            `LET tmp1 = [ 1, 2, 3] FOR tmp2 IN tmp1 RETURN tmp2 * 2`,
+        );
     });
 
     it('discards unsafe variable labels', () => {
@@ -72,7 +74,7 @@ describe('aql', () => {
         const tmp2 = new AQLVariable('label');
         const fragment = aql`LET ${tmp1} = [ 1, 2, 3] FOR ${tmp2} IN ${tmp1} RETURN ${tmp2} * 2`;
         expect(fragment.getCode().code).to.equal(
-            `LET v_label1 = [ 1, 2, 3] FOR v_label2 IN v_label1 RETURN v_label2 * 2`
+            `LET v_label1 = [ 1, 2, 3] FOR v_label2 IN v_label1 RETURN v_label2 * 2`,
         );
     });
 

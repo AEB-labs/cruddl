@@ -7,23 +7,30 @@
  * Object prototype.
  */
 import {
-    DirectiveNode, FieldNode, GraphQLDirective, GraphQLError, GraphQLField, valueFromAST, VariableNode, print,
-    GraphQLNonNull
+    DirectiveNode,
+    FieldNode,
+    GraphQLDirective,
+    GraphQLError,
+    GraphQLField,
+    valueFromAST,
+    VariableNode,
+    print,
+    GraphQLNonNull,
 } from 'graphql';
 import { arrayToObject } from '../utils/utils';
 
 export function getArgumentValues(
     def: GraphQLField<any, any> | GraphQLDirective,
     node: FieldNode | DirectiveNode,
-    variableValues?: {[key: string]: any}|undefined
-): {[key: string]: any} {
-    const coercedValues: {[key: string]: any} = {};
+    variableValues?: { [key: string]: any } | undefined,
+): { [key: string]: any } {
+    const coercedValues: { [key: string]: any } = {};
     const argDefs = def.args;
     const argNodes = node.arguments;
     if (!argDefs || !argNodes) {
         return coercedValues;
     }
-    const argNodeMap = arrayToObject(argNodes, arg => arg.name.value);
+    const argNodeMap = arrayToObject(argNodes, (arg) => arg.name.value);
     for (let i = 0; i < argDefs.length; i++) {
         const argDef = argDefs[i];
         const name = argDef.name;
@@ -36,8 +43,8 @@ export function getArgumentValues(
             } else if (argType instanceof GraphQLNonNull) {
                 throw new GraphQLError(
                     `Argument "${name}" of required type ` +
-                    `"${String(argType)}" was not provided.`,
-                    [node]
+                        `"${String(argType)}" was not provided.`,
+                    [node],
                 );
             }
         } else if (argumentNode.value.kind === 'Variable') {
@@ -56,9 +63,9 @@ export function getArgumentValues(
             } else if (argType instanceof GraphQLNonNull) {
                 throw new GraphQLError(
                     `Argument "${name}" of required type "${String(argType)}" was ` +
-                    `provided the variable "$${variableName}" which was not provided ` +
-                    'a runtime value.',
-                    [argumentNode.value]
+                        `provided the variable "$${variableName}" which was not provided ` +
+                        'a runtime value.',
+                    [argumentNode.value],
                 );
             }
         } else {
@@ -70,7 +77,7 @@ export function getArgumentValues(
                 // continue with an invalid argument value.
                 throw new GraphQLError(
                     `Argument "${name}" has invalid value ${print(valueNode)}.`,
-                    [argumentNode.value]
+                    [argumentNode.value],
                 );
             }
             coercedValues[name] = coercedValue;

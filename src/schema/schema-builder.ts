@@ -34,7 +34,11 @@ import { Project, ProjectOptions } from '../project/project';
 import { ProjectSource, SourceType } from '../project/source';
 import { SchemaGenerator } from '../schema-generation';
 import { flatMap, PlainObject } from '../utils/utils';
-import { validateParsedProjectSource, validatePostMerge, validateSource } from './preparation/ast-validator';
+import {
+    validateParsedProjectSource,
+    validatePostMerge,
+    validateSource,
+} from './preparation/ast-validator';
 import {
     executePreMergeTransformationPipeline,
     executeSchemaTransformationPipeline,
@@ -56,7 +60,10 @@ export function validateSchema(project: Project): ValidationResult {
     }
 }
 
-export function validateAndPrepareSchema(project: Project): { validationResult: ValidationResult; model: Model } {
+export function validateAndPrepareSchema(project: Project): {
+    validationResult: ValidationResult;
+    model: Model;
+} {
     const validationContext: ValidationContext = new ValidationContext();
 
     const sources = flatMap(project.sources, (source) => {
@@ -68,7 +75,10 @@ export function validateAndPrepareSchema(project: Project): { validationResult: 
         return [source];
     });
 
-    const { sources: parsedSources } = parseProject(new Project({ ...project.options, sources }), validationContext);
+    const { sources: parsedSources } = parseProject(
+        new Project({ ...project.options, sources }),
+        validationContext,
+    );
 
     const validParsedSources = flatMap(parsedSources, (parsedSource) => {
         const sourceResult = validateParsedProjectSource(parsedSource);
@@ -157,10 +167,15 @@ function mergeAST(doc1: DocumentNode, doc2: DocumentNode): DocumentNode {
 /**
  * Parse all schema parts sources which aren't AST already and deep clone all AST sources.
  */
-export function parseProject(project: Project, validationContext: ValidationContext): ParsedProject {
+export function parseProject(
+    project: Project,
+    validationContext: ValidationContext,
+): ParsedProject {
     return {
         sources: compact(
-            project.sources.map((source) => parseProjectSource(source, project.options, validationContext))
+            project.sources.map((source) =>
+                parseProjectSource(source, project.options, validationContext),
+            ),
         ),
     };
 }
@@ -168,7 +183,7 @@ export function parseProject(project: Project, validationContext: ValidationCont
 function parseYAMLSource(
     projectSource: ProjectSource,
     options: ProjectOptions,
-    validationContext: ValidationContext
+    validationContext: ValidationContext,
 ): ParsedObjectProjectSource | undefined {
     const root: YAMLNode | undefined = load(projectSource.body);
 
@@ -185,10 +200,14 @@ function parseYAMLSource(
                 error.reason,
                 new MessageLocation(
                     projectSource,
-                    new SourcePosition(error.mark.position, error.mark.line + 1, error.mark.column + 1),
-                    endPos
-                )
-            )
+                    new SourcePosition(
+                        error.mark.position,
+                        error.mark.line + 1,
+                        error.mark.column + 1,
+                    ),
+                    endPos,
+                ),
+            ),
         );
     });
 
@@ -219,7 +238,7 @@ function parseYAMLSource(
 function parseJSONSource(
     projectSource: ProjectSource,
     options: ProjectOptions,
-    validationContext: ValidationContext
+    validationContext: ValidationContext,
 ): ParsedObjectProjectSource | undefined {
     if (projectSource.body.trim() === '') {
         return undefined;
@@ -251,7 +270,11 @@ function parseJSONSource(
 
     for (const key in pointers) {
         const pointer = pointers[key];
-        jsonPathLocationMap[key] = new MessageLocation(projectSource, pointer.value.pos, pointer.valueEnd.pos);
+        jsonPathLocationMap[key] = new MessageLocation(
+            projectSource,
+            pointer.value.pos,
+            pointer.valueEnd.pos,
+        );
     }
 
     const data: PlainObject = parseResult.data;
@@ -261,8 +284,8 @@ function parseJSONSource(
         validationContext.addMessage(
             ValidationMessage.error(
                 `JSON file should define an object (is array)`,
-                new MessageLocation(projectSource, 0, projectSource.body.length)
-            )
+                new MessageLocation(projectSource, 0, projectSource.body.length),
+            ),
         );
         return undefined;
     }
@@ -281,7 +304,7 @@ function parseJSONSource(
 function parseGraphQLsSource(
     projectSource: ProjectSource,
     options: ProjectOptions,
-    validationContext: ValidationContext
+    validationContext: ValidationContext,
 ): ParsedGraphQLProjectSource | undefined {
     if (projectSource.body.trim() === '') {
         return undefined;
@@ -313,7 +336,7 @@ function parseGraphQLsSource(
 export function parseProjectSource(
     projectSource: ProjectSource,
     options: ProjectOptions,
-    validationContext: ValidationContext
+    validationContext: ValidationContext,
 ): ParsedProjectSource | undefined {
     switch (projectSource.type) {
         case SourceType.YAML:
@@ -339,7 +362,10 @@ function getNamespaceFromSourceName(name: string): ReadonlyArray<string> {
  * @param {ProjectSource} source containing valid YAML (returns error if source is not valid)
  * @returns {{[p: string]: MessageLocation}} a map of paths to message locations
  */
-function extractMessageLocationsFromYAML(root: YAMLNode, source: ProjectSource): { [path: string]: MessageLocation } {
+function extractMessageLocationsFromYAML(
+    root: YAMLNode,
+    source: ProjectSource,
+): { [path: string]: MessageLocation } {
     const result = extractAllPaths(root, [] as ReadonlyArray<string | number>);
     let messageLocations: { [path: string]: MessageLocation } = {};
     result.forEach(
@@ -347,8 +373,8 @@ function extractMessageLocationsFromYAML(root: YAMLNode, source: ProjectSource):
             (messageLocations['/' + val.path.join('/')] = new MessageLocation(
                 source,
                 val.node.startPosition,
-                val.node.endPosition
-            ))
+                val.node.endPosition,
+            )),
     );
 
     return messageLocations;
@@ -362,13 +388,15 @@ function extractMessageLocationsFromYAML(root: YAMLNode, source: ProjectSource):
  */
 function extractAllPaths(
     node: YAMLNode,
-    curPath: ReadonlyArray<string | number>
+    curPath: ReadonlyArray<string | number>,
 ): { path: ReadonlyArray<string | number>; node: YAMLNode }[] {
     switch (node.kind) {
         case Kind.MAP:
             const mapNode = node as YamlMap;
-            const mergedMap = ([] as { path: ReadonlyArray<string | number>; node: YAMLNode }[]).concat(
-                ...mapNode.mappings.map((childNode) => extractAllPaths(childNode, [...curPath]))
+            const mergedMap = (
+                [] as { path: ReadonlyArray<string | number>; node: YAMLNode }[]
+            ).concat(
+                ...mapNode.mappings.map((childNode) => extractAllPaths(childNode, [...curPath])),
             );
             return [...mergedMap];
         case Kind.MAPPING:
@@ -389,8 +417,12 @@ function extractAllPaths(
             }
         case Kind.SEQ:
             const seqNode = node as YAMLSequence;
-            const mergedSequence = ([] as { path: ReadonlyArray<string | number>; node: YAMLNode }[]).concat(
-                ...seqNode.items.map((childNode, index) => extractAllPaths(childNode, [...curPath, index]))
+            const mergedSequence = (
+                [] as { path: ReadonlyArray<string | number>; node: YAMLNode }[]
+            ).concat(
+                ...seqNode.items.map((childNode, index) =>
+                    extractAllPaths(childNode, [...curPath, index]),
+                ),
             );
             return [...mergedSequence];
         case Kind.INCLUDE_REF:
@@ -404,15 +436,15 @@ function extractAllPaths(
 export function extractJSONFromYAML(
     root: YAMLNode,
     validationContext: ValidationContext,
-    source: ProjectSource
+    source: ProjectSource,
 ): PlainObject | undefined {
     const result = recursiveObjectExtraction(root, {}, validationContext, source);
     if (typeof result !== 'object') {
         validationContext.addMessage(
             ValidationMessage.error(
                 `YAML file should define an object (is ${typeof result})`,
-                new MessageLocation(source, 0, source.body.length)
-            )
+                new MessageLocation(source, 0, source.body.length),
+            ),
         );
         return undefined;
     }
@@ -421,8 +453,8 @@ export function extractJSONFromYAML(
         validationContext.addMessage(
             ValidationMessage.error(
                 `YAML file should define an object (is array)`,
-                new MessageLocation(source, 0, source.body.length)
-            )
+                new MessageLocation(source, 0, source.body.length),
+            ),
         );
         return undefined;
     }
@@ -434,7 +466,7 @@ function recursiveObjectExtraction(
     node: YAMLNode | undefined,
     object: PlainObject,
     validationContext: ValidationContext,
-    source: ProjectSource
+    source: ProjectSource,
 ): any {
     // ATTENTION: Typings of the yaml ast parser are wrong
     if (!node) {
@@ -444,7 +476,12 @@ function recursiveObjectExtraction(
         case Kind.MAP:
             const mapNode = node as YamlMap;
             mapNode.mappings.forEach((val) => {
-                object[val.key.value] = recursiveObjectExtraction(val.value, {}, validationContext, source);
+                object[val.key.value] = recursiveObjectExtraction(
+                    val.value,
+                    {},
+                    validationContext,
+                    source,
+                );
             });
             return object;
         case Kind.MAPPING:
@@ -452,28 +489,34 @@ function recursiveObjectExtraction(
         case Kind.SCALAR:
             const scalarNode = node as YAMLScalar;
             // check whether string or number scalar
-            if (scalarNode.doubleQuoted || scalarNode.singleQuoted || isNaN(Number(scalarNode.value))) {
+            if (
+                scalarNode.doubleQuoted ||
+                scalarNode.singleQuoted ||
+                isNaN(Number(scalarNode.value))
+            ) {
                 return scalarNode.value;
             } else {
                 return Number(scalarNode.value);
             }
         case Kind.SEQ:
             const seqNode = node as YAMLSequence;
-            return seqNode.items.map((val) => recursiveObjectExtraction(val, {}, validationContext, source));
+            return seqNode.items.map((val) =>
+                recursiveObjectExtraction(val, {}, validationContext, source),
+            );
         case Kind.INCLUDE_REF:
             validationContext.addMessage(
                 ValidationMessage.error(
                     `Include references are not supported`,
-                    new MessageLocation(source, node.startPosition, node.endPosition)
-                )
+                    new MessageLocation(source, node.startPosition, node.endPosition),
+                ),
             );
             return undefined;
         case Kind.ANCHOR_REF:
             validationContext.addMessage(
                 ValidationMessage.error(
                     `Anchor references are not supported`,
-                    new MessageLocation(source, node.startPosition, node.endPosition)
-                )
+                    new MessageLocation(source, node.startPosition, node.endPosition),
+                ),
             );
             return undefined;
     }
@@ -489,7 +532,13 @@ function getMessageFromGraphQLSyntaxError(error: GraphQLError): string {
 }
 
 function getGraphQLMessageLocation(error: GraphQLError): MessageLocation | undefined {
-    if (!error.source || !error.locations || !error.locations.length || !error.positions || !error.positions.length) {
+    if (
+        !error.source ||
+        !error.locations ||
+        !error.locations.length ||
+        !error.positions ||
+        !error.positions.length
+    ) {
         return undefined;
     }
     const endOffset = error.source.body.length;
@@ -497,6 +546,6 @@ function getGraphQLMessageLocation(error: GraphQLError): MessageLocation | undef
     return new MessageLocation(
         ProjectSource.fromGraphQLSource(error.source) || error.source.name,
         new SourcePosition(error.positions[0], error.locations[0].line, error.locations[0].column),
-        new SourcePosition(endOffset, endLoc.line, endLoc.column)
+        new SourcePosition(endOffset, endLoc.line, endLoc.column),
     );
 }

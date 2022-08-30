@@ -1,11 +1,17 @@
 import { BenchmarkConfig, BenchmarkFactories } from './support/async-bench';
 import { takeRandomSample } from '../../src/utils/utils';
 import {
-    addManyPapersWithAQL, addPaper, createLargePaper, formatBytes, getRandomPaperIDsWithAQL, getSizeFactorForJSONLength,
-    initEnvironment, TestEnvironment
+    addManyPapersWithAQL,
+    addPaper,
+    createLargePaper,
+    formatBytes,
+    getRandomPaperIDsWithAQL,
+    getSizeFactorForJSONLength,
+    initEnvironment,
+    TestEnvironment,
 } from './support/helpers';
 
-function testAddRootEntity(config: {documentLength: number }): BenchmarkConfig {
+function testAddRootEntity(config: { documentLength: number }): BenchmarkConfig {
     const sizeFactor = getSizeFactorForJSONLength(config.documentLength);
     let env: TestEnvironment;
     return {
@@ -19,7 +25,7 @@ function testAddRootEntity(config: {documentLength: number }): BenchmarkConfig {
             if (!id) {
                 throw new Error('ID missing');
             }
-        }
+        },
     };
 }
 
@@ -30,38 +36,53 @@ function getSelectionSet(config: { onlyFewFields?: boolean }) {
     return `title, id, tags, literatureReferences { title, authors }`;
 }
 
-function getOneOfXRootEntities(config: { rootEntitiesInDB: number, documentLength: number, onlyFewFields?: boolean }): BenchmarkConfig {
+function getOneOfXRootEntities(config: {
+    rootEntitiesInDB: number;
+    documentLength: number;
+    onlyFewFields?: boolean;
+}): BenchmarkConfig {
     let env: TestEnvironment;
     let sampledIDs: string[] = [];
     const sizeFactor = getSizeFactorForJSONLength(config.documentLength);
     return {
-        name: `Get ${config.onlyFewFields ? 'two fields of ' : ''} one of ${config.rootEntitiesInDB} root entities of size ${formatBytes(config.documentLength)}`,
+        name: `Get ${config.onlyFewFields ? 'two fields of ' : ''} one of ${
+            config.rootEntitiesInDB
+        } root entities of size ${formatBytes(config.documentLength)}`,
         async beforeAll() {
             env = await initEnvironment();
             await addManyPapersWithAQL(env, config.rootEntitiesInDB, createLargePaper(sizeFactor));
         },
 
-        async before({count}) {
+        async before({ count }) {
             sampledIDs = await getRandomPaperIDsWithAQL(env, count);
         },
 
         async fn() {
             const id = takeRandomSample(sampledIDs);
-            const result = await env.exec(`query($id: ID!) { allPapers(filter:{id: $id}) { ${getSelectionSet(config)} } }`, {
-                id
-            });
+            const result = await env.exec(
+                `query($id: ID!) { allPapers(filter:{id: $id}) { ${getSelectionSet(config)} } }`,
+                {
+                    id,
+                },
+            );
             if (result.allPapers[0].id != id) {
                 throw new Error(`Unexpected result: ${JSON.stringify(result)}`);
             }
-        }
+        },
     };
 }
 
-function getAllOfXRootEntities(config: { rootEntities: number, documentLength: number, onlyFewFields?: boolean }): BenchmarkConfig {
+function getAllOfXRootEntities(config: {
+    rootEntities: number;
+    documentLength: number;
+    onlyFewFields?: boolean;
+}): BenchmarkConfig {
     let env: TestEnvironment;
     const sizeFactor = getSizeFactorForJSONLength(config.documentLength);
     return {
-        name: `Fetch ${config.onlyFewFields ? 'two fields of ' : ''} all ${config.rootEntities} root entities of size ${formatBytes(config.documentLength)} in a collection`,
+        name: `Fetch ${config.onlyFewFields ? 'two fields of ' : ''} all ${
+            config.rootEntities
+        } root entities of size ${formatBytes(config.documentLength)} in a collection`,
         async beforeAll() {
             env = await initEnvironment();
             await addManyPapersWithAQL(env, config.rootEntities, createLargePaper(sizeFactor));
@@ -70,38 +91,51 @@ function getAllOfXRootEntities(config: { rootEntities: number, documentLength: n
         async fn() {
             const result = await env.exec(`query { allPapers { ${getSelectionSet(config)} } }`);
             if (result.allPapers.length != config.rootEntities) {
-                throw new Error(`Expected ${config.rootEntities} root entities, got ${result.allPapers.length}`);
+                throw new Error(
+                    `Expected ${config.rootEntities} root entities, got ${result.allPapers.length}`,
+                );
             }
-        }
+        },
     };
 }
 
 // these will allocate up to a few hundred megabytes each
 const benchmarks: BenchmarkFactories = [
-    () => testAddRootEntity({documentLength: 100}),
-    () => testAddRootEntity({documentLength: 10000}),
-    () => testAddRootEntity({documentLength: 1000000}),
-    () => testAddRootEntity({documentLength: 10000000}),
+    () => testAddRootEntity({ documentLength: 100 }),
+    () => testAddRootEntity({ documentLength: 10000 }),
+    () => testAddRootEntity({ documentLength: 1000000 }),
+    () => testAddRootEntity({ documentLength: 10000000 }),
 
     // test fetching from large collection
-    () => getOneOfXRootEntities({ rootEntitiesInDB: 1000, documentLength: 100}),
-    () => getOneOfXRootEntities({ rootEntitiesInDB: 100000, documentLength: 100}),
-    () => getOneOfXRootEntities({ rootEntitiesInDB: 1000000, documentLength: 100}),
+    () => getOneOfXRootEntities({ rootEntitiesInDB: 1000, documentLength: 100 }),
+    () => getOneOfXRootEntities({ rootEntitiesInDB: 100000, documentLength: 100 }),
+    () => getOneOfXRootEntities({ rootEntitiesInDB: 1000000, documentLength: 100 }),
 
     // test fetching large documents
-    () => getOneOfXRootEntities({ rootEntitiesInDB: 10, documentLength: 10000}),
-    () => getOneOfXRootEntities({ rootEntitiesInDB: 10, documentLength: 1000000}),
-    () => getOneOfXRootEntities({ rootEntitiesInDB: 10, documentLength: 10000000}),
+    () => getOneOfXRootEntities({ rootEntitiesInDB: 10, documentLength: 10000 }),
+    () => getOneOfXRootEntities({ rootEntitiesInDB: 10, documentLength: 1000000 }),
+    () => getOneOfXRootEntities({ rootEntitiesInDB: 10, documentLength: 10000000 }),
 
     // test fetching large documents partially
-    () => getOneOfXRootEntities({ rootEntitiesInDB: 10, documentLength: 10000, onlyFewFields: true}),
-    () => getOneOfXRootEntities({ rootEntitiesInDB: 10, documentLength: 1000000, onlyFewFields: true}),
-    () => getOneOfXRootEntities({ rootEntitiesInDB: 10, documentLength: 10000000, onlyFewFields: true}),
+    () =>
+        getOneOfXRootEntities({ rootEntitiesInDB: 10, documentLength: 10000, onlyFewFields: true }),
+    () =>
+        getOneOfXRootEntities({
+            rootEntitiesInDB: 10,
+            documentLength: 1000000,
+            onlyFewFields: true,
+        }),
+    () =>
+        getOneOfXRootEntities({
+            rootEntitiesInDB: 10,
+            documentLength: 10000000,
+            onlyFewFields: true,
+        }),
 
     // test fetching many documents
-    () => getAllOfXRootEntities({ rootEntities: 100, documentLength: 1000}),
-    () => getAllOfXRootEntities({ rootEntities: 1000, documentLength: 1000}),
-    () => getAllOfXRootEntities({ rootEntities: 10000, documentLength: 1000}),
+    () => getAllOfXRootEntities({ rootEntities: 100, documentLength: 1000 }),
+    () => getAllOfXRootEntities({ rootEntities: 1000, documentLength: 1000 }),
+    () => getAllOfXRootEntities({ rootEntities: 10000, documentLength: 1000 }),
 ];
 
 export default benchmarks;

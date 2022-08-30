@@ -5,9 +5,12 @@ import { Model, RootEntityType, TypeKind } from '../../../core-exports';
 import { FlexSearchLanguage } from '../../../src/model';
 import {
     FLEX_SEARCH_CASE_SENSITIVE_ARGUMENT,
-    FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT
+    FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT,
 } from '../../../src/schema/constants';
-import { assertValidatorAccepts, assertValidatorRejects } from '../../schema/ast-validation-modules/helpers';
+import {
+    assertValidatorAccepts,
+    assertValidatorRejects,
+} from '../../schema/ast-validation-modules/helpers';
 import { createSimpleModel } from '../model-spec.helper';
 import { expectSingleErrorToInclude } from './validation-utils';
 
@@ -19,7 +22,7 @@ describe('FlexSearch', () => {
                 otherHandlingUnit: HandlingUnit @relation @flexSearch
             }
         `,
-            `@flexSearch is not supported on relations.`
+            `@flexSearch is not supported on relations.`,
         );
     });
     it('rejects flexSearch on reference', () => {
@@ -30,7 +33,7 @@ describe('FlexSearch', () => {
                 otherHandlingUnit: HandlingUnit @reference @flexSearch
             }
         `,
-            `@flexSearch is not supported on references.`
+            `@flexSearch is not supported on references.`,
         );
     });
     it('rejects flexSearch on collect fields', () => {
@@ -41,7 +44,7 @@ describe('FlexSearch', () => {
                 someCollection: Int @collect(path: "someNumbers", aggregate: SUM) @flexSearch
             }
         `,
-            `@flexSearch is not supported on collect fields.`
+            `@flexSearch is not supported on collect fields.`,
         );
     });
     it('accepts flexSearch flexSearchFulltext on strings', () => {
@@ -52,7 +55,7 @@ describe('FlexSearch', () => {
             type HandlingUnit @rootEntity(flexSearch: true) {
                 handlingUnitNumber: String @flexSearchFulltext @flexSearch
             }
-        `
+        `,
         );
     });
     it('accepts flexSearch and flexSearchFulltext on I18nString', () => {
@@ -61,7 +64,7 @@ describe('FlexSearch', () => {
             type HandlingUnit @rootEntity(flexSearch: true) {
                 handlingUnitNumber: I18nString @flexSearchFulltext @flexSearch
             }
-        `
+        `,
         );
     });
     it('rejects flexSearchFulltext on numbers', () => {
@@ -71,7 +74,7 @@ describe('FlexSearch', () => {
                 someNumbers: [Int] @flexSearchFulltext(language: DE)
             }
         `,
-            `@flexSearchFulltext is not supported on type "Int".`
+            `@flexSearchFulltext is not supported on type "Int".`,
         );
     });
     it('rejects flexSearchFulltext on collect fields', () => {
@@ -82,7 +85,7 @@ describe('FlexSearch', () => {
                 someCollection: [String] @collect(path: "someStrings", aggregate: DISTINCT) @flexSearchFulltext(language: DE)
             }
         `,
-            `@flexSearch is not supported on collect fields.`
+            `@flexSearch is not supported on collect fields.`,
         );
     });
     it('rejects flexSearch on child without indexed field', () => {
@@ -95,7 +98,7 @@ describe('FlexSearch', () => {
                 someString: String
             }
         `,
-            `At least one field on type "HandlingUnitInfo" must be annotated with @flexSearch or @flexSearchFulltext if @flexSearch is specified on the type declaration.`
+            `At least one field on type "HandlingUnitInfo" must be annotated with @flexSearch or @flexSearchFulltext if @flexSearch is specified on the type declaration.`,
         );
     });
     it('rejects flexSearch includeInSearch for booleans', () => {
@@ -105,7 +108,7 @@ describe('FlexSearch', () => {
                 someBool: Boolean @flexSearch(includeInSearch: true)
             }
         `,
-            `"${FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT}: true" is only supported on the types "String", "[String]" and object types.`
+            `"${FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT}: true" is only supported on the types "String", "[String]" and object types.`,
         );
     });
 
@@ -116,7 +119,7 @@ describe('FlexSearch', () => {
                 someInt: Int @flexSearch(caseSensitive: false)
             }
         `,
-            `"${FLEX_SEARCH_CASE_SENSITIVE_ARGUMENT}" is only supported on the types "String" and "[String]".`
+            `"${FLEX_SEARCH_CASE_SENSITIVE_ARGUMENT}" is only supported on the types "String" and "[String]".`,
         );
     });
     it('accepts flexSearch includeInSearch for string arrays', () => {
@@ -134,10 +137,10 @@ describe('FlexSearch', () => {
                     kind: TypeKind.ROOT_ENTITY,
                     fields: [{ name: 'accessGroup', typeName: 'String' }],
                     permissions: {
-                        permissionProfileName: 'restricted'
+                        permissionProfileName: 'restricted',
                     },
-                    flexSearchIndexConfig: { isIndexed: true, primarySort: [] }
-                }
+                    flexSearchIndexConfig: { isIndexed: true, primarySort: [] },
+                },
             ],
             permissionProfiles: [
                 {
@@ -145,15 +148,19 @@ describe('FlexSearch', () => {
                     profiles: {
                         ['restricted']: {
                             permissions: [
-                                { access: 'readWrite', roles: ['allusers'], restrictToAccessGroups: ['RESTRICTED'] }
-                            ]
-                        }
-                    }
-                }
-            ]
+                                {
+                                    access: 'readWrite',
+                                    roles: ['allusers'],
+                                    restrictToAccessGroups: ['RESTRICTED'],
+                                },
+                            ],
+                        },
+                    },
+                },
+            ],
         });
-        const type = <RootEntityType>model.types.find(value => value.name === 'HandlingUnit');
-        expectSingleErrorToInclude(type.fields.find(value => value.name === 'accessGroup')!, '');
+        const type = <RootEntityType>model.types.find((value) => value.name === 'HandlingUnit');
+        expectSingleErrorToInclude(type.fields.find((value) => value.name === 'accessGroup')!, '');
     });
     it('accepts a valid primarySort', () => {
         assertValidatorAccepts(`
@@ -180,7 +187,7 @@ describe('FlexSearch', () => {
                 someString: String
             }
         `,
-            `At least one field on type "HandlingUnitInfo" must be annotated with @flexSearch or @flexSearchFulltext if @flexSearch is specified on the type declaration.`
+            `At least one field on type "HandlingUnitInfo" must be annotated with @flexSearch or @flexSearchFulltext if @flexSearch is specified on the type declaration.`,
         );
     });
     it('uses EN as default language for flexSearchFulltext', () => {
@@ -191,8 +198,8 @@ describe('FlexSearch', () => {
         `;
         const model = createSimpleModel(document);
         expect(model.validate().getErrors(), model.validate().toString()).to.deep.equal([]);
-        const type = model.rootEntityTypes.find(value => value.name === 'HandlingUnit');
-        const field = type?.fields.find(value => value.name === 'someString');
+        const type = model.rootEntityTypes.find((value) => value.name === 'HandlingUnit');
+        const field = type?.fields.find((value) => value.name === 'someString');
         expect(field?.flexSearchLanguage).to.equal(FlexSearchLanguage.EN);
     });
 });

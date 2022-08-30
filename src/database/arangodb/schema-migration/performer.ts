@@ -7,7 +7,7 @@ import {
     ERROR_ARANGO_DUPLICATE_NAME,
     ERROR_ARANGO_INDEX_NOT_FOUND,
     ERROR_BAD_PARAMETER,
-    ERROR_FILE_EXISTS
+    ERROR_FILE_EXISTS,
 } from '../error-codes';
 import { configureForBackgroundCreation, isEqualProperties } from './arango-search-helpers';
 import {
@@ -21,7 +21,7 @@ import {
     RecreateArangoSearchViewMigration,
     SchemaMigration,
     UpdateArangoSearchAnalyzerMigration,
-    UpdateArangoSearchViewMigration
+    UpdateArangoSearchViewMigration,
 } from './migrations';
 
 export class MigrationPerformer {
@@ -65,8 +65,8 @@ export class MigrationPerformer {
                 fields: migration.index.fields.slice(),
                 unique: migration.index.unique,
                 sparse: migration.index.sparse,
-                inBackground: this.config.createIndicesInBackground
-            } as any /* inBackground is not included in the types, but it works */
+                inBackground: this.config.createIndicesInBackground,
+            } as any /* inBackground is not included in the types, but it works */,
         );
     }
 
@@ -86,7 +86,7 @@ export class MigrationPerformer {
         try {
             await this.db.createCollection(migration.collectionName, {
                 ...(this.config.createCollectionOptions as any),
-                type: CollectionType.DOCUMENT_COLLECTION
+                type: CollectionType.DOCUMENT_COLLECTION,
             });
         } catch (e) {
             // maybe the collection has been created in the meantime
@@ -104,7 +104,7 @@ export class MigrationPerformer {
         try {
             await this.db.createCollection(migration.collectionName, {
                 ...(this.config.createCollectionOptions as any),
-                type: CollectionType.EDGE_COLLECTION
+                type: CollectionType.EDGE_COLLECTION,
             });
         } catch (e) {
             // maybe the collection has been created in the meantime
@@ -120,7 +120,10 @@ export class MigrationPerformer {
 
     private async createArangoSearchView(migration: CreateArangoSearchViewMigration) {
         try {
-            await this.db.createView(migration.viewName, configureForBackgroundCreation(migration.properties));
+            await this.db.createView(
+                migration.viewName,
+                configureForBackgroundCreation(migration.properties),
+            );
         } catch (e) {
             // maybe the collection has been created in the meantime
             if (e.errorNum === ERROR_ARANGO_DUPLICATE_NAME) {
@@ -135,7 +138,9 @@ export class MigrationPerformer {
     }
 
     private async updateArangoSearchView(migration: UpdateArangoSearchViewMigration) {
-        await this.db.view(migration.viewName).replaceProperties(configureForBackgroundCreation(migration.properties));
+        await this.db
+            .view(migration.viewName)
+            .replaceProperties(configureForBackgroundCreation(migration.properties));
     }
 
     private async dropArangoSearchView(migration: DropArangoSearchViewMigration) {
@@ -161,7 +166,10 @@ export class MigrationPerformer {
         }
 
         try {
-            await this.db.createView(migration.viewName, configureForBackgroundCreation(migration.properties));
+            await this.db.createView(
+                migration.viewName,
+                configureForBackgroundCreation(migration.properties),
+            );
         } catch (e) {
             // maybe the collection has been created in the meantime
             if (e.errorNum === ERROR_ARANGO_DUPLICATE_NAME) {
@@ -176,7 +184,7 @@ export class MigrationPerformer {
     }
 
     private async createArangoSearchAnalyzer(
-        migration: CreateArangoSearchAnalyzerMigration | UpdateArangoSearchAnalyzerMigration
+        migration: CreateArangoSearchAnalyzerMigration | UpdateArangoSearchAnalyzerMigration,
     ) {
         await this.db.createAnalyzer(migration.name, migration.options);
     }
@@ -187,7 +195,7 @@ export class MigrationPerformer {
         } catch (e) {
             if (e.code === 409) {
                 throw new Error(
-                    `Failed to drop arangoSearch analyzer because it is still in use. Drop arangoSearch views and run the migration again. ${e.message}`
+                    `Failed to drop arangoSearch analyzer because it is still in use. Drop arangoSearch views and run the migration again. ${e.message}`,
                 );
             }
             if (e.code !== 404) {

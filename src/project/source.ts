@@ -31,7 +31,11 @@ export class ProjectSource {
      */
     public readonly type: SourceType;
 
-    constructor(public readonly name: string, public readonly body: string, public readonly filePath: string | undefined = undefined) {
+    constructor(
+        public readonly name: string,
+        public readonly body: string,
+        public readonly filePath: string | undefined = undefined,
+    ) {
         if (typeof name != 'string' || !name) {
             throw new Error(`name must be a non-empty string, but is ${String(name)}`);
         }
@@ -63,8 +67,8 @@ export class ProjectSource {
 }
 
 export interface SourceConfig {
-    readonly name: string
-    readonly body: string
+    readonly name: string;
+    readonly body: string;
 }
 
 export type SourceLike = SourceConfig | ProjectSource;

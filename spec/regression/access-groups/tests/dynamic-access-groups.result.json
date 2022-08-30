@@ -1,48 +1,48 @@
 {
-    "wrongAccessGroup": {
-        "errors": [
-            {
-                "message": "Not authorized to set File.accessGroup to this value (allowed values: forwarded-by-quick, forwarded-by-fast, forwarded-by-anyone)",
-                "locations": [
-                    {
-                        "line": 2,
-                        "column": 5
-                    }
-                ],
-                "path": ["createFile"]
-            }
+  "wrongAccessGroup": {
+    "errors": [
+      {
+        "message": "Not authorized to set File.accessGroup to this value (allowed values: forwarded-by-quick, forwarded-by-fast, forwarded-by-anyone)",
+        "locations": [
+          {
+            "line": 2,
+            "column": 5
+          }
         ],
-        "data": null
-    },
-    "correctAccessGroups": {
-        "data": {
-            "f1": {
-                "accessGroup": "forwarded-by-quick"
-            },
-            "f2": {
-                "accessGroup": "forwarded-by-fast"
-            },
-            "f3": {
-                "accessGroup": "forwarded-by-anyone"
-            }
-        }
-    },
-    "list": {
-        "data": {
-            "allFiles": [
-                {
-                    "name": "forwarded-by-anyone",
-                    "accessGroup": "forwarded-by-anyone"
-                },
-                {
-                    "name": "forwarded-by-fast",
-                    "accessGroup": "forwarded-by-fast"
-                },
-                {
-                    "name": "forwarded-by-quick",
-                    "accessGroup": "forwarded-by-quick"
-                }
-            ]
-        }
+        "path": ["createFile"]
+      }
+    ],
+    "data": null
+  },
+  "correctAccessGroups": {
+    "data": {
+      "f1": {
+        "accessGroup": "forwarded-by-quick"
+      },
+      "f2": {
+        "accessGroup": "forwarded-by-fast"
+      },
+      "f3": {
+        "accessGroup": "forwarded-by-anyone"
+      }
     }
+  },
+  "list": {
+    "data": {
+      "allFiles": [
+        {
+          "name": "forwarded-by-anyone",
+          "accessGroup": "forwarded-by-anyone"
+        },
+        {
+          "name": "forwarded-by-fast",
+          "accessGroup": "forwarded-by-fast"
+        },
+        {
+          "name": "forwarded-by-quick",
+          "accessGroup": "forwarded-by-quick"
+        }
+      ]
+    }
+  }
 }

@@ -1,6 +1,6 @@
 export class Watch {
     private lastTime: number;
-    timings: {[key: string]: number} = {};
+    timings: { [key: string]: number } = {};
 
     /**
      * Creates and starts a watch

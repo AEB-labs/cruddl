@@ -16,7 +16,10 @@ export class LiteralQueryNode extends QueryNode {
     }
 
     public describe() {
-        const json = this.value === undefined ? 'undefined' : JSON.stringify(this.value, undefined, INDENTATION);
+        const json =
+            this.value === undefined
+                ? 'undefined'
+                : JSON.stringify(this.value, undefined, INDENTATION);
         return `literal ${cyan(json)}`;
     }
 }

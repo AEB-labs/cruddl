@@ -1,7 +1,11 @@
-import { assertValidatorAccepts, assertValidatorAcceptsAndDoesNotWarn, assertValidatorRejects, assertValidatorWarns } from './helpers';
+import {
+    assertValidatorAccepts,
+    assertValidatorAcceptsAndDoesNotWarn,
+    assertValidatorRejects,
+    assertValidatorWarns,
+} from './helpers';
 
 describe('check-directed-relation-edges-validator', () => {
-
     it('accepts forward only @relation', () => {
         assertValidatorAccepts(`
             type Foo @rootEntity { bar: Bar @relation }
@@ -38,17 +42,23 @@ describe('check-directed-relation-edges-validator', () => {
     });
 
     it('accepts backward only @relations', () => {
-        assertValidatorRejects(`
+        assertValidatorRejects(
+            `
             type Foo @rootEntity { bar: Bar @relation(inverseOf: "foo") }
             type Bar @rootEntity { bla: String }
-        `, 'Field "foo" does not exist on type "Bar".');
+        `,
+            'Field "foo" does not exist on type "Bar".',
+        );
     });
 
     it('warns screwed @relations', () => {
-        assertValidatorWarns(`
+        assertValidatorWarns(
+            `
             type Foo @rootEntity { bar: Bar @relation }
             type Bar @rootEntity { foo: Foo @relation }
-        `, 'This field and "Bar.foo" define separate relations. Consider using the "inverseOf" argument to add a backlink to an existing relation.');
+        `,
+            'This field and "Bar.foo" define separate relations. Consider using the "inverseOf" argument to add a backlink to an existing relation.',
+        );
     });
 
     it('accepts self-relation with backlink', () => {
@@ -78,5 +88,4 @@ describe('check-directed-relation-edges-validator', () => {
             type XXX @rootEntity { id: String }
         `, 'VALIDATION_ERROR_INVALID_ARGUMENT_TYPE');
     });*/
-
 });

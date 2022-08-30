@@ -1,5 +1,7 @@
 mutation createEdges {
-    updateMain(input: { id: "@{ids/Main/1}", addBlockingMains: ["@{ids/Main/2}", "@{ids/Main/3}"] }) {
+    updateMain(
+        input: { id: "@{ids/Main/1}", addBlockingMains: ["@{ids/Main/2}", "@{ids/Main/3}"] }
+    ) {
         key
     }
 }

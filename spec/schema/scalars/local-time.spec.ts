@@ -48,7 +48,6 @@ describe('GraphQLLocalTime', () => {
         ['14:50:12.12345678', '14:50:12.123456780'],
     ];
 
-
     for (const str of validStrings) {
         it(`accepts ${str}`, () => {
             expect(GraphQLLocalTime.parseValue(str)).to.equal(str);
@@ -57,7 +56,9 @@ describe('GraphQLLocalTime', () => {
 
     for (const str of invalidStrings) {
         it(`rejects ${str}`, () => {
-            expect(() => GraphQLLocalTime.parseValue(str)).to.throw(`Invalid ISO 8601 LocalTime: ${str}`);
+            expect(() => GraphQLLocalTime.parseValue(str)).to.throw(
+                `Invalid ISO 8601 LocalTime: ${str}`,
+            );
         });
     }
 
@@ -66,5 +67,4 @@ describe('GraphQLLocalTime', () => {
             expect(GraphQLLocalTime.parseValue(input)).to.equal(result);
         });
     }
-
 });

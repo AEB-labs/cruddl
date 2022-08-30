@@ -130,21 +130,27 @@ describe('mutation', () => {
         const updateDeliveryRelationOnlyResult: any = await execute(
             schema,
             parse(preparedUpdateDeliveryRelationOnly),
-            {}
+            {},
         );
-        const updateDeliveryRelationOnlyUpdatedAt = updateDeliveryRelationOnlyResult.data.updateDelivery.updatedAt;
+        const updateDeliveryRelationOnlyUpdatedAt =
+            updateDeliveryRelationOnlyResult.data.updateDelivery.updatedAt;
         // updatedAt must not have been changed, because only a relation was modified.
         expect(updateDeliveryRelationOnlyUpdatedAt).to.equal(updateUpdatedAt);
 
         // update delivery item and remove delivery.
-        const preparedUpdateDeliveryItemRelationOnly = updateDeliveryItemRelationOnly.replace('%itemId%', itemId);
+        const preparedUpdateDeliveryItemRelationOnly = updateDeliveryItemRelationOnly.replace(
+            '%itemId%',
+            itemId,
+        );
         const updateDeliveryItemRelationOnlyResult: any = await execute(
             schema,
             parse(preparedUpdateDeliveryItemRelationOnly),
-            {}
+            {},
         );
-        const updateItemCreatedAt = updateDeliveryItemRelationOnlyResult.data.updateDeliveryItem.createdAt;
-        const updateItemUpdatedAt = updateDeliveryItemRelationOnlyResult.data.updateDeliveryItem.updatedAt;
+        const updateItemCreatedAt =
+            updateDeliveryItemRelationOnlyResult.data.updateDeliveryItem.createdAt;
+        const updateItemUpdatedAt =
+            updateDeliveryItemRelationOnlyResult.data.updateDeliveryItem.updatedAt;
 
         // item createdAt and updatedAt still the same
         expect(updateItemCreatedAt).to.equal(createItemCreatedAt);

@@ -27,23 +27,33 @@ export class RootTypesGenerator {
 
     private readonly enumTypeGenerator = new EnumTypeGenerator();
     private readonly filterTypeGenerator = new FilterTypeGenerator(this.enumTypeGenerator);
-    private readonly flexSearchFilterTypeGenerator = new FlexSearchFilterTypeGenerator(this.enumTypeGenerator);
+    private readonly flexSearchFilterTypeGenerator = new FlexSearchFilterTypeGenerator(
+        this.enumTypeGenerator,
+    );
     private readonly orderByEnumGenerator = new OrderByEnumGenerator({
-        maxRootEntityDepth: this.options.maxOrderByRootEntityDepth
+        maxRootEntityDepth: this.options.maxOrderByRootEntityDepth,
     });
     private readonly rootFieldHelper = new RootFieldHelper();
     private readonly orderByAugmentation = new OrderByAndPaginationAugmentation(
         this.orderByEnumGenerator,
-        this.rootFieldHelper
+        this.rootFieldHelper,
     );
-    private readonly filterAugmentation = new FilterAugmentation(this.filterTypeGenerator, this.rootFieldHelper);
+    private readonly filterAugmentation = new FilterAugmentation(
+        this.filterTypeGenerator,
+        this.rootFieldHelper,
+    );
     private readonly flexSearchFilterAugmentation = new FlexSearchPostFilterAugmentation(
         this.filterTypeGenerator,
-        this.rootFieldHelper
+        this.rootFieldHelper,
     );
-    private readonly listAugmentation = new ListAugmentation(this.filterAugmentation, this.orderByAugmentation);
+    private readonly listAugmentation = new ListAugmentation(
+        this.filterAugmentation,
+        this.orderByAugmentation,
+    );
     private readonly metaFirstAugmentation = new MetaFirstAugmentation();
-    private readonly uniqueFieldArgumentsGenerator = new UniqueFieldArgumentsGenerator(this.enumTypeGenerator);
+    private readonly uniqueFieldArgumentsGenerator = new UniqueFieldArgumentsGenerator(
+        this.enumTypeGenerator,
+    );
 
     private readonly metaTypeGenerator = new MetaTypeGenerator();
     private readonly outputTypeGenerator = new OutputTypeGenerator(
@@ -52,18 +62,18 @@ export class RootTypesGenerator {
         this.enumTypeGenerator,
         this.orderByEnumGenerator,
         this.metaTypeGenerator,
-        this.rootFieldHelper
+        this.rootFieldHelper,
     );
     private readonly flexSearchGenerator = new FlexSearchGenerator(
         this.flexSearchFilterTypeGenerator,
         this.outputTypeGenerator,
         this.flexSearchFilterAugmentation,
-        this.orderByAugmentation
+        this.orderByAugmentation,
     );
     private readonly createTypeGenerator = new CreateInputTypeGenerator(this.enumTypeGenerator);
     private readonly updateTypeGenerator = new UpdateInputTypeGenerator(
         this.enumTypeGenerator,
-        this.createTypeGenerator
+        this.createTypeGenerator,
     );
     private readonly queryTypeGenerator = new QueryTypeGenerator(
         this.outputTypeGenerator,
@@ -72,7 +82,7 @@ export class RootTypesGenerator {
         this.metaFirstAugmentation,
         this.metaTypeGenerator,
         this.flexSearchGenerator,
-        this.uniqueFieldArgumentsGenerator
+        this.uniqueFieldArgumentsGenerator,
     );
 
     private readonly billingTypeGenerator = new BillingTypeGenerator(this.outputTypeGenerator);
@@ -82,7 +92,7 @@ export class RootTypesGenerator {
         this.updateTypeGenerator,
         this.listAugmentation,
         this.billingTypeGenerator,
-        this.uniqueFieldArgumentsGenerator
+        this.uniqueFieldArgumentsGenerator,
     );
 
     @memorize()

@@ -1,74 +1,74 @@
 {
-    "roles": ["users"],
-    "rootEntities": {
-        "Root": [
-            {
-                "@id": "1",
-                "name": "r1",
-                "children": [
-                    {
-                        "name": "r1c1",
-                        "children": [
-                            {
-                                "name": "r1c1g1"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "@id": "2",
-                "name": "r2",
-                "children": [
-                    {
-                        "name": "r2c1",
-                        "children": [
-                            {
-                                "name": "r2c1g1"
-                            },
-                            {
-                                "name": "r2c1g2"
-                            }
-                        ],
-                        "extension": {
-                            "children": [
-                                {
-                                    "name": "r2c1eg1"
-                                },
-                                {
-                                    "name": "r2c1eg2"
-                                }
-                            ]
-                        }
-                    },
-                    {
-                        "name": "r2c2",
-                        "children": [
-                            {
-                                "name": "r2c2g1"
-                            },
-                            {
-                                "name": "r2c2g2"
-                            }
-                        ],
-                        "extension": {
-                            "children": [
-                                {
-                                    "name": "r2c2eg1"
-                                },
-                                {
-                                    "name": "r2c2ge2"
-                                }
-                            ]
-                        }
-                    }
-                ]
-            }
-        ],
-        "Root2": [
-            {
-                "@id": "1"
-            }
+  "roles": ["users"],
+  "rootEntities": {
+    "Root": [
+      {
+        "@id": "1",
+        "name": "r1",
+        "children": [
+          {
+            "name": "r1c1",
+            "children": [
+              {
+                "name": "r1c1g1"
+              }
+            ]
+          }
         ]
-    }
+      },
+      {
+        "@id": "2",
+        "name": "r2",
+        "children": [
+          {
+            "name": "r2c1",
+            "children": [
+              {
+                "name": "r2c1g1"
+              },
+              {
+                "name": "r2c1g2"
+              }
+            ],
+            "extension": {
+              "children": [
+                {
+                  "name": "r2c1eg1"
+                },
+                {
+                  "name": "r2c1eg2"
+                }
+              ]
+            }
+          },
+          {
+            "name": "r2c2",
+            "children": [
+              {
+                "name": "r2c2g1"
+              },
+              {
+                "name": "r2c2g2"
+              }
+            ],
+            "extension": {
+              "children": [
+                {
+                  "name": "r2c2eg1"
+                },
+                {
+                  "name": "r2c2ge2"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "Root2": [
+      {
+        "@id": "1"
+      }
+    ]
+  }
 }

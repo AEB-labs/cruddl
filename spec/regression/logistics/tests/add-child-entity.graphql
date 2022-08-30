@@ -1,10 +1,5 @@
 mutation add {
-    updateDelivery(input: {
-        id: "@{ids/Delivery/1}",
-        addItems: [{
-            itemNumber: "1234"
-        }]
-    }) {
+    updateDelivery(input: { id: "@{ids/Delivery/1}", addItems: [{ itemNumber: "1234" }] }) {
         items {
             itemNumber
         }

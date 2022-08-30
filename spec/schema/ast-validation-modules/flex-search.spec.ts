@@ -9,7 +9,7 @@ describe('flexSearch', () => {
                     name: String
                 }
             `,
-                'The provided flexSearchOrder is invalid. It must be a path that evaluates to a scalar value and the full path must be annotated with flexSearch.'
+                'The provided flexSearchOrder is invalid. It must be a path that evaluates to a scalar value and the full path must be annotated with flexSearch.',
             );
         });
     });

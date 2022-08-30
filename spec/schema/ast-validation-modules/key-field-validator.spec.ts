@@ -5,7 +5,7 @@ import {
     assertValidatorAcceptsAndDoesNotWarn,
     assertValidatorRejects,
     assertValidatorWarns,
-    validate
+    validate,
 } from './helpers';
 
 describe('key field validator', () => {
@@ -18,8 +18,12 @@ describe('key field validator', () => {
         `);
         expect(validationResult.hasErrors()).to.be.true;
         expect(validationResult.messages.length, validationResult.toString()).to.equal(2);
-        expect(validationResult.messages[0].message).to.equal('Only one field can be a @key field.');
-        expect(validationResult.messages[1].message).to.equal('Only one field can be a @key field.');
+        expect(validationResult.messages[0].message).to.equal(
+            'Only one field can be a @key field.',
+        );
+        expect(validationResult.messages[1].message).to.equal(
+            'Only one field can be a @key field.',
+        );
     });
 
     it('finds bad type usage', () => {
@@ -33,7 +37,7 @@ describe('key field validator', () => {
                 count: Int
             }
         `,
-            `Only fields of type "String", "Int", "Int53", "ID", "LocalDate", and enum types can be used as key field.`
+            `Only fields of type "String", "Int", "Int53", "ID", "LocalDate", and enum types can be used as key field.`,
         );
     });
 
@@ -45,7 +49,7 @@ describe('key field validator', () => {
                 bar: [Int] @key
             }
         `,
-            'List fields cannot be used as key field.'
+            'List fields cannot be used as key field.',
         );
     });
 
@@ -56,7 +60,7 @@ describe('key field validator', () => {
                 foo: String @key
             }
         `,
-            'A @key field can only be declared on root entities.'
+            'A @key field can only be declared on root entities.',
         );
     });
 
@@ -77,7 +81,7 @@ describe('key field validator', () => {
                 bar: JSON @key
             }
         `,
-            'Only fields of type "String", "Int", "Int53", "ID", "LocalDate", and enum types can be used as key field.'
+            'Only fields of type "String", "Int", "Int53", "ID", "LocalDate", and enum types can be used as key field.',
         );
     });
 
@@ -114,7 +118,7 @@ describe('key field validator', () => {
                 test: String
             }
         `,
-            'The field "id" is redundant and should only be explicitly added when used with @key.'
+            'The field "id" is redundant and should only be explicitly added when used with @key.',
         );
     });
 
@@ -126,7 +130,7 @@ describe('key field validator', () => {
                 test: String
             }
         `,
-            'The field "_key" is deprecated and should be replaced with "id" (of type "ID").'
+            'The field "_key" is deprecated and should be replaced with "id" (of type "ID").',
         );
     });
 
@@ -138,7 +142,7 @@ describe('key field validator', () => {
                 test: String
             }
         `,
-            'The field "id" must be of type "ID".'
+            'The field "id" must be of type "ID".',
         );
     });
 
@@ -150,7 +154,7 @@ describe('key field validator', () => {
                 test: String
             }
         `,
-            'The field "id" must be of type "ID".'
+            'The field "id" must be of type "ID".',
         );
     });
 
@@ -162,7 +166,7 @@ describe('key field validator', () => {
                 test: String
             }
         `,
-            'The field name "_key" is reserved and can only be used in combination with @key.'
+            'The field name "_key" is reserved and can only be used in combination with @key.',
         );
     });
 
@@ -174,7 +178,7 @@ describe('key field validator', () => {
                 id: ID @key
             }
         `,
-            'Object type "Stuff" does not declare any fields.'
+            'Object type "Stuff" does not declare any fields.',
         );
     });
 
@@ -186,7 +190,7 @@ describe('key field validator', () => {
                 _internal: String
             }
         `,
-            'Field names cannot start with an underscore.'
+            'Field names cannot start with an underscore.',
         );
     });
 });

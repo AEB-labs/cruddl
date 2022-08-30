@@ -1,5 +1,5 @@
 {
-  "roles": [ "admin" ],
+  "roles": ["admin"],
   "rootEntities": {
     "Paper": [
       {
@@ -9,21 +9,14 @@
         "publishDate": "2017-04-05",
         "isPublished": true,
         "literatureReferences": [],
-        "tags": [
-          "object-oriented",
-          "modeling",
-          "design"
-        ],
+        "tags": ["object-oriented", "modeling", "design"],
         "categories": ["ITScience", "Programming"]
       },
       {
         "@id": "2",
         "key": "UML",
         "literatureReferences": [],
-        "tags": [
-          "uml",
-          "specification"
-        ],
+        "tags": ["uml", "specification"],
         "title": "Unified modeling language reference manual, the"
       },
       {
@@ -33,9 +26,7 @@
         "publishDate": "2017-04-05",
         "isPublished": true,
         "literatureReferences": [],
-        "tags": [
-          "nosql"
-        ],
+        "tags": ["nosql"],
         "categories": ["ITScience", "Programming", "BusinessInformatics"]
       },
       {
@@ -61,10 +52,7 @@
             }
           }
         ],
-        "tags": [
-          "cap-theorem",
-          "databases"
-        ],
+        "tags": ["cap-theorem", "databases"],
         "categories": ["Programming", "Telecommunications"]
       },
       {
@@ -72,18 +60,13 @@
         "key": "Scal",
         "isPublished": true,
         "publishDate": "2017-04-05",
-        "tags": [
-          "nosql"
-        ],
+        "tags": ["nosql"],
         "categories": ["Programming"],
         "title": "Scalable SQL and NoSQL data stores",
         "literatureReferences": [
           {
             "paper": "Part",
-            "authors": [
-              "Seth Gilbert",
-              "Nancy Lynch"
-            ],
+            "authors": ["Seth Gilbert", "Nancy Lynch"],
             "pages": {
               "startPage": 51,
               "endPage": 59

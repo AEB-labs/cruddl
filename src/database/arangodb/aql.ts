@@ -120,7 +120,7 @@ export abstract class AQLFragment {
         return {
             code,
             boundValues: context.getBoundValueMap(),
-            usedResultVariables: context.getPreExecInjectedVariablesMap()
+            usedResultVariables: context.getPreExecInjectedVariablesMap(),
         };
     }
 
@@ -206,16 +206,20 @@ export class AQLCollection extends AQLFragment {
         super();
         if (typeof collectionName !== 'string') {
             throw new Error(
-                `Tried to create AQLCollection with a parameter that is not a string but ${typeof collectionName}`
+                `Tried to create AQLCollection with a parameter that is not a string but ${typeof collectionName}`,
             );
         }
         // test this here so we are sure we can use it safely as bind parameter name
         if (!collectionName.match(/^[a-zA-Z0-9_]+$/)) {
-            throw new Error(`Collection name does not follow conventions: ${JSON.stringify(collectionName)}`);
+            throw new Error(
+                `Collection name does not follow conventions: ${JSON.stringify(collectionName)}`,
+            );
         }
         // no need for these, so be safe
         if (collectionName.startsWith('_')) {
-            throw new Error(`Tried to create AQLCollection with system collection (starts with _): ${collectionName}`);
+            throw new Error(
+                `Tried to create AQLCollection with system collection (starts with _): ${collectionName}`,
+            );
         }
         if (collectionName.startsWith('v_')) {
             // catch this early - shouldn't happen (v is not a plural), and could cause collisions with variables
@@ -242,15 +246,15 @@ export class AQLCompoundFragment extends AQLFragment {
     }
 
     isEmpty() {
-        return this.fragments.length == 0 || this.fragments.every(fr => fr.isEmpty());
+        return this.fragments.length == 0 || this.fragments.every((fr) => fr.isEmpty());
     }
 
     toStringWithContext(context: AQLCodeBuildingContext): string {
-        return this.fragments.map(fr => fr.toStringWithContext(context)).join('');
+        return this.fragments.map((fr) => fr.toStringWithContext(context)).join('');
     }
 
     toColoredStringWithContext(context: AQLCodeBuildingContext): string {
-        return this.fragments.map(fr => fr.toColoredStringWithContext(context)).join('');
+        return this.fragments.map((fr) => fr.toColoredStringWithContext(context)).join('');
     }
 
     getCodeWithContext(context: AQLCodeBuildingContext): string {
@@ -314,10 +318,16 @@ export function aql(
                 fragments.push(...value.fragments);
             } else if (value instanceof AQLFragment) {
                 fragments.push(value);
-            } else if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+            } else if (
+                typeof value === 'string' ||
+                typeof value === 'number' ||
+                typeof value === 'boolean'
+            ) {
                 fragments.push(new AQLBoundValue(value));
             } else {
-                throw new Error(`aql: Received a value that is neither an AQLFragment, nor a primitive`);
+                throw new Error(
+                    `aql: Received a value that is neither an AQLFragment, nor a primitive`,
+                );
             }
         }
     }
@@ -419,7 +429,7 @@ export class AQLCompoundQuery extends AQLFragment {
         public readonly resultVar: AQLQueryResultVariable | undefined,
         public readonly resultValidator: QueryResultValidator | undefined,
         public readonly readAccessedCollections: string[],
-        public readonly writeAccessedCollections: string[]
+        public readonly writeAccessedCollections: string[],
     ) {
         super();
     }
@@ -435,10 +445,10 @@ export class AQLCompoundQuery extends AQLFragment {
     }
 
     private getExecutableQueriesRecursive(
-        resultVarToNameMap: Map<AQLQueryResultVariable, string>
+        resultVarToNameMap: Map<AQLQueryResultVariable, string>,
     ): AQLExecutableQuery[] {
-        const executableQueries = flatMap(this.preExecQueries, aqlQuery =>
-            aqlQuery.getExecutableQueriesRecursive(resultVarToNameMap)
+        const executableQueries = flatMap(this.preExecQueries, (aqlQuery) =>
+            aqlQuery.getExecutableQueriesRecursive(resultVarToNameMap),
         );
 
         const { code, boundValues, usedResultVariables } = this.aqlQuery.getCode();
@@ -461,7 +471,7 @@ export class AQLCompoundQuery extends AQLFragment {
         let queryResultValidator = undefined;
         if (this.resultValidator) {
             queryResultValidator = {
-                [this.resultValidator.getValidatorName()]: this.resultValidator.getValidatorData()
+                [this.resultValidator.getValidatorName()]: this.resultValidator.getValidatorData(),
             };
         }
 
@@ -470,7 +480,7 @@ export class AQLCompoundQuery extends AQLFragment {
             boundValues,
             usedResultNames,
             queryResultName,
-            queryResultValidator
+            queryResultValidator,
         );
         return [...executableQueries, executableQuery];
     }
@@ -478,9 +488,15 @@ export class AQLCompoundQuery extends AQLFragment {
     //TODO Refactor the following three methods. AQLCompoundQuery isn't a real AQLFragment.
     //TODO Include read/write accessed collections in output
     toStringWithContext(context: AQLCodeBuildingContext): string {
-        let descriptions = this.preExecQueries.map(aqlQuery => aqlQuery.toStringWithContext(context));
-        const varDescription = this.resultVar ? this.resultVar.toStringWithContext(context) + ' = ' : '';
-        const validatorDescription = this.resultValidator ? ' validate result ' + this.resultValidator.describe() : '';
+        let descriptions = this.preExecQueries.map((aqlQuery) =>
+            aqlQuery.toStringWithContext(context),
+        );
+        const varDescription = this.resultVar
+            ? this.resultVar.toStringWithContext(context) + ' = '
+            : '';
+        const validatorDescription = this.resultValidator
+            ? ' validate result ' + this.resultValidator.describe()
+            : '';
         const execDescription =
             varDescription +
             'execute(\n' +
@@ -493,9 +509,15 @@ export class AQLCompoundQuery extends AQLFragment {
     }
 
     toColoredStringWithContext(context: AQLCodeBuildingContext): string {
-        let descriptions = this.preExecQueries.map(aqlQuery => aqlQuery.toColoredStringWithContext(context));
-        const varDescription = this.resultVar ? this.resultVar.toColoredStringWithContext(context) + ' = ' : '';
-        const validatorDescription = this.resultValidator ? ' validate result ' + this.resultValidator.describe() : '';
+        let descriptions = this.preExecQueries.map((aqlQuery) =>
+            aqlQuery.toColoredStringWithContext(context),
+        );
+        const varDescription = this.resultVar
+            ? this.resultVar.toColoredStringWithContext(context) + ' = '
+            : '';
+        const validatorDescription = this.resultValidator
+            ? ' validate result ' + this.resultValidator.describe()
+            : '';
         const execDescription =
             varDescription +
             'execute(\n' +
@@ -508,7 +530,9 @@ export class AQLCompoundQuery extends AQLFragment {
     }
 
     getCodeWithContext(context: AQLCodeBuildingContext): string {
-        throw new Error('Unsupported Operation. AQLCompoundQuery can not provide a single AQL statement.');
+        throw new Error(
+            'Unsupported Operation. AQLCompoundQuery can not provide a single AQL statement.',
+        );
     }
 }
 
@@ -521,6 +545,6 @@ export class AQLExecutableQuery {
         public readonly boundValues: { [p: string]: any },
         public readonly usedPreExecResultNames: { [p: string]: string },
         public readonly resultName?: string,
-        public readonly resultValidator?: { [name: string]: any }
+        public readonly resultValidator?: { [name: string]: any },
     ) {}
 }

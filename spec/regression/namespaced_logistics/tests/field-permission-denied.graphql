@@ -1,7 +1,12 @@
 mutation prepare {
     logistics {
         delivery {
-            updateHandlingUnit(input: { id: "@{ids/logistics.delivery.HandlingUnit/1}", delivery:  "@{ids/logistics.delivery.Delivery/1}" }) {
+            updateHandlingUnit(
+                input: {
+                    id: "@{ids/logistics.delivery.HandlingUnit/1}"
+                    delivery: "@{ids/logistics.delivery.Delivery/1}"
+                }
+            ) {
                 huNumber
             }
         }
@@ -43,7 +48,6 @@ query select {
 # this is separate because they are non-nullable and tus set the whole data property to null
 query selectMeta {
     logistics {
-
         # these are forbidden on type level
         allForwarders {
             name
@@ -58,19 +62,33 @@ query selectMeta {
 query filter {
     logistics {
         delivery {
-            direct: allDeliveries(filter: { id: "@{ids/logistics.delivery.Delivery/1}", totalValue: "EUR 5.50"}) {
+            direct: allDeliveries(
+                filter: { id: "@{ids/logistics.delivery.Delivery/1}", totalValue: "EUR 5.50" }
+            ) {
                 deliveryNumber
             }
 
-            startsWith: allDeliveries(filter: { id: "@{ids/logistics.delivery.Delivery/1}", totalValue_starts_with: "EUR"}) {
+            startsWith: allDeliveries(
+                filter: {
+                    id: "@{ids/logistics.delivery.Delivery/1}"
+                    totalValue_starts_with: "EUR"
+                }
+            ) {
                 deliveryNumber
             }
 
-            throughRelation: allHandlingUnits(filter: { id: "@{ids/logistics.delivery.HandlingUnit/1}", delivery: {totalValue: "EUR 5.50"}}) {
+            throughRelation: allHandlingUnits(
+                filter: {
+                    id: "@{ids/logistics.delivery.HandlingUnit/1}"
+                    delivery: { totalValue: "EUR 5.50" }
+                }
+            ) {
                 huNumber
             }
 
-            toUnaccessibleEntity: allDeliveries(filter: { id: "@{ids/logistics.delivery.Delivery/1}", forwarder: {name: "DHL"}}) {
+            toUnaccessibleEntity: allDeliveries(
+                filter: { id: "@{ids/logistics.delivery.Delivery/1}", forwarder: { name: "DHL" } }
+            ) {
                 deliveryNumber
             }
         }
@@ -85,12 +103,17 @@ query filter {
 query sort {
     logistics {
         delivery {
-
-            direct: allDeliveries(filter: { id: "@{ids/logistics.delivery.Delivery/1}" }, orderBy: totalValue_ASC) {
+            direct: allDeliveries(
+                filter: { id: "@{ids/logistics.delivery.Delivery/1}" }
+                orderBy: totalValue_ASC
+            ) {
                 deliveryNumber
             }
 
-            throughRelation: allHandlingUnits(filter: { id: "@{ids/logistics.delivery.Delivery/1}" }, orderBy: delivery_totalValue_DESC) {
+            throughRelation: allHandlingUnits(
+                filter: { id: "@{ids/logistics.delivery.Delivery/1}" }
+                orderBy: delivery_totalValue_DESC
+            ) {
                 huNumber
             }
         }
@@ -100,11 +123,11 @@ query sort {
 mutation create {
     logistics {
         delivery {
-            createDelivery(input: {totalValue: "EUR 5.50"}) {
+            createDelivery(input: { totalValue: "EUR 5.50" }) {
                 deliveryNumber
             }
         }
-        createForwarder(input: { name: "DPD"}) {
+        createForwarder(input: { name: "DPD" }) {
             name
         }
     }
@@ -113,16 +136,20 @@ mutation create {
 mutation update {
     logistics {
         delivery {
-            updateDelivery(input: { id: "@{ids/logistics.delivery.Delivery/1}", totalValue: "EUR 5.50"}) {
+            updateDelivery(
+                input: { id: "@{ids/logistics.delivery.Delivery/1}", totalValue: "EUR 5.50" }
+            ) {
                 deliveryNumber
             }
 
             # this should not be executed because the other mutations fail
-            update2: updateDelivery(input: { id: "@{ids/logistics.delivery.Delivery/1}", deliveryNumber: "2" }) {
+            update2: updateDelivery(
+                input: { id: "@{ids/logistics.delivery.Delivery/1}", deliveryNumber: "2" }
+            ) {
                 deliveryNumber
             }
         }
-        updateForwarder(input: { id: "@{ids/logistics.Forwarder/1}", name: "DPD"}) {
+        updateForwarder(input: { id: "@{ids/logistics.Forwarder/1}", name: "DPD" }) {
             name
         }
     }

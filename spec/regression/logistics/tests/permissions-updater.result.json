@@ -1,56 +1,56 @@
 {
-    "create": {
-        "errors": [
-            {
-                "message": "Not authorized to create Delivery objects",
-                "locations": [
-                    {
-                        "line": 2,
-                        "column": 5
-                    }
-                ],
-                "path": ["createDelivery"]
-            }
+  "create": {
+    "errors": [
+      {
+        "message": "Not authorized to create Delivery objects",
+        "locations": [
+          {
+            "line": 2,
+            "column": 5
+          }
         ],
-        "data": null
-    },
-    "update": {
-        "data": {
-            "updateDelivery": {
-                "deliveryNumber": "updated"
-            }
-        }
-    },
-    "delete": {
-        "errors": [
-            {
-                "message": "Not authorized to delete Delivery objects",
-                "locations": [
-                    {
-                        "line": 14,
-                        "column": 5
-                    }
-                ],
-                "path": ["deleteDelivery"]
-            }
-        ],
-        "data": {
-            "deleteDelivery": null
-        }
-    },
-    "list": {
-        "data": {
-            "allDeliveries": [
-                {
-                    "deliveryNumber": "1000521"
-                },
-                {
-                    "deliveryNumber": "1000522"
-                },
-                {
-                    "deliveryNumber": "updated"
-                }
-            ]
-        }
+        "path": ["createDelivery"]
+      }
+    ],
+    "data": null
+  },
+  "update": {
+    "data": {
+      "updateDelivery": {
+        "deliveryNumber": "updated"
+      }
     }
+  },
+  "delete": {
+    "errors": [
+      {
+        "message": "Not authorized to delete Delivery objects",
+        "locations": [
+          {
+            "line": 14,
+            "column": 5
+          }
+        ],
+        "path": ["deleteDelivery"]
+      }
+    ],
+    "data": {
+      "deleteDelivery": null
+    }
+  },
+  "list": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000521"
+        },
+        {
+          "deliveryNumber": "1000522"
+        },
+        {
+          "deliveryNumber": "updated"
+        }
+      ]
+    }
+  }
 }

@@ -18,7 +18,7 @@ import {
     UnaryOperator,
     UpdateEntitiesQueryNode,
     VariableQueryNode,
-    WithPreExecutionQueryNode
+    WithPreExecutionQueryNode,
 } from '../../query-tree';
 import { decapitalize } from '../../utils/utils';
 import { AccessOperation, AuthContext } from '../auth-basics';
@@ -27,18 +27,24 @@ import { getPermissionDescriptorOfRootEntityType } from '../permission-descripto
 
 type Action = 'update' | 'delete';
 
-export function transformUpdateEntitiesQueryNode(node: UpdateEntitiesQueryNode, authContext: AuthContext): QueryNode {
+export function transformUpdateEntitiesQueryNode(
+    node: UpdateEntitiesQueryNode,
+    authContext: AuthContext,
+): QueryNode {
     return transformUpdateOrDeleteEntitiesQueryNode(node, authContext, AccessOperation.UPDATE);
 }
 
-export function transformDeleteEntitiesQueryNode(node: DeleteEntitiesQueryNode, authContext: AuthContext): QueryNode {
+export function transformDeleteEntitiesQueryNode(
+    node: DeleteEntitiesQueryNode,
+    authContext: AuthContext,
+): QueryNode {
     return transformUpdateOrDeleteEntitiesQueryNode(node, authContext, AccessOperation.DELETE);
 }
 
 function transformUpdateOrDeleteEntitiesQueryNode(
     node: UpdateEntitiesQueryNode | DeleteEntitiesQueryNode,
     authContext: AuthContext,
-    operation: AccessOperation.UPDATE | AccessOperation.DELETE
+    operation: AccessOperation.UPDATE | AccessOperation.DELETE,
 ): QueryNode {
     const actionDescription = operation === AccessOperation.UPDATE ? 'update' : 'delete';
     const permissionDescriptor = getPermissionDescriptorOfRootEntityType(node.rootEntityType);
@@ -48,7 +54,7 @@ function transformUpdateOrDeleteEntitiesQueryNode(
         case PermissionResult.DENIED:
             return new RuntimeErrorQueryNode(
                 `Not authorized to ${actionDescription} ${node.rootEntityType.name} objects`,
-                { code: PERMISSION_DENIED_ERROR }
+                { code: PERMISSION_DENIED_ERROR },
             );
         case PermissionResult.GRANTED:
             return node;
@@ -63,24 +69,31 @@ function transformUpdateOrDeleteEntitiesQueryNode(
     // see if any entities matched by the filter are write-restricted
     const listItemVar = new VariableQueryNode(decapitalize(node.rootEntityType.name));
     let entityNode: QueryNode = listItemVar;
-    if (node instanceof DeleteEntitiesQueryNode && node.entitiesIdentifierKind === EntitiesIdentifierKind.ID) {
+    if (
+        node instanceof DeleteEntitiesQueryNode &&
+        node.entitiesIdentifierKind === EntitiesIdentifierKind.ID
+    ) {
         entityNode = new EntityFromIdQueryNode(node.rootEntityType, listItemVar);
     }
-    const rawWriteCondition = permissionDescriptor.getAccessCondition(authContext, operation, entityNode);
+    const rawWriteCondition = permissionDescriptor.getAccessCondition(
+        authContext,
+        operation,
+        entityNode,
+    );
     const canWrite = getIsTrueInEachItemQueryNode(node.listNode, listItemVar, rawWriteCondition);
     const explanation = permissionDescriptor.getExplanationForCondition(
         authContext,
         operation,
-        ConditionExplanationContext.BEFORE_WRITE
+        ConditionExplanationContext.BEFORE_WRITE,
     );
     let preExecQueries: PreExecQueryParms[] = [
         new PreExecQueryParms({
             query: canWrite,
             resultValidator: new ErrorIfNotTruthyResultValidator({
                 errorCode: PERMISSION_DENIED_ERROR,
-                errorMessage: `Not authorized to ${actionDescription} ${explanation}`
-            })
-        })
+                errorMessage: `Not authorized to ${actionDescription} ${explanation}`,
+            }),
+        }),
     ];
 
     // if we're updating, check if we would be able to update the objects after we changed them
@@ -90,57 +103,68 @@ function transformUpdateOrDeleteEntitiesQueryNode(
         // this is the most general approach, but also inefficient because it constructs the whole "post-update" objects just to check one field which may not even have been modified
         // TODO add a fast-lane way for PermissionDescriptors to statically check updated values? Or at least to specify that they don't need the merge?
         const updateItemVar = node.currentEntityVariable;
-        const postUpdateNode = new MergeObjectsQueryNode([updateItemVar, new ObjectQueryNode(node.updates)]); // { ...itemVar, ...{ node.updates... } }
+        const postUpdateNode = new MergeObjectsQueryNode([
+            updateItemVar,
+            new ObjectQueryNode(node.updates),
+        ]); // { ...itemVar, ...{ node.updates... } }
         const writeConditionPostUpdate = permissionDescriptor.getAccessCondition(
             authContext,
             operation,
-            postUpdateNode
+            postUpdateNode,
         );
         const explanation = permissionDescriptor.getExplanationForCondition(
             authContext,
             operation,
-            ConditionExplanationContext.SET
+            ConditionExplanationContext.SET,
         );
         const canWriteTheseValues = getIsTrueInEachItemQueryNode(
             node.listNode,
             updateItemVar,
-            writeConditionPostUpdate
+            writeConditionPostUpdate,
         );
         preExecQueries.push(
             new PreExecQueryParms({
                 query: canWriteTheseValues,
                 resultValidator: new ErrorIfNotTruthyResultValidator({
                     errorCode: PERMISSION_DENIED_ERROR,
-                    errorMessage: `Not authorized to ${explanation}`
-                })
-            })
+                    errorMessage: `Not authorized to ${explanation}`,
+                }),
+            }),
         );
     }
 
     return new WithPreExecutionQueryNode({
         resultNode: node,
-        preExecQueries
+        preExecQueries,
     });
 }
 
-function getIsTrueInEachItemQueryNode(listNode: QueryNode, itemVarNode: VariableQueryNode, condition: QueryNode) {
+function getIsTrueInEachItemQueryNode(
+    listNode: QueryNode,
+    itemVarNode: VariableQueryNode,
+    condition: QueryNode,
+) {
     // items.map(itemVar => !condition(itemVar)).length == 0
     const entitiesWithWriteRestrictions = getFilteredListQueryNode(
         listNode,
         itemVarNode,
-        new UnaryOperationQueryNode(condition, UnaryOperator.NOT)
+        new UnaryOperationQueryNode(condition, UnaryOperator.NOT),
     );
     return new BinaryOperationQueryNode(
         new CountQueryNode(entitiesWithWriteRestrictions),
         BinaryOperator.EQUAL,
-        ConstIntQueryNode.ZERO
+        ConstIntQueryNode.ZERO,
     );
 }
 
-function getFilteredListQueryNode(listNode: QueryNode, itemVarNode: VariableQueryNode, condition: QueryNode) {
+function getFilteredListQueryNode(
+    listNode: QueryNode,
+    itemVarNode: VariableQueryNode,
+    condition: QueryNode,
+) {
     return new TransformListQueryNode({
         itemVariable: itemVarNode,
         listNode: listNode,
-        filterNode: condition
+        filterNode: condition,
     });
 }

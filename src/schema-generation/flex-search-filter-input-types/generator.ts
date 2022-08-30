@@ -6,7 +6,7 @@ import {
     BinaryOperatorWithAnalyzer,
     LiteralQueryNode,
     QueryNode,
-    RuntimeErrorQueryNode
+    RuntimeErrorQueryNode,
 } from '../../query-tree';
 import { FlexSearchComplexOperatorQueryNode } from '../../query-tree/flex-search';
 import {
@@ -20,21 +20,30 @@ import {
     INPUT_FIELD_NOT_CONTAINS_ALL_WORDS,
     INPUT_FIELD_NOT_CONTAINS_ANY_PREFIX,
     INPUT_FIELD_NOT_CONTAINS_ANY_WORD,
-    INPUT_FIELD_NOT_CONTAINS_PHRASE
+    INPUT_FIELD_NOT_CONTAINS_PHRASE,
 } from '../../schema/constants';
 import { getFlexSearchFilterTypeName } from '../../schema/names';
 import { GraphQLI18nString } from '../../schema/scalars/string-map';
 import { flatMap } from '../../utils/utils';
 import { EnumTypeGenerator } from '../enum-type-generator';
-import { ENUM_FILTER_FIELDS, FILTER_OPERATORS, NUMERIC_FILTER_FIELDS } from '../filter-input-types/constants';
+import {
+    ENUM_FILTER_FIELDS,
+    FILTER_OPERATORS,
+    NUMERIC_FILTER_FIELDS,
+} from '../filter-input-types/constants';
 import { resolveThunk } from '../query-node-object-type';
-import { binaryNotOpWithAnalyzer, binaryOpWithAnaylzer, noAnalyzerWasSuppliedError, not } from '../utils/input-types';
+import {
+    binaryNotOpWithAnalyzer,
+    binaryOpWithAnaylzer,
+    noAnalyzerWasSuppliedError,
+    not,
+} from '../utils/input-types';
 import {
     FLEX_SEARCH_FILTER_FIELDS_BY_TYPE,
     FLEX_SEARCH_FILTER_OPERATORS,
     STRING_FLEX_SEARCH_FILTER_FIELDS,
     STRING_FLEX_SEARCH_FILTER_OPERATORS,
-    STRING_TEXT_ANALYZER_FILTER_FIELDS
+    STRING_TEXT_ANALYZER_FILTER_FIELDS,
 } from './constants';
 import {
     FlexSearchAndFilterField,
@@ -45,7 +54,7 @@ import {
     FlexSearchOrFilterField,
     FlexSearchScalarOrEnumFieldFilterField,
     FlexSearchScalarOrEnumFilterField,
-    I18nStringLocalizedFilterLanguageField
+    I18nStringLocalizedFilterLanguageField,
 } from './filter-fields';
 import { FlexSearchFilterObjectType } from './filter-types';
 
@@ -58,11 +67,14 @@ export class FlexSearchFilterTypeGenerator {
             type,
             () => {
                 return flatMap(
-                    type.fields.filter(value => value.isFlexSearchIndexed || value.isFlexSearchFulltextIndexed),
-                    (field: Field) => this.generateFieldFlexSearchFilterFields(field, isAggregation)
+                    type.fields.filter(
+                        (value) => value.isFlexSearchIndexed || value.isFlexSearchFulltextIndexed,
+                    ),
+                    (field: Field) =>
+                        this.generateFieldFlexSearchFilterFields(field, isAggregation),
                 );
             },
-            isAggregation
+            isAggregation,
         );
         return flexSearchFilterObjectType;
     }
@@ -70,14 +82,14 @@ export class FlexSearchFilterTypeGenerator {
     private generateFlexSearchFilterType(
         type: Type,
         fields: Thunk<ReadonlyArray<FlexSearchFilterField>>,
-        isAggregation: boolean
+        isAggregation: boolean,
     ): FlexSearchFilterObjectType {
         function getFields(): ReadonlyArray<FlexSearchFilterField> {
             const filterFields = [...resolveThunk(fields)];
             if (!isAggregation) {
                 return filterFields.concat([
                     new FlexSearchAndFilterField(filterType),
-                    new FlexSearchOrFilterField(filterType)
+                    new FlexSearchOrFilterField(filterType),
                 ]);
             } else {
                 return filterFields;
@@ -90,14 +102,14 @@ export class FlexSearchFilterTypeGenerator {
             `FlexSearchFilter type for \`${type.name}\`.\n\nAll fields in this type are *and*-combined; see the \`or\` field for *or*-combination.\n` +
             isAggregation
                 ? `An aggregation contains all values of a list. Each check in this type is true if it matches any of the values in the list.`
-                : `Large queries in conjunctive normal form (e.g. (a OR b) AND (c OR d)... ) and should be avoided.`
+                : `Large queries in conjunctive normal form (e.g. (a OR b) AND (c OR d)... ) and should be avoided.`,
         );
         return filterType;
     }
 
     public generateFieldFlexSearchFilterFields(
         field: Field,
-        isAggregation: boolean
+        isAggregation: boolean,
     ): ReadonlyArray<FlexSearchFilterField> {
         if (field.isList) {
             return this.generateListFieldFilterFields(field);
@@ -123,7 +135,9 @@ export class FlexSearchFilterTypeGenerator {
         return [];
     }
 
-    private generateFilterFieldsForNonListScalar(field: Field): ReadonlyArray<FlexSearchFilterField> {
+    private generateFilterFieldsForNonListScalar(
+        field: Field,
+    ): ReadonlyArray<FlexSearchFilterField> {
         if (field.isList || !field.type.isScalarType) {
             throw new Error(`Expected "${field.name}" to be a non-list scalar`);
         }
@@ -134,7 +148,7 @@ export class FlexSearchFilterTypeGenerator {
         if (field.isFlexSearchIndexed) {
             scalarFields = scalarFields.concat(
                 filterFields.map(
-                    name =>
+                    (name) =>
                         new FlexSearchScalarOrEnumFieldFilterField(
                             field,
                             inputType.name === 'String'
@@ -142,37 +156,46 @@ export class FlexSearchFilterTypeGenerator {
                                 : FLEX_SEARCH_FILTER_OPERATORS[name],
                             name === INPUT_FIELD_EQUAL ? undefined : name,
                             inputType,
-                            field.flexSearchAnalyzer
-                        )
-                )
+                            field.flexSearchAnalyzer,
+                        ),
+                ),
             );
         }
 
         if (field.flexSearchLanguage && field.isFlexSearchFulltextIndexed) {
             scalarFields = scalarFields.concat(
                 STRING_TEXT_ANALYZER_FILTER_FIELDS.map(
-                    name =>
+                    (name) =>
                         new FlexSearchScalarOrEnumFieldFilterField(
                             field,
                             this.getComplexFilterOperatorByName(name),
                             name,
                             inputType,
-                            field.getFlexSearchFulltextAnalyzerOrThrow()
-                        )
-                )
+                            field.getFlexSearchFulltextAnalyzerOrThrow(),
+                        ),
+                ),
             );
         }
         return scalarFields;
     }
 
     private getComplexFilterOperatorByName(
-        name: string
-    ): (fieldNode: QueryNode, valueNode: QueryNode, analyzer?: string, path?: ReadonlyArray<Field>) => QueryNode {
+        name: string,
+    ): (
+        fieldNode: QueryNode,
+        valueNode: QueryNode,
+        analyzer?: string,
+        path?: ReadonlyArray<Field>,
+    ) => QueryNode {
         switch (name) {
             case INPUT_FIELD_CONTAINS_ANY_WORD:
-                return binaryOpWithAnaylzer(BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_ANY_WORD);
+                return binaryOpWithAnaylzer(
+                    BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_ANY_WORD,
+                );
             case INPUT_FIELD_NOT_CONTAINS_ANY_WORD:
-                return binaryNotOpWithAnalyzer(BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_ANY_WORD);
+                return binaryNotOpWithAnalyzer(
+                    BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_ANY_WORD,
+                );
             case INPUT_FIELD_CONTAINS_ALL_WORDS:
                 return (fieldNode: QueryNode, valueNode: QueryNode, analyzer?: string) => {
                     if (!analyzer) {
@@ -183,7 +206,7 @@ export class FlexSearchFilterTypeGenerator {
                         BinaryOperator.AND,
                         fieldNode,
                         valueNode,
-                        analyzer
+                        analyzer,
                     );
                 };
             case INPUT_FIELD_NOT_CONTAINS_ALL_WORDS:
@@ -197,8 +220,8 @@ export class FlexSearchFilterTypeGenerator {
                             BinaryOperator.AND,
                             fieldNode,
                             valueNode,
-                            analyzer
-                        )
+                            analyzer,
+                        ),
                     );
                 };
             case INPUT_FIELD_CONTAINS_ANY_PREFIX:
@@ -211,7 +234,7 @@ export class FlexSearchFilterTypeGenerator {
                         BinaryOperator.OR,
                         fieldNode,
                         valueNode,
-                        analyzer
+                        analyzer,
                     );
                 };
             case INPUT_FIELD_NOT_CONTAINS_ANY_PREFIX:
@@ -225,8 +248,8 @@ export class FlexSearchFilterTypeGenerator {
                             BinaryOperator.OR,
                             fieldNode,
                             valueNode,
-                            analyzer
-                        )
+                            analyzer,
+                        ),
                     );
                 };
             case INPUT_FIELD_CONTAINS_ALL_PREFIXES:
@@ -239,7 +262,7 @@ export class FlexSearchFilterTypeGenerator {
                         BinaryOperator.AND,
                         fieldNode,
                         valueNode,
-                        analyzer
+                        analyzer,
                     );
                 };
             case INPUT_FIELD_NOT_CONTAINS_ALL_PREFIXES:
@@ -253,14 +276,16 @@ export class FlexSearchFilterTypeGenerator {
                             BinaryOperator.AND,
                             fieldNode,
                             valueNode,
-                            analyzer
-                        )
+                            analyzer,
+                        ),
                     );
                 };
             case INPUT_FIELD_CONTAINS_PHRASE:
                 return binaryOpWithAnaylzer(BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_PHRASE);
             case INPUT_FIELD_NOT_CONTAINS_PHRASE:
-                return binaryNotOpWithAnalyzer(BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_PHRASE);
+                return binaryNotOpWithAnalyzer(
+                    BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_PHRASE,
+                );
             default:
                 throw new Error(`Complex Filter for '${name}' is not defined.`);
         }
@@ -271,10 +296,12 @@ export class FlexSearchFilterTypeGenerator {
         logicalOperator: BinaryOperator,
         fieldNode: QueryNode,
         valueNode: QueryNode,
-        analyzer: string
+        analyzer: string,
     ): QueryNode {
         if (!(valueNode instanceof LiteralQueryNode) || typeof valueNode.value !== 'string') {
-            throw new Error('FlexSearchComplexFilters requires a LiteralQueryNode with a string-value, as valueNode');
+            throw new Error(
+                'FlexSearchComplexFilters requires a LiteralQueryNode with a string-value, as valueNode',
+            );
         }
         return new FlexSearchComplexOperatorQueryNode(
             valueNode.value,
@@ -282,31 +309,34 @@ export class FlexSearchFilterTypeGenerator {
             logicalOperator,
             fieldNode,
             analyzer,
-            true
+            true,
         );
     }
 
     private generateFilterFieldsForNonListEnumField(
         field: Field,
-        graphQLEnumType: GraphQLEnumType
+        graphQLEnumType: GraphQLEnumType,
     ): FlexSearchFilterField[] {
         if (field.isList || !field.type.isEnumType) {
             throw new Error(`Expected "${field.name}" to be a non-list enum`);
         }
         return ENUM_FILTER_FIELDS.map(
-            name =>
+            (name) =>
                 new FlexSearchScalarOrEnumFieldFilterField(
                     field,
                     FILTER_OPERATORS[name],
                     name === INPUT_FIELD_EQUAL ? undefined : name,
                     graphQLEnumType,
-                    field.flexSearchAnalyzer
-                )
+                    field.flexSearchAnalyzer,
+                ),
         );
     }
 
     @memorize()
-    private generateListFieldFilterFields(field: Field, path?: ReadonlyArray<Field>): FlexSearchFilterField[] {
+    private generateListFieldFilterFields(
+        field: Field,
+        path?: ReadonlyArray<Field>,
+    ): FlexSearchFilterField[] {
         const pathParam = path ? path : [];
         if (field.type instanceof ScalarType) {
             return this.buildFilterFieldsForListScalar(field.type, field, pathParam);
@@ -325,7 +355,7 @@ export class FlexSearchFilterTypeGenerator {
     private buildFilterFieldsForListScalar(
         type: ScalarType,
         field: Field,
-        path?: ReadonlyArray<Field>
+        path?: ReadonlyArray<Field>,
     ): FlexSearchScalarOrEnumFieldFilterField[] {
         const filterFields = this.getFilterFieldsByType(type);
 
@@ -333,7 +363,7 @@ export class FlexSearchFilterTypeGenerator {
         if (field.isFlexSearchIndexed) {
             scalarFields = scalarFields.concat(
                 filterFields.map(
-                    name =>
+                    (name) =>
                         new FlexSearchScalarOrEnumFieldFilterField(
                             field,
                             type.name === 'String'
@@ -342,39 +372,43 @@ export class FlexSearchFilterTypeGenerator {
                             name,
                             type.graphQLScalarType,
                             field.flexSearchAnalyzer,
-                            true
-                        )
-                )
+                            true,
+                        ),
+                ),
             );
         }
 
         if (field.flexSearchLanguage && field.isFlexSearchFulltextIndexed) {
             scalarFields = scalarFields.concat(
                 STRING_TEXT_ANALYZER_FILTER_FIELDS.map(
-                    name =>
+                    (name) =>
                         new FlexSearchScalarOrEnumFieldFilterField(
                             field,
                             this.getComplexFilterOperatorByName(name),
                             name,
                             type.graphQLScalarType,
-                            field.flexSearchFulltextAnalyzer
-                        )
-                )
+                            field.flexSearchFulltextAnalyzer,
+                        ),
+                ),
             );
         }
 
         return scalarFields;
     }
 
-    private buildFilterFieldsForListEnum(type: EnumType, field: Field, path?: ReadonlyArray<Field>) {
-        return ENUM_FILTER_FIELDS.map(name => {
+    private buildFilterFieldsForListEnum(
+        type: EnumType,
+        field: Field,
+        path?: ReadonlyArray<Field>,
+    ) {
+        return ENUM_FILTER_FIELDS.map((name) => {
             return new FlexSearchScalarOrEnumFieldFilterField(
                 field,
                 FLEX_SEARCH_FILTER_OPERATORS[name],
                 name,
                 this.enumTypeGenerator.generate(type),
                 undefined,
-                true
+                true,
             );
         });
     }
@@ -392,42 +426,42 @@ export class FlexSearchFilterTypeGenerator {
                 field,
                 this.generateI18nStringLocalizedFilterObjectType(
                     field.isFlexSearchIndexed,
-                    field.isFlexSearchFulltextIndexed
-                )
-            )
+                    field.isFlexSearchFulltextIndexed,
+                ),
+            ),
         ];
     }
 
     @memorize()
     private generateI18nStringLocalizedFilterObjectType(
         withIdentityIndex: boolean,
-        withFullTextIndex: boolean
+        withFullTextIndex: boolean,
     ): FlexSearchFilterObjectType {
         const fields: FlexSearchFilterField[] = [new I18nStringLocalizedFilterLanguageField()];
         if (withIdentityIndex) {
             fields.push(
                 ...STRING_FLEX_SEARCH_FILTER_FIELDS.map(
-                    operatorName =>
+                    (operatorName) =>
                         new FlexSearchScalarOrEnumFilterField(
                             STRING_FLEX_SEARCH_FILTER_OPERATORS[operatorName],
                             operatorName,
                             GraphQLString,
-                            false
-                        )
-                )
+                            false,
+                        ),
+                ),
             );
         }
         if (withFullTextIndex) {
             fields.push(
                 ...STRING_TEXT_ANALYZER_FILTER_FIELDS.map(
-                    operatorName =>
+                    (operatorName) =>
                         new FlexSearchScalarOrEnumFilterField(
                             this.getComplexFilterOperatorByName(operatorName),
                             operatorName,
                             GraphQLString,
-                            true
-                        )
-                )
+                            true,
+                        ),
+                ),
             );
         }
 
@@ -448,7 +482,7 @@ export class FlexSearchFilterTypeGenerator {
             `I18nStringLocalized${namePart}Filter`,
             fields,
             `Allows to on a specific localization of an \`I18nString\`\n\n` +
-                `The language should be provided in the special \`language\` field. All other fields are *and*-combined. There are no fallback rules for string localization; if there is no localization for the given language, the filter acts as if the field was \`null\`.`
+                `The language should be provided in the special \`language\` field. All other fields are *and*-combined. There are no fallback rules for string localization; if there is no localization for the given language, the filter acts as if the field was \`null\`.`,
         );
     }
 }

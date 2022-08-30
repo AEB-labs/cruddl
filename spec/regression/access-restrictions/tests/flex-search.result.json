@@ -1,14 +1,14 @@
 {
-    "flexAuth": {
-        "data": {
-            "flexSearchFiles": [
-                {
-                    "name": "accounting"
-                },
-                {
-                    "name": "public"
-                }
-            ]
+  "flexAuth": {
+    "data": {
+      "flexSearchFiles": [
+        {
+          "name": "accounting"
+        },
+        {
+          "name": "public"
         }
+      ]
     }
+  }
 }

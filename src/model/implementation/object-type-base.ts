@@ -11,23 +11,33 @@ export abstract class ObjectTypeBase extends TypeBase {
     readonly fields: ReadonlyArray<Field>;
     private readonly fieldMap: ReadonlyMap<string, Field>;
 
-    protected constructor(input: ObjectTypeConfig, model: Model, systemFieldInputs: ReadonlyArray<SystemFieldConfig> = []) {
+    protected constructor(
+        input: ObjectTypeConfig,
+        model: Model,
+        systemFieldInputs: ReadonlyArray<SystemFieldConfig> = [],
+    ) {
         super(input, model);
         const thisAsObjectType: ObjectType = this as any;
-        const customFields = (input.fields || []).map(field => new Field(field, thisAsObjectType));
-        const systemFields = (systemFieldInputs || []).map(input => new Field({...input, isSystemField: true}, thisAsObjectType));
-        this.fields = [
-            ...systemFields,
-            ...customFields
-        ];
-        this.fieldMap = new Map(this.fields.map((field): [string, Field] => [ field.name, field ]));
+        const customFields = (input.fields || []).map(
+            (field) => new Field(field, thisAsObjectType),
+        );
+        const systemFields = (systemFieldInputs || []).map(
+            (input) => new Field({ ...input, isSystemField: true }, thisAsObjectType),
+        );
+        this.fields = [...systemFields, ...customFields];
+        this.fieldMap = new Map(this.fields.map((field): [string, Field] => [field.name, field]));
     }
 
     validate(context: ValidationContext) {
         super.validate(context);
 
-        if (!this.fields.filter(f => !f.isSystemField).length) {
-            context.addMessage(ValidationMessage.error(`Object type "${this.name}" does not declare any fields.`, this.nameASTNode));
+        if (!this.fields.filter((f) => !f.isSystemField).length) {
+            context.addMessage(
+                ValidationMessage.error(
+                    `Object type "${this.name}" does not declare any fields.`,
+                    this.nameASTNode,
+                ),
+            );
         }
 
         this.validateDuplicateFields(context);
@@ -38,9 +48,11 @@ export abstract class ObjectTypeBase extends TypeBase {
     }
 
     private validateDuplicateFields(context: ValidationContext) {
-        const duplicateFields = objectValues(groupBy(this.fields, field => field.name)).filter(fields => fields.length > 1);
+        const duplicateFields = objectValues(groupBy(this.fields, (field) => field.name)).filter(
+            (fields) => fields.length > 1,
+        );
         for (const fields of duplicateFields) {
-            const isSystemFieldCollision = fields.some(field => field.isSystemField);
+            const isSystemFieldCollision = fields.some((field) => field.isSystemField);
             for (const field of fields) {
                 if (field.isSystemField) {
                     // don't report errors for system fields the user didn't even write
@@ -49,15 +61,25 @@ export abstract class ObjectTypeBase extends TypeBase {
 
                 if (isSystemFieldCollision) {
                     // user does not see duplicate field, so provide better message
-                    context.addMessage(ValidationMessage.error(`Field name "${field.name}" is reserved by a system field.`, field.astNode));
+                    context.addMessage(
+                        ValidationMessage.error(
+                            `Field name "${field.name}" is reserved by a system field.`,
+                            field.astNode,
+                        ),
+                    );
                 } else {
-                    context.addMessage(ValidationMessage.error(`Duplicate field name: "${field.name}".`, field.astNode));
+                    context.addMessage(
+                        ValidationMessage.error(
+                            `Duplicate field name: "${field.name}".`,
+                            field.astNode,
+                        ),
+                    );
                 }
             }
         }
     }
 
-    getField(name: string): Field|undefined {
+    getField(name: string): Field | undefined {
         return this.fieldMap.get(name);
     }
 

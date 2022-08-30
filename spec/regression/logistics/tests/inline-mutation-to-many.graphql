@@ -1,11 +1,18 @@
 mutation toManyRelation {
-    createDelivery(input: {deliveryNumber: "10", createHandlingUnits: [{huNumber:"A"},{huNumber:"B"}]}) {
+    createDelivery(
+        input: { deliveryNumber: "10", createHandlingUnits: [{ huNumber: "A" }, { huNumber: "B" }] }
+    ) {
         deliveryNumber
-        handlingUnits{
+        handlingUnits {
             huNumber
         }
     }
-    updateDelivery(input: {id: "@{ids/Delivery/1}", createHandlingUnits: [{huNumber: "C"},{huNumber:"D"}]}){
+    updateDelivery(
+        input: {
+            id: "@{ids/Delivery/1}"
+            createHandlingUnits: [{ huNumber: "C" }, { huNumber: "D" }]
+        }
+    ) {
         handlingUnits {
             huNumber
         }

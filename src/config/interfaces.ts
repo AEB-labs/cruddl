@@ -1,5 +1,9 @@
 import { FragmentDefinitionNode, GraphQLSchema, OperationDefinitionNode } from 'graphql';
-import { DatabaseAdapterTimings, ExecutionPlan, TransactionStats } from '../database/database-adapter';
+import {
+    DatabaseAdapterTimings,
+    ExecutionPlan,
+    TransactionStats,
+} from '../database/database-adapter';
 import { ExecutionOptions, ExecutionOptionsCallbackArgs } from '../execution/execution-options';
 import { FieldResolverParameters } from '../graphql/operation-based-resolvers';
 import { LoggerProvider } from './logging';

@@ -2,19 +2,19 @@ import {
     AffectedFieldInfoQueryNode,
     PERMISSION_DENIED_ERROR,
     QueryNode,
-    RuntimeErrorQueryNode
+    RuntimeErrorQueryNode,
 } from '../../query-tree';
 import { ACCESS_GROUP_FIELD } from '../../schema/constants';
 import { AccessOperation, AuthContext } from '../auth-basics';
 import { PermissionResult } from '../permission-descriptors';
 import {
     getPermissionDescriptorOfField,
-    getPermissionDescriptorOfRootEntityType
+    getPermissionDescriptorOfRootEntityType,
 } from '../permission-descriptors-in-model';
 
 export function transformAffectedFieldInfoQueryNode(
     node: AffectedFieldInfoQueryNode,
-    authContext: AuthContext
+    authContext: AuthContext,
 ): QueryNode {
     const permissionDescriptor = getPermissionDescriptorOfField(node.field);
     // currently, we don't distinguish between CREATE and UPDATE on field permissions. The `readWrite` argument on
@@ -27,11 +27,11 @@ export function transformAffectedFieldInfoQueryNode(
         case PermissionResult.DENIED:
             return new RuntimeErrorQueryNode(
                 `Not authorized to set ${node.field.declaringType.name}.${node.field.name}`,
-                { code: PERMISSION_DENIED_ERROR }
+                { code: PERMISSION_DENIED_ERROR },
             );
         case PermissionResult.CONDITIONAL:
             throw new Error(
-                `Conditional permission profiles are currently not supported on fields, but used in ${node.field.declaringType.name}.${node.field.name}`
+                `Conditional permission profiles are currently not supported on fields, but used in ${node.field.declaringType.name}.${node.field.name}`,
             );
     }
 

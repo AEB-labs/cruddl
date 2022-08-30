@@ -1,8 +1,8 @@
 {
-    "databases": {
-        // recursive traversal as well as @collect with accessGroup is not implemented in InMemoryAdapter
-        "in-memory": {
-            "ignore": true
-        }
+  "databases": {
+    // recursive traversal as well as @collect with accessGroup is not implemented in InMemoryAdapter
+    "in-memory": {
+      "ignore": true
     }
+  }
 }

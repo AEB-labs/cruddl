@@ -17,7 +17,7 @@ const sourceValidators: ReadonlyArray<SourceValidator> = [];
 const parsedProjectSourceValidators: ReadonlyArray<ParsedSourceValidator> = [
     new GraphQLRulesValidator(),
     new SidecarSchemaValidator(),
-    new PermissionProfileValidator()
+    new PermissionProfileValidator(),
 ];
 
 const postMergeValidators: ReadonlyArray<ASTValidator> = [
@@ -25,7 +25,7 @@ const postMergeValidators: ReadonlyArray<ASTValidator> = [
     new NoUnusedNonRootObjectTypesValidator(),
     new NoListsOfListsValidator(),
     new RolesOnNonRootEntityTypesValidator(),
-    new IndicesValidator()
+    new IndicesValidator(),
 ];
 
 export interface ASTValidator {
@@ -41,16 +41,20 @@ export interface SourceValidator {
 }
 
 export function validateSource(source: ProjectSource): ValidationResult {
-    return new ValidationResult(flatMap(sourceValidators, validator => validator.validate(source)));
+    return new ValidationResult(
+        flatMap(sourceValidators, (validator) => validator.validate(source)),
+    );
 }
 
 export function validateParsedProjectSource(source: ParsedProjectSource): ValidationResult {
-    return new ValidationResult(flatMap(parsedProjectSourceValidators, validator => validator.validate(source)));
+    return new ValidationResult(
+        flatMap(parsedProjectSourceValidators, (validator) => validator.validate(source)),
+    );
 }
 
 export function validatePostMerge(ast: DocumentNode, model: Model): ValidationResult {
     return new ValidationResult(
-        flatMap(postMergeValidators, validator => {
+        flatMap(postMergeValidators, (validator) => {
             // All validators rely on a valid model except for the things they test.
             // That's why they allow them to throw errors due to a bad model.
             // To keep the validators simple, we just ignore these errors and
@@ -60,6 +64,6 @@ export function validatePostMerge(ast: DocumentNode, model: Model): ValidationRe
             } catch (e) {
                 return [];
             }
-        })
+        }),
     );
 }

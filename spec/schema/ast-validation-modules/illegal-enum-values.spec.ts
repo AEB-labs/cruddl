@@ -3,7 +3,7 @@ import {
     assertValidatorAccepts,
     assertValidatorAcceptsAndDoesNotWarn,
     assertValidatorRejects,
-    assertValidatorWarns
+    assertValidatorWarns,
 } from './helpers';
 
 describe('enum declaration validation', () => {
@@ -25,7 +25,7 @@ describe('enum declaration validation', () => {
                     true
                 }
             `,
-            'Enums cannot define value "true".'
+            'Enums cannot define value "true".',
         );
     });
 
@@ -37,7 +37,7 @@ describe('enum declaration validation', () => {
                     bad
                 }
             `,
-            'Enum values should be UPPER_CASE.'
+            'Enum values should be UPPER_CASE.',
         );
     });
 });

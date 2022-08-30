@@ -42,14 +42,18 @@ function visitObjectProperties<T>(object: T, visitor: Visitor<T>): T {
     return newObj;
 }
 
-function visitObjectOrArray<T>(nodeOrArray: T | T[], visitor: Visitor<any>, key: string | undefined): T | T[] {
+function visitObjectOrArray<T>(
+    nodeOrArray: T | T[],
+    visitor: Visitor<any>,
+    key: string | undefined,
+): T | T[] {
     if (typeof nodeOrArray != 'object' || nodeOrArray === null) {
         return nodeOrArray;
     }
     if (!Array.isArray(nodeOrArray)) {
         return visitObject0(nodeOrArray as T, visitor, key);
     }
-    return nodeOrArray.map(item => visitObject0(item, visitor, key));
+    return nodeOrArray.map((item) => visitObject0(item, visitor, key));
 }
 
 function enter<T>(obj: T, visitor: Visitor<T>, key: string | undefined): VisitResult<T> {

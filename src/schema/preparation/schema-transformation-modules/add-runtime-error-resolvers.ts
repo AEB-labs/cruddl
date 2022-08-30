@@ -18,14 +18,19 @@ export class AddRuntimeErrorResolversTransformer implements SchemaTransformer {
                 return {
                     ...config,
                     resolve(source, args, context, info) {
-                        const result = (config.resolve || defaultFieldResolver)(source, args, context, info);
+                        const result = (config.resolve || defaultFieldResolver)(
+                            source,
+                            args,
+                            context,
+                            info,
+                        );
                         if (isPromise(result)) {
                             return result.then(maybeThrow);
                         }
                         return maybeThrow(result);
-                    }
-                }
-            }
+                    },
+                };
+            },
         });
     }
 }

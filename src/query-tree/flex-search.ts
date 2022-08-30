@@ -4,7 +4,11 @@ import { binaryOp } from '../schema-generation/utils/input-types';
 import { decapitalize, indent } from '../utils/utils';
 import { QueryNode } from './base';
 import { ConstBoolQueryNode, LiteralQueryNode } from './literals';
-import { BinaryOperator, BinaryOperatorWithAnalyzer, OperatorWithAnalyzerQueryNode } from './operators';
+import {
+    BinaryOperator,
+    BinaryOperatorWithAnalyzer,
+    OperatorWithAnalyzerQueryNode,
+} from './operators';
 import { simplifyBooleans } from './utils';
 import { VariableQueryNode } from './variables';
 
@@ -25,7 +29,8 @@ export class FlexSearchQueryNode extends QueryNode {
     }) {
         super();
         this.flexFilterNode = params.flexFilterNode || new ConstBoolQueryNode(true);
-        this.itemVariable = params.itemVariable || new VariableQueryNode(decapitalize(params.rootEntityType.name));
+        this.itemVariable =
+            params.itemVariable || new VariableQueryNode(decapitalize(params.rootEntityType.name));
         this.rootEntityType = params.rootEntityType;
         this.isOptimisationsDisabled = params.isOptimisationsDisabled || false;
     }
@@ -35,7 +40,9 @@ export class FlexSearchQueryNode extends QueryNode {
             `Use FlexSearch for ${this.rootEntityType!.name}` +
             ` with ${this.itemVariable.describe()} => \n` +
             indent(
-                this.flexFilterNode.equals(ConstBoolQueryNode.TRUE) ? '' : `where ${this.flexFilterNode.describe()}\n`
+                this.flexFilterNode.equals(ConstBoolQueryNode.TRUE)
+                    ? ''
+                    : `where ${this.flexFilterNode.describe()}\n`,
             )
         );
     }
@@ -52,7 +59,7 @@ export class FlexSearchComplexOperatorQueryNode extends QueryNode {
         readonly logicalOperator: BinaryOperator,
         private readonly fieldNode: QueryNode,
         readonly analyzer: string,
-        readonly returnFalseForNoTokens: boolean
+        readonly returnFalseForNoTokens: boolean,
     ) {
         super();
     }
@@ -63,7 +70,7 @@ export class FlexSearchComplexOperatorQueryNode extends QueryNode {
 
     expand(tokenizations: ReadonlyArray<FlexSearchTokenization>): QueryNode {
         const tokenization = tokenizations.find(
-            value => value.expression === this.expression && value.analyzer === this.analyzer
+            (value) => value.expression === this.expression && value.analyzer === this.analyzer,
         );
         const tokens = tokenization ? tokenization.tokens : [];
 
@@ -73,19 +80,21 @@ export class FlexSearchComplexOperatorQueryNode extends QueryNode {
         }
 
         const neutralOperand =
-            this.logicalOperator === BinaryOperator.AND ? ConstBoolQueryNode.TRUE : ConstBoolQueryNode.FALSE;
+            this.logicalOperator === BinaryOperator.AND
+                ? ConstBoolQueryNode.TRUE
+                : ConstBoolQueryNode.FALSE;
         return simplifyBooleans(
             tokens
                 .map(
-                    value =>
+                    (value) =>
                         new OperatorWithAnalyzerQueryNode(
                             this.fieldNode,
                             this.comparisonOperator,
                             new LiteralQueryNode(value),
-                            this.analyzer
-                        ) as QueryNode
+                            this.analyzer,
+                        ) as QueryNode,
                 )
-                .reduce(binaryOp(this.logicalOperator), neutralOperand)
+                .reduce(binaryOp(this.logicalOperator), neutralOperand),
         );
     }
 }
@@ -105,7 +114,9 @@ export class FlexSearchFieldExistsQueryNode extends QueryNode {
     }
 
     describe() {
-        return `EXISTS(${this.sourceNode.describe()}${this.analyzer ? ', ' + this.analyzer.toString() : ''})`;
+        return `EXISTS(${this.sourceNode.describe()}${
+            this.analyzer ? ', ' + this.analyzer.toString() : ''
+        })`;
     }
 }
 
@@ -117,11 +128,17 @@ export class FlexSearchFieldExistsQueryNode extends QueryNode {
  * do not do tokenization should be used (e.g. case-converting analyzers are ok).
  */
 export class FlexSearchStartsWithQueryNode extends QueryNode {
-    constructor(public readonly lhs: QueryNode, public readonly rhs: QueryNode, public readonly analyzer?: string) {
+    constructor(
+        public readonly lhs: QueryNode,
+        public readonly rhs: QueryNode,
+        public readonly analyzer?: string,
+    ) {
         super();
     }
 
     describe() {
-        return `STARTS_WITH(${this.lhs.describe()},${this.rhs.describe()}, ${this.analyzer || IDENTITY_ANALYZER})`;
+        return `STARTS_WITH(${this.lhs.describe()},${this.rhs.describe()}, ${
+            this.analyzer || IDENTITY_ANALYZER
+        })`;
     }
 }

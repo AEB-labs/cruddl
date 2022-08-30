@@ -19,14 +19,14 @@ export class BillingEntityType implements ModelComponent {
                 this.quantityFieldPath = new FieldPath({
                     path: input.quantityFieldName,
                     location: input.quantityFieldNameLoc,
-                    baseType: this.rootEntityType
+                    baseType: this.rootEntityType,
                 });
             }
             if (input.categoryMapping && input.categoryMapping.fieldName) {
                 this.categoryMappingFieldPath = new FieldPath({
                     path: input.categoryMapping.fieldName,
                     location: input.categoryMapping.fieldNameLoc,
-                    baseType: this.rootEntityType
+                    baseType: this.rootEntityType,
                 });
             }
         }
@@ -37,8 +37,8 @@ export class BillingEntityType implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `No rootEntity with the name "${this.input.typeName}" is defined.`,
-                    this.input.typeNameLoc
-                )
+                    this.input.typeNameLoc,
+                ),
             );
             return;
         }
@@ -46,8 +46,8 @@ export class BillingEntityType implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `The field "${this.input.keyFieldName}" is not defined in the type "${this.input.typeName}".`,
-                    this.input.keyFieldNameLoc
-                )
+                    this.input.keyFieldNameLoc,
+                ),
             );
             return;
         }
@@ -55,8 +55,8 @@ export class BillingEntityType implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `The type "${this.input.typeName}" does not define a keyField and no "keyFieldName" is defined.`,
-                    this.input.keyFieldNameLoc
-                )
+                    this.input.keyFieldNameLoc,
+                ),
             );
             return;
         }
@@ -71,17 +71,21 @@ export class BillingEntityType implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `The field "${this.input.keyFieldName}" in the type "${this.input.typeName}" is not a "String", "Int", or "ID".`,
-                    this.input.keyFieldNameLoc
-                )
+                    this.input.keyFieldNameLoc,
+                ),
             );
             return;
         }
-        if (this.model.billingEntityTypes.find(value => value.typeName === this.typeName && value !== this)) {
+        if (
+            this.model.billingEntityTypes.find(
+                (value) => value.typeName === this.typeName && value !== this,
+            )
+        ) {
             context.addMessage(
                 ValidationMessage.error(
                     `There are multiple billing configurations for the type "${this.typeName}".`,
-                    this.input.typeNameLoc
-                )
+                    this.input.typeNameLoc,
+                ),
             );
             return;
         }
@@ -110,8 +114,8 @@ export class BillingEntityType implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `The quantity field must be of a number or a list type, but "${lastField.type.name}.${lastField.name}" is of type "${lastField.type.name}".`,
-                    this.input.quantityFieldNameLoc
-                )
+                    this.input.quantityFieldNameLoc,
+                ),
             );
         }
     }
@@ -126,14 +130,14 @@ export class BillingEntityType implements ModelComponent {
                 context.addMessage(
                     ValidationMessage.error(
                         `"category" and "categoryMapping" cannot be combined.`,
-                        this.input.categoryMappingLoc
-                    )
+                        this.input.categoryMappingLoc,
+                    ),
                 );
                 context.addMessage(
                     ValidationMessage.error(
                         `"category" and "categoryMapping" cannot be combined.`,
-                        this.input.categoryLoc
-                    )
+                        this.input.categoryLoc,
+                    ),
                 );
             }
             return;
@@ -154,22 +158,27 @@ export class BillingEntityType implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `Field "${lastField.type.name}.${lastField.name}" is a list and cannot be used as mapping source.`,
-                    this.input.categoryMapping.fieldNameLoc
-                )
+                    this.input.categoryMapping.fieldNameLoc,
+                ),
             );
         }
 
         const allowedTypes = [GraphQLString, GraphQLID, GraphQLBoolean, GraphQLInt, GraphQLInt53];
-        if (!allowedTypes.some(t => t.name === lastField.type.name) && !lastField.type.isEnumType) {
+        if (
+            !allowedTypes.some((t) => t.name === lastField.type.name) &&
+            !lastField.type.isEnumType
+        ) {
             context.addMessage(
                 ValidationMessage.error(
                     `Only fields of type ${allowedTypes
-                        .map(t => t.name)
+                        .map((t) => t.name)
                         .join(', ')} and of enum types can be used as mapping source, but "${
                         this.rootEntityType.name
-                    }.${this.input.categoryMapping.fieldName}" is of type "${lastField.type.name}".`,
-                    this.input.categoryMapping.fieldNameLoc
-                )
+                    }.${this.input.categoryMapping.fieldName}" is of type "${
+                        lastField.type.name
+                    }".`,
+                    this.input.categoryMapping.fieldNameLoc,
+                ),
             );
         }
 
@@ -178,7 +187,7 @@ export class BillingEntityType implements ModelComponent {
 
     @memorize()
     get rootEntityType(): RootEntityType | undefined {
-        return this.model.rootEntityTypes.find(value => value.name === this.input.typeName);
+        return this.model.rootEntityTypes.find((value) => value.name === this.input.typeName);
     }
 
     @memorize()
@@ -187,7 +196,9 @@ export class BillingEntityType implements ModelComponent {
             return undefined;
         }
         if (this.input.keyFieldName) {
-            return this.rootEntityType.fields.find(value => value.name === this.input.keyFieldName);
+            return this.rootEntityType.fields.find(
+                (value) => value.name === this.input.keyFieldName,
+            );
         } else {
             return this.rootEntityType.keyField;
         }
@@ -201,7 +212,9 @@ export class BillingEntityType implements ModelComponent {
     get keyFieldName() {
         return (
             this.input.keyFieldName ||
-            (this.rootEntityType && this.rootEntityType.keyField ? this.rootEntityType.keyField.name : undefined)
+            (this.rootEntityType && this.rootEntityType.keyField
+                ? this.rootEntityType.keyField.name
+                : undefined)
         );
     }
 

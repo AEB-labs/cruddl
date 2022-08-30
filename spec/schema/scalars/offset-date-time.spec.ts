@@ -1,5 +1,8 @@
 import { expect } from 'chai';
-import { GraphQLOffsetDateTime, serializeForStorage } from '../../../src/schema/scalars/offset-date-time';
+import {
+    GraphQLOffsetDateTime,
+    serializeForStorage,
+} from '../../../src/schema/scalars/offset-date-time';
 
 describe('GraphQLOffsetDateTime', () => {
     const validStrings = [
@@ -9,7 +12,7 @@ describe('GraphQLOffsetDateTime', () => {
         '2018-08-21T14:50:00.123+05:00',
         '2018-08-21T14:50:00.1234+05:00', // nanoseconds are kept to precision
         '2018-08-21T14:50:00.123456-03:32',
-        '2018-08-21T14:50:00.123456789+13:00' // across the international date border
+        '2018-08-21T14:50:00.123456789+13:00', // across the international date border
     ];
 
     const coercedStrings = [
@@ -18,7 +21,7 @@ describe('GraphQLOffsetDateTime', () => {
         ['2018-08-21T14:50:00.000Z', '2018-08-21T14:50:00+00:00'], // superfluous nanoseconds are cut off
         ['2018-08-21T14:50:00.123400+00:00', '2018-08-21T14:50:00.1234+00:00'], // superfluous nanosecond precision is cut off
         ['2018-08-21T14:50:00+00:00', '2018-08-21T14:50:00+00:00'],
-        ['2018-08-21T14:50Z', '2018-08-21T14:50:00+00:00'] // second part is added
+        ['2018-08-21T14:50Z', '2018-08-21T14:50:00+00:00'], // second part is added
     ];
 
     const invalidStrings = [
@@ -46,7 +49,7 @@ describe('GraphQLOffsetDateTime', () => {
         // leap seconds are not supported for anything but Instant by js-joda...
         '1982-06-30T23:59:60Z',
         '1982-06-30T23:59:60.123Z',
-        '1982-07-01T23:59:60Z'
+        '1982-07-01T23:59:60Z',
     ];
 
     function coerce(str: string): string {
@@ -78,14 +81,18 @@ describe('GraphQLOffsetDateTime', () => {
     });
 
     it('sets offset and timestamp properly in stored format', () => {
-        const stored = serializeForStorage(GraphQLOffsetDateTime.parseValue(`2018-08-21T14:50:00.1234+03:30`));
+        const stored = serializeForStorage(
+            GraphQLOffsetDateTime.parseValue(`2018-08-21T14:50:00.1234+03:30`),
+        );
         // timestamp is an instant (DateTime), so nanoseconds are stored as 3-digit groups
         expect(stored.timestamp).to.equal(`2018-08-21T11:20:00.123400Z`);
         expect(stored.offset).to.equal(`+03:30`);
     });
 
     it('stores Z offset as +00:00', () => {
-        const stored = serializeForStorage(GraphQLOffsetDateTime.parseValue(`2018-08-21T14:50:00.1234Z`));
+        const stored = serializeForStorage(
+            GraphQLOffsetDateTime.parseValue(`2018-08-21T14:50:00.1234Z`),
+        );
         expect(stored.timestamp).to.equal(`2018-08-21T14:50:00.123400Z`);
         expect(stored.offset).to.equal(`+00:00`);
     });

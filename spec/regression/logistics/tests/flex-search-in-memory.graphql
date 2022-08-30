@@ -125,7 +125,10 @@ query meta_below_max {
 }
 
 query order_below_max {
-    flexSearchDeliveries(flexSearchFilter: { deliveryNumber: "1000521" }, orderBy: deliveryNumber_ASC) {
+    flexSearchDeliveries(
+        flexSearchFilter: { deliveryNumber: "1000521" }
+        orderBy: deliveryNumber_ASC
+    ) {
         deliveryNumber
     }
 }
@@ -161,7 +164,9 @@ query recursion_successfull {
 }
 
 query recursion_error {
-    flexSearchDeliveries(flexSearchFilter: { recursion: { recursion: { recursion: { name: "test_c" } } } }) {
+    flexSearchDeliveries(
+        flexSearchFilter: { recursion: { recursion: { recursion: { name: "test_c" } } } }
+    ) {
         deliveryNumber
     }
 }

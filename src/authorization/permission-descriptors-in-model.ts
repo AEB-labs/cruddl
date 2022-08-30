@@ -4,15 +4,23 @@ import {
     AlwaysGrantPermissionDescriptor,
     PermissionDescriptor,
     ProfileBasedPermissionDescriptor,
-    StaticPermissionDescriptor
+    StaticPermissionDescriptor,
 } from './permission-descriptors';
 
-export function getPermissionDescriptorOfRootEntityType(rootEntityType: RootEntityType): PermissionDescriptor {
+export function getPermissionDescriptorOfRootEntityType(
+    rootEntityType: RootEntityType,
+): PermissionDescriptor {
     if (rootEntityType.permissionProfile) {
-        return new ProfileBasedPermissionDescriptor(rootEntityType.permissionProfile, rootEntityType);
+        return new ProfileBasedPermissionDescriptor(
+            rootEntityType.permissionProfile,
+            rootEntityType,
+        );
     }
     if (rootEntityType.roles) {
-        return new StaticPermissionDescriptor(rootEntityType.roles.read, rootEntityType.roles.readWrite);
+        return new StaticPermissionDescriptor(
+            rootEntityType.roles.read,
+            rootEntityType.roles.readWrite,
+        );
     }
     // by default, no permissions are granted
     return new AlwaysDenyPermissionDescriptor();

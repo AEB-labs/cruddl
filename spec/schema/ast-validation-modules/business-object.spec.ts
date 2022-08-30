@@ -14,7 +14,7 @@ describe('@businessObject validation', () => {
                     a: String
                 }
             `),
-            'The directive @businessObject can only be used on root entity type definitions.'
+            'The directive @businessObject can only be used on root entity type definitions.',
         );
     });
 
@@ -24,7 +24,7 @@ describe('@businessObject validation', () => {
                 type Test @rootEntity @businessObject {
                     a: String
                 }
-            `)
+            `),
         );
     });
 });

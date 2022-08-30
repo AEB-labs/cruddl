@@ -38,13 +38,15 @@ export class BinaryOperationQueryNode extends QueryNode {
     constructor(
         public readonly lhs: QueryNode,
         public readonly operator: BinaryOperator,
-        public readonly rhs: QueryNode
+        public readonly rhs: QueryNode,
     ) {
         super();
     }
 
     describe() {
-        return `(${this.lhs.describe()} ${this.describeOperator(this.operator)} ${this.rhs.describe()})`;
+        return `(${this.lhs.describe()} ${this.describeOperator(
+            this.operator,
+        )} ${this.rhs.describe()})`;
     }
 
     private describeOperator(op: BinaryOperator) {
@@ -151,14 +153,14 @@ export class OperatorWithAnalyzerQueryNode extends QueryNode {
         public readonly lhs: QueryNode,
         public readonly operator: BinaryOperatorWithAnalyzer,
         public readonly rhs: QueryNode,
-        public readonly analyzer: string
+        public readonly analyzer: string,
     ) {
         super();
     }
 
     describe() {
         return `(${this.lhs.describe()} ${this.describeOperator(
-            this.operator
+            this.operator,
         )} ${this.rhs.describe()} with analyzer: "${this.analyzer}")`;
     }
 
@@ -207,7 +209,7 @@ export class ConditionalQueryNode extends QueryNode {
     constructor(
         public readonly condition: QueryNode,
         public readonly expr1: QueryNode,
-        public readonly expr2: QueryNode
+        public readonly expr2: QueryNode,
     ) {
         super();
     }

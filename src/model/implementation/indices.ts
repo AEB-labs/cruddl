@@ -13,7 +13,7 @@ export class IndexField implements ModelComponent {
     constructor(
         public readonly dotSeparatedPath: string,
         public readonly declaringType: RootEntityType,
-        public readonly astNode?: DirectiveNode | StringValueNode | ObjectValueNode
+        public readonly astNode?: DirectiveNode | StringValueNode | ObjectValueNode,
     ) {
         this.path = dotSeparatedPath.split('.');
     }
@@ -36,11 +36,14 @@ export class IndexField implements ModelComponent {
     }
 
     private traversePath(
-        addMessage: (mess: ValidationMessage) => void
+        addMessage: (mess: ValidationMessage) => void,
     ): { fieldsInPath: ReadonlyArray<Field>; field: Field } | undefined {
         if (!this.dotSeparatedPath.match(/^([\w]+\.)*[\w]+$/)) {
             addMessage(
-                ValidationMessage.error(`An index field path should be field names separated by dots.`, this.astNode)
+                ValidationMessage.error(
+                    `An index field path should be field names separated by dots.`,
+                    this.astNode,
+                ),
             );
             return undefined;
         }
@@ -51,14 +54,19 @@ export class IndexField implements ModelComponent {
         for (const fieldName of this.path) {
             if (!type.isObjectType) {
                 if (field) {
-                    addMessage(ValidationMessage.error(`Field "${field.name}" is not an object`, this.astNode));
+                    addMessage(
+                        ValidationMessage.error(
+                            `Field "${field.name}" is not an object`,
+                            this.astNode,
+                        ),
+                    );
                 } else {
                     // this should not occur - would mean that the root is not an object type
                     addMessage(
                         ValidationMessage.error(
                             `Index defined on non-object type (this is probably an internal error).`,
-                            this.astNode
-                        )
+                            this.astNode,
+                        ),
                     );
                 }
                 return undefined;
@@ -67,7 +75,10 @@ export class IndexField implements ModelComponent {
             const nextField = type.getField(fieldName);
             if (!nextField) {
                 addMessage(
-                    ValidationMessage.error(`Type "${type.name}" does not have a field "${fieldName}"`, this.astNode)
+                    ValidationMessage.error(
+                        `Type "${type.name}" does not have a field "${fieldName}"`,
+                        this.astNode,
+                    ),
                 );
                 return undefined;
             }
@@ -76,8 +87,8 @@ export class IndexField implements ModelComponent {
                 addMessage(
                     ValidationMessage.error(
                         `Field "${type.name}.${nextField.name}" is a parent field and cannot be used in an index.`,
-                        this.astNode
-                    )
+                        this.astNode,
+                    ),
                 );
                 return undefined;
             }
@@ -86,8 +97,8 @@ export class IndexField implements ModelComponent {
                 addMessage(
                     ValidationMessage.error(
                         `Field "${type.name}.${nextField.name}" is a root field and cannot be used in an index.`,
-                        this.astNode
-                    )
+                        this.astNode,
+                    ),
                 );
                 return undefined;
             }
@@ -96,8 +107,8 @@ export class IndexField implements ModelComponent {
                 addMessage(
                     ValidationMessage.error(
                         `Field "${type.name}.${nextField.name}" resolves to a root entity, but indices can not cross root entity boundaries.`,
-                        this.astNode
-                    )
+                        this.astNode,
+                    ),
                 );
                 return undefined;
             }
@@ -115,8 +126,8 @@ export class IndexField implements ModelComponent {
             addMessage(
                 ValidationMessage.error(
                     `Indices can only be defined on scalar or enum fields, but the type of "${field.declaringType.name}.${field.name}" is an object type. Specify a dot-separated field path to create an index on an embedded object.`,
-                    this.astNode
-                )
+                    this.astNode,
+                ),
             );
             return undefined;
         }
@@ -125,8 +136,8 @@ export class IndexField implements ModelComponent {
             addMessage(
                 ValidationMessage.error(
                     `Indices can not be defined on scalar fields of type "JSON", but the type of "${field.declaringType.name}.${field.name}" is "JSON".`,
-                    this.astNode
-                )
+                    this.astNode,
+                ),
             );
             return undefined;
         }
@@ -150,13 +161,20 @@ export class Index implements ModelComponent {
         return undefined;
     }
 
-    constructor(private input: IndexDefinitionConfig, public readonly declaringType: RootEntityType) {
+    constructor(
+        private input: IndexDefinitionConfig,
+        public readonly declaringType: RootEntityType,
+    ) {
         this.name = input.name;
         this.unique = input.unique || false;
         this.sparse = input.sparse != undefined ? input.sparse : this.unique;
         this.fields = (input.fields || []).map(
             (fieldPath, index) =>
-                new IndexField(fieldPath, declaringType, (input.fieldASTNodes || [])[index] || input.astNode)
+                new IndexField(
+                    fieldPath,
+                    declaringType,
+                    (input.fieldASTNodes || [])[index] || input.astNode,
+                ),
         );
         this.astNode = input.astNode;
         this.nameASTNode = input.nameASTNode;
@@ -181,15 +199,17 @@ export class Index implements ModelComponent {
 
     validate(context: ValidationContext) {
         if (!this.fields.length) {
-            context.addMessage(ValidationMessage.error(`An index must specify at least one field.`, this.astNode));
+            context.addMessage(
+                ValidationMessage.error(`An index must specify at least one field.`, this.astNode),
+            );
         }
 
         if (this.name && !this.name.match(/^[a-zA-Z0-9]+/)) {
             context.addMessage(
                 ValidationMessage.error(
                     `An index name must only consist of alphanumeric characters.`,
-                    this.nameASTNode ?? this.astNode
-                )
+                    this.nameASTNode ?? this.astNode,
+                ),
             );
         }
 

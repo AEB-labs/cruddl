@@ -12,18 +12,23 @@ export function parseBillingConfigs(source: ParsedObjectProjectSource): BillingC
             return {
                 ...value,
                 typeNameLoc: source.pathLocationMap[`/billing/billingEntities/${index}/typeName`],
-                keyFieldNameLoc: source.pathLocationMap[`/billing/billingEntities/${index}/keyFieldName`],
-                quantityFieldNameLoc: source.pathLocationMap[`/billing/billingEntities/${index}/quantityFieldName`],
+                keyFieldNameLoc:
+                    source.pathLocationMap[`/billing/billingEntities/${index}/keyFieldName`],
+                quantityFieldNameLoc:
+                    source.pathLocationMap[`/billing/billingEntities/${index}/quantityFieldName`],
                 categoryLoc: source.pathLocationMap[`/billing/billingEntities/${index}/category`],
-                categoryMappingLoc: source.pathLocationMap[`/billing/billingEntities/${index}/categoryMapping`],
+                categoryMappingLoc:
+                    source.pathLocationMap[`/billing/billingEntities/${index}/categoryMapping`],
                 categoryMapping: value.categoryMapping
                     ? {
                           ...value.categoryMapping,
                           fieldNameLoc:
-                              source.pathLocationMap[`/billing/billingEntities/${index}/categoryMapping/fieldName`]
+                              source.pathLocationMap[
+                                  `/billing/billingEntities/${index}/categoryMapping/fieldName`
+                              ],
                       }
-                    : undefined
+                    : undefined,
             };
-        })
+        }),
     };
 }

@@ -4,7 +4,11 @@ import { QueryResultValidator } from './validation';
 import { VariableQueryNode } from './variables';
 
 export class PreExecQueryParms extends QueryNode {
-    constructor(params: { query: QueryNode, resultVariable?: VariableQueryNode, resultValidator?: QueryResultValidator}) {
+    constructor(params: {
+        query: QueryNode;
+        resultVariable?: VariableQueryNode;
+        resultValidator?: QueryResultValidator;
+    }) {
         super();
         this.query = params.query;
         this.resultVariable = params.resultVariable;
@@ -12,12 +16,14 @@ export class PreExecQueryParms extends QueryNode {
     }
 
     public readonly query: QueryNode;
-    public readonly resultVariable: VariableQueryNode|undefined;
-    public readonly resultValidator: QueryResultValidator|undefined;
+    public readonly resultVariable: VariableQueryNode | undefined;
+    public readonly resultValidator: QueryResultValidator | undefined;
 
     describe() {
         const resultVarDescr = this.resultVariable ? `${this.resultVariable.describe()} = ` : '';
-        const validatorDescr = this.resultValidator ? ' validate result: ' + this.resultValidator.describe(): '';
+        const validatorDescr = this.resultValidator
+            ? ' validate result: ' + this.resultValidator.describe()
+            : '';
         return resultVarDescr + '(\n' + indent(this.query.describe()) + '\n)' + validatorDescr;
     }
 }
@@ -44,13 +50,12 @@ export class PreExecQueryParms extends QueryNode {
  * within a result validator, which then causes a rollback of the whole transaction.
  */
 export class WithPreExecutionQueryNode extends QueryNode {
-
     public readonly preExecQueries: ReadonlyArray<PreExecQueryParms>;
     public readonly resultNode: QueryNode;
 
-    constructor(params:{
-        resultNode: QueryNode,
-        preExecQueries: ReadonlyArray<(PreExecQueryParms|undefined)>
+    constructor(params: {
+        resultNode: QueryNode;
+        preExecQueries: ReadonlyArray<PreExecQueryParms | undefined>;
     }) {
         super();
         this.preExecQueries = compact(params.preExecQueries);
@@ -62,12 +67,17 @@ export class WithPreExecutionQueryNode extends QueryNode {
             return this.resultNode.describe();
         }
 
-        const preExecDescriptions = this.preExecQueries.map(q => q.describe());
+        const preExecDescriptions = this.preExecQueries.map((q) => q.describe());
         const resultDescr = '(\n' + indent(this.resultNode.describe()) + '\n)';
 
-        return 'pre execute\n' + indent('' + // '' to move the arg label here in WebStorm
-            preExecDescriptions.join('\nthen ') + '\n' +
-            `return ${resultDescr}`
+        return (
+            'pre execute\n' +
+            indent(
+                '' + // '' to move the arg label here in WebStorm
+                    preExecDescriptions.join('\nthen ') +
+                    '\n' +
+                    `return ${resultDescr}`,
+            )
         );
     }
 }

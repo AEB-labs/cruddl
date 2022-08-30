@@ -1,83 +1,83 @@
 {
-    "createEdges": {
-        "data": {
-            "updateMains": [
-                {
-                    "key": "m1"
-                },
-                {
-                    "key": "m2"
-                }
-            ],
-            "updateDependents": [
-                {
-                    "key": "d2"
-                }
-            ]
+  "createEdges": {
+    "data": {
+      "updateMains": [
+        {
+          "key": "m1"
+        },
+        {
+          "key": "m2"
         }
-    },
-    "deleteSuccessfully": {
-        "data": {
-            "deleteMain": {
-                "key": "m1"
-            }
+      ],
+      "updateDependents": [
+        {
+          "key": "d2"
         }
-    },
-    "deleteRestricted": {
-        "errors": [
-            {
-                "message": "Cannot delete Main object because a Blocker object is still referenced via dependents.blockers (id: @{ids/Blocker/2})",
-                "locations": [
-                    {
-                        "line": 23,
-                        "column": 5
-                    }
-                ],
-                "path": ["deleteMain"]
-            }
-        ],
-        "data": {
-            "deleteMain": null
-        }
-    },
-    "everything": {
-        "data": {
-            "allMains": [
-                {
-                    "key": "m2"
-                },
-                {
-                    "key": "m3"
-                },
-                {
-                    "key": "m4"
-                }
-            ],
-            "allDependents": [
-                {
-                    "key": "d2"
-                },
-                {
-                    "key": "d3"
-                },
-                {
-                    "key": "d4"
-                }
-            ],
-            "allBlockers": [
-                {
-                    "key": "b1"
-                },
-                {
-                    "key": "b2"
-                },
-                {
-                    "key": "b3"
-                },
-                {
-                    "key": "b4"
-                }
-            ]
-        }
+      ]
     }
+  },
+  "deleteSuccessfully": {
+    "data": {
+      "deleteMain": {
+        "key": "m1"
+      }
+    }
+  },
+  "deleteRestricted": {
+    "errors": [
+      {
+        "message": "Cannot delete Main object because a Blocker object is still referenced via dependents.blockers (id: @{ids/Blocker/2})",
+        "locations": [
+          {
+            "line": 23,
+            "column": 5
+          }
+        ],
+        "path": ["deleteMain"]
+      }
+    ],
+    "data": {
+      "deleteMain": null
+    }
+  },
+  "everything": {
+    "data": {
+      "allMains": [
+        {
+          "key": "m2"
+        },
+        {
+          "key": "m3"
+        },
+        {
+          "key": "m4"
+        }
+      ],
+      "allDependents": [
+        {
+          "key": "d2"
+        },
+        {
+          "key": "d3"
+        },
+        {
+          "key": "d4"
+        }
+      ],
+      "allBlockers": [
+        {
+          "key": "b1"
+        },
+        {
+          "key": "b2"
+        },
+        {
+          "key": "b3"
+        },
+        {
+          "key": "b4"
+        }
+      ]
+    }
+  }
 }

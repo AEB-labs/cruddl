@@ -189,7 +189,7 @@
         "message": "Not authorized to read Forwarder objects (in Delivery.forwarder)",
         "locations": [
           {
-            "line": 63,
+            "line": 65,
             "column": 5
           }
         ],
@@ -212,7 +212,7 @@
         "message": "Not authorized to read Delivery.totalValue",
         "locations": [
           {
-            "line": 69,
+            "line": 73,
             "column": 5
           }
         ],
@@ -224,7 +224,7 @@
         "message": "Not authorized to read Delivery.totalValue",
         "locations": [
           {
-            "line": 73,
+            "line": 77,
             "column": 5
           }
         ],
@@ -244,7 +244,7 @@
         "message": "Not authorized to set Delivery.totalValue",
         "locations": [
           {
-            "line": 79,
+            "line": 86,
             "column": 5
           }
         ],
@@ -261,7 +261,7 @@
         "message": "Not authorized to set Delivery.totalValue",
         "locations": [
           {
-            "line": 89,
+            "line": 96,
             "column": 5
           }
         ],
@@ -273,7 +273,7 @@
         "message": "Not authorized to update Forwarder objects, Not authorized to read Forwarder objects",
         "locations": [
           {
-            "line": 93,
+            "line": 100,
             "column": 5
           }
         ],
@@ -285,7 +285,7 @@
         "message": "Skipped because other mutations reported errors",
         "locations": [
           {
-            "line": 97,
+            "line": 104,
             "column": 5
           }
         ],
@@ -306,7 +306,7 @@
         "message": "Not authorized to read Forwarder objects, Not authorized to delete Forwarder objects",
         "locations": [
           {
-            "line": 103,
+            "line": 110,
             "column": 5
           }
         ],

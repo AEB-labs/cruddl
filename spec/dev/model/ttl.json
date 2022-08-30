@@ -1,9 +1,9 @@
 {
-    "timeToLive": [
-        {
-            "typeName": "Hero",
-            "dateField": "timeOfDeath",
-            "expireAfterDays": 1
-        }
-    ]
+  "timeToLive": [
+    {
+      "typeName": "Hero",
+      "dateField": "timeOfDeath",
+      "expireAfterDays": 1
+    }
+  ]
 }

@@ -12,8 +12,8 @@ const only: string[] = [];
 describe('regression tests', async () => {
     const dirs = fs
         .readdirSync(regressionRootDir)
-        .filter(name => fs.statSync(path.resolve(regressionRootDir, name)).isDirectory())
-        .filter(dir => only.length === 0 || only.includes(dir));
+        .filter((name) => fs.statSync(path.resolve(regressionRootDir, name)).isDirectory())
+        .filter((dir) => only.length === 0 || only.includes(dir));
 
     const databases: ('in-memory' | 'arangodb')[] = process.argv.includes('--db=in-memory')
         ? ['in-memory']
@@ -21,12 +21,12 @@ describe('regression tests', async () => {
         ? ['arangodb']
         : ['in-memory', 'arangodb'];
 
-    const filterArg = process.argv.find(arg => arg.startsWith('--regression-tests='));
+    const filterArg = process.argv.find((arg) => arg.startsWith('--regression-tests='));
     let testNameFilter = (name: string) => true;
     if (filterArg) {
         const pattern = filterArg.substr('--regression-tests='.length);
         const regex = likePatternToRegExp(pattern, { singleWildcardChar: '?', wildcardChar: '*' });
-        testNameFilter = name => !!name.match(regex);
+        testNameFilter = (name) => !!name.match(regex);
     }
 
     for (const database of databases) {
@@ -38,12 +38,12 @@ describe('regression tests', async () => {
                 const options: RegressionSuiteOptions = {
                     saveActualAsExpected: process.argv.includes('--save-actual-as-expected'),
                     trace: process.argv.includes('--log-trace'),
-                    database
+                    database,
                 };
                 const suite = new RegressionSuite(suitePath, options);
                 describe(suiteName, async () => {
                     for (const testName of suite.getTestNames().filter(testNameFilter)) {
-                        it(testName, async function() {
+                        it(testName, async function () {
                             if (await suite.shouldIgnoreTest(testName)) {
                                 this.skip();
                             }

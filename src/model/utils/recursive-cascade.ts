@@ -10,7 +10,7 @@ export function findRecursiveCascadePath(field: Field): ReadonlyArray<Field> | u
 
 function findRecursiveCascadePath0(
     type: RootEntityType,
-    fieldPath: ReadonlyArray<Field>
+    fieldPath: ReadonlyArray<Field>,
 ): ReadonlyArray<Field> | undefined {
     for (const field of type.fields) {
         if (

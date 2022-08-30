@@ -1,240 +1,240 @@
 {
-    "roles": ["users"],
-    "rootEntities": {
-        "Delivery": [
-            {
-                "@id": "1",
-                "deliveryNumber": "D1",
-                "accessGroup": "D1",
-                "dispatchedAt": "2020-01-30T10:00:00+01:00",
-                "priority": 1,
-                "deliveryContents": [
-                    {
-                        "deliveryContentNumber": "DC1.1",
-                        "items": [
-                            {
-                                "itemNumber": "DI1.1.1",
-                                "weightInKg": 1.2,
-                                "isDangerousGoods": true
-                            },
-                            {
-                                "itemNumber": "DI1.1.2",
-                                "weightInKg": 2.2
-                            }
-                        ]
-                    },
-                    {
-                        "deliveryContentNumber": "DC1.2",
-                        "items": [
-                            {
-                                "itemNumber": "DI1.2.1",
-                                "weightInKg": 4.4,
-                                "isDangerousGoods": false
-                            },
-                            {
-                                "itemNumber": "DI1.2.2",
-                                "weightInKg": 8.8
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "@id": "2",
-                "deliveryNumber": "D2",
-                "accessGroup": "D2",
-                "dispatchedAt": "2020-01-30T11:00:00+03:00",
-                "priority": 3,
-                "deliveryContents": [
-                    {
-                        "deliveryContentNumber": "DC2.1",
-                        "items": [
-                            {
-                                "itemNumber": "DI2.1.1",
-                                "weightInKg": 16.16,
-                                "isDangerousGoods": true
-                            },
-                            {
-                                "itemNumber": "DI2.1.2",
-                                "weightInKg": 32.32,
-                                "isDangerousGoods": true
-                            }
-                        ]
-                    },
-                    {
-                        "deliveryContentNumber": "DC2.2",
-                        "items": [
-                            {
-                                "itemNumber": "DI2.2.1"
-                            },
-                            {
-                                "itemNumber": "DI2.2.2"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "@id": "3",
-                "deliveryNumber": "D3",
-                "accessGroup": "D3",
-                "priority": 2,
-                "deliveryContents": [
-                    {
-                        "deliveryContentNumber": "DC3.1",
-                        "items": [
-                            {
-                                "itemNumber": "DI3.1.1",
-                                "isDangerousGoods": false
-                            },
-                            {
-                                "itemNumber": "DI3.1.2"
-                            }
-                        ]
-                    },
-                    {
-                        "deliveryContentNumber": "DC3.2",
-                        "items": [
-                            {
-                                "itemNumber": "DI3.2.1"
-                            },
-                            {
-                                "itemNumber": "DI3.2.2"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "@id": "4",
-                "deliveryNumber": "D4",
-                "accessGroup": "D4",
-                "deliveryContents": [
-                    {
-                        "deliveryContentNumber": "DC4.1",
-                        "items": [
-                            {
-                                "itemNumber": "DI4.1.1"
-                            },
-                            {
-                                "itemNumber": "DI4.1.2"
-                            }
-                        ]
-                    },
-                    {
-                        "deliveryContentNumber": "DC4.2",
-                        "items": [
-                            {
-                                "itemNumber": "DI4.2.1"
-                            },
-                            {
-                                "itemNumber": "DI4.2.2"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "@id": "5",
-                "deliveryNumber": "D5",
-                "accessGroup": "D5",
-                "deliveryContents": [
-                    {
-                        "deliveryContentNumber": "DC5.1"
-                    },
-                    {
-                        "deliveryContentNumber": "DC5.2",
-                        "items": []
-                    }
-                ]
-            },
-            {
-                "@id": "6",
-                "deliveryNumber": "D6"
-            }
-        ],
-        "Shipment": [
-            {
-                "@id": "1",
-                "shipmentNumber": "S1",
-                "accessGroup": "S1"
-            },
-            {
-                "@id": "2",
-                "shipmentNumber": "S2",
-                "accessGroup": "S2"
-            },
-            {
-                "@id": "3",
-                "shipmentNumber": "S3",
-                "accessGroup": "S3"
-            },
-            {
-                "@id": "4",
-                "shipmentNumber": "S4",
-                "accessGroup": "S4"
-            }
-        ],
-        "HandlingUnit": [
-            {
-                "@id": "1",
-                "handlingUnitNumber": "H1",
-                "accessGroup": "H1",
-                "warehouseSlot": {
-                    "warehouse": "South",
-                    "level": 0
-                }
-            },
-            {
-                "@id": "2",
-                "handlingUnitNumber": "H2",
-                "accessGroup": "H2",
-                "warehouseSlot": {
-                    "warehouse": "South",
-                    "level": 1
-                }
-            },
-            {
-                "@id": "3",
-                "handlingUnitNumber": "H3",
-                "accessGroup": "H3",
-                "warehouseSlot": {
-                    "warehouse": "South",
-                    "level": 0
-                }
-            },
-            {
-                "@id": "4",
-                "handlingUnitNumber": "H4",
-                "accessGroup": "H4",
-                "warehouseSlot": {
-                    "warehouse": "North",
-                    "level": 0
-                }
-            }
-        ],
-        "Order": [
-            {
-                "@id": "1",
-                "orderNumber": "O1",
-                "accessGroup": "O1",
-                "payedAt": "2019-06-21T18:10:00Z"
-            },
-            {
-                "@id": "2",
-                "orderNumber": "O2",
-                "accessGroup": "O2"
-            },
-            {
-                "@id": "3",
-                "orderNumber": "O3",
-                "accessGroup": "O3"
-            },
-            {
-                "@id": "4",
-                "orderNumber": "O4",
-                "accessGroup": "O4"
-            }
+  "roles": ["users"],
+  "rootEntities": {
+    "Delivery": [
+      {
+        "@id": "1",
+        "deliveryNumber": "D1",
+        "accessGroup": "D1",
+        "dispatchedAt": "2020-01-30T10:00:00+01:00",
+        "priority": 1,
+        "deliveryContents": [
+          {
+            "deliveryContentNumber": "DC1.1",
+            "items": [
+              {
+                "itemNumber": "DI1.1.1",
+                "weightInKg": 1.2,
+                "isDangerousGoods": true
+              },
+              {
+                "itemNumber": "DI1.1.2",
+                "weightInKg": 2.2
+              }
+            ]
+          },
+          {
+            "deliveryContentNumber": "DC1.2",
+            "items": [
+              {
+                "itemNumber": "DI1.2.1",
+                "weightInKg": 4.4,
+                "isDangerousGoods": false
+              },
+              {
+                "itemNumber": "DI1.2.2",
+                "weightInKg": 8.8
+              }
+            ]
+          }
         ]
-    }
+      },
+      {
+        "@id": "2",
+        "deliveryNumber": "D2",
+        "accessGroup": "D2",
+        "dispatchedAt": "2020-01-30T11:00:00+03:00",
+        "priority": 3,
+        "deliveryContents": [
+          {
+            "deliveryContentNumber": "DC2.1",
+            "items": [
+              {
+                "itemNumber": "DI2.1.1",
+                "weightInKg": 16.16,
+                "isDangerousGoods": true
+              },
+              {
+                "itemNumber": "DI2.1.2",
+                "weightInKg": 32.32,
+                "isDangerousGoods": true
+              }
+            ]
+          },
+          {
+            "deliveryContentNumber": "DC2.2",
+            "items": [
+              {
+                "itemNumber": "DI2.2.1"
+              },
+              {
+                "itemNumber": "DI2.2.2"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "@id": "3",
+        "deliveryNumber": "D3",
+        "accessGroup": "D3",
+        "priority": 2,
+        "deliveryContents": [
+          {
+            "deliveryContentNumber": "DC3.1",
+            "items": [
+              {
+                "itemNumber": "DI3.1.1",
+                "isDangerousGoods": false
+              },
+              {
+                "itemNumber": "DI3.1.2"
+              }
+            ]
+          },
+          {
+            "deliveryContentNumber": "DC3.2",
+            "items": [
+              {
+                "itemNumber": "DI3.2.1"
+              },
+              {
+                "itemNumber": "DI3.2.2"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "@id": "4",
+        "deliveryNumber": "D4",
+        "accessGroup": "D4",
+        "deliveryContents": [
+          {
+            "deliveryContentNumber": "DC4.1",
+            "items": [
+              {
+                "itemNumber": "DI4.1.1"
+              },
+              {
+                "itemNumber": "DI4.1.2"
+              }
+            ]
+          },
+          {
+            "deliveryContentNumber": "DC4.2",
+            "items": [
+              {
+                "itemNumber": "DI4.2.1"
+              },
+              {
+                "itemNumber": "DI4.2.2"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "@id": "5",
+        "deliveryNumber": "D5",
+        "accessGroup": "D5",
+        "deliveryContents": [
+          {
+            "deliveryContentNumber": "DC5.1"
+          },
+          {
+            "deliveryContentNumber": "DC5.2",
+            "items": []
+          }
+        ]
+      },
+      {
+        "@id": "6",
+        "deliveryNumber": "D6"
+      }
+    ],
+    "Shipment": [
+      {
+        "@id": "1",
+        "shipmentNumber": "S1",
+        "accessGroup": "S1"
+      },
+      {
+        "@id": "2",
+        "shipmentNumber": "S2",
+        "accessGroup": "S2"
+      },
+      {
+        "@id": "3",
+        "shipmentNumber": "S3",
+        "accessGroup": "S3"
+      },
+      {
+        "@id": "4",
+        "shipmentNumber": "S4",
+        "accessGroup": "S4"
+      }
+    ],
+    "HandlingUnit": [
+      {
+        "@id": "1",
+        "handlingUnitNumber": "H1",
+        "accessGroup": "H1",
+        "warehouseSlot": {
+          "warehouse": "South",
+          "level": 0
+        }
+      },
+      {
+        "@id": "2",
+        "handlingUnitNumber": "H2",
+        "accessGroup": "H2",
+        "warehouseSlot": {
+          "warehouse": "South",
+          "level": 1
+        }
+      },
+      {
+        "@id": "3",
+        "handlingUnitNumber": "H3",
+        "accessGroup": "H3",
+        "warehouseSlot": {
+          "warehouse": "South",
+          "level": 0
+        }
+      },
+      {
+        "@id": "4",
+        "handlingUnitNumber": "H4",
+        "accessGroup": "H4",
+        "warehouseSlot": {
+          "warehouse": "North",
+          "level": 0
+        }
+      }
+    ],
+    "Order": [
+      {
+        "@id": "1",
+        "orderNumber": "O1",
+        "accessGroup": "O1",
+        "payedAt": "2019-06-21T18:10:00Z"
+      },
+      {
+        "@id": "2",
+        "orderNumber": "O2",
+        "accessGroup": "O2"
+      },
+      {
+        "@id": "3",
+        "orderNumber": "O3",
+        "accessGroup": "O3"
+      },
+      {
+        "@id": "4",
+        "orderNumber": "O4",
+        "accessGroup": "O4"
+      }
+    ]
+  }
 }

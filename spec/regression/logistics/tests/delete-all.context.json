@@ -1,3 +1,3 @@
 {
-    "authRoles": ["allusers", "admin"]
+  "authRoles": ["allusers", "admin"]
 }

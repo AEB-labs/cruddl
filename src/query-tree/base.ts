@@ -44,7 +44,9 @@ export abstract class QueryNode {
         if (!other || other.constructor !== this.constructor) {
             return false;
         }
-        return Object.keys(this).every(key => this.fieldEquals(key, (this as any)[key], (other as any)[key]));
+        return Object.keys(this).every((key) =>
+            this.fieldEquals(key, (this as any)[key], (other as any)[key]),
+        );
     }
 
     protected fieldEquals(key: string, lhs: any, rhs: any): boolean {
@@ -53,5 +55,4 @@ export abstract class QueryNode {
         }
         return lhs === rhs;
     }
-
 }

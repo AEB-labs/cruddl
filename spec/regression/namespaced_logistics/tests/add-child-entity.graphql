@@ -1,12 +1,12 @@
 mutation add {
     logistics {
         delivery {
-            updateDelivery(input: {
-                id: "@{ids/logistics.delivery.Delivery/1}",
-                addItems: [{
-                    itemNumber: "1234"
-                }]
-            }) {
+            updateDelivery(
+                input: {
+                    id: "@{ids/logistics.delivery.Delivery/1}"
+                    addItems: [{ itemNumber: "1234" }]
+                }
+            ) {
                 items {
                     itemNumber
                 }

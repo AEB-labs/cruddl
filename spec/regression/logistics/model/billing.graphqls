@@ -1,4 +1,6 @@
-type BillingEntity @rootEntity(indices: [{ fields: ["type"] }, { fields: ["exportedAt"] }]) @roles(readWrite: ["allusers"]){
+type BillingEntity
+    @rootEntity(indices: [{ fields: ["type"] }, { fields: ["exportedAt"] }])
+    @roles(readWrite: ["allusers"]) {
     key: String!
     type: String!
     isConfirmedForExport: Boolean!

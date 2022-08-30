@@ -12,7 +12,7 @@ import {
     OperationDefinitionNode,
     OperationTypeNode,
     SelectionNode,
-    TypeNameMetaFieldDef
+    TypeNameMetaFieldDef,
 } from 'graphql';
 import { isEqual } from 'lodash';
 import { blue, cyan, green } from '../utils/colors';
@@ -78,9 +78,16 @@ export class FieldRequest {
 
     public describe(): string {
         const selectionItemsDesc = this.selectionSet
-            .map(selection => `${green(JSON.stringify(selection.propertyName))}: ${selection.fieldRequest.describe()}`)
+            .map(
+                (selection) =>
+                    `${green(
+                        JSON.stringify(selection.propertyName),
+                    )}: ${selection.fieldRequest.describe()}`,
+            )
             .join(',\n');
-        const selectionDesc = selectionItemsDesc ? ` with selections {\n${indent(selectionItemsDesc)}\n}` : '';
+        const selectionDesc = selectionItemsDesc
+            ? ` with selections {\n${indent(selectionItemsDesc)}\n}`
+            : '';
         const argsDesc =
             this.args && Object.getOwnPropertyNames(this.args).length
                 ? ` with args ${cyan(JSON.stringify(this.args, null, INDENTATION))}`
@@ -101,7 +108,9 @@ export class FieldSelection {
     constructor(public readonly propertyName: string, public readonly fieldRequest: FieldRequest) {}
 
     equals(other: FieldSelection) {
-        return this.propertyName === other.propertyName && this.fieldRequest.equals(other.fieldRequest);
+        return (
+            this.propertyName === other.propertyName && this.fieldRequest.equals(other.fieldRequest)
+        );
     }
 }
 
@@ -111,12 +120,17 @@ export class FieldSelection {
 export class DistilledOperation {
     constructor(
         public readonly operation: OperationTypeNode,
-        public readonly selectionSet: ReadonlyArray<FieldSelection>
+        public readonly selectionSet: ReadonlyArray<FieldSelection>,
     ) {}
 
     public describe(): string {
         const selectionItemsDesc = this.selectionSet
-            .map(selection => `${green(JSON.stringify(selection.propertyName))}: ${selection.fieldRequest.describe()}`)
+            .map(
+                (selection) =>
+                    `${green(
+                        JSON.stringify(selection.propertyName),
+                    )}: ${selection.fieldRequest.describe()}`,
+            )
             .join(',\n');
         return `${this.operation} with selections {\n${indent(selectionItemsDesc)}\n}`;
     }
@@ -141,14 +155,18 @@ export function distillOperation(params: OperationDistillationParams): Distilled
         variableValues: params.variableValues,
         fragments: params.fragments,
         schema: params.schema,
-        includeTypenameFields: params.includeTypenameFields
+        includeTypenameFields: params.includeTypenameFields,
     };
 
     const parentType = getOperationRootType(params.schema, params.operation.operation);
     if (!parentType) {
         throw new Error(`Schema does not have a ${params.operation.operation} root type`);
     }
-    const selections = distillSelections(params.operation.selectionSet.selections, parentType, context);
+    const selections = distillSelections(
+        params.operation.selectionSet.selections,
+        parentType,
+        context,
+    );
     return new DistilledOperation(params.operation.operation, selections);
 }
 
@@ -159,18 +177,18 @@ export function distillQuery(
     document: DocumentNode,
     schema: GraphQLSchema,
     variableValues: { [name: string]: any } = {},
-    operationName?: string
+    operationName?: string,
 ): DistilledOperation {
     return distillOperation({
         schema,
         operation: extractOperation(document, operationName),
         fragments: arrayToObject(
-            document.definitions.filter(def => def.kind == 'FragmentDefinition') as ReadonlyArray<
-                FragmentDefinitionNode
-            >,
-            def => def.name.value
+            document.definitions.filter(
+                (def) => def.kind == 'FragmentDefinition',
+            ) as ReadonlyArray<FragmentDefinitionNode>,
+            (def) => def.name.value,
         ),
-        variableValues
+        variableValues,
     });
 }
 
@@ -187,16 +205,20 @@ interface Context {
 function distillSelections(
     selections: ReadonlyArray<SelectionNode>,
     parentType: GraphQLCompositeType,
-    context: Context
+    context: Context,
 ): ReadonlyArray<FieldSelection> {
     const allFieldNodes: ReadonlyArray<FieldNode> = resolveSelections(selections, context);
     const allButSystemFieldNodes = allFieldNodes.filter(
-        node => !node.name.value.startsWith('__') || (context.includeTypenameFields && node.name.value === '__typename')
+        (node) =>
+            !node.name.value.startsWith('__') ||
+            (context.includeTypenameFields && node.name.value === '__typename'),
     );
-    const fieldNodesByPropertyName = groupArray(allButSystemFieldNodes, selection => getAliasOrName(selection));
+    const fieldNodesByPropertyName = groupArray(allButSystemFieldNodes, (selection) =>
+        getAliasOrName(selection),
+    );
     return Array.from(fieldNodesByPropertyName).map(
         ([propertyName, fieldNodes]) =>
-            new FieldSelection(propertyName, buildFieldRequest(fieldNodes, parentType, context))
+            new FieldSelection(propertyName, buildFieldRequest(fieldNodes, parentType, context)),
     );
 }
 
@@ -214,7 +236,7 @@ function distillSelections(
 function buildFieldRequest(
     fieldNodes: Array<FieldNode>,
     parentType: GraphQLCompositeType,
-    context: Context
+    context: Context,
 ): FieldRequest {
     const fieldName = fieldNodes[0].name.value;
 
@@ -226,7 +248,7 @@ function buildFieldRequest(
             field: TypeNameMetaFieldDef,
             parentType,
             schema: context.schema,
-            fieldNodes
+            fieldNodes,
         });
     }
 
@@ -238,7 +260,9 @@ function buildFieldRequest(
     let selections: ReadonlyArray<FieldSelection> = [];
     const compositeFieldType = unwrapToCompositeType(fieldDef.type);
     if (compositeFieldType) {
-        const childFieldNodes = flatMap(fieldNodes, node => (node.selectionSet ? node.selectionSet.selections : []));
+        const childFieldNodes = flatMap(fieldNodes, (node) =>
+            node.selectionSet ? node.selectionSet.selections : [],
+        );
         selections = distillSelections(childFieldNodes, compositeFieldType, context);
     }
 
@@ -250,7 +274,7 @@ function buildFieldRequest(
         schema: context.schema,
         selectionSet: selections,
         args,
-        fieldNodes
+        fieldNodes,
     });
 }
 

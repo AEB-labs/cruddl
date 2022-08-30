@@ -1,5 +1,10 @@
 mutation createEdges {
-    updateShipment(input: { id: "@{ids/Shipment/1}", addDeliveries: ["@{ids/Delivery/1}", "@{ids/Delivery/2}"] }) {
+    updateShipment(
+        input: {
+            id: "@{ids/Shipment/1}"
+            addDeliveries: ["@{ids/Delivery/1}", "@{ids/Delivery/2}"]
+        }
+    ) {
         shipmentNumber
     }
     updateOrder(input: { id: "@{ids/Order/1}", delivery: "@{ids/Delivery/1}" }) {

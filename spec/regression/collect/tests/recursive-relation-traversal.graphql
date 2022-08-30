@@ -1,67 +1,74 @@
 mutation createEdges {
-    updateShipment(input: { id: "@{ids/Shipment/1}", addDeliveries: [ "@{ids/Delivery/1}", "@{ids/Delivery/2}" ] }) {
+    updateShipment(
+        input: {
+            id: "@{ids/Shipment/1}"
+            addDeliveries: ["@{ids/Delivery/1}", "@{ids/Delivery/2}"]
+        }
+    ) {
         shipmentNumber
     }
-    d1: updateDelivery(input: { id: "@{ids/Delivery/1}", addHandlingUnits: [ "@{ids/HandlingUnit/1}", "@{ids/HandlingUnit/2}" ] }) {
+    d1: updateDelivery(
+        input: {
+            id: "@{ids/Delivery/1}"
+            addHandlingUnits: ["@{ids/HandlingUnit/1}", "@{ids/HandlingUnit/2}"]
+        }
+    ) {
         deliveryNumber
     }
-    d2: updateDelivery(input: { id: "@{ids/Delivery/2}", addHandlingUnits: [ "@{ids/HandlingUnit/3}" ] }) {
+    d2: updateDelivery(
+        input: { id: "@{ids/Delivery/2}", addHandlingUnits: ["@{ids/HandlingUnit/3}"] }
+    ) {
         deliveryNumber
     }
-    h1: updateHandlingUnit(input: { id: "@{ids/HandlingUnit/1}", createChildHandlingUnits: [
-        {
-            handlingUnitNumber: "H1.1",
+    h1: updateHandlingUnit(
+        input: {
+            id: "@{ids/HandlingUnit/1}"
             createChildHandlingUnits: [
                 {
-                    handlingUnitNumber: "H1.1.1"
-                },
-                {
-                    handlingUnitNumber: "H1.1.2"
+                    handlingUnitNumber: "H1.1"
+                    createChildHandlingUnits: [
+                        { handlingUnitNumber: "H1.1.1" }
+                        { handlingUnitNumber: "H1.1.2" }
+                    ]
                 }
-            ]
-        },
-        {
-            handlingUnitNumber: "H1.2",
-            createChildHandlingUnits: [
                 {
-                    handlingUnitNumber: "H1.2.1"
-                },
-                {
-                    handlingUnitNumber: "H1.2.2"
+                    handlingUnitNumber: "H1.2"
+                    createChildHandlingUnits: [
+                        { handlingUnitNumber: "H1.2.1" }
+                        { handlingUnitNumber: "H1.2.2" }
+                    ]
                 }
             ]
         }
-    ] }) {
+    ) {
         handlingUnitNumber
     }
-    h2: updateHandlingUnit(input: { id: "@{ids/HandlingUnit/2}", createChildHandlingUnits: [
-        {
-            handlingUnitNumber: "H2.1",
+    h2: updateHandlingUnit(
+        input: {
+            id: "@{ids/HandlingUnit/2}"
             createChildHandlingUnits: [
                 {
-                    handlingUnitNumber: "H2.1.1"
+                    handlingUnitNumber: "H2.1"
+                    createChildHandlingUnits: [{ handlingUnitNumber: "H2.1.1" }]
                 }
+                { handlingUnitNumber: "H2.2" }
             ]
-        },
-        {
-            handlingUnitNumber: "H2.2"
         }
-    ] }) {
+    ) {
         handlingUnitNumber
     }
-    h3: updateHandlingUnit(input: { id: "@{ids/HandlingUnit/3}", createChildHandlingUnits: [
-        {
-            handlingUnitNumber: "H3.1",
+    h3: updateHandlingUnit(
+        input: {
+            id: "@{ids/HandlingUnit/3}"
             createChildHandlingUnits: [
                 {
-                    handlingUnitNumber: "H3.1.1"
+                    handlingUnitNumber: "H3.1"
+                    createChildHandlingUnits: [{ handlingUnitNumber: "H3.1.1" }]
                 }
+                { handlingUnitNumber: "H3.2" }
             ]
-        },
-        {
-            handlingUnitNumber: "H3.2"
         }
-    ] }) {
+    ) {
         handlingUnitNumber
     }
 }

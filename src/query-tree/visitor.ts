@@ -21,5 +21,5 @@ export function visitQueryNode(node: QueryNode, visitor: Visitor<QueryNode>): Qu
             }
             return visitor.leave(node, key);
         },
-    })
+    });
 }

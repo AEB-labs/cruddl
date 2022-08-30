@@ -40,7 +40,10 @@ export class Model implements ModelComponent {
 
     constructor(private input: ModelConfig) {
         this.builtInTypes = createBuiltInTypes(this);
-        this.types = [...this.builtInTypes, ...input.types.map((typeInput) => createType(typeInput, this))];
+        this.types = [
+            ...this.builtInTypes,
+            ...input.types.map((typeInput) => createType(typeInput, this)),
+        ];
         this.permissionProfiles = flatMap(input.permissionProfiles || [], createPermissionProfiles);
         this.rootNamespace = new Namespace({
             parent: undefined,
@@ -82,12 +85,15 @@ export class Model implements ModelComponent {
             permissionProfile.validate(context);
         }
 
-        return new ValidationResult([...(this.input.validationMessages || []), ...context.validationMessages]);
+        return new ValidationResult([
+            ...(this.input.validationMessages || []),
+            ...context.validationMessages,
+        ]);
     }
 
     private validateDuplicateTypes(context: ValidationContext) {
         const duplicateTypes = objectValues(groupBy(this.types, (type) => type.name)).filter(
-            (types) => types.length > 1
+            (types) => types.length > 1,
         );
         for (const types of duplicateTypes) {
             for (const type of types) {
@@ -101,12 +107,15 @@ export class Model implements ModelComponent {
                     context.addMessage(
                         ValidationMessage.error(
                             `Type name "${type.name}" is reserved by a built-in type.`,
-                            type.nameASTNode
-                        )
+                            type.nameASTNode,
+                        ),
                     );
                 } else {
                     context.addMessage(
-                        ValidationMessage.error(`Duplicate type name: "${type.name}".`, type.nameASTNode)
+                        ValidationMessage.error(
+                            `Duplicate type name: "${type.name}".`,
+                            type.nameASTNode,
+                        ),
                     );
                 }
             }
@@ -130,19 +139,27 @@ export class Model implements ModelComponent {
     }
 
     get rootEntityTypes(): ReadonlyArray<RootEntityType> {
-        return this.types.filter((t) => t.kind === TypeKind.ROOT_ENTITY) as ReadonlyArray<RootEntityType>;
+        return this.types.filter(
+            (t) => t.kind === TypeKind.ROOT_ENTITY,
+        ) as ReadonlyArray<RootEntityType>;
     }
 
     get childEntityTypes(): ReadonlyArray<ChildEntityType> {
-        return this.types.filter((t) => t.kind === TypeKind.CHILD_ENTITY) as ReadonlyArray<ChildEntityType>;
+        return this.types.filter(
+            (t) => t.kind === TypeKind.CHILD_ENTITY,
+        ) as ReadonlyArray<ChildEntityType>;
     }
 
     get entityExtensionTypes(): ReadonlyArray<EntityExtensionType> {
-        return this.types.filter((t) => t.kind === TypeKind.ENTITY_EXTENSION) as ReadonlyArray<EntityExtensionType>;
+        return this.types.filter(
+            (t) => t.kind === TypeKind.ENTITY_EXTENSION,
+        ) as ReadonlyArray<EntityExtensionType>;
     }
 
     get valueObjectTypes(): ReadonlyArray<ValueObjectType> {
-        return this.types.filter((t) => t.kind === TypeKind.VALUE_OBJECT) as ReadonlyArray<ValueObjectType>;
+        return this.types.filter(
+            (t) => t.kind === TypeKind.VALUE_OBJECT,
+        ) as ReadonlyArray<ValueObjectType>;
     }
 
     get scalarTypes(): ReadonlyArray<ScalarType> {
@@ -261,8 +278,10 @@ export class Model implements ModelComponent {
     }
 }
 
-function createPermissionProfiles(map: NamespacedPermissionProfileConfigMap): ReadonlyArray<PermissionProfile> {
+function createPermissionProfiles(
+    map: NamespacedPermissionProfileConfigMap,
+): ReadonlyArray<PermissionProfile> {
     return objectEntries(map.profiles).map(
-        ([name, profile]) => new PermissionProfile(name, map.namespacePath || [], profile)
+        ([name, profile]) => new PermissionProfile(name, map.namespacePath || [], profile),
     );
 }

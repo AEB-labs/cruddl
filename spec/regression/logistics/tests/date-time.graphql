@@ -1,5 +1,5 @@
 mutation update {
-    updateDelivery(input: { id: "@{ids/Delivery/1}", shippedAt: "2018-06-06T10:37:00Z"}) {
+    updateDelivery(input: { id: "@{ids/Delivery/1}", shippedAt: "2018-06-06T10:37:00Z" }) {
         shippedAt
     }
 }

@@ -1,5 +1,5 @@
 mutation prepare {
-    updateHandlingUnit(input: { id: "@{ids/HandlingUnit/1}", delivery:  "@{ids/Delivery/1}" }) {
+    updateHandlingUnit(input: { id: "@{ids/HandlingUnit/1}", delivery: "@{ids/Delivery/1}" }) {
         huNumber
     }
 }
@@ -44,7 +44,7 @@ query selectMeta {
 }
 
 query filter {
-    direct: allDeliveries(filter: { id: "@{ids/Delivery/1}", totalValue: "EUR 5.50"}) {
+    direct: allDeliveries(filter: { id: "@{ids/Delivery/1}", totalValue: "EUR 5.50" }) {
         deliveryNumber
     }
 
@@ -52,15 +52,19 @@ query filter {
         value
     }
 
-    startsWith: allDeliveries(filter: { id: "@{ids/Delivery/1}", totalValue_starts_with: "EUR"}) {
+    startsWith: allDeliveries(filter: { id: "@{ids/Delivery/1}", totalValue_starts_with: "EUR" }) {
         deliveryNumber
     }
 
-    throughRelation: allHandlingUnits(filter: { id: "@{ids/HandlingUnit/1}", delivery: {totalValue: "EUR 5.50"}}) {
+    throughRelation: allHandlingUnits(
+        filter: { id: "@{ids/HandlingUnit/1}", delivery: { totalValue: "EUR 5.50" } }
+    ) {
         huNumber
     }
 
-    toUnaccessibleEntity: allDeliveries(filter: { id: "@{ids/Delivery/1}", forwarder: {name: "DHL"}}) {
+    toUnaccessibleEntity: allDeliveries(
+        filter: { id: "@{ids/Delivery/1}", forwarder: { name: "DHL" } }
+    ) {
         deliveryNumber
     }
 }
@@ -70,27 +74,30 @@ query sort {
         deliveryNumber
     }
 
-    throughRelation: allHandlingUnits(filter: { id: "@{ids/Delivery/1}" }, orderBy: delivery_totalValue_DESC) {
+    throughRelation: allHandlingUnits(
+        filter: { id: "@{ids/Delivery/1}" }
+        orderBy: delivery_totalValue_DESC
+    ) {
         huNumber
     }
 }
 
 mutation create {
-    createDelivery(input: {totalValue: "EUR 5.50"}) {
+    createDelivery(input: { totalValue: "EUR 5.50" }) {
         deliveryNumber
     }
 
-    createForwarder(input: { name: "DPD"}) {
+    createForwarder(input: { name: "DPD" }) {
         name
     }
 }
 
 mutation update {
-    updateDelivery(input: { id: "@{ids/Delivery/1}", totalValue: "EUR 5.50"}) {
+    updateDelivery(input: { id: "@{ids/Delivery/1}", totalValue: "EUR 5.50" }) {
         deliveryNumber
     }
 
-    updateForwarder(input: { id: "@{ids/Forwarder/1}", name: "DPD"}) {
+    updateForwarder(input: { id: "@{ids/Forwarder/1}", name: "DPD" }) {
         name
     }
     # this should not be executed because the other mutations fail

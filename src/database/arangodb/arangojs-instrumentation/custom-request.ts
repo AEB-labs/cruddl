@@ -8,7 +8,13 @@ import { btoa } from 'arangojs/lib/btoa';
 import { joinPath } from 'arangojs/lib/joinPath';
 import { Errback } from 'arangojs/lib/errback';
 import { omit } from 'arangojs/lib/omit';
-import { Agent as HttpAgent, ClientRequest, ClientRequestArgs, IncomingMessage, request as httpRequest } from 'http';
+import {
+    Agent as HttpAgent,
+    ClientRequest,
+    ClientRequestArgs,
+    IncomingMessage,
+    request as httpRequest,
+} from 'http';
 import { Agent as HttpsAgent, request as httpsRequest } from 'https';
 import { Socket } from 'net';
 import { parse as parseUrl, UrlWithStringQuery } from 'url';
@@ -53,7 +59,7 @@ export function createRequest(baseUrl: string, agentOptions: any, agent: any): R
     if (baseUrl.startsWith(`${baseUrlParts.protocol}//unix:`)) {
         if (!baseUrlParts.pathname) {
             throw new Error(
-                `Unix socket URL must be in the format http://unix:/socket/path, http+unix:///socket/path or unix:///socket/path not ${baseUrl}`
+                `Unix socket URL must be in the format http://unix:/socket/path, http+unix:///socket/path or unix:///socket/path not ${baseUrl}`,
             );
         }
         const i = baseUrlParts.pathname.indexOf(':');
@@ -80,7 +86,7 @@ export function createRequest(baseUrl: string, agentOptions: any, agent: any): R
     return Object.assign(
         function request(
             { method, url, headers, body, timeout, requestInstrumentation }: RequestOptions,
-            callback: Errback<ArangojsResponse>
+            callback: Errback<ArangojsResponse>,
         ) {
             // this is the last change we cancel a request
             // we don't cancel running requests because arangodb does not kill queries when the request ist terminated
@@ -88,7 +94,9 @@ export function createRequest(baseUrl: string, agentOptions: any, agent: any): R
             // - to get notified if the request completes pretty quickly anyway so we don't need to kill the query
             // - to take up a socket so that no new query is sent on it while the query is not yet killed
             if (requestInstrumentation && requestInstrumentation.isCancelled) {
-                return callback(new Error(`Request has been cancelled by caller before it was sent`));
+                return callback(
+                    new Error(`Request has been cancelled by caller before it was sent`),
+                );
             }
 
             notifyAboutPhaseEnd(requestInstrumentation, 'queuing');
@@ -120,23 +128,26 @@ export function createRequest(baseUrl: string, agentOptions: any, agent: any): R
             let called = false;
 
             try {
-                const req = (isTls ? httpsRequest : httpRequest)(options, (res: IncomingMessage) => {
-                    notifyAboutPhaseEnd(requestInstrumentation, 'waiting');
-                    const data: Buffer[] = [];
-                    res.on('data', chunk => data.push(chunk as Buffer));
-                    res.on('end', () => {
-                        const response = res as ArangojsResponse;
-                        response.request = req;
-                        response.body = Buffer.concat(data);
-                        if (called) return;
-                        called = true;
-                        if (agentOptions.after) {
-                            agentOptions.after(null, response);
-                        }
-                        notifyAboutPhaseEnd(requestInstrumentation, 'receiving');
-                        callback(null, response);
-                    });
-                });
+                const req = (isTls ? httpsRequest : httpRequest)(
+                    options,
+                    (res: IncomingMessage) => {
+                        notifyAboutPhaseEnd(requestInstrumentation, 'waiting');
+                        const data: Buffer[] = [];
+                        res.on('data', (chunk) => data.push(chunk as Buffer));
+                        res.on('end', () => {
+                            const response = res as ArangojsResponse;
+                            response.request = req;
+                            response.body = Buffer.concat(data);
+                            if (called) return;
+                            called = true;
+                            if (agentOptions.after) {
+                                agentOptions.after(null, response);
+                            }
+                            notifyAboutPhaseEnd(requestInstrumentation, 'receiving');
+                            callback(null, response);
+                        });
+                    },
+                );
                 if (requestInstrumentation) {
                     req.on('socket', (socket: Socket) => {
                         notifyAboutPhaseEnd(requestInstrumentation, 'socketInit');
@@ -144,8 +155,12 @@ export function createRequest(baseUrl: string, agentOptions: any, agent: any): R
                             return;
                         }
                         knownSockets.add(socket);
-                        socket.on('lookup', () => notifyAboutPhaseEnd(requestInstrumentation, 'lookup'));
-                        socket.on('connect', () => notifyAboutPhaseEnd(requestInstrumentation, 'connecting'));
+                        socket.on('lookup', () =>
+                            notifyAboutPhaseEnd(requestInstrumentation, 'lookup'),
+                        );
+                        socket.on('connect', () =>
+                            notifyAboutPhaseEnd(requestInstrumentation, 'connecting'),
+                        );
                     });
                 }
                 if (timeout) {
@@ -154,7 +169,7 @@ export function createRequest(baseUrl: string, agentOptions: any, agent: any): R
                 req.on('timeout', () => {
                     req.abort();
                 });
-                req.on('error', err => {
+                req.on('error', (err) => {
                     const error = err as ArangojsError;
                     error.request = req;
                     if (called) return;
@@ -180,14 +195,14 @@ export function createRequest(baseUrl: string, agentOptions: any, agent: any): R
         {
             close() {
                 agent.destroy();
-            }
-        }
+            },
+        },
     );
 }
 
 function notifyAboutPhaseEnd(
     requestInstrumentation: RequestInstrumentation | undefined,
-    phase: RequestInstrumentationPhase
+    phase: RequestInstrumentationPhase,
 ) {
     if (!requestInstrumentation) {
         return;

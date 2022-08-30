@@ -1,4 +1,10 @@
-import { getNamedType, GraphQLInputType, GraphQLList, GraphQLNonNull, GraphQLString } from 'graphql';
+import {
+    getNamedType,
+    GraphQLInputType,
+    GraphQLList,
+    GraphQLNonNull,
+    GraphQLString,
+} from 'graphql';
 import { Field, TypeKind } from '../../model';
 import {
     BinaryOperationQueryNode,
@@ -48,7 +54,7 @@ export interface FlexSearchFilterField extends TypedInputFieldBase<FlexSearchFil
         sourceNode: QueryNode,
         filterValue: AnyValue,
         path: ReadonlyArray<Field>,
-        info: QueryNodeResolveInfo
+        info: QueryNodeResolveInfo,
     ): QueryNode;
 }
 
@@ -77,16 +83,20 @@ export class FlexSearchScalarOrEnumFieldFilterField implements FlexSearchFilterF
 
     constructor(
         public readonly field: Field,
-        public readonly resolveOperator: (fieldNode: QueryNode, valueNode: QueryNode, analyzer?: string) => QueryNode,
+        public readonly resolveOperator: (
+            fieldNode: QueryNode,
+            valueNode: QueryNode,
+            analyzer?: string,
+        ) => QueryNode,
         public readonly operatorSuffix: string | undefined,
         baseInputType: GraphQLInputType,
         public readonly analyzer?: string,
-        readonly isAggregation: boolean = false
+        readonly isAggregation: boolean = false,
     ) {
         if (!resolveOperator) {
             // this is looked up from string maps, so it might be undefined in case of a bug -> fail early
             throw new Error(
-                `Filter field for ${field.name} with suffix ${operatorSuffix} is missing the resolve function`
+                `Filter field for ${field.name} with suffix ${operatorSuffix} is missing the resolve function`,
             );
         }
         this.inputType = FLEX_SEARCH_OPERATORS_WITH_LIST_OPERAND.includes(operatorSuffix || '')
@@ -100,7 +110,8 @@ export class FlexSearchScalarOrEnumFieldFilterField implements FlexSearchFilterF
         });
 
         if (this.field.description) {
-            this.description = (this.description ? this.description + '\n\n' : '') + this.field.description;
+            this.description =
+                (this.description ? this.description + '\n\n' : '') + this.field.description;
         }
     }
 
@@ -111,7 +122,9 @@ export class FlexSearchScalarOrEnumFieldFilterField implements FlexSearchFilterF
     get name() {
         return (
             this.field.name +
-            (this.isAggregation ? FILTER_FIELD_PREFIX_SEPARATOR + NESTED_FIELD_SUFFIX.toLowerCase() : '') +
+            (this.isAggregation
+                ? FILTER_FIELD_PREFIX_SEPARATOR + NESTED_FIELD_SUFFIX.toLowerCase()
+                : '') +
             (this.operatorSuffix ? FILTER_FIELD_PREFIX_SEPARATOR + this.operatorSuffix : '')
         );
     }
@@ -120,10 +133,14 @@ export class FlexSearchScalarOrEnumFieldFilterField implements FlexSearchFilterF
         sourceNode: QueryNode,
         filterValue: AnyValue,
         path: ReadonlyArray<Field>,
-        info: QueryNodeResolveInfo
+        info: QueryNodeResolveInfo,
     ): QueryNode {
         let valueNode;
-        if (this.field.declaringType.isRootEntityType && this.field.isSystemField && this.field.name === ID_FIELD) {
+        if (
+            this.field.declaringType.isRootEntityType &&
+            this.field.isSystemField &&
+            this.field.name === ID_FIELD
+        ) {
             if (path.length) {
                 throw new Error(`Tried to create cross-root-entity flexSearch filter`);
             }
@@ -140,18 +157,27 @@ export class FlexSearchScalarOrEnumFilterField implements FlexSearchFilterField 
     public readonly description: string | undefined;
 
     constructor(
-        public readonly resolveOperator: (fieldNode: QueryNode, valueNode: QueryNode, analyzer?: string) => QueryNode,
+        public readonly resolveOperator: (
+            fieldNode: QueryNode,
+            valueNode: QueryNode,
+            analyzer?: string,
+        ) => QueryNode,
         public readonly operatorName: string,
         baseInputType: GraphQLInputType,
-        readonly usesFullTextIndex: boolean
+        readonly usesFullTextIndex: boolean,
     ) {
         this.inputType = FLEX_SEARCH_OPERATORS_WITH_LIST_OPERAND.includes(operatorName)
             ? new GraphQLList(baseInputType)
             : baseInputType;
-        this.description = getDescription({ operator: operatorName, typeName: getNamedType(baseInputType).name });
+        this.description = getDescription({
+            operator: operatorName,
+            typeName: getNamedType(baseInputType).name,
+        });
         if (!resolveOperator) {
             // this is looked up from string maps, so it might be undefined in case of a bug -> fail early
-            throw new Error(`Filter field for operator ${operatorName} is missing the resolve function`);
+            throw new Error(
+                `Filter field for operator ${operatorName} is missing the resolve function`,
+            );
         }
     }
 
@@ -163,7 +189,7 @@ export class FlexSearchScalarOrEnumFilterField implements FlexSearchFilterField 
         sourceNode: QueryNode,
         filterValue: AnyValue,
         path: ReadonlyArray<Field>,
-        info: QueryNodeResolveInfo
+        info: QueryNodeResolveInfo,
     ): QueryNode {
         const lastField = path[path.length - 1];
         if (!lastField) {
@@ -173,7 +199,9 @@ export class FlexSearchScalarOrEnumFilterField implements FlexSearchFilterField 
             this,
             sourceNode,
             filterValue,
-            this.usesFullTextIndex ? lastField.getFlexSearchFulltextAnalyzerOrThrow() : lastField.flexSearchAnalyzer
+            this.usesFullTextIndex
+                ? lastField.getFlexSearchFulltextAnalyzerOrThrow()
+                : lastField.flexSearchAnalyzer,
         );
     }
 }
@@ -182,10 +210,17 @@ export class FlexSearchNestedObjectFilterField implements FlexSearchFilterField 
     readonly name: string;
     readonly description: string;
 
-    constructor(public readonly field: Field, public readonly inputType: FlexSearchFilterObjectType) {
+    constructor(
+        public readonly field: Field,
+        public readonly inputType: FlexSearchFilterObjectType,
+    ) {
         this.name = this.field.isList ? this.field.name + NESTED_FIELD_SUFFIX : this.field.name;
         this.description = `Checks if \`${this.field.name}\` is not null, and allows to filter based on its fields.`;
-        if (this.field.isReference && this.field.type.kind == TypeKind.ROOT_ENTITY && this.field.type.keyField) {
+        if (
+            this.field.isReference &&
+            this.field.type.kind == TypeKind.ROOT_ENTITY &&
+            this.field.type.keyField
+        ) {
             this.description =
                 `Filters the through \`${this.field.type.keyField.name}\` referenced ${this.field.type.pluralName} that fulfills the given requirements.\n\n ` +
                 this.description;
@@ -196,19 +231,19 @@ export class FlexSearchNestedObjectFilterField implements FlexSearchFilterField 
         sourceNode: QueryNode,
         filterValue: AnyValue,
         path: ReadonlyArray<Field>,
-        info: QueryNodeResolveInfo
+        info: QueryNodeResolveInfo,
     ): QueryNode {
         // if path contains any Field twice
         const recursionDepth = info.flexSearchRecursionDepth ? info.flexSearchRecursionDepth : 1;
         if (
             path.some(
                 (value) =>
-                    path.filter((value1) => value.type.isObjectType && value.type == value1.type).length >
-                    recursionDepth
+                    path.filter((value1) => value.type.isObjectType && value.type == value1.type)
+                        .length > recursionDepth,
             )
         ) {
             return new RuntimeErrorQueryNode(
-                `Recursive filters can only be defined for ${recursionDepth} level of recursion.`
+                `Recursive filters can only be defined for ${recursionDepth} level of recursion.`,
             );
         }
         if (filterValue == null) {
@@ -217,13 +252,13 @@ export class FlexSearchNestedObjectFilterField implements FlexSearchFilterField 
             const node = new BinaryOperationQueryNode(
                 new BinaryOperationQueryNode(valueNode, BinaryOperator.EQUAL, literalNode),
                 BinaryOperator.OR,
-                not(new FlexSearchFieldExistsQueryNode(valueNode, this.field.flexSearchAnalyzer))
+                not(new FlexSearchFieldExistsQueryNode(valueNode, this.field.flexSearchAnalyzer)),
             );
             if (path.length > 0) {
                 return new BinaryOperationQueryNode(
                     node,
                     BinaryOperator.AND,
-                    new FlexSearchFieldExistsQueryNode(valueNode, this.field.flexSearchAnalyzer)
+                    new FlexSearchFieldExistsQueryNode(valueNode, this.field.flexSearchAnalyzer),
                 );
             } else {
                 return node;
@@ -233,7 +268,7 @@ export class FlexSearchNestedObjectFilterField implements FlexSearchFilterField 
                 new FieldQueryNode(sourceNode, this.field),
                 filterValue,
                 path.concat(this.field),
-                info
+                info,
             );
         }
     }
@@ -243,7 +278,10 @@ export class FlexSearchEntityExtensionFilterField implements FlexSearchFilterFie
     readonly name: string;
     readonly description: string;
 
-    constructor(public readonly field: Field, public readonly inputType: FlexSearchFilterObjectType) {
+    constructor(
+        public readonly field: Field,
+        public readonly inputType: FlexSearchFilterObjectType,
+    ) {
         this.name = this.field.isList ? this.field.name + NESTED_FIELD_SUFFIX : this.field.name;
         this.description = `Allows to filter on the fields of \`${this.field.name}\`.\n\nNote that \`${this.field.name}\` is an entity extension and thus can never be \`null\`, so specifying \`null\` to this filter field has no effect.`;
     }
@@ -252,7 +290,7 @@ export class FlexSearchEntityExtensionFilterField implements FlexSearchFilterFie
         sourceNode: QueryNode,
         filterValue: AnyValue,
         path: ReadonlyArray<Field>,
-        info: QueryNodeResolveInfo
+        info: QueryNodeResolveInfo,
     ): QueryNode {
         if (filterValue == undefined) {
             // entity extensions can't ever be null, and null is always coerced to {}, so this filter just shouldn't have any effect
@@ -278,14 +316,18 @@ export class FlexSearchAndFilterField implements FlexSearchFilterField {
         sourceNode: QueryNode,
         filterValue: AnyValue,
         path: ReadonlyArray<Field>,
-        info: QueryNodeResolveInfo
+        info: QueryNodeResolveInfo,
     ): QueryNode {
         if (!Array.isArray(filterValue) || !filterValue.length) {
             return new ConstBoolQueryNode(true);
         }
         const values = (filterValue || []) as ReadonlyArray<PlainObject>;
-        const nodes = values.map((value) => this.filterType.getFilterNode(sourceNode, value, path, info));
-        return nodes.reduce((prev, node) => new BinaryOperationQueryNode(prev, BinaryOperator.AND, node));
+        const nodes = values.map((value) =>
+            this.filterType.getFilterNode(sourceNode, value, path, info),
+        );
+        return nodes.reduce(
+            (prev, node) => new BinaryOperationQueryNode(prev, BinaryOperator.AND, node),
+        );
     }
 }
 
@@ -304,7 +346,7 @@ export class FlexSearchOrFilterField implements FlexSearchFilterField {
         sourceNode: QueryNode,
         filterValue: AnyValue,
         path: ReadonlyArray<Field>,
-        info: QueryNodeResolveInfo
+        info: QueryNodeResolveInfo,
     ): QueryNode {
         if (!Array.isArray(filterValue)) {
             return new ConstBoolQueryNode(true); // regard as omitted
@@ -313,15 +355,22 @@ export class FlexSearchOrFilterField implements FlexSearchFilterField {
         if (!values.length) {
             return ConstBoolQueryNode.FALSE; // neutral element of OR
         }
-        const nodes = values.map((value) => this.filterType.getFilterNode(sourceNode, value, path, info));
-        return nodes.reduce((prev, node) => new BinaryOperationQueryNode(prev, BinaryOperator.OR, node));
+        const nodes = values.map((value) =>
+            this.filterType.getFilterNode(sourceNode, value, path, info),
+        );
+        return nodes.reduce(
+            (prev, node) => new BinaryOperationQueryNode(prev, BinaryOperator.OR, node),
+        );
     }
 }
 
 export class FlexSearchI18nStringLocalizedFilterField implements FlexSearchFilterField {
     readonly name: string;
 
-    constructor(public readonly field: Field, public readonly inputType: FlexSearchFilterObjectType) {
+    constructor(
+        public readonly field: Field,
+        public readonly inputType: FlexSearchFilterObjectType,
+    ) {
         this.name = `${this.field.name}_localized`;
     }
 
@@ -336,7 +385,7 @@ export class FlexSearchI18nStringLocalizedFilterField implements FlexSearchFilte
         sourceNode: QueryNode,
         filterValue: AnyValue,
         path: ReadonlyArray<Field>,
-        info: QueryNodeResolveInfo
+        info: QueryNodeResolveInfo,
     ): QueryNode {
         if (filterValue == undefined) {
             // does not really make sense because language is required
@@ -351,7 +400,12 @@ export class FlexSearchI18nStringLocalizedFilterField implements FlexSearchFilte
         const fieldValueNode = new FieldQueryNode(sourceNode, this.field);
         const localizedValueNode = new PropertyAccessQueryNode(fieldValueNode, language);
 
-        return this.inputType.getFilterNode(localizedValueNode, filterValue, path.concat(this.field), info);
+        return this.inputType.getFilterNode(
+            localizedValueNode,
+            filterValue,
+            path.concat(this.field),
+            info,
+        );
     }
 }
 
@@ -374,61 +428,75 @@ export function resolveFilterField(
     filterField: FlexSearchScalarOrEnumFieldFilterField | FlexSearchScalarOrEnumFilterField,
     valueNode: QueryNode,
     filterValue: AnyValue,
-    analyzer: string | undefined
+    analyzer: string | undefined,
 ): QueryNode {
-    if (FLEX_SEARCH_OPERATORS_WITH_LIST_OPERAND.includes(filterField.operatorName) && filterValue == null) {
+    if (
+        FLEX_SEARCH_OPERATORS_WITH_LIST_OPERAND.includes(filterField.operatorName) &&
+        filterValue == null
+    ) {
         return new ConstBoolQueryNode(true);
     }
 
     const literalNode = new LiteralQueryNode(filterValue);
     if (
-        (filterField.operatorName === INPUT_FIELD_EQUAL || filterField.operatorName === INPUT_FIELD_LTE) &&
+        (filterField.operatorName === INPUT_FIELD_EQUAL ||
+            filterField.operatorName === INPUT_FIELD_LTE) &&
         filterValue == null
     ) {
         return new BinaryOperationQueryNode(
             new BinaryOperationQueryNode(valueNode, BinaryOperator.EQUAL, NullQueryNode.NULL),
             BinaryOperator.OR,
-            not(new FlexSearchFieldExistsQueryNode(valueNode, analyzer))
+            not(new FlexSearchFieldExistsQueryNode(valueNode, analyzer)),
         );
     }
     // field < x and field <= x should also find NULL values, because that's how it behaves in non-flexsearch case
     if (
-        (filterField.operatorName === INPUT_FIELD_LT || filterField.operatorName === INPUT_FIELD_LTE) &&
+        (filterField.operatorName === INPUT_FIELD_LT ||
+            filterField.operatorName === INPUT_FIELD_LTE) &&
         filterValue != null
     ) {
         const isNull = new BinaryOperationQueryNode(
             new BinaryOperationQueryNode(valueNode, BinaryOperator.EQUAL, NullQueryNode.NULL),
             BinaryOperator.OR,
-            not(new FlexSearchFieldExistsQueryNode(valueNode, analyzer))
+            not(new FlexSearchFieldExistsQueryNode(valueNode, analyzer)),
         );
         return new BinaryOperationQueryNode(
             isNull,
             BinaryOperator.OR,
-            filterField.resolveOperator(valueNode, literalNode, analyzer)
-        );
-    }
-    if (filterField.operatorName == INPUT_FIELD_IN && Array.isArray(filterValue) && filterValue.includes(null)) {
-        return new BinaryOperationQueryNode(
             filterField.resolveOperator(valueNode, literalNode, analyzer),
-            BinaryOperator.OR,
-            not(new FlexSearchFieldExistsQueryNode(valueNode, analyzer))
         );
     }
     if (
-        (filterField.operatorName == INPUT_FIELD_NOT || filterField.operatorName === INPUT_FIELD_GT) &&
+        filterField.operatorName == INPUT_FIELD_IN &&
+        Array.isArray(filterValue) &&
+        filterValue.includes(null)
+    ) {
+        return new BinaryOperationQueryNode(
+            filterField.resolveOperator(valueNode, literalNode, analyzer),
+            BinaryOperator.OR,
+            not(new FlexSearchFieldExistsQueryNode(valueNode, analyzer)),
+        );
+    }
+    if (
+        (filterField.operatorName == INPUT_FIELD_NOT ||
+            filterField.operatorName === INPUT_FIELD_GT) &&
         filterValue == null
     ) {
         return new BinaryOperationQueryNode(
             new BinaryOperationQueryNode(valueNode, BinaryOperator.UNEQUAL, NullQueryNode.NULL),
             BinaryOperator.AND,
-            new FlexSearchFieldExistsQueryNode(valueNode, analyzer)
+            new FlexSearchFieldExistsQueryNode(valueNode, analyzer),
         );
     }
-    if (filterField.operatorName == INPUT_FIELD_NOT_IN && Array.isArray(filterValue) && filterValue.includes(null)) {
+    if (
+        filterField.operatorName == INPUT_FIELD_NOT_IN &&
+        Array.isArray(filterValue) &&
+        filterValue.includes(null)
+    ) {
         return new BinaryOperationQueryNode(
             filterField.resolveOperator(valueNode, literalNode, analyzer),
             BinaryOperator.AND,
-            new FlexSearchFieldExistsQueryNode(valueNode, analyzer)
+            new FlexSearchFieldExistsQueryNode(valueNode, analyzer),
         );
     }
 
@@ -446,7 +514,9 @@ export function resolveFilterField(
     if (
         (filterField.operatorName == INPUT_FIELD_STARTS_WITH ||
             filterField.operatorName == INPUT_FIELD_NOT_STARTS_WITH ||
-            STRING_TEXT_ANALYZER_FILTER_FIELDS.some((value) => filterField.operatorName === value)) &&
+            STRING_TEXT_ANALYZER_FILTER_FIELDS.some(
+                (value) => filterField.operatorName === value,
+            )) &&
         (filterValue == null || filterValue === '')
     ) {
         return new ConstBoolQueryNode(true);

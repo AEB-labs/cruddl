@@ -142,7 +142,7 @@ describe('@root directive', () => {
                 root: [Child] @root
             }
         `,
-            `A root field cannot be a list.`
+            `A root field cannot be a list.`,
         );
     });
 
@@ -154,7 +154,7 @@ describe('@root directive', () => {
                 root: Root @root
             }
         `,
-            `@root can only be used on fields of child entity types.`
+            `@root can only be used on fields of child entity types.`,
         );
     });
 
@@ -170,7 +170,7 @@ describe('@root directive', () => {
                 root: Root @root
             }
         `,
-            `@root can only be used on fields of child entity types.`
+            `@root can only be used on fields of child entity types.`,
         );
     });
 
@@ -186,7 +186,7 @@ describe('@root directive', () => {
                 root: Root @root
             }
         `,
-            `@root can only be used on fields of child entity types.`
+            `@root can only be used on fields of child entity types.`,
         );
     });
 
@@ -202,7 +202,7 @@ describe('@root directive', () => {
                 root: Root @root
             }
         `,
-            `There need to be fields other than parent and root fields in a child entity type.`
+            `There need to be fields other than parent and root fields in a child entity type.`,
         );
     });
 
@@ -219,7 +219,7 @@ describe('@root directive', () => {
                 root: Root @root @reference
             }
         `,
-            `@root and @reference cannot be combined.`
+            `@root and @reference cannot be combined.`,
         );
     });
 
@@ -239,7 +239,7 @@ describe('@root directive', () => {
                 field: String
             }
         `,
-            `@root and @collect cannot be combined.`
+            `@root and @collect cannot be combined.`,
         );
     });
 
@@ -255,7 +255,7 @@ describe('@root directive', () => {
                 root: Root @root @flexSearch
             }
         `,
-            `@flexSearch is not supported on root fields.`
+            `@flexSearch is not supported on root fields.`,
         );
     });
 
@@ -271,7 +271,7 @@ describe('@root directive', () => {
                 root: Root @root @flexSearchFulltext
             }
         `,
-            `@flexSearchFulltext is not supported on type "Root".`
+            `@flexSearchFulltext is not supported on type "Root".`,
         );
     });
 
@@ -287,7 +287,7 @@ describe('@root directive', () => {
                 root: Root @root @defaultValue(value: { })
             }
         `,
-            `Default values are not supported on root fields.`
+            `Default values are not supported on root fields.`,
         );
     });
 
@@ -303,7 +303,7 @@ describe('@root directive', () => {
                 root: Root @root @parent
             }
         `,
-            `@parent and @root cannot be combined.`
+            `@parent and @root cannot be combined.`,
         );
     });
 
@@ -319,7 +319,7 @@ describe('@root directive', () => {
                 root: Root @root
             }
         `,
-            `Type "Child" is not used by any root entity type and therefore cannot have a root field.`
+            `Type "Child" is not used by any root entity type and therefore cannot have a root field.`,
         );
     });
 
@@ -339,7 +339,7 @@ describe('@root directive', () => {
                 root: Root2 @root
             }
         `,
-            `Type "Child" is used in root entity type "Root1", so the type of this root field should be "Root1".`
+            `Type "Child" is used in root entity type "Root1", so the type of this root field should be "Root1".`,
         );
     });
 
@@ -359,7 +359,7 @@ describe('@root directive', () => {
                 root: Root1 @root
             }
         `,
-            `Type "Child" is used in root entity type "Root2" as well and thus cannot have a root field.`
+            `Type "Child" is used in root entity type "Root2" as well and thus cannot have a root field.`,
         );
     });
 
@@ -383,7 +383,7 @@ describe('@root directive', () => {
                 root: Root1 @root
             }
         `,
-            `Type "Child" is used in root entity types "Root2" and "Root3" as well and thus cannot have a root field.`
+            `Type "Child" is used in root entity types "Root2" and "Root3" as well and thus cannot have a root field.`,
         );
     });
 
@@ -411,7 +411,7 @@ describe('@root directive', () => {
                 root: Root4 @root
             }
         `,
-            `Type "Child" is used in multiple root entity types ("Root1", "Root2" and "Root3") and thus cannot have a root field.`
+            `Type "Child" is used in multiple root entity types ("Root1", "Root2" and "Root3") and thus cannot have a root field.`,
         );
     });
 
@@ -432,7 +432,7 @@ describe('@root directive', () => {
                 root: Root2 @root
             }
         `,
-            'Type "Child" is used in root entity type "Root", so the type of this root field should be "Root".'
+            'Type "Child" is used in root entity type "Root", so the type of this root field should be "Root".',
         );
     });
 
@@ -456,7 +456,7 @@ describe('@root directive', () => {
                 root: Extension1 @root
             }
         `,
-            'Type "Child" is used in root entity type "Root", so the type of this root field should be "Root".'
+            'Type "Child" is used in root entity type "Root", so the type of this root field should be "Root".',
         );
     });
 
@@ -472,12 +472,12 @@ describe('@root directive', () => {
                 root1: Root @root
                 root2: Root @root
             }
-        `
+        `,
         );
         expect(result.hasErrors()).to.be.true;
-        expect(result.messages.map(m => m.message)).to.deep.equal([
+        expect(result.messages.map((m) => m.message)).to.deep.equal([
             `There can only be one root field per type.`,
-            `There can only be one root field per type.`
+            `There can only be one root field per type.`,
         ]);
     });
 });

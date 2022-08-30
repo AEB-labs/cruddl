@@ -4,17 +4,13 @@
       "withValue": {
         "dgInfo": {
           "unNumber": "1863",
-          "notices": [
-            "No special treatment necessary."
-          ]
+          "notices": ["No special treatment necessary."]
         }
       },
       "withoutValue": {
         "dgInfo": {
           "unNumber": null,
-          "notices": [
-            "No special treatment necessary."
-          ]
+          "notices": ["No special treatment necessary."]
         }
       }
     }
@@ -24,9 +20,7 @@
       "updateDelivery": {
         "dgInfo": {
           "unNumber": "1234",
-          "notices": [
-            "No special treatment necessary."
-          ],
+          "notices": ["No special treatment necessary."],
           "details": {
             "expiryDate": "2020-02-14"
           }
@@ -39,9 +33,7 @@
       "Delivery": {
         "dgInfo": {
           "unNumber": "1234",
-          "notices": [
-            "No special treatment necessary."
-          ]
+          "notices": ["No special treatment necessary."]
         }
       }
     }
@@ -73,9 +65,7 @@
       "createDelivery": {
         "dgInfo": {
           "unNumber": null,
-          "notices": [
-            "No special treatment necessary."
-          ]
+          "notices": ["No special treatment necessary."]
         }
       }
     }
@@ -85,9 +75,7 @@
       "createDelivery": {
         "dgInfo": {
           "unNumber": "1234",
-          "notices": [
-            "No special treatment necessary."
-          ]
+          "notices": ["No special treatment necessary."]
         }
       }
     }

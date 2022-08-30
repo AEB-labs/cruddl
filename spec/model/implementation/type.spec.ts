@@ -1,6 +1,10 @@
 import { GraphQLString } from 'graphql';
 import { Model, ScalarType, TypeKind } from '../../../src/model';
-import { expectSingleErrorToInclude, expectSingleWarningToInclude, expectToBeValid } from './validation-utils';
+import {
+    expectSingleErrorToInclude,
+    expectSingleWarningToInclude,
+    expectToBeValid,
+} from './validation-utils';
 
 // This test uses a ScalarType because that is a concrete class without much addition to TypeBase
 describe('Type', () => {
@@ -12,9 +16,9 @@ describe('Type', () => {
                 {
                     kind: TypeKind.SCALAR,
                     name: 'Delivery',
-                    graphQLScalarType: GraphQLString
+                    graphQLScalarType: GraphQLString,
                 },
-                model
+                model,
             );
 
             expectToBeValid(type);
@@ -25,9 +29,9 @@ describe('Type', () => {
                 {
                     kind: TypeKind.SCALAR,
                     name: '',
-                    graphQLScalarType: GraphQLString
+                    graphQLScalarType: GraphQLString,
                 },
-                model
+                model,
             );
 
             expectSingleErrorToInclude(type, `Type name is empty.`);
@@ -38,9 +42,9 @@ describe('Type', () => {
                 {
                     kind: TypeKind.SCALAR,
                     name: 'This_Is_Ugly',
-                    graphQLScalarType: GraphQLString
+                    graphQLScalarType: GraphQLString,
                 },
-                model
+                model,
             );
 
             expectSingleWarningToInclude(type, `Type names should not include underscores.`);
@@ -51,9 +55,9 @@ describe('Type', () => {
                 {
                     kind: TypeKind.SCALAR,
                     name: '_Internal',
-                    graphQLScalarType: GraphQLString
+                    graphQLScalarType: GraphQLString,
                 },
-                model
+                model,
             );
             expectSingleErrorToInclude(type, `Type names cannot start with an underscore.`);
         });
@@ -63,12 +67,15 @@ describe('Type', () => {
                 {
                     kind: TypeKind.SCALAR,
                     name: 'thisIsNotATypeName',
-                    graphQLScalarType: GraphQLString
+                    graphQLScalarType: GraphQLString,
                 },
-                model
+                model,
             );
 
-            expectSingleWarningToInclude(type, `Type names should start with an uppercase character.`);
+            expectSingleWarningToInclude(
+                type,
+                `Type names should start with an uppercase character.`,
+            );
         });
     });
 });

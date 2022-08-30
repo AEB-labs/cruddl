@@ -10,19 +10,22 @@ describe('like-helper', () => {
         });
 
         it('properly unescapes special chars', () => {
-            const { isSimplePrefixPattern, literalPrefix } = analyzeLikePatternPrefix('test \\% \\\\ \\_');
+            const { isSimplePrefixPattern, literalPrefix } =
+                analyzeLikePatternPrefix('test \\% \\\\ \\_');
             expect(isSimplePrefixPattern).to.be.false;
             expect(literalPrefix).to.equal('test % \\ _');
         });
 
         it('leaves badly escaped characters as-is', () => {
-            const { isSimplePrefixPattern, literalPrefix } = analyzeLikePatternPrefix('test \\a \\');
+            const { isSimplePrefixPattern, literalPrefix } =
+                analyzeLikePatternPrefix('test \\a \\');
             expect(isSimplePrefixPattern).to.be.false;
             expect(literalPrefix).to.equal('test \\a \\');
         });
 
         it('treats % as placeholder', () => {
-            const { isSimplePrefixPattern, literalPrefix } = analyzeLikePatternPrefix('test % suffix');
+            const { isSimplePrefixPattern, literalPrefix } =
+                analyzeLikePatternPrefix('test % suffix');
             expect(isSimplePrefixPattern).to.be.false;
             expect(literalPrefix).to.equal('test ');
         });
@@ -40,7 +43,8 @@ describe('like-helper', () => {
         });
 
         it('treats _ as placeholder', () => {
-            const { isSimplePrefixPattern, literalPrefix } = analyzeLikePatternPrefix('test _ suffix');
+            const { isSimplePrefixPattern, literalPrefix } =
+                analyzeLikePatternPrefix('test _ suffix');
             expect(isSimplePrefixPattern).to.be.false;
             expect(literalPrefix).to.equal('test ');
         });
@@ -80,11 +84,15 @@ describe('like-helper', () => {
         });
 
         it('translates % properly', () => {
-            expect(likePatternToRegExp('test % suffix').source).to.equal(/^test ([\s\S]*) suffix$/.source);
+            expect(likePatternToRegExp('test % suffix').source).to.equal(
+                /^test ([\s\S]*) suffix$/.source,
+            );
         });
 
         it('translates _ properly', () => {
-            expect(likePatternToRegExp('test _ suffix').source).to.equal(/^test [\s\S] suffix$/.source);
+            expect(likePatternToRegExp('test _ suffix').source).to.equal(
+                /^test [\s\S] suffix$/.source,
+            );
         });
 
         it('matches a simple pattern', () => {
@@ -97,6 +105,6 @@ describe('like-helper', () => {
             expect('test.value\\_suffix').to.match(likePatternToRegExp('test.%\\_suffix'));
             expect('test,value\\_suffix').not.to.match(likePatternToRegExp('test.%\\_suffix'));
             expect('blahtest.value\\_suffix').not.to.match(likePatternToRegExp('test.%\\_suffix'));
-        })
-    })
+        });
+    });
 });

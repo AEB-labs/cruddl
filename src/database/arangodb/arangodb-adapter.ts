@@ -6,7 +6,7 @@ import { ExecutionOptions } from '../../execution/execution-options';
 import {
     ConflictRetriesExhaustedError,
     TransactionCancelledError,
-    TransactionTimeoutError
+    TransactionTimeoutError,
 } from '../../execution/runtime-errors';
 import { Model } from '../../model';
 import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS, QueryNode } from '../../query-tree';
@@ -21,18 +21,21 @@ import {
     ExecutionPlan,
     ExecutionResult,
     FlexSearchTokenizable,
-    TransactionStats
+    TransactionStats,
 } from '../database-adapter';
 import { AQLCompoundQuery, aqlConfig, AQLExecutableQuery } from './aql';
 import { generateTokenizationQuery, getAQLQuery } from './aql-generator';
-import { RequestInstrumentation, RequestInstrumentationPhase } from './arangojs-instrumentation/config';
+import {
+    RequestInstrumentation,
+    RequestInstrumentationPhase,
+} from './arangojs-instrumentation/config';
 import { CancellationManager } from './cancellation-manager';
 import {
     ArangoDBConfig,
     DEFAULT_RETRY_DELAY_BASE_MS,
     getArangoDBLogger,
     initDatabase,
-    RETRY_DELAY_RANDOM_FRACTION
+    RETRY_DELAY_RANDOM_FRACTION,
 } from './config';
 import { ERROR_ARANGO_CONFLICT, ERROR_QUERY_KILLED } from './error-codes';
 import { hasRevisionAssertions } from './revision-helper';
@@ -123,7 +126,11 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         // (https://github.com/istanbuljs/nyc) not to instrument the code with coverage instructions.
 
         /* istanbul ignore next */
-        const arangoExecutionFunction = function({ queries, options, transactionID }: ArangoExecutionOptions) {
+        const arangoExecutionFunction = function ({
+            queries,
+            options,
+            transactionID,
+        }: ArangoExecutionOptions) {
             const db = require('@arangodb').db;
             const enableProfiling = options.recordTimings;
             const internal = enableProfiling ? require('internal') : undefined;
@@ -163,7 +170,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                     error,
                     timings,
                     plans,
-                    stats: transactionStats
+                    stats: transactionStats,
                 });
             }
 
@@ -182,7 +189,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                     if (options.recordPlan) {
                         const stmt = db._createStatement({
                             query: query.code,
-                            bindVars
+                            bindVars,
                         });
                         explainResult = stmt.explain({ allPlans: true });
                     }
@@ -192,15 +199,15 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                         bindVars,
                         options: {
                             profile: options.recordPlan ? 2 : options.recordTimings ? 1 : 0,
-                            memoryLimit: options.queryMemoryLimit
-                        }
+                            memoryLimit: options.queryMemoryLimit,
+                        },
                     });
                 } catch (error) {
                     if (explainResult) {
                         plans.push({
                             plan: explainResult.plans[0],
                             discardedPlans: explainResult.plans.slice(1),
-                            warnings: explainResult.warnings
+                            warnings: explainResult.warnings,
                         });
                     }
 
@@ -226,13 +233,19 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                         discardedPlans: explainResult ? explainResult.plans.slice(1) : [],
                         stats: extra.stats,
                         warnings: extra.warnings,
-                        profile: extra.profile
+                        profile: extra.profile,
                     });
                 }
 
-                if (executionResult.getExtra().stats && executionResult.getExtra().stats.peakMemoryUsage) {
+                if (
+                    executionResult.getExtra().stats &&
+                    executionResult.getExtra().stats.peakMemoryUsage
+                ) {
                     const usage = executionResult.getExtra().stats.peakMemoryUsage;
-                    if (!transactionStats.peakQueryMemoryUsage || transactionStats.peakQueryMemoryUsage < usage) {
+                    if (
+                        !transactionStats.peakQueryMemoryUsage ||
+                        transactionStats.peakQueryMemoryUsage < usage
+                    ) {
                         transactionStats.peakQueryMemoryUsage = usage;
                     }
                 }
@@ -252,7 +265,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                 } catch (e) {
                     rollbackWithError({
                         message: e.message,
-                        code: e.code
+                        code: e.code,
                     });
                 }
             }
@@ -274,7 +287,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                 data,
                 timings,
                 plans,
-                stats: transactionStats
+                stats: transactionStats,
             };
 
             if (options.mutationMode === 'rollback') {
@@ -285,12 +298,20 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         };
 
         const validatorProviders = ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS.map(
-            provider => `[${JSON.stringify(provider.getValidatorName())}]: ${String(provider.getValidatorFunction())}`
+            (provider) =>
+                `[${JSON.stringify(provider.getValidatorName())}]: ${String(
+                    provider.getValidatorFunction(),
+                )}`,
         );
 
-        const allValidatorFunctionsObjectString = `validators = {${validatorProviders.join(',\n')}}`;
+        const allValidatorFunctionsObjectString = `validators = {${validatorProviders.join(
+            ',\n',
+        )}}`;
 
-        return String(arangoExecutionFunction).replace('//inject_validators_here', allValidatorFunctionsObjectString);
+        return String(arangoExecutionFunction).replace(
+            '//inject_validators_here',
+            allValidatorFunctionsObjectString,
+        );
     }
 
     async execute(queryTree: QueryNode) {
@@ -327,9 +348,17 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         // by retrying the query.
         let executionResult;
         if (hasRevisionAssertions(queryTree)) {
-            executionResult = await this.executeTransactionOnce(executableQueries, options, aqlQuery);
+            executionResult = await this.executeTransactionOnce(
+                executableQueries,
+                options,
+                aqlQuery,
+            );
         } else {
-            executionResult = await this.executeTransactionWithRetries(executableQueries, options, aqlQuery);
+            executionResult = await this.executeTransactionWithRetries(
+                executableQueries,
+                options,
+                aqlQuery,
+            );
         }
         const {
             databaseError,
@@ -338,7 +367,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             plans,
             stats,
             hasTimedOut,
-            wasCancelled
+            wasCancelled,
         } = executionResult;
 
         let timings;
@@ -347,8 +376,8 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                 ...transactionTimings,
                 preparation: {
                     total: aqlPreparationTime,
-                    aql: aqlPreparationTime
-                }
+                    aql: aqlPreparationTime,
+                },
             };
         }
 
@@ -363,8 +392,8 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                     discardedPlans: plans[index] && plans[index].discardedPlans,
                     stats: plans[index] && plans[index].stats,
                     warnings: plans[index] && plans[index].warnings,
-                    profile: plans[index] && plans[index].profile
-                }))
+                    profile: plans[index] && plans[index].profile,
+                })),
             };
         }
 
@@ -373,7 +402,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             error = this.processDatabaseError(databaseError, {
                 wasCancelled,
                 hasTimedOut,
-                transactionTimeoutMs: options.transactionTimeoutMs
+                transactionTimeoutMs: options.transactionTimeoutMs,
             });
         }
 
@@ -382,7 +411,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             data,
             timings,
             plan,
-            stats
+            stats,
         };
     }
 
@@ -391,8 +420,12 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         {
             hasTimedOut,
             wasCancelled,
-            transactionTimeoutMs
-        }: { hasTimedOut: boolean; wasCancelled: boolean; transactionTimeoutMs: number | undefined }
+            transactionTimeoutMs,
+        }: {
+            hasTimedOut: boolean;
+            wasCancelled: boolean;
+            transactionTimeoutMs: number | undefined;
+        },
     ): Error {
         // might be just something like a TypeError
         if (!isArangoError(error)) {
@@ -418,7 +451,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
     private async executeTransactionWithRetries(
         executableQueries: ReadonlyArray<AQLExecutableQuery>,
         options: ExecutionOptions,
-        aqlQuery: AQLCompoundQuery
+        aqlQuery: AQLCompoundQuery,
     ): Promise<TransactionResult> {
         const maxRetries = this.config.retriesOnConflict || 0;
         let nextRetryDelay = 0;
@@ -432,21 +465,31 @@ export class ArangoDBAdapter implements DatabaseAdapter {
 
             if (options.recordTimings && result.timings) {
                 timings = {
-                    database: sumUpValues([timings ? timings.database : {}, result.timings.database]),
-                    dbConnection: sumUpValues([timings ? timings.dbConnection : {}, result.timings.dbConnection])
+                    database: sumUpValues([
+                        timings ? timings.database : {},
+                        result.timings.database,
+                    ]),
+                    dbConnection: sumUpValues([
+                        timings ? timings.dbConnection : {},
+                        result.timings.dbConnection,
+                    ]),
                 } as TransactionResult['timings'];
             }
 
             const stats = {
                 ...result.stats,
-                retries
+                retries,
             };
 
-            if (!result.databaseError || !this.isRetryableError(result.databaseError) || !maxRetries) {
+            if (
+                !result.databaseError ||
+                !this.isRetryableError(result.databaseError) ||
+                !maxRetries
+            ) {
                 return {
                     ...result,
                     timings,
-                    stats
+                    stats,
                 };
             }
 
@@ -456,19 +499,28 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                     ...result,
                     timings,
                     stats,
-                    databaseError: new ConflictRetriesExhaustedError({ causedBy: result.databaseError, retries })
+                    databaseError: new ConflictRetriesExhaustedError({
+                        causedBy: result.databaseError,
+                        retries,
+                    }),
                 };
             }
 
             const sleepStart = getPreciseTime();
             const randomFactor = 1 + RETRY_DELAY_RANDOM_FRACTION * (2 * Math.random() - 1);
             const delayWithRandomComponent = nextRetryDelay * randomFactor;
-            const shouldContinue = await sleepInterruptible(delayWithRandomComponent, options.cancellationToken);
+            const shouldContinue = await sleepInterruptible(
+                delayWithRandomComponent,
+                options.cancellationToken,
+            );
             if (options.recordTimings && timings) {
                 const sleepLength = getPreciseTime() - sleepStart;
                 timings = {
                     ...timings,
-                    dbConnection: sumUpValues([timings.dbConnection, { retryDelay: sleepLength, total: sleepLength }])
+                    dbConnection: sumUpValues([
+                        timings.dbConnection,
+                        { retryDelay: sleepLength, total: sleepLength },
+                    ]),
                 } as TransactionResult['timings'];
             }
             if (!shouldContinue) {
@@ -478,7 +530,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                 return {
                     ...result,
                     timings,
-                    stats
+                    stats,
                 };
             }
 
@@ -498,16 +550,16 @@ export class ArangoDBAdapter implements DatabaseAdapter {
     private async executeTransactionOnce(
         executableQueries: ReadonlyArray<AQLExecutableQuery>,
         options: ExecutionOptions,
-        aqlQuery: AQLCompoundQuery
+        aqlQuery: AQLCompoundQuery,
     ): Promise<TransactionResult> {
         const transactionID = uuid();
         const args: ArangoExecutionOptions = {
             queries: executableQueries,
             options: {
                 ...options,
-                queryMemoryLimit: options.queryMemoryLimit || this.config.queryMemoryLimit
+                queryMemoryLimit: options.queryMemoryLimit || this.config.queryMemoryLimit,
             },
-            transactionID
+            transactionID,
         };
         let isTransactionFinished = false;
         const watch = new Watch();
@@ -522,7 +574,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             });
         }
         let requestSentCallback: (() => void) | undefined;
-        let requestSentPromise = new Promise<void>(resolve => (requestSentCallback = resolve));
+        let requestSentPromise = new Promise<void>((resolve) => (requestSentCallback = resolve));
         let timeout: any | undefined;
         if (options.transactionTimeoutMs != undefined) {
             const ms = options.transactionTimeoutMs;
@@ -530,9 +582,9 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             const timeoutPromise = requestSentPromise
                 .then(
                     () =>
-                        new Promise<void>(resolve => {
+                        new Promise<void>((resolve) => {
                             timeout = setTimeout(resolve, ms);
-                        })
+                        }),
                 )
                 .then(() => {
                     hasTimedOut = true;
@@ -580,15 +632,19 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                                 // either was faster than the delay above, or the request was removed from the request queue
                                 if (!isTransactionFinished) {
                                     this.logger.debug(`Cancelling query ${transactionID}`);
-                                    this.cancellationManager.cancelQuery(transactionID).catch(e => {
-                                        this.logger.warn(`Error cancelling query ${transactionID}: ${e.stack}`);
-                                    });
+                                    this.cancellationManager
+                                        .cancelQuery(transactionID)
+                                        .catch((e) => {
+                                            this.logger.warn(
+                                                `Error cancelling query ${transactionID}: ${e.stack}`,
+                                            );
+                                        });
                                 }
                             });
                     }
                 }
             },
-            cancellationToken
+            cancellationToken,
         } as RequestInstrumentation;
 
         const dbStartTime = getPreciseTime();
@@ -597,13 +653,13 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             transactionResult = await this.db.executeTransaction(
                 {
                     read: aqlQuery.readAccessedCollections,
-                    write: aqlQuery.writeAccessedCollections
+                    write: aqlQuery.writeAccessedCollections,
                 },
                 this.arangoExecutionFunction,
                 {
                     params: args,
-                    waitForSync: true
-                }
+                    waitForSync: true,
+                },
             );
         } catch (e) {
             isTransactionFinished = true;
@@ -623,7 +679,12 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                 timeout = undefined;
             }
         }
-        const { timings: databaseReportedTimings, data, plans, error: databaseError } = transactionResult;
+        const {
+            timings: databaseReportedTimings,
+            data,
+            plans,
+            error: databaseError,
+        } = transactionResult;
         isTransactionFinished = true;
 
         let timings;
@@ -635,8 +696,18 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             const connecting = watch.timings.connecting || 0;
             const receiving = watch.timings.receiving;
             const waiting = watch.timings.waiting;
-            const other = watch.timings.total - queuing - socketInit - lookup - connecting - receiving - waiting;
-            const dbInternalTotal = objectValues<number>(databaseReportedTimings).reduce((a, b) => a + b, 0);
+            const other =
+                watch.timings.total -
+                queuing -
+                socketInit -
+                lookup -
+                connecting -
+                receiving -
+                waiting;
+            const dbInternalTotal = objectValues<number>(databaseReportedTimings).reduce(
+                (a, b) => a + b,
+                0,
+            );
             timings = {
                 dbConnection: {
                     queuing,
@@ -646,12 +717,12 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                     waiting,
                     receiving,
                     other,
-                    total: dbConnectionTotal
+                    total: dbConnectionTotal,
                 },
                 database: {
                     ...databaseReportedTimings,
-                    total: dbInternalTotal
-                }
+                    total: dbInternalTotal,
+                },
             };
         }
 
@@ -662,7 +733,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             databaseError,
             stats: transactionResult.stats,
             hasTimedOut,
-            wasCancelled
+            wasCancelled,
         };
     }
 
@@ -688,7 +759,9 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         const skippedMigrations: SchemaMigration[] = [];
         for (const migration of migrations) {
             if (!migration.isMandatory && !this.doNonMandatoryMigrations) {
-                this.logger.debug(`Skipping migration "${migration.description}" because of configuration`);
+                this.logger.debug(
+                    `Skipping migration "${migration.description}" because of configuration`,
+                );
                 skippedMigrations.push(migration);
                 continue;
             }
@@ -697,7 +770,9 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                 await this.performMigration(migration);
                 this.logger.info(`Successfully performed migration "${migration.description}"`);
             } catch (e) {
-                this.logger.error(`Error performing migration "${migration.description}": ${e.stack}`);
+                this.logger.error(
+                    `Error performing migration "${migration.description}": ${e.stack}`,
+                );
                 throw e;
             }
         }
@@ -708,14 +783,16 @@ export class ArangoDBAdapter implements DatabaseAdapter {
     }
 
     async tokenizeExpressions(
-        tokenizations: ReadonlyArray<FlexSearchTokenizable>
+        tokenizations: ReadonlyArray<FlexSearchTokenizable>,
     ): Promise<ReadonlyArray<FlexSearchTokenization>> {
         const tokenizationsFiltered = tokenizations.filter(
             (value, index) =>
                 !tokenizations.some(
                     (value2, index2) =>
-                        value.expression === value2.expression && value.analyzer === value2.analyzer && index > index2
-                )
+                        value.expression === value2.expression &&
+                        value.analyzer === value2.analyzer &&
+                        index > index2,
+                ),
         );
 
         const cursor = await this.db.query(generateTokenizationQuery(tokenizationsFiltered));
@@ -726,7 +803,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             resultArray.push({
                 expression: tokenizationsFiltered[i].expression,
                 analyzer: tokenizationsFiltered[i].analyzer,
-                tokens: result['token_' + i]
+                tokens: result['token_' + i],
             });
         }
 
@@ -734,7 +811,9 @@ export class ArangoDBAdapter implements DatabaseAdapter {
     }
 }
 
-function sumUpValues(objects: ReadonlyArray<{ readonly [key: string]: number }>): { readonly [key: string]: number } {
+function sumUpValues(objects: ReadonlyArray<{ readonly [key: string]: number }>): {
+    readonly [key: string]: number;
+} {
     const result: { [key: string]: number } = {};
     for (const obj of objects) {
         for (const key of Object.keys(obj)) {

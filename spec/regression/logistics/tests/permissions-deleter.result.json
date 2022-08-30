@@ -1,53 +1,53 @@
 {
-    "create": {
-        "errors": [
-            {
-                "message": "Not authorized to create Delivery objects",
-                "locations": [
-                    {
-                        "line": 2,
-                        "column": 5
-                    }
-                ],
-                "path": ["createDelivery"]
-            }
+  "create": {
+    "errors": [
+      {
+        "message": "Not authorized to create Delivery objects",
+        "locations": [
+          {
+            "line": 2,
+            "column": 5
+          }
         ],
-        "data": null
-    },
-    "update": {
-        "errors": [
-            {
-                "message": "Not authorized to update Delivery objects",
-                "locations": [
-                    {
-                        "line": 8,
-                        "column": 5
-                    }
-                ],
-                "path": ["updateDelivery"]
-            }
+        "path": ["createDelivery"]
+      }
+    ],
+    "data": null
+  },
+  "update": {
+    "errors": [
+      {
+        "message": "Not authorized to update Delivery objects",
+        "locations": [
+          {
+            "line": 8,
+            "column": 5
+          }
         ],
-        "data": {
-            "updateDelivery": null
-        }
-    },
-    "delete": {
-        "data": {
-            "deleteDelivery": {
-                "deliveryNumber": "1000173"
-            }
-        }
-    },
-    "list": {
-        "data": {
-            "allDeliveries": [
-                {
-                    "deliveryNumber": "1000521"
-                },
-                {
-                    "deliveryNumber": "1000522"
-                }
-            ]
-        }
+        "path": ["updateDelivery"]
+      }
+    ],
+    "data": {
+      "updateDelivery": null
     }
+  },
+  "delete": {
+    "data": {
+      "deleteDelivery": {
+        "deliveryNumber": "1000173"
+      }
+    }
+  },
+  "list": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000521"
+        },
+        {
+          "deliveryNumber": "1000522"
+        }
+      ]
+    }
+  }
 }

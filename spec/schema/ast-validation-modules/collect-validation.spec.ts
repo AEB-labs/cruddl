@@ -35,7 +35,7 @@ describe('collect validation', () => {
                     allHandlingUnits: [HandlingUnit] @collect(path: "deliveries.handlingUnits")
                 }
             `,
-                `The path can produce duplicate HandlingUnit entities (because the relation target type "HandlingUnit" does not declare an inverse relation field to "Delivery.handlingUnits"). Please set argument "aggregate" to "DISTINCT" to filter out duplicates and null items if you don't want any other aggregation.`
+                `The path can produce duplicate HandlingUnit entities (because the relation target type "HandlingUnit" does not declare an inverse relation field to "Delivery.handlingUnits"). Please set argument "aggregate" to "DISTINCT" to filter out duplicates and null items if you don't want any other aggregation.`,
             );
         });
 
@@ -74,7 +74,7 @@ describe('collect validation', () => {
                     deliveries: [Delivery] @relation
                 }
             `,
-                `The path can produce duplicate HandlingUnit entities (because "HandlingUnit.deliveries", which is the inverse relation field to "Delivery.handlingUnits", is declared as a list). Please set argument "aggregate" to "DISTINCT" to filter out duplicates and null items if you don't want any other aggregation.`
+                `The path can produce duplicate HandlingUnit entities (because "HandlingUnit.deliveries", which is the inverse relation field to "Delivery.handlingUnits", is declared as a list). Please set argument "aggregate" to "DISTINCT" to filter out duplicates and null items if you don't want any other aggregation.`,
             );
         });
 
@@ -130,7 +130,7 @@ describe('collect validation', () => {
                     shipmentHandlingUnits: [HandlingUnit] @collect(path: "shipments.allHandlingUnits")
                 }
             `,
-                `The path can produce duplicate HandlingUnit entities. Please set argument "aggregate" to "DISTINCT" to filter out duplicates and null items if you don't want any other aggregation.`
+                `The path can produce duplicate HandlingUnit entities. Please set argument "aggregate" to "DISTINCT" to filter out duplicates and null items if you don't want any other aggregation.`,
             );
         });
 
@@ -171,9 +171,9 @@ describe('collect validation', () => {
                     allHandlingUnits: [HandlingUnit] @collect(path: "deliveries.shipmentHandlingUnits")
                 }
             `);
-            expect(result.getErrors().map(e => e.message)).to.deep.equal([
+            expect(result.getErrors().map((e) => e.message)).to.deep.equal([
                 `Collect field "allHandlingUnits" cannot be used here because it would cause a recursion.`,
-                `Collect field "shipmentHandlingUnits" cannot be used here because it would cause a recursion.`
+                `Collect field "shipmentHandlingUnits" cannot be used here because it would cause a recursion.`,
             ]);
         });
 
@@ -197,9 +197,9 @@ describe('collect validation', () => {
                     allHandlingUnits: [HandlingUnit] @collect(path: "shipment.deliveries.shipmentHandlingUnits")
                 }
             `);
-            expect(result.getErrors().map(e => e.message)).to.deep.equal([
+            expect(result.getErrors().map((e) => e.message)).to.deep.equal([
                 `Collect field "allHandlingUnits" cannot be used here because it would cause a recursion.`,
-                `Collect field "shipmentHandlingUnits" cannot be used here because it would cause a recursion.`
+                `Collect field "shipmentHandlingUnits" cannot be used here because it would cause a recursion.`,
             ]);
         });
 
@@ -215,9 +215,9 @@ describe('collect validation', () => {
                     allInnerHandlingUnits: [HandlingUnit] @collect(path: "handlingUnits.allInnerHandlingUnits")
                 }
             `);
-            expect(result.getErrors().map(e => e.message)).to.deep.equal([
+            expect(result.getErrors().map((e) => e.message)).to.deep.equal([
                 `Type "HandlingUnit" does not have a field "childHandlingUnits".`,
-                `The collect path of "HandlingUnit.allInnerHandlingUnits" has validation errors.`
+                `The collect path of "HandlingUnit.allInnerHandlingUnits" has validation errors.`,
             ]);
         });
 
@@ -232,7 +232,7 @@ describe('collect validation', () => {
                     handlingUnitNumbers: [String] @collect(path: "handlingUnits.handlingUnitNumber")
                 }
             `,
-                `The collect path results in scalar type "String", but scalars cannot be collected without aggregating them.  You may want to use the "DISTINCT" aggregation.`
+                `The collect path results in scalar type "String", but scalars cannot be collected without aggregating them.  You may want to use the "DISTINCT" aggregation.`,
             );
         });
 
@@ -247,7 +247,7 @@ describe('collect validation', () => {
                     hu: HandlingUnit @collect(path: "handlingUnits")
                 }
             `,
-                `This collect field should be a declared as a list.`
+                `This collect field should be a declared as a list.`,
             );
         });
 
@@ -262,7 +262,7 @@ describe('collect validation', () => {
                     hus: [HandlingUnit] @collect(path: "handlingUnit")
                 }
             `,
-                `The path does not result in a list.`
+                `The path does not result in a list.`,
             );
         });
 
@@ -277,7 +277,7 @@ describe('collect validation', () => {
                     hus: [Delivery] @collect(path: "handlingUnits")
                 }
             `,
-                `The collect path results in type "HandlingUnit", but this field is declared with type "Delivery".`
+                `The collect path results in type "HandlingUnit", but this field is declared with type "Delivery".`,
             );
         });
 
@@ -288,7 +288,7 @@ describe('collect validation', () => {
                     deliveries: [Delivery] @collect(path: "")
                 }
             `,
-                `The path cannot be empty.`
+                `The path cannot be empty.`,
             );
         });
 
@@ -300,7 +300,7 @@ describe('collect validation', () => {
                     deliveries: [Delivery] @collect(path: "childDelivery..childDelivery")
                 }
             `,
-                `The path should consist of dot-separated segments.`
+                `The path should consist of dot-separated segments.`,
             );
         });
 
@@ -312,7 +312,7 @@ describe('collect validation', () => {
                     deliveries: [Delivery] @collect(path: "childDelivery.!")
                 }
             `,
-                `The path segment "!" is invalid. It should be a field name, optionally followed by a depth specifier like {1,2}.`
+                `The path segment "!" is invalid. It should be a field name, optionally followed by a depth specifier like {1,2}.`,
             );
         });
 
@@ -324,7 +324,7 @@ describe('collect validation', () => {
                     deliveryNumber: String
                 }
             `,
-                `Type "String" is not an object type and cannot be navigated into.`
+                `Type "String" is not an object type and cannot be navigated into.`,
             );
         });
 
@@ -335,7 +335,7 @@ describe('collect validation', () => {
                     hus: [Delivery] @collect(path: "handlingUnits")
                 }
             `,
-                `Type "Delivery" does not have a field "handlingUnits".`
+                `Type "Delivery" does not have a field "handlingUnits".`,
             );
         });
 
@@ -350,7 +350,7 @@ describe('collect validation', () => {
                     c: Country @collect(path: "country")
                 }
             `,
-                `Field "Delivery.country" is a reference and cannot be used in a collect path.`
+                `Field "Delivery.country" is a reference and cannot be used in a collect path.`,
             );
         });
 
@@ -364,9 +364,9 @@ describe('collect validation', () => {
                     c: Country @collect(path: "country")
                 }
             `);
-            expect(result.getErrors().map(e => e.message)).to.deep.equal([
+            expect(result.getErrors().map((e) => e.message)).to.deep.equal([
                 `Type "Country" is a root entity type and cannot be embedded. Consider adding @reference or @relation.`,
-                `Field "Delivery.country" is a root entity, but not a relation, and cannot be used in a collect path.`
+                `Field "Delivery.country" is a root entity, but not a relation, and cannot be used in a collect path.`,
             ]);
         });
 
@@ -380,7 +380,7 @@ describe('collect validation', () => {
                     tra: Country @collect
                 }
             `,
-                `Directive "@collect" argument "path" of type "String!" is required, but it was not provided.`
+                `Directive "@collect" argument "path" of type "String!" is required, but it was not provided.`,
             );
         });
 
@@ -394,7 +394,7 @@ describe('collect validation', () => {
                     tra: Country @collect(path: "")
                 }
             `,
-                `The path cannot be empty.`
+                `The path cannot be empty.`,
             );
         });
 
@@ -405,7 +405,7 @@ describe('collect validation', () => {
                     tra: Delivery @relation @collect(path: "tra")
                 }
             `,
-                `@collect and @relation cannot be combined.`
+                `@collect and @relation cannot be combined.`,
             );
         });
 
@@ -444,7 +444,7 @@ describe('collect validation', () => {
                     allInnerHandlingUnits: [HandlingUnit] @collect(path: "childHandlingUnits{0}")
                 }
             `,
-                `The maximum depth cannot be zero.`
+                `The maximum depth cannot be zero.`,
             );
         });
 
@@ -456,7 +456,7 @@ describe('collect validation', () => {
                     allInnerHandlingUnits: [HandlingUnit] @collect(path: "childHandlingUnits{2,1}")
                 }
             `,
-                `The maximum depth (1) cannot be lower than the minimum depth (2).`
+                `The maximum depth (1) cannot be lower than the minimum depth (2).`,
             );
         });
 
@@ -471,7 +471,7 @@ describe('collect validation', () => {
                     allItems: [Item] @collect(path: "items.subItems{0,3}")
                 }
             `,
-                `A depth specifier is only valid for relation fields, and field "Item.subItems" is not a relation.`
+                `A depth specifier is only valid for relation fields, and field "Item.subItems" is not a relation.`,
             );
         });
 
@@ -486,7 +486,7 @@ describe('collect validation', () => {
                     allHandlingUnits: [HandlingUnit] @collect(path: "handlingUnits{0,3}")
                 }
             `,
-                `A depth specifier is only valid for recursive relation fields, and field "Delivery.handlingUnits" is not of type "Delivery", but of type "HandlingUnit".`
+                `A depth specifier is only valid for recursive relation fields, and field "Delivery.handlingUnits" is not of type "Delivery", but of type "HandlingUnit".`,
             );
         });
 
@@ -498,7 +498,7 @@ describe('collect validation', () => {
                     thisAndSiblings: [Delivery] @collect(path: "siblingDelivery{0,2}")
                 }
             `,
-                `The maximum depth of "Delivery.siblingDelivery" cannot be higher than 1 because it is a to-1 relation.`
+                `The maximum depth of "Delivery.siblingDelivery" cannot be higher than 1 because it is a to-1 relation.`,
             );
         });
 
@@ -510,7 +510,7 @@ describe('collect validation', () => {
                     thisAndSibling: [Delivery] @collect(path: "siblingDelivery{0,1}")
                 }
             `,
-                `The collect path can produce items that are null because "Delivery.siblingDelivery" can be null. Please set argument "aggregate" to "DISTINCT" to filter out null items if you don't want any other aggregation.`
+                `The collect path can produce items that are null because "Delivery.siblingDelivery" can be null. Please set argument "aggregate" to "DISTINCT" to filter out null items if you don't want any other aggregation.`,
             );
         });
     });
@@ -543,7 +543,7 @@ describe('collect validation', () => {
                     totalWeightInKg: Int @collect(path: "handlingUnits.totalWeightInKg", aggregate: SUM)
                 }
             `,
-                `The aggregation results in type "Float", but this field is declared with type "Int".`
+                `The aggregation results in type "Float", but this field is declared with type "Int".`,
             );
         });
 
@@ -558,7 +558,7 @@ describe('collect validation', () => {
                     totalWeightInKg: Float @collect(path: "handlingUnits", aggregate: COUNT)
                 }
             `,
-                `The aggregation results in type "Int", but this field is declared with type "Float".`
+                `The aggregation results in type "Int", but this field is declared with type "Float".`,
             );
         });
 
@@ -573,7 +573,7 @@ describe('collect validation', () => {
                     totalWeightInKg: [Int] @collect(path: "handlingUnits", aggregate: COUNT)
                 }
             `,
-                `This aggregation field should not be declared as a list.`
+                `This aggregation field should not be declared as a list.`,
             );
         });
 
@@ -590,7 +590,7 @@ describe('collect validation', () => {
                     totalPackedAt: DateTime @collect(path: "handlingUnits.packedAt", aggregate: SUM)
                 }
             `,
-                `Aggregation operator "SUM" is not supported on type "DateTime" (supported types: "Int", "Int53", "Float", "Decimal1", "Decimal2", "Decimal3").`
+                `Aggregation operator "SUM" is not supported on type "DateTime" (supported types: "Int", "Int53", "Float", "Decimal1", "Decimal2", "Decimal3").`,
             );
         });
 
@@ -617,7 +617,7 @@ describe('collect validation', () => {
                     totalPackedAt: OffsetDateTime @collect(path: "handlingUnits.packedAt", aggregate: MAX)
                 }
             `,
-                'The aggregation results in type "DateTime", but this field is declared with type "OffsetDateTime".'
+                'The aggregation results in type "DateTime", but this field is declared with type "OffsetDateTime".',
             );
         });
 
@@ -654,7 +654,7 @@ describe('collect validation', () => {
                     totalWeightInKg: Float @collect(path: "deliveries.totalWeightInKg", aggregate: SUM)
                 }
             `,
-                `Field "Delivery.totalWeightInKg" is an aggregation field and cannot be used in a collect path.`
+                `Field "Delivery.totalWeightInKg" is an aggregation field and cannot be used in a collect path.`,
             );
         });
 
@@ -675,7 +675,7 @@ describe('collect validation', () => {
                     parent: Child @parent
                 }
             `,
-                `Field "Grandchild.parent" is a parent field and cannot be used in a collect path.`
+                `Field "Grandchild.parent" is a parent field and cannot be used in a collect path.`,
             );
         });
 
@@ -692,7 +692,7 @@ describe('collect validation', () => {
                     parent: Delivery @root
                 }
             `,
-                `Field "Child.parent" is a root field and cannot be used in a collect path.`
+                `Field "Child.parent" is a root field and cannot be used in a collect path.`,
             );
         });
 
@@ -733,7 +733,7 @@ describe('collect validation', () => {
                         distinctItemExtensions: [ItemExtension] @collect(path: "items.extension", aggregate: DISTINCT)
                     }
                 `,
-                    'Aggregation operator "DISTINCT" is not supported on entity extension types. You can instead collect the parent objects by removing the last path segment.'
+                    'Aggregation operator "DISTINCT" is not supported on entity extension types. You can instead collect the parent objects by removing the last path segment.',
                 );
             });
 
@@ -768,7 +768,7 @@ describe('collect validation', () => {
                         distinctVolumes: [Volume] @collect(path: "volumes", aggregate: DISTINCT)
                     }
                 `,
-                    'Aggregation operator "DISTINCT" is not supported on value object type "Volume" because its field "value" has a type that does not support this operator.'
+                    'Aggregation operator "DISTINCT" is not supported on value object type "Volume" because its field "value" has a type that does not support this operator.',
                 );
             });
         });

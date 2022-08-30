@@ -44,13 +44,13 @@ export class InMemoryAdapter implements DatabaseAdapter {
             ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS.map((provider): [string, Function] => [
                 provider.getValidatorName(),
                 provider.getValidatorFunction(),
-            ])
+            ]),
         );
 
         const support = {
             compare(
                 lhs: string | boolean | number | null | undefined | any,
-                rhs: string | boolean | number | null | undefined | any
+                rhs: string | boolean | number | null | undefined | any,
             ): number {
                 if (lhs == undefined) {
                     if (rhs == undefined) {
@@ -114,7 +114,10 @@ export class InMemoryAdapter implements DatabaseAdapter {
                 // both are objects
 
                 const properties = Array.from(
-                    new Set([...Object.getOwnPropertyNames(lhs), ...Object.getOwnPropertyNames(rhs)])
+                    new Set([
+                        ...Object.getOwnPropertyNames(lhs),
+                        ...Object.getOwnPropertyNames(rhs),
+                    ]),
                 ).sort();
                 for (const property of properties) {
                     const lhsValue = lhs[property];
@@ -141,7 +144,9 @@ export class InMemoryAdapter implements DatabaseAdapter {
                 return items.reduce((acc, item) => (support.compare(item, acc) > 0 ? item : acc));
             },
 
-            getMultiComparator<T>(...valueFns: [(item: T) => string | boolean | number | null | undefined, boolean][]) {
+            getMultiComparator<T>(
+                ...valueFns: [(item: T) => string | boolean | number | null | undefined, boolean][]
+            ) {
                 if (valueFns.length == 0) {
                     return () => 0;
                 }
@@ -259,9 +264,13 @@ export class InMemoryAdapter implements DatabaseAdapter {
 
     async updateSchema(model: Model) {
         const rootEntities = model.rootEntityTypes;
-        const requiredEdgeCollections = Array.from(new Set(model.relations.map(getCollectionNameForRelation)));
+        const requiredEdgeCollections = Array.from(
+            new Set(model.relations.map(getCollectionNameForRelation)),
+        );
 
-        const requiredCollections = rootEntities.map((entity) => getCollectionNameForRootEntity(entity));
+        const requiredCollections = rootEntities.map((entity) =>
+            getCollectionNameForRootEntity(entity),
+        );
         if (!requiredCollections.some((value) => value === 'billingEntities')) {
             requiredCollections.push('billingEntities');
         }
@@ -273,7 +282,7 @@ export class InMemoryAdapter implements DatabaseAdapter {
     }
 
     async tokenizeExpressions(
-        tokenizations: ReadonlyArray<FlexSearchTokenizable>
+        tokenizations: ReadonlyArray<FlexSearchTokenizable>,
     ): Promise<ReadonlyArray<FlexSearchTokenization>> {
         return tokenizations.map((value) => {
             return {

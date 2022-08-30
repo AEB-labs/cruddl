@@ -1,7 +1,10 @@
 import { expect } from 'chai';
 import { DocumentNode, graphql, print } from 'graphql';
 import gql from 'graphql-tag';
-import { ExecutionOptions, ExecutionOptionsCallbackArgs } from '../../src/execution/execution-options';
+import {
+    ExecutionOptions,
+    ExecutionOptionsCallbackArgs,
+} from '../../src/execution/execution-options';
 import { getMetaSchema } from '../../src/meta-schema/meta-schema';
 import { AggregationOperator, Model, TypeKind } from '../../src/model';
 import { Project } from '../../src/project/project';
@@ -833,7 +836,7 @@ describe('Meta schema API', () => {
                         isRoot
                     }
                 }
-            `
+            `,
         );
         expect(result).to.deep.equal({
             namespaces: [
@@ -858,7 +861,7 @@ describe('Meta schema API', () => {
                         path
                     }
                 }
-            `
+            `,
         );
         expect(result).to.deep.equal({
             logistics: { name: 'logistics', path: ['logistics'] },

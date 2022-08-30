@@ -7,7 +7,7 @@ import {
     QueryNode,
     RuntimeErrorQueryNode,
     UnaryOperationQueryNode,
-    UnaryOperator
+    UnaryOperator,
 } from '../../query-tree';
 
 export const noAnalyzerWasSuppliedError = 'No Analyzer was supplied';

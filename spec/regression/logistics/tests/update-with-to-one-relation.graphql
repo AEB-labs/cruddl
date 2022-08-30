@@ -1,8 +1,5 @@
 mutation set {
-    updateHandlingUnit(input: {
-        id: "@{ids/HandlingUnit/1}",
-        delivery: "@{ids/Delivery/1}"
-    }) {
+    updateHandlingUnit(input: { id: "@{ids/HandlingUnit/1}", delivery: "@{ids/Delivery/1}" }) {
         huNumber
     }
 }
@@ -16,10 +13,7 @@ query check1 {
 }
 
 mutation replace {
-    updateHandlingUnit(input: {
-        id: "@{ids/HandlingUnit/1}",
-        delivery: "@{ids/Delivery/2}"
-    }) {
+    updateHandlingUnit(input: { id: "@{ids/HandlingUnit/1}", delivery: "@{ids/Delivery/2}" }) {
         huNumber
     }
 }
@@ -33,9 +27,7 @@ query check2 {
 }
 
 mutation leave {
-    updateHandlingUnit(input: {
-        id: "@{ids/HandlingUnit/1}"
-    }) {
+    updateHandlingUnit(input: { id: "@{ids/HandlingUnit/1}" }) {
         huNumber
     }
 }
@@ -49,10 +41,7 @@ query check3 {
 }
 
 mutation unset {
-    updateHandlingUnit(input: {
-        id: "@{ids/HandlingUnit/1}",
-        delivery: null
-    }) {
+    updateHandlingUnit(input: { id: "@{ids/HandlingUnit/1}", delivery: null }) {
         huNumber
     }
 }

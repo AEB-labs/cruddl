@@ -3,23 +3,26 @@ import { expect } from 'chai';
 import { getMessages } from './source-validation-helper';
 
 describe('check-yaml-syntax validator', () => {
-
     it('reports syntax errors', () => {
-        const messages = getMessages(new ProjectSource('test.yaml', 'valid\nfoo: second colon: here\n '));
+        const messages = getMessages(
+            new ProjectSource('test.yaml', 'valid\nfoo: second colon: here\n '),
+        );
         expect(messages.length).to.equal(2);
-        expect(messages[0].message).to.equal("end of the stream or a document separator is expected");
+        expect(messages[0].message).to.equal(
+            'end of the stream or a document separator is expected',
+        );
         expect(JSON.parse(JSON.stringify(messages[0].location))).to.deep.equal({
-            "_end": {
-                "column": 24,
-                "line": 2,
-                "offset": 29,
+            _end: {
+                column: 24,
+                line: 2,
+                offset: 29,
             },
-            "_start": {
-                "column": 4,
-                "line": 2,
-                "offset": 9
+            _start: {
+                column: 4,
+                line: 2,
+                offset: 9,
             },
-            "sourceName": "test.yaml"
+            sourceName: 'test.yaml',
         });
     });
 

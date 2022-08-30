@@ -32,7 +32,7 @@ describe('indices validator', () => {
             `
             type Foo @rootEntity(indices:[{ fields: []}]) { foo: String }
         `,
-            'An index must specify at least one field.'
+            'An index must specify at least one field.',
         );
     });
 
@@ -41,7 +41,7 @@ describe('indices validator', () => {
             `
             type Foo @rootEntity(indices:[{ fields: ["asds#/asd"]}]) { foo: String }
         `,
-            'An index field path should be field names separated by dots.'
+            'An index field path should be field names separated by dots.',
         );
     });
 
@@ -50,7 +50,7 @@ describe('indices validator', () => {
             `
             type Foo @rootEntity(indices:[{ fields: ["bar"]}]) { foo: String }
         `,
-            'Type "Foo" does not have a field "bar"'
+            'Type "Foo" does not have a field "bar"',
         );
     });
 
@@ -60,7 +60,7 @@ describe('indices validator', () => {
             type Foo @rootEntity(indices:[{ fields: ["bar.bla"]}]) { foo: String, bar: Bar }
             type Bar @entityExtension { baz: String }
         `,
-            'Type "Bar" does not have a field "bla"'
+            'Type "Bar" does not have a field "bla"',
         );
     });
 
@@ -70,7 +70,7 @@ describe('indices validator', () => {
             type Foo @rootEntity(indices:[{ fields: ["bar"]}]) { foo: String, bar: Bar }
             type Bar @entityExtension { baz: String }
         `,
-            'Indices can only be defined on scalar or enum fields, but the type of "Foo.bar" is an object type. Specify a dot-separated field path to create an index on an embedded object.'
+            'Indices can only be defined on scalar or enum fields, but the type of "Foo.bar" is an object type. Specify a dot-separated field path to create an index on an embedded object.',
         );
     });
 
@@ -79,7 +79,7 @@ describe('indices validator', () => {
             `
             type Foo @rootEntity(indices:[{ fields: ["bar.baz"]}]) { foo: String, bar: String }
         `,
-            'Field "bar" is not an object'
+            'Field "bar" is not an object',
         );
     });
 
@@ -89,7 +89,7 @@ describe('indices validator', () => {
             type Foo @rootEntity(indices:[{ fields: ["bar.baz"]}]) { bar: Bar @relation }
             type Bar @rootEntity { baz: String }
         `,
-            'Field "Foo.bar" resolves to a root entity, but indices can not cross root entity boundaries.'
+            'Field "Foo.bar" resolves to a root entity, but indices can not cross root entity boundaries.',
         );
     });
 
@@ -98,7 +98,7 @@ describe('indices validator', () => {
             `
             type Foo @valueObject { bar: String @unique }
         `,
-            'Indices are only allowed in root entity fields. You can add indices to fields of embedded objects with @rootEntities(indices: [...]).'
+            'Indices are only allowed in root entity fields. You can add indices to fields of embedded objects with @rootEntities(indices: [...]).',
         );
     });
 
@@ -107,19 +107,19 @@ describe('indices validator', () => {
             `
             type Foo @rootEntity { bar: JSON @index }
         `,
-            'Indices can not be defined on scalar fields of type "JSON", but the type of "Foo.bar" is "JSON".'
+            'Indices can not be defined on scalar fields of type "JSON", but the type of "Foo.bar" is "JSON".',
         );
         assertValidatorRejects(
             `
             type Foo @rootEntity { bar: JSON @unique }
         `,
-            'Indices can not be defined on scalar fields of type "JSON", but the type of "Foo.bar" is "JSON".'
+            'Indices can not be defined on scalar fields of type "JSON", but the type of "Foo.bar" is "JSON".',
         );
         assertValidatorRejects(
             `
             type Foo @rootEntity(indices:[{ fields: ["bar"]}]) { bar: JSON }
         `,
-            'Indices can not be defined on scalar fields of type "JSON", but the type of "Foo.bar" is "JSON".'
+            'Indices can not be defined on scalar fields of type "JSON", but the type of "Foo.bar" is "JSON".',
         );
     });
 
@@ -128,7 +128,7 @@ describe('indices validator', () => {
             `
             type Foo @childEntity { bar: String @index }
         `,
-            'Indices are only allowed in root entity fields. You can add indices to fields of embedded objects with @rootEntities(indices: [...]).'
+            'Indices are only allowed in root entity fields. You can add indices to fields of embedded objects with @rootEntities(indices: [...]).',
         );
     });
 
@@ -149,7 +149,7 @@ describe('indices validator', () => {
                 parent: Child @parent
             }
         `,
-            'Field "Grandchild.parent" is a parent field and cannot be used in an index.'
+            'Field "Grandchild.parent" is a parent field and cannot be used in an index.',
         );
     });
 
@@ -166,7 +166,7 @@ describe('indices validator', () => {
                 root: Root @root
             }
         `,
-            'Field "Child.root" is a root field and cannot be used in an index.'
+            'Field "Child.root" is a root field and cannot be used in an index.',
         );
     });
 });
